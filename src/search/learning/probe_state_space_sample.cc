@@ -43,7 +43,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
     vector<int> h_s;
 
     // TODO for now we use the global state registry for all states (even temporary states like this): see issue386
-    State s = g_initial_state();
+    GlobalState s = g_initial_state();
     sample_t::const_iterator succ_it = temporary_samp->find(s);
     if (succ_it == temporary_samp->end()) {
         (*temporary_samp)[s].reserve(0);
@@ -78,7 +78,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
             const GlobalOperator *op = applicable_ops[op_num];
             // TODO for now, we only generate registered successors. This is a temporary state that
             // should should not necessarily be registered in the global registry: see issue386.
-            State succ = State::construct_registered_successor(s, *op);
+            GlobalState succ = GlobalState::construct_registered_successor(s, *op);
 
             succ_it = temporary_samp->find(succ);
             if (succ_it == temporary_samp->end()) {
@@ -120,7 +120,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 
         // TODO for now, we only generate registered successors. This is a temporary state that
         // should should not necessarily be registered in the global registry: see issue386.
-        State succ = State::construct_registered_successor(s, *op);
+        GlobalState succ = GlobalState::construct_registered_successor(s, *op);
 
         if (test_goal(succ)) {
             //if (succ_node.is_goal()) {

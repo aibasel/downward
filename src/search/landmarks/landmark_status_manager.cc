@@ -13,14 +13,14 @@ LandmarkStatusManager::~LandmarkStatusManager() {
 }
 
 
-vector<bool> &LandmarkStatusManager::get_reached_landmarks(const State &state) {
+vector<bool> &LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
     return reached_lms[state];
 }
 
 
 void LandmarkStatusManager::set_landmarks_for_initial_state() {
     // TODO use correct state registry here.
-    const State &initial_state = g_initial_state();
+    const GlobalState &initial_state = g_initial_state();
     vector<bool> &reached = get_reached_landmarks(initial_state);
     reached.resize(lm_graph.number_of_landmarks());
     //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
@@ -66,7 +66,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state() {
 
 
 bool LandmarkStatusManager::update_reached_lms(
-    const State &parent_state, const GlobalOperator &, const State &state) {
+    const GlobalState &parent_state, const GlobalOperator &, const GlobalState &state) {
     vector<bool> &parent_reached = get_reached_landmarks(parent_state);
     vector<bool> &reached = get_reached_landmarks(state);
 
@@ -120,7 +120,7 @@ bool LandmarkStatusManager::update_reached_lms(
     return true;
 }
 
-bool LandmarkStatusManager::update_lm_status(const State &state) {
+bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
     vector<bool> &reached = get_reached_landmarks(state);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();

@@ -29,7 +29,7 @@ void HMHeuristic::initialize() {
     generate_all_tuples();
 }
 
-int HMHeuristic::compute_heuristic(const State &state) {
+int HMHeuristic::compute_heuristic(const GlobalState &state) {
     if (test_goal(state)) {
         return 0;
     } else {

@@ -70,7 +70,7 @@ public:
         return in_goal;
     }
 
-    bool is_true_in_state(const State &state) const {
+    bool is_true_in_state(const GlobalState &state) const {
         if (disjunctive) {
             for (unsigned int i = 0; i < vars.size(); i++) {
                 if (state[vars[i]] == vals[i]) {

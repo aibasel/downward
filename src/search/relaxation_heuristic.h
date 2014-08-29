@@ -6,7 +6,7 @@
 #include <vector>
 
 class GlobalOperator;
-class State;
+class GlobalState;
 
 class Proposition;
 class UnaryOperator;
@@ -53,7 +53,7 @@ protected:
     std::vector<Proposition *> goal_propositions;
 
     virtual void initialize();
-    virtual int compute_heuristic(const State &state) = 0;
+    virtual int compute_heuristic(const GlobalState &state) = 0;
 public:
     RelaxationHeuristic(const Options &options);
     virtual ~RelaxationHeuristic();

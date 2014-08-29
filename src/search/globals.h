@@ -13,12 +13,12 @@ class IntPacker;
 class LegacyCausalGraph;
 class GlobalOperator;
 class RandomNumberGenerator;
-class State;
+class GlobalState;
 class SuccessorGenerator;
 class Timer;
 class StateRegistry;
 
-bool test_goal(const State &state);
+bool test_goal(const GlobalState &state);
 void save_plan(const std::vector<const GlobalOperator *> &plan, int iter);
 int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 
@@ -54,7 +54,7 @@ extern std::vector<int> g_initial_state_data;
 // TODO The following function returns the initial state that is registered
 //      in g_state_registry. This is only a short-term solution. In the
 //      medium term, we should get rid of the global registry.
-extern const State &g_initial_state();
+extern const GlobalState &g_initial_state();
 extern std::vector<std::pair<int, int> > g_goal;
 
 extern std::vector<GlobalOperator> g_operators;

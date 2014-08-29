@@ -33,7 +33,7 @@ class CanonicalPDBsHeuristic : public Heuristic {
     void dump_cliques() const;
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     CanonicalPDBsHeuristic(const Options &opts);
     virtual ~CanonicalPDBsHeuristic();
@@ -55,7 +55,7 @@ public:
     // given state is a dead end or not (see issue404).
     // set Heuristic's evaluator_value to DEAD_END if state is a dead end and to
     // 0 otherwise.
-    void evaluate_dead_end(const State &state);
+    void evaluate_dead_end(const GlobalState &state);
     const std::vector<PDBHeuristic *> &get_pattern_databases() const {return pattern_databases; }
     int get_size() const {return size; }
     void dump() const;

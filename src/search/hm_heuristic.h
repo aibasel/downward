@@ -27,7 +27,7 @@ public:
     virtual ~HMHeuristic();
     virtual bool dead_ends_are_reliable() const;
 protected:
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
     virtual void initialize();
 
     // parameters
@@ -45,7 +45,7 @@ protected:
 
     // some helper methods
     int check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple);
-    void state_to_tuple(const State &state, tuple &t) {
+    void state_to_tuple(const GlobalState &state, tuple &t) {
         for (int i = 0; i < g_variable_domain.size(); i++)
             t.push_back(make_pair(i, state[i]));
     }

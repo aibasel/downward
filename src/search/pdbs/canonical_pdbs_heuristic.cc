@@ -128,7 +128,7 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
 void CanonicalPDBsHeuristic::initialize() {
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
+int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &state) {
     int max_h = 0;
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
@@ -223,7 +223,7 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
-void CanonicalPDBsHeuristic::evaluate_dead_end(const State &state) {
+void CanonicalPDBsHeuristic::evaluate_dead_end(const GlobalState &state) {
     int evaluator_value = 0;
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         pattern_databases[i]->evaluate(state);

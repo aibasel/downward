@@ -29,7 +29,7 @@ protected:
     std::vector<Heuristic *> preferred_operator_heuristics;
     std::vector<Heuristic *> estimate_heuristics;
 
-    State current_state;
+    GlobalState current_state;
     StateID current_predecessor_id;
     const GlobalOperator *current_operator;
     int current_g;

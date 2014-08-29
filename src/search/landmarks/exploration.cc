@@ -164,7 +164,7 @@ public:
 };
 
 // heuristic computation
-void Exploration::setup_exploration_queue(const State &state,
+void Exploration::setup_exploration_queue(const GlobalState &state,
                                           const vector<pair<int, int> > &excluded_props,
                                           const hash_set<const GlobalOperator *,
                                                          ex_hash_operator_ptr> &excluded_ops,
@@ -302,7 +302,7 @@ int Exploration::compute_hsp_max_heuristic() {
     return maximal_cost;
 }
 
-int Exploration::get_lower_bound(const State &state) {
+int Exploration::get_lower_bound(const GlobalState &state) {
 /* Note: this function is currently not used */
     prepare_heuristic_computation(state, true);
     int h = compute_hsp_max_heuristic();
@@ -311,7 +311,7 @@ int Exploration::get_lower_bound(const State &state) {
 }
 
 
-int Exploration::compute_ff_heuristic(const State &state) {
+int Exploration::compute_ff_heuristic(const GlobalState &state) {
     int h_add_heuristic = compute_hsp_add_heuristic();
     if (h_add_heuristic == DEAD_END) {
         return DEAD_END;
@@ -329,7 +329,7 @@ int Exploration::compute_ff_heuristic(const State &state) {
 }
 
 void Exploration::collect_relaxed_plan(ExProposition *goal,
-                                       RelaxedPlan &relaxed_plan, const State &state) {
+                                       RelaxedPlan &relaxed_plan, const GlobalState &state) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         ExUnaryOperator *unary_op = goal->reached_by;
@@ -412,13 +412,13 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
     heuristic_recomputation_needed = true;
 }
 
-void Exploration::prepare_heuristic_computation(const State &state, bool h_max = false) {
+void Exploration::prepare_heuristic_computation(const GlobalState &state, bool h_max = false) {
     setup_exploration_queue(state, h_max);
     relaxed_exploration(h_max);
     heuristic_recomputation_needed = false;
 }
 
-int Exploration::compute_heuristic(const State &state) {
+int Exploration::compute_heuristic(const GlobalState &state) {
     if (heuristic_recomputation_needed) {
         prepare_heuristic_computation(state);
     }
@@ -427,7 +427,7 @@ int Exploration::compute_heuristic(const State &state) {
 
 
 void Exploration::collect_ha(ExProposition *goal,
-                             RelaxedPlan &relaxed_plan, const State &state) {
+                             RelaxedPlan &relaxed_plan, const GlobalState &state) {
     // This is the same as collect_relaxed_plan, except that preferred operators
     // are saved in exported_ops rather than preferred_operators
 
@@ -458,7 +458,7 @@ bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
 }
 
 bool Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
-                                const State &state) {
+                                const GlobalState &state) {
     relaxed_plan.clear();
     // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
     if (!landmarks.empty()) {

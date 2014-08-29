@@ -236,7 +236,7 @@ bool PDBHeuristic::is_goal_state(const size_t state_index, const vector<pair<int
     return true;
 }
 
-size_t PDBHeuristic::hash_index(const State &state) const {
+size_t PDBHeuristic::hash_index(const GlobalState &state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
         index += hash_multipliers[i] * state[pattern[i]];
@@ -247,7 +247,7 @@ size_t PDBHeuristic::hash_index(const State &state) const {
 void PDBHeuristic::initialize() {
 }
 
-int PDBHeuristic::compute_heuristic(const State &state) {
+int PDBHeuristic::compute_heuristic(const GlobalState &state) {
     int h = distances[hash_index(state)];
     if (h == numeric_limits<int>::max())
         return DEAD_END;

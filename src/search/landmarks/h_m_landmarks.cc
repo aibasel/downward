@@ -298,7 +298,7 @@ void HMLandmarks::get_split_m_sets(
 // get subsets of state with size <= m
 void HMLandmarks::get_m_sets(int m,
                              std::vector<FluentSet> &subsets,
-                             const State &s) {
+                             const GlobalState &s) {
     FluentSet state_fluents;
     for (int i = 0; i < g_variable_domain.size(); i++) {
         state_fluents.push_back(std::make_pair(i, s[i]));

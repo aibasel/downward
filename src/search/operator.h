@@ -18,7 +18,7 @@ struct GlobalCondition {
         assert(val >= 0 && val < g_variable_domain[var]);
     }
 
-    bool is_applicable(const State &state) const {
+    bool is_applicable(const GlobalState &state) const {
         return state[var] == val;
     }
 
@@ -41,7 +41,7 @@ struct GlobalEffect {
     GlobalEffect(int variable, int value, const std::vector<GlobalCondition> &conds)
         : var(variable), val(value), conditions(conds) {}
 
-    bool does_fire(const State &state) const {
+    bool does_fire(const GlobalState &state) const {
         for (int i = 0; i < conditions.size(); ++i)
             if (!conditions[i].is_applicable(state))
                 return false;
@@ -70,7 +70,7 @@ public:
     const std::vector<GlobalCondition> &get_preconditions() const {return preconditions; }
     const std::vector<GlobalEffect> &get_effects() const {return effects; }
 
-    bool is_applicable(const State &state) const {
+    bool is_applicable(const GlobalState &state) const {
         for (int i = 0; i < preconditions.size(); ++i)
             if (!preconditions[i].is_applicable(state))
                 return false;

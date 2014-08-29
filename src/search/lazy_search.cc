@@ -127,7 +127,7 @@ int LazySearch::fetch_next_state() {
 
     current_predecessor_id = next.first;
     current_operator = next.second;
-    State current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
+    GlobalState current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
     current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
 
@@ -156,7 +156,7 @@ int LazySearch::step() {
         if (dummy_id == StateID::no_state) {
             dummy_id = g_initial_state().get_id();
         }
-        State parent_state = g_state_registry->lookup_state(dummy_id);
+        GlobalState parent_state = g_state_registry->lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         for (int i = 0; i < heuristics.size(); i++) {

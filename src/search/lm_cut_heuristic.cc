@@ -113,7 +113,7 @@ void LandmarkCutHeuristic::setup_exploration_queue() {
     }
 }
 
-void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
+void LandmarkCutHeuristic::setup_exploration_queue_state(const GlobalState &state) {
     for (int var = 0; var < propositions.size(); var++) {
         RelaxedProposition *init_prop = &propositions[var][state[var]];
         enqueue_if_necessary(init_prop, 0);
@@ -121,7 +121,7 @@ void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
     enqueue_if_necessary(&artificial_precondition, 0);
 }
 
-void LandmarkCutHeuristic::first_exploration(const State &state) {
+void LandmarkCutHeuristic::first_exploration(const GlobalState &state) {
     assert(priority_queue.empty());
     setup_exploration_queue();
     setup_exploration_queue_state(state);
@@ -202,7 +202,7 @@ void LandmarkCutHeuristic::first_exploration_incremental(
 }
 
 void LandmarkCutHeuristic::second_exploration(
-    const State &state, vector<RelaxedProposition *> &second_exploration_queue, vector<RelaxedOperator *> &cut) {
+    const GlobalState &state, vector<RelaxedProposition *> &second_exploration_queue, vector<RelaxedOperator *> &cut) {
     assert(second_exploration_queue.empty());
     assert(cut.empty());
 
@@ -293,7 +293,7 @@ void LandmarkCutHeuristic::validate_h_max() const {
 #endif
 }
 
-int LandmarkCutHeuristic::compute_heuristic(const State &state) {
+int LandmarkCutHeuristic::compute_heuristic(const GlobalState &state) {
     // TODO: Possibly put back in some kind of preferred operator mechanism.
     for (int i = 0; i < relaxed_operators.size(); i++) {
         RelaxedOperator &op = relaxed_operators[i];

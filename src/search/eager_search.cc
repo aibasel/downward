@@ -69,7 +69,7 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
-    const State &initial_state = g_initial_state();
+    const GlobalState &initial_state = g_initial_state();
     for (size_t i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(initial_state);
     open_list->evaluate(0, false);
@@ -105,7 +105,7 @@ int EagerSearch::step() {
     }
     SearchNode node = n.first;
 
-    State s = node.get_state();
+    GlobalState s = node.get_state();
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
@@ -133,7 +133,7 @@ int EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        State succ_state = g_state_registry->get_successor_state(s, *op);
+        GlobalState succ_state = g_state_registry->get_successor_state(s, *op);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
@@ -256,7 +256,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         //      recreate it outside of this function with node.get_state()?
         //      One way would be to store State objects inside SearchNodes
         //      instead of StateIDs
-        State s = g_state_registry->lookup_state(id);
+        GlobalState s = g_state_registry->lookup_state(id);
         SearchNode node = search_space.get_node(s);
 
         if (node.is_closed())

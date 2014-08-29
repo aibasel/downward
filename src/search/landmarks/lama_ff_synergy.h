@@ -18,7 +18,7 @@ public:
         HeuristicProxy(LamaFFSynergy *synergy_);
         virtual ~HeuristicProxy() {}
 
-        virtual int compute_heuristic(const State &state) {
+        virtual int compute_heuristic(const GlobalState &state) {
             if (is_first_proxy)
                 synergy->compute_heuristics(state);
             return get_heuristic_value();
@@ -45,8 +45,8 @@ public:
         }
 public:
         LamaHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {}
-        virtual bool reach_state(const State &parent_state, const GlobalOperator &op,
-                                 const State &state) {
+        virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                                 const GlobalState &state) {
             return synergy->lama_reach_state(parent_state, op, state);
         }
     };
@@ -73,10 +73,10 @@ public:
         initialized = true;
     }
 
-    bool lama_reach_state(const State &parent_state, const GlobalOperator &op,
-                          const State &state);
+    bool lama_reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                          const GlobalState &state);
 
-    void compute_heuristics(const State &);
+    void compute_heuristics(const GlobalState &);
     void get_lama_preferred_operators(std::vector<const GlobalOperator *> &result);
     void get_ff_preferred_operators(std::vector<const GlobalOperator *> &result);
 public:
