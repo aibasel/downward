@@ -2,11 +2,12 @@
 #define LAZY_SEARCH_H
 
 #include "global_state.h"
-#include "open_lists/open_list.h"
 #include "scalar_evaluator.h"
 #include "search_engine.h"
 #include "search_progress.h"
 #include "search_space.h"
+
+#include "open_lists/open_list.h"
 
 #include <vector>
 

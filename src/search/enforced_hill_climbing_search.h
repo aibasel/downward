@@ -5,11 +5,12 @@
 #include "global_operator.h"
 #include "global_state.h"
 #include "globals.h"
-#include "open_lists/open_list.h"
 #include "search_engine.h"
 #include "search_node_info.h"
 #include "search_progress.h"
 #include "search_space.h"
+
+#include "open_lists/open_list.h"
 
 #include <map>
 #include <vector>

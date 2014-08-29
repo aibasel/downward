@@ -5,11 +5,12 @@
 
 #include "evaluator.h"
 #include "global_state.h"
-#include "open_lists/open_list.h"
 #include "search_engine.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "timer.h"
+
+#include "open_lists/open_list.h"
 
 class GlobalOperator;
 class Heuristic;
