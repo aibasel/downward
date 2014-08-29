@@ -202,7 +202,7 @@ LabelSignature LabelReducer::build_label_signature(
     vector<Assignment> preconditions;
     vector<Assignment> effects;
 
-    const vector<Condition> &precs = label.get_preconditions();
+    const vector<GlobalCondition> &precs = label.get_preconditions();
     for (size_t i = 0; i < precs.size(); ++i) {
         int var = precs[i].var;
         if (var_is_used[var]) {

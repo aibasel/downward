@@ -121,7 +121,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             sort(precond_pairs.begin(), precond_pairs.end());
 
             hash_map<int, int> pre_map;
-            const vector<Condition> &preconditions = the_operator->get_preconditions();
+            const vector<GlobalCondition> &preconditions = the_operator->get_preconditions();
             for (int j = 0; j < preconditions.size(); ++j)
                 pre_map[preconditions[j].var] = preconditions[j].val;
 
@@ -146,7 +146,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                 if (pre != -1)
                     triggercond_pairs.push_back(make_pair(var_no, pre));
 
-                const vector<Condition> &cond = effects[j].conditions;
+                const vector<GlobalCondition> &cond = effects[j].conditions;
                 for (int k = 0; k < cond.size(); k++)
                     triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].val));
                 sort(triggercond_pairs.begin(), triggercond_pairs.end());

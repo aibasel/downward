@@ -9,7 +9,7 @@
 using namespace std;
 using namespace __gnu_cxx;
 
-bool _possibly_fires(const vector<Condition> &conditions, const vector<vector<int> > &lvl_var) {
+bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int> > &lvl_var) {
     for (int j = 0; j < conditions.size(); j++)
         if (lvl_var[conditions[j].var][conditions[j].val] ==
             numeric_limits<int>::max())
@@ -39,7 +39,7 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
 
     // Test whether all preconditions of o can be reached
     // Otherwise, operator is not applicable
-    const vector<Condition> &preconditions = o.get_preconditions();
+    const vector<GlobalCondition> &preconditions = o.get_preconditions();
     for (unsigned i = 0; i < preconditions.size(); ++i)
         if (lvl_var[preconditions[i].var][preconditions[i].val] ==
             numeric_limits<int>::max())

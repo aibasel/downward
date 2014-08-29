@@ -28,7 +28,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // effects achieving the LM.
 
     vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
-    const vector<Condition> &preconditions = o.get_preconditions();
+    const vector<GlobalCondition> &preconditions = o.get_preconditions();
     for (size_t j = 0; j < preconditions.size(); ++j) {
         result.insert(make_pair(preconditions[j].var, preconditions[j].val));
         has_precondition_on_var[preconditions[j].var] = true;

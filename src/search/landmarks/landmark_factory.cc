@@ -76,7 +76,7 @@ bool LandmarkFactory::is_landmark_precondition(const Operator &o,
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
     assert(lmp != NULL);
-    const vector<Condition> &preconditions = o.get_preconditions();
+    const vector<GlobalCondition> &preconditions = o.get_preconditions();
     for (size_t j = 0; j < preconditions.size(); ++j) {
         for (size_t k = 0; k < lmp->vars.size(); ++k) {
             if (preconditions[j].var == lmp->vars[k] && 

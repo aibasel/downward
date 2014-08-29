@@ -7,7 +7,7 @@
 
 using namespace std;
 
-Label::Label(int id_, int cost_, const vector<Condition> &preconditions_, const vector<GlobalEffect> &effects_)
+Label::Label(int id_, int cost_, const vector<GlobalCondition> &preconditions_, const vector<GlobalEffect> &effects_)
     : id(id_), cost(cost_), preconditions(preconditions_), effects(effects_), root(this) {
 }
 
@@ -15,7 +15,7 @@ bool Label::is_reduced() const {
     return root != this;
 }
 
-OperatorLabel::OperatorLabel(int id, int cost, const vector<Condition> &preconditions,
+OperatorLabel::OperatorLabel(int id, int cost, const vector<GlobalCondition> &preconditions,
                              const vector<GlobalEffect> &effects)
     : Label(id, cost, preconditions, effects) {
 }

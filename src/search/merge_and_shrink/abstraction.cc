@@ -587,7 +587,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); label_no++) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<Condition> &preconditions = label->get_preconditions();
+        const vector<GlobalCondition> &preconditions = label->get_preconditions();
         const vector<GlobalEffect> &effects = label->get_effects();
         hash_map<int,int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
@@ -620,7 +620,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             // cond_effect_pre_value == -1 means no effect condition on var.
             // has_other_effect_cond is true iff there exists an effect
             // condition on a variable other than var.
-            const vector<Condition> &eff_cond = effects[i].conditions;
+            const vector<GlobalCondition> &eff_cond = effects[i].conditions;
             int cond_effect_pre_value = -1;
             bool has_other_effect_cond = false;
             for (size_t j = 0; j < eff_cond.size(); ++j) {

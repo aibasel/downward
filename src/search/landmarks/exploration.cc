@@ -118,7 +118,7 @@ void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_g
 void Exploration::build_unary_operators(const Operator &op) {
     // Note: changed from the original to allow sorting of operator conditions
     int base_cost = get_adjusted_cost(op);
-    const vector<Condition> &preconditions = op.get_preconditions();
+    const vector<GlobalCondition> &preconditions = op.get_preconditions();
     const vector<GlobalEffect> &effects = op.get_effects();
     vector<ExProposition *> precondition;
     vector<pair<int, int> > precondition_var_vals1;
@@ -133,7 +133,7 @@ void Exploration::build_unary_operators(const Operator &op) {
         assert(effects[i].var >= 0 && effects[i].var < g_variable_domain.size());
         assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
         ExProposition *effect = &propositions[effects[i].var][effects[i].val];
-        const vector<Condition> &eff_conds = effects[i].conditions;
+        const vector<GlobalCondition> &eff_conds = effects[i].conditions;
         for (int j = 0; j < eff_conds.size(); j++) {
             assert(eff_conds[j].var >= 0 && eff_conds[j].var < g_variable_domain.size());
             assert(eff_conds[j].val >= 0 && eff_conds[j].val < g_variable_domain[eff_conds[j].var]);
