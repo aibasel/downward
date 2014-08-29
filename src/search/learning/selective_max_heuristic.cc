@@ -511,7 +511,7 @@ int SelectiveMaxHeuristic::calc_max() {
     return max;
 }
 
-bool SelectiveMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
+bool SelectiveMaxHeuristic::reach_state(const State &parent_state, const GlobalOperator &op,
                                         const State &state) {
     int ret = false;
     int val;

@@ -17,7 +17,7 @@ using namespace std;
 
 class Options;
 
-typedef pair<StateID, pair<int, const Operator * > > OpenListEntryEHC;
+typedef pair<StateID, pair<int, const GlobalOperator * > > OpenListEntryEHC;
 
 enum PreferredUsage {
     PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST,
@@ -47,8 +47,8 @@ protected:
     virtual void initialize();
     virtual int step();
     int ehc();
-    void get_successors(const State &state, vector<const Operator *> &ops);
-    void evaluate(const State &parent, const Operator *op, const State &state);
+    void get_successors(const State &state, vector<const GlobalOperator *> &ops);
+    void evaluate(const State &parent, const GlobalOperator *op, const State &state);
 public:
     EnforcedHillClimbingSearch(const Options &opts);
     virtual ~EnforcedHillClimbingSearch();

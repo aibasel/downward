@@ -18,7 +18,7 @@ GlobalCondition::GlobalCondition(istream &in) {
 //}
 
 
-void Operator::read_pre_post(istream &in) {
+void GlobalOperator::read_pre_post(istream &in) {
     int cond_count, var, pre, post;
     in >> cond_count;
     vector<GlobalCondition> conditions;
@@ -31,7 +31,7 @@ void Operator::read_pre_post(istream &in) {
     effects.push_back(GlobalEffect(var, post, conditions));
 }
 
-Operator::Operator(istream &in, bool axiom) {
+GlobalOperator::GlobalOperator(istream &in, bool axiom) {
     marked = false;
 
     is_an_axiom = axiom;
@@ -81,7 +81,7 @@ void GlobalEffect::dump() const {
     }
 }
 
-void Operator::dump() const {
+void GlobalOperator::dump() const {
     cout << name << ":";
     for (int i = 0; i < preconditions.size(); i++) {
         cout << " [";

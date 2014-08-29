@@ -40,7 +40,7 @@ public:
 };
 
 // Implements a single PDB
-class Operator;
+class GlobalOperator;
 class State;
 class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;

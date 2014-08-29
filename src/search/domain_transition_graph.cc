@@ -106,7 +106,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                 int cea_parent = global_to_cea_parent[global_var];
                 cea_precond.push_back(LocalAssignment(cea_parent, val));
             }
-            Operator *the_operator;
+            GlobalOperator *the_operator;
             if (is_axiom) {
                 assert(operator_index >= 0 && operator_index < g_axioms.size());
                 the_operator = &g_axioms[operator_index];

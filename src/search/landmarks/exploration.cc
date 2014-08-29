@@ -115,7 +115,7 @@ void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_g
     heuristic_recomputation_needed = true;
 }
 
-void Exploration::build_unary_operators(const Operator &op) {
+void Exploration::build_unary_operators(const GlobalOperator &op) {
     // Note: changed from the original to allow sorting of operator conditions
     int base_cost = get_adjusted_cost(op);
     const vector<GlobalCondition> &preconditions = op.get_preconditions();
@@ -166,7 +166,7 @@ public:
 // heuristic computation
 void Exploration::setup_exploration_queue(const State &state,
                                           const vector<pair<int, int> > &excluded_props,
-                                          const hash_set<const Operator *,
+                                          const hash_set<const GlobalOperator *,
                                                          ex_hash_operator_ptr> &excluded_ops,
                                           bool use_h_max = false) {
     prop_queue.clear();
@@ -336,7 +336,7 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
         if (unary_op) { // We have not yet chained back to a start node.
             for (int i = 0; i < unary_op->precondition.size(); i++)
                 collect_relaxed_plan(unary_op->precondition[i], relaxed_plan, state);
-            const Operator *op = unary_op->op;
+            const GlobalOperator *op = unary_op->op;
             bool added_to_relaxed_plan = false;
             //if(!op->is_axiom()) // Using axioms in the relaxed plan actually
             //improves performance in many domains... We need to look into this.
@@ -358,7 +358,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
                                                      vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
                                                      bool level_out,
                                                      const vector<pair<int, int> > &excluded_props,
-                                                     const hash_set<const Operator *, ex_hash_operator_ptr> &excluded_ops,
+                                                     const hash_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(g_initial_state(), excluded_props, excluded_ops, true);
@@ -373,7 +373,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
         }
     }
     if (compute_lvl_ops) {
-        hash_map< const Operator *, int, ex_hash_operator_ptr> operator_index;
+        hash_map< const GlobalOperator *, int, ex_hash_operator_ptr> operator_index;
         for (int i = 0; i < g_operators.size(); i++) {
             operator_index.insert(make_pair(&g_operators[i], i));
         }
@@ -435,7 +435,7 @@ void Exploration::collect_ha(ExProposition *goal,
     if (unary_op) { // We have not yet chained back to a start node.
         for (int i = 0; i < unary_op->precondition.size(); i++)
             collect_ha(unary_op->precondition[i], relaxed_plan, state);
-        const Operator *op = unary_op->op;
+        const GlobalOperator *op = unary_op->op;
         bool added_to_relaxed_plan = false;
         if (!op->is_axiom())
             added_to_relaxed_plan = relaxed_plan.insert(op).second;

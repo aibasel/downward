@@ -135,7 +135,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
         // random walk of length length
         State current_state(initial_state);
         for (int j = 0; j < length; ++j) {
-            vector<const Operator *> applicable_ops;
+            vector<const GlobalOperator *> applicable_ops;
             g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
             // if there are no applicable operators --> do not walk further
             if (applicable_ops.empty()) {

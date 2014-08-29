@@ -14,7 +14,7 @@ AxiomEvaluator::AxiomEvaluator() {
 
     // Initialize rules
     for (int i = 0; i < g_axioms.size(); i++) {
-        const Operator &axiom = g_axioms[i];
+        const GlobalOperator &axiom = g_axioms[i];
         int cond_count = axiom.get_effects()[0].conditions.size();
         int eff_var = axiom.get_effects()[0].var;
         int eff_val = axiom.get_effects()[0].val;

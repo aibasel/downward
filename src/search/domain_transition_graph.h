@@ -9,7 +9,7 @@ using namespace std;
 
 class CGHeuristic;
 class State;
-class Operator;
+class GlobalOperator;
 
 class ValueNode;
 class ValueTransition;
@@ -34,11 +34,11 @@ struct LocalAssignment {
 };
 
 struct ValueTransitionLabel {
-    Operator *op;
+    GlobalOperator *op;
     vector<LocalAssignment> precond;
     vector<LocalAssignment> effect;
 
-    ValueTransitionLabel(Operator *theOp, const vector<LocalAssignment> &precond_,
+    ValueTransitionLabel(GlobalOperator *theOp, const vector<LocalAssignment> &precond_,
                          const vector<LocalAssignment> &effect_)
         : op(theOp), precond(precond_), effect(effect_) {}
     void dump() const;

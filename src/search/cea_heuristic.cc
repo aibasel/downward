@@ -359,7 +359,7 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
         node->reached_by = 0; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
-            const Operator *op = first_on_path->label->op;
+            const GlobalOperator *op = first_on_path->label->op;
             if (g_min_action_cost != 0 || op->is_applicable(state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.

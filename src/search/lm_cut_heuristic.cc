@@ -69,7 +69,7 @@ void LandmarkCutHeuristic::initialize() {
     }
 }
 
-void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
+void LandmarkCutHeuristic::build_relaxed_operator(const GlobalOperator &op) {
     const vector<GlobalCondition> &op_preconds = op.get_preconditions();
     const vector<GlobalEffect> &op_effects = op.get_effects();
     vector<RelaxedProposition *> precondition;
@@ -84,7 +84,7 @@ void LandmarkCutHeuristic::build_relaxed_operator(const Operator &op) {
 void LandmarkCutHeuristic::add_relaxed_operator(
     const vector<RelaxedProposition *> &precondition,
     const vector<RelaxedProposition *> &effects,
-    const Operator *op, int base_cost) {
+    const GlobalOperator *op, int base_cost) {
     RelaxedOperator relaxed_op(precondition, effects, op, base_cost);
     if (relaxed_op.precondition.empty())
         relaxed_op.precondition.push_back(&artificial_precondition);

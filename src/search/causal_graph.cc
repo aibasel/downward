@@ -112,7 +112,7 @@ struct CausalGraphBuilder {
         pred_builder.add_pair(v, u);
     }
 
-    void handle_operator(const Operator &op) {
+    void handle_operator(const GlobalOperator &op) {
         const vector<GlobalCondition> &preconditions = op.get_preconditions();
         const vector<GlobalEffect> &effects = op.get_effects();
 

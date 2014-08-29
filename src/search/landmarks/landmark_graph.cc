@@ -39,7 +39,7 @@ void LandmarkGraph::generate_operators_lookups() {
         operators_eff_lookup[i].resize(g_variable_domain[i]);
     }
     for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); i++) {
-        const Operator &op = get_operator_for_lookup_index(i);
+        const GlobalOperator &op = get_operator_for_lookup_index(i);
         const vector<GlobalEffect> &effects = op.get_effects();
         for (unsigned j = 0; j < effects.size(); j++) {
             operators_eff_lookup[effects[j].var][effects[j].val].push_back(i);

@@ -39,7 +39,7 @@ int ProbeStateSpaceSample::get_aggregate_value(vector<int> &values) {
 }
 
 void ProbeStateSpaceSample::send_probe(int depth_limit) {
-    vector<const Operator *> applicable_ops;
+    vector<const GlobalOperator *> applicable_ops;
     vector<int> h_s;
 
     // TODO for now we use the global state registry for all states (even temporary states like this): see issue386
@@ -75,7 +75,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 
         for (int op_num = 0; op_num < applicable_ops.size(); op_num++) {
             // generate and add to training set all successors
-            const Operator *op = applicable_ops[op_num];
+            const GlobalOperator *op = applicable_ops[op_num];
             // TODO for now, we only generate registered successors. This is a temporary state that
             // should should not necessarily be registered in the global registry: see issue386.
             State succ = State::construct_registered_successor(s, *op);
@@ -114,7 +114,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
         // choose operator at random
         int op_num = choose_operator(h_s);
 
-        const Operator *op = applicable_ops[op_num];
+        const GlobalOperator *op = applicable_ops[op_num];
 
         //cout << op->get_name() << endl;
 

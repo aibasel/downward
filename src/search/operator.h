@@ -51,7 +51,7 @@ struct GlobalEffect {
     void dump() const;
 };
 
-class Operator {
+class GlobalOperator {
     bool is_an_axiom;
     std::vector<GlobalCondition> preconditions;
     std::vector<GlobalEffect> effects;
@@ -61,7 +61,7 @@ class Operator {
     mutable bool marked; // Used for short-term marking of preferred operators
     void read_pre_post(std::istream &in);
 public:
-    explicit Operator(std::istream &in, bool is_axiom);
+    explicit GlobalOperator(std::istream &in, bool is_axiom);
     void dump() const;
     std::string get_name() const {return name; }
 

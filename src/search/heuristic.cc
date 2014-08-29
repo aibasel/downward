@@ -25,7 +25,7 @@ Heuristic::Heuristic(const Options &opts)
 Heuristic::~Heuristic() {
 }
 
-void Heuristic::set_preferred(const Operator *op) {
+void Heuristic::set_preferred(const GlobalOperator *op) {
     if (!op->is_marked()) {
         op->mark();
         preferred_operators.push_back(op);
@@ -86,7 +86,7 @@ int Heuristic::get_heuristic() {
     return heuristic;
 }
 
-void Heuristic::get_preferred_operators(std::vector<const Operator *> &result) {
+void Heuristic::get_preferred_operators(std::vector<const GlobalOperator *> &result) {
     assert(heuristic >= 0);
     result.insert(result.end(),
                   preferred_operators.begin(),
@@ -94,7 +94,7 @@ void Heuristic::get_preferred_operators(std::vector<const Operator *> &result) {
 }
 
 bool Heuristic::reach_state(const State & /*parent_state*/,
-                            const Operator & /*op*/, const State & /*state*/) {
+                            const GlobalOperator & /*op*/, const State & /*state*/) {
     return false;
 }
 
@@ -116,7 +116,7 @@ void Heuristic::set_evaluator_value(int val) {
     evaluator_value = val;
 }
 
-int Heuristic::get_adjusted_cost(const Operator &op) const {
+int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 

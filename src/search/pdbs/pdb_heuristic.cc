@@ -117,7 +117,7 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
 
 void PDBHeuristic::build_abstract_operators(
     int op_no, vector<AbstractOperator> &operators) {
-    const Operator &op = g_operators[op_no];
+    const GlobalOperator &op = g_operators[op_no];
     vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
     vector<pair<int, int> > pre_pairs; // all variable value pairs that are a precondition (value != -1)
     vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect

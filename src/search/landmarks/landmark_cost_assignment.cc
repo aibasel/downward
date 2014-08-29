@@ -70,7 +70,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 assert(op_id >= 0 && op_id < g_operators.size());
                 if (!action_landmarks[op_id]) {
                     action_landmarks[op_id] = true;
-                    const Operator &op = lm_graph.get_operator_for_lookup_index(
+                    const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
                         op_id);
                     h += get_adjusted_action_cost(op, cost_type);
                 }
@@ -131,7 +131,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
              ++ach_it) {
             int op_id = *ach_it;
             assert(op_id >= 0 && op_id < g_operators.size());
-            const Operator &op = lm_graph.get_operator_for_lookup_index(
+            const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
                 op_id);
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);

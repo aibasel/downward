@@ -40,8 +40,8 @@ protected:
                                          std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op);
 
     // protected not private for LandmarkFactoryRpgSearch
-    bool achieves_non_conditional(const Operator &o, const LandmarkNode *lmp) const;
-    bool is_landmark_precondition(const Operator &o, const LandmarkNode *lmp) const;
+    bool achieves_non_conditional(const GlobalOperator &o, const LandmarkNode *lmp) const;
+    bool is_landmark_precondition(const GlobalOperator &o, const LandmarkNode *lmp) const;
 
 private:
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;

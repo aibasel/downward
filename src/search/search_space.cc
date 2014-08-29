@@ -71,7 +71,7 @@ void SearchNode::open_initial(int h) {
 }
 
 void SearchNode::open(int h, const SearchNode &parent_node,
-                      const Operator *parent_op) {
+                      const GlobalOperator *parent_op) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
@@ -82,7 +82,7 @@ void SearchNode::open(int h, const SearchNode &parent_node,
 }
 
 void SearchNode::reopen(const SearchNode &parent_node,
-                        const Operator *parent_op) {
+                        const GlobalOperator *parent_op) {
     assert(info.status == SearchNodeInfo::OPEN ||
            info.status == SearchNodeInfo::CLOSED);
 
@@ -97,7 +97,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
 
 // like reopen, except doesn't change status
 void SearchNode::update_parent(const SearchNode &parent_node,
-                               const Operator *parent_op) {
+                               const GlobalOperator *parent_op) {
     assert(info.status == SearchNodeInfo::OPEN ||
            info.status == SearchNodeInfo::CLOSED);
     // The latter possibility is for inconsistent heuristics, which
@@ -142,12 +142,12 @@ SearchNode SearchSpace::get_node(const State &state) {
 }
 
 void SearchSpace::trace_path(const State &goal_state,
-                             vector<const Operator *> &path) const {
+                             vector<const GlobalOperator *> &path) const {
     State current_state = goal_state;
     assert(path.empty());
     for (;;) {
         const SearchNodeInfo &info = search_node_infos[current_state];
-        const Operator *op = info.creating_operator;
+        const GlobalOperator *op = info.creating_operator;
         if (op == 0) {
             assert(info.parent_state_id == StateID::no_state);
             break;

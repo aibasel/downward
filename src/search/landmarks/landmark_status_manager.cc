@@ -66,7 +66,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state() {
 
 
 bool LandmarkStatusManager::update_reached_lms(
-    const State &parent_state, const Operator &, const State &state) {
+    const State &parent_state, const GlobalOperator &, const State &state) {
     vector<bool> &parent_reached = get_reached_landmarks(parent_state);
     vector<bool> &reached = get_reached_landmarks(state);
 

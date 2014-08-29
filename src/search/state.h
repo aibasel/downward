@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-class Operator;
+class GlobalOperator;
 class StateRegistry;
 
 typedef IntPacker::Bin PackedStateBin;

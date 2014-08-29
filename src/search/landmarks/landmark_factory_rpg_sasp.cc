@@ -22,7 +22,7 @@ LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
 }
 
 void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
-    const LandmarkNode *lmp, const Operator &o, hash_map<int, int> &result) const {
+    const LandmarkNode *lmp, const GlobalOperator &o, hash_map<int, int> &result) const {
     // Computes a subset of the actual preconditions of o for achieving lmp - takes into account
     // operator preconditions, but only reports those effect conditions that are true for ALL
     // effects achieving the LM.
@@ -99,7 +99,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
         // ...look at all achieving operators
         const vector<int> &ops = lm_graph->get_operators_including_eff(b);
         for (size_t i = 0; i < ops.size(); ++i) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp))
@@ -218,7 +218,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
         const vector<int> &ops = lm_graph->get_operators_including_eff(b);
 
         for (size_t i = 0; i < ops.size(); ++i) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
             if (!init && shared_pre.empty())
                 break;
 
@@ -323,7 +323,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     hash_map<int, set<int> > used_operators; // tells for each
     // proposition which operators use it
     for (size_t i = 0; i < ops.size(); ++i) {
-        const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+        const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
         if (_possibly_reaches_lm(op, lvl_var, bp)) {
             no_ops++;
             hash_map<int, int> next_pre;

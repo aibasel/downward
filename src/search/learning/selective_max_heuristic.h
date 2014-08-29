@@ -139,7 +139,7 @@ public:
     }
 
     virtual void print_statistics() const;
-    virtual bool reach_state(const State &parent_state, const Operator &op,
+    virtual bool reach_state(const State &parent_state, const GlobalOperator &op,
                              const State &state);
 };
 

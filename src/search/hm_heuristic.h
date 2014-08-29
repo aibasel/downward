@@ -41,7 +41,7 @@ protected:
     void update_hm_table();
     int eval(tuple &t);
     int update_hm_entry(tuple &t, int val);
-    void extend_tuple(tuple &t, const Operator &op);
+    void extend_tuple(tuple &t, const GlobalOperator &op);
 
     // some helper methods
     int check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple);
@@ -50,7 +50,7 @@ protected:
             t.push_back(make_pair(i, state[i]));
     }
 
-    int get_operator_pre_value(const Operator &op, int var) {
+    int get_operator_pre_value(const GlobalOperator &op, int var) {
         for (int i = 0; i < op.get_preconditions().size(); ++i) {
             if (op.get_preconditions()[i].var == var)
                 return op.get_preconditions()[i].val;
@@ -58,14 +58,14 @@ protected:
         return -1;
     }
 
-    void get_operator_pre(const Operator &op, tuple &t) {
+    void get_operator_pre(const GlobalOperator &op, tuple &t) {
         for (int i = 0; i < op.get_preconditions().size(); ++i)
             t.push_back(make_pair(op.get_preconditions()[i].var, op.get_preconditions()[i].val));
 
         sort(t.begin(), t.end());
     }
 
-    void get_operator_eff(const Operator &op, tuple &t) {
+    void get_operator_eff(const GlobalOperator &op, tuple &t) {
         for (int i = 0; i < op.get_effects().size(); ++i)
             t.push_back(make_pair(op.get_effects()[i].var, op.get_effects()[i].val));
 
@@ -73,7 +73,7 @@ protected:
     }
 
 
-    bool is_pre_of(const Operator &op, int var) {
+    bool is_pre_of(const GlobalOperator &op, int var) {
         // TODO if preconditions will be always sorted we should use a log-n
         // search instead
         for (int j = 0; j < op.get_preconditions().size(); ++j) {
@@ -84,7 +84,7 @@ protected:
         return false;
     }
 
-    bool is_effect_of(const Operator &op, int var) {
+    bool is_effect_of(const GlobalOperator &op, int var) {
         for (int j = 0; j < op.get_effects().size(); ++j) {
             if (op.get_effects()[j].var == var) {
                 return true;
@@ -93,7 +93,7 @@ protected:
         return false;
     }
 
-    bool contradict_effect_of(const Operator &op, int var, int val) {
+    bool contradict_effect_of(const GlobalOperator &op, int var, int val) {
         for (int j = 0; j < op.get_effects().size(); ++j) {
             if (op.get_effects()[j].var == var && op.get_effects()[j].val != val) {
                 return true;

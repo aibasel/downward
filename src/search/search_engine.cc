@@ -65,7 +65,7 @@ void SearchEngine::save_plan_if_necessary() const {
         save_plan(get_plan(), 0);
 }
 
-int SearchEngine::get_adjusted_cost(const Operator &op) const {
+int SearchEngine::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 

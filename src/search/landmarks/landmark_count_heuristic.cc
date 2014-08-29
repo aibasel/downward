@@ -187,10 +187,10 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
      disjunctive landmarks */
-    vector<const Operator *> all_operators;
+    vector<const GlobalOperator *> all_operators;
     g_successor_generator->generate_applicable_ops(state, all_operators);
-    vector<const Operator *> ha_simple;
-    vector<const Operator *> ha_disj;
+    vector<const GlobalOperator *> ha_simple;
+    vector<const GlobalOperator *> ha_disj;
 
     for (int i = 0; i < all_operators.size(); i++) {
         const vector<GlobalEffect> &effects = all_operators[i]->get_effects();
@@ -239,7 +239,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
 }
 
 bool LandmarkCountHeuristic::reach_state(const State &parent_state,
-                                         const Operator &op, const State &state) {
+                                         const GlobalOperator &op, const State &state) {
     lm_status_manager.update_reached_lms(parent_state, op, state);
     /* TODO: The return value "true" signals that the LM set of this state
              has changed and the h value should be recomputed. It's not

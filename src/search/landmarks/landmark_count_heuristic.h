@@ -53,7 +53,7 @@ public:
     LandmarkCountHeuristic(const Options &opts);
     ~LandmarkCountHeuristic() {
     }
-    virtual bool reach_state(const State &parent_state, const Operator &op,
+    virtual bool reach_state(const State &parent_state, const GlobalOperator &op,
                              const State &state);
     virtual bool dead_ends_are_reliable() const;
 };

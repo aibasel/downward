@@ -313,7 +313,7 @@ void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
 }
 
 void get_operator_precondition(int op_index, FluentSet &pc) {
-    Operator &op = g_operators[op_index];
+    GlobalOperator &op = g_operators[op_index];
 
     const std::vector<GlobalCondition> &preconditions = op.get_preconditions();
     for (int i = 0; i < preconditions.size(); i++) 
@@ -325,7 +325,7 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
 // get facts that are always true after the operator application
 // (effects plus prevail conditions)
 void get_operator_postcondition(int op_index, FluentSet &post) {
-    Operator &op = g_operators[op_index];
+    GlobalOperator &op = g_operators[op_index];
 
     const std::vector<GlobalCondition> &preconditions = op.get_preconditions();
     const std::vector<GlobalEffect> &effects = op.get_effects();

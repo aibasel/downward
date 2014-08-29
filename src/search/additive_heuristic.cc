@@ -111,7 +111,7 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // more expensive applicability test.
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
-                const Operator *op = &g_operators[operator_no];
+                const GlobalOperator *op = &g_operators[operator_no];
                 if (op->is_applicable(state))
                     set_preferred(op);
             }

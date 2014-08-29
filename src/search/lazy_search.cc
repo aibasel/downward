@@ -57,10 +57,10 @@ void LazySearch::initialize() {
     assert(!heuristics.empty());
 }
 
-void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
+void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     assert(ops.empty());
-    vector<const Operator *> all_operators;
-    vector<const Operator *> preferred_operators;
+    vector<const GlobalOperator *> all_operators;
+    vector<const GlobalOperator *> preferred_operators;
 
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
@@ -99,7 +99,7 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
 }
 
 void LazySearch::generate_successors() {
-    vector<const Operator *> operators;
+    vector<const GlobalOperator *> operators;
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
 
