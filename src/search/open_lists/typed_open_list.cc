@@ -86,16 +86,13 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     int pos = g_rng.next(bucket.size());
     Entry result = bucket[pos];
 
-    bucket.erase(bucket.begin() + pos);
+    fast_remove_from_vector(bucket, pos);
     if (bucket.empty()) {
-        if(bucket_list.size() > 1 && (bucket_list.size() - 1 != bucket_id)) {
-            //swap: move the back to the position to be deleted and then pop_back
-            pair<std::vector<int>,Bucket> &last = bucket_list.back();
-            bucket_list[bucket_id] = last;
+        pair<std::vector<int>,Bucket> &last = fast_remove_from_vector(bucket_list,bucket_id);
+        if(last.first != bucket_key) {
             open_list[last.first] = bucket_id;
         }
         open_list.erase(bucket_key);
-        bucket_list.pop_back();
     }
     --size;
     return result;
