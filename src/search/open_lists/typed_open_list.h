@@ -20,7 +20,7 @@ class TypedOpenList : public OpenList<Entry> {
     std::vector<std::pair<std::vector<int>,Bucket> > bucket_list;
 
     typedef typename __gnu_cxx::hash_map<std::vector<int>, int, __gnu_cxx::hash<const std::vector<int> > > BucketMap;
-    BucketMap open_list;
+    BucketMap key_to_bucket_index;
 
     int size;
     bool dead_end;

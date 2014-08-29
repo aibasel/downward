@@ -1,5 +1,4 @@
 // HACK! Ignore this if used as a top-level compile target.
-//#include "typed_open_list.h"
 #ifdef OPEN_LISTS_TYPED_OPEN_LIST_H
 
 #include "../option_parser.h"
@@ -55,14 +54,14 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
         key[i] = evaluators[i]->get_value();
     }
 
-    typename BucketMap::iterator bucket = open_list.find(key);
-    if(bucket == open_list.end()) {
+    typename BucketMap::iterator key_bucket_pair = key_to_bucket_index.find(key);
+    if(key_bucket_pair == key_to_bucket_index.end()) {
         bucket_list.push_back(make_pair<vector<int>,Bucket>(key,Bucket()));
         bucket_list.back().second.push_back(entry);//TODO: c++11 list init
-        open_list[key] = bucket_list.size() - 1;
+        key_to_bucket_index[key] = bucket_list.size() - 1;
     } else {
-        assert(bucket->second < bucket_list.size());
-        bucket_list[bucket->second].second.push_back(entry);
+        assert(key_bucket_pair->second < bucket_list.size());
+        bucket_list[key_bucket_pair->second].second.push_back(entry);
     }
 
     ++size;
@@ -79,9 +78,9 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     }
 
     int bucket_id = g_rng.next(bucket_list.size());
-    pair<std::vector<int>,Bucket> &bucket_pair = bucket_list[bucket_id];
-    vector<int> bucket_key = bucket_pair.first;//copy the key
-    Bucket &bucket = bucket_pair.second;
+    pair<std::vector<int>,Bucket> &key_bucket_pair = bucket_list[bucket_id];
+    vector<int> bucket_key = key_bucket_pair.first;//copy the key
+    Bucket &bucket = key_bucket_pair.second;
 
     int pos = g_rng.next(bucket.size());
     Entry result = bucket[pos];
@@ -90,9 +89,9 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     if (bucket.empty()) {
         pair<std::vector<int>,Bucket> &last = fast_remove_from_vector(bucket_list,bucket_id);
         if(last.first != bucket_key) {
-            open_list[last.first] = bucket_id;
+            key_to_bucket_index[last.first] = bucket_id;
         }
-        open_list.erase(bucket_key);
+        key_to_bucket_index.erase(bucket_key);
     }
     --size;
     return result;
@@ -106,7 +105,7 @@ bool TypedOpenList<Entry>::empty() const {
 template<class Entry>
 void TypedOpenList<Entry>::clear() {
     bucket_list.clear();
-    open_list.clear();
+    key_to_bucket_index.clear();
     size = 0;
 }
 
