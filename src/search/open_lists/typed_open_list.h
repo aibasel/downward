@@ -17,7 +17,9 @@ class TypedOpenList : public OpenList<Entry> {
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
 
-    typedef typename __gnu_cxx::hash_map<std::vector<int>, Bucket, __gnu_cxx::hash<const std::vector<int> > > BucketMap;
+    std::vector<std::pair<std::vector<int>,Bucket> > bucket_list;
+
+    typedef typename __gnu_cxx::hash_map<std::vector<int>, int, __gnu_cxx::hash<const std::vector<int> > > BucketMap;
     BucketMap open_list;
 
     int size;
@@ -30,19 +32,19 @@ protected:
 public:
     TypedOpenList(const Options &opts);
     TypedOpenList(const std::vector<OpenList<Entry> *> &sublists);
-    ~TypedOpenList();
+    virtual ~TypedOpenList();
 
     // OpenList interface
-    int insert(const Entry &entry);
-    Entry remove_min(std::vector<int> *key = 0);
-    bool empty() const;
-    void clear();
+    virtual int insert(const Entry &entry);
+    virtual Entry remove_min(std::vector<int> *key = 0);
+    virtual bool empty() const;
+    virtual void clear();
 
     // Evaluator interface
-    void evaluate(int g, bool preferred);
-    bool is_dead_end() const;
-    bool dead_end_is_reliable() const;
-    void get_involved_heuristics(std::set<Heuristic *> &hset);
+    virtual void evaluate(int g, bool preferred);
+    virtual bool is_dead_end() const;
+    virtual bool dead_end_is_reliable() const;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset);
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };
