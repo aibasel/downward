@@ -34,4 +34,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new ConstEvaluator(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("c", _parse);
+static Plugin<ScalarEvaluator> _plugin("const", _parse);
