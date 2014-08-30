@@ -137,7 +137,7 @@ void LandmarkCutHeuristic::first_exploration(const State &state) {
             prop->precondition_of;
         for (int i = 0; i < triggered_operators.size(); ++i) {
             RelaxedOperator *relaxed_op = triggered_operators[i];
-            relaxed_op->unsatisfied_preconditions--;
+            --relaxed_op->unsatisfied_preconditions;
             assert(relaxed_op->unsatisfied_preconditions >= 0);
             if (relaxed_op->unsatisfied_preconditions == 0) {
                 relaxed_op->h_max_supporter = prop;

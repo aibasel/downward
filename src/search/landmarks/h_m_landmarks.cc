@@ -696,7 +696,7 @@ void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
         // a pc for the action itself
         if (info.second == -1) {
             if (newly_discovered) {
-                unsat_pc_count_[info.first].first--;
+                --unsat_pc_count_[info.first].first;
             }
             // add to queue if unsatcount at 0
             if (unsat_pc_count_[info.first].first == 0) {
@@ -707,7 +707,7 @@ void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
         // a pc for a conditional noop
         else {
             if (newly_discovered) {
-                unsat_pc_count_[info.first].second[info.second]--;
+                --unsat_pc_count_[info.first].second[info.second];
             }
             // if associated action is applicable, and effect has become applicable
             // (if associated action is not applicable, all noops will be used when it first does)

@@ -87,7 +87,7 @@ void AdditiveHeuristic::relaxed_exploration() {
         for (int i = 0; i < triggered_operators.size(); ++i) {
             UnaryOperator *unary_op = triggered_operators[i];
             increase_cost(unary_op->cost, prop_cost);
-            unary_op->unsatisfied_preconditions--;
+            --unary_op->unsatisfied_preconditions;
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0)
                 enqueue_if_necessary(unary_op->effect,

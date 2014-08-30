@@ -210,13 +210,13 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
             disj_lms_to_nodes.erase(lm);
         }
     } else if (node->conjunctive) {
-        conj_lms--;
+        --conj_lms;
     } else {
         pair<int, int> lm = make_pair(node->vars[0], node->vals[0]);
         simple_lms_to_nodes.erase(lm);
     }
     nodes.erase(node);
-    landmarks_count--;
+    --landmarks_count;
     assert(nodes.find(node) == nodes.end());
 }
 

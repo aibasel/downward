@@ -236,7 +236,7 @@ void Exploration::relaxed_exploration(bool use_h_max = false, bool level_out = f
             ExUnaryOperator *unary_op = triggered_operators[i];
             if (unary_op->h_add_cost == -2) // operator is not applied
                 continue;
-            unary_op->unsatisfied_preconditions--;
+            --unary_op->unsatisfied_preconditions;
             increase_cost(unary_op->h_add_cost, prop_cost);
             unary_op->h_max_cost = max(prop_cost + unary_op->base_cost,
                                        unary_op->h_max_cost);
