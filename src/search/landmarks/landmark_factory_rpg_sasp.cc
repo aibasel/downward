@@ -489,7 +489,8 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
      relaxed planning graph (as captured in lvl_var).
      These orders are saved in the node member variable "forward_orders".
      */
-    for (size_t i = 0; i < g_variable_domain.size(); ++i)
+    int num_variables = g_variable_domain.size();
+    for (int i = 0; i < num_variables; ++i)
         for (int j = 0; j < g_variable_domain[i]; ++j) {
             if (lvl_var[i][j] != numeric_limits<int>::max())
                 continue;
