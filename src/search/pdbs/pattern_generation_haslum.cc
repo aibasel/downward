@@ -70,7 +70,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
             } else {
                 // [commented out the message because it might be too verbose]
                 // cout << "ignoring new pattern as candidate because it is too large" << endl;
-                num_rejected += 1;
+                ++num_rejected;
             }
         }
     }
@@ -249,7 +249,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     size_t max_pdb_size = 0;
     try {
         while (true) {
-            num_iterations += 1;
+            ++num_iterations;
             cout << "current collection size is " << current_heuristic->get_size() << endl;
             // TODO think about how to handle this when state_registries are moved into the search algorithms.
             current_heuristic->evaluate(g_initial_state());
