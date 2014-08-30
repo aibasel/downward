@@ -9,7 +9,7 @@ using namespace std;
 
 static double fac(int n) {
     double t = 1.0;
-    for (int i = n; i > 1; i--)
+    for (int i = n; i > 1; --i)
         t *= i;
     return t;
 }

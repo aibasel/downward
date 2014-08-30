@@ -83,7 +83,7 @@ void HSPMaxHeuristic::relaxed_exploration() {
             prop->precondition_of;
         for (int i = 0; i < triggered_operators.size(); ++i) {
             UnaryOperator *unary_op = triggered_operators[i];
-            unary_op->unsatisfied_preconditions--;
+            --unary_op->unsatisfied_preconditions;
             unary_op->cost = max(unary_op->cost,
                                  unary_op->base_cost + prop_cost);
             assert(unary_op->unsatisfied_preconditions >= 0);

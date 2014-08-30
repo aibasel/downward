@@ -20,7 +20,7 @@ VariableOrderFinder::VariableOrderFinder(
         for (int i = 0; i < var_count; ++i)
             remaining_vars.push_back(i);
     } else {
-        for (int i = var_count - 1; i >= 0; i--)
+        for (int i = var_count - 1; i >= 0; --i)
             remaining_vars.push_back(i);
     }
 

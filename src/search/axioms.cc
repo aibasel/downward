@@ -89,7 +89,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
             queue.pop_back();
             for (int i = 0; i < curr_literal->condition_of.size(); ++i) {
                 AxiomRule *rule = curr_literal->condition_of[i];
-                if (--(rule->unsatisfied_conditions) == 0) {
+                if (--rule->unsatisfied_conditions == 0) {
                     int var_no = rule->effect_var;
                     int val = rule->effect_val;
                     if (g_state_packer->get(buffer, var_no) != val) {

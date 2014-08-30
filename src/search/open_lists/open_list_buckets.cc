@@ -69,7 +69,7 @@ Entry BucketOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
     while (buckets[lowest_bucket].empty())
         ++lowest_bucket;
-    size--;
+    --size;
     if (key) {
         assert(key->empty());
         key->push_back(lowest_bucket);

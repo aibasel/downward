@@ -112,7 +112,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                      ++ach_it) {
                     int op_id = *ach_it;
                     assert(op_id >= 0 && op_id < g_operators.size());
-                    achieved_lms_by_op[op_id]--;
+                    --achieved_lms_by_op[op_id];
                 }
             } else {
                 relevant_lms.push_back(&node);

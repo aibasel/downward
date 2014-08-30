@@ -72,7 +72,7 @@ Entry TieBreakingOpenList<Entry>::remove_min(vector<int> *key) {
     it = buckets.begin();
     assert(it != buckets.end());
     assert(!it->second.empty());
-    size--;
+    --size;
     if (key) {
         assert(key->empty());
         *key = it->first;
