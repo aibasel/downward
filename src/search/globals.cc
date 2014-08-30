@@ -38,7 +38,7 @@ static const int PRE_FILE_VERSION = 3;
 static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
 
 bool test_goal(const State &state) {
-    for (int i = 0; i < g_goal.size(); i++) {
+    for (int i = 0; i < g_goal.size(); ++i) {
         if (state[g_goal[i].first] != g_goal[i].second) {
             return false;
         }
@@ -51,7 +51,7 @@ int calculate_plan_cost(const vector<const Operator *> &plan) {
     //       and the SearchEngine classes and hence should maybe
     //       be moved into the SearchEngine (along with save_plan).
     int plan_cost = 0;
-    for (int i = 0; i < plan.size(); i++) {
+    for (int i = 0; i < plan.size(); ++i) {
         plan_cost += plan[i]->get_cost();
     }
     return plan_cost;
@@ -68,7 +68,7 @@ void save_plan(const vector<const Operator *> &plan, int iter) {
         out << g_plan_filename << "." << iter;
         outfile.open(out.str().c_str(), ios::out);
     }
-    for (int i = 0; i < plan.size(); i++) {
+    for (int i = 0; i < plan.size(); ++i) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
     }
@@ -128,7 +128,7 @@ void read_metric(istream &in) {
 void read_variables(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
         check_magic(in, "begin_variable");
         string name;
         in >> name;
@@ -141,7 +141,7 @@ void read_variables(istream &in) {
         g_variable_domain.push_back(range);
         in >> ws;
         vector<string> fact_names(range);
-        for (size_t i = 0; i < fact_names.size(); i++)
+        for (size_t i = 0; i < fact_names.size(); ++i)
             getline(in, fact_names[i]);
         g_fact_names.push_back(fact_names);
         check_magic(in, "end_variable");
@@ -206,7 +206,7 @@ void read_goal(istream &in) {
         cerr << "Task has no goal condition!" << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
         int var, val;
         in >> var >> val;
         g_goal.push_back(make_pair(var, val));
@@ -216,7 +216,7 @@ void read_goal(istream &in) {
 
 void dump_goal() {
     cout << "Goal Conditions:" << endl;
-    for (int i = 0; i < g_goal.size(); i++)
+    for (int i = 0; i < g_goal.size(); ++i)
         cout << "  " << g_variable_name[g_goal[i].first] << ": "
              << g_goal[i].second << endl;
 }
@@ -224,14 +224,14 @@ void dump_goal() {
 void read_operators(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; ++i)
         g_operators.push_back(Operator(in, false));
 }
 
 void read_axioms(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; ++i)
         g_axioms.push_back(Operator(in, true));
 
     g_axiom_evaluator = new AxiomEvaluator;
@@ -245,7 +245,7 @@ void read_everything(istream &in) {
     read_mutexes(in);
     g_initial_state_data.resize(g_variable_domain.size());
     check_magic(in, "begin_state");
-    for (int i = 0; i < g_variable_domain.size(); i++) {
+    for (int i = 0; i < g_variable_domain.size(); ++i) {
         in >> g_initial_state_data[i];
     }
     check_magic(in, "end_state");
@@ -291,7 +291,7 @@ void dump_everything() {
     cout << "Max Action Cost: " << g_max_action_cost << endl;
     // TODO: Dump the actual fact names.
     cout << "Variables (" << g_variable_name.size() << "):" << endl;
-    for (int i = 0; i < g_variable_name.size(); i++)
+    for (int i = 0; i < g_variable_name.size(); ++i)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
     State initial_state = g_initial_state();
@@ -303,7 +303,7 @@ void dump_everything() {
     /*
     cout << "Successor Generator:" << endl;
     g_successor_generator->dump();
-    for(int i = 0; i < g_variable_domain.size(); i++)
+    for(int i = 0; i < g_variable_domain.size(); ++i)
       g_transition_graphs[i]->dump();
     */
 }

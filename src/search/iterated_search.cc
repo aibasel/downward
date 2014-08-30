@@ -62,7 +62,7 @@ int IteratedSearch::step() {
     if (pass_bound) {
         current_search->set_bound(best_bound);
     }
-    phase++;
+    ++phase;
 
     current_search->search();
 

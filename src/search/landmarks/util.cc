@@ -10,7 +10,7 @@ using namespace std;
 using namespace __gnu_cxx;
 
 bool _possibly_fires(const vector<Condition> &conditions, const vector<vector<int> > &lvl_var) {
-    for (int j = 0; j < conditions.size(); j++)
+    for (int j = 0; j < conditions.size(); ++j)
         if (lvl_var[conditions[j].var][conditions[j].val] ==
             numeric_limits<int>::max())
             return false;
@@ -22,7 +22,7 @@ hash_map<int, int> _intersect(const hash_map<int, int> &a, const hash_map<int, i
     if (a.size() > b.size())
         return _intersect(b, a);
     hash_map<int, int> result;
-    for (hash_map<int, int>::const_iterator it1 = a.begin(); it1 != a.end(); it1++) {
+    for (hash_map<int, int>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1) {
         hash_map<int, int>::const_iterator it2 = b.find(it1->first);
         if (it2 != b.end() && it2->second == it1->second)
             result.insert(*it1);

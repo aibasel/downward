@@ -121,7 +121,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     }
 
     // Third pass: Count shared costs for the remaining landmarks.
-    for (int i = 0; i < relevant_lms.size(); i++) {
+    for (int i = 0; i < relevant_lms.size(); ++i) {
         LandmarkNode &node = *relevant_lms[i];
         int lmn_status = node.get_status();
         const set<int> &achievers = get_achievers(lmn_status, node);

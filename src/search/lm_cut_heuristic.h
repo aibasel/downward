@@ -143,7 +143,7 @@ public:
 
 inline void RelaxedOperator::update_h_max_supporter() {
     assert(!unsatisfied_preconditions);
-    for (int i = 0; i < precondition.size(); i++)
+    for (int i = 0; i < precondition.size(); ++i)
         if (precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
             h_max_supporter = precondition[i];
     h_max_supporter_cost = h_max_supporter->h_max_cost;

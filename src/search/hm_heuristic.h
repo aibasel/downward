@@ -46,7 +46,7 @@ protected:
     // some helper methods
     int check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple);
     void state_to_tuple(const State &state, tuple &t) {
-        for (int i = 0; i < g_variable_domain.size(); i++)
+        for (int i = 0; i < g_variable_domain.size(); ++i)
             t.push_back(make_pair(i, state[i]));
     }
 
@@ -126,7 +126,7 @@ protected:
     }
     void print_tuple(tuple &tup) const {
         cout << tup[0].first << "=" << tup[0].second;
-        for (int i = 1; i < tup.size(); i++)
+        for (int i = 1; i < tup.size(); ++i)
             cout << "," << tup[i].first << "=" << tup[i].second;
     }
 };

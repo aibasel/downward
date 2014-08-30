@@ -23,7 +23,7 @@ void StateVarFeatureExtractor::extract_features(const void *obj,
                                                 vector<int> &features) {
     const State &state = *((const State *)obj);
     //cout << "kaka " << get_num_features() << endl;
-    for (int i = 0; i < get_num_features(); i++) {
+    for (int i = 0; i < get_num_features(); ++i) {
         features.push_back(state[i]);
         //cout << i << " : " << (int) state[i] << "   " << features[i] << endl;
     }

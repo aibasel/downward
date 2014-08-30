@@ -20,11 +20,11 @@ CGCache::CGCache() {
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         // This is to be on the safe side of overflows for the multiplications below.
         assert(g_variable_domain[var] <= 1000);
         const vector<int> &succ = cg->get_pre_to_eff(var);
-        for (int i = 0; i < succ.size(); i++) {
+        for (int i = 0; i < succ.size(); ++i) {
             // Ignore arcs that are not part of the reduced CG:
             // These are ignored by the CG heuristic.
             if (succ[i] > var)
@@ -35,9 +35,9 @@ CGCache::CGCache() {
     // Compute transitive close of inverted causal graph.
     // This is made easier because it is acyclic and the variables
     // are in topological order.
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         int direct_depend_count = depends_on[var].size();
-        for (int i = 0; i < direct_depend_count; i++) {
+        for (int i = 0; i < direct_depend_count; ++i) {
             int affector = depends_on[var][i];
             assert(affector < var);
             depends_on[var].insert(depends_on[var].end(),
@@ -51,9 +51,9 @@ CGCache::CGCache() {
 
     /*
       cout << "Dumping transitive closure of inverted causal graph..." << endl;
-      for(int var = 0; var < var_count; var++) {
+      for(int var = 0; var < var_count; ++var) {
       cout << var << ":";
-      for(int i = 0; i < depends_on[var].size(); i++)
+      for(int i = 0; i < depends_on[var].size(); ++i)
       cout << " " << depends_on[var][i];
       cout << endl;
       }
@@ -64,11 +64,11 @@ CGCache::CGCache() {
     cache.resize(var_count);
     helpful_transition_cache.resize(var_count);
 
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         int required_cache_size = g_variable_domain[var] * (g_variable_domain[var] - 1);
         bool can_cache = (required_cache_size <= MAX_CACHE_SIZE);
         if (can_cache) {
-            for (int i = 0; i < depends_on[var].size(); i++) {
+            for (int i = 0; i < depends_on[var].size(); ++i) {
                 int relevant_var = depends_on[var][i];
                 if (cache[relevant_var].empty()) {
                     // It is possible that var depends on a variable var_i

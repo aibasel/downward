@@ -138,7 +138,7 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
             exploration->exported_ops.clear();
             return DEAD_END;
         }
-        for (int i = 0; i < exploration->exported_ops.size(); i++) {
+        for (int i = 0; i < exploration->exported_ops.size(); ++i) {
             set_preferred(exploration->exported_ops[i]);
         }
         exploration->exported_ops.clear();
@@ -150,7 +150,7 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
                                                LandmarkSet &reached_lms, vector<pair<int, int> > &leaves) {
     set<LandmarkNode *>::const_iterator it;
-    for (it = lgraph.get_nodes().begin(); it != lgraph.get_nodes().end(); it++) {
+    for (it = lgraph.get_nodes().begin(); it != lgraph.get_nodes().end(); ++it) {
         LandmarkNode *node_p = *it;
 
         if (!disjunctive_lms && node_p->disjunctive)
@@ -158,7 +158,7 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
 
         if (reached_lms.find(node_p) == reached_lms.end()
             && !check_node_orders_disobeyed(*node_p, reached_lms)) {
-            for (int i = 0; i < node_p->vars.size(); i++) {
+            for (int i = 0; i < node_p->vars.size(); ++i) {
                 pair<int, int> node_prop = make_pair(node_p->vars[i],
                                                      node_p->vals[i]);
                 leaves.push_back(node_prop);
@@ -172,7 +172,7 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
     const hash_map<LandmarkNode *, edge_type, hash_pointer> &parents =
         node.parents;
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-         parent_it = parents.begin(); parent_it != parents.end(); parent_it++) {
+         parent_it = parents.begin(); parent_it != parents.end(); ++parent_it) {
         LandmarkNode &parent = *(parent_it->first);
         if (reached.find(&parent) == reached.end()) {
             return true;
@@ -192,9 +192,9 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
     vector<const Operator *> ha_simple;
     vector<const Operator *> ha_disj;
 
-    for (int i = 0; i < all_operators.size(); i++) {
+    for (int i = 0; i < all_operators.size(); ++i) {
         const vector<Effect> &effects = all_operators[i]->get_effects();
-        for (int j = 0; j < effects.size(); j++) {
+        for (int j = 0; j < effects.size(); ++j) {
             if (!effects[j].does_fire(state))
                 continue;
             const pair<int, int> varval = make_pair(effects[j].var,
@@ -212,11 +212,11 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
         return false;
 
     if (ha_simple.empty()) {
-        for (int i = 0; i < ha_disj.size(); i++) {
+        for (int i = 0; i < ha_disj.size(); ++i) {
             set_preferred(ha_disj[i]);
         }
     } else {
-        for (int i = 0; i < ha_simple.size(); i++) {
+        for (int i = 0; i < ha_simple.size(); ++i) {
             set_preferred(ha_simple[i]);
         }
     }
@@ -265,7 +265,7 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
     // functions in this class that use LandmarkSets for the reached LMs
     // (HACK).
 
-    for (int i = 0; i < lms_vec.size(); i++)
+    for (int i = 0; i < lms_vec.size(); ++i)
         if (lms_vec[i])
             lms_set.insert(lgraph.get_lm_for_index(i));
 }

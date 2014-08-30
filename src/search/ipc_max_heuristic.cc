@@ -21,7 +21,7 @@ int IPCMaxHeuristic::compute_heuristic(const State &state) {
     dead_end = false;
     dead_end_reliable = false;
     value = 0;
-    for (unsigned int i = 0; i < evaluators.size(); i++) {
+    for (unsigned int i = 0; i < evaluators.size(); ++i) {
         evaluators[i]->evaluate(state);
 
         if (evaluators[i]->is_dead_end()) {
@@ -42,7 +42,7 @@ int IPCMaxHeuristic::compute_heuristic(const State &state) {
 bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
                                   const State &state) {
     bool result = false;
-    for (int i = 0; i < evaluators.size(); i++) {
+    for (int i = 0; i < evaluators.size(); ++i) {
         if (evaluators[i]->reach_state(parent_state, op, state)) {
             result = true;
             // Don't break: we must call reached_state everywhere.

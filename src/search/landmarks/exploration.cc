@@ -33,16 +33,16 @@ Exploration::Exploration(const Options &opts)
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.
-    for (int var = 0; var < g_variable_domain.size(); var++) {
+    for (int var = 0; var < g_variable_domain.size(); ++var) {
         propositions.push_back(vector<ExProposition>(g_variable_domain[var]));
-        for (int val = 0; val < g_variable_domain[var]; val++) {
+        for (int val = 0; val < g_variable_domain[var]; ++val) {
             propositions[var][val].var = var;
             propositions[var][val].val = val;
         }
     }
 
     // Build goal propositions.
-    for (int i = 0; i < g_goal.size(); i++) {
+    for (int i = 0; i < g_goal.size(); ++i) {
         int var = g_goal[i].first, val = g_goal[i].second;
         propositions[var][val].is_goal_condition = true;
         propositions[var][val].is_termination_condition = true;
@@ -51,15 +51,15 @@ Exploration::Exploration(const Options &opts)
     }
 
     // Build unary operators for operators and axioms.
-    for (int i = 0; i < g_operators.size(); i++)
+    for (int i = 0; i < g_operators.size(); ++i)
         build_unary_operators(g_operators[i]);
-    for (int i = 0; i < g_axioms.size(); i++)
+    for (int i = 0; i < g_axioms.size(); ++i)
         build_unary_operators(g_axioms[i]);
 
     // Cross-reference unary operators.
-    for (int i = 0; i < unary_operators.size(); i++) {
+    for (int i = 0; i < unary_operators.size(); ++i) {
         ExUnaryOperator *op = &unary_operators[i];
-        for (int j = 0; j < op->precondition.size(); j++)
+        for (int j = 0; j < op->precondition.size(); ++j)
             op->precondition[j]->precondition_of.push_back(op);
     }
     // Set flag that before heuristic values can be used, computation
@@ -94,18 +94,18 @@ void Exploration::write_overflow_warning() {
 
 void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_goals) {
     //Clear previous additional goals.
-    for (int i = 0; i < termination_propositions.size(); i++) {
+    for (int i = 0; i < termination_propositions.size(); ++i) {
         int var = termination_propositions[i]->var, val = termination_propositions[i]->val;
         propositions[var][val].is_termination_condition = false;
     }
     termination_propositions.clear();
-    for (int i = 0; i < g_goal.size(); i++) {
+    for (int i = 0; i < g_goal.size(); ++i) {
         int var = g_goal[i].first, val = g_goal[i].second;
         propositions[var][val].is_termination_condition = true;
         termination_propositions.push_back(&propositions[var][val]);
     }
     // Build new additional goal propositions.
-    for (int i = 0; i < add_goals.size(); i++) {
+    for (int i = 0; i < add_goals.size(); ++i) {
         int var = add_goals[i].first, val = add_goals[i].second;
         if (!propositions[var][val].is_goal_condition) {
             propositions[var][val].is_termination_condition = true;
@@ -123,18 +123,18 @@ void Exploration::build_unary_operators(const Operator &op) {
     vector<ExProposition *> precondition;
     vector<pair<int, int> > precondition_var_vals1;
 
-    for (int i = 0; i < preconditions.size(); i++) {
+    for (int i = 0; i < preconditions.size(); ++i) {
         assert(preconditions[i].var >= 0 && preconditions[i].var < g_variable_domain.size());
         assert(preconditions[i].val >= 0 && preconditions[i].val < g_variable_domain[preconditions[i].var]);
         precondition_var_vals1.push_back(make_pair(preconditions[i].var, preconditions[i].val));
     }
-    for (int i = 0; i < effects.size(); i++) {
+    for (int i = 0; i < effects.size(); ++i) {
         vector<pair<int, int> > precondition_var_vals2(precondition_var_vals1);
         assert(effects[i].var >= 0 && effects[i].var < g_variable_domain.size());
         assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
         ExProposition *effect = &propositions[effects[i].var][effects[i].val];
         const vector<Condition> &eff_conds = effects[i].conditions;
-        for (int j = 0; j < eff_conds.size(); j++) {
+        for (int j = 0; j < eff_conds.size(); ++j) {
             assert(eff_conds[j].var >= 0 && eff_conds[j].var < g_variable_domain.size());
             assert(eff_conds[j].val >= 0 && eff_conds[j].val < g_variable_domain[eff_conds[j].var]);
             precondition_var_vals2.push_back(make_pair(eff_conds[j].var, eff_conds[j].val));
@@ -142,7 +142,7 @@ void Exploration::build_unary_operators(const Operator &op) {
 
         sort(precondition_var_vals2.begin(), precondition_var_vals2.end());
 
-        for (int j = 0; j < precondition_var_vals2.size(); j++)
+        for (int j = 0; j < precondition_var_vals2.size(); ++j)
             precondition.push_back(&propositions[precondition_var_vals2[j].first]
                                    [precondition_var_vals2[j].second]);
 
@@ -157,7 +157,7 @@ public:
     size_t operator()(const pair<vector<ExProposition *>, ExProposition *> &key) const {
         size_t hash_value = reinterpret_cast<size_t>(key.second);
         const vector<ExProposition *> &vec = key.first;
-        for (int i = 0; i < vec.size(); i++)
+        for (int i = 0; i < vec.size(); ++i)
             hash_value = 17 * hash_value + reinterpret_cast<size_t>(vec[i]);
         return hash_value;
     }
@@ -171,8 +171,8 @@ void Exploration::setup_exploration_queue(const State &state,
                                           bool use_h_max = false) {
     prop_queue.clear();
 
-    for (int var = 0; var < propositions.size(); var++) {
-        for (int value = 0; value < propositions[var].size(); value++) {
+    for (int var = 0; var < propositions.size(); ++var) {
+        for (int value = 0; value < propositions[var].size(); ++value) {
             ExProposition &prop = propositions[var][value];
             prop.h_add_cost = -1;
             prop.h_max_cost = -1;
@@ -181,20 +181,20 @@ void Exploration::setup_exploration_queue(const State &state,
         }
     }
     if (excluded_props.size() > 0) {
-        for (unsigned i = 0; i < excluded_props.size(); i++) {
+        for (unsigned i = 0; i < excluded_props.size(); ++i) {
             ExProposition &prop = propositions[excluded_props[i].first][excluded_props[i].second];
             prop.h_add_cost = -2;
         }
     }
 
     // Deal with current state.
-    for (int var = 0; var < propositions.size(); var++) {
+    for (int var = 0; var < propositions.size(); ++var) {
         ExProposition *init_prop = &propositions[var][state[var]];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
 
     // Initialize operator data, deal with precondition-free operators/axioms.
-    for (int i = 0; i < unary_operators.size(); i++) {
+    for (int i = 0; i < unary_operators.size(); ++i) {
         ExUnaryOperator &op = unary_operators[i];
         op.unsatisfied_preconditions = op.precondition.size();
         if (excluded_ops.size() > 0 && (op.effect->h_add_cost == -2 ||
@@ -232,7 +232,7 @@ void Exploration::relaxed_exploration(bool use_h_max = false, bool level_out = f
         if (!level_out && prop->is_termination_condition && --unsolved_goals == 0)
             return;
         const vector<ExUnaryOperator *> &triggered_operators = prop->precondition_of;
-        for (int i = 0; i < triggered_operators.size(); i++) {
+        for (int i = 0; i < triggered_operators.size(); ++i) {
             ExUnaryOperator *unary_op = triggered_operators[i];
             if (unary_op->h_add_cost == -2) // operator is not applied
                 continue;
@@ -281,7 +281,7 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
 
 int Exploration::compute_hsp_add_heuristic() {
     int total_cost = 0;
-    for (int i = 0; i < goal_propositions.size(); i++) {
+    for (int i = 0; i < goal_propositions.size(); ++i) {
         int prop_cost = goal_propositions[i]->h_add_cost;
         if (prop_cost == -1)
             return DEAD_END;
@@ -293,7 +293,7 @@ int Exploration::compute_hsp_add_heuristic() {
 int Exploration::compute_hsp_max_heuristic() {
 /* Note: this function is currently not used */
     int maximal_cost = 0;
-    for (int i = 0; i < goal_propositions.size(); i++) {
+    for (int i = 0; i < goal_propositions.size(); ++i) {
         int prop_cost = goal_propositions[i]->h_max_cost;
         if (prop_cost == -1)
             return DEAD_END;
@@ -318,7 +318,7 @@ int Exploration::compute_ff_heuristic(const State &state) {
     } else {
         relaxed_plan.clear();
         // Collecting the relaxed plan also marks helpful actions as preferred.
-        for (int i = 0; i < goal_propositions.size(); i++)
+        for (int i = 0; i < goal_propositions.size(); ++i)
             collect_relaxed_plan(goal_propositions[i], relaxed_plan, state);
         int cost = 0;
         RelaxedPlan::iterator it = relaxed_plan.begin();
@@ -334,7 +334,7 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
         goal->marked = true;
         ExUnaryOperator *unary_op = goal->reached_by;
         if (unary_op) { // We have not yet chained back to a start node.
-            for (int i = 0; i < unary_op->precondition.size(); i++)
+            for (int i = 0; i < unary_op->precondition.size(); ++i)
                 collect_relaxed_plan(unary_op->precondition[i], relaxed_plan, state);
             const Operator *op = unary_op->op;
             bool added_to_relaxed_plan = false;
@@ -365,8 +365,8 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
     relaxed_exploration(true, level_out);
 
     // Copy reachability information into lvl_var and lvl_op
-    for (int var = 0; var < propositions.size(); var++) {
-        for (int value = 0; value < propositions[var].size(); value++) {
+    for (int var = 0; var < propositions.size(); ++var) {
+        for (int value = 0; value < propositions[var].size(); ++value) {
             ExProposition &prop = propositions[var][value];
             if (prop.h_max_cost >= 0)
                 lvl_var[var][value] = prop.h_max_cost;
@@ -374,19 +374,19 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
     }
     if (compute_lvl_ops) {
         hash_map< const Operator *, int, ex_hash_operator_ptr> operator_index;
-        for (int i = 0; i < g_operators.size(); i++) {
+        for (int i = 0; i < g_operators.size(); ++i) {
             operator_index.insert(make_pair(&g_operators[i], i));
         }
         int offset = g_operators.size();
-        for (int i = 0; i < g_axioms.size(); i++) {
+        for (int i = 0; i < g_axioms.size(); ++i) {
             operator_index.insert(make_pair(&g_axioms[i], i + offset));
         }
-        for (int i = 0; i < unary_operators.size(); i++) {
+        for (int i = 0; i < unary_operators.size(); ++i) {
             ExUnaryOperator &op = unary_operators[i];
             // H_max_cost of operator might be wrongly 0 or 1, if the operator
             // did not get applied during relaxed exploration. Look through
             // preconditions and adjust.
-            for (int i = 0; i < op.precondition.size(); i++) {
+            for (int i = 0; i < op.precondition.size(); ++i) {
                 ExProposition *prop = op.precondition[i];
                 if (prop->h_max_cost == -1) {
                     // Operator cannot be applied due to unreached precondition
@@ -433,7 +433,7 @@ void Exploration::collect_ha(ExProposition *goal,
 
     ExUnaryOperator *unary_op = goal->reached_by;
     if (unary_op) { // We have not yet chained back to a start node.
-        for (int i = 0; i < unary_op->precondition.size(); i++)
+        for (int i = 0; i < unary_op->precondition.size(); ++i)
             collect_ha(unary_op->precondition[i], relaxed_plan, state);
         const Operator *op = unary_op->op;
         bool added_to_relaxed_plan = false;
@@ -451,7 +451,7 @@ void Exploration::collect_ha(ExProposition *goal,
 
 bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
     // TODO: change landmarks to set or hash_set
-    for (int i = 0; i < landmarks.size(); i++)
+    for (int i = 0; i < landmarks.size(); ++i)
         if (landmarks[i].first == var && landmarks[i].second == val)
             return true;
     return false;
@@ -468,7 +468,7 @@ bool Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         }
         int min_cost = numeric_limits<int>::max();
         ExProposition *target = NULL;
-        for (int i = 0; i < termination_propositions.size(); i++) {
+        for (int i = 0; i < termination_propositions.size(); ++i) {
             const int prop_cost = termination_propositions[i]->h_add_cost;
             if (prop_cost == -1 && is_landmark(landmarks, termination_propositions[i]->var,
                                                termination_propositions[i]->val)) {
@@ -488,7 +488,7 @@ bool Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         if (heuristic_recomputation_needed) {
             prepare_heuristic_computation(state);
         }
-        for (int i = 0; i < goal_propositions.size(); i++) {
+        for (int i = 0; i < goal_propositions.size(); ++i) {
             if (goal_propositions[i]->h_add_cost == -1)
                 return false;  // dead end
             collect_ha(goal_propositions[i], relaxed_plan, state);

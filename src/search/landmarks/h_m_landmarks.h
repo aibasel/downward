@@ -19,7 +19,7 @@ struct FluentSetComparer {
         if (fs1.size() != fs2.size()) {
             return fs1.size() < fs2.size();
         }
-        for (int i = 0; i < fs1.size(); i++) {
+        for (int i = 0; i < fs1.size(); ++i) {
             if (fs1[i].first != fs2[i].first) {
                 return fs1[i].first < fs2[i].first;
             }

@@ -44,7 +44,7 @@ int CGHeuristic::compute_heuristic(const State &state) {
     setup_domain_transition_graphs();
 
     int heuristic = 0;
-    for (int i = 0; i < g_goal.size(); i++) {
+    for (int i = 0; i < g_goal.size(); ++i) {
         int var_no = g_goal[i].first, from = state[var_no], to = g_goal[i].second;
         DomainTransitionGraph *dtg = g_transition_graphs[var_no];
         int cost_for_goal = get_transition_cost(state, dtg, from, to);
@@ -59,15 +59,15 @@ int CGHeuristic::compute_heuristic(const State &state) {
 }
 
 void CGHeuristic::setup_domain_transition_graphs() {
-    for (int var = 0; var < g_transition_graphs.size(); var++) {
+    for (int var = 0; var < g_transition_graphs.size(); ++var) {
         DomainTransitionGraph *dtg = g_transition_graphs[var];
-        for (int i = 0; i < dtg->nodes.size(); i++) {
+        for (int i = 0; i < dtg->nodes.size(); ++i) {
             dtg->nodes[i].distances.clear();
             dtg->nodes[i].helpful_transitions.clear();
         }
     }
     // Reset "dirty bits" for helpful transitions.
-    helpful_transition_extraction_counter++;
+    ++helpful_transition_extraction_counter;
 }
 
 int CGHeuristic::get_transition_cost(const State &state,
@@ -99,7 +99,7 @@ int CGHeuristic::get_transition_cost(const State &state,
         start->reached_from = 0;
         start->reached_by = 0;
         start->children_state.resize(dtg->local_to_global_child.size());
-        for (int i = 0; i < dtg->local_to_global_child.size(); i++)
+        for (int i = 0; i < dtg->local_to_global_child.size(); ++i)
             start->children_state[i] = state[dtg->local_to_global_child[i]];
 
         // Initialize Heap for Dijkstra's algorithm.
@@ -124,22 +124,22 @@ int CGHeuristic::get_transition_cost(const State &state,
             if (source->value != start_val) {
                 source->children_state = source->reached_from->children_state;
                 vector<LocalAssignment> &precond = source->reached_by->precond;
-                for (int k = 0; k < precond.size(); k++)
+                for (int k = 0; k < precond.size(); ++k)
                     source->children_state[precond[k].local_var] = precond[k].value;
             }
 
             // Scan outgoing transitions.
-            for (int i = 0; i < source->transitions.size(); i++) {
+            for (int i = 0; i < source->transitions.size(); ++i) {
                 ValueTransition *transition = &source->transitions[i];
                 ValueNode *target = transition->target;
                 int *target_distance_ptr = &start->distances[target->value];
 
                 // Scan labels of the transition.
-                for (int j = 0; j < transition->labels.size(); j++) {
+                for (int j = 0; j < transition->labels.size(); ++j) {
                     ValueTransitionLabel *label = &transition->labels[j];
                     int new_distance = source_distance + get_adjusted_cost(*label->op);
                     vector<LocalAssignment> &precond = label->precond;
-                    for (int k = 0; k < precond.size(); k++) {
+                    for (int k = 0; k < precond.size(); ++k) {
                         if (new_distance >= *target_distance_ptr)
                             break;  // We already know this isn't an improved path.
                         int local_var = precond[k].local_var;
@@ -191,7 +191,7 @@ int CGHeuristic::get_transition_cost(const State &state,
     }
 
     if (use_the_cache) {
-        for (int val = 0; val < start->distances.size(); val++) {
+        for (int val = 0; val < start->distances.size(); ++val) {
             if (val == start_val)
                 continue;
             int distance = start->distances[val];
@@ -259,7 +259,7 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     } else {
         // Recursively compute helpful transitions for the precondition variables.
         const vector<LocalAssignment> &precond = helpful->precond;
-        for (int i = 0; i < precond.size(); i++) {
+        for (int i = 0; i < precond.size(); ++i) {
             int local_var = precond[i].local_var;
             int global_var = dtg->local_to_global_child[local_var];
             DomainTransitionGraph *precond_dtg = g_transition_graphs[global_var];

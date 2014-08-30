@@ -72,7 +72,7 @@ struct ExUnaryOperator {
                     return false;
                 else if (*(precondition[i]) < *(other.precondition[i]))
                     return true;
-                i++;
+                ++i;
             }
             return true;
         }
