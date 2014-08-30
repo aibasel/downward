@@ -12,7 +12,7 @@ Condition::Condition(istream &in) {
 // Effect::Effect(istream &in) {
 //    int cond_count;
 //    in >> cond_count;
-//    for (int i = 0; i < cond_count; i++)
+//    for (int i = 0; i < cond_count; ++i)
 //        cond.push_back(Condition(in));
 //    in >> var >> post;
 //}
@@ -23,7 +23,7 @@ void Operator::read_pre_post(istream &in) {
     in >> cond_count;
     vector<Condition> conditions;
     conditions.reserve(cond_count);
-    for (int i = 0; i < cond_count; i++)
+    for (int i = 0; i < cond_count; ++i)
         conditions.push_back(Condition(in));
     in >> var >> pre >> post;
     if (pre != -1)
@@ -41,10 +41,10 @@ Operator::Operator(istream &in, bool axiom) {
         getline(in, name);
         int count;
         in >> count;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < count; ++i)
             preconditions.push_back(Condition(in));
         in >> count;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < count; ++i)
             read_pre_post(in);
 
         int op_cost;
@@ -74,7 +74,7 @@ void Effect::dump() const {
     cout << g_variable_name[var] << ":= " << val;
     if (!conditions.empty()) {
         cout << " if";
-        for (int i = 0; i < conditions.size(); i++) {
+        for (int i = 0; i < conditions.size(); ++i) {
             cout << " ";
             conditions[i].dump();
         }
@@ -83,12 +83,12 @@ void Effect::dump() const {
 
 void Operator::dump() const {
     cout << name << ":";
-    for (int i = 0; i < preconditions.size(); i++) {
+    for (int i = 0; i < preconditions.size(); ++i) {
         cout << " [";
         preconditions[i].dump();
         cout << "]";
     }
-    for (int i = 0; i < effects.size(); i++) {
+    for (int i = 0; i < effects.size(); ++i) {
         cout << " [";
         effects[i].dump();
         cout << "]";

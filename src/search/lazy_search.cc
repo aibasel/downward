@@ -41,7 +41,7 @@ void LazySearch::initialize() {
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
         estimate_heuristics.push_back(*it);
         search_progress.add_heuristic(*it);
     }
@@ -51,7 +51,7 @@ void LazySearch::initialize() {
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
         heuristics.push_back(*it);
     }
     assert(!heuristics.empty());
@@ -65,7 +65,7 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
 
-    for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
+    for (int i = 0; i < preferred_operator_heuristics.size(); ++i) {
         Heuristic *heur = preferred_operator_heuristics[i];
         if (!heur->is_dead_end())
             heur->get_preferred_operators(preferred_operators);
@@ -80,18 +80,18 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
     }
 
     if (preferred_successors_first) {
-        for (int i = 0; i < preferred_operators.size(); i++) {
+        for (int i = 0; i < preferred_operators.size(); ++i) {
             if (!preferred_operators[i]->is_marked()) {
                 ops.push_back(preferred_operators[i]);
                 preferred_operators[i]->mark();
             }
         }
 
-        for (int i = 0; i < all_operators.size(); i++)
+        for (int i = 0; i < all_operators.size(); ++i)
             if (!all_operators[i]->is_marked())
                 ops.push_back(all_operators[i]);
     } else {
-        for (int i = 0; i < preferred_operators.size(); i++)
+        for (int i = 0; i < preferred_operators.size(); ++i)
             if (!preferred_operators[i]->is_marked())
                 preferred_operators[i]->mark();
         ops.swap(all_operators);
@@ -103,7 +103,7 @@ void LazySearch::generate_successors() {
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
 
-    for (int i = 0; i < operators.size(); i++) {
+    for (int i = 0; i < operators.size(); ++i) {
         int new_g = current_g + get_adjusted_cost(*operators[i]);
         int new_real_g = current_real_g + operators[i]->get_cost();
         bool is_preferred = operators[i]->is_marked();
@@ -159,7 +159,7 @@ int LazySearch::step() {
         State parent_state = g_state_registry->lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        for (int i = 0; i < heuristics.size(); i++) {
+        for (int i = 0; i < heuristics.size(); ++i) {
             if (current_operator != NULL) {
                 heuristics[i]->reach_state(parent_state, *current_operator, current_state);
             }
@@ -312,7 +312,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
                                                                  false);
         } else {
             vector<OpenList<OpenListEntryLazy> *> inner_lists;
-            for (int i = 0; i < evals.size(); i++) {
+            for (int i = 0; i < evals.size(); ++i) {
                 inner_lists.push_back(
                     new StandardScalarOpenList<OpenListEntryLazy>(evals[i],
                                                                   false));
@@ -398,7 +398,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         vector<OpenList<OpenListEntryLazy> *> inner_lists;
-        for (int i = 0; i < evals.size(); i++) {
+        for (int i = 0; i < evals.size(); ++i) {
             GEvaluator *g = new GEvaluator();
             vector<ScalarEvaluator *> sum_evals;
             sum_evals.push_back(g);

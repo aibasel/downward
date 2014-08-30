@@ -22,10 +22,10 @@ void MaxHeuristic::initialize() {
         arff_out << "@RELATION max" << endl;
         arff_out << endl;
 
-        for (int i = 0; i < g_variable_domain.size(); i++) {
+        for (int i = 0; i < g_variable_domain.size(); ++i) {
             arff_out << "@ATTRIBUTE " << g_variable_name[i] << " {";
             arff_out << "0";
-            for (int j = 1; j < g_variable_domain[i]; j++) {
+            for (int j = 1; j < g_variable_domain[i]; ++j) {
                 arff_out << "," << j;
             }
             arff_out << "}" << endl;
@@ -35,14 +35,14 @@ void MaxHeuristic::initialize() {
         //arff_out << "@ATTRIBUTE f NUMERIC" << endl;
 
         /*
-        for (int i = 0; i < heuristics.size(); i++) {
+        for (int i = 0; i < heuristics.size(); ++i) {
                 arff_out << "@ATTRIBUTE h" << i << " NUMERIC" << endl;
         }
         */
 
         /*
         arff_out << "@ATTRIBUTE winner {0";
-        for (int i = 0; i < heuristics.size(); i++) {
+        for (int i = 0; i < heuristics.size(); ++i) {
                 arff_out << "," <<  (i+1) ;
         }
         arff_out << "}" << endl;
@@ -57,9 +57,9 @@ void MaxHeuristic::initialize() {
 int MaxHeuristic::compute_heuristic(const State &state) {
     int max = 0;
     bool dead_end = false;
-    num_evals++;
+    ++num_evals;
 
-    for (int i = 0; i < heuristics.size(); i++) {
+    for (int i = 0; i < heuristics.size(); ++i) {
         //cout << "h[" << i << "] = ";
         heuristics[i]->evaluate(state);
         if (heuristics[i]->is_dead_end()) {
@@ -80,7 +80,7 @@ int MaxHeuristic::compute_heuristic(const State &state) {
 
     if (dead_end) {
         bool all_dead_end = true;
-        for (int i = 0; i < heuristics.size(); i++) {
+        for (int i = 0; i < heuristics.size(); ++i) {
             if (!heuristics[i]->is_dead_end()) {
                 all_dead_end = false;
                 break;
@@ -93,16 +93,16 @@ int MaxHeuristic::compute_heuristic(const State &state) {
 
     int winner_count = 0;
     int winner_id = -1;
-    for (int i = 0; i < heuristics.size(); i++) {
+    for (int i = 0; i < heuristics.size(); ++i) {
         if (hvalue[i] == max) {
             winner[i]++;
-            winner_count++;
+            ++winner_count;
             winner_id = i;
         }
     }
 
     if (dump_arff) {
-        for (int i = 0; i < g_variable_domain.size(); i++) {
+        for (int i = 0; i < g_variable_domain.size(); ++i) {
             arff_out << state[i] << ", ";
         }
         //int g = g_learning_search_space->get_node(state).get_g();
@@ -119,7 +119,7 @@ int MaxHeuristic::compute_heuristic(const State &state) {
 void MaxHeuristic::print_statistics() const {
     cout << "Num evals: " << num_evals << endl;
     cout << "heuristic,  winner,   only winner" << endl;
-    for (int i = 0; i < heuristics.size(); i++) {
+    for (int i = 0; i < heuristics.size(); ++i) {
         cout << i /*heuristics[i]->get_name()*/ << " , " << winner[i] << " , " << only_winner[i] << endl;
     }
 }
@@ -128,7 +128,7 @@ bool MaxHeuristic::reach_state(const State &parent_state, const Operator &op,
                                const State &state) {
     int ret = false;
     int val;
-    for (int i = 0; i < heuristics.size(); i++) {
+    for (int i = 0; i < heuristics.size(); ++i) {
         val = heuristics[i]->reach_state(parent_state, op, state);
         ret = ret || val;
     }

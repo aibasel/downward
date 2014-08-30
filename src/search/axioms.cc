@@ -9,11 +9,11 @@ using namespace std;
 
 AxiomEvaluator::AxiomEvaluator() {
     // Initialize literals
-    for (int i = 0; i < g_variable_domain.size(); i++)
+    for (int i = 0; i < g_variable_domain.size(); ++i)
         axiom_literals.push_back(vector<AxiomLiteral>(g_variable_domain[i]));
 
     // Initialize rules
-    for (int i = 0; i < g_axioms.size(); i++) {
+    for (int i = 0; i < g_axioms.size(); ++i) {
         const Operator &axiom = g_axioms[i];
         int cond_count = axiom.get_effects()[0].conditions.size();
         int eff_var = axiom.get_effects()[0].var;
@@ -23,9 +23,9 @@ AxiomEvaluator::AxiomEvaluator() {
     }
 
     // Cross-reference rules and literals
-    for (int i = 0; i < g_axioms.size(); i++) {
+    for (int i = 0; i < g_axioms.size(); ++i) {
         const vector<Condition> &conditions = g_axioms[i].get_effects()[0].conditions;
-        for (int j = 0; j < conditions.size(); j++) {
+        for (int j = 0; j < conditions.size(); ++j) {
             const Condition &cond = conditions[j];
             axiom_literals[cond.var][cond.val].condition_of.push_back(&rules[i]);
         }
@@ -33,11 +33,11 @@ AxiomEvaluator::AxiomEvaluator() {
 
     // Initialize negation-by-failure information
     int last_layer = -1;
-    for (int i = 0; i < g_axiom_layers.size(); i++)
+    for (int i = 0; i < g_axiom_layers.size(); ++i)
         last_layer = max(last_layer, g_axiom_layers[i]);
     nbf_info_by_layer.resize(last_layer + 1);
 
-    for (int var_no = 0; var_no < g_axiom_layers.size(); var_no++) {
+    for (int var_no = 0; var_no < g_axiom_layers.size(); ++var_no) {
         int layer = g_axiom_layers[var_no];
         if (layer != -1 && layer != last_layer) {
             int nbf_value = g_default_axiom_values[var_no];
@@ -54,7 +54,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
         return;
 
     assert(queue.empty());
-    for (int i = 0; i < g_axiom_layers.size(); i++) {
+    for (int i = 0; i < g_axiom_layers.size(); ++i) {
         if (g_axiom_layers[i] != -1) {
             g_state_packer->set(buffer, i, g_default_axiom_values[i]);
         } else {
@@ -62,7 +62,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
         }
     }
 
-    for (int i = 0; i < rules.size(); i++) {
+    for (int i = 0; i < rules.size(); ++i) {
         rules[i].unsatisfied_conditions = rules[i].condition_count;
 
         // TODO: In a perfect world, trivial axioms would have been
@@ -82,12 +82,12 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
         }
     }
 
-    for (int layer_no = 0; layer_no < nbf_info_by_layer.size(); layer_no++) {
+    for (int layer_no = 0; layer_no < nbf_info_by_layer.size(); ++layer_no) {
         // Apply Horn rules.
         while (!queue.empty()) {
             AxiomLiteral *curr_literal = queue.back();
             queue.pop_back();
-            for (int i = 0; i < curr_literal->condition_of.size(); i++) {
+            for (int i = 0; i < curr_literal->condition_of.size(); ++i) {
                 AxiomRule *rule = curr_literal->condition_of[i];
                 if (--(rule->unsatisfied_conditions) == 0) {
                     int var_no = rule->effect_var;
@@ -104,7 +104,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
         // to save some time (see issue420, msg3058).
         if (layer_no != nbf_info_by_layer.size() - 1) {
             const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
-            for (int i = 0; i < nbf_info.size(); i++) {
+            for (int i = 0; i < nbf_info.size(); ++i) {
                 int var_no = nbf_info[i].var_no;
                 if (g_state_packer->get(buffer, var_no) == g_default_axiom_values[var_no])
                     queue.push_back(nbf_info[i].literal);

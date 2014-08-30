@@ -37,7 +37,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
         if (unary_op) { // We have not yet chained back to a start node.
-            for (int i = 0; i < unary_op->precondition.size(); i++)
+            for (int i = 0; i < unary_op->precondition.size(); ++i)
                 mark_preferred_operators_and_relaxed_plan(
                     state, unary_op->precondition[i]);
             int operator_no = unary_op->operator_no;
@@ -65,11 +65,11 @@ int FFHeuristic::compute_heuristic(const State &state) {
         return h_add;
 
     // Collecting the relaxed plan also sets the preferred operators.
-    for (int i = 0; i < goal_propositions.size(); i++)
+    for (int i = 0; i < goal_propositions.size(); ++i)
         mark_preferred_operators_and_relaxed_plan(state, goal_propositions[i]);
 
     int h_ff = 0;
-    for (int op_no = 0; op_no < relaxed_plan.size(); op_no++) {
+    for (int op_no = 0; op_no < relaxed_plan.size(); ++op_no) {
         if (relaxed_plan[op_no]) {
             relaxed_plan[op_no] = false; // Clean up for next computation.
             h_ff += get_adjusted_cost(g_operators[op_no]);
