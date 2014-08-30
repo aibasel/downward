@@ -46,12 +46,12 @@ protected:
     // some helper methods
     int check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple);
     void state_to_tuple(const State &state, tuple &t) {
-        for (int i = 0; i < g_variable_domain.size(); ++i)
+        for (size_t i = 0; i < g_variable_domain.size(); ++i)
             t.push_back(make_pair(i, state[i]));
     }
 
     int get_operator_pre_value(const Operator &op, int var) {
-        for (int i = 0; i < op.get_preconditions().size(); ++i) {
+        for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
             if (op.get_preconditions()[i].var == var)
                 return op.get_preconditions()[i].val;
         }
@@ -59,14 +59,14 @@ protected:
     }
 
     void get_operator_pre(const Operator &op, tuple &t) {
-        for (int i = 0; i < op.get_preconditions().size(); ++i)
+        for (size_t i = 0; i < op.get_preconditions().size(); ++i)
             t.push_back(make_pair(op.get_preconditions()[i].var, op.get_preconditions()[i].val));
 
         sort(t.begin(), t.end());
     }
 
     void get_operator_eff(const Operator &op, tuple &t) {
-        for (int i = 0; i < op.get_effects().size(); ++i)
+        for (size_t i = 0; i < op.get_effects().size(); ++i)
             t.push_back(make_pair(op.get_effects()[i].var, op.get_effects()[i].val));
 
         sort(t.begin(), t.end());
@@ -76,7 +76,7 @@ protected:
     bool is_pre_of(const Operator &op, int var) {
         // TODO if preconditions will be always sorted we should use a log-n
         // search instead
-        for (int j = 0; j < op.get_preconditions().size(); ++j) {
+        for (size_t j = 0; j < op.get_preconditions().size(); ++j) {
             if (op.get_preconditions()[j].var == var) {
                 return true;
             }
@@ -85,7 +85,7 @@ protected:
     }
 
     bool is_effect_of(const Operator &op, int var) {
-        for (int j = 0; j < op.get_effects().size(); ++j) {
+        for (size_t j = 0; j < op.get_effects().size(); ++j) {
             if (op.get_effects()[j].var == var) {
                 return true;
             }
@@ -94,7 +94,7 @@ protected:
     }
 
     bool contradict_effect_of(const Operator &op, int var, int val) {
-        for (int j = 0; j < op.get_effects().size(); ++j) {
+        for (size_t j = 0; j < op.get_effects().size(); ++j) {
             if (op.get_effects()[j].var == var && op.get_effects()[j].val != val) {
                 return true;
             }

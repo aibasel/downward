@@ -32,8 +32,8 @@ void DomainTransitionGraph::read_all(istream &in) {
     cout << "Simplifying transitions..." << flush;
     for (int var = 0; var < var_count; ++var) {
         vector<ValueNode> &nodes = g_transition_graphs[var]->nodes;
-        for (int value = 0; value < nodes.size(); ++value)
-            for (int i = 0; i < nodes[value].transitions.size(); ++i)
+        for (size_t value = 0; value < nodes.size(); ++value)
+            for (size_t i = 0; i < nodes[value].transitions.size(); ++i)
                 nodes[value].transitions[i].simplify();
     }
     cout << " done!" << endl;
@@ -58,7 +58,7 @@ void DomainTransitionGraph::read_data(istream &in) {
     //       that transitions in the input are not grouped by target
     //       like they should be. Change this.
 
-    for (int origin = 0; origin < nodes.size(); ++origin) {
+    for (size_t origin = 0; origin < nodes.size(); ++origin) {
         int trans_count;
         in >> trans_count;
         for (int i = 0; i < trans_count; ++i) {
@@ -122,11 +122,11 @@ void DomainTransitionGraph::read_data(istream &in) {
 
             hash_map<int, int> pre_map;
             const vector<Condition> &preconditions = the_operator->get_preconditions();
-            for (int j = 0; j < preconditions.size(); ++j)
+            for (size_t j = 0; j < preconditions.size(); ++j)
                 pre_map[preconditions[j].var] = preconditions[j].val;
 
             const vector<Effect> &effects = the_operator->get_effects();
-            for (int j = 0; j < effects.size(); ++j) {
+            for (size_t j = 0; j < effects.size(); ++j) {
                 int var_no = effects[j].var;
                 int pre = -1;
                 hash_map<int, int>::const_iterator pre_it = pre_map.find(var_no); 
@@ -147,7 +147,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                     triggercond_pairs.push_back(make_pair(var_no, pre));
 
                 const vector<Condition> &cond = effects[j].conditions;
-                for (int k = 0; k < cond.size(); ++k)
+                for (size_t k = 0; k < cond.size(); ++k)
                     triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].val));
                 sort(triggercond_pairs.begin(), triggercond_pairs.end());
 
@@ -182,7 +182,7 @@ void DomainTransitionGraph::get_successors(int value, vector<int> &result) const
     assert(value >= 0 && value < nodes.size());
     const vector<ValueTransition> &transitions = nodes[value].transitions;
     result.reserve(transitions.size());
-    for (int i = 0; i < transitions.size(); ++i)
+    for (size_t i = 0; i < transitions.size(); ++i)
         result.push_back(transitions[i].target->value);
 }
 
@@ -190,7 +190,7 @@ class hash_pair_vector {
 public:
     size_t operator()(const vector<pair<int, int> > &vec) const {
         unsigned long hash_value = 0;
-        for (int i = 0; i < vec.size(); ++i) {
+        for (size_t i = 0; i < vec.size(); ++i) {
             hash_value = 17 * hash_value + vec[i].first;
             hash_value = 17 * hash_value + vec[i].second;
         }
@@ -222,10 +222,10 @@ void ValueTransition::simplify_labels(
     HashMap label_index;
     label_index.resize(label_vec.size() * 2);
 
-    for (int i = 0; i < label_vec.size(); ++i) {
+    for (size_t i = 0; i < label_vec.size(); ++i) {
         HashKey key;
         const vector<LocalAssignment> &conditions = label_vec[i].precond;
-        for (int j = 0; j < conditions.size(); ++j)
+        for (size_t j = 0; j < conditions.size(); ++j)
             key.push_back(make_pair(conditions[j].local_var, conditions[j].value));
         sort(key.begin(), key.end());
         label_index[key] = i;
@@ -242,7 +242,7 @@ void ValueTransition::simplify_labels(
         if (powerset_size <= 31) { // HACK! Don't spend too much time here...
             for (int mask = 0; mask < powerset_size; ++mask) {
                 HashKey subset;
-                for (int i = 0; i < key.size(); ++i)
+                for (size_t i = 0; i < key.size(); ++i)
                     if (mask & (1 << i))
                         subset.push_back(key[i]);
                 HashMap::iterator found = label_index.find(subset);

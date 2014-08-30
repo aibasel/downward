@@ -17,7 +17,7 @@ int StateSpaceSample::choose_operator(vector<int> &h_s) {
         ret = g_rng(h_s.size());
     } else {
         double sum_inv = 0;
-        for (int i = 0; i < h_s.size(); ++i) {
+        for (size_t i = 0; i < h_s.size(); ++i) {
             sum_inv = sum_inv + (1.0 / (double)h_s[i]);
         }
         double val = g_rng() * sum_inv;

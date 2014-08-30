@@ -73,7 +73,7 @@ SuccessorGeneratorGenerate::SuccessorGeneratorGenerate(istream &in) {
 }
 
 void SuccessorGeneratorGenerate::_dump(string indent) {
-    for (int i = 0; i < op.size(); ++i) {
+    for (size_t i = 0; i < op.size(); ++i) {
         cout << indent;
         op[i]->dump();
     }

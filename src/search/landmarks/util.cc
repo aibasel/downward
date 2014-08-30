@@ -10,7 +10,7 @@ using namespace std;
 using namespace __gnu_cxx;
 
 bool _possibly_fires(const vector<Condition> &conditions, const vector<vector<int> > &lvl_var) {
-    for (int j = 0; j < conditions.size(); ++j)
+    for (size_t j = 0; j < conditions.size(); ++j)
         if (lvl_var[conditions[j].var][conditions[j].val] ==
             numeric_limits<int>::max())
             return false;

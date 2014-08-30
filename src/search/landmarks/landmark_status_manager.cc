@@ -40,7 +40,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state() {
         }
         if (node_p->conjunctive) {
             bool lm_true = true;
-            for (int i = 0; i < node_p->vals.size(); ++i) {
+            for (size_t i = 0; i < node_p->vals.size(); ++i) {
                 if (initial_state[node_p->vars[i]] != node_p->vals[i]) {
                     lm_true = false;
                     break;
@@ -51,7 +51,7 @@ void LandmarkStatusManager::set_landmarks_for_initial_state() {
                 ++inserted;
             }
         } else {
-            for (int i = 0; i < node_p->vals.size(); ++i) {
+            for (size_t i = 0; i < node_p->vals.size(); ++i) {
                 if (initial_state[node_p->vars[i]] == node_p->vals[i]) {
                     reached[node_p->get_id()] = true;
                     ++inserted;

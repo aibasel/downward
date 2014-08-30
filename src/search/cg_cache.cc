@@ -24,7 +24,7 @@ CGCache::CGCache() {
         // This is to be on the safe side of overflows for the multiplications below.
         assert(g_variable_domain[var] <= 1000);
         const vector<int> &succ = cg->get_pre_to_eff(var);
-        for (int i = 0; i < succ.size(); ++i) {
+        for (size_t i = 0; i < succ.size(); ++i) {
             // Ignore arcs that are not part of the reduced CG:
             // These are ignored by the CG heuristic.
             if (succ[i] > var)
@@ -68,7 +68,7 @@ CGCache::CGCache() {
         int required_cache_size = g_variable_domain[var] * (g_variable_domain[var] - 1);
         bool can_cache = (required_cache_size <= MAX_CACHE_SIZE);
         if (can_cache) {
-            for (int i = 0; i < depends_on[var].size(); ++i) {
+            for (size_t i = 0; i < depends_on[var].size(); ++i) {
                 int relevant_var = depends_on[var][i];
                 if (cache[relevant_var].empty()) {
                     // It is possible that var depends on a variable var_i
@@ -107,7 +107,7 @@ int CGCache::get_index(int var, const State &state,
     assert(from_val != to_val);
     int index = from_val;
     int multiplier = g_variable_domain[var];
-    for (int i = 0; i < depends_on[var].size(); ++i) {
+    for (size_t i = 0; i < depends_on[var].size(); ++i) {
         int dep_var = depends_on[var][i];
         index += state[dep_var] * multiplier;
         multiplier *= g_variable_domain[dep_var];

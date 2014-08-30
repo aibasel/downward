@@ -23,7 +23,7 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
             return 0;
     } else if (lm.disjunctive) {
         set<pair<int, int> > lm_facts;
-        for (int j = 0; j < lm.vars.size(); ++j) {
+        for (size_t j = 0; j < lm.vars.size(); ++j) {
             lm_facts.insert(make_pair(lm.vars[j], lm.vals[j]));
         }
         if (lm_graph->exact_same_disj_landmark_exists(lm_facts))
@@ -41,7 +41,7 @@ void LandmarkGraphMerged::generate_landmarks() {
     cout << "Merging " << lm_graphs.size() << " landmark graphs" << endl;
 
     cout << "Adding simple landmarks" << endl;
-    for (int i = 0; i < lm_graphs.size(); ++i) {
+    for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); ++it) {
@@ -55,7 +55,7 @@ void LandmarkGraphMerged::generate_landmarks() {
     }
 
     cout << "Adding disjunctive landmarks" << endl;
-    for (int i = 0; i < lm_graphs.size(); ++i) {
+    for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); ++it) {
@@ -63,7 +63,7 @@ void LandmarkGraphMerged::generate_landmarks() {
             if (node.disjunctive) {
                 set<pair<int, int> > lm_facts;
                 bool exists = false;
-                for (int j = 0; j < node.vars.size(); ++j) {
+                for (size_t j = 0; j < node.vars.size(); ++j) {
                     pair<int, int> lm_fact = make_pair(node.vars[j], node.vals[j]);
                     if (lm_graph->landmark_exists(lm_fact)) {
                         exists = true;
@@ -83,7 +83,7 @@ void LandmarkGraphMerged::generate_landmarks() {
     }
 
     cout << "Adding orderings" << endl;
-    for (int i = 0; i < lm_graphs.size(); ++i) {
+    for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); ++it) {

@@ -58,7 +58,7 @@ int PDBStateSpaceSample::collect() {
         ++num_probes;
 
         int depth = get_random_depth();
-        for (int j = 0; j < heuristics.size(); ++j) {
+        for (size_t j = 0; j < heuristics.size(); ++j) {
             heuristics[j]->reset();
         }
         send_probe(depth);

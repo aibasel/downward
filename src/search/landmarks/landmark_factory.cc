@@ -99,7 +99,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     // Initialize lvl_op and lvl_var to numeric_limits<int>::max()
     if (compute_lvl_op) {
         lvl_op.resize(g_operators.size() + g_axioms.size());
-        for (int i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
+        for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
             const Operator &op = lm_graph->get_operator_for_lookup_index(i);
             lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
             const vector<Effect> &effects = op.get_effects();
@@ -118,11 +118,11 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     if (exclude != NULL) {
-        for (int op = 0; op < g_operators.size(); ++op) {
+        for (size_t op = 0; op < g_operators.size(); ++op) {
             if (achieves_non_conditional(g_operators[op], exclude))
                 exclude_ops.insert(&g_operators[op]);
         }
-        for (int i = 0; i < exclude->vars.size(); ++i)
+        for (size_t i = 0; i < exclude->vars.size(); ++i)
             exclude_props.push_back(make_pair(exclude->vars[i],
                                               exclude->vals[i]));
     }
@@ -131,7 +131,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
                                                                     exclude_props, exclude_ops, compute_lvl_op);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
-    for (int i = 0; i < g_goal.size(); ++i)
+    for (size_t i = 0; i < g_goal.size(); ++i)
         if (lvl_var[g_goal[i].first][g_goal[i].second] ==
             numeric_limits<int>::max())
             return false;
@@ -158,7 +158,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     }
     hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
-    for (int op = 0; op < g_operators.size(); ++op) {
+    for (size_t op = 0; op < g_operators.size(); ++op) {
         if (is_landmark_precondition(g_operators[op], &landmark)) {
             exclude_ops.insert(&g_operators[op]);
         }
@@ -168,7 +168,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
                                                                     exclude_props, exclude_ops, false);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
-    for (int i = 0; i < g_goal.size(); ++i)
+    for (size_t i = 0; i < g_goal.size(); ++i)
         if (lvl_var[g_goal[i].first][g_goal[i].second] ==
             numeric_limits<int>::max())
             return true;
@@ -219,7 +219,7 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
             && effect_conditions.find(effects[i].var)->second.first
             == effects[i].val) {
             // We have seen this effect before, adding conditions
-            for (int k = 0; k < effects[i].conditions.size(); ++k) {
+            for (size_t k = 0; k < effects[i].conditions.size(); ++k) {
                 vector<pair<int, int> > &vec = effect_conditions.find(effects[i].var)->second.second;
                 vec.push_back(make_pair(effects[i].conditions[k].var, effects[i].conditions[k].val));
             }
@@ -228,7 +228,7 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
             vector<pair<int, int> > &vec = effect_conditions.insert(make_pair(
                                                                         effects[i].var, make_pair(effects[i].val, vector<pair<int,
                                                                                                                                int> > ()))).first->second.second;
-            for (int k = 0; k < effects[i].conditions.size(); ++k) {
+            for (size_t k = 0; k < effects[i].conditions.size(); ++k) {
                 vec.push_back(make_pair(effects[i].conditions[k].var, effects[i].conditions[k].val));
             }
         }
@@ -302,9 +302,9 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
     assert(node_a != node_b);
     assert(!node_a->disjunctive && !node_b->disjunctive);
 
-    for (int bi = 0; bi < node_b->vars.size(); ++bi) {
+    for (size_t bi = 0; bi < node_b->vars.size(); ++bi) {
         pair<int, int> b = make_pair(node_b->vars[bi], node_b->vals[bi]);
-        for (int ai = 0; ai < node_a->vars.size(); ++ai) {
+        for (size_t ai = 0; ai < node_a->vars.size(); ++ai) {
             pair<int, int> a = make_pair(node_a->vars[ai], node_a->vals[ai]);
 
             if (a.first == b.first && a.second == b.second) {
@@ -382,7 +382,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
                  node.parents.begin(); it != node.parents.end(); ++it) {
             edge_type edge = it->second;
-            for (int i = 0; i < it->first->vars.size(); ++i) {
+            for (size_t i = 0; i < it->first->vars.size(); ++i) {
                 pair<int, int> parent_prop = make_pair(it->first->vars[i],
                                                        it->first->vals[i]);
                 if (edge >= greedy_necessary && parent_prop != b && are_mutex(
@@ -759,7 +759,7 @@ void LandmarkFactory::calc_achievers() {
          != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &lmn = **node_it;
 
-        for (int k = 0; k < lmn.vars.size(); ++k) {
+        for (size_t k = 0; k < lmn.vars.size(); ++k) {
             vector<int> ops = lm_graph->get_operators_including_eff(make_pair(
                                                                         lmn.vars[k], lmn.vals[k]));
             lmn.possible_achievers.insert(ops.begin(), ops.end());

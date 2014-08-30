@@ -42,15 +42,15 @@ void HSPMaxHeuristic::initialize() {
 void HSPMaxHeuristic::setup_exploration_queue() {
     queue.clear();
 
-    for (int var = 0; var < propositions.size(); ++var) {
-        for (int value = 0; value < propositions[var].size(); ++value) {
+    for (size_t var = 0; var < propositions.size(); ++var) {
+        for (size_t value = 0; value < propositions[var].size(); ++value) {
             Proposition &prop = propositions[var][value];
             prop.cost = -1;
         }
     }
 
     // Deal with operators and axioms without preconditions.
-    for (int i = 0; i < unary_operators.size(); ++i) {
+    for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
         op.unsatisfied_preconditions = op.precondition.size();
         op.cost = op.base_cost; // will be increased by precondition costs
@@ -61,7 +61,7 @@ void HSPMaxHeuristic::setup_exploration_queue() {
 }
 
 void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
-    for (int var = 0; var < propositions.size(); ++var) {
+    for (size_t var = 0; var < propositions.size(); ++var) {
         Proposition *init_prop = &propositions[var][state[var]];
         enqueue_if_necessary(init_prop, 0);
     }
@@ -81,7 +81,7 @@ void HSPMaxHeuristic::relaxed_exploration() {
             return;
         const vector<UnaryOperator *> &triggered_operators =
             prop->precondition_of;
-        for (int i = 0; i < triggered_operators.size(); ++i) {
+        for (size_t i = 0; i < triggered_operators.size(); ++i) {
             UnaryOperator *unary_op = triggered_operators[i];
             --unary_op->unsatisfied_preconditions;
             unary_op->cost = max(unary_op->cost,
@@ -99,7 +99,7 @@ int HSPMaxHeuristic::compute_heuristic(const State &state) {
     relaxed_exploration();
 
     int total_cost = 0;
-    for (int i = 0; i < goal_propositions.size(); ++i) {
+    for (size_t i = 0; i < goal_propositions.size(); ++i) {
         int prop_cost = goal_propositions[i]->cost;
         if (prop_cost == -1)
             return DEAD_END;

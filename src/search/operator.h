@@ -42,7 +42,7 @@ struct Effect {
         : var(variable), val(value), conditions(conds) {}
 
     bool does_fire(const State &state) const {
-        for (int i = 0; i < conditions.size(); ++i)
+        for (size_t i = 0; i < conditions.size(); ++i)
             if (!conditions[i].is_applicable(state))
                 return false;
         return true;
@@ -71,7 +71,7 @@ public:
     const std::vector<Effect> &get_effects() const {return effects; }
 
     bool is_applicable(const State &state) const {
-        for (int i = 0; i < preconditions.size(); ++i)
+        for (size_t i = 0; i < preconditions.size(); ++i)
             if (!preconditions[i].is_applicable(state))
                 return false;
         return true;
