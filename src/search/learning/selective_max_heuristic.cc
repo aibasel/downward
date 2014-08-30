@@ -303,7 +303,7 @@ void SelectiveMaxHeuristic::train() {
 
 int SelectiveMaxHeuristic::eval_heuristic(const State &state, int index, bool count) {
     if (count)
-        num_evaluated[index]++;
+        ++num_evaluated[index];
     computed[index] = true;
 
     heuristics[index]->evaluate(state);
@@ -351,10 +351,10 @@ int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
             double thr = threshold[i];
 
             if ((hvalue[e] - hvalue[c]) > thr) {
-                num_evaluated[e]++;
+                ++num_evaluated[e];
                 return hvalue[e];
             } else {
-                num_evaluated[c]++;
+                ++num_evaluated[c];
                 return hvalue[c];
             }
         }
@@ -497,12 +497,12 @@ int SelectiveMaxHeuristic::calc_max() {
 
         //update statistics
         if (winner_count == 1) {
-            num_winner[winner_id]++;
-            num_only_winner[winner_id]++;
+            ++num_winner[winner_id];
+            ++num_only_winner[winner_id];
         } else {
             for (int i = 0; i < num_heuristics; ++i) {
                 if (hvalue[i] == max) {
-                    num_winner[i]++;
+                    ++num_winner[i];
                 }
             }
         }

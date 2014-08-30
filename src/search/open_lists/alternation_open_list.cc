@@ -96,7 +96,7 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     OpenList<Entry> *best_list = open_lists[best];
     assert(!best_list->empty());
     size--;
-    priorities[best]++;
+    ++priorities[best];
     return best_list->remove_min(0);
 }
 
