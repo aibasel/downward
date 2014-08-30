@@ -79,7 +79,7 @@ public:
             }
             return false;
         } else { // conjunctive or simple
-            for (int i = 0; i < vars.size(); ++i) {
+            for (size_t i = 0; i < vars.size(); ++i) {
                 if (state[vars[i]] != vals[i]) {
                     return false;
                 }
@@ -101,13 +101,13 @@ struct LandmarkNodeComparer {
         if (a->vars.size() < b->vars.size()) {
             return false;
         }
-        for (int i = 0; i < a->vars.size(); ++i) {
+        for (size_t i = 0; i < a->vars.size(); ++i) {
             if (a->vars[i] > b->vars[i])
                 return true;
             if (a->vars[i] < b->vars[i])
                 return false;
         }
-        for (int i = 0; i < a->vals.size(); ++i) {
+        for (size_t i = 0; i < a->vals.size(); ++i) {
             if (a->vals[i] > b->vals[i])
                 return true;
             if (a->vals[i] < b->vals[i])

@@ -44,7 +44,7 @@ void EnforcedHillClimbingSearch::evaluate(const State &parent, const Operator *o
         heuristic->evaluate(state);
         search_progress.inc_evaluations();
     }
-    for (int i = 0; i < preferred_heuristics.size(); ++i) {
+    for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
         if (op != NULL) {
             preferred_heuristics[i]->reach_state(parent, *op, state);
         }
@@ -96,22 +96,22 @@ void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const
 
         // mark preferred operators as preferred
         if (use_preferred && (preferred_usage == RANK_PREFERRED_FIRST)) {
-            for (int i = 0; i < ops.size(); ++i) {
+            for (size_t i = 0; i < ops.size(); ++i) {
                 ops[i]->unmark();
             }
             vector<const Operator *> preferred_ops;
-            for (int i = 0; i < preferred_heuristics.size(); ++i) {
+            for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
                 preferred_heuristics[i]->get_preferred_operators(preferred_ops);
             }
-            for (int i = 0; i < preferred_ops.size(); ++i) {
+            for (size_t i = 0; i < preferred_ops.size(); ++i) {
                 preferred_ops[i]->mark();
             }
         }
     } else {
         vector<const Operator *> preferred_ops;
-        for (int i = 0; i < preferred_heuristics.size(); ++i) {
+        for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
             preferred_heuristics[i]->get_preferred_operators(preferred_ops);
-            for (int j = 0; j < preferred_ops.size(); ++j) {
+            for (size_t j = 0; j < preferred_ops.size(); ++j) {
                 if (!preferred_ops[j]->is_marked()) {
                     preferred_ops[j]->mark();
                     ops.push_back(preferred_ops[j]);
@@ -145,7 +145,7 @@ int EnforcedHillClimbingSearch::step() {
     SearchNode current_node = search_space.get_node(current_state);
     current_node.close();
 
-    for (int i = 0; i < ops.size(); ++i) {
+    for (size_t i = 0; i < ops.size(); ++i) {
         int d = get_adjusted_cost(*ops[i]);
         OpenListEntryEHC entry = make_pair(current_state.get_id(), make_pair(d, ops[i]));
         open_list->evaluate(d, ops[i]->is_marked());
@@ -203,7 +203,7 @@ int EnforcedHillClimbingSearch::ehc() {
                 get_successors(s, ops);
 
                 node.close();
-                for (int i = 0; i < ops.size(); ++i) {
+                for (size_t i = 0; i < ops.size(); ++i) {
                     int new_d = d + get_adjusted_cost(*ops[i]);
                     OpenListEntryEHC entry = make_pair(node.get_state_id(), make_pair(new_d, ops[i]));
                     open_list->evaluate(new_d, ops[i]->is_marked());

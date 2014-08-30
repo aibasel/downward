@@ -205,7 +205,7 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
         assert(child.parents.find(node) == child.parents.end());
     }
     if (node->disjunctive) {
-        for (int i = 0; i < node->vars.size(); ++i) {
+        for (size_t i = 0; i < node->vars.size(); ++i) {
             pair<int, int> lm = make_pair(node->vars[i], node->vals[i]);
             disj_lms_to_nodes.erase(lm);
         }
@@ -223,7 +223,7 @@ void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
 LandmarkNode &LandmarkGraph::make_disj_node_simple(pair<int, int> lm) {
     LandmarkNode &node = get_disj_lm_node(lm);
     node.disjunctive = false;
-    for (int i = 0; i < node.vars.size(); ++i)
+    for (size_t i = 0; i < node.vars.size(); ++i)
         disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
     simple_lms_to_nodes.insert(make_pair(lm, &node));
     return node;

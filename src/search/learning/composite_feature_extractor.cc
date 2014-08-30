@@ -30,7 +30,7 @@ int CompositeFeatureExtractor::get_feature_domain_size(int feature) {
 
 void CompositeFeatureExtractor::extract_features(const void *obj,
                                                  vector<int> &features) {
-    for (int i = 0; i < feature_extractors.size(); ++i) {
+    for (size_t i = 0; i < feature_extractors.size(); ++i) {
         feature_extractors[i]->extract_features(obj, features);
     }
 }

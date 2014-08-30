@@ -74,7 +74,7 @@ void Effect::dump() const {
     cout << g_variable_name[var] << ":= " << val;
     if (!conditions.empty()) {
         cout << " if";
-        for (int i = 0; i < conditions.size(); ++i) {
+        for (size_t i = 0; i < conditions.size(); ++i) {
             cout << " ";
             conditions[i].dump();
         }
@@ -83,12 +83,12 @@ void Effect::dump() const {
 
 void Operator::dump() const {
     cout << name << ":";
-    for (int i = 0; i < preconditions.size(); ++i) {
+    for (size_t i = 0; i < preconditions.size(); ++i) {
         cout << " [";
         preconditions[i].dump();
         cout << "]";
     }
-    for (int i = 0; i < effects.size(); ++i) {
+    for (size_t i = 0; i < effects.size(); ++i) {
         cout << " [";
         effects[i].dump();
         cout << "]";

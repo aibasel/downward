@@ -43,7 +43,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     for (size_t j = 0; j < effects.size(); ++j) {
         int var = effects[j].var;
         if (!has_precondition_on_var[var] && g_variable_domain[var] == 2) {
-            for (int i = 0; i < lmp->vars.size(); ++i) {
+            for (size_t i = 0; i < lmp->vars.size(); ++i) {
                 if (lmp->vars[i] == var
                     && initial_state[var] != lmp->vals[i]) {
                     result.insert(make_pair(var, initial_state[var]));
@@ -56,7 +56,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // Check for lmp in conditional effects
     set<int> lm_props_achievable;
     for (size_t j = 0; j < effects.size(); ++j)
-        for (int i = 0; i < lmp->vars.size(); ++i)
+        for (size_t i = 0; i < lmp->vars.size(); ++i)
             if (lmp->vars[i] == effects[j].var && lmp->vals[i]
                 == effects[j].val)
                 lm_props_achievable.insert(i);
@@ -311,10 +311,10 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
      in the set stems from the same PDDL predicate. */
 
     vector<int> ops;
-    for (int i = 0; i < bp->vars.size(); ++i) {
+    for (size_t i = 0; i < bp->vars.size(); ++i) {
         pair<int, int> b = make_pair(bp->vars[i], bp->vals[i]);
         const vector<int> &tmp_ops = lm_graph->get_operators_including_eff(b);
-        for (int j = 0; j < tmp_ops.size(); ++j)
+        for (size_t j = 0; j < tmp_ops.size(); ++j)
             ops.push_back(tmp_ops[j]);
     }
     int no_ops = 0;
@@ -399,7 +399,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
             // Process achieving operators again to find disj. LMs
             vector<set<pair<int, int> > > disjunctive_pre;
             compute_disjunctive_preconditions(disjunctive_pre, lvl_var, bp);
-            for (int i = 0; i < disjunctive_pre.size(); ++i)
+            for (size_t i = 0; i < disjunctive_pre.size(); ++i)
                 if (disjunctive_pre[i].size() < 5) { // We don't want disj. LMs to get too big
                     found_disj_lm_and_order(disjunctive_pre[i], *bp, greedy_necessary);
                 }
@@ -489,7 +489,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
      relaxed planning graph (as captured in lvl_var).
      These orders are saved in the node member variable "forward_orders".
      */
-    for (int i = 0; i < g_variable_domain.size(); ++i)
+    for (size_t i = 0; i < g_variable_domain.size(); ++i)
         for (int j = 0; j < g_variable_domain[i]; ++j) {
             if (lvl_var[i][j] != numeric_limits<int>::max())
                 continue;

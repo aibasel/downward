@@ -174,7 +174,7 @@ int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
     typedef hash_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
-    for (int state = 0; state < abs.size(); ++state) {
+    for (size_t state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
         assert(h >= 0 && h != INF);
         assert(abs.get_init_distance(state) != INF);
@@ -203,7 +203,7 @@ void ShrinkBisimulation::compute_signatures(
 
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
-    for (int state = 0; state < abs.size(); ++state) {
+    for (size_t state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
         assert(h >= 0 && h <= abs.get_max_h());
         Signature signature(h, abs.is_goal_state(state),

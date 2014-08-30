@@ -121,7 +121,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     }
 
     // Third pass: Count shared costs for the remaining landmarks.
-    for (int i = 0; i < relevant_lms.size(); ++i) {
+    for (size_t i = 0; i < relevant_lms.size(); ++i) {
         LandmarkNode &node = *relevant_lms[i];
         int lmn_status = node.get_status();
         const set<int> &achievers = get_achievers(lmn_status, node);
@@ -203,7 +203,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         // between 0 and the real operator cost.
         double *row_lb = new double[num_rows];
         double *row_ub = new double[num_rows];
-        for (int op_id = 0; op_id < g_operators.size(); ++op_id) {
+        for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
             const Operator &op = g_operators[op_id];
             row_lb[op_id] = 0;
             row_ub[op_id] = get_adjusted_action_cost(op, cost_type);

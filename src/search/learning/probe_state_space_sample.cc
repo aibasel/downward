@@ -31,7 +31,7 @@ int ProbeStateSpaceSample::collect() {
 
 int ProbeStateSpaceSample::get_aggregate_value(vector<int> &values) {
     int max = numeric_limits<int>::min();
-    for (int i = 0; i < values.size(); ++i) {
+    for (size_t i = 0; i < values.size(); ++i) {
         if (values[i] > max)
             max = values[i];
     }
@@ -50,7 +50,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
         succ_it = temporary_samp->find(s);
         if (add_every_state) {
             samp[s].reserve(heuristics.size());
-            for (int j = 0; j < heuristics.size(); ++j) {
+            for (size_t j = 0; j < heuristics.size(); ++j) {
                 heuristics[j]->evaluate(succ_it->first);
                 int val = numeric_limits<int>::max();
                 if (!heuristics[j]->is_dead_end()) {
@@ -73,7 +73,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
         generated = generated + applicable_ops.size();
         h_s.resize(applicable_ops.size());
 
-        for (int op_num = 0; op_num < applicable_ops.size(); ++op_num) {
+        for (size_t op_num = 0; op_num < applicable_ops.size(); ++op_num) {
             // generate and add to training set all successors
             const Operator *op = applicable_ops[op_num];
             // TODO for now, we only generate registered successors. This is a temporary state that
@@ -93,7 +93,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
                 samp[s].resize(heuristics.size());
             }
 
-            for (int j = 0; j < heuristics.size(); ++j) {
+            for (size_t j = 0; j < heuristics.size(); ++j) {
                 double before = computation_timer();
                 heuristics[j]->reach_state(s, *op, succ_it->first);
                 if (add_every_state) {
@@ -133,7 +133,7 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 
     if (!add_every_state) {
         samp[s].reserve(heuristics.size());
-        for (int j = 0; j < heuristics.size(); ++j) {
+        for (size_t j = 0; j < heuristics.size(); ++j) {
             succ_it = temporary_samp->find(s);
             double before = computation_timer();
             heuristics[j]->evaluate(succ_it->first);

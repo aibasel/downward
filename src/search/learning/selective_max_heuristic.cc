@@ -185,7 +185,7 @@ void SelectiveMaxHeuristic::train() {
         sample = new ProbeStateSpaceSample(goal_depth_estimate,
                                            2 * min_training_set / goal_depth_estimate,
                                            min_training_set);
-        for (int i = 0; i < heuristics.size(); ++i)
+        for (size_t i = 0; i < heuristics.size(); ++i)
             sample->add_heuristic(heuristics[i]);
         break;
     /*
@@ -197,7 +197,7 @@ void SelectiveMaxHeuristic::train() {
         sample = new PDBStateSpaceSample(goal_depth_estimate,
                                          min_training_set,
                                          min_training_set);
-        for (int i = 0; i < heuristics.size(); ++i)
+        for (size_t i = 0; i < heuristics.size(); ++i)
             sample->add_heuristic(heuristics[i]);
         break;
     default:
@@ -377,7 +377,7 @@ int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
 
     if (test_mode) {
         // evaluate all heuristics
-        for (int i = 0; i < heuristics.size(); ++i) {
+        for (size_t i = 0; i < heuristics.size(); ++i) {
             if (!computed[i]) {
                 eval_heuristic(state, i, false);
             }
@@ -544,7 +544,7 @@ void SelectiveMaxHeuristic::print_statistics() const {
 
     double eval_time = 0;
     cout << "heuristic,  evaluated, winner,   only winner, total time, average time" << endl;
-    for (int i = 0; i < heuristics.size(); ++i) {
+    for (size_t i = 0; i < heuristics.size(); ++i) {
         cout << i /*heuristics[i]->get_name()*/ << " , " <<
         num_evaluated[i] << " , " <<
         num_winner[i] << " , " <<
