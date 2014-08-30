@@ -15,7 +15,6 @@
 #include <vector>
 using namespace std;
 
-
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
@@ -26,6 +25,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
     delete merge_strategy;
+    delete shrink_strategy;
     delete labels;
 }
 
