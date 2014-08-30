@@ -95,7 +95,7 @@ int MaxHeuristic::compute_heuristic(const State &state) {
     int winner_id = -1;
     for (int i = 0; i < heuristics.size(); ++i) {
         if (hvalue[i] == max) {
-            winner[i]++;
+            ++winner[i];
             ++winner_count;
             winner_id = i;
         }
@@ -110,7 +110,7 @@ int MaxHeuristic::compute_heuristic(const State &state) {
     }
 
     if (winner_count == 1) {
-        only_winner[winner_id]++;
+        ++only_winner[winner_id];
     }
 
     return max;
