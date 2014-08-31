@@ -126,7 +126,8 @@ int LandmarkCountHeuristic::compute_heuristic(const State &state) {
     vector<bool> &reached_lms_v = lm_status_manager.get_reached_landmarks(state);
     convert_lms(reached_lms, reached_lms_v);
 
-    if (reached_lms.size() == lgraph.number_of_landmarks()
+    int num_reached = reached_lms.size();
+    if (num_reached == lgraph.number_of_landmarks()
         || !generate_helpful_actions(state, reached_lms)) {
         assert(exploration != NULL);
         set_exploration_goals(state);
@@ -229,7 +230,8 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
      its parents have all been reached, or if all landmarks have been
      reached before, the LM is a goal, and it's not true at moment */
 
-    if (lgraph.number_of_landmarks() != reached.size()) {
+    int num_reached = reached.size();
+    if (num_reached != lgraph.number_of_landmarks()) {
         if (reached.find(&lm) != reached.end())
             return false;
         else

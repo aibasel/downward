@@ -21,7 +21,7 @@ class MaxCliqueComputer {
 
         //cout << "subg: " << subg << endl;
         //cout << "cand: " << cand << endl;
-        int max = 0;
+        size_t max = 0;
         int vertex = subg[0]; // We will take the first vertex if there is no better one.
 
         for (size_t i = 0; i < subg.size(); ++i) {

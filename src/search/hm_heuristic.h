@@ -126,7 +126,7 @@ protected:
     }
     void print_tuple(tuple &tup) const {
         cout << tup[0].first << "=" << tup[0].second;
-        for (int i = 1; i < tup.size(); ++i)
+        for (size_t i = 1; i < tup.size(); ++i)
             cout << "," << tup[i].first << "=" << tup[i].second;
     }
 };

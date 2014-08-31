@@ -32,7 +32,7 @@ void Labels::reduce(pair<int, int> next_merge,
 }
 
 const Label *Labels::get_label_by_index(int index) const {
-    assert(index >= 0 && index < labels.size());
+    assert(in_bounds(index, labels));
     return labels[index];
 }
 

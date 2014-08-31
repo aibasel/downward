@@ -128,11 +128,12 @@ bool contains(std::list<T> &alist, const T &val) {
 void HMLandmarks::get_m_sets_(int m, int num_included, int current_var,
                               FluentSet &current,
                               std::vector<FluentSet > &subsets) {
+    int num_variables = g_variable_domain.size();
     if (num_included == m) {
         subsets.push_back(current);
         return;
     }
-    if (current_var == g_variable_domain.size()) {
+    if (current_var == num_variables) {
         if (num_included != 0) {
             subsets.push_back(current);
         }
@@ -168,7 +169,7 @@ void HMLandmarks::get_m_sets_of_set_(int m, int num_included, int current_var_in
         return;
     }
 
-    if (current_var_index == superset.size()) {
+    if (current_var_index == static_cast<int>(superset.size())) {
         if (num_included != 0) {
             subsets.push_back(current);
         }
@@ -209,11 +210,14 @@ void HMLandmarks::get_split_m_sets_(
        }
      */
 
-    if (((ss1_num_included + ss2_num_included) == m) ||
-        ((ss1_var_index == superset1.size()) && (ss2_var_index == superset2.size()))) {
+    int sup1_size = superset1.size();
+    int sup2_size = superset2.size();
+
+    if (ss1_num_included + ss2_num_included == m ||
+        (ss1_var_index == sup1_size && ss2_var_index == sup2_size)) {
         // if set is empty, don't have to include from it
-        if (((ss1_num_included > 0) || (superset1.size() == 0)) &&
-            ((ss2_num_included > 0) || (superset2.size() == 0))) {
+        if ((ss1_num_included > 0 || sup1_size == 0) &&
+            (ss2_num_included > 0 || sup2_size == 0)) {
             subsets.push_back(current);
         }
         return;
@@ -221,11 +225,12 @@ void HMLandmarks::get_split_m_sets_(
 
     bool use_var = true;
 
-    if ((ss1_var_index != superset1.size()) &&
-        ((ss2_var_index == superset2.size()) ||
-         (superset1[ss1_var_index] < superset2[ss2_var_index]))) {
+    if (ss1_var_index != sup1_size &&
+        (ss2_var_index == sup2_size ||
+         superset1[ss1_var_index] < superset2[ss2_var_index])) {
         for (size_t i = 0; i < current.size(); ++i) {
-            if (!interesting(superset1[ss1_var_index].first, superset1[ss1_var_index].second,
+            if (!interesting(superset1[ss1_var_index].first,
+                             superset1[ss1_var_index].second,
                              current[i].first, current[i].second)) {
                 use_var = false;
                 break;
@@ -316,7 +321,7 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
     Operator &op = g_operators[op_index];
 
     const std::vector<Condition> &preconditions = op.get_preconditions();
-    for (int i = 0; i < preconditions.size(); ++i) 
+    for (size_t i = 0; i < preconditions.size(); ++i)
         pc.push_back(make_pair(preconditions[i].var, preconditions[i].val));
 
     std::sort(pc.begin(), pc.end());
@@ -365,7 +370,8 @@ void HMLandmarks::print_pm_op(const PMOp &op) {
     for (size_t i = 0; i < op.cond_noops.size(); ++i) {
         cond_pc.clear();
         cond_eff.clear();
-        int pm_fluent, j;
+        int pm_fluent;
+        size_t j;
         std::cout << "PC:" << std::endl;
         for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
             print_fluentset(h_m_table_[pm_fluent].fluents);
@@ -517,7 +523,8 @@ void HMLandmarks::build_pm_ops() {
         // because mvvs appearing in pc also appear in effect
 
         FluentSetToIntMap::const_iterator it = set_indices_.begin();
-        while ((it->first.size() < m_) && (it != set_indices_.end())) {
+        while (static_cast<int>(it->first.size()) < m_
+               && it != set_indices_.end()) {
             if (possible_noop_set(eff, it->first)) {
                 // for each such set, add a "conditional effect" to the operator
                 op.cond_noops.resize(op.cond_noops.size() + 1);
@@ -539,7 +546,7 @@ void HMLandmarks::build_pm_ops() {
 
                 // push back all noop preconditions
                 for (size_t j = 0; j < noop_pc_subsets.size(); ++j) {
-                    assert(noop_pc_subsets[j].size() <= m_);
+                    assert(static_cast<int>(noop_pc_subsets[j].size()) <= m_);
                     assert(set_indices_.find(noop_pc_subsets[j]) != set_indices_.end());
 
                     set_index = set_indices_[noop_pc_subsets[j]];
@@ -553,7 +560,7 @@ void HMLandmarks::build_pm_ops() {
 
                 // and the noop effects
                 for (size_t j = 0; j < noop_eff_subsets.size(); ++j) {
-                    assert(noop_eff_subsets[j].size() <= m_);
+                    assert(static_cast<int>(noop_eff_subsets[j].size()) <= m_);
                     assert(set_indices_.find(noop_eff_subsets[j]) != set_indices_.end());
 
                     set_index = set_indices_[noop_eff_subsets[j]];
@@ -640,13 +647,13 @@ void HMLandmarks::calc_achievers() {
             FluentSet post, pre;
             get_operator_postcondition(op, post);
             get_operator_precondition(op, pre);
-            int j;
+            size_t j;
             for (j = 0; j < lmn.vars.size(); ++j) {
                 std::pair<int, int> lm_val = std::make_pair(lmn.vars[j], lmn.vals[j]);
                 // action adds this element of lm as well
                 if (std::find(post.begin(), post.end(), lm_val) != post.end())
                     continue;
-                int k;
+                size_t k;
                 for (k = 0; k < post.size(); ++k) {
                     if (are_mutex(post[k], lm_val)) {
                         break;
@@ -753,7 +760,7 @@ void HMLandmarks::compute_h_m_landmarks() {
     std::list<int> local_landmarks, cn_landmarks;
     std::list<int> local_necessary;
 
-    int prev_size;
+    size_t prev_size;
 
     int level = 1;
 
@@ -851,7 +858,7 @@ void HMLandmarks::compute_noop_landmarks(
     int level,
     TriggerSet &next_trigger) {
     std::list<int> cn_necessary, cn_landmarks;
-    int prev_size;
+    size_t prev_size;
     int pm_fluent;
 
     PMOp &action = pm_ops_[op_index];
@@ -866,7 +873,7 @@ void HMLandmarks::compute_noop_landmarks(
         cn_necessary = local_necessary;
     }
 
-    int i;
+    size_t i;
     for (i = 0; (pm_fluent = pc_eff_pair[i]) != -1; ++i) {
         union_with(cn_landmarks, h_m_table_[pm_fluent].landmarks);
         insert_into(cn_landmarks, pm_fluent);

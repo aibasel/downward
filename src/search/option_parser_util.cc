@@ -31,7 +31,7 @@ void DocStore::add_value_explanations(string k,
                                       string arg_name,
                                       ValueExplanations value_explanations) {
     vector<ArgumentInfo> &args = registered[k].arg_help;
-    for (int i = 0; i != args.size(); ++i) {
+    for (size_t i = 0; i < args.size(); ++i) {
         if (args[i].kwd.compare(arg_name) == 0) {
             args[i].value_explanations = value_explanations;
             break;

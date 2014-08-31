@@ -26,7 +26,8 @@ static void validate_and_normalize_pattern(
     if (!pattern.empty()) {
         if (pattern.front() < 0)
             parser.error("variable number too low in pattern");
-        if (pattern.back() >= g_variable_domain.size())
+        int num_variables = g_variable_domain.size();
+        if (pattern.back() >= num_variables)
             parser.error("variable number too high in pattern");
     }
 }
@@ -62,7 +63,7 @@ static void build_pattern_for_size_limit(
         parser.error("abstraction size must be at least 1");
 
     VariableOrderFinder order(GOAL_CG_LEVEL);
-    size_t size = 1;
+    int size = 1;
     while (true) {
         if (order.done())
             break;

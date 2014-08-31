@@ -262,18 +262,21 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
         map<int, set<int> >::iterator it2 = unique_conds.begin();
         for (; it2 != unique_conds.end(); ++it2) {
             bool is_surely_reached_by_var = false;
-            if (it2->second.size() == g_variable_domain[it2->first]) {
+            int num_values_for_cond = it2->second.size();
+            int num_values_of_variable = g_variable_domain[it2->first];
+            if (num_values_for_cond == num_values_of_variable) {
                 is_surely_reached_by_var = true;
             }
             // ...or else if the condition variable is the same as the effect variable,
             // check whether the condition variable takes on all other values except the
             // effect value
-            else if (it2->first == it->first && it2->second.size()
-                     == g_variable_domain[it2->first] - 1) {
+            else if (it2->first == it->first &&
+                     num_values_for_cond == num_values_of_variable - 1) {
                 // Number of different values is correct, now ensure that the effect value
                 // was the one missing
                 it2->second.insert(it->second.first);
-                if (it2->second.size() == g_variable_domain[it2->first]) {
+                num_values_for_cond = it2->second.size();
+                if (num_values_for_cond == g_variable_domain[it2->first]) {
                     is_surely_reached_by_var = true;
                 }
             }

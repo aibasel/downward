@@ -43,7 +43,7 @@ class LabelReducer {
 
     LabelReductionMethod label_reduction_method;
     LabelReductionSystemOrder label_reduction_system_order;
-    std::vector<std::size_t> system_order;
+    std::vector<int> system_order;
 
     // old label reduction
     LabelSignature build_label_signature(const Label &label,

@@ -80,7 +80,8 @@ void HMHeuristic::update_hm_table() {
                 for (size_t i = 0; i < partial_eff.size(); ++i) {
                     update_hm_entry(partial_eff[i], c1 + get_adjusted_cost(op));
 
-                    if (partial_eff[i].size() < m) {
+                    int eff_size = partial_eff[i].size();
+                    if (eff_size < m) {
                         extend_tuple(partial_eff[i], op);
                     }
                 }
@@ -165,7 +166,7 @@ int HMHeuristic::update_hm_entry(tuple &t, int val) {
 
 void HMHeuristic::generate_all_tuples(int var, int sz, tuple &base) {
     if (sz == 1) {
-        for (int i = var; i < g_variable_domain.size(); ++i) {
+        for (size_t i = var; i < g_variable_domain.size(); ++i) {
             for (int j = 0; j < g_variable_domain[i]; ++j) {
                 tuple tup(base);
                 tup.push_back(make_pair(i, j));
@@ -173,7 +174,8 @@ void HMHeuristic::generate_all_tuples(int var, int sz, tuple &base) {
             }
         }
     } else {
-        for (int i = var; i < g_variable_domain.size(); ++i) {
+        int num_variables = g_variable_domain.size();
+        for (int i = var; i < num_variables; ++i) {
             for (int j = 0; j < g_variable_domain[i]; ++j) {
                 tuple tup(base);
                 tup.push_back(make_pair(i, j));
@@ -187,13 +189,13 @@ void HMHeuristic::generate_all_tuples(int var, int sz, tuple &base) {
 void HMHeuristic::generate_all_partial_tuple(tuple &base_tuple, tuple &t,
                                              int index, int sz, vector<tuple> &res) {
     if (sz == 1) {
-        for (int i = index; i < base_tuple.size(); ++i) {
+        for (size_t i = index; i < base_tuple.size(); ++i) {
             tuple tup(t);
             tup.push_back(base_tuple[i]);
             res.push_back(tup);
         }
     } else {
-        for (int i = index; i < base_tuple.size(); ++i) {
+        for (size_t i = index; i < base_tuple.size(); ++i) {
             tuple tup(t);
             tup.push_back(base_tuple[i]);
             res.push_back(tup);

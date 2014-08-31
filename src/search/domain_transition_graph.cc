@@ -8,6 +8,8 @@ using namespace __gnu_cxx;
 #include "domain_transition_graph.h"
 #include "globals.h"
 #include "operator.h"
+#include "utilities.h"
+
 
 void DomainTransitionGraph::read_all(istream &in) {
     int var_count = g_variable_domain.size();
@@ -108,10 +110,10 @@ void DomainTransitionGraph::read_data(istream &in) {
             }
             Operator *the_operator;
             if (is_axiom) {
-                assert(operator_index >= 0 && operator_index < g_axioms.size());
+                assert(in_bounds(operator_index, g_axioms));
                 the_operator = &g_axioms[operator_index];
             } else {
-                assert(operator_index >= 0 && operator_index < g_operators.size());
+                assert(in_bounds(operator_index, g_operators));
                 the_operator = &g_operators[operator_index];
             }
 
@@ -179,7 +181,7 @@ void DomainTransitionGraph::dump() const {
 
 void DomainTransitionGraph::get_successors(int value, vector<int> &result) const {
     assert(result.empty());
-    assert(value >= 0 && value < nodes.size());
+    assert(in_bounds(value, nodes));
     const vector<ValueTransition> &transitions = nodes[value].transitions;
     result.reserve(transitions.size());
     for (size_t i = 0; i < transitions.size(); ++i)

@@ -47,7 +47,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
 
     vector<vector<vector<bool> > > new_pattern_collections;
     new_pattern_collections.reserve(num_collections);
-    for (size_t i = 0; i < num_collections; ++i) {
+    for (int i = 0; i < num_collections; ++i) {
         int selected;
         if (total_so_far == 0) {
             // All fitness values are 0 => choose uniformly.
@@ -210,12 +210,12 @@ void PatternGenerationEdelkamp::bin_packing() {
         variables.push_back(i);
     }
 
-    for (size_t i = 0; i < num_collections; ++i) {
+    for (int i = 0; i < num_collections; ++i) {
         // random variable ordering for all pattern collections
         random_shuffle(variables.begin(), variables.end(), g_rng);
         vector<vector<bool> > pattern_collection;
         vector<bool> pattern(g_variable_name.size(), false);
-        size_t current_size = 1;
+        int current_size = 1;
         for (size_t j = 0; j < variables.size(); ++j) {
             int var = variables[j];
             int next_var_size = g_variable_domain[var];

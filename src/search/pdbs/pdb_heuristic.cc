@@ -87,16 +87,18 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
                                 vector<pair<int, int> > &eff_pairs,
                                 const vector<pair<int, int> > &effects_without_pre,
                                 vector<AbstractOperator> &operators) {
-    if (pos == effects_without_pre.size()) { // all effects withouth precondition have been checked, insert op
+    if (pos == static_cast<int>(effects_without_pre.size())) {
+        // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
             operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers));
             relevant_operators[op_no] = true;
         }
     } else {
-        // for each possible value for the current variable, build an abstract operator
+        // For each possible value for the current variable, build an
+        // abstract operator.
         int var = effects_without_pre[pos].first;
         int eff = effects_without_pre[pos].second;
-        for (size_t i = 0; i < g_variable_domain[pattern[var]]; ++i) {
+        for (int i = 0; i < g_variable_domain[pattern[var]]; ++i) {
             if (i != eff) {
                 pre_pairs.push_back(make_pair(var, i));
                 eff_pairs.push_back(make_pair(var, eff));
