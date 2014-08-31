@@ -177,7 +177,7 @@ ifeq ($(DOWNWARD_OS), auto)
         DOWNWARD_OS=windows
     else ifeq ($(UNAME_O), Msys)
         DOWNWARD_OS=windows
-    else ifeq ($(OS), auto)
+    else ifeq ($(DOWNWARD_OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
         DOWNWARD_OS=linux
     endif
@@ -216,13 +216,13 @@ ifeq ($(DOWNWARD_BITWIDTH), 32)
 else ifeq ($(DOWNWARD_BITWIDTH), 64)
     BITWIDTHOPT = -m64
 else ifneq ($(DOWNWARD_BITWIDTH), native)
-    $(error Bad value for BITWIDTH)
+    $(error Bad value for DOWNWARD_BITWIDTH)
 endif
 
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-CXXFLAGS += -Wall -W -Wno-deprecated -ansi -pedantic -Werror
+CXXFLAGS += -std=c++98 -Wall -Wextra -Wpedantic -Wno-deprecated -Werror
 
 CXXFLAGS += -Iext
 ifeq ($(DOWNWARD_OS), osx)
