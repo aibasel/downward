@@ -36,7 +36,8 @@ public:
 protected:
     virtual void dump_strategy_specific_options() const;
 
-    std::pair<int, int> compute_shrink_sizes(int size1, int size2) const;
+    std::pair<std::size_t, std::size_t> compute_shrink_sizes(
+        std::size_t size1, std::size_t size2) const;
     bool must_shrink(const Abstraction &abs, int threshold, bool force) const;
     void apply(Abstraction &abs,
                EquivalenceRelation &equivalence_relation,

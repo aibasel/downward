@@ -3,6 +3,7 @@
 #include "causal_graph.h"
 #include "globals.h"
 #include "state.h"
+#include "utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -115,6 +116,6 @@ int CGCache::get_index(int var, const State &state,
     if (to_val > from_val)
         --to_val;
     index += to_val * multiplier;
-    assert(index >= 0 && index < cache[var].size());
+    assert(in_bounds(index, cache[var]));
     return index;
 }

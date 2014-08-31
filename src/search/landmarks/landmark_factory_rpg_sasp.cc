@@ -245,7 +245,7 @@ static string get_predicate_for_fact(int var_no, int value) {
     } else if (fact_name.substr(0, 12) == "NegatedAtom ") {
         predicate_pos = 12;
     }
-    int paren_pos = fact_name.find('(', predicate_pos);
+    size_t paren_pos = fact_name.find('(', predicate_pos);
     if (predicate_pos == 0 || paren_pos == string::npos) {
         cerr << "error: cannot extract predicate from fact: "
              << fact_name << endl;
@@ -285,7 +285,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes() {
         int range = g_variable_domain[var_no];
         vector<int> classes_for_var;
         disjunction_classes[var_no].reserve(range);
-        for (size_t value = 0; value < range; ++value) {
+        for (int value = 0; value < range; ++value) {
             string predicate = get_predicate_for_fact(var_no, value);
             int disj_class;
             if (predicate.empty()) {
@@ -317,7 +317,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
         for (size_t j = 0; j < tmp_ops.size(); ++j)
             ops.push_back(tmp_ops[j]);
     }
-    int no_ops = 0;
+    int num_ops = 0;
     hash_map<int, vector<pair<int, int> > > preconditions; // maps from
     // pddl_proposition_indeces to props
     hash_map<int, set<int> > used_operators; // tells for each
@@ -325,7 +325,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     for (size_t i = 0; i < ops.size(); ++i) {
         const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
         if (_possibly_reaches_lm(op, lvl_var, bp)) {
-            ++no_ops;
+            ++num_ops;
             hash_map<int, int> next_pre;
             get_greedy_preconditions_for_lm(bp, op, next_pre);
             for (hash_map<int, int>::iterator it = next_pre.begin(); it
@@ -348,7 +348,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     }
     for (hash_map<int, vector<pair<int, int> > >::iterator it =
              preconditions.begin(); it != preconditions.end(); ++it) {
-        if (used_operators[it->first].size() == no_ops) {
+        if (static_cast<int>(used_operators[it->first].size()) == num_ops) {
             set<pair<int, int> > pre_set; // the set gets rid of duplicate predicates
             pre_set.insert(it->second.begin(), it->second.end());
             if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
@@ -496,7 +496,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
                 continue;
 
             bool insert = true;
-            for (int m = 0; m < lmp->vars.size() && insert; ++m) {
+            for (size_t m = 0; m < lmp->vars.size() && insert; ++m) {
                 const pair<int, int> lm = make_pair(lmp->vars[m], lmp->vals[m]);
 
                 if (make_pair(i, j) != lm) {
@@ -507,8 +507,8 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
                     const vector<int> &reach_lm = lm_graph->get_operators_including_eff(
                         lm);
 
-                    for (int k = 0; k < reach_ij.size() && intersection_empty; ++k)
-                        for (int l = 0; l < reach_lm.size()
+                    for (size_t k = 0; k < reach_ij.size() && intersection_empty; ++k)
+                        for (size_t l = 0; l < reach_lm.size()
                              && intersection_empty; ++l)
                             if (reach_ij[k] == reach_lm[l])
                                 intersection_empty = false;

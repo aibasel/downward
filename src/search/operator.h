@@ -8,13 +8,15 @@
 
 #include "globals.h"
 #include "state.h"
+#include "utilities.h"
+
 
 struct Condition {
     int var;
     int val;
     explicit Condition(std::istream &in);
     Condition(int variable, int value) : var(variable), val(value) {
-        assert(var >= 0 && var < g_variable_name.size());
+        assert(in_bounds(var, g_variable_name));
         assert(val >= 0 && val < g_variable_domain[var]);
     }
 

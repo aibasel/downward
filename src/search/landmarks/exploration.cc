@@ -2,6 +2,7 @@
 #include "../globals.h"
 #include "../operator.h"
 #include "../state.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <limits>
@@ -124,18 +125,18 @@ void Exploration::build_unary_operators(const Operator &op) {
     vector<pair<int, int> > precondition_var_vals1;
 
     for (size_t i = 0; i < preconditions.size(); ++i) {
-        assert(preconditions[i].var >= 0 && preconditions[i].var < g_variable_domain.size());
+        assert(in_bounds(preconditions[i].var, g_variable_domain));
         assert(preconditions[i].val >= 0 && preconditions[i].val < g_variable_domain[preconditions[i].var]);
         precondition_var_vals1.push_back(make_pair(preconditions[i].var, preconditions[i].val));
     }
     for (size_t i = 0; i < effects.size(); ++i) {
         vector<pair<int, int> > precondition_var_vals2(precondition_var_vals1);
-        assert(effects[i].var >= 0 && effects[i].var < g_variable_domain.size());
+        assert(in_bounds(effects[i].var, g_variable_domain));
         assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
         ExProposition *effect = &propositions[effects[i].var][effects[i].val];
         const vector<Condition> &eff_conds = effects[i].conditions;
         for (size_t j = 0; j < eff_conds.size(); ++j) {
-            assert(eff_conds[j].var >= 0 && eff_conds[j].var < g_variable_domain.size());
+            assert(in_bounds(eff_conds[j].var, g_variable_domain));
             assert(eff_conds[j].val >= 0 && eff_conds[j].val < g_variable_domain[eff_conds[j].var]);
             precondition_var_vals2.push_back(make_pair(eff_conds[j].var, eff_conds[j].val));
         }

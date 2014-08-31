@@ -41,6 +41,8 @@ LabelReducer::LabelReducer(const Options &options)
 void LabelReducer::reduce_labels(pair<int, int> next_merge,
                                  const vector<Abstraction *> &all_abstractions,
                                  std::vector<Label *> &labels) const {
+    int num_abstractions = all_abstractions.size();
+
     if (label_reduction_method == NONE) {
         return;
     }
@@ -49,7 +51,7 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         // We need to normalize all abstraction to incorporate possible previous
         // label reductions, because normalize cannot deal with several label
         // reductions at once.
-        for (size_t i = 0; i < all_abstractions.size(); ++i) {
+        for (int i = 0; i < num_abstractions; ++i) {
             if (all_abstractions[i]) {
                 all_abstractions[i]->normalize();
             }
@@ -95,14 +97,14 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
     // all_abstractions
     size_t system_order_index = 0;
     assert(!system_order.empty());
-    while (system_order[system_order_index] >= all_abstractions.size()) {
+    while (system_order[system_order_index] >= num_abstractions) {
         ++system_order_index;
-        assert(system_order_index < system_order.size());
+        assert(in_bounds(system_order_index, system_order));
     }
 
     int max_iterations;
     if (label_reduction_method == ALL_ABSTRACTIONS) {
-        max_iterations = all_abstractions.size();
+        max_iterations = num_abstractions;
     } else if (label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
         max_iterations = numeric_limits<int>::max();
     } else {
@@ -114,7 +116,7 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         all_abstractions.size(), 0);
 
     for (int i = 0; i < max_iterations; ++i) {
-        size_t abs_index = system_order[system_order_index];
+        int abs_index = system_order[system_order_index];
         Abstraction *current_abstraction = all_abstractions[abs_index];
 
         bool have_reduced = false;
@@ -131,14 +133,14 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         } else {
             ++num_unsuccessful_iterations;
         }
-        if (num_unsuccessful_iterations == all_abstractions.size() - 1)
+        if (num_unsuccessful_iterations == num_abstractions - 1)
             break;
 
         ++system_order_index;
         if (system_order_index == system_order.size()) {
             system_order_index = 0;
         }
-        while (system_order[system_order_index] >= all_abstractions.size()) {
+        while (system_order[system_order_index] >= num_abstractions) {
             ++system_order_index;
             if (system_order_index == system_order.size()) {
                 system_order_index = 0;
@@ -266,7 +268,8 @@ bool LabelReducer::reduce_old(const vector<int> &abs_vars,
         }
         reduced_label_map[signature].push_back(label);
     }
-    assert(reduced_label_map.size() == num_labels_after_reduction);
+    assert(num_labels_after_reduction ==
+           static_cast<int>(reduced_label_map.size()));
 
     for (size_t i = 0; i < reduced_label_signatures.size(); ++i) {
         const LabelSignature &signature = reduced_label_signatures[i];
@@ -349,7 +352,7 @@ bool LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vect
         const Block &block = *it;
         vector<Label *> equivalent_labels;
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
-            assert(*jt < labels.size());
+            assert(*jt < static_cast<int>(labels.size()));
             Label *label = labels[*jt];
             if (!label->is_reduced()) {
                 // only consider non-reduced labels

@@ -227,7 +227,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             bool txt2tags = false;
             vector<string> helpiands;
             if (i + 1 < args.size()) {
-                for (int j = i + 1; j < args.size(); ++j) {
+                for (size_t j = i + 1; j < args.size(); ++j) {
                     if (args[j] == "--txt2tags") {
                         txt2tags = true;
                     } else {
@@ -425,7 +425,8 @@ void OptionParser::add_enum_option(string k,
     stringstream str_stream(name);
     int x;
     if (!(str_stream >> x).fail()) {
-        if (x > enumeration.size()) {
+        int max_choice = enumeration.size();
+        if (x > max_choice) {
             error("invalid enum argument " + name
                   + " for option " + k);
         }

@@ -63,17 +63,17 @@ void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     const vector<Effect> &effects = op.get_effects();
     vector<Proposition *> precondition;
     for (size_t i = 0; i < preconditions.size(); ++i) {
-        assert(preconditions[i].var >= 0 && preconditions[i].var < g_variable_domain.size());
+        assert(in_bounds(preconditions[i].var, g_variable_domain));
         assert(preconditions[i].val >= 0 && preconditions[i].val < g_variable_domain[preconditions[i].var]);
         precondition.push_back(&propositions[preconditions[i].var][preconditions[i].val]);
     }
     for (size_t i = 0; i < effects.size(); ++i) {
-        assert(effects[i].var >= 0 && effects[i].var < g_variable_domain.size());
+        assert(in_bounds(effects[i].var, g_variable_domain));
         assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
         Proposition *effect = &propositions[effects[i].var][effects[i].val];
         const vector<Condition> &eff_cond = effects[i].conditions;
         for (size_t j = 0; j < eff_cond.size(); ++j) {
-            assert(eff_cond[j].var >= 0 && eff_cond[j].var < g_variable_domain.size());
+            assert(in_bounds(eff_cond[j].var, g_variable_domain));
             assert(eff_cond[j].val >= 0 && eff_cond[j].val < g_variable_domain[eff_cond[j].var]);
             precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].val]);
         }

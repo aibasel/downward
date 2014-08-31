@@ -68,7 +68,7 @@ void IntRelationBuilder::compute_relation(IntRelation &result) const {
     int range = get_range();
     result.clear();
     result.resize(range);
-    for (size_t i = 0; i < range; ++i) {
+    for (int i = 0; i < range; ++i) {
         result[i].assign(int_sets[i].begin(), int_sets[i].end());
         sort(result[i].begin(), result[i].end());
     }

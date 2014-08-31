@@ -24,7 +24,7 @@ MergeDFP::MergeDFP()
     // abstraction will be stored at.
 }
 
-size_t MergeDFP::get_corrected_index(int index) const {
+int MergeDFP::get_corrected_index(int index) const {
     // This method assumes that we iterate over the vector of all
     // abstractions in inverted order (from back to front). It returns the
     // unmodified index as long as we are in the range of composite
@@ -55,7 +55,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<Abstraction *> &all_abstract
         // Afterwards, we consider the atomic abstrations in the "regular"
         // order from the first one until the last one. See also explanation
         // at get_corrected_index().
-        size_t abs_index = get_corrected_index(i);
+        int abs_index = get_corrected_index(i);
         Abstraction *abstraction = all_abstractions[abs_index];
         if (abstraction) {
             sorted_abstractions.push_back(abstraction);

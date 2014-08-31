@@ -91,9 +91,9 @@ bool LandmarkStatusManager::update_reached_lms(
 
 
     int num_landmarks = lm_graph.number_of_landmarks();
-    assert(reached.size() == num_landmarks);
-    assert(parent_reached.size() == num_landmarks);
-    assert(!intersect || old_reached.size() == num_landmarks);
+    assert(static_cast<int>(reached.size()) == num_landmarks);
+    assert(static_cast<int>(parent_reached.size()) == num_landmarks);
+    assert(!intersect || static_cast<int>(old_reached.size()) == num_landmarks);
 
     for (int id = 0; id < num_landmarks; ++id) {
         if (intersect && !old_reached[id]) {

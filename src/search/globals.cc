@@ -162,13 +162,13 @@ void read_mutexes(istream &in) {
        If we ever change this representation, this is something to be
        aware of. */
 
-    for (size_t i = 0; i < num_mutex_groups; ++i) {
+    for (int i = 0; i < num_mutex_groups; ++i) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
         in >> num_facts;
         vector<pair<int, int> > invariant_group;
         invariant_group.reserve(num_facts);
-        for (size_t j = 0; j < num_facts; ++j) {
+        for (int j = 0; j < num_facts; ++j) {
             int var, val;
             in >> var >> val;
             invariant_group.push_back(make_pair(var, val));

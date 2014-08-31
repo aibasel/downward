@@ -38,8 +38,9 @@ bool ShrinkStrategy::must_shrink(
     const Abstraction &abs, int threshold, bool force) const {
     assert(threshold >= 1);
     assert(abs.is_solvable());
-    if (abs.size() > threshold) {
-        cout << abs.tag() << "shrink from size " << abs.size()
+    int num_states = abs.size();
+    if (num_states > threshold) {
+        cout << abs.tag() << "shrink from size " << num_states
              << " (threshold: " << threshold << ")" << endl;
         return true;
     }
@@ -51,16 +52,17 @@ bool ShrinkStrategy::must_shrink(
     return false;
 }
 
-pair<int, int> ShrinkStrategy::compute_shrink_sizes(
-    int size1, int size2) const {
+pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
+    size_t size1, size_t size2) const {
     // Bound both sizes by max allowed size before merge.
-    int new_size1 = min(size1, max_states_before_merge);
-    int new_size2 = min(size2, max_states_before_merge);
+    size_t max_before_merge = max_states_before_merge;
+    size_t new_size1 = min(size1, max_before_merge);
+    size_t new_size2 = min(size2, max_before_merge);
 
     // Check if product would exceed max allowed size.
     // Use division instead of multiplication to avoid overflow.
     if (max_states / new_size1 < new_size2) {
-        int balanced_size = int(sqrt(max_states));
+        size_t balanced_size = size_t(sqrt(max_states));
 
         if (new_size1 <= balanced_size) {
             // Size of the first abstraction is small enough. Use whatever
@@ -82,9 +84,9 @@ pair<int, int> ShrinkStrategy::compute_shrink_sizes(
         }
     }
     assert(new_size1 <= size1 && new_size2 <= size2);
-    assert(new_size1 <= max_states_before_merge);
-    assert(new_size2 <= max_states_before_merge);
-    assert(new_size1 * new_size2 <= max_states);
+    assert(static_cast<int>(new_size1) <= max_states_before_merge);
+    assert(static_cast<int>(new_size2) <= max_states_before_merge);
+    assert(static_cast<int>(new_size1 * new_size2) <= max_states);
     return make_pair(new_size1, new_size2);
 }
 
@@ -93,9 +95,10 @@ void ShrinkStrategy::shrink_atomic(Abstraction & /*abs*/) {
 }
 
 void ShrinkStrategy::shrink_before_merge(Abstraction &abs1, Abstraction &abs2) {
-    pair<int, int> new_sizes = compute_shrink_sizes(abs1.size(), abs2.size());
-    int new_size1 = new_sizes.first;
-    int new_size2 = new_sizes.second;
+    pair<size_t, size_t> new_sizes = compute_shrink_sizes(
+        abs1.size(), abs2.size());
+    size_t new_size1 = new_sizes.first;
+    size_t new_size2 = new_sizes.second;
 
     if (new_size2 != abs2.size()) {
         shrink(abs2, new_size2);

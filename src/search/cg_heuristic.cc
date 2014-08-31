@@ -191,7 +191,8 @@ int CGHeuristic::get_transition_cost(const State &state,
     }
 
     if (use_the_cache) {
-        for (size_t val = 0; val < start->distances.size(); ++val) {
+        int num_values = start->distances.size();
+        for (int val = 0; val < num_values; ++val) {
             if (val == start_val)
                 continue;
             int distance = start->distances[val];

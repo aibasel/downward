@@ -146,12 +146,14 @@ public:
         return nodes;
     }
     inline const Operator &get_operator_for_lookup_index(int op_no) const {
-        const Operator &op = (op_no < g_operators.size()) ?
-                             g_operators[op_no] : g_axioms[op_no - g_operators.size()];
-        return op;
+        int num_ops = g_operators.size();
+        if (op_no < num_ops)
+            return g_operators[op_no];
+        else
+            return g_axioms[op_no - num_ops];
     }
     inline int number_of_landmarks() const {
-        assert(landmarks_count == nodes.size());
+        assert(landmarks_count == static_cast<int>(nodes.size()));
         return landmarks_count;
     }
     Exploration *get_exploration() const {return exploration; }
