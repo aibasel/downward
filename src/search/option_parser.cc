@@ -238,8 +238,8 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (helpiands.empty()) {
                 get_full_help();
             } else {
-                for (size_t i = 0; i != helpiands.size(); ++i) {
-                    get_help(helpiands[i]);
+                for (size_t j = 0; j != helpiands.size(); ++j) {
+                    get_help(helpiands[j]);
                 }
             }
             DocPrinter *dp;

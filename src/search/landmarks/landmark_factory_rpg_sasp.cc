@@ -29,10 +29,10 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
 
     vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
     const vector<Condition> &preconditions = o.get_preconditions();
-    for (size_t j = 0; j < preconditions.size(); ++j) {
-        result.insert(make_pair(preconditions[j].var, preconditions[j].val));
-        has_precondition_on_var[preconditions[j].var] = true;
-    } 
+    for (size_t i = 0; i < preconditions.size(); ++i) {
+        result.insert(make_pair(preconditions[i].var, preconditions[i].val));
+        has_precondition_on_var[preconditions[i].var] = true;
+    }
 
     // If there is an effect but no precondition on a variable v with domain
     // size 2 and initially the variable has the other value than required by
@@ -40,12 +40,12 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // variable must still have the initial value.
     const State &initial_state = g_initial_state();
     const vector<Effect> &effects = o.get_effects();
-    for (size_t j = 0; j < effects.size(); ++j) {
-        int var = effects[j].var;
+    for (size_t i = 0; i < effects.size(); ++i) {
+        int var = effects[i].var;
         if (!has_precondition_on_var[var] && g_variable_domain[var] == 2) {
-            for (size_t i = 0; i < lmp->vars.size(); ++i) {
-                if (lmp->vars[i] == var
-                    && initial_state[var] != lmp->vals[i]) {
+            for (size_t j = 0; j < lmp->vars.size(); ++j) {
+                if (lmp->vars[j] == var
+                    && initial_state[var] != lmp->vals[j]) {
                     result.insert(make_pair(var, initial_state[var]));
                     break;
                 }
@@ -55,29 +55,29 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
 
     // Check for lmp in conditional effects
     set<int> lm_props_achievable;
-    for (size_t j = 0; j < effects.size(); ++j)
-        for (size_t i = 0; i < lmp->vars.size(); ++i)
-            if (lmp->vars[i] == effects[j].var && lmp->vals[i]
-                == effects[j].val)
-                lm_props_achievable.insert(i);
+    for (size_t i = 0; i < effects.size(); ++i)
+        for (size_t j = 0; j < lmp->vars.size(); ++j)
+            if (lmp->vars[j] == effects[i].var && lmp->vals[j]
+                == effects[i].val)
+                lm_props_achievable.insert(j);
     // Intersect effect conditions of all effects that can achieve lmp
     hash_map<int, int> intersection;
     bool init = true;
     set<int>::iterator it = lm_props_achievable.begin();
     for (; it != lm_props_achievable.end(); ++it) {
-        for (size_t j = 0; j < effects.size(); ++j) {
+        for (size_t i = 0; i < effects.size(); ++i) {
             if (!init && intersection.empty())
                 break;
             hash_map<int, int> current_cond;
-            if (lmp->vars[*it] == effects[j].var &&
-                lmp->vals[*it] == effects[j].val) {
-                if (effects[j].conditions.empty()) {
+            if (lmp->vars[*it] == effects[i].var &&
+                lmp->vals[*it] == effects[i].val) {
+                if (effects[i].conditions.empty()) {
                     intersection.clear();
                     break;
                 } else {
-                    for (size_t k = 0; k < effects[j].conditions.size(); ++k)
-                        current_cond.insert(make_pair(effects[j].conditions[k].var,
-                                                      effects[j].conditions[k].val));
+                    for (size_t j = 0; j < effects[i].conditions.size(); ++j)
+                        current_cond.insert(make_pair(effects[i].conditions[j].var,
+                                                      effects[i].conditions[j].val));
                 }
             }
             if (init) {
@@ -94,12 +94,12 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
                                                                                int> > &lvl_var) {
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
-    for (size_t k = 0; k < bp->vars.size(); ++k) {
-        pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
+    for (size_t i = 0; i < bp->vars.size(); ++i) {
+        pair<int, int> b = make_pair(bp->vars[i], bp->vals[i]);
         // ...look at all achieving operators
         const vector<int> &ops = lm_graph->get_operators_including_eff(b);
-        for (size_t i = 0; i < ops.size(); ++i) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+        for (size_t j = 0; j < ops.size(); ++j) {
+            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[j]);
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp))
@@ -213,12 +213,12 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     /* Compute the shared preconditions of all operators that can potentially
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
-    for (size_t k = 0; k < bp->vars.size(); ++k) {
-        pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
+    for (size_t i = 0; i < bp->vars.size(); ++i) {
+        pair<int, int> b = make_pair(bp->vars[i], bp->vals[i]);
         const vector<int> &ops = lm_graph->get_operators_including_eff(b);
 
-        for (size_t i = 0; i < ops.size(); ++i) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+        for (size_t j = 0; j < ops.size(); ++j) {
+            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[j]);
             if (!init && shared_pre.empty())
                 break;
 
@@ -281,12 +281,12 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes() {
 
     size_t num_vars = g_variable_domain.size();
     disjunction_classes.resize(num_vars);
-    for (size_t var_no = 0; var_no < num_vars; ++var_no) {
-        int range = g_variable_domain[var_no];
+    for (size_t var = 0; var < num_vars; ++var) {
+        int range = g_variable_domain[var];
         vector<int> classes_for_var;
-        disjunction_classes[var_no].reserve(range);
+        disjunction_classes[var].reserve(range);
         for (int value = 0; value < range; ++value) {
-            string predicate = get_predicate_for_fact(var_no, value);
+            string predicate = get_predicate_for_fact(var, value);
             int disj_class;
             if (predicate.empty()) {
                 disj_class = -1;
@@ -296,7 +296,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes() {
                 pair<string, int> entry(predicate, predicate_to_index.size());
                 disj_class = predicate_to_index.insert(entry).first->second;
             }
-            disjunction_classes[var_no].push_back(disj_class);
+            disjunction_classes[var].push_back(disj_class);
         }
     }
 }
@@ -473,10 +473,10 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
         open.pop_front();
         vector<int> succ;
         g_transition_graphs[landmark.first]->get_successors(c, succ);
-        for (size_t j = 0; j < succ.size(); ++j)
-            if (closed.find(succ[j]) == closed.end()) {
-                open.push_back(succ[j]);
-                closed.insert(succ[j]);
+        for (size_t i = 0; i < succ.size(); ++i)
+            if (closed.find(succ[i]) == closed.end()) {
+                open.push_back(succ[i]);
+                closed.insert(succ[i]);
             }
 
     }
@@ -490,27 +490,27 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
      These orders are saved in the node member variable "forward_orders".
      */
     int num_variables = g_variable_domain.size();
-    for (int i = 0; i < num_variables; ++i)
-        for (int j = 0; j < g_variable_domain[i]; ++j) {
-            if (lvl_var[i][j] != numeric_limits<int>::max())
+    for (int var = 0; var < num_variables; ++var)
+        for (int value = 0; value < g_variable_domain[var]; ++value) {
+            if (lvl_var[var][value] != numeric_limits<int>::max())
                 continue;
 
             bool insert = true;
-            for (size_t m = 0; m < lmp->vars.size() && insert; ++m) {
-                const pair<int, int> lm = make_pair(lmp->vars[m], lmp->vals[m]);
+            for (size_t i = 0; i < lmp->vars.size() && insert; ++i) {
+                const pair<int, int> lm = make_pair(lmp->vars[i], lmp->vals[i]);
 
-                if (make_pair(i, j) != lm) {
-                    // Make sure there is no operator that reaches both lm and (i, j) at the same time
+                if (make_pair(var, value) != lm) {
+                    // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
-                    const vector<int> &reach_ij = lm_graph->get_operators_including_eff(
-                        make_pair(i, j));
+                    const vector<int> &reach_fact = lm_graph->get_operators_including_eff(
+                        make_pair(var, value));
                     const vector<int> &reach_lm = lm_graph->get_operators_including_eff(
                         lm);
 
-                    for (size_t k = 0; k < reach_ij.size() && intersection_empty; ++k)
-                        for (size_t l = 0; l < reach_lm.size()
-                             && intersection_empty; ++l)
-                            if (reach_ij[k] == reach_lm[l])
+                    for (size_t j = 0; j < reach_fact.size() && intersection_empty; ++j)
+                        for (size_t k = 0; k < reach_lm.size()
+                             && intersection_empty; ++k)
+                            if (reach_fact[j] == reach_lm[k])
                                 intersection_empty = false;
 
                     if (!intersection_empty)
@@ -519,7 +519,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
                     insert = false;
             }
             if (insert)
-                lmp->forward_orders.insert(make_pair(i, j));
+                lmp->forward_orders.insert(make_pair(var, value));
         }
 
 }

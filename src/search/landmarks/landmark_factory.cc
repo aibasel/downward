@@ -60,11 +60,11 @@ bool LandmarkFactory::achieves_non_conditional(const Operator &o,
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
     assert(lmp != NULL);
     const vector<Effect> &effects = o.get_effects();
-    for (size_t j = 0; j < effects.size(); ++j) {
-        for (size_t k = 0; k < lmp->vars.size(); ++k) {
-            if (effects[j].var == lmp->vars[k] && effects[j].val
-                == lmp->vals[k])
-                if (effects[j].conditions.empty())
+    for (size_t i = 0; i < effects.size(); ++i) {
+        for (size_t j = 0; j < lmp->vars.size(); ++j) {
+            if (effects[i].var == lmp->vars[j] && effects[i].val
+                == lmp->vals[j])
+                if (effects[i].conditions.empty())
                     return true;
         }
     }
@@ -77,10 +77,10 @@ bool LandmarkFactory::is_landmark_precondition(const Operator &o,
     A disjunctive landmarks is used if one of its disjuncts is used. */
     assert(lmp != NULL);
     const vector<Condition> &preconditions = o.get_preconditions();
-    for (size_t j = 0; j < preconditions.size(); ++j) {
-        for (size_t k = 0; k < lmp->vars.size(); ++k) {
-            if (preconditions[j].var == lmp->vars[k] && 
-                preconditions[j].val == lmp->vals[k])
+    for (size_t i = 0; i < preconditions.size(); ++i) {
+        for (size_t j = 0; j < lmp->vars.size(); ++j) {
+            if (preconditions[i].var == lmp->vars[j] &&
+                preconditions[i].val == lmp->vals[j])
                 return true;
         }
     }
@@ -219,17 +219,17 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
             && effect_conditions.find(effects[i].var)->second.first
             == effects[i].val) {
             // We have seen this effect before, adding conditions
-            for (size_t k = 0; k < effects[i].conditions.size(); ++k) {
+            for (size_t j = 0; j < effects[i].conditions.size(); ++j) {
                 vector<pair<int, int> > &vec = effect_conditions.find(effects[i].var)->second.second;
-                vec.push_back(make_pair(effects[i].conditions[k].var, effects[i].conditions[k].val));
+                vec.push_back(make_pair(effects[i].conditions[j].var, effects[i].conditions[j].val));
             }
         } else {
             // We have not seen this effect before, making new effect entry
             vector<pair<int, int> > &vec = effect_conditions.insert(make_pair(
                                                                         effects[i].var, make_pair(effects[i].val, vector<pair<int,
                                                                                                                                int> > ()))).first->second.second;
-            for (size_t k = 0; k < effects[i].conditions.size(); ++k) {
-                vec.push_back(make_pair(effects[i].conditions[k].var, effects[i].conditions[k].val));
+            for (size_t j = 0; j < effects[i].conditions.size(); ++j) {
+                vec.push_back(make_pair(effects[i].conditions[j].var, effects[i].conditions[j].val));
             }
         }
     }
@@ -245,14 +245,14 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
         // variables to the set of values they take on (in unique_conds)
         map<int, set<int> > unique_conds;
         vector<pair<int, int> > &conds = it->second.second;
-        for (size_t j = 0; j < conds.size(); ++j) {
-            if (unique_conds.find(conds[j].first) != unique_conds.end()) {
-                unique_conds.find(conds[j].first)->second.insert(
-                    conds[j].second);
+        for (size_t i = 0; i < conds.size(); ++i) {
+            if (unique_conds.find(conds[i].first) != unique_conds.end()) {
+                unique_conds.find(conds[i].first)->second.insert(
+                    conds[i].second);
             } else {
                 set<int> &the_set = unique_conds.insert(make_pair(
-                                                            conds[j].first, set<int> ())).first->second;
-                the_set.insert(conds[j].second);
+                                                            conds[i].first, set<int> ())).first->second;
+                the_set.insert(conds[i].second);
             }
         }
         // Check for each condition variable whether the number of values it takes on is
@@ -347,14 +347,14 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 bool trivial_conditioned_effects_found = effect_always_happens(effects,
                                                                                trivially_conditioned_effects);
                 hash_map<int, int> next_eff;
-                for (size_t i = 0; i < effects.size(); ++i) {
-                    if (effects[i].conditions.empty() && effects[i].var != a.first) {
-                        next_eff.insert(make_pair(effects[i].var, effects[i].val));
+                for (size_t j = 0; j < effects.size(); ++j) {
+                    if (effects[j].conditions.empty() && effects[j].var != a.first) {
+                        next_eff.insert(make_pair(effects[j].var, effects[j].val));
                     } else if (trivial_conditioned_effects_found
                                && trivially_conditioned_effects.find(make_pair(
-                                                                         effects[i].var, effects[i].val))
+                                                                         effects[j].var, effects[j].val))
                                != trivially_conditioned_effects.end())
-                        next_eff.insert(make_pair(effects[i].var, effects[i].val));
+                        next_eff.insert(make_pair(effects[j].var, effects[j].val));
                 }
                 // Intersect effects of this operator with those of previous operators
                 if (init)
@@ -762,12 +762,12 @@ void LandmarkFactory::calc_achievers() {
          != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &lmn = **node_it;
 
-        for (size_t k = 0; k < lmn.vars.size(); ++k) {
-            vector<int> ops = lm_graph->get_operators_including_eff(make_pair(
-                                                                        lmn.vars[k], lmn.vals[k]));
+        for (size_t i = 0; i < lmn.vars.size(); ++i) {
+            vector<int> ops = lm_graph->get_operators_including_eff(
+                make_pair(lmn.vars[i], lmn.vals[i]));
             lmn.possible_achievers.insert(ops.begin(), ops.end());
 
-            if (g_axiom_layers[lmn.vars[k]] != -1)
+            if (g_axiom_layers[lmn.vars[i]] != -1)
                 lmn.is_derived = true;
         }
 

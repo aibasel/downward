@@ -451,8 +451,8 @@ void Abstraction::normalize() {
                     transitions_by_label[parent_id];
 
             if (relevant_labels[parent_id]) {
-                for (size_t i = 0; i < transitions.size(); ++i) {
-                    const AbstractTransition &t = transitions[i];
+                for (size_t j = 0; j < transitions.size(); ++j) {
+                    const AbstractTransition &t = transitions[j];
                     target_buckets[t.target].push_back(
                         make_pair(t.src, reduced_label_no));
                     if (t.target != t.src) {

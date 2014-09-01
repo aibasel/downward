@@ -110,17 +110,17 @@ void NBClassifier::addExample(const void *obj, int tag) {
         }
     }
 
-    for (int Att1 = 0; Att1 < m_NumAttributes; ++Att1) {
-        if (attIndex[Att1] == -1)
+    for (int att1 = 0; att1 < m_NumAttributes; ++att1) {
+        if (attIndex[att1] == -1)
             continue;  // avoid pointless looping as Att1 is currently the class attribute
 
-        m_Frequencies[attIndex[Att1]] += weight;
+        m_Frequencies[attIndex[att1]] += weight;
 
         // if this is a missing value, we don't want to increase sumforcounts
-        m_SumForCounts[classVal][Att1] += weight;
+        m_SumForCounts[classVal][att1] += weight;
 
         // save time by referencing this now, rather than do it repeatedly in the loop
-        m_CondiCounts1[classVal][attIndex[Att1]] += weight;
+        m_CondiCounts1[classVal][attIndex[att1]] += weight;
         /*
         countsPointer = m_CondiCounts[classVal][attIndex[Att1]];
 
@@ -145,8 +145,8 @@ void NBClassifier::addExample(const void *obj, int tag) {
 bool NBClassifier::distributionForInstance(const void *obj, double *dist) {
     // calculate probabilities for each possible class value
 
-    for (int classVal = 0; classVal < m_NumClasses; ++classVal) {
-        dist[classVal] = NBconditionalProb(obj, classVal);
+    for (int class_val = 0; class_val < m_NumClasses; ++class_val) {
+        dist[class_val] = NBconditionalProb(obj, class_val);
     }
 
     normalize(dist, m_NumClasses);
