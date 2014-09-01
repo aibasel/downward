@@ -110,7 +110,7 @@ DocPrinter::~DocPrinter() {
 void DocPrinter::print_all() {
     DocStore *ds = DocStore::instance();
     vector<string> types = ds->get_types();
-    for (size_t n(0); n != types.size(); ++n) {
+    for (size_t n = 0; n < types.size(); ++n) {
         // Entries for the category itself have an empty type
         if (!types[n].empty())
             print_category(types[n]);
@@ -122,7 +122,7 @@ void DocPrinter::print_category(string category_name) {
     DocStore *ds = DocStore::instance();
     print_element("", ds->get(category_name));
     vector<string> keys = ds->get_keys();
-    for (size_t i(0); i != keys.size(); ++i) {
+    for (size_t i = 0; i < keys.size(); ++i) {
         DocStruct info = ds->get(keys[i]);
         if (info.type.compare(category_name) != 0
             || info.hidden)
@@ -158,7 +158,7 @@ void Txt2TagsPrinter::print_synopsis(const DocStruct &info) {
 void Txt2TagsPrinter::print_usage(string call_name, const DocStruct &info) {
     if (!call_name.empty()) {
         os << "``` " << call_name << "(";
-        for (size_t j(0); j != info.arg_help.size(); ++j) {
+        for (size_t j = 0; j < info.arg_help.size(); ++j) {
             ArgumentInfo arg = info.arg_help[j];
             os << arg.kwd;
             if (!info.arg_help[j].default_value.empty()) {
@@ -178,13 +178,13 @@ static bool is_call(string s) {
 }
 
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
-    for (size_t j(0); j != info.arg_help.size(); ++j) {
+    for (size_t j = 0; j < info.arg_help.size(); ++j) {
         ArgumentInfo arg = info.arg_help[j];
         os << "- //" << arg.kwd << "// ("
            << arg.type_name << "): "
            << arg.help << endl;
         if (!arg.value_explanations.empty()) {
-            for (size_t k(0); k != arg.value_explanations.size(); ++k) {
+            for (size_t k = 0; k < arg.value_explanations.size(); ++k) {
                 pair<string, string> explanation =
                     arg.value_explanations[k];
                 if (is_call(explanation.first)) {
@@ -200,7 +200,7 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
 }
 
 void Txt2TagsPrinter::print_notes(const DocStruct &info) {
-    for (size_t j(0); j != info.notes.size(); ++j) {
+    for (size_t j = 0; j < info.notes.size(); ++j) {
         NoteInfo note = info.notes[j];
         if (note.long_text) {
             os << "=== " << note.name << " ===" << endl
@@ -215,7 +215,7 @@ void Txt2TagsPrinter::print_language_features(const DocStruct &info) {
     if (!info.support_help.empty()) {
         os << "Language features supported:" << endl;
     }
-    for (size_t j(0); j != info.support_help.size(); ++j) {
+    for (size_t j = 0; j < info.support_help.size(); ++j) {
         LanguageSupportInfo ls = info.support_help[j];
         os << "- **" << ls.feature << ":** " << ls.description << endl;
     }
@@ -225,7 +225,7 @@ void Txt2TagsPrinter::print_properties(const DocStruct &info) {
     if (!info.property_help.empty()) {
         os << "Properties:" << endl;
     }
-    for (size_t j(0); j != info.property_help.size(); ++j) {
+    for (size_t j = 0; j < info.property_help.size(); ++j) {
         PropertyInfo p = info.property_help[j];
         os << "- **" << p.property << ":** " << p.description << endl;
     }
@@ -260,7 +260,7 @@ void PlainPrinter::print_synopsis(const DocStruct &info) {
 void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
     if (!call_name.empty()) {
         os << call_name << "(";
-        for (size_t j(0); j != info.arg_help.size(); ++j) {
+        for (size_t j = 0; j < info.arg_help.size(); ++j) {
             ArgumentInfo arg = info.arg_help[j];
             os << arg.kwd;
             if (!info.arg_help[j].default_value.empty()) {
@@ -276,7 +276,7 @@ void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
 }
 
 void PlainPrinter::print_arguments(const DocStruct &info) {
-    for (size_t j(0); j != info.arg_help.size(); ++j) {
+    for (size_t j = 0; j < info.arg_help.size(); ++j) {
         ArgumentInfo arg = info.arg_help[j];
         os << " " << arg.kwd << "("
            << arg.type_name << "): "
@@ -286,7 +286,7 @@ void PlainPrinter::print_arguments(const DocStruct &info) {
 
 void PlainPrinter::print_notes(const DocStruct &info) {
     if (print_all) {
-        for (size_t j(0); j != info.notes.size(); ++j) {
+        for (size_t j = 0; j < info.notes.size(); ++j) {
             NoteInfo note = info.notes[j];
             if (note.long_text) {
                 os << "=== " << note.name << " ===" << endl
@@ -303,7 +303,7 @@ void PlainPrinter::print_language_features(const DocStruct &info) {
         if (!info.support_help.empty()) {
             os << "Language features supported:" << endl;
         }
-        for (size_t j(0); j != info.support_help.size(); ++j) {
+        for (size_t j = 0; j < info.support_help.size(); ++j) {
             LanguageSupportInfo ls = info.support_help[j];
             os << " * " << ls.feature << ": " << ls.description << endl;
         }
@@ -315,7 +315,7 @@ void PlainPrinter::print_properties(const DocStruct &info) {
         if (!info.property_help.empty()) {
             os << "Properties:" << endl;
         }
-        for (size_t j(0); j != info.property_help.size(); ++j) {
+        for (size_t j = 0; j < info.property_help.size(); ++j) {
             PropertyInfo p = info.property_help[j];
             os << " * " << p.property << ": " << p.description << endl;
         }
