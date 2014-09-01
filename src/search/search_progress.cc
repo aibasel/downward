@@ -42,7 +42,7 @@ void SearchProgress::report_f_value(int f) {
 }
 
 void SearchProgress::get_initial_h_values() {
-    for (unsigned int i = 0; i < heuristics.size(); ++i) {
+    for (size_t i = 0; i < heuristics.size(); ++i) {
         initial_h_values.push_back(heuristics[i]->get_heuristic());
     }
 }

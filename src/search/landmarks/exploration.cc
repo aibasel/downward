@@ -182,7 +182,7 @@ void Exploration::setup_exploration_queue(const State &state,
         }
     }
     if (excluded_props.size() > 0) {
-        for (unsigned i = 0; i < excluded_props.size(); ++i) {
+        for (size_t i = 0; i < excluded_props.size(); ++i) {
             ExProposition &prop = propositions[excluded_props[i].first][excluded_props[i].second];
             prop.h_add_cost = -2;
         }

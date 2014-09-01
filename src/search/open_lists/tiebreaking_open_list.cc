@@ -100,7 +100,7 @@ void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
     dead_end = false;
     dead_end_reliable = false;
 
-    for (unsigned int i = 0; i < evaluators.size(); ++i) {
+    for (size_t i = 0; i < evaluators.size(); ++i) {
         evaluators[i]->evaluate(g, preferred);
 
         // check for dead end
@@ -140,7 +140,7 @@ int TieBreakingOpenList<Entry>::dimension() const {
 
 template<class Entry>
 void TieBreakingOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
-    for (unsigned int i = 0; i < evaluators.size(); ++i) {
+    for (size_t i = 0; i < evaluators.size(); ++i) {
         evaluators[i]->get_involved_heuristics(hset);
     }
 }

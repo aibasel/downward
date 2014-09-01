@@ -40,7 +40,7 @@ bool _possibly_reaches_lm(const Operator &o, const vector<vector<int> > &lvl_var
     // Test whether all preconditions of o can be reached
     // Otherwise, operator is not applicable
     const vector<Condition> &preconditions = o.get_preconditions();
-    for (unsigned i = 0; i < preconditions.size(); ++i)
+    for (size_t i = 0; i < preconditions.size(); ++i)
         if (lvl_var[preconditions[i].var][preconditions[i].val] ==
             numeric_limits<int>::max())
             return false;
