@@ -21,7 +21,7 @@ int IPCMaxHeuristic::compute_heuristic(const State &state) {
     dead_end = false;
     dead_end_reliable = false;
     value = 0;
-    for (unsigned int i = 0; i < evaluators.size(); ++i) {
+    for (size_t i = 0; i < evaluators.size(); ++i) {
         evaluators[i]->evaluate(state);
 
         if (evaluators[i]->is_dead_end()) {

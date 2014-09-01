@@ -953,7 +953,7 @@ void HMLandmarks::generate_landmarks() {
            std::cout << "Goal set: ";
            print_fluentset(goal_subsets[i]);
            std::cout << " -- ";
-           for(unsigned j = 0; j < goal_subsets[i].size(); ++j) {
+           for(size_t j = 0; j < goal_subsets[i].size(); ++j) {
            std::cout << goal_subsets[i][j] << " ";
            }
            std::cout << std::endl;

@@ -35,13 +35,13 @@ void LandmarkGraph::generate_operators_lookups() {
     to the operators that achieve them or have them as preconditions */
 
     operators_eff_lookup.resize(g_variable_domain.size());
-    for (unsigned i = 0; i < g_variable_domain.size(); ++i) {
+    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         operators_eff_lookup[i].resize(g_variable_domain[i]);
     }
-    for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
+    for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
         const Operator &op = get_operator_for_lookup_index(i);
         const vector<Effect> &effects = op.get_effects();
-        for (unsigned j = 0; j < effects.size(); ++j) {
+        for (size_t j = 0; j < effects.size(); ++j) {
             operators_eff_lookup[effects[j].var][effects[j].val].push_back(i);
         }
     }
@@ -247,7 +247,7 @@ void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
         cout << "disj {";
     else if (node_p->conjunctive)
         cout << "conj {";
-    for (unsigned int i = 0; i < node_p->vars.size(); ++i) {
+    for (size_t i = 0; i < node_p->vars.size(); ++i) {
         int var_no = node_p->vars[i], value = node_p->vals[i];
         cout << g_fact_names[var_no][value] << " ("
              << g_variable_name[var_no] << "(" << var_no << ")"

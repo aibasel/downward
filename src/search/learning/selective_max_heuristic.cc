@@ -615,7 +615,7 @@ static Heuristic *_parse(OptionParser &parser) {
         vector<Heuristic *> heuristics_ =
             opts.get_list<Heuristic *>("heuristics");
         heur = new SelectiveMaxHeuristic(opts);
-        for (unsigned int i = 0; i < heuristics_.size(); ++i) {
+        for (size_t i = 0; i < heuristics_.size(); ++i) {
             heur->add_heuristic(heuristics_[i]);
         }
         heur->set_alpha(opts.get<double>("alpha"));
