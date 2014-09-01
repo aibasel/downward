@@ -283,7 +283,6 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes() {
     disjunction_classes.resize(num_variables);
     for (int var = 0; var < num_variables; ++var) {
         int range = g_variable_domain[var];
-        vector<int> classes_for_var;
         disjunction_classes[var].reserve(range);
         for (int value = 0; value < range; ++value) {
             string predicate = get_predicate_for_fact(var, value);

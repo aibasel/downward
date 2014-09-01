@@ -757,7 +757,7 @@ void HMLandmarks::compute_h_m_landmarks() {
     std::vector<int>::iterator it;
     TriggerSet::iterator op_it;
 
-    std::list<int> local_landmarks, cn_landmarks;
+    std::list<int> local_landmarks;
     std::list<int> local_necessary;
 
     size_t prev_size;
