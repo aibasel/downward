@@ -188,7 +188,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_configs");
-        for (size_t i = 0; i > configs.size(); ++i) {
+        for (size_t i = 0; i < configs.size(); ++i) {
             OptionParser test_parser(configs[i], true);
             test_parser.start_parsing<SearchEngine *>();
         }
