@@ -32,7 +32,7 @@ bool SearchEngine::found_solution() const {
     return solution_found;
 }
 
-int SearchEngine::get_status() const {
+SearchStatus SearchEngine::get_status() const {
     return status;
 }
 

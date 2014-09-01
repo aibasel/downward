@@ -123,7 +123,7 @@ void EnforcedHillClimbingSearch::get_successors(const State &state, vector<const
     search_progress.inc_generated_ops(ops.size());
 }
 
-int EnforcedHillClimbingSearch::step() {
+SearchStatus EnforcedHillClimbingSearch::step() {
     //cout << "s = ";
     //for (int i = 0; i < g_variable_domain.size(); i++) {
     //    cout << current_state[i] << " ";
@@ -155,7 +155,7 @@ int EnforcedHillClimbingSearch::step() {
     return ehc();
 }
 
-int EnforcedHillClimbingSearch::ehc() {
+SearchStatus EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
         OpenListEntryEHC next = open_list->remove_min();
         StateID last_parent_id = next.first;
