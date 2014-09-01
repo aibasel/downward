@@ -17,7 +17,7 @@ class TypedOpenList : public OpenList<Entry> {
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
 
-    std::vector<std::pair<std::vector<int>,Bucket> > bucket_list;
+    std::vector<std::pair<std::vector<int>, Bucket> > bucket_list;
 
     typedef typename __gnu_cxx::hash_map<std::vector<int>, int, __gnu_cxx::hash<const std::vector<int> > > BucketMap;
     BucketMap key_to_bucket_index;
@@ -26,15 +26,12 @@ class TypedOpenList : public OpenList<Entry> {
     bool dead_end;
     bool dead_end_reliable;
 
-    // removes the element at pos
-    // returns the elemnet which had been moved
+    // Delete the element at position pos and return the element that has been moved to the vacant position.
     template<typename T>
-    T& fast_remove_from_vector(std::vector<T> &vec, size_t pos) {
+    T &fast_remove_from_vector(std::vector<T> &vec, size_t pos) {
+        assert(pos < vec.size());
         T &last = vec.back();
-        if(vec.size() > 1 && (vec.size() - 1 != pos)) {
-            //swap: move the back to the position to be deleted and then pop_back
-            vec[pos] = last;
-        }
+        std::swap(vec[pos], last);
         vec.pop_back();
         return last;
     }

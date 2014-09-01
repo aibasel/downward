@@ -48,16 +48,16 @@ TypedOpenList<Entry>::~TypedOpenList() {
 
 template<class Entry>
 int TypedOpenList<Entry>::insert(const Entry &entry) {
-    std::vector<int> key(evaluators.size());
+    vector<int> key(evaluators.size());
 
     for (size_t i = 0; i < evaluators.size(); ++i) {
         key[i] = evaluators[i]->get_value();
     }
 
     typename BucketMap::iterator key_bucket_pair = key_to_bucket_index.find(key);
-    if(key_bucket_pair == key_to_bucket_index.end()) {
-        bucket_list.push_back(make_pair<vector<int>,Bucket>(key,Bucket()));
-        bucket_list.back().second.push_back(entry);//TODO: c++11 list init
+    if (key_bucket_pair == key_to_bucket_index.end()) {
+        bucket_list.push_back(make_pair<vector<int>, Bucket>(key, Bucket()));
+        bucket_list.back().second.push_back(entry); //TODO: c++11 list init
         key_to_bucket_index[key] = bucket_list.size() - 1;
     } else {
         assert(key_bucket_pair->second < bucket_list.size());
@@ -78,8 +78,8 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     }
 
     int bucket_id = g_rng.next(bucket_list.size());
-    pair<std::vector<int>,Bucket> &key_bucket_pair = bucket_list[bucket_id];
-    vector<int> bucket_key = key_bucket_pair.first;//copy the key
+    pair<vector<int>, Bucket> &key_bucket_pair = bucket_list[bucket_id];
+    vector<int> bucket_key = key_bucket_pair.first; // Copy the key.
     Bucket &bucket = key_bucket_pair.second;
 
     int pos = g_rng.next(bucket.size());
@@ -87,10 +87,8 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
 
     fast_remove_from_vector(bucket, pos);
     if (bucket.empty()) {
-        pair<std::vector<int>,Bucket> &last = fast_remove_from_vector(bucket_list,bucket_id);
-        if(last.first != bucket_key) {
-            key_to_bucket_index[last.first] = bucket_id;
-        }
+        pair<vector<int>, Bucket> &last = fast_remove_from_vector(bucket_list, bucket_id);
+        key_to_bucket_index[last.first] = bucket_id;
         key_to_bucket_index.erase(bucket_key);
     }
     --size;
@@ -145,7 +143,7 @@ bool TypedOpenList<Entry>::dead_end_is_reliable() const {
 }
 
 template<class Entry>
-void TypedOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
+void TypedOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
     for (size_t i = 0; i < evaluators.size(); i++)
         evaluators[i]->get_involved_heuristics(hset);
 }
