@@ -1,4 +1,5 @@
 #include "const_evaluator.h"
+
 #include "option_parser.h"
 #include "plugin.h"
 
@@ -22,7 +23,7 @@ bool ConstEvaluator::dead_end_is_reliable() const {
     return true;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Constant evaluator",
                              "Returns a constant value.");
     parser.add_option<int>("value", "the constant value", "1");
@@ -34,4 +35,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new ConstEvaluator(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("const", _parse);
+static Plugin<Heuristic> _plugin("const", _parse);
