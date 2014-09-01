@@ -51,7 +51,7 @@ void SearchEngine::search() {
     Timer timer;
     while (status == IN_PROGRESS) {
         status = step();
-        if (timer() > max_time) {
+        if (timer() >= max_time) {
             cout << "Time limit reached. Abort search." << endl;
             status = TIMEOUT;
             break;
