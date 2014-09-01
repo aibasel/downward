@@ -54,7 +54,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
     return get_search_engine(p);
 }
 
-int IteratedSearch::step() {
+SearchStatus IteratedSearch::step() {
     current_search = create_phase(phase);
     if (current_search == NULL) {
         return found_solution() ? SOLVED : FAILED;
@@ -97,7 +97,7 @@ int IteratedSearch::step() {
     return step_return_value();
 }
 
-int IteratedSearch::step_return_value() {
+SearchStatus IteratedSearch::step_return_value() {
     if (iterated_found_solution)
         cout << "Best solution cost so far: " << best_bound << endl;
 

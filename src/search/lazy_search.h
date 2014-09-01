@@ -36,10 +36,10 @@ protected:
     int current_real_g;
 
     virtual void initialize();
-    virtual int step();
+    virtual SearchStatus step();
 
     void generate_successors();
-    int fetch_next_state();
+    SearchStatus fetch_next_state();
 
     void reward_progress();
 

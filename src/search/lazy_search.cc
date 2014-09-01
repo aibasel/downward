@@ -117,7 +117,7 @@ void LazySearch::generate_successors() {
     }
 }
 
-int LazySearch::fetch_next_state() {
+SearchStatus LazySearch::fetch_next_state() {
     if (open_list->empty()) {
         cout << "Completely explored state space -- no solution!" << endl;
         return FAILED;
@@ -138,7 +138,7 @@ int LazySearch::fetch_next_state() {
     return IN_PROGRESS;
 }
 
-int LazySearch::step() {
+SearchStatus LazySearch::step() {
     // Invariants:
     // - current_state is the next state for which we want to compute the heuristic.
     // - current_predecessor is a permanent pointer to the predecessor of that state.

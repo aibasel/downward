@@ -26,7 +26,7 @@ class EagerSearch : public SearchEngine {
     ScalarEvaluator *f_evaluator;
 
 protected:
-    int step();
+    SearchStatus step();
     std::pair<SearchNode, bool> fetch_next_node();
     bool check_goal(const SearchNode &node);
     void update_jump_statistic(const SearchNode &node);
