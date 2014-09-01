@@ -731,16 +731,16 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
     ::set_union(abs1->varset.begin(), abs1->varset.end(), abs2->varset.begin(),
                 abs2->varset.end(), back_inserter(varset));
 
-    num_states = abs1->size() * abs2->size();
+    int abs1_size = abs1->size();
+    int abs2_size = abs2->size();
+    num_states = abs1_size * abs2_size;
     goal_states.resize(num_states, false);
     goal_relevant = (abs1->goal_relevant || abs2->goal_relevant);
 
     lookup_table.resize(abs1->size(), vector<AbstractStateRef> (abs2->size()));
-    int abs1_size = abs1->size();
-    int abs2_size = abs2->size();
     for (int s1 = 0; s1 < abs1_size; ++s1) {
         for (int s2 = 0; s2 < abs2_size; ++s2) {
-            int state = s1 * abs2->size() + s2;
+            int state = s1 * abs2_size + s2;
             lookup_table[s1][s2] = state;
             if (abs1->goal_states[s1] && abs2->goal_states[s2])
                 goal_states[state] = true;
@@ -762,7 +762,7 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
        first abstraction and multiplying in out with the transitions of the
        second transition, we obtain the desired order (a,c,d).
      */
-    int multiplier = abs2->size();
+    int multiplier = abs2_size;
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         bool relevant1 = abs1->relevant_labels[label_no];
         bool relevant2 = abs2->relevant_labels[label_no];
@@ -788,8 +788,7 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
                 }
             } else if (relevant1) {
                 assert(!relevant2);
-                transitions.reserve(bucket1.size() * abs2->size());
-                int abs2_size = abs2->size();
+                transitions.reserve(bucket1.size() * abs2_size);
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
@@ -801,8 +800,7 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
                 }
             } else if (relevant2) {
                 assert(!relevant1);
-                transitions.reserve(bucket2.size() * abs1->size());
-                int abs1_size = abs1->size();
+                transitions.reserve(bucket2.size() * abs1_size);
                 for (int s1 = 0; s1 < abs1_size; ++s1) {
                     for (size_t i = 0; i < bucket2.size(); ++i) {
                         int src2 = bucket2[i].src;
