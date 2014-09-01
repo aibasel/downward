@@ -41,7 +41,6 @@ HEADERS = \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
-          const_evaluator.h\
           domain_transition_graph.h \
           eager_search.h \
           enforced_hill_climbing_search.h \
@@ -98,6 +97,7 @@ HEADERS += additive_heuristic.h
 HEADERS += blind_search_heuristic.h
 HEADERS += cea_heuristic.h
 HEADERS += cg_heuristic.h cg_cache.h
+HEADERS += const_evaluator.h
 HEADERS += ff_heuristic.h
 HEADERS += goal_count_heuristic.h
 HEADERS += hm_heuristic.h
