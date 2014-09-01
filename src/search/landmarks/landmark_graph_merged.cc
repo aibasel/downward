@@ -23,8 +23,8 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
             return 0;
     } else if (lm.disjunctive) {
         set<pair<int, int> > lm_facts;
-        for (size_t j = 0; j < lm.vars.size(); ++j) {
-            lm_facts.insert(make_pair(lm.vars[j], lm.vals[j]));
+        for (size_t i = 0; i < lm.vars.size(); ++i) {
+            lm_facts.insert(make_pair(lm.vars[i], lm.vals[i]));
         }
         if (lm_graph->exact_same_disj_landmark_exists(lm_facts))
             return &lm_graph->get_disj_lm_node(make_pair(lm.vars[0], lm.vals[0]));

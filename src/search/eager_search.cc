@@ -146,14 +146,14 @@ int EagerSearch::step() {
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
             bool h_is_dirty = false;
-            for (size_t i = 0; i < heuristics.size(); ++i) {
+            for (size_t j = 0; j < heuristics.size(); ++j) {
                 /*
                   Note that we can't break out of the loop when
                   h_is_dirty is set to true or use short-circuit
                   evaluation here. We must call reach_state for each
                   heuristic for its side effects.
                 */
-                if (heuristics[i]->reach_state(s, *op, succ_state))
+                if (heuristics[j]->reach_state(s, *op, succ_state))
                     h_is_dirty = true;
             }
             if (h_is_dirty && use_multi_path_dependence)
@@ -163,8 +163,8 @@ int EagerSearch::step() {
         if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
-            for (size_t i = 0; i < heuristics.size(); ++i)
-                heuristics[i]->evaluate(succ_state);
+            for (size_t j = 0; j < heuristics.size(); ++j)
+                heuristics[j]->evaluate(succ_state);
             succ_node.clear_h_dirty();
             search_progress.inc_evaluated_states();
             search_progress.inc_evaluations(heuristics.size());

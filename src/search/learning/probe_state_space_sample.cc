@@ -50,11 +50,11 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
         succ_it = temporary_samp->find(s);
         if (add_every_state) {
             samp[s].reserve(heuristics.size());
-            for (size_t j = 0; j < heuristics.size(); ++j) {
-                heuristics[j]->evaluate(succ_it->first);
+            for (size_t i = 0; i < heuristics.size(); ++i) {
+                heuristics[i]->evaluate(succ_it->first);
                 int val = numeric_limits<int>::max();
-                if (!heuristics[j]->is_dead_end()) {
-                    val = heuristics[j]->get_heuristic();
+                if (!heuristics[i]->is_dead_end()) {
+                    val = heuristics[i]->get_heuristic();
                 }
                 samp[s].push_back(val);
             }
@@ -133,15 +133,15 @@ void ProbeStateSpaceSample::send_probe(int depth_limit) {
 
     if (!add_every_state) {
         samp[s].reserve(heuristics.size());
-        for (size_t j = 0; j < heuristics.size(); ++j) {
+        for (size_t i = 0; i < heuristics.size(); ++i) {
             succ_it = temporary_samp->find(s);
             double before = computation_timer();
-            heuristics[j]->evaluate(succ_it->first);
+            heuristics[i]->evaluate(succ_it->first);
             double after = computation_timer();
-            computation_time[j] += after - before;
+            computation_time[i] += after - before;
             int val = numeric_limits<int>::max();
-            if (!heuristics[j]->is_dead_end()) {
-                val = heuristics[j]->get_heuristic();
+            if (!heuristics[i]->is_dead_end()) {
+                val = heuristics[i]->get_heuristic();
             }
             samp[s].push_back(val);
         }

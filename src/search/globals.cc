@@ -141,8 +141,8 @@ void read_variables(istream &in) {
         g_variable_domain.push_back(range);
         in >> ws;
         vector<string> fact_names(range);
-        for (size_t i = 0; i < fact_names.size(); ++i)
-            getline(in, fact_names[i]);
+        for (size_t j = 0; j < fact_names.size(); ++j)
+            getline(in, fact_names[j]);
         g_fact_names.push_back(fact_names);
         check_magic(in, "end_variable");
     }

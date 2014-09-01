@@ -223,12 +223,12 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 
     current_heuristic->evaluate(sample);
     int h_collection = current_heuristic->get_heuristic(); // h-value of the current collection heuristic
-    for (size_t k = 0; k < max_additive_subsets.size(); ++k) { // for each max additive subset...
+    for (size_t i = 0; i < max_additive_subsets.size(); ++i) { // for each max additive subset...
         int h_subset = 0;
-        for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) { // ...calculate its h-value
-            max_additive_subsets[k][l]->evaluate(sample);
-            assert(!max_additive_subsets[k][l]->is_dead_end());
-            h_subset += max_additive_subsets[k][l]->get_heuristic();
+        for (size_t j = 0; j < max_additive_subsets[i].size(); ++j) { // ...calculate its h-value
+            max_additive_subsets[i][j]->evaluate(sample);
+            assert(!max_additive_subsets[i][j]->is_dead_end());
+            h_subset += max_additive_subsets[i][j]->get_heuristic();
         }
         if (h_pattern + h_subset > h_collection) {
             // return true if one max additive subest is found for which the condition is met
