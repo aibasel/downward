@@ -87,8 +87,8 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
 
     fast_remove_from_vector(bucket, pos);
     if (bucket.empty()) {
-        pair<vector<int>, Bucket> &last = fast_remove_from_vector(bucket_list, bucket_id);
-        key_to_bucket_index[last.first] = bucket_id;
+        key_to_bucket_index[bucket_list.back().first] = bucket_id;
+        fast_remove_from_vector(bucket_list, bucket_id);
         key_to_bucket_index.erase(bucket_key);
     }
     --size;
