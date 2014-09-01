@@ -166,20 +166,12 @@ int HMHeuristic::update_hm_entry(tuple &t, int val) {
 
 void HMHeuristic::generate_all_tuples(int var, int sz, tuple &base) {
     int num_variables = g_variable_domain.size();
-    if (sz == 1) {
-        for (int i = var; i < num_variables; ++i) {
-            for (int j = 0; j < g_variable_domain[i]; ++j) {
-                tuple tup(base);
-                tup.push_back(make_pair(i, j));
-                hm_table[tup] = 0;
-            }
-        }
-    } else {
-        for (int i = var; i < num_variables; ++i) {
-            for (int j = 0; j < g_variable_domain[i]; ++j) {
-                tuple tup(base);
-                tup.push_back(make_pair(i, j));
-                hm_table[tup] = 0;
+    for (int i = var; i < num_variables; ++i) {
+        for (int j = 0; j < g_variable_domain[i]; ++j) {
+            tuple tup(base);
+            tup.push_back(make_pair(i, j));
+            hm_table[tup] = 0;
+            if (sz > 1) {
                 generate_all_tuples(i + 1, sz - 1, tup);
             }
         }
