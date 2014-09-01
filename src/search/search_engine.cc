@@ -89,8 +89,11 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "the real cost, regardless of the cost_type parameter", "infinity");
     parser.add_option<int>(
         "max_time",
-        "maximum time in seconds the search is allowed to run for. since "
+        "maximum time in seconds the search is allowed to run for. Since "
         "the timeout is only checked after each complete search step "
-        "(usually a node expansion) the actual runtime can be arbitrarily longer.",
+        "(usually a node expansion) the actual runtime can be arbitrarily "
+        "longer. Therefore, this parameter should not be used for time-limiting "
+        "experiments. Timed out searches are treated as failed searches "
+        "(i.e. as incomplete searches that exhaust their search space).",
         "infinity");
 }
