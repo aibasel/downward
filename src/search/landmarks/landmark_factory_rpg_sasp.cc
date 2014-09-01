@@ -279,9 +279,9 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes() {
     typedef map<string, int> PredicateIndex;
     PredicateIndex predicate_to_index;
 
-    size_t num_vars = g_variable_domain.size();
-    disjunction_classes.resize(num_vars);
-    for (size_t var = 0; var < num_vars; ++var) {
+    int num_variables = g_variable_domain.size();
+    disjunction_classes.resize(num_variables);
+    for (int var = 0; var < num_variables; ++var) {
         int range = g_variable_domain[var];
         vector<int> classes_for_var;
         disjunction_classes[var].reserve(range);
