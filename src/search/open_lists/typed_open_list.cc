@@ -80,7 +80,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
 
     int bucket_id = g_rng.next(bucket_list.size());
     pair<size_t, Bucket> &hash_bucket_pair = bucket_list[bucket_id];
-    size_t bucket_hash = hash_bucket_pair.first; // Copy the key.
+    size_t hash = hash_bucket_pair.first;
     Bucket &bucket = hash_bucket_pair.second;
 
     int pos = g_rng.next(bucket.size());
@@ -90,7 +90,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     if (bucket.empty()) {
         key_to_bucket_index[bucket_list.back().first] = bucket_id;
         fast_remove_from_vector(bucket_list, bucket_id);
-        key_to_bucket_index.erase(bucket_hash);
+        key_to_bucket_index.erase(hash);
     }
     --size;
     return result;
