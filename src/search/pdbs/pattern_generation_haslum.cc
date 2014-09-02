@@ -121,7 +121,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
-        if ((*hill_climbing_timer)() > max_time)
+        if ((*hill_climbing_timer)() >= max_time)
             throw HillClimbingTimeout();
 
         // calculate length of random walk accoring to a binomial distribution
@@ -168,7 +168,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
     // Iterate over all candidates and search for the best improving pattern/pdb
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
-        if ((*hill_climbing_timer)() > max_time)
+        if ((*hill_climbing_timer)() >= max_time)
             throw HillClimbingTimeout();
 
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
