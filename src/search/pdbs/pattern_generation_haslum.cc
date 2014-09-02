@@ -34,7 +34,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
-      max_time(opts.get<int>("max_time")),
+      max_time(opts.get<double>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
       num_rejected(0),
       hill_climbing_timer(0) {
@@ -444,10 +444,10 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("min_improvement",
                            "minimum number of samples on which a candidate pattern collection must improve on the "
                            "current one to be considered as the next pattern collection ", "10");
-    parser.add_option<int>("max_time",
-                           "maximum time in seconds for improving the initial pattern "
-                           "collection via hill climbing. If set to 0, no hill climbing is performed at all.",
-                           "infinity");
+    parser.add_option<double>("max_time",
+                              "maximum time in seconds for improving the initial pattern "
+                              "collection via hill climbing. If set to 0, no hill climbing is performed at all.",
+                              "infinity");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
