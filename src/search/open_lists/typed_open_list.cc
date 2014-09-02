@@ -90,7 +90,6 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     if (bucket.empty()) {
         size_t moved_bucket_hash = bucket_list.back().first;
         key_to_bucket_index[moved_bucket_hash] = bucket_id;
-        // dont use fast_remove_from_vector here as it might change its behaviour some day.
         assert(bucket_id < bucket_list.size());
         std::swap(bucket_list[bucket_id], bucket_list.back());
         bucket_list.pop_back();
