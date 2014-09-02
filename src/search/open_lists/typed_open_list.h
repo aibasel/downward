@@ -8,6 +8,7 @@
 
 #include <tr1/unordered_map>
 
+#include <cstddef>
 #include <vector>
 
 class Options;
@@ -19,9 +20,9 @@ class TypedOpenList : public OpenList<Entry> {
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
 
-    std::vector<std::pair<size_t, Bucket> > bucket_list;
+    std::vector<std::pair<std::size_t, Bucket> > bucket_list;
 
-    typedef typename std::tr1::unordered_map<size_t, int> BucketMap;
+    typedef typename std::tr1::unordered_map<std::size_t, int> BucketMap;
     BucketMap key_to_bucket_index;
 
     int size;
@@ -30,7 +31,7 @@ class TypedOpenList : public OpenList<Entry> {
 
     // Delete the element at position pos.
     template<typename T>
-    void fast_remove_from_vector(std::vector<T> &vec, size_t pos) {
+    void fast_remove_from_vector(std::vector<T> &vec, std::size_t pos) {
         assert(pos < vec.size());
         std::swap(vec[pos], vec.back());
         vec.pop_back();
