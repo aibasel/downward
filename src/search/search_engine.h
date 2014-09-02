@@ -12,7 +12,7 @@ class Options;
 #include "search_progress.h"
 #include "operator_cost.h"
 
-enum SearchStatus {FAILED, SOLVED, IN_PROGRESS, TIMEOUT};
+enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
 public:
