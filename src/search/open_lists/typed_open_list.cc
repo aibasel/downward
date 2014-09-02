@@ -53,12 +53,13 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
     for (size_t i = 0; i < evaluators.size(); ++i) {
         key[i] = evaluators[i]->get_value();
     }
+    size_t hash = __gnu_cxx::hash< const std::vector<int> >() (key);
 
-    typename BucketMap::iterator key_bucket_pair = key_to_bucket_index.find(key);
+    typename BucketMap::iterator key_bucket_pair = key_to_bucket_index.find(hash);
     if (key_bucket_pair == key_to_bucket_index.end()) {
-        bucket_list.push_back(make_pair<vector<int>, Bucket>(key, Bucket()));
-        bucket_list.back().second.push_back(entry); //TODO: c++11 list init
-        key_to_bucket_index[key] = bucket_list.size() - 1;
+        bucket_list.push_back(make_pair<size_t, Bucket>(hash, Bucket()));
+        bucket_list.back().second.push_back(entry); // TODO: c++11 list init
+        key_to_bucket_index[hash] = bucket_list.size() - 1;
     } else {
         assert(key_bucket_pair->second < bucket_list.size());
         bucket_list[key_bucket_pair->second].second.push_back(entry);
@@ -78,8 +79,8 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     }
 
     int bucket_id = g_rng.next(bucket_list.size());
-    pair<vector<int>, Bucket> &key_bucket_pair = bucket_list[bucket_id];
-    vector<int> bucket_key = key_bucket_pair.first; // Copy the key.
+    pair<size_t, Bucket> &key_bucket_pair = bucket_list[bucket_id];
+    size_t bucket_hash = key_bucket_pair.first; // Copy the key.
     Bucket &bucket = key_bucket_pair.second;
 
     int pos = g_rng.next(bucket.size());
@@ -89,7 +90,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     if (bucket.empty()) {
         key_to_bucket_index[bucket_list.back().first] = bucket_id;
         fast_remove_from_vector(bucket_list, bucket_id);
-        key_to_bucket_index.erase(bucket_key);
+        key_to_bucket_index.erase(bucket_hash);
     }
     --size;
     return result;

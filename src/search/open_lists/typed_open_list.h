@@ -6,6 +6,8 @@
 #include "../evaluator.h"
 #include "../plugin.h"
 
+#include <tr1/unordered_map>
+
 #include <vector>
 
 class Options;
@@ -17,9 +19,9 @@ class TypedOpenList : public OpenList<Entry> {
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
 
-    std::vector<std::pair<std::vector<int>, Bucket> > bucket_list;
+    std::vector<std::pair<size_t, Bucket> > bucket_list;
 
-    typedef typename __gnu_cxx::hash_map<std::vector<int>, int, __gnu_cxx::hash<const std::vector<int> > > BucketMap;
+    typedef typename std::tr1::unordered_map<size_t, int> BucketMap;
     BucketMap key_to_bucket_index;
 
     int size;
@@ -60,5 +62,4 @@ public:
 #include "typed_open_list.cc"
 
 // HACK! Need a better strategy of dealing with templates, also in the Makefile.
-
 #endif
