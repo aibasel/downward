@@ -26,7 +26,7 @@ protected:
     SearchProgress search_progress;
     int bound;
     OperatorCost cost_type;
-    int max_time;
+    double max_time;
 
     virtual void initialize() {}
     virtual SearchStatus step() = 0;
