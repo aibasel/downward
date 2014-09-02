@@ -29,14 +29,6 @@ class TypedOpenList : public OpenList<Entry> {
     bool dead_end;
     bool dead_end_reliable;
 
-    // Delete the element at position pos.
-    template<typename T>
-    void fast_remove_from_vector(std::vector<T> &vec, std::size_t pos) {
-        assert(pos < vec.size());
-        std::swap(vec[pos], vec.back());
-        vec.pop_back();
-    }
-
 protected:
     Evaluator *get_evaluator() {return this; }
 
