@@ -1,6 +1,7 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include <cassert>
 #include <cstdlib>
 #include <ostream>
 #include <utility>
@@ -25,7 +26,7 @@
 #define ABORT(msg) \
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \
-              << ", line " << __LINE__ << ": " << msg << std::endl), \
+                   << ", line " << __LINE__ << ": " << msg << std::endl), \
         (abort()), \
         (void)0 \
     )
@@ -108,4 +109,11 @@ public:
     }
 };
 
+// Delete the element at position pos.
+template<typename T>
+void fast_remove_from_vector(std::vector<T> &vec, std::size_t pos) {
+    assert(pos < vec.size());
+    std::swap(vec[pos], vec.back());
+    vec.pop_back();
+}
 #endif
