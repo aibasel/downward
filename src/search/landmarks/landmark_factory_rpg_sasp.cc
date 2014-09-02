@@ -57,8 +57,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     set<int> lm_props_achievable;
     for (size_t i = 0; i < effects.size(); ++i)
         for (size_t j = 0; j < lmp->vars.size(); ++j)
-            if (lmp->vars[j] == effects[i].var && lmp->vals[j]
-                == effects[i].val)
+            if (lmp->vars[j] == effects[i].var && lmp->vals[j] == effects[i].val)
                 lm_props_achievable.insert(j);
     // Intersect effect conditions of all effects that can achieve lmp
     hash_map<int, int> intersection;
