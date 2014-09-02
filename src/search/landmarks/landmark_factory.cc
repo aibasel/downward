@@ -62,8 +62,7 @@ bool LandmarkFactory::achieves_non_conditional(const Operator &o,
     const vector<Effect> &effects = o.get_effects();
     for (size_t i = 0; i < effects.size(); ++i) {
         for (size_t j = 0; j < lmp->vars.size(); ++j) {
-            if (effects[i].var == lmp->vars[j] && effects[i].val
-                == lmp->vals[j])
+            if (effects[i].var == lmp->vars[j] && effects[i].val == lmp->vals[j])
                 if (effects[i].conditions.empty())
                     return true;
         }
@@ -225,9 +224,9 @@ bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
             }
         } else {
             // We have not seen this effect before, making new effect entry
-            vector<pair<int, int> > &vec = effect_conditions.insert(make_pair(
-                                                                        effects[i].var, make_pair(effects[i].val, vector<pair<int,
-                                                                                                                               int> > ()))).first->second.second;
+            vector<pair<int, int> > &vec = effect_conditions.insert(
+                make_pair(effects[i].var, make_pair(
+                              effects[i].val, vector<pair<int, int> > ()))).first->second.second;
             for (size_t j = 0; j < effects[i].conditions.size(); ++j) {
                 vec.push_back(make_pair(effects[i].conditions[j].var, effects[i].conditions[j].val));
             }
@@ -763,7 +762,7 @@ void LandmarkFactory::calc_achievers() {
         LandmarkNode &lmn = **node_it;
 
         for (size_t i = 0; i < lmn.vars.size(); ++i) {
-            vector<int> ops = lm_graph->get_operators_including_eff(
+            const vector<int> &ops = lm_graph->get_operators_including_eff(
                 make_pair(lmn.vars[i], lmn.vals[i]));
             lmn.possible_achievers.insert(ops.begin(), ops.end());
 
