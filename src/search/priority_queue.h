@@ -168,7 +168,8 @@ public:
         ++num_entries;
         ++num_pushes;
         assert(num_pushes); // Check against overflow.
-        if (key >= buckets.size())
+        int num_buckets = buckets.size();
+        if (key >= num_buckets)
             buckets.resize(key + 1);
         else if (key < current_bucket_no)
             current_bucket_no = key;
