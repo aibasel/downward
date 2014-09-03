@@ -302,7 +302,7 @@ void CegarHeuristic::print_statistics() {
 }
 
 int CegarHeuristic::compute_heuristic(const State &state) {
-    assert(abstractions.size() <= tasks.size());
+    assert(abstractions.size() == tasks.size());
     int sum_h = 0;
     for (int i = 0; i < abstractions.size(); ++i) {
         Task &task = tasks[i];
