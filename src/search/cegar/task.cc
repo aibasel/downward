@@ -125,12 +125,11 @@ void Task::set_goal(const Fact &fact, bool adapt) {
 }
 
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
-    if (operators.size() != original_operator_numbers.size()) {
-        cout << "Updating original_operator_numbers not implemented." << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    for (int i = 0; i < operators.size(); ++i)
+    if (operators.size() != original_operator_numbers.size())
+        ABORT("Updating original_operator_numbers not implemented.");
+    for (int i = 0; i < operators.size(); ++i) {
         operators[i].set_cost(remaining_costs[original_operator_numbers[i]]);
+    }
 }
 
 void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const {
@@ -169,6 +168,7 @@ void Task::move_fact(int var, int before, int after) {
     // We never move a fact with more than one original index. If we did, we
     // would have to use a vector here.
     orig_index[var][after] = orig_index[var][before];
+    assert(orig_index[var][before] == before);
     task_index[var][orig_index[var][before]] = after;
     fact_names[var][after] = fact_names[var][before];
     if (initial_state_data[var] == before)
@@ -246,6 +246,7 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
     assert(values.size() >= 2);
     set<int> mapped_values;
     for (unordered_set<int>::iterator it = values.begin(); it != values.end(); ++it) {
+        assert(task_index[var][*it] != UNDEFINED);
         mapped_values.insert(task_index[var][*it]);
     }
     if (DEBUG)
