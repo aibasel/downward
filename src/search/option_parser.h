@@ -61,11 +61,18 @@ public:
 };
 
 
-//int needs a specialization to allow "infinity" (=numeric_limits<int>::max())
+// int needs a specialization to allow "infinity".
 template <>
 class TokenParser<int> {
 public:
     static inline int parse(OptionParser &p);
+};
+
+// double needs a specialization to allow "infinity".
+template <>
+class TokenParser<double> {
+public:
+    static inline double parse(OptionParser &p);
 };
 
 
@@ -306,6 +313,20 @@ int TokenParser<int>::parse(OptionParser &p) {
         int x;
         if ((str_stream >> x).fail()) {
             p.error("could not parse int argument " + pt->value);
+        }
+        return x;
+    }
+}
+
+double TokenParser<double>::parse(OptionParser &p) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (pt->value.compare("infinity") == 0) {
+        return std::numeric_limits<double>::infinity();
+    } else {
+        std::stringstream str_stream(pt->value);
+        double x;
+        if ((str_stream >> x).fail()) {
+            p.error("could not parse double argument " + pt->value);
         }
         return x;
     }
