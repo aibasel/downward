@@ -17,6 +17,7 @@ Task::Task(vector<int> domain, vector<vector<string> > names, vector<Operator> o
     : initial_state_data(initial_state_data_),
       goal(goal_facts),
       variable_domain(domain),
+      unreachable_facts(domain.size()),
       fact_names(names),
       operators(ops),
       original_operator_numbers(ops.size()),
@@ -225,16 +226,19 @@ void Task::find_and_apply_new_fact_ordering(int var, set<int> &unordered_values,
     update_facts(var, num_values, new_task_index);
 }
 
+// TODO: Rename method.
 void Task::remove_unreachable_facts(const FactSet &reached_facts) {
     assert(!reached_facts.empty());
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(task_index[var].size() == variable_domain[var]);
+        assert(unreachable_facts[var].empty());
         set<int> unordered_values;
         for (int value = 0; value < variable_domain[var]; ++value) {
             if (reached_facts.count(Fact(var, value)) == 1) {
                 unordered_values.insert(value);
             } else if (DEBUG) {
                 cout << "Remove fact " << Fact(var, value) << endl;
+                unreachable_facts[var].insert(value);
             }
         }
         find_and_apply_new_fact_ordering(var, unordered_values, UNDEFINED);
