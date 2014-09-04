@@ -53,9 +53,9 @@ private:
     // Root of the refinement hierarchy.
     AbstractState *single;
 
-    // Abstract init and goal state. There will always be only one goal state.
+    // Abstract init and goal states.
     AbstractState *init;
-    AbstractState *goal;
+    AbstractStates goals;
 
     // Queue for A* search.
     mutable AdaptiveQueue<AbstractState *> *open;
@@ -90,6 +90,7 @@ private:
     SplitTree split_tree;
 
     int get_min_goal_distance() const;
+    bool is_goal(AbstractState *state) const;
 
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
