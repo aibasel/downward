@@ -120,6 +120,8 @@ public:
     explicit Abstraction(const Task *t);
     ~Abstraction();
 
+    void separate_unreachable_facts();
+
     // Build abstraction.
     void build();
 
