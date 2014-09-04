@@ -65,6 +65,7 @@ Abstraction::Abstraction(const Task *task_)
         single->add_loop(&task->get_operators()[i]);
     }
     states.insert(init);
+    separate_unreachable_facts();
 }
 
 Abstraction::~Abstraction() {
@@ -88,6 +89,18 @@ int Abstraction::get_min_goal_distance() const {
 
 bool Abstraction::is_goal(AbstractState *state) const {
     return goals.find(state) != goals.end();
+}
+
+void Abstraction::separate_unreachable_facts() {
+    for (int var = 0; var < task->get_num_vars(); ++var) {
+        cout << var << ": ";
+        unordered_set<int> unreachable_facts = task->get_unreachable_facts()[var];
+        for (unordered_set<int>::iterator it = unreachable_facts.begin(); it != unreachable_facts.end(); ++it) {
+            cout << *it << " ";
+        }
+        cout << endl;
+    }
+
 }
 
 void Abstraction::build() {

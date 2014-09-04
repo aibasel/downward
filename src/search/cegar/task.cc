@@ -236,8 +236,9 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
         for (int value = 0; value < variable_domain[var]; ++value) {
             if (reached_facts.count(Fact(var, value)) == 1) {
                 unordered_values.insert(value);
-            } else if (DEBUG) {
-                cout << "Remove fact " << Fact(var, value) << endl;
+            } else {
+                if (DEBUG)
+                    cout << "Remove fact " << Fact(var, value) << endl;
                 unreachable_facts[var].insert(value);
             }
         }

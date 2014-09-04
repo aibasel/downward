@@ -65,6 +65,7 @@ public:
     const std::vector<Fact> &get_goals() const {return goal; }
     const std::vector<int> &get_initial_state_data() const {return initial_state_data; }
     const std::vector<int> &get_variable_domain() const {return variable_domain; }
+    const std::vector<std::tr1::unordered_set<int> > &get_unreachable_facts() const {return unreachable_facts; }
 
     int get_projected_index(int var, int value) const {return task_index[var][value]; }
 
