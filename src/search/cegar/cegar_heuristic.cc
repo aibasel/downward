@@ -324,8 +324,7 @@ int CegarHeuristic::compute_heuristic(const State &state) {
         const int *buffer = 0;
         // TODO: Use the state's buffer directly.
         if (false && (Decomposition(options.get_enum("decomposition")) == NONE ||
-                      (Decomposition(options.get_enum("decomposition")) == GOALS &&
-                       !options.get<bool>("adapt_task")))) {
+                      (Decomposition(options.get_enum("decomposition")) == GOALS))) {
             ABORT("Not implemented");
         } else {
             // If any fact in state is not reachable in this task, h(state) = 0.
@@ -380,7 +379,6 @@ static Heuristic *_parse(OptionParser &parser) {
                            "build abstractions for each of these facts",
                            "LANDMARKS_AND_GOALS");
     parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
-    parser.add_option<bool>("adapt_task", "remove redundant operators and facts", "true");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<int>("min_hadd", "ignore facts with too low h^add values", "0");
