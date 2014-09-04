@@ -213,6 +213,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
         if (forward && use_h && is_goal(state)) {
             if (debug)
                 cout << "GOAL REACHED" << endl;
+            extract_solution(state);
             return true;
         }
         // All operators that induce self-loops need at least 0 costs.
@@ -464,10 +465,9 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     return cond;
 }
 
-void Abstraction::extract_solution() const {
+void Abstraction::extract_solution(AbstractState *goal) const {
     assert(get_min_goal_distance() != INF);
-    // TODO: Use correct goal state.
-    AbstractState *current = *goals.begin();
+    AbstractState *current = goal;
     while (current != init) {
         const Operator *prev_op = current->get_prev_solution_op();
         AbstractState *prev_state = current->get_prev_solution_state();
@@ -485,9 +485,7 @@ void Abstraction::find_solution() const {
     open->clear();
     init->set_distance(0);
     open->push(init->get_h(), init);
-    bool success = astar_search(true, true);
-    if (success)
-        extract_solution();
+    astar_search(true, true);
 }
 
 void Abstraction::update_h_values() const {

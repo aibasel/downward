@@ -113,7 +113,7 @@ private:
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;
 
-    void extract_solution() const;
+    void extract_solution(AbstractState *goal) const;
     void find_solution() const;
 
 public:
