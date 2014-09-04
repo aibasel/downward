@@ -242,7 +242,7 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
                 unreachable_facts[var].insert(value);
             }
         }
-        find_and_apply_new_fact_ordering(var, unordered_values, UNDEFINED);
+        //find_and_apply_new_fact_ordering(var, unordered_values, UNDEFINED);
     }
 }
 
