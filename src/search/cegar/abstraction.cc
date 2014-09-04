@@ -93,15 +93,9 @@ bool Abstraction::is_goal(AbstractState *state) const {
 void Abstraction::separate_unreachable_facts() {
     assert(init == single);
     for (int var = 0; var < task->get_num_vars(); ++var) {
-        cout << var << ": ";
-        unordered_set<int> unreachable_facts = task->get_unreachable_facts()[var];
+        const unordered_set<int> &unreachable_facts = task->get_unreachable_facts()[var];
         // TODO: Use vector<int> directly?
-        vector<int> wanted;
-        for (unordered_set<int>::iterator it = unreachable_facts.begin(); it != unreachable_facts.end(); ++it) {
-            cout << *it << " ";
-            wanted.push_back(*it);
-        }
-        cout << endl;
+        vector<int> wanted(unreachable_facts.begin(), unreachable_facts.end());
         if (!wanted.empty())
             refine(init, var, wanted);
     }
