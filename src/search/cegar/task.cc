@@ -104,7 +104,7 @@ void Task::compute_facts_and_operators() {
     compute_possibly_before_facts(last_fact, &reached_facts);
 
     // Only keep operators with all preconditions in reachable set of facts.
-    remove_inapplicable_operators(reached_facts);
+    //remove_inapplicable_operators(reached_facts);
 
     for (int i = 0; i < operators.size(); ++i) {
         Operator &op = operators[i];
@@ -177,6 +177,11 @@ void Task::move_fact(int var, int before, int after) {
     for (int i = 0; i < goal.size(); ++i) {
         if (var == goal[i].first && before == goal[i].second)
             goal[i].second = after;
+    }
+    unordered_set<int>::iterator it = unreachable_facts[var].find(before);
+    if (it != unreachable_facts[var].end()) {
+        unreachable_facts[var].erase(it);
+        unreachable_facts[var].insert(after);
     }
 }
 
