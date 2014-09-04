@@ -17,6 +17,7 @@ private:
     std::vector<int> initial_state_data;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
+    std::vector<std::tr1::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
     std::vector<Operator> operators;
     std::vector<int> original_operator_numbers;
