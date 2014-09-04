@@ -97,32 +97,19 @@ void Task::remove_inapplicable_operators(const FactSet reached_facts) {
     remove_unmarked_operators();
 }
 
-void Task::compute_facts_and_operators() {
-    assert(goal.size() == 1);
-    Fact &last_fact = goal[0];
-    FactSet reached_facts;
-    compute_possibly_before_facts(last_fact, &reached_facts);
-
-    // Only keep operators with all preconditions in reachable set of facts.
-    //remove_inapplicable_operators(reached_facts);
-
+void Task::keep_single_effect(const Fact &last_fact) {
     for (int i = 0; i < operators.size(); ++i) {
         Operator &op = operators[i];
         // If op achieves last_fact set eff(op) = {last_fact}.
         if (get_eff(op, last_fact.first) == last_fact.second)
             op.keep_single_effect(last_fact.first, last_fact.second);
     }
-    // Add last_fact to reachable facts.
-    reached_facts.insert(last_fact);
-    remove_unreachable_facts(reached_facts);
 }
 
-void Task::set_goal(const Fact &fact, bool adapt) {
+void Task::set_goal(const Fact &fact) {
     additive_heuristic = 0;
     goal.clear();
     goal.push_back(fact);
-    if (adapt)
-        compute_facts_and_operators();
 }
 
 void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
@@ -231,8 +218,7 @@ void Task::find_and_apply_new_fact_ordering(int var, set<int> &unordered_values,
     update_facts(var, num_values, new_task_index);
 }
 
-// TODO: Rename method.
-void Task::remove_unreachable_facts(const FactSet &reached_facts) {
+void Task::save_unreachable_facts(const FactSet &reached_facts) {
     assert(!reached_facts.empty());
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(task_index[var].size() == variable_domain[var]);
