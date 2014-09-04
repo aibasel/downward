@@ -89,6 +89,8 @@ private:
     // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
 
+    int get_min_goal_distance() const;
+
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
 

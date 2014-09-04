@@ -76,6 +76,15 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
     cout << "Use flaw-selection strategy " << pick << endl;
 }
 
+int Abstraction::get_min_goal_distance() const {
+    return goal->get_distance();
+    //int min_distance = INF;
+    //for (unordered_set::iterator it = goals.begin(); it != goals.end(); ++it) {
+    //    min_distance = min(min_distance, it->get_distance());
+    //}
+    //return min_distance();
+}
+
 void Abstraction::build() {
     if (dump_graphs) {
         assert(get_num_states() == 1);
@@ -89,7 +98,7 @@ void Abstraction::build() {
         } else {
             update_h_values();
         }
-        if ((use_astar && goal->get_distance() == INF) ||
+        if ((use_astar && get_min_goal_distance() == INF) ||
             (!use_astar && init->get_h() == INF)) {
             cout << "Abstract problem is unsolvable!" << endl;
             valid_conc_solution = false;
@@ -256,7 +265,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             }
         }
     }
-    if ((forward && goal->get_distance() == INF) ||
+    if ((forward && get_min_goal_distance() == INF) ||
         (!forward && init->get_distance() == INF)) {
         return false;
     }
@@ -450,8 +459,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
 }
 
 void Abstraction::extract_solution() const {
-    assert(goal->get_distance() != INF);
-    assert(goal->get_h() == 0);
+    assert(get_min_goal_distance() != INF);
     AbstractState *current = goal;
     while (current != init) {
         const Operator *prev_op = current->get_prev_solution_op();
@@ -462,7 +470,7 @@ void Abstraction::extract_solution() const {
         assert(prev_state != current);
         current = prev_state;
     }
-    assert(init->get_h() == goal->get_distance());
+    assert(init->get_h() == get_min_goal_distance());
 }
 
 void Abstraction::find_solution() const {
