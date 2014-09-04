@@ -272,6 +272,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             }
         }
     }
+    // TODO: Remove this and the return value.
     if ((forward && get_min_goal_distance() == INF) ||
         (!forward && init->get_distance() == INF)) {
         return false;
