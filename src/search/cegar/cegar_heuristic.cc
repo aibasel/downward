@@ -187,7 +187,20 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         Task task = original_task;
         if (decomposition != NONE) {
             bool combine_facts = (options.get<bool>("combine_facts") && decomposition == LANDMARKS);
-            task.set_goal(facts[i], options.get<bool>("adapt_task") || combine_facts);
+            task.set_goal(facts[i]);
+            Fact &last_fact = facts[i];
+            FactSet reached_facts;
+            if (decomposition == LANDMARKS) {
+                task.compute_possibly_before_facts(last_fact, &reached_facts);
+            }
+            if (decomposition == LANDMARKS && !options.get<bool>("general_costs")) {
+                task.remove_inapplicable_operators(reached_facts);
+                task.keep_single_effect(last_fact);
+            }
+            if (decomposition == LANDMARKS) {
+                reached_facts.insert(last_fact);
+                task.save_unreachable_facts(reached_facts);
+            }
             if (combine_facts) {
                 unordered_map<int, unordered_set<int> > groups;
                 get_prev_landmarks(facts[i], &groups);
