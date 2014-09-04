@@ -229,7 +229,6 @@ void Task::remove_unreachable_facts(const FactSet &reached_facts) {
     assert(!reached_facts.empty());
     for (int var = 0; var < variable_domain.size(); ++var) {
         assert(task_index[var].size() == variable_domain[var]);
-        vector<int> new_task_index(variable_domain[var], -2);
         set<int> unordered_values;
         for (int value = 0; value < variable_domain[var]; ++value) {
             if (reached_facts.count(Fact(var, value)) == 1) {
