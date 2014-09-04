@@ -36,7 +36,6 @@ Abstraction::Abstraction(const Task *task_)
     : task(task_),
       single(new AbstractState(task_)),
       init(single),
-      goal(single),
       open(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
       rng(2012),
@@ -52,6 +51,8 @@ Abstraction::Abstraction(const Task *task_)
       memory_released(false) {
     assert(!task->get_goal().empty());
     reserve_memory_padding();
+
+    goals.insert(init);
 
     vector<int> original_initial_state_data;
     original_initial_state_data.swap(g_initial_state_data);
@@ -77,12 +78,16 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
 }
 
 int Abstraction::get_min_goal_distance() const {
-    return goal->get_distance();
-    //int min_distance = INF;
-    //for (unordered_set::iterator it = goals.begin(); it != goals.end(); ++it) {
-    //    min_distance = min(min_distance, it->get_distance());
-    //}
-    //return min_distance();
+    assert(!memory_released);
+    int min_distance = INF;
+    for (AbstractStates::const_iterator it = goals.begin(); it != goals.end(); ++it) {
+        min_distance = min(min_distance, (*it)->get_distance());
+    }
+    return min_distance;
+}
+
+bool Abstraction::is_goal(AbstractState *state) const {
+    return goals.find(state) != goals.end();
 }
 
 void Abstraction::build() {
@@ -156,12 +161,13 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
     }
-    if (state == goal) {
+    if (is_goal(state)) {
         assert(!v1->is_abstraction_of_goal());
         assert(v2->is_abstraction_of_goal());
-        goal = v2;
+        goals.erase(state);
+        goals.insert(v2);
         if (DEBUG)
-            cout << "Using new goal state: " << goal->str() << endl;
+            cout << "Using new/additional goal state: " << v2->str() << endl;
     }
 
     int num_states = get_num_states();
@@ -204,7 +210,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
         if (debug)
             cout << endl << "Expand: " << state->str() << " g:" << g
                  << " h:" << state->get_h() << " f:" << new_f << endl;
-        if (forward && use_h && state == goal) {
+        if (forward && use_h && is_goal(state)) {
             if (debug)
                 cout << "GOAL REACHED" << endl;
             return true;
@@ -296,7 +302,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         // Start check from each state only once.
         if (!states_to_splits[abs_state].empty())
             continue;
-        if (abs_state == goal) {
+        if (is_goal(abs_state)) {
             if (test_goal(conc_state)) {
                 // We found a valid concrete solution.
                 return true;
@@ -460,7 +466,8 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
 
 void Abstraction::extract_solution() const {
     assert(get_min_goal_distance() != INF);
-    AbstractState *current = goal;
+    // TODO: Use correct goal state.
+    AbstractState *current = *goals.begin();
     while (current != init) {
         const Operator *prev_op = current->get_prev_solution_op();
         AbstractState *prev_state = current->get_prev_solution_state();
@@ -486,8 +493,10 @@ void Abstraction::find_solution() const {
 void Abstraction::update_h_values() const {
     reset_distances_and_solution();
     open->clear();
-    goal->set_distance(0);
-    open->push(0, goal);
+    for (AbstractStates::const_iterator it = goals.begin(); it != goals.end(); ++it) {
+        (*it)->set_distance(0);
+        open->push(0, *it);
+    }
     astar_search(false, false);
     for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
         AbstractState *state = *it;
@@ -548,7 +557,7 @@ void Abstraction::write_dot_file(int num) {
         }
         if (current_state == init) {
             dotfile << current_state->str() << " [color=green];" << endl;
-        } else if (current_state == goal) {
+        } else if (is_goal(current_state)) {
             dotfile << current_state->str() << " [color=red];" << endl;
         }
     }
