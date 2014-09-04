@@ -321,8 +321,10 @@ void Task::release_memory() {
 }
 
 bool Task::translate_state(const State &state, int *translated) const {
+    // TODO: Loop only over changed values.
     for (int var = 0; var < variable_domain.size(); ++var) {
         int value = task_index[var][state[var]];
+        // TODO: Remove this case and return void.
         if (value == UNDEFINED) {
             return false;
         } else {
