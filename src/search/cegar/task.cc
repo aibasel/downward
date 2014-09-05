@@ -366,10 +366,16 @@ void Task::dump() const {
     int num_facts = 0;
     for (int var = 0; var < variable_domain.size(); ++var)
         num_facts += variable_domain[var];
-    cout << "  " << "Facts: " << num_facts << endl;
+    cout << "  Facts: " << num_facts << endl;
     if (DEBUG)
         dump_facts();
-    cout << "  " << "Operators: " << operators.size() << endl;
+    cout << "  Operators: " << operators.size() << endl;
+    int total_cost = 0;
+    for (int i = 0; i < operators.size(); ++i) {
+        total_cost += operators[i].get_cost();
+    }
+    assert(total_cost >= 0);
+    cout << "  Total cost: " << total_cost << endl;
     if (DEBUG) {
         for (int i = 0; i < operators.size(); ++i) {
             cout << "    c=" << operators[i].get_cost() << " ";
