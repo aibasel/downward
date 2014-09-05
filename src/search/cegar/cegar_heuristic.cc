@@ -70,6 +70,7 @@ void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
         const LandmarkNode *node_p = *it;
         facts->push_back(get_fact(node_p));
     }
+    sort(facts->begin(), facts->end());
 }
 
 LandmarkGraph CegarHeuristic::get_landmark_graph() const {
