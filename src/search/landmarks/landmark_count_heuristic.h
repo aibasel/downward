@@ -44,7 +44,7 @@ class LandmarkCountHeuristic : public Heuristic {
                                   const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &state);
 
-    //int get_needed_landmarks(const State& state, LandmarkSet& needed) const;
+    //int get_needed_landmarks(const GlobalState& state, LandmarkSet& needed) const;
     Exploration *get_exploration() {return exploration; }
     void convert_lms(LandmarkSet &lms_set, const std::vector<bool> &lms_vec);
 protected:

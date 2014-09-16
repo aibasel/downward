@@ -105,7 +105,7 @@ int Heuristic::get_value() const {
 
 void Heuristic::evaluate(int, bool) {
     return;
-    // if this is called, evaluate(const State &state) or set_evaluator_value(int val)
+    // if this is called, evaluate(const GlobalState &state) or set_evaluator_value(int val)
     // should already have been called
 }
 

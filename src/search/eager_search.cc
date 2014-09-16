@@ -254,7 +254,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             use_multi_path_dependence ? &last_key_removed : 0);
         // TODO is there a way we can avoid creating the state here and then
         //      recreate it outside of this function with node.get_state()?
-        //      One way would be to store State objects inside SearchNodes
+        //      One way would be to store GlobalState objects inside SearchNodes
         //      instead of StateIDs
         GlobalState s = g_state_registry->lookup_state(id);
         SearchNode node = search_space.get_node(s);
