@@ -9,7 +9,7 @@ exp = common_setup.IssueExperiment(
     search_revisions=["issue462-base", "issue462-v1"],
     configs=configs.default_configs_satisficing(),
     suite=suites.suite_satisficing_with_ipc11(),
-    limits={"search_time": 30}
+    limits={"search_time": 300}
     )
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
