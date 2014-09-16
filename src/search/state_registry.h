@@ -14,7 +14,7 @@
 /*
   Overview of classes relevant to storing and working with registered states.
 
-  State
+  GlobalState
     This class is used for manipulating states.
     It contains the (uncompressed) variable values for fast access by the heuristic.
     A State is always registered in a StateRegistry and has a valid ID.
@@ -52,7 +52,7 @@
 
   PerStateInformation<T>
     Associates a value of type T with every state in a given StateRegistry.
-    Can be thought of as a very compactly implemented map from State to T.
+    Can be thought of as a very compactly implemented map from GlobalState to T.
     References stay valid forever. Memory usage is essentially the same as a
     vector<T> whose size is the number of states in the registry.
 

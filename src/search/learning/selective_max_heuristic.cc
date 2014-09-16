@@ -269,7 +269,7 @@ void SelectiveMaxHeuristic::train() {
             sample_t::const_iterator it;
             //while (training_set.has_more_states()) {
             for (it = training_set.begin(); it != training_set.end(); it++) {
-                //const State s = training_set.get_next_state();
+                //const GlobalState s = training_set.get_next_state();
                 const GlobalState s = (*it).first;
                 int value_expensive = training_set[s][expensive[classifier_index]];
                 int value_cheap = training_set[s][cheap[classifier_index]];
