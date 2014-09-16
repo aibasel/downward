@@ -78,7 +78,7 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return (node.endswith("cluster") or
+    return (node.endswith("cluster.bc2.ch") or
             node.startswith("gkigrid") or
             node in ["habakuk", "turtur"])
 
