@@ -1,7 +1,7 @@
 #include "axioms.h"
+#include "global_operator.h"
 #include "globals.h"
 #include "int_packer.h"
-#include "operator.h"
 
 #include <iostream>
 #include <vector>
@@ -14,7 +14,7 @@ AxiomEvaluator::AxiomEvaluator() {
 
     // Initialize rules
     for (int i = 0; i < g_axioms.size(); i++) {
-        const Operator &axiom = g_axioms[i];
+        const GlobalOperator &axiom = g_axioms[i];
         int cond_count = axiom.get_effects()[0].conditions.size();
         int eff_var = axiom.get_effects()[0].var;
         int eff_val = axiom.get_effects()[0].val;
@@ -24,9 +24,9 @@ AxiomEvaluator::AxiomEvaluator() {
 
     // Cross-reference rules and literals
     for (int i = 0; i < g_axioms.size(); i++) {
-        const vector<Condition> &conditions = g_axioms[i].get_effects()[0].conditions;
+        const vector<GlobalCondition> &conditions = g_axioms[i].get_effects()[0].conditions;
         for (int j = 0; j < conditions.size(); j++) {
-            const Condition &cond = conditions[j];
+            const GlobalCondition &cond = conditions[j];
             axiom_literals[cond.var][cond.val].condition_of.push_back(&rules[i]);
         }
     }

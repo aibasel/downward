@@ -57,10 +57,10 @@ void LazySearch::initialize() {
     assert(!heuristics.empty());
 }
 
-void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
+void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     assert(ops.empty());
-    vector<const Operator *> all_operators;
-    vector<const Operator *> preferred_operators;
+    vector<const GlobalOperator *> all_operators;
+    vector<const GlobalOperator *> preferred_operators;
 
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
@@ -99,7 +99,7 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
 }
 
 void LazySearch::generate_successors() {
-    vector<const Operator *> operators;
+    vector<const GlobalOperator *> operators;
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
 
@@ -127,7 +127,7 @@ SearchStatus LazySearch::fetch_next_state() {
 
     current_predecessor_id = next.first;
     current_operator = next.second;
-    State current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
+    GlobalState current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
     current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
 
@@ -156,7 +156,7 @@ SearchStatus LazySearch::step() {
         if (dummy_id == StateID::no_state) {
             dummy_id = g_initial_state().get_id();
         }
-        State parent_state = g_state_registry->lookup_state(dummy_id);
+        GlobalState parent_state = g_state_registry->lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         for (int i = 0; i < heuristics.size(); i++) {

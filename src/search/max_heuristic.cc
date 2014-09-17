@@ -1,9 +1,9 @@
 #include "max_heuristic.h"
 
-#include "operator.h"
+#include "global_operator.h"
+#include "global_state.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "state.h"
 
 #include <cassert>
 #include <vector>
@@ -60,7 +60,7 @@ void HSPMaxHeuristic::setup_exploration_queue() {
     }
 }
 
-void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
+void HSPMaxHeuristic::setup_exploration_queue_state(const GlobalState &state) {
     for (int var = 0; var < propositions.size(); var++) {
         Proposition *init_prop = &propositions[var][state[var]];
         enqueue_if_necessary(init_prop, 0);
@@ -93,7 +93,7 @@ void HSPMaxHeuristic::relaxed_exploration() {
     }
 }
 
-int HSPMaxHeuristic::compute_heuristic(const State &state) {
+int HSPMaxHeuristic::compute_heuristic(const GlobalState &state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();
