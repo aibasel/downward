@@ -3,11 +3,11 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../utilities.h"
 
 #include <vector>
@@ -61,7 +61,7 @@ ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
 void ZeroOnePDBsHeuristic::initialize() {
 }
 
-int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) {
+int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &state) {
     // since we use action cost partitioning, we can simply add up all h-values
     // from the patterns in the pattern collection
     int h_val = 0;

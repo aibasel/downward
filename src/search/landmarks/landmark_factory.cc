@@ -54,12 +54,12 @@ void LandmarkFactory::generate() {
     calc_achievers();
 }
 
-bool LandmarkFactory::achieves_non_conditional(const Operator &o,
+bool LandmarkFactory::achieves_non_conditional(const GlobalOperator &o,
                                                const LandmarkNode *lmp) const {
     /* Test whether the landmark is achieved by the operator unconditionally.
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
     assert(lmp != NULL);
-    const vector<Effect> &effects = o.get_effects();
+    const vector<GlobalEffect> &effects = o.get_effects();
     for (size_t j = 0; j < effects.size(); ++j) {
         for (size_t k = 0; k < lmp->vars.size(); ++k) {
             if (effects[j].var == lmp->vars[k] && effects[j].val
@@ -71,12 +71,12 @@ bool LandmarkFactory::achieves_non_conditional(const Operator &o,
     return false;
 }
 
-bool LandmarkFactory::is_landmark_precondition(const Operator &o,
+bool LandmarkFactory::is_landmark_precondition(const GlobalOperator &o,
                                                const LandmarkNode *lmp) const {
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
     assert(lmp != NULL);
-    const vector<Condition> &preconditions = o.get_preconditions();
+    const vector<GlobalCondition> &preconditions = o.get_preconditions();
     for (size_t j = 0; j < preconditions.size(); ++j) {
         for (size_t k = 0; k < lmp->vars.size(); ++k) {
             if (preconditions[j].var == lmp->vars[k] && 
@@ -100,9 +100,9 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     if (compute_lvl_op) {
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (int i = 0; i < g_operators.size() + g_axioms.size(); i++) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(i);
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(i);
             lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
-            const vector<Effect> &effects = op.get_effects();
+            const vector<GlobalEffect> &effects = op.get_effects();
             for (size_t j = 0; j < effects.size(); ++j)
                 lvl_op[i].insert(make_pair(make_pair(effects[j].var,
                                                      effects[j].val),
@@ -115,7 +115,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
                             numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
-    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    hash_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     if (exclude != NULL) {
         for (int op = 0; op < g_operators.size(); op++) {
@@ -156,7 +156,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
         lvl_var[var].resize(g_variable_domain[var],
                             numeric_limits<int>::max());
     }
-    hash_set<const Operator *, ex_hash_operator_ptr> exclude_ops;
+    hash_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     for (int op = 0; op < g_operators.size(); op++) {
         if (is_landmark_precondition(g_operators[op], &landmark)) {
@@ -176,7 +176,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     return false;
 }
 
-bool LandmarkFactory::effect_always_happens(const vector<Effect> &effects, set<
+bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects, set<
                                                 pair<int, int> > &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
@@ -329,7 +329,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             const vector<int> &ops = lm_graph->get_operators_including_eff(a);
             // Intersect operators that achieve a one by one
             for (size_t i = 0; i < ops.size(); ++i) {
-                const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+                const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
                 // If no shared effect among previous operators, break
                 if (!init && shared_eff.empty())
                     break;
@@ -339,7 +339,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 // e.g. in Schedule. There, the same effect is conditioned on a disjunction
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
-                const vector<Effect> &effects = op.get_effects();
+                const vector<GlobalEffect> &effects = op.get_effects();
                 set<pair<int, int> > trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(effects,
                                                                                trivially_conditioned_effects);
@@ -776,7 +776,7 @@ void LandmarkFactory::calc_achievers() {
         for (ach_it = lmn.possible_achievers.begin(); ach_it
              != lmn.possible_achievers.end(); ++ach_it) {
             int op_id = *ach_it;
-            const Operator &op = lm_graph->get_operator_for_lookup_index(op_id);
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(op_id);
 
             if (_possibly_reaches_lm(op, lvl_var, &lmn)) {
                 lmn.first_achievers.insert(op_id);

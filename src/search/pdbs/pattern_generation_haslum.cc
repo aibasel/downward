@@ -4,12 +4,12 @@
 #include "pdb_heuristic.h"
 
 #include "../causal_graph.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
-#include "../state.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../timer.h"
@@ -97,9 +97,9 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &
 }
 
 void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
-                                            vector<State> &samples,
+                                            vector<GlobalState> &samples,
                                             double average_operator_cost) {
-    const State &initial_state = sample_registry.get_initial_state();
+    const GlobalState &initial_state = sample_registry.get_initial_state();
     current_heuristic->evaluate(initial_state);
     assert(!current_heuristic->is_dead_end());
 
@@ -133,9 +133,9 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
         }
 
         // random walk of length length
-        State current_state(initial_state);
+        GlobalState current_state(initial_state);
         for (int j = 0; j < length; ++j) {
-            vector<const Operator *> applicable_ops;
+            vector<const GlobalOperator *> applicable_ops;
             g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
             // if there are no applicable operators --> do not walk further
             if (applicable_ops.empty()) {
@@ -156,7 +156,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 }
 
 std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
-    vector<State> &samples,
+    vector<GlobalState> &samples,
     vector<PDBHeuristic *> &candidate_pdbs) {
     // TODO: The original implementation by Haslum et al. uses astar to compute h values for
     // the sample states only instead of generating all PDBs.
@@ -211,7 +211,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
-                                                    const State &sample,
+                                                    const GlobalState &sample,
                                                     const vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     pdb_heuristic->evaluate(sample);
     if (pdb_heuristic->is_dead_end()) {
@@ -267,7 +267,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
             StateRegistry sample_registry;
-            vector<State> samples;
+            vector<GlobalState> samples;
             sample_states(sample_registry, samples, average_operator_cost);
 
             pair<int, int> improvement_and_index =

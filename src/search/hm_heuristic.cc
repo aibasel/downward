@@ -29,7 +29,7 @@ void HMHeuristic::initialize() {
     generate_all_tuples();
 }
 
-int HMHeuristic::compute_heuristic(const State &state) {
+int HMHeuristic::compute_heuristic(const GlobalState &state) {
     if (test_goal(state)) {
         return 0;
     } else {
@@ -67,7 +67,7 @@ void HMHeuristic::update_hm_table() {
         was_updated = false;
 
         for (int op_id = 0; op_id < g_operators.size(); op_id++) {
-            const Operator &op = g_operators[op_id];
+            const GlobalOperator &op = g_operators[op_id];
             tuple pre;
             get_operator_pre(op, pre);
 
@@ -89,7 +89,7 @@ void HMHeuristic::update_hm_table() {
     } while (was_updated);
 }
 
-void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
+void HMHeuristic::extend_tuple(tuple &t, const GlobalOperator &op) {
     map<tuple, int>::const_iterator it;
     for (it = hm_table.begin(); it != hm_table.end(); it++) {
         pair<tuple, int> hm_ent = *it;

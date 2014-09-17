@@ -138,7 +138,7 @@ private:
     void get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset);
 
     void get_m_sets(int m, std::vector<FluentSet> &subsets,
-                    const State &s);
+                    const GlobalState &s);
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);

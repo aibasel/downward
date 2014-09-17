@@ -1,7 +1,8 @@
-#include "globals.h"
-#include "operator.h"
-#include "state.h"
 #include "successor_generator.h"
+
+#include "global_operator.h"
+#include "global_state.h"
+#include "globals.h"
 #include "utilities.h"
 
 #include <cstdlib>
@@ -16,17 +17,17 @@ class SuccessorGeneratorSwitch : public SuccessorGenerator {
     SuccessorGenerator *default_generator;
 public:
     SuccessorGeneratorSwitch(istream &in);
-    virtual void generate_applicable_ops(const State &curr,
-                                         vector<const Operator *> &ops);
+    virtual void generate_applicable_ops(const GlobalState &curr,
+                                         vector<const GlobalOperator *> &ops);
     virtual void _dump(string indent);
 };
 
 class SuccessorGeneratorGenerate : public SuccessorGenerator {
-    vector<const Operator *> op;
+    vector<const GlobalOperator *> op;
 public:
     SuccessorGeneratorGenerate(istream &in);
-    virtual void generate_applicable_ops(const State &curr,
-                                         vector<const Operator *> &ops);
+    virtual void generate_applicable_ops(const GlobalState &curr,
+                                         vector<const GlobalOperator *> &ops);
     virtual void _dump(string indent);
 };
 
@@ -39,7 +40,7 @@ SuccessorGeneratorSwitch::SuccessorGeneratorSwitch(istream &in) {
 }
 
 void SuccessorGeneratorSwitch::generate_applicable_ops(
-    const State &curr, vector<const Operator *> &ops) {
+    const GlobalState &curr, vector<const GlobalOperator *> &ops) {
     immediate_ops->generate_applicable_ops(curr, ops);
     generator_for_value[curr[switch_var]]->generate_applicable_ops(curr, ops);
     default_generator->generate_applicable_ops(curr, ops);
@@ -57,8 +58,8 @@ void SuccessorGeneratorSwitch::_dump(string indent) {
     default_generator->_dump(indent + "  ");
 }
 
-void SuccessorGeneratorGenerate::generate_applicable_ops(const State &,
-                                                         vector<const Operator *> &ops) {
+void SuccessorGeneratorGenerate::generate_applicable_ops(const GlobalState &,
+                                                         vector<const GlobalOperator *> &ops) {
     ops.insert(ops.end(), op.begin(), op.end());
 }
 

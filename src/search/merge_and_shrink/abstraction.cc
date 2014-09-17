@@ -587,8 +587,8 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); label_no++) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<Condition> &preconditions = label->get_preconditions();
-        const vector<Effect> &effects = label->get_effects();
+        const vector<GlobalCondition> &preconditions = label->get_preconditions();
+        const vector<GlobalEffect> &effects = label->get_effects();
         hash_map<int,int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (int i = 0; i < preconditions.size(); i++) 
@@ -620,7 +620,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             // cond_effect_pre_value == -1 means no effect condition on var.
             // has_other_effect_cond is true iff there exists an effect
             // condition on a variable other than var.
-            const vector<Condition> &eff_cond = effects[i].conditions;
+            const vector<GlobalCondition> &eff_cond = effects[i].conditions;
             int cond_effect_pre_value = -1;
             bool has_other_effect_cond = false;
             for (size_t j = 0; j < eff_cond.size(); ++j) {
@@ -833,12 +833,12 @@ string CompositeAbstraction::description() const {
     return s.str();
 }
 
-AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const {
+AbstractStateRef AtomicAbstraction::get_abstract_state(const GlobalState &state) const {
     int value = state[variable];
     return lookup_table[value];
 }
 
-AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) const {
+AbstractStateRef CompositeAbstraction::get_abstract_state(const GlobalState &state) const {
     AbstractStateRef state1 = components[0]->get_abstract_state(state);
     AbstractStateRef state2 = components[1]->get_abstract_state(state);
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
@@ -981,7 +981,7 @@ bool Abstraction::is_solvable() const {
     return init_state != PRUNED_STATE;
 }
 
-int Abstraction::get_cost(const State &state) const {
+int Abstraction::get_cost(const GlobalState &state) const {
     int abs_state = get_abstract_state(state);
     if (abs_state == PRUNED_STATE)
         return -1;

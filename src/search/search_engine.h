@@ -7,16 +7,16 @@ class Heuristic;
 class OptionParser;
 class Options;
 
-#include "operator.h"
+#include "global_operator.h"
+#include "operator_cost.h"
 #include "search_space.h"
 #include "search_progress.h"
-#include "operator_cost.h"
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
 public:
-    typedef std::vector<const Operator *> Plan;
+    typedef std::vector<const GlobalOperator *> Plan;
 private:
     SearchStatus status;
     bool solution_found;
@@ -32,8 +32,8 @@ protected:
     virtual SearchStatus step() = 0;
 
     void set_plan(const Plan &plan);
-    bool check_goal_and_set_plan(const State &state);
-    int get_adjusted_cost(const Operator &op) const;
+    bool check_goal_and_set_plan(const GlobalState &state);
+    int get_adjusted_cost(const GlobalOperator &op) const;
 public:
     SearchEngine(const Options &opts);
     virtual ~SearchEngine();

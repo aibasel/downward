@@ -69,7 +69,7 @@ void EagerSearch::initialize() {
 
     assert(!heuristics.empty());
 
-    const State &initial_state = g_initial_state();
+    const GlobalState &initial_state = g_initial_state();
     for (size_t i = 0; i < heuristics.size(); i++)
         heuristics[i]->evaluate(initial_state);
     open_list->evaluate(0, false);
@@ -105,12 +105,12 @@ SearchStatus EagerSearch::step() {
     }
     SearchNode node = n.first;
 
-    State s = node.get_state();
+    GlobalState s = node.get_state();
     if (check_goal_and_set_plan(s))
         return SOLVED;
 
-    vector<const Operator *> applicable_ops;
-    set<const Operator *> preferred_ops;
+    vector<const GlobalOperator *> applicable_ops;
+    set<const GlobalOperator *> preferred_ops;
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
@@ -120,7 +120,7 @@ SearchStatus EagerSearch::step() {
         if (!h->is_dead_end()) {
             // In an alternation search with unreliable heuristics, it is
             // possible that this heuristic considers the state a dead end.
-            vector<const Operator *> preferred;
+            vector<const GlobalOperator *> preferred;
             h->get_preferred_operators(preferred);
             preferred_ops.insert(preferred.begin(), preferred.end());
         }
@@ -128,12 +128,12 @@ SearchStatus EagerSearch::step() {
     search_progress.inc_evaluations(preferred_operator_heuristics.size());
 
     for (int i = 0; i < applicable_ops.size(); i++) {
-        const Operator *op = applicable_ops[i];
+        const GlobalOperator *op = applicable_ops[i];
 
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        State succ_state = g_state_registry->get_successor_state(s, *op);
+        GlobalState succ_state = g_state_registry->get_successor_state(s, *op);
         search_progress.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
@@ -254,9 +254,9 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             use_multi_path_dependence ? &last_key_removed : 0);
         // TODO is there a way we can avoid creating the state here and then
         //      recreate it outside of this function with node.get_state()?
-        //      One way would be to store State objects inside SearchNodes
+        //      One way would be to store GlobalState objects inside SearchNodes
         //      instead of StateIDs
-        State s = g_state_registry->lookup_state(id);
+        GlobalState s = g_state_registry->lookup_state(id);
         SearchNode node = search_space.get_node(s);
 
         if (node.is_closed())

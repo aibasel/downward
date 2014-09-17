@@ -298,7 +298,7 @@ void HMLandmarks::get_split_m_sets(
 // get subsets of state with size <= m
 void HMLandmarks::get_m_sets(int m,
                              std::vector<FluentSet> &subsets,
-                             const State &s) {
+                             const GlobalState &s) {
     FluentSet state_fluents;
     for (int i = 0; i < g_variable_domain.size(); i++) {
         state_fluents.push_back(std::make_pair(i, s[i]));
@@ -313,9 +313,9 @@ void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
 }
 
 void get_operator_precondition(int op_index, FluentSet &pc) {
-    Operator &op = g_operators[op_index];
+    GlobalOperator &op = g_operators[op_index];
 
-    const std::vector<Condition> &preconditions = op.get_preconditions();
+    const std::vector<GlobalCondition> &preconditions = op.get_preconditions();
     for (int i = 0; i < preconditions.size(); i++) 
         pc.push_back(make_pair(preconditions[i].var, preconditions[i].val));
 
@@ -325,10 +325,10 @@ void get_operator_precondition(int op_index, FluentSet &pc) {
 // get facts that are always true after the operator application
 // (effects plus prevail conditions)
 void get_operator_postcondition(int op_index, FluentSet &post) {
-    Operator &op = g_operators[op_index];
+    GlobalOperator &op = g_operators[op_index];
 
-    const std::vector<Condition> &preconditions = op.get_preconditions();
-    const std::vector<Effect> &effects = op.get_effects();
+    const std::vector<GlobalCondition> &preconditions = op.get_preconditions();
+    const std::vector<GlobalEffect> &effects = op.get_effects();
     std::vector<bool> has_effect_on_var(g_variable_domain.size(), false);
 
     for (int i = 0; i < effects.size(); i++) {

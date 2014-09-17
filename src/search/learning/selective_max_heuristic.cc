@@ -225,7 +225,7 @@ void SelectiveMaxHeuristic::train() {
             double before = retimer();
             sample_t::const_iterator it;
             for (it = training_set.begin(); it != training_set.end(); it++) {
-                const State s = (*it).first;
+                const GlobalState s = (*it).first;
                 heuristics[i]->evaluate(s);
             }
             double after = retimer();
@@ -269,8 +269,8 @@ void SelectiveMaxHeuristic::train() {
             sample_t::const_iterator it;
             //while (training_set.has_more_states()) {
             for (it = training_set.begin(); it != training_set.end(); it++) {
-                //const State s = training_set.get_next_state();
-                const State s = (*it).first;
+                //const GlobalState s = training_set.get_next_state();
+                const GlobalState s = (*it).first;
                 int value_expensive = training_set[s][expensive[classifier_index]];
                 int value_cheap = training_set[s][cheap[classifier_index]];
 
@@ -301,7 +301,7 @@ void SelectiveMaxHeuristic::train() {
     //cout << "Freed Memory" << endl;
 }
 
-int SelectiveMaxHeuristic::eval_heuristic(const State &state, int index, bool count) {
+int SelectiveMaxHeuristic::eval_heuristic(const GlobalState &state, int index, bool count) {
     if (count)
         num_evaluated[index]++;
     computed[index] = true;
@@ -319,7 +319,7 @@ int SelectiveMaxHeuristic::eval_heuristic(const State &state, int index, bool co
     return hvalue[index];
 }
 
-int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
+int SelectiveMaxHeuristic::compute_heuristic(const GlobalState &state) {
     num_evals++;
     dead_end = false;
 
@@ -406,7 +406,7 @@ int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
 }
 
 
-void SelectiveMaxHeuristic::learn(const State &state) {
+void SelectiveMaxHeuristic::learn(const GlobalState &state) {
     total_training_time.resume();
     //calculate all (remaining) heuristics
     for (int i = num_always_calc; i < heuristics.size(); i++) {
@@ -432,7 +432,7 @@ void SelectiveMaxHeuristic::learn(const State &state) {
     total_training_time.stop();
 }
 
-void SelectiveMaxHeuristic::classify(const State &state) {
+void SelectiveMaxHeuristic::classify(const GlobalState &state) {
     total_classification_time.resume();
     double max_confidence = 0.0;
     int best_heuristics = -1;
@@ -511,8 +511,8 @@ int SelectiveMaxHeuristic::calc_max() {
     return max;
 }
 
-bool SelectiveMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
-                                        const State &state) {
+bool SelectiveMaxHeuristic::reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                                        const GlobalState &state) {
     int ret = false;
     int val;
     for (int i = 0; i < num_heuristics; i++) {

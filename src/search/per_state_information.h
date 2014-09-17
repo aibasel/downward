@@ -1,9 +1,9 @@
 #ifndef PER_STATE_INFORMATION_H
 #define PER_STATE_INFORMATION_H
 
+#include "global_state.h"
 #include "globals.h"
 #include "segmented_vector.h"
-#include "state.h"
 #include "state_id.h"
 #include "state_registry.h"
 #include "utilities.h"
@@ -177,7 +177,7 @@ public:
         }
     }
 
-    Entry &operator[](const State &state) {
+    Entry &operator[](const GlobalState &state) {
         const StateRegistry *registry = &state.get_registry();
         SegmentedVector<Entry> *entries = get_entries(registry);
         int state_id = state.get_id().value;
@@ -189,7 +189,7 @@ public:
         return (*cached_entries)[state_id];
     }
 
-    const Entry &operator[](const State &state) const {
+    const Entry &operator[](const GlobalState &state) const {
         const StateRegistry *registry = &state.get_registry();
         const SegmentedVector<Entry> *entries = get_entries(registry);
         if (!entries) {

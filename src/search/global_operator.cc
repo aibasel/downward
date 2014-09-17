@@ -1,10 +1,11 @@
+#include "global_operator.h"
+
 #include "globals.h"
-#include "operator.h"
 
 #include <iostream>
 using namespace std;
 
-Condition::Condition(istream &in) {
+GlobalCondition::GlobalCondition(istream &in) {
     in >> var >> val;
 }
 
@@ -18,20 +19,20 @@ Condition::Condition(istream &in) {
 //}
 
 
-void Operator::read_pre_post(istream &in) {
+void GlobalOperator::read_pre_post(istream &in) {
     int cond_count, var, pre, post;
     in >> cond_count;
-    vector<Condition> conditions;
+    vector<GlobalCondition> conditions;
     conditions.reserve(cond_count);
     for (int i = 0; i < cond_count; i++)
-        conditions.push_back(Condition(in));
+        conditions.push_back(GlobalCondition(in));
     in >> var >> pre >> post;
     if (pre != -1)
-        preconditions.push_back(Condition(var, pre));
-    effects.push_back(Effect(var, post, conditions));
+        preconditions.push_back(GlobalCondition(var, pre));
+    effects.push_back(GlobalEffect(var, post, conditions));
 }
 
-Operator::Operator(istream &in, bool axiom) {
+GlobalOperator::GlobalOperator(istream &in, bool axiom) {
     marked = false;
 
     is_an_axiom = axiom;
@@ -42,7 +43,7 @@ Operator::Operator(istream &in, bool axiom) {
         int count;
         in >> count;
         for (int i = 0; i < count; i++)
-            preconditions.push_back(Condition(in));
+            preconditions.push_back(GlobalCondition(in));
         in >> count;
         for (int i = 0; i < count; i++)
             read_pre_post(in);
@@ -66,11 +67,11 @@ Operator::Operator(istream &in, bool axiom) {
     marker1 = marker2 = false;
 }
 
-void Condition::dump() const {
+void GlobalCondition::dump() const {
     cout << g_variable_name[var] << ": " << val;
 }
 
-void Effect::dump() const {
+void GlobalEffect::dump() const {
     cout << g_variable_name[var] << ":= " << val;
     if (!conditions.empty()) {
         cout << " if";
@@ -81,7 +82,7 @@ void Effect::dump() const {
     }
 }
 
-void Operator::dump() const {
+void GlobalOperator::dump() const {
     cout << name << ":";
     for (int i = 0; i < preconditions.size(); i++) {
         cout << " [";
