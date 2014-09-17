@@ -264,6 +264,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
 
         if (use_multi_path_dependence) {
             assert(last_key_removed.size() == 2);
+            if (node.is_dead_end())
+                continue;
             int pushed_h = last_key_removed[1];
             assert(node.get_h() >= pushed_h);
             if (node.get_h() > pushed_h) {
