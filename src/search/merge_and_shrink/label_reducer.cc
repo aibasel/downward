@@ -106,7 +106,7 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
     } else if (label_reduction_method == ALL_ABSTRACTIONS_WITH_FIXPOINT) {
         max_iterations = numeric_limits<int>::max();
     } else {
-        abort();
+        ABORT("unknown label reduction method");
     }
 
     int num_unsuccessful_iterations = 0;
