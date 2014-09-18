@@ -4,14 +4,14 @@
 #include <iostream>
 #include <vector>
 
-class Operator;
-class State;
+class GlobalOperator;
+class GlobalState;
 
 class SuccessorGenerator {
 public:
     virtual ~SuccessorGenerator() {}
-    virtual void generate_applicable_ops(const State &curr,
-                                         std::vector<const Operator *> &ops) = 0;
+    virtual void generate_applicable_ops(const GlobalState &curr,
+                                         std::vector<const GlobalOperator *> &ops) = 0;
     void dump() {_dump("  "); }
     virtual void _dump(std::string indent) = 0;
 };

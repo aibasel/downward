@@ -1,8 +1,8 @@
 #ifndef GLOBAL_TASK_INTERFACE_H
 #define GLOBAL_TASK_INTERFACE_H
 
+#include "global_operator.h"
 #include "globals.h"
-#include "operator.h"
 #include "task_interface.h"
 
 #include <cassert>
@@ -11,7 +11,7 @@
 
 class GlobalTaskInterface : public TaskInterface {
 protected:
-    const Operator &get_operator_or_axiom(int index, bool is_axiom) const {
+    const GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) const {
         if (is_axiom) {
             assert(index < g_axioms.size());
             return g_axioms[index];
@@ -41,7 +41,7 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const;
     std::pair<int, int> get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const;
-    const Operator *get_global_operator(int index, bool is_axiom) const;
+    const GlobalOperator *get_global_operator(int index, bool is_axiom) const;
 
     int get_num_axioms() const {return g_axioms.size(); }
 

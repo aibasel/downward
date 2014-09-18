@@ -13,8 +13,9 @@ static void exit_handler(int exit_code, void *hint);
 #elif OPERATING_SYSTEM == OSX
 static void exit_handler();
 #include <mach/mach.h>
-#elif OPERATING_SYSTEM == CYGWIN
-// nothing
+#elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
+#include <windows.h>
+#include <psapi.h>
 #endif
 
 static char *memory_padding = new char[512 * 1024];
@@ -34,7 +35,7 @@ void register_event_handlers() {
     on_exit(exit_handler, 0);
 #elif OPERATING_SYSTEM == OSX
     atexit(exit_handler);
-#elif OPERATING_SYSTEM == CYGWIN
+#elif OPERATING_SYSTEM == CYGWIN || OPERATING_SYSTEM == WINDOWS
     // nothing
 #endif
     signal(SIGABRT, signal_handler);
@@ -43,7 +44,7 @@ void register_event_handlers() {
     signal(SIGINT, signal_handler);
 }
 
-#if OPERATING_SYSTEM != CYGWIN
+#if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
 #if OPERATING_SYSTEM == LINUX
 void exit_handler(int, void *) {
 #elif OPERATING_SYSTEM == OSX
@@ -59,10 +60,10 @@ void exit_with(ExitCode exitcode) {
         cout << "Solution found." << endl;
         break;
     case EXIT_CRITICAL_ERROR:
-        cerr << "Unexplained error occured." << endl;
+        cerr << "Unexplained error occurred." << endl;
         break;
     case EXIT_INPUT_ERROR:
-        cerr << "Usage error occured." << endl;
+        cerr << "Usage error occurred." << endl;
         break;
     case EXIT_UNSUPPORTED:
         cerr << "Tried to use unsupported feature." << endl;
@@ -119,6 +120,11 @@ int get_peak_memory_in_kb() {
                   reinterpret_cast<task_info_t>(&t_info),
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
+#elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
+    // The file /proc/self/status is present under Cygwin, but contains no peak memory info.
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
+    memory_in_kb = pmc.PeakPagefileUsage / 1024;
 #else
     ifstream procfile("/proc/self/status");
     string word;

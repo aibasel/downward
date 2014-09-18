@@ -122,7 +122,7 @@ def build_planner():
     os.chdir(cwd)
 
 def get_pages_from_planner():
-    p = subprocess.Popen(["../../src/search/downward-1", "--help", "--txt2tags"], stdout=subprocess.PIPE)
+    p = subprocess.Popen(["../../src/search/downward-release", "--help", "--txt2tags"], stdout=subprocess.PIPE)
     out = p.communicate()[0]
     #split the output into tuples (title, markup_text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)

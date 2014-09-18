@@ -3,18 +3,19 @@
 
 #include <vector>
 
-#include "open_lists/open_list.h"
-#include "search_engine.h"
-#include "search_space.h"
-#include "state.h"
-#include "timer.h"
 #include "evaluator.h"
+#include "global_state.h"
+#include "search_engine.h"
 #include "search_progress.h"
+#include "search_space.h"
+#include "timer.h"
 
+#include "open_lists/open_list.h"
+
+class GlobalOperator;
 class Heuristic;
-class Operator;
-class ScalarEvaluator;
 class Options;
+class ScalarEvaluator;
 
 class EagerSearch : public SearchEngine {
     // Search Behavior parameters
@@ -26,7 +27,7 @@ class EagerSearch : public SearchEngine {
     ScalarEvaluator *f_evaluator;
 
 protected:
-    int step();
+    SearchStatus step();
     std::pair<SearchNode, bool> fetch_next_node();
     bool check_goal(const SearchNode &node);
     void update_jump_statistic(const SearchNode &node);

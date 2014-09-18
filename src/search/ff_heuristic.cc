@@ -1,10 +1,10 @@
 #include "ff_heuristic.h"
 
+#include "global_operator.h"
+#include "global_state.h"
 #include "globals.h"
-#include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "state.h"
 
 #include <cassert>
 #include <vector>
@@ -32,7 +32,7 @@ void FFHeuristic::initialize() {
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
-    const State &state, Proposition *goal) {
+    const GlobalState &state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
@@ -50,7 +50,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // so we perform it to save work.
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
-                    const Operator *op = &g_operators[operator_no];
+                    const GlobalOperator *op = &g_operators[operator_no];
                     if (op->is_applicable(state))
                         set_preferred(op);
                 }
@@ -59,7 +59,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
     }
 }
 
-int FFHeuristic::compute_heuristic(const State &state) {
+int FFHeuristic::compute_heuristic(const GlobalState &state) {
     int h_add = compute_add_and_ff(state);
     if (h_add == DEAD_END)
         return h_add;

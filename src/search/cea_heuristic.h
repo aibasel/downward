@@ -30,20 +30,20 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
 
     bool is_local_problem_set_up(const LocalProblem *problem) const;
     void set_up_local_problem(LocalProblem *problem, int base_priority,
-                              int start_value, const State &state);
+                              int start_value, const GlobalState &state);
 
     void try_to_fire_transition(LocalTransition *trans);
     void expand_node(LocalProblemNode *node);
-    void expand_transition(LocalTransition *trans, const State &state);
+    void expand_transition(LocalTransition *trans, const GlobalState &state);
 
-    int compute_costs(const State &state);
+    int compute_costs(const GlobalState &state);
     void mark_helpful_transitions(
-        LocalProblem *problem, LocalProblemNode *node, const State &state);
+        LocalProblem *problem, LocalProblemNode *node, const GlobalState &state);
     // Clears "reached_by" of visited nodes as a side effect to avoid
     // recursing to the same node again.
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     ContextEnhancedAdditiveHeuristic(const Options &opts);
     ~ContextEnhancedAdditiveHeuristic();

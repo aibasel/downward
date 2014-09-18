@@ -1,8 +1,9 @@
 #include "maximum_heuristic.h"
+
+#include "../global_state.h"
 #include "../globals.h"
-#include "../state.h"
-#include "../search_space.h"
 #include "../option_parser.h"
+#include "../search_space.h"
 
 #include <cassert>
 #include <limits>
@@ -54,7 +55,7 @@ void MaxHeuristic::initialize() {
 }
 
 
-int MaxHeuristic::compute_heuristic(const State &state) {
+int MaxHeuristic::compute_heuristic(const GlobalState &state) {
     int max = 0;
     bool dead_end = false;
     num_evals++;
@@ -124,8 +125,8 @@ void MaxHeuristic::print_statistics() const {
     }
 }
 
-bool MaxHeuristic::reach_state(const State &parent_state, const Operator &op,
-                               const State &state) {
+bool MaxHeuristic::reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                               const GlobalState &state) {
     int ret = false;
     int val;
     for (int i = 0; i < heuristics.size(); i++) {

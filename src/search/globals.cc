@@ -3,12 +3,11 @@
 #include "axioms.h"
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
+#include "global_operator.h"
+#include "global_state.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "legacy_causal_graph.h"
-#include "operator.h"
 #include "rng.h"
-#include "state.h"
 #include "state_registry.h"
 #include "successor_generator.h"
 #include "timer.h"
@@ -27,8 +26,6 @@ using namespace std;
 #include <ext/hash_map>
 using namespace __gnu_cxx;
 
-#include "state_registry.h"
-
 static const int PRE_FILE_VERSION = 3;
 
 
@@ -40,7 +37,7 @@ static const int PRE_FILE_VERSION = 3;
 
 static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
 
-bool test_goal(const State &state) {
+bool test_goal(const GlobalState &state) {
     for (int i = 0; i < g_goal.size(); i++) {
         if (state[g_goal[i].first] != g_goal[i].second) {
             return false;
@@ -49,7 +46,7 @@ bool test_goal(const State &state) {
     return true;
 }
 
-int calculate_plan_cost(const vector<const Operator *> &plan) {
+int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
     // TODO: Refactor: this is only used by save_plan (see below)
     //       and the SearchEngine classes and hence should maybe
     //       be moved into the SearchEngine (along with save_plan).
@@ -60,7 +57,7 @@ int calculate_plan_cost(const vector<const Operator *> &plan) {
     return plan_cost;
 }
 
-void save_plan(const vector<const Operator *> &plan, int iter) {
+void save_plan(const vector<const GlobalOperator *> &plan, int iter) {
     // TODO: Refactor: this is only used by the SearchEngine classes
     //       and hence should maybe be moved into the SearchEngine.
     ofstream outfile;
@@ -228,19 +225,20 @@ void read_operators(istream &in) {
     int count;
     in >> count;
     for (int i = 0; i < count; i++)
-        g_operators.push_back(Operator(in, false));
+        g_operators.push_back(GlobalOperator(in, false));
 }
 
 void read_axioms(istream &in) {
     int count;
     in >> count;
     for (int i = 0; i < count; i++)
-        g_axioms.push_back(Operator(in, true));
+        g_axioms.push_back(GlobalOperator(in, true));
 
     g_axiom_evaluator = new AxiomEvaluator;
 }
 
 void read_everything(istream &in) {
+    cout << "reading input... [t=" << g_timer << "]" << endl;
     read_and_verify_version(in);
     read_metric(in);
     read_variables(in);
@@ -260,22 +258,31 @@ void read_everything(istream &in) {
     g_successor_generator = read_successor_generator(in);
     check_magic(in, "end_SG");
     DomainTransitionGraph::read_all(in);
-    g_legacy_causal_graph = new LegacyCausalGraph(in);
+    check_magic(in, "begin_CG"); // ignore everything from here
+
+    cout << "done reading input! [t=" << g_timer << "]" << endl;
 
     // NOTE: causal graph is computed from the problem specification,
     // so must be built after the problem has been read in.
-    g_causal_graph = new CausalGraph;
 
+    cout << "building causal graph..." << flush;
+    g_causal_graph = new CausalGraph;
+    cout << "done! [t=" << g_timer << "]" << endl;
+
+    cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
     cout << "Variables: " << g_variable_domain.size() << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() *
             g_state_packer->get_bin_size_in_bytes() << endl;
+    cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
     g_state_registry = new StateRegistry;
+
+    cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
 
 void dump_everything() {
@@ -287,7 +294,7 @@ void dump_everything() {
     for (int i = 0; i < g_variable_name.size(); i++)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
-    State initial_state = g_initial_state();
+    GlobalState initial_state = g_initial_state();
     cout << "Initial State (PDDL):" << endl;
     initial_state.dump_pddl();
     cout << "Initial State (FDR):" << endl;
@@ -299,6 +306,10 @@ void dump_everything() {
     for(int i = 0; i < g_variable_domain.size(); i++)
       g_transition_graphs[i]->dump();
     */
+}
+
+bool is_unit_cost() {
+    return g_min_action_cost == 1 && g_max_action_cost == 1;
 }
 
 bool has_axioms() {
@@ -313,23 +324,13 @@ void verify_no_axioms() {
     }
 }
 
-int get_first_conditional_effects_op_id() {
-    for (int i = 0; i < g_operators.size(); i++) {
-        const vector<PrePost> &pre_post = g_operators[i].get_pre_post();
-        for (int j = 0; j < pre_post.size(); j++) {
-            const vector<Prevail> &cond = pre_post[j].cond;
-            if (cond.empty())
-                continue;
-            // Accept conditions that are redundant, but nothing else.
-            // In a better world, these would never be included in the
-            // input in the first place.
-            int var = pre_post[j].var;
-            int pre = pre_post[j].pre;
-            int post = pre_post[j].post;
-            if (pre == -1 && cond.size() == 1 && cond[0].var == var
-                && cond[0].prev != post && g_variable_domain[var] == 2)
-                continue;
-            return i;
+static int get_first_conditional_effects_op_id() {
+    for (int i = 0; i < g_operators.size(); ++i) {
+        const vector<GlobalEffect> &effects = g_operators[i].get_effects();
+        for (int j = 0; j < effects.size(); ++j) {
+            const vector<GlobalCondition> &cond = effects[j].conditions;
+            if (!cond.empty())
+                return i;
         }
     }
     return -1;
@@ -360,7 +361,7 @@ bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
-const State &g_initial_state() {
+const GlobalState &g_initial_state() {
     return g_state_registry->get_initial_state();
 }
 
@@ -375,13 +376,12 @@ vector<int> g_default_axiom_values;
 IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int> > g_goal;
-vector<Operator> g_operators;
-vector<Operator> g_axioms;
+vector<GlobalOperator> g_operators;
+vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 CausalGraph *g_causal_graph;
-LegacyCausalGraph *g_legacy_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";

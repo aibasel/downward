@@ -74,11 +74,11 @@ protected:
 
 
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 
-    void learn(const State &state);
-    void classify(const State &state);
-    int eval_heuristic(const State &state, int index, bool count);
+    void learn(const GlobalState &state);
+    void classify(const GlobalState &state);
+    int eval_heuristic(const GlobalState &state, int index, bool count);
     int calc_max();
 
     //int diff2tag(int diff) {return diff + max_diff;}
@@ -139,8 +139,8 @@ public:
     }
 
     virtual void print_statistics() const;
-    virtual bool reach_state(const State &parent_state, const Operator &op,
-                             const State &state);
+    virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                             const GlobalState &state);
 };
 
 #endif

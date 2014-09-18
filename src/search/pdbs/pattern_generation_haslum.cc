@@ -3,13 +3,13 @@
 #include "canonical_pdbs_heuristic.h"
 #include "pdb_heuristic.h"
 
+#include "../causal_graph.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../legacy_causal_graph.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
-#include "../state.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../timer.h"
@@ -34,7 +34,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
-      max_time(opts.get<int>("max_time")),
+      max_time(opts.get<double>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
       num_rejected(0),
       hill_climbing_timer(0) {
@@ -51,9 +51,11 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
     const vector<int> &pattern = pdb->get_pattern();
     int pdb_size = pdb->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
-        // causally relevant variables for current variable from pattern
-        vector<int> rel_vars = g_legacy_causal_graph->get_predecessors(pattern[i]);
-        sort(rel_vars.begin(), rel_vars.end());
+        /* Only consider variables used in preconditions for current
+           variable from pattern. It would also make sense to consider
+           *goal* variables connected by effect-effect arcs, but we
+           don't. This may be worth experimenting with. */
+        const vector<int> &rel_vars = g_causal_graph->get_eff_to_pre(pattern[i]);
         vector<int> relevant_vars;
         // make sure we only use relevant variables which are not already included in pattern
         set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
@@ -95,9 +97,9 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &
 }
 
 void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
-                                            vector<State> &samples,
+                                            vector<GlobalState> &samples,
                                             double average_operator_cost) {
-    const State &initial_state = sample_registry.get_initial_state();
+    const GlobalState &initial_state = sample_registry.get_initial_state();
     current_heuristic->evaluate(initial_state);
     assert(!current_heuristic->is_dead_end());
 
@@ -119,7 +121,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
-        if ((*hill_climbing_timer)() > max_time)
+        if ((*hill_climbing_timer)() >= max_time)
             throw HillClimbingTimeout();
 
         // calculate length of random walk accoring to a binomial distribution
@@ -131,9 +133,9 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
         }
 
         // random walk of length length
-        State current_state(initial_state);
+        GlobalState current_state(initial_state);
         for (int j = 0; j < length; ++j) {
-            vector<const Operator *> applicable_ops;
+            vector<const GlobalOperator *> applicable_ops;
             g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
             // if there are no applicable operators --> do not walk further
             if (applicable_ops.empty()) {
@@ -154,7 +156,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 }
 
 std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
-    vector<State> &samples,
+    vector<GlobalState> &samples,
     vector<PDBHeuristic *> &candidate_pdbs) {
     // TODO: The original implementation by Haslum et al. uses astar to compute h values for
     // the sample states only instead of generating all PDBs.
@@ -166,7 +168,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
     // Iterate over all candidates and search for the best improving pattern/pdb
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
-        if ((*hill_climbing_timer)() > max_time)
+        if ((*hill_climbing_timer)() >= max_time)
             throw HillClimbingTimeout();
 
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
@@ -209,7 +211,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
-                                                    const State &sample,
+                                                    const GlobalState &sample,
                                                     const vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     pdb_heuristic->evaluate(sample);
     if (pdb_heuristic->is_dead_end()) {
@@ -265,7 +267,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
             StateRegistry sample_registry;
-            vector<State> samples;
+            vector<GlobalState> samples;
             sample_states(sample_registry, samples, average_operator_cost);
 
             pair<int, int> improvement_and_index =
@@ -421,9 +423,10 @@ static Heuristic *_parse(OptionParser &parser) {
                          "The section \"avoiding redundant evaluations\" describes how the search neighbourhood "
                          "of patterns can be restricted to variables that are somewhat relevant to the variables "
                          "already included in the pattern by analyzing causal graphs. This is also implemented "
-                         "in Fast Downward. The second approach described in the paper (statistical confidence "
-                         "interval) is not applicable to this implementation, as it doesn't use A* search but "
-                         "constructs the entire pattern databases for all candidate patterns anyway.\n"
+                         "in Fast Downward, but we only consider precondition-to-effect arcs of the causal graph, "
+                         "ignoring effect-to-effect arcs. The second approach described in the paper (statistical "
+                         "confidence interval) is not applicable to this implementation, as it doesn't use A* "
+                         "search but constructs the entire pattern databases for all candidate patterns anyway.\n"
                          "The search is ended if there is no more improvement (or the improvement is smaller "
                          "than the minimal improvement which can be set as an option), how ever there is no "
                          "limit of iterations of the local search. This is similar to the techniques used in "
@@ -441,10 +444,10 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("min_improvement",
                            "minimum number of samples on which a candidate pattern collection must improve on the "
                            "current one to be considered as the next pattern collection ", "10");
-    parser.add_option<int>("max_time",
-                           "maximum time in seconds for improving the initial pattern "
-                           "collection via hill climbing. If set to 0, no hill climbing is performed at all.",
-                           "infinity");
+    parser.add_option<double>("max_time",
+                              "maximum time in seconds for improving the initial pattern "
+                              "collection via hill climbing. If set to 0, no hill climbing is performed at all.",
+                              "infinity");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
