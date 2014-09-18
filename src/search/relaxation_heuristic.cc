@@ -69,7 +69,7 @@ void RelaxationHeuristic::initialize() {
     }
 }
 
-void RelaxationHeuristic::build_unary_operators(const OperatorRef &op, int op_no) {
+void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     int base_cost = get_adjusted_cost(op);
     vector<Proposition *> precondition_props;
     Preconditions preconditions = op.get_preconditions();

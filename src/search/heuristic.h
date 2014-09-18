@@ -35,7 +35,7 @@ protected:
     // preferred operators for this heuristic once.
     void set_preferred(const GlobalOperator *op);
     int get_adjusted_cost(const GlobalOperator &op) const;
-    int get_adjusted_cost(const OperatorRef &op) const;
+    int get_adjusted_cost(const Operator &op) const;
     bool is_unit_cost_problem() const {
         return is_unit_cost;
     }
