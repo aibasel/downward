@@ -5,16 +5,15 @@
 #include "merge_strategy.h"
 #include "shrink_strategy.h"
 
+#include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../timer.h"
 
 #include <cassert>
 #include <vector>
 using namespace std;
-
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
@@ -26,6 +25,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
     delete merge_strategy;
+    delete shrink_strategy;
     delete labels;
 }
 
@@ -189,7 +189,7 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << "Estimated peak memory for abstraction: " << final_abstraction->get_peak_memory_estimate() << " bytes" << endl;
 }
 
-int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
+int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
     int cost = final_abstraction->get_cost(state);
     if (cost == -1)
         return DEAD_END;

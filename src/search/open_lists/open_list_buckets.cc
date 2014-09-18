@@ -11,7 +11,7 @@ using namespace std;
   Bucket-based implementation of an open list.
   Nodes with identical heuristic value are expanded in FIFO order.
 
-  It would be easy to templatize the "State *" and "Operator *"
+  It would be easy to templatize the "GlobalState *" and "GlobalOperator *"
   datatypes, because these are only used as anonymous data. However,
   there is little point in applying such generalizations before there
   is any need for them.

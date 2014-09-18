@@ -1,58 +1,5 @@
 from __future__ import print_function
 
-from . import pddl_types
-
-def parse_condition(alist):
-    condition = parse_condition_aux(alist, False)
-    # TODO: The next line doesn't appear to do anything good,
-    # since uniquify_variables doesn't modify the condition in place.
-    # Conditions in actions or axioms are uniquified elsewhere, but
-    # it looks like goal conditions are never uniquified at all
-    # (which would be a bug).
-    condition.uniquify_variables({})
-    return condition
-
-def parse_condition_aux(alist, negated):
-    """Parse a PDDL condition. The condition is translated into NNF on the fly."""
-    tag = alist[0]
-    if tag in ("and", "or", "not", "imply"):
-        args = alist[1:]
-        if tag == "imply":
-            assert len(args) == 2
-        if tag == "not":
-            assert len(args) == 1
-            return parse_condition_aux(args[0], not negated)
-    elif tag in ("forall", "exists"):
-        parameters = pddl_types.parse_typed_list(alist[1])
-        args = alist[2:]
-        assert len(args) == 1
-    elif negated:
-        return NegatedAtom(alist[0], alist[1:])
-    else:
-        return Atom(alist[0], alist[1:])
-    if tag == "imply":
-        parts = [parse_condition_aux(args[0], not negated),
-                 parse_condition_aux(args[1], negated)]
-        tag = "or"
-    else:
-        parts = [parse_condition_aux(part, negated) for part in args]
-
-    if tag == "and" and not negated or tag == "or" and negated:
-        return Conjunction(parts)
-    elif tag == "or" and not negated or tag == "and" and negated:
-        return Disjunction(parts)
-    elif tag == "forall" and not negated or tag == "exists" and negated:
-        return UniversalCondition(parameters, parts)
-    elif tag == "exists" and not negated or tag == "forall" and negated:
-        return ExistentialCondition(parameters, parts)
-
-def parse_literal(alist):
-    if alist[0] == "not":
-        assert len(alist) == 2
-        alist = alist[1]
-        return NegatedAtom(alist[0], alist[1:])
-    else:
-        return Atom(alist[0], alist[1:])
 
 # Conditions (of any type) are immutable, because they need to
 # be hashed occasionally. Immutability also allows more efficient comparison
@@ -250,7 +197,7 @@ class QuantifiedCondition(Condition):
 
 class UniversalCondition(QuantifiedCondition):
     def _untyped(self, parts):
-        type_literals = [NegatedAtom(par.type, [par.name]) for par in self.parameters]
+        type_literals = [par.get_atom().negate() for par in self.parameters]
         return UniversalCondition(self.parameters,
                                   [Disjunction(type_literals + parts)])
     def negate(self):
@@ -260,7 +207,7 @@ class UniversalCondition(QuantifiedCondition):
 
 class ExistentialCondition(QuantifiedCondition):
     def _untyped(self, parts):
-        type_literals = [Atom(par.type, [par.name]) for par in self.parameters]
+        type_literals = [par.get_atom() for par in self.parameters]
         return ExistentialCondition(self.parameters,
                                     [Conjunction(type_literals + parts)])
     def negate(self):

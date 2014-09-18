@@ -3,10 +3,10 @@
 #include "landmark_graph.h"
 #include "util.h"
 
-#include "../operator.h"
-#include "../state.h"
-#include "../globals.h"
 #include "../domain_transition_graph.h"
+#include "../global_operator.h"
+#include "../global_state.h"
+#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -22,57 +22,63 @@ LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
 }
 
 void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
-    const LandmarkNode *lmp, const Operator &o, hash_map<int, int> &result) const {
+    const LandmarkNode *lmp, const GlobalOperator &o, hash_map<int, int> &result) const {
     // Computes a subset of the actual preconditions of o for achieving lmp - takes into account
     // operator preconditions, but only reports those effect conditions that are true for ALL
     // effects achieving the LM.
 
-    const State &initial_state = g_initial_state();
-    const vector<PrePost> &prepost = o.get_pre_post();
-    for (unsigned j = 0; j < prepost.size(); j++) {
-        if (prepost[j].pre != -1) {
-            assert(prepost[j].pre < g_variable_domain[prepost[j].var]);
-            result.insert(make_pair(prepost[j].var, prepost[j].pre));
-        } else if (g_variable_domain[prepost[j].var] == 2) {
+    vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
+    const vector<GlobalCondition> &preconditions = o.get_preconditions();
+    for (size_t j = 0; j < preconditions.size(); ++j) {
+        result.insert(make_pair(preconditions[j].var, preconditions[j].val));
+        has_precondition_on_var[preconditions[j].var] = true;
+    } 
+
+    // If there is an effect but no precondition on a variable v with domain
+    // size 2 and initially the variable has the other value than required by
+    // the landmark then at the first time the landmark is reached the
+    // variable must still have the initial value.
+    const GlobalState &initial_state = g_initial_state();
+    const vector<GlobalEffect> &effects = o.get_effects();
+    for (size_t j = 0; j < effects.size(); ++j) {
+        int var = effects[j].var;
+        if (!has_precondition_on_var[var] && g_variable_domain[var] == 2) {
             for (int i = 0; i < lmp->vars.size(); i++) {
-                if (lmp->vars[i] == prepost[j].var
-                    && initial_state[prepost[j].var] != lmp->vals[i]) {
-                    result.insert(make_pair(prepost[j].var,
-                                            initial_state[prepost[j].var]));
+                if (lmp->vars[i] == var
+                    && initial_state[var] != lmp->vals[i]) {
+                    result.insert(make_pair(var, initial_state[var]));
                     break;
                 }
             }
         }
     }
 
-    const vector<Prevail> prevail = o.get_prevail();
-    for (unsigned j = 0; j < prevail.size(); j++)
-        result.insert(make_pair(prevail[j].var, prevail[j].prev));
     // Check for lmp in conditional effects
     set<int> lm_props_achievable;
-    for (unsigned j = 0; j < prepost.size(); j++)
+    for (size_t j = 0; j < effects.size(); ++j)
         for (int i = 0; i < lmp->vars.size(); i++)
-            if (lmp->vars[i] == prepost[j].var && lmp->vals[i]
-                == prepost[j].post)
+            if (lmp->vars[i] == effects[j].var && lmp->vals[i]
+                == effects[j].val)
                 lm_props_achievable.insert(i);
     // Intersect effect conditions of all effects that can achieve lmp
     hash_map<int, int> intersection;
     bool init = true;
     set<int>::iterator it = lm_props_achievable.begin();
     for (; it != lm_props_achievable.end(); ++it) {
-        for (unsigned j = 0; j < prepost.size(); j++) {
+        for (size_t j = 0; j < effects.size(); ++j) {
             if (!init && intersection.empty())
                 break;
             hash_map<int, int> current_cond;
-            if (lmp->vars[*it] == prepost[j].var && lmp->vals[*it]
-                == prepost[j].post) {
-                if (prepost[j].cond.empty()) {
+            if (lmp->vars[*it] == effects[j].var &&
+                lmp->vals[*it] == effects[j].val) {
+                if (effects[j].conditions.empty()) {
                     intersection.clear();
                     break;
-                } else
-                    for (unsigned k = 0; k < prepost[j].cond.size(); k++)
-                        current_cond.insert(make_pair(prepost[j].cond[k].var,
-                                                      prepost[j].cond[k].prev));
+                } else {
+                    for (size_t k = 0; k < effects[j].conditions.size(); ++k)
+                        current_cond.insert(make_pair(effects[j].conditions[k].var,
+                                                      effects[j].conditions[k].val));
+                }
             }
             if (init) {
                 init = false;
@@ -88,12 +94,12 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
                                                                                int> > &lvl_var) {
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
-    for (unsigned int k = 0; k < bp->vars.size(); k++) {
+    for (size_t k = 0; k < bp->vars.size(); ++k) {
         pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
         // ...look at all achieving operators
         const vector<int> &ops = lm_graph->get_operators_including_eff(b);
-        for (unsigned i = 0; i < ops.size(); i++) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+        for (size_t i = 0; i < ops.size(); ++i) {
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp))
@@ -167,7 +173,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(const set<pair<int, int> > 
                                                      LandmarkNode &b, edge_type t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
-    const State &initial_state = g_initial_state();
+    const GlobalState &initial_state = g_initial_state();
     for (set<pair<int, int> >::iterator it = a.begin(); it != a.end(); ++it) {
         if (initial_state[it->first] == it->second) {
             //cout << endl << "not adding LM that's true in initial state: "
@@ -207,12 +213,12 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     /* Compute the shared preconditions of all operators that can potentially
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
-    for (unsigned int k = 0; k < bp->vars.size(); k++) {
+    for (size_t k = 0; k < bp->vars.size(); ++k) {
         pair<int, int> b = make_pair(bp->vars[k], bp->vals[k]);
         const vector<int> &ops = lm_graph->get_operators_including_eff(b);
 
-        for (unsigned i = 0; i < ops.size(); i++) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+        for (size_t i = 0; i < ops.size(); ++i) {
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
             if (!init && shared_pre.empty())
                 break;
 
@@ -316,8 +322,8 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     // pddl_proposition_indeces to props
     hash_map<int, set<int> > used_operators; // tells for each
     // proposition which operators use it
-    for (unsigned i = 0; i < ops.size(); i++) {
-        const Operator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
+    for (size_t i = 0; i < ops.size(); ++i) {
+        const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(ops[i]);
         if (_possibly_reaches_lm(op, lvl_var, bp)) {
             no_ops++;
             hash_map<int, int> next_pre;
@@ -356,7 +362,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
     build_disjunction_classes();
 
-    for (unsigned i = 0; i < g_goal.size(); i++) {
+    for (size_t i = 0; i < g_goal.size(); ++i) {
         LandmarkNode &lmn = lm_graph->landmark_add_simple(g_goal[i]);
         lmn.in_goal = true;
         open_landmarks.push_back(&lmn);
@@ -448,7 +454,7 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
      any value in "exclude". If not, that means that one of the values in "exclude"
      is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
-    const State &initial_state = g_initial_state();
+    const GlobalState &initial_state = g_initial_state();
     assert(landmark.second != initial_state[landmark.first]); // no initial state landmarks
     // The value that we want to achieve must not be excluded:
     assert(exclude.find(landmark.second) == exclude.end());
@@ -467,7 +473,7 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
         open.pop_front();
         vector<int> succ;
         g_transition_graphs[landmark.first]->get_successors(c, succ);
-        for (unsigned j = 0; j < succ.size(); j++)
+        for (size_t j = 0; j < succ.size(); ++j)
             if (closed.find(succ[j]) == closed.end()) {
                 open.push_back(succ[j]);
                 closed.insert(succ[j]);

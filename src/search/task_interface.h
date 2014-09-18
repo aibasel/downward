@@ -3,7 +3,7 @@
 
 #include <utility>
 
-class Operator;
+class GlobalOperator;
 
 class TaskInterface {
 public:
@@ -24,7 +24,7 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const = 0;
     virtual std::pair<int, int> get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const = 0;
-    virtual const Operator *get_global_operator(int index, bool is_axiom) const = 0;
+    virtual const GlobalOperator *get_global_operator(int index, bool is_axiom) const = 0;
 
     virtual int get_num_axioms() const = 0;
 

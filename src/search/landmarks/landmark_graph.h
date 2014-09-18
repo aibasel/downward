@@ -9,9 +9,9 @@
 #include <ext/hash_set>
 #include <cassert>
 
-#include "../operator.h"
 #include "exploration.h"
 #include "landmark_types.h"
+#include "../global_operator.h"
 #include "../option_parser.h"
 
 enum edge_type {
@@ -70,7 +70,7 @@ public:
         return in_goal;
     }
 
-    bool is_true_in_state(const State &state) const {
+    bool is_true_in_state(const GlobalState &state) const {
         if (disjunctive) {
             for (unsigned int i = 0; i < vars.size(); i++) {
                 if (state[vars[i]] == vals[i]) {
@@ -145,8 +145,8 @@ public:
     inline const std::set<LandmarkNode *> &get_nodes() const {
         return nodes;
     }
-    inline const Operator &get_operator_for_lookup_index(int op_no) const {
-        const Operator &op = (op_no < g_operators.size()) ?
+    inline const GlobalOperator &get_operator_for_lookup_index(int op_no) const {
+        const GlobalOperator &op = (op_no < g_operators.size()) ?
                              g_operators[op_no] : g_axioms[op_no - g_operators.size()];
         return op;
     }

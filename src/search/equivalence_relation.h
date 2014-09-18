@@ -1,5 +1,5 @@
-#ifndef MERGE_AND_SHRINK_EQUIVALENCE_RELATION_H
-#define MERGE_AND_SHRINK_EQUIVALENCE_RELATION_H
+#ifndef EQUIVALENCE_RELATION_H
+#define EQUIVALENCE_RELATION_H
 
 #include <algorithm>
 #include <cmath>
@@ -92,15 +92,15 @@ public:
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.
-      The vector labeled_elements cointains pairs (L, e) where L is an arbitrary
-      label for element e. Elements must not occur more than once in this vector.
-      Two elements are equivalent iff they are labeled with the same label.
+      The vector annotated_elements cointains pairs (A, e) where A is an arbitrary
+      annotation for element e. Elements must not occur more than once in this vector.
+      Two elements are equivalent iff they are annotated with an equivalent annotation.
 
       All elements that are not mentioned in this vector are assumed to have one
-      specific label that does not occur in labeled_elements, i.e. they are
+      specific annotation that does not occur in annotated_elements, i.e. they are
       equivalent to each other, but not equivalent to anything mentioned in
-      labeled_elements.
-      The vector labeled_elements will be sorted by the constructor.
+      annotated_elements.
+      The vector annotated_elements will be sorted by the constructor.
     */
     // NOTE unfortunately this is not possible as a constructor, since c++
     //      does not support templated constructors that only use the template
@@ -108,33 +108,33 @@ public:
     //      Also, default parameters are not allowed for function templates in
     //      the current c++ standard.
     template<class T>
-    static EquivalenceRelation *from_grouped_elements(
+    static EquivalenceRelation *from_annotated_elements(
             int n,
-            std::vector<std::pair<T, int> > &labeled_elements);
+            std::vector<std::pair<T, int> > &annotated_elements);
     template<class T, class Equal>
-    static EquivalenceRelation *from_grouped_elements(
+    static EquivalenceRelation *from_annotated_elements(
             int n,
-            std::vector<std::pair<T, int> > &labeled_elements);
+            std::vector<std::pair<T, int> > &annotated_elements);
 };
 
 template<class T>
-EquivalenceRelation *EquivalenceRelation::from_grouped_elements(int n,
-    std::vector<std::pair<T, int> > &labeled_elements) {
-    return EquivalenceRelation::from_grouped_elements<T, std::equal_to<T> >(n, labeled_elements);
+EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
+    std::vector<std::pair<T, int> > &annotated_elements) {
+    return EquivalenceRelation::from_annotated_elements<T, std::equal_to<T> >(n, annotated_elements);
 }
 
 template<class T, class Equal>
-EquivalenceRelation *EquivalenceRelation::from_grouped_elements(int n,
-    std::vector<std::pair<T, int> > &labeled_elements) {
+EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
+    std::vector<std::pair<T, int> > &annotated_elements) {
     EquivalenceRelation *relation = new EquivalenceRelation(n);
-    if (!labeled_elements.empty()) {
-        sort(labeled_elements.begin(), labeled_elements.end());
+    if (!annotated_elements.empty()) {
+        sort(annotated_elements.begin(), annotated_elements.end());
         Equal equal;
-        T current_class_label = labeled_elements[0].first;
+        T current_class_label = annotated_elements[0].first;
         BlockListIter it_current_block = relation->add_empty_block();
-        for (size_t i = 0; i < labeled_elements.size(); ++i) {
-            T label = labeled_elements[i].first;
-            int element = labeled_elements[i].second;
+        for (size_t i = 0; i < annotated_elements.size(); ++i) {
+            T label = annotated_elements[i].first;
+            int element = annotated_elements[i].second;
             if (!equal(label, current_class_label)) {
                 current_class_label = label;
                 it_current_block = relation->add_empty_block();

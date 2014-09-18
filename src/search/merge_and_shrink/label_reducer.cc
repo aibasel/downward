@@ -1,11 +1,11 @@
 #include "label_reducer.h"
 
 #include "abstraction.h"
-#include "equivalence_relation.h"
 #include "label.h"
 
+#include "../equivalence_relation.h"
+#include "../global_operator.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../utilities.h"
 
@@ -202,22 +202,19 @@ LabelSignature LabelReducer::build_label_signature(
     vector<Assignment> preconditions;
     vector<Assignment> effects;
 
-    const vector<Prevail> &prev = label.get_prevail();
-    for (size_t i = 0; i < prev.size(); ++i) {
-        int var = prev[i].var;
+    const vector<GlobalCondition> &precs = label.get_preconditions();
+    for (size_t i = 0; i < precs.size(); ++i) {
+        int var = precs[i].var;
         if (var_is_used[var]) {
-            int val = prev[i].prev;
+            int val = precs[i].val;
             preconditions.push_back(make_pair(var, val));
         }
     }
-    const vector<PrePost> &pre_post = label.get_pre_post();
-    for (size_t i = 0; i < pre_post.size(); ++i) {
-        int var = pre_post[i].var;
+    const vector<GlobalEffect> &effs = label.get_effects();
+    for (size_t i = 0; i < effs.size(); ++i) {
+        int var = effs[i].var;
         if (var_is_used[var]) {
-            int pre = pre_post[i].pre;
-            if (pre != -1)
-                preconditions.push_back(make_pair(var, pre));
-            int post = pre_post[i].post;
+            int post = effs[i].val;
             effects.push_back(make_pair(var, post));
         }
     }
@@ -308,17 +305,17 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
-    vector<pair<int, int> > groups_and_labels;
-    groups_and_labels.reserve(num_labels);
+    vector<pair<int, int> > annotated_labels;
+    annotated_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         const Label *label = labels[label_no];
         assert(label->get_id() == label_no);
         if (!label->is_reduced()) {
             // only consider non-reduced labels
-            groups_and_labels.push_back(make_pair(0, label_no));
+            annotated_labels.push_back(make_pair(0, label_no));
         }
     }
-    EquivalenceRelation *relation = EquivalenceRelation::from_grouped_elements<int>(num_labels, groups_and_labels);
+    EquivalenceRelation *relation = EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
     for (size_t i = 0; i < all_abstractions.size(); ++i) {
         Abstraction *abs = all_abstractions[i];

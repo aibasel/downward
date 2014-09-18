@@ -1,10 +1,10 @@
 #include "abstraction.h"
 
-#include "equivalence_relation.h"
 #include "label.h"
 #include "labels.h"
 #include "shrink_fh.h"
 
+#include "../equivalence_relation.h"
 #include "../globals.h"
 #include "../priority_queue.h"
 #include "../timer.h"
@@ -38,9 +38,7 @@ using namespace __gnu_cxx;
  computation is not worth the overhead.
  */
 
-//  TODO: We define infinity in more than a few places right now (=>
-//        grep for it). It should only be defined once.
-static const int infinity = numeric_limits<int>::max();
+const int INF = numeric_limits<int>::max();
 
 Abstraction::Abstraction(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
@@ -111,7 +109,7 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
     for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
         if (relevant_labels[label_no]) {
             const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-            int label_rank = infinity;
+            int label_rank = INF;
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const AbstractTransition &t = transitions[i];
                 label_rank = min(label_rank, goal_distances[t.target]);
@@ -149,12 +147,12 @@ void Abstraction::compute_distances() {
         cout << "init state was pruned, no distances to compute" << endl;
         // If init_state was pruned, then everything must have been pruned.
         assert(num_states == 0);
-        max_f = max_g = max_h = infinity;
+        max_f = max_g = max_h = INF;
         return;
     }
 
-    init_distances.resize(num_states, infinity);
-    goal_distances.resize(num_states, infinity);
+    init_distances.resize(num_states, INF);
+    goal_distances.resize(num_states, INF);
     if (labels->is_unit_cost()) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
@@ -176,9 +174,9 @@ void Abstraction::compute_distances() {
         // States that are both unreachable and irrelevant are counted
         // as unreachable, not irrelevant. (Doesn't really matter, of
         // course.)
-        if (g == infinity) {
+        if (g == INF) {
             unreachable_count++;
-        } else if (h == infinity) {
+        } else if (h == INF) {
             irrelevant_count++;
         } else {
             max_f = max(max_f, g + h);
@@ -535,8 +533,8 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
 
     assert(is_normalized());
     vector<bool> considered_labels(num_labels, false);
-    vector<pair<int, int> > groups_and_labels;
-    int group_number = 0;
+    vector<pair<int, int> > annotated_labels;
+    int annotation = 0;
     for (size_t label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_label_reduced(label_no)) {
             // do not consider non-leaf labels
@@ -546,7 +544,7 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             continue;
         }
         int label_cost = get_label_cost_by_index(label_no);
-        groups_and_labels.push_back(make_pair(group_number, label_no));
+        annotated_labels.push_back(make_pair(annotation, label_no));
         const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
         for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
             if (labels->is_label_reduced(other_label_no)) {
@@ -566,12 +564,12 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             if ((transitions.empty() && other_transitions.empty())
                 || (transitions == other_transitions)) {
                 considered_labels[other_label_no] = true;
-                groups_and_labels.push_back(make_pair(group_number, other_label_no));
+                annotated_labels.push_back(make_pair(annotation, other_label_no));
             }
         }
-        ++group_number;
+        ++annotation;
     }
-    return EquivalenceRelation::from_grouped_elements<int>(num_labels, groups_and_labels);
+    return EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 }
 
 void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
@@ -589,24 +587,25 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); label_no++) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<Prevail> &prev = label->get_prevail();
-        for (int i = 0; i < prev.size(); i++) {
-            int var = prev[i].var;
-            int value = prev[i].prev;
-            Abstraction *abs = result[var];
-            AbstractTransition trans(value, value);
-            abs->transitions_by_label[label_no].push_back(trans);
-            abs->relevant_labels[label_no] = true;
-        }
-        const vector<PrePost> &pre_post = label->get_pre_post();
-        for (int i = 0; i < pre_post.size(); i++) {
-            int var = pre_post[i].var;
-            int post_value = pre_post[i].post;
+        const vector<GlobalCondition> &preconditions = label->get_preconditions();
+        const vector<GlobalEffect> &effects = label->get_effects();
+        hash_map<int,int> pre_val;
+        vector<bool> has_effect_on_var(g_variable_domain.size(), false);
+        for (int i = 0; i < preconditions.size(); i++) 
+            pre_val[preconditions[i].var] = preconditions[i].val;
+
+        for (int i = 0; i < effects.size(); i++) {
+            int var = effects[i].var;
+            has_effect_on_var[var] = true;
+            int post_value = effects[i].val;
             Abstraction *abs = result[var];
 
             // Determine possible values that var can have when this
             // operator is applicable.
-            int pre_value = pre_post[i].pre;
+            int pre_value = -1;
+            hash_map<int,int>::const_iterator pre_val_it = pre_val.find(var);
+            if (pre_val_it != pre_val.end())
+                pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;
             if (pre_value == -1) {
                 pre_value_min = 0;
@@ -621,12 +620,12 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             // cond_effect_pre_value == -1 means no effect condition on var.
             // has_other_effect_cond is true iff there exists an effect
             // condition on a variable other than var.
-            const vector<Prevail> &eff_cond = pre_post[i].cond;
+            const vector<GlobalCondition> &eff_cond = effects[i].conditions;
             int cond_effect_pre_value = -1;
             bool has_other_effect_cond = false;
             for (size_t j = 0; j < eff_cond.size(); ++j) {
                 if (eff_cond[j].var == var) {
-                    cond_effect_pre_value = eff_cond[j].prev;
+                    cond_effect_pre_value = eff_cond[j].val;
                 } else {
                     has_other_effect_cond = true;
                 }
@@ -657,8 +656,18 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
                     }
                 }
             }
-            
+
             abs->relevant_labels[label_no] = true;
+        }
+        for (int i = 0; i < preconditions.size(); i++) {
+            int var = preconditions[i].var;
+            if (!has_effect_on_var[var]) {
+                int value = preconditions[i].val;
+                Abstraction *abs = result[var];
+                AbstractTransition trans(value, value);
+                abs->transitions_by_label[label_no].push_back(trans);
+                abs->relevant_labels[label_no] = true;
+            }
         }
     }
 
@@ -824,12 +833,12 @@ string CompositeAbstraction::description() const {
     return s.str();
 }
 
-AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const {
+AbstractStateRef AtomicAbstraction::get_abstract_state(const GlobalState &state) const {
     int value = state[variable];
     return lookup_table[value];
 }
 
-AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) const {
+AbstractStateRef CompositeAbstraction::get_abstract_state(const GlobalState &state) const {
     AbstractStateRef state1 = components[0]->get_abstract_state(state);
     AbstractStateRef state2 = components[1]->get_abstract_state(state);
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
@@ -890,8 +899,8 @@ void Abstraction::apply_abstraction(
     }
 
     int new_num_states = collapsed_groups.size();
-    vector<int> new_init_distances(new_num_states, infinity);
-    vector<int> new_goal_distances(new_num_states, infinity);
+    vector<int> new_init_distances(new_num_states, INF);
+    vector<int> new_goal_distances(new_num_states, INF);
     vector<bool> new_goal_states(new_num_states, false);
 
     bool must_clear_distances = false;
@@ -972,12 +981,12 @@ bool Abstraction::is_solvable() const {
     return init_state != PRUNED_STATE;
 }
 
-int Abstraction::get_cost(const State &state) const {
+int Abstraction::get_cost(const GlobalState &state) const {
     int abs_state = get_abstract_state(state);
     if (abs_state == PRUNED_STATE)
         return -1;
     int cost = goal_distances[abs_state];
-    assert(cost != infinity);
+    assert(cost != INF);
     return cost;
 }
 

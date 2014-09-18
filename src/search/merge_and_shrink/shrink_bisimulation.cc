@@ -7,14 +7,10 @@
 
 #include <cassert>
 #include <iostream>
-#include <limits>
 #include <ext/hash_map>
 
 using namespace std;
 using namespace __gnu_cxx;
-
-
-static const int infinity = numeric_limits<int>::max();
 
 
 /* A successor signature characterizes the behaviour of an abstract
@@ -180,8 +176,8 @@ int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
-        assert(h >= 0 && h != infinity);
-        assert(abs.get_init_distance(state) != infinity);
+        assert(h >= 0 && h != INF);
+        assert(abs.get_init_distance(state) != INF);
 
         if (abs.is_goal_state(state)) {
             assert(h == 0);
@@ -215,7 +211,7 @@ void ShrinkBisimulation::compute_signatures(
                             state);
         signatures.push_back(signature);
     }
-    signatures.push_back(Signature(infinity, false, -1, SuccessorSignature(), -1));
+    signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
     int num_labels = abs.get_num_labels();
@@ -285,7 +281,7 @@ void ShrinkBisimulation::compute_abstraction(
     // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
 
     int max_h = abs.get_max_h();
-    assert(max_h >= 0 && max_h != infinity);
+    assert(max_h >= 0 && max_h != INF);
 
     bool stable = false;
     bool stop_requested = false;
@@ -298,7 +294,7 @@ void ShrinkBisimulation::compute_abstraction(
         // Verify size of signatures and presence of sentinels.
         assert(signatures.size() == num_states + 2);
         assert(signatures[0].h_and_goal == -2);
-        assert(signatures[num_states + 1].h_and_goal == infinity);
+        assert(signatures[num_states + 1].h_and_goal == INF);
 
         int sig_start = 1; // Skip over initial sentinel.
         while (true) {
@@ -306,7 +302,7 @@ void ShrinkBisimulation::compute_abstraction(
             int group = signatures[sig_start].group;
             if (h_and_goal > max_h) {
                 // We have hit the end sentinel.
-                assert(h_and_goal == infinity);
+                assert(h_and_goal == INF);
                 assert(sig_start + 1 == signatures.size());
                 break;
             }
@@ -396,8 +392,8 @@ void ShrinkBisimulation::compute_abstraction(
 
 ShrinkStrategy *ShrinkBisimulation::create_default() {
     Options opts;
-    opts.set("max_states", infinity);
-    opts.set("max_states_before_merge", infinity);
+    opts.set("max_states", INF);
+    opts.set("max_states_before_merge", INF);
     opts.set<bool>("greedy", false);
     opts.set("threshold", 1);
     opts.set("group_by_h", false);

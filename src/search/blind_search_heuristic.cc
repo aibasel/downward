@@ -1,9 +1,10 @@
 #include "blind_search_heuristic.h"
 
+#include "global_operator.h"
+#include "global_state.h"
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "state.h"
 #include "task.h"
 
 #include <limits>
@@ -27,7 +28,7 @@ void BlindSearchHeuristic::initialize() {
     cout << "Initializing blind search heuristic..." << endl;
 }
 
-int BlindSearchHeuristic::compute_heuristic(const State &state) {
+int BlindSearchHeuristic::compute_heuristic(const GlobalState &state) {
     if (test_goal(state))
         return 0;
     else

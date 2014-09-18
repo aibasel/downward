@@ -36,16 +36,19 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         }
         if (opts.get<bool>("optimal")) {
 #ifdef USE_LP
-            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(lgraph,
-                                                                                  OperatorCost(opts.get_enum("cost_type")));
+            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
+                lgraph,
+                OperatorCost(opts.get_enum("cost_type")),
+                LPSolverType(opts.get_enum("lpsolver")));
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
             exit_with(EXIT_INPUT_ERROR);
 #endif
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(lgraph, opts.get<bool>("alm"),
-                                                                         OperatorCost(opts.get_enum("cost_type")));
+            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(
+                lgraph, opts.get<bool>("alm"),
+                OperatorCost(opts.get_enum("cost_type")));
         }
     } else {
         use_cost_sharing = false;
@@ -55,7 +58,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     lm_status_manager.set_landmarks_for_initial_state();
 }
 
-void LandmarkCountHeuristic::set_exploration_goals(const State &state) {
+void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
     assert(exploration != 0);
     // Set additional goals for FF exploration
     vector<pair<int, int> > lm_leaves;
@@ -66,7 +69,7 @@ void LandmarkCountHeuristic::set_exploration_goals(const State &state) {
     exploration->set_additional_goals(lm_leaves);
 }
 
-int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
+int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
     double epsilon = 0.01;
 
     // Need explicit test to see if state is a goal state. The landmark
@@ -102,7 +105,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
     return h;
 }
 
-int LandmarkCountHeuristic::compute_heuristic(const State &state) {
+int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
     bool goal_reached = test_goal(state);
     if (goal_reached)
         return 0;
@@ -178,24 +181,24 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
     return false;
 }
 
-bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
+bool LandmarkCountHeuristic::generate_helpful_actions(const GlobalState &state,
                                                       const LandmarkSet &reached) {
     /* Find actions that achieve new landmark leaves. If no such action exist,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
      disjunctive landmarks */
-    vector<const Operator *> all_operators;
+    vector<const GlobalOperator *> all_operators;
     g_successor_generator->generate_applicable_ops(state, all_operators);
-    vector<const Operator *> ha_simple;
-    vector<const Operator *> ha_disj;
+    vector<const GlobalOperator *> ha_simple;
+    vector<const GlobalOperator *> ha_disj;
 
     for (int i = 0; i < all_operators.size(); i++) {
-        const vector<PrePost> &prepost = all_operators[i]->get_pre_post();
-        for (int j = 0; j < prepost.size(); j++) {
-            if (!prepost[j].does_fire(state))
+        const vector<GlobalEffect> &effects = all_operators[i]->get_effects();
+        for (int j = 0; j < effects.size(); j++) {
+            if (!effects[j].does_fire(state))
                 continue;
-            const pair<int, int> varval = make_pair(prepost[j].var,
-                                                    prepost[j].post);
+            const pair<int, int> varval = make_pair(effects[j].var,
+                                                    effects[j].val);
             LandmarkNode *lm_p = lgraph.get_landmark(varval);
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
@@ -220,7 +223,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
     return true;
 }
 
-bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
+bool LandmarkCountHeuristic::landmark_is_interesting(const GlobalState &s,
                                                      const LandmarkSet &reached, LandmarkNode &lm) const {
     /* A landmark is interesting if it hasn't been reached before and
      its parents have all been reached, or if all landmarks have been
@@ -235,8 +238,8 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
     return lm.is_goal() && !lm.is_true_in_state(s);
 }
 
-bool LandmarkCountHeuristic::reach_state(const State &parent_state,
-                                         const Operator &op, const State &state) {
+bool LandmarkCountHeuristic::reach_state(const GlobalState &parent_state,
+                                         const GlobalOperator &op, const GlobalState &state) {
     lm_status_manager.update_reached_lms(parent_state, op, state);
     /* TODO: The return value "true" signals that the LM set of this state
              has changed and the h value should be recomputed. It's not
@@ -252,8 +255,8 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
     }
 
     // admissible = false
-    return (!has_axioms() && (!has_conditional_effects()
-                              || lgraph.supports_conditional_effects()));
+    return !has_axioms() && (!has_conditional_effects()
+                             || lgraph.supports_conditional_effects());
 }
 
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
@@ -320,11 +323,9 @@ static Heuristic *_parse(OptionParser &parser) {
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
+    add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-
-    if (!parser.dry_run() && opts.get<LandmarkGraph *>("lm_graph") == 0)
-        parser.error("landmark graph could not be constructed");
 
     if (parser.dry_run())
         return 0;

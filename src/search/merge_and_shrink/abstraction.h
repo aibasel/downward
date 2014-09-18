@@ -6,11 +6,14 @@
 #include <vector>
 
 class EquivalenceRelation;
+class GlobalState;
 class Label;
 class Labels;
-class State;
 
 typedef int AbstractStateRef;
+
+// Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
+extern const int INF;
 
 struct AbstractTransition {
     AbstractStateRef src;
@@ -97,7 +100,7 @@ class Abstraction {
 protected:
     std::vector<int> varset;
 
-    virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
+    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(const std::vector<
                                                        AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
@@ -115,7 +118,7 @@ public:
                                           Labels *labels);
     bool is_solvable() const;
 
-    int get_cost(const State &state) const;
+    int get_cost(const GlobalState &state) const;
     int size() const;
     void statistics(bool include_expensive_statistics) const;
 
@@ -175,7 +178,7 @@ protected:
     virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
-    virtual AbstractStateRef get_abstract_state(const State &state) const;
+    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
     virtual int memory_estimate() const;
 public:
     AtomicAbstraction(Labels *labels, int variable);
@@ -189,7 +192,7 @@ protected:
     virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
-    virtual AbstractStateRef get_abstract_state(const State &state) const;
+    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
     virtual int memory_estimate() const;
 public:
     CompositeAbstraction(Labels *labels, Abstraction *abs1, Abstraction *abs2);
