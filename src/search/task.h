@@ -14,7 +14,7 @@ class Preconditions;
 class EffectConditions;
 class Effect;
 class Effects;
-class OperatorRef;
+class Operator;
 class Operators;
 class Axioms;
 class Goals;
@@ -143,14 +143,14 @@ public:
 };
 
 
-class OperatorRef {
+class Operator {
     const TaskInterface &interface;
     int index;
     bool is_an_axiom;
 public:
-    OperatorRef(const TaskInterface &interface_, int index_, bool is_axiom)
+    Operator(const TaskInterface &interface_, int index_, bool is_axiom)
         : interface(interface_), index(index_), is_an_axiom(is_axiom) {}
-    ~OperatorRef() {}
+    ~Operator() {}
     Preconditions get_preconditions() const {return Preconditions(interface, index, is_an_axiom); }
     Effects get_effects() const {return Effects(interface, index, is_an_axiom); }
     int get_cost() const {return interface.get_operator_cost(index, is_an_axiom); }
@@ -168,8 +168,8 @@ public:
         : interface(interface_) {}
     ~Operators() {}
     int size() const {return interface.get_num_operators(); }
-    OperatorRef operator[](int index) const {
-        return OperatorRef(interface, index, false);
+    Operator operator[](int index) const {
+        return Operator(interface, index, false);
     }
 };
 
@@ -181,8 +181,8 @@ public:
         : interface(interface_) {}
     ~Axioms() {}
     int size() const {return interface.get_num_axioms(); }
-    OperatorRef operator[](int index) const {
-        return OperatorRef(interface, index, true);
+    Operator operator[](int index) const {
+        return Operator(interface, index, true);
     }
 };
 

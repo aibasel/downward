@@ -122,7 +122,7 @@ int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
-int Heuristic::get_adjusted_cost(const OperatorRef &op) const {
+int Heuristic::get_adjusted_cost(const Operator &op) const {
     if (op.is_axiom())
         return 0;
     else
