@@ -82,7 +82,7 @@ void exit_with(ExitCode exitcode) {
         break;
     default:
         cerr << "Exitcode: " << exitcode << endl;
-        ABORT("Unkown exitcode.");
+        ABORT("Unknown exitcode.");
     }
     exit(exitcode);
 }
