@@ -300,7 +300,7 @@ static Heuristic *_parse(OptionParser &parser) {
         return 0;
     } else {
         if (opts.get_enum("label_reduction_method") == 1
-                && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
+            && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
             parser.error("old label reduction is only correct when used with a "
                          "linear merge strategy!");
         }

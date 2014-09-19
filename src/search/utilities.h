@@ -25,7 +25,7 @@
 #define ABORT(msg) \
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \
-              << ", line " << __LINE__ << ": " << msg << std::endl), \
+                   << ", line " << __LINE__ << ": " << msg << std::endl), \
         (abort()), \
         (void)0 \
     )

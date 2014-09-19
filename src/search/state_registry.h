@@ -102,9 +102,9 @@ class StateRegistry {
     struct StateIDSemanticHash {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
         StateIDSemanticHash(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool (state_data_pool_) {
+            : state_data_pool(state_data_pool_) {
         }
-        size_t operator() (StateID id) const {
+        size_t operator()(StateID id) const {
             return ::hash_number_sequence(state_data_pool[id.value], g_state_packer->get_num_bins());
         }
     };
@@ -112,10 +112,10 @@ class StateRegistry {
     struct StateIDSemanticEqual {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
         StateIDSemanticEqual(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool (state_data_pool_) {
+            : state_data_pool(state_data_pool_) {
         }
 
-        size_t operator() (StateID lhs, StateID rhs) const {
+        size_t operator()(StateID lhs, StateID rhs) const {
             size_t size = g_state_packer->get_num_bins();
             const PackedStateBin *lhs_data = state_data_pool[lhs.value];
             const PackedStateBin *rhs_data = state_data_pool[rhs.value];

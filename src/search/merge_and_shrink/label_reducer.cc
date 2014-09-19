@@ -21,7 +21,6 @@ using namespace __gnu_cxx;
 LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
       label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
-
     size_t max_no_systems = g_variable_domain.size() * 2 - 1;
     system_order.reserve(max_no_systems);
     if (label_reduction_system_order == REGULAR
@@ -227,7 +226,7 @@ LabelSignature LabelReducer::build_label_signature(
 }
 
 bool LabelReducer::reduce_old(const vector<int> &abs_vars,
-                             vector<Label *> &labels) const {
+                              vector<Label *> &labels) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
 

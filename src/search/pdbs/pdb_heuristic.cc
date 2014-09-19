@@ -132,7 +132,7 @@ void PDBHeuristic::build_abstract_operators(
 
     for (size_t i = 0; i < preconditions.size(); ++i)
         has_precondition_on_var[preconditions[i].var] = true;
-    
+
     for (size_t i = 0; i < effects.size(); ++i) {
         if (variable_to_index[effects[i].var] != -1) {
             if (has_precondition_on_var[effects[i].var]) {

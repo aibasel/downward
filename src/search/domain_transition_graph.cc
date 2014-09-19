@@ -131,7 +131,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             for (size_t j = 0; j < effects.size(); ++j) {
                 int var_no = effects[j].var;
                 int pre = -1;
-                hash_map<int, int>::const_iterator pre_it = pre_map.find(var_no); 
+                hash_map<int, int>::const_iterator pre_it = pre_map.find(var_no);
                 if (pre_it != pre_map.end())
                     pre = pre_it->second;
                 int post = effects[j].val;

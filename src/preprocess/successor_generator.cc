@@ -199,8 +199,8 @@ GeneratorBase *SuccessorGenerator::construct_recursive(int switch_var_no,
                 int val = cond_iter->second;
                 if (var == switch_var) {
                     var_is_interesting = true;
-                    while(cond_iter != conditions[op_index].end() &&
-                          cond_iter->first == switch_var) {
+                    while (cond_iter != conditions[op_index].end() &&
+                           cond_iter->first == switch_var) {
                         ++cond_iter;
                     }
                     ops_for_val_indices[val].push_back(op_index);
