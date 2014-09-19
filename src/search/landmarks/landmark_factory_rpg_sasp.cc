@@ -32,7 +32,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     for (size_t j = 0; j < preconditions.size(); ++j) {
         result.insert(make_pair(preconditions[j].var, preconditions[j].val));
         has_precondition_on_var[preconditions[j].var] = true;
-    } 
+    }
 
     // If there is an effect but no precondition on a variable v with domain
     // size 2 and initially the variable has the other value than required by
@@ -129,12 +129,12 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
 
         /* TODO: Problem: Schon diese jetzige Implementierung ist nicht mehr korrekt,
         da rm_landmark_node nicht nur bei allen children die parents-zeiger auf sich selbst
-        löscht, sondern auch bei allen parents die children-zeiger auf sich selbst. Ein
+        loescht, sondern auch bei allen parents die children-zeiger auf sich selbst. Ein
         einfaches Speichern aller Attribute von node funktioniert also nicht - entweder man
         muss dann manuell bei den parents des alten node alle children-Zeiger neu setzen auf
-        den neuen node oder man überarbeitet das ganze komplett anders... Eine andere Vermutung
-        meinerseits wäre, dass die alte Version verbugt ist und eigentlich auch die children-
-        Zeiger der parents von node gelöscht werden müssten, wie es in rm_landmark_node passiert.
+        den neuen node oder man ueberarbeitet das ganze komplett anders... Eine andere Vermutung
+        meinerseits waere, dass die alte Version verbugt ist und eigentlich auch die children-
+        Zeiger der parents von node geloescht werden muessten, wie es in rm_landmark_node passiert.
         */
         // TODO: avoid copy constructor, save attributes locally and assign to new lm
         // new: replace by new program logic
