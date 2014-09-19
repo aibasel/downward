@@ -81,7 +81,8 @@ void ZeroOnePDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Zero-One PDB",
+    parser.document_synopsis(
+        "Zero-One PDB",
         "The zero/one pattern database heuristic is simply the sum of the "
         "heuristic values of all patterns in the pattern collection. In contrast "
         "to the canonical pattern database heuristic, there is no need to check "

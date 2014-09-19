@@ -271,7 +271,8 @@ void CanonicalPDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Canonical PDB",
+    parser.document_synopsis(
+        "Canonical PDB",
         "The canonical pattern database heuristic is calculated as follows. "
         "For a given pattern collection C, the value of the canonical heuristic "
         "function is the maximum over all maximal additive subsets A in C, where "

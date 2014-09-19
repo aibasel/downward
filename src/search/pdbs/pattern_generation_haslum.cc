@@ -396,43 +396,45 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
-    parser.document_note("Note",
-                         "This pattern generation method uses the canonical pattern collection heuristic.");
-    parser.document_note("Implementation Notes",
-                         "The following will very briefly describe the algorithm and explain the differences "
-                         "between the original implementation from 2007 and the new one in Fast Downward.\n\n"
-                         "The aim of the algorithm is to output a pattern collection for which the "
-                         "Heuristic#Canonical_PDB yields the best heuristic estimates.\n\n"
-                         "The algorithm is basically a local search (hill climbing) which searches the "
-                         "\"pattern neighbourhood\" (starting initially with a pattern for each goal variable) "
-                         "for improving the pattern collection. This is done exactly as described in the "
-                         "section \"pattern construction as search\" in the paper. For evaluating the "
-                         "neighbourhood, the \"counting approximation\" as introduced in the paper was "
-                         "implemented. An important difference however consists in the fact that this "
-                         "implementation computes all pattern databases for each candidate pattern rather than "
-                         "using A* search to compute the heuristic values only for the sample states for each "
-                         "pattern.\n\nAlso the logic for sampling the search space differs a bit from the "
-                         "original implementation. The original implementation uses a random walk of a length "
-                         "which is binomially distributed with the mean at the estimated solution depth "
-                         "(estimation is done with the current pattern collection heuristic). In the Fast "
-                         "Downward implementation, also a random walk is used, where the length is the "
-                         "estimation of the number of solution steps, which is calculated by dividing the "
-                         "current heuristic estimate for the initial state by the average operator costs of "
-                         "the planning task (calculated only once and not updated during sampling!) to take "
-                         "non-unit cost problems into account. This yields a random walk of an expected lenght "
-                         "of np = 2 * estimated number of solution steps. If the random walk gets stuck, it is "
-                         "being restarted from the initial state, exactly as described in the original paper.\n\n"
-                         "The section \"avoiding redundant evaluations\" describes how the search neighbourhood "
-                         "of patterns can be restricted to variables that are somewhat relevant to the variables "
-                         "already included in the pattern by analyzing causal graphs. This is also implemented "
-                         "in Fast Downward, but we only consider precondition-to-effect arcs of the causal graph, "
-                         "ignoring effect-to-effect arcs. The second approach described in the paper (statistical "
-                         "confidence interval) is not applicable to this implementation, as it doesn't use A* "
-                         "search but constructs the entire pattern databases for all candidate patterns anyway.\n"
-                         "The search is ended if there is no more improvement (or the improvement is smaller "
-                         "than the minimal improvement which can be set as an option), how ever there is no "
-                         "limit of iterations of the local search. This is similar to the techniques used in "
-                         "the original implementation as described in the paper.", true);
+    parser.document_note(
+        "Note",
+        "This pattern generation method uses the canonical pattern collection heuristic.");
+    parser.document_note(
+        "Implementation Notes",
+        "The following will very briefly describe the algorithm and explain the differences "
+        "between the original implementation from 2007 and the new one in Fast Downward.\n\n"
+        "The aim of the algorithm is to output a pattern collection for which the "
+        "Heuristic#Canonical_PDB yields the best heuristic estimates.\n\n"
+        "The algorithm is basically a local search (hill climbing) which searches the "
+        "\"pattern neighbourhood\" (starting initially with a pattern for each goal variable) "
+        "for improving the pattern collection. This is done exactly as described in the "
+        "section \"pattern construction as search\" in the paper. For evaluating the "
+        "neighbourhood, the \"counting approximation\" as introduced in the paper was "
+        "implemented. An important difference however consists in the fact that this "
+        "implementation computes all pattern databases for each candidate pattern rather than "
+        "using A* search to compute the heuristic values only for the sample states for each "
+        "pattern.\n\nAlso the logic for sampling the search space differs a bit from the "
+        "original implementation. The original implementation uses a random walk of a length "
+        "which is binomially distributed with the mean at the estimated solution depth "
+        "(estimation is done with the current pattern collection heuristic). In the Fast "
+        "Downward implementation, also a random walk is used, where the length is the "
+        "estimation of the number of solution steps, which is calculated by dividing the "
+        "current heuristic estimate for the initial state by the average operator costs of "
+        "the planning task (calculated only once and not updated during sampling!) to take "
+        "non-unit cost problems into account. This yields a random walk of an expected lenght "
+        "of np = 2 * estimated number of solution steps. If the random walk gets stuck, it is "
+        "being restarted from the initial state, exactly as described in the original paper.\n\n"
+        "The section \"avoiding redundant evaluations\" describes how the search neighbourhood "
+        "of patterns can be restricted to variables that are somewhat relevant to the variables "
+        "already included in the pattern by analyzing causal graphs. This is also implemented "
+        "in Fast Downward, but we only consider precondition-to-effect arcs of the causal graph, "
+        "ignoring effect-to-effect arcs. The second approach described in the paper (statistical "
+        "confidence interval) is not applicable to this implementation, as it doesn't use A* "
+        "search but constructs the entire pattern databases for all candidate patterns anyway.\n"
+        "The search is ended if there is no more improvement (or the improvement is smaller "
+        "than the minimal improvement which can be set as an option), how ever there is no "
+        "limit of iterations of the local search. This is similar to the techniques used in "
+        "the original implementation as described in the paper.", true);
 
     parser.add_option<int>("pdb_max_size",
                            "maximal number of states per pattern database ",
