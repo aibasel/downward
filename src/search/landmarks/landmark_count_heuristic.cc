@@ -126,7 +126,8 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
     vector<bool> &reached_lms_v = lm_status_manager.get_reached_landmarks(state);
     convert_lms(reached_lms, reached_lms_v);
 
-    if (reached_lms.size() == lgraph.number_of_landmarks()
+    int num_reached = reached_lms.size();
+    if (num_reached == lgraph.number_of_landmarks()
         || !generate_helpful_actions(state, reached_lms)) {
         assert(exploration != NULL);
         set_exploration_goals(state);
@@ -138,7 +139,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
             exploration->exported_ops.clear();
             return DEAD_END;
         }
-        for (int i = 0; i < exploration->exported_ops.size(); i++) {
+        for (size_t i = 0; i < exploration->exported_ops.size(); ++i) {
             set_preferred(exploration->exported_ops[i]);
         }
         exploration->exported_ops.clear();
@@ -150,7 +151,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
                                                LandmarkSet &reached_lms, vector<pair<int, int> > &leaves) {
     set<LandmarkNode *>::const_iterator it;
-    for (it = lgraph.get_nodes().begin(); it != lgraph.get_nodes().end(); it++) {
+    for (it = lgraph.get_nodes().begin(); it != lgraph.get_nodes().end(); ++it) {
         LandmarkNode *node_p = *it;
 
         if (!disjunctive_lms && node_p->disjunctive)
@@ -158,7 +159,7 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
 
         if (reached_lms.find(node_p) == reached_lms.end()
             && !check_node_orders_disobeyed(*node_p, reached_lms)) {
-            for (int i = 0; i < node_p->vars.size(); i++) {
+            for (size_t i = 0; i < node_p->vars.size(); ++i) {
                 pair<int, int> node_prop = make_pair(node_p->vars[i],
                                                      node_p->vals[i]);
                 leaves.push_back(node_prop);
@@ -172,7 +173,7 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
     const hash_map<LandmarkNode *, edge_type, hash_pointer> &parents =
         node.parents;
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-         parent_it = parents.begin(); parent_it != parents.end(); parent_it++) {
+         parent_it = parents.begin(); parent_it != parents.end(); ++parent_it) {
         LandmarkNode &parent = *(parent_it->first);
         if (reached.find(&parent) == reached.end()) {
             return true;
@@ -192,9 +193,9 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const GlobalState &state,
     vector<const GlobalOperator *> ha_simple;
     vector<const GlobalOperator *> ha_disj;
 
-    for (int i = 0; i < all_operators.size(); i++) {
+    for (size_t i = 0; i < all_operators.size(); ++i) {
         const vector<GlobalEffect> &effects = all_operators[i]->get_effects();
-        for (int j = 0; j < effects.size(); j++) {
+        for (size_t j = 0; j < effects.size(); ++j) {
             if (!effects[j].does_fire(state))
                 continue;
             const pair<int, int> varval = make_pair(effects[j].var,
@@ -212,11 +213,11 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const GlobalState &state,
         return false;
 
     if (ha_simple.empty()) {
-        for (int i = 0; i < ha_disj.size(); i++) {
+        for (size_t i = 0; i < ha_disj.size(); ++i) {
             set_preferred(ha_disj[i]);
         }
     } else {
-        for (int i = 0; i < ha_simple.size(); i++) {
+        for (size_t i = 0; i < ha_simple.size(); ++i) {
             set_preferred(ha_simple[i]);
         }
     }
@@ -229,7 +230,8 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const GlobalState &s,
      its parents have all been reached, or if all landmarks have been
      reached before, the LM is a goal, and it's not true at moment */
 
-    if (lgraph.number_of_landmarks() != reached.size()) {
+    int num_reached = reached.size();
+    if (num_reached != lgraph.number_of_landmarks()) {
         if (reached.find(&lm) != reached.end())
             return false;
         else
@@ -265,7 +267,7 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
     // functions in this class that use LandmarkSets for the reached LMs
     // (HACK).
 
-    for (int i = 0; i < lms_vec.size(); i++)
+    for (size_t i = 0; i < lms_vec.size(); ++i)
         if (lms_vec[i])
             lms_set.insert(lgraph.get_lm_for_index(i));
 }

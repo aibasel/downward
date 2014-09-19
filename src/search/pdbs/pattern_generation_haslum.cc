@@ -70,7 +70,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
             } else {
                 // [commented out the message because it might be too verbose]
                 // cout << "ignoring new pattern as candidate because it is too large" << endl;
-                num_rejected += 1;
+                ++num_rejected;
             }
         }
     }
@@ -179,7 +179,9 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
         }
         // If a candidate's size added to the current collection's size exceeds the maximum
         // collection size, then delete the PDB and let the PDB's entry point to a null reference
-        if (current_heuristic->get_size() + pdb_heuristic->get_size() > collection_max_size) {
+        int combined_size = current_heuristic->get_size() +
+            pdb_heuristic->get_size();
+        if (combined_size > collection_max_size) {
             delete pdb_heuristic;
             candidate_pdbs[i] = 0;
             continue;
@@ -221,12 +223,12 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 
     current_heuristic->evaluate(sample);
     int h_collection = current_heuristic->get_heuristic(); // h-value of the current collection heuristic
-    for (size_t k = 0; k < max_additive_subsets.size(); ++k) { // for each max additive subset...
+    for (size_t i = 0; i < max_additive_subsets.size(); ++i) { // for each max additive subset...
         int h_subset = 0;
-        for (size_t l = 0; l < max_additive_subsets[k].size(); ++l) { // ...calculate its h-value
-            max_additive_subsets[k][l]->evaluate(sample);
-            assert(!max_additive_subsets[k][l]->is_dead_end());
-            h_subset += max_additive_subsets[k][l]->get_heuristic();
+        for (size_t j = 0; j < max_additive_subsets[i].size(); ++j) { // ...calculate its h-value
+            max_additive_subsets[i][j]->evaluate(sample);
+            assert(!max_additive_subsets[i][j]->is_dead_end());
+            h_subset += max_additive_subsets[i][j]->get_heuristic();
         }
         if (h_pattern + h_subset > h_collection) {
             // return true if one max additive subest is found for which the condition is met
@@ -249,7 +251,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     size_t max_pdb_size = 0;
     try {
         while (true) {
-            num_iterations += 1;
+            ++num_iterations;
             cout << "current collection size is " << current_heuristic->get_size() << endl;
             // TODO think about how to handle this when state_registries are moved into the search algorithms.
             current_heuristic->evaluate(g_initial_state());

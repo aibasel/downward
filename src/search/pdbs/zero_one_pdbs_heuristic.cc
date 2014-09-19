@@ -41,9 +41,9 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         // get used operators and set their cost for further iterations to 0 (action cost partitioning)
         const vector<bool> &used_ops = pdb_heuristic->get_relevant_operators();
         assert(used_ops.size() == operator_costs.size());
-        for (size_t k = 0; k < used_ops.size(); ++k) {
-            if (used_ops[k])
-                operator_costs[k] = 0;
+        for (size_t j = 0; j < used_ops.size(); ++j) {
+            if (used_ops[j])
+                operator_costs[j] = 0;
         }
 
         approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();

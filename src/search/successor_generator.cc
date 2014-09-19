@@ -34,7 +34,7 @@ public:
 SuccessorGeneratorSwitch::SuccessorGeneratorSwitch(istream &in) {
     in >> switch_var;
     immediate_ops = read_successor_generator(in);
-    for (int i = 0; i < g_variable_domain[switch_var]; i++)
+    for (int i = 0; i < g_variable_domain[switch_var]; ++i)
         generator_for_value.push_back(read_successor_generator(in));
     default_generator = read_successor_generator(in);
 }
@@ -50,7 +50,7 @@ void SuccessorGeneratorSwitch::_dump(string indent) {
     cout << indent << "switch on " << g_variable_name[switch_var] << endl;
     cout << indent << "immediately:" << endl;
     immediate_ops->_dump(indent + "  ");
-    for (int i = 0; i < g_variable_domain[switch_var]; i++) {
+    for (int i = 0; i < g_variable_domain[switch_var]; ++i) {
         cout << indent << "case " << i << ":" << endl;
         generator_for_value[i]->_dump(indent + "  ");
     }
@@ -66,7 +66,7 @@ void SuccessorGeneratorGenerate::generate_applicable_ops(const GlobalState &,
 SuccessorGeneratorGenerate::SuccessorGeneratorGenerate(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
         int op_index;
         in >> op_index;
         op.push_back(&g_operators[op_index]);
@@ -74,7 +74,7 @@ SuccessorGeneratorGenerate::SuccessorGeneratorGenerate(istream &in) {
 }
 
 void SuccessorGeneratorGenerate::_dump(string indent) {
-    for (int i = 0; i < op.size(); i++) {
+    for (size_t i = 0; i < op.size(); ++i) {
         cout << indent;
         op[i]->dump();
     }

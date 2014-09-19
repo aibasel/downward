@@ -9,8 +9,8 @@ using namespace std;
 using namespace __gnu_cxx;
 
 bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int> > &lvl_var) {
-    for (int j = 0; j < conditions.size(); j++)
-        if (lvl_var[conditions[j].var][conditions[j].val] ==
+    for (size_t i = 0; i < conditions.size(); ++i)
+        if (lvl_var[conditions[i].var][conditions[i].val] ==
             numeric_limits<int>::max())
             return false;
     return true;
@@ -21,7 +21,7 @@ hash_map<int, int> _intersect(const hash_map<int, int> &a, const hash_map<int, i
     if (a.size() > b.size())
         return _intersect(b, a);
     hash_map<int, int> result;
-    for (hash_map<int, int>::const_iterator it1 = a.begin(); it1 != a.end(); it1++) {
+    for (hash_map<int, int>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1) {
         hash_map<int, int>::const_iterator it2 = b.find(it1->first);
         if (it2 != b.end() && it2->second == it1->second)
             result.insert(*it1);
@@ -39,7 +39,7 @@ bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int> > &l
     // Test whether all preconditions of o can be reached
     // Otherwise, operator is not applicable
     const vector<GlobalCondition> &preconditions = o.get_preconditions();
-    for (unsigned i = 0; i < preconditions.size(); ++i)
+    for (size_t i = 0; i < preconditions.size(); ++i)
         if (lvl_var[preconditions[i].var][preconditions[i].val] ==
             numeric_limits<int>::max())
             return false;
