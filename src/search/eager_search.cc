@@ -342,7 +342,8 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "reopen closed nodes", "false");
     parser.add_option<bool>("pathmax",
                             "use pathmax correction", "false");
-    parser.add_option<ScalarEvaluator *>("f_eval",
+    parser.add_option<ScalarEvaluator *>(
+        "f_eval",
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
         "",
@@ -374,7 +375,8 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "for the more general eager search, "
         "because the current implementation of multi-path depedence "
         "does not support general open lists.");
-    parser.document_note("Equivalent statements using general eager search",
+    parser.document_note(
+        "Equivalent statements using general eager search",
         "\n```\n--search astar(evaluator)\n```\n"
         "is equivalent to\n"
         "```\n--heuristic h=evaluator\n"
@@ -429,7 +431,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.document_note(
         "Closed nodes",
         "Closed node are not re-opened");
-    parser.document_note("Equivalent statements using general eager search",
+    parser.document_note(
+        "Equivalent statements using general eager search",
         "\n```\n--heuristic h2=eval2\n"
         "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
         "is equivalent to\n"

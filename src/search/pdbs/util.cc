@@ -108,10 +108,12 @@ static void build_singleton_patterns(
 }
 
 void parse_pattern(OptionParser &parser, Options &opts) {
-    parser.add_option<int>("max_states",
+    parser.add_option<int>(
+        "max_states",
         "maximal number of abstract states in the pattern database",
         "1000000");
-    parser.add_list_option<int>("pattern",
+    parser.add_list_option<int>(
+        "pattern",
         "list of variable numbers of the planning task that should be used as pattern. "
         "Default: the variables are selected automatically based on a simple greedy strategy.",
         "",
