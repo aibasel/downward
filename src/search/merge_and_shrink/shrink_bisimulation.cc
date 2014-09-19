@@ -116,7 +116,6 @@ bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
 
 void ShrinkBisimulation::shrink(
     Abstraction &abs, int target, bool force) {
-
     // TODO: Explain this min(target, threshold) stuff. Also, make the
     //       output clearer, which right now is rubbish, calling the
     //       min(...) "threshold". The reasoning behind this is that

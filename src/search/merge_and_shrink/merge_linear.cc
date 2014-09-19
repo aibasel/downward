@@ -73,4 +73,3 @@ static MergeStrategy *_parse(OptionParser &parser) {
 }
 
 static Plugin<MergeStrategy> _plugin("merge_linear", _parse);
-

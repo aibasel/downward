@@ -180,7 +180,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
         // If a candidate's size added to the current collection's size exceeds the maximum
         // collection size, then delete the PDB and let the PDB's entry point to a null reference
         int combined_size = current_heuristic->get_size() +
-            pdb_heuristic->get_size();
+                            pdb_heuristic->get_size();
         if (combined_size > collection_max_size) {
             delete pdb_heuristic;
             candidate_pdbs[i] = 0;

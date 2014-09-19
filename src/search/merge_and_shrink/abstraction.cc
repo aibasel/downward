@@ -124,7 +124,7 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
 }
 
 bool Abstraction::are_distances_computed() const {
-    if (max_h == DISTANCE_UNKNOWN ) {
+    if (max_h == DISTANCE_UNKNOWN) {
         assert(max_f == DISTANCE_UNKNOWN);
         assert(max_g == DISTANCE_UNKNOWN);
         assert(init_distances.empty());
@@ -337,7 +337,7 @@ void Abstraction::compute_goal_distances_general_cost() {
 }
 
 void AtomicAbstraction::apply_abstraction_to_lookup_table(
-        const vector<AbstractStateRef> &abstraction_mapping) {
+    const vector<AbstractStateRef> &abstraction_mapping) {
     cout << tag() << "applying abstraction to lookup table" << endl;
     for (size_t i = 0; i < lookup_table.size(); ++i) {
         AbstractStateRef old_state = lookup_table[i];
@@ -347,7 +347,7 @@ void AtomicAbstraction::apply_abstraction_to_lookup_table(
 }
 
 void CompositeAbstraction::apply_abstraction_to_lookup_table(
-        const vector<AbstractStateRef> &abstraction_mapping) {
+    const vector<AbstractStateRef> &abstraction_mapping) {
     cout << tag() << "applying abstraction to lookup table" << endl;
     for (size_t i = 0; i < components[0]->size(); ++i) {
         for (size_t j = 0; j < components[1]->size(); ++j) {
@@ -369,7 +369,7 @@ bool Abstraction::are_transitions_sorted_unique() const {
 }
 
 bool Abstraction::is_normalized() const {
-    return ((num_labels == labels->get_size()) && transitions_sorted_unique);
+    return (num_labels == labels->get_size()) && transitions_sorted_unique;
 }
 
 void Abstraction::normalize() {
@@ -448,7 +448,7 @@ void Abstraction::normalize() {
             // on...
             assert(parent_id < num_labels);
             vector<AbstractTransition> &transitions =
-                    transitions_by_label[parent_id];
+                transitions_by_label[parent_id];
 
             if (relevant_labels[parent_id]) {
                 for (size_t j = 0; j < transitions.size(); ++j) {
@@ -590,7 +590,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
         const Label *label = labels->get_label_by_index(label_no);
         const vector<GlobalCondition> &preconditions = label->get_preconditions();
         const vector<GlobalEffect> &effects = label->get_effects();
-        hash_map<int,int> pre_val;
+        hash_map<int, int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (size_t i = 0; i < preconditions.size(); ++i)
             pre_val[preconditions[i].var] = preconditions[i].val;
@@ -604,7 +604,7 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             // Determine possible values that var can have when this
             // operator is applicable.
             int pre_value = -1;
-            hash_map<int,int>::const_iterator pre_val_it = pre_val.find(var);
+            hash_map<int, int>::const_iterator pre_val_it = pre_val.find(var);
             if (pre_val_it != pre_val.end())
                 pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;

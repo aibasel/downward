@@ -275,7 +275,7 @@ void read_everything(istream &in) {
     cout << "Variables: " << g_variable_domain.size() << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() *
-            g_state_packer->get_bin_size_in_bytes() << endl;
+    g_state_packer->get_bin_size_in_bytes() << endl;
     cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
@@ -343,10 +343,10 @@ bool has_conditional_effects() {
 void verify_no_conditional_effects() {
     int op_id = get_first_conditional_effects_op_id();
     if (op_id != -1) {
-            cerr << "Heuristic does not support conditional effects "
-                 << "(operator " << g_operators[op_id].get_name() << ")" << endl
-                 << "Terminating." << endl;
-            exit_with(EXIT_UNSUPPORTED);
+        cerr << "Heuristic does not support conditional effects "
+             << "(operator " << g_operators[op_id].get_name() << ")" << endl
+             << "Terminating." << endl;
+        exit_with(EXIT_UNSUPPORTED);
     }
 }
 

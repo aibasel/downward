@@ -271,7 +271,7 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
         const vector<GlobalCondition> &preconditions = op.get_preconditions();
         for (size_t j = 0; j < preconditions.size(); ++j)
             t.insert(make_pair(preconditions[j].var, preconditions[j].val));
-        
+
         const vector<GlobalEffect> &effects = op.get_effects();
         for (size_t j = 0; j < effects.size(); ++j) {
             const vector<GlobalCondition> &cond = effects[j].conditions;
