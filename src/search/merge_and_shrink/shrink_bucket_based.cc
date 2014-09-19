@@ -58,7 +58,7 @@ void ShrinkBucketBased::compute_abstraction(
             }
         } else if (budget_for_this_bucket <= 1) {
             // The whole bucket must form one group.
-            size_t remaining_buckets = buckets.size() - bucket_no;
+            int remaining_buckets = buckets.size() - bucket_no;
             if (remaining_state_budget >= remaining_buckets) {
                 equiv_relation.push_back(EquivalenceClass());
             } else {
@@ -81,8 +81,8 @@ void ShrinkBucketBased::compute_abstraction(
 
             // Then combine groups until required size is reached.
             assert(budget_for_this_bucket >= 2 &&
-                   budget_for_this_bucket < groups.size());
-            while (groups.size() > budget_for_this_bucket) {
+                   budget_for_this_bucket < static_cast<int>(groups.size()));
+            while (static_cast<int>(groups.size()) > budget_for_this_bucket) {
                 // TODO: Use g_rng once the PDB code has been merged.
                 size_t pos1 = static_cast<size_t>(rand()) % groups.size();
                 size_t pos2;

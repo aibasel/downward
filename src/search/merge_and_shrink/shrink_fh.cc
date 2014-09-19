@@ -4,6 +4,7 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <map>
@@ -81,7 +82,8 @@ void ShrinkFH::ordered_buckets_use_map(
     vector<Bucket> &buckets) const {
     map<int, map<int, Bucket > > states_by_f_and_h;
     int bucket_count = 0;
-    for (AbstractStateRef state = 0; state < abs.size(); ++state) {
+    int num_states = abs.size();
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
         int g = abs.get_init_distance(state);
         int h = abs.get_goal_distance(state);
         if (g != INF && h != INF) {
@@ -103,7 +105,7 @@ void ShrinkFH::ordered_buckets_use_map(
             states_by_f_and_h.begin(), states_by_f_and_h.end(),
             h_start, buckets);
     }
-    assert(buckets.size() == bucket_count);
+    assert(static_cast<int>(buckets.size()) == bucket_count);
 }
 
 void ShrinkFH::ordered_buckets_use_vector(
@@ -114,13 +116,14 @@ void ShrinkFH::ordered_buckets_use_vector(
     for (int f = 0; f <= abs.get_max_f(); ++f)
         states_by_f_and_h[f].resize(min(f, abs.get_max_h()) + 1);
     int bucket_count = 0;
-    for (AbstractStateRef state = 0; state < abs.size(); ++state) {
+    int num_states = abs.size();
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
         int g = abs.get_init_distance(state);
         int h = abs.get_goal_distance(state);
         if (g != INF && h != INF) {
             int f = g + h;
-            assert(f >= 0 && f < states_by_f_and_h.size());
-            assert(h >= 0 && h < states_by_f_and_h[f].size());
+            assert(in_bounds(f, states_by_f_and_h));
+            assert(in_bounds(h, states_by_f_and_h[f]));
             Bucket &bucket = states_by_f_and_h[f][h];
             if (bucket.empty())
                 ++bucket_count;
@@ -144,7 +147,7 @@ void ShrinkFH::ordered_buckets_use_vector(
             }
         }
     }
-    assert(buckets.size() == bucket_count);
+    assert(static_cast<int>(buckets.size()) == bucket_count);
 }
 
 ShrinkStrategy *ShrinkFH::create_default(int max_states) {

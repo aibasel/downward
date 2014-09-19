@@ -137,7 +137,7 @@ void ShrinkBisimulation::shrink_atomic(Abstraction &abs) {
     // a new shrinking class instance in this roundabout fashion. We
     // shouldn't need to generate a new instance at all.
 
-    int old_size = abs.size();
+    size_t old_size = abs.size();
     ShrinkStrategy *strategy = create_default();
     strategy->shrink(abs, abs.size(), true);
     delete strategy;
@@ -174,7 +174,7 @@ int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
     typedef hash_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
-    for (int state = 0; state < abs.size(); ++state) {
+    for (size_t state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
         assert(h >= 0 && h != INF);
         assert(abs.get_init_distance(state) != INF);
@@ -203,7 +203,7 @@ void ShrinkBisimulation::compute_signatures(
 
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
-    for (int state = 0; state < abs.size(); ++state) {
+    for (size_t state = 0; state < abs.size(); ++state) {
         int h = abs.get_goal_distance(state);
         assert(h >= 0 && h <= abs.get_max_h());
         Signature signature(h, abs.is_goal_state(state),
@@ -292,7 +292,7 @@ void ShrinkBisimulation::compute_abstraction(
         compute_signatures(abs, signatures, state_to_group);
 
         // Verify size of signatures and presence of sentinels.
-        assert(signatures.size() == num_states + 2);
+        assert(static_cast<int>(signatures.size()) == num_states + 2);
         assert(signatures[0].h_and_goal == -2);
         assert(signatures[num_states + 1].h_and_goal == INF);
 
@@ -303,7 +303,7 @@ void ShrinkBisimulation::compute_abstraction(
             if (h_and_goal > max_h) {
                 // We have hit the end sentinel.
                 assert(h_and_goal == INF);
-                assert(sig_start + 1 == signatures.size());
+                assert(sig_start + 1 == static_cast<int>(signatures.size()));
                 break;
             }
 
@@ -348,7 +348,7 @@ void ShrinkBisimulation::compute_abstraction(
                 stable = false;
 
                 int new_group_no = -1;
-                for (size_t i = sig_start; i < sig_end; ++i) {
+                for (int i = sig_start; i < sig_end; ++i) {
                     const Signature &prev_sig = signatures[i - 1];
                     const Signature &curr_sig = signatures[i];
 

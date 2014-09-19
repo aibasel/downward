@@ -108,4 +108,14 @@ public:
     }
 };
 
+template<class T>
+bool in_bounds(int index, const T &container) {
+    return index >= 0 && static_cast<size_t>(index) < container.size();
+}
+
+template<class T>
+bool in_bounds(size_t index, const T &container) {
+    return index < container.size();
+}
+
 #endif
