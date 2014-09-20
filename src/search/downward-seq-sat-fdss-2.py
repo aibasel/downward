@@ -1,10 +1,9 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import portfolio
 
 # NOTE: when using iterated search included, we must include the option
 #       "plan_counter=PLANCOUNTER"
+
+OPTIMAL = False
 
 CONFIGS = [
     # eager_greedy_ff
@@ -41,7 +40,7 @@ CONFIGS = [
           "lazy_greedy(h,preferred=h,cost_type=S_COST_TYPE,bound=BOUND)"]),
      ]
 
-def build_final_config(successful_args):
+def FINAL_CONFIG_BUILDER(successful_args):
 # this heavily depends on that in CONFIGS only "simple" configurations are used
     new_args = list(successful_args)
     for pos, arg in enumerate(successful_args):
@@ -61,6 +60,3 @@ def build_final_config(successful_args):
             new_args[pos + 1] = new_search
             break
     return new_args
-
-portfolio.run(configs=CONFIGS, optimal=False,
-              final_config_builder=build_final_config)

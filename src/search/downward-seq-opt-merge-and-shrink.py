@@ -1,7 +1,6 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import portfolio
+OPTIMAL = True
 
 CONFIGS = [
     (800, ["--search",
@@ -9,5 +8,3 @@ CONFIGS = [
     (1000, ["--search",
            "astar(merge_and_shrink(merge_strategy=merge_linear(variable_order=reverse_level),shrink_strategy=shrink_bisimulation(max_states=200000,greedy=false,group_by_h=true)))"]),
      ]
-
-portfolio.run(CONFIGS, optimal=True)

@@ -1,7 +1,6 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import portfolio
+OPTIMAL = True
 
 CONFIGS = [
     (175, ["--search",
@@ -13,6 +12,3 @@ CONFIGS = [
     (569, ["--search",
            "astar(lmcut())"]),
      ]
-
-portfolio.run(CONFIGS, optimal=True)
-
