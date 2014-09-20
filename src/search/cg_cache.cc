@@ -48,49 +48,13 @@ CGCache::CGCache() {
                               depends_on[var].end());
     }
 
-    const int MAX_CACHE_SIZE = 1000000;
-
     cache.resize(var_count);
     helpful_transition_cache.resize(var_count);
 
     for (int var = 0; var < var_count; ++var) {
-        int required_cache_size = 1;
-        bool can_cache = true;
-
-        int var_domain = g_variable_domain[var];
-        if (is_product_within_limit(var_domain, var_domain - 1,
-                                    MAX_CACHE_SIZE)) {
-            required_cache_size = var_domain * (var_domain - 1);
-        } else {
-            can_cache = false;
-        }
-
-        if (can_cache) {
-            for (size_t i = 0; i < depends_on[var].size(); ++i) {
-                int relevant_var = depends_on[var][i];
-                if (cache[relevant_var].empty()) {
-                    /*
-                      Check if var depends on a variable var_i that is
-                      not cached. This is possible even if var would
-                      have an acceptable cache size because the domain
-                      of var_i contributes quadratically to its own
-                      cache size but only linearly to the cache size
-                      of var.
-                    */
-                    can_cache = false;
-                    break;
-                }
-                int relevant_var_domain = g_variable_domain[relevant_var];
-                if (!is_product_within_limit(required_cache_size,
-                                             relevant_var_domain,
-                                             MAX_CACHE_SIZE)) {
-                    can_cache = false;
-                    break;
-                }
-                required_cache_size *= relevant_var_domain;
-            }
-        }
-        if (can_cache) {
+        int required_cache_size = compute_required_cache_size(
+            var, depends_on[var]);
+        if (required_cache_size != -1) {
             //  cout << "Cache for var " << var << ": "
             //       << required_cache_size << " entries" << endl;
             cache[var].resize(required_cache_size, NOT_COMPUTED);
@@ -102,6 +66,48 @@ CGCache::CGCache() {
 }
 
 CGCache::~CGCache() {
+}
+
+int CGCache::compute_required_cache_size(
+    int var, const vector<int> &depends_on) const {
+    /*
+      Compute the size of the cache required for variable "var", which
+      depends on the variables in "depends_on". Requires that the
+      caches for all variables in "depends_on" have already been
+      allocated. Returns -1 if the variable cannot be cached because
+      the required cache size would be too large.
+    */
+
+    const int MAX_CACHE_SIZE = 1000000;
+
+    int var_domain = g_variable_domain[var];
+    if (!is_product_within_limit(var_domain, var_domain - 1, MAX_CACHE_SIZE))
+        return -1;
+
+    int required_size = var_domain * (var_domain - 1);
+
+    for (size_t i = 0; i < depends_on.size(); ++i) {
+        int depend_var = depends_on[i];
+        int depend_var_domain = g_variable_domain[depend_var];
+
+        /*
+          If var depends on a variable var_i that is not cached, then
+          it cannot be cached. This is possible even if var would have
+          an acceptable cache size because the domain of var_i
+          contributes quadratically to its own cache size but only
+          linearly to the cache size of var.
+        */
+        if (cache[depend_var].empty())
+            return -1;
+
+        if (!is_product_within_limit(required_size, depend_var_domain,
+                                     MAX_CACHE_SIZE))
+            return -1;
+
+        required_size *= depend_var_domain;
+    }
+
+    return required_size;
 }
 
 int CGCache::get_index(int var, const GlobalState &state,
