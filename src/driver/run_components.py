@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import portfolio
+
 import os
 import os.path
 import subprocess
 import sys
+import types
 
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -69,8 +72,16 @@ def run_search(args):
         # portfolio time slices. After all, we used to take into
         # account time for dispatch script and unitcost script, and
         # these are now in-process.
-        execfile(args.portfolio)
-        raise NotImplementedError
+        environment = {}
+        def mock_run(configs, optimal=True, final_config=None,
+                     final_config_builder=None, timeout=None):
+            portfolio.run(executable, args.search_input, configs, optimal,
+                          final_config, final_config_builder, timeout)
+
+        mock_portfolio_module = types.ModuleType("portfolio", "Mock portfolio module")
+        sys.modules["portfolio"] = mock_portfolio_module
+        mock_portfolio_module.__dict__['run'] = mock_run
+        execfile(args.portfolio, environment)
     else:
         print "*** final search options:", args.search_options
         write_elapsed_time()

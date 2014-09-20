@@ -44,12 +44,6 @@ EXPECTED_EXITCODES = set([
 # [..., EXIT_OUT_OF_MEMORY, ...] -> EXIT_OUT_OF_MEMORY
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--plan-file", default="sas_plan",
-                        help="Filename for the found plans (default: %default)")
-    return parser.parse_known_args()
-
 def safe_unlink(filename):
     try:
         os.unlink(filename)
@@ -167,10 +161,11 @@ def _generate_exitcode(exitcodes):
     print "Error: Unhandled exit codes:", exitcodes
     return EXIT_CRITICAL_ERROR
 
-def run(configs, optimal=True, final_config=None, final_config_builder=None,
+def run(planner, sas_file, configs, optimal=True, final_config=None, final_config_builder=None,
         timeout=None):
-    options, extra_args = parse_args()
-    plan_file = options.plan_file
+    # TODO: Remove?
+    plan_file = "sas_plan"
+    unitcost = "nonunit"
 
     # Time limits are either positive values in seconds or -1 (unlimited).
     soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
@@ -206,12 +201,6 @@ def run(configs, optimal=True, final_config=None, final_config_builder=None,
     if memory < 0:
         memory = None
     print 'Internal memory limit:', memory
-
-    assert len(extra_args) == 3, extra_args
-    sas_file = extra_args.pop(0)
-    assert extra_args[0] in ["unit", "nonunit"], extra_args
-    unitcost = extra_args.pop(0)
-    planner = extra_args.pop(0)
 
     safe_unlink("plan_numbers_and_cost")
 
