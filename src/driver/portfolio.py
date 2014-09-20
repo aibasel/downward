@@ -12,6 +12,7 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
+# TODO: How do we make python reserve less memory without the downward script?
 # On maia the python process that runs this module reserves about 128MB of
 # virtual memory. To make it reserve less space, it is necessary to lower the
 # soft limit for virtual memory before the process is started. This is done in
@@ -162,10 +163,17 @@ def _generate_exitcode(exitcodes):
     print "Error: Unhandled exit codes:", exitcodes
     return EXIT_CRITICAL_ERROR
 
-def run(planner, sas_file, configs, optimal=True, final_config=None, final_config_builder=None,
-        timeout=None):
+def run(planner, sas_file, configs, optimal=True, final_config=None,
+        final_config_builder=None, timeout=None):
     # TODO: Remove?
     plan_file = "sas_plan"
+    # TODO: Remove or parse input_file with input_analyzer.is_unit_cost?
+    #       If we remove this we will repeat the first configuration
+    #       that finds a solution from satisficing FDSS 1+2. This might
+    #       be wasted effort, but the second run will use the lower
+    #       g_bound. For all portfolios that do not use H_COST_TYPE and
+    #       S_COST_TYPE, knowing whether the task has unit costs is
+    #       irrelevant.
     unitcost = "nonunit"
 
     # Time limits are either positive values in seconds or -1 (unlimited).
