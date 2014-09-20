@@ -204,14 +204,7 @@ def run(planner, sas_file, configs, optimal=True, final_config=None, final_confi
 
     safe_unlink("plan_numbers_and_cost")
 
-    remaining_time_at_start = float(timeout)
-    try:
-        for line in open("elapsed.time"):
-            if line.strip():
-                remaining_time_at_start -= float(line)
-    except EnvironmentError:
-        print "WARNING! elapsed_time not found -- assuming full time available."
-
+    remaining_time_at_start = float(timeout) - sum(os.times()[:4])
     print "remaining time at start: %s" % remaining_time_at_start
 
     if optimal:

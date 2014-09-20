@@ -16,22 +16,6 @@ PREPROCESS = os.path.join(SRC_DIR, "preprocess", "preprocess")
 SEARCH_DIR = os.path.join(SRC_DIR, "search")
 
 
-def write_elapsed_time():
-    ## Note: According to the os.times documentation, Windows sets the
-    ## child time components to 0, so this won't work properly under
-    ## Windows.
-    ##
-    ## TODO: Find a solution for this. A simple solution might be to
-    ## just document this as a limitation under Windows that causes
-    ## time slices for portfolios to be allocated slightly wrongly.
-    ## Another solution would be to base time slices on wall-clock
-    ## time under Windows.
-    times = os.times()
-    child_elapsed = times[2] + times[3]
-    with open("elapsed.time", "w") as time_file:
-        print >> time_file, child_elapsed
-
-
 def call_cmd(cmd, args, stdin=None):
     sys.stdout.flush()
     if stdin:
@@ -84,6 +68,5 @@ def run_search(args):
         execfile(args.portfolio, environment)
     else:
         print "*** final search options:", args.search_options
-        write_elapsed_time()
         call_cmd(executable, args.search_options, stdin=args.search_input)
     print "***"
