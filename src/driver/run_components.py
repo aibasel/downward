@@ -52,16 +52,12 @@ def run_search(args):
     if args.portfolio:
         assert not args.search_options
         # TODO: Preserve exit code.
-        environment = {}
-        def mock_run(configs, optimal=True, final_config=None,
-                     final_config_builder=None, timeout=None):
-            portfolio.run(executable, args.search_input, configs, optimal,
-                          final_config, final_config_builder, timeout)
-
-        mock_portfolio_module = types.ModuleType("portfolio", "Mock portfolio module")
-        sys.modules["portfolio"] = mock_portfolio_module
-        mock_portfolio_module.__dict__['run'] = mock_run
-        execfile(args.portfolio, environment)
+        env = {}
+        execfile(args.portfolio, env)
+        # TODO: Use kwargs. Use better error reporting.
+        portfolio.run(executable, args.search_input, env["CONFIGS"],
+                      env["OPTIMAL"], env.get("FINAL_CONFIG"),
+                      env.get("FINAL_CONFIG_BUILDER"), env.get("TIMEOUT"))
     else:
         print "*** final search options:", args.search_options
         call_cmd(executable, args.search_options, stdin=args.search_input)
