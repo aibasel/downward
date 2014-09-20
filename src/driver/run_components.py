@@ -69,6 +69,7 @@ def run_search(args):
         # portfolio time slices. After all, we used to take into
         # account time for dispatch script and unitcost script, and
         # these are now in-process.
+        execfile(args.portfolio)
         raise NotImplementedError
     else:
         print "*** final search options:", args.search_options
