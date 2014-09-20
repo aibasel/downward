@@ -38,7 +38,7 @@ static void validate_and_normalize_patterns(
       - Validate and normalize each pattern (see there).
       - Sort collection lexicographically and remove duplicate patterns.
       - Warn if duplicate patterns exist.
-     */
+    */
 
     for (size_t i = 0; i < pattern_collection.size(); ++i)
         validate_and_normalize_pattern(parser, pattern_collection[i]);
@@ -70,9 +70,7 @@ static void build_pattern_for_size_limit(
         int next_var = order.next();
         int next_var_size = g_variable_domain[next_var];
 
-        // Test if (size * next_var_size > size_limit) while guarding
-        // against overflow.
-        if ((size_limit - 1) / next_var_size <= size)
+        if (!is_product_within_limit(size, next_var_size, size_limit))
             break;
 
         pattern.push_back(next_var);
