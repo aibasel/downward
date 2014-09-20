@@ -6,7 +6,6 @@ import os
 import os.path
 import subprocess
 import sys
-import types
 
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
