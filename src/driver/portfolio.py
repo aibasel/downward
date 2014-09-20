@@ -120,8 +120,9 @@ def run_search(planner, args, sas_file, plan_file, timeout=None, memory=None):
         else:
             set_limit(resource.RLIMIT_AS, -1, -1)
 
-    returncode = subprocess.call(complete_args, stdin=open(sas_file),
-                                 preexec_fn=set_limits)
+    with open(sas_file) as input_file:
+        returncode = subprocess.call(complete_args, stdin=input_file,
+                                     preexec_fn=set_limits)
     print "returncode:", returncode
     print
     return returncode
