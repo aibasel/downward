@@ -36,8 +36,8 @@ void ShrinkFH::dump_strategy_specific_options() const {
 void ShrinkFH::partition_into_buckets(
     const Abstraction &abs, vector<Bucket> &buckets) const {
     assert(buckets.empty());
-    // The following line converts to double to avoid overflow.
     int max_f = abs.get_max_f();
+    // Calculate with double to avoid overflow.
     if (static_cast<double>(max_f) * max_f / 2.0 > abs.size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).

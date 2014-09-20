@@ -22,8 +22,6 @@ CGCache::CGCache() {
     // Compute inverted causal graph.
     depends_on.resize(var_count);
     for (int var = 0; var < var_count; ++var) {
-        // This is to be on the safe side of overflows for the multiplications below.
-        assert(g_variable_domain[var] <= 1000);
         const vector<int> &succ = cg->get_pre_to_eff(var);
         for (size_t i = 0; i < succ.size(); ++i) {
             // Ignore arcs that are not part of the reduced CG:
@@ -33,7 +31,7 @@ CGCache::CGCache() {
         }
     }
 
-    // Compute transitive close of inverted causal graph.
+    // Compute transitive closure of inverted reduced causal graph.
     // This is made easier because it is acyclic and the variables
     // are in topological order.
     for (int var = 0; var < var_count; ++var) {
@@ -50,42 +48,46 @@ CGCache::CGCache() {
                               depends_on[var].end());
     }
 
-    /*
-      cout << "Dumping transitive closure of inverted causal graph..." << endl;
-      for(int var = 0; var < var_count; ++var) {
-      cout << var << ":";
-      for(int i = 0; i < depends_on[var].size(); ++i)
-      cout << " " << depends_on[var][i];
-      cout << endl;
-      }
-    */
-
     const int MAX_CACHE_SIZE = 1000000;
 
     cache.resize(var_count);
     helpful_transition_cache.resize(var_count);
 
     for (int var = 0; var < var_count; ++var) {
-        int required_cache_size = g_variable_domain[var] * (g_variable_domain[var] - 1);
-        bool can_cache = (required_cache_size <= MAX_CACHE_SIZE);
+        int required_cache_size = 1;
+        bool can_cache = true;
+
+        int var_domain = g_variable_domain[var];
+        if (is_product_within_limit(var_domain, var_domain - 1,
+                                    MAX_CACHE_SIZE)) {
+            required_cache_size = var_domain * (var_domain - 1);
+        } else {
+            can_cache = false;
+        }
+
         if (can_cache) {
             for (size_t i = 0; i < depends_on[var].size(); ++i) {
                 int relevant_var = depends_on[var][i];
                 if (cache[relevant_var].empty()) {
-                    // It is possible that var depends on a variable var_i
-                    // that is not cached: this is the case, if the
-                    // required_cache_size of var_i exceeds MAX_CACHE_SIZE
-                    // (note: the domain of var_i contributes quadratically to
-                    // the required_cache_size of var_i while it contributes
-                    // only linearly to the required_cache_size of var)
+                    /*
+                      Check if var depends on a variable var_i that is
+                      not cached. This is possible even if var would
+                      have an acceptable cache size because the domain
+                      of var_i contributes quadratically to its own
+                      cache size but only linearly to the cache size
+                      of var.
+                    */
                     can_cache = false;
                     break;
                 }
-                required_cache_size *= g_variable_domain[relevant_var];
-                if (required_cache_size > MAX_CACHE_SIZE) {
+                int relevant_var_domain = g_variable_domain[relevant_var];
+                if (!is_product_within_limit(required_cache_size,
+                                             relevant_var_domain,
+                                             MAX_CACHE_SIZE)) {
                     can_cache = false;
                     break;
                 }
+                required_cache_size *= relevant_var_domain;
             }
         }
         if (can_cache) {
