@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import argparse
 import math
-import optparse
 import os
 import resource
 import signal
@@ -45,10 +45,10 @@ EXPECTED_EXITCODES = set([
 
 
 def parse_args():
-    parser = optparse.OptionParser()
-    parser.add_option("--plan-file", default="sas_plan",
-                      help="Filename for the found plans (default: %default)")
-    return parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--plan-file", default="sas_plan",
+                        help="Filename for the found plans (default: %default)")
+    return parser.parse_known_args()
 
 def safe_unlink(filename):
     try:
