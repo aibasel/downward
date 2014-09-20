@@ -51,11 +51,7 @@ def run_search(args):
 
     if args.portfolio:
         assert not args.search_options
-        # TODO: Implement portfolios. Don't forget exit code. Take
-        # into account the time used by *this* process too for the
-        # portfolio time slices. After all, we used to take into
-        # account time for dispatch script and unitcost script, and
-        # these are now in-process.
+        # TODO: Preserve exit code.
         environment = {}
         def mock_run(configs, optimal=True, final_config=None,
                      final_config_builder=None, timeout=None):
