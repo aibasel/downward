@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import glob
 import math
 import os
+import re
 import resource
 import signal
 import subprocess
@@ -44,12 +46,6 @@ EXPECTED_EXITCODES = set([
 # [..., EXIT_OUT_OF_MEMORY, ...] -> EXIT_OUT_OF_MEMORY
 
 
-def safe_unlink(filename):
-    try:
-        os.unlink(filename)
-    except EnvironmentError:
-        pass
-
 def set_limit(kind, soft, hard):
     try:
         resource.setrlimit(kind, (soft, hard))
@@ -59,15 +55,20 @@ def set_limit(kind, soft, hard):
                          "Previous limit: %s\n" %
                          (kind, (soft, hard), err, resource.getrlimit(kind)))
 
+def get_plan_cost(plan_file):
+    with open(plan_file) as f:
+        for line in f:
+            match = re.match(r"; cost = (\d+)\n", line)
+            if match:
+                return int(match.group(1))
+
+def get_g_bound_and_number_of_plans(plan_file):
+    plans = glob.glob("%s*" % plan_file)
+    bound = min(get_plan_cost(plan) for plan in plans) if plans else "infinity"
+    return bound, len(plans)
+
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
-    g_bound = "infinity"
-    plan_no = 0
-    try:
-        for line in open("plan_numbers_and_cost"):
-            plan_no += 1
-            g_bound = int(line.split()[1])
-    except IOError:
-        pass
+    g_bound, plan_no = get_g_bound_and_number_of_plans(plan_file)
     for index, arg in enumerate(args):
         if arg == "--heuristic":
             heuristic_config = args[index + 1]
@@ -201,8 +202,6 @@ def run(planner, sas_file, configs, optimal=True, final_config=None, final_confi
     if memory < 0:
         memory = None
     print 'Internal memory limit:', memory
-
-    safe_unlink("plan_numbers_and_cost")
 
     remaining_time_at_start = float(timeout) - sum(os.times()[:4])
     print "remaining time at start: %s" % remaining_time_at_start
