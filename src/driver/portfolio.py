@@ -165,7 +165,10 @@ def _generate_exitcode(exitcodes):
 
 def run(planner, sas_file, configs, optimal=True, final_config=None,
         final_config_builder=None, timeout=None):
-    # TODO: Remove?
+    # TODO: How should we retrieve the plan_file argument? We cannot
+    #       add --plan_file to the main argument parser, since it has to
+    #       be passed to the search component as well. Maybe we could
+    #       use ArgumentParser.parse_known_args() to parse it here?
     plan_file = "sas_plan"
     # TODO: Remove or parse input_file with input_analyzer.is_unit_cost?
     #       If we remove this we will repeat the first configuration
