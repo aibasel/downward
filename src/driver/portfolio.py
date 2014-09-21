@@ -2,6 +2,7 @@
 __all__ = ["run"]
 
 # TODO: Rename portfolio.py to portfolios.py ?
+# TODO: Should we add *** in front of logging messages?
 
 import glob
 import math
