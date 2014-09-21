@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import portfolio
-
 import os
 import os.path
 import subprocess
 import sys
+
+import portfolio
 
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
