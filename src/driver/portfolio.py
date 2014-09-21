@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Rename portfolio.py to portfolios.py ?
+
 import glob
 import math
 import os
