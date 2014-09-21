@@ -246,7 +246,8 @@ def _run_sat_config(configs, pos, search_cost_type, heuristic_cost_type, planner
 def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
     exitcodes = []
-    # For non-unitcost tasks we start by treating all costs as one. When we find
+    # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
+    # has non-unit costs, we start by treating all costs as one. When we find
     # a solution, we rerun the successful config with real costs.
     heuristic_cost_type = 1
     search_cost_type = 1
