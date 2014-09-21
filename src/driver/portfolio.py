@@ -75,26 +75,23 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     g_bound, plan_no = get_g_bound_and_number_of_plans(plan_file)
     for index, arg in enumerate(args):
         if arg == "--heuristic":
-            heuristic_config = args[index + 1]
-            heuristic_config = heuristic_config.replace(
-                "H_COST_TYPE", str(heuristic_cost_type))
-            args[index + 1] = heuristic_config
+            heuristic = args[index + 1]
+            heuristic = heuristic.replace("H_COST_TYPE", str(heuristic_cost_type))
+            args[index + 1] = heuristic
         elif arg == "--search":
-            search_config = args[index + 1]
-            if search_config.startswith("iterated"):
-                if not "plan_counter=PLANCOUNTER" in search_config:
+            search = args[index + 1]
+            if search.startswith("iterated"):
+                if not "plan_counter=PLANCOUNTER" in search:
                     raise ValueError("When using iterated search, we must add "
                                      "the option plan_counter=PLANCOUNTER")
                 curr_plan_file = plan_file
             else:
                 curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
-            search_config = search_config.replace("BOUND", str(g_bound))
-            search_config = search_config.replace("PLANCOUNTER", str(plan_no))
-            search_config = search_config.replace(
-                "H_COST_TYPE", str(heuristic_cost_type))
-            search_config = search_config.replace(
-                "S_COST_TYPE", str(search_cost_type))
-            args[index + 1] = search_config
+            for name, value in [("BOUND", g_bound), ("PLANCOUNTER", plan_no),
+                    ("H_COST_TYPE", heuristic_cost_type),
+                    ("S_COST_TYPE", search_cost_type)]:
+                search = search.replace(name, str(value))
+            args[index + 1] = search
             break
     print "g bound: %s" % g_bound
     print "next plan number: %d" % (plan_no + 1)
