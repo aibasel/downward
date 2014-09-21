@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+__all__ = ["run"]
 
 # TODO: Rename portfolio.py to portfolios.py ?
 
@@ -83,13 +84,15 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
         elif arg == "--search":
             search = args[index + 1]
             if search.startswith("iterated"):
-                if not "plan_counter=PLANCOUNTER" in search:
+                if "plan_counter=PLANCOUNTER" not in search:
                     raise ValueError("When using iterated search, we must add "
                                      "the option plan_counter=PLANCOUNTER")
                 curr_plan_file = plan_file
             else:
                 curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
-            for name, value in [("BOUND", g_bound), ("PLANCOUNTER", plan_no),
+            for name, value in [
+                    ("BOUND", g_bound),
+                    ("PLANCOUNTER", plan_no),
                     ("H_COST_TYPE", heuristic_cost_type),
                     ("S_COST_TYPE", search_cost_type)]:
                 search = search.replace(name, str(value))
@@ -99,8 +102,8 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     print "next plan number: %d" % (plan_no + 1)
     return curr_plan_file
 
-def run_search(planner, args, sas_file, curr_plan_file, timeout=None, memory=None):
-    complete_args = [planner] + args + ["--plan-file", curr_plan_file]
+def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=None):
+    complete_args = [executable] + args + ["--plan-file", curr_plan_file]
     print "args: %s" % complete_args
     sys.stdout.flush()
 
@@ -142,7 +145,94 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     run_timeout = remaining_time * relative_time / remaining_relative_time
     return run_timeout
 
-def _generate_exitcode(exitcodes):
+def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
+                   executable, sas_file, plan_file, remaining_time_at_start,
+                   memory):
+    args = list(configs[pos][1])
+    curr_plan_file = adapt_search(args, search_cost_type,
+                                  heuristic_cost_type, plan_file)
+    run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
+    if run_timeout <= 0:
+        return None
+    return run_search(executable, args, sas_file, curr_plan_file, run_timeout,
+                      memory)
+
+def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
+            final_config_builder, remaining_time_at_start, memory):
+    exitcodes = []
+    # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
+    # has non-unit costs, we start by treating all costs as one. When we find
+    # a solution, we rerun the successful config with real costs.
+    heuristic_cost_type = 1
+    search_cost_type = 1
+    changed_cost_types = False
+    while configs:
+        configs_next_round = []
+        for pos, (relative_time, args) in enumerate(configs):
+            args = list(args)
+            exitcode = run_sat_config(
+                configs, pos, search_cost_type, heuristic_cost_type,
+                executable, sas_file, plan_file, remaining_time_at_start,
+                memory)
+            if exitcode is None:
+                return exitcodes
+
+            exitcodes.append(exitcode)
+            if exitcode == EXIT_UNSOLVABLE:
+                return exitcodes
+
+            if exitcode == EXIT_PLAN_FOUND:
+                configs_next_round.append(configs[pos][:])
+                if (not changed_cost_types and unitcost != "unit" and
+                        can_change_cost_type(args)):
+                    # Switch to real cost and repeat last run.
+                    changed_cost_types = True
+                    search_cost_type = 0
+                    heuristic_cost_type = 2
+                    exitcode = run_sat_config(
+                        configs, pos, search_cost_type, heuristic_cost_type,
+                        executable, sas_file, plan_file,
+                        remaining_time_at_start, memory)
+                    if exitcode is None:
+                        return exitcodes
+
+                    exitcodes.append(exitcode)
+                    if exitcode == EXIT_UNSOLVABLE:
+                        return exitcodes
+                if final_config_builder:
+                    print "Build final config."
+                    final_config = final_config_builder(args[:])
+                    break
+
+        if final_config:
+            break
+
+        # Only run the successful configs in the next round.
+        configs = configs_next_round
+
+    if final_config:
+        print "Abort portfolio and run final config."
+        exitcode = run_sat_config(
+            [(1, list(final_config))], 0, search_cost_type,
+            heuristic_cost_type, executable, sas_file, plan_file,
+            remaining_time_at_start, memory)
+        if exitcode is not None:
+            exitcodes.append(exitcode)
+    return exitcodes
+
+def run_opt(configs, executable, sas_file, plan_file, remaining_time_at_start,
+            memory):
+    exitcodes = []
+    for pos, (relative_time, args) in enumerate(configs):
+        timeout = determine_timeout(remaining_time_at_start, configs, pos)
+        exitcode = run_search(executable, args, sas_file, plan_file, timeout, memory)
+        exitcodes.append(exitcode)
+
+        if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
+            break
+    return exitcodes
+
+def generate_exitcode(exitcodes):
     print "Exit codes:", exitcodes
     exitcodes = set(exitcodes)
     if EXIT_SIGXCPU in exitcodes:
@@ -166,6 +256,9 @@ def _generate_exitcode(exitcodes):
     print "Error: Unhandled exit codes:", exitcodes
     return EXIT_CRITICAL_ERROR
 
+def can_change_cost_type(args):
+    return any('S_COST_TYPE' in part or 'H_COST_TYPE' in part for part in args)
+
 def get_portfolio_attributes(portfolio):
     attributes = {}
     try:
@@ -183,7 +276,7 @@ def get_portfolio_attributes(portfolio):
         raise ValueError("portfolios must define OPTIMAL")
     return attributes
 
-def run(portfolio, planner, sas_file):
+def run(portfolio, executable, sas_file):
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
@@ -244,100 +337,12 @@ def run(portfolio, planner, sas_file):
     print "remaining time at start: %s" % remaining_time_at_start
 
     if optimal:
-        exitcodes = run_opt(configs, planner, sas_file, plan_file,
+        exitcodes = run_opt(configs, executable, sas_file, plan_file,
                             remaining_time_at_start, memory)
     else:
-        exitcodes = run_sat(configs, unitcost, planner, sas_file, plan_file,
+        exitcodes = run_sat(configs, unitcost, executable, sas_file, plan_file,
                             final_config, final_config_builder,
                             remaining_time_at_start, memory)
-    exitcode = _generate_exitcode(exitcodes)
+    exitcode = generate_exitcode(exitcodes)
     print "Exit with %d" % exitcode
     sys.exit(exitcode)
-
-def _can_change_cost_type(args):
-    return any('S_COST_TYPE' in part or 'H_COST_TYPE' in part for part in args)
-
-def _run_sat_config(configs, pos, search_cost_type, heuristic_cost_type, planner,
-                    sas_file, plan_file, remaining_time_at_start, memory):
-    args = list(configs[pos][1])
-    curr_plan_file = adapt_search(args, search_cost_type,
-                                  heuristic_cost_type, plan_file)
-    run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
-    if run_timeout <= 0:
-        return None
-    return run_search(planner, args, sas_file, curr_plan_file, run_timeout,
-                      memory)
-
-def run_sat(configs, unitcost, planner, sas_file, plan_file, final_config,
-            final_config_builder, remaining_time_at_start, memory):
-    exitcodes = []
-    # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
-    # has non-unit costs, we start by treating all costs as one. When we find
-    # a solution, we rerun the successful config with real costs.
-    heuristic_cost_type = 1
-    search_cost_type = 1
-    changed_cost_types = False
-    while configs:
-        configs_next_round = []
-        for pos, (relative_time, args) in enumerate(configs):
-            args = list(args)
-            exitcode = _run_sat_config(configs, pos, search_cost_type,
-                                       heuristic_cost_type, planner, sas_file,
-                                       plan_file, remaining_time_at_start,
-                                       memory)
-            if exitcode is None:
-                return exitcodes
-
-            exitcodes.append(exitcode)
-            if exitcode == EXIT_UNSOLVABLE:
-                return exitcodes
-
-            if exitcode == EXIT_PLAN_FOUND:
-                configs_next_round.append(configs[pos][:])
-                if (not changed_cost_types and unitcost != "unit" and
-                        _can_change_cost_type(args)):
-                    # Switch to real cost and repeat last run.
-                    changed_cost_types = True
-                    search_cost_type = 0
-                    heuristic_cost_type = 2
-                    exitcode = _run_sat_config(configs, pos, search_cost_type,
-                                               heuristic_cost_type, planner,
-                                               sas_file, plan_file,
-                                               remaining_time_at_start, memory)
-                    if exitcode is None:
-                        return exitcodes
-
-                    exitcodes.append(exitcode)
-                    if exitcode == EXIT_UNSOLVABLE:
-                        return exitcodes
-                if final_config_builder:
-                    print "Build final config."
-                    final_config = final_config_builder(args[:])
-                    break
-
-        if final_config:
-            break
-
-        # Only run the successful configs in the next round.
-        configs = configs_next_round
-
-    if final_config:
-        print "Abort portfolio and run final config."
-        exitcode = _run_sat_config([(1, list(final_config))], 0, search_cost_type,
-                                   heuristic_cost_type, planner, sas_file,
-                                   plan_file, remaining_time_at_start, memory)
-        if exitcode is not None:
-            exitcodes.append(exitcode)
-    return exitcodes
-
-def run_opt(configs, planner, sas_file, plan_file, remaining_time_at_start,
-            memory):
-    exitcodes = []
-    for pos, (relative_time, args) in enumerate(configs):
-        timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        exitcode = run_search(planner, args, sas_file, plan_file, timeout, memory)
-        exitcodes.append(exitcode)
-
-        if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
-            break
-    return exitcodes
