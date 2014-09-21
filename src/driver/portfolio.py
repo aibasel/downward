@@ -168,7 +168,15 @@ def _generate_exitcode(exitcodes):
 
 def get_portfolio_attributes(portfolio):
     attributes = {}
-    execfile(portfolio, attributes)
+    try:
+        execfile(portfolio, attributes)
+    except ImportError as err:
+        if str(err) == "No module named portfolio":
+            raise ValueError(
+                "The portfolio format has changed. New portfolios may only "
+                "define attributes. See the FDSS portfolios for examples.")
+        else:
+            raise
     if "CONFIGS" not in attributes:
         raise ValueError("portfolios must define CONFIGS")
     if "OPTIMAL" not in attributes:
