@@ -61,10 +61,14 @@ def get_plan_cost(plan_file):
             match = re.match(r"; cost = (\d+)\n", line)
             if match:
                 return int(match.group(1))
+    sys.stderr.write("Could not retrieve plan cost from %s\n" % plan_file)
+    return None
 
 def get_g_bound_and_number_of_plans(plan_file):
     plans = glob.glob("%s*" % plan_file)
-    bound = min(get_plan_cost(plan) for plan in plans) if plans else "infinity"
+    costs = [get_plan_cost(plan) for plan in plans]
+    costs = [cost for cost in costs if cost is not None]
+    bound = min(costs) if costs else "infinity"
     return bound, len(plans)
 
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
