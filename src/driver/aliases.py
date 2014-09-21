@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import glob
+import os
+
+from run_components import SEARCH_DIR as PORTFOLIO_DIR
+
 ALIASES = {}
 
 
@@ -141,23 +146,34 @@ ALIASES["seq-opt-lmcut"] = [
     "--search", "astar(lmcut())"]
 
 
+PORTFOLIOS = {}
+for portfolio in glob.glob(os.path.join(PORTFOLIO_DIR, "downward-seq-*.py")):
+    name, _ = os.path.splitext(os.path.basename(portfolio))
+    alias = name[len("downward-"):]
+    PORTFOLIOS[alias] = portfolio
+
+
 def show_aliases():
-    for alias in sorted(ALIASES):
+    for alias in sorted(ALIASES.keys() + PORTFOLIOS.keys()):
         print alias
 
 
 def set_options_for_alias(alias_name, args):
-    """Set args.search_options to the command-line arguments for the alias."""
-
-    # TODO: Implement and document effect on args.portfolio.
-
+    """
+    If alias_name is an alias for a configuration, set args.search_options
+    to the corresponding command-line arguments. If it is an alias for a
+    portfolio, set args.portfolio to the path to the portfolio file.
+    Otherwise raise KeyError.
+    """
     assert not args.search_options
+    assert not args.portfolio
 
     args.search_options = ALIASES.get(alias_name)
     if args.search_options is not None:
         return
 
-    raise NotImplementedError("portfolio aliases not implemented")
+    args.portfolio = PORTFOLIOS.get(alias_name)
+    if args.portfolio is not None:
+        return
 
-    # TODO: The old code checked if a portfolio file with the given name
-    # existed and then loaded it. How should we implement this now?
+    raise KeyError
