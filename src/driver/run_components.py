@@ -51,12 +51,9 @@ def run_search(args):
     if args.portfolio:
         assert not args.search_options
         # TODO: Preserve exit code.
-        env = {}
-        execfile(args.portfolio, env)
-        # TODO: Use kwargs. Use better error reporting.
-        portfolio.run(executable, args.search_input, env["CONFIGS"],
-                      env["OPTIMAL"], env.get("FINAL_CONFIG"),
-                      env.get("FINAL_CONFIG_BUILDER"), env.get("TIMEOUT"))
+        namespace = {}
+        execfile(args.portfolio, namespace)
+        portfolio.run(executable, args.search_input, **namespace)
     else:
         print "*** final search options:", args.search_options
         call_cmd(executable, args.search_options, stdin=args.search_input)
