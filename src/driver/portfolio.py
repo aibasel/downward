@@ -166,16 +166,22 @@ def _generate_exitcode(exitcodes):
     print "Error: Unhandled exit codes:", exitcodes
     return EXIT_CRITICAL_ERROR
 
-def run(planner, sas_file, **kwargs):
-    if "CONFIGS" not in kwargs:
+def get_portfolio_attributes(portfolio):
+    attributes = {}
+    execfile(portfolio, attributes)
+    if "CONFIGS" not in attributes:
         raise ValueError("portfolios must define CONFIGS")
-    if "OPTIMAL" not in kwargs:
+    if "OPTIMAL" not in attributes:
         raise ValueError("portfolios must define OPTIMAL")
-    configs = kwargs["CONFIGS"]
-    optimal = kwargs["OPTIMAL"]
-    final_config = kwargs.get("FINAL_CONFIG")
-    final_config_builder = kwargs.get("FINAL_CONFIG_BUILDER")
-    timeout = kwargs.get("TIMEOUT")
+    return attributes
+
+def run(portfolio, planner, sas_file):
+    attributes = get_portfolio_attributes(portfolio)
+    configs = attributes["CONFIGS"]
+    optimal = attributes["OPTIMAL"]
+    final_config = attributes.get("FINAL_CONFIG")
+    final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
+    timeout = attributes.get("TIMEOUT")
     # TODO: How should we retrieve the plan_file argument? We cannot
     #       add --plan_file to the main argument parser, since it has to
     #       be passed to the search component as well. Maybe we could

@@ -51,9 +51,7 @@ def run_search(args):
     if args.portfolio:
         assert not args.search_options
         # TODO: Preserve exit code.
-        namespace = {}
-        execfile(args.portfolio, namespace)
-        portfolio.run(executable, args.search_input, **namespace)
+        portfolio.run(args.portfolio, executable, args.search_input)
     else:
         print "*** final search options:", args.search_options
         call_cmd(executable, args.search_options, stdin=args.search_input)
