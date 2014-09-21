@@ -339,6 +339,4 @@ def run(portfolio, executable, sas_file):
         exitcodes = run_sat(configs, unitcost, executable, sas_file, plan_file,
                             final_config, final_config_builder,
                             remaining_time_at_start, memory)
-    exitcode = generate_exitcode(exitcodes)
-    print "Exit with %d" % exitcode
-    sys.exit(exitcode)
+    return generate_exitcode(exitcodes)

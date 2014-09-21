@@ -7,6 +7,9 @@ from . import aliases
 from . import arguments
 from . import run_components
 
+# TODO: lab test case that tests all the aliases, including
+# unit/general case. Ditto for the portfolios.
+
 
 def set_memory_limit():
     # We don't want Python to gobble up too much memory in case we're
@@ -42,22 +45,10 @@ def main():
 
     for component in args.components:
         if component == "translate":
-            run_components.run_translate(args)
+            exitcode = run_components.run_translate(args)
         elif component == "preprocess":
-            run_components.run_preprocess(args)
+            exitcode = run_components.run_preprocess(args)
         elif component == "search":
-            run_components.run_search(args)
+            exitcode = run_components.run_search(args)
 
-
-    ## TODO: The old "plan" script preserved the exit code of the
-    ## search component. Make sure that this one does, too, both in
-    ## the case where only search is run and in the case where the
-    ## whole planner is run. It is probably better to wait with this
-    ## until the functionality of the driver has progressed further,
-    ## though.
-
-
-if __name__ == "__main__":
-    # TODO: lab test case that tests all the aliases, including
-    # unit/general case. Ditto for the portfolios.
-    main()
+    return exitcode
