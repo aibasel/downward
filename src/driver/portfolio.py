@@ -172,12 +172,13 @@ def run(planner, sas_file, configs, optimal=True, final_config=None,
     #       use ArgumentParser.parse_known_args() to parse it here?
     plan_file = "sas_plan"
     # TODO: Remove or parse input_file with input_analyzer.is_unit_cost?
-    #       If we remove this we will repeat the first configuration
-    #       that finds a solution from satisficing FDSS 1+2. This might
+    #       If we remove this we will run the first satisficing FDSS
+    #       configuration that finds a solution twice. This might
     #       be wasted effort, but the second run will use the lower
     #       g_bound. For all portfolios that do not use H_COST_TYPE and
     #       S_COST_TYPE, knowing whether the task has unit costs is
-    #       irrelevant.
+    #       irrelevant. I see no easy way of using the new --if-unit-cost
+    #       for this problem.
     unitcost = "nonunit"
 
     # Time limits are either positive values in seconds or -1 (unlimited).
