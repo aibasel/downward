@@ -55,13 +55,13 @@ def set_limit(kind, soft, hard):
                          "Previous limit: %s\n" %
                          (kind, (soft, hard), err, resource.getrlimit(kind)))
 
-def get_plan_cost(plan_file):
-    with open(plan_file) as f:
-        for line in f:
+def get_plan_cost(sas_plan_file):
+    with open(sas_plan_file) as input_file:
+        for line in input_file:
             match = re.match(r"; cost = (\d+)\n", line)
             if match:
                 return int(match.group(1))
-    sys.stderr.write("Could not retrieve plan cost from %s\n" % plan_file)
+    sys.stderr.write("Could not retrieve plan cost from %s\n" % sas_plan_file)
     return None
 
 def get_g_bound_and_number_of_plans(plan_file):
@@ -100,8 +100,8 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     print "next plan number: %d" % (plan_no + 1)
     return curr_plan_file
 
-def run_search(planner, args, sas_file, plan_file, timeout=None, memory=None):
-    complete_args = [planner] + args + ["--plan-file", plan_file]
+def run_search(planner, args, sas_file, curr_plan_file, timeout=None, memory=None):
+    complete_args = [planner] + args + ["--plan-file", curr_plan_file]
     print "args: %s" % complete_args
     sys.stdout.flush()
 
