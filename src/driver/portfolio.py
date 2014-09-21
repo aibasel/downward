@@ -14,12 +14,8 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
-# TODO: How do we make python reserve less memory without the downward script?
-# On maia the python process that runs this module reserves about 128MB of
-# virtual memory. To make it reserve less space, it is necessary to lower the
-# soft limit for virtual memory before the process is started. This is done in
-# the "downward" wrapper script. In order not to reach the external memory limit
-# during a planner run, we don't allow the planner to use the reserved memory.
+# In order not to reach the external memory limit during a planner run,
+# we reserve some memory for the Python process (see also main.py).
 BYTES_FOR_PYTHON = 50 * 1024 * 1024
 
 # Exit codes.
