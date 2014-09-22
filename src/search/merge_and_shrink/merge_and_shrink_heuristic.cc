@@ -237,7 +237,7 @@ static Heuristic *_parse(OptionParser &parser) {
                   "CG_GOAL_LEVEL to match the heuristic "
                   "in the paper."));
     shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, initialize_by_h=false, group_by_h=false)",
+        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, group_by_h=false)",
                   "Greedy bisimulation without size bound "
                   "(called M&S-gop in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert). "
@@ -245,7 +245,7 @@ static Heuristic *_parse(OptionParser &parser) {
                   "REVERSE_LEVEL to match "
                   "the heuristic in the paper. "));
     shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=N, greedy=false, initialize_by_h=true, group_by_h=true)",
+        make_pair("shrink_bisimulation(max_states=N, greedy=false, group_by_h=true)",
                   "Exact bisimulation with a size limit "
                   "(called DFP-bop in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert), "
