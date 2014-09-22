@@ -5,7 +5,7 @@ __all__ = ["run"]
 
 # TODO: Rename portfolio.py to portfolios.py ?
 
-import glob
+import itertools
 import math
 import os
 import re
@@ -61,15 +61,22 @@ def get_plan_cost(sas_plan_file):
             match = re.match(r"; cost = (\d+)\n", line)
             if match:
                 return int(match.group(1))
-    print("Could not retrieve plan cost from %s" % sas_plan_file, file=sys.stderr)
+    os.remove(sas_plan_file)
+    print("Could not retrieve plan cost from %s. Deleted the file." % sas_plan_file)
     return None
 
 def get_g_bound_and_number_of_plans(plan_file):
-    plans = glob.glob("%s*" % plan_file)
-    costs = [get_plan_cost(plan) for plan in plans]
-    costs = [cost for cost in costs if cost is not None]
-    bound = min(costs) if costs else "infinity"
-    return bound, len(plans)
+    plan_costs = []
+    for index in itertools.count(start=1):
+        sas_plan_file = "%s.%d" % (plan_file, index)
+        if os.path.exists(sas_plan_file):
+            plan_cost = get_plan_cost(sas_plan_file)
+            if plan_cost is not None:
+                plan_costs.append(plan_cost)
+        else:
+            break
+    bound = min(plan_costs) if plan_costs else "infinity"
+    return bound, len(plan_costs)
 
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     g_bound, plan_no = get_g_bound_and_number_of_plans(plan_file)
