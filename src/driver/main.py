@@ -50,5 +50,7 @@ def main():
             exitcode = run_components.run_preprocess(args)
         elif component == "search":
             exitcode = run_components.run_search(args)
+        else:
+            assert False
 
     return exitcode
