@@ -55,6 +55,7 @@ def set_limit(kind, soft, hard):
         print("Limit for %s could not be set to %s (%s). Previous limit: %s" %
               (kind, (soft, hard), err, resource.getrlimit(kind)), file=sys.stderr)
 
+
 def get_plan_cost(sas_plan_file):
     with open(sas_plan_file) as input_file:
         for line in input_file:
@@ -64,6 +65,7 @@ def get_plan_cost(sas_plan_file):
     os.remove(sas_plan_file)
     print("Could not retrieve plan cost from %s. Deleted the file." % sas_plan_file)
     return None
+
 
 def get_g_bound_and_number_of_plans(plan_file):
     plan_costs = []
@@ -77,6 +79,7 @@ def get_g_bound_and_number_of_plans(plan_file):
             break
     bound = min(plan_costs) if plan_costs else "infinity"
     return bound, len(plan_costs)
+
 
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     g_bound, plan_no = get_g_bound_and_number_of_plans(plan_file)
@@ -105,6 +108,7 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     print("g bound: %s" % g_bound)
     print("next plan number: %d" % (plan_no + 1))
     return curr_plan_file
+
 
 def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=None):
     complete_args = [executable] + args + ["--plan-file", curr_plan_file]
@@ -137,6 +141,7 @@ def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=
     print()
     return returncode
 
+
 def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_time = remaining_time_at_start - sum(os.times()[:4])
     relative_time = configs[pos][0]
@@ -149,6 +154,7 @@ def determine_timeout(remaining_time_at_start, configs, pos):
     run_timeout = remaining_time * relative_time / remaining_relative_time
     return run_timeout
 
+
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
                    executable, sas_file, plan_file, remaining_time_at_start,
                    memory):
@@ -160,6 +166,7 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
         return None
     return run_search(executable, args, sas_file, curr_plan_file, run_timeout,
                       memory)
+
 
 def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
@@ -224,6 +231,7 @@ def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
             exitcodes.append(exitcode)
     return exitcodes
 
+
 def run_opt(configs, executable, sas_file, plan_file, remaining_time_at_start,
             memory):
     exitcodes = []
@@ -235,6 +243,7 @@ def run_opt(configs, executable, sas_file, plan_file, remaining_time_at_start,
         if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
             break
     return exitcodes
+
 
 def generate_exitcode(exitcodes):
     print("Exit codes: %s" % exitcodes)
@@ -260,8 +269,10 @@ def generate_exitcode(exitcodes):
     print("Error: Unhandled exit codes: %s" % exitcodes)
     return EXIT_CRITICAL_ERROR
 
+
 def can_change_cost_type(args):
     return any('S_COST_TYPE' in part or 'H_COST_TYPE' in part for part in args)
+
 
 def get_portfolio_attributes(portfolio):
     attributes = {}
@@ -279,6 +290,7 @@ def get_portfolio_attributes(portfolio):
     if "OPTIMAL" not in attributes:
         raise ValueError("portfolios must define OPTIMAL")
     return attributes
+
 
 def run(portfolio, executable, sas_file):
     attributes = get_portfolio_attributes(portfolio)
