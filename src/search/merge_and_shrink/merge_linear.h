@@ -3,7 +3,7 @@
 
 #include "merge_strategy.h"
 
-#include "variable_order_finder.h"
+#include "../variable_order_finder.h"
 
 class Options;
 
