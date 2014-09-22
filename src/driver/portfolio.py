@@ -78,6 +78,10 @@ def get_g_bound_and_number_of_plans(plan_file):
         if os.path.exists(sas_plan_file):
             plan_cost = get_plan_cost(sas_plan_file)
             if plan_cost is not None:
+                if plan_costs and not plan_costs[-1] > plan_cost:
+                    raise SystemExit(
+                        "Plan costs must decrease: %s" %
+                        " -> ".join(str(c) for c in plan_costs + [plan_cost]))
                 plan_costs.append(plan_cost)
         else:
             break
