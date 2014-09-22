@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# NOTE: when using iterated search included, we must include the option
-#       "plan_counter=PLANCOUNTER"
-
 OPTIMAL = False
 
 CONFIGS = [
