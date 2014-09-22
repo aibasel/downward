@@ -150,8 +150,21 @@ def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=
     return returncode
 
 
+def get_elapsed_time():
+    ## Note: According to the os.times documentation, Windows sets the
+    ## child time components to 0, so this won't work properly under
+    ## Windows.
+    ##
+    ## TODO: Find a solution for this. A simple solution might be to
+    ## just document this as a limitation under Windows that causes
+    ## time slices for portfolios to be allocated slightly wrongly.
+    ## Another solution would be to base time slices on wall-clock
+    ## time under Windows.
+    return sum(os.times()[:4])
+
+
 def determine_timeout(remaining_time_at_start, configs, pos):
-    remaining_time = remaining_time_at_start - sum(os.times()[:4])
+    remaining_time = remaining_time_at_start - get_elapsed_time()
     relative_time = configs[pos][0]
     print("remaining time: %s" % remaining_time)
     remaining_relative_time = sum(config[0] for config in configs[pos:])
@@ -357,7 +370,7 @@ def run(portfolio, executable, sas_file):
         memory = None
     print("Internal memory limit: %s" % memory)
 
-    remaining_time_at_start = float(timeout) - sum(os.times()[:4])
+    remaining_time_at_start = float(timeout) - get_elapsed_time()
     print("remaining time at start: %.2f" % remaining_time_at_start)
 
     if optimal:
