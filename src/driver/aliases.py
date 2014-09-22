@@ -3,7 +3,10 @@
 import glob
 import os
 
-from run_components import SEARCH_DIR as PORTFOLIO_DIR
+from run_components import DRIVER_DIR
+
+
+PORTFOLIO_DIR = os.path.join(DRIVER_DIR, "portfolios")
 
 ALIASES = {}
 
@@ -147,10 +150,10 @@ ALIASES["seq-opt-lmcut"] = [
 
 
 PORTFOLIOS = {}
-for portfolio in glob.glob(os.path.join(PORTFOLIO_DIR, "downward-seq-*.py")):
-    name, _ = os.path.splitext(os.path.basename(portfolio))
-    alias = name[len("downward-"):]
-    PORTFOLIOS[alias] = portfolio
+for portfolio in os.listdir(PORTFOLIO_DIR):
+    name, ext = os.path.splitext(portfolio)
+    assert ext == ".py", portfolio
+    PORTFOLIOS[name.replace("_", "-")] = os.path.join(PORTFOLIO_DIR, portfolio)
 
 
 def show_aliases():
