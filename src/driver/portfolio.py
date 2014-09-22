@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 __all__ = ["run"]
 
 # TODO: Rename portfolio.py to portfolios.py ?
-# TODO: Should we add *** in front of logging messages?
 
 import glob
 import math
@@ -51,9 +52,8 @@ def set_limit(kind, soft, hard):
         resource.setrlimit(kind, (soft, hard))
     except (OSError, ValueError), err:
         # This can happen if the limit has already been set externally.
-        sys.stderr.write("Limit for %s could not be set to %s (%s). "
-                         "Previous limit: %s\n" %
-                         (kind, (soft, hard), err, resource.getrlimit(kind)))
+        print("Limit for %s could not be set to %s (%s). Previous limit: %s" %
+              (kind, (soft, hard), err, resource.getrlimit(kind)), file=sys.stderr)
 
 def get_plan_cost(sas_plan_file):
     with open(sas_plan_file) as input_file:
@@ -61,7 +61,7 @@ def get_plan_cost(sas_plan_file):
             match = re.match(r"; cost = (\d+)\n", line)
             if match:
                 return int(match.group(1))
-    sys.stderr.write("Could not retrieve plan cost from %s\n" % sas_plan_file)
+    print("Could not retrieve plan cost from %s" % sas_plan_file, file=sys.stderr)
     return None
 
 def get_g_bound_and_number_of_plans(plan_file):
@@ -95,13 +95,13 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
                 search = search.replace(name, str(value))
             args[index + 1] = search
             break
-    print "g bound: %s" % g_bound
-    print "next plan number: %d" % (plan_no + 1)
+    print("g bound: %s" % g_bound)
+    print("next plan number: %d" % (plan_no + 1))
     return curr_plan_file
 
 def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=None):
     complete_args = [executable] + args + ["--plan-file", curr_plan_file]
-    print "args: %s" % complete_args
+    print("args: %s" % complete_args)
     sys.stdout.flush()
 
     def set_limits():
@@ -114,7 +114,7 @@ def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=
             # Hard limit reached --> SIGKILL.
             soft_limit = int(math.ceil(timeout))
             hard_limit = min(soft_limit + 1, external_hard_limit)
-            print "timeout: %.2f -> (%d, %d)" % (timeout, soft_limit, hard_limit)
+            print("timeout: %.2f -> (%d, %d)" % (timeout, soft_limit, hard_limit))
             sys.stdout.flush()
             set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
         if memory is not None:
@@ -126,17 +126,17 @@ def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=
     with open(sas_file) as input_file:
         returncode = subprocess.call(complete_args, stdin=input_file,
                                      preexec_fn=set_limits)
-    print "returncode:", returncode
-    print
+    print("returncode: %d" % returncode)
+    print()
     return returncode
 
 def determine_timeout(remaining_time_at_start, configs, pos):
     remaining_time = remaining_time_at_start - sum(os.times()[:4])
     relative_time = configs[pos][0]
-    print "remaining time: %s" % remaining_time
+    print("remaining time: %s" % remaining_time)
     remaining_relative_time = sum(config[0] for config in configs[pos:])
-    print "config %d: relative time %d, remaining %d" % (
-        pos, relative_time, remaining_relative_time)
+    print("config %d: relative time %d, remaining %d" %
+          (pos, relative_time, remaining_relative_time))
     # For the last config we have relative_time == remaining_relative_time, so
     # we use all of the remaining time at the end.
     run_timeout = remaining_time * relative_time / remaining_relative_time
@@ -197,7 +197,7 @@ def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
                     if exitcode == EXIT_UNSOLVABLE:
                         return exitcodes
                 if final_config_builder:
-                    print "Build final config."
+                    print("Build final config.")
                     final_config = final_config_builder(args[:])
                     break
 
@@ -208,7 +208,7 @@ def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
         configs = configs_next_round
 
     if final_config:
-        print "Abort portfolio and run final config."
+        print("Abort portfolio and run final config.")
         exitcode = run_sat_config(
             [(1, list(final_config))], 0, search_cost_type,
             heuristic_cost_type, executable, sas_file, plan_file,
@@ -230,14 +230,14 @@ def run_opt(configs, executable, sas_file, plan_file, remaining_time_at_start,
     return exitcodes
 
 def generate_exitcode(exitcodes):
-    print "Exit codes:", exitcodes
+    print("Exit codes: %s" % exitcodes)
     exitcodes = set(exitcodes)
     if EXIT_SIGXCPU in exitcodes:
         exitcodes.remove(EXIT_SIGXCPU)
         exitcodes.add(EXIT_TIMEOUT)
     unexpected_codes = exitcodes - EXPECTED_EXITCODES
     if unexpected_codes:
-        print "Error: Unexpected exit codes:", list(unexpected_codes)
+        print("Error: Unexpected exit codes: %s" % list(unexpected_codes))
         if len(unexpected_codes) == 1:
             return unexpected_codes.pop()
         else:
@@ -250,7 +250,7 @@ def generate_exitcode(exitcodes):
             return code
     if exitcodes == set([EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]):
         return EXIT_TIMEOUT_AND_MEMORY
-    print "Error: Unhandled exit codes:", exitcodes
+    print("Error: Unhandled exit codes: %s" % exitcodes)
     return EXIT_CRITICAL_ERROR
 
 def can_change_cost_type(args):
@@ -297,7 +297,7 @@ def run(portfolio, executable, sas_file):
 
     # Time limits are either positive values in seconds or -1 (unlimited).
     soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
-    print 'External time limits:', (soft_time_limit, hard_time_limit)
+    print("External time limits: %d, %d" % (soft_time_limit, hard_time_limit))
     external_time_limit = None
     if soft_time_limit != resource.RLIM_INFINITY:
         external_time_limit = soft_time_limit
@@ -306,32 +306,32 @@ def run(portfolio, executable, sas_file):
     if (external_time_limit is not None and
             timeout is not None and
             timeout != external_time_limit):
-        sys.stderr.write("The externally set timeout (%d) differs from the one "
-                         "in the portfolio file (%d). Is this expected?\n" %
-                         (external_time_limit, timeout))
+        print("The externally set timeout (%d) differs from the one "
+              "in the portfolio file (%d). Is this expected?" %
+              (external_time_limit, timeout), file=sys.stderr)
     # Prefer limits in the order: external soft limit, external hard limit,
     # from portfolio file, default.
     if external_time_limit is not None:
         timeout = external_time_limit
     elif timeout is None:
-        sys.stderr.write("No timeout has been set for the portfolio so we take "
-                         "the default of %ds.\n" % DEFAULT_TIMEOUT)
+        print("No timeout has been set for the portfolio so we take "
+              "the default of %ds." % DEFAULT_TIMEOUT, file=sys.stderr)
         timeout = DEFAULT_TIMEOUT
-    print 'Internal time limit:', timeout
+    print("Internal time limit: %d" % timeout)
 
     # Memory limits are either positive values in Bytes or -1 (unlimited).
     soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
-    print 'External memory limits:', (soft_mem_limit, hard_mem_limit)
+    print("External memory limits: %d, %d" % (soft_mem_limit, hard_mem_limit))
     # The soft memory limit is artificially lowered (by the downward script),
     # so we respect the hard limit and raise the soft limit for child processes.
     memory = hard_mem_limit - BYTES_FOR_PYTHON
     # Do not limit memory if the previous limit was very low or unlimited.
     if memory < 0:
         memory = None
-    print 'Internal memory limit:', memory
+    print("Internal memory limit: %s" % memory)
 
     remaining_time_at_start = float(timeout) - sum(os.times()[:4])
-    print "remaining time at start: %s" % remaining_time_at_start
+    print("remaining time at start: %.2f" % remaining_time_at_start)
 
     if optimal:
         exitcodes = run_opt(configs, executable, sas_file, plan_file,
