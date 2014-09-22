@@ -67,10 +67,14 @@ def get_plan_cost(sas_plan_file):
     return None
 
 
+def get_plan_file(prefix, number):
+    return "%s.%d" % (prefix, number)
+
+
 def get_g_bound_and_number_of_plans(plan_file):
     plan_costs = []
     for index in itertools.count(start=1):
-        sas_plan_file = "%s.%d" % (plan_file, index)
+        sas_plan_file = get_plan_file(plan_file, index)
         if os.path.exists(sas_plan_file):
             plan_cost = get_plan_cost(sas_plan_file)
             if plan_cost is not None:
@@ -96,7 +100,7 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
                                      "the option plan_counter=PLANCOUNTER")
                 curr_plan_file = plan_file
             else:
-                curr_plan_file = "%s.%d" % (plan_file, plan_no + 1)
+                curr_plan_file = get_plan_file(plan_file, plan_no + 1)
             for name, value in [
                     ("BOUND", g_bound),
                     ("PLANCOUNTER", plan_no),
