@@ -4,7 +4,7 @@
 #include "../option_parser.h"
 #include "../utilities.h"
 
-#include "../merge_and_shrink/variable_order_finder.h"
+#include "../variable_order_finder.h"
 #include <vector>
 
 using namespace std;
