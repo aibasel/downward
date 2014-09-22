@@ -54,3 +54,9 @@ def main():
             assert False
 
     return exitcode
+
+
+if __name__ == "__main__":
+    exitcode = main()
+    print "*** Exit with %d" % exitcode
+    sys.exit(exitcode)
