@@ -90,10 +90,6 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-void ShrinkStrategy::shrink_atomic(Abstraction & /*abs*/) {
-    // Default implemention does nothing.
-}
-
 void ShrinkStrategy::shrink_before_merge(Abstraction &abs1, Abstraction &abs2) {
     pair<size_t, size_t> new_sizes = compute_shrink_sizes(
         abs1.size(), abs2.size());
