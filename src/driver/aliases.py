@@ -171,12 +171,9 @@ def set_options_for_alias(alias_name, args):
     assert not args.search_options
     assert not args.portfolio
 
-    args.search_options = ALIASES.get(alias_name)
-    if args.search_options is not None:
-        return
-
-    args.portfolio = PORTFOLIOS.get(alias_name)
-    if args.portfolio is not None:
-        return
-
-    raise KeyError
+    if alias_name in ALIASES:
+        args.search_options = ALIASES[alias_name]
+    elif alias_name in PORTFOLIOS:
+        args.portfolio = PORTFOLIOS[alias_name]
+    else:
+        raise KeyError(alias_name)
