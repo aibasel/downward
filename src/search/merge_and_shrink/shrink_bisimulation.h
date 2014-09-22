@@ -44,10 +44,7 @@ public:
     virtual bool reduce_labels_before_shrinking() const;
 
     virtual void shrink(Abstraction &abs, int target, bool force = false);
-    virtual void shrink_atomic(Abstraction &abs);
     virtual void shrink_before_merge(Abstraction &abs1, Abstraction &abs2);
-
-    static ShrinkStrategy *create_default();
 };
 
 #endif

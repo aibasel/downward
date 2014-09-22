@@ -129,25 +129,6 @@ void ShrinkBisimulation::shrink(
     }
 }
 
-void ShrinkBisimulation::shrink_atomic(Abstraction &abs) {
-    // Perform an exact bisimulation on all atomic abstractions.
-
-    // TODO/HACK: Come up with a better way to do this than generating
-    // a new shrinking class instance in this roundabout fashion. We
-    // shouldn't need to generate a new instance at all.
-
-    size_t old_size = abs.size();
-    ShrinkStrategy *strategy = create_default();
-    strategy->shrink(abs, abs.size(), true);
-    delete strategy;
-    if (abs.size() != old_size) {
-        cout << "Atomic abstraction simplified "
-             << "from " << old_size
-             << " to " << abs.size()
-             << " states." << endl;
-    }
-}
-
 void ShrinkBisimulation::shrink_before_merge(
     Abstraction &abs1, Abstraction &abs2) {
     pair<int, int> new_sizes = compute_shrink_sizes(abs1.size(), abs2.size());
@@ -387,18 +368,6 @@ void ShrinkBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
-}
-
-ShrinkStrategy *ShrinkBisimulation::create_default() {
-    Options opts;
-    opts.set("max_states", INF);
-    opts.set("max_states_before_merge", INF);
-    opts.set<bool>("greedy", false);
-    opts.set("threshold", 1);
-    opts.set("group_by_h", false);
-    opts.set<int>("at_limit", RETURN);
-
-    return new ShrinkBisimulation(opts);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {

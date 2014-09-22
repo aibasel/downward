@@ -63,14 +63,6 @@ Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
     all_abstractions.reserve(g_variable_domain.size() * 2 - 1);
     Abstraction::build_atomic_abstractions(all_abstractions, labels);
 
-    cout << "Shrinking atomic abstractions..." << endl;
-    for (size_t i = 0; i < all_abstractions.size(); ++i) {
-        all_abstractions[i]->compute_distances();
-        if (!all_abstractions[i]->is_solvable())
-            return all_abstractions[i];
-        shrink_strategy->shrink_atomic(*all_abstractions[i]);
-    }
-
     cout << "Merging abstractions..." << endl;
 
     vector<int> system_order;
