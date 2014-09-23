@@ -44,16 +44,8 @@ TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
       transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
       relevant_labels(transitions_by_label.size(), false),
-      transitions_sorted_unique(true), is_unit_cost(true), peak_memory(0) {
+      transitions_sorted_unique(true), peak_memory(0) {
     clear_distances();
-
-    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
-        const Label *label = labels->get_label_by_index(label_no);
-        if (label->get_cost() != 1) {
-            is_unit_cost = false;
-            break;
-        }
-    }
 }
 
 TransitionSystem::~TransitionSystem() {
@@ -157,6 +149,15 @@ void TransitionSystem::compute_distances() {
         assert(num_states == 0);
         max_f = max_g = max_h = INF;
         return;
+    }
+
+    bool is_unit_cost = true;
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+        const Label *label = labels->get_label_by_index(label_no);
+        if (label->get_cost() != 1) {
+            is_unit_cost = false;
+            break;
+        }
     }
 
     init_distances.resize(num_states, INF);

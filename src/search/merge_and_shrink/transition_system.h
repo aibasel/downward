@@ -79,7 +79,6 @@ class TransitionSystem {
 
     bool transitions_sorted_unique;
     bool goal_relevant;
-    bool is_unit_cost;
 
     mutable int peak_memory;
 
