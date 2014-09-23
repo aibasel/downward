@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+""" Module for running planner portfolios.
+
+Memory limits: We apply the same memory limit that is given to the
+plan script to each planner call. Note that this setup does not work if
+the sum of the memory usage of the Python process and the planner calls
+is limited. In this case the Python process might get killed although
+we would like to kill only the single planner call and continue with
+the remaining configurations. If we ever want to support this scenario
+we will have to reduce the memory limit of the planner calls by the
+amount of memory that the Python process needs. On maia for example
+this amounts to 128MB of reserved virtual memory. We can make Python
+reserve less space by lowering the soft limit for virtual memory before
+the process is started.
+"""
+
 __all__ = ["run"]
 
 # TODO: Rename portfolio.py to portfolios.py ?
@@ -16,9 +31,6 @@ import sys
 
 
 DEFAULT_TIMEOUT = 1800
-# In order not to reach the external memory limit during a planner run,
-# we reserve some memory for the Python process (see also main.py).
-BYTES_FOR_PYTHON = 50 * 1024 * 1024
 
 # Exit codes.
 EXIT_PLAN_FOUND = 0
@@ -362,12 +374,10 @@ def run(portfolio, executable, sas_file):
     # Memory limits are either positive values in Bytes or -1 (unlimited).
     soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
     print("External memory limits: %d, %d" % (soft_mem_limit, hard_mem_limit))
-    # The soft memory limit is artificially lowered (by the downward script),
-    # so we respect the hard limit and raise the soft limit for child processes.
-    memory = hard_mem_limit - BYTES_FOR_PYTHON
-    # Do not limit memory if the previous limit was very low or unlimited.
-    if memory < 0:
+    if hard_mem_limit == resource.RLIM_INFINITY:
         memory = None
+    else:
+        memory = hard_mem_limit
     print("Internal memory limit: %s" % memory)
 
     remaining_time_at_start = float(timeout) - get_elapsed_time()
