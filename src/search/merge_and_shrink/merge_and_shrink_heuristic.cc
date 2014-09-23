@@ -1,6 +1,6 @@
 #include "merge_and_shrink_heuristic.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 #include "labels.h"
 #include "merge_strategy.h"
 #include "shrink_strategy.h"

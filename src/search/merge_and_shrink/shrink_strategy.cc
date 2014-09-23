@@ -1,6 +1,6 @@
 #include "shrink_strategy.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include "../option_parser.h"
 

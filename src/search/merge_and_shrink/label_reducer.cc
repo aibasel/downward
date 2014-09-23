@@ -1,6 +1,6 @@
 #include "label_reducer.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 #include "label.h"
 
 #include "../equivalence_relation.h"

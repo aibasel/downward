@@ -1,6 +1,6 @@
 #include "merge_dfp.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 #include "label.h"
 
 #include "../option_parser.h"

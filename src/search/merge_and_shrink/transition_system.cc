@@ -1,4 +1,4 @@
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include "label.h"
 #include "labels.h"
