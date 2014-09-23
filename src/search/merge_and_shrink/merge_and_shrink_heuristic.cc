@@ -1,6 +1,6 @@
 #include "merge_and_shrink_heuristic.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 #include "labels.h"
 #include "merge_strategy.h"
 #include "shrink_strategy.h"
@@ -53,121 +53,121 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-Abstraction *MergeAndShrinkHeuristic::build_abstraction() {
+TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     // TODO: We're leaking memory here in various ways. Fix this.
-    //       Don't forget that build_atomic_abstractions also
+    //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    // vector of all abstractions. entries with 0 have been merged.
-    vector<Abstraction *> all_abstractions;
-    all_abstractions.reserve(g_variable_domain.size() * 2 - 1);
-    Abstraction::build_atomic_abstractions(all_abstractions, labels);
+    // vector of all transition systems. entries with 0 have been merged.
+    vector<TransitionSystem *> all_transition_systems;
+    all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
+    TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels);
 
-    cout << "Shrinking atomic abstractions..." << endl;
-    for (size_t i = 0; i < all_abstractions.size(); ++i) {
-        all_abstractions[i]->compute_distances();
-        if (!all_abstractions[i]->is_solvable())
-            return all_abstractions[i];
-        shrink_strategy->shrink_atomic(*all_abstractions[i]);
+    cout << "Shrinking atomic transition systems..." << endl;
+    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+        all_transition_systems[i]->compute_distances();
+        if (!all_transition_systems[i]->is_solvable())
+            return all_transition_systems[i];
+        shrink_strategy->shrink_atomic(*all_transition_systems[i]);
     }
 
-    cout << "Merging abstractions..." << endl;
+    cout << "Merging transition systems..." << endl;
 
-    vector<int> system_order;
+    vector<int> transition_system_order;
     while (!merge_strategy->done()) {
-        pair<int, int> next_systems = merge_strategy->get_next(all_abstractions);
-        int system_one = next_systems.first;
-        system_order.push_back(system_one);
-        Abstraction *abstraction = all_abstractions[system_one];
-        assert(abstraction);
-        int system_two = next_systems.second;
+        pair<int, int> next_transition_system = merge_strategy->get_next(all_transition_systems);
+        int system_one = next_transition_system.first;
+        transition_system_order.push_back(system_one);
+        TransitionSystem *transition_system = all_transition_systems[system_one];
+        assert(transition_system);
+        int system_two = next_transition_system.second;
         assert(system_one != system_two);
-        system_order.push_back(system_two);
-        Abstraction *other_abstraction = all_abstractions[system_two];
-        assert(other_abstraction);
+        transition_system_order.push_back(system_two);
+        TransitionSystem *other_transition_system = all_transition_systems[system_two];
+        assert(other_transition_system);
 
-        // Note: we do not reduce labels several times for the same abstraction
+        // Note: we do not reduce labels several times for the same transition system
         bool reduced_labels = false;
         if (shrink_strategy->reduce_labels_before_shrinking()) {
-            labels->reduce(make_pair(system_one, system_two), all_abstractions);
+            labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             reduced_labels = true;
-            abstraction->normalize();
-            other_abstraction->normalize();
-            abstraction->statistics(use_expensive_statistics);
-            other_abstraction->statistics(use_expensive_statistics);
+            transition_system->normalize();
+            other_transition_system->normalize();
+            transition_system->statistics(use_expensive_statistics);
+            other_transition_system->statistics(use_expensive_statistics);
         }
 
         // distances need to be computed before shrinking
-        abstraction->compute_distances();
-        other_abstraction->compute_distances();
-        if (!abstraction->is_solvable())
-            return abstraction;
-        if (!other_abstraction->is_solvable())
-            return other_abstraction;
+        transition_system->compute_distances();
+        other_transition_system->compute_distances();
+        if (!transition_system->is_solvable())
+            return transition_system;
+        if (!other_transition_system->is_solvable())
+            return other_transition_system;
 
-        shrink_strategy->shrink_before_merge(*abstraction, *other_abstraction);
+        shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
         // TODO: Make shrink_before_merge return a pair of bools
         //       that tells us whether they have actually changed,
         //       and use that to decide whether to dump statistics?
-        // (The old code would print statistics on abstraction iff it was
+        // (The old code would print statistics on transition system iff it was
         // shrunk. This is not so easy any more since this method is not
         // in control, and the shrink strategy doesn't know whether we want
         // expensive statistics. As a temporary aid, we just print the
         // statistics always now, whether or not we shrunk.)
-        abstraction->statistics(use_expensive_statistics);
-        other_abstraction->statistics(use_expensive_statistics);
+        transition_system->statistics(use_expensive_statistics);
+        other_transition_system->statistics(use_expensive_statistics);
 
         if (!reduced_labels) {
-            labels->reduce(make_pair(system_one, system_two), all_abstractions);
+            labels->reduce(make_pair(system_one, system_two), all_transition_systems);
         }
-        abstraction->normalize();
-        other_abstraction->normalize();
+        transition_system->normalize();
+        other_transition_system->normalize();
         if (!reduced_labels) {
             // only print statistics if we just possibly reduced labels
-            other_abstraction->statistics(use_expensive_statistics);
-            abstraction->statistics(use_expensive_statistics);
+            other_transition_system->statistics(use_expensive_statistics);
+            transition_system->statistics(use_expensive_statistics);
         }
 
-        Abstraction *new_abstraction = new CompositeAbstraction(labels,
-                                                                abstraction,
-                                                                other_abstraction);
+        TransitionSystem *new_transition_system = new CompositeTransitionSystem(labels,
+                                                                transition_system,
+                                                                other_transition_system);
 
-        abstraction->release_memory();
-        other_abstraction->release_memory();
+        transition_system->release_memory();
+        other_transition_system->release_memory();
 
-        new_abstraction->statistics(use_expensive_statistics);
+        new_transition_system->statistics(use_expensive_statistics);
 
-        all_abstractions[system_one] = 0;
-        all_abstractions[system_two] = 0;
-        all_abstractions.push_back(new_abstraction);
+        all_transition_systems[system_one] = 0;
+        all_transition_systems[system_two] = 0;
+        all_transition_systems.push_back(new_transition_system);
     }
 
-    assert(all_abstractions.size() == g_variable_domain.size() * 2 - 1);
-    Abstraction *final_abstraction = 0;
-    for (size_t i = 0; i < all_abstractions.size(); ++i) {
-        if (all_abstractions[i]) {
-            if (final_abstraction) {
-                cerr << "Found more than one remaining abstraction!" << endl;
+    assert(all_transition_systems.size() == g_variable_domain.size() * 2 - 1);
+    TransitionSystem *final_transition_system = 0;
+    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+        if (all_transition_systems[i]) {
+            if (final_transition_system) {
+                cerr << "Found more than one remaining transition system!" << endl;
                 exit_with(EXIT_CRITICAL_ERROR);
             }
-            final_abstraction = all_abstractions[i];
-            assert(i == all_abstractions.size() - 1);
+            final_transition_system = all_transition_systems[i];
+            assert(i == all_transition_systems.size() - 1);
         }
     }
 
-    final_abstraction->compute_distances();
-    if (!final_abstraction->is_solvable())
-        return final_abstraction;
+    final_transition_system->compute_distances();
+    if (!final_transition_system->is_solvable())
+        return final_transition_system;
 
-    final_abstraction->statistics(use_expensive_statistics);
-    final_abstraction->release_memory();
+    final_transition_system->statistics(use_expensive_statistics);
+    final_transition_system->release_memory();
 
-    cout << "Order of merged systems: ";
-    for (size_t i = 1; i < system_order.size(); i += 2) {
-        cout << system_order[i - 1] << " " << system_order[i] << ", ";
+    cout << "Order of merged transition systems: ";
+    for (size_t i = 1; i < transition_system_order.size(); i += 2) {
+        cout << transition_system_order[i - 1] << " " << transition_system_order[i] << ", ";
     }
     cout << endl;
-    return final_abstraction;
+    return final_transition_system;
 }
 
 void MergeAndShrinkHeuristic::initialize() {
@@ -178,19 +178,19 @@ void MergeAndShrinkHeuristic::initialize() {
 
     verify_no_axioms();
 
-    cout << "Building abstraction..." << endl;
-    final_abstraction = build_abstraction();
-    if (!final_abstraction->is_solvable()) {
+    cout << "Building transition system..." << endl;
+    final_transition_system = build_transition_system();
+    if (!final_transition_system->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
     }
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
-    cout << "Estimated peak memory for abstraction: " << final_abstraction->get_peak_memory_estimate() << " bytes" << endl;
+    cout << "Estimated peak memory for transition system: " << final_transition_system->get_peak_memory_estimate() << " bytes" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
-    int cost = final_abstraction->get_cost(state);
+    int cost = final_transition_system->get_cost(state);
     if (cost == -1)
         return DEAD_END;
     return cost;
@@ -209,7 +209,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "Note",
         "Conditional effects are supported directly. Note, however, that "
         "for tasks that are not factored (in the sense of the JACM 2014 "
-        "merge-and-shrink paper), the atomic abstractions on which "
+        "merge-and-shrink paper), the atomic transition systems on which "
         "merge-and-shrink heuristics are based are nondeterministic, "
         "which can lead to poor heuristics even when no shrinking is "
         "performed.");
@@ -227,7 +227,7 @@ static Heuristic *_parse(OptionParser &parser) {
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
         make_pair("shrink_fh(max_states=N)",
-                  "f-preserving abstractions from the "
+                  "f-preserving transition systems from the "
                   "Helmert/Haslum/Hoffmann ICAPS 2007 paper "
                   "(called HHH in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert). "
@@ -259,32 +259,32 @@ static Heuristic *_parse(OptionParser &parser) {
     vector<string> label_reduction_method;
     label_reduction_method.push_back("NONE");
     label_reduction_method.push_back("OLD");
-    label_reduction_method.push_back("TWO_ABSTRACTIONS");
-    label_reduction_method.push_back("ALL_ABSTRACTIONS");
-    label_reduction_method.push_back("ALL_ABSTRACTIONS_WITH_FIXPOINT");
+    label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
+    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
+    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
     parser.add_enum_option("label_reduction_method", label_reduction_method,
                            "label reduction method: "
                            "none: no label reduction will be performed "
                            "old: emulate the label reduction as desribed in the "
                            "IJCAI 2011 paper by Nissim, Hoffmann and Helmert."
-                           "two_abstractions: compute the 'combinable relation' "
-                           "for labels only for the two abstractions that will "
+                           "two_transition_systems: compute the 'combinable relation' "
+                           "for labels only for the two transition systems that will "
                            "be merged next and reduce labels."
-                           "all_abstractions: compute the 'combinable relation' "
-                           "for labels once for every abstraction and reduce "
+                           "all_transition_systems: compute the 'combinable relation' "
+                           "for labels once for every transition system and reduce "
                            "labels."
-                           "all_abstractions_with_fixpoint: keep computing the "
+                           "all_transition_systems_with_fixpoint: keep computing the "
                            "'combinable relation' for labels iteratively for all "
-                           "abstractions until no more labels can be reduced.",
-                           "ALL_ABSTRACTIONS_WITH_FIXPOINT");
+                           "transition systems until no more labels can be reduced.",
+                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
     vector<string> label_reduction_system_order;
     label_reduction_system_order.push_back("REGULAR");
     label_reduction_system_order.push_back("REVERSE");
     label_reduction_system_order.push_back("RANDOM");
     parser.add_enum_option("label_reduction_system_order", label_reduction_system_order,
                            "order of transition systems for the label reduction methods "
-                           "that iterate over the set of all abstractions. only useful "
-                           "for the choices all_abstractions and all_abstractions_with_fixpoint "
+                           "that iterate over the set of all transition systems. only useful "
+                           "for the choices all_transition_systems and all_transition_systems_with_fixpoint "
                            "for the option label_reduction_method.", "RANDOM");
     parser.add_option<bool>("expensive_statistics",
                             "show statistics on \"unique unlabeled edges\" (WARNING: "
