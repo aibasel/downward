@@ -50,8 +50,11 @@ def run_search(args):
 
     if args.portfolio:
         assert not args.search_options
-        portfolio.run(args.portfolio, executable, args.search_input)
+        portfolio.run(
+            args.portfolio, executable, args.search_input, args.plan_file)
     else:
+        if "--plan-file" not in args.search_options:
+            args.search_options.extend(["--plan-file", args.plan_file])
         print "*** final search options:", args.search_options
         call_cmd(executable, args.search_options, stdin=args.search_input)
     print "***"
