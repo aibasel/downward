@@ -3,6 +3,7 @@
 
 from downward import suites
 from lab.reports import Attribute
+from lab.suites import suite_all
 
 import common_setup
 
@@ -12,7 +13,7 @@ import os
 exp = common_setup.IssueExperiment(
     search_revisions=["issue469-base", "issue469-v1"],
     configs={"astar_blind": ["--search", "astar(blind())"]},
-    suite=['airport'],
+    suite=suite_all(),
     )
 
 parser = os.path.join(common_setup.get_script_dir(),
