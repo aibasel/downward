@@ -35,8 +35,7 @@ def main():
             else:
                 assert False
     except subprocess.CalledProcessError as err:
-        print("Command \"%s\" returned exitcode %d" %
-              (" ".join(err.cmd), err.returncode))
+        print(err)
         sys.exit(err.returncode)
 
 
