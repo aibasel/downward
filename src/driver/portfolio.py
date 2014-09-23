@@ -325,18 +325,13 @@ def get_portfolio_attributes(portfolio):
     return attributes
 
 
-def run(portfolio, executable, sas_file):
+def run(portfolio, executable, sas_file, plan_file):
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
     timeout = attributes.get("TIMEOUT")
-    # TODO: How should we retrieve the plan_file argument? We cannot
-    #       add --plan_file to the main argument parser, since it has to
-    #       be passed to the search component as well. Maybe we could
-    #       use ArgumentParser.parse_known_args() to parse it here?
-    plan_file = "sas_plan"
     # TODO: Remove or parse input_file with input_analyzer.is_unit_cost?
     #       If we remove this we will run the first satisficing FDSS
     #       configuration that finds a solution twice. This might
