@@ -43,6 +43,7 @@ void register_event_handlers() {
     signal(SIGTERM, signal_handler);
     signal(SIGSEGV, signal_handler);
     signal(SIGINT, signal_handler);
+    signal(SIGXCPU, signal_handler);
 }
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
