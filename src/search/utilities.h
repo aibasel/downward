@@ -25,7 +25,7 @@
 #define ABORT(msg) \
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \
-              << ", line " << __LINE__ << ": " << msg << std::endl), \
+                   << ", line " << __LINE__ << ": " << msg << std::endl), \
         (abort()), \
         (void)0 \
     )
@@ -107,5 +107,15 @@ public:
         return my_hash_class(p);
     }
 };
+
+template<class T>
+bool in_bounds(int index, const T &container) {
+    return index >= 0 && static_cast<size_t>(index) < container.size();
+}
+
+template<class T>
+bool in_bounds(size_t index, const T &container) {
+    return index < container.size();
+}
 
 #endif

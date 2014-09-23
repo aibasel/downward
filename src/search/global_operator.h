@@ -3,6 +3,7 @@
 
 #include "global_state.h"
 #include "globals.h"
+#include "utilities.h"
 
 #include <cassert>
 #include <iostream>
@@ -14,7 +15,7 @@ struct GlobalCondition {
     int val;
     explicit GlobalCondition(std::istream &in);
     GlobalCondition(int variable, int value) : var(variable), val(value) {
-        assert(var >= 0 && var < g_variable_name.size());
+        assert(in_bounds(var, g_variable_domain));
         assert(val >= 0 && val < g_variable_domain[var]);
     }
 
@@ -40,12 +41,12 @@ struct GlobalEffect {
     explicit GlobalEffect(std::istream &in);
     GlobalEffect(int variable, int value, const std::vector<GlobalCondition> &conds)
         : var(variable), val(value), conditions(conds) {
-        assert(var >= 0 && var < g_variable_domain.size());
+        assert(in_bounds(var, g_variable_domain));
         assert(val >= 0 && val < g_variable_domain[var]);
     }
 
     bool does_fire(const GlobalState &state) const {
-        for (int i = 0; i < conditions.size(); ++i)
+        for (size_t i = 0; i < conditions.size(); ++i)
             if (!conditions[i].is_applicable(state))
                 return false;
         return true;
@@ -74,7 +75,7 @@ public:
     const std::vector<GlobalEffect> &get_effects() const {return effects; }
 
     bool is_applicable(const GlobalState &state) const {
-        for (int i = 0; i < preconditions.size(); ++i)
+        for (size_t i = 0; i < preconditions.size(); ++i)
             if (!preconditions[i].is_applicable(state))
                 return false;
         return true;

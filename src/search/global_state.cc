@@ -11,7 +11,7 @@ using namespace std;
 
 
 GlobalState::GlobalState(const PackedStateBin *buffer_, const StateRegistry &registry_,
-             StateID id_)
+                         StateID id_)
     : buffer(buffer_),
       registry(&registry_),
       id(id_) {
@@ -27,7 +27,7 @@ int GlobalState::operator[](int index) const {
 }
 
 void GlobalState::dump_pddl() const {
-    for (int i = 0; i < g_variable_domain.size(); i++) {
+    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         const string &fact_name = g_fact_names[i][(*this)[i]];
         if (fact_name != "<none of those>")
             cout << fact_name << endl;

@@ -45,7 +45,7 @@ void EnforcedHillClimbingSearch::evaluate(const GlobalState &parent, const Globa
         heuristic->evaluate(state);
         search_progress.inc_evaluations();
     }
-    for (int i = 0; i < preferred_heuristics.size(); i++) {
+    for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
         if (op != NULL) {
             preferred_heuristics[i]->reach_state(parent, *op, state);
         }
@@ -97,22 +97,22 @@ void EnforcedHillClimbingSearch::get_successors(const GlobalState &state, vector
 
         // mark preferred operators as preferred
         if (use_preferred && (preferred_usage == RANK_PREFERRED_FIRST)) {
-            for (int i = 0; i < ops.size(); i++) {
+            for (size_t i = 0; i < ops.size(); ++i) {
                 ops[i]->unmark();
             }
             vector<const GlobalOperator *> preferred_ops;
-            for (int i = 0; i < preferred_heuristics.size(); i++) {
+            for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
                 preferred_heuristics[i]->get_preferred_operators(preferred_ops);
             }
-            for (int i = 0; i < preferred_ops.size(); i++) {
+            for (size_t i = 0; i < preferred_ops.size(); ++i) {
                 preferred_ops[i]->mark();
             }
         }
     } else {
         vector<const GlobalOperator *> preferred_ops;
-        for (int i = 0; i < preferred_heuristics.size(); i++) {
+        for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
             preferred_heuristics[i]->get_preferred_operators(preferred_ops);
-            for (int j = 0; j < preferred_ops.size(); j++) {
+            for (size_t j = 0; j < preferred_ops.size(); ++j) {
                 if (!preferred_ops[j]->is_marked()) {
                     preferred_ops[j]->mark();
                     ops.push_back(preferred_ops[j]);
@@ -126,7 +126,7 @@ void EnforcedHillClimbingSearch::get_successors(const GlobalState &state, vector
 
 SearchStatus EnforcedHillClimbingSearch::step() {
     //cout << "s = ";
-    //for (int i = 0; i < g_variable_domain.size(); i++) {
+    //for (int i = 0; i < g_variable_domain.size(); ++i) {
     //    cout << current_state[i] << " ";
     //}
     //cout << endl;
@@ -146,7 +146,7 @@ SearchStatus EnforcedHillClimbingSearch::step() {
     SearchNode current_node = search_space.get_node(current_state);
     current_node.close();
 
-    for (int i = 0; i < ops.size(); i++) {
+    for (size_t i = 0; i < ops.size(); ++i) {
         int d = get_adjusted_cost(*ops[i]);
         OpenListEntryEHC entry = make_pair(current_state.get_id(), make_pair(d, ops[i]));
         open_list->evaluate(d, ops[i]->is_marked());
@@ -186,7 +186,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
             if (h < current_h) {
                 current_g = node.get_g();
-                num_ehc_phases++;
+                ++num_ehc_phases;
                 if (d_counts.find(d) == d_counts.end()) {
                     d_counts[d] = make_pair(0, 0);
                 }
@@ -204,7 +204,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
                 get_successors(s, ops);
 
                 node.close();
-                for (int i = 0; i < ops.size(); i++) {
+                for (size_t i = 0; i < ops.size(); ++i) {
                     int new_d = d + get_adjusted_cost(*ops[i]);
                     OpenListEntryEHC entry = make_pair(node.get_state_id(), make_pair(new_d, ops[i]));
                     open_list->evaluate(new_d, ops[i]->is_marked());
@@ -225,7 +225,7 @@ void EnforcedHillClimbingSearch::statistics() const {
     cout << "Average expansions per EHC Phase: " << (double)search_progress.get_expanded() / (double)num_ehc_phases << endl;
 
     map<int, pair<int, int> >::const_iterator it;
-    for (it = d_counts.begin(); it != d_counts.end(); it++) {
+    for (it = d_counts.begin(); it != d_counts.end(); ++it) {
         pair<int, pair<int, int> > p = *it;
         cout << "EHC phases of depth " << p.first << " : " << p.second.first << " - Avg. Expansions: " << (double)p.second.second / (double)p.second.first << endl;
     }

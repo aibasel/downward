@@ -1,5 +1,5 @@
-## Variables prefixed with "DOWNWARD_" are used to configure the 
-## build. They can be changed on the command line or set as 
+## Variables prefixed with "DOWNWARD_" are used to configure the
+## build. They can be changed on the command line or set as
 ## environment variables.
 
 ## By default, build in 32-bit mode. Use DOWNWARD_BITWIDTH=64
@@ -16,7 +16,7 @@ DOWNWARD_USE_LP ?= 0
 DOWNWARD_COIN_ROOT ?= /opt/coin
 
 ## To use an LP solver through OSI, set the following variables
-## to paths for the solver's "include" and "lib" directories. 
+## to paths for the solver's "include" and "lib" directories.
 DOWNWARD_CLP_INCDIR ?= $(DOWNWARD_COIN_ROOT)/include/coin
 DOWNWARD_CLP_LIBDIR ?= $(DOWNWARD_COIN_ROOT)/lib
 DOWNWARD_CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
@@ -75,6 +75,7 @@ HEADERS = \
           sum_evaluator.h \
           timer.h \
           utilities.h \
+          variable_order_finder.h \
           weighted_evaluator.h \
           \
           open_lists/alternation_open_list.h \
@@ -103,8 +104,7 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-HEADERS += merge_and_shrink/abstraction.h \
-           merge_and_shrink/label.h \
+HEADERS += merge_and_shrink/label.h \
            merge_and_shrink/labels.h \
            merge_and_shrink/label_reducer.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
@@ -116,7 +116,7 @@ HEADERS += merge_and_shrink/abstraction.h \
            merge_and_shrink/shrink_fh.h \
            merge_and_shrink/shrink_random.h \
            merge_and_shrink/shrink_strategy.h \
-           merge_and_shrink/variable_order_finder.h \
+           merge_and_shrink/transition_system.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
@@ -178,7 +178,7 @@ ifeq ($(DOWNWARD_OS), auto)
         DOWNWARD_OS=windows
     else ifeq ($(UNAME_O), Msys)
         DOWNWARD_OS=windows
-    else ifeq ($(OS), auto)
+    else ifeq ($(DOWNWARD_OS), auto)
         $(warning OS detection failed -- setting to Linux and hoping for the best!)
         DOWNWARD_OS=linux
     endif
@@ -217,13 +217,13 @@ ifeq ($(DOWNWARD_BITWIDTH), 32)
 else ifeq ($(DOWNWARD_BITWIDTH), 64)
     BITWIDTHOPT = -m64
 else ifneq ($(DOWNWARD_BITWIDTH), native)
-    $(error Bad value for BITWIDTH)
+    $(error Bad value for DOWNWARD_BITWIDTH)
 endif
 
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-CXXFLAGS += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+CXXFLAGS += -std=c++98 -Wall -Wextra -pedantic -Wno-deprecated -Werror
 
 CXXFLAGS += -Iext
 ifeq ($(DOWNWARD_OS), osx)

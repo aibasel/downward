@@ -154,7 +154,8 @@ public:
     }
 
 private:
-    Predefinitions<T>() {}
+    Predefinitions<T>() {
+    }
     static Predefinitions<T> *instance_;
     std::map<std::string, T> predefined;
 };
@@ -480,7 +481,7 @@ struct NoteInfo {
     NoteInfo(std::string n, std::string descr, bool long_text_)
         : name(n),
           description(descr),
-          long_text(long_text_){
+          long_text(long_text_) {
     }
     std::string name;
     std::string description;

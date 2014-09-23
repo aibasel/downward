@@ -62,9 +62,9 @@ void RelaxationHeuristic::initialize() {
     simplify();
 
     // Cross-reference unary operators.
-    for (int i = 0; i < unary_operators.size(); i++) {
+    for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator *op = &unary_operators[i];
-        for (int j = 0; j < op->precondition.size(); j++)
+        for (size_t j = 0; j < op->precondition.size(); ++j)
             op->precondition[j]->precondition_of.push_back(op);
     }
 }
@@ -106,7 +106,7 @@ public:
 
         unsigned long hash_value = key.second->id;
         const vector<Proposition *> &vec = key.first;
-        for (int i = 0; i < vec.size(); i++)
+        for (size_t i = 0; i < vec.size(); ++i)
             hash_value = 17 * hash_value + vec[i]->id;
         return size_t(hash_value);
     }
@@ -142,7 +142,7 @@ void RelaxationHeuristic::simplify() {
     HashMap unary_operator_index;
     unary_operator_index.resize(unary_operators.size() * 2);
 
-    for (int i = 0; i < unary_operators.size(); i++) {
+    for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
         sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
         HashKey key(op.precondition, op.effect);
@@ -171,9 +171,9 @@ void RelaxationHeuristic::simplify() {
         int powerset_size = (1 << key.first.size()) - 1; // -1: only consider proper subsets
         bool match = false;
         if (powerset_size <= 31) { // HACK! Don't spend too much time here...
-            for (int mask = 0; mask < powerset_size; mask++) {
+            for (int mask = 0; mask < powerset_size; ++mask) {
                 HashKey dominating_key = make_pair(vector<Proposition *>(), key.second);
-                for (int i = 0; i < key.first.size(); i++)
+                for (size_t i = 0; i < key.first.size(); ++i)
                     if (mask & (1 << i))
                         dominating_key.first.push_back(key.first[i]);
                 HashMap::iterator found = unary_operator_index.find(

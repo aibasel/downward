@@ -82,7 +82,7 @@ void exit_with(ExitCode exitcode) {
         break;
     default:
         cerr << "Exitcode: " << exitcode << endl;
-        ABORT("Unkown exitcode.");
+        ABORT("Unknown exitcode.");
     }
     exit(exitcode);
 }
@@ -123,7 +123,7 @@ int get_peak_memory_in_kb() {
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
     // The file /proc/self/status is present under Cygwin, but contains no peak memory info.
     PROCESS_MEMORY_COUNTERS_EX pmc;
-    GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
+    GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc), sizeof(pmc));
     memory_in_kb = pmc.PeakPagefileUsage / 1024;
 #else
     ifstream procfile("/proc/self/status");

@@ -31,7 +31,7 @@ void DocStore::add_value_explanations(string k,
                                       string arg_name,
                                       ValueExplanations value_explanations) {
     vector<ArgumentInfo> &args = registered[k].arg_help;
-    for (int i = 0; i != args.size(); ++i) {
+    for (size_t i = 0; i < args.size(); ++i) {
         if (args[i].kwd.compare(arg_name) == 0) {
             args[i].value_explanations = value_explanations;
             break;
@@ -110,7 +110,7 @@ DocPrinter::~DocPrinter() {
 void DocPrinter::print_all() {
     DocStore *ds = DocStore::instance();
     vector<string> types = ds->get_types();
-    for (size_t n(0); n != types.size(); ++n) {
+    for (size_t n = 0; n < types.size(); ++n) {
         // Entries for the category itself have an empty type
         if (!types[n].empty())
             print_category(types[n]);
@@ -122,7 +122,7 @@ void DocPrinter::print_category(string category_name) {
     DocStore *ds = DocStore::instance();
     print_element("", ds->get(category_name));
     vector<string> keys = ds->get_keys();
-    for (size_t i(0); i != keys.size(); ++i) {
+    for (size_t i = 0; i < keys.size(); ++i) {
         DocStruct info = ds->get(keys[i]);
         if (info.type.compare(category_name) != 0
             || info.hidden)
@@ -158,15 +158,15 @@ void Txt2TagsPrinter::print_synopsis(const DocStruct &info) {
 void Txt2TagsPrinter::print_usage(string call_name, const DocStruct &info) {
     if (!call_name.empty()) {
         os << "``` " << call_name << "(";
-        for (size_t j(0); j != info.arg_help.size(); ++j) {
-            ArgumentInfo arg = info.arg_help[j];
+        for (size_t i = 0; i < info.arg_help.size(); ++i) {
+            ArgumentInfo arg = info.arg_help[i];
             os << arg.kwd;
-            if (!info.arg_help[j].default_value.empty()) {
-                os << "=" << info.arg_help[j].default_value;
-            } else if (!info.arg_help[j].mandatory) {
+            if (!info.arg_help[i].default_value.empty()) {
+                os << "=" << info.arg_help[i].default_value;
+            } else if (!info.arg_help[i].mandatory) {
                 os << "=None";
             }
-            if (j != info.arg_help.size() - 1)
+            if (i != info.arg_help.size() - 1)
                 os << ", ";
         }
         os << ")" << endl << endl << endl;
@@ -178,15 +178,15 @@ static bool is_call(string s) {
 }
 
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
-    for (size_t j(0); j != info.arg_help.size(); ++j) {
-        ArgumentInfo arg = info.arg_help[j];
+    for (size_t i = 0; i < info.arg_help.size(); ++i) {
+        ArgumentInfo arg = info.arg_help[i];
         os << "- //" << arg.kwd << "// ("
            << arg.type_name << "): "
            << arg.help << endl;
         if (!arg.value_explanations.empty()) {
-            for (size_t k(0); k != arg.value_explanations.size(); ++k) {
+            for (size_t j = 0; j < arg.value_explanations.size(); ++j) {
                 pair<string, string> explanation =
-                    arg.value_explanations[k];
+                    arg.value_explanations[j];
                 if (is_call(explanation.first)) {
                     os << endl << "```" << endl << explanation.first << endl << "```" << endl
                        << " " << explanation.second << endl;
@@ -200,8 +200,8 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
 }
 
 void Txt2TagsPrinter::print_notes(const DocStruct &info) {
-    for (size_t j(0); j != info.notes.size(); ++j) {
-        NoteInfo note = info.notes[j];
+    for (size_t i = 0; i < info.notes.size(); ++i) {
+        NoteInfo note = info.notes[i];
         if (note.long_text) {
             os << "=== " << note.name << " ===" << endl
                << note.description << endl << endl;
@@ -215,8 +215,8 @@ void Txt2TagsPrinter::print_language_features(const DocStruct &info) {
     if (!info.support_help.empty()) {
         os << "Language features supported:" << endl;
     }
-    for (size_t j(0); j != info.support_help.size(); ++j) {
-        LanguageSupportInfo ls = info.support_help[j];
+    for (size_t i = 0; i < info.support_help.size(); ++i) {
+        LanguageSupportInfo ls = info.support_help[i];
         os << "- **" << ls.feature << ":** " << ls.description << endl;
     }
 }
@@ -225,8 +225,8 @@ void Txt2TagsPrinter::print_properties(const DocStruct &info) {
     if (!info.property_help.empty()) {
         os << "Properties:" << endl;
     }
-    for (size_t j(0); j != info.property_help.size(); ++j) {
-        PropertyInfo p = info.property_help[j];
+    for (size_t i = 0; i < info.property_help.size(); ++i) {
+        PropertyInfo p = info.property_help[i];
         os << "- **" << p.property << ":** " << p.description << endl;
     }
 }
@@ -260,15 +260,15 @@ void PlainPrinter::print_synopsis(const DocStruct &info) {
 void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
     if (!call_name.empty()) {
         os << call_name << "(";
-        for (size_t j(0); j != info.arg_help.size(); ++j) {
-            ArgumentInfo arg = info.arg_help[j];
+        for (size_t i = 0; i < info.arg_help.size(); ++i) {
+            ArgumentInfo arg = info.arg_help[i];
             os << arg.kwd;
-            if (!info.arg_help[j].default_value.empty()) {
-                os << "=" << info.arg_help[j].default_value;
-            } else if (!info.arg_help[j].mandatory) {
+            if (!info.arg_help[i].default_value.empty()) {
+                os << "=" << info.arg_help[i].default_value;
+            } else if (!info.arg_help[i].mandatory) {
                 os << "=None";
             }
-            if (j != info.arg_help.size() - 1)
+            if (i != info.arg_help.size() - 1)
                 os << ", ";
         }
         os << ")" << endl;
@@ -276,8 +276,8 @@ void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
 }
 
 void PlainPrinter::print_arguments(const DocStruct &info) {
-    for (size_t j(0); j != info.arg_help.size(); ++j) {
-        ArgumentInfo arg = info.arg_help[j];
+    for (size_t i = 0; i < info.arg_help.size(); ++i) {
+        ArgumentInfo arg = info.arg_help[i];
         os << " " << arg.kwd << "("
            << arg.type_name << "): "
            << arg.help << endl;
@@ -286,8 +286,8 @@ void PlainPrinter::print_arguments(const DocStruct &info) {
 
 void PlainPrinter::print_notes(const DocStruct &info) {
     if (print_all) {
-        for (size_t j(0); j != info.notes.size(); ++j) {
-            NoteInfo note = info.notes[j];
+        for (size_t i = 0; i < info.notes.size(); ++i) {
+            NoteInfo note = info.notes[i];
             if (note.long_text) {
                 os << "=== " << note.name << " ===" << endl
                    << note.description << endl << endl;
@@ -303,8 +303,8 @@ void PlainPrinter::print_language_features(const DocStruct &info) {
         if (!info.support_help.empty()) {
             os << "Language features supported:" << endl;
         }
-        for (size_t j(0); j != info.support_help.size(); ++j) {
-            LanguageSupportInfo ls = info.support_help[j];
+        for (size_t i = 0; i < info.support_help.size(); ++i) {
+            LanguageSupportInfo ls = info.support_help[i];
             os << " * " << ls.feature << ": " << ls.description << endl;
         }
     }
@@ -315,8 +315,8 @@ void PlainPrinter::print_properties(const DocStruct &info) {
         if (!info.property_help.empty()) {
             os << "Properties:" << endl;
         }
-        for (size_t j(0); j != info.property_help.size(); ++j) {
-            PropertyInfo p = info.property_help[j];
+        for (size_t i = 0; i < info.property_help.size(); ++i) {
+            PropertyInfo p = info.property_help[i];
             os << " * " << p.property << ": " << p.description << endl;
         }
     }

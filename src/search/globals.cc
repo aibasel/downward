@@ -38,7 +38,7 @@ static const int PRE_FILE_VERSION = 3;
 static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
 
 bool test_goal(const GlobalState &state) {
-    for (int i = 0; i < g_goal.size(); i++) {
+    for (size_t i = 0; i < g_goal.size(); ++i) {
         if (state[g_goal[i].first] != g_goal[i].second) {
             return false;
         }
@@ -51,7 +51,7 @@ int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
     //       and the SearchEngine classes and hence should maybe
     //       be moved into the SearchEngine (along with save_plan).
     int plan_cost = 0;
-    for (int i = 0; i < plan.size(); i++) {
+    for (size_t i = 0; i < plan.size(); ++i) {
         plan_cost += plan[i]->get_cost();
     }
     return plan_cost;
@@ -68,7 +68,7 @@ void save_plan(const vector<const GlobalOperator *> &plan, int iter) {
         out << g_plan_filename << "." << iter;
         outfile.open(out.str().c_str(), ios::out);
     }
-    for (int i = 0; i < plan.size(); i++) {
+    for (size_t i = 0; i < plan.size(); ++i) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
     }
@@ -86,7 +86,7 @@ bool peek_magic(istream &in, string magic) {
     string word;
     in >> word;
     bool result = (word == magic);
-    for (int i = word.size() - 1; i >= 0; i--)
+    for (int i = word.size() - 1; i >= 0; --i)
         in.putback(word[i]);
     return result;
 }
@@ -128,7 +128,7 @@ void read_metric(istream &in) {
 void read_variables(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
         check_magic(in, "begin_variable");
         string name;
         in >> name;
@@ -141,8 +141,8 @@ void read_variables(istream &in) {
         g_variable_domain.push_back(range);
         in >> ws;
         vector<string> fact_names(range);
-        for (size_t i = 0; i < fact_names.size(); i++)
-            getline(in, fact_names[i]);
+        for (size_t j = 0; j < fact_names.size(); ++j)
+            getline(in, fact_names[j]);
         g_fact_names.push_back(fact_names);
         check_magic(in, "end_variable");
     }
@@ -162,13 +162,13 @@ void read_mutexes(istream &in) {
        If we ever change this representation, this is something to be
        aware of. */
 
-    for (size_t i = 0; i < num_mutex_groups; ++i) {
+    for (int i = 0; i < num_mutex_groups; ++i) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
         in >> num_facts;
         vector<pair<int, int> > invariant_group;
         invariant_group.reserve(num_facts);
-        for (size_t j = 0; j < num_facts; ++j) {
+        for (int j = 0; j < num_facts; ++j) {
             int var, val;
             in >> var >> val;
             invariant_group.push_back(make_pair(var, val));
@@ -206,7 +206,7 @@ void read_goal(istream &in) {
         cerr << "Task has no goal condition!" << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; ++i) {
         int var, val;
         in >> var >> val;
         g_goal.push_back(make_pair(var, val));
@@ -216,7 +216,7 @@ void read_goal(istream &in) {
 
 void dump_goal() {
     cout << "Goal Conditions:" << endl;
-    for (int i = 0; i < g_goal.size(); i++)
+    for (size_t i = 0; i < g_goal.size(); ++i)
         cout << "  " << g_variable_name[g_goal[i].first] << ": "
              << g_goal[i].second << endl;
 }
@@ -224,14 +224,14 @@ void dump_goal() {
 void read_operators(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; ++i)
         g_operators.push_back(GlobalOperator(in, false));
 }
 
 void read_axioms(istream &in) {
     int count;
     in >> count;
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; ++i)
         g_axioms.push_back(GlobalOperator(in, true));
 
     g_axiom_evaluator = new AxiomEvaluator;
@@ -245,7 +245,7 @@ void read_everything(istream &in) {
     read_mutexes(in);
     g_initial_state_data.resize(g_variable_domain.size());
     check_magic(in, "begin_state");
-    for (int i = 0; i < g_variable_domain.size(); i++) {
+    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         in >> g_initial_state_data[i];
     }
     check_magic(in, "end_state");
@@ -275,7 +275,7 @@ void read_everything(istream &in) {
     cout << "Variables: " << g_variable_domain.size() << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() *
-            g_state_packer->get_bin_size_in_bytes() << endl;
+    g_state_packer->get_bin_size_in_bytes() << endl;
     cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
@@ -291,7 +291,7 @@ void dump_everything() {
     cout << "Max Action Cost: " << g_max_action_cost << endl;
     // TODO: Dump the actual fact names.
     cout << "Variables (" << g_variable_name.size() << "):" << endl;
-    for (int i = 0; i < g_variable_name.size(); i++)
+    for (size_t i = 0; i < g_variable_name.size(); ++i)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
     GlobalState initial_state = g_initial_state();
@@ -303,7 +303,7 @@ void dump_everything() {
     /*
     cout << "Successor Generator:" << endl;
     g_successor_generator->dump();
-    for(int i = 0; i < g_variable_domain.size(); i++)
+    for(int i = 0; i < g_variable_domain.size(); ++i)
       g_transition_graphs[i]->dump();
     */
 }
@@ -325,9 +325,9 @@ void verify_no_axioms() {
 }
 
 static int get_first_conditional_effects_op_id() {
-    for (int i = 0; i < g_operators.size(); ++i) {
+    for (size_t i = 0; i < g_operators.size(); ++i) {
         const vector<GlobalEffect> &effects = g_operators[i].get_effects();
-        for (int j = 0; j < effects.size(); ++j) {
+        for (size_t j = 0; j < effects.size(); ++j) {
             const vector<GlobalCondition> &cond = effects[j].conditions;
             if (!cond.empty())
                 return i;
@@ -343,10 +343,10 @@ bool has_conditional_effects() {
 void verify_no_conditional_effects() {
     int op_id = get_first_conditional_effects_op_id();
     if (op_id != -1) {
-            cerr << "Heuristic does not support conditional effects "
-                 << "(operator " << g_operators[op_id].get_name() << ")" << endl
-                 << "Terminating." << endl;
-            exit_with(EXIT_UNSUPPORTED);
+        cerr << "Heuristic does not support conditional effects "
+             << "(operator " << g_operators[op_id].get_name() << ")" << endl
+             << "Terminating." << endl;
+        exit_with(EXIT_UNSUPPORTED);
     }
 }
 

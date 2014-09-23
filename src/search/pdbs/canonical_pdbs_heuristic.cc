@@ -93,8 +93,8 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     assert(are_additive.empty());
     int num_vars = g_variable_domain.size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
-    for (size_t k = 0; k < g_operators.size(); ++k) {
-        const GlobalOperator &o = g_operators[k];
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        const GlobalOperator &o = g_operators[i];
         const vector<GlobalEffect> effects = o.get_effects();
         for (size_t e1 = 0; e1 < effects.size(); ++e1) {
             for (size_t e2 = 0; e2 < effects.size(); ++e2) {
@@ -271,7 +271,8 @@ void CanonicalPDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Canonical PDB",
+    parser.document_synopsis(
+        "Canonical PDB",
         "The canonical pattern database heuristic is calculated as follows. "
         "For a given pattern collection C, the value of the canonical heuristic "
         "function is the maximum over all maximal additive subsets A in C, where "

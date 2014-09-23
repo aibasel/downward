@@ -57,7 +57,7 @@ int StandardScalarOpenList<Entry>::insert(const Entry &entry) {
         return 0;
     int key = last_evaluated_value;
     buckets[key].push_back(entry);
-    size++;
+    ++size;
     return 1;
 }
 
