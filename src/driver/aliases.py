@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import glob
 import os
 
 from run_components import DRIVER_DIR
