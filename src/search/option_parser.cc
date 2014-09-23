@@ -76,7 +76,7 @@ static void get_full_help_templ() {
     DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
                                        TypeDocumenter<T>::synopsis());
     vector<string> keys = Registry<T>::instance()->get_keys();
-    for (size_t i(0); i != keys.size(); ++i) {
+    for (size_t i = 0; i < keys.size(); ++i) {
         ParseTree pt;
         pt.insert(pt.begin(), ParseNode(keys[i]));
         get_help_templ<T>(pt);
@@ -106,7 +106,7 @@ Predefining landmarks and heuristics:
 static std::vector<std::string> to_list(std::string s) {
     std::vector<std::string> result;
     std::string buffer;
-    for (size_t i(0); i != s.size(); ++i) {
+    for (size_t i = 0; i < s.size(); ++i) {
         if (s[i] == ',') {
             result.push_back(buffer);
             buffer.clear();
@@ -138,12 +138,12 @@ static void predefine_heuristic(std::string s, bool dry_run) {
         if (!dry_run) {
             std::vector<Heuristic *> heur =
                 op.start_parsing<Synergy *>()->heuristics;
-            for (size_t i(0); i != definees.size(); ++i) {
+            for (size_t i = 0; i < definees.size(); ++i) {
                 Predefinitions<Heuristic *>::instance()->predefine(
                     definees[i], heur[i]);
             }
         } else {
-            for (size_t i(0); i != definees.size(); ++i) {
+            for (size_t i = 0; i < definees.size(); ++i) {
                 Predefinitions<Heuristic *>::instance()->predefine(
                     definees[i], 0);
             }
@@ -229,7 +229,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             bool txt2tags = false;
             vector<string> helpiands;
             if (i + 1 < args.size()) {
-                for (int j = i + 1; j < args.size(); ++j) {
+                for (size_t j = i + 1; j < args.size(); ++j) {
                     if (args[j] == "--txt2tags") {
                         txt2tags = true;
                     } else {
@@ -240,8 +240,8 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (helpiands.empty()) {
                 get_full_help();
             } else {
-                for (size_t i = 0; i != helpiands.size(); ++i) {
-                    get_help(helpiands[i]);
+                for (size_t j = 0; j != helpiands.size(); ++j) {
+                    get_help(helpiands[j]);
                 }
             }
             DocPrinter *dp;
@@ -301,7 +301,7 @@ static ParseTree generate_parse_tree(string config) {
     ParseTree::sibling_iterator cur_node = pseudoroot;
     string buffer(""), key("");
     char next = ' ';
-    for (size_t i(0); i != config.size(); ++i) {
+    for (size_t i = 0; i < config.size(); ++i) {
         next = config.at(i);
         if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
             tr.append_child(cur_node, ParseNode(buffer, key));
@@ -395,7 +395,7 @@ void OptionParser::add_enum_option(string k,
     if (help_mode_) {
         ValueExplanations value_explanations;
         string enum_descr = "{";
-        for (size_t i(0); i != enumeration.size(); ++i) {
+        for (size_t i = 0; i < enumeration.size(); ++i) {
             enum_descr += enumeration[i];
             if (i != enumeration.size() - 1) {
                 enum_descr += ", ";
@@ -427,7 +427,8 @@ void OptionParser::add_enum_option(string k,
     stringstream str_stream(name);
     int x;
     if (!(str_stream >> x).fail()) {
-        if (x > enumeration.size()) {
+        int max_choice = enumeration.size();
+        if (x > max_choice) {
             error("invalid enum argument " + name
                   + " for option " + k);
         }
@@ -454,7 +455,7 @@ Options OptionParser::parse() {
          pti != end_of_roots_children(parse_tree); ++pti) {
         if (pti->key.compare("") != 0) {
             bool valid_key = false;
-            for (size_t i(0); i != valid_keys.size(); ++i) {
+            for (size_t i = 0; i < valid_keys.size(); ++i) {
                 if (valid_keys[i].compare(pti->key) == 0) {
                     valid_key = true;
                     break;

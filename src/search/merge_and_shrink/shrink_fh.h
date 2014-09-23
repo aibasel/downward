@@ -38,17 +38,17 @@ private:
     const HighLow h_start;
 
     void ordered_buckets_use_vector(
-        const Abstraction &abs,
+        const TransitionSystem &abs,
         std::vector<Bucket> &buckets) const;
     void ordered_buckets_use_map(
-        const Abstraction &abs,
+        const TransitionSystem &abs,
         std::vector<Bucket> &buckets) const;
 protected:
     virtual std::string name() const;
     virtual void dump_strategy_specific_options() const;
 
     virtual void partition_into_buckets(
-        const Abstraction &abs, std::vector<Bucket> &buckets) const;
+        const TransitionSystem &abs, std::vector<Bucket> &buckets) const;
 
 public:
     ShrinkFH(const Options &opts);

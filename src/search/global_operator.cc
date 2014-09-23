@@ -7,7 +7,7 @@ using namespace std;
 
 GlobalCondition::GlobalCondition(istream &in) {
     in >> var >> val;
-    assert(var >= 0 && var < g_variable_domain.size());
+    assert(in_bounds(var, g_variable_domain));
     assert(val >= 0 && val < g_variable_domain[var]);
 }
 
@@ -15,7 +15,7 @@ GlobalCondition::GlobalCondition(istream &in) {
 // Effect::Effect(istream &in) {
 //    int cond_count;
 //    in >> cond_count;
-//    for (int i = 0; i < cond_count; i++)
+//    for (int i = 0; i < cond_count; ++i)
 //        cond.push_back(Condition(in));
 //    in >> var >> post;
 //}
@@ -26,10 +26,10 @@ void GlobalOperator::read_pre_post(istream &in) {
     in >> cond_count;
     vector<GlobalCondition> conditions;
     conditions.reserve(cond_count);
-    for (int i = 0; i < cond_count; i++)
+    for (int i = 0; i < cond_count; ++i)
         conditions.push_back(GlobalCondition(in));
     in >> var >> pre >> post;
-    assert(var >= 0 && var < g_variable_domain.size());
+    assert(in_bounds(var, g_variable_domain));
     assert(pre >= -1 && pre < g_variable_domain[var]);
     assert(post >= 0 && post < g_variable_domain[var]);
     if (pre != -1)
@@ -47,10 +47,10 @@ GlobalOperator::GlobalOperator(istream &in, bool axiom) {
         getline(in, name);
         int count;
         in >> count;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < count; ++i)
             preconditions.push_back(GlobalCondition(in));
         in >> count;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < count; ++i)
             read_pre_post(in);
 
         int op_cost;
@@ -80,7 +80,7 @@ void GlobalEffect::dump() const {
     cout << g_variable_name[var] << ":= " << val;
     if (!conditions.empty()) {
         cout << " if";
-        for (int i = 0; i < conditions.size(); i++) {
+        for (size_t i = 0; i < conditions.size(); ++i) {
             cout << " ";
             conditions[i].dump();
         }
@@ -89,12 +89,12 @@ void GlobalEffect::dump() const {
 
 void GlobalOperator::dump() const {
     cout << name << ":";
-    for (int i = 0; i < preconditions.size(); i++) {
+    for (size_t i = 0; i < preconditions.size(); ++i) {
         cout << " [";
         preconditions[i].dump();
         cout << "]";
     }
-    for (int i = 0; i < effects.size(); i++) {
+    for (size_t i = 0; i < effects.size(); ++i) {
         cout << " [";
         effects[i].dump();
         cout << "]";

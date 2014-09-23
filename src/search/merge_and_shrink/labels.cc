@@ -27,12 +27,12 @@ Labels::~Labels() {
 }
 
 void Labels::reduce(pair<int, int> next_merge,
-                    const std::vector<Abstraction *> &all_abstractions) {
-    label_reducer->reduce_labels(next_merge, all_abstractions, labels);
+                    const std::vector<TransitionSystem *> &all_transition_systems) {
+    label_reducer->reduce_labels(next_merge, all_transition_systems, labels);
 }
 
 const Label *Labels::get_label_by_index(int index) const {
-    assert(index >= 0 && index < labels.size());
+    assert(in_bounds(index, labels));
     return labels[index];
 }
 

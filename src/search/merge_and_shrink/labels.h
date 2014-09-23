@@ -5,14 +5,14 @@
 
 #include <vector>
 
-class Abstraction;
+class TransitionSystem;
 class Label;
 class LabelReducer;
 class Options;
 
 /*
  The Labels class is basically a container class for the set of all
- labels used by merge-and-shrink abstractions.
+ labels used by merge-and-shrink transition_systems.
  */
 class Labels {
     const bool unit_cost;
@@ -23,7 +23,7 @@ public:
     Labels(bool unit_cost, const Options &options, OperatorCost cost_type);
     ~Labels();
     void reduce(std::pair<int, int> next_merge,
-                const std::vector<Abstraction *> &all_abstractions);
+                const std::vector<TransitionSystem *> &all_transition_systems);
     // TODO: consider removing get_label_by_index and forwarding all required
     // methods of Label and giving access to them by label number.
     const Label *get_label_by_index(int index) const;

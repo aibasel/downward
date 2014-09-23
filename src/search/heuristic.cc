@@ -39,7 +39,7 @@ void Heuristic::evaluate(const GlobalState &state) {
         initialize();
     preferred_operators.clear();
     heuristic = compute_heuristic(state);
-    for (int i = 0; i < preferred_operators.size(); i++)
+    for (size_t i = 0; i < preferred_operators.size(); ++i)
         preferred_operators[i]->unmark();
     assert(heuristic == DEAD_END || heuristic >= 0);
 
@@ -53,7 +53,7 @@ void Heuristic::evaluate(const GlobalState &state) {
 
 #ifndef NDEBUG
     if (heuristic != DEAD_END) {
-        for (int i = 0; i < preferred_operators.size(); i++)
+        for (size_t i = 0; i < preferred_operators.size(); ++i)
             assert(preferred_operators[i]->is_applicable(state));
     }
 #endif

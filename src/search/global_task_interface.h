@@ -4,6 +4,7 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "task_interface.h"
+#include "utilities.h"
 
 #include <cassert>
 #include <utility>
@@ -13,10 +14,10 @@ class GlobalTaskInterface : public TaskInterface {
 protected:
     const GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) const {
         if (is_axiom) {
-            assert(index < g_axioms.size());
+            assert(in_bounds(index, g_axioms));
             return g_axioms[index];
         } else {
-            assert(index < g_operators.size());
+            assert(in_bounds(index, g_operators));
             return g_operators[index];
         }
     }

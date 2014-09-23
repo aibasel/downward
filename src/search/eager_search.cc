@@ -46,7 +46,7 @@ void EagerSearch::initialize() {
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
         estimate_heuristics.push_back(*it);
         search_progress.add_heuristic(*it);
     }
@@ -63,14 +63,14 @@ void EagerSearch::initialize() {
         f_evaluator->get_involved_heuristics(hset);
     }
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
         heuristics.push_back(*it);
     }
 
     assert(!heuristics.empty());
 
     const GlobalState &initial_state = g_initial_state();
-    for (size_t i = 0; i < heuristics.size(); i++)
+    for (size_t i = 0; i < heuristics.size(); ++i)
         heuristics[i]->evaluate(initial_state);
     open_list->evaluate(0, false);
     search_progress.inc_evaluated_states();
@@ -114,7 +114,7 @@ SearchStatus EagerSearch::step() {
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
-    for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
+    for (size_t i = 0; i < preferred_operator_heuristics.size(); ++i) {
         Heuristic *h = preferred_operator_heuristics[i];
         h->evaluate(s);
         if (!h->is_dead_end()) {
@@ -127,7 +127,7 @@ SearchStatus EagerSearch::step() {
     }
     search_progress.inc_evaluations(preferred_operator_heuristics.size());
 
-    for (int i = 0; i < applicable_ops.size(); i++) {
+    for (size_t i = 0; i < applicable_ops.size(); ++i) {
         const GlobalOperator *op = applicable_ops[i];
 
         if ((node.get_real_g() + op->get_cost()) >= bound)
@@ -146,14 +146,14 @@ SearchStatus EagerSearch::step() {
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
             bool h_is_dirty = false;
-            for (size_t i = 0; i < heuristics.size(); ++i) {
+            for (size_t j = 0; j < heuristics.size(); ++j) {
                 /*
                   Note that we can't break out of the loop when
                   h_is_dirty is set to true or use short-circuit
                   evaluation here. We must call reach_state for each
                   heuristic for its side effects.
                 */
-                if (heuristics[i]->reach_state(s, *op, succ_state))
+                if (heuristics[j]->reach_state(s, *op, succ_state))
                     h_is_dirty = true;
             }
             if (h_is_dirty && use_multi_path_dependence)
@@ -163,8 +163,8 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
-            for (size_t i = 0; i < heuristics.size(); i++)
-                heuristics[i]->evaluate(succ_state);
+            for (size_t j = 0; j < heuristics.size(); ++j)
+                heuristics[j]->evaluate(succ_state);
             succ_node.clear_h_dirty();
             search_progress.inc_evaluated_states();
             search_progress.inc_evaluations(heuristics.size());
@@ -272,7 +272,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             }
             assert(node.get_h() == pushed_h);
             if (!node.is_closed() && node.is_h_dirty()) {
-                for (size_t i = 0; i < heuristics.size(); i++)
+                for (size_t i = 0; i < heuristics.size(); ++i)
                     heuristics[i]->evaluate(node.get_state());
                 node.clear_h_dirty();
                 search_progress.inc_evaluations(heuristics.size());
@@ -322,7 +322,7 @@ void EagerSearch::update_jump_statistic(const SearchNode &node) {
 }
 
 void EagerSearch::print_heuristic_values(const vector<int> &values) const {
-    for (int i = 0; i < values.size(); i++) {
+    for (size_t i = 0; i < values.size(); ++i) {
         cout << values[i];
         if (i != values.size() - 1)
             cout << "/";
@@ -342,11 +342,12 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "reopen closed nodes", "false");
     parser.add_option<bool>("pathmax",
                             "use pathmax correction", "false");
-    parser.add_option<ScalarEvaluator *>("f_eval",
+    parser.add_option<ScalarEvaluator *>(
+        "f_eval",
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
         "",
-                                         OptionFlags(false));
+        OptionFlags(false));
     parser.add_list_option<Heuristic *>
         ("preferred",
         "use preferred operators of these heuristics", "[]");
@@ -374,7 +375,8 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "for the more general eager search, "
         "because the current implementation of multi-path depedence "
         "does not support general open lists.");
-    parser.document_note("Equivalent statements using general eager search",
+    parser.document_note(
+        "Equivalent statements using general eager search",
         "\n```\n--search astar(evaluator)\n```\n"
         "is equivalent to\n"
         "```\n--heuristic h=evaluator\n"
@@ -429,7 +431,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.document_note(
         "Closed nodes",
         "Closed node are not re-opened");
-    parser.document_note("Equivalent statements using general eager search",
+    parser.document_note(
+        "Equivalent statements using general eager search",
         "\n```\n--heuristic h2=eval2\n"
         "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
         "is equivalent to\n"
@@ -477,7 +480,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
             open = new StandardScalarOpenList<StateID>(evals[0], false);
         } else {
             vector<OpenList<StateID> *> inner_lists;
-            for (int i = 0; i < evals.size(); i++) {
+            for (size_t i = 0; i < evals.size(); ++i) {
                 inner_lists.push_back(
                     new StandardScalarOpenList<StateID>(evals[i], false));
                 if (!preferred_list.empty()) {

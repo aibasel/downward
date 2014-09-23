@@ -25,7 +25,7 @@ class GlobalState {
     StateID id;
     // Only used by the state registry.
     GlobalState(const PackedStateBin *buffer_, const StateRegistry &registry_,
-          StateID id_);
+                StateID id_);
 
     const PackedStateBin *get_packed_buffer() const {
         return buffer;

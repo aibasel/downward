@@ -33,7 +33,7 @@ pair<int, int> GlobalTaskInterface::get_operator_effect_condition(
     int op_index, int eff_index, int cond_index, bool is_axiom) const {
     assert(eff_index < get_num_operator_effects(op_index, is_axiom));
     const GlobalEffect &effect = get_operator_or_axiom(op_index, is_axiom).get_effects()[eff_index];
-    assert(cond_index < effect.conditions.size());
+    assert(in_bounds(cond_index, effect.conditions));
     const GlobalCondition &condition = effect.conditions[cond_index];
     return make_pair(condition.var, condition.val);
 }

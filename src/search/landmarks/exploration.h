@@ -66,13 +66,12 @@ struct ExUnaryOperator {
             return true;
 
         else {
-            int i = 0;
-            while (i != precondition.size()) {
-                if (i == other.precondition.size() || *(other.precondition[i]) < *(precondition[i]))
+            for (size_t i = 0; i < precondition.size(); ++i) {
+                if (i == other.precondition.size() ||
+                    *(other.precondition[i]) < *(precondition[i]))
                     return false;
                 else if (*(precondition[i]) < *(other.precondition[i]))
                     return true;
-                i++;
             }
             return true;
         }
