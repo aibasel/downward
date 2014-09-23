@@ -588,8 +588,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<GlobalCondition> &preconditions = label->get_preconditions();
-        const vector<GlobalEffect> &effects = label->get_effects();
+        const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(label);
+        const vector<GlobalCondition> &preconditions = op_label->get_preconditions();
+        const vector<GlobalEffect> &effects = op_label->get_effects();
         hash_map<int, int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (size_t i = 0; i < preconditions.size(); ++i)
