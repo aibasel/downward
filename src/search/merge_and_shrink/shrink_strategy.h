@@ -5,7 +5,7 @@
 #include <vector>
 #include <ext/slist>
 
-class Abstraction;
+class TransitionSystem;
 class OptionParser;
 class Options;
 
@@ -38,8 +38,8 @@ protected:
 
     std::pair<std::size_t, std::size_t> compute_shrink_sizes(
         std::size_t size1, std::size_t size2) const;
-    bool must_shrink(const Abstraction &abs, int threshold, bool force) const;
-    void apply(Abstraction &abs,
+    bool must_shrink(const TransitionSystem &abs, int threshold, bool force) const;
+    void apply(TransitionSystem &abs,
                EquivalenceRelation &equivalence_relation,
                int threshold) const;
 public:
@@ -65,7 +65,7 @@ public:
        accordingly? Currently the only exception is ShrinkRandom, I
        think. */
 
-    /* Shrink the abstraction to size threshold.
+    /* Shrink the transition system to size threshold.
 
        In most shrink stategies, this also prunes all irrelevant and
        unreachable states, which may cause the resulting size to be
@@ -80,10 +80,10 @@ public:
     // TODO: Should all three of these be public?
     //       If not, also modify in derived clases.
 
-    virtual void shrink(Abstraction &abs, int threshold,
+    virtual void shrink(TransitionSystem &abs, int threshold,
                         bool force = false) = 0;
-    virtual void shrink_atomic(Abstraction &abs1);
-    virtual void shrink_before_merge(Abstraction &abs1, Abstraction &abs2);
+    virtual void shrink_atomic(TransitionSystem &abs1);
+    virtual void shrink_before_merge(TransitionSystem &abs1, TransitionSystem &abs2);
 
     static void add_options_to_parser(OptionParser &parser);
     static void handle_option_defaults(Options &opts);
