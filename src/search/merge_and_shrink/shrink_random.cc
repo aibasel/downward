@@ -22,7 +22,7 @@ string ShrinkRandom::name() const {
 }
 
 void ShrinkRandom::partition_into_buckets(
-    const Abstraction &abs, vector<Bucket> &buckets) const {
+    const TransitionSystem &abs, vector<Bucket> &buckets) const {
     assert(buckets.empty());
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();
