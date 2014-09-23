@@ -1,6 +1,6 @@
 #include "shrink_fh.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"

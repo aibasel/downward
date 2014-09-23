@@ -1,6 +1,6 @@
 #include "shrink_bucket_based.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include <cassert>
 #include <iostream>
