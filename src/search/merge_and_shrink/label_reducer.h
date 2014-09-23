@@ -3,7 +3,7 @@
 
 #include <vector>
 
-class Abstraction;
+class TransitionSystem;
 class EquivalenceRelation;
 class Label;
 class LabelSignature;
@@ -15,24 +15,24 @@ class LabelReducer {
        old: emulate the label reduction as desribed in the
        IJCAI 2011 paper by Nissim, Hoffmann and Helmert.
 
-       two_abstractions: compute the 'combinable relation'
-       for labels only for the two abstractions that will
+       two_transition_systems: compute the 'combinable relation'
+       for labels only for the two transition_systems that will
        be merged next and reduce labels.
 
-       all_abstractions: compute the 'combinable relation'
-       for labels once for every abstraction and reduce
+       all_transition_systems: compute the 'combinable relation'
+       for labels once for every transition_system and reduce
        labels.
 
-       all_abstractions_with_fixpoint: keep computing the
+       all_transition_systems_with_fixpoint: keep computing the
        'combinable relation' for labels iteratively for all
-       abstractions until no more labels can be reduced.
+       transition systems until no more labels can be reduced.
      */
     enum LabelReductionMethod {
         NONE,
         OLD,
-        TWO_ABSTRACTIONS,
-        ALL_ABSTRACTIONS,
-        ALL_ABSTRACTIONS_WITH_FIXPOINT
+        TWO_TRANSITION_SYSTEMS,
+        ALL_TRANSITION_SYSTEMS,
+        ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT
     };
 
     enum LabelReductionSystemOrder {
@@ -53,10 +53,11 @@ class LabelReducer {
                     std::vector<Label *> &labels) const;
 
     // exact label reduction
-    EquivalenceRelation *compute_outside_equivalence(int abs_index,
-                                                     const std::vector<Abstraction *> &all_abstractions,
-                                                     const std::vector<Label *> &labels,
-                                                     std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
+    EquivalenceRelation *compute_outside_equivalence(
+            int abs_index,
+            const std::vector<TransitionSystem *> &all_transition_systems,
+            const std::vector<Label *> &labels,
+            std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
     // returns true iff at least one new label has been created
     bool reduce_exactly(const EquivalenceRelation *relation,
                         std::vector<Label *> &labels) const;
@@ -64,7 +65,7 @@ public:
     explicit LabelReducer(const Options &options);
     ~LabelReducer() {}
     void reduce_labels(std::pair<int, int> next_merge,
-                       const std::vector<Abstraction *> &all_abstractions,
+                       const std::vector<TransitionSystem *> &all_transition_systems,
                        std::vector<Label * > &labels) const;
     void dump_options() const;
 };

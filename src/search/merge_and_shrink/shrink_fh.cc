@@ -34,7 +34,7 @@ void ShrinkFH::dump_strategy_specific_options() const {
 }
 
 void ShrinkFH::partition_into_buckets(
-    const Abstraction &abs, vector<Bucket> &buckets) const {
+    const TransitionSystem &abs, vector<Bucket> &buckets) const {
     assert(buckets.empty());
     // The following line converts to double to avoid overflow.
     int max_f = abs.get_max_f();
@@ -78,7 +78,7 @@ static void collect_f_h_buckets(
 }
 
 void ShrinkFH::ordered_buckets_use_map(
-    const Abstraction &abs,
+    const TransitionSystem &abs,
     vector<Bucket> &buckets) const {
     map<int, map<int, Bucket > > states_by_f_and_h;
     int bucket_count = 0;
@@ -109,7 +109,7 @@ void ShrinkFH::ordered_buckets_use_map(
 }
 
 void ShrinkFH::ordered_buckets_use_vector(
-    const Abstraction &abs,
+    const TransitionSystem &abs,
     vector<Bucket> &buckets) const {
     vector<vector<Bucket > > states_by_f_and_h;
     states_by_f_and_h.resize(abs.get_max_f() + 1);
