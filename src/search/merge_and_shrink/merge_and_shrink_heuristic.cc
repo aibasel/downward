@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    labels = new Labels(is_unit_cost_problem(), opts, cost_type);
+    labels = new Labels(opts, cost_type);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {

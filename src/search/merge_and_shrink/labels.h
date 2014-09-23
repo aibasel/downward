@@ -15,12 +15,11 @@ class Options;
  labels used by merge-and-shrink transition_systems.
  */
 class Labels {
-    const bool unit_cost;
     const LabelReducer *label_reducer;
 
     std::vector<Label *> labels;
 public:
-    Labels(bool unit_cost, const Options &options, OperatorCost cost_type);
+    Labels(const Options &options, OperatorCost cost_type);
     ~Labels();
     void reduce(std::pair<int, int> next_merge,
                 const std::vector<TransitionSystem *> &all_transition_systems);
@@ -33,9 +32,6 @@ public:
 
     int get_size() const {
         return labels.size();
-    }
-    bool is_unit_cost() const {
-        return unit_cost;
     }
 };
 

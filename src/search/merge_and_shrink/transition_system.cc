@@ -44,8 +44,16 @@ TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
       transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
       relevant_labels(transitions_by_label.size(), false),
-      transitions_sorted_unique(true), peak_memory(0) {
+      transitions_sorted_unique(true), is_unit_cost(true), peak_memory(0) {
     clear_distances();
+
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+        const Label *label = labels->get_label_by_index(label_no);
+        if (label->get_cost() != 1) {
+            is_unit_cost = false;
+            break;
+        }
+    }
 }
 
 TransitionSystem::~TransitionSystem() {
@@ -153,7 +161,7 @@ void TransitionSystem::compute_distances() {
 
     init_distances.resize(num_states, INF);
     goal_distances.resize(num_states, INF);
-    if (labels->is_unit_cost()) {
+    if (is_unit_cost) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
@@ -717,8 +725,8 @@ AtomicTransitionSystem::~AtomicTransitionSystem() {
 }
 
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
-                                           TransitionSystem *abs1,
-                                           TransitionSystem *abs2)
+                                                     TransitionSystem *abs1,
+                                                     TransitionSystem *abs2)
     : TransitionSystem(labels) {
     cout << "Merging " << abs1->description() << " and "
          << abs2->description() << endl;
