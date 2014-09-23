@@ -18,7 +18,7 @@ the process is started.
 
 __all__ = ["run"]
 
-# TODO: Rename portfolio.py to portfolios.py ?
+# TODO: Rename portfolio.py to portfolio_runner.py
 
 import itertools
 import math
@@ -106,7 +106,7 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
     for index, arg in enumerate(args):
         if arg == "--heuristic":
             heuristic = args[index + 1]
-            heuristic = heuristic.replace("H_COST_TYPE", str(heuristic_cost_type))
+            heuristic = heuristic.replace("H_COST_TYPE", heuristic_cost_type)
             args[index + 1] = heuristic
         elif arg == "--search":
             search = args[index + 1]
@@ -207,8 +207,8 @@ def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
     # has non-unit costs, we start by treating all costs as one. When we find
     # a solution, we rerun the successful config with real costs.
-    heuristic_cost_type = 1
-    search_cost_type = 1
+    heuristic_cost_type = "one"
+    search_cost_type = "one"
     changed_cost_types = False
     while configs:
         configs_next_round = []
@@ -231,8 +231,8 @@ def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
                         can_change_cost_type(args)):
                     # Switch to real cost and repeat last run.
                     changed_cost_types = True
-                    search_cost_type = 0
-                    heuristic_cost_type = 2
+                    search_cost_type = "normal"
+                    heuristic_cost_type = "plusone"
                     exitcode = run_sat_config(
                         configs, pos, search_cost_type, heuristic_cost_type,
                         executable, sas_file, plan_file,
