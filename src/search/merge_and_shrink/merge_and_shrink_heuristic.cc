@@ -258,7 +258,6 @@ static Heuristic *_parse(OptionParser &parser) {
 
     vector<string> label_reduction_method;
     label_reduction_method.push_back("NONE");
-    label_reduction_method.push_back("OLD");
     label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
     label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
     label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
