@@ -22,7 +22,7 @@ GlobalState::GlobalState(const PackedStateBin *buffer_, const StateRegistry &reg
 GlobalState::~GlobalState() {
 }
 
-int GlobalState::operator[](int index) const {
+int GlobalState::operator[](size_t index) const {
     return g_state_packer->get(buffer, index);
 }
 
