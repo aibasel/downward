@@ -122,7 +122,7 @@ public:
     EffectConditions get_conditions() const {
         return EffectConditions(interface, op_index, eff_index, is_axiom);
     }
-    Fact get_effect() const {
+    Fact get_fact() const {
         std::pair<int, int> fact =
             interface.get_operator_effect(op_index, eff_index, is_axiom);
         return Fact(interface, fact.first, fact.second);
