@@ -62,7 +62,7 @@ static MergeStrategy *_parse(OptionParser &parser) {
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
     parser.add_enum_option("variable_order", merge_strategies,
-                           "the order in which atomic transition_systems are merged",
+                           "the order in which atomic transition systems are merged",
                            "CG_GOAL_LEVEL");
 
     Options opts = parser.parse();
