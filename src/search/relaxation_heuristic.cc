@@ -82,7 +82,7 @@ void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     int num_effects = effects.size();
     for (int i = 0; i < num_effects; ++i) {
         Effect effect = effects[i];
-        Fact effect_fact = effect.get_effect();
+        Fact effect_fact = effect.get_fact();
         Proposition *effect_prop = &propositions[effect_fact.get_var_id()][effect_fact.get_value()];
         EffectConditions eff_conds = effect.get_conditions();
         int num_eff_conds = eff_conds.size();
