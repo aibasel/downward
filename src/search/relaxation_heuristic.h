@@ -45,6 +45,7 @@ struct Proposition {
 };
 
 class RelaxationHeuristic : public Heuristic {
+    Proposition *get_proposition(const Fact &fact);
     void build_unary_operators(const Operator &op, int operator_no);
     void simplify();
 protected:
