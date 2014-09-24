@@ -7,7 +7,7 @@
 
 class CompositeLabel;
 
-/* This class implements labels as used by merge-and-shrink abstractions.
+/* This class implements labels as used by merge-and-shrink transition systems.
    It abstracts from the underlying regular operators and allows to store
    additional information associated with labels.
    NOTE: operators that are axioms are currently not supported! */

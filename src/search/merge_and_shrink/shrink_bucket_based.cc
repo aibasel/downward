@@ -1,6 +1,6 @@
 #include "shrink_bucket_based.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include <cassert>
 #include <iostream>
@@ -19,7 +19,7 @@ bool ShrinkBucketBased::reduce_labels_before_shrinking() const {
     return false;
 }
 
-void ShrinkBucketBased::shrink(Abstraction &abs, int threshold, bool force) {
+void ShrinkBucketBased::shrink(TransitionSystem &abs, int threshold, bool force) {
     if (must_shrink(abs, threshold, force)) {
         vector<Bucket> buckets;
         partition_into_buckets(abs, buckets);

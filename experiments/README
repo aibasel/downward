@@ -15,8 +15,7 @@ performed:
     suite_satisficing_with_ipc11.
 
 * Add a custom log parser:
-  * issue214/issue214.py
-  * alternatively use exp.add_search_parser()
+  * issue469/issue469.py adds a parser for raw_memory
 
 * Add scatter plots for custom attributes:
   * issue214/issue214.py
@@ -24,3 +23,5 @@ performed:
 * Run configurations on the same tasks multiple times to reduce noise:
   * issue420/issue420-v1-regressions.py
 
+* Independent CompareRevisionReports for portfolio configs and core solvers:
+  * issue462/issue462-opt.py

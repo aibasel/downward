@@ -1,6 +1,6 @@
 #include "shrink_bisimulation.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -115,7 +115,7 @@ bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
 }
 
 void ShrinkBisimulation::shrink(
-    Abstraction &abs, int target, bool force) {
+    TransitionSystem &abs, int target, bool force) {
     // TODO: Explain this min(target, threshold) stuff. Also, make the
     //       output clearer, which right now is rubbish, calling the
     //       min(...) "threshold". The reasoning behind this is that
@@ -130,7 +130,7 @@ void ShrinkBisimulation::shrink(
 }
 
 void ShrinkBisimulation::shrink_before_merge(
-    Abstraction &abs1, Abstraction &abs2) {
+    TransitionSystem &abs1, TransitionSystem &abs2) {
     pair<int, int> new_sizes = compute_shrink_sizes(abs1.size(), abs2.size());
     int new_size1 = new_sizes.first;
     int new_size2 = new_sizes.second;
@@ -139,7 +139,7 @@ void ShrinkBisimulation::shrink_before_merge(
     shrink(abs1, new_size1);
 }
 
-int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
+int ShrinkBisimulation::initialize_groups(const TransitionSystem &abs,
                                           vector<int> &state_to_group) {
     /* Group 0 holds all goal states.
 
@@ -176,7 +176,7 @@ int ShrinkBisimulation::initialize_groups(const Abstraction &abs,
 }
 
 void ShrinkBisimulation::compute_signatures(
-    const Abstraction &abs,
+    const TransitionSystem &abs,
     vector<Signature> &signatures,
     vector<int> &state_to_group) {
     assert(signatures.empty());
@@ -196,11 +196,11 @@ void ShrinkBisimulation::compute_signatures(
     // Step 2: Add transition information.
     int num_labels = abs.get_num_labels();
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const vector<AbstractTransition> &transitions =
+        const vector<Transition> &transitions =
             abs.get_transitions_for_label(label_no);
         int label_cost = abs.get_label_cost_by_index(label_no);
         for (size_t i = 0; i < transitions.size(); ++i) {
-            const AbstractTransition &trans = transitions[i];
+            const Transition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
             bool skip_transition = false;
             if (greedy) {
@@ -246,7 +246,7 @@ void ShrinkBisimulation::compute_signatures(
 }
 
 void ShrinkBisimulation::compute_abstraction(
-    Abstraction &abs,
+    TransitionSystem &abs,
     int target_size,
     EquivalenceRelation &equivalence_relation) {
     int num_states = abs.size();
@@ -368,6 +368,18 @@ void ShrinkBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
+}
+
+ShrinkStrategy *ShrinkBisimulation::create_default() {
+    Options opts;
+    opts.set("max_states", INF);
+    opts.set("max_states_before_merge", INF);
+    opts.set<bool>("greedy", false);
+    opts.set("threshold", 1);
+    opts.set("group_by_h", false);
+    opts.set<int>("at_limit", RETURN);
+
+    return new ShrinkBisimulation(opts);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
