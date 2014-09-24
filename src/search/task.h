@@ -20,6 +20,8 @@ class Axioms;
 class Goals;
 class Task;
 
+// Currently, we still need to map Operators to GlobalOperators for some things
+// like marking preferred operators. In the long run this mapping should go away.
 class GlobalOperator;
 
 
