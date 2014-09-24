@@ -4,6 +4,7 @@
 #include "int_packer.h"
 #include "state_id.h"
 
+#include <cstddef>
 #include <iostream>
 #include <vector>
 
@@ -44,7 +45,7 @@ public:
         return id;
     }
 
-    int operator[](int index) const;
+    int operator[](std::size_t index) const;
 
     void dump_pddl() const;
     void dump_fdr() const;
