@@ -153,10 +153,12 @@ void TransitionSystem::compute_distances() {
 
     bool is_unit_cost = true;
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
-        const Label *label = labels->get_label_by_index(label_no);
-        if (label->get_cost() != 1) {
-            is_unit_cost = false;
-            break;
+        if (relevant_labels[label_no]) {
+            const Label *label = labels->get_label_by_index(label_no);
+            if (label->get_cost() != 1) {
+                is_unit_cost = false;
+                break;
+            }
         }
     }
 
