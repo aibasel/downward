@@ -4,6 +4,7 @@
 #include "task_interface.h"
 
 #include <cassert>
+#include <cstddef>
 #include <utility>
 
 class Fact;
@@ -45,8 +46,8 @@ protected:
         : interface(interface_) {}
 public:
     virtual ~Conditions() {}
-    virtual int size() const = 0;
-    virtual Fact operator[](int index) const = 0;
+    virtual std::size_t size() const = 0;
+    virtual Fact operator[](std::size_t index) const = 0;
 };
 
 
@@ -69,8 +70,8 @@ public:
     explicit Variables(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Variables() {}
-    int size() const {return interface.get_num_variables(); }
-    Variable operator[](int index) const {return Variable(interface, index); }
+    std::size_t size() const {return interface.get_num_variables(); }
+    Variable operator[](std::size_t index) const {return Variable(interface, index); }
 };
 
 
@@ -81,8 +82,8 @@ public:
     Preconditions(const TaskInterface &interface_, int op_index_, bool is_axiom_)
         : Conditions(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Preconditions() {}
-    int size() const {return interface.get_num_operator_preconditions(op_index, is_axiom); }
-    Fact operator[](int fact_index) const {
+    std::size_t size() const {return interface.get_num_operator_preconditions(op_index, is_axiom); }
+    Fact operator[](std::size_t fact_index) const {
         std::pair<int, int> fact =
             interface.get_operator_precondition(op_index, fact_index, is_axiom);
         return Fact(interface, fact.first, fact.second);
@@ -99,10 +100,10 @@ public:
         const TaskInterface &interface_, int op_index_, int eff_index_, bool is_axiom_)
         : Conditions(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
     ~EffectConditions() {}
-    int size() const {
+    std::size_t size() const {
         return interface.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
-    Fact operator[](int index) const {
+    Fact operator[](std::size_t index) const {
         std::pair<int, int> fact =
             interface.get_operator_effect_condition(op_index, eff_index, index, is_axiom);
         return Fact(interface, fact.first, fact.second);
@@ -138,8 +139,8 @@ public:
     Effects(const TaskInterface &interface_, int op_index_, bool is_axiom_)
         : interface(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Effects() {}
-    int size() const {return interface.get_num_operator_effects(op_index, is_axiom); }
-    Effect operator[](int eff_index) const {
+    std::size_t size() const {return interface.get_num_operator_effects(op_index, is_axiom); }
+    Effect operator[](std::size_t eff_index) const {
         return Effect(interface, op_index, eff_index, is_axiom);
     }
 };
@@ -169,8 +170,8 @@ public:
     explicit Operators(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Operators() {}
-    int size() const {return interface.get_num_operators(); }
-    Operator operator[](int index) const {
+    std::size_t size() const {return interface.get_num_operators(); }
+    Operator operator[](std::size_t index) const {
         return Operator(interface, index, false);
     }
 };
@@ -182,8 +183,8 @@ public:
     explicit Axioms(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Axioms() {}
-    int size() const {return interface.get_num_axioms(); }
-    Operator operator[](int index) const {
+    std::size_t size() const {return interface.get_num_axioms(); }
+    Operator operator[](std::size_t index) const {
         return Operator(interface, index, true);
     }
 };
@@ -194,8 +195,8 @@ public:
     explicit Goals(const TaskInterface &interface_)
         : Conditions(interface_) {}
     ~Goals() {}
-    int size() const {return interface.get_num_goals(); }
-    Fact operator[](int index) const {
+    std::size_t size() const {return interface.get_num_goals(); }
+    Fact operator[](std::size_t index) const {
         std::pair<int, int> fact = interface.get_goal_fact(index);
         return Fact(interface, fact.first, fact.second);
     }
