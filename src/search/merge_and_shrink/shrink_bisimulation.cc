@@ -129,25 +129,6 @@ void ShrinkBisimulation::shrink(
     }
 }
 
-void ShrinkBisimulation::shrink_atomic(TransitionSystem &abs) {
-    // Perform an exact bisimulation on all atomic transition systems.
-
-    // TODO/HACK: Come up with a better way to do this than generating
-    // a new shrinking class instance in this roundabout fashion. We
-    // shouldn't need to generate a new instance at all.
-
-    size_t old_size = abs.size();
-    ShrinkStrategy *strategy = create_default();
-    strategy->shrink(abs, abs.size(), true);
-    delete strategy;
-    if (abs.size() != old_size) {
-        cout << "Atomic transition system simplified "
-             << "from " << old_size
-             << " to " << abs.size()
-             << " states." << endl;
-    }
-}
-
 void ShrinkBisimulation::shrink_before_merge(
     TransitionSystem &abs1, TransitionSystem &abs2) {
     pair<int, int> new_sizes = compute_shrink_sizes(abs1.size(), abs2.size());
