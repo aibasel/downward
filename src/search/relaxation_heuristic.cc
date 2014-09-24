@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "task.h"
 
+#include <cstddef>
 #include <cassert>
 #include <vector>
 using namespace std;
@@ -29,18 +30,18 @@ void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
     Variables vars = task.get_variables();
-    int num_vars = vars.size();
+    size_t num_vars = vars.size();
     propositions.resize(num_vars);
-    for (int var = 0; var < num_vars; var++) {
-        int num_values = vars[var].get_domain_size();
-        for (int value = 0; value < num_values; value++)
+    for (size_t var = 0; var < num_vars; var++) {
+        size_t num_values = vars[var].get_domain_size();
+        for (size_t value = 0; value < num_values; value++)
             propositions[var].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
     Goals goals = task.get_goals();
-    int num_goals = goals.size();
-    for (int i = 0; i < num_goals; i++) {
+    size_t num_goals = goals.size();
+    for (size_t i = 0; i < num_goals; i++) {
         Proposition *prop = get_proposition(goals[i]);
         prop->is_goal = true;
         goal_propositions.push_back(prop);
@@ -48,12 +49,12 @@ void RelaxationHeuristic::initialize() {
 
     // Build unary operators for operators and axioms.
     Operators operators = task.get_operators();
-    int num_operators = operators.size();
-    for (int i = 0; i < num_operators; i++)
+    size_t num_operators = operators.size();
+    for (size_t i = 0; i < num_operators; i++)
         build_unary_operators(operators[i], i);
     Axioms axioms = task.get_axioms();
-    int num_axioms = axioms.size();
-    for (int i = 0; i < num_axioms; i++)
+    size_t num_axioms = axioms.size();
+    for (size_t i = 0; i < num_axioms; i++)
         build_unary_operators(axioms[i], -1);
 
     // Simplify unary operators.
@@ -79,20 +80,20 @@ void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     int base_cost = get_adjusted_cost(op);
     vector<Proposition *> precondition_props;
     Preconditions preconditions = op.get_preconditions();
-    int num_preconditions = preconditions.size();
-    for (int i = 0; i < num_preconditions; ++i) {
+    size_t num_preconditions = preconditions.size();
+    for (size_t i = 0; i < num_preconditions; ++i) {
         Fact fact = preconditions[i];
         precondition_props.push_back(get_proposition(fact));
     }
     Effects effects = op.get_effects();
-    int num_effects = effects.size();
-    for (int i = 0; i < num_effects; ++i) {
+    size_t num_effects = effects.size();
+    for (size_t i = 0; i < num_effects; ++i) {
         Effect effect = effects[i];
         Fact effect_fact = effect.get_fact();
         Proposition *effect_prop = get_proposition(effect_fact);
         EffectConditions eff_conds = effect.get_conditions();
-        int num_eff_conds = eff_conds.size();
-        for (int j = 0; j < num_eff_conds; ++j) {
+        size_t num_eff_conds = eff_conds.size();
+        for (size_t j = 0; j < num_eff_conds; ++j) {
             Fact eff_cond = eff_conds[j];
             precondition_props.push_back(get_proposition(eff_cond));
         }
