@@ -63,14 +63,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
     TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels);
 
-    cout << "Shrinking atomic transition systems..." << endl;
-    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-        all_transition_systems[i]->compute_distances();
-        if (!all_transition_systems[i]->is_solvable())
-            return all_transition_systems[i];
-        shrink_strategy->shrink_atomic(*all_transition_systems[i]);
-    }
-
     cout << "Merging transition systems..." << endl;
 
     vector<int> transition_system_order;
