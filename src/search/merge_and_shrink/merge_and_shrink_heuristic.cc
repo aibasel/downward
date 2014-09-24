@@ -249,34 +249,54 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
     vector<string> label_reduction_method;
+    vector<string> label_reduction_method_doc;
     label_reduction_method.push_back("NONE");
+    label_reduction_method_doc.push_back(
+        "no label reduction will be performed");
     label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
+    label_reduction_method_doc.push_back(
+         "compute the 'combinable relation' only for the two transition "
+         "systems being merged next");
     label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
+    label_reduction_method_doc.push_back(
+        "compute the 'combinable relation' for labels once for every "
+        "transition  system and reduce labels");
     label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
-    parser.add_enum_option("label_reduction_method", label_reduction_method,
-                           "label reduction method: "
-                           "none: no label reduction will be performed "
-                           "old: emulate the label reduction as desribed in the "
-                           "IJCAI 2011 paper by Nissim, Hoffmann and Helmert."
-                           "two_transition_systems: compute the 'combinable relation' "
-                           "for labels only for the two transition systems that will "
-                           "be merged next and reduce labels."
-                           "all_transition_systems: compute the 'combinable relation' "
-                           "for labels once for every transition system and reduce "
-                           "labels."
-                           "all_transition_systems_with_fixpoint: keep computing the "
-                           "'combinable relation' for labels iteratively for all "
-                           "transition systems until no more labels can be reduced.",
-                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
+    label_reduction_method_doc.push_back(
+        "keep computing the 'combinable relation' for labels iteratively "
+        "for all transition systems until no more labels can be reduced");
+    parser.add_enum_option("label_reduction_method",
+                           label_reduction_method,
+                           "Label reduction method. See the AAAI14 by Sievers "
+                           "et al. for explanation of the default label "
+                           "reduction method and the 'combinable relation'.",
+                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
+                           label_reduction_method_doc);
+
     vector<string> label_reduction_system_order;
+    vector<string> label_reduction_system_order_doc;
     label_reduction_system_order.push_back("REGULAR");
+    label_reduction_system_order_doc.push_back(
+         "transition systems are considered in the FD given order for "
+         "atomic transition systems and in the order of their creation "
+         "for composite transition system.");
     label_reduction_system_order.push_back("REVERSE");
+    label_reduction_system_order_doc.push_back(
+         "inverse of REGULAR");
     label_reduction_system_order.push_back("RANDOM");
-    parser.add_enum_option("label_reduction_system_order", label_reduction_system_order,
-                           "order of transition systems for the label reduction methods "
-                           "that iterate over the set of all transition systems. only useful "
-                           "for the choices all_transition_systems and all_transition_systems_with_fixpoint "
-                           "for the option label_reduction_method.", "RANDOM");
+    label_reduction_system_order_doc.push_back(
+         "random order");
+    parser.add_enum_option("label_reduction_system_order",
+                           label_reduction_system_order,
+                           "Order of transition systems for the label reduction "
+                           "methods that iterate over the set of all transition "
+                           "systems. Only useful for the choices "
+                           "all_transition_systems and "
+                           "all_transition_systems_with_fixpoint for the option "
+                           "label_reduction_method.",
+                           "RANDOM",
+                           label_reduction_system_order_doc);
+
     parser.add_option<bool>("expensive_statistics",
                             "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow, i.e. too expensive to show by default "
