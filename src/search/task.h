@@ -33,6 +33,7 @@ public:
     Fact(const TaskInterface &interface_, int var_id_, int value_)
         : interface(interface_), var_id(var_id_), value(value_) {}
     ~Fact() {}
+    Variable get_variable() const;
     int get_var_id() const {return var_id; }
     int get_value() const {return value; }
 };
