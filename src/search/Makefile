@@ -103,8 +103,7 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-HEADERS += merge_and_shrink/abstraction.h \
-           merge_and_shrink/label.h \
+HEADERS += merge_and_shrink/label.h \
            merge_and_shrink/labels.h \
            merge_and_shrink/label_reducer.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
@@ -116,6 +115,7 @@ HEADERS += merge_and_shrink/abstraction.h \
            merge_and_shrink/shrink_fh.h \
            merge_and_shrink/shrink_random.h \
            merge_and_shrink/shrink_strategy.h \
+           merge_and_shrink/transition_system.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
