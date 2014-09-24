@@ -12,9 +12,6 @@ class Options;
 class LabelReducer {
     /* none: no label reduction will be performed
 
-       old: emulate the label reduction as desribed in the
-       IJCAI 2011 paper by Nissim, Hoffmann and Helmert.
-
        two_transition_systems: compute the 'combinable relation'
        for labels only for the two transition_systems that will
        be merged next and reduce labels.
@@ -29,7 +26,6 @@ class LabelReducer {
      */
     enum LabelReductionMethod {
         NONE,
-        OLD,
         TWO_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT

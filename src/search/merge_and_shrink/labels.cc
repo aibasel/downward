@@ -11,8 +11,7 @@
 
 using namespace std;
 
-Labels::Labels(bool unit_cost_, const Options &options, OperatorCost cost_type)
-    : unit_cost(unit_cost_) {
+Labels::Labels(const Options &options, OperatorCost cost_type) {
     label_reducer = new LabelReducer(options);
     if (!g_operators.empty())
         labels.reserve(g_operators.size() * 2 - 1);
