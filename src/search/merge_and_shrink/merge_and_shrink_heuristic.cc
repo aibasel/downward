@@ -134,9 +134,10 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
             transition_system->statistics(use_expensive_statistics);
         }
 
-        TransitionSystem *new_transition_system = new CompositeTransitionSystem(labels,
-                                                                transition_system,
-                                                                other_transition_system);
+        TransitionSystem *new_transition_system = new CompositeTransitionSystem(
+                    labels,
+                    transition_system,
+                    other_transition_system);
 
         transition_system->release_memory();
         other_transition_system->release_memory();

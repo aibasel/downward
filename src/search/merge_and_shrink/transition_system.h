@@ -75,7 +75,6 @@ class TransitionSystem {
     int max_g;
     int max_h;
 
-    bool transitions_sorted_unique;
     bool goal_relevant;
 
     mutable int peak_memory;

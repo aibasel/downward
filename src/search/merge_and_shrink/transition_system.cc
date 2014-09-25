@@ -43,8 +43,7 @@ const int INF = numeric_limits<int>::max();
 TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
       transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
-      relevant_labels(transitions_by_label.size(), false),
-      transitions_sorted_unique(true), peak_memory(0) {
+      relevant_labels(transitions_by_label.size(), false), peak_memory(0) {
     clear_distances();
 }
 
@@ -381,7 +380,7 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 }
 
 bool TransitionSystem::is_normalized() const {
-    return (num_labels == labels->get_size()) && transitions_sorted_unique;
+    return (num_labels == labels->get_size()) && are_transitions_sorted_unique();
 }
 
 void TransitionSystem::normalize() {
@@ -390,7 +389,7 @@ void TransitionSystem::normalize() {
        object. */
 
     if (is_normalized()) {
-        return;
+        exit_with(EXIT_CRITICAL_ERROR);
     }
     //cout << tag() << "normalizing" << endl;
 
@@ -535,7 +534,6 @@ void TransitionSystem::normalize() {
     // Transition system has been normalized, restore invariant
     assert(are_transitions_sorted_unique());
     num_labels = labels->get_size();
-    transitions_sorted_unique = true;
     assert(is_normalized());
 }
 
@@ -836,10 +834,9 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
     }
 
     // TODO do not check if transitions are sorted but just assume they are not?
-    //if (!are_transitions_sorted_unique())
-    //    transitions_sorted_unique = false;
+    if (!are_transitions_sorted_unique())
+        normalize();
 
-    normalize();
     compute_distances();
 }
 
@@ -999,16 +996,14 @@ void TransitionSystem::apply_abstraction(
     }
 
     // TODO do not check if transitions are sorted but just assume they are not?
-    //if (!are_transitions_sorted_unique())
-    //    transitions_sorted_unique = false;
+    if (!are_transitions_sorted_unique())
+        normalize();
 
-    normalize();
     compute_distances();
 }
 
 void TransitionSystem::apply_label_reduction() {
     normalize();
-    compute_distances();
 }
 
 bool TransitionSystem::is_solvable() const {
