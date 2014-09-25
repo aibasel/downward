@@ -611,7 +611,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             int var = effects[i].var;
             has_effect_on_var[var] = true;
             int post_value = effects[i].val;
-            TransitionSystem *abs = result[var];
+            TransitionSystem *ts = result[var];
 
             // Determine possible values that var can have when this
             // operator is applicable.
@@ -651,7 +651,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
                    a condition on var and this condition is not satisfied. */
                 if (cond_effect_pre_value == -1 || cond_effect_pre_value == value) {
                     Transition trans(value, post_value);
-                    abs->transitions_by_label[label_no].push_back(trans);
+                    ts->transitions_by_label[label_no].push_back(trans);
                 }
             }
 
@@ -665,21 +665,21 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
                        fails to trigger if this condition is false. */
                     if (has_other_effect_cond || value != cond_effect_pre_value) {
                         Transition loop(value, value);
-                        abs->transitions_by_label[label_no].push_back(loop);
+                        ts->transitions_by_label[label_no].push_back(loop);
                     }
                 }
             }
 
-            abs->relevant_labels[label_no] = true;
+            ts->relevant_labels[label_no] = true;
         }
         for (size_t i = 0; i < preconditions.size(); ++i) {
             int var = preconditions[i].var;
             if (!has_effect_on_var[var]) {
                 int value = preconditions[i].val;
-                TransitionSystem *abs = result[var];
+                TransitionSystem *ts = result[var];
                 Transition trans(value, value);
-                abs->transitions_by_label[label_no].push_back(trans);
-                abs->relevant_labels[label_no] = true;
+                ts->transitions_by_label[label_no].push_back(trans);
+                ts->relevant_labels[label_no] = true;
             }
         }
     }
@@ -728,35 +728,35 @@ AtomicTransitionSystem::~AtomicTransitionSystem() {
 }
 
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
-                                                     TransitionSystem *abs1,
-                                                     TransitionSystem *abs2)
+                                                     TransitionSystem *ts1,
+                                                     TransitionSystem *ts2)
     : TransitionSystem(labels) {
-    cout << "Merging " << abs1->description() << " and "
-         << abs2->description() << endl;
+    cout << "Merging " << ts1->description() << " and "
+         << ts2->description() << endl;
 
-    assert(abs1->is_solvable() && abs2->is_solvable());
-    assert(abs1->is_normalized() && abs2->is_normalized());
+    assert(ts1->is_solvable() && ts2->is_solvable());
+    assert(ts1->is_normalized() && ts2->is_normalized());
 
-    components[0] = abs1;
-    components[1] = abs2;
+    components[0] = ts1;
+    components[1] = ts2;
 
-    ::set_union(abs1->varset.begin(), abs1->varset.end(), abs2->varset.begin(),
-                abs2->varset.end(), back_inserter(varset));
+    ::set_union(ts1->varset.begin(), ts1->varset.end(), ts2->varset.begin(),
+                ts2->varset.end(), back_inserter(varset));
 
-    int abs1_size = abs1->size();
-    int abs2_size = abs2->size();
-    num_states = abs1_size * abs2_size;
+    int ts1_size = ts1->size();
+    int ts2_size = ts2->size();
+    num_states = ts1_size * ts2_size;
     goal_states.resize(num_states, false);
-    goal_relevant = (abs1->goal_relevant || abs2->goal_relevant);
+    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
 
-    lookup_table.resize(abs1->size(), vector<AbstractStateRef> (abs2->size()));
-    for (int s1 = 0; s1 < abs1_size; ++s1) {
-        for (int s2 = 0; s2 < abs2_size; ++s2) {
-            int state = s1 * abs2_size + s2;
+    lookup_table.resize(ts1->size(), vector<AbstractStateRef> (ts2->size()));
+    for (int s1 = 0; s1 < ts1_size; ++s1) {
+        for (int s2 = 0; s2 < ts2_size; ++s2) {
+            int state = s1 * ts2_size + s2;
             lookup_table[s1][s2] = state;
-            if (abs1->goal_states[s1] && abs2->goal_states[s2])
+            if (ts1->goal_states[s1] && ts2->goal_states[s2])
                 goal_states[state] = true;
-            if (s1 == abs1->init_state && s2 == abs2->init_state)
+            if (s1 == ts1->init_state && s2 == ts2->init_state)
                 init_state = state;
         }
     }
@@ -774,17 +774,17 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
        first transition system and multiplying in out with the transitions of the
        second transition, we obtain the desired order (a,c,d).
      */
-    int multiplier = abs2_size;
+    int multiplier = ts2_size;
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        bool relevant1 = abs1->relevant_labels[label_no];
-        bool relevant2 = abs2->relevant_labels[label_no];
+        bool relevant1 = ts1->relevant_labels[label_no];
+        bool relevant2 = ts2->relevant_labels[label_no];
         if (relevant1 || relevant2) {
             relevant_labels[label_no] = true;
             vector<Transition> &transitions = transitions_by_label[label_no];
             const vector<Transition> &bucket1 =
-                abs1->transitions_by_label[label_no];
+                ts1->transitions_by_label[label_no];
             const vector<Transition> &bucket2 =
-                abs2->transitions_by_label[label_no];
+                ts2->transitions_by_label[label_no];
             if (relevant1 && relevant2) {
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (size_t i = 0; i < bucket1.size(); ++i) {
@@ -800,11 +800,11 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant1) {
                 assert(!relevant2);
-                transitions.reserve(bucket1.size() * abs2_size);
+                transitions.reserve(bucket1.size() * ts2_size);
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    for (int s2 = 0; s2 < abs2_size; ++s2) {
+                    for (int s2 = 0; s2 < ts2_size; ++s2) {
                         int src = src1 * multiplier + s2;
                         int target = target1 * multiplier + s2;
                         transitions.push_back(Transition(src, target));
@@ -812,8 +812,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant2) {
                 assert(!relevant1);
-                transitions.reserve(bucket2.size() * abs1_size);
-                for (int s1 = 0; s1 < abs1_size; ++s1) {
+                transitions.reserve(bucket2.size() * ts1_size);
+                for (int s1 = 0; s1 < ts1_size; ++s1) {
                     for (size_t i = 0; i < bucket2.size(); ++i) {
                         int src2 = bucket2[i].src;
                         int target2 = bucket2[i].target;
@@ -1094,7 +1094,7 @@ void TransitionSystem::dump_relevant_labels() const {
 }
 
 void TransitionSystem::dump() const {
-    cout << "digraph abstract_transition_graph";
+    cout << "digraph transition system";
     for (size_t i = 0; i < varset.size(); ++i)
         cout << "_" << varset[i];
     cout << " {" << endl;
