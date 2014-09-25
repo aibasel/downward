@@ -688,6 +688,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     for (size_t i = 0; i < result.size(); ++i) {
         assert(result[i]->are_transitions_sorted_unique());
         assert(result[i]->is_normalized());
+        result[i]->compute_distances();
     }
 }
 
@@ -723,8 +724,6 @@ AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
             init_state = value;
         lookup_table.push_back(value);
     }
-
-    compute_distances();
 }
 
 AtomicTransitionSystem::~AtomicTransitionSystem() {
@@ -789,6 +788,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
             const vector<Transition> &bucket2 =
                 ts2->transitions_by_label[label_no];
             if (relevant1 && relevant2) {
+                if (bucket1.size() * bucket2.size() > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
@@ -803,6 +804,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant1) {
                 assert(!relevant2);
+                if (bucket1.size() * ts2_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
                 transitions.reserve(bucket1.size() * ts2_size);
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
@@ -815,6 +818,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant2) {
                 assert(!relevant1);
+                if (bucket2.size() * ts1_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
                 transitions.reserve(bucket2.size() * ts1_size);
                 for (int s1 = 0; s1 < ts1_size; ++s1) {
                     for (size_t i = 0; i < bucket2.size(); ++i) {
