@@ -9,7 +9,7 @@ using namespace std;
 
 static double fac(int n) {
     double t = 1.0;
-    for (int i = n; i > 1; i--)
+    for (int i = n; i > 1; --i)
         t *= i;
     return t;
 }
@@ -26,7 +26,7 @@ PDBStateSpaceSample::PDBStateSpaceSample(int goal_depth, int probes = 10, int si
     prob_table = new double[table_size];
 
     prob_table[0] = bin(goal_depth / p, p, 0);
-    for (int i = 1; i < (table_size - 1); i++) {
+    for (int i = 1; i < (table_size - 1); ++i) {
         prob_table[i] = prob_table[i - 1] + bin(goal_depth / p, p, i);
     }
     prob_table[table_size - 1] = 1.0;
@@ -43,7 +43,7 @@ int PDBStateSpaceSample::get_random_depth() {
     double p = g_rng();
     int d = 0;
     while (prob_table[d] < p) {
-        d++;
+        ++d;
     }
     return d;
 }
@@ -55,10 +55,10 @@ int PDBStateSpaceSample::collect() {
         sample_t temp_sample;
         temporary_samp = &temp_sample;
 
-        num_probes++;
+        ++num_probes;
 
         int depth = get_random_depth();
-        for (int j = 0; j < heuristics.size(); j++) {
+        for (size_t j = 0; j < heuristics.size(); ++j) {
             heuristics[j]->reset();
         }
         send_probe(depth);

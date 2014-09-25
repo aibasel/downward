@@ -36,7 +36,8 @@ SearchEngine *IteratedSearch::get_search_engine(
 }
 
 SearchEngine *IteratedSearch::create_phase(int p) {
-    if (p >= engine_configs.size()) {
+    int num_phases = engine_configs.size();
+    if (p >= num_phases) {
         /* We've gone through all searches. We continue if
            repeat_last_phase is true, but *not* if we didn't find a
            solution the last time around, since then this search would
@@ -54,7 +55,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
     return get_search_engine(p);
 }
 
-int IteratedSearch::step() {
+SearchStatus IteratedSearch::step() {
     current_search = create_phase(phase);
     if (current_search == NULL) {
         return found_solution() ? SOLVED : FAILED;
@@ -62,7 +63,7 @@ int IteratedSearch::step() {
     if (pass_bound) {
         current_search->set_bound(best_bound);
     }
-    phase++;
+    ++phase;
 
     current_search->search();
 
@@ -97,7 +98,7 @@ int IteratedSearch::step() {
     return step_return_value();
 }
 
-int IteratedSearch::step_return_value() {
+SearchStatus IteratedSearch::step_return_value() {
     if (iterated_found_solution)
         cout << "Best solution cost so far: " << best_bound << endl;
 
@@ -131,17 +132,52 @@ void IteratedSearch::save_plan_if_necessary() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.add_list_option<ParseTree>("engine_configs", "");
-    parser.add_option<bool>("pass_bound", true,
-                            "use bound from previous search");
-    parser.add_option<bool>("repeat_last", false,
-                            "repeat last phase of search");
-    parser.add_option<bool>("continue_on_fail", false,
-                            "continue search after no solution found");
-    parser.add_option<bool>("continue_on_solve", true,
-                            "continue search after solution found");
-    parser.add_option<int>("plan_counter", 0,
-                           "start enumerating plans with this number");
+    parser.document_synopsis("Iterated search", "");
+    parser.document_note(
+        "Note 1",
+        "We do no cache values between search iterations at the moment. "
+        "If you perform a LAMA-style iterative search, heuristic values "
+        "will be computed multiple times. "
+        "Adding heuristic caching is [issue108 http://issues.fast-downward.org/issue108].");
+    parser.document_note(
+        "Note 2",
+        "Running this\n```\n"
+        "./downward --search \"iterated([lazy_wastar(merge_and_shrink(),w=10), "
+        "lazy_wastar(merge_and_shrink(),w=5), lazy_wastar(merge_and_shrink(),w=3), "
+        "lazy_wastar(merge_and_shrink(),w=2), lazy_wastar(merge_and_shrink(),w=1)])\"\n"
+        "```\nwould perform the preprocessing phase of the merge and shrink heuristic "
+        "5 times (once before each iteration).\n\n"
+        "To avoid this, use heuristic predefinition, which avoids duplicate "
+        "preprocessing, as follows:\n```\n"
+        "./downward --heuristic \"h=merge_and_shrink()\" --search "
+        "\"iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3), "
+        "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])\"\n"
+        "```");
+    parser.document_note(
+        "Note 3",
+        "If you reuse the same landmark count heuristic "
+        "(using heuristic predefinition) between iterations, "
+        "the path data (that is, landmark status for each visited state) "
+        "will be saved between iterations.");
+    parser.add_list_option<ParseTree>("engine_configs",
+                                      "list of search engines for each phase");
+    parser.add_option<bool>(
+        "pass_bound",
+        "use bound from previous search. The bound is the real cost "
+        "of the plan found before, regardless of the cost_type parameter.",
+        "true");
+    parser.add_option<bool>("repeat_last",
+                            "repeat last phase of search",
+                            "false");
+    parser.add_option<bool>("continue_on_fail",
+                            "continue search after no solution found",
+                            "false");
+    parser.add_option<bool>("continue_on_solve",
+                            "continue search after solution found",
+                            "true");
+    parser.add_option<int>("plan_counter",
+                           "start enumerating plans with plan_counter + 1",
+                           "0");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -152,7 +188,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_configs");
-        for (size_t i(0); i != configs.size(); ++i) {
+        for (size_t i = 0; i < configs.size(); ++i) {
             OptionParser test_parser(configs[i], true);
             test_parser.start_parsing<SearchEngine *>();
         }

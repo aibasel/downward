@@ -1,8 +1,11 @@
 #ifndef LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
-#include <set>
 #include "../globals.h"
+#include "../lp_solver_interface.h"
+#include "../operator_cost.h"
+
+#include <set>
 
 class LandmarkGraph;
 class LandmarkNode;
@@ -40,7 +43,7 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     OsiSolverInterface *si;
 #endif
 public:
-    LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph, OperatorCost cost_type);
+    LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
     virtual double cost_sharing_h_value();

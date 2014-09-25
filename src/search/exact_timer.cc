@@ -10,7 +10,9 @@
 #if OPERATING_SYSTEM == OSX
 #include <mach/mach_time.h>
 #elif OPERATING_SYSTEM == CYGWIN
-#define CLOCK_PROCESS_CPUTIME_ID (clockid_t)2
+#ifndef CLOCK_PROCESS_CPUTIME_ID
+#define CLOCK_PROCESS_CPUTIME_ID (clockid_t(2))
+#endif
 #endif
 
 using namespace std;
@@ -81,7 +83,7 @@ double ExactTimer::reset() {
     return result;
 }
 
-ostream & operator<<(ostream &os, const ExactTimer &timer) {
+ostream &operator<<(ostream &os, const ExactTimer &timer) {
     double value = timer() / 1e9;
     if (value < 0 && value > -1e-10)
         value = 0.0;  // We sometimes get inaccuracies from God knows where.

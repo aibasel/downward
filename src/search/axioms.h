@@ -1,9 +1,9 @@
 #ifndef AXIOMS_H
 #define AXIOMS_H
 
-#include <vector>
+#include "global_state.h"
 
-class State;
+#include <vector>
 
 class AxiomEvaluator {
     struct AxiomRule;
@@ -31,9 +31,13 @@ class AxiomEvaluator {
     std::vector<std::vector<AxiomLiteral> > axiom_literals;
     std::vector<AxiomRule> rules;
     std::vector<std::vector<NegationByFailureInfo> > nbf_info_by_layer;
+
+    // The queue is an instance variable rather than a local variable
+    // to reduce reallocation effort. See issue420.
+    std::vector<AxiomLiteral *> queue;
 public:
     AxiomEvaluator();
-    void evaluate(State &state);
+    void evaluate(PackedStateBin *buffer);
 };
 
 #endif

@@ -1,8 +1,9 @@
 #include "cg_cache.h"
 
+#include "causal_graph.h"
+#include "global_state.h"
 #include "globals.h"
-#include "legacy_causal_graph.h"
-#include "state.h"
+#include "utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -16,15 +17,15 @@ CGCache::CGCache() {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = g_variable_domain.size();
-    LegacyCausalGraph *cg = g_legacy_causal_graph;
+    const CausalGraph *cg = g_causal_graph;
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         // This is to be on the safe side of overflows for the multiplications below.
         assert(g_variable_domain[var] <= 1000);
-        const vector<int> &succ = cg->get_successors(var);
-        for (int i = 0; i < succ.size(); i++) {
+        const vector<int> &succ = cg->get_pre_to_eff(var);
+        for (size_t i = 0; i < succ.size(); ++i) {
             // Ignore arcs that are not part of the reduced CG:
             // These are ignored by the CG heuristic.
             if (succ[i] > var)
@@ -35,9 +36,9 @@ CGCache::CGCache() {
     // Compute transitive close of inverted causal graph.
     // This is made easier because it is acyclic and the variables
     // are in topological order.
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         int direct_depend_count = depends_on[var].size();
-        for (int i = 0; i < direct_depend_count; i++) {
+        for (int i = 0; i < direct_depend_count; ++i) {
             int affector = depends_on[var][i];
             assert(affector < var);
             depends_on[var].insert(depends_on[var].end(),
@@ -51,9 +52,9 @@ CGCache::CGCache() {
 
     /*
       cout << "Dumping transitive closure of inverted causal graph..." << endl;
-      for(int var = 0; var < var_count; var++) {
+      for(int var = 0; var < var_count; ++var) {
       cout << var << ":";
-      for(int i = 0; i < depends_on[var].size(); i++)
+      for(int i = 0; i < depends_on[var].size(); ++i)
       cout << " " << depends_on[var][i];
       cout << endl;
       }
@@ -64,11 +65,11 @@ CGCache::CGCache() {
     cache.resize(var_count);
     helpful_transition_cache.resize(var_count);
 
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         int required_cache_size = g_variable_domain[var] * (g_variable_domain[var] - 1);
         bool can_cache = (required_cache_size <= MAX_CACHE_SIZE);
         if (can_cache) {
-            for (int i = 0; i < depends_on[var].size(); i++) {
+            for (size_t i = 0; i < depends_on[var].size(); ++i) {
                 int relevant_var = depends_on[var][i];
                 if (cache[relevant_var].empty()) {
                     // It is possible that var depends on a variable var_i
@@ -101,13 +102,13 @@ CGCache::CGCache() {
 CGCache::~CGCache() {
 }
 
-int CGCache::get_index(int var, const State &state,
+int CGCache::get_index(int var, const GlobalState &state,
                        int from_val, int to_val) const {
     assert(is_cached(var));
     assert(from_val != to_val);
     int index = from_val;
     int multiplier = g_variable_domain[var];
-    for (int i = 0; i < depends_on[var].size(); ++i) {
+    for (size_t i = 0; i < depends_on[var].size(); ++i) {
         int dep_var = depends_on[var][i];
         index += state[dep_var] * multiplier;
         multiplier *= g_variable_domain[dep_var];
@@ -115,6 +116,6 @@ int CGCache::get_index(int var, const State &state,
     if (to_val > from_val)
         --to_val;
     index += to_val * multiplier;
-    assert(index >= 0 && index < cache[var].size());
+    assert(in_bounds(index, cache[var]));
     return index;
 }
