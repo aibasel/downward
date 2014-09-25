@@ -35,17 +35,17 @@ void ShrinkStrategy::dump_strategy_specific_options() const {
 }
 
 bool ShrinkStrategy::must_shrink(
-    const TransitionSystem &abs, int threshold, bool force) const {
+    const TransitionSystem &ts, int threshold, bool force) const {
     assert(threshold >= 1);
-    assert(abs.is_solvable());
-    int num_states = abs.size();
+    assert(ts.is_solvable());
+    int num_states = ts.size();
     if (num_states > threshold) {
-        cout << abs.tag() << "shrink from size " << num_states
+        cout << ts.tag() << "shrink from size " << num_states
              << " (threshold: " << threshold << ")" << endl;
         return true;
     }
     if (force) {
-        cout << abs.tag()
+        cout << ts.tag()
              << "shrink forced to prune unreachable/irrelevant states" << endl;
         return true;
     }
@@ -90,18 +90,18 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-void ShrinkStrategy::shrink_before_merge(TransitionSystem &abs1, TransitionSystem &abs2) {
+void ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2) {
     pair<size_t, size_t> new_sizes = compute_shrink_sizes(
-        abs1.size(), abs2.size());
+        ts1.size(), ts2.size());
     size_t new_size1 = new_sizes.first;
     size_t new_size2 = new_sizes.second;
 
-    if (new_size2 != abs2.size()) {
-        shrink(abs2, new_size2);
+    if (new_size2 != ts2.size()) {
+        shrink(ts2, new_size2);
     }
 
-    if (new_size1 != abs1.size()) {
-        shrink(abs1, new_size1);
+    if (new_size1 != ts1.size()) {
+        shrink(ts1, new_size1);
     }
 }
 
@@ -114,15 +114,15 @@ void ShrinkStrategy::shrink_before_merge(TransitionSystem &abs1, TransitionSyste
  */
 
 void ShrinkStrategy::apply(
-    TransitionSystem &abs,
+    TransitionSystem &ts,
     EquivalenceRelation &equivalence_relation,
     int target) const {
     // TODO: We currently violate this; see issue250
     //assert(equivalence_relation.size() <= target);
-    abs.apply_abstraction(equivalence_relation);
-    cout << abs.tag() << "size after shrink " << abs.size()
+    ts.apply_abstraction(equivalence_relation);
+    cout << ts.tag() << "size after shrink " << ts.size()
          << ", target " << target << endl;
-    //assert(abs.size() <= target);
+    //assert(ts.size() <= target);
 }
 
 void ShrinkStrategy::add_options_to_parser(OptionParser &parser) {

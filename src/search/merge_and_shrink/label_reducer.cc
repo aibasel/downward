@@ -18,18 +18,18 @@ LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
       label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
     size_t max_no_systems = g_variable_domain.size() * 2 - 1;
-    system_order.reserve(max_no_systems);
+    transition_system_order.reserve(max_no_systems);
     if (label_reduction_system_order == REGULAR
         || label_reduction_system_order == RANDOM) {
         for (size_t i = 0; i < max_no_systems; ++i)
-            system_order.push_back(i);
+            transition_system_order.push_back(i);
         if (label_reduction_system_order == RANDOM) {
-            random_shuffle(system_order.begin(), system_order.end());
+            random_shuffle(transition_system_order.begin(), transition_system_order.end());
         }
     } else {
         assert(label_reduction_system_order == REVERSE);
         for (size_t i = 0; i < max_no_systems; ++i)
-            system_order.push_back(max_no_systems - 1 - i);
+            transition_system_order.push_back(max_no_systems - 1 - i);
     }
 }
 
@@ -75,11 +75,11 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
 
     // Make sure that we start with an index not ouf of range for
     // all_transition_systems
-    size_t system_order_index = 0;
-    assert(!system_order.empty());
-    while (system_order[system_order_index] >= num_transition_systems) {
-        ++system_order_index;
-        assert(in_bounds(system_order_index, system_order));
+    size_t tso_index = 0;
+    assert(!transition_system_order.empty());
+    while (transition_system_order[tso_index] >= num_transition_systems) {
+        ++tso_index;
+        assert(in_bounds(tso_index, transition_system_order));
     }
 
     int max_iterations;
@@ -96,13 +96,13 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         all_transition_systems.size(), 0);
 
     for (int i = 0; i < max_iterations; ++i) {
-        int abs_index = system_order[system_order_index];
-        TransitionSystem *current_transition_system = all_transition_systems[abs_index];
+        int ts_index = transition_system_order[tso_index];
+        TransitionSystem *current_transition_system = all_transition_systems[ts_index];
 
         bool have_reduced = false;
         if (current_transition_system != 0) {
             EquivalenceRelation *relation = compute_outside_equivalence(
-                abs_index, all_transition_systems,
+                ts_index, all_transition_systems,
                 labels, local_equivalence_relations);
             have_reduced = reduce_exactly(relation, labels);
             delete relation;
@@ -116,14 +116,14 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         if (num_unsuccessful_iterations == num_transition_systems - 1)
             break;
 
-        ++system_order_index;
-        if (system_order_index == system_order.size()) {
-            system_order_index = 0;
+        ++tso_index;
+        if (tso_index == transition_system_order.size()) {
+            tso_index = 0;
         }
-        while (system_order[system_order_index] >= num_transition_systems) {
-            ++system_order_index;
-            if (system_order_index == system_order.size()) {
-                system_order_index = 0;
+        while (transition_system_order[tso_index] >= num_transition_systems) {
+            ++tso_index;
+            if (tso_index == transition_system_order.size()) {
+                tso_index = 0;
             }
         }
     }
@@ -133,14 +133,14 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
 }
 
 EquivalenceRelation *LabelReducer::compute_outside_equivalence(
-        int abs_index,
+        int ts_index,
         const vector<TransitionSystem *> &all_transition_systems,
         const vector<Label *> &labels,
         vector<EquivalenceRelation *> &local_equivalence_relations) const {
     /*Returns an equivalence relation over labels s.t. l ~ l'
     iff l and l' are locally equivalent in all transition systems
     T' \neq T. (They may or may not be locally equivalent in T.) */
-    TransitionSystem *transition_system = all_transition_systems[abs_index];
+    TransitionSystem *transition_system = all_transition_systems[ts_index];
     assert(transition_system);
     //cout << transition_system->tag() << "compute combinable labels" << endl;
 
@@ -148,9 +148,9 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     // local equivalence relation (if exists) because this does not happen
     // in the refinement loop below.
     transition_system->normalize();
-    if (local_equivalence_relations[abs_index]) {
-        delete local_equivalence_relations[abs_index];
-        local_equivalence_relations[abs_index] = 0;
+    if (local_equivalence_relations[ts_index]) {
+        delete local_equivalence_relations[ts_index];
+        local_equivalence_relations[ts_index] = 0;
     }
 
     // create the equivalence relation where all labels are equivalent
@@ -168,24 +168,24 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     EquivalenceRelation *relation = EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-        TransitionSystem *abs = all_transition_systems[i];
-        if (!abs || abs == transition_system) {
+        TransitionSystem *transition_system = all_transition_systems[i];
+        if (!transition_system || transition_system == transition_system) {
             continue;
         }
-        if (!abs->is_normalized()) {
-            abs->normalize();
+        if (!transition_system->is_normalized()) {
+            transition_system->normalize();
             if (local_equivalence_relations[i]) {
                 delete local_equivalence_relations[i];
                 local_equivalence_relations[i] = 0;
             }
         }
-        //cout << abs->tag();
+        //cout << transition_system->tag();
         if (!local_equivalence_relations[i]) {
             //cout << "compute local equivalence relation" << endl;
-            local_equivalence_relations[i] = abs->compute_local_equivalence_relation();
+            local_equivalence_relations[i] = transition_system->compute_local_equivalence_relation();
         } else {
             //cout << "use cached local equivalence relation" << endl;
-            assert(abs->is_normalized());
+            assert(transition_system->is_normalized());
         }
         relation->refine(*local_equivalence_relations[i]);
     }
