@@ -178,27 +178,27 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     EquivalenceRelation *relation = EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-        TransitionSystem *transition_system = all_transition_systems[i];
-        if (!transition_system || transition_system == transition_system) {
+        TransitionSystem *ts = all_transition_systems[i];
+        if (!ts || ts == transition_system) {
             continue;
         }
-        //if (!transition_system->is_normalized()) {
-        //    transition_system->normalize();
+        //if (!ts->is_normalized()) {
+        //    ts->normalize();
             if (local_equivalence_relations[i]) {
                 delete local_equivalence_relations[i];
                 local_equivalence_relations[i] = 0;
             }
         //}
-        if (!transition_system->is_normalized()) {
+        if (!ts->is_normalized()) {
             exit_with(EXIT_CRITICAL_ERROR);
         }
         //cout << transition_system->tag();
         if (!local_equivalence_relations[i]) {
             //cout << "compute local equivalence relation" << endl;
-            local_equivalence_relations[i] = transition_system->compute_local_equivalence_relation();
+            local_equivalence_relations[i] = ts->compute_local_equivalence_relation();
         } else {
             //cout << "use cached local equivalence relation" << endl;
-            if (!transition_system->is_normalized())
+            if (!ts->is_normalized())
                 exit_with(EXIT_CRITICAL_ERROR);
         }
         relation->refine(*local_equivalence_relations[i]);
