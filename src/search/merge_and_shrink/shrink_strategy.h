@@ -38,8 +38,8 @@ protected:
 
     std::pair<std::size_t, std::size_t> compute_shrink_sizes(
         std::size_t size1, std::size_t size2) const;
-    bool must_shrink(const TransitionSystem &abs, int threshold, bool force) const;
-    void apply(TransitionSystem &abs,
+    bool must_shrink(const TransitionSystem &ts, int threshold, bool force) const;
+    void apply(TransitionSystem &ts,
                EquivalenceRelation &equivalence_relation,
                int threshold) const;
 public:
@@ -71,7 +71,7 @@ public:
        unreachable states, which may cause the resulting size to be
        lower than threshold.
 
-       Does nothing if threshold >= abs.size() unless force is true
+       Does nothing if threshold >= ts.size() unless force is true
        (in which case it only prunes irrelevant and unreachable
        states).
     */
@@ -80,9 +80,9 @@ public:
     // TODO: Should all three of these be public?
     //       If not, also modify in derived clases.
 
-    virtual void shrink(TransitionSystem &abs, int threshold,
+    virtual void shrink(TransitionSystem &ts, int threshold,
                         bool force = false) = 0;
-    virtual void shrink_before_merge(TransitionSystem &abs1, TransitionSystem &abs2);
+    virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 
     static void add_options_to_parser(OptionParser &parser);
     static void handle_option_defaults(Options &opts);

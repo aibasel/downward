@@ -39,11 +39,11 @@ class LabelReducer {
 
     LabelReductionMethod label_reduction_method;
     LabelReductionSystemOrder label_reduction_system_order;
-    std::vector<int> system_order;
+    std::vector<int> transition_system_order;
 
     // exact label reduction
     EquivalenceRelation *compute_outside_equivalence(
-            int abs_index,
+            int ts_index,
             const std::vector<TransitionSystem *> &all_transition_systems,
             const std::vector<Label *> &labels,
             std::vector<EquivalenceRelation *> &local_equivalence_relations) const;

@@ -195,7 +195,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
     virtual int memory_estimate() const;
 public:
-    CompositeTransitionSystem(Labels *labels, TransitionSystem *abs1, TransitionSystem *abs2);
+    CompositeTransitionSystem(Labels *labels, TransitionSystem *ts1, TransitionSystem *ts2);
     virtual ~CompositeTransitionSystem();
 };
 
