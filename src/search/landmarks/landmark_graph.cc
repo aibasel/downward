@@ -1,9 +1,9 @@
 #include "landmark_graph.h"
 
 #include "../exact_timer.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
-#include "../state.h"
 
 #include <cassert>
 #include <ext/hash_map>
@@ -15,6 +15,7 @@
 #include <vector>
 
 using namespace __gnu_cxx;
+using namespace std;
 
 LandmarkGraph::LandmarkGraph(const Options &opts)
     : exploration(opts.get<Exploration *>("explor")),
@@ -25,6 +26,7 @@ LandmarkGraph::LandmarkGraph(const Options &opts)
     conjunctive_landmarks = opts.get<bool>("conjunctive_landmarks");
     no_orders = opts.get<bool>("no_orders");
     lm_cost_type = static_cast<OperatorCost>(opts.get_enum("lm_cost_type"));
+    conditional_effects_supported = opts.get<bool>("supports_conditional_effects");
     generate_operators_lookups();
 }
 
@@ -33,14 +35,14 @@ void LandmarkGraph::generate_operators_lookups() {
     to the operators that achieve them or have them as preconditions */
 
     operators_eff_lookup.resize(g_variable_domain.size());
-    for (unsigned i = 0; i < g_variable_domain.size(); i++) {
+    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         operators_eff_lookup[i].resize(g_variable_domain[i]);
     }
-    for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); i++) {
-        const Operator &op = get_operator_for_lookup_index(i);
-        const vector<PrePost> &prepost = op.get_pre_post();
-        for (unsigned j = 0; j < prepost.size(); j++) {
-            operators_eff_lookup[prepost[j].var][prepost[j].post].push_back(i);
+    for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
+        const GlobalOperator &op = get_operator_for_lookup_index(i);
+        const vector<GlobalEffect> &effects = op.get_effects();
+        for (size_t j = 0; j < effects.size(); ++j) {
+            operators_eff_lookup[effects[j].var][effects[j].val].push_back(i);
         }
     }
 }
@@ -71,7 +73,7 @@ LandmarkNode *LandmarkGraph::get_lm_for_index(int i) {
 int LandmarkGraph::number_of_edges() const {
     int total = 0;
     for (set<LandmarkNode *>::const_iterator it = nodes.begin(); it
-         != nodes.end(); it++)
+         != nodes.end(); ++it)
         total += (*it)->children.size();
     return total;
 }
@@ -153,7 +155,7 @@ LandmarkNode &LandmarkGraph::landmark_add_simple(const pair<int, int> &lm) {
     LandmarkNode *new_node_p = new LandmarkNode(vars, vals, false);
     nodes.insert(new_node_p);
     simple_lms_to_nodes.insert(make_pair(lm, new_node_p));
-    landmarks_count++;
+    ++landmarks_count;
     return *new_node_p;
 }
 
@@ -170,7 +172,7 @@ LandmarkNode &LandmarkGraph::landmark_add_disjunctive(const set<pair<int, int> >
     for (set<pair<int, int> >::iterator it = lm.begin(); it != lm.end(); ++it) {
         disj_lms_to_nodes.insert(make_pair(*it, new_node_p));
     }
-    landmarks_count++;
+    ++landmarks_count;
     return *new_node_p;
 }
 
@@ -191,37 +193,37 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int> >
 
 void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
-             node->parents.begin(); it != node->parents.end(); it++) {
+             node->parents.begin(); it != node->parents.end(); ++it) {
         LandmarkNode &parent = *(it->first);
         parent.children.erase(node);
         assert(parent.children.find(node) == parent.children.end());
     }
     for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
-             node->children.begin(); it != node->children.end(); it++) {
+             node->children.begin(); it != node->children.end(); ++it) {
         LandmarkNode &child = *(it->first);
         child.parents.erase(node);
         assert(child.parents.find(node) == child.parents.end());
     }
     if (node->disjunctive) {
-        for (int i = 0; i < node->vars.size(); i++) {
+        for (size_t i = 0; i < node->vars.size(); ++i) {
             pair<int, int> lm = make_pair(node->vars[i], node->vals[i]);
             disj_lms_to_nodes.erase(lm);
         }
     } else if (node->conjunctive) {
-        conj_lms--;
+        --conj_lms;
     } else {
         pair<int, int> lm = make_pair(node->vars[0], node->vals[0]);
         simple_lms_to_nodes.erase(lm);
     }
     nodes.erase(node);
-    landmarks_count--;
+    --landmarks_count;
     assert(nodes.find(node) == nodes.end());
 }
 
 LandmarkNode &LandmarkGraph::make_disj_node_simple(pair<int, int> lm) {
     LandmarkNode &node = get_disj_lm_node(lm);
     node.disjunctive = false;
-    for (int i = 0; i < node.vars.size(); i++)
+    for (size_t i = 0; i < node.vars.size(); ++i)
         disj_lms_to_nodes.erase(make_pair(node.vars[i], node.vals[i]));
     simple_lms_to_nodes.insert(make_pair(lm, &node));
     return node;
@@ -231,11 +233,11 @@ void LandmarkGraph::set_landmark_ids() {
     ordered_nodes.resize(landmarks_count);
     int id = 0;
     for (set<LandmarkNode *>::iterator node_it =
-             nodes.begin(); node_it != nodes.end(); node_it++) {
+             nodes.begin(); node_it != nodes.end(); ++node_it) {
         LandmarkNode *lmn = *node_it;
         lmn->assign_id(id);
         ordered_nodes[id] = lmn;
-        id++;
+        ++id;
     }
 }
 
@@ -245,7 +247,7 @@ void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
         cout << "disj {";
     else if (node_p->conjunctive)
         cout << "conj {";
-    for (unsigned int i = 0; i < node_p->vars.size(); i++) {
+    for (size_t i = 0; i < node_p->vars.size(); ++i) {
         int var_no = node_p->vars[i], value = node_p->vals[i];
         cout << g_fact_names[var_no][value] << " ("
              << g_variable_name[var_no] << "(" << var_no << ")"
@@ -266,12 +268,12 @@ void LandmarkGraph::dump() const {
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 
     for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
-         != nodes2.end(); it++) {
+         != nodes2.end(); ++it) {
         LandmarkNode *node_p = *it;
         dump_node(node_p);
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
              parent_it = node_p->parents.begin(); parent_it
-             != node_p->parents.end(); parent_it++) {
+             != node_p->parents.end(); ++parent_it) {
             const edge_type &edge = parent_it->second;
             const LandmarkNode *parent_p = parent_it->first;
             cout << "\t\t<-_";
@@ -296,7 +298,7 @@ void LandmarkGraph::dump() const {
         }
         for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
              child_it = node_p->children.begin(); child_it
-             != node_p->children.end(); child_it++) {
+             != node_p->children.end(); ++child_it) {
             const edge_type &edge = child_it->second;
             const LandmarkNode *child_p = child_it->first;
             cout << "\t\t->_";
@@ -327,26 +329,34 @@ void LandmarkGraph::dump() const {
 void LandmarkGraph::add_options_to_parser(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     parser.add_option<bool>("reasonable_orders",
-                            false,
-                            "generate reasonable orders");
+                            "generate reasonable orders",
+                            "false");
     parser.add_option<bool>("only_causal_landmarks",
-                            false,
-                            "keep only causal landmarks");
+                            "keep only causal landmarks",
+                            "false");
     parser.add_option<bool>("disjunctive_landmarks",
-                            true,
-                            "keep disjunctive landmarks");
+                            "keep disjunctive landmarks",
+                            "true");
     parser.add_option<bool>("conjunctive_landmarks",
-                            true,
-                            "keep conjunctive landmarks");
+                            "keep conjunctive landmarks",
+                            "true");
     parser.add_option<bool>("no_orders",
-                            false,
-                            "discard all orderings");
+                            "discard all orderings",
+                            "false");
+
+    /* TODO: The following lines overlap strongly with
+       ::add_cost_type_option_to_parser, but the option name is
+       different, so the method cannot be used directly. We could make
+       the option name in ::add_cost_type_option_to_parser settable by
+       the caller, but this doesn't seem worth it since this option
+       should go away anyway once the landmark code is properly
+       cleaned up. */
     vector<string> cost_types;
     cost_types.push_back("NORMAL");
     cost_types.push_back("ONE");
     cost_types.push_back("PLUSONE");
     parser.add_enum_option("lm_cost_type",
                            cost_types,
-                           "NORMAL",
-                           "landmark action cost adjustment");
+                           "landmark action cost adjustment",
+                           "NORMAL");
 }

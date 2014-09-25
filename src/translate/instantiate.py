@@ -25,8 +25,8 @@ def get_objects_by_type(typed_objects, types):
     for type in types:
         supertypes[type.name] = type.supertype_names
     for obj in typed_objects:
-        result[obj.type].append(obj.name)
-        for type in supertypes[obj.type]:
+        result[obj.type_name].append(obj.name)
+        for type in supertypes[obj.type_name]:
             result[type].append(obj.name)
     return result
 
@@ -77,7 +77,8 @@ def explore(task):
         return instantiate(task, model)
 
 if __name__ == "__main__":
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
     relaxed_reachable, atoms, actions, axioms, _ = explore(task)
     print("goal relaxed reachable: %s" % relaxed_reachable)
     print("%d atoms:" % len(atoms))

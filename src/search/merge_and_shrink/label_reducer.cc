@@ -1,132 +1,261 @@
 #include "label_reducer.h"
 
-#include "../globals.h"
-#include "../operator.h"
-#include "../utilities.h"
+#include "transition_system.h"
+#include "label.h"
 
+#include "../equivalence_relation.h"
+#include "../globals.h"
+#include "../option_parser.h"
+
+#include <algorithm>
 #include <cassert>
-#include <ext/hash_map>
 #include <iostream>
+#include <limits>
 
 using namespace std;
-using namespace __gnu_cxx;
 
-typedef pair<int, int> Assignment;
-
-struct OperatorSignature {
-    vector<int> data;
-
-    OperatorSignature(const vector<Assignment> &preconditions,
-                      const vector<Assignment> &effects, int cost) {
-        // We require that preconditions and effects are sorted by
-        // variable -- some sort of canonical representation is needed
-        // to guarantee that we can properly test for uniqueness.
-        for (size_t i = 0; i < preconditions.size(); ++i) {
-            if (i != 0)
-                assert(preconditions[i].first > preconditions[i - 1].first);
-            data.push_back(preconditions[i].first);
-            data.push_back(preconditions[i].second);
+LabelReducer::LabelReducer(const Options &options)
+    : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
+      label_reduction_system_order(LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
+    size_t max_no_systems = g_variable_domain.size() * 2 - 1;
+    transition_system_order.reserve(max_no_systems);
+    if (label_reduction_system_order == REGULAR
+        || label_reduction_system_order == RANDOM) {
+        for (size_t i = 0; i < max_no_systems; ++i)
+            transition_system_order.push_back(i);
+        if (label_reduction_system_order == RANDOM) {
+            random_shuffle(transition_system_order.begin(), transition_system_order.end());
         }
-        data.push_back(-1); // marker
-        for (size_t i = 0; i < effects.size(); ++i) {
-            if (i != 0)
-                assert(effects[i].first > effects[i - 1].first);
-            data.push_back(effects[i].first);
-            data.push_back(effects[i].second);
-        }
-        data.push_back(-1); // marker
-        data.push_back(cost);
+    } else {
+        assert(label_reduction_system_order == REVERSE);
+        for (size_t i = 0; i < max_no_systems; ++i)
+            transition_system_order.push_back(max_no_systems - 1 - i);
     }
-
-    bool operator==(const OperatorSignature &other) const {
-        return data == other.data;
-    }
-
-    size_t hash() const {
-        return ::hash_number_sequence(data, data.size());
-    }
-};
-
-namespace __gnu_cxx {
-template<>
-struct hash<OperatorSignature> {
-    size_t operator()(const OperatorSignature &sig) const {
-        return sig.hash();
-    }
-};
 }
 
-LabelReducer::LabelReducer(
-    const vector<const Operator *> &relevant_operators,
-    const vector<int> &pruned_vars,
-    OperatorCost cost_type) {
-    num_pruned_vars = pruned_vars.size();
-    num_labels = relevant_operators.size();
-    num_reduced_labels = 0;
+void LabelReducer::reduce_labels(pair<int, int> next_merge,
+                                 const vector<TransitionSystem *> &all_transition_systems,
+                                 std::vector<Label *> &labels) const {
+    int num_transition_systems = all_transition_systems.size();
 
-    vector<bool> var_is_used(g_variable_domain.size(), true);
-    for (size_t i = 0; i < pruned_vars.size(); ++i)
-        var_is_used[pruned_vars[i]] = false;
+    if (label_reduction_method == NONE) {
+        return;
+    }
 
-    hash_map<OperatorSignature, const Operator *> reduced_label_map;
-    reduced_label_by_index.resize(g_operators.size(), 0);
+    if (label_reduction_method == TWO_TRANSITION_SYSTEMS) {
+        /* Note:
+           We compute the combinable relation for labels for the two transition systems
+           in the order given by the merge strategy. We conducted experiments
+           testing the impact of always starting with the larger transitions system
+           (in terms of variables) or with the smaller transition system and found
+           no significant differences.
+         */
+        assert(all_transition_systems[next_merge.first]);
+        assert(all_transition_systems[next_merge.second]);
 
-    for (size_t i = 0; i < relevant_operators.size(); ++i) {
-        const Operator *op = relevant_operators[i];
-        OperatorSignature signature = build_operator_signature(
-            *op, cost_type, var_is_used);
+        vector<EquivalenceRelation *> local_equivalence_relations(
+            all_transition_systems.size(), 0);
 
-        int op_index = get_op_index(op);
-        if (!reduced_label_map.count(signature)) {
-            reduced_label_map[signature] = op;
-            reduced_label_by_index[op_index] = op;
-            ++num_reduced_labels;
+        EquivalenceRelation *relation = compute_outside_equivalence(
+            next_merge.first, all_transition_systems,
+            labels, local_equivalence_relations);
+        reduce_exactly(relation, labels);
+        delete relation;
+
+        relation = compute_outside_equivalence(
+            next_merge.second, all_transition_systems,
+            labels, local_equivalence_relations);
+        reduce_exactly(relation, labels);
+        delete relation;
+
+        for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+            delete local_equivalence_relations[i];
+        return;
+    }
+
+    // Make sure that we start with an index not ouf of range for
+    // all_transition_systems
+    size_t tso_index = 0;
+    assert(!transition_system_order.empty());
+    while (transition_system_order[tso_index] >= num_transition_systems) {
+        ++tso_index;
+        assert(in_bounds(tso_index, transition_system_order));
+    }
+
+    int max_iterations;
+    if (label_reduction_method == ALL_TRANSITION_SYSTEMS) {
+        max_iterations = num_transition_systems;
+    } else if (label_reduction_method == ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
+        max_iterations = numeric_limits<int>::max();
+    } else {
+        ABORT("unknown label reduction method");
+    }
+
+    int num_unsuccessful_iterations = 0;
+    vector<EquivalenceRelation *> local_equivalence_relations(
+        all_transition_systems.size(), 0);
+
+    for (int i = 0; i < max_iterations; ++i) {
+        int ts_index = transition_system_order[tso_index];
+        TransitionSystem *current_transition_system = all_transition_systems[ts_index];
+
+        bool have_reduced = false;
+        if (current_transition_system != 0) {
+            EquivalenceRelation *relation = compute_outside_equivalence(
+                ts_index, all_transition_systems,
+                labels, local_equivalence_relations);
+            have_reduced = reduce_exactly(relation, labels);
+            delete relation;
+        }
+
+        if (have_reduced) {
+            num_unsuccessful_iterations = 0;
         } else {
-            reduced_label_by_index[op_index] = reduced_label_map[signature];
+            ++num_unsuccessful_iterations;
+        }
+        if (num_unsuccessful_iterations == num_transition_systems - 1)
+            break;
+
+        ++tso_index;
+        if (tso_index == transition_system_order.size()) {
+            tso_index = 0;
+        }
+        while (transition_system_order[tso_index] >= num_transition_systems) {
+            ++tso_index;
+            if (tso_index == transition_system_order.size()) {
+                tso_index = 0;
+            }
         }
     }
-    assert(reduced_label_map.size() == num_reduced_labels);
+
+    for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+        delete local_equivalence_relations[i];
 }
 
-LabelReducer::~LabelReducer() {
-}
+EquivalenceRelation *LabelReducer::compute_outside_equivalence(
+        int ts_index,
+        const vector<TransitionSystem *> &all_transition_systems,
+        const vector<Label *> &labels,
+        vector<EquivalenceRelation *> &local_equivalence_relations) const {
+    /*Returns an equivalence relation over labels s.t. l ~ l'
+    iff l and l' are locally equivalent in all transition systems
+    T' \neq T. (They may or may not be locally equivalent in T.) */
+    TransitionSystem *transition_system = all_transition_systems[ts_index];
+    assert(transition_system);
+    //cout << transition_system->tag() << "compute combinable labels" << endl;
 
-OperatorSignature LabelReducer::build_operator_signature(
-    const Operator &op, OperatorCost cost_type,
-    const vector<bool> &var_is_used) const {
-    vector<Assignment> preconditions;
-    vector<Assignment> effects;
+    // We always normalize the "starting" transition system and delete the cached
+    // local equivalence relation (if exists) because this does not happen
+    // in the refinement loop below.
+    transition_system->normalize();
+    if (local_equivalence_relations[ts_index]) {
+        delete local_equivalence_relations[ts_index];
+        local_equivalence_relations[ts_index] = 0;
+    }
 
-    int op_cost = get_adjusted_action_cost(op, cost_type);
-    const vector<Prevail> &prev = op.get_prevail();
-    for (size_t i = 0; i < prev.size(); ++i) {
-        int var = prev[i].var;
-        if (var_is_used[var]) {
-            int val = prev[i].prev;
-            preconditions.push_back(make_pair(var, val));
+    // create the equivalence relation where all labels are equivalent
+    int num_labels = labels.size();
+    vector<pair<int, int> > annotated_labels;
+    annotated_labels.reserve(num_labels);
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        const Label *label = labels[label_no];
+        assert(label->get_id() == label_no);
+        if (!label->is_reduced()) {
+            // only consider non-reduced labels
+            annotated_labels.push_back(make_pair(0, label_no));
         }
     }
-    const vector<PrePost> &pre_post = op.get_pre_post();
-    for (size_t i = 0; i < pre_post.size(); ++i) {
-        int var = pre_post[i].var;
-        if (var_is_used[var]) {
-            int pre = pre_post[i].pre;
-            if (pre != -1)
-                preconditions.push_back(make_pair(var, pre));
-            int post = pre_post[i].post;
-            effects.push_back(make_pair(var, post));
-        }
-    }
-    ::sort(preconditions.begin(), preconditions.end());
-    ::sort(effects.begin(), effects.end());
+    EquivalenceRelation *relation = EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
-    return OperatorSignature(preconditions, effects, op_cost);
+    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+        TransitionSystem *ts = all_transition_systems[i];
+        if (!ts || ts == transition_system) {
+            continue;
+        }
+        if (!ts->is_normalized()) {
+            ts->normalize();
+            if (local_equivalence_relations[i]) {
+                delete local_equivalence_relations[i];
+                local_equivalence_relations[i] = 0;
+            }
+        }
+        //cout << transition_system->tag();
+        if (!local_equivalence_relations[i]) {
+            //cout << "compute local equivalence relation" << endl;
+            local_equivalence_relations[i] = ts->compute_local_equivalence_relation();
+        } else {
+            //cout << "use cached local equivalence relation" << endl;
+            assert(ts->is_normalized());
+        }
+        relation->refine(*local_equivalence_relations[i]);
+    }
+    return relation;
 }
 
-void LabelReducer::statistics() const {
-    cout << "Label reduction: "
-         << num_pruned_vars << " pruned vars, "
-         << num_labels << " labels, "
-         << num_reduced_labels << " reduced labels"
-         << endl;
+bool LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const {
+    int num_labels = 0;
+    int num_labels_after_reduction = 0;
+    for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
+        const Block &block = *it;
+        vector<Label *> equivalent_labels;
+        for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
+            assert(*jt < static_cast<int>(labels.size()));
+            Label *label = labels[*jt];
+            if (!label->is_reduced()) {
+                // only consider non-reduced labels
+                equivalent_labels.push_back(label);
+                ++num_labels;
+            }
+        }
+        if (equivalent_labels.size() > 1) {
+            Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
+            labels.push_back(new_label);
+        }
+        if (!equivalent_labels.empty()) {
+            ++num_labels_after_reduction;
+        }
+    }
+    int number_reduced_labels = num_labels - num_labels_after_reduction;
+    if (number_reduced_labels > 0) {
+        cout << "Label reduction: "
+             << num_labels << " labels, "
+             << num_labels_after_reduction << " after reduction"
+             << endl;
+    }
+    return number_reduced_labels;
+}
+
+void LabelReducer::dump_options() const {
+    cout << "Label reduction: ";
+    switch (label_reduction_method) {
+    case NONE:
+        cout << "disabled";
+        break;
+    case TWO_TRANSITION_SYSTEMS:
+        cout << "two transition systems (which will be merged next)";
+        break;
+    case ALL_TRANSITION_SYSTEMS:
+        cout << "all transition systems";
+        break;
+    case ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT:
+        cout << "all transition systems with fixpoint computation";
+        break;
+    }
+    cout << endl;
+    if (label_reduction_method == ALL_TRANSITION_SYSTEMS ||
+        label_reduction_method == ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
+        cout << "System order: ";
+        switch (label_reduction_system_order) {
+        case REGULAR:
+            cout << "regular";
+            break;
+        case REVERSE:
+            cout << "reversed";
+            break;
+        case RANDOM:
+            cout << "random";
+            break;
+        }
+        cout << endl;
+    }
 }

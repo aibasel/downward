@@ -23,14 +23,14 @@ int CompositeFeatureExtractor::get_feature_domain_size(int feature) {
             feature = feature + feature_extractors[fe]->get_num_features();
             return feature_extractors[fe]->get_feature_domain_size(feature);
         }
-        fe++;
+        ++fe;
     }
     return 0;
 }
 
 void CompositeFeatureExtractor::extract_features(const void *obj,
                                                  vector<int> &features) {
-    for (int i = 0; i < feature_extractors.size(); i++) {
+    for (size_t i = 0; i < feature_extractors.size(); ++i) {
         feature_extractors[i]->extract_features(obj, features);
     }
 }

@@ -1,47 +1,62 @@
 #ifndef MERGE_AND_SHRINK_LABEL_REDUCER_H
 #define MERGE_AND_SHRINK_LABEL_REDUCER_H
 
-#include "../globals.h"
-#include "../operator.h"
-#include "../operator_cost.h"
-
-#include <cassert>
 #include <vector>
 
-class OperatorSignature;
+class TransitionSystem;
+class EquivalenceRelation;
+class Label;
+class LabelSignature;
+class Options;
 
 class LabelReducer {
-    std::vector<const Operator *> reduced_label_by_index;
-    inline int get_op_index(const Operator *op) const;
+    /* none: no label reduction will be performed
 
-    int num_pruned_vars;
-    int num_labels;
-    int num_reduced_labels;
+       two_transition_systems: compute the 'combinable relation'
+       for labels only for the two transition_systems that will
+       be merged next and reduce labels.
 
-    OperatorSignature build_operator_signature(
-        const Operator &op, OperatorCost cost_type,
-        const vector<bool> &var_is_used) const;
+       all_transition_systems: compute the 'combinable relation'
+       for labels once for every transition_system and reduce
+       labels.
+
+       all_transition_systems_with_fixpoint: keep computing the
+       'combinable relation' for labels iteratively for all
+       transition systems until no more labels can be reduced.
+     */
+    enum LabelReductionMethod {
+        NONE,
+        TWO_TRANSITION_SYSTEMS,
+        ALL_TRANSITION_SYSTEMS,
+        ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT
+    };
+
+    enum LabelReductionSystemOrder {
+        REGULAR,
+        REVERSE,
+        RANDOM
+    };
+
+    LabelReductionMethod label_reduction_method;
+    LabelReductionSystemOrder label_reduction_system_order;
+    std::vector<int> transition_system_order;
+
+    // exact label reduction
+    EquivalenceRelation *compute_outside_equivalence(
+            int ts_index,
+            const std::vector<TransitionSystem *> &all_transition_systems,
+            const std::vector<Label *> &labels,
+            std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
+    // returns true iff at least one new label has been created
+    bool reduce_exactly(const EquivalenceRelation *relation,
+                        std::vector<Label *> &labels) const;
 public:
-    LabelReducer(
-        const std::vector<const Operator *> &relevant_operators,
-        const std::vector<int> &pruned_vars,
-        OperatorCost cost_type);
-    ~LabelReducer();
-    inline const Operator *get_reduced_label(const Operator *op) const;
-    void statistics() const;
+    explicit LabelReducer(const Options &options);
+    ~LabelReducer() {}
+    void reduce_labels(std::pair<int, int> next_merge,
+                       const std::vector<TransitionSystem *> &all_transition_systems,
+                       std::vector<Label * > &labels) const;
+    void dump_options() const;
 };
-
-inline int LabelReducer::get_op_index(const Operator *op) const {
-    int op_index = op - &*g_operators.begin();
-    assert(op_index >= 0 && op_index < g_operators.size());
-    return op_index;
-}
-
-inline const Operator *LabelReducer::get_reduced_label(
-    const Operator *op) const {
-    const Operator *reduced_label = reduced_label_by_index[get_op_index(op)];
-    assert(reduced_label);
-    return reduced_label;
-}
 
 #endif

@@ -40,20 +40,20 @@ protected:
                                          std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op);
 
     // protected not private for LandmarkFactoryRpgSearch
-    bool achieves_non_conditional(const Operator &o, const LandmarkNode *lmp) const;
-    bool is_landmark_precondition(const Operator &o, const LandmarkNode *lmp) const;
+    bool achieves_non_conditional(const GlobalOperator &o, const LandmarkNode *lmp) const;
+    bool is_landmark_precondition(const GlobalOperator &o, const LandmarkNode *lmp) const;
 
 private:
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
-    bool effect_always_happens(const std::vector<PrePost> &prepost,
+    bool effect_always_happens(const std::vector<GlobalEffect> &effects,
                                std::set<std::pair<int, int> > &eff) const;
     void approximate_reasonable_orders(bool obedient_orders);
     void mk_acyclic_graph();
     int loop_acyclic_graph(LandmarkNode &lmn,
                            __gnu_cxx::hash_set<LandmarkNode *, hash_pointer> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                         list<std::pair<LandmarkNode *, edge_type> > &path,
-                                         list<std::pair<LandmarkNode *, edge_type> >::iterator it);
+                                         std::list<std::pair<LandmarkNode *, edge_type> > &path,
+                                         std::list<std::pair<LandmarkNode *, edge_type> >::iterator it);
     int calculate_lms_cost() const;
     void collect_ancestors(__gnu_cxx::hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
                            bool use_reasonable);

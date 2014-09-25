@@ -38,7 +38,7 @@ void AODEClassifier::buildClassifier(int num_classes) {
     m_NumAttValues = new int[m_NumAttributes];
 
     m_TotalAttValues = 0;
-    for (int i = 0; i < m_NumAttributes; i++) {
+    for (int i = 0; i < m_NumAttributes; ++i) {
         if (i != m_ClassIndex) {
             m_StartAttIndex[i] = m_TotalAttValues;
             m_NumAttValues[i] = feature_extractor->get_feature_domain_size(i);
@@ -57,16 +57,16 @@ void AODEClassifier::buildClassifier(int num_classes) {
     m_SumForCounts = new double *[m_NumClasses];
     m_ClassCounts = new double[m_NumClasses];
     m_Frequencies = new double[m_TotalAttValues];
-    for (int i = 0; i < m_NumClasses; i++) {
+    for (int i = 0; i < m_NumClasses; ++i) {
         m_CondiCounts[i] = new double *[m_TotalAttValues];
-        for (int j = 0; j < m_TotalAttValues; j++) {
+        for (int j = 0; j < m_TotalAttValues; ++j) {
             m_CondiCounts[i][j] = new double[m_TotalAttValues];
-            for (int k = 0; k < m_TotalAttValues; k++) {
+            for (int k = 0; k < m_TotalAttValues; ++k) {
                 m_CondiCounts[i][j][k] = 0;
             }
         }
         m_SumForCounts[i] = new double[m_NumAttributes];
-        for (int j = 0; j < m_NumAttributes; j++) {
+        for (int j = 0; j < m_NumAttributes; ++j) {
             m_SumForCounts[i][j] = 0;
         }
         m_ClassCounts[i] = 0;
@@ -88,7 +88,7 @@ void AODEClassifier::addExample(const void *obj, int tag) {
     // store instance's att val indexes in an array, b/c accessing it
     // in loop(s) is more efficient
     int *attIndex = new int[m_NumAttributes];
-    for (int i = 0; i < m_NumAttributes; i++) {
+    for (int i = 0; i < m_NumAttributes; ++i) {
         if (i == m_ClassIndex)
             attIndex[i] = -1;  // we don't use the class attribute in counts
         else {
@@ -96,21 +96,21 @@ void AODEClassifier::addExample(const void *obj, int tag) {
         }
     }
 
-    for (int Att1 = 0; Att1 < m_NumAttributes; Att1++) {
-        if (attIndex[Att1] == -1)
+    for (int att1 = 0; att1 < m_NumAttributes; ++att1) {
+        if (attIndex[att1] == -1)
             continue;  // avoid pointless looping as Att1 is currently the class attribute
 
-        m_Frequencies[attIndex[Att1]] += weight;
+        m_Frequencies[attIndex[att1]] += weight;
 
         // if this is a missing value, we don't want to increase sumforcounts
-        m_SumForCounts[classVal][Att1] += weight;
+        m_SumForCounts[classVal][att1] += weight;
 
         // save time by referencing this now, rather than do it repeatedly in the loop
-        countsPointer = m_CondiCounts[classVal][attIndex[Att1]];
+        countsPointer = m_CondiCounts[classVal][attIndex[att1]];
 
-        for (int Att2 = 0; Att2 < m_NumAttributes; Att2++) {
-            if (attIndex[Att2] != -1) {
-                countsPointer[attIndex[Att2]] += weight;
+        for (int att2 = 0; att2 < m_NumAttributes; ++att2) {
+            if (attIndex[att2] != -1) {
+                countsPointer[attIndex[att2]] += weight;
             }
         }
     }
@@ -145,7 +145,7 @@ bool AODEClassifier::distributionForInstance(const void *obj, double *dist) {
     // store instance's att indexes in an int array, so accessing them
     // is more efficient in loop(s).
     int *attIndex = new int[m_NumAttributes];
-    for (int att = 0; att < m_NumAttributes; att++) {
+    for (int att = 0; att < m_NumAttributes; ++att) {
         if (att == m_ClassIndex)
             attIndex[att] = -1;  // can't use class or missing values in calculations
         else
@@ -153,15 +153,15 @@ bool AODEClassifier::distributionForInstance(const void *obj, double *dist) {
     }
 
     // calculate probabilities for each possible class value
-    for (int classVal = 0; classVal < m_NumClasses; classVal++) {
-        probs[classVal] = 0;
+    for (int class_val = 0; class_val < m_NumClasses; ++class_val) {
+        probs[class_val] = 0;
         double spodeP = 0; // P(X,y) for current parent and class
         parentCount = 0;
 
-        countsForClass = m_CondiCounts[classVal];
+        countsForClass = m_CondiCounts[class_val];
 
         // each attribute has a turn of being the parent
-        for (int parent = 0; parent < m_NumAttributes; parent++) {
+        for (int parent = 0; parent < m_NumAttributes; ++parent) {
             if (attIndex[parent] == -1)
                 continue;  // skip class attribute or missing value
 
@@ -177,7 +177,7 @@ bool AODEClassifier::distributionForInstance(const void *obj, double *dist) {
             // block the parent from being its own child
             attIndex[parent] = -1;
 
-            parentCount++;
+            ++parentCount;
 
             // joint frequency of class and parent
             double classparentfreq = countsForClassParent[pIndex];
@@ -198,7 +198,7 @@ bool AODEClassifier::distributionForInstance(const void *obj, double *dist) {
             }
 
             // take into account the value of each attribute
-            for (int att = 0; att < m_NumAttributes; att++) {
+            for (int att = 0; att < m_NumAttributes; ++att) {
                 if (attIndex[att] == -1)
                     continue;
 
@@ -218,7 +218,7 @@ bool AODEClassifier::distributionForInstance(const void *obj, double *dist) {
             }
 
             // add this probability to the overall probability
-            probs[classVal] += spodeP;
+            probs[class_val] += spodeP;
 
             // unblock the parent
             attIndex[parent] = pIndex;
@@ -227,10 +227,10 @@ bool AODEClassifier::distributionForInstance(const void *obj, double *dist) {
         // check that at least one att was a parent
         if (parentCount < 1) {
             // do plain naive bayes conditional prob
-            probs[classVal] = NBconditionalProb(features, classVal);
+            probs[class_val] = NBconditionalProb(features, class_val);
         } else {
             // divide by number of parent atts to get the mean
-            probs[classVal] /= (double)(parentCount);
+            probs[class_val] /= (double)(parentCount);
         }
     }
 
@@ -262,7 +262,7 @@ double AODEClassifier::NBconditionalProb(vector<int> &features, int classVal) {
     pointer = m_CondiCounts[classVal];
 
     // consider effect of each att value
-    for (int att = 0; att < m_NumAttributes; att++) {
+    for (int att = 0; att < m_NumAttributes; ++att) {
         if (att == m_ClassIndex)
             continue;
 
@@ -293,7 +293,7 @@ static void normalize(double *doubles, int length, double sum) {
         // Maybe this should just be a return.
         return;
     }
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < length; ++i) {
         doubles[i] /= sum;
     }
 }
@@ -307,7 +307,7 @@ static void normalize(double *doubles, int length, double sum) {
    */
 static void normalize(double *doubles, int length) {
     double sum = 0;
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < length; ++i) {
         sum += doubles[i];
     }
     normalize(doubles, length, sum);

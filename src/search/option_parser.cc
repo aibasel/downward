@@ -3,11 +3,18 @@
 #include "ext/tree_util.hh"
 #include "plugin.h"
 #include "rng.h"
-#include <string>
 #include <algorithm>
 #include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 using namespace std;
+
+
+ArgError::ArgError(std::string msg_) : msg(msg_) {
+}
+
 
 ParseError::ParseError(string m, ParseTree pt)
     : msg(m),
@@ -20,12 +27,6 @@ ParseError::ParseError(string m, ParseTree pt, string correct_substring)
       substr(correct_substring) {
 }
 
-HelpElement::HelpElement(string k, string h, string t_n)
-    : kwd(k),
-      help(h),
-      type_name(t_n) {
-}
-
 void OptionParser::error(string msg) {
     throw ParseError(msg, *this->get_parse_tree());
 }
@@ -34,10 +35,11 @@ void OptionParser::warning(string msg) {
     cout << "Parser Warning: " << msg << endl;
 }
 
-
 /*
 Functions for printing help:
 */
+
+DocStore *DocStore::instance_ = 0;
 
 void OptionParser::set_help_mode(bool m) {
     dry_run_ = dry_run_ && m;
@@ -48,12 +50,9 @@ void OptionParser::set_help_mode(bool m) {
 template <class T>
 static void get_help_templ(const ParseTree &pt) {
     if (Registry<T>::instance()->contains(pt.begin()->value)) {
-        cout << pt.begin()->value << " is a " << TypeNamer<T>::name()
-             << endl << "Usage: " << endl;
         OptionParser p(pt, true);
         p.set_help_mode(true);
         p.start_parsing<T>();
-        cout << endl;
     }
 }
 
@@ -66,14 +65,16 @@ static void get_help(string k) {
     get_help_templ<LandmarkGraph *>(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
+    get_help_templ<MergeStrategy *>(pt);
     get_help_templ<ShrinkStrategy *>(pt);
 }
 
 template <class T>
 static void get_full_help_templ() {
-    cout << endl << "Help for " << TypeNamer<T>::name() << "s:" << endl << endl;
+    DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
+                                       TypeDocumenter<T>::synopsis());
     vector<string> keys = Registry<T>::instance()->get_keys();
-    for (size_t i(0); i != keys.size(); ++i) {
+    for (size_t i = 0; i < keys.size(); ++i) {
         ParseTree pt;
         pt.insert(pt.begin(), ParseNode(keys[i]));
         get_help_templ<T>(pt);
@@ -87,6 +88,7 @@ static void get_full_help() {
     get_full_help_templ<LandmarkGraph *>();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
+    get_full_help_templ<MergeStrategy *>();
     get_full_help_templ<ShrinkStrategy *>();
 }
 
@@ -100,7 +102,7 @@ Predefining landmarks and heuristics:
 static std::vector<std::string> to_list(std::string s) {
     std::vector<std::string> result;
     std::string buffer;
-    for (size_t i(0); i != s.size(); ++i) {
+    for (size_t i = 0; i < s.size(); ++i) {
         if (s[i] == ',') {
             result.push_back(buffer);
             buffer.clear();
@@ -138,42 +140,90 @@ Parse command line options
 */
 
 SearchEngine *OptionParser::parse_cmd_line(
-    int argc, const char **argv, bool dry_run) {
-    SearchEngine *engine(0);
+    int argc, const char **argv, bool dry_run, bool is_unit_cost) {
+    vector<string> args;
+    bool active = true;
     for (int i = 1; i < argc; ++i) {
-        string arg = string(argv[i]);
+        string arg = argv[i];
+        if (arg == "--if-unit-cost") {
+            active = is_unit_cost;
+        } else if (arg == "--if-non-unit-cost") {
+            active = !is_unit_cost;
+        } else if (arg == "--always") {
+            active = true;
+        } else if (active) {
+            args.push_back(arg);
+        }
+    }
+    return parse_cmd_line_aux(args, dry_run);
+}
+
+
+SearchEngine *OptionParser::parse_cmd_line_aux(
+    const vector<string> &args, bool dry_run) {
+    SearchEngine *engine(0);
+    for (size_t i = 0; i < args.size(); ++i) {
+        string arg = args[i];
+        bool is_last = (i == args.size() - 1);
         if (arg.compare("--heuristic") == 0) {
+            if (is_last)
+                throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine<Heuristic *>(argv[i], dry_run);
+            predefine<Heuristic *>(args[i], dry_run);
         } else if (arg.compare("--landmarks") == 0) {
+            if (is_last)
+                throw ArgError("missing argument after --landmarks");
             ++i;
-            predefine<LandmarkGraph *>(argv[i], dry_run);
+            predefine<LandmarkGraph *>(args[i], dry_run);
         } else if (arg.compare("--search") == 0) {
+            if (is_last)
+                throw ArgError("missing argument after --search");
             ++i;
-            OptionParser p(argv[i], dry_run);
+            OptionParser p(args[i], dry_run);
             engine = p.start_parsing<SearchEngine *>();
         } else if (arg.compare("--random-seed") == 0) {
+            if (is_last)
+                throw ArgError("missing argument after --random-seed");
             ++i;
-            srand(atoi(argv[i]));
-            g_rng.seed(atoi(argv[i]));
-            cout << "random seed " << argv[i] << endl;
+            srand(atoi(args[i].c_str()));
+            g_rng.seed(atoi(args[i].c_str()));
+            cout << "random seed " << args[i] << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
-            if (i + 1 < argc) {
-                string helpiand = string(argv[i + 1]);
-                get_help(helpiand);
-            } else {
-                get_full_help();
+            bool txt2tags = false;
+            vector<string> helpiands;
+            if (i + 1 < args.size()) {
+                for (size_t j = i + 1; j < args.size(); ++j) {
+                    if (args[j] == "--txt2tags") {
+                        txt2tags = true;
+                    } else {
+                        helpiands.push_back(string(args[j]));
+                    }
+                }
             }
+            if (helpiands.empty()) {
+                get_full_help();
+            } else {
+                for (size_t j = 0; j != helpiands.size(); ++j) {
+                    get_help(helpiands[j]);
+                }
+            }
+            DocPrinter *dp;
+            if (txt2tags) {
+                dp = new Txt2TagsPrinter(cout);
+            } else {
+                dp = new PlainPrinter(cout);
+            }
+            dp->print_all();
             cout << "Help output finished." << endl;
             exit(0);
         } else if (arg.compare("--plan-file") == 0) {
+            if (is_last)
+                throw ArgError("missing argument after --plan-file");
             ++i;
-            g_plan_filename = argv[i];
+            g_plan_filename = args[i];
         } else {
-            cerr << "unknown option " << arg << endl << endl;
-            cout << OptionParser::usage(argv[0]) << endl;
-            exit_with(EXIT_INPUT_ERROR);
+            throw ArgError("unknown option " + arg);
         }
     }
     return engine;
@@ -215,14 +265,14 @@ static ParseTree generate_parse_tree(string config) {
     ParseTree::sibling_iterator cur_node = pseudoroot;
     string buffer(""), key("");
     char next = ' ';
-    for (size_t i(0); i != config.size(); ++i) {
+    for (size_t i = 0; i < config.size(); ++i) {
         next = config.at(i);
         if ((next == '(' || next == ')' || next == ',') && buffer.size() > 0) {
             tr.append_child(cur_node, ParseNode(buffer, key));
             buffer.clear();
             key.clear();
-        } else if(next == '(' && buffer.size() == 0) {
-            throw ParseError("misplaced opening bracket (", *cur_node, config.substr(0,i));
+        } else if (next == '(' && buffer.size() == 0) {
+            throw ParseError("misplaced opening bracket (", *cur_node, config.substr(0, i));
         }
         switch (next) {
         case ' ':
@@ -232,12 +282,12 @@ static ParseTree generate_parse_tree(string config) {
             break;
         case ')':
             if (cur_node == pseudoroot)
-                throw ParseError("missing (", *cur_node, config.substr(0,i));
+                throw ParseError("missing (", *cur_node, config.substr(0, i));
             cur_node = tr.parent(cur_node);
             break;
         case '[':
             if (!buffer.empty())
-                throw ParseError("misplaced opening bracket [", *cur_node, config.substr(0,i));
+                throw ParseError("misplaced opening bracket [", *cur_node, config.substr(0, i));
             tr.append_child(cur_node, ParseNode("list", key));
             key.clear();
             cur_node = last_child(tr, cur_node);
@@ -249,7 +299,7 @@ static ParseTree generate_parse_tree(string config) {
                 key.clear();
             }
             if (cur_node->value.compare("list") != 0) {
-                throw ParseError("mismatched brackets", *cur_node, config.substr(0,i));
+                throw ParseError("mismatched brackets", *cur_node, config.substr(0, i));
             }
             cur_node = tr.parent(cur_node);
             break;
@@ -257,7 +307,7 @@ static ParseTree generate_parse_tree(string config) {
             break;
         case '=':
             if (buffer.empty())
-                throw ParseError("expected keyword before =", *cur_node, config.substr(0,i));
+                throw ParseError("expected keyword before =", *cur_node, config.substr(0, i));
             key = buffer;
             buffer.clear();
             break;
@@ -266,10 +316,11 @@ static ParseTree generate_parse_tree(string config) {
             break;
         }
     }
-    if (next != ')')
-        throw ParseError("expected ) at end of configuration after " + buffer, *cur_node);
     if (cur_node->value.compare("pseudoroot") != 0)
         throw ParseError("missing )", *cur_node);
+    if (buffer.size() > 0)
+        tr.append_child(cur_node, ParseNode(buffer, key));
+
 
     //the real parse tree is the first (and only) child of the pseudoroot.
     //pseudoroot is only a placeholder.
@@ -302,32 +353,34 @@ string str_to_lower(string s) {
 
 void OptionParser::add_enum_option(string k,
                                    vector<string > enumeration,
-                                   string def_val, string h,
-                                   OptionFlags flags) {
+                                   string h, string def_val,
+                                   vector<string> enum_docs,
+                                   const OptionFlags &flags) {
     if (help_mode_) {
+        ValueExplanations value_explanations;
         string enum_descr = "{";
-        for (size_t i(0); i != enumeration.size(); ++i) {
+        for (size_t i = 0; i < enumeration.size(); ++i) {
             enum_descr += enumeration[i];
             if (i != enumeration.size() - 1) {
                 enum_descr += ", ";
             }
+            if (enum_docs.size() > i) {
+                value_explanations.push_back(make_pair(enumeration[i],
+                                                       enum_docs[i]));
+            }
         }
         enum_descr += "}";
 
-        helpers.push_back(HelpElement(k, h, enum_descr));
-        if (def_val.compare("") != 0) {
-            helpers.back().default_value = def_val;
-        }
+        DocStore::instance()->add_arg(parse_tree.begin()->value,
+                                      k, h,
+                                      enum_descr, def_val, flags.mandatory,
+                                      value_explanations);
         return;
     }
 
     //enum arguments can be given by name or by number:
     //first parse the corresponding string like a normal argument...
-    if (def_val.compare("") != 0) {
-        add_option<string>(k, def_val, h);
-    } else {
-        add_option<string>(k, h, flags.mandatory);
-    }
+    add_option<string>(k, h, def_val, flags);
 
     if (!flags.mandatory && !opts.contains(k))
         return;
@@ -338,7 +391,8 @@ void OptionParser::add_enum_option(string k,
     stringstream str_stream(name);
     int x;
     if (!(str_stream >> x).fail()) {
-        if (x > enumeration.size()) {
+        int max_choice = enumeration.size();
+        if (x > max_choice) {
             error("invalid enum argument " + name
                   + " for option " + k);
         }
@@ -358,23 +412,6 @@ void OptionParser::add_enum_option(string k,
 }
 
 Options OptionParser::parse() {
-    if (help_mode_) {
-        //print out collected help information
-        cout << parse_tree.begin()->value << "(";
-        for (size_t i(0); i != helpers.size(); ++i) {
-            cout << helpers[i].kwd
-                 << (helpers[i].default_value.compare("") != 0 ? " = " : "")
-                 << helpers[i].default_value;
-            if (i != helpers.size() - 1) {
-                cout << ", ";
-            }
-        }
-        cout << ")" << endl;
-        for (size_t i(0); i != helpers.size(); ++i) {
-            cout << helpers[i].kwd << "(" << helpers[i].type_name << "): "
-                 << helpers[i].help << endl;
-        }
-    }
     //check if there were any arguments with invalid keywords,
     //or positional arguments after keyword arguments
     string last_key = "";
@@ -382,7 +419,7 @@ Options OptionParser::parse() {
          pti != end_of_roots_children(parse_tree); ++pti) {
         if (pti->key.compare("") != 0) {
             bool valid_key = false;
-            for (size_t i(0); i != valid_keys.size(); ++i) {
+            for (size_t i = 0; i < valid_keys.size(); ++i) {
                 if (valid_keys[i].compare(pti->key) == 0) {
                     valid_key = true;
                     break;
@@ -401,6 +438,39 @@ Options OptionParser::parse() {
         last_key = pti->key;
     }
     return opts;
+}
+
+void OptionParser::document_values(string argument,
+                                   ValueExplanations value_explanations) const {
+    DocStore::instance()->add_value_explanations(
+        parse_tree.begin()->value,
+        argument, value_explanations);
+}
+
+void OptionParser::document_synopsis(string name, string note) const {
+    DocStore::instance()->set_synopsis(parse_tree.begin()->value,
+                                       name, note);
+}
+
+void OptionParser::document_property(string property, string note) const {
+    DocStore::instance()->add_property(parse_tree.begin()->value,
+                                       property, note);
+}
+
+void OptionParser::document_language_support(string feature,
+                                             string note) const {
+    DocStore::instance()->add_feature(parse_tree.begin()->value,
+                                      feature, note);
+}
+
+void OptionParser::document_note(string name,
+                                 string note, bool long_text) const {
+    DocStore::instance()->add_note(parse_tree.begin()->value,
+                                   name, note, long_text);
+}
+
+void OptionParser::document_hide() const {
+    DocStore::instance()->hide(parse_tree.begin()->value);
 }
 
 bool OptionParser::dry_run() const {
