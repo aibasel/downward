@@ -44,8 +44,6 @@ class TransitionSystem {
     friend class AtomicTransitionSystem;
     friend class CompositeTransitionSystem;
 
-    friend class ShrinkStrategy; // for apply() -- TODO: refactor!
-
     static const int PRUNED_STATE = -1;
     static const int DISTANCE_UNKNOWN = -2;
 
@@ -87,16 +85,24 @@ class TransitionSystem {
     void compute_goal_distances_unit_cost();
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
+    bool are_distances_computed() const;
+    void compute_distances();
 
     // are_transitions_sorted_unique() is used to determine whether the
     // transitions of an transition system are sorted uniquely or not after
     // construction (composite transition system) and shrinking (apply_abstraction).
     bool are_transitions_sorted_unique() const;
 
-    void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
+
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
+
+    void normalize();
+
+    // see tag()
+    virtual std::string description() const = 0;
+
 protected:
     std::vector<int> varset;
 
@@ -105,17 +111,24 @@ protected:
             const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
     virtual int memory_estimate() const;
 public:
-    TransitionSystem(Labels *labels);
+    explicit TransitionSystem(Labels *labels);
     virtual ~TransitionSystem();
 
-    // Two methods to identify the transition system in output.
-    // tag is a convience method that upper-cases the first letter of
-    // description and appends ": ";
-    virtual std::string description() const = 0;
-    std::string tag() const;
-
+    // non-const methods:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels);
+    void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
+    void apply_label_reduction();
+    void release_memory();
+
+    // const methods:
+
+    // Method to identify the transition system in output.
+    // tag is a convience method that upper-cases the first letter of
+    // description and appends ": ";
+    std::string tag() const;
+
+
     bool is_solvable() const;
 
     int get_cost(const GlobalState &state) const;
@@ -128,12 +141,8 @@ public:
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
 
-    bool are_distances_computed() const;
-    void compute_distances();
     bool is_normalized() const;
-    void normalize();
     EquivalenceRelation *compute_local_equivalence_relation() const;
-    void release_memory();
 
     void dump_relevant_labels() const;
     void dump() const;
@@ -161,7 +170,7 @@ public:
     // This method is shrink_bisimulation-exclusive
     int get_num_labels() const;
     // These methods are used by non_linear_merge_strategy
-    void compute_label_ranks(std::vector<int> &label_ranks);
+    void compute_label_ranks(std::vector<int> &label_ranks) const;
     bool is_goal_relevant() const {
         return goal_relevant;
     }

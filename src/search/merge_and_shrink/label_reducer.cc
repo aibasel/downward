@@ -68,8 +68,10 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         reduce_exactly(relation, labels);
         delete relation;
 
-        for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+        for (size_t i = 0; i < local_equivalence_relations.size(); ++i) {
+            all_transition_systems[i]->apply_label_reduction();
             delete local_equivalence_relations[i];
+        }
         return;
     }
 
@@ -106,6 +108,9 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
                 labels, local_equivalence_relations);
             have_reduced = reduce_exactly(relation, labels);
             delete relation;
+            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+                all_transition_systems[i]->apply_label_reduction();
+            }
         }
 
         if (have_reduced) {
@@ -147,7 +152,10 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     // We always normalize the "starting" transition system and delete the cached
     // local equivalence relation (if exists) because this does not happen
     // in the refinement loop below.
-    transition_system->normalize();
+    //transition_system->normalize();
+    if (!transition_system->is_normalized()) {
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
     if (local_equivalence_relations[ts_index]) {
         delete local_equivalence_relations[ts_index];
         local_equivalence_relations[ts_index] = 0;
@@ -172,12 +180,15 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
         if (!transition_system || transition_system == transition_system) {
             continue;
         }
-        if (!transition_system->is_normalized()) {
-            transition_system->normalize();
+        //if (!transition_system->is_normalized()) {
+        //    transition_system->normalize();
             if (local_equivalence_relations[i]) {
                 delete local_equivalence_relations[i];
                 local_equivalence_relations[i] = 0;
             }
+        //}
+        if (!transition_system->is_normalized()) {
+            exit_with(EXIT_CRITICAL_ERROR);
         }
         //cout << transition_system->tag();
         if (!local_equivalence_relations[i]) {
