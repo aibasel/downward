@@ -69,7 +69,8 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         delete relation;
 
         for (size_t i = 0; i < local_equivalence_relations.size(); ++i) {
-            all_transition_systems[i]->apply_label_reduction();
+            if (all_transition_systems[i])
+                all_transition_systems[i]->apply_label_reduction();
             delete local_equivalence_relations[i];
         }
         return;
@@ -108,13 +109,14 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
                 labels, local_equivalence_relations);
             have_reduced = reduce_exactly(relation, labels);
             delete relation;
-            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-                all_transition_systems[i]->apply_label_reduction();
-            }
         }
 
         if (have_reduced) {
             num_unsuccessful_iterations = 0;
+            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+                if (all_transition_systems[i])
+                    all_transition_systems[i]->apply_label_reduction();
+            }
         } else {
             ++num_unsuccessful_iterations;
         }
