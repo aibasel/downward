@@ -105,6 +105,12 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
                 min_cost = min(min_cost, get_adjusted_action_cost(op, lm_graph->get_lm_cost_type()));
         }
     }
+    /*
+      TODO: The following assertion fails for the unsolvable tasks that are
+      created if the translator detects unsolvability. To reproduce, search
+      with "astar(lmcount(lm_rhw()))" on mystery/prob07.pddl in debug mode.
+      See issue 467
+    */
     assert(min_cost < numeric_limits<int>::max());
     return min_cost;
 }

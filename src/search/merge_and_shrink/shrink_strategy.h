@@ -82,7 +82,6 @@ public:
 
     virtual void shrink(TransitionSystem &abs, int threshold,
                         bool force = false) = 0;
-    virtual void shrink_atomic(TransitionSystem &abs1);
     virtual void shrink_before_merge(TransitionSystem &abs1, TransitionSystem &abs2);
 
     static void add_options_to_parser(OptionParser &parser);

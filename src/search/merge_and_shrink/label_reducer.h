@@ -12,9 +12,6 @@ class Options;
 class LabelReducer {
     /* none: no label reduction will be performed
 
-       old: emulate the label reduction as desribed in the
-       IJCAI 2011 paper by Nissim, Hoffmann and Helmert.
-
        two_transition_systems: compute the 'combinable relation'
        for labels only for the two transition_systems that will
        be merged next and reduce labels.
@@ -29,7 +26,6 @@ class LabelReducer {
      */
     enum LabelReductionMethod {
         NONE,
-        OLD,
         TWO_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT
@@ -44,13 +40,6 @@ class LabelReducer {
     LabelReductionMethod label_reduction_method;
     LabelReductionSystemOrder label_reduction_system_order;
     std::vector<int> system_order;
-
-    // old label reduction
-    LabelSignature build_label_signature(const Label &label,
-                                         const std::vector<bool> &var_is_used) const;
-    // returns true iff at least one new label has been created
-    bool reduce_old(const std::vector<int> &abs_vars,
-                    std::vector<Label *> &labels) const;
 
     // exact label reduction
     EquivalenceRelation *compute_outside_equivalence(
