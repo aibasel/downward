@@ -41,13 +41,6 @@ class LabelReducer {
     LabelReductionSystemOrder label_reduction_system_order;
     std::vector<int> system_order;
 
-    // old label reduction
-    LabelSignature build_label_signature(const Label &label,
-                                         const std::vector<bool> &var_is_used) const;
-    // returns true iff at least one new label has been created
-    bool reduce_old(const std::vector<int> &abs_vars,
-                    std::vector<Label *> &labels) const;
-
     // exact label reduction
     EquivalenceRelation *compute_outside_equivalence(
             int abs_index,
