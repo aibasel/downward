@@ -31,8 +31,7 @@ class Fact {
     int var_id;
     int value;
 public:
-    Fact(const TaskInterface &interface_, int var_id_, int value_)
-        : interface(interface_), var_id(var_id_), value(value_) {}
+    Fact(const TaskInterface &interface_, int var_id_, int value_);
     ~Fact() {}
     Variable get_variable() const;
     int get_value() const {return value; }
@@ -60,7 +59,10 @@ public:
     ~Variable() {}
     int get_id() const {return id; }
     int get_domain_size() const {return interface.get_variable_domain_size(id); }
-    Fact get_fact(int index) const {return Fact(interface, id, index); }
+    Fact get_fact(int index) const {
+        assert(index < get_domain_size());
+        return Fact(interface, id, index);
+    }
 };
 
 
@@ -71,7 +73,10 @@ public:
         : interface(interface_) {}
     ~Variables() {}
     std::size_t size() const {return interface.get_num_variables(); }
-    Variable operator[](std::size_t index) const {return Variable(interface, index); }
+    Variable operator[](std::size_t index) const {
+        assert(index < size());
+        return Variable(interface, index);
+    }
 };
 
 
@@ -84,6 +89,7 @@ public:
     ~Preconditions() {}
     std::size_t size() const {return interface.get_num_operator_preconditions(op_index, is_axiom); }
     Fact operator[](std::size_t fact_index) const {
+        assert(fact_index < size());
         std::pair<int, int> fact =
             interface.get_operator_precondition(op_index, fact_index, is_axiom);
         return Fact(interface, fact.first, fact.second);
@@ -104,6 +110,7 @@ public:
         return interface.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
     Fact operator[](std::size_t index) const {
+        assert(index < size());
         std::pair<int, int> fact =
             interface.get_operator_effect_condition(op_index, eff_index, index, is_axiom);
         return Fact(interface, fact.first, fact.second);
@@ -141,6 +148,7 @@ public:
     ~Effects() {}
     std::size_t size() const {return interface.get_num_operator_effects(op_index, is_axiom); }
     Effect operator[](std::size_t eff_index) const {
+        assert(eff_index < size());
         return Effect(interface, op_index, eff_index, is_axiom);
     }
 };
@@ -172,6 +180,7 @@ public:
     ~Operators() {}
     std::size_t size() const {return interface.get_num_operators(); }
     Operator operator[](std::size_t index) const {
+        assert(index < size());
         return Operator(interface, index, false);
     }
 };
@@ -185,6 +194,7 @@ public:
     ~Axioms() {}
     std::size_t size() const {return interface.get_num_axioms(); }
     Operator operator[](std::size_t index) const {
+        assert(index < size());
         return Operator(interface, index, true);
     }
 };
@@ -197,6 +207,7 @@ public:
     ~Goals() {}
     std::size_t size() const {return interface.get_num_goals(); }
     Fact operator[](std::size_t index) const {
+        assert(index < size());
         std::pair<int, int> fact = interface.get_goal_fact(index);
         return Fact(interface, fact.first, fact.second);
     }

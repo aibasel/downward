@@ -48,7 +48,6 @@ public:
 
     int get_num_goals() const {return g_goal.size(); }
     std::pair<int, int> get_goal_fact(int index) const {
-        assert(index < get_num_goals());
         return g_goal[index];
     }
 };
