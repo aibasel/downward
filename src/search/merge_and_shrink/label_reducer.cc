@@ -198,7 +198,8 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
             local_equivalence_relations[i] = transition_system->compute_local_equivalence_relation();
         } else {
             //cout << "use cached local equivalence relation" << endl;
-            assert(transition_system->is_normalized());
+            if (!transition_system->is_normalized())
+                exit_with(EXIT_CRITICAL_ERROR);
         }
         relation->refine(*local_equivalence_relations[i]);
     }
