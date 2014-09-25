@@ -4,19 +4,15 @@
 #include "label.h"
 
 #include "../equivalence_relation.h"
-#include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
-#include <ext/hash_map>
 #include <iostream>
 #include <limits>
 
 using namespace std;
-using namespace __gnu_cxx;
 
 LabelReducer::LabelReducer(const Options &options)
     : label_reduction_method(LabelReductionMethod(options.get_enum("label_reduction_method"))),
@@ -43,21 +39,6 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
     int num_transition_systems = all_transition_systems.size();
 
     if (label_reduction_method == NONE) {
-        return;
-    }
-
-    if (label_reduction_method == OLD) {
-        // We need to normalize all transition systems to incorporate possible previous
-        // label reductions, because normalize cannot deal with several label
-        // reductions at once.
-        for (int i = 0; i < num_transition_systems; ++i) {
-            if (all_transition_systems[i]) {
-                all_transition_systems[i]->normalize();
-            }
-        }
-        assert(all_transition_systems[next_merge.first]->get_varset().size() >=
-               all_transition_systems[next_merge.second]->get_varset().size());
-        reduce_old(all_transition_systems[next_merge.first]->get_varset(), labels);
         return;
     }
 
@@ -151,143 +132,11 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         delete local_equivalence_relations[i];
 }
 
-
-typedef pair<int, int> Assignment;
-
-struct LabelSignature {
-    vector<int> data;
-
-    LabelSignature(const vector<Assignment> &preconditions,
-                   const vector<Assignment> &effects, int cost) {
-        // We require that preconditions and effects are sorted by
-        // variable -- some sort of canonical representation is needed
-        // to guarantee that we can properly test for uniqueness.
-        for (size_t i = 0; i < preconditions.size(); ++i) {
-            if (i != 0)
-                assert(preconditions[i].first > preconditions[i - 1].first);
-            data.push_back(preconditions[i].first);
-            data.push_back(preconditions[i].second);
-        }
-        data.push_back(-1); // marker
-        for (size_t i = 0; i < effects.size(); ++i) {
-            if (i != 0)
-                assert(effects[i].first > effects[i - 1].first);
-            data.push_back(effects[i].first);
-            data.push_back(effects[i].second);
-        }
-        data.push_back(-1); // marker
-        data.push_back(cost);
-    }
-
-    bool operator==(const LabelSignature &other) const {
-        return data == other.data;
-    }
-
-    size_t hash() const {
-        return ::hash_number_sequence(data, data.size());
-    }
-};
-
-namespace __gnu_cxx {
-template<>
-struct hash<LabelSignature> {
-    size_t operator()(const LabelSignature &sig) const {
-        return sig.hash();
-    }
-};
-}
-
-LabelSignature LabelReducer::build_label_signature(
-    const Label &label,
-    const vector<bool> &var_is_used) const {
-    vector<Assignment> preconditions;
-    vector<Assignment> effects;
-
-    const vector<GlobalCondition> &precs = label.get_preconditions();
-    for (size_t i = 0; i < precs.size(); ++i) {
-        int var = precs[i].var;
-        if (var_is_used[var]) {
-            int val = precs[i].val;
-            preconditions.push_back(make_pair(var, val));
-        }
-    }
-    const vector<GlobalEffect> &effs = label.get_effects();
-    for (size_t i = 0; i < effs.size(); ++i) {
-        int var = effs[i].var;
-        if (var_is_used[var]) {
-            int post = effs[i].val;
-            effects.push_back(make_pair(var, post));
-        }
-    }
-    ::sort(preconditions.begin(), preconditions.end());
-    ::sort(effects.begin(), effects.end());
-
-    return LabelSignature(preconditions, effects, label.get_cost());
-}
-
-bool LabelReducer::reduce_old(const vector<int> &abs_vars,
-                              vector<Label *> &labels) const {
-    int num_labels = 0;
-    int num_labels_after_reduction = 0;
-
-    vector<bool> var_is_used(g_variable_domain.size(), true);
-    for (size_t i = 0; i < abs_vars.size(); ++i)
-        var_is_used[abs_vars[i]] = false;
-
-    hash_map<LabelSignature, vector<Label *> > reduced_label_map;
-    // TODO: consider combining reduced_label_signature and is_label_reduced
-    // into a set or hash-set (is_label_reduced only serves to make sure
-    // that every label signature is pushed at most once into reduced_label_signatures).
-    // The questions is if iterating over the set or hash set is efficient
-    // (and produces the same result, because we would then very probably
-    // settle for different 'canonical labels' because the ordering would be
-    // lost).
-    hash_map<LabelSignature, bool> is_label_reduced;
-    vector<LabelSignature> reduced_label_signatures;
-
-    for (size_t i = 0; i < labels.size(); ++i) {
-        Label *label = labels[i];
-        if (label->is_reduced()) {
-            // ignore already reduced labels
-            continue;
-        }
-        ++num_labels;
-        LabelSignature signature = build_label_signature(
-            *label, var_is_used);
-
-        if (!reduced_label_map.count(signature)) {
-            is_label_reduced[signature] = false;
-            ++num_labels_after_reduction;
-        } else {
-            assert(is_label_reduced.count(signature));
-            if (!is_label_reduced[signature]) {
-                is_label_reduced[signature] = true;
-                reduced_label_signatures.push_back(signature);
-            }
-        }
-        reduced_label_map[signature].push_back(label);
-    }
-    assert(num_labels_after_reduction ==
-           static_cast<int>(reduced_label_map.size()));
-
-    for (size_t i = 0; i < reduced_label_signatures.size(); ++i) {
-        const LabelSignature &signature = reduced_label_signatures[i];
-        const vector<Label *> &reduced_labels = reduced_label_map[signature];
-        Label *new_label = new CompositeLabel(labels.size(), reduced_labels);
-        labels.push_back(new_label);
-    }
-
-    cout << "Old, local label reduction: "
-         << num_labels << " labels, "
-         << num_labels_after_reduction << " after reduction"
-         << endl;
-    return num_labels - num_labels_after_reduction;
-}
-
-EquivalenceRelation *LabelReducer::compute_outside_equivalence(int abs_index,
-                                                               const vector<TransitionSystem *> &all_transition_systems,
-                                                               const vector<Label *> &labels,
-                                                               vector<EquivalenceRelation *> &local_equivalence_relations) const {
+EquivalenceRelation *LabelReducer::compute_outside_equivalence(
+        int abs_index,
+        const vector<TransitionSystem *> &all_transition_systems,
+        const vector<Label *> &labels,
+        vector<EquivalenceRelation *> &local_equivalence_relations) const {
     /*Returns an equivalence relation over labels s.t. l ~ l'
     iff l and l' are locally equivalent in all transition systems
     T' \neq T. (They may or may not be locally equivalent in T.) */
@@ -381,9 +230,6 @@ void LabelReducer::dump_options() const {
     switch (label_reduction_method) {
     case NONE:
         cout << "disabled";
-        break;
-    case OLD:
-        cout << "old";
         break;
     case TWO_TRANSITION_SYSTEMS:
         cout << "two transition systems (which will be merged next)";

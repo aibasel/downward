@@ -151,9 +151,20 @@ void TransitionSystem::compute_distances() {
         return;
     }
 
+    bool is_unit_cost = true;
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+        if (relevant_labels[label_no]) {
+            const Label *label = labels->get_label_by_index(label_no);
+            if (label->get_cost() != 1) {
+                is_unit_cost = false;
+                break;
+            }
+        }
+    }
+
     init_distances.resize(num_states, INF);
     goal_distances.resize(num_states, INF);
-    if (labels->is_unit_cost()) {
+    if (is_unit_cost) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
@@ -588,8 +599,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<GlobalCondition> &preconditions = label->get_preconditions();
-        const vector<GlobalEffect> &effects = label->get_effects();
+        const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(label);
+        const vector<GlobalCondition> &preconditions = op_label->get_preconditions();
+        const vector<GlobalEffect> &effects = op_label->get_effects();
         hash_map<int, int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (size_t i = 0; i < preconditions.size(); ++i)
@@ -716,8 +728,8 @@ AtomicTransitionSystem::~AtomicTransitionSystem() {
 }
 
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
-                                           TransitionSystem *abs1,
-                                           TransitionSystem *abs2)
+                                                     TransitionSystem *abs1,
+                                                     TransitionSystem *abs2)
     : TransitionSystem(labels) {
     cout << "Merging " << abs1->description() << " and "
          << abs2->description() << endl;
