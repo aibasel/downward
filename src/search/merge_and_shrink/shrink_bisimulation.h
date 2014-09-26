@@ -24,8 +24,8 @@ class ShrinkBisimulation : public ShrinkStrategy {
     const AtLimit at_limit;
 
     void compute_abstraction(TransitionSystem &ts,
-        int target_size,
-        EquivalenceRelation &equivalence_relation);
+                             int target_size,
+                             EquivalenceRelation &equivalence_relation);
 
     int initialize_groups(const TransitionSystem &ts,
                           std::vector<int> &state_to_group);
