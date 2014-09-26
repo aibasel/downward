@@ -30,6 +30,11 @@
         (void)0 \
     )
 
+#define UNUSED_PARAMETER(p) \
+    ( \
+        (void)p \
+    )
+
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
     EXIT_CRITICAL_ERROR = 1,
