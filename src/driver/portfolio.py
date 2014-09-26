@@ -68,35 +68,49 @@ def set_limit(kind, soft, hard):
               (kind, (soft, hard), err, resource.getrlimit(kind)), file=sys.stderr)
 
 
-def get_plan_cost(sas_plan_file):
-    with open(sas_plan_file) as input_file:
-        for line in input_file:
-            match = re.match(r"; cost = (\d+)\n", line)
-            if match:
-                return int(match.group(1))
-    os.remove(sas_plan_file)
-    print("Could not retrieve plan cost from %s. Deleted the file." % sas_plan_file)
-    return None
-
-
 def get_plan_file(prefix, number):
     return "%s.%d" % (prefix, number)
 
 
-def get_g_bound_and_number_of_plans(plan_file):
-    plan_costs = []
+def get_plan_files(plan_file):
+    plan_files = []
     for index in itertools.count(start=1):
         sas_plan_file = get_plan_file(plan_file, index)
         if os.path.exists(sas_plan_file):
-            plan_cost = get_plan_cost(sas_plan_file)
-            if plan_cost is not None:
-                if plan_costs and not plan_costs[-1] > plan_cost:
-                    raise SystemExit(
-                        "Plan costs must decrease: %s" %
-                        " -> ".join(str(c) for c in plan_costs + [plan_cost]))
-                plan_costs.append(plan_cost)
+            plan_files.append(sas_plan_file)
         else:
             break
+    return plan_files
+
+
+def get_plan_cost_and_cost_type(sas_plan_file):
+    with open(sas_plan_file) as input_file:
+        for line in input_file:
+            match = re.match(r"; cost = (\d+) \((unit-cost|general-cost)\)\n", line)
+            if match:
+                return int(match.group(1)), match.group(2)
+    os.remove(sas_plan_file)
+    print("Could not retrieve plan cost from %s. Deleted the file." % sas_plan_file)
+    return None, None
+
+
+def get_cost_type(plan_file):
+    for sas_plan_file in get_plan_files(plan_file):
+        _, cost_type = get_plan_cost_and_cost_type(sas_plan_file)
+        if cost_type is not None:
+            return cost_type
+
+
+def get_g_bound_and_number_of_plans(plan_file):
+    plan_costs = []
+    for sas_plan_file in get_plan_files(plan_file):
+        plan_cost, _ = get_plan_cost_and_cost_type(sas_plan_file)
+        if plan_cost is not None:
+            if plan_costs and not plan_costs[-1] > plan_cost:
+                raise SystemExit(
+                    "Plan costs must decrease: %s" %
+                    " -> ".join(str(c) for c in plan_costs + [plan_cost]))
+            plan_costs.append(plan_cost)
     bound = min(plan_costs) if plan_costs else "infinity"
     return bound, len(plan_costs)
 
@@ -201,7 +215,7 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
                       memory)
 
 
-def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
+def run_sat(configs, executable, sas_file, plan_file, final_config,
             final_config_builder, remaining_time_at_start, memory):
     exitcodes = []
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
@@ -227,9 +241,9 @@ def run_sat(configs, unitcost, executable, sas_file, plan_file, final_config,
 
             if exitcode == EXIT_PLAN_FOUND:
                 configs_next_round.append(configs[pos][:])
-                if (not changed_cost_types and unitcost != "unit" and
-                        can_change_cost_type(args)):
-                    # Switch to real cost and repeat last run.
+                if (not changed_cost_types and can_change_cost_type(args) and
+                        get_cost_type(plan_file) == "general-cost"):
+                    print("Switch to real costs and repeat last run.")
                     changed_cost_types = True
                     search_cost_type = "normal"
                     heuristic_cost_type = "plusone"
@@ -332,15 +346,6 @@ def run(portfolio, executable, sas_file, plan_file):
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
     timeout = attributes.get("TIMEOUT")
-    # TODO: Remove or parse input_file with input_analyzer.is_unit_cost?
-    #       If we remove this we will run the first satisficing FDSS
-    #       configuration that finds a solution twice. This might
-    #       be wasted effort, but the second run will use the lower
-    #       g_bound. For all portfolios that do not use H_COST_TYPE and
-    #       S_COST_TYPE, knowing whether the task has unit costs is
-    #       irrelevant. I see no easy way of using the new --if-unit-cost
-    #       for this problem.
-    unitcost = "nonunit"
 
     # Time limits are either positive values in seconds or -1 (unlimited).
     soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
@@ -382,7 +387,7 @@ def run(portfolio, executable, sas_file, plan_file):
         exitcodes = run_opt(configs, executable, sas_file, plan_file,
                             remaining_time_at_start, memory)
     else:
-        exitcodes = run_sat(configs, unitcost, executable, sas_file, plan_file,
+        exitcodes = run_sat(configs, executable, sas_file, plan_file,
                             final_config, final_config_builder,
                             remaining_time_at_start, memory)
     exitcode = generate_exitcode(exitcodes)
