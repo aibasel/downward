@@ -43,7 +43,9 @@ void register_event_handlers() {
     signal(SIGTERM, signal_handler);
     signal(SIGSEGV, signal_handler);
     signal(SIGINT, signal_handler);
+#if OPERATING_SYSTEM != WINDOWS
     signal(SIGXCPU, signal_handler);
+#endif
 }
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
@@ -110,6 +112,8 @@ void signal_handler(int signal_number) {
 }
 
 int get_peak_memory_in_kb(bool use_buffered_input) {
+    // Because of -Werror=unused-parameter we have to do something with the parameter
+    UNUSED_PARAMETER(use_buffered_input);
     // On error, produces a warning on cerr and returns -1.
     int memory_in_kb = -1;
 
