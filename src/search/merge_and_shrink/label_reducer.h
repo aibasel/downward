@@ -43,10 +43,10 @@ class LabelReducer {
 
     // exact label reduction
     EquivalenceRelation *compute_outside_equivalence(
-            int ts_index,
-            const std::vector<TransitionSystem *> &all_transition_systems,
-            const std::vector<Label *> &labels,
-            std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
+        int ts_index,
+        const std::vector<TransitionSystem *> &all_transition_systems,
+        const std::vector<Label *> &labels,
+        std::vector<EquivalenceRelation *> &local_equivalence_relations) const;
     // returns true iff at least one new label has been created
     bool reduce_exactly(const EquivalenceRelation *relation,
                         std::vector<Label *> &labels) const;

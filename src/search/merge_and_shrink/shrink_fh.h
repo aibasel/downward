@@ -38,9 +38,9 @@ private:
     const HighLow h_start;
 
     void ordered_buckets_use_vector(const TransitionSystem &ts,
-        std::vector<Bucket> &buckets) const;
+                                    std::vector<Bucket> &buckets) const;
     void ordered_buckets_use_map(const TransitionSystem &ts,
-        std::vector<Bucket> &buckets) const;
+                                 std::vector<Bucket> &buckets) const;
 protected:
     virtual std::string name() const;
     virtual void dump_strategy_specific_options() const;
