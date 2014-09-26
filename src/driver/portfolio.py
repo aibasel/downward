@@ -68,43 +68,43 @@ def set_limit(kind, soft, hard):
               (kind, (soft, hard), err, resource.getrlimit(kind)), file=sys.stderr)
 
 
-def get_plan_file(prefix, number):
-    return "%s.%d" % (prefix, number)
+def get_plan_cost_and_cost_type(plan_file):
+    with open(plan_file) as input_file:
+        for line in input_file:
+            match = re.match(r"; cost = (\d+) \((unit-cost|general-cost)\)\n", line)
+            if match:
+                return int(match.group(1)), match.group(2)
+    os.remove(plan_file)
+    print("Could not retrieve plan cost from %s. Deleted the file." % plan_file)
+    return None, None
 
 
-def get_plan_files(plan_file):
+def get_plan_file(plan_prefix, number):
+    return "%s.%d" % (plan_prefix, number)
+
+
+def get_plan_files(plan_prefix):
     plan_files = []
     for index in itertools.count(start=1):
-        sas_plan_file = get_plan_file(plan_file, index)
-        if os.path.exists(sas_plan_file):
-            plan_files.append(sas_plan_file)
+        plan_file = get_plan_file(plan_prefix, index)
+        if os.path.exists(plan_file):
+            plan_files.append(plan_file)
         else:
             break
     return plan_files
 
 
-def get_plan_cost_and_cost_type(sas_plan_file):
-    with open(sas_plan_file) as input_file:
-        for line in input_file:
-            match = re.match(r"; cost = (\d+) \((unit-cost|general-cost)\)\n", line)
-            if match:
-                return int(match.group(1)), match.group(2)
-    os.remove(sas_plan_file)
-    print("Could not retrieve plan cost from %s. Deleted the file." % sas_plan_file)
-    return None, None
-
-
-def get_cost_type(plan_file):
-    for sas_plan_file in get_plan_files(plan_file):
-        _, cost_type = get_plan_cost_and_cost_type(sas_plan_file)
+def get_cost_type(plan_prefix):
+    for plan_file in get_plan_files(plan_prefix):
+        _, cost_type = get_plan_cost_and_cost_type(plan_file)
         if cost_type is not None:
             return cost_type
 
 
-def get_g_bound_and_number_of_plans(plan_file):
+def get_g_bound_and_number_of_plans(plan_prefix):
     plan_costs = []
-    for sas_plan_file in get_plan_files(plan_file):
-        plan_cost, _ = get_plan_cost_and_cost_type(sas_plan_file)
+    for plan_file in get_plan_files(plan_prefix):
+        plan_cost, _ = get_plan_cost_and_cost_type(plan_file)
         if plan_cost is not None:
             if plan_costs and not plan_costs[-1] > plan_cost:
                 raise SystemExit(
@@ -115,8 +115,8 @@ def get_g_bound_and_number_of_plans(plan_file):
     return bound, len(plan_costs)
 
 
-def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
-    g_bound, plan_no = get_g_bound_and_number_of_plans(plan_file)
+def adapt_search(args, search_cost_type, heuristic_cost_type, plan_prefix):
+    g_bound, plan_no = get_g_bound_and_number_of_plans(plan_prefix)
     for index, arg in enumerate(args):
         if arg == "--heuristic":
             heuristic = args[index + 1]
@@ -128,9 +128,9 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
                 if "plan_counter=PLANCOUNTER" not in search:
                     raise ValueError("When using iterated search, we must add "
                                      "the option plan_counter=PLANCOUNTER")
-                curr_plan_file = plan_file
+                plan_file = plan_prefix
             else:
-                curr_plan_file = get_plan_file(plan_file, plan_no + 1)
+                plan_file = get_plan_file(plan_prefix, plan_no + 1)
             for name, value in [
                     ("BOUND", g_bound),
                     ("PLANCOUNTER", plan_no),
@@ -141,11 +141,11 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_file):
             break
     print("g bound: %s" % g_bound)
     print("next plan number: %d" % (plan_no + 1))
-    return curr_plan_file
+    return plan_file
 
 
-def run_search(executable, args, sas_file, curr_plan_file, timeout=None, memory=None):
-    complete_args = [executable] + args + ["--plan-file", curr_plan_file]
+def run_search(executable, args, sas_file, plan_file, timeout=None, memory=None):
+    complete_args = [executable] + args + ["--plan-file", plan_file]
     print("args: %s" % complete_args)
     sys.stdout.flush()
 
@@ -203,19 +203,18 @@ def determine_timeout(remaining_time_at_start, configs, pos):
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
-                   executable, sas_file, plan_file, remaining_time_at_start,
+                   executable, sas_file, plan_prefix, remaining_time_at_start,
                    memory):
     args = list(configs[pos][1])
-    curr_plan_file = adapt_search(args, search_cost_type,
-                                  heuristic_cost_type, plan_file)
+    plan_file = adapt_search(args, search_cost_type, heuristic_cost_type,
+                             plan_prefix)
     run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
     if run_timeout <= 0:
         return None
-    return run_search(executable, args, sas_file, curr_plan_file, run_timeout,
-                      memory)
+    return run_search(executable, args, sas_file, plan_file, run_timeout, memory)
 
 
-def run_sat(configs, executable, sas_file, plan_file, final_config,
+def run_sat(configs, executable, sas_file, plan_prefix, final_config,
             final_config_builder, remaining_time_at_start, memory):
     exitcodes = []
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
@@ -230,7 +229,7 @@ def run_sat(configs, executable, sas_file, plan_file, final_config,
             args = list(args)
             exitcode = run_sat_config(
                 configs, pos, search_cost_type, heuristic_cost_type,
-                executable, sas_file, plan_file, remaining_time_at_start,
+                executable, sas_file, plan_prefix, remaining_time_at_start,
                 memory)
             if exitcode is None:
                 return exitcodes
@@ -242,14 +241,14 @@ def run_sat(configs, executable, sas_file, plan_file, final_config,
             if exitcode == EXIT_PLAN_FOUND:
                 configs_next_round.append(configs[pos][:])
                 if (not changed_cost_types and can_change_cost_type(args) and
-                        get_cost_type(plan_file) == "general-cost"):
+                        get_cost_type(plan_prefix) == "general-cost"):
                     print("Switch to real costs and repeat last run.")
                     changed_cost_types = True
                     search_cost_type = "normal"
                     heuristic_cost_type = "plusone"
                     exitcode = run_sat_config(
                         configs, pos, search_cost_type, heuristic_cost_type,
-                        executable, sas_file, plan_file,
+                        executable, sas_file, plan_prefix,
                         remaining_time_at_start, memory)
                     if exitcode is None:
                         return exitcodes
@@ -272,19 +271,19 @@ def run_sat(configs, executable, sas_file, plan_file, final_config,
         print("Abort portfolio and run final config.")
         exitcode = run_sat_config(
             [(1, list(final_config))], 0, search_cost_type,
-            heuristic_cost_type, executable, sas_file, plan_file,
+            heuristic_cost_type, executable, sas_file, plan_prefix,
             remaining_time_at_start, memory)
         if exitcode is not None:
             exitcodes.append(exitcode)
     return exitcodes
 
 
-def run_opt(configs, executable, sas_file, plan_file, remaining_time_at_start,
+def run_opt(configs, executable, sas_file, plan_prefix, remaining_time_at_start,
             memory):
     exitcodes = []
     for pos, (relative_time, args) in enumerate(configs):
         timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        exitcode = run_search(executable, args, sas_file, plan_file, timeout, memory)
+        exitcode = run_search(executable, args, sas_file, plan_prefix, timeout, memory)
         exitcodes.append(exitcode)
 
         if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
@@ -339,7 +338,7 @@ def get_portfolio_attributes(portfolio):
     return attributes
 
 
-def run(portfolio, executable, sas_file, plan_file):
+def run(portfolio, executable, sas_file, plan_prefix):
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
@@ -384,10 +383,10 @@ def run(portfolio, executable, sas_file, plan_file):
     print("remaining time at start: %.2f" % remaining_time_at_start)
 
     if optimal:
-        exitcodes = run_opt(configs, executable, sas_file, plan_file,
+        exitcodes = run_opt(configs, executable, sas_file, plan_prefix,
                             remaining_time_at_start, memory)
     else:
-        exitcodes = run_sat(configs, executable, sas_file, plan_file,
+        exitcodes = run_sat(configs, executable, sas_file, plan_prefix,
                             final_config, final_config_builder,
                             remaining_time_at_start, memory)
     exitcode = generate_exitcode(exitcodes)
