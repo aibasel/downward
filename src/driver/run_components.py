@@ -5,7 +5,7 @@ import os.path
 import subprocess
 import sys
 
-import portfolio
+import portfolio_runner
 
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -50,7 +50,7 @@ def run_search(args):
 
     if args.portfolio:
         assert not args.search_options
-        portfolio.run(
+        portfolio_runner.run(
             args.portfolio, executable, args.search_input, args.plan_file)
     else:
         if "--plan-file" not in args.search_options:

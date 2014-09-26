@@ -18,8 +18,6 @@ the process is started.
 
 __all__ = ["run"]
 
-# TODO: Rename portfolio.py to portfolio_runner.py
-
 import itertools
 import math
 import os
