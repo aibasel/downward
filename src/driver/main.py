@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import resource
 import subprocess
 import sys
 
@@ -16,9 +15,6 @@ from . import run_components
 def main():
     args = arguments.parse_args()
     print("*** processed args: %s" % args)
-
-    # TODO: Get rid of this:
-    # raise SystemExit("stopping to debug arg parsing")
 
     if args.show_aliases:
         aliases.show_aliases()
