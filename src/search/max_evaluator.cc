@@ -40,7 +40,7 @@ static ScalarEvaluator *create(const vector<string> &config,
         throw ParseError(end);
     // need at least one evaluator
 
-    end++;
+    ++end;
     if (config[end] != ")")
         throw ParseError(end);
 

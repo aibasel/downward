@@ -4,7 +4,7 @@
 #include "../option_parser.h"
 #include "../utilities.h"
 
-#include "../merge_and_shrink/variable_order_finder.h"
+#include "../variable_order_finder.h"
 #include <vector>
 
 using namespace std;
@@ -26,7 +26,8 @@ static void validate_and_normalize_pattern(
     if (!pattern.empty()) {
         if (pattern.front() < 0)
             parser.error("variable number too low in pattern");
-        if (pattern.back() >= g_variable_domain.size())
+        int num_variables = g_variable_domain.size();
+        if (pattern.back() >= num_variables)
             parser.error("variable number too high in pattern");
     }
 }
@@ -62,7 +63,7 @@ static void build_pattern_for_size_limit(
         parser.error("abstraction size must be at least 1");
 
     VariableOrderFinder order(GOAL_CG_LEVEL);
-    size_t size = 1;
+    int size = 1;
     while (true) {
         if (order.done())
             break;
@@ -107,10 +108,12 @@ static void build_singleton_patterns(
 }
 
 void parse_pattern(OptionParser &parser, Options &opts) {
-    parser.add_option<int>("max_states",
+    parser.add_option<int>(
+        "max_states",
         "maximal number of abstract states in the pattern database",
         "1000000");
-    parser.add_list_option<int>("pattern",
+    parser.add_list_option<int>(
+        "pattern",
         "list of variable numbers of the planning task that should be used as pattern. "
         "Default: the variables are selected automatically based on a simple greedy strategy.",
         "",
