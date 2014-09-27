@@ -25,7 +25,13 @@ CONFIGS = {
             + 'greedy=false,group_by_h=true)))'],
         'astar_ipdb': [
             '--search',
-            'astar(ipdb)'],
+            'astar(ipdb())'],
+        'astar_pdb': [
+            '--search',
+            'astar(pdb())'],
+        'astar_gapdb': [
+            '--search',
+            'astar(gapdb())'],
 }
 
 exp = common_setup.IssueExperiment(
