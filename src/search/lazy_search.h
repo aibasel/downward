@@ -1,20 +1,21 @@
 #ifndef LAZY_SEARCH_H
 #define LAZY_SEARCH_H
 
-#include <vector>
+#include "global_state.h"
+#include "scalar_evaluator.h"
+#include "search_engine.h"
+#include "search_progress.h"
+#include "search_space.h"
 
 #include "open_lists/open_list.h"
-#include "search_engine.h"
-#include "state.h"
-#include "scalar_evaluator.h"
-#include "search_space.h"
-#include "search_progress.h"
 
+#include <vector>
+
+class GlobalOperator;
 class Heuristic;
-class Operator;
 class Options;
 
-typedef std::pair<StateID, const Operator *> OpenListEntryLazy;
+typedef std::pair<StateID, const GlobalOperator *> OpenListEntryLazy;
 
 class LazySearch : public SearchEngine {
 protected:
@@ -29,9 +30,9 @@ protected:
     std::vector<Heuristic *> preferred_operator_heuristics;
     std::vector<Heuristic *> estimate_heuristics;
 
-    State current_state;
+    GlobalState current_state;
     StateID current_predecessor_id;
-    const Operator *current_operator;
+    const GlobalOperator *current_operator;
     int current_g;
     int current_real_g;
 
@@ -43,7 +44,7 @@ protected:
 
     void reward_progress();
 
-    void get_successor_operators(std::vector<const Operator *> &ops);
+    void get_successor_operators(std::vector<const GlobalOperator *> &ops);
 public:
 
     LazySearch(const Options &opts);

@@ -4,10 +4,10 @@
 #include "util.h"
 
 #include "../globals.h"
-#include "../operator.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../plugin.h"
 #include "../priority_queue.h"
-#include "../state.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -87,16 +87,18 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
                                 vector<pair<int, int> > &eff_pairs,
                                 const vector<pair<int, int> > &effects_without_pre,
                                 vector<AbstractOperator> &operators) {
-    if (pos == effects_without_pre.size()) { // all effects withouth precondition have been checked, insert op
+    if (pos == static_cast<int>(effects_without_pre.size())) {
+        // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
             operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers));
             relevant_operators[op_no] = true;
         }
     } else {
-        // for each possible value for the current variable, build an abstract operator
+        // For each possible value for the current variable, build an
+        // abstract operator.
         int var = effects_without_pre[pos].first;
         int eff = effects_without_pre[pos].second;
-        for (size_t i = 0; i < g_variable_domain[pattern[var]]; ++i) {
+        for (int i = 0; i < g_variable_domain[pattern[var]]; ++i) {
             if (i != eff) {
                 pre_pairs.push_back(make_pair(var, i));
                 eff_pairs.push_back(make_pair(var, eff));
@@ -117,20 +119,20 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
 
 void PDBHeuristic::build_abstract_operators(
     int op_no, vector<AbstractOperator> &operators) {
-    const Operator &op = g_operators[op_no];
+    const GlobalOperator &op = g_operators[op_no];
     vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
     vector<pair<int, int> > pre_pairs; // all variable value pairs that are a precondition (value != -1)
     vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect
     vector<pair<int, int> > effects_without_pre; // all variable value pairs that are a precondition (value = -1)
 
-    const vector<Condition> &preconditions = op.get_preconditions();
-    const vector<Effect> &effects = op.get_effects();
+    const vector<GlobalCondition> &preconditions = op.get_preconditions();
+    const vector<GlobalEffect> &effects = op.get_effects();
     vector<bool> has_precond_and_effect_on_var(g_variable_domain.size(), false);
     vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
 
     for (size_t i = 0; i < preconditions.size(); ++i)
         has_precondition_on_var[preconditions[i].var] = true;
-    
+
     for (size_t i = 0; i < effects.size(); ++i) {
         if (variable_to_index[effects[i].var] != -1) {
             if (has_precondition_on_var[effects[i].var]) {
@@ -236,7 +238,7 @@ bool PDBHeuristic::is_goal_state(const size_t state_index, const vector<pair<int
     return true;
 }
 
-size_t PDBHeuristic::hash_index(const State &state) const {
+size_t PDBHeuristic::hash_index(const GlobalState &state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
         index += hash_multipliers[i] * state[pattern[i]];
@@ -247,7 +249,7 @@ size_t PDBHeuristic::hash_index(const State &state) const {
 void PDBHeuristic::initialize() {
 }
 
-int PDBHeuristic::compute_heuristic(const State &state) {
+int PDBHeuristic::compute_heuristic(const GlobalState &state) {
     int h = distances[hash_index(state)];
     if (h == numeric_limits<int>::max())
         return DEAD_END;

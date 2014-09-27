@@ -45,6 +45,6 @@ int CombiningEvaluator::get_value() const {
 }
 
 void CombiningEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
-    for (unsigned int i = 0; i < subevaluators.size(); i++)
+    for (size_t i = 0; i < subevaluators.size(); ++i)
         subevaluators[i]->get_involved_heuristics(hset);
 }

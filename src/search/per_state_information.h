@@ -1,9 +1,9 @@
 #ifndef PER_STATE_INFORMATION_H
 #define PER_STATE_INFORMATION_H
 
+#include "global_state.h"
 #include "globals.h"
 #include "segmented_vector.h"
-#include "state.h"
 #include "state_id.h"
 #include "state_registry.h"
 #include "utilities.h"
@@ -52,7 +52,7 @@ template<class Entry>
 class PerStateInformation : public PerStateInformationBase {
     const Entry default_value;
     typedef __gnu_cxx::hash_map<const StateRegistry *,
-        SegmentedVector<Entry> *, hash_pointer > EntryVectorMap;
+                                SegmentedVector<Entry> *, hash_pointer > EntryVectorMap;
     EntryVectorMap entries_by_registry;
 
     mutable const StateRegistry *cached_registry;
@@ -102,7 +102,7 @@ class PerStateInformation : public PerStateInformationBase {
 
     // No implementation to forbid copies and assignment
     PerStateInformation(const PerStateInformation<Entry> &);
-    PerStateInformation & operator=(const PerStateInformation<Entry> &);
+    PerStateInformation &operator=(const PerStateInformation<Entry> &);
 public:
     // TODO this iterates over StateIDs not over entries. Move it to StateRegistry?
     //      A better implementation would allow to iterate over pair<StateID, Entry>.
@@ -116,13 +116,13 @@ public:
         const_iterator(const PerStateInformation<Entry> &owner_,
                        const StateRegistry *registry_, size_t start)
             : owner(owner_), registry(registry_), pos(start) {}
-    public:
-        const_iterator(const const_iterator& other)
+public:
+        const_iterator(const const_iterator &other)
             : owner(other.owner), registry(other.registry), pos(other.pos) {}
 
         ~const_iterator() {}
 
-        const_iterator& operator++() {
+        const_iterator &operator++() {
             ++pos.value;
             return *this;
         }
@@ -133,11 +133,11 @@ public:
             return tmp;
         }
 
-        bool operator==(const const_iterator& rhs) {
+        bool operator==(const const_iterator &rhs) {
             return &owner == &rhs.owner && registry == rhs.registry && pos == rhs.pos;
         }
 
-        bool operator!=(const const_iterator& rhs) {
+        bool operator!=(const const_iterator &rhs) {
             return !(*this == rhs);
         }
 
@@ -177,27 +177,28 @@ public:
         }
     }
 
-    Entry &operator[](const State &state) {
+    Entry &operator[](const GlobalState &state) {
         const StateRegistry *registry = &state.get_registry();
         SegmentedVector<Entry> *entries = get_entries(registry);
         int state_id = state.get_id().value;
         size_t virtual_size = registry->size();
-        assert(state_id >= 0 && state_id < virtual_size);
+        assert(in_bounds(state_id, *registry));
         if (entries->size() < virtual_size) {
             entries->resize(virtual_size, default_value);
         }
         return (*cached_entries)[state_id];
     }
 
-    const Entry &operator[](const State &state) const {
+    const Entry &operator[](const GlobalState &state) const {
         const StateRegistry *registry = &state.get_registry();
         const SegmentedVector<Entry> *entries = get_entries(registry);
         if (!entries) {
             return default_value;
         }
         int state_id = state.get_id().value;
-        assert(state_id >= 0 && state_id < registry->size());
-        if (state_id >= entries->size()) {
+        assert(in_bounds(state_id, *registry));
+        int num_entries = entries->size();
+        if (state_id >= num_entries) {
             return default_value;
         }
         return (*entries)[state_id];

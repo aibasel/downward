@@ -40,8 +40,8 @@ public:
 };
 
 // Implements a single PDB
-class Operator;
-class State;
+class GlobalOperator;
+class GlobalState;
 class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;
 
@@ -86,10 +86,10 @@ class PDBHeuristic : public Heuristic {
 
     /* The given concrete state is used to calculate the index of the according abstract state. This is only used
        for table lookup (distances) during search. */
-    size_t hash_index(const State &state) const;
+    size_t hash_index(const GlobalState &state) const;
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     /* Important: It is assumed that the pattern (passed via Options) is small enough so that the number of
                   abstract states is below numeric_limits<int>::max()

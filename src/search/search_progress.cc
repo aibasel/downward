@@ -42,14 +42,14 @@ void SearchProgress::report_f_value(int f) {
 }
 
 void SearchProgress::get_initial_h_values() {
-    for (unsigned int i = 0; i < heuristics.size(); i++) {
+    for (size_t i = 0; i < heuristics.size(); ++i) {
         initial_h_values.push_back(heuristics[i]->get_heuristic());
     }
 }
 
 bool SearchProgress::check_h_progress(int g) {
     bool progress = false;
-    for (int i = 0; i < heuristics.size(); i++) {
+    for (size_t i = 0; i < heuristics.size(); ++i) {
         if (heuristics[i]->is_dead_end())
             continue;
         int h = heuristics[i]->get_heuristic();
@@ -74,7 +74,7 @@ void SearchProgress::print_f_line() const {
 
 void SearchProgress::print_h_line(int g) const {
     cout << "Best heuristic value: ";
-    for (int i = 0; i < heuristics.size(); i++) {
+    for (size_t i = 0; i < heuristics.size(); ++i) {
         cout << best_heuristic_values[i];
         if (i != heuristics.size() - 1)
             cout << "/";
@@ -99,7 +99,7 @@ void SearchProgress::print_statistics() const {
         // This will be skipped in the cumulative statistics of an
         // iterated search, which do not have initial h values.
         cout << "Initial state h value: ";
-        for (int i = 0; i < initial_h_values.size(); i++) {
+        for (size_t i = 0; i < initial_h_values.size(); ++i) {
             cout << initial_h_values[i];
             if (i != initial_h_values.size() - 1)
                 cout << "/";

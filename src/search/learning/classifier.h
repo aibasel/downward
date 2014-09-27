@@ -1,8 +1,8 @@
 #ifndef LEARNING_CLASSIFIER_H
 #define LEARNING_CLASSIFIER_H
 
-#include "../state.h"
 #include "feature_extractor.h"
+#include "../global_state.h"
 
 enum classifier_t {NB = 0, AODE = 1};
 
