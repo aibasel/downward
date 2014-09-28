@@ -31,8 +31,7 @@
     )
 
 template<typename T>
-void unused_parameter(T p) {
-    (void)p;
+void unused_parameter(const T &) {
 }
 
 enum ExitCode {
