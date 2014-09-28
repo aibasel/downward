@@ -30,10 +30,10 @@
         (void)0 \
     )
 
-#define UNUSED_PARAMETER(p) \
-    ( \
-        (void)p \
-    )
+template<typename T>
+void unused_parameter(T p) {
+    (void)p;
+}
 
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
