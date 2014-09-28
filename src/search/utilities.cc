@@ -44,7 +44,8 @@ void register_event_handlers() {
     signal(SIGSEGV, signal_handler);
     signal(SIGINT, signal_handler);
 #if OPERATING_SYSTEM != WINDOWS
-    signal(SIGXCPU, signal_handler);
+    // This causes problems, see issue479.
+    //signal(SIGXCPU, signal_handler);
 #endif
 }
 
