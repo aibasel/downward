@@ -133,10 +133,10 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
 }
 
 EquivalenceRelation *LabelReducer::compute_outside_equivalence(
-        int ts_index,
-        const vector<TransitionSystem *> &all_transition_systems,
-        const vector<Label *> &labels,
-        vector<EquivalenceRelation *> &local_equivalence_relations) const {
+    int ts_index,
+    const vector<TransitionSystem *> &all_transition_systems,
+    const vector<Label *> &labels,
+    vector<EquivalenceRelation *> &local_equivalence_relations) const {
     /*Returns an equivalence relation over labels s.t. l ~ l'
     iff l and l' are locally equivalent in all transition systems
     T' \neq T. (They may or may not be locally equivalent in T.) */
