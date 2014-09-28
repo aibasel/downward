@@ -15,7 +15,7 @@ MergeLinear::MergeLinear(const Options &opts)
       need_first_index(true) {
 }
 
-pair<int, int> MergeLinear::get_next(const std::vector<Abstraction *> &all_abstractions) {
+pair<int, int> MergeLinear::get_next(const std::vector<TransitionSystem *> &all_transition_systems) {
     assert(!done() && !order.done());
 
     int first;
@@ -24,14 +24,14 @@ pair<int, int> MergeLinear::get_next(const std::vector<Abstraction *> &all_abstr
         first = order.next();
         cout << "First variable: " << first << endl;
     } else {
-        // The most recent composite abstraction is appended at the end of
-        // all_abstractions in merge_and_shrink.cc
-        first = all_abstractions.size() - 1;
+        // The most recent composite transition system is appended at the end of
+        // all_transition_systems in merge_and_shrink.cc
+        first = all_transition_systems.size() - 1;
     }
     int second = order.next();
     cout << "Next variable: " << second << endl;
-    assert(all_abstractions[first]);
-    assert(all_abstractions[second]);
+    assert(all_transition_systems[first]);
+    assert(all_transition_systems[second]);
     --remaining_merges;
     if (done() && !order.done()) {
         cerr << "Variable order finder not done, but no merges remaining" << endl;
@@ -62,7 +62,7 @@ static MergeStrategy *_parse(OptionParser &parser) {
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
     parser.add_enum_option("variable_order", merge_strategies,
-                           "the order in which atomic abstractions are merged",
+                           "the order in which atomic transition systems are merged",
                            "CG_GOAL_LEVEL");
 
     Options opts = parser.parse();
