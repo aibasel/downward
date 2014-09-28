@@ -11,8 +11,7 @@
 
 using namespace std;
 
-Labels::Labels(bool unit_cost_, const Options &options, OperatorCost cost_type)
-    : unit_cost(unit_cost_) {
+Labels::Labels(const Options &options, OperatorCost cost_type) {
     label_reducer = new LabelReducer(options);
     if (!g_operators.empty())
         labels.reserve(g_operators.size() * 2 - 1);
@@ -27,8 +26,8 @@ Labels::~Labels() {
 }
 
 void Labels::reduce(pair<int, int> next_merge,
-                    const std::vector<Abstraction *> &all_abstractions) {
-    label_reducer->reduce_labels(next_merge, all_abstractions, labels);
+                    const std::vector<TransitionSystem *> &all_transition_systems) {
+    label_reducer->reduce_labels(next_merge, all_transition_systems, labels);
 }
 
 const Label *Labels::get_label_by_index(int index) const {

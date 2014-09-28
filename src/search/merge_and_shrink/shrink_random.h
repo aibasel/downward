@@ -7,8 +7,7 @@ class Options;
 
 class ShrinkRandom : public ShrinkBucketBased {
 protected:
-    virtual void partition_into_buckets(
-        const Abstraction &abs, std::vector<Bucket> &buckets) const;
+    virtual void partition_into_buckets(const TransitionSystem &ts, std::vector<Bucket> &buckets) const;
 
     virtual std::string name() const;
 public:
