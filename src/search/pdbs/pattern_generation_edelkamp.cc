@@ -120,6 +120,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     }
 
     pattern.assign(in_pruned_pattern.begin(), in_pruned_pattern.end());
+    sort(pattern.begin(), pattern.end());
 }
 
 bool PatternGenerationEdelkamp::is_pattern_too_large(
