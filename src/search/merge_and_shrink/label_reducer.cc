@@ -59,20 +59,37 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         EquivalenceRelation *relation = compute_outside_equivalence(
             next_merge.first, all_transition_systems,
             labels, local_equivalence_relations);
-        reduce_exactly(relation, labels);
+        bool have_reduced = reduce_exactly(relation, labels);
+        if (have_reduced) {
+            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+                if (all_transition_systems[i]) {
+                    all_transition_systems[i]->apply_label_reduction();
+                    if (local_equivalence_relations[i]) {
+                        delete local_equivalence_relations[i];
+                        local_equivalence_relations[i] = 0;
+                    }
+                }
+            }
+        }
         delete relation;
 
         relation = compute_outside_equivalence(
             next_merge.second, all_transition_systems,
             labels, local_equivalence_relations);
-        reduce_exactly(relation, labels);
+        have_reduced = reduce_exactly(relation, labels);
+        if (have_reduced) {
+            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+                if (all_transition_systems[i]) {
+                    all_transition_systems[i]->apply_label_reduction();
+                    if (local_equivalence_relations[i]) {
+                        delete local_equivalence_relations[i];
+                        local_equivalence_relations[i] = 0;
+                    }
+                }
+            }
+        }
         delete relation;
 
-        for (size_t i = 0; i < local_equivalence_relations.size(); ++i) {
-            if (all_transition_systems[i])
-                all_transition_systems[i]->apply_label_reduction();
-            delete local_equivalence_relations[i];
-        }
         return;
     }
 
