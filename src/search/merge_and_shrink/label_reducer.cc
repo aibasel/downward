@@ -114,8 +114,13 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         if (have_reduced) {
             num_unsuccessful_iterations = 0;
             for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-                if (all_transition_systems[i])
+                if (all_transition_systems[i]) {
                     all_transition_systems[i]->apply_label_reduction();
+                    if (local_equivalence_relations[i]) {
+                        delete local_equivalence_relations[i];
+                        local_equivalence_relations[i] = 0;
+                    }
+                }
             }
         } else {
             ++num_unsuccessful_iterations;
@@ -158,10 +163,10 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     if (!transition_system->is_normalized()) {
         exit_with(EXIT_CRITICAL_ERROR);
     }
-    if (local_equivalence_relations[ts_index]) {
-        delete local_equivalence_relations[ts_index];
-        local_equivalence_relations[ts_index] = 0;
-    }
+//    if (local_equivalence_relations[ts_index]) {
+//        delete local_equivalence_relations[ts_index];
+//        local_equivalence_relations[ts_index] = 0;
+//    }
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
@@ -184,10 +189,10 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
         }
         //if (!ts->is_normalized()) {
         //    ts->normalize();
-            if (local_equivalence_relations[i]) {
-                delete local_equivalence_relations[i];
-                local_equivalence_relations[i] = 0;
-            }
+//            if (local_equivalence_relations[i]) {
+//                delete local_equivalence_relations[i];
+//                local_equivalence_relations[i] = 0;
+//            }
         //}
         if (!ts->is_normalized()) {
             exit_with(EXIT_CRITICAL_ERROR);
