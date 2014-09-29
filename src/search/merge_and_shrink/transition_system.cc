@@ -995,6 +995,12 @@ void TransitionSystem::apply_abstraction(
         clear_distances();
     }
 
+    // Observation from some experiments in the context of making transition
+    // systems always be valid: including the normalize below or not
+    // drastically seems to influence memory usage. Memory usage increases a
+    // lot if normalizing here after every shrink. The reason for this is
+    // somewhat unclear.
+
     // TODO do not check if transitions are sorted but just assume they are not?
     if (!are_transitions_sorted_unique())
         normalize();
