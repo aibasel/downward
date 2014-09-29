@@ -13,11 +13,15 @@ using namespace std;
 
 Labels::Labels(const Options &options, OperatorCost cost_type) {
     label_reducer = new LabelReducer(options);
-    if (!g_operators.empty())
+    if (!g_operators.empty()) {
+        if (g_operators.size() * 2 - 1 > labels.max_size())
+            exit_with(EXIT_OUT_OF_MEMORY);
         labels.reserve(g_operators.size() * 2 - 1);
+    }
     for (size_t i = 0; i < g_operators.size(); ++i) {
         labels.push_back(new OperatorLabel(i, get_adjusted_action_cost(g_operators[i], cost_type),
-                                           g_operators[i].get_preconditions(), g_operators[i].get_effects()));
+                                           g_operators[i].get_preconditions(),
+                                           g_operators[i].get_effects()));
     }
 }
 
