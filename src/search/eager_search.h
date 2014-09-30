@@ -29,7 +29,6 @@ class EagerSearch : public SearchEngine {
 protected:
     SearchStatus step();
     std::pair<SearchNode, bool> fetch_next_node();
-    bool check_goal(const SearchNode &node);
     void update_jump_statistic(const SearchNode &node);
     void print_heuristic_values(const std::vector<int> &values) const;
     void reward_progress();
