@@ -7,10 +7,12 @@ import sys
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
 from lab.experiment import ARGPARSER
+from lab.reports import Table
 from lab.steps import Step
 
 from downward.experiments import DownwardExperiment, _get_rev_nick
 from downward.checkouts import Translator, Preprocessor, Planner
+from downward.reports import PlanningReport
 from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
@@ -345,3 +347,53 @@ class IssueExperiment(DownwardExperiment):
                         report(self.eval_dir, os.path.join(scatter_dir, name))
 
         self.add_step(Step("make-scatter-plots", make_scatter_plots))
+
+
+class RegressionReport(PlanningReport):
+    """
+    Compare revisions for tasks on which the first revision performs
+    better than other revisions.
+
+    *revision_nicks* must be a list of revision_nicks, e.g.
+    ["default", "issue123"].
+
+    *config_nicks* must be a list of configuration nicknames, e.g.
+    ["eager_greedy_ff", "eager_greedy_add"].
+
+    *regression_attribute* is the attribute that we compare between
+    different revisions. It defaults to "coverage".
+
+    Example comparing search_time for tasks were we lose coverage::
+
+        exp.add_report(RegressionReport(revision_nicks=["default", "issue123"],
+                                        config_nicks=["eager_greedy_ff"],
+                                        regression_attribute="coverage",
+                                        attributes="search_time"))
+    """
+    def __init__(self, revision_nicks, config_nicks,
+                 regression_attribute="coverage", **kwargs):
+        PlanningReport.__init__(self, **kwargs)
+        assert revision_nicks
+        self.revision_nicks = revision_nicks
+        assert config_nicks
+        self.config_nicks = config_nicks
+        self.regression_attribute = regression_attribute
+
+    def get_markup(self):
+        tables = []
+        for (domain, problem) in self.problems:
+            for config_nick in self.config_nicks:
+                runs = [self.runs[(domain, problem, rev + "-" + config_nick)]
+                        for rev in self.revision_nicks]
+
+                if any(runs[0][self.regression_attribute] >
+                       runs[i][self.regression_attribute]
+                       for i in range(1, len(self.revision_nicks))):
+                    print "\"%s:%s\"," % (domain, problem)
+                    table = Table()
+                    for rev, run in zip(self.revision_nicks, runs):
+                        for attr in self.attributes:
+                            table.add_cell(rev, attr, run.get(attr))
+                    table_name = ":".join((domain, problem, config_nick))
+                    tables.append((table_name, table))
+        return "\n".join(name + "\n" + str(table) for name, table in tables)
