@@ -34,10 +34,12 @@ exp = common_setup.IssueExperiment(
     )
 exp.add_search_parser("custom-parser.py")
 
-exp.add_absolute_report_step(attributes=exp.DEFAULT_TABLE_ATTRIBUTES + ["init_time"])
-exp.add_comparison_table_step()
+attributes = attributes=exp.DEFAULT_TABLE_ATTRIBUTES + ["init_time"]
+exp.add_absolute_report_step(attributes=attributes)
+exp.add_comparison_table_step(attributes=attributes)
 exp.add_report(common_setup.RegressionReport(
     revision_nicks=exp.revision_nicks,
-    config_nicks=CONFIGS.keys()))
+    config_nicks=CONFIGS.keys(),
+    attributes=attributes))
 
 exp()
