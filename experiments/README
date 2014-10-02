@@ -15,8 +15,13 @@ performed:
     suite_satisficing_with_ipc11.
 
 * Add a custom log parser:
-  * issue214/issue214.py
-  * alternatively use exp.add_search_parser()
+  * issue439/regressions.py
+
+* Compare all attributes for tasks where we lose coverage:
+  * issue439/regressions.py
+
+* Use custom time limit:
+  * issue439/issue439.py
 
 * Add scatter plots for custom attributes:
   * issue214/issue214.py
