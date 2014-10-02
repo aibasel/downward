@@ -60,7 +60,7 @@ EXPECTED_EXITCODES = set([
 def set_limit(kind, soft, hard):
     try:
         resource.setrlimit(kind, (soft, hard))
-    except (OSError, ValueError), err:
+    except (OSError, ValueError) as err:
         # This can happen if the limit has already been set externally.
         print("Limit for %s could not be set to %s (%s). Previous limit: %s" %
               (kind, (soft, hard), err, resource.getrlimit(kind)), file=sys.stderr)
@@ -320,15 +320,17 @@ def can_change_cost_type(args):
 
 def get_portfolio_attributes(portfolio):
     attributes = {}
-    try:
-        execfile(portfolio, attributes)
-    except ImportError as err:
-        if str(err) == "No module named portfolio":
-            raise ValueError(
-                "The portfolio format has changed. New portfolios may only "
-                "define attributes. See the FDSS portfolios for examples.")
-        else:
-            raise
+    with open(portfolio) as portfolio_file:
+        content = portfolio_file.read()
+        try:
+            exec(content, attributes)
+        except ImportError as err:
+            if str(err) == "No module named portfolio":
+                raise ValueError(
+                    "The portfolio format has changed. New portfolios may only "
+                    "define attributes. See the FDSS portfolios for examples.")
+            else:
+                raise
     if "CONFIGS" not in attributes:
         raise ValueError("portfolios must define CONFIGS")
     if "OPTIMAL" not in attributes:

@@ -6,7 +6,7 @@ import os.path
 import subprocess
 import sys
 
-import portfolio_runner
+from . import portfolio_runner
 
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
