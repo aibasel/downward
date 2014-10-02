@@ -4,7 +4,6 @@ from __future__ import print_function
 import subprocess
 import sys
 
-from . import aliases
 from . import arguments
 from . import run_components
 
@@ -15,10 +14,6 @@ from . import run_components
 def main():
     args = arguments.parse_args()
     print("*** processed args: %s" % args)
-
-    if args.show_aliases:
-        aliases.show_aliases()
-        sys.exit()
 
     try:
         for component in args.components:
