@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 import os.path
 import subprocess
@@ -25,28 +26,26 @@ def call_cmd(cmd, args, stdin=None):
 
 
 def run_translate(args):
-    print "*** Running translator."
-    print "*** translator inputs: %s" % args.translate_inputs
-    print "*** translator arguments: %s" % args.translate_options
+    logging.info("Running translator.")
+    logging.info("translator inputs: %s" % args.translate_inputs)
+    logging.info("translator arguments: %s" % args.translate_options)
     call_cmd(TRANSLATE, args.translate_inputs + args.translate_options)
-    print "***"
 
 
 def run_preprocess(args):
-    print "*** Running preprocessor."
-    print "*** preprocessor arguments: %s" % args.preprocess_options
+    logging.info("Running preprocessor.")
+    logging.info("preprocessor arguments: %s" % args.preprocess_options)
     call_cmd(PREPROCESS, args.preprocess_options, stdin=args.preprocess_input)
-    print "***"
 
 
 def run_search(args):
-    print "*** Running search."
+    logging.info("Running search.")
 
     if args.debug:
         executable = os.path.join(SEARCH_DIR, "downward-debug")
     else:
         executable = os.path.join(SEARCH_DIR, "downward-release")
-    print "*** executable:", executable
+    logging.info("executable: %s" % executable)
 
     if args.portfolio:
         assert not args.search_options
@@ -55,6 +54,5 @@ def run_search(args):
     else:
         if "--plan-file" not in args.search_options:
             args.search_options.extend(["--plan-file", args.plan_file])
-        print "*** final search options:", args.search_options
+        logging.info("final search options: %s" % args.search_options)
         call_cmd(executable, args.search_options, stdin=args.search_input)
-    print "***"

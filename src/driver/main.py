@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import logging
 import subprocess
 import sys
 
@@ -12,6 +13,8 @@ from . import run_components
 
 
 def main():
+    logging.basicConfig(level=logging.INFO,
+                        format="%(levelname)-8s %(message)s")
     args = arguments.parse_args()
     print("*** processed args: %s" % args)
 
