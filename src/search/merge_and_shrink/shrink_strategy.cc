@@ -36,18 +36,13 @@ void ShrinkStrategy::dump_strategy_specific_options() const {
 }
 
 bool ShrinkStrategy::must_shrink(
-    const TransitionSystem &ts, int threshold, bool force) const {
+    const TransitionSystem &ts, int threshold) const {
     assert(threshold >= 1);
     assert(ts.is_solvable());
     int num_states = ts.size();
     if (num_states > threshold) {
         cout << ts.tag() << "shrink from size " << num_states
              << " (threshold: " << threshold << ")" << endl;
-        return true;
-    }
-    if (force) {
-        cout << ts.tag()
-             << "shrink forced to prune unreachable/irrelevant states" << endl;
         return true;
     }
     return false;
