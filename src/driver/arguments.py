@@ -64,11 +64,14 @@ def _split_planner_args(parser, args):
             curr_options.append(option)
 
 
-def _check_arg_conflicts(parser, possible_conflicts):
-    for pos, (name1, is_specified1) in enumerate(possible_conflicts):
-        for name2, is_specified2 in possible_conflicts[pos + 1:]:
+def _check_mutex_args(parser, args, required=False):
+    for pos, (name1, is_specified1) in enumerate(args):
+        for name2, is_specified2 in args[pos + 1:]:
             if is_specified1 and is_specified2:
                 parser.error("cannot combine %s with %s" % (name1, name2))
+    if required and not any(is_specified for _, is_specified in args):
+        parser.error("exactly one of {%s} has to be specified" %
+            ", ".join(name for name, _ in args))
 
 
 def _looks_like_search_input(filename):
@@ -194,10 +197,11 @@ def parse_args():
 
     _split_planner_args(parser, args)
 
-    _check_arg_conflicts(parser, [
+    _check_mutex_args(parser, [
             ("--alias", args.alias is not None),
             ("--portfolio", args.portfolio is not None),
-            ("options for search component", bool(args.search_options))])
+            ("options for search component", bool(args.search_options))],
+        required=True)
 
     if args.alias:
         try:
