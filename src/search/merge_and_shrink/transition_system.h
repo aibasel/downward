@@ -87,6 +87,7 @@ class TransitionSystem {
     void compute_goal_distances_unit_cost();
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
+    void discard_states(const std::vector<bool> &to_be_pruned_states);
 
     // are_transitions_sorted_unique() is used to determine whether the
     // transitions of an transition system are sorted uniquely or not after

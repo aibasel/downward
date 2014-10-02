@@ -123,6 +123,37 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
     }
 }
 
+void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
+    /* Call shrink to discard unreachable and irrelevant states.
+       The strategy must be one that prunes unreachable/irrelevant
+       notes, but beyond that the details don't matter, as there
+       is no need to actually shrink. So faster methods should be
+       preferred. */
+
+    /* TODO: Create a dedicated shrinking strategy from scratch,
+       e.g. a bucket-based one that simply generates one good and
+       one bad bucket? */
+
+    // TODO/HACK: The way this is created is of course unspeakably
+    // ugly. We'll leave this as is for now because there will likely
+    // be more structural changes soon.
+//    ShrinkStrategy *shrink_temp = ShrinkFH::create_default(num_states);
+//    shrink_temp->shrink(*this, num_states, true);
+//    delete shrink_temp;
+
+    assert(int(to_be_pruned_states.size()) == num_states);
+    vector<slist<AbstractStateRef> > equivalence_relation;
+    equivalence_relation.reserve(num_states - to_be_pruned_states.size());
+    for (int state = 0; state < num_states; ++state) {
+        if (!to_be_pruned_states[state]) {
+            slist<AbstractStateRef> group;
+            group.push_front(state);
+            equivalence_relation.push_back(group);
+        }
+    }
+    apply_abstraction(equivalence_relation);
+}
+
 bool TransitionSystem::are_distances_computed() const {
     if (max_h == DISTANCE_UNKNOWN) {
         assert(max_f == DISTANCE_UNKNOWN);
@@ -179,6 +210,7 @@ void TransitionSystem::compute_distances() {
     max_h = 0;
 
     int unreachable_count = 0, irrelevant_count = 0;
+    vector<bool> to_be_pruned_states(num_states, false);
     for (int i = 0; i < num_states; ++i) {
         int g = init_distances[i];
         int h = goal_distances[i];
@@ -187,8 +219,10 @@ void TransitionSystem::compute_distances() {
         // course.)
         if (g == INF) {
             ++unreachable_count;
+            to_be_pruned_states[i] = true;
         } else if (h == INF) {
             ++irrelevant_count;
+            to_be_pruned_states[i] = true;
         } else {
             max_f = max(max_f, g + h);
             max_g = max(max_g, g);
@@ -199,22 +233,7 @@ void TransitionSystem::compute_distances() {
         cout << tag()
              << "unreachable: " << unreachable_count << " states, "
              << "irrelevant: " << irrelevant_count << " states" << endl;
-        /* Call shrink to discard unreachable and irrelevant states.
-           The strategy must be one that prunes unreachable/irrelevant
-           notes, but beyond that the details don't matter, as there
-           is no need to actually shrink. So faster methods should be
-           preferred. */
-
-        /* TODO: Create a dedicated shrinking strategy from scratch,
-           e.g. a bucket-based one that simply generates one good and
-           one bad bucket? */
-
-        // TODO/HACK: The way this is created is of course unspeakably
-        // ugly. We'll leave this as is for now because there will likely
-        // be more structural changes soon.
-        ShrinkStrategy *shrink_temp = ShrinkFH::create_default(num_states);
-        shrink_temp->shrink(*this, num_states, true);
-        delete shrink_temp;
+        discard_states(to_be_pruned_states);
     }
 }
 
