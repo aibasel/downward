@@ -130,7 +130,7 @@ public:
     //       a mutable attribute?
 
     bool are_distances_computed() const;
-    void compute_distances();
+    void compute_distances_and_prune();
     bool is_normalized() const;
     void normalize();
     EquivalenceRelation *compute_local_equivalence_relation() const;
