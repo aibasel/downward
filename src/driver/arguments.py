@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import sys
 
 from . import aliases
 
@@ -194,6 +195,10 @@ def parse_args():
     # --help" passes "--help" to the search code.
 
     args = parser.parse_args()
+
+    if args.show_aliases:
+        aliases.show_aliases()
+        sys.exit()
 
     _split_planner_args(parser, args)
 
