@@ -102,7 +102,7 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
     }
     // distances must be computed
     if (max_h == DISTANCE_UNKNOWN) {
-        compute_distances();
+        compute_distances_and_prune();
     }
     assert(label_ranks.empty());
     label_ranks.reserve(transitions_by_label.size());
@@ -124,26 +124,9 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
 }
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
-    /* Call shrink to discard unreachable and irrelevant states.
-       The strategy must be one that prunes unreachable/irrelevant
-       notes, but beyond that the details don't matter, as there
-       is no need to actually shrink. So faster methods should be
-       preferred. */
-
-    /* TODO: Create a dedicated shrinking strategy from scratch,
-       e.g. a bucket-based one that simply generates one good and
-       one bad bucket? */
-
-    // TODO/HACK: The way this is created is of course unspeakably
-    // ugly. We'll leave this as is for now because there will likely
-    // be more structural changes soon.
-//    ShrinkStrategy *shrink_temp = ShrinkFH::create_default(num_states);
-//    shrink_temp->shrink(*this, num_states, true);
-//    delete shrink_temp;
-
     assert(int(to_be_pruned_states.size()) == num_states);
     vector<slist<AbstractStateRef> > equivalence_relation;
-    equivalence_relation.reserve(num_states - to_be_pruned_states.size());
+    equivalence_relation.reserve(num_states);
     for (int state = 0; state < num_states; ++state) {
         if (!to_be_pruned_states[state]) {
             slist<AbstractStateRef> group;
@@ -165,7 +148,13 @@ bool TransitionSystem::are_distances_computed() const {
     return true;
 }
 
-void TransitionSystem::compute_distances() {
+void TransitionSystem::compute_distances_and_prune() {
+    // This method has two responsabilities:
+    // It computes distances and then removes all unreachable or irrelevant
+    // states.
+    // Note that as a side effect, this method not only sets init_distances
+    // and goal_distances, but also max_f, max_g and max_h.
+
     cout << tag() << flush;
     if (are_distances_computed()) {
         cout << "distances already known" << endl;

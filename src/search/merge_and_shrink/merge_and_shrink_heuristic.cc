@@ -92,8 +92,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
 
         // distances need to be computed before shrinking
-        transition_system->compute_distances();
-        other_transition_system->compute_distances();
+        transition_system->compute_distances_and_prune();
+        other_transition_system->compute_distances_and_prune();
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -148,7 +148,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
     }
 
-    final_transition_system->compute_distances();
+    final_transition_system->compute_distances_and_prune();
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 
