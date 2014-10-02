@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 
 import os
 
@@ -157,7 +158,7 @@ for portfolio in os.listdir(PORTFOLIO_DIR):
 
 def show_aliases():
     for alias in sorted(ALIASES.keys() + PORTFOLIOS.keys()):
-        print alias
+        print(alias)
 
 
 def set_options_for_alias(alias_name, args):
