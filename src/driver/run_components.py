@@ -52,6 +52,9 @@ def run_search(args):
         portfolio_runner.run(
             args.portfolio, executable, args.search_input, args.plan_file)
     else:
+        if not args.search_options:
+            raise SystemExit(
+                "search needs --alias, --portfolio, or search options")
         if "--plan-file" not in args.search_options:
             args.search_options.extend(["--plan-file", args.plan_file])
         logging.info("final search options: %s" % args.search_options)

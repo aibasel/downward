@@ -5,6 +5,7 @@ import logging
 import subprocess
 import sys
 
+from . import aliases
 from . import arguments
 from . import run_components
 
@@ -18,6 +19,10 @@ def main():
                         stream=sys.stdout)
     args = arguments.parse_args()
     print("*** processed args: %s" % args)
+
+    if args.show_aliases:
+        aliases.show_aliases()
+        sys.exit()
 
     try:
         for component in args.components:
