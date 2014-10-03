@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import sys
 
 from . import aliases
 
@@ -196,11 +195,12 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if args.show_aliases:
-        aliases.show_aliases()
-        sys.exit()
-
     _split_planner_args(parser, args)
+
+    _check_mutex_args(parser, [
+            ("--alias", args.alias is not None),
+            ("--portfolio", args.portfolio is not None),
+            ("options for search component", bool(args.search_options))])
 
     if args.alias:
         try:
@@ -209,11 +209,5 @@ def parse_args():
             parser.error("unknown alias: %r" % args.alias)
 
     _set_components_and_inputs(parser, args)
-
-    _check_mutex_args(parser, [
-            ("--alias", args.alias is not None),
-            ("--portfolio", args.portfolio is not None),
-            ("options for search component", bool(args.search_options))],
-        required=bool("search" in args.components))
 
     return args
