@@ -14,7 +14,8 @@ from . import run_components
 
 def main():
     logging.basicConfig(level=logging.INFO,
-                        format="%(levelname)-8s %(message)s")
+                        format="%(levelname)-8s %(message)s",
+                        stream=sys.stdout)
     args = arguments.parse_args()
     print("*** processed args: %s" % args)
 
