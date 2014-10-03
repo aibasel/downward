@@ -202,12 +202,6 @@ def parse_args():
 
     _split_planner_args(parser, args)
 
-    _check_mutex_args(parser, [
-            ("--alias", args.alias is not None),
-            ("--portfolio", args.portfolio is not None),
-            ("options for search component", bool(args.search_options))],
-        required=True)
-
     if args.alias:
         try:
             aliases.set_options_for_alias(args.alias, args)
@@ -215,5 +209,11 @@ def parse_args():
             parser.error("unknown alias: %r" % args.alias)
 
     _set_components_and_inputs(parser, args)
+
+    _check_mutex_args(parser, [
+            ("--alias", args.alias is not None),
+            ("--portfolio", args.portfolio is not None),
+            ("options for search component", bool(args.search_options))],
+        required=bool("search" in args.components))
 
     return args
