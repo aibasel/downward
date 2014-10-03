@@ -5,11 +5,11 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -93,9 +93,9 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     assert(are_additive.empty());
     int num_vars = g_variable_domain.size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
-    for (size_t k = 0; k < g_operators.size(); ++k) {
-        const Operator &o = g_operators[k];
-        const vector<PrePost> effects = o.get_pre_post();
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        const GlobalOperator &o = g_operators[i];
+        const vector<GlobalEffect> effects = o.get_effects();
         for (size_t e1 = 0; e1 < effects.size(); ++e1) {
             for (size_t e2 = 0; e2 < effects.size(); ++e2) {
                 are_additive[effects[e1].var][effects[e2].var] = false;
@@ -128,7 +128,7 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
 void CanonicalPDBsHeuristic::initialize() {
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
+int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &state) {
     int max_h = 0;
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
@@ -223,7 +223,7 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
-void CanonicalPDBsHeuristic::evaluate_dead_end(const State &state) {
+void CanonicalPDBsHeuristic::evaluate_dead_end(const GlobalState &state) {
     int evaluator_value = 0;
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
         pattern_databases[i]->evaluate(state);
@@ -271,7 +271,8 @@ void CanonicalPDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Canonical PDB",
+    parser.document_synopsis(
+        "Canonical PDB",
         "The canonical pattern database heuristic is calculated as follows. "
         "For a given pattern collection C, the value of the canonical heuristic "
         "function is the maximum over all maximal additive subsets A in C, where "

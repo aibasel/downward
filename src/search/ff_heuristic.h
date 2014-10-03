@@ -21,10 +21,10 @@ class FFHeuristic : public AdditiveHeuristic {
     typedef std::vector<bool> RelaxedPlan;
     RelaxedPlan relaxed_plan;
     void mark_preferred_operators_and_relaxed_plan(
-        const State &state, Proposition *goal);
+        const GlobalState &state, Proposition *goal);
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     FFHeuristic(const Options &options);
     ~FFHeuristic();
