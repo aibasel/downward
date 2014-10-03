@@ -41,7 +41,7 @@ void LazySearch::initialize() {
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
         estimate_heuristics.push_back(*it);
         search_progress.add_heuristic(*it);
     }
@@ -51,21 +51,21 @@ void LazySearch::initialize() {
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); it++) {
+    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
         heuristics.push_back(*it);
     }
     assert(!heuristics.empty());
 }
 
-void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
+void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     assert(ops.empty());
-    vector<const Operator *> all_operators;
-    vector<const Operator *> preferred_operators;
+    vector<const GlobalOperator *> all_operators;
+    vector<const GlobalOperator *> preferred_operators;
 
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
 
-    for (int i = 0; i < preferred_operator_heuristics.size(); i++) {
+    for (size_t i = 0; i < preferred_operator_heuristics.size(); ++i) {
         Heuristic *heur = preferred_operator_heuristics[i];
         if (!heur->is_dead_end())
             heur->get_preferred_operators(preferred_operators);
@@ -80,18 +80,18 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
     }
 
     if (preferred_successors_first) {
-        for (int i = 0; i < preferred_operators.size(); i++) {
+        for (size_t i = 0; i < preferred_operators.size(); ++i) {
             if (!preferred_operators[i]->is_marked()) {
                 ops.push_back(preferred_operators[i]);
                 preferred_operators[i]->mark();
             }
         }
 
-        for (int i = 0; i < all_operators.size(); i++)
+        for (size_t i = 0; i < all_operators.size(); ++i)
             if (!all_operators[i]->is_marked())
                 ops.push_back(all_operators[i]);
     } else {
-        for (int i = 0; i < preferred_operators.size(); i++)
+        for (size_t i = 0; i < preferred_operators.size(); ++i)
             if (!preferred_operators[i]->is_marked())
                 preferred_operators[i]->mark();
         ops.swap(all_operators);
@@ -99,11 +99,11 @@ void LazySearch::get_successor_operators(vector<const Operator *> &ops) {
 }
 
 void LazySearch::generate_successors() {
-    vector<const Operator *> operators;
+    vector<const GlobalOperator *> operators;
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
 
-    for (int i = 0; i < operators.size(); i++) {
+    for (size_t i = 0; i < operators.size(); ++i) {
         int new_g = current_g + get_adjusted_cost(*operators[i]);
         int new_real_g = current_real_g + operators[i]->get_cost();
         bool is_preferred = operators[i]->is_marked();
@@ -117,7 +117,7 @@ void LazySearch::generate_successors() {
     }
 }
 
-int LazySearch::fetch_next_state() {
+SearchStatus LazySearch::fetch_next_state() {
     if (open_list->empty()) {
         cout << "Completely explored state space -- no solution!" << endl;
         return FAILED;
@@ -127,7 +127,7 @@ int LazySearch::fetch_next_state() {
 
     current_predecessor_id = next.first;
     current_operator = next.second;
-    State current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
+    GlobalState current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
     current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
 
@@ -138,7 +138,7 @@ int LazySearch::fetch_next_state() {
     return IN_PROGRESS;
 }
 
-int LazySearch::step() {
+SearchStatus LazySearch::step() {
     // Invariants:
     // - current_state is the next state for which we want to compute the heuristic.
     // - current_predecessor is a permanent pointer to the predecessor of that state.
@@ -156,10 +156,10 @@ int LazySearch::step() {
         if (dummy_id == StateID::no_state) {
             dummy_id = g_initial_state().get_id();
         }
-        State parent_state = g_state_registry->lookup_state(dummy_id);
+        GlobalState parent_state = g_state_registry->lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        for (int i = 0; i < heuristics.size(); i++) {
+        for (size_t i = 0; i < heuristics.size(); ++i) {
             if (current_operator != NULL) {
                 heuristics[i]->reach_state(parent_state, *current_operator, current_state);
             }
@@ -261,29 +261,30 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "If only one evaluator and no preferred operator heuristic is used, "
         "the search does not use an alternation open list "
         "but a standard open list with only one queue.");
-    parser.document_note("Equivalent statements using general lazy search",
-         "\n```\n--heuristic h2=eval2\n"
-         "--search lazy_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
-         "is equivalent to\n"
-         "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
-         "--search lazy(alt([single(h1), single(h1, pref_only=true), single(h2),\n"
-         "                  single(h2, pref_only=true)], boost=100),\n"
-         "              preferred=h2)\n```\n"
-         "------------------------------------------------------------\n"
-         "```\n--search lazy_greedy([eval1, eval2], boost=100)\n```\n"
-         "is equivalent to\n"
-         "```\n--search lazy(alt([single(eval1), single(eval2)], boost=100))\n```\n"
-         "------------------------------------------------------------\n"
-         "```\n--heuristic h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
-         "is equivalent to\n"
-         "```\n--heuristic h1=eval1\n"
-         "--search lazy(alt([single(h1), single(h1, pref_only=true)], boost=1000),\n"
-         "              preferred=h1)\n```\n"
-         "------------------------------------------------------------\n"
-         "```\n--search lazy_greedy(eval1)\n```\n"
-         "is equivalent to\n"
-         "```\n--search lazy(single(eval1))\n```\n",
-         true);
+    parser.document_note(
+        "Equivalent statements using general lazy search",
+        "\n```\n--heuristic h2=eval2\n"
+        "--search lazy_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1 --heuristic h2=eval2\n"
+        "--search lazy(alt([single(h1), single(h1, pref_only=true), single(h2),\n"
+        "                  single(h2, pref_only=true)], boost=100),\n"
+        "              preferred=h2)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search lazy_greedy([eval1, eval2], boost=100)\n```\n"
+        "is equivalent to\n"
+        "```\n--search lazy(alt([single(eval1), single(eval2)], boost=100))\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--heuristic h1=eval1\n--search lazy_greedy(h1, preferred=h1)\n```\n"
+        "is equivalent to\n"
+        "```\n--heuristic h1=eval1\n"
+        "--search lazy(alt([single(h1), single(h1, pref_only=true)], boost=1000),\n"
+        "              preferred=h1)\n```\n"
+        "------------------------------------------------------------\n"
+        "```\n--search lazy_greedy(eval1)\n```\n"
+        "is equivalent to\n"
+        "```\n--search lazy(single(eval1))\n```\n",
+        true);
 
     parser.add_list_option<ScalarEvaluator *>("evals", "scalar evaluators");
     parser.add_list_option<Heuristic *>(
@@ -312,7 +313,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
                                                                  false);
         } else {
             vector<OpenList<OpenListEntryLazy> *> inner_lists;
-            for (int i = 0; i < evals.size(); i++) {
+            for (size_t i = 0; i < evals.size(); ++i) {
                 inner_lists.push_back(
                     new StandardScalarOpenList<OpenListEntryLazy>(evals[i],
                                                                   false));
@@ -346,7 +347,8 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         "In the special case with only one evaluator and no preferred "
         "operator heuristics, it uses a single queue that "
         "is ranked by g + w * h. ");
-    parser.document_note("Equivalent statements using general lazy search",
+    parser.document_note(
+        "Equivalent statements using general lazy search",
         "\n```\n--heuristic h1=eval1\n"
         "--search lazy_wastar([h1, eval2], w=2, preferred=h1,\n"
         "                     bound=100, boost=500)\n```\n"
@@ -398,7 +400,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
         vector<OpenList<OpenListEntryLazy> *> inner_lists;
-        for (int i = 0; i < evals.size(); i++) {
+        for (size_t i = 0; i < evals.size(); ++i) {
             GEvaluator *g = new GEvaluator();
             vector<ScalarEvaluator *> sum_evals;
             sum_evals.push_back(g);

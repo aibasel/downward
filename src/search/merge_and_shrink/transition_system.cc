@@ -1,4 +1,4 @@
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include "label.h"
 #include "labels.h"
@@ -27,7 +27,7 @@ using namespace __gnu_cxx;
 /* Implementation note: Transitions are grouped by their labels,
  not by source state or any such thing. Such a grouping is beneficial
  for fast generation of products because we can iterate operator by
- operator, and it also allows applying abstraction mappings very
+ operator, and it also allows applying transition system mappings very
  efficiently.
 
  We rarely need to be able to efficiently query the successors of a
@@ -40,7 +40,7 @@ using namespace __gnu_cxx;
 
 const int INF = numeric_limits<int>::max();
 
-Abstraction::Abstraction(Labels *labels_)
+TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
       transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
       relevant_labels(transitions_by_label.size(), false),
@@ -48,16 +48,16 @@ Abstraction::Abstraction(Labels *labels_)
     clear_distances();
 }
 
-Abstraction::~Abstraction() {
+TransitionSystem::~TransitionSystem() {
 }
 
-string Abstraction::tag() const {
+string TransitionSystem::tag() const {
     string desc(description());
     desc[0] = toupper(desc[0]);
     return desc + ": ";
 }
 
-void Abstraction::clear_distances() {
+void TransitionSystem::clear_distances() {
     max_f = DISTANCE_UNKNOWN;
     max_g = DISTANCE_UNKNOWN;
     max_h = DISTANCE_UNKNOWN;
@@ -65,37 +65,37 @@ void Abstraction::clear_distances() {
     goal_distances.clear();
 }
 
-int Abstraction::size() const {
+size_t TransitionSystem::size() const {
     return num_states;
 }
 
-int Abstraction::get_max_f() const {
+int TransitionSystem::get_max_f() const {
     return max_f;
 }
 
-int Abstraction::get_max_g() const {
+int TransitionSystem::get_max_g() const {
     return max_g;
 }
 
-int Abstraction::get_max_h() const {
+int TransitionSystem::get_max_h() const {
     return max_h;
 }
 
-int Abstraction::get_label_cost_by_index(int label_no) const {
+int TransitionSystem::get_label_cost_by_index(int label_no) const {
     const Label *label = labels->get_label_by_index(label_no);
     return label->get_cost();
 }
 
-const vector<AbstractTransition> &Abstraction::get_transitions_for_label(int label_no) const {
+const vector<Transition> &TransitionSystem::get_transitions_for_label(int label_no) const {
     return transitions_by_label[label_no];
 }
 
-int Abstraction::get_num_labels() const {
+int TransitionSystem::get_num_labels() const {
     return labels->get_size();
 }
 
-void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
-    // abstraction needs to be normalized when considering labels and their
+void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
+    // transition system needs to be normalized when considering labels and their
     // transitions
     if (!is_normalized()) {
         normalize();
@@ -108,10 +108,10 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
     label_ranks.reserve(transitions_by_label.size());
     for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
         if (relevant_labels[label_no]) {
-            const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
+            const vector<Transition> &transitions = transitions_by_label[label_no];
             int label_rank = INF;
             for (size_t i = 0; i < transitions.size(); ++i) {
-                const AbstractTransition &t = transitions[i];
+                const Transition &t = transitions[i];
                 label_rank = min(label_rank, goal_distances[t.target]);
             }
             // relevant labels with no transitions have a rank of infinity (they
@@ -123,8 +123,8 @@ void Abstraction::compute_label_ranks(vector<int> &label_ranks) {
     }
 }
 
-bool Abstraction::are_distances_computed() const {
-    if (max_h == DISTANCE_UNKNOWN ) {
+bool TransitionSystem::are_distances_computed() const {
+    if (max_h == DISTANCE_UNKNOWN) {
         assert(max_f == DISTANCE_UNKNOWN);
         assert(max_g == DISTANCE_UNKNOWN);
         assert(init_distances.empty());
@@ -134,7 +134,7 @@ bool Abstraction::are_distances_computed() const {
     return true;
 }
 
-void Abstraction::compute_distances() {
+void TransitionSystem::compute_distances() {
     cout << tag() << flush;
     if (are_distances_computed()) {
         cout << "distances already known" << endl;
@@ -151,9 +151,20 @@ void Abstraction::compute_distances() {
         return;
     }
 
+    bool is_unit_cost = true;
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+        if (relevant_labels[label_no]) {
+            const Label *label = labels->get_label_by_index(label_no);
+            if (label->get_cost() != 1) {
+                is_unit_cost = false;
+                break;
+            }
+        }
+    }
+
     init_distances.resize(num_states, INF);
     goal_distances.resize(num_states, INF);
-    if (labels->is_unit_cost()) {
+    if (is_unit_cost) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
@@ -168,16 +179,16 @@ void Abstraction::compute_distances() {
     max_h = 0;
 
     int unreachable_count = 0, irrelevant_count = 0;
-    for (int i = 0; i < num_states; i++) {
+    for (int i = 0; i < num_states; ++i) {
         int g = init_distances[i];
         int h = goal_distances[i];
         // States that are both unreachable and irrelevant are counted
         // as unreachable, not irrelevant. (Doesn't really matter, of
         // course.)
         if (g == INF) {
-            unreachable_count++;
+            ++unreachable_count;
         } else if (h == INF) {
-            irrelevant_count++;
+            ++irrelevant_count;
         } else {
             max_f = max(max_f, g + h);
             max_g = max(max_g, g);
@@ -213,7 +224,7 @@ static void breadth_first_search(
     while (!queue.empty()) {
         int state = queue.front();
         queue.pop_front();
-        for (int i = 0; i < graph[state].size(); i++) {
+        for (size_t i = 0; i < graph[state].size(); ++i) {
             int successor = graph[state][i];
             if (distances[successor] > distances[state] + 1) {
                 distances[successor] = distances[state] + 1;
@@ -223,18 +234,18 @@ static void breadth_first_search(
     }
 }
 
-void Abstraction::compute_init_distances_unit_cost() {
+void TransitionSystem::compute_init_distances_unit_cost() {
     vector<vector<AbstractStateRef> > forward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; label_no++) {
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        for (int j = 0; j < transitions.size(); j++) {
-            const AbstractTransition &trans = transitions[j];
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        const vector<Transition> &transitions = transitions_by_label[label_no];
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const Transition &trans = transitions[j];
             forward_graph[trans.src].push_back(trans.target);
         }
     }
 
     deque<AbstractStateRef> queue;
-    for (AbstractStateRef state = 0; state < num_states; state++) {
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
         if (state == init_state) {
             init_distances[state] = 0;
             queue.push_back(state);
@@ -243,18 +254,18 @@ void Abstraction::compute_init_distances_unit_cost() {
     breadth_first_search(forward_graph, queue, init_distances);
 }
 
-void Abstraction::compute_goal_distances_unit_cost() {
+void TransitionSystem::compute_goal_distances_unit_cost() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; label_no++) {
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        for (int j = 0; j < transitions.size(); j++) {
-            const AbstractTransition &trans = transitions[j];
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        const vector<Transition> &transitions = transitions_by_label[label_no];
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const Transition &trans = transitions[j];
             backward_graph[trans.target].push_back(trans.src);
         }
     }
 
     deque<AbstractStateRef> queue;
-    for (AbstractStateRef state = 0; state < num_states; state++) {
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
         if (goal_states[state]) {
             goal_distances[state] = 0;
             queue.push_back(state);
@@ -275,7 +286,7 @@ static void dijkstra_search(
         assert(state_distance <= distance);
         if (state_distance < distance)
             continue;
-        for (int i = 0; i < graph[state].size(); i++) {
+        for (size_t i = 0; i < graph[state].size(); ++i) {
             const pair<int, int> &transition = graph[state][i];
             int successor = transition.first;
             int cost = transition.second;
@@ -288,13 +299,13 @@ static void dijkstra_search(
     }
 }
 
-void Abstraction::compute_init_distances_general_cost() {
+void TransitionSystem::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; label_no++) {
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         int label_cost = get_label_cost_by_index(label_no);
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        for (int j = 0; j < transitions.size(); j++) {
-            const AbstractTransition &trans = transitions[j];
+        const vector<Transition> &transitions = transitions_by_label[label_no];
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const Transition &trans = transitions[j];
             forward_graph[trans.src].push_back(
                 make_pair(trans.target, label_cost));
         }
@@ -303,7 +314,7 @@ void Abstraction::compute_init_distances_general_cost() {
     // TODO: Reuse the same queue for multiple computations to save speed?
     //       Also see compute_goal_distances_general_cost.
     AdaptiveQueue<int> queue;
-    for (AbstractStateRef state = 0; state < num_states; state++) {
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
         if (state == init_state) {
             init_distances[state] = 0;
             queue.push(0, state);
@@ -312,13 +323,13 @@ void Abstraction::compute_init_distances_general_cost() {
     dijkstra_search(forward_graph, queue, init_distances);
 }
 
-void Abstraction::compute_goal_distances_general_cost() {
+void TransitionSystem::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; label_no++) {
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         int label_cost = get_label_cost_by_index(label_no);
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        for (int j = 0; j < transitions.size(); j++) {
-            const AbstractTransition &trans = transitions[j];
+        const vector<Transition> &transitions = transitions_by_label[label_no];
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const Transition &trans = transitions[j];
             backward_graph[trans.target].push_back(
                 make_pair(trans.src, label_cost));
         }
@@ -327,7 +338,7 @@ void Abstraction::compute_goal_distances_general_cost() {
     // TODO: Reuse the same queue for multiple computations to save speed?
     //       Also see compute_init_distances_general_cost.
     AdaptiveQueue<int> queue;
-    for (AbstractStateRef state = 0; state < num_states; state++) {
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
         if (goal_states[state]) {
             goal_distances[state] = 0;
             queue.push(0, state);
@@ -336,21 +347,21 @@ void Abstraction::compute_goal_distances_general_cost() {
     dijkstra_search(backward_graph, queue, goal_distances);
 }
 
-void AtomicAbstraction::apply_abstraction_to_lookup_table(
-        const vector<AbstractStateRef> &abstraction_mapping) {
+void AtomicTransitionSystem::apply_abstraction_to_lookup_table(
+    const vector<AbstractStateRef> &abstraction_mapping) {
     cout << tag() << "applying abstraction to lookup table" << endl;
-    for (int i = 0; i < lookup_table.size(); i++) {
+    for (size_t i = 0; i < lookup_table.size(); ++i) {
         AbstractStateRef old_state = lookup_table[i];
         if (old_state != PRUNED_STATE)
             lookup_table[i] = abstraction_mapping[old_state];
     }
 }
 
-void CompositeAbstraction::apply_abstraction_to_lookup_table(
-        const vector<AbstractStateRef> &abstraction_mapping) {
+void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
+    const vector<AbstractStateRef> &abstraction_mapping) {
     cout << tag() << "applying abstraction to lookup table" << endl;
-    for (int i = 0; i < components[0]->size(); i++) {
-        for (int j = 0; j < components[1]->size(); j++) {
+    for (size_t i = 0; i < components[0]->size(); ++i) {
+        for (size_t j = 0; j < components[1]->size(); ++j) {
             AbstractStateRef old_state = lookup_table[i][j];
             if (old_state != PRUNED_STATE)
                 lookup_table[i][j] = abstraction_mapping[old_state];
@@ -358,9 +369,9 @@ void CompositeAbstraction::apply_abstraction_to_lookup_table(
     }
 }
 
-bool Abstraction::are_transitions_sorted_unique() const {
+bool TransitionSystem::are_transitions_sorted_unique() const {
     for (size_t i = 0; i < transitions_by_label.size(); ++i) {
-        const vector<AbstractTransition> &transitions = transitions_by_label[i];
+        const vector<Transition> &transitions = transitions_by_label[i];
         if (!is_sorted_unique(transitions)) {
             return false;
         }
@@ -368,11 +379,11 @@ bool Abstraction::are_transitions_sorted_unique() const {
     return true;
 }
 
-bool Abstraction::is_normalized() const {
-    return ((num_labels == labels->get_size()) && transitions_sorted_unique);
+bool TransitionSystem::is_normalized() const {
+    return (num_labels == labels->get_size()) && transitions_sorted_unique;
 }
 
-void Abstraction::normalize() {
+void TransitionSystem::normalize() {
     /* This method sorts all transitions and removes duplicate transitions.
        It also maps the labels so that they are up to date with the labels
        object. */
@@ -396,20 +407,20 @@ void Abstraction::normalize() {
        reduction. (These labels are handled separately in the next
        loop.) */
 
-    for (int label_no = 0; label_no < num_labels; label_no++) {
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_label_reduced(label_no)) {
             // skip all labels that have been reduced (previously, in which case
             // they do not induce any transitions or recently, in which case we
             // deal with them separately).
             continue;
         }
-        vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        for (int i = 0; i < transitions.size(); i++) {
-            const AbstractTransition &t = transitions[i];
+        vector<Transition> &transitions = transitions_by_label[label_no];
+        for (size_t i = 0; i < transitions.size(); ++i) {
+            const Transition &t = transitions[i];
             target_buckets[t.target].push_back(
                 make_pair(t.src, label_no));
         }
-        vector<AbstractTransition> ().swap(transitions);
+        vector<Transition> ().swap(transitions);
     }
 
     /* Now we handle "new" labels. We iterate over the fresh labels and
@@ -447,19 +458,19 @@ void Abstraction::normalize() {
             // be broken and we would need to consider parents' parents and so
             // on...
             assert(parent_id < num_labels);
-            vector<AbstractTransition> &transitions =
-                    transitions_by_label[parent_id];
+            vector<Transition> &transitions =
+                transitions_by_label[parent_id];
 
             if (relevant_labels[parent_id]) {
-                for (int i = 0; i < transitions.size(); i++) {
-                    const AbstractTransition &t = transitions[i];
+                for (size_t j = 0; j < transitions.size(); ++j) {
+                    const Transition &t = transitions[j];
                     target_buckets[t.target].push_back(
                         make_pair(t.src, reduced_label_no));
                     if (t.target != t.src) {
                         all_transitions_are_self_loops = false;
                     }
                 }
-                vector<AbstractTransition> ().swap(transitions);
+                vector<Transition> ().swap(transitions);
 
                 // mark parent as irrelevant (unused labels should not be
                 // marked as relevant in order to avoid confusions when
@@ -492,9 +503,9 @@ void Abstraction::normalize() {
     // Second, partition by src state.
     vector<StateBucket> src_buckets(num_states);
 
-    for (AbstractStateRef target = 0; target < num_states; target++) {
+    for (AbstractStateRef target = 0; target < num_states; ++target) {
         StateBucket &bucket = target_buckets[target];
-        for (int i = 0; i < bucket.size(); i++) {
+        for (size_t i = 0; i < bucket.size(); ++i) {
             AbstractStateRef src = bucket[i].first;
             int label_no = bucket[i].second;
             if (labels_made_irrelevant.count(label_no)) {
@@ -507,27 +518,27 @@ void Abstraction::normalize() {
     vector<StateBucket> ().swap(target_buckets);
 
     // Finally, partition by operator and drop duplicates.
-    for (AbstractStateRef src = 0; src < num_states; src++) {
+    for (AbstractStateRef src = 0; src < num_states; ++src) {
         StateBucket &bucket = src_buckets[src];
-        for (int i = 0; i < bucket.size(); i++) {
+        for (size_t i = 0; i < bucket.size(); ++i) {
             int target = bucket[i].first;
             int label_no = bucket[i].second;
 
-            vector<AbstractTransition> &op_bucket = transitions_by_label[label_no];
-            AbstractTransition trans(src, target);
+            vector<Transition> &op_bucket = transitions_by_label[label_no];
+            Transition trans(src, target);
             if (op_bucket.empty() || op_bucket.back() != trans)
                 op_bucket.push_back(trans);
         }
     }
 
-    // Abstraction has been normalized, restore invariant
+    // Transition system has been normalized, restore invariant
     assert(are_transitions_sorted_unique());
     num_labels = labels->get_size();
     transitions_sorted_unique = true;
     assert(is_normalized());
 }
 
-EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
+EquivalenceRelation *TransitionSystem::compute_local_equivalence_relation() const {
     /* If label l1 is irrelevant and label l2 is relevant but has exactly the
        transitions of an irrelevant label, we do not detect the equivalence. */
 
@@ -535,7 +546,7 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
     vector<bool> considered_labels(num_labels, false);
     vector<pair<int, int> > annotated_labels;
     int annotation = 0;
-    for (size_t label_no = 0; label_no < num_labels; ++label_no) {
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_label_reduced(label_no)) {
             // do not consider non-leaf labels
             continue;
@@ -545,8 +556,9 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
         }
         int label_cost = get_label_cost_by_index(label_no);
         annotated_labels.push_back(make_pair(annotation, label_no));
-        const vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-        for (size_t other_label_no = label_no + 1; other_label_no < num_labels; ++other_label_no) {
+        const vector<Transition> &transitions = transitions_by_label[label_no];
+        for (int other_label_no = label_no + 1; other_label_no < num_labels;
+             ++other_label_no) {
             if (labels->is_label_reduced(other_label_no)) {
                 // do not consider non-leaf labels
                 continue;
@@ -560,7 +572,7 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
             if (relevant_labels[label_no] != relevant_labels[other_label_no]) {
                 continue;
             }
-            const vector<AbstractTransition> &other_transitions = transitions_by_label[other_label_no];
+            const vector<Transition> &other_transitions = transitions_by_label[other_label_no];
             if ((transitions.empty() && other_transitions.empty())
                 || (transitions == other_transitions)) {
                 considered_labels[other_label_no] = true;
@@ -572,39 +584,41 @@ EquivalenceRelation *Abstraction::compute_local_equivalence_relation() const {
     return EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 }
 
-void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
-                                            Labels *labels) {
+void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *> &result,
+                                                       Labels *labels) {
     assert(result.empty());
-    cout << "Building atomic abstractions... " << endl;
+    cout << "Building atomic transition systems... " << endl;
     int var_count = g_variable_domain.size();
 
-    // Step 1: Create the abstraction objects without transitions.
-    for (int var_no = 0; var_no < var_count; var_no++)
-        result.push_back(new AtomicAbstraction(labels, var_no));
+    // Step 1: Create the transition system objects without transitions.
+    for (int var_no = 0; var_no < var_count; ++var_no)
+        result.push_back(new AtomicTransitionSystem(labels, var_no));
 
     // Step 2: Add transitions.
-    // Note that when building atomic abstractions, no other labels than the
+    // Note that when building atomic transition systems, no other labels than the
     // original operators have been added yet.
-    for (int label_no = 0; label_no < labels->get_size(); label_no++) {
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<Prevail> &prev = label->get_prevail();
-        for (int i = 0; i < prev.size(); i++) {
-            int var = prev[i].var;
-            int value = prev[i].prev;
-            Abstraction *abs = result[var];
-            AbstractTransition trans(value, value);
-            abs->transitions_by_label[label_no].push_back(trans);
-            abs->relevant_labels[label_no] = true;
-        }
-        const vector<PrePost> &pre_post = label->get_pre_post();
-        for (int i = 0; i < pre_post.size(); i++) {
-            int var = pre_post[i].var;
-            int post_value = pre_post[i].post;
-            Abstraction *abs = result[var];
+        const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(label);
+        const vector<GlobalCondition> &preconditions = op_label->get_preconditions();
+        const vector<GlobalEffect> &effects = op_label->get_effects();
+        hash_map<int, int> pre_val;
+        vector<bool> has_effect_on_var(g_variable_domain.size(), false);
+        for (size_t i = 0; i < preconditions.size(); ++i)
+            pre_val[preconditions[i].var] = preconditions[i].val;
+
+        for (size_t i = 0; i < effects.size(); ++i) {
+            int var = effects[i].var;
+            has_effect_on_var[var] = true;
+            int post_value = effects[i].val;
+            TransitionSystem *ts = result[var];
 
             // Determine possible values that var can have when this
             // operator is applicable.
-            int pre_value = pre_post[i].pre;
+            int pre_value = -1;
+            hash_map<int, int>::const_iterator pre_val_it = pre_val.find(var);
+            if (pre_val_it != pre_val.end())
+                pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;
             if (pre_value == -1) {
                 pre_value_min = 0;
@@ -619,44 +633,54 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
             // cond_effect_pre_value == -1 means no effect condition on var.
             // has_other_effect_cond is true iff there exists an effect
             // condition on a variable other than var.
-            const vector<Prevail> &eff_cond = pre_post[i].cond;
+            const vector<GlobalCondition> &eff_cond = effects[i].conditions;
             int cond_effect_pre_value = -1;
             bool has_other_effect_cond = false;
             for (size_t j = 0; j < eff_cond.size(); ++j) {
                 if (eff_cond[j].var == var) {
-                    cond_effect_pre_value = eff_cond[j].prev;
+                    cond_effect_pre_value = eff_cond[j].val;
                 } else {
                     has_other_effect_cond = true;
                 }
             }
 
             // Handle transitions that occur when the effect triggers.
-            for (int value = pre_value_min; value < pre_value_max; value++) {
+            for (int value = pre_value_min; value < pre_value_max; ++value) {
                 /* Only add a transition if it is possible that the effect
                    triggers. We can rule out that the effect triggers if it has
                    a condition on var and this condition is not satisfied. */
                 if (cond_effect_pre_value == -1 || cond_effect_pre_value == value) {
-                    AbstractTransition trans(value, post_value);
-                    abs->transitions_by_label[label_no].push_back(trans);
+                    Transition trans(value, post_value);
+                    ts->transitions_by_label[label_no].push_back(trans);
                 }
             }
 
             // Handle transitions that occur when the effect does not trigger.
             if (!eff_cond.empty()) {
-                for (int value = pre_value_min; value < pre_value_max; value++) {
+                for (int value = pre_value_min; value < pre_value_max; ++value) {
                     /* Add self-loop if the effect might not trigger.
                        If the effect has a condition on another variable, then
                        it can fail to trigger no matter which value var has.
                        If it only has a condition on var, then the effect
                        fails to trigger if this condition is false. */
                     if (has_other_effect_cond || value != cond_effect_pre_value) {
-                        AbstractTransition loop(value, value);
-                        abs->transitions_by_label[label_no].push_back(loop);
+                        Transition loop(value, value);
+                        ts->transitions_by_label[label_no].push_back(loop);
                     }
                 }
             }
 
-            abs->relevant_labels[label_no] = true;
+            ts->relevant_labels[label_no] = true;
+        }
+        for (size_t i = 0; i < preconditions.size(); ++i) {
+            int var = preconditions[i].var;
+            if (!has_effect_on_var[var]) {
+                int value = preconditions[i].val;
+                TransitionSystem *ts = result[var];
+                Transition trans(value, value);
+                ts->transitions_by_label[label_no].push_back(trans);
+                ts->relevant_labels[label_no] = true;
+            }
         }
     }
 
@@ -666,20 +690,20 @@ void Abstraction::build_atomic_abstractions(vector<Abstraction *> &result,
     }
 }
 
-AtomicAbstraction::AtomicAbstraction(Labels *labels, int variable_)
-    : Abstraction(labels), variable(variable_) {
+AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
+    : TransitionSystem(labels), variable(variable_) {
     varset.push_back(variable);
     /*
-      This generates the states of the atomic abstraction, but not the
+      This generates the states of the atomic transition system, but not the
       arcs: It is more efficient to generate all arcs of all atomic
-      abstractions simultaneously.
+      transition systems simultaneously.
      */
     int range = g_variable_domain[variable];
 
     int init_value = g_initial_state()[variable];
     int goal_value = -1;
     goal_relevant = false;
-    for (int goal_no = 0; goal_no < g_goal.size(); goal_no++) {
+    for (size_t goal_no = 0; goal_no < g_goal.size(); ++goal_no) {
         if (g_goal[goal_no].first == variable) {
             goal_relevant = true;
             assert(goal_value == -1);
@@ -690,7 +714,7 @@ AtomicAbstraction::AtomicAbstraction(Labels *labels, int variable_)
     num_states = range;
     lookup_table.reserve(range);
     goal_states.resize(num_states, false);
-    for (int value = 0; value < range; value++) {
+    for (int value = 0; value < range; ++value) {
         if (value == goal_value || goal_value == -1) {
             goal_states[value] = true;
         }
@@ -700,100 +724,102 @@ AtomicAbstraction::AtomicAbstraction(Labels *labels, int variable_)
     }
 }
 
-AtomicAbstraction::~AtomicAbstraction() {
+AtomicTransitionSystem::~AtomicTransitionSystem() {
 }
 
-CompositeAbstraction::CompositeAbstraction(Labels *labels,
-                                           Abstraction *abs1,
-                                           Abstraction *abs2)
-    : Abstraction(labels) {
-    cout << "Merging " << abs1->description() << " and "
-         << abs2->description() << endl;
+CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
+                                                     TransitionSystem *ts1,
+                                                     TransitionSystem *ts2)
+    : TransitionSystem(labels) {
+    cout << "Merging " << ts1->description() << " and "
+         << ts2->description() << endl;
 
-    assert(abs1->is_solvable() && abs2->is_solvable());
-    assert(abs1->is_normalized() && abs2->is_normalized());
+    assert(ts1->is_solvable() && ts2->is_solvable());
+    assert(ts1->is_normalized() && ts2->is_normalized());
 
-    components[0] = abs1;
-    components[1] = abs2;
+    components[0] = ts1;
+    components[1] = ts2;
 
-    ::set_union(abs1->varset.begin(), abs1->varset.end(), abs2->varset.begin(),
-                abs2->varset.end(), back_inserter(varset));
+    ::set_union(ts1->varset.begin(), ts1->varset.end(), ts2->varset.begin(),
+                ts2->varset.end(), back_inserter(varset));
 
-    num_states = abs1->size() * abs2->size();
+    int ts1_size = ts1->size();
+    int ts2_size = ts2->size();
+    num_states = ts1_size * ts2_size;
     goal_states.resize(num_states, false);
-    goal_relevant = (abs1->goal_relevant || abs2->goal_relevant);
+    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
 
-    lookup_table.resize(abs1->size(), vector<AbstractStateRef> (abs2->size()));
-    for (int s1 = 0; s1 < abs1->size(); s1++) {
-        for (int s2 = 0; s2 < abs2->size(); s2++) {
-            int state = s1 * abs2->size() + s2;
+    lookup_table.resize(ts1->size(), vector<AbstractStateRef> (ts2->size()));
+    for (int s1 = 0; s1 < ts1_size; ++s1) {
+        for (int s2 = 0; s2 < ts2_size; ++s2) {
+            int state = s1 * ts2_size + s2;
             lookup_table[s1][s2] = state;
-            if (abs1->goal_states[s1] && abs2->goal_states[s2])
+            if (ts1->goal_states[s1] && ts2->goal_states[s2])
                 goal_states[state] = true;
-            if (s1 == abs1->init_state && s2 == abs2->init_state)
+            if (s1 == ts1->init_state && s2 == ts2->init_state)
                 init_state = state;
         }
     }
 
     /* Note:
-       The way we construct the transitions of the new composite abstraction,
+       The way we construct the transitions of the new composite transition system,
        we cannot easily guarantee that they are sorted. Given that we have
-       transitions a->b and c->d in abstraction one and two, we would like to
-       have (a,c)->(b,d) in the resultin abstraction. There is no obvious way
-       at looking at the transitions of abstractions one and two that would
+       transitions a->b and c->d in transition system one and two, we would like to
+       have (a,c)->(b,d) in the resultin transition system. There is no obvious way
+       at looking at the transitions of transition systems one and two that would
        result in the desired ordering. Even in the case that the second
-       abstractions has only self loops, this is not trivial, as we would like
+       transition systems has only self loops, this is not trivial, as we would like
        to sort transitions to (a,c,b). Only in the case that the first
-       abstraction has only self-lopos, by looking at each transition of the
-       first abstraction and multiplying in out with the transitions of the
+       transition system has only self-lopos, by looking at each transition of the
+       first transition system and multiplying in out with the transitions of the
        second transition, we obtain the desired order (a,c,d).
      */
-    int multiplier = abs2->size();
-    for (int label_no = 0; label_no < num_labels; label_no++) {
-        bool relevant1 = abs1->relevant_labels[label_no];
-        bool relevant2 = abs2->relevant_labels[label_no];
+    int multiplier = ts2_size;
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        bool relevant1 = ts1->relevant_labels[label_no];
+        bool relevant2 = ts2->relevant_labels[label_no];
         if (relevant1 || relevant2) {
             relevant_labels[label_no] = true;
-            vector<AbstractTransition> &transitions = transitions_by_label[label_no];
-            const vector<AbstractTransition> &bucket1 =
-                abs1->transitions_by_label[label_no];
-            const vector<AbstractTransition> &bucket2 =
-                abs2->transitions_by_label[label_no];
+            vector<Transition> &transitions = transitions_by_label[label_no];
+            const vector<Transition> &bucket1 =
+                ts1->transitions_by_label[label_no];
+            const vector<Transition> &bucket2 =
+                ts2->transitions_by_label[label_no];
             if (relevant1 && relevant2) {
                 transitions.reserve(bucket1.size() * bucket2.size());
-                for (int i = 0; i < bucket1.size(); i++) {
+                for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    for (int j = 0; j < bucket2.size(); j++) {
+                    for (size_t j = 0; j < bucket2.size(); ++j) {
                         int src2 = bucket2[j].src;
                         int target2 = bucket2[j].target;
                         int src = src1 * multiplier + src2;
                         int target = target1 * multiplier + target2;
-                        transitions.push_back(AbstractTransition(src, target));
+                        transitions.push_back(Transition(src, target));
                     }
                 }
             } else if (relevant1) {
                 assert(!relevant2);
-                transitions.reserve(bucket1.size() * abs2->size());
-                for (int i = 0; i < bucket1.size(); i++) {
+                transitions.reserve(bucket1.size() * ts2_size);
+                for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    for (int s2 = 0; s2 < abs2->size(); s2++) {
+                    for (int s2 = 0; s2 < ts2_size; ++s2) {
                         int src = src1 * multiplier + s2;
                         int target = target1 * multiplier + s2;
-                        transitions.push_back(AbstractTransition(src, target));
+                        transitions.push_back(Transition(src, target));
                     }
                 }
             } else if (relevant2) {
                 assert(!relevant1);
-                transitions.reserve(bucket2.size() * abs1->size());
-                for (int s1 = 0; s1 < abs1->size(); s1++) {
-                    for (int i = 0; i < bucket2.size(); i++) {
+                transitions.reserve(bucket2.size() * ts1_size);
+                for (int s1 = 0; s1 < ts1_size; ++s1) {
+                    for (size_t i = 0; i < bucket2.size(); ++i) {
                         int src2 = bucket2[i].src;
                         int target2 = bucket2[i].target;
                         int src = s1 * multiplier + src2;
                         int target = s1 * multiplier + target2;
-                        transitions.push_back(AbstractTransition(src, target));
+                        transitions.push_back(Transition(src, target));
                     }
                 }
                 assert(is_sorted_unique(transitions));
@@ -806,28 +832,28 @@ CompositeAbstraction::CompositeAbstraction(Labels *labels,
         transitions_sorted_unique = false;
 }
 
-CompositeAbstraction::~CompositeAbstraction() {
+CompositeTransitionSystem::~CompositeTransitionSystem() {
 }
 
-string AtomicAbstraction::description() const {
+string AtomicTransitionSystem::description() const {
     ostringstream s;
-    s << "atomic abstraction #" << variable;
+    s << "atomic transition system #" << variable;
     return s.str();
 }
 
-string CompositeAbstraction::description() const {
+string CompositeTransitionSystem::description() const {
     ostringstream s;
-    s << "abstraction (" << varset.size() << "/"
+    s << "transition system (" << varset.size() << "/"
       << g_variable_domain.size() << " vars)";
     return s.str();
 }
 
-AbstractStateRef AtomicAbstraction::get_abstract_state(const State &state) const {
+AbstractStateRef AtomicTransitionSystem::get_abstract_state(const GlobalState &state) const {
     int value = state[variable];
     return lookup_table[value];
 }
 
-AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) const {
+AbstractStateRef CompositeTransitionSystem::get_abstract_state(const GlobalState &state) const {
     AbstractStateRef state1 = components[0]->get_abstract_state(state);
     AbstractStateRef state2 = components[1]->get_abstract_state(state);
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
@@ -835,7 +861,7 @@ AbstractStateRef CompositeAbstraction::get_abstract_state(const State &state) co
     return lookup_table[state1][state2];
 }
 
-void Abstraction::apply_abstraction(
+void TransitionSystem::apply_abstraction(
     vector<slist<AbstractStateRef> > &collapsed_groups) {
     /* Note on how this method interacts with the distance information
        (init_distances and goal_distances): if no two states with
@@ -856,16 +882,16 @@ void Abstraction::apply_abstraction(
 
        Still, it might be good if we could find a way to perform the
        unreachability and relevance pruning that didn't introduce such
-       tight coupling between the distance computation and abstraction
+       tight coupling between the distance computation and transition system
        code. It would probably also a good idea to do the
        unreachability/relevance pruning as early as possible, e.g.
        right after construction.
      */
 
-    // abstraction must have been normalized if any labels have been reduced
+    // transition system must have been normalized if any labels have been reduced
     // before. Note that we do *not* require transitions to be sorted (thus
     // not asserting is_normalized()), because shrink can indirectly be called
-    // from the distances computation, which is done for the final abstraction
+    // from the distances computation, which is done for the final transition system
     // which on its turn may not be normalized at that time.
     assert(num_labels == labels->get_size());
     // distances must have been computed before
@@ -878,7 +904,7 @@ void Abstraction::apply_abstraction(
 
     vector<int> abstraction_mapping(num_states, PRUNED_STATE);
 
-    for (int group_no = 0; group_no < collapsed_groups.size(); group_no++) {
+    for (size_t group_no = 0; group_no < collapsed_groups.size(); ++group_no) {
         Group &group = collapsed_groups[group_no];
         for (Group::iterator pos = group.begin(); pos != group.end(); ++pos) {
             AbstractStateRef state = *pos;
@@ -893,7 +919,7 @@ void Abstraction::apply_abstraction(
     vector<bool> new_goal_states(new_num_states, false);
 
     bool must_clear_distances = false;
-    for (AbstractStateRef new_state = 0; new_state < collapsed_groups.size(); new_state++) {
+    for (AbstractStateRef new_state = 0; new_state < new_num_states; ++new_state) {
         Group &group = collapsed_groups[new_state];
         assert(!group.empty());
 
@@ -923,27 +949,27 @@ void Abstraction::apply_abstraction(
     vector<int>().swap(goal_distances);
     vector<bool>().swap(goal_states);
 
-    vector<vector<AbstractTransition> > new_transitions_by_label(
+    vector<vector<Transition> > new_transitions_by_label(
         transitions_by_label.size());
-    for (int label_no = 0; label_no < num_labels; label_no++) {
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_label_reduced(label_no)) {
             // do not consider non-leaf labels
             continue;
         }
-        const vector<AbstractTransition> &transitions =
+        const vector<Transition> &transitions =
             transitions_by_label[label_no];
-        vector<AbstractTransition> &new_transitions =
+        vector<Transition> &new_transitions =
             new_transitions_by_label[label_no];
         new_transitions.reserve(transitions.size());
-        for (int i = 0; i < transitions.size(); i++) {
-            const AbstractTransition &trans = transitions[i];
+        for (size_t i = 0; i < transitions.size(); ++i) {
+            const Transition &trans = transitions[i];
             int src = abstraction_mapping[trans.src];
             int target = abstraction_mapping[trans.target];
             if (src != PRUNED_STATE && target != PRUNED_STATE)
-                new_transitions.push_back(AbstractTransition(src, target));
+                new_transitions.push_back(Transition(src, target));
         }
     }
-    vector<vector<AbstractTransition> > ().swap(transitions_by_label);
+    vector<vector<Transition> > ().swap(transitions_by_label);
 
     num_states = new_num_states;
     transitions_by_label.swap(new_transitions_by_label);
@@ -966,11 +992,11 @@ void Abstraction::apply_abstraction(
         transitions_sorted_unique = false;
 }
 
-bool Abstraction::is_solvable() const {
+bool TransitionSystem::is_solvable() const {
     return init_state != PRUNED_STATE;
 }
 
-int Abstraction::get_cost(const State &state) const {
+int TransitionSystem::get_cost(const GlobalState &state) const {
     int abs_state = get_abstract_state(state);
     if (abs_state == PRUNED_STATE)
         return -1;
@@ -979,51 +1005,51 @@ int Abstraction::get_cost(const State &state) const {
     return cost;
 }
 
-int Abstraction::memory_estimate() const {
-    int result = sizeof(Abstraction);
+int TransitionSystem::memory_estimate() const {
+    int result = sizeof(TransitionSystem);
     result += sizeof(Label *) * relevant_labels.capacity();
-    result += sizeof(vector<AbstractTransition> )
+    result += sizeof(vector<Transition> )
               * transitions_by_label.capacity();
-    for (int i = 0; i < transitions_by_label.size(); i++)
-        result += sizeof(AbstractTransition) * transitions_by_label[i].capacity();
+    for (size_t i = 0; i < transitions_by_label.size(); ++i)
+        result += sizeof(Transition) * transitions_by_label[i].capacity();
     result += sizeof(int) * init_distances.capacity();
     result += sizeof(int) * goal_distances.capacity();
     result += sizeof(bool) * goal_states.capacity();
     return result;
 }
 
-int AtomicAbstraction::memory_estimate() const {
-    int result = Abstraction::memory_estimate();
-    result += sizeof(AtomicAbstraction) - sizeof(Abstraction);
+int AtomicTransitionSystem::memory_estimate() const {
+    int result = TransitionSystem::memory_estimate();
+    result += sizeof(AtomicTransitionSystem) - sizeof(TransitionSystem);
     result += sizeof(AbstractStateRef) * lookup_table.capacity();
     return result;
 }
 
-int CompositeAbstraction::memory_estimate() const {
-    int result = Abstraction::memory_estimate();
-    result += sizeof(CompositeAbstraction) - sizeof(Abstraction);
+int CompositeTransitionSystem::memory_estimate() const {
+    int result = TransitionSystem::memory_estimate();
+    result += sizeof(CompositeTransitionSystem) - sizeof(TransitionSystem);
     result += sizeof(vector<AbstractStateRef> ) * lookup_table.capacity();
-    for (int i = 0; i < lookup_table.size(); i++)
+    for (size_t i = 0; i < lookup_table.size(); ++i)
         result += sizeof(AbstractStateRef) * lookup_table[i].capacity();
     return result;
 }
 
-void Abstraction::release_memory() {
+void TransitionSystem::release_memory() {
     vector<bool>().swap(relevant_labels);
-    vector<vector<AbstractTransition> >().swap(transitions_by_label);
+    vector<vector<Transition> >().swap(transitions_by_label);
 }
 
-int Abstraction::total_transitions() const {
+int TransitionSystem::total_transitions() const {
     int total = 0;
-    for (int i = 0; i < transitions_by_label.size(); i++)
+    for (size_t i = 0; i < transitions_by_label.size(); ++i)
         total += transitions_by_label[i].size();
     return total;
 }
 
-int Abstraction::unique_unlabeled_transitions() const {
-    vector<AbstractTransition> unique_transitions;
-    for (int i = 0; i < transitions_by_label.size(); i++) {
-        const vector<AbstractTransition> &trans = transitions_by_label[i];
+int TransitionSystem::unique_unlabeled_transitions() const {
+    vector<Transition> unique_transitions;
+    for (size_t i = 0; i < transitions_by_label.size(); ++i) {
+        const vector<Transition> &trans = transitions_by_label[i];
         unique_transitions.insert(unique_transitions.end(), trans.begin(),
                                   trans.end());
     }
@@ -1032,7 +1058,7 @@ int Abstraction::unique_unlabeled_transitions() const {
            - unique_transitions.begin();
 }
 
-void Abstraction::statistics(bool include_expensive_statistics) const {
+void TransitionSystem::statistics(bool include_expensive_statistics) const {
     int memory = memory_estimate();
     peak_memory = max(peak_memory, memory);
     cout << tag() << size() << " states, ";
@@ -1049,16 +1075,16 @@ void Abstraction::statistics(bool include_expensive_statistics) const {
         cout << "init h=" << goal_distances[init_state] << ", max f=" << max_f
              << ", max g=" << max_g << ", max h=" << max_h;
     } else {
-        cout << "abstraction is unsolvable";
+        cout << "transition system is unsolvable";
     }
     cout << " [t=" << g_timer << "]" << endl;
 }
 
-int Abstraction::get_peak_memory_estimate() const {
+int TransitionSystem::get_peak_memory_estimate() const {
     return peak_memory;
 }
 
-void Abstraction::dump_relevant_labels() const {
+void TransitionSystem::dump_relevant_labels() const {
     cout << "relevant labels" << endl;
     for (size_t label_no = 0; label_no < relevant_labels.size(); ++label_no) {
         if (label_no) {
@@ -1067,13 +1093,13 @@ void Abstraction::dump_relevant_labels() const {
     }
 }
 
-void Abstraction::dump() const {
-    cout << "digraph abstract_transition_graph";
-    for (int i = 0; i < varset.size(); i++)
+void TransitionSystem::dump() const {
+    cout << "digraph transition system";
+    for (size_t i = 0; i < varset.size(); ++i)
         cout << "_" << varset[i];
     cout << " {" << endl;
     cout << "    node [shape = none] start;" << endl;
-    for (int i = 0; i < num_states; i++) {
+    for (int i = 0; i < num_states; ++i) {
         bool is_init = (i == init_state);
         bool is_goal = (goal_states[i] == true);
         cout << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
@@ -1081,10 +1107,10 @@ void Abstraction::dump() const {
         if (is_init)
             cout << "    start -> node" << i << ";" << endl;
     }
-    for (int label_no = 0; label_no < num_labels; label_no++) {
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
         // reduced labels are automatically skipped because trans is then empty
-        const vector<AbstractTransition> &trans = transitions_by_label[label_no];
-        for (int i = 0; i < trans.size(); i++) {
+        const vector<Transition> &trans = transitions_by_label[label_no];
+        for (size_t i = 0; i < trans.size(); ++i) {
             int src = trans[i].src;
             int target = trans[i].target;
             cout << "    node" << src << " -> node" << target << " [label = o_"

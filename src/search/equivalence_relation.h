@@ -15,7 +15,7 @@ typedef std::list<Block>::const_iterator BlockListConstIter;
 class EquivalenceRelation;
 
 struct DoubleEpsilonEquality {
-    bool operator() (const double &d1, const double &d2) {
+    bool operator()(const double &d1, const double &d2) {
         // TODO avoid code duplication with landmark count heuristic
         static const double epsilon = 0.01;
         return abs(d1 - d2) < epsilon;
@@ -102,30 +102,30 @@ public:
       annotated_elements.
       The vector annotated_elements will be sorted by the constructor.
     */
-    // NOTE unfortunately this is not possible as a constructor, since c++
+    // NOTE Unfortunately this is not possible as a constructor, since C++
     //      does not support templated constructors that only use the template
     //      parameter in a nested context.
     //      Also, default parameters are not allowed for function templates in
-    //      the current c++ standard.
+    //      the current C++ standard.
     template<class T>
     static EquivalenceRelation *from_annotated_elements(
-            int n,
-            std::vector<std::pair<T, int> > &annotated_elements);
+        int n,
+        std::vector<std::pair<T, int> > &annotated_elements);
     template<class T, class Equal>
     static EquivalenceRelation *from_annotated_elements(
-            int n,
-            std::vector<std::pair<T, int> > &annotated_elements);
+        int n,
+        std::vector<std::pair<T, int> > &annotated_elements);
 };
 
 template<class T>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
-    std::vector<std::pair<T, int> > &annotated_elements) {
+                                                                  std::vector<std::pair<T, int> > &annotated_elements) {
     return EquivalenceRelation::from_annotated_elements<T, std::equal_to<T> >(n, annotated_elements);
 }
 
 template<class T, class Equal>
 EquivalenceRelation *EquivalenceRelation::from_annotated_elements(int n,
-    std::vector<std::pair<T, int> > &annotated_elements) {
+                                                                  std::vector<std::pair<T, int> > &annotated_elements) {
     EquivalenceRelation *relation = new EquivalenceRelation(n);
     if (!annotated_elements.empty()) {
         sort(annotated_elements.begin(), annotated_elements.end());

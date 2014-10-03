@@ -7,9 +7,21 @@ the greatest flexibility.
 Below we list some experiments that show how certain tasks can be
 performed:
 
-* issue214/issue214.py:
-  * Add a custom log parser (alternatively use exp.add_search_parser()).
-  * Add scatter plots for custom attributes.
+* Test changes that affect the whole planner:
+  * issue422/issue422.py shows the general setup but tests only LM-cut.
+    Use "from downward.configs import default_configs_optimal" and set
+    the parameter suite to default_configs_optimal. For satisficing
+    configs use default_configs_satisficing and
+    suite_satisficing_with_ipc11.
 
-* issue420/issue420-v1-regressions.py:
-  * Run configurations on the same tasks multiple times to reduce noise.
+* Add a custom log parser:
+  * issue469/issue469.py adds a parser for raw_memory
+
+* Add scatter plots for custom attributes:
+  * issue214/issue214.py
+
+* Run configurations on the same tasks multiple times to reduce noise:
+  * issue420/issue420-v1-regressions.py
+
+* Independent CompareRevisionReports for portfolio configs and core solvers:
+  * issue462/issue462-opt.py

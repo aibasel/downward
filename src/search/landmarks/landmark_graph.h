@@ -9,9 +9,9 @@
 #include <ext/hash_set>
 #include <cassert>
 
-#include "../operator.h"
 #include "exploration.h"
 #include "landmark_types.h"
+#include "../global_operator.h"
 #include "../option_parser.h"
 
 enum edge_type {
@@ -70,16 +70,16 @@ public:
         return in_goal;
     }
 
-    bool is_true_in_state(const State &state) const {
+    bool is_true_in_state(const GlobalState &state) const {
         if (disjunctive) {
-            for (unsigned int i = 0; i < vars.size(); i++) {
+            for (size_t i = 0; i < vars.size(); ++i) {
                 if (state[vars[i]] == vals[i]) {
                     return true;
                 }
             }
             return false;
         } else { // conjunctive or simple
-            for (int i = 0; i < vars.size(); i++) {
+            for (size_t i = 0; i < vars.size(); ++i) {
                 if (state[vars[i]] != vals[i]) {
                     return false;
                 }
@@ -101,13 +101,13 @@ struct LandmarkNodeComparer {
         if (a->vars.size() < b->vars.size()) {
             return false;
         }
-        for (int i = 0; i < a->vars.size(); i++) {
+        for (size_t i = 0; i < a->vars.size(); ++i) {
             if (a->vars[i] > b->vars[i])
                 return true;
             if (a->vars[i] < b->vars[i])
                 return false;
         }
-        for (int i = 0; i < a->vals.size(); i++) {
+        for (size_t i = 0; i < a->vals.size(); ++i) {
             if (a->vals[i] > b->vals[i])
                 return true;
             if (a->vals[i] < b->vals[i])
@@ -145,13 +145,15 @@ public:
     inline const std::set<LandmarkNode *> &get_nodes() const {
         return nodes;
     }
-    inline const Operator &get_operator_for_lookup_index(int op_no) const {
-        const Operator &op = (op_no < g_operators.size()) ?
-                             g_operators[op_no] : g_axioms[op_no - g_operators.size()];
-        return op;
+    inline const GlobalOperator &get_operator_for_lookup_index(int op_no) const {
+        int num_ops = g_operators.size();
+        if (op_no < num_ops)
+            return g_operators[op_no];
+        else
+            return g_axioms[op_no - num_ops];
     }
     inline int number_of_landmarks() const {
-        assert(landmarks_count == nodes.size());
+        assert(landmarks_count == static_cast<int>(nodes.size()));
         return landmarks_count;
     }
     Exploration *get_exploration() const {return exploration; }

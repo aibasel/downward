@@ -3,7 +3,7 @@
 
 #include "../heuristic.h"
 
-class Abstraction;
+class TransitionSystem;
 class Labels;
 class MergeStrategy;
 class ShrinkStrategy;
@@ -14,14 +14,14 @@ class MergeAndShrinkHeuristic : public Heuristic {
     const bool use_expensive_statistics;
     Labels *labels;
 
-    Abstraction *final_abstraction;
-    Abstraction *build_abstraction();
+    TransitionSystem *final_transition_system;
+    TransitionSystem *build_transition_system();
 
     void dump_options() const;
     void warn_on_unusual_options() const;
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     MergeAndShrinkHeuristic(const Options &opts);
     ~MergeAndShrinkHeuristic();

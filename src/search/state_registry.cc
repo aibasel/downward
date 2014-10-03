@@ -1,7 +1,7 @@
 #include "state_registry.h"
 
 #include "axioms.h"
-#include "operator.h"
+#include "global_operator.h"
 #include "per_state_information.h"
 
 using namespace std;
@@ -40,11 +40,11 @@ StateID StateRegistry::insert_id_or_pop_state() {
     return *result.first;
 }
 
-State StateRegistry::lookup_state(StateID id) const {
-    return State(state_data_pool[id.value], *this, id);
+GlobalState StateRegistry::lookup_state(StateID id) const {
+    return GlobalState(state_data_pool[id.value], *this, id);
 }
 
-const State &StateRegistry::get_initial_state() {
+const GlobalState &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
         PackedStateBin *buffer = new PackedStateBin[g_state_packer->get_num_bins()];
         for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
@@ -55,7 +55,7 @@ const State &StateRegistry::get_initial_state() {
         // buffer is copied by push_back
         delete[] buffer;
         StateID id = insert_id_or_pop_state();
-        cached_initial_state = new State(lookup_state(id));
+        cached_initial_state = new GlobalState(lookup_state(id));
     }
     return *cached_initial_state;
 }
@@ -63,14 +63,14 @@ const State &StateRegistry::get_initial_state() {
 //TODO it would be nice to move the actual state creation (and operator application)
 //     out of the StateRegistry. This could for example be done by global functions
 //     operating on state buffers (PackedStateBin *).
-State StateRegistry::get_successor_state(const State &predecessor, const Operator &op) {
+GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, const GlobalOperator &op) {
     assert(!op.is_axiom());
     state_data_pool.push_back(predecessor.get_packed_buffer());
     PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
-    for (size_t i = 0; i < op.get_pre_post().size(); ++i) {
-        const PrePost &pre_post = op.get_pre_post()[i];
-        if (pre_post.does_fire(predecessor))
-            g_state_packer->set(buffer, pre_post.var, pre_post.post);
+    for (size_t i = 0; i < op.get_effects().size(); ++i) {
+        const GlobalEffect &effect = op.get_effects()[i];
+        if (effect.does_fire(predecessor))
+            g_state_packer->set(buffer, effect.var, effect.val);
     }
     g_axiom_evaluator->evaluate(buffer);
     StateID id = insert_id_or_pop_state();

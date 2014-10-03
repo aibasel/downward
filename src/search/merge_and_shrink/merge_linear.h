@@ -3,7 +3,7 @@
 
 #include "merge_strategy.h"
 
-#include "variable_order_finder.h"
+#include "../variable_order_finder.h"
 
 class Options;
 
@@ -16,7 +16,7 @@ public:
     explicit MergeLinear(const Options &opts);
     virtual ~MergeLinear() {}
 
-    virtual std::pair<int, int> get_next(const std::vector<Abstraction *> &all_abstractions);
+    virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems);
     virtual std::string name() const;
 };
 

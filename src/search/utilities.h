@@ -10,11 +10,12 @@
 #define LINUX 0
 #define OSX 1
 #define CYGWIN 2
+#define WINDOWS 3
 
 #if defined(__CYGWIN32__)
 #define OPERATING_SYSTEM CYGWIN
 #elif defined(__WINNT__)
-#define OPERATING_SYSTEM CYGWIN
+#define OPERATING_SYSTEM WINDOWS
 #elif defined(__APPLE__)
 #define OPERATING_SYSTEM OSX
 #else
@@ -24,7 +25,7 @@
 #define ABORT(msg) \
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \
-              << ", line " << __LINE__ << ": " << msg << std::endl), \
+                   << ", line " << __LINE__ << ": " << msg << std::endl), \
         (abort()), \
         (void)0 \
     )
@@ -47,8 +48,8 @@ extern void exit_with(ExitCode returncode) __attribute__((noreturn));
 
 extern void register_event_handlers();
 
-extern int get_peak_memory_in_kb();
-extern void print_peak_memory();
+extern int get_peak_memory_in_kb(bool use_buffered_input = true);
+extern void print_peak_memory(bool use_buffered_input = true);
 
 template<class T>
 extern bool is_sorted_unique(const std::vector<T> &values) {
@@ -106,5 +107,15 @@ public:
         return my_hash_class(p);
     }
 };
+
+template<class T>
+bool in_bounds(int index, const T &container) {
+    return index >= 0 && static_cast<size_t>(index) < container.size();
+}
+
+template<class T>
+bool in_bounds(size_t index, const T &container) {
+    return index < container.size();
+}
 
 #endif
