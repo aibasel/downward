@@ -149,11 +149,16 @@ bool TransitionSystem::are_distances_computed() const {
 }
 
 void TransitionSystem::compute_distances_and_prune() {
-    // This method has two responsabilities:
-    // It computes distances and then removes all unreachable or irrelevant
-    // states.
-    // Note that as a side effect, this method not only sets init_distances
-    // and goal_distances, but also max_f, max_g and max_h.
+    /* This method computes the distances of abstract states from the
+       abstract initial state ("abstract g") and from the abstract
+       goal states ("abstract h"). It also prunes all states that are
+       unreachable (abstract g is infinite) or irrelevant (abstact h
+       is infinite).
+
+       In addition to its main job of pruning state and setting
+       init_distances and goal_distances, it also sets max_f, max_g
+       and max_h.
+    */
 
     cout << tag() << flush;
     if (are_distances_computed()) {
