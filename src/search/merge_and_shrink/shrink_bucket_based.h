@@ -46,8 +46,7 @@ public:
 
     virtual bool reduce_labels_before_shrinking() const;
 
-    virtual void shrink(TransitionSystem &ts, int threshold,
-                        bool force = false);
+    virtual void shrink(TransitionSystem &ts, int threshold);
 };
 
 #endif
