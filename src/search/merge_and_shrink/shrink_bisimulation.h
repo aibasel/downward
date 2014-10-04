@@ -4,7 +4,7 @@
 #include "shrink_strategy.h"
 
 class Options;
-class Signature;
+struct Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
     enum AtLimit {
