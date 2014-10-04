@@ -4,7 +4,7 @@
 #include <vector>
 #include <ext/hash_map>
 
-class GlobalCondition;
+struct GlobalCondition;
 class GlobalOperator;
 class LandmarkNode;
 
