@@ -4,7 +4,7 @@
 #include <vector>
 
 class GlobalState;
-class ValueTransitionLabel;
+struct ValueTransitionLabel;
 
 class CGCache {
     std::vector<std::vector<int> > cache;
