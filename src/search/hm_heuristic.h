@@ -11,124 +11,62 @@
 #include "globals.h"
 #include "heuristic.h"
 
-using namespace std;
 
-typedef vector<pair<int, int> > tuple;
+typedef std::vector<std::pair<int, int> > Tuple;
 
 class Options;
-/**
- * The h^m heuristic.
- * This is a preliminary implementation, and it is very slow.
- * Please do not use this for comparison.
- */
-class HMHeuristic : public Heuristic {
-public:
-    HMHeuristic(const Options &opts);
-    virtual ~HMHeuristic();
-    virtual bool dead_ends_are_reliable() const;
-protected:
-    virtual int compute_heuristic(const GlobalState &state);
-    virtual void initialize();
 
+/*
+  Haslum's h^m heuristic family ("critical path heuristics").
+
+  This is a very slow implementation and should not be used for
+  speed benchmarks.
+*/
+
+class HMHeuristic : public Heuristic {
     // parameters
     int m;
 
     // h^m table
-    map<tuple, int> hm_table;
+    std::map<Tuple, int> hm_table;
     bool was_updated;
 
-    void init_hm_table(tuple &t);
+    // auxiliary methods
+    void init_hm_table(Tuple &t);
     void update_hm_table();
-    int eval(tuple &t);
-    int update_hm_entry(tuple &t, int val);
-    void extend_tuple(tuple &t, const GlobalOperator &op);
+    int eval(Tuple &t) const;
+    int update_hm_entry(Tuple &t, int val);
+    void extend_tuple(Tuple &t, const GlobalOperator &op);
 
-    // some helper methods
-    int check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple);
-    void state_to_tuple(const GlobalState &state, tuple &t) {
-        for (size_t i = 0; i < g_variable_domain.size(); ++i)
-            t.push_back(make_pair(i, state[i]));
-    }
+    int check_tuple_in_tuple(const Tuple &tup, const Tuple &big_tuple) const;
+    void state_to_tuple(const GlobalState &state, Tuple &t) const;
 
-    int get_operator_pre_value(const GlobalOperator &op, int var) {
-        for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
-            if (op.get_preconditions()[i].var == var)
-                return op.get_preconditions()[i].val;
-        }
-        return -1;
-    }
+    int get_operator_pre_value(const GlobalOperator &op, int var) const;
+    void get_operator_pre(const GlobalOperator &op, Tuple &t) const;
+    void get_operator_eff(const GlobalOperator &op, Tuple &t) const;
+    bool is_pre_of(const GlobalOperator &op, int var) const;
+    bool is_effect_of(const GlobalOperator &op, int var) const;
+    bool contradict_effect_of(const GlobalOperator &op, int var, int val) const;
 
-    void get_operator_pre(const GlobalOperator &op, tuple &t) {
-        for (size_t i = 0; i < op.get_preconditions().size(); ++i)
-            t.push_back(make_pair(op.get_preconditions()[i].var, op.get_preconditions()[i].val));
+    void generate_all_tuples();
+    void generate_all_tuples_aux(int var, int sz, Tuple &base);
 
-        sort(t.begin(), t.end());
-    }
+    void generate_all_partial_tuples(Tuple &base_tuple,
+                                     std::vector<Tuple> &res) const;
+    void generate_all_partial_tuples_aux(Tuple &base_tuple, Tuple &t, int index,
+                                         int sz, std::vector<Tuple> &res) const;
 
-    void get_operator_eff(const GlobalOperator &op, tuple &t) {
-        for (size_t i = 0; i < op.get_effects().size(); ++i)
-            t.push_back(make_pair(op.get_effects()[i].var, op.get_effects()[i].val));
+    void dump_table() const;
+    void dump_tuple(Tuple &tup) const;
 
-        sort(t.begin(), t.end());
-    }
+protected:
+    virtual int compute_heuristic(const GlobalState &state);
+    virtual void initialize();
 
-
-    bool is_pre_of(const GlobalOperator &op, int var) {
-        // TODO if preconditions will be always sorted we should use a log-n
-        // search instead
-        for (size_t j = 0; j < op.get_preconditions().size(); ++j) {
-            if (op.get_preconditions()[j].var == var) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool is_effect_of(const GlobalOperator &op, int var) {
-        for (size_t j = 0; j < op.get_effects().size(); ++j) {
-            if (op.get_effects()[j].var == var) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool contradict_effect_of(const GlobalOperator &op, int var, int val) {
-        for (size_t j = 0; j < op.get_effects().size(); ++j) {
-            if (op.get_effects()[j].var == var && op.get_effects()[j].val != val) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    void generate_all_tuples() {
-        tuple t;
-        generate_all_tuples(0, m, t);
-    }
-    void generate_all_tuples(int var, int sz, tuple &base);
-
-    void generate_all_partial_tuple(tuple &base_tuple, vector<tuple> &res) {
-        tuple t;
-        generate_all_partial_tuple(base_tuple, t, 0, m, res);
-    }
-    void generate_all_partial_tuple(tuple &base_tuple, tuple &t, int index, int sz, vector<tuple> &res);
-
-    void dump_table() const {
-        map<tuple, int>::const_iterator it;
-        for (it = hm_table.begin(); it != hm_table.end(); ++it) {
-            pair<tuple, int> hm_ent = *it;
-            cout << "h[";
-            print_tuple(hm_ent.first);
-            cout << "] = " << hm_ent.second << endl;
-        }
-    }
-    void print_tuple(tuple &tup) const {
-        cout << tup[0].first << "=" << tup[0].second;
-        for (size_t i = 1; i < tup.size(); ++i)
-            cout << "," << tup[i].first << "=" << tup[i].second;
-    }
+public:
+    HMHeuristic(const Options &opts);
+    virtual ~HMHeuristic();
+    virtual bool dead_ends_are_reliable() const;
 };
 
 #endif

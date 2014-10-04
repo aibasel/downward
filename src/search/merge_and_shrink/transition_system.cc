@@ -40,6 +40,11 @@ using namespace __gnu_cxx;
 
 const int INF = numeric_limits<int>::max();
 
+
+const int TransitionSystem::PRUNED_STATE;
+const int TransitionSystem::DISTANCE_UNKNOWN;
+
+
 TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
       transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
