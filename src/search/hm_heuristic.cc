@@ -147,14 +147,14 @@ void HMHeuristic::extend_tuple(Tuple &t, const GlobalOperator &op) {
 }
 
 
-int HMHeuristic::eval(Tuple &t) {
+int HMHeuristic::eval(Tuple &t) const {
     vector<Tuple> partial;
     generate_all_partial_tuples(t, partial);
     int max = 0;
     for (size_t i = 0; i < partial.size(); ++i) {
         assert(hm_table.count(partial[i]) == 1);
 
-        int h = hm_table[partial[i]];
+        int h = hm_table.find(partial[i])->second; // C++11: use "at"
         if (h > max) {
             max = h;
         }
@@ -173,41 +173,8 @@ int HMHeuristic::update_hm_entry(Tuple &t, int val) {
 }
 
 
-void HMHeuristic::generate_all_tuples_aux(int var, int sz, Tuple &base) {
-    int num_variables = g_variable_domain.size();
-    for (int i = var; i < num_variables; ++i) {
-        for (int j = 0; j < g_variable_domain[i]; ++j) {
-            Tuple tup(base);
-            tup.push_back(make_pair(i, j));
-            hm_table[tup] = 0;
-            if (sz > 1) {
-                generate_all_tuples_aux(i + 1, sz - 1, tup);
-            }
-        }
-    }
-}
-
-
-void HMHeuristic::generate_all_partial_tuples_aux(
-    Tuple &base_tuple, Tuple &t, int index, int sz, vector<Tuple> &res) {
-    if (sz == 1) {
-        for (size_t i = index; i < base_tuple.size(); ++i) {
-            Tuple tup(t);
-            tup.push_back(base_tuple[i]);
-            res.push_back(tup);
-        }
-    } else {
-        for (size_t i = index; i < base_tuple.size(); ++i) {
-            Tuple tup(t);
-            tup.push_back(base_tuple[i]);
-            res.push_back(tup);
-            generate_all_partial_tuples_aux(base_tuple, tup, i + 1, sz - 1, res);
-        }
-    }
-}
-
-
-int HMHeuristic::check_tuple_in_tuple(const Tuple &tup, const Tuple &big_tuple) {
+int HMHeuristic::check_tuple_in_tuple(
+    const Tuple &tup, const Tuple &big_tuple) const {
     for (size_t i = 0; i < tup.size(); ++i) {
         bool found = false;
         for (size_t j = 0; j < big_tuple.size(); ++j) {
@@ -224,13 +191,14 @@ int HMHeuristic::check_tuple_in_tuple(const Tuple &tup, const Tuple &big_tuple) 
 }
 
 
-void HMHeuristic::state_to_tuple(const GlobalState &state, Tuple &t) {
+void HMHeuristic::state_to_tuple(const GlobalState &state, Tuple &t) const {
     for (size_t i = 0; i < g_variable_domain.size(); ++i)
         t.push_back(make_pair(i, state[i]));
 }
 
 
-int HMHeuristic::get_operator_pre_value(const GlobalOperator &op, int var) {
+int HMHeuristic::get_operator_pre_value(
+    const GlobalOperator &op, int var) const {
     for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
         if (op.get_preconditions()[i].var == var)
             return op.get_preconditions()[i].val;
@@ -239,7 +207,7 @@ int HMHeuristic::get_operator_pre_value(const GlobalOperator &op, int var) {
 }
 
 
-void HMHeuristic::get_operator_pre(const GlobalOperator &op, Tuple &t) {
+void HMHeuristic::get_operator_pre(const GlobalOperator &op, Tuple &t) const {
     for (size_t i = 0; i < op.get_preconditions().size(); ++i)
         t.push_back(make_pair(op.get_preconditions()[i].var,
                               op.get_preconditions()[i].val));
@@ -247,7 +215,7 @@ void HMHeuristic::get_operator_pre(const GlobalOperator &op, Tuple &t) {
 }
 
 
-void HMHeuristic::get_operator_eff(const GlobalOperator &op, Tuple &t) {
+void HMHeuristic::get_operator_eff(const GlobalOperator &op, Tuple &t) const {
     for (size_t i = 0; i < op.get_effects().size(); ++i)
         t.push_back(make_pair(op.get_effects()[i].var,
                               op.get_effects()[i].val));
@@ -255,7 +223,7 @@ void HMHeuristic::get_operator_eff(const GlobalOperator &op, Tuple &t) {
 }
 
 
-bool HMHeuristic::is_pre_of(const GlobalOperator &op, int var) {
+bool HMHeuristic::is_pre_of(const GlobalOperator &op, int var) const {
     // TODO if preconditions will be always sorted we should use a log-n
     // search instead
     for (size_t j = 0; j < op.get_preconditions().size(); ++j) {
@@ -267,7 +235,7 @@ bool HMHeuristic::is_pre_of(const GlobalOperator &op, int var) {
 }
 
 
-bool HMHeuristic::is_effect_of(const GlobalOperator &op, int var) {
+bool HMHeuristic::is_effect_of(const GlobalOperator &op, int var) const {
     for (size_t j = 0; j < op.get_effects().size(); ++j) {
         if (op.get_effects()[j].var == var) {
             return true;
@@ -278,7 +246,7 @@ bool HMHeuristic::is_effect_of(const GlobalOperator &op, int var) {
 
 
 bool HMHeuristic::contradict_effect_of(
-    const GlobalOperator &op, int var, int val) {
+    const GlobalOperator &op, int var, int val) const {
     for (size_t j = 0; j < op.get_effects().size(); ++j) {
         if (op.get_effects()[j].var == var && op.get_effects()[j].val != val) {
             return true;
@@ -294,10 +262,44 @@ void HMHeuristic::generate_all_tuples() {
 }
 
 
+void HMHeuristic::generate_all_tuples_aux(int var, int sz, Tuple &base) {
+    int num_variables = g_variable_domain.size();
+    for (int i = var; i < num_variables; ++i) {
+        for (int j = 0; j < g_variable_domain[i]; ++j) {
+            Tuple tup(base);
+            tup.push_back(make_pair(i, j));
+            hm_table[tup] = 0;
+            if (sz > 1) {
+                generate_all_tuples_aux(i + 1, sz - 1, tup);
+            }
+        }
+    }
+}
+
+
 void HMHeuristic::generate_all_partial_tuples(
-    Tuple &base_tuple, vector<Tuple> &res) {
+    Tuple &base_tuple, vector<Tuple> &res) const {
     Tuple t;
     generate_all_partial_tuples_aux(base_tuple, t, 0, m, res);
+}
+
+
+void HMHeuristic::generate_all_partial_tuples_aux(
+    Tuple &base_tuple, Tuple &t, int index, int sz, vector<Tuple> &res) const {
+    if (sz == 1) {
+        for (size_t i = index; i < base_tuple.size(); ++i) {
+            Tuple tup(t);
+            tup.push_back(base_tuple[i]);
+            res.push_back(tup);
+        }
+    } else {
+        for (size_t i = index; i < base_tuple.size(); ++i) {
+            Tuple tup(t);
+            tup.push_back(base_tuple[i]);
+            res.push_back(tup);
+            generate_all_partial_tuples_aux(base_tuple, tup, i + 1, sz - 1, res);
+        }
+    }
 }
 
 
