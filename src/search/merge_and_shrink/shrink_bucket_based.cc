@@ -19,8 +19,8 @@ bool ShrinkBucketBased::reduce_labels_before_shrinking() const {
     return false;
 }
 
-void ShrinkBucketBased::shrink(TransitionSystem &ts, int threshold, bool force) {
-    if (must_shrink(ts, threshold, force)) {
+void ShrinkBucketBased::shrink(TransitionSystem &ts, int threshold) {
+    if (must_shrink(ts, threshold)) {
         vector<Bucket> buckets;
         partition_into_buckets(ts, buckets);
 
