@@ -10,7 +10,7 @@
 class CGCache;
 class DomainTransitionGraph;
 class GlobalState;
-class ValueNode;
+struct ValueNode;
 
 class CGHeuristic : public Heuristic {
     std::vector<AdaptiveQueue<ValueNode *> *> prio_queues;
