@@ -38,7 +38,7 @@ protected:
 
     std::pair<std::size_t, std::size_t> compute_shrink_sizes(
         std::size_t size1, std::size_t size2) const;
-    bool must_shrink(const TransitionSystem &ts, int threshold, bool force) const;
+    bool must_shrink(const TransitionSystem &ts, int threshold) const;
     void apply(TransitionSystem &ts,
                EquivalenceRelation &equivalence_relation,
                int threshold) const;
@@ -80,8 +80,7 @@ public:
     // TODO: Should all three of these be public?
     //       If not, also modify in derived clases.
 
-    virtual void shrink(TransitionSystem &ts, int threshold,
-                        bool force = false) = 0;
+    virtual void shrink(TransitionSystem &ts, int threshold) = 0;
     virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 
     static void add_options_to_parser(OptionParser &parser);

@@ -4,7 +4,7 @@
 #include <vector>
 
 class GlobalState;
-class ValueTransitionLabel;
+struct ValueTransitionLabel;
 
 class CGCache {
     std::vector<std::vector<int> > cache;
@@ -12,6 +12,8 @@ class CGCache {
     std::vector<std::vector<int> > depends_on;
 
     int get_index(int var, const GlobalState &state, int from_val, int to_val) const;
+    int compute_required_cache_size(int var,
+                                    const std::vector<int> &depends_on) const;
 public:
     static const int NOT_COMPUTED = -2;
 

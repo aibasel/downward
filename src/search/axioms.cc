@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
 AxiomEvaluator::AxiomEvaluator() {
