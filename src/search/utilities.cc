@@ -18,7 +18,8 @@ static void exit_handler();
 #include <psapi.h>
 #endif
 
-static char *memory_padding = new char[512 * 1024];
+// See issue 469 for the reasons we chose this limit.
+static char *memory_padding = new char[32 * 1024];
 
 static void out_of_memory_handler();
 static void signal_handler(int signal_number);
@@ -42,6 +43,8 @@ void register_event_handlers() {
     signal(SIGTERM, signal_handler);
     signal(SIGSEGV, signal_handler);
     signal(SIGINT, signal_handler);
+    // This causes problems, see issue479.
+    //signal(SIGXCPU, signal_handler);
 }
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
@@ -50,7 +53,7 @@ void exit_handler(int, void *) {
 #elif OPERATING_SYSTEM == OSX
 void exit_handler() {
 #endif
-    print_peak_memory();
+    print_peak_memory(false);
 }
 #endif
 
@@ -101,13 +104,13 @@ void signal_handler(int signal_number) {
     if (handler_in_progress)
         raise(signal_number);
     handler_in_progress = 1;
-    print_peak_memory();
+    print_peak_memory(false);
     cout << "caught signal " << signal_number << " -- exiting" << endl;
     signal(signal_number, SIG_DFL);
     raise(signal_number);
 }
 
-int get_peak_memory_in_kb() {
+int get_peak_memory_in_kb(bool use_buffered_input) {
     // On error, produces a warning on cerr and returns -1.
     int memory_in_kb = -1;
 
@@ -126,7 +129,11 @@ int get_peak_memory_in_kb() {
     GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc), sizeof(pmc));
     memory_in_kb = pmc.PeakPagefileUsage / 1024;
 #else
-    ifstream procfile("/proc/self/status");
+    ifstream procfile;
+    if (!use_buffered_input) {
+        procfile.rdbuf()->pubsetbuf(0, 0);
+    }
+    procfile.open("/proc/self/status");
     string word;
     while (procfile.good()) {
         procfile >> word;
@@ -146,6 +153,13 @@ int get_peak_memory_in_kb() {
     return memory_in_kb;
 }
 
-void print_peak_memory() {
-    cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
+void print_peak_memory(bool use_buffered_input) {
+    cout << "Peak memory: " << get_peak_memory_in_kb(use_buffered_input) << " KB" << endl;
+}
+
+
+bool is_product_within_limit(int factor1, int factor2, int limit) {
+    assert(factor1 >= 0 && factor1 <= limit);
+    assert(factor2 >= 0 && factor2 <= limit);
+    return factor2 == 0 || factor1 <= limit / factor2;
 }

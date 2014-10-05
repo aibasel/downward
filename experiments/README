@@ -29,3 +29,5 @@ performed:
 * Run configurations on the same tasks multiple times to reduce noise:
   * issue420/issue420-v1-regressions.py
 
+* Independent CompareRevisionReports for portfolio configs and core solvers:
+  * issue462/issue462-opt.py

@@ -46,20 +46,20 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
     vector<TransitionSystem *> sorted_transition_systems;
     vector<int> indices_mapping;
     vector<vector<int> > transition_system_label_ranks;
-    // Precompute a vector sorted_abstrations which contains all exisiting
+    // Precompute a vector sorted_transition_systems which contains all exisiting
     // transition systems from all_transition_systems in the desired order.
     for (int i = all_transition_systems.size() - 1; i >= 0; --i) {
         // We iterate from back to front, considering the composite
         // transition systems in the order from "most recently added" (= at the back
         // of the vector) to "first added" (= at border_atomics_composites).
-        // Afterwards, we consider the atomic abstrations in the "regular"
+        // Afterwards, we consider the atomic transition systems in the "regular"
         // order from the first one until the last one. See also explanation
         // at get_corrected_index().
-        int abs_index = get_corrected_index(i);
-        TransitionSystem *transition_system = all_transition_systems[abs_index];
+        int ts_index = get_corrected_index(i);
+        TransitionSystem *transition_system = all_transition_systems[ts_index];
         if (transition_system) {
             sorted_transition_systems.push_back(transition_system);
-            indices_mapping.push_back(abs_index);
+            indices_mapping.push_back(ts_index);
             transition_system_label_ranks.push_back(vector<int>());
             vector<int> &label_ranks = transition_system_label_ranks[transition_system_label_ranks.size() - 1];
             transition_system->compute_label_ranks(label_ranks);
@@ -69,17 +69,17 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
     int first = -1;
     int second = -1;
     int minimum_weight = INF;
-    for (size_t abs_index = 0; abs_index < sorted_transition_systems.size(); ++abs_index) {
-        TransitionSystem *transition_system = sorted_transition_systems[abs_index];
+    for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
+        TransitionSystem *transition_system = sorted_transition_systems[ts_index];
         assert(transition_system);
-        vector<int> &label_ranks = transition_system_label_ranks[abs_index];
+        vector<int> &label_ranks = transition_system_label_ranks[ts_index];
         assert(!label_ranks.empty());
-        for (size_t other_abs_index = abs_index + 1; other_abs_index < sorted_transition_systems.size();
-             ++other_abs_index) {
-            TransitionSystem *other_transition_system = sorted_transition_systems[other_abs_index];
+        for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
+             ++other_ts_index) {
+            TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
             assert(other_transition_system);
             if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
-                vector<int> &other_label_ranks = transition_system_label_ranks[other_abs_index];
+                vector<int> &other_label_ranks = transition_system_label_ranks[other_ts_index];
                 assert(!other_label_ranks.empty());
                 assert(label_ranks.size() == other_label_ranks.size());
                 int pair_weight = INF;
@@ -92,8 +92,8 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
                 }
                 if (pair_weight < minimum_weight) {
                     minimum_weight = pair_weight;
-                    first = indices_mapping[abs_index];
-                    second = indices_mapping[other_abs_index];
+                    first = indices_mapping[ts_index];
+                    second = indices_mapping[other_ts_index];
                     assert(all_transition_systems[first] == transition_system);
                     assert(all_transition_systems[second] == other_transition_system);
                 }
@@ -107,16 +107,16 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
         assert(second == -1);
         assert(minimum_weight == INF);
 
-        for (size_t abs_index = 0; abs_index < sorted_transition_systems.size(); ++abs_index) {
-            TransitionSystem *transition_system = sorted_transition_systems[abs_index];
+        for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
+            TransitionSystem *transition_system = sorted_transition_systems[ts_index];
             assert(transition_system);
-            for (size_t other_abs_index = abs_index + 1; other_abs_index < sorted_transition_systems.size();
-                 ++other_abs_index) {
-                TransitionSystem *other_transition_system = sorted_transition_systems[other_abs_index];
+            for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
+                 ++other_ts_index) {
+                TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
                 assert(other_transition_system);
                 if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
-                    first = indices_mapping[abs_index];
-                    second = indices_mapping[other_abs_index];
+                    first = indices_mapping[ts_index];
+                    second = indices_mapping[other_ts_index];
                     assert(all_transition_systems[first] == transition_system);
                     assert(all_transition_systems[second] == other_transition_system);
                 }

@@ -40,6 +40,11 @@ using namespace __gnu_cxx;
 
 const int INF = numeric_limits<int>::max();
 
+
+const int TransitionSystem::PRUNED_STATE;
+const int TransitionSystem::DISTANCE_UNKNOWN;
+
+
 TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
       transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
@@ -102,7 +107,7 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
     }
     // distances must be computed
     if (max_h == DISTANCE_UNKNOWN) {
-        compute_distances();
+        compute_distances_and_prune();
     }
     assert(label_ranks.empty());
     label_ranks.reserve(transitions_by_label.size());
@@ -123,6 +128,20 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
     }
 }
 
+void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
+    assert(int(to_be_pruned_states.size()) == num_states);
+    vector<slist<AbstractStateRef> > equivalence_relation;
+    equivalence_relation.reserve(num_states);
+    for (int state = 0; state < num_states; ++state) {
+        if (!to_be_pruned_states[state]) {
+            slist<AbstractStateRef> group;
+            group.push_front(state);
+            equivalence_relation.push_back(group);
+        }
+    }
+    apply_abstraction(equivalence_relation);
+}
+
 bool TransitionSystem::are_distances_computed() const {
     if (max_h == DISTANCE_UNKNOWN) {
         assert(max_f == DISTANCE_UNKNOWN);
@@ -134,7 +153,18 @@ bool TransitionSystem::are_distances_computed() const {
     return true;
 }
 
-void TransitionSystem::compute_distances() {
+void TransitionSystem::compute_distances_and_prune() {
+    /* This method computes the distances of abstract states from the
+       abstract initial state ("abstract g") and from the abstract
+       goal states ("abstract h"). It also prunes all states that are
+       unreachable (abstract g is infinite) or irrelevant (abstact h
+       is infinite).
+
+       In addition to its main job of pruning state and setting
+       init_distances and goal_distances, it also sets max_f, max_g
+       and max_h.
+    */
+
     cout << tag() << flush;
     if (are_distances_computed()) {
         cout << "distances already known" << endl;
@@ -151,9 +181,20 @@ void TransitionSystem::compute_distances() {
         return;
     }
 
+    bool is_unit_cost = true;
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
+        if (relevant_labels[label_no]) {
+            const Label *label = labels->get_label_by_index(label_no);
+            if (label->get_cost() != 1) {
+                is_unit_cost = false;
+                break;
+            }
+        }
+    }
+
     init_distances.resize(num_states, INF);
     goal_distances.resize(num_states, INF);
-    if (labels->is_unit_cost()) {
+    if (is_unit_cost) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
@@ -168,6 +209,7 @@ void TransitionSystem::compute_distances() {
     max_h = 0;
 
     int unreachable_count = 0, irrelevant_count = 0;
+    vector<bool> to_be_pruned_states(num_states, false);
     for (int i = 0; i < num_states; ++i) {
         int g = init_distances[i];
         int h = goal_distances[i];
@@ -176,8 +218,10 @@ void TransitionSystem::compute_distances() {
         // course.)
         if (g == INF) {
             ++unreachable_count;
+            to_be_pruned_states[i] = true;
         } else if (h == INF) {
             ++irrelevant_count;
+            to_be_pruned_states[i] = true;
         } else {
             max_f = max(max_f, g + h);
             max_g = max(max_g, g);
@@ -188,22 +232,7 @@ void TransitionSystem::compute_distances() {
         cout << tag()
              << "unreachable: " << unreachable_count << " states, "
              << "irrelevant: " << irrelevant_count << " states" << endl;
-        /* Call shrink to discard unreachable and irrelevant states.
-           The strategy must be one that prunes unreachable/irrelevant
-           notes, but beyond that the details don't matter, as there
-           is no need to actually shrink. So faster methods should be
-           preferred. */
-
-        /* TODO: Create a dedicated shrinking strategy from scratch,
-           e.g. a bucket-based one that simply generates one good and
-           one bad bucket? */
-
-        // TODO/HACK: The way this is created is of course unspeakably
-        // ugly. We'll leave this as is for now because there will likely
-        // be more structural changes soon.
-        ShrinkStrategy *shrink_temp = ShrinkFH::create_default(num_states);
-        shrink_temp->shrink(*this, num_states, true);
-        delete shrink_temp;
+        discard_states(to_be_pruned_states);
     }
 }
 
@@ -588,8 +617,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
         const Label *label = labels->get_label_by_index(label_no);
-        const vector<GlobalCondition> &preconditions = label->get_preconditions();
-        const vector<GlobalEffect> &effects = label->get_effects();
+        const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(label);
+        const vector<GlobalCondition> &preconditions = op_label->get_preconditions();
+        const vector<GlobalEffect> &effects = op_label->get_effects();
         hash_map<int, int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (size_t i = 0; i < preconditions.size(); ++i)
@@ -599,7 +629,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             int var = effects[i].var;
             has_effect_on_var[var] = true;
             int post_value = effects[i].val;
-            TransitionSystem *abs = result[var];
+            TransitionSystem *ts = result[var];
 
             // Determine possible values that var can have when this
             // operator is applicable.
@@ -639,7 +669,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
                    a condition on var and this condition is not satisfied. */
                 if (cond_effect_pre_value == -1 || cond_effect_pre_value == value) {
                     Transition trans(value, post_value);
-                    abs->transitions_by_label[label_no].push_back(trans);
+                    ts->transitions_by_label[label_no].push_back(trans);
                 }
             }
 
@@ -653,21 +683,21 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
                        fails to trigger if this condition is false. */
                     if (has_other_effect_cond || value != cond_effect_pre_value) {
                         Transition loop(value, value);
-                        abs->transitions_by_label[label_no].push_back(loop);
+                        ts->transitions_by_label[label_no].push_back(loop);
                     }
                 }
             }
 
-            abs->relevant_labels[label_no] = true;
+            ts->relevant_labels[label_no] = true;
         }
         for (size_t i = 0; i < preconditions.size(); ++i) {
             int var = preconditions[i].var;
             if (!has_effect_on_var[var]) {
                 int value = preconditions[i].val;
-                TransitionSystem *abs = result[var];
+                TransitionSystem *ts = result[var];
                 Transition trans(value, value);
-                abs->transitions_by_label[label_no].push_back(trans);
-                abs->relevant_labels[label_no] = true;
+                ts->transitions_by_label[label_no].push_back(trans);
+                ts->relevant_labels[label_no] = true;
             }
         }
     }
@@ -716,35 +746,35 @@ AtomicTransitionSystem::~AtomicTransitionSystem() {
 }
 
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
-                                           TransitionSystem *abs1,
-                                           TransitionSystem *abs2)
+                                                     TransitionSystem *ts1,
+                                                     TransitionSystem *ts2)
     : TransitionSystem(labels) {
-    cout << "Merging " << abs1->description() << " and "
-         << abs2->description() << endl;
+    cout << "Merging " << ts1->description() << " and "
+         << ts2->description() << endl;
 
-    assert(abs1->is_solvable() && abs2->is_solvable());
-    assert(abs1->is_normalized() && abs2->is_normalized());
+    assert(ts1->is_solvable() && ts2->is_solvable());
+    assert(ts1->is_normalized() && ts2->is_normalized());
 
-    components[0] = abs1;
-    components[1] = abs2;
+    components[0] = ts1;
+    components[1] = ts2;
 
-    ::set_union(abs1->varset.begin(), abs1->varset.end(), abs2->varset.begin(),
-                abs2->varset.end(), back_inserter(varset));
+    ::set_union(ts1->varset.begin(), ts1->varset.end(), ts2->varset.begin(),
+                ts2->varset.end(), back_inserter(varset));
 
-    int abs1_size = abs1->size();
-    int abs2_size = abs2->size();
-    num_states = abs1_size * abs2_size;
+    int ts1_size = ts1->size();
+    int ts2_size = ts2->size();
+    num_states = ts1_size * ts2_size;
     goal_states.resize(num_states, false);
-    goal_relevant = (abs1->goal_relevant || abs2->goal_relevant);
+    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
 
-    lookup_table.resize(abs1->size(), vector<AbstractStateRef> (abs2->size()));
-    for (int s1 = 0; s1 < abs1_size; ++s1) {
-        for (int s2 = 0; s2 < abs2_size; ++s2) {
-            int state = s1 * abs2_size + s2;
+    lookup_table.resize(ts1->size(), vector<AbstractStateRef> (ts2->size()));
+    for (int s1 = 0; s1 < ts1_size; ++s1) {
+        for (int s2 = 0; s2 < ts2_size; ++s2) {
+            int state = s1 * ts2_size + s2;
             lookup_table[s1][s2] = state;
-            if (abs1->goal_states[s1] && abs2->goal_states[s2])
+            if (ts1->goal_states[s1] && ts2->goal_states[s2])
                 goal_states[state] = true;
-            if (s1 == abs1->init_state && s2 == abs2->init_state)
+            if (s1 == ts1->init_state && s2 == ts2->init_state)
                 init_state = state;
         }
     }
@@ -762,18 +792,20 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
        first transition system and multiplying in out with the transitions of the
        second transition, we obtain the desired order (a,c,d).
      */
-    int multiplier = abs2_size;
+    int multiplier = ts2_size;
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        bool relevant1 = abs1->relevant_labels[label_no];
-        bool relevant2 = abs2->relevant_labels[label_no];
+        bool relevant1 = ts1->relevant_labels[label_no];
+        bool relevant2 = ts2->relevant_labels[label_no];
         if (relevant1 || relevant2) {
             relevant_labels[label_no] = true;
             vector<Transition> &transitions = transitions_by_label[label_no];
             const vector<Transition> &bucket1 =
-                abs1->transitions_by_label[label_no];
+                ts1->transitions_by_label[label_no];
             const vector<Transition> &bucket2 =
-                abs2->transitions_by_label[label_no];
+                ts2->transitions_by_label[label_no];
             if (relevant1 && relevant2) {
+                if (bucket1.size() * bucket2.size() > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
@@ -788,11 +820,13 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant1) {
                 assert(!relevant2);
-                transitions.reserve(bucket1.size() * abs2_size);
+                if (bucket1.size() * ts2_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
+                transitions.reserve(bucket1.size() * ts2_size);
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
                     int target1 = bucket1[i].target;
-                    for (int s2 = 0; s2 < abs2_size; ++s2) {
+                    for (int s2 = 0; s2 < ts2_size; ++s2) {
                         int src = src1 * multiplier + s2;
                         int target = target1 * multiplier + s2;
                         transitions.push_back(Transition(src, target));
@@ -800,8 +834,10 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant2) {
                 assert(!relevant1);
-                transitions.reserve(bucket2.size() * abs1_size);
-                for (int s1 = 0; s1 < abs1_size; ++s1) {
+                if (bucket2.size() * ts1_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
+                transitions.reserve(bucket2.size() * ts1_size);
+                for (int s1 = 0; s1 < ts1_size; ++s1) {
                     for (size_t i = 0; i < bucket2.size(); ++i) {
                         int src2 = bucket2[i].src;
                         int target2 = bucket2[i].target;
@@ -1082,7 +1118,7 @@ void TransitionSystem::dump_relevant_labels() const {
 }
 
 void TransitionSystem::dump() const {
-    cout << "digraph abstract_transition_graph";
+    cout << "digraph transition system";
     for (size_t i = 0; i < varset.size(); ++i)
         cout << "_" << varset[i];
     cout << " {" << endl;
