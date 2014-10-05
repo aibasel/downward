@@ -14,14 +14,6 @@ Heuristic::Heuristic(const Options &opts)
     : task(*opts.get<Task *>("task")),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
-
-    is_unit_cost = true;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        if (get_adjusted_cost(g_operators[i]) != 1) {
-            is_unit_cost = false;
-            break;
-        }
-    }
 }
 
 Heuristic::~Heuristic() {

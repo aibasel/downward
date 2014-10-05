@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    labels = new Labels(is_unit_cost_problem(), opts, cost_type);
+    labels = new Labels(opts, cost_type);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -60,16 +60,10 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
 
     // vector of all transition systems. entries with 0 have been merged.
     vector<TransitionSystem *> all_transition_systems;
+    if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
+        exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
     TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels);
-
-    cout << "Shrinking atomic transition systems..." << endl;
-    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-        all_transition_systems[i]->compute_distances();
-        if (!all_transition_systems[i]->is_solvable())
-            return all_transition_systems[i];
-        shrink_strategy->shrink_atomic(*all_transition_systems[i]);
-    }
 
     cout << "Merging transition systems..." << endl;
 
@@ -98,8 +92,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
 
         // distances need to be computed before shrinking
-        transition_system->compute_distances();
-        other_transition_system->compute_distances();
+        transition_system->compute_distances_and_prune();
+        other_transition_system->compute_distances_and_prune();
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -128,9 +122,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
             transition_system->statistics(use_expensive_statistics);
         }
 
-        TransitionSystem *new_transition_system = new CompositeTransitionSystem(labels,
-                                                                transition_system,
-                                                                other_transition_system);
+        TransitionSystem *new_transition_system = new CompositeTransitionSystem(
+            labels, transition_system, other_transition_system);
 
         transition_system->release_memory();
         other_transition_system->release_memory();
@@ -155,7 +148,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
     }
 
-    final_transition_system->compute_distances();
+    final_transition_system->compute_distances_and_prune();
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 
@@ -257,35 +250,54 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
     vector<string> label_reduction_method;
+    vector<string> label_reduction_method_doc;
     label_reduction_method.push_back("NONE");
-    label_reduction_method.push_back("OLD");
+    label_reduction_method_doc.push_back(
+        "no label reduction will be performed");
     label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
+    label_reduction_method_doc.push_back(
+        "compute the 'combinable relation' only for the two transition "
+        "systems being merged next");
     label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
+    label_reduction_method_doc.push_back(
+        "compute the 'combinable relation' for labels once for every "
+        "transition  system and reduce labels");
     label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
-    parser.add_enum_option("label_reduction_method", label_reduction_method,
-                           "label reduction method: "
-                           "none: no label reduction will be performed "
-                           "old: emulate the label reduction as desribed in the "
-                           "IJCAI 2011 paper by Nissim, Hoffmann and Helmert."
-                           "two_transition_systems: compute the 'combinable relation' "
-                           "for labels only for the two transition systems that will "
-                           "be merged next and reduce labels."
-                           "all_transition_systems: compute the 'combinable relation' "
-                           "for labels once for every transition system and reduce "
-                           "labels."
-                           "all_transition_systems_with_fixpoint: keep computing the "
-                           "'combinable relation' for labels iteratively for all "
-                           "transition systems until no more labels can be reduced.",
-                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
+    label_reduction_method_doc.push_back(
+        "keep computing the 'combinable relation' for labels iteratively "
+        "for all transition systems until no more labels can be reduced");
+    parser.add_enum_option("label_reduction_method",
+                           label_reduction_method,
+                           "Label reduction method. See the AAAI14 by Sievers "
+                           "et al. for explanation of the default label "
+                           "reduction method and the 'combinable relation'.",
+                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
+                           label_reduction_method_doc);
+
     vector<string> label_reduction_system_order;
+    vector<string> label_reduction_system_order_doc;
     label_reduction_system_order.push_back("REGULAR");
+    label_reduction_system_order_doc.push_back(
+        "transition systems are considered in the FD given order for "
+        "atomic transition systems and in the order of their creation "
+        "for composite transition system.");
     label_reduction_system_order.push_back("REVERSE");
+    label_reduction_system_order_doc.push_back(
+        "inverse of REGULAR");
     label_reduction_system_order.push_back("RANDOM");
-    parser.add_enum_option("label_reduction_system_order", label_reduction_system_order,
-                           "order of transition systems for the label reduction methods "
-                           "that iterate over the set of all transition systems. only useful "
-                           "for the choices all_transition_systems and all_transition_systems_with_fixpoint "
-                           "for the option label_reduction_method.", "RANDOM");
+    label_reduction_system_order_doc.push_back(
+        "random order");
+    parser.add_enum_option("label_reduction_system_order",
+                           label_reduction_system_order,
+                           "Order of transition systems for the label reduction "
+                           "methods that iterate over the set of all transition "
+                           "systems. Only useful for the choices "
+                           "all_transition_systems and "
+                           "all_transition_systems_with_fixpoint for the option "
+                           "label_reduction_method.",
+                           "RANDOM",
+                           label_reduction_system_order_doc);
+
     parser.add_option<bool>("expensive_statistics",
                             "show statistics on \"unique unlabeled edges\" (WARNING: "
                             "these are *very* slow, i.e. too expensive to show by default "

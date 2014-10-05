@@ -4,7 +4,7 @@
 #include "shrink_strategy.h"
 
 class Options;
-class Signature;
+struct Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
     enum AtLimit {
@@ -23,17 +23,15 @@ class ShrinkBisimulation : public ShrinkStrategy {
     const bool group_by_h;
     const AtLimit at_limit;
 
-    void compute_abstraction(
-        TransitionSystem &abs,
-        int target_size,
-        EquivalenceRelation &equivalence_relation);
+    void compute_abstraction(TransitionSystem &ts,
+                             int target_size,
+                             EquivalenceRelation &equivalence_relation);
 
-    int initialize_groups(const TransitionSystem &abs,
+    int initialize_groups(const TransitionSystem &ts,
                           std::vector<int> &state_to_group);
-    void compute_signatures(
-        const TransitionSystem &abs,
-        std::vector<Signature> &signatures,
-        std::vector<int> &state_to_group);
+    void compute_signatures(const TransitionSystem &ts,
+                            std::vector<Signature> &signatures,
+                            std::vector<int> &state_to_group);
 public:
     ShrinkBisimulation(const Options &opts);
     virtual ~ShrinkBisimulation();
@@ -43,11 +41,8 @@ public:
 
     virtual bool reduce_labels_before_shrinking() const;
 
-    virtual void shrink(TransitionSystem &abs, int target, bool force = false);
-    virtual void shrink_atomic(TransitionSystem &abs);
-    virtual void shrink_before_merge(TransitionSystem &abs1, TransitionSystem &abs2);
-
-    static ShrinkStrategy *create_default();
+    virtual void shrink(TransitionSystem &ts, int target);
+    virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 };
 
 #endif

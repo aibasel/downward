@@ -23,7 +23,6 @@ class Heuristic : public ScalarEvaluator {
     // estimates, eg. when re-opening a search node
 
     std::vector<const GlobalOperator *> preferred_operators;
-    bool is_unit_cost;
 protected:
     Task task;
     OperatorCost cost_type;
@@ -36,9 +35,6 @@ protected:
     void set_preferred(const GlobalOperator *op);
     int get_adjusted_cost(const GlobalOperator &op) const;
     int get_adjusted_cost(const Operator &op) const;
-    bool is_unit_cost_problem() const {
-        return is_unit_cost;
-    }
 public:
     Heuristic(const Options &options);
     virtual ~Heuristic();
