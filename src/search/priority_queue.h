@@ -169,7 +169,7 @@ public:
     virtual void push(int key, const Value &value) {
         ++num_entries;
         ++num_pushes;
-        assert(num_pushes); // Check against overflow.
+        assert(num_pushes > 0); // Check against overflow.
         int num_buckets = buckets.size();
         if (key >= num_buckets)
             buckets.resize(key + 1);
