@@ -156,3 +156,10 @@ int get_peak_memory_in_kb(bool use_buffered_input) {
 void print_peak_memory(bool use_buffered_input) {
     cout << "Peak memory: " << get_peak_memory_in_kb(use_buffered_input) << " KB" << endl;
 }
+
+
+bool is_product_within_limit(int factor1, int factor2, int limit) {
+    assert(factor1 >= 0 && factor1 <= limit);
+    assert(factor2 >= 0 && factor2 <= limit);
+    return factor2 == 0 || factor1 <= limit / factor2;
+}

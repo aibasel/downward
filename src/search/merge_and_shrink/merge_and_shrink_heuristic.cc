@@ -60,6 +60,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
 
     // vector of all transition systems. entries with 0 have been merged.
     vector<TransitionSystem *> all_transition_systems;
+    if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
+        exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
     TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels);
 
@@ -90,8 +92,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
 
         // distances need to be computed before shrinking
-        transition_system->compute_distances();
-        other_transition_system->compute_distances();
+        transition_system->compute_distances_and_prune();
+        other_transition_system->compute_distances_and_prune();
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -146,7 +148,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
     }
 
-    final_transition_system->compute_distances();
+    final_transition_system->compute_distances_and_prune();
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 
