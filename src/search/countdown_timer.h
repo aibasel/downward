@@ -1,0 +1,18 @@
+#ifndef COUNTDOWN_TIMER_H
+#define COUNTDOWN_TIMER_H
+
+#include "timer.h"
+
+class CountdownTimer {
+    Timer timer;
+    double max_time;
+public:
+    explicit CountdownTimer(double max_time);
+    ~CountdownTimer();
+    double get_elapsed_time() const;
+    bool is_expired() const;
+};
+
+std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
+
+#endif
