@@ -1,0 +1,5 @@
+In order to use the supplied experiment scripts, you need to adapt them
+at the following places:
+- all exp scripts: REPO_NAME/REPO: provide the path to your repository
+- fetch exp scripts: update paths to fetch from
+- standard experiment: update paths
