@@ -138,6 +138,17 @@ public:
     //       a mutable attribute?
 
     bool are_distances_computed() const;
+    /*
+      A transition system is normalized if:
+       - Transitions are sorted (by labels, by states) and there are no
+         duplicates.
+       - All labels are incorporated
+       - Distances are computed and stored
+      TODO: combine is_normalized with are_distances_computed()
+      NOTE: normalize() does *not* compute distances, as to avoid recomputing
+      distances after every label reduction. We compute distances after
+      creating transition systems and after applying abstractions.
+    */
     bool is_normalized() const;
     void normalize();
     EquivalenceRelation *compute_local_equivalence_relation() const;

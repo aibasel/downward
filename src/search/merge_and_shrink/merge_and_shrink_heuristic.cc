@@ -94,7 +94,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
 
         if (!transition_system->are_distances_computed()
-                || !!other_transition_system->are_distances_computed()) {
+                || !other_transition_system->are_distances_computed()) {
             // TODO: do this for all transition systems?
             exit_with(EXIT_CRITICAL_ERROR);
         }

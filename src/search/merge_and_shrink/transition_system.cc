@@ -554,8 +554,6 @@ void TransitionSystem::normalize() {
     num_labels = labels->get_size();
     transitions_sorted_unique = true;
     assert(is_normalized());
-    clear_distances();
-    compute_distances_and_prune();
 }
 
 EquivalenceRelation *TransitionSystem::compute_local_equivalence_relation() const {
