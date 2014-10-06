@@ -41,6 +41,10 @@ class LabelReducer {
     LabelReductionSystemOrder label_reduction_system_order;
     std::vector<int> transition_system_order;
 
+    void normalize_and_del_equiv_rel(
+        const std::vector<TransitionSystem *> &all_transition_systems,
+        std::vector<EquivalenceRelation *> &equivalence_relations) const;
+
     // exact label reduction
     EquivalenceRelation *compute_outside_equivalence(
         int ts_index,

@@ -33,6 +33,20 @@ LabelReducer::LabelReducer(const Options &options)
     }
 }
 
+void LabelReducer::normalize_and_del_equiv_rel(
+    const vector<TransitionSystem *> &all_transition_systems,
+    vector<EquivalenceRelation *> &equivalence_relations) const {
+    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
+        if (all_transition_systems[i]) {
+            all_transition_systems[i]->normalize();
+            if (equivalence_relations[i]) {
+                delete equivalence_relations[i];
+                equivalence_relations[i] = 0;
+            }
+        }
+    }
+}
+
 void LabelReducer::reduce_labels(pair<int, int> next_merge,
                                  const vector<TransitionSystem *> &all_transition_systems,
                                  std::vector<Label *> &labels) const {
@@ -61,15 +75,7 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
             labels, local_equivalence_relations);
         bool have_reduced = reduce_exactly(relation, labels);
         if (have_reduced) {
-            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-                if (all_transition_systems[i]) {
-                    all_transition_systems[i]->apply_label_reduction();
-                    if (local_equivalence_relations[i]) {
-                        delete local_equivalence_relations[i];
-                        local_equivalence_relations[i] = 0;
-                    }
-                }
-            }
+            normalize_and_del_equiv_rel(all_transition_systems, local_equivalence_relations);
         }
         delete relation;
 
@@ -78,18 +84,9 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
             labels, local_equivalence_relations);
         have_reduced = reduce_exactly(relation, labels);
         if (have_reduced) {
-            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-                if (all_transition_systems[i]) {
-                    all_transition_systems[i]->apply_label_reduction();
-                    if (local_equivalence_relations[i]) {
-                        delete local_equivalence_relations[i];
-                        local_equivalence_relations[i] = 0;
-                    }
-                }
-            }
+            normalize_and_del_equiv_rel(all_transition_systems, local_equivalence_relations);
         }
         delete relation;
-
         return;
     }
 
@@ -130,16 +127,10 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
 
         if (have_reduced) {
             num_unsuccessful_iterations = 0;
-            for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-                if (all_transition_systems[i]) {
-                    all_transition_systems[i]->apply_label_reduction();
-                    if (local_equivalence_relations[i]) {
-                        delete local_equivalence_relations[i];
-                        local_equivalence_relations[i] = 0;
-                    }
-                }
-            }
+            normalize_and_del_equiv_rel(all_transition_systems, local_equivalence_relations);
         } else {
+            // Even if the transition system has been removed, we need to count
+            // it as unsuccessful iterations (the size of the vector matters).
             ++num_unsuccessful_iterations;
         }
         if (num_unsuccessful_iterations == num_transition_systems - 1)
@@ -156,9 +147,6 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
             }
         }
     }
-
-    for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
-        delete local_equivalence_relations[i];
 }
 
 EquivalenceRelation *LabelReducer::compute_outside_equivalence(
@@ -173,17 +161,9 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     assert(transition_system);
     //cout << transition_system->tag() << "compute combinable labels" << endl;
 
-    // We always normalize the "starting" transition system and delete the cached
-    // local equivalence relation (if exists) because this does not happen
-    // in the refinement loop below.
-    //transition_system->normalize();
     if (!transition_system->is_normalized()) {
         exit_with(EXIT_CRITICAL_ERROR);
     }
-//    if (local_equivalence_relations[ts_index]) {
-//        delete local_equivalence_relations[ts_index];
-//        local_equivalence_relations[ts_index] = 0;
-//    }
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
@@ -204,13 +184,6 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
         if (!ts || ts == transition_system) {
             continue;
         }
-        //if (!ts->is_normalized()) {
-        //    ts->normalize();
-//            if (local_equivalence_relations[i]) {
-//                delete local_equivalence_relations[i];
-//                local_equivalence_relations[i] = 0;
-//            }
-        //}
         if (!ts->is_normalized()) {
             exit_with(EXIT_CRITICAL_ERROR);
         }
