@@ -85,21 +85,19 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             reduced_labels = true;
-            //transition_system->normalize();
-            if (!transition_system->is_normalized()) {
-                exit_with(EXIT_CRITICAL_ERROR);
-            }
-            //other_transition_system->normalize();
-            if (!other_transition_system->is_normalized()) {
+            if (!transition_system->is_normalized()
+                    || !other_transition_system->is_normalized()) {
                 exit_with(EXIT_CRITICAL_ERROR);
             }
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
         }
 
-        // distances need to be computed before shrinking
-        //transition_system->compute_distances_and_prune();
-        //other_transition_system->compute_distances_and_prune();
+        if (!transition_system->are_distances_computed()
+                || !!other_transition_system->are_distances_computed()) {
+            // TODO: do this for all transition systems?
+            exit_with(EXIT_CRITICAL_ERROR);
+        }
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -120,12 +118,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (!reduced_labels) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
         }
-        //transition_system->normalize();
-        if (!transition_system->is_normalized()) {
-            exit_with(EXIT_CRITICAL_ERROR);
-        }
-        //other_transition_system->normalize();
-        if (!other_transition_system->is_normalized()) {
+        if (!transition_system->is_normalized()
+                || !other_transition_system->is_normalized()) {
             exit_with(EXIT_CRITICAL_ERROR);
         }
         if (!reduced_labels) {
@@ -160,7 +154,9 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
     }
 
-    //final_transition_system->compute_distances_and_prune();
+    if (!final_transition_system->are_distances_computed()) {
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 

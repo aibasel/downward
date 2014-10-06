@@ -75,6 +75,8 @@ class TransitionSystem {
     int max_g;
     int max_h;
 
+    bool transitions_sorted_unique;
+
     bool goal_relevant;
 
     mutable int peak_memory;
@@ -85,7 +87,6 @@ class TransitionSystem {
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
     void discard_states(const std::vector<bool> &to_be_pruned_states);
-    bool are_distances_computed() const;
     void compute_distances_and_prune();
 
     // are_transitions_sorted_unique() is used to determine whether the
@@ -93,14 +94,15 @@ class TransitionSystem {
     // construction (composite transition system) and shrinking (apply_abstraction).
     bool are_transitions_sorted_unique() const;
 
-
-
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
 
-    void normalize();
-
-    // see tag()
+    /*
+      Print "atomic transition system #x" for atomic transition systems,
+      where x is the variable. For composite transition systems, print
+      "transition system (xyz)" for the transition system containing variables
+      x, y and z.
+    */
     virtual std::string description() const = 0;
 
 protected:
@@ -114,20 +116,14 @@ public:
     explicit TransitionSystem(Labels *labels);
     virtual ~TransitionSystem();
 
-    // non-const methods:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels);
     void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
-    void apply_label_reduction();
     void release_memory();
 
-    // const methods:
-
-    // Method to identify the transition system in output.
-    // tag is a convience method that upper-cases the first letter of
-    // description and appends ": ";
+    // Method to identify the transition system in output. It upper-cases the
+    // first letter of description() and appends ": ".
     std::string tag() const;
-
 
     bool is_solvable() const;
 
@@ -141,7 +137,9 @@ public:
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
 
+    bool are_distances_computed() const;
     bool is_normalized() const;
+    void normalize();
     EquivalenceRelation *compute_local_equivalence_relation() const;
 
     void dump_relevant_labels() const;
