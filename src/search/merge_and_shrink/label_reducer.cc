@@ -87,6 +87,9 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
             normalize_and_del_equiv_rel(all_transition_systems, local_equivalence_relations);
         }
         delete relation;
+
+        for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+            delete local_equivalence_relations[i];
         return;
     }
 
@@ -147,6 +150,9 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
             }
         }
     }
+
+    for (size_t i = 0; i < local_equivalence_relations.size(); ++i)
+        delete local_equivalence_relations[i];
 }
 
 EquivalenceRelation *LabelReducer::compute_outside_equivalence(
