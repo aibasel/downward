@@ -106,6 +106,12 @@ public:
     static inline SearchEngine *parse(OptionParser &p);
 };
 
+template <>
+class TokenParser<Synergy *> {
+public:
+    static inline Synergy *parse(OptionParser &p);
+};
+
 
 template <>
 class TokenParser<ParseTree> {
@@ -400,6 +406,10 @@ ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
     return lookup_in_registry<ShrinkStrategy>(p);
 }
 
+
+Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
+    return lookup_in_registry<Synergy>(p);
+}
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
     return *p.get_parse_tree();

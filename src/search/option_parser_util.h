@@ -20,6 +20,7 @@ class ShrinkStrategy;
 class LandmarkGraph;
 class Heuristic;
 class ScalarEvaluator;
+class Synergy;
 class SearchEngine;
 class OptionParser;
 template<class Entry>
@@ -163,6 +164,11 @@ Predefinitions<T> *Predefinitions<T>::instance_ = 0;
 
 
 
+class Synergy {
+public:
+    std::vector<Heuristic *> heuristics;
+};
+
 //TypeNamer prints out names of types.
 //There's something built in for this (typeid().name()), but the output is not always very readable
 
@@ -236,6 +242,12 @@ struct TypeNamer<ParseTree> {
     }
 };
 
+template <>
+struct TypeNamer<Synergy *> {
+    static std::string name() {
+        return "Synergy";
+    }
+};
 
 template <>
 struct TypeNamer<MergeStrategy *> {

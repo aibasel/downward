@@ -9,6 +9,7 @@
 #include "../heuristic.h"
 
 class LandmarkCountHeuristic : public Heuristic {
+    friend class LamaFFSynergy;
     LandmarkGraph &lgraph;
     Exploration *exploration;
     bool use_preferred_operators;
