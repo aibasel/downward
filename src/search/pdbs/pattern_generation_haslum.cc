@@ -4,6 +4,7 @@
 #include "pdb_heuristic.h"
 
 #include "../causal_graph.h"
+#include "../countdown_timer.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
@@ -20,7 +21,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <exception>
-#include <limits>
 #include <set>
 #include <string>
 #include <utility>
@@ -123,7 +123,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
         // Avoid calling times() for shorter traces.
-        if (max_time != numeric_limits<double>::infinity() && (*hill_climbing_timer)() >= max_time)
+        if (hill_climbing_timer->is_expired())
             throw HillClimbingTimeout();
 
         // calculate length of random walk accoring to a binomial distribution
@@ -171,7 +171,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
     // Iterate over all candidates and search for the best improving pattern/pdb
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
         // Avoid calling times() for shorter traces.
-        if (max_time != numeric_limits<double>::infinity() && (*hill_climbing_timer)() >= max_time)
+        if (hill_climbing_timer->is_expired())
             throw HillClimbingTimeout();
 
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
@@ -243,7 +243,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 
 void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                                             vector<vector<int> > &initial_candidate_patterns) {
-    hill_climbing_timer = new Timer();
+    hill_climbing_timer = new CountdownTimer(max_time);
     // stores all candidate patterns generated so far in order to avoid duplicates
     set<vector<int> > generated_patterns;
     // new_candidates is the set of new pattern candidates from the last call to generate_candidate_patterns
@@ -301,7 +301,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             delete candidate_pdbs[best_pdb_index];
             candidate_pdbs[best_pdb_index] = 0;
 
-            cout << "Hill climbing time so far: " << *hill_climbing_timer << endl;
+            cout << "Hill climbing time so far: "
+                 << hill_climbing_timer->get_elapsed_time() << endl;
         }
     } catch (HillClimbingTimeout &e) {
         cout << "Time limit reached. Abort hill climbing." << endl;
@@ -319,7 +320,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     cout << "iPDB: generated = " << generated_patterns.size() << endl;
     cout << "iPDB: rejected = " << num_rejected << endl;
     cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
-    cout << "iPDB: hill climbing time: " << *hill_climbing_timer << endl;
+    cout << "iPDB: hill climbing time: "
+         << hill_climbing_timer->get_elapsed_time() << endl;
 
     // delete all created PDB-pointer
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
