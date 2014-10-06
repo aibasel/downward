@@ -115,14 +115,14 @@ bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
 }
 
 void ShrinkBisimulation::shrink(
-    TransitionSystem &ts, int target, bool force) {
+    TransitionSystem &ts, int target) {
     // TODO: Explain this min(target, threshold) stuff. Also, make the
     //       output clearer, which right now is rubbish, calling the
     //       min(...) "threshold". The reasoning behind this is that
     //       we need to shrink if we're above the threshold or if
     //       *after* composition we'd be above the size limit, so
     //       target can either be less or larger than threshold.
-    if (must_shrink(ts, min(target, threshold), force)) {
+    if (must_shrink(ts, min(target, threshold))) {
         EquivalenceRelation equivalence_relation;
         compute_abstraction(ts, target, equivalence_relation);
         apply(ts, equivalence_relation, target);
@@ -368,18 +368,6 @@ void ShrinkBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
-}
-
-ShrinkStrategy *ShrinkBisimulation::create_default() {
-    Options opts;
-    opts.set("max_states", INF);
-    opts.set("max_states_before_merge", INF);
-    opts.set<bool>("greedy", false);
-    opts.set("threshold", 1);
-    opts.set("group_by_h", false);
-    opts.set<int>("at_limit", RETURN);
-
-    return new ShrinkBisimulation(opts);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {

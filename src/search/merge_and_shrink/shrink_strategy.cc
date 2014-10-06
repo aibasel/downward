@@ -3,6 +3,7 @@
 #include "transition_system.h"
 
 #include "../option_parser.h"
+#include "../utilities.h"
 
 #include <cassert>
 #include <cmath>
@@ -35,18 +36,13 @@ void ShrinkStrategy::dump_strategy_specific_options() const {
 }
 
 bool ShrinkStrategy::must_shrink(
-    const TransitionSystem &ts, int threshold, bool force) const {
+    const TransitionSystem &ts, int threshold) const {
     assert(threshold >= 1);
     assert(ts.is_solvable());
     int num_states = ts.size();
     if (num_states > threshold) {
         cout << ts.tag() << "shrink from size " << num_states
              << " (threshold: " << threshold << ")" << endl;
-        return true;
-    }
-    if (force) {
-        cout << ts.tag()
-             << "shrink forced to prune unreachable/irrelevant states" << endl;
         return true;
     }
     return false;
@@ -59,9 +55,7 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     size_t new_size1 = min(size1, max_before_merge);
     size_t new_size2 = min(size2, max_before_merge);
 
-    // Check if product would exceed max allowed size.
-    // Use division instead of multiplication to avoid overflow.
-    if (max_states / new_size1 < new_size2) {
+    if (!is_product_within_limit(new_size1, new_size2, max_states)) {
         size_t balanced_size = size_t(sqrt(max_states));
 
         if (new_size1 <= balanced_size) {
@@ -149,9 +143,11 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
         int n = max_states_before_merge;
-        max_states = n * n;
-        if (max_states < 0 || max_states / n != n)         // overflow
+        if (is_product_within_limit(n, n, numeric_limits<int>::max())) {
+            max_states = n * n;
+        } else {
             max_states = numeric_limits<int>::max();
+        }
     }
 
     if (max_states_before_merge > max_states) {

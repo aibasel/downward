@@ -120,6 +120,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     }
 
     pattern.assign(in_pruned_pattern.begin(), in_pruned_pattern.end());
+    sort(pattern.begin(), pattern.end());
 }
 
 bool PatternGenerationEdelkamp::is_pattern_too_large(
@@ -128,8 +129,7 @@ bool PatternGenerationEdelkamp::is_pattern_too_large(
     int mem = 1;
     for (size_t i = 0; i < pattern.size(); ++i) {
         int domain_size = g_variable_domain[pattern[i]];
-        // test against overflow and pdb_max_size
-        if (mem > pdb_max_size / domain_size)
+        if (!is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
         mem *= domain_size;
     }
@@ -221,9 +221,8 @@ void PatternGenerationEdelkamp::bin_packing() {
             int next_var_size = g_variable_domain[var];
             if (next_var_size > pdb_max_size) // var never fits into a bin
                 continue;
-            // test against overflow and pdb_max_size
-            if (current_size > pdb_max_size / next_var_size) { // open a new bin for var
-                // current_size * next_var_size > pdb_max_size
+            if (!is_product_within_limit(current_size, next_var_size, pdb_max_size)) {
+                // Open a new bin for var.
                 pattern_collection.push_back(pattern);
                 pattern.clear();
                 pattern.resize(g_variable_name.size(), false);

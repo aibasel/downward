@@ -57,19 +57,19 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
            don't. This may be worth experimenting with. */
         const vector<int> &rel_vars = g_causal_graph->get_eff_to_pre(pattern[i]);
         vector<int> relevant_vars;
-        // make sure we only use relevant variables which are not already included in pattern
-        set_difference(rel_vars.begin(), rel_vars.end(), pattern.begin(), pattern.end(), back_inserter(relevant_vars));
+        // Only use relevant variables which are not already in pattern.
+        set_difference(rel_vars.begin(), rel_vars.end(),
+                       pattern.begin(), pattern.end(),
+                       back_inserter(relevant_vars));
         for (size_t j = 0; j < relevant_vars.size(); ++j) {
-            // test against overflow and pdb_max_size
-            if (pdb_size <= pdb_max_size / g_variable_domain[relevant_vars[j]]) {
-                // pdb_size * g_variable_domain[relevant_vars[j]] <= pdb_max_size
+            int var = relevant_vars[j];
+            int var_domain = g_variable_domain[var];
+            if (is_product_within_limit(pdb_size, var_domain, pdb_max_size)) {
                 vector<int> new_pattern(pattern);
-                new_pattern.push_back(relevant_vars[j]);
+                new_pattern.push_back(var);
                 sort(new_pattern.begin(), new_pattern.end());
                 candidate_patterns.push_back(new_pattern);
             } else {
-                // [commented out the message because it might be too verbose]
-                // cout << "ignoring new pattern as candidate because it is too large" << endl;
                 ++num_rejected;
             }
         }

@@ -36,8 +36,8 @@ void ShrinkFH::dump_strategy_specific_options() const {
 void ShrinkFH::partition_into_buckets(
     const TransitionSystem &ts, vector<Bucket> &buckets) const {
     assert(buckets.empty());
-    // The following line converts to double to avoid overflow.
     int max_f = ts.get_max_f();
+    // Calculate with double to avoid overflow.
     if (static_cast<double>(max_f) * max_f / 2.0 > ts.size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
@@ -148,15 +148,6 @@ void ShrinkFH::ordered_buckets_use_vector(
         }
     }
     assert(static_cast<int>(buckets.size()) == bucket_count);
-}
-
-ShrinkStrategy *ShrinkFH::create_default(int max_states) {
-    Options opts;
-    opts.set("max_states", max_states);
-    opts.set("max_states_before_merge", max_states);
-    opts.set<int>("shrink_f", ShrinkFH::HIGH);
-    opts.set<int>("shrink_h", ShrinkFH::LOW);
-    return new ShrinkFH(opts);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {
