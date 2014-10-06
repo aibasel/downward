@@ -62,6 +62,7 @@ static void get_help(string k) {
     get_help_templ<SearchEngine *>(pt);
     get_help_templ<Heuristic *>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
+    get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
@@ -85,6 +86,7 @@ static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
     get_full_help_templ<Heuristic *>();
     get_full_help_templ<ScalarEvaluator *>();
+    get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
@@ -116,8 +118,40 @@ static std::vector<std::string> to_list(std::string s) {
     return result;
 }
 
-template <class T>
-static void predefine(std::string s, bool dry_run) {
+//Note: originally the following function was templated (predefine<T>),
+//but there is no Synergy<LandmarkGraph>, so I split it up for now.
+static void predefine_heuristic(std::string s, bool dry_run) {
+    //remove newlines so they don't mess anything up:
+    s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+
+    size_t split = s.find("=");
+    std::string ls = s.substr(0, split);
+    std::vector<std::string> definees = to_list(ls);
+    std::string rs = s.substr(split + 1);
+    OptionParser op(rs, dry_run);
+    if (definees.size() == 1) { //normal predefinition
+        Predefinitions<Heuristic * >::instance()->predefine(
+            definees[0], op.start_parsing<Heuristic *>());
+    } else if (definees.size() > 1) { //synergy
+        if (!dry_run) {
+            std::vector<Heuristic *> heur =
+                op.start_parsing<Synergy *>()->heuristics;
+            for (size_t i = 0; i < definees.size(); ++i) {
+                Predefinitions<Heuristic *>::instance()->predefine(
+                    definees[i], heur[i]);
+            }
+        } else {
+            for (size_t i = 0; i < definees.size(); ++i) {
+                Predefinitions<Heuristic *>::instance()->predefine(
+                    definees[i], 0);
+            }
+        }
+    } else {
+        op.error("predefinition has invalid left side");
+    }
+}
+
+static void predefine_lmgraph(std::string s, bool dry_run) {
     //remove newlines so they don't mess anything up:
     s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
 
@@ -127,8 +161,8 @@ static void predefine(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<T>::instance()->predefine(
-            definees[0], op.start_parsing<T>());
+        Predefinitions<LandmarkGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<LandmarkGraph *>());
     } else {
         op.error("predefinition has invalid left side");
     }
@@ -169,12 +203,12 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --heuristic");
             ++i;
-            predefine<Heuristic *>(args[i], dry_run);
+            predefine_heuristic(args[i], dry_run);
         } else if (arg.compare("--landmarks") == 0) {
             if (is_last)
                 throw ArgError("missing argument after --landmarks");
             ++i;
-            predefine<LandmarkGraph *>(args[i], dry_run);
+            predefine_lmgraph(args[i], dry_run);
         } else if (arg.compare("--search") == 0) {
             if (is_last)
                 throw ArgError("missing argument after --search");
