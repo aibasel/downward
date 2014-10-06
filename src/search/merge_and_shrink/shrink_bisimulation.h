@@ -4,7 +4,7 @@
 #include "shrink_strategy.h"
 
 class Options;
-class Signature;
+struct Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
     enum AtLimit {
@@ -41,10 +41,8 @@ public:
 
     virtual bool reduce_labels_before_shrinking() const;
 
-    virtual void shrink(TransitionSystem &ts, int target, bool force = false);
+    virtual void shrink(TransitionSystem &ts, int target);
     virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
-
-    static ShrinkStrategy *create_default();
 };
 
 #endif

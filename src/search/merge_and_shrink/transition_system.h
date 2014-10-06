@@ -87,6 +87,7 @@ class TransitionSystem {
     void compute_goal_distances_unit_cost();
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
+    void discard_states(const std::vector<bool> &to_be_pruned_states);
 
     // are_transitions_sorted_unique() is used to determine whether the
     // transitions of an transition system are sorted uniquely or not after
@@ -129,7 +130,7 @@ public:
     //       a mutable attribute?
 
     bool are_distances_computed() const;
-    void compute_distances();
+    void compute_distances_and_prune();
     bool is_normalized() const;
     void normalize();
     EquivalenceRelation *compute_local_equivalence_relation() const;

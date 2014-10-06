@@ -40,6 +40,11 @@ using namespace __gnu_cxx;
 
 const int INF = numeric_limits<int>::max();
 
+
+const int TransitionSystem::PRUNED_STATE;
+const int TransitionSystem::DISTANCE_UNKNOWN;
+
+
 TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_), num_labels(labels->get_size()),
       transitions_by_label(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
@@ -102,7 +107,7 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
     }
     // distances must be computed
     if (max_h == DISTANCE_UNKNOWN) {
-        compute_distances();
+        compute_distances_and_prune();
     }
     assert(label_ranks.empty());
     label_ranks.reserve(transitions_by_label.size());
@@ -123,6 +128,20 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) {
     }
 }
 
+void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
+    assert(int(to_be_pruned_states.size()) == num_states);
+    vector<slist<AbstractStateRef> > equivalence_relation;
+    equivalence_relation.reserve(num_states);
+    for (int state = 0; state < num_states; ++state) {
+        if (!to_be_pruned_states[state]) {
+            slist<AbstractStateRef> group;
+            group.push_front(state);
+            equivalence_relation.push_back(group);
+        }
+    }
+    apply_abstraction(equivalence_relation);
+}
+
 bool TransitionSystem::are_distances_computed() const {
     if (max_h == DISTANCE_UNKNOWN) {
         assert(max_f == DISTANCE_UNKNOWN);
@@ -134,7 +153,18 @@ bool TransitionSystem::are_distances_computed() const {
     return true;
 }
 
-void TransitionSystem::compute_distances() {
+void TransitionSystem::compute_distances_and_prune() {
+    /* This method computes the distances of abstract states from the
+       abstract initial state ("abstract g") and from the abstract
+       goal states ("abstract h"). It also prunes all states that are
+       unreachable (abstract g is infinite) or irrelevant (abstact h
+       is infinite).
+
+       In addition to its main job of pruning state and setting
+       init_distances and goal_distances, it also sets max_f, max_g
+       and max_h.
+    */
+
     cout << tag() << flush;
     if (are_distances_computed()) {
         cout << "distances already known" << endl;
@@ -179,6 +209,7 @@ void TransitionSystem::compute_distances() {
     max_h = 0;
 
     int unreachable_count = 0, irrelevant_count = 0;
+    vector<bool> to_be_pruned_states(num_states, false);
     for (int i = 0; i < num_states; ++i) {
         int g = init_distances[i];
         int h = goal_distances[i];
@@ -187,8 +218,10 @@ void TransitionSystem::compute_distances() {
         // course.)
         if (g == INF) {
             ++unreachable_count;
+            to_be_pruned_states[i] = true;
         } else if (h == INF) {
             ++irrelevant_count;
+            to_be_pruned_states[i] = true;
         } else {
             max_f = max(max_f, g + h);
             max_g = max(max_g, g);
@@ -199,22 +232,7 @@ void TransitionSystem::compute_distances() {
         cout << tag()
              << "unreachable: " << unreachable_count << " states, "
              << "irrelevant: " << irrelevant_count << " states" << endl;
-        /* Call shrink to discard unreachable and irrelevant states.
-           The strategy must be one that prunes unreachable/irrelevant
-           notes, but beyond that the details don't matter, as there
-           is no need to actually shrink. So faster methods should be
-           preferred. */
-
-        /* TODO: Create a dedicated shrinking strategy from scratch,
-           e.g. a bucket-based one that simply generates one good and
-           one bad bucket? */
-
-        // TODO/HACK: The way this is created is of course unspeakably
-        // ugly. We'll leave this as is for now because there will likely
-        // be more structural changes soon.
-        ShrinkStrategy *shrink_temp = ShrinkFH::create_default(num_states);
-        shrink_temp->shrink(*this, num_states, true);
-        delete shrink_temp;
+        discard_states(to_be_pruned_states);
     }
 }
 
@@ -786,6 +804,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
             const vector<Transition> &bucket2 =
                 ts2->transitions_by_label[label_no];
             if (relevant1 && relevant2) {
+                if (bucket1.size() * bucket2.size() > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
                 transitions.reserve(bucket1.size() * bucket2.size());
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
@@ -800,6 +820,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant1) {
                 assert(!relevant2);
+                if (bucket1.size() * ts2_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
                 transitions.reserve(bucket1.size() * ts2_size);
                 for (size_t i = 0; i < bucket1.size(); ++i) {
                     int src1 = bucket1[i].src;
@@ -812,6 +834,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             } else if (relevant2) {
                 assert(!relevant1);
+                if (bucket2.size() * ts1_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
                 transitions.reserve(bucket2.size() * ts1_size);
                 for (int s1 = 0; s1 < ts1_size; ++s1) {
                     for (size_t i = 0; i < bucket2.size(); ++i) {

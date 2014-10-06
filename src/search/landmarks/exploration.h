@@ -14,8 +14,8 @@
 class GlobalOperator;
 class GlobalState;
 
-class ExProposition;
-class ExUnaryOperator;
+struct ExProposition;
+struct ExUnaryOperator;
 
 struct ExProposition {
     int var;
