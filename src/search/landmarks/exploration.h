@@ -117,7 +117,6 @@ class Exploration : public Heuristic {
     void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const GlobalState &state);
 
     int compute_hsp_add_heuristic();
-    int compute_hsp_max_heuristic();
     int compute_ff_heuristic(const GlobalState &state);
 
     void collect_ha(ExProposition *goal, RelaxedPlan &relaxed_plan, const GlobalState &state);
@@ -129,7 +128,6 @@ class Exploration : public Heuristic {
 protected:
     virtual int compute_heuristic(const GlobalState &state);
 public:
-    int get_lower_bound(const GlobalState &state);
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,

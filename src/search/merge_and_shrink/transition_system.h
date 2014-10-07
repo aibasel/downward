@@ -76,7 +76,6 @@ class TransitionSystem {
     int max_h;
 
     bool transitions_sorted_unique;
-
     bool goal_relevant;
 
     mutable int peak_memory;
@@ -119,24 +118,13 @@ public:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels);
     void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
-    void release_memory();
 
     // Method to identify the transition system in output. It upper-cases the
     // first letter of description() and appends ": ".
     std::string tag() const;
 
-    bool is_solvable() const;
-
-    int get_cost(const GlobalState &state) const;
-    std::size_t size() const;
-    void statistics(bool include_expensive_statistics) const;
-
-    int get_peak_memory_estimate() const;
-    // NOTE: This will only return something useful if the memory estimates
-    //       have been computed along the way by calls to statistics().
-    // TODO: Find a better way of doing this that doesn't require
-    //       a mutable attribute?
-
+    // This is public exclusively for ShrinkBisimulation
+    int get_label_cost_by_index(int label_no) const;
     bool are_distances_computed() const;
     /*
       A transition system is normalized if:
@@ -153,49 +141,61 @@ public:
     void normalize();
     EquivalenceRelation *compute_local_equivalence_relation() const;
 
+    bool is_solvable() const;
+    int get_cost(const GlobalState &state) const;
+    void statistics(bool include_expensive_statistics) const;
+    // NOTE: This will only return something useful if the memory estimates
+    //       have been computed along the way by calls to statistics().
+    // TODO: Find a better way of doing this that doesn't require
+    //       a mutable attribute?
+    int get_peak_memory_estimate() const;
+    void release_memory();
     void dump_relevant_labels() const;
     void dump() const;
 
-    // The following methods exist for the benefit of shrink strategies.
-    int get_max_f() const;
-    int get_max_g() const; // Not being used!
-    int get_max_h() const;
+    int get_size() const {
+        return num_states;
+    }
 
+    // Methods only used by shrink strategies.
+    int get_max_f() const {
+        return max_f;
+    }
+    int get_max_g() const { // currently not being used
+        return max_g;
+    }
+    int get_max_h() const {
+        return max_h;
+    }
     bool is_goal_state(int state) const {
         return goal_states[state];
     }
-
     int get_init_distance(int state) const {
         return init_distances[state];
     }
-
     int get_goal_distance(int state) const {
         return goal_distances[state];
     }
-
-    // These methods should be private but is public for shrink_bisimulation
-    int get_label_cost_by_index(int label_no) const;
-    const std::vector<Transition> &get_transitions_for_label(int label_no) const;
-    // This method is shrink_bisimulation-exclusive
+    const std::vector<Transition> &get_transitions_for_label(int label_no) const {
+        return transitions_by_label[label_no];
+    }
     int get_num_labels() const;
-    // These methods are used by non_linear_merge_strategy
+
+    // Methods only used by MergeDFP.
     void compute_label_ranks(std::vector<int> &label_ranks) const;
     bool is_goal_relevant() const {
         return goal_relevant;
     }
-    // This is used by the "old label reduction" method
-    const std::vector<int> &get_varset() const {
-        return varset;
-    }
 };
+
 
 class AtomicTransitionSystem : public TransitionSystem {
     int variable;
     std::vector<AbstractStateRef> lookup_table;
 protected:
-    virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
+    virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
     virtual int memory_estimate() const;
 public:
@@ -203,13 +203,14 @@ public:
     virtual ~AtomicTransitionSystem();
 };
 
+
 class CompositeTransitionSystem : public TransitionSystem {
     TransitionSystem *components[2];
     std::vector<std::vector<AbstractStateRef> > lookup_table;
 protected:
-    virtual std::string description() const;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
+    virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
     virtual int memory_estimate() const;
 public:
