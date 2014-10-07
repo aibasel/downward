@@ -122,7 +122,6 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
-        // Avoid calling times() for shorter traces.
         if (hill_climbing_timer->is_expired())
             throw HillClimbingTimeout();
 
@@ -170,7 +169,6 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
     // Iterate over all candidates and search for the best improving pattern/pdb
     for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
-        // Avoid calling times() for shorter traces.
         if (hill_climbing_timer->is_expired())
             throw HillClimbingTimeout();
 
