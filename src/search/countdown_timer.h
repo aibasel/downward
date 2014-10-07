@@ -11,7 +11,6 @@ class CountdownTimer {
 public:
     explicit CountdownTimer(double max_time);
     ~CountdownTimer();
-    double get_elapsed_time() const;
     bool is_expired() const;
     friend std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
 };
