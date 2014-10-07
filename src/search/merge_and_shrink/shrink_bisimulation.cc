@@ -131,7 +131,7 @@ void ShrinkBisimulation::shrink(
 
 void ShrinkBisimulation::shrink_before_merge(
     TransitionSystem &ts1, TransitionSystem &ts2) {
-    pair<int, int> new_sizes = compute_shrink_sizes(ts1.size(), ts2.size());
+    pair<int, int> new_sizes = compute_shrink_sizes(ts1.get_size(), ts2.get_size());
     int new_size1 = new_sizes.first;
     int new_size2 = new_sizes.second;
 
@@ -154,7 +154,7 @@ int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
     typedef hash_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
-    for (size_t state = 0; state < ts.size(); ++state) {
+    for (int state = 0; state < ts.get_size(); ++state) {
         int h = ts.get_goal_distance(state);
         assert(h >= 0 && h != INF);
         assert(ts.get_init_distance(state) != INF);
@@ -183,7 +183,7 @@ void ShrinkBisimulation::compute_signatures(
 
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
-    for (size_t state = 0; state < ts.size(); ++state) {
+    for (int state = 0; state < ts.get_size(); ++state) {
         int h = ts.get_goal_distance(state);
         assert(h >= 0 && h <= ts.get_max_h());
         Signature signature(h, ts.is_goal_state(state),
@@ -249,7 +249,7 @@ void ShrinkBisimulation::compute_abstraction(
     TransitionSystem &ts,
     int target_size,
     EquivalenceRelation &equivalence_relation) {
-    int num_states = ts.size();
+    int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
     vector<Signature> signatures;

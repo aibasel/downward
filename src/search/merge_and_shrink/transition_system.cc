@@ -70,62 +70,9 @@ void TransitionSystem::clear_distances() {
     goal_distances.clear();
 }
 
-size_t TransitionSystem::size() const {
-    return num_states;
-}
-
-int TransitionSystem::get_max_f() const {
-    return max_f;
-}
-
-int TransitionSystem::get_max_g() const {
-    return max_g;
-}
-
-int TransitionSystem::get_max_h() const {
-    return max_h;
-}
-
 int TransitionSystem::get_label_cost_by_index(int label_no) const {
     const Label *label = labels->get_label_by_index(label_no);
     return label->get_cost();
-}
-
-const vector<Transition> &TransitionSystem::get_transitions_for_label(int label_no) const {
-    return transitions_by_label[label_no];
-}
-
-int TransitionSystem::get_num_labels() const {
-    return labels->get_size();
-}
-
-void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
-    // transition system needs to be normalized when considering labels and their
-    // transitions
-    if (!is_normalized()) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    // distances must be computed
-    if (!(are_distances_computed())) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    assert(label_ranks.empty());
-    label_ranks.reserve(transitions_by_label.size());
-    for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
-        if (relevant_labels[label_no]) {
-            const vector<Transition> &transitions = transitions_by_label[label_no];
-            int label_rank = INF;
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &t = transitions[i];
-                label_rank = min(label_rank, goal_distances[t.target]);
-            }
-            // relevant labels with no transitions have a rank of infinity (they
-            // block snychronization)
-            label_ranks.push_back(label_rank);
-        } else {
-            label_ranks.push_back(-1);
-        }
-    }
 }
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
@@ -363,28 +310,6 @@ void TransitionSystem::compute_goal_distances_general_cost() {
         }
     }
     dijkstra_search(backward_graph, queue, goal_distances);
-}
-
-void AtomicTransitionSystem::apply_abstraction_to_lookup_table(
-    const vector<AbstractStateRef> &abstraction_mapping) {
-    cout << tag() << "applying abstraction to lookup table" << endl;
-    for (size_t i = 0; i < lookup_table.size(); ++i) {
-        AbstractStateRef old_state = lookup_table[i];
-        if (old_state != PRUNED_STATE)
-            lookup_table[i] = abstraction_mapping[old_state];
-    }
-}
-
-void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
-    const vector<AbstractStateRef> &abstraction_mapping) {
-    cout << tag() << "applying abstraction to lookup table" << endl;
-    for (size_t i = 0; i < components[0]->size(); ++i) {
-        for (size_t j = 0; j < components[1]->size(); ++j) {
-            AbstractStateRef old_state = lookup_table[i][j];
-            if (old_state != PRUNED_STATE)
-                lookup_table[i][j] = abstraction_mapping[old_state];
-        }
-    }
 }
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
@@ -709,187 +634,6 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     }
 }
 
-AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
-    : TransitionSystem(labels), variable(variable_) {
-    varset.push_back(variable);
-    /*
-      This generates the states of the atomic transition system, but not the
-      arcs: It is more efficient to generate all arcs of all atomic
-      transition systems simultaneously.
-     */
-    int range = g_variable_domain[variable];
-
-    int init_value = g_initial_state()[variable];
-    int goal_value = -1;
-    goal_relevant = false;
-    for (size_t goal_no = 0; goal_no < g_goal.size(); ++goal_no) {
-        if (g_goal[goal_no].first == variable) {
-            goal_relevant = true;
-            assert(goal_value == -1);
-            goal_value = g_goal[goal_no].second;
-        }
-    }
-
-    num_states = range;
-    lookup_table.reserve(range);
-    goal_states.resize(num_states, false);
-    for (int value = 0; value < range; ++value) {
-        if (value == goal_value || goal_value == -1) {
-            goal_states[value] = true;
-        }
-        if (value == init_value)
-            init_state = value;
-        lookup_table.push_back(value);
-    }
-}
-
-AtomicTransitionSystem::~AtomicTransitionSystem() {
-}
-
-CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
-                                                     TransitionSystem *ts1,
-                                                     TransitionSystem *ts2)
-    : TransitionSystem(labels) {
-    cout << "Merging " << ts1->description() << " and "
-         << ts2->description() << endl;
-
-    assert(ts1->is_solvable() && ts2->is_solvable());
-    assert(ts1->is_normalized() && ts2->is_normalized());
-
-    components[0] = ts1;
-    components[1] = ts2;
-
-    ::set_union(ts1->varset.begin(), ts1->varset.end(), ts2->varset.begin(),
-                ts2->varset.end(), back_inserter(varset));
-
-    int ts1_size = ts1->size();
-    int ts2_size = ts2->size();
-    num_states = ts1_size * ts2_size;
-    goal_states.resize(num_states, false);
-    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
-
-    lookup_table.resize(ts1->size(), vector<AbstractStateRef> (ts2->size()));
-    for (int s1 = 0; s1 < ts1_size; ++s1) {
-        for (int s2 = 0; s2 < ts2_size; ++s2) {
-            int state = s1 * ts2_size + s2;
-            lookup_table[s1][s2] = state;
-            if (ts1->goal_states[s1] && ts2->goal_states[s2])
-                goal_states[state] = true;
-            if (s1 == ts1->init_state && s2 == ts2->init_state)
-                init_state = state;
-        }
-    }
-
-    /* Note:
-       The way we construct the transitions of the new composite transition system,
-       we cannot easily guarantee that they are sorted. Given that we have
-       transitions a->b and c->d in transition system one and two, we would like to
-       have (a,c)->(b,d) in the resultin transition system. There is no obvious way
-       at looking at the transitions of transition systems one and two that would
-       result in the desired ordering. Even in the case that the second
-       transition systems has only self loops, this is not trivial, as we would like
-       to sort transitions to (a,c,b). Only in the case that the first
-       transition system has only self-lopos, by looking at each transition of the
-       first transition system and multiplying in out with the transitions of the
-       second transition, we obtain the desired order (a,c,d).
-     */
-    int multiplier = ts2_size;
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        bool relevant1 = ts1->relevant_labels[label_no];
-        bool relevant2 = ts2->relevant_labels[label_no];
-        if (relevant1 || relevant2) {
-            relevant_labels[label_no] = true;
-            vector<Transition> &transitions = transitions_by_label[label_no];
-            const vector<Transition> &bucket1 =
-                ts1->transitions_by_label[label_no];
-            const vector<Transition> &bucket2 =
-                ts2->transitions_by_label[label_no];
-            if (relevant1 && relevant2) {
-                if (bucket1.size() * bucket2.size() > transitions.max_size())
-                    exit_with(EXIT_OUT_OF_MEMORY);
-                transitions.reserve(bucket1.size() * bucket2.size());
-                for (size_t i = 0; i < bucket1.size(); ++i) {
-                    int src1 = bucket1[i].src;
-                    int target1 = bucket1[i].target;
-                    for (size_t j = 0; j < bucket2.size(); ++j) {
-                        int src2 = bucket2[j].src;
-                        int target2 = bucket2[j].target;
-                        int src = src1 * multiplier + src2;
-                        int target = target1 * multiplier + target2;
-                        transitions.push_back(Transition(src, target));
-                    }
-                }
-            } else if (relevant1) {
-                assert(!relevant2);
-                if (bucket1.size() * ts2_size > transitions.max_size())
-                    exit_with(EXIT_OUT_OF_MEMORY);
-                transitions.reserve(bucket1.size() * ts2_size);
-                for (size_t i = 0; i < bucket1.size(); ++i) {
-                    int src1 = bucket1[i].src;
-                    int target1 = bucket1[i].target;
-                    for (int s2 = 0; s2 < ts2_size; ++s2) {
-                        int src = src1 * multiplier + s2;
-                        int target = target1 * multiplier + s2;
-                        transitions.push_back(Transition(src, target));
-                    }
-                }
-            } else if (relevant2) {
-                assert(!relevant1);
-                if (bucket2.size() * ts1_size > transitions.max_size())
-                    exit_with(EXIT_OUT_OF_MEMORY);
-                transitions.reserve(bucket2.size() * ts1_size);
-                for (int s1 = 0; s1 < ts1_size; ++s1) {
-                    for (size_t i = 0; i < bucket2.size(); ++i) {
-                        int src2 = bucket2[i].src;
-                        int target2 = bucket2[i].target;
-                        int src = s1 * multiplier + src2;
-                        int target = s1 * multiplier + target2;
-                        transitions.push_back(Transition(src, target));
-                    }
-                }
-                assert(is_sorted_unique(transitions));
-            }
-        }
-    }
-
-    // TODO do not check if transitions are sorted but just assume they are not?
-    if (!are_transitions_sorted_unique()) {
-        transitions_sorted_unique = false;
-        normalize();
-    }
-
-    compute_distances_and_prune();
-}
-
-CompositeTransitionSystem::~CompositeTransitionSystem() {
-}
-
-string AtomicTransitionSystem::description() const {
-    ostringstream s;
-    s << "atomic transition system #" << variable;
-    return s.str();
-}
-
-string CompositeTransitionSystem::description() const {
-    ostringstream s;
-    s << "transition system (" << varset.size() << "/"
-      << g_variable_domain.size() << " vars)";
-    return s.str();
-}
-
-AbstractStateRef AtomicTransitionSystem::get_abstract_state(const GlobalState &state) const {
-    int value = state[variable];
-    return lookup_table[value];
-}
-
-AbstractStateRef CompositeTransitionSystem::get_abstract_state(const GlobalState &state) const {
-    AbstractStateRef state1 = components[0]->get_abstract_state(state);
-    AbstractStateRef state2 = components[1]->get_abstract_state(state);
-    if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
-        return PRUNED_STATE;
-    return lookup_table[state1][state2];
-}
-
 void TransitionSystem::apply_abstraction(
     vector<slist<AbstractStateRef> > &collapsed_groups) {
     /* Note on how this method interacts with the distance information
@@ -926,7 +670,7 @@ void TransitionSystem::apply_abstraction(
     // distances must have been computed before
     assert(are_distances_computed());
 
-    cout << tag() << "applying abstraction (" << size()
+    cout << tag() << "applying abstraction (" << get_size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
     typedef slist<AbstractStateRef> Group;
@@ -1061,27 +805,6 @@ int TransitionSystem::memory_estimate() const {
     return result;
 }
 
-int AtomicTransitionSystem::memory_estimate() const {
-    int result = TransitionSystem::memory_estimate();
-    result += sizeof(AtomicTransitionSystem) - sizeof(TransitionSystem);
-    result += sizeof(AbstractStateRef) * lookup_table.capacity();
-    return result;
-}
-
-int CompositeTransitionSystem::memory_estimate() const {
-    int result = TransitionSystem::memory_estimate();
-    result += sizeof(CompositeTransitionSystem) - sizeof(TransitionSystem);
-    result += sizeof(vector<AbstractStateRef> ) * lookup_table.capacity();
-    for (size_t i = 0; i < lookup_table.size(); ++i)
-        result += sizeof(AbstractStateRef) * lookup_table[i].capacity();
-    return result;
-}
-
-void TransitionSystem::release_memory() {
-    vector<bool>().swap(relevant_labels);
-    vector<vector<Transition> >().swap(transitions_by_label);
-}
-
 int TransitionSystem::total_transitions() const {
     int total = 0;
     for (size_t i = 0; i < transitions_by_label.size(); ++i)
@@ -1104,7 +827,7 @@ int TransitionSystem::unique_unlabeled_transitions() const {
 void TransitionSystem::statistics(bool include_expensive_statistics) const {
     int memory = memory_estimate();
     peak_memory = max(peak_memory, memory);
-    cout << tag() << size() << " states, ";
+    cout << tag() << get_size() << " states, ";
     if (include_expensive_statistics)
         cout << unique_unlabeled_transitions();
     else
@@ -1125,6 +848,11 @@ void TransitionSystem::statistics(bool include_expensive_statistics) const {
 
 int TransitionSystem::get_peak_memory_estimate() const {
     return peak_memory;
+}
+
+void TransitionSystem::release_memory() {
+    vector<bool>().swap(relevant_labels);
+    vector<vector<Transition> >().swap(transitions_by_label);
 }
 
 void TransitionSystem::dump_relevant_labels() const {
@@ -1162,3 +890,260 @@ void TransitionSystem::dump() const {
     }
     cout << "}" << endl;
 }
+
+int TransitionSystem::get_num_labels() const {
+    return labels->get_size();
+}
+
+void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
+    // transition system needs to be normalized when considering labels and their
+    // transitions
+    if (!is_normalized()) {
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
+    // distances must be computed
+    if (!(are_distances_computed())) {
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
+    assert(label_ranks.empty());
+    label_ranks.reserve(transitions_by_label.size());
+    for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
+        if (relevant_labels[label_no]) {
+            const vector<Transition> &transitions = transitions_by_label[label_no];
+            int label_rank = INF;
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const Transition &t = transitions[i];
+                label_rank = min(label_rank, goal_distances[t.target]);
+            }
+            // relevant labels with no transitions have a rank of infinity (they
+            // block snychronization)
+            label_ranks.push_back(label_rank);
+        } else {
+            label_ranks.push_back(-1);
+        }
+    }
+}
+
+
+
+AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
+    : TransitionSystem(labels), variable(variable_) {
+    varset.push_back(variable);
+    /*
+      This generates the states of the atomic transition system, but not the
+      arcs: It is more efficient to generate all arcs of all atomic
+      transition systems simultaneously.
+     */
+    int range = g_variable_domain[variable];
+
+    int init_value = g_initial_state()[variable];
+    int goal_value = -1;
+    goal_relevant = false;
+    for (size_t goal_no = 0; goal_no < g_goal.size(); ++goal_no) {
+        if (g_goal[goal_no].first == variable) {
+            goal_relevant = true;
+            assert(goal_value == -1);
+            goal_value = g_goal[goal_no].second;
+        }
+    }
+
+    num_states = range;
+    lookup_table.reserve(range);
+    goal_states.resize(num_states, false);
+    for (int value = 0; value < range; ++value) {
+        if (value == goal_value || goal_value == -1) {
+            goal_states[value] = true;
+        }
+        if (value == init_value)
+            init_state = value;
+        lookup_table.push_back(value);
+    }
+}
+
+AtomicTransitionSystem::~AtomicTransitionSystem() {
+}
+
+void AtomicTransitionSystem::apply_abstraction_to_lookup_table(
+    const vector<AbstractStateRef> &abstraction_mapping) {
+    cout << tag() << "applying abstraction to lookup table" << endl;
+    for (size_t i = 0; i < lookup_table.size(); ++i) {
+        AbstractStateRef old_state = lookup_table[i];
+        if (old_state != PRUNED_STATE)
+            lookup_table[i] = abstraction_mapping[old_state];
+    }
+}
+
+string AtomicTransitionSystem::description() const {
+    ostringstream s;
+    s << "atomic transition system #" << variable;
+    return s.str();
+}
+
+AbstractStateRef AtomicTransitionSystem::get_abstract_state(const GlobalState &state) const {
+    int value = state[variable];
+    return lookup_table[value];
+}
+
+int AtomicTransitionSystem::memory_estimate() const {
+    int result = TransitionSystem::memory_estimate();
+    result += sizeof(AtomicTransitionSystem) - sizeof(TransitionSystem);
+    result += sizeof(AbstractStateRef) * lookup_table.capacity();
+    return result;
+}
+
+
+
+CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
+                                                     TransitionSystem *ts1,
+                                                     TransitionSystem *ts2)
+    : TransitionSystem(labels) {
+    cout << "Merging " << ts1->description() << " and "
+         << ts2->description() << endl;
+
+    assert(ts1->is_solvable() && ts2->is_solvable());
+    assert(ts1->is_normalized() && ts2->is_normalized());
+
+    components[0] = ts1;
+    components[1] = ts2;
+
+    ::set_union(ts1->varset.begin(), ts1->varset.end(), ts2->varset.begin(),
+                ts2->varset.end(), back_inserter(varset));
+
+    int ts1_size = ts1->get_size();
+    int ts2_size = ts2->get_size();
+    num_states = ts1_size * ts2_size;
+    goal_states.resize(num_states, false);
+    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
+
+    lookup_table.resize(ts1->get_size(), vector<AbstractStateRef> (ts2->get_size()));
+    for (int s1 = 0; s1 < ts1_size; ++s1) {
+        for (int s2 = 0; s2 < ts2_size; ++s2) {
+            int state = s1 * ts2_size + s2;
+            lookup_table[s1][s2] = state;
+            if (ts1->goal_states[s1] && ts2->goal_states[s2])
+                goal_states[state] = true;
+            if (s1 == ts1->init_state && s2 == ts2->init_state)
+                init_state = state;
+        }
+    }
+
+    /* Note:
+       The way we construct the transitions of the new composite transition system,
+       we cannot easily guarantee that they are sorted. Given that we have
+       transitions a->b and c->d in transition system one and two, we would like to
+       have (a,c)->(b,d) in the resultin transition system. There is no obvious way
+       at looking at the transitions of transition systems one and two that would
+       result in the desired ordering. Even in the case that the second
+       transition systems has only self loops, this is not trivial, as we would like
+       to sort transitions to (a,c,b). Only in the case that the first
+       transition system has only self-lopos, by looking at each transition of the
+       first transition system and multiplying in out with the transitions of the
+       second transition, we obtain the desired order (a,c,d).
+     */
+    int multiplier = ts2_size;
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        bool relevant1 = ts1->relevant_labels[label_no];
+        bool relevant2 = ts2->relevant_labels[label_no];
+        if (relevant1 || relevant2) {
+            relevant_labels[label_no] = true;
+            vector<Transition> &transitions = transitions_by_label[label_no];
+            const vector<Transition> &bucket1 =
+                ts1->transitions_by_label[label_no];
+            const vector<Transition> &bucket2 =
+                ts2->transitions_by_label[label_no];
+            if (relevant1 && relevant2) {
+                if (bucket1.size() * bucket2.size() > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
+                transitions.reserve(bucket1.size() * bucket2.size());
+                for (size_t i = 0; i < bucket1.size(); ++i) {
+                    int src1 = bucket1[i].src;
+                    int target1 = bucket1[i].target;
+                    for (size_t j = 0; j < bucket2.size(); ++j) {
+                        int src2 = bucket2[j].src;
+                        int target2 = bucket2[j].target;
+                        int src = src1 * multiplier + src2;
+                        int target = target1 * multiplier + target2;
+                        transitions.push_back(Transition(src, target));
+                    }
+                }
+            } else if (relevant1) {
+                assert(!relevant2);
+                if (bucket1.size() * ts2_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
+                transitions.reserve(bucket1.size() * ts2_size);
+                for (size_t i = 0; i < bucket1.size(); ++i) {
+                    int src1 = bucket1[i].src;
+                    int target1 = bucket1[i].target;
+                    for (int s2 = 0; s2 < ts2_size; ++s2) {
+                        int src = src1 * multiplier + s2;
+                        int target = target1 * multiplier + s2;
+                        transitions.push_back(Transition(src, target));
+                    }
+                }
+            } else if (relevant2) {
+                assert(!relevant1);
+                if (bucket2.size() * ts1_size > transitions.max_size())
+                    exit_with(EXIT_OUT_OF_MEMORY);
+                transitions.reserve(bucket2.size() * ts1_size);
+                for (int s1 = 0; s1 < ts1_size; ++s1) {
+                    for (size_t i = 0; i < bucket2.size(); ++i) {
+                        int src2 = bucket2[i].src;
+                        int target2 = bucket2[i].target;
+                        int src = s1 * multiplier + src2;
+                        int target = s1 * multiplier + target2;
+                        transitions.push_back(Transition(src, target));
+                    }
+                }
+                assert(is_sorted_unique(transitions));
+            }
+        }
+    }
+
+    // TODO do not check if transitions are sorted but just assume they are not?
+    if (!are_transitions_sorted_unique()) {
+        transitions_sorted_unique = false;
+        normalize();
+    }
+
+    compute_distances_and_prune();
+}
+
+CompositeTransitionSystem::~CompositeTransitionSystem() {
+}
+
+void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
+    const vector<AbstractStateRef> &abstraction_mapping) {
+    cout << tag() << "applying abstraction to lookup table" << endl;
+    for (int i = 0; i < components[0]->get_size(); ++i) {
+        for (int j = 0; j < components[1]->get_size(); ++j) {
+            AbstractStateRef old_state = lookup_table[i][j];
+            if (old_state != PRUNED_STATE)
+                lookup_table[i][j] = abstraction_mapping[old_state];
+        }
+    }
+}
+
+string CompositeTransitionSystem::description() const {
+    ostringstream s;
+    s << "transition system (" << varset.size() << "/"
+      << g_variable_domain.size() << " vars)";
+    return s.str();
+}
+
+AbstractStateRef CompositeTransitionSystem::get_abstract_state(const GlobalState &state) const {
+    AbstractStateRef state1 = components[0]->get_abstract_state(state);
+    AbstractStateRef state2 = components[1]->get_abstract_state(state);
+    if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
+        return PRUNED_STATE;
+    return lookup_table[state1][state2];
+}
+
+int CompositeTransitionSystem::memory_estimate() const {
+    int result = TransitionSystem::memory_estimate();
+    result += sizeof(CompositeTransitionSystem) - sizeof(TransitionSystem);
+    result += sizeof(vector<AbstractStateRef> ) * lookup_table.capacity();
+    for (size_t i = 0; i < lookup_table.size(); ++i)
+        result += sizeof(AbstractStateRef) * lookup_table[i].capacity();
+    return result;
+}
+
