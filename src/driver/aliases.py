@@ -96,8 +96,7 @@ lazy(alt([single(sum([g(),weight(hff,2)])),
 ALIASES["seq-sat-lama-2011"] = [
     "--if-unit-cost",
     "--heuristic",
-    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                         lm_cost_type=plusone,cost_type=plusone))",
+    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true))",
     "--search", """iterated([
                      lazy_greedy([hff,hlm],preferred=[hff,hlm]),
                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
