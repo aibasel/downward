@@ -13,7 +13,7 @@ class CountdownTimer;
 class GlobalState;
 class Options;
 class PDBHeuristic;
-class Timer;
+
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
     const int pdb_max_size; // maximum number of states for each pdb
