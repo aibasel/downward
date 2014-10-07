@@ -38,7 +38,7 @@ void ShrinkFH::partition_into_buckets(
     assert(buckets.empty());
     int max_f = ts.get_max_f();
     // Calculate with double to avoid overflow.
-    if (static_cast<double>(max_f) * max_f / 2.0 > ts.size()) {
+    if (static_cast<double>(max_f) * max_f / 2.0 > ts.get_size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
         ordered_buckets_use_map(ts, buckets);
@@ -82,7 +82,7 @@ void ShrinkFH::ordered_buckets_use_map(
     vector<Bucket> &buckets) const {
     map<int, map<int, Bucket > > states_by_f_and_h;
     int bucket_count = 0;
-    int num_states = ts.size();
+    int num_states = ts.get_size();
     for (AbstractStateRef state = 0; state < num_states; ++state) {
         int g = ts.get_init_distance(state);
         int h = ts.get_goal_distance(state);
@@ -116,7 +116,7 @@ void ShrinkFH::ordered_buckets_use_vector(
     for (int f = 0; f <= ts.get_max_f(); ++f)
         states_by_f_and_h[f].resize(min(f, ts.get_max_h()) + 1);
     int bucket_count = 0;
-    int num_states = ts.size();
+    int num_states = ts.get_size();
     for (AbstractStateRef state = 0; state < num_states; ++state) {
         int g = ts.get_init_distance(state);
         int h = ts.get_goal_distance(state);
