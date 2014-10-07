@@ -11,10 +11,6 @@ CountdownTimer::CountdownTimer(double max_time)
 CountdownTimer::~CountdownTimer() {
 }
 
-double CountdownTimer::get_elapsed_time() const {
-    return timer();
-}
-
 bool CountdownTimer::is_expired() const {
     return max_time != numeric_limits<double>::infinity() && timer() >= max_time;
 }
