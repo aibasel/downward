@@ -30,10 +30,6 @@
         (void)0 \
     )
 
-template<typename T>
-void unused_parameter(const T &) {
-}
-
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
     EXIT_CRITICAL_ERROR = 1,
@@ -120,6 +116,10 @@ bool in_bounds(int index, const T &container) {
 template<class T>
 bool in_bounds(size_t index, const T &container) {
     return index < container.size();
+}
+
+template<typename T>
+void unused_parameter(const T &) {
 }
 
 #endif
