@@ -1,7 +1,6 @@
 #include "countdown_timer.h"
 
 #include <limits>
-#include <ostream>
 
 using namespace std;
 
@@ -21,11 +20,6 @@ bool CountdownTimer::is_expired() const {
 }
 
 ostream &operator<<(ostream &os, const CountdownTimer &cd_timer) {
-    double value = cd_timer.get_elapsed_time();
-    if (value < 0 && value > -1e-10)
-        value = 0.0;  // We sometimes get inaccuracies from god knows where.
-    if (value < 1e-10)
-        value = 0.0;  // Don't care about such small values.
-    os << value << "s";
+    os << cd_timer.timer;
     return os;
 }
