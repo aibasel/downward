@@ -836,6 +836,26 @@ void TransitionSystem::release_memory() {
     vector<vector<Transition> >().swap(transitions_by_label);
 }
 
+void TransitionSystem::dump_fields() const {
+    cout << "labels->get_size() " << labels->get_size() << endl;
+    cout << "num_labels: " << num_labels << endl;
+    //transitions_by_label;
+    cout << "total_transitions: " << total_transitions() << endl;
+    //relevant_labels;
+    cout << "num_states: " << num_states << endl;
+    //init_distances;
+    //goal_distances;
+    //goal_states;
+    cout << "init_state: " << init_state << endl;
+    cout << "max_f: " << max_f << endl;
+    cout << "max_g: " << max_g << endl;
+    cout << "max_h: " << max_h << endl;
+    cout << "transitions_sorted_unique: " << transitions_sorted_unique << endl;
+    cout << "goal_relevant:" << goal_relevant << endl;
+    cout << "peak_memory: " << peak_memory << endl;
+    cout << "varset: " << varset << endl;
+}
+
 void TransitionSystem::dump_relevant_labels() const {
     cout << "relevant labels" << endl;
     for (size_t label_no = 0; label_no < relevant_labels.size(); ++label_no) {
