@@ -9,7 +9,7 @@ CONFIGS = {
         'astar_ipdb': [
             '--search',
             'astar(ipdb())'],
-        'astar_ipdb': [
+        'astar_pdb': [
             '--search',
             'astar(pdb())'],
         'astar_gapdb': [
