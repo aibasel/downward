@@ -12,6 +12,11 @@ CountdownTimer::~CountdownTimer() {
 }
 
 bool CountdownTimer::is_expired() const {
+    /*
+      We avoid querying the timer when it cannot expire so that we get cleaner
+      output from "strace" (which otherwise reports the "times" system call
+      millions of times.
+    */
     return max_time != numeric_limits<double>::infinity() && timer() >= max_time;
 }
 
