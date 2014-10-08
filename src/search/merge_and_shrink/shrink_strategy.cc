@@ -39,7 +39,7 @@ bool ShrinkStrategy::must_shrink(
     const TransitionSystem &ts, int threshold) const {
     assert(threshold >= 1);
     assert(ts.is_solvable());
-    int num_states = ts.size();
+    int num_states = ts.get_size();
     if (num_states > threshold) {
         cout << ts.tag() << "shrink from size " << num_states
              << " (threshold: " << threshold << ")" << endl;
@@ -85,16 +85,16 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
 }
 
 void ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2) {
-    pair<size_t, size_t> new_sizes = compute_shrink_sizes(
-        ts1.size(), ts2.size());
-    size_t new_size1 = new_sizes.first;
-    size_t new_size2 = new_sizes.second;
+    pair<int, int> new_sizes = compute_shrink_sizes(
+        ts1.get_size(), ts2.get_size());
+    int new_size1 = new_sizes.first;
+    int new_size2 = new_sizes.second;
 
-    if (new_size2 != ts2.size()) {
+    if (new_size2 != ts2.get_size()) {
         shrink(ts2, new_size2);
     }
 
-    if (new_size1 != ts1.size()) {
+    if (new_size1 != ts1.get_size()) {
         shrink(ts1, new_size1);
     }
 }
@@ -114,7 +114,7 @@ void ShrinkStrategy::apply(
     // TODO: We currently violate this; see issue250
     //assert(equivalence_relation.size() <= target);
     ts.apply_abstraction(equivalence_relation);
-    cout << ts.tag() << "size after shrink " << ts.size()
+    cout << ts.tag() << "size after shrink " << ts.get_size()
          << ", target " << target << endl;
     //assert(ts.size() <= target);
 }
