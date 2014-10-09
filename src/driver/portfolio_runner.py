@@ -175,15 +175,11 @@ def run_search(executable, args, sas_file, plan_file, timeout=None, memory=None)
 
 
 def get_elapsed_time():
-    ## Note: According to the os.times documentation, Windows sets the
-    ## child time components to 0, so this won't work properly under
-    ## Windows.
-    ##
-    ## TODO: Find a solution for this. A simple solution might be to
-    ## just document this as a limitation under Windows that causes
-    ## time slices for portfolios to be allocated slightly wrongly.
-    ## Another solution would be to base time slices on wall-clock
-    ## time under Windows.
+    """
+    Note: According to the os.times documentation, Windows sets the
+    child time components to 0, so time slices for portfolios will be
+    allocated slightly wrongly there.
+    """
     return sum(os.times()[:4])
 
 
