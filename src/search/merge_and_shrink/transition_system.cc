@@ -669,6 +669,11 @@ void TransitionSystem::apply_abstraction(
     // distances must have been computed before
     assert(are_distances_computed());
 
+    if (int(collapsed_groups.size()) == get_size()) {
+        cout << "not applying abstraction (same number of states)" << endl;
+        return;
+    }
+
     cout << tag() << "applying abstraction (" << get_size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
