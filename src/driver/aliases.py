@@ -128,9 +128,9 @@ ALIASES["seq-sat-lama-2011"] = [
 ALIASES["seq-opt-fd-autotune"] = [
     "--heuristic", "hlmcut=lmcut()",
     "--heuristic", "hhmax=hmax()",
-    "--heuristic" "hselmax=selmax([hlmcut,hhmax],alpha=4,classifier=0,"
-    "                             conf_threshold=0.85,training_set=10,"
-    "                             sample=0,uniform=true)",
+    "--heuristic", "hselmax=selmax([hlmcut,hhmax],alpha=4,classifier=0,"
+    "                              conf_threshold=0.85,training_set=10,"
+    "                              sample=0,uniform=true)",
     "--search", "astar(hselmax,mpd=false,pathmax=true,cost_type=normal)"]
 
 ALIASES["seq-opt-selmax"] = [
