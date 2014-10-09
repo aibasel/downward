@@ -321,7 +321,7 @@ def get_portfolio_attributes(portfolio):
         content = portfolio_file.read()
         try:
             exec(content, attributes)
-        except Exception as err:
+        except Exception:
             traceback.print_exc()
             raise SystemExit(
                 "The portfolio %s could not be loaded. Maybe it still "
