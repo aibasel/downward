@@ -17,9 +17,30 @@ driver are passed on to the search component. Use --translate-options
 and --search-options to switch between components (see below for
 examples)."""
 
+EXAMPLES = [
+    ("Translate and preprocess, then find a plan with LM-Cut:",
+     ["./plan.py", "../benchmarks/gripper/prob01.pddl",
+      "--search", "astar(lmcut())"]),
+    ("Translate and preprocess, run no search:",
+     ["./plan.py", "--run-translator", "--run-preprocessor",
+      "../benchmarks/gripper/prob01.pddl"]),
+    ("Run predefined configuration (LAMA-2011) on preprocessed task:",
+     ["./plan.py", "--alias", "seq-sat-lama-2011", "output"]),
+    ("Run portfolio:",
+     ["./plan.py", "--portfolio", "driver/portfolios/seq_opt_fdss_1.py",
+      "output"]),
+    ("Run search in debug mode:",
+     ["./plan.py", "output", "--search", "astar(ipdb())"]),
+    ("Pass options to translator:",
+     ["./plan.py", "../benchmarks/gripper/prob01.pddl",
+      "--translate-options", "--relaxed",
+      "--search-options", "--search", "astar(lmcut())"]),
+]
+
 EPILOG = """Examples:
-./plan.py TODO
-"""
+
+%s
+""" % "\n\n".join("# %s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
@@ -72,6 +93,7 @@ def _split_planner_args(parser, args):
 
     curr_options = args.search_options
     for option in options:
+        # TODO: We have --translat*e*-options, but --run-translat*or*.
         if option == "--translate-options":
             curr_options = args.translate_options
         elif option == "--preprocess-options":
@@ -175,6 +197,7 @@ def parse_args():
     parser.add_argument(
         "--debug", action="store_true",
         help="use debug mode for search component")
+    # TODO: Do we really want to support two names for the same thing?
     parser.add_argument(
         "--ipc", dest="alias",
         help="same as --alias")
