@@ -5,9 +5,27 @@ import argparse
 from . import aliases
 
 
-DESCRIPTION = """Fast Downward driver script. Arguments that do not
-have a special meaning for the driver (see below) are passed on to the
-search component."""
+DESCRIPTION = """Fast Downward driver script.
+
+Input files can be either a PDDL problem file (with an optional PDDL
+domain file) or a SAS+ preprocessor output file. Depending on the input
+the driver runs the all three planner components or just the search.
+You can also specify the components manually with the options below.
+
+By default, all arguments that do not have a special meaning for the
+driver are passed on to the search component. Use --translate-options
+and --search-options to switch between components (see below for
+examples)."""
+
+EPILOG = """Examples:
+./plan.py TODO
+"""
+
+
+class RawHelpFormatter(argparse.HelpFormatter):
+    """Keep newlines and spacing."""
+    def _fill_text(self, text, width, indent):
+        return ''.join([indent + line for line in text.splitlines(True)])
 
 
 def _split_off_filenames(planner_args):
@@ -148,10 +166,9 @@ def _set_components_and_inputs(parser, args):
 
 
 def parse_args():
-    # TODO: Need better usage string. We might also want to improve
-    # the help output more generally. Note that there are various ways
-    # to finetune this by including a formatter, an epilog, etc.
-    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION, epilog=EPILOG,
+        formatter_class=RawHelpFormatter)
     parser.add_argument(
         "--alias",
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
@@ -171,16 +188,18 @@ def parse_args():
     parser.add_argument(
         "--portfolio", metavar="FILE",
         help="run a portfolio specified in FILE")
-    parser.add_argument(
+    components = parser.add_argument_group(
+        title="choose planner components")
+    components.add_argument(
         "--run-all", action="store_true",
         help="run all components of the planner")
-    parser.add_argument(
+    components.add_argument(
         "--run-translator", action="store_true",
         help="run translator component of the planner")
-    parser.add_argument(
+    components.add_argument(
         "--run-preprocessor", action="store_true",
         help="run preprocessor component of the planner")
-    parser.add_argument(
+    components.add_argument(
         "--run-search", action="store_true",
         help="run search component of the planner")
     parser.add_argument(
