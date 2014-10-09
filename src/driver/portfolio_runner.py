@@ -311,7 +311,7 @@ def generate_exitcode(exitcodes):
 
 
 def can_change_cost_type(args):
-    return any('S_COST_TYPE' in part or 'H_COST_TYPE' in part for part in args)
+    return any("S_COST_TYPE" in part or "H_COST_TYPE" in part for part in args)
 
 
 def get_portfolio_attributes(portfolio):
