@@ -1,8 +1,8 @@
 #ifndef SEARCH_NODE_INFO_H
 #define SEARCH_NODE_INFO_H
 
+#include "global_operator.h"
 #include "state_id.h"
-#include "operator.h"
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
@@ -15,7 +15,7 @@ struct SearchNodeInfo {
     int h : 31; // TODO:CR - should we get rid of it
     bool h_is_dirty : 1;
     StateID parent_state_id;
-    const Operator *creating_operator;
+    const GlobalOperator *creating_operator;
     int real_g;
 
     SearchNodeInfo()

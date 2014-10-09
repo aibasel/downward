@@ -56,7 +56,7 @@ void RandomNumberGenerator::seed(int se) {
 void RandomNumberGenerator::seed(unsigned int *init_key, int key_length) {
     int i = 1, j = 0, k = (N > key_length ? N : key_length);
     seed(19650218UL);
-    for (; k; k--) {
+    for (; k; --k) {
         mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525UL)) +
                 init_key[j] + j;
         mt[i] &= 0xffffffffUL;
@@ -69,7 +69,7 @@ void RandomNumberGenerator::seed(unsigned int *init_key, int key_length) {
         if (j >= key_length)
             j = 0;
     }
-    for (k = N - 1; k; k--) {
+    for (k = N - 1; k; --k) {
         mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1566083941UL)) - i;
         mt[i] &= 0xffffffffUL;
         ++i;

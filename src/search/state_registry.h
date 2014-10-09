@@ -1,10 +1,10 @@
 #ifndef STATE_REGISTRY_H
 #define STATE_REGISTRY_H
 
+#include "global_state.h"
 #include "globals.h"
 #include "int_packer.h"
 #include "segmented_vector.h"
-#include "state.h"
 #include "state_id.h"
 #include "utilities.h"
 
@@ -14,7 +14,7 @@
 /*
   Overview of classes relevant to storing and working with registered states.
 
-  State
+  GlobalState
     This class is used for manipulating states.
     It contains the (uncompressed) variable values for fast access by the heuristic.
     A State is always registered in a StateRegistry and has a valid ID.
@@ -52,7 +52,7 @@
 
   PerStateInformation<T>
     Associates a value of type T with every state in a given StateRegistry.
-    Can be thought of as a very compactly implemented map from State to T.
+    Can be thought of as a very compactly implemented map from GlobalState to T.
     References stay valid forever. Memory usage is essentially the same as a
     vector<T> whose size is the number of states in the registry.
 
@@ -102,9 +102,9 @@ class StateRegistry {
     struct StateIDSemanticHash {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
         StateIDSemanticHash(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool (state_data_pool_) {
+            : state_data_pool(state_data_pool_) {
         }
-        size_t operator() (StateID id) const {
+        size_t operator()(StateID id) const {
             return ::hash_number_sequence(state_data_pool[id.value], g_state_packer->get_num_bins());
         }
     };
@@ -112,10 +112,10 @@ class StateRegistry {
     struct StateIDSemanticEqual {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
         StateIDSemanticEqual(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool (state_data_pool_) {
+            : state_data_pool(state_data_pool_) {
         }
 
-        size_t operator() (StateID lhs, StateID rhs) const {
+        size_t operator()(StateID lhs, StateID rhs) const {
             size_t size = g_state_packer->get_num_bins();
             const PackedStateBin *lhs_data = state_data_pool[lhs.value];
             const PackedStateBin *rhs_data = state_data_pool[rhs.value];
@@ -134,7 +134,7 @@ class StateRegistry {
 
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
-    State *cached_initial_state;
+    GlobalState *cached_initial_state;
     mutable std::set<PerStateInformationBase *> subscribers;
     StateID insert_id_or_pop_state();
 public:
@@ -145,20 +145,20 @@ public:
       Returns the state that was registered at the given ID. The ID must refer
       to a state in this registry. Do not mix IDs from from different registries.
     */
-    State lookup_state(StateID id) const;
+    GlobalState lookup_state(StateID id) const;
 
     /*
       Returns a reference to the initial state and registers it if this was not
       done before. The result is cached internally so subsequent calls are cheap.
     */
-    const State &get_initial_state();
+    const GlobalState &get_initial_state();
 
     /*
       Returns the state that results from applying op to predecessor and
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    State get_successor_state(const State &predecessor, const Operator &op);
+    GlobalState get_successor_state(const GlobalState &predecessor, const GlobalOperator &op);
 
     /*
       Returns the number of states registered so far.

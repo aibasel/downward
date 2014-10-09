@@ -9,8 +9,8 @@
 
 class CGCache;
 class DomainTransitionGraph;
-class State;
-class ValueNode;
+class GlobalState;
+struct ValueNode;
 
 class CGHeuristic : public Heuristic {
     std::vector<AdaptiveQueue<ValueNode *> *> prio_queues;
@@ -22,11 +22,11 @@ class CGHeuristic : public Heuristic {
     int helpful_transition_extraction_counter;
 
     void setup_domain_transition_graphs();
-    int get_transition_cost(const State &state, DomainTransitionGraph *dtg, int start_val, int goal_val);
-    void mark_helpful_transitions(const State &state, DomainTransitionGraph *dtg, int to);
+    int get_transition_cost(const GlobalState &state, DomainTransitionGraph *dtg, int start_val, int goal_val);
+    void mark_helpful_transitions(const GlobalState &state, DomainTransitionGraph *dtg, int to);
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     CGHeuristic(const Options &opts);
     ~CGHeuristic();

@@ -3,11 +3,11 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../utilities.h"
 
 #include <vector>
@@ -41,9 +41,9 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         // get used operators and set their cost for further iterations to 0 (action cost partitioning)
         const vector<bool> &used_ops = pdb_heuristic->get_relevant_operators();
         assert(used_ops.size() == operator_costs.size());
-        for (size_t k = 0; k < used_ops.size(); ++k) {
-            if (used_ops[k])
-                operator_costs[k] = 0;
+        for (size_t j = 0; j < used_ops.size(); ++j) {
+            if (used_ops[j])
+                operator_costs[j] = 0;
         }
 
         approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();
@@ -61,7 +61,7 @@ ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
 void ZeroOnePDBsHeuristic::initialize() {
 }
 
-int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) {
+int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &state) {
     // since we use action cost partitioning, we can simply add up all h-values
     // from the patterns in the pattern collection
     int h_val = 0;
@@ -81,7 +81,8 @@ void ZeroOnePDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Zero-One PDB",
+    parser.document_synopsis(
+        "Zero-One PDB",
         "The zero/one pattern database heuristic is simply the sum of the "
         "heuristic values of all patterns in the pattern collection. In contrast "
         "to the canonical pattern database heuristic, there is no need to check "

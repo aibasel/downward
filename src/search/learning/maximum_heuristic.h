@@ -18,7 +18,7 @@ protected:
     vector<int> only_winner;
     vector<int> hvalue;
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
     int num_evals;
 
     bool dump_arff;
@@ -40,8 +40,8 @@ public:
     }
 
     virtual void print_statistics() const;
-    virtual bool reach_state(const State &parent_state, const Operator &op,
-                             const State &state);
+    virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                             const GlobalState &state);
 };
 
 #endif

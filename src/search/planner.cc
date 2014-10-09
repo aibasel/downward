@@ -1,14 +1,15 @@
 #include "globals.h"
-#include "operator.h"
+
 #include "option_parser.h"
-#include "ext/tree_util.hh"
+#include "search_engine.h"
 #include "timer.h"
 #include "utilities.h"
-#include "search_engine.h"
 
+#include "ext/tree_util.hh"
 
 #include <iostream>
 #include <new>
+
 using namespace std;
 
 int main(int argc, const char **argv) {
