@@ -69,7 +69,7 @@ def set_limit(kind, soft, hard):
 def get_plan_cost_and_cost_type(plan_file):
     with open(plan_file) as input_file:
         for line in input_file:
-            match = re.match(r"; cost = (\d+) \((unit-cost|general-cost)\)\n", line)
+            match = re.match(r"; cost = (\d+) \((unit cost|general cost)\)\n", line)
             if match:
                 return int(match.group(1)), match.group(2)
     os.remove(plan_file)
@@ -235,7 +235,7 @@ def run_sat(configs, executable, sas_file, plan_prefix, final_config,
             if exitcode == EXIT_PLAN_FOUND:
                 configs_next_round.append(configs[pos][:])
                 if (not changed_cost_types and can_change_cost_type(args) and
-                        get_cost_type(plan_prefix) == "general-cost"):
+                        get_cost_type(plan_prefix) == "general cost"):
                     print("Switch to real costs and repeat last run.")
                     changed_cost_types = True
                     search_cost_type = "normal"
