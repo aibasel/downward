@@ -10,11 +10,10 @@
 
 // TODO: Fix duplication with the other relaxation heuristics.
 
-class Operator;
-class State;
-
-class RelaxedProposition;
-class RelaxedOperator;
+class GlobalOperator;
+class GlobalState;
+struct RelaxedProposition;
+struct RelaxedOperator;
 
 class Options;
 /* TODO: Check the impact of using unary relaxed operators instead of
@@ -58,7 +57,7 @@ const int COST_MULTIPLIER = 1;
  */
 
 struct RelaxedOperator {
-    const Operator *op;
+    const GlobalOperator *op;
     std::vector<RelaxedProposition *> precondition;
     std::vector<RelaxedProposition *> effects;
     int base_cost; // 0 for axioms, 1 for regular operators
@@ -69,7 +68,7 @@ struct RelaxedOperator {
     RelaxedProposition *h_max_supporter;
     RelaxedOperator(const std::vector<RelaxedProposition *> &pre,
                     const std::vector<RelaxedProposition *> &eff,
-                    const Operator *the_op, int base)
+                    const GlobalOperator *the_op, int base)
         : op(the_op), precondition(pre), effects(eff), base_cost(base) {
     }
 
@@ -113,16 +112,16 @@ class LandmarkCutHeuristic : public Heuristic {
     AdaptiveQueue<RelaxedProposition *> priority_queue;
 
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
-    void build_relaxed_operator(const Operator &op);
+    virtual int compute_heuristic(const GlobalState &state);
+    void build_relaxed_operator(const GlobalOperator &op);
     void add_relaxed_operator(const std::vector<RelaxedProposition *> &precondition,
                               const std::vector<RelaxedProposition *> &effects,
-                              const Operator *op, int base_cost);
+                              const GlobalOperator *op, int base_cost);
     void setup_exploration_queue();
-    void setup_exploration_queue_state(const State &state);
-    void first_exploration(const State &state);
+    void setup_exploration_queue_state(const GlobalState &state);
+    void first_exploration(const GlobalState &state);
     void first_exploration_incremental(std::vector<RelaxedOperator *> &cut);
-    void second_exploration(const State &state, std::vector<RelaxedProposition *> &queue,
+    void second_exploration(const GlobalState &state, std::vector<RelaxedProposition *> &queue,
                             std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
@@ -143,7 +142,7 @@ public:
 
 inline void RelaxedOperator::update_h_max_supporter() {
     assert(!unsatisfied_preconditions);
-    for (int i = 0; i < precondition.size(); i++)
+    for (size_t i = 0; i < precondition.size(); ++i)
         if (precondition[i]->h_max_cost > h_max_supporter->h_max_cost)
             h_max_supporter = precondition[i];
     h_max_supporter_cost = h_max_supporter->h_max_cost;

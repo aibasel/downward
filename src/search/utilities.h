@@ -49,8 +49,13 @@ extern void exit_with(ExitCode returncode) __attribute__((noreturn));
 
 extern void register_event_handlers();
 
-extern int get_peak_memory_in_kb();
-extern void print_peak_memory();
+extern int get_peak_memory_in_kb(bool use_buffered_input = true);
+extern void print_peak_memory(bool use_buffered_input = true);
+
+/* Test if the product of two numbers is bounded by a third number.
+   Safe against overflow. The caller must guarantee
+   0 <= factor1, factor2 <= limit; failing this is an error. */
+extern bool is_product_within_limit(int factor1, int factor2, int limit);
 
 template<class T>
 extern bool is_sorted_unique(const std::vector<T> &values) {
@@ -109,6 +114,16 @@ public:
     }
 };
 
+template<class T>
+bool in_bounds(int index, const T &container) {
+    return index >= 0 && static_cast<size_t>(index) < container.size();
+}
+
+template<class T>
+bool in_bounds(size_t index, const T &container) {
+    return index < container.size();
+}
+
 // Delete the element at position pos.
 template<typename T>
 void fast_remove_from_vector(std::vector<T> &vec, std::size_t pos) {
@@ -116,4 +131,9 @@ void fast_remove_from_vector(std::vector<T> &vec, std::size_t pos) {
     std::swap(vec[pos], vec.back());
     vec.pop_back();
 }
+
+template<typename T>
+void unused_parameter(const T &) {
+}
+
 #endif

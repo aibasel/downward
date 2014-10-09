@@ -1,8 +1,8 @@
 #include "variable_order_finder.h"
 
-#include "../causal_graph.h"
-#include "../globals.h"
-#include "../utilities.h"
+#include "causal_graph.h"
+#include "globals.h"
+#include "utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -20,7 +20,7 @@ VariableOrderFinder::VariableOrderFinder(
         for (int i = 0; i < var_count; ++i)
             remaining_vars.push_back(i);
     } else {
-        for (int i = var_count - 1; i >= 0; i--)
+        for (int i = var_count - 1; i >= 0; --i)
             remaining_vars.push_back(i);
     }
 
@@ -30,7 +30,7 @@ VariableOrderFinder::VariableOrderFinder(
 
     is_causal_predecessor.resize(var_count, false);
     is_goal_variable.resize(var_count, false);
-    for (int i = 0; i < g_goal.size(); ++i)
+    for (size_t i = 0; i < g_goal.size(); ++i)
         is_goal_variable[g_goal[i].first] = true;
 }
 
@@ -42,7 +42,7 @@ void VariableOrderFinder::select_next(int position, int var_no) {
     remaining_vars.erase(remaining_vars.begin() + position);
     selected_vars.push_back(var_no);
     const vector<int> &new_vars = g_causal_graph->get_eff_to_pre(var_no);
-    for (int i = 0; i < new_vars.size(); ++i)
+    for (size_t i = 0; i < new_vars.size(); ++i)
         is_causal_predecessor[new_vars[i]] = true;
 }
 
@@ -55,7 +55,7 @@ int VariableOrderFinder::next() {
     if (variable_order_type == CG_GOAL_LEVEL || variable_order_type
         == CG_GOAL_RANDOM) {
         // First run: Try to find a causally connected variable.
-        for (int i = 0; i < remaining_vars.size(); ++i) {
+        for (size_t i = 0; i < remaining_vars.size(); ++i) {
             int var_no = remaining_vars[i];
             if (is_causal_predecessor[var_no]) {
                 select_next(i, var_no);
@@ -63,7 +63,7 @@ int VariableOrderFinder::next() {
             }
         }
         // Second run: Try to find a goal variable.
-        for (int i = 0; i < remaining_vars.size(); ++i) {
+        for (size_t i = 0; i < remaining_vars.size(); ++i) {
             int var_no = remaining_vars[i];
             if (is_goal_variable[var_no]) {
                 select_next(i, var_no);
@@ -72,7 +72,7 @@ int VariableOrderFinder::next() {
         }
     } else if (variable_order_type == GOAL_CG_LEVEL) {
         // First run: Try to find a goal variable.
-        for (int i = 0; i < remaining_vars.size(); ++i) {
+        for (size_t i = 0; i < remaining_vars.size(); ++i) {
             int var_no = remaining_vars[i];
             if (is_goal_variable[var_no]) {
                 select_next(i, var_no);
@@ -80,7 +80,7 @@ int VariableOrderFinder::next() {
             }
         }
         // Second run: Try to find a causally connected variable.
-        for (int i = 0; i < remaining_vars.size(); ++i) {
+        for (size_t i = 0; i < remaining_vars.size(); ++i) {
             int var_no = remaining_vars[i];
             if (is_causal_predecessor[var_no]) {
                 select_next(i, var_no);

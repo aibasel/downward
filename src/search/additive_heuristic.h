@@ -19,9 +19,9 @@ class AdditiveHeuristic : public RelaxationHeuristic {
     bool did_write_overflow_warning;
 
     void setup_exploration_queue();
-    void setup_exploration_queue_state(const State &state);
+    void setup_exploration_queue_state(const GlobalState &state);
     void relaxed_exploration();
-    void mark_preferred_operators(const State &state, Proposition *goal);
+    void mark_preferred_operators(const GlobalState &state, Proposition *goal);
 
     void enqueue_if_necessary(Proposition *prop, int cost, UnaryOperator *op) {
         assert(cost >= 0);
@@ -46,10 +46,10 @@ class AdditiveHeuristic : public RelaxationHeuristic {
     void write_overflow_warning();
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 
     // Common part of h^add and h^ff computation.
-    int compute_add_and_ff(const State &state);
+    int compute_add_and_ff(const GlobalState &state);
 public:
     AdditiveHeuristic(const Options &options);
     ~AdditiveHeuristic();

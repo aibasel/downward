@@ -4,7 +4,7 @@
 #include "shrink_strategy.h"
 
 class Options;
-class Signature;
+struct Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
     enum AtLimit {
@@ -13,9 +13,9 @@ class ShrinkBisimulation : public ShrinkStrategy {
     };
 
     /*
-      threshold: Shrink the abstraction iff it is larger than this
+      threshold: Shrink the transition system iff it is larger than this
       size. Note that this is set independently from max_states, which
-      is the number of states to which the abstraction is shrunk.
+      is the number of states to which the transition system is shrunk.
     */
 
     const bool greedy;
@@ -23,17 +23,15 @@ class ShrinkBisimulation : public ShrinkStrategy {
     const bool group_by_h;
     const AtLimit at_limit;
 
-    void compute_abstraction(
-        Abstraction &abs,
-        int target_size,
-        EquivalenceRelation &equivalence_relation);
+    void compute_abstraction(TransitionSystem &ts,
+                             int target_size,
+                             EquivalenceRelation &equivalence_relation);
 
-    int initialize_groups(const Abstraction &abs,
+    int initialize_groups(const TransitionSystem &ts,
                           std::vector<int> &state_to_group);
-    void compute_signatures(
-        const Abstraction &abs,
-        std::vector<Signature> &signatures,
-        std::vector<int> &state_to_group);
+    void compute_signatures(const TransitionSystem &ts,
+                            std::vector<Signature> &signatures,
+                            std::vector<int> &state_to_group);
 public:
     ShrinkBisimulation(const Options &opts);
     virtual ~ShrinkBisimulation();
@@ -43,11 +41,8 @@ public:
 
     virtual bool reduce_labels_before_shrinking() const;
 
-    virtual void shrink(Abstraction &abs, int target, bool force = false);
-    virtual void shrink_atomic(Abstraction &abs);
-    virtual void shrink_before_merge(Abstraction &abs1, Abstraction &abs2);
-
-    static ShrinkStrategy *create_default();
+    virtual void shrink(TransitionSystem &ts, int target);
+    virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 };
 
 #endif

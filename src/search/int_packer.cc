@@ -4,7 +4,7 @@
 using namespace std;
 
 
-static const size_t BITS_PER_BIN = sizeof(IntPacker::Bin) * 8;
+static const int BITS_PER_BIN = sizeof(IntPacker::Bin) * 8;
 
 
 static IntPacker::Bin get_bit_mask(int from, int to) {
@@ -24,7 +24,7 @@ static IntPacker::Bin get_bit_mask(int from, int to) {
 
 static int get_bit_size_for_range(int range) {
     int num_bits = 0;
-    while ((1U << num_bits) < range)
+    while ((1U << num_bits) < static_cast<unsigned int>(range))
         ++num_bits;
     return num_bits;
 }

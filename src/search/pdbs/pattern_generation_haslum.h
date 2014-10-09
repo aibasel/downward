@@ -8,23 +8,24 @@
 #include <set>
 #include <vector>
 
-class Options;
 class CanonicalPDBsHeuristic;
+class CountdownTimer;
+class GlobalState;
+class Options;
 class PDBHeuristic;
-class State;
-class Timer;
+
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
     const int pdb_max_size; // maximum number of states for each pdb
     const int collection_max_size; // maximum added size of all pdbs
     const int num_samples;
     const int min_improvement; // minimal improvement required for hill climbing to continue search
-    const int max_time;
+    const double max_time;
     const OperatorCost cost_type;
     CanonicalPDBsHeuristic *current_heuristic;
 
     int num_rejected; // for stats only
-    Timer *hill_climbing_timer;
+    CountdownTimer *hill_climbing_timer;
 
     /* For the given pattern, all possible extensions of the pattern by one relevant variable
        are inserted into candidate_patterns. This may generate duplicated patterns. */
@@ -44,20 +45,20 @@ class PatternGenerationHaslum {
        applicable, the walk starts over again from the initial state. At the end of each random
        walk, the last state visited is taken as a sample state, thus totalling exactly
        num_samples of sample states. */
-    void sample_states(StateRegistry &sample_registry, std::vector<State> &samples,
+    void sample_states(StateRegistry &sample_registry, std::vector<GlobalState> &samples,
                        double average_operator_costs);
 
 
     /* Searches for the best improving pdb in candidate_pdbs according to the
        counting approximation and the given samples. Returns the improvement and
        the index of the best pdb in candidate_pdbs. */
-    std::pair<int, int> find_best_improving_pdb(std::vector<State> &samples,
+    std::pair<int, int> find_best_improving_pdb(std::vector<GlobalState> &samples,
                                                 std::vector<PDBHeuristic *> &candidate_pdbs);
 
     /* Returns true iff the h-value of the new pattern (from pdb_heuristic) plus the h-value of all
        maximal additive subsets from the current pattern collection heuristic if the new pattern was
        added to it is greater than the the h-value of the current pattern collection. */
-    bool is_heuristic_improved(PDBHeuristic *pdb_heuristic, const State &sample,
+    bool is_heuristic_improved(PDBHeuristic *pdb_heuristic, const GlobalState &sample,
                                const std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
 
     /* This is the core algorithm of this class. As soon as after an iteration, the improvement (according

@@ -17,11 +17,11 @@ IPCMaxHeuristic::IPCMaxHeuristic(const Options &opts)
 IPCMaxHeuristic::~IPCMaxHeuristic() {
 }
 
-int IPCMaxHeuristic::compute_heuristic(const State &state) {
+int IPCMaxHeuristic::compute_heuristic(const GlobalState &state) {
     dead_end = false;
     dead_end_reliable = false;
     value = 0;
-    for (unsigned int i = 0; i < evaluators.size(); i++) {
+    for (size_t i = 0; i < evaluators.size(); ++i) {
         evaluators[i]->evaluate(state);
 
         if (evaluators[i]->is_dead_end()) {
@@ -39,10 +39,10 @@ int IPCMaxHeuristic::compute_heuristic(const State &state) {
     return value;
 }
 
-bool IPCMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
-                                  const State &state) {
+bool IPCMaxHeuristic::reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                                  const GlobalState &state) {
     bool result = false;
-    for (int i = 0; i < evaluators.size(); i++) {
+    for (size_t i = 0; i < evaluators.size(); ++i) {
         if (evaluators[i]->reach_state(parent_state, op, state)) {
             result = true;
             // Don't break: we must call reached_state everywhere.

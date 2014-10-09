@@ -10,7 +10,7 @@ DominancePruner::DominancePruner(vector<PDBHeuristic *> &pattern_databases_,
 
 void DominancePruner::compute_superset_relation() {
     superset_relation.clear();
-    int num_patterns = pattern_databases.size();
+    size_t num_patterns = pattern_databases.size();
     for (size_t i = 0; i < num_patterns; ++i) {
         const vector<int> p_i = pattern_databases[i]->get_pattern();
         for (size_t j = 0; j < num_patterns; ++j) {

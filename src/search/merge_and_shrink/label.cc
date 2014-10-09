@@ -7,23 +7,22 @@
 
 using namespace std;
 
-Label::Label(int id_, int cost_, const vector<Prevail> &prevail_, const vector<PrePost> &pre_post_)
-    : id(id_), cost(cost_), prevail(prevail_), pre_post(pre_post_), root(this) {
+Label::Label(int id_, int cost_)
+    : id(id_), cost(cost_), root(this) {
 }
 
 bool Label::is_reduced() const {
     return root != this;
 }
 
-OperatorLabel::OperatorLabel(int id, int cost, const vector<Prevail> &prevail,
-                             const vector<PrePost> &pre_post)
-    : Label(id, cost, prevail, pre_post) {
+OperatorLabel::OperatorLabel(int id, int cost,
+                             const vector<GlobalCondition> &preconditions_,
+                             const vector<GlobalEffect> &effects_)
+    : Label(id, cost), preconditions(preconditions_), effects(effects_) {
 }
 
 CompositeLabel::CompositeLabel(int id, const std::vector<Label *> &parents_)
-    : Label(id, parents_[0]->get_cost(), parents_[0]->get_prevail(), parents_[0]->get_pre_post()) {
-    // We take the first label as the "canonical" label for prevail and pre-post
-    // to match the old implementation of label reduction.
+    : Label(id, parents_[0]->get_cost()) {
     for (size_t i = 0; i < parents_.size(); ++i) {
         Label *parent = parents_[i];
         if (i > 0)

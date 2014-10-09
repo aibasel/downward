@@ -1,7 +1,7 @@
 #include "landmark_factory_zhu_givan.h"
 #include "landmark_graph.h"
-#include "../operator.h"
-#include "../state.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -34,7 +34,7 @@ void LandmarkFactoryZhuGivan::generate_landmarks() {
 
 bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
     const proposition_layer &layer) const {
-    for (unsigned i = 0; i < g_goal.size(); i++)
+    for (size_t i = 0; i < g_goal.size(); ++i)
         if (!layer[g_goal[i].first][g_goal[i].second].reached())
             return false;
 
@@ -44,7 +44,7 @@ bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
 void LandmarkFactoryZhuGivan::extract_landmarks(
     const proposition_layer &last_prop_layer) {
     // insert goal landmarks and mark them as goals
-    for (unsigned i = 0; i < g_goal.size(); i++) {
+    for (size_t i = 0; i < g_goal.size(); ++i) {
         LandmarkNode *lmp;
         if (lm_graph->simple_landmark_exists(g_goal[i])) {
             lmp = &lm_graph->get_simple_lm_node(g_goal[i]);
@@ -60,7 +60,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         assert(goal_node.reached());
 
         for (lm_set::const_iterator it = goal_node.labels.begin(); it
-             != goal_node.labels.end(); it++) {
+             != goal_node.labels.end(); ++it) {
             if (*it == g_goal[i]) // ignore label on itself
                 continue;
             LandmarkNode *node;
@@ -89,9 +89,9 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     hash_set<int> triggered(g_operators.size() + g_axioms.size());
 
     // set initial layer
-    const State &initial_state = g_initial_state();
+    const GlobalState &initial_state = g_initial_state();
     current_prop_layer.resize(g_variable_domain.size());
-    for (unsigned i = 0; i < g_variable_domain.size(); i++) {
+    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         current_prop_layer[i].resize(g_variable_domain[i]);
 
         // label nodes from initial state
@@ -112,15 +112,15 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
         hash_set<int> next_triggered;
         changes = false;
         for (hash_set<int>::const_iterator it = triggered.begin(); it
-             != triggered.end(); it++) {
-            const Operator &op = lm_graph->get_operator_for_lookup_index(*it);
+             != triggered.end(); ++it) {
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(*it);
             if (operator_applicable(op, current_prop_layer)) {
                 lm_set changed = apply_operator_and_propagate_labels(op,
                                                                      current_prop_layer, next_prop_layer);
                 if (!changed.empty()) {
                     changes = true;
                     for (lm_set::const_iterator it2 = changed.begin(); it2
-                         != changed.end(); it2++)
+                         != changed.end(); ++it2)
                         next_triggered.insert(
                             triggers[it2->first][it2->second].begin(),
                             triggers[it2->first][it2->second].end());
@@ -134,27 +134,20 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     return current_prop_layer;
 }
 
-bool LandmarkFactoryZhuGivan::operator_applicable(const Operator &op,
+bool LandmarkFactoryZhuGivan::operator_applicable(const GlobalOperator &op,
                                                   const proposition_layer &state) const {
     // test preconditions
-    const vector<Prevail> &prevail = op.get_prevail();
-    for (unsigned i = 0; i < prevail.size(); i++)
-        if (!state[prevail[i].var][prevail[i].prev].reached())
+    const vector<GlobalCondition> &preconditions = op.get_preconditions();
+    for (size_t i = 0; i < preconditions.size(); ++i)
+        if (!state[preconditions[i].var][preconditions[i].val].reached())
             return false;
-
-    const vector<PrePost> &prepost = op.get_pre_post();
-    for (unsigned i = 0; i < prepost.size(); i++)
-        if (prepost[i].pre != -1
-            && !state[prepost[i].var][prepost[i].pre].reached())
-            return false;
-
     return true;
 }
 
 bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
-    const vector<Prevail> &cond, const proposition_layer &state) const {
-    for (unsigned i = 0; i < cond.size(); i++)
-        if (!state[cond[i].var][cond[i].prev].reached())
+    const vector<GlobalCondition> &cond, const proposition_layer &state) const {
+    for (size_t i = 0; i < cond.size(); ++i)
+        if (!state[cond[i].var][cond[i].val].reached())
             return false;
     return true;
 }
@@ -165,7 +158,7 @@ static lm_set _union(const lm_set &a, const lm_set &b) {
 
     lm_set result = a;
 
-    for (lm_set::const_iterator it = b.begin(); it != b.end(); it++)
+    for (lm_set::const_iterator it = b.begin(); it != b.end(); ++it)
         result.insert(*it);
     return result;
 }
@@ -176,36 +169,32 @@ static lm_set _intersection(const lm_set &a, const lm_set &b) {
 
     lm_set result;
 
-    for (lm_set::const_iterator it = a.begin(); it != a.end(); it++)
+    for (lm_set::const_iterator it = a.begin(); it != a.end(); ++it)
         if (b.find(*it) != b.end())
             result.insert(*it);
     return result;
 }
 
-lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const Operator &op,
+lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const GlobalOperator &op,
                                                              const proposition_layer &current) const {
     lm_set result;
 
-    const vector<Prevail> &prevail = op.get_prevail();
-    for (unsigned i = 0; i < prevail.size(); i++)
+    // TODO This looks like an O(n^2) algorithm where O(n log n) would do, a
+    // bit like the Python string concatenation anti-pattern.
+    const vector<GlobalCondition> &preconditions = op.get_preconditions();
+    for (size_t i = 0; i < preconditions.size(); ++i)
         result =
             _union(result,
-                   current[prevail[i].var][prevail[i].prev].labels);
-
-    const vector<PrePost> &prepost = op.get_pre_post();
-    for (unsigned i = 0; i < prepost.size(); i++)
-        if (prepost[i].pre != -1)
-            result = _union(result,
-                            current[prepost[i].var][prepost[i].pre].labels);
+                   current[preconditions[i].var][preconditions[i].val].labels);
 
     return result;
 }
 
 lm_set LandmarkFactoryZhuGivan::union_of_condition_labels(
-    const vector<Prevail> &cond, const proposition_layer &current) const {
+    const vector<GlobalCondition> &cond, const proposition_layer &current) const {
     lm_set result;
-    for (unsigned i = 0; i < cond.size(); i++)
-        result = _union(result, current[cond[i].var][cond[i].prev].labels);
+    for (size_t i = 0; i < cond.size(); ++i)
+        result = _union(result, current[cond[i].var][cond[i].val].labels);
 
     return result;
 }
@@ -235,25 +224,25 @@ static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
 }
 
 lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
-    const Operator &op, const proposition_layer &current,
+    const GlobalOperator &op, const proposition_layer &current,
     proposition_layer &next) const {
     assert(operator_applicable(op, current));
 
     lm_set result;
     lm_set precond_label_union = union_of_precondition_labels(op, current);
 
-    const vector<PrePost> &prepost = op.get_pre_post();
-    for (int i = 0; i < prepost.size(); i++) {
-        const int var = prepost[i].var;
-        const int post = prepost[i].post;
+    const vector<GlobalEffect> &effects = op.get_effects();
+    for (size_t i = 0; i < effects.size(); ++i) {
+        const int var = effects[i].var;
+        const int post = effects[i].val;
 
         if (next[var][post].labels.size() == 1)
             continue;
 
-        if (operator_cond_effect_fires(prepost[i].cond, current)) {
+        if (operator_cond_effect_fires(effects[i].conditions, current)) {
             const lm_set precond_label_union_with_condeff = _union(
                 precond_label_union, union_of_condition_labels(
-                    prepost[i].cond, current));         // NOTE: this equals precond_label_union, if prepost[i] is
+                    effects[i].conditions, current));         // NOTE: this equals precond_label_union, if effects[i] is
             // not a conditional effect
 
             if (_propagate_labels(next[var][post].labels,
@@ -270,38 +259,30 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
 
     // initialize empty triggers
     triggers.resize(g_variable_domain.size());
-    for (unsigned i = 0; i < g_variable_domain.size(); i++)
+    for (size_t i = 0; i < g_variable_domain.size(); ++i)
         triggers[i].resize(g_variable_domain[i]);
 
     // compute triggers
-    for (unsigned i = 0; i < g_operators.size() + g_axioms.size(); i++) {
+    for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
         // collect possible triggers first
         lm_set t;
-        bool has_cond = false;
 
-        const Operator &op = lm_graph->get_operator_for_lookup_index(i);
-        const vector<Prevail> &prevail = op.get_prevail();
-        for (unsigned j = 0; j < prevail.size(); j++) {
-            t.insert(make_pair(prevail[j].var, prevail[j].prev));
-            has_cond = true;
-        }
+        const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(i);
+        const vector<GlobalCondition> &preconditions = op.get_preconditions();
+        for (size_t j = 0; j < preconditions.size(); ++j)
+            t.insert(make_pair(preconditions[j].var, preconditions[j].val));
 
-        const vector<PrePost> &prepost = op.get_pre_post();
-        for (unsigned j = 0; j < prepost.size(); j++) {
-            if (prepost[j].pre != -1) {
-                t.insert(make_pair(prepost[j].var, prepost[j].pre));
-                has_cond = true;
-            }
-            const vector<Prevail> &cond = prepost[j].cond;
-            for (unsigned k = 0; k < cond.size(); k++) {
-                t.insert(make_pair(cond[k].var, cond[k].prev));
-            }
+        const vector<GlobalEffect> &effects = op.get_effects();
+        for (size_t j = 0; j < effects.size(); ++j) {
+            const vector<GlobalCondition> &cond = effects[j].conditions;
+            for (size_t k = 0; k < cond.size(); ++k)
+                t.insert(make_pair(cond[k].var, cond[k].val));
         }
-        if (!has_cond) // no preconditions
+        if (op.get_preconditions().empty())
             operators_without_preconditions.push_back(i);
 
         // add operator to triggers vector
-        for (lm_set::const_iterator it = t.begin(); it != t.end(); it++)
+        for (lm_set::const_iterator it = t.begin(); it != t.end(); ++it)
             triggers[it->first][it->second].push_back(i);
     }
 }
