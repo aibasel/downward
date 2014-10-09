@@ -109,8 +109,8 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
     }
 }
 
-void PDBHeuristic::build_abstract_operators(
-    int op_no, const vector<int> &operator_costs, vector<AbstractOperator> &operators) {
+void PDBHeuristic::build_abstract_operators(int op_no, int cost,
+                                            vector<AbstractOperator> &operators) {
     const GlobalOperator &op = g_operators[op_no];
     vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
     vector<pair<int, int> > pre_pairs; // all variable value pairs that are a precondition (value != -1)
@@ -144,20 +144,20 @@ void PDBHeuristic::build_abstract_operators(
             }
         }
     }
-    int op_cost;
-    if (operator_costs.empty()) {
-        op_cost = get_adjusted_cost(g_operators[op_no]);
-    } else {
-        op_cost = operator_costs[op_no];
-    }
-    multiply_out(0, op_no, op_cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
+    multiply_out(0, op_no, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
 }
 
 void PDBHeuristic::create_pdb(const std::vector<int> &operator_costs) {
     // compute all abstract operators
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        build_abstract_operators(i, operator_costs, operators);
+        int op_cost;
+        if (operator_costs.empty()) {
+            op_cost = get_adjusted_cost(g_operators[i]);
+        } else {
+            op_cost = operator_costs[i];
+        }
+        build_abstract_operators(i, op_cost, operators);
     }
 
     // build the match tree
