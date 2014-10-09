@@ -34,6 +34,7 @@ def run_translate(args):
 
 def run_preprocess(args):
     logging.info("Running preprocessor.")
+    logging.info("preprocessor input: %s" % args.preprocess_input)
     logging.info("preprocessor arguments: %s" % args.preprocess_options)
     call_cmd(PREPROCESS, args.preprocess_options, stdin=args.preprocess_input)
 
@@ -45,10 +46,12 @@ def run_search(args):
         executable = os.path.join(SEARCH_DIR, "downward-debug")
     else:
         executable = os.path.join(SEARCH_DIR, "downward-release")
-    logging.info("executable: %s" % executable)
+    logging.info("search input: %s" % args.search_input)
+    logging.info("search executable: %s" % executable)
 
     if args.portfolio:
         assert not args.search_options
+        logging.info("search portfolio: %s" % args.portfolio)
         portfolio_runner.run(
             args.portfolio, executable, args.search_input, args.plan_file)
     else:
@@ -57,5 +60,7 @@ def run_search(args):
                 "search needs --alias, --portfolio, or search options")
         if "--plan-file" not in args.search_options:
             args.search_options.extend(["--plan-file", args.plan_file])
-        logging.info("final search options: %s" % args.search_options)
+        args.search_options = [
+            x.replace(" ", "").replace("\n", "") for x in args.search_options]
+        logging.info("search arguments: %s" % args.search_options)
         call_cmd(executable, args.search_options, stdin=args.search_input)
