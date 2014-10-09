@@ -26,6 +26,7 @@ import resource
 import signal
 import subprocess
 import sys
+import traceback
 
 
 DEFAULT_TIMEOUT = 1800
@@ -320,13 +321,12 @@ def get_portfolio_attributes(portfolio):
         content = portfolio_file.read()
         try:
             exec(content, attributes)
-        except ImportError as err:
-            if str(err) == "No module named portfolio":
-                raise ValueError(
-                    "The portfolio format has changed. New portfolios may only "
-                    "define attributes. See the FDSS portfolios for examples.")
-            else:
-                raise
+        except Exception as err:
+            traceback.print_exc()
+            raise SystemExit(
+                "The portfolio %s could not be loaded. Maybe it still "
+                "uses the old portfolio syntax? See the FDSS portfolios "
+                "for examples using the new syntax." % portfolio)
     if "CONFIGS" not in attributes:
         raise ValueError("portfolios must define CONFIGS")
     if "OPTIMAL" not in attributes:
