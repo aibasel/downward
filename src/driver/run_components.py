@@ -41,13 +41,17 @@ def run_preprocess(args):
 
 def run_search(args):
     logging.info("Running search.")
+    logging.info("search input: %s" % args.search_input)
 
     if args.debug:
         executable = os.path.join(SEARCH_DIR, "downward-debug")
     else:
         executable = os.path.join(SEARCH_DIR, "downward-release")
-    logging.info("search input: %s" % args.search_input)
     logging.info("search executable: %s" % executable)
+    if not os.path.exists(executable):
+        target = " debug" if args.debug else ""
+        raise SystemExit(
+            "executable not found. Please run \"./build_all%s\"." % target)
 
     if args.portfolio:
         assert not args.search_options
