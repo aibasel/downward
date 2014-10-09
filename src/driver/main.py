@@ -9,9 +9,6 @@ from . import aliases
 from . import arguments
 from . import run_components
 
-# TODO: lab test case that tests all the aliases, including
-# unit/general case. Ditto for the portfolios.
-
 
 def main():
     logging.basicConfig(level=logging.INFO,
