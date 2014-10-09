@@ -9,8 +9,8 @@ DESCRIPTION = """Fast Downward driver script.
 
 Input files can be either a PDDL problem file (with an optional PDDL
 domain file) or a SAS+ preprocessor output file. Depending on the input
-the driver runs the all three planner components or just the search.
-You can also specify the components manually with the options below.
+the driver runs all three planner components or just the search. You
+can also specify the components manually with the options below.
 
 By default, all arguments that do not have a special meaning for the
 driver are passed on to the search component. Use --translate-options
@@ -30,7 +30,7 @@ EXAMPLES = [
      ["./plan.py", "--portfolio", "driver/portfolios/seq_opt_fdss_1.py",
       "output"]),
     ("Run search in debug mode:",
-     ["./plan.py", "output", "--search", "astar(ipdb())"]),
+     ["./plan.py", "--debug", "output", "--search", "astar(ipdb())"]),
     ("Pass options to translator:",
      ["./plan.py", "../benchmarks/gripper/prob01.pddl",
       "--translate-options", "--relaxed",
@@ -44,7 +44,7 @@ EPILOG = """Examples:
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
-    """Keep newlines and spacing."""
+    """Preserve newlines and spacing."""
     def _fill_text(self, text, width, indent):
         return ''.join([indent + line for line in text.splitlines(True)])
 
