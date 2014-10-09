@@ -36,6 +36,9 @@ def run_preprocess(args):
     logging.info("Running preprocessor.")
     logging.info("preprocessor input: %s" % args.preprocess_input)
     logging.info("preprocessor arguments: %s" % args.preprocess_options)
+    if not os.path.exists(PREPROCESS):
+        raise SystemExit(
+            "preprocessor not found. Please run \"./build_all\"." )
     call_cmd(PREPROCESS, args.preprocess_options, stdin=args.preprocess_input)
 
 
@@ -51,7 +54,7 @@ def run_search(args):
     if not os.path.exists(executable):
         target = " debug" if args.debug else ""
         raise SystemExit(
-            "executable not found. Please run \"./build_all%s\"." % target)
+            "planner not found. Please run \"./build_all%s\"." % target)
 
     if args.portfolio:
         assert not args.search_options
