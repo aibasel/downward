@@ -133,6 +133,7 @@ public:
     //       a mutable attribute?
     int get_peak_memory_estimate() const;
     void release_memory();
+    void dump_fields() const;
     void dump_relevant_labels() const;
     void dump() const;
 
