@@ -162,6 +162,10 @@ def parse_args():
         "--ipc", dest="alias",
         help="same as --alias")
     parser.add_argument(
+        "--log-level", choices=["debug", "info", "warning"],
+        default="info",
+        help="print all messages >= this level (default: %(default)s)")
+    parser.add_argument(
         "--plan-file", metavar="FILE", default="sas_plan",
         help="write plan(s) to FILE{.1,.2,...} (default: %(default)s)")
     parser.add_argument(
