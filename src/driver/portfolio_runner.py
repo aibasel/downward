@@ -71,16 +71,17 @@ def set_limit(kind, soft, hard):
 
 def plan_file_is_complete(plan_file):
     with open(plan_file) as input_file:
-        return any(PLAN_COST_REGEX.match(line) for line in input_file)
+        lines = input_file.readlines()
+    if not lines:
+        return False
+    return PLAN_COST_REGEX.match(lines[-1])
 
 
 def get_plan_cost_and_cost_type(plan_file):
     with open(plan_file) as input_file:
-        for line in input_file:
-            match = PLAN_COST_REGEX.match(line)
-            if match:
-                return int(match.group(1)), match.group(2)
-    assert False
+        last_line = input_file.readlines()[-1]
+    match = PLAN_COST_REGEX.match(last_line)
+    return int(match.group(1)), match.group(2)
 
 
 def get_plan_file(plan_prefix, number):
