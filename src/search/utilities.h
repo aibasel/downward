@@ -125,7 +125,6 @@ bool in_bounds(size_t index, const T &container) {
     return index < container.size();
 }
 
-// Delete the element at position pos.
 template<typename T>
 void fast_remove_from_vector(std::vector<T> &vec, std::size_t pos) {
     assert(pos < vec.size());
