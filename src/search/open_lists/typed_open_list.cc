@@ -11,26 +11,6 @@
 
 using namespace std;
 
-
-template<class Entry>
-OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
-    parser.document_synopsis("Type-based open list",
-                             "Type-based open list that uses multiple evaluators to put nodes into buckets. "
-                             "When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected randomly. "
-                             "This open list should be used in combination with other open lists, e.g. alt().");
-    parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to group the nodes by.");
-
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
-
-    opts.verify_list_non_empty<ScalarEvaluator *>("sublists");
-    if (parser.dry_run())
-        return 0;
-    else
-        return new TypedOpenList<Entry>(opts);
-}
-
 template<class Entry>
 TypedOpenList<Entry>::TypedOpenList(const Options &opts)
     : evaluators(opts.get_list<ScalarEvaluator *>("sublists")),
@@ -151,4 +131,24 @@ void TypedOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
     for (size_t i = 0; i < evaluators.size(); i++)
         evaluators[i]->get_involved_heuristics(hset);
 }
+
+template<class Entry>
+OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
+    parser.document_synopsis("Type-based open list",
+                             "Type-based open list that uses multiple evaluators to put nodes into buckets. "
+                             "When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected randomly. "
+                             "This open list should be used in combination with other open lists, e.g. alt().");
+    parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to group the nodes by.");
+
+    Options opts = parser.parse();
+    if (parser.help_mode())
+        return 0;
+
+    opts.verify_list_non_empty<ScalarEvaluator *>("sublists");
+    if (parser.dry_run())
+        return 0;
+    else
+        return new TypedOpenList<Entry>(opts);
+}
+
 #endif
