@@ -474,14 +474,6 @@ void TransitionSystem::normalize() {
         }
     }
 
-    for (size_t i = 0; i < transitions_by_label.size(); ++i) {
-        if (transitions_by_label[i].capacity() != transitions_by_label[i].size()) {
-            vector<Transition> trans(transitions_by_label[i]);
-            assert(trans.size() == trans.capacity());
-            transitions_by_label[i].swap(trans);
-        }
-    }
-
     // Transition system has been normalized, restore invariant
     assert(are_transitions_sorted_unique());
     num_labels = labels->get_size();
