@@ -110,6 +110,7 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
 }
 
 void PDBHeuristic::build_abstract_operators(int op_no, int cost,
+                                            const std::vector<int> &variable_to_index,
                                             vector<AbstractOperator> &operators) {
     const GlobalOperator &op = g_operators[op_no];
     vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
@@ -148,6 +149,11 @@ void PDBHeuristic::build_abstract_operators(int op_no, int cost,
 }
 
 void PDBHeuristic::create_pdb(const std::vector<int> &operator_costs) {
+    vector<int> variable_to_index(g_variable_name.size(), -1);
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        variable_to_index[pattern[i]] = i;
+    }
+
     // compute all abstract operators
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
@@ -157,7 +163,7 @@ void PDBHeuristic::create_pdb(const std::vector<int> &operator_costs) {
         } else {
             op_cost = operator_costs[i];
         }
-        build_abstract_operators(i, op_cost, operators);
+        build_abstract_operators(i, op_cost, variable_to_index, operators);
     }
 
     // build the match tree
@@ -215,11 +221,9 @@ void PDBHeuristic::set_pattern(const vector<int> &pat,
     assert(is_sorted_unique(pat));
     pattern = pat;
     hash_multipliers.reserve(pattern.size());
-    variable_to_index.resize(g_variable_name.size(), -1);
     num_states = 1;
     for (size_t i = 0; i < pattern.size(); ++i) {
         hash_multipliers.push_back(num_states);
-        variable_to_index[pattern[i]] = i;
         num_states *= g_variable_domain[pattern[i]];
     }
     create_pdb(operator_costs);
