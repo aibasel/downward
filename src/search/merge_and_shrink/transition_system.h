@@ -86,12 +86,14 @@ class TransitionSystem {
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
     void discard_states(const std::vector<bool> &to_be_pruned_states);
+    bool are_distances_computed() const;
     void compute_distances_and_prune();
 
     // are_transitions_sorted_unique() is used to determine whether the
     // transitions of an transition system are sorted uniquely or not after
     // construction (composite transition system) and shrinking (apply_abstraction).
     bool are_transitions_sorted_unique() const;
+    void normalize();
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
@@ -123,9 +125,8 @@ public:
     // first letter of description() and appends ": ".
     std::string tag() const;
 
-    // This is public exclusively for ShrinkBisimulation
+    // get_label_cost_by_index is public exclusively for ShrinkBisimulation
     int get_label_cost_by_index(int label_no) const;
-    bool are_distances_computed() const;
     /*
       A transition system is normalized if:
        - Transitions are sorted (by labels, by states) and there are no
@@ -138,7 +139,6 @@ public:
       creating transition systems and after applying abstractions.
     */
     bool is_normalized() const;
-    void normalize();
     EquivalenceRelation *compute_local_equivalence_relation() const;
 
     bool is_solvable() const;

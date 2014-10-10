@@ -331,9 +331,7 @@ void TransitionSystem::normalize() {
        It also maps the labels so that they are up to date with the labels
        object. */
 
-    if (is_normalized()) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
+    assert(!is_normalized());
     //cout << tag() << "normalizing" << endl;
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
@@ -896,15 +894,10 @@ int TransitionSystem::get_num_labels() const {
 }
 
 void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
-    // transition system needs to be normalized when considering labels and their
-    // transitions
-    if (!is_normalized()) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    // distances must be computed
-    if (!(are_distances_computed())) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
+    // transition system needs to be normalized and distances must have
+    // been computed to compute label ranks
+    assert(is_normalized());
+    assert(are_distances_computed());
     assert(label_ranks.empty());
     label_ranks.reserve(transitions_by_label.size());
     for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
