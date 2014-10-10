@@ -97,7 +97,7 @@ void TypedOpenList<Entry>::evaluate(int g, bool preferred) {
       1. at least one heuristic reliably recognizes it as a dead end, or
       2. all heuristics unreliably recognize it as a dead end
       In case 1., the dead end is reliable; in case 2. it is not.
-     */
+    */
 
     dead_end = true;
     dead_end_reliable = false;
