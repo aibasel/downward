@@ -8,6 +8,7 @@
 
 class Options;
 
+// TODO: as soon as search doesn't need atleast one heuristic this should be converted to a ScalarEvaluator
 class ConstEvaluator : public Heuristic {
     int value;
 
