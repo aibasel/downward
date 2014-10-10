@@ -166,8 +166,8 @@ public:
     /*
       Returns the average h-value over all states, where dead-ends are
       ignored (they neither increase the sum of all h-values nor the
-      total number of entries for the mean value calculation). If the
-      pattern is empty or all states are dead-ends, infinity is retuned.
+      number of entries for the mean value calculation). If all states
+      are dead-ends, infinity is retuned.
       Note: This is only calculated when called; avoid repeated calls to
       this method!
     */
