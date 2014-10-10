@@ -1,6 +1,7 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <ostream>
