@@ -8,7 +8,7 @@
 
 class Options;
 
-// TODO: as soon as search doesn't need atleast one heuristic this should be converted to a ScalarEvaluator
+// TODO: as soon as search doesn't need at least one heuristic this should inherit from ScalarEvaluator
 class ConstEvaluator : public Heuristic {
     int value;
 
