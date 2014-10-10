@@ -33,6 +33,7 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
     for (size_t i = 0; i < evaluators.size(); ++i) {
         key[i] = evaluators[i]->get_value();
     }
+    // The hash function is located in pareto_open_list.h
     size_t hash = __gnu_cxx::hash< const std::vector<int> >() (key);
 
     typename BucketMap::iterator hash_bucket_pair = key_to_bucket_index.find(hash);
