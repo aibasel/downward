@@ -267,7 +267,7 @@ double PDBHeuristic::compute_mean_finite_h() const {
         }
         sum += distances[i];
     }
-    if (size == 0) { // empty pattern or all states are dead-end
+    if (size == 0) { // all states are dead-end
         return numeric_limits<double>::infinity();
     } else
         return sum / num_states;
