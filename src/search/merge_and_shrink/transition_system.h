@@ -2,6 +2,7 @@
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
 #include <ext/slist>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -37,6 +38,11 @@ struct Transition {
 
     bool operator>=(const Transition &other) const {
         return !(*this < other);
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Transition &trans) {
+        os << trans.src << "->" << trans.target;
+        return os;
     }
 };
 
@@ -120,6 +126,8 @@ public:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels);
     void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
+    void apply_label_reduction(const std::vector<std::vector<int> > &label_mapping,
+                               bool only_equivalent_labels);
 
     // Method to identify the transition system in output. It upper-cases the
     // first letter of description() and appends ": ".

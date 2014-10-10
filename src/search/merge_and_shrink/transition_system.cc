@@ -76,7 +76,7 @@ int TransitionSystem::get_label_cost_by_index(int label_no) const {
 }
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
-    assert(int(to_be_pruned_states.size()) == num_states);
+    assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
     vector<slist<AbstractStateRef> > equivalence_relation;
     equivalence_relation.reserve(num_states);
     for (int state = 0; state < num_states; ++state) {
@@ -395,7 +395,7 @@ void TransitionSystem::normalize() {
             const Label *parent = parents[i];
             int parent_id = parent->get_id();
             // We require that we only have to deal with one label reduction at
-            // at time when normalizing. Otherwise the following assertion could
+            // a time when normalizing. Otherwise the following assertion could
             // be broken and we would need to consider parents' parents and so
             // on...
             assert(parent_id < num_labels);
@@ -668,8 +668,8 @@ void TransitionSystem::apply_abstraction(
     // distances must have been computed before
     assert(are_distances_computed());
 
-    if (int(collapsed_groups.size()) == get_size()) {
-        cout << "not applying abstraction (same number of states)" << endl;
+    if (static_cast<int>(collapsed_groups.size()) == get_size()) {
+        cout << tag() << "not applying abstraction (same number of states)" << endl;
         return;
     }
 
@@ -778,6 +778,35 @@ void TransitionSystem::apply_abstraction(
     }
 
     compute_distances_and_prune();
+}
+
+void TransitionSystem::apply_label_reduction(const vector<vector<int> > &label_mapping,
+                                             bool only_equivalent_labels) {
+    //cout << tag() << " applying label mapping" << endl;
+    if (only_equivalent_labels) {
+        for (size_t i = 0; i < label_mapping.size(); ++i) {
+            const vector<int> &reduced_label_nos = label_mapping[i];
+            assert(reduced_label_nos.size() > 1);
+            vector<Transition> &trans = transitions_by_label[num_labels];
+            assert(trans.empty());
+            trans.swap(transitions_by_label[reduced_label_nos[0]]);
+            bool label_relevant = relevant_labels[reduced_label_nos[0]];
+            relevant_labels[num_labels] = label_relevant;
+            for (size_t j = 1; j < reduced_label_nos.size(); ++j) {
+                int label_no = reduced_label_nos[j];
+                vector<Transition> &other_trans = transitions_by_label[label_no];
+                assert(other_trans == trans);
+                assert(relevant_labels[label_no] == label_relevant);
+                vector<Transition>().swap(other_trans);
+            }
+            ++num_labels;
+        }
+        assert(num_labels == labels->get_size());
+        assert(are_transitions_sorted_unique());
+    } else {
+        normalize();
+        //clear_distances();
+    }
 }
 
 bool TransitionSystem::is_solvable() const {
