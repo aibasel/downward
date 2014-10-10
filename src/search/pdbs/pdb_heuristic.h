@@ -48,9 +48,6 @@ class PDBHeuristic : public Heuristic {
     std::vector<bool> relevant_operators; // stores for all operators whether they are relevant to this PDB or not
     size_t num_states; // size of the PDB
 
-    // concrete variable are mapped to abstract variables in the order they appear in pattern
-    std::vector<int> variable_to_index;
-
     // final h-values for abstract-states. dead-ends are represented by numeric_limits<int>::max()
     std::vector<int> distances;
 
@@ -66,9 +63,11 @@ class PDBHeuristic : public Heuristic {
                       const std::vector<std::pair<int, int> > &effects_without_pre,
                       std::vector<AbstractOperator> &operators);
 
-    /* Computes all abstract operators for a given concrete operator (by its global operator number). Initializes
-       datastructures for initial call to recursive method multiyply_out. */
+    /* Computes all abstract operators for a given concrete operator (by its global operator number).
+       Initializes datastructures for initial call to recursive method multiyply_out.
+       variable_to_index maps variables in the task to their index in the pattern or -1. */
     void build_abstract_operators(int op_no, int cost,
+                                  const std::vector<int> &variable_to_index,
                                   std::vector<AbstractOperator> &operators);
 
     /* Computes all abstract operators, builds the match tree (successor generator) and then does a Dijkstra regression
