@@ -20,18 +20,12 @@ TypedOpenList<Entry>::TypedOpenList(const Options &opts)
 }
 
 template<class Entry>
-TypedOpenList<Entry>::TypedOpenList(const vector<OpenList<Entry> *> &sublists)
-    : evaluators(sublists), size(0) {
-}
-
-template<class Entry>
 TypedOpenList<Entry>::~TypedOpenList() {
 }
 
 template<class Entry>
 int TypedOpenList<Entry>::insert(const Entry &entry) {
     vector<int> key(evaluators.size());
-
     for (size_t i = 0; i < evaluators.size(); ++i) {
         key[i] = evaluators[i]->get_value();
     }
