@@ -9,10 +9,11 @@
 #include <vector>
 
 class CanonicalPDBsHeuristic;
+class CountdownTimer;
 class GlobalState;
 class Options;
 class PDBHeuristic;
-class Timer;
+
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
     const int pdb_max_size; // maximum number of states for each pdb
@@ -24,7 +25,7 @@ class PatternGenerationHaslum {
     CanonicalPDBsHeuristic *current_heuristic;
 
     int num_rejected; // for stats only
-    Timer *hill_climbing_timer;
+    CountdownTimer *hill_climbing_timer;
 
     /* For the given pattern, all possible extensions of the pattern by one relevant variable
        are inserted into candidate_patterns. This may generate duplicated patterns. */

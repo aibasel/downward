@@ -45,9 +45,6 @@ class GlobalState;
 class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;
 
-    // can be specified to be different from the normal operator costs. this is useful for action cost partitioning
-    std::vector<int> operator_costs;
-
     std::vector<bool> relevant_operators; // stores for all operators whether they are relevant to this PDB or not
     size_t num_states; // size of the PDB
 
@@ -71,14 +68,20 @@ class PDBHeuristic : public Heuristic {
 
     /* Computes all abstract operators for a given concrete operator (by its global operator number). Initializes
        datastructures for initial call to recursive method multiyply_out. */
-    void build_abstract_operators(int op_no, std::vector<AbstractOperator> &operators);
+    void build_abstract_operators(int op_no, int cost,
+                                  std::vector<AbstractOperator> &operators);
 
     /* Computes all abstract operators, builds the match tree (successor generator) and then does a Dijkstra regression
-       search to compute all final h-values (stored in distances). */
-    void create_pdb();
+       search to compute all final h-values (stored in distances).
+       operator_costs can specify individual operator costs for each operator
+       for action cost partitioning. If left empty, default operator costs are used. */
+    void create_pdb(const std::vector<int> &operator_costs = std::vector<int>());
 
-    // Sets the pattern for the PDB and initializes hash_multipliers and num_states.
-    void set_pattern(const std::vector<int> &pattern);
+    /* Sets the pattern for the PDB and initializes hash_multipliers and num_states.
+       operator_costs can specify individual operator costs for each operator
+       for action cost partitioning. If left empty, default operator costs are used. */
+    void set_pattern(const std::vector<int> &pattern,
+                     const std::vector<int> &operator_costs = std::vector<int>());
 
     /* For a given abstract state (given as index), the according values for each variable in the state are computed
        and compared with the given pairs of goal variables and values. Returns true iff the state is a goal state. */
@@ -94,12 +97,13 @@ public:
     /* Important: It is assumed that the pattern (passed via Options) is small enough so that the number of
                   abstract states is below numeric_limits<int>::max()
        Parameters:
-       dump:     If set to true, prints the construction time.
-       op_costs: Can specify individual operator costs for each operator. This is useful for action cost
-                 partitioning. If left empty, default operator costs are used. */
+       dump:           If set to true, prints the construction time.
+       operator_costs: Can specify individual operator costs for each operator.
+                       This is useful for action cost partitioning. If left empty,
+                       default operator costs are used. */
     PDBHeuristic(const Options &opts,
                  bool dump = true,
-                 const std::vector<int> &op_costs = std::vector<int>());
+                 const std::vector<int> &operator_costs = std::vector<int>());
     virtual ~PDBHeuristic();
 
     // Returns the pattern (i.e. all variables used) of the PDB

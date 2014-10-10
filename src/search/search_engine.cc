@@ -1,13 +1,16 @@
-#include <cassert>
-#include <iostream>
-#include <limits>
-using namespace std;
+#include "search_engine.h"
 
+#include "countdown_timer.h"
 #include "globals.h"
 #include "operator_cost.h"
 #include "option_parser.h"
-#include "search_engine.h"
-#include "timer.h"
+
+#include <cassert>
+#include <iostream>
+#include <limits>
+
+using namespace std;
+
 
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
@@ -48,10 +51,10 @@ void SearchEngine::set_plan(const Plan &p) {
 
 void SearchEngine::search() {
     initialize();
-    Timer timer;
+    CountdownTimer timer(max_time);
     while (status == IN_PROGRESS) {
         status = step();
-        if (timer() >= max_time) {
+        if (timer.is_expired()) {
             cout << "Time limit reached. Abort search." << endl;
             status = TIMEOUT;
             break;

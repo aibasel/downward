@@ -668,6 +668,11 @@ void TransitionSystem::apply_abstraction(
     // distances must have been computed before
     assert(are_distances_computed());
 
+    if (int(collapsed_groups.size()) == get_size()) {
+        cout << "not applying abstraction (same number of states)" << endl;
+        return;
+    }
+
     cout << tag() << "applying abstraction (" << get_size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
@@ -851,6 +856,26 @@ int TransitionSystem::get_peak_memory_estimate() const {
 void TransitionSystem::release_memory() {
     vector<bool>().swap(relevant_labels);
     vector<vector<Transition> >().swap(transitions_by_label);
+}
+
+void TransitionSystem::dump_fields() const {
+    cout << "labels->get_size() " << labels->get_size() << endl;
+    cout << "num_labels: " << num_labels << endl;
+    //transitions_by_label;
+    cout << "total_transitions: " << total_transitions() << endl;
+    //relevant_labels;
+    cout << "num_states: " << num_states << endl;
+    //init_distances;
+    //goal_distances;
+    //goal_states;
+    cout << "init_state: " << init_state << endl;
+    cout << "max_f: " << max_f << endl;
+    cout << "max_g: " << max_g << endl;
+    cout << "max_h: " << max_h << endl;
+    cout << "transitions_sorted_unique: " << transitions_sorted_unique << endl;
+    cout << "goal_relevant:" << goal_relevant << endl;
+    cout << "peak_memory: " << peak_memory << endl;
+    cout << "varset: " << varset << endl;
 }
 
 void TransitionSystem::dump_relevant_labels() const {
