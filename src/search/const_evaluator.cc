@@ -11,7 +11,7 @@ ConstEvaluator::ConstEvaluator(const Options &opts)
 ConstEvaluator::~ConstEvaluator() {
 }
 
-int ConstEvaluator::compute_heuristic(const State &) {
+int ConstEvaluator::compute_heuristic(const GlobalState &) {
     return value;
 }
 
