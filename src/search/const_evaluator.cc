@@ -5,7 +5,8 @@
 
 
 ConstEvaluator::ConstEvaluator(const Options &opts)
-    : Heuristic(opts), value(opts.get<int>("value")) {
+    : Heuristic(opts),
+      value(opts.get<int>("value")) {
 }
 
 ConstEvaluator::~ConstEvaluator() {
