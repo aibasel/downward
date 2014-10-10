@@ -66,6 +66,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
 
     fast_remove_from_vector(bucket, pos);
     if (bucket.empty()) {
+        // Swap the empty bucket with the last bucket, then delete it.
         size_t moved_bucket_hash = bucket_list.back().first;
         key_to_bucket_index[moved_bucket_hash] = bucket_id;
         assert(bucket_id < bucket_list.size());
