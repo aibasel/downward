@@ -14,7 +14,9 @@ using namespace std;
 template<class Entry>
 TypedOpenList<Entry>::TypedOpenList(const Options &opts)
     : evaluators(opts.get_list<ScalarEvaluator *>("sublists")),
-      size(0) {
+      size(0),
+      dead_end(false),
+      dead_end_reliable(false) {
 }
 
 template<class Entry>
