@@ -5,7 +5,6 @@
 #include "pareto_open_list.h"
 #include "../plugin.h"
 
-
 #include <cstddef>
 #include <unordered_map>
 #include <vector>
@@ -34,7 +33,6 @@ protected:
 
 public:
     TypedOpenList(const Options &opts);
-    TypedOpenList(const std::vector<OpenList<Entry> *> &sublists);
     virtual ~TypedOpenList();
 
     // OpenList interface
