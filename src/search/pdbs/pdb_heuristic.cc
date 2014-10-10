@@ -259,18 +259,17 @@ int PDBHeuristic::compute_heuristic(const GlobalState &state) {
 
 double PDBHeuristic::compute_mean_finite_h() const {
     double sum = 0;
-    int size = num_states;
+    int size = 0;
     for (size_t i = 0; i < distances.size(); ++i) {
-        if (distances[i] == numeric_limits<int>::max()) {
-            --size;
-            continue;
+        if (distances[i] != numeric_limits<int>::max()) {
+            sum += distances[i];
+            ++size;
         }
-        sum += distances[i];
     }
     if (size == 0) { // all states are dead-end
         return numeric_limits<double>::infinity();
     } else
-        return sum / num_states;
+        return sum / size;
 }
 
 bool PDBHeuristic::is_operator_relevant(const GlobalOperator &op) const {
