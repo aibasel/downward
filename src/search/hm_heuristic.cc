@@ -318,7 +318,6 @@ void HMHeuristic::dump_tuple(Tuple &tup) const {
     cout << tup[0].first << "=" << tup[0].second;
     for (size_t i = 1; i < tup.size(); ++i)
         cout << "," << tup[i].first << "=" << tup[i].second;
-
 }
 
 
