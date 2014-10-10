@@ -33,15 +33,17 @@ LabelReducer::LabelReducer(const Options &options)
     }
 }
 
-void LabelReducer::normalize_and_del_equiv_rel(
+void LabelReducer::apply_lr_and_del_equiv_rel(
     const vector<TransitionSystem *> &all_transition_systems,
-    vector<EquivalenceRelation *> &equivalence_relations) const {
+    int ts_index,
+    const vector<vector<int> > &label_mapping,
+    vector<EquivalenceRelation *> &cached_equivalence_relations) const {
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         if (all_transition_systems[i]) {
-            all_transition_systems[i]->normalize();
-            if (equivalence_relations[i]) {
-                delete equivalence_relations[i];
-                equivalence_relations[i] = 0;
+            all_transition_systems[i]->apply_label_reduction(label_mapping, static_cast<int>(i) != ts_index);
+            if (cached_equivalence_relations[i]) {
+                delete cached_equivalence_relations[i];
+                cached_equivalence_relations[i] = 0;
             }
         }
     }
@@ -73,18 +75,26 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         EquivalenceRelation *relation = compute_outside_equivalence(
             next_merge.first, all_transition_systems,
             labels, local_equivalence_relations);
-        bool have_reduced = reduce_exactly(relation, labels);
+        vector<vector<int> > label_mapping;
+        bool have_reduced = reduce_exactly(relation, labels, label_mapping);
         if (have_reduced) {
-            normalize_and_del_equiv_rel(all_transition_systems, local_equivalence_relations);
+            apply_lr_and_del_equiv_rel(all_transition_systems,
+                                       next_merge.first,
+                                       label_mapping,
+                                       local_equivalence_relations);
         }
         delete relation;
+        label_mapping.clear();
 
         relation = compute_outside_equivalence(
             next_merge.second, all_transition_systems,
             labels, local_equivalence_relations);
-        have_reduced = reduce_exactly(relation, labels);
+        have_reduced = reduce_exactly(relation, labels, label_mapping);
         if (have_reduced) {
-            normalize_and_del_equiv_rel(all_transition_systems, local_equivalence_relations);
+            apply_lr_and_del_equiv_rel(all_transition_systems,
+                                       next_merge.second,
+                                       label_mapping,
+                                       local_equivalence_relations);
         }
         delete relation;
 
@@ -120,17 +130,21 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         TransitionSystem *current_transition_system = all_transition_systems[ts_index];
 
         bool have_reduced = false;
+        vector<vector<int> > label_mapping;
         if (current_transition_system != 0) {
             EquivalenceRelation *relation = compute_outside_equivalence(
                 ts_index, all_transition_systems,
                 labels, local_equivalence_relations);
-            have_reduced = reduce_exactly(relation, labels);
+            have_reduced = reduce_exactly(relation, labels, label_mapping);
             delete relation;
         }
 
         if (have_reduced) {
             num_unsuccessful_iterations = 0;
-            normalize_and_del_equiv_rel(all_transition_systems, local_equivalence_relations);
+            apply_lr_and_del_equiv_rel(all_transition_systems,
+                                       ts_index,
+                                       label_mapping,
+                                       local_equivalence_relations);
         } else {
             // Even if the transition system has been removed, we need to count
             // it as unsuccessful iterations (the size of the vector matters).
@@ -200,24 +214,29 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     return relation;
 }
 
-bool LabelReducer::reduce_exactly(const EquivalenceRelation *relation, std::vector<Label *> &labels) const {
+bool LabelReducer::reduce_exactly(const EquivalenceRelation *relation,
+                                  vector<Label *> &labels,
+                                  vector<vector<int> > &label_mapping) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
         const Block &block = *it;
         vector<Label *> equivalent_labels;
+        vector<int> equivalent_label_nos;
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
             assert(*jt < static_cast<int>(labels.size()));
             Label *label = labels[*jt];
             if (!label->is_reduced()) {
                 // only consider non-reduced labels
                 equivalent_labels.push_back(label);
+                equivalent_label_nos.push_back(*jt);
                 ++num_labels;
             }
         }
         if (equivalent_labels.size() > 1) {
             Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
             labels.push_back(new_label);
+            label_mapping.push_back(equivalent_label_nos);
         }
         if (!equivalent_labels.empty()) {
             ++num_labels_after_reduction;
