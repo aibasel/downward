@@ -266,10 +266,11 @@ double PDBHeuristic::compute_mean_finite_h() const {
             ++size;
         }
     }
-    if (size == 0) { // all states are dead-end
+    if (size == 0) { // All states are dead ends.
         return numeric_limits<double>::infinity();
-    } else
+    } else {
         return sum / size;
+    }
 }
 
 bool PDBHeuristic::is_operator_relevant(const GlobalOperator &op) const {
