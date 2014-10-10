@@ -34,8 +34,8 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
 
     typename BucketMap::iterator it = key_to_bucket_index.find(hash);
     if (it == key_to_bucket_index.end()) {
-        bucket_list.push_back(make_pair(hash, Bucket({entry}
-                                                     )));
+        bucket_list.push_back(make_pair(hash, Bucket()));
+        bucket_list.back().second.push_back(entry); // TODO: c++11 list init
         key_to_bucket_index[hash] = bucket_list.size() - 1;
     } else {
         size_t bucket_index = it->second;
