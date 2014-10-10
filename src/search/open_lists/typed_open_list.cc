@@ -6,9 +6,6 @@
 #include "../rng.h"
 #include "../utilities.h"
 
-#include <cassert>
-#include <cstdlib>
-
 using namespace std;
 
 template<class Entry>
