@@ -85,19 +85,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             reduced_labels = true;
-            if (!transition_system->is_normalized()
-                    || !other_transition_system->is_normalized()) {
-                exit_with(EXIT_CRITICAL_ERROR);
-            }
+            assert(transition_system->is_normalized());
+            assert(other_transition_system->is_normalized());
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
         }
 
-        if (!transition_system->are_distances_computed()
-                || !other_transition_system->are_distances_computed()) {
-            // TODO: do this for all transition systems?
-            exit_with(EXIT_CRITICAL_ERROR);
-        }
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -118,10 +111,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (!reduced_labels) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
         }
-        if (!transition_system->is_normalized()
-                || !other_transition_system->is_normalized()) {
-            exit_with(EXIT_CRITICAL_ERROR);
-        }
+        assert(transition_system->is_normalized());
+        assert(other_transition_system->is_normalized());
         if (!reduced_labels) {
             // only print statistics if we just possibly reduced labels
             other_transition_system->statistics(use_expensive_statistics);
@@ -154,9 +145,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
     }
 
-    if (!final_transition_system->are_distances_computed()) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 

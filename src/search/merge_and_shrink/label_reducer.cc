@@ -166,10 +166,7 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     TransitionSystem *transition_system = all_transition_systems[ts_index];
     assert(transition_system);
     //cout << transition_system->tag() << "compute combinable labels" << endl;
-
-    if (!transition_system->is_normalized()) {
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
+    assert(transition_system->is_normalized());
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
@@ -190,17 +187,13 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
         if (!ts || ts == transition_system) {
             continue;
         }
-        if (!ts->is_normalized()) {
-            exit_with(EXIT_CRITICAL_ERROR);
-        }
+        assert(ts->is_normalized());
         //cout << transition_system->tag();
         if (!local_equivalence_relations[i]) {
             //cout << "compute local equivalence relation" << endl;
             local_equivalence_relations[i] = ts->compute_local_equivalence_relation();
         } else {
             //cout << "use cached local equivalence relation" << endl;
-            if (!ts->is_normalized())
-                exit_with(EXIT_CRITICAL_ERROR);
         }
         relation->refine(*local_equivalence_relations[i]);
     }
