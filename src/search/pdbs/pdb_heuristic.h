@@ -45,7 +45,6 @@ class GlobalState;
 class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;
 
-    std::vector<bool> relevant_operators; // stores for all operators whether they are relevant to this PDB or not
     size_t num_states; // size of the PDB
 
     // final h-values for abstract-states. dead-ends are represented by numeric_limits<int>::max()
@@ -57,7 +56,7 @@ class PDBHeuristic : public Heuristic {
        In the case of a precondition with value = -1 in the conrete operator, all mutliplied out abstract
        operators are computed, i.e. for all possible values of the variable (with precondition = -1),
        one abstract operator with a conrete value (!= -1) is computed. */
-    void multiply_out(int pos, int op_no, int cost, std::vector<std::pair<int, int> > &prev_pairs,
+    void multiply_out(int pos, int cost, std::vector<std::pair<int, int> > &prev_pairs,
                       std::vector<std::pair<int, int> > &pre_pairs,
                       std::vector<std::pair<int, int> > &eff_pairs,
                       const std::vector<std::pair<int, int> > &effects_without_pre,
@@ -66,7 +65,7 @@ class PDBHeuristic : public Heuristic {
     /* Computes all abstract operators for a given concrete operator (by its global operator number).
        Initializes datastructures for initial call to recursive method multiyply_out.
        variable_to_index maps variables in the task to their index in the pattern or -1. */
-    void build_abstract_operators(int op_no, int cost,
+    void build_abstract_operators(const GlobalOperator &op, int cost,
                                   const std::vector<int> &variable_to_index,
                                   std::vector<AbstractOperator> &operators);
 
@@ -117,8 +116,8 @@ public:
        Note: This is only calculated when called; avoid repeated calls to this method! */
     double compute_mean_finite_h() const;
 
-    // Returns all operators affecting this PDB
-    const std::vector<bool> &get_relevant_operators() const {return relevant_operators; }
+    // Returns true iff op has an effect on a variable in the pattern.
+    bool is_operator_relevant(const GlobalOperator &op) const;
 };
 
 #endif
