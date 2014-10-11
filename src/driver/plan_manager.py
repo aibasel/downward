@@ -11,7 +11,7 @@ import re
 PLAN_COST_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)\n")
 
 
-def plan_file_is_complete(plan_file):
+def _plan_file_is_complete(plan_file):
     with open(plan_file) as input_file:
         lines = input_file.readlines()
     if not lines:
@@ -19,7 +19,7 @@ def plan_file_is_complete(plan_file):
     return PLAN_COST_REGEX.match(lines[-1])
 
 
-def get_plan_cost_and_cost_type(plan_file):
+def _get_plan_cost_and_cost_type(plan_file):
     with open(plan_file) as input_file:
         last_line = input_file.readlines()[-1]
     match = PLAN_COST_REGEX.match(last_line)
@@ -30,7 +30,7 @@ def get_plan_file(plan_prefix, number):
     return "%s.%d" % (plan_prefix, number)
 
 
-def get_plan_files_and_cleanup(plan_prefix):
+def _get_plan_files_and_cleanup(plan_prefix):
     """Return all complete plan files.
 
     If the last plan file is incomplete, delete it.
@@ -39,7 +39,7 @@ def get_plan_files_and_cleanup(plan_prefix):
     for index in itertools.count(start=1):
         plan_file = get_plan_file(plan_prefix, index)
         if os.path.exists(plan_file):
-            if plan_file_is_complete(plan_file):
+            if _plan_file_is_complete(plan_file):
                 plan_files.append(plan_file)
             else:
                 os.remove(plan_file)
@@ -52,16 +52,16 @@ def get_plan_files_and_cleanup(plan_prefix):
 
 def get_cost_type(plan_prefix):
     """This method is only called after a plan has been found."""
-    plan_files = get_plan_files_and_cleanup(plan_prefix)
+    plan_files = _get_plan_files_and_cleanup(plan_prefix)
     assert plan_files
-    _, cost_type = get_plan_cost_and_cost_type(plan_files[0])
+    _, cost_type = _get_plan_cost_and_cost_type(plan_files[0])
     return cost_type
 
 
 def get_g_bound_and_number_of_plans(plan_prefix):
     plan_costs = []
-    for plan_file in get_plan_files_and_cleanup(plan_prefix):
-        plan_cost, _ = get_plan_cost_and_cost_type(plan_file)
+    for plan_file in _get_plan_files_and_cleanup(plan_prefix):
+        plan_cost, _ = _get_plan_cost_and_cost_type(plan_file)
         if plan_costs and not plan_costs[-1] > plan_cost:
             raise SystemExit(
                 "Plan costs must decrease: %s" %
