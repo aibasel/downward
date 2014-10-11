@@ -40,7 +40,7 @@ EXAMPLES = [
 EPILOG = """Examples:
 
 %s
-""" % "\n\n".join("# %s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
+""" % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
