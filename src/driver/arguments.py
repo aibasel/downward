@@ -15,7 +15,10 @@ component. This default behaviour can be overridden with the options below.
 Arguments given before the specified input files are interpreted by the driver
 script ("driver options"). Arguments given after the input files are passed on
 to the planner components ("component options"). In exceptional cases where no
-input files are needed, "--" separates driver and component options.
+input files are needed, use "--" to separate driver from component options. In
+even more exceptional cases where input files begin with "--", use "--" to
+separate driver options from input files and also to separate input files from
+component options.
 
 By default, component options are passed to the search component. Use
 "--translate-options", "--preprocess-options" or "--search-options" within the
@@ -27,7 +30,7 @@ EXAMPLES = [
      ["./plan.py", "../benchmarks/gripper/prob01.pddl",
       "--search", '"astar(lmcut())"']),
     ("Translate and preprocess, run no search:",
-     ["./plan.py", "--run-translator", "--run-preprocessor",
+     ["./plan.py", "--translate", "--preprocess",
       "../benchmarks/gripper/prob01.pddl"]),
     ("Run predefined configuration (LAMA-2011) on preprocessed task:",
      ["./plan.py", "--alias", "seq-sat-lama-2011", "output"]),
@@ -42,7 +45,14 @@ EXAMPLES = [
       "--search-options", "--search", '"astar(lmcut())"']),
 ]
 
-EPILOG = """Examples:
+EPILOG = """component options:
+  --translate-options OPTION1 OPTION2 ...
+  --preprocess-options OPTION1 OPTION2 ...
+  --search-options OPTION1 OPTION2 ...
+                        pass OPTION1 OPTION2 ... to specified planner component
+                        (default: pass component options to search)
+
+Examples:
 
 %s
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
@@ -98,7 +108,6 @@ def _split_planner_args(parser, args):
 
     curr_options = args.search_options
     for option in options:
-        # TODO: We have --translat*e*-options, but --run-translat*or*.
         if option == "--translate-options":
             curr_options = args.translate_options
         elif option == "--preprocess-options":
@@ -157,11 +166,11 @@ def _set_components_and_inputs(parser, args):
        separate function."""
 
     args.components = []
-    if args.run_translator or args.run_all:
+    if args.translate or args.run_all:
         args.components.append("translate")
-    if args.run_preprocessor or args.run_all:
+    if args.preprocess or args.run_all:
         args.components.append("preprocess")
-    if args.run_search or args.run_all:
+    if args.search or args.run_all:
         args.components.append("search")
 
     if args.components == ["translate", "search"]:
@@ -195,40 +204,63 @@ def _set_components_and_inputs(parser, args):
 def parse_args():
     parser = argparse.ArgumentParser(
         description=DESCRIPTION, epilog=EPILOG,
-        formatter_class=RawHelpFormatter)
-    parser.add_argument(
-        "--alias",
-        help="run a config with an alias (e.g. seq-sat-lama-2011)")
-    parser.add_argument(
-        "--debug", action="store_true",
-        help="use debug mode for search component")
-    parser.add_argument(
-        "--log-level", choices=["debug", "info", "warning"],
-        default="info",
-        help="print all messages >= this level (default: %(default)s)")
-    parser.add_argument(
-        "--plan-file", metavar="FILE", default="sas_plan",
-        help="write plan(s) to FILE{.1,.2,...} (default: %(default)s)")
-    parser.add_argument(
-        "--portfolio", metavar="FILE",
-        help="run a portfolio specified in FILE")
+        formatter_class=RawHelpFormatter,
+        add_help=False)
+    # TODO: where the usage string currently says "...", we want to
+    # be more explicit and say something like "INPUT_FILE ...
+    # COMPONENT_OPTION ...". How to best do this? Do we have to specify
+    # the whole usage string manually, or can we leverage the existing
+    # stuff by overriding something within the formatter class?
+
+    help_options = parser.add_argument_group(
+        title=("driver options that show information and exit "
+               "(don't run planner)"))
+    # We manually add the help option because we want to control
+    # how it is grouped in the output.
+    help_options.add_argument(
+        "-h", "--help",
+        action="help", default=argparse.SUPPRESS,
+        help="show this help message and exit")
+    help_options.add_argument(
+        "--show-aliases", action="store_true",
+        help="show the known aliases (see --alias) and exit")
+
     components = parser.add_argument_group(
-        title="choose planner components")
+        title=("driver options selecting the planner components to be run\n"
+               "(may select several; default: auto-select based on input file(s))"))
     components.add_argument(
         "--run-all", action="store_true",
         help="run all components of the planner")
     components.add_argument(
-        "--run-translator", action="store_true",
-        help="run translator component of the planner")
+        "--translate", action="store_true",
+        help="run translator component")
     components.add_argument(
-        "--run-preprocessor", action="store_true",
-        help="run preprocessor component of the planner")
+        "--preprocess", action="store_true",
+        help="run preprocessor component")
     components.add_argument(
-        "--run-search", action="store_true",
-        help="run search component of the planner")
-    parser.add_argument(
-        "--show-aliases", action="store_true",
-        help="show the known aliases; don't run search")
+        "--search", action="store_true",
+        help="run search component")
+
+    driver_other = parser.add_argument_group(
+        title="other driver options")
+    driver_other.add_argument(
+        "--alias",
+        help="run a config with an alias (e.g. seq-sat-lama-2011)")
+    driver_other.add_argument(
+        "--debug", action="store_true",
+        help="use debug mode for search component")
+    driver_other.add_argument(
+        "--log-level", choices=["debug", "info", "warning"],
+        default="info",
+        help="set log level (most verbose: debug; least verbose: warning; default: %(default)s)")
+
+    driver_other.add_argument(
+        "--plan-file", metavar="FILE", default="sas_plan",
+        help="write plan(s) to FILE (default: %(default)s; anytime configurations append .1, .2, ...)")
+    driver_other.add_argument(
+        "--portfolio", metavar="FILE",
+        help="run a portfolio specified in FILE")
+
     parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,
         help="file names and options passed on to planner components")
