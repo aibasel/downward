@@ -27,8 +27,8 @@ import subprocess
 import sys
 import traceback
 
-# TODO: Clean up the interface to .plan_manager later.
-from .plan_manager import get_cost_type, get_g_bound_and_number_of_plans, get_plan_file
+from plan_manager import PlanManager
+
 
 DEFAULT_TIMEOUT = 1800
 
@@ -68,8 +68,22 @@ def set_limit(kind, soft, hard):
               (kind, (soft, hard), err, resource.getrlimit(kind)), file=sys.stderr)
 
 
-def adapt_search(args, search_cost_type, heuristic_cost_type, plan_prefix):
-    g_bound, plan_no = get_g_bound_and_number_of_plans(plan_prefix)
+def adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager):
+    # TODO: It's a bit unfortunate and messy that we need to pass in the
+    # plan name and counter in different ways for iterated and non-iterated
+    # configs. Idea: change the search code to change this, offering a
+    # mechanism for passing in a plan counter there in general (not just
+    # for iterated search). The output filename without a counter should
+    # then only be used when no plan counter was passed in and no iterated
+    # search is used. The plan counter argument for the iterated search
+    # should then disappear.
+    #
+    # TODO: When the previous TODO has been dealt with, we should be able
+    # to remove PlanManager.get_next_plan_file.
+
+    g_bound = plan_manager.get_best_plan_cost()
+    plan_counter = plan_manager.get_plan_counter()
+
     for index, arg in enumerate(args):
         if arg == "--heuristic":
             heuristic = args[index + 1]
@@ -81,20 +95,20 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_prefix):
                 if "plan_counter=PLANCOUNTER" not in search:
                     raise ValueError("When using iterated search, we must add "
                                      "the option plan_counter=PLANCOUNTER")
-                plan_file = plan_prefix
+                plan_file_arg = plan_manager.get_plan_prefix()
             else:
-                plan_file = get_plan_file(plan_prefix, plan_no + 1)
+                plan_file_arg = plan_manager.get_next_plan_file()
             for name, value in [
                     ("BOUND", g_bound),
-                    ("PLANCOUNTER", plan_no),
+                    ("PLANCOUNTER", plan_counter),
                     ("H_COST_TYPE", heuristic_cost_type),
                     ("S_COST_TYPE", search_cost_type)]:
                 search = search.replace(name, str(value))
             args[index + 1] = search
             break
     print("g bound: %s" % g_bound)
-    print("next plan number: %d" % (plan_no + 1))
-    return plan_file
+    print("next plan number: %d" % (plan_counter + 1))
+    return plan_file_arg
 
 
 def run_search(executable, args, sas_file, plan_file, timeout=None, memory=None):
@@ -152,19 +166,23 @@ def determine_timeout(remaining_time_at_start, configs, pos):
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
-                   executable, sas_file, plan_prefix, remaining_time_at_start,
+                   executable, sas_file, plan_manager, remaining_time_at_start,
                    memory):
     args = list(configs[pos][1])
     plan_file = adapt_search(args, search_cost_type, heuristic_cost_type,
-                             plan_prefix)
+                             plan_manager)
     run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
     if run_timeout <= 0:
         return None
-    return run_search(executable, args, sas_file, plan_file, run_timeout, memory)
+    result = run_search(executable, args, sas_file, plan_file, run_timeout, memory)
+    plan_manager.process_new_plans()
+    return result
 
 
 def run_sat(configs, executable, sas_file, plan_prefix, final_config,
             final_config_builder, remaining_time_at_start, memory):
+    plan_manager = PlanManager(plan_prefix)
+
     exitcodes = []
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
     # has non-unit costs, we start by treating all costs as one. When we find
@@ -178,7 +196,7 @@ def run_sat(configs, executable, sas_file, plan_prefix, final_config,
             args = list(args)
             exitcode = run_sat_config(
                 configs, pos, search_cost_type, heuristic_cost_type,
-                executable, sas_file, plan_prefix, remaining_time_at_start,
+                executable, sas_file, plan_manager, remaining_time_at_start,
                 memory)
             if exitcode is None:
                 return exitcodes
@@ -190,14 +208,14 @@ def run_sat(configs, executable, sas_file, plan_prefix, final_config,
             if exitcode == EXIT_PLAN_FOUND:
                 configs_next_round.append(configs[pos][:])
                 if (not changed_cost_types and can_change_cost_type(args) and
-                        get_cost_type(plan_prefix) == "general cost"):
+                    plan_manager.get_problem_type() == "general cost"):
                     print("Switch to real costs and repeat last run.")
                     changed_cost_types = True
                     search_cost_type = "normal"
                     heuristic_cost_type = "plusone"
                     exitcode = run_sat_config(
                         configs, pos, search_cost_type, heuristic_cost_type,
-                        executable, sas_file, plan_prefix,
+                        executable, sas_file, plan_manager,
                         remaining_time_at_start, memory)
                     if exitcode is None:
                         return exitcodes
@@ -220,7 +238,7 @@ def run_sat(configs, executable, sas_file, plan_prefix, final_config,
         print("Abort portfolio and run final config.")
         exitcode = run_sat_config(
             [(1, list(final_config))], 0, search_cost_type,
-            heuristic_cost_type, executable, sas_file, plan_prefix,
+            heuristic_cost_type, executable, sas_file, plan_manager,
             remaining_time_at_start, memory)
         if exitcode is not None:
             exitcodes.append(exitcode)
