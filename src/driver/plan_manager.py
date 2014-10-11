@@ -8,7 +8,7 @@ import os.path
 import re
 
 
-PLAN_COST_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)\n")
+_PLAN_INFO_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)\n")
 
 
 def _read_last_line(filename):
@@ -19,57 +19,80 @@ def _read_last_line(filename):
     return line
 
 
-def _plan_file_is_complete(plan_file):
-    last_line = _read_last_line(plan_file) or ""
-    return PLAN_COST_REGEX.match(last_line)
+def _parse_plan(plan_filename):
+    """Parse a plan file and return a pair (cost, problem_type)
+    summarizing the salient information. Return (None, None) for
+    incomplete plans."""
+
+    last_line = _read_last_line(plan_filename) or ""
+    match = _PLAN_INFO_REGEX.match(last_line)
+    if match:
+        return int(match.group(1)), match.group(2)
+    else:
+        return None, None
 
 
-def _get_plan_cost_and_cost_type(plan_file):
-    last_line = _read_last_line(plan_file)
-    match = PLAN_COST_REGEX.match(last_line)
-    return int(match.group(1)), match.group(2)
+class PlanManager(object):
+    def __init__(self, plan_prefix):
+        self._plan_prefix = plan_prefix
+        self._plan_costs = []
+        self._problem_type = None
 
+    def get_plan_prefix(self):
+        return self._plan_prefix
 
-def get_plan_file(plan_prefix, number):
-    return "%s.%d" % (plan_prefix, number)
+    def get_plan_counter(self):
+        return len(self._plan_costs)
 
+    def get_next_plan_file(self):
+        return self._get_plan_file(self.get_plan_counter() + 1)
 
-def _get_plan_files_and_clean_up(plan_prefix):
-    """Return all complete plan files.
-
-    If the last plan file is incomplete, delete it.
-    """
-    plan_files = []
-    for index in itertools.count(start=1):
-        plan_file = get_plan_file(plan_prefix, index)
-        if os.path.exists(plan_file):
-            if _plan_file_is_complete(plan_file):
-                plan_files.append(plan_file)
-            else:
-                os.remove(plan_file)
-                print("%s is incomplete. Deleted the file." % plan_file)
-                break
+    def get_best_plan_cost(self):
+        """Return best plan cost found so far. Return string
+        "infinity" if no plans found yet."""
+        if self._plan_costs:
+            return self._plan_costs[-1]
         else:
-            break
-    return plan_files
+            return "infinity"
 
+    def get_problem_type(self):
+        if self._problem_type is None:
+            raise ValueError("no plans found yet: cost type not set")
+        return self._problem_type
 
-def get_cost_type(plan_prefix):
-    # This method is only called after a plan has been found.
-    plan_files = _get_plan_files_and_clean_up(plan_prefix)
-    assert plan_files
-    _, cost_type = _get_plan_cost_and_cost_type(plan_files[0])
-    return cost_type
+    def process_new_plans(self):
+        """Update information about plans after a planner run.
 
+        Read newly generated plans and store the relevant information.
+        If the last plan file is incomplete, delete it.
+        """
 
-def get_g_bound_and_number_of_plans(plan_prefix):
-    plan_costs = []
-    for plan_file in _get_plan_files_and_clean_up(plan_prefix):
-        plan_cost, _ = _get_plan_cost_and_cost_type(plan_file)
-        if plan_costs and not plan_costs[-1] > plan_cost:
-            raise SystemExit(
-                "Plan costs must decrease: %s" %
-                " -> ".join(str(c) for c in plan_costs + [plan_cost]))
-        plan_costs.append(plan_cost)
-    bound = min(plan_costs) if plan_costs else "infinity"
-    return bound, len(plan_costs)
+        had_incomplete_plan = False
+        for counter in itertools.count(self.get_plan_counter() + 1):
+            plan_filename = self._get_plan_file(counter)
+            def bogus_plan(msg):
+                raise RuntimeError("%s: %s" % (plan_filename, msg))
+            if not os.path.exists(plan_filename):
+                break
+            if had_incomplete_plan:
+                bogus_plan("plan found after incomplete plan")
+            cost, problem_type = _parse_plan(plan_filename)
+            if cost is None:
+                had_incomplete_plan = True
+                print("%s is incomplete. Deleted the file." % plan_filename)
+                os.remove(plan_filename)
+            else:
+                print("plan manager: found new plan with cost %d" % cost)
+                if self._problem_type is None:
+                    # This is the first plan we found.
+                    self._problem_type = problem_type
+                else:
+                    # Check if info from this plan matches previous info.
+                    if self._problem_type != problem_type:
+                        bogus_plan("problem type has changed")
+                    if cost >= self._plan_costs[-1]:
+                        bogus_plan("plan quality has not improved")
+                self._plan_costs.append(cost)
+
+    def _get_plan_file(self, number):
+        return "%s.%d" % (self._plan_prefix, number)
