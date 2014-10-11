@@ -18,8 +18,9 @@ to the planner components ("component options"). In exceptional cases where no
 input files are needed, "--" separates driver and component options.
 
 By default, component options are passed to the search component. Use
---translate-options, --preprocess-options and --search-options to override the
-default for the following options. (See below for examples.)"""
+"--translate-options", "--preprocess-options" or "--search-options" within the
+component options to override the default for the following options, until
+overridden again. (See below for examples.)"""
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
