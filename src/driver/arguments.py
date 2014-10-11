@@ -250,6 +250,7 @@ def parse_args():
         except KeyError:
             parser.error("unknown alias: %r" % args.alias)
 
-    _set_components_and_inputs(parser, args)
+    if not args.show_aliases:
+        _set_components_and_inputs(parser, args)
 
     return args
