@@ -51,7 +51,7 @@ def _get_plan_files_and_clean_up(plan_prefix):
 
 
 def get_cost_type(plan_prefix):
-    """This method is only called after a plan has been found."""
+    # This method is only called after a plan has been found.
     plan_files = _get_plan_files_and_clean_up(plan_prefix)
     assert plan_files
     _, cost_type = _get_plan_cost_and_cost_type(plan_files[0])
