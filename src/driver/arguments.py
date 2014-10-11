@@ -7,34 +7,38 @@ from . import aliases
 
 DESCRIPTION = """Fast Downward driver script.
 
-Input files can be either a PDDL problem file (with an optional PDDL
-domain file) or a SAS+ preprocessor output file. Depending on the input
-the driver runs all three planner components or just the search. You
-can also specify the components manually with the options below.
+Input files can be either a PDDL problem file (with an optional PDDL domain
+file), in which case the driver runs all three planner components,  or a SAS+
+preprocessor output file, in which case the driver runs just the search
+component. This default behaviour can be overridden with the options below.
 
-By default, all arguments that do not have a special meaning for the
-driver are passed on to the search component. Use --translate-options
-and --search-options to switch between components (see below for
-examples)."""
+Arguments given before the specified input files are interpreted by the driver
+script ("driver options"). Arguments given after the input files are passed on
+to the planner components ("component options"). In exceptional cases where no
+input files are needed, "--" separates driver and component options.
+
+By default, component options are passed to the search component. Use
+--translate-options, --preprocess-options and --search-options to override the
+default for the following options. (See below for examples.)"""
 
 EXAMPLES = [
-    ("Translate and preprocess, then find a plan with LM-Cut:",
+    ("Translate and preprocess, then find a plan with A* + LM-Cut:",
      ["./plan.py", "../benchmarks/gripper/prob01.pddl",
-      "--search", "astar(lmcut())"]),
+      "--search", '"astar(lmcut())"']),
     ("Translate and preprocess, run no search:",
      ["./plan.py", "--run-translator", "--run-preprocessor",
       "../benchmarks/gripper/prob01.pddl"]),
     ("Run predefined configuration (LAMA-2011) on preprocessed task:",
      ["./plan.py", "--alias", "seq-sat-lama-2011", "output"]),
-    ("Run portfolio:",
-     ["./plan.py", "--portfolio", "driver/portfolios/seq_opt_fdss_1.py",
+    ("Run a portfolio on a preprocessed task:",
+     ["./plan.py", "--portfolio", "my-portfolio.py",
       "output"]),
-    ("Run search in debug mode:",
-     ["./plan.py", "--debug", "output", "--search", "astar(ipdb())"]),
-    ("Pass options to translator:",
+    ("Run the search component in debug mode (with assertions enabled):",
+     ["./plan.py", "--debug", "output", "--search", '"astar(ipdb())"']),
+    ("Pass options to translator and search components:",
      ["./plan.py", "../benchmarks/gripper/prob01.pddl",
       "--translate-options", "--relaxed",
-      "--search-options", "--search", "astar(lmcut())"]),
+      "--search-options", "--search", '"astar(lmcut())"']),
 ]
 
 EPILOG = """Examples:
