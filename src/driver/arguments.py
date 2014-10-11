@@ -197,10 +197,6 @@ def parse_args():
     parser.add_argument(
         "--debug", action="store_true",
         help="use debug mode for search component")
-    # TODO: Do we really want to support two names for the same thing?
-    parser.add_argument(
-        "--ipc", dest="alias",
-        help="same as --alias")
     parser.add_argument(
         "--log-level", choices=["debug", "info", "warning"],
         default="info",
