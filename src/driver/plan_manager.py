@@ -30,7 +30,7 @@ def get_plan_file(plan_prefix, number):
     return "%s.%d" % (plan_prefix, number)
 
 
-def _get_plan_files_and_cleanup(plan_prefix):
+def _get_plan_files_and_clean_up(plan_prefix):
     """Return all complete plan files.
 
     If the last plan file is incomplete, delete it.
@@ -52,7 +52,7 @@ def _get_plan_files_and_cleanup(plan_prefix):
 
 def get_cost_type(plan_prefix):
     """This method is only called after a plan has been found."""
-    plan_files = _get_plan_files_and_cleanup(plan_prefix)
+    plan_files = _get_plan_files_and_clean_up(plan_prefix)
     assert plan_files
     _, cost_type = _get_plan_cost_and_cost_type(plan_files[0])
     return cost_type
@@ -60,7 +60,7 @@ def get_cost_type(plan_prefix):
 
 def get_g_bound_and_number_of_plans(plan_prefix):
     plan_costs = []
-    for plan_file in _get_plan_files_and_cleanup(plan_prefix):
+    for plan_file in _get_plan_files_and_clean_up(plan_prefix):
         plan_cost, _ = _get_plan_cost_and_cost_type(plan_file)
         if plan_costs and not plan_costs[-1] > plan_cost:
             raise SystemExit(
