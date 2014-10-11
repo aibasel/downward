@@ -11,17 +11,21 @@ import re
 PLAN_COST_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)\n")
 
 
+def _read_last_line(filename):
+    line = None
+    with open(filename) as input_file:
+        for line in input_file:
+            pass
+    return line
+
+
 def _plan_file_is_complete(plan_file):
-    with open(plan_file) as input_file:
-        lines = input_file.readlines()
-    if not lines:
-        return False
-    return PLAN_COST_REGEX.match(lines[-1])
+    last_line = _read_last_line(plan_file) or ""
+    return PLAN_COST_REGEX.match(last_line)
 
 
 def _get_plan_cost_and_cost_type(plan_file):
-    with open(plan_file) as input_file:
-        last_line = input_file.readlines()[-1]
+    last_line = _read_last_line(plan_file)
     match = PLAN_COST_REGEX.match(last_line)
     return int(match.group(1)), match.group(2)
 
