@@ -16,7 +16,12 @@ PREPROCESS = os.path.join(SRC_DIR, "preprocess", "preprocess")
 SEARCH_DIR = os.path.join(SRC_DIR, "search")
 
 
-def call_cmd(cmd, args, stdin=None):
+def call_cmd(cmd, args, debug, stdin=None):
+    if not os.path.exists(cmd):
+        target = " debug" if debug else ""
+        raise SystemExit(
+            "Could not find %s. Please run \"./build_all%s\"." %
+            (cmd, target))
     sys.stdout.flush()
     if stdin:
         with open(stdin) as stdin_file:
@@ -36,9 +41,6 @@ def run_preprocess(args):
     logging.info("Running preprocessor.")
     logging.info("preprocessor input: %s" % args.preprocess_input)
     logging.info("preprocessor arguments: %s" % args.preprocess_options)
-    if not os.path.exists(PREPROCESS):
-        raise SystemExit(
-            "preprocessor not found. Please run \"./build_all\"." )
     call_cmd(PREPROCESS, args.preprocess_options, stdin=args.preprocess_input)
 
 
@@ -51,10 +53,6 @@ def run_search(args):
     else:
         executable = os.path.join(SEARCH_DIR, "downward-release")
     logging.info("search executable: %s" % executable)
-    if not os.path.exists(executable):
-        target = " debug" if args.debug else ""
-        raise SystemExit(
-            "planner not found. Please run \"./build_all%s\"." % target)
 
     if args.portfolio:
         assert not args.search_options
@@ -70,4 +68,4 @@ def run_search(args):
         args.search_options = [
             x.replace(" ", "").replace("\n", "") for x in args.search_options]
         logging.info("search arguments: %s" % args.search_options)
-        call_cmd(executable, args.search_options, stdin=args.search_input)
+        call_cmd(executable, args.search_options, args.debug, stdin=args.search_input)
