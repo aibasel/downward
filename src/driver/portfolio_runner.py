@@ -82,10 +82,11 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager):
         elif arg == "--search":
             search = args[index + 1]
             for name, value in [
-                    ("BOUND", g_bound),
                     ("H_COST_TYPE", heuristic_cost_type),
                     ("S_COST_TYPE", search_cost_type)]:
                 search = search.replace(name, str(value))
+            assert search.endswith(")"), search
+            search = "%s,bound=%s)" % (search[:-1], str(g_bound))
             args[index + 1] = search
             break
 
