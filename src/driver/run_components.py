@@ -63,8 +63,7 @@ def run_search(args):
         if not args.search_options:
             raise ValueError(
                 "search needs --alias, --portfolio, or search options")
-        if "--plan-file" not in args.search_options:
-            args.search_options.extend(["--plan-file", args.plan_file])
+        args.search_options.extend(["--internal-plan-file", args.plan_file])
         args.search_options = [
             x.replace(" ", "").replace("\n", "") for x in args.search_options]
         logging.info("search arguments: %s" % args.search_options)

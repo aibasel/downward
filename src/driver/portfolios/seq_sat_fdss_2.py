@@ -53,7 +53,7 @@ def FINAL_CONFIG_BUILDER(successful_args):
                         "eager(single(sum([g(),weight(h,%d)])),preferred=h,cost_type=S_COST_TYPE)" % weight
                 sub_searches.append(sub_search)
             sub_search_string = ",".join(sub_searches)
-            new_search = "iterated([%s],bound=BOUND,repeat_last=true,plan_counter=PLANCOUNTER)" % sub_search_string
+            new_search = "iterated([%s],bound=BOUND,repeat_last=true)" % sub_search_string
             new_args[pos + 1] = new_search
             break
     return new_args
