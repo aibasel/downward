@@ -2,9 +2,13 @@
 
 #include <cassert>
 #include <csignal>
+#include <cstdio>
+#include <cstring>
 #include <iostream>
+#include <fcntl.h>
 #include <fstream>
 #include <limits>
+#include <unistd.h>
 using namespace std;
 
 
@@ -18,11 +22,8 @@ static void exit_handler();
 #include <psapi.h>
 #endif
 
-// See issue 469 for the reasons we chose this limit.
-static char *memory_padding = new char[32 * 1024];
-
 static void out_of_memory_handler();
-static void signal_handler(int signal_number);
+extern "C" void signal_handler(int signal_number);
 
 
 void register_event_handlers() {
@@ -58,60 +59,135 @@ void register_event_handlers() {
     sigaction(SIGXCPU, &default_signal_action, 0);
 }
 
+void write_reentrant(int filedescr, const char *message) {
+    int len = strlen(message);
+    if (write(filedescr, message, len) != len) {
+        abort();
+    }
+}
+
+void print_peak_memory_reentrant() {
+    // On error, produces a warning on cerr.
+    bool found = false;
+    char memory_in_kb[32];
+
+#if OPERATING_SYSTEM == OSX
+    // TODO
+#elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
+    // TODO
+#else
+    int proc_file_descr = open("/proc/self/status", O_RDONLY);
+    if (proc_file_descr > 0) {
+        char buffer[128];
+        const char *magic = "\nVmPeak:";
+        size_t pos_magic = 0;
+        size_t pos_copy = 0;
+        bool scanning = true;
+
+        while (read(proc_file_descr, buffer, sizeof(buffer)) > 0) {
+            for (size_t i = 0; i < sizeof(buffer); ++i) {
+                if (scanning) {
+                    // Scan for the magic word.
+                    if (buffer[i] == magic[pos_magic]) {
+                        ++pos_magic;
+                        if (pos_magic == sizeof(magic)) {
+                            scanning = false;
+                        }
+                    } else {
+                        pos_magic = 0;
+                    }
+                } else {
+                    // Skip spaces, then copy everything until the next space.
+                    if (pos_copy >= sizeof(memory_in_kb)) {
+                        break;
+                    } else if (buffer[i] == ' ' || buffer[i] == '\t') {
+                        if (pos_copy == 0) {
+                            // Spaces before the memory.
+                            continue;
+                        }
+                        // Spaces after the memory.
+                        memory_in_kb[pos_copy] = '\000';
+                        found = true;
+                        break;
+                    } else {
+                        memory_in_kb[pos_copy] = buffer[i];
+                        ++pos_copy;
+                    }
+                }
+            }
+            if (found) break;
+        }
+        close(proc_file_descr);
+    }
+#endif
+    if (!found) {
+        write_reentrant(STDERR_FILENO,
+                        "warning: could not determine peak memory\n");
+        strcpy(memory_in_kb, "-1");
+    }
+    char buffer[128];
+    if (sprintf(buffer, "Peak memory: %s KB\n", memory_in_kb) < 0)
+        abort();
+    write_reentrant(STDOUT_FILENO, buffer);
+}
+
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
 #if OPERATING_SYSTEM == LINUX
 void exit_handler(int, void *) {
 #elif OPERATING_SYSTEM == OSX
 void exit_handler() {
 #endif
-    print_peak_memory(false);
+    print_peak_memory_reentrant();
 }
 #endif
 
 void exit_with(ExitCode exitcode) {
     switch (exitcode) {
     case EXIT_PLAN_FOUND:
-        cout << "Solution found." << endl;
+        write_reentrant(STDOUT_FILENO, "Solution found.\n");
         break;
     case EXIT_CRITICAL_ERROR:
-        cerr << "Unexplained error occurred." << endl;
+        write_reentrant(STDERR_FILENO, "Unexplained error occurred.\n");
         break;
     case EXIT_INPUT_ERROR:
-        cerr << "Usage error occurred." << endl;
+        write_reentrant(STDERR_FILENO, "Usage error occurred.\n");
         break;
     case EXIT_UNSUPPORTED:
-        cerr << "Tried to use unsupported feature." << endl;
+        write_reentrant(STDERR_FILENO, "Tried to use unsupported feature.\n");
         break;
     case EXIT_UNSOLVABLE:
-        cout << "Task is provably unsolvable." << endl;
+        write_reentrant(STDOUT_FILENO, "Task is provably unsolvable.\n");
         break;
     case EXIT_UNSOLVED_INCOMPLETE:
-        cout << "Search stopped without finding a solution." << endl;
+        write_reentrant(STDOUT_FILENO, "Search stopped without finding a solution.\n");
         break;
     case EXIT_OUT_OF_MEMORY:
-        cout << "Memory limit has been reached." << endl;
+        write_reentrant(STDOUT_FILENO, "Memory limit has been reached.\n");
         break;
     case EXIT_TIMEOUT:
-        cout << "Time limit has been reached." << endl;
+        write_reentrant(STDOUT_FILENO, "Time limit has been reached.\n");
         break;
     default:
-        cerr << "Exitcode: " << exitcode << endl;
+        char buffer[32];
+        if (sprintf(buffer, "Exitcode: %d\n", exitcode) < 0)
+            abort();
+        write_reentrant(STDERR_FILENO, buffer);
         ABORT("Unknown exitcode.");
     }
     exit(exitcode);
 }
 
 static void out_of_memory_handler() {
-    assert(memory_padding);
-    delete[] memory_padding;
-    memory_padding = 0;
-    cout << "Failed to allocate memory. Released memory buffer." << endl;
+    write_reentrant(STDOUT_FILENO, "Failed to allocate memory.\n");
     exit_with(EXIT_OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {
-    print_peak_memory(false);
-    cout << "caught signal " << signal_number << " -- exiting" << endl;
+    print_peak_memory_reentrant();
+    char buffer[32];
+    if (sprintf(buffer, "caught signal %d -- exiting\n", signal_number) < 0)
+        abort();
+    write_reentrant(STDOUT_FILENO, buffer);
     raise(signal_number);
 }
 
