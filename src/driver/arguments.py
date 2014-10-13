@@ -65,7 +65,7 @@ class RawHelpFormatter(argparse.HelpFormatter):
     def _format_args(self, action, default_metavar):
         """Show explicit help for remaining args instead of "..."."""
         if action.nargs == argparse.REMAINDER:
-            return "INPUT_FILE1 [INPUT_FILE2] [COMPONENT_OPTIONS]"
+            return "INPUT_FILE1 [INPUT_FILE2] [COMPONENT_OPTION ...]"
         else:
             return argparse.HelpFormatter._format_args(self, action, default_metavar)
 
