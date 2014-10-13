@@ -1,5 +1,24 @@
 #include "reentrant.h"
 
+/*
+  NOTE:
+  Methods in this file are meant to be used in event handlers. They
+  should all be "re-entrant", i.e. they must not use static variables,
+  global data, or locks. Only some system calls such as
+  open/read/write/close are guaranteed to re-entrant. See
+    https://www.securecoding.cert.org/confluence/display/seccode/
+    SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers
+    #SIG30-C.Callonlyasynchronous-safefunctionswithinsignalhandlers-
+    Asynchronous-Signal-SafeFunctions
+  for a complete list.
+  We also use some low level string methods where re-entrancy is not
+  guaranteed but very likely with most compilers. If these ever cause
+  any problems, we will have to replace them by re-entrant
+  implementations.
+
+  See also: issue479
+*/
+
 #include "utilities.h"
 
 #include <csignal>
@@ -40,6 +59,7 @@ char read_char_reentrant(int filedescr, char *c) {
 
 void print_peak_memory_reentrant() {
 #if OPERATING_SYSTEM == OSX || OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
+    // TODO: find re-entrant alternative on those systems.
     print_peak_memory();
 #else
     int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
