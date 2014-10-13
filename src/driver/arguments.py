@@ -63,6 +63,13 @@ class RawHelpFormatter(argparse.HelpFormatter):
     def _fill_text(self, text, width, indent):
         return ''.join([indent + line for line in text.splitlines(True)])
 
+    def _format_args(self, action, default_metavar):
+        """Show explicit help for remaining args instead of "..."."""
+        if action.nargs == argparse.REMAINDER:
+            return "INPUT_FILE1 [INPUT_FILE2] [COMPONENT_OPTIONS]"
+        else:
+            return argparse.HelpFormatter._format_args(self, action, default_metavar)
+
 
 def _split_off_filenames(planner_args):
     """Given the list of arguments to be passed on to the planner
@@ -206,11 +213,6 @@ def parse_args():
         description=DESCRIPTION, epilog=EPILOG,
         formatter_class=RawHelpFormatter,
         add_help=False)
-    # TODO: where the usage string currently says "...", we want to
-    # be more explicit and say something like "INPUT_FILE ...
-    # COMPONENT_OPTION ...". How to best do this? Do we have to specify
-    # the whole usage string manually, or can we leverage the existing
-    # stuff by overriding something within the formatter class?
 
     help_options = parser.add_argument_group(
         title=("driver options that show information and exit "
