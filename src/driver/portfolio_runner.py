@@ -79,6 +79,11 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager):
             args[index + 1] = heuristic
         elif arg == "--search":
             search = args[index + 1]
+            if "bound=BOUND" not in search:
+                raise ValueError(
+                    "Satisficing portfolios need the string "
+                    "\"bound=BOUND\" in each search configuration. "
+                    "See the FDSS portfolios for examples.")
             for name, value in [
                     ("BOUND", g_bound),
                     ("H_COST_TYPE", heuristic_cost_type),
