@@ -298,7 +298,7 @@ def get_portfolio_attributes(portfolio):
             exec(content, attributes)
         except Exception:
             traceback.print_exc()
-            raise SystemExit(
+            raise ValueError(
                 "The portfolio %s could not be loaded. Maybe it still "
                 "uses the old portfolio syntax? See the FDSS portfolios "
                 "for examples using the new syntax." % portfolio)

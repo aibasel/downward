@@ -19,7 +19,7 @@ SEARCH_DIR = os.path.join(SRC_DIR, "search")
 def call_cmd(cmd, args, debug, stdin=None):
     if not os.path.exists(cmd):
         target = " debug" if debug else ""
-        raise SystemExit(
+        raise IOError(
             "Could not find %s. Please run \"./build_all%s\"." %
             (cmd, target))
     sys.stdout.flush()
@@ -61,7 +61,7 @@ def run_search(args):
             args.portfolio, executable, args.search_input, args.plan_file)
     else:
         if not args.search_options:
-            raise SystemExit(
+            raise ValueError(
                 "search needs --alias, --portfolio, or search options")
         if "--plan-file" not in args.search_options:
             args.search_options.extend(["--plan-file", args.plan_file])
