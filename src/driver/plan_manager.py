@@ -91,5 +91,17 @@ class PlanManager(object):
                         bogus_plan("plan quality has not improved")
                 self._plan_costs.append(cost)
 
+    def delete_existing_plans(self):
+        """Delete all plans that match the given plan prefix."""
+        if os.path.exists(self._plan_prefix):
+            os.remove(self._plan_prefix)
+
+        for counter in itertools.count(start=1):
+            plan_filename = self._get_plan_file(counter)
+            if os.path.exists(plan_filename):
+                os.remove(plan_filename)
+            else:
+                break
+
     def _get_plan_file(self, number):
         return "%s.%d" % (self._plan_prefix, number)

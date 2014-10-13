@@ -52,11 +52,7 @@ def run_search(args):
     logging.info("search input: %s" % args.search_input)
 
     plan_manager = PlanManager(args.plan_file)
-    plan_manager.process_new_plans()
-    if plan_manager.get_plan_counter() > 0:
-        raise IOError(
-            "The working directory already contains plan files. "
-            "Please remove them and try again.")
+    plan_manager.delete_existing_plans()
 
     if args.debug:
         executable = os.path.join(SEARCH_DIR, "downward-debug")
