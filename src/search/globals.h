@@ -19,7 +19,7 @@ class Timer;
 class StateRegistry;
 
 bool test_goal(const GlobalState &state);
-void save_plan(const std::vector<const GlobalOperator *> &plan, int iter);
+void save_plan(const std::vector<const GlobalOperator *> &plan);
 int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 
 void read_everything(std::istream &in);

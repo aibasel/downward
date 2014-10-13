@@ -57,17 +57,15 @@ int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
     return plan_cost;
 }
 
-void save_plan(const vector<const GlobalOperator *> &plan, int iter) {
+void save_plan(const vector<const GlobalOperator *> &plan) {
     // TODO: Refactor: this is only used by the SearchEngine classes
     //       and hence should maybe be moved into the SearchEngine.
+    ostringstream filename;
+    filename << g_plan_filename;
+    if (g_plan_counter > 0)
+        filename << "." << g_plan_counter;
     ofstream outfile;
-    if (iter == 0) {
-        outfile.open(g_plan_filename.c_str(), ios::out);
-    } else {
-        ostringstream out;
-        out << g_plan_filename << "." << iter;
-        outfile.open(out.str().c_str(), ios::out);
-    }
+    outfile.open(filename.str().c_str(), ios::out);
     for (size_t i = 0; i < plan.size(); ++i) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
@@ -78,6 +76,7 @@ void save_plan(const vector<const GlobalOperator *> &plan, int iter) {
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
+    ++g_plan_counter;
 }
 
 bool peek_magic(istream &in, string magic) {

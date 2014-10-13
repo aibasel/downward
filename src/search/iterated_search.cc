@@ -13,7 +13,6 @@ IteratedSearch::IteratedSearch(const Options &opts)
     last_phase_found_solution = false;
     best_bound = bound;
     iterated_found_solution = false;
-    plan_counter = opts.get<int>("plan_counter");
 }
 
 IteratedSearch::~IteratedSearch() {
@@ -75,8 +74,7 @@ SearchStatus IteratedSearch::step() {
         found_plan = current_search->get_plan();
         plan_cost = calculate_plan_cost(found_plan);
         if (plan_cost < best_bound) {
-            ++plan_counter;
-            save_plan(found_plan, plan_counter);
+            save_plan(found_plan);
             best_bound = plan_cost;
             set_plan(found_plan);
         }
@@ -175,9 +173,6 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<bool>("continue_on_solve",
                             "continue search after solution found",
                             "true");
-    parser.add_option<int>("plan_counter",
-                           "start enumerating plans with plan_counter + 1",
-                           "0");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
