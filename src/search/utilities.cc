@@ -59,17 +59,27 @@ void register_event_handlers() {
     sigaction(SIGXCPU, &default_signal_action, 0);
 }
 
-void write_reentrant(int filedescr, const char *message) {
-    int len = strlen(message);
+void write_reentrant(int filedescr, const char *message, int len) {
     if (write(filedescr, message, len) != len) {
         abort();
     }
 }
 
+void write_reentrant_str(int filedescr, const char *message) {
+    write_reentrant(filedescr, message, strlen(message));
+}
+
 void write_reentrant_char(int filedescr, const char c) {
-    if (write(filedescr, &c, 1) != 1) {
+    write_reentrant(filedescr, &c, 1);
+}
+
+void write_reentrant_int(int filedescr, int value) {
+    char buffer[20];
+    int len = snprintf(buffer, sizeof(buffer), "%d", value);
+    if (len > 0)
+        write_reentrant(filedescr, buffer, len);
+    else
         abort();
-    }
 }
 
 void print_peak_memory_reentrant() {
@@ -80,7 +90,7 @@ void print_peak_memory_reentrant() {
     int proc_file_descr = open("/proc/self/status", O_RDONLY);
 
     if (proc_file_descr == -1) {
-        write_reentrant(STDERR_FILENO,
+        write_reentrant_str(STDERR_FILENO,
                         "critical error: could not open /proc/self/status\n");
         abort();
     }
@@ -100,12 +110,12 @@ void print_peak_memory_reentrant() {
     }
 
     if (pos_magic != len_magic) {
-        write_reentrant(STDERR_FILENO,
+        write_reentrant_str(STDERR_FILENO,
                         "critical error: could not find VmPeak in /proc/self/status\n");
         abort();
     }
 
-    write_reentrant(STDOUT_FILENO, "Peak memory: ");
+    write_reentrant_str(STDOUT_FILENO, "Peak memory: ");
 
     // Skip over whitespace.
     while (read(proc_file_descr, &c, 1) > 0 && isspace(c))
@@ -115,7 +125,7 @@ void print_peak_memory_reentrant() {
         write_reentrant_char(STDOUT_FILENO, c);
     } while (read(proc_file_descr, &c, 1) > 0 && !isspace(c));
 
-    write_reentrant(STDOUT_FILENO, " KB\n");
+    write_reentrant_str(STDOUT_FILENO, " KB\n");
     close(proc_file_descr);
 #endif
 }
@@ -131,52 +141,57 @@ void exit_handler() {
 #endif
 
 void exit_with(ExitCode exitcode) {
+    const char *message;
+    int filedescr = STDOUT_FILENO;
     switch (exitcode) {
     case EXIT_PLAN_FOUND:
-        write_reentrant(STDOUT_FILENO, "Solution found.\n");
+        message = "Solution found.";
         break;
     case EXIT_CRITICAL_ERROR:
-        write_reentrant(STDERR_FILENO, "Unexplained error occurred.\n");
+        message = "Unexplained error occurred.";
+        filedescr = STDERR_FILENO;
         break;
     case EXIT_INPUT_ERROR:
-        write_reentrant(STDERR_FILENO, "Usage error occurred.\n");
+        message = "Usage error occurred.";
+        filedescr = STDERR_FILENO;
         break;
     case EXIT_UNSUPPORTED:
-        write_reentrant(STDERR_FILENO, "Tried to use unsupported feature.\n");
+        message = "Tried to use unsupported feature.";
+        filedescr = STDERR_FILENO;
         break;
     case EXIT_UNSOLVABLE:
-        write_reentrant(STDOUT_FILENO, "Task is provably unsolvable.\n");
+        message = "Task is provably unsolvable.";
         break;
     case EXIT_UNSOLVED_INCOMPLETE:
-        write_reentrant(STDOUT_FILENO, "Search stopped without finding a solution.\n");
+        message = "Search stopped without finding a solution.";
         break;
     case EXIT_OUT_OF_MEMORY:
-        write_reentrant(STDOUT_FILENO, "Memory limit has been reached.\n");
+        message = "Memory limit has been reached.";
         break;
     case EXIT_TIMEOUT:
-        write_reentrant(STDOUT_FILENO, "Time limit has been reached.\n");
+        message = "Time limit has been reached.";
         break;
     default:
-        char buffer[32];
-        if (sprintf(buffer, "Exitcode: %d\n", exitcode) < 0)
-            abort();
-        write_reentrant(STDERR_FILENO, buffer);
-        ABORT("Unknown exitcode.");
+        write_reentrant_str(STDERR_FILENO, "Exitcode: ");
+        write_reentrant_int(STDERR_FILENO, exitcode);
+        write_reentrant_str(STDERR_FILENO, "\nUnknown exitcode.\n");
+        abort();
     }
+    write_reentrant_str(filedescr, message);
+    write_reentrant_char(filedescr, '\n');
     exit(exitcode);
 }
 
 static void out_of_memory_handler() {
-    write_reentrant(STDOUT_FILENO, "Failed to allocate memory.\n");
+    write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
     exit_with(EXIT_OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {
     print_peak_memory_reentrant();
-    char buffer[32];
-    if (sprintf(buffer, "caught signal %d -- exiting\n", signal_number) < 0)
-        abort();
-    write_reentrant(STDOUT_FILENO, buffer);
+    write_reentrant_str(STDOUT_FILENO, "caught signal ");
+    write_reentrant_int(STDOUT_FILENO, signal_number);
+    write_reentrant_str(STDOUT_FILENO, " -- exiting\n");
     raise(signal_number);
 }
 
