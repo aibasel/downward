@@ -79,10 +79,9 @@ void write_reentrant_char(int filedescr, const char c) {
 void write_reentrant_int(int filedescr, int value) {
     char buffer[20];
     int len = snprintf(buffer, sizeof(buffer), "%d", value);
-    if (len > 0)
-        write_reentrant(filedescr, buffer, len);
-    else
+    if (len < 0)
         abort();
+    write_reentrant(filedescr, buffer, len);
 }
 
 char read_char_reentrant(int filedescr, char *c) {
@@ -188,6 +187,12 @@ void exit_with(ExitCode exitcode) {
 }
 
 static void out_of_memory_handler() {
+    /*
+      We do not use any memory padding currently. The methods below should
+      only use stack memory. If we ever run into situations where the stack
+      memory is not sufficient, we can consider using sigaltstack to reserve
+      memoy for the stack of the signal handler and raising a signal here.
+    */
     write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
     exit_with(EXIT_OUT_OF_MEMORY);
 }
