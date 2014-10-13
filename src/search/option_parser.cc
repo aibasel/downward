@@ -252,24 +252,24 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             dp->print_all();
             cout << "Help output finished." << endl;
             exit(0);
-        } else if (arg.compare("--plan-file") == 0) {
+        } else if (arg.compare("--internal-plan-file") == 0) {
             if (is_last)
-                throw ArgError("missing argument after --plan-file");
+                throw ArgError("missing argument after --internal-plan-file");
             ++i;
             g_plan_filename = args[i];
-        } else if (arg.compare("--plan-counter") == 0) {
+        } else if (arg.compare("--internal-plan-counter") == 0) {
             if (is_last)
-                throw ArgError("missing argument after --plan-counter");
+                throw ArgError("missing argument after --internal-plan-counter");
             ++i;
             try {
                 g_plan_counter = stoi(args[i]);
             } catch (invalid_argument &) {
-                throw ArgError("argument for --plan-counter must be an integer");
+                throw ArgError("argument for --internal-plan-counter must be an integer");
             } catch (out_of_range &) {
-                throw ArgError("argument for --plan-counter is too large");
+                throw ArgError("argument for --internal-plan-counter is too large");
             }
             if (g_plan_counter < 0)
-                throw ArgError("argument for --plan-counter must be non-negative");
+                throw ArgError("argument for --internal-plan-counter must be non-negative");
         } else {
             throw ArgError("unknown option " + arg);
         }
@@ -295,7 +295,7 @@ string OptionParser::usage(string progname) {
         "    by the name that is specified in the definition.\n"
         "--random-seed SEED\n"
         "    Use random seed SEED\n\n"
-        "--plan-file FILENAME\n"
+        "--internal-plan-file FILENAME\n"
         "    Plan will be output to a file called FILENAME\n\n"
         "See http://www.fast-downward.org/ for details.";
     return usage;
