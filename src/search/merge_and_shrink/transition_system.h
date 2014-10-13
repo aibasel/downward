@@ -99,7 +99,7 @@ class TransitionSystem {
     // transitions of an transition system are sorted uniquely or not after
     // construction (composite transition system) and shrinking (apply_abstraction).
     bool are_transitions_sorted_unique() const;
-    void normalize();
+    void normalize_transitions();
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
