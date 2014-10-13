@@ -79,7 +79,7 @@ void print_peak_memory_reentrant() {
     int proc_file_descr = open("/proc/self/status", O_RDONLY);
     if (proc_file_descr > 0) {
         char buffer[128];
-        const char *magic = "\nVmPeak:";
+        const char magic[] = "\nVmPeak:";
         size_t pos_magic = 0;
         size_t pos_copy = 0;
         bool scanning = true;
@@ -90,7 +90,7 @@ void print_peak_memory_reentrant() {
                     // Scan for the magic word.
                     if (buffer[i] == magic[pos_magic]) {
                         ++pos_magic;
-                        if (pos_magic == sizeof(magic)) {
+                        if (pos_magic == sizeof(magic) - 1) {
                             scanning = false;
                         }
                     } else {
@@ -106,7 +106,7 @@ void print_peak_memory_reentrant() {
                             continue;
                         }
                         // Spaces after the memory.
-                        memory_in_kb[pos_copy] = '\000';
+                        memory_in_kb[pos_copy] = '\0';
                         found = true;
                         break;
                     } else {
