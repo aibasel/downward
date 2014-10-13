@@ -69,20 +69,10 @@ def set_limit(kind, soft, hard):
 
 
 def adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager):
-    # TODO: It's a bit unfortunate and messy that we need to pass in the
-    # plan name and counter in different ways for iterated and non-iterated
-    # configs. Idea: change the search code to change this, offering a
-    # mechanism for passing in a plan counter there in general (not just
-    # for iterated search). The output filename without a counter should
-    # then only be used when no plan counter was passed in and no iterated
-    # search is used. The plan counter argument for the iterated search
-    # should then disappear.
-    #
-    # TODO: When the previous TODO has been dealt with, we should be able
-    # to remove PlanManager.get_next_plan_file.
-
     g_bound = plan_manager.get_best_plan_cost()
     plan_counter = plan_manager.get_plan_counter()
+    print("g bound: %s" % g_bound)
+    print("next plan number: %d" % (plan_counter + 1))
 
     for index, arg in enumerate(args):
         if arg == "--heuristic":
@@ -91,28 +81,19 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager):
             args[index + 1] = heuristic
         elif arg == "--search":
             search = args[index + 1]
-            if search.startswith("iterated"):
-                if "plan_counter=PLANCOUNTER" not in search:
-                    raise ValueError("When using iterated search, we must add "
-                                     "the option plan_counter=PLANCOUNTER")
-                plan_file_arg = plan_manager.get_plan_prefix()
-            else:
-                plan_file_arg = plan_manager.get_next_plan_file()
             for name, value in [
                     ("BOUND", g_bound),
-                    ("PLANCOUNTER", plan_counter),
                     ("H_COST_TYPE", heuristic_cost_type),
                     ("S_COST_TYPE", search_cost_type)]:
                 search = search.replace(name, str(value))
             args[index + 1] = search
             break
-    print("g bound: %s" % g_bound)
-    print("next plan number: %d" % (plan_counter + 1))
-    return plan_file_arg
 
 
-def run_search(executable, args, sas_file, plan_file, timeout=None, memory=None):
-    complete_args = [executable] + args + ["--plan-file", plan_file]
+def run_search(executable, args, sas_file, plan_manager, timeout=None, memory=None):
+    complete_args = [executable] + args + [
+        "--internal-plan-file", plan_manager.get_plan_prefix(),
+        "--internal-plan-counter", str(plan_manager.get_plan_counter() + 1)]
     print("args: %s" % complete_args)
     sys.stdout.flush()
 
@@ -171,21 +152,18 @@ def determine_timeout(remaining_time_at_start, configs, pos):
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
                    executable, sas_file, plan_manager, remaining_time_at_start,
                    memory):
-    args = list(configs[pos][1])
-    plan_file = adapt_search(args, search_cost_type, heuristic_cost_type,
-                             plan_manager)
     run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
     if run_timeout <= 0:
         return None
-    result = run_search(executable, args, sas_file, plan_file, run_timeout, memory)
+    args = list(configs[pos][1])
+    adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager)
+    result = run_search(executable, args, sas_file, plan_manager, run_timeout, memory)
     plan_manager.process_new_plans()
     return result
 
 
-def run_sat(configs, executable, sas_file, plan_prefix, final_config,
+def run_sat(configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, remaining_time_at_start, memory):
-    plan_manager = PlanManager(plan_prefix)
-
     exitcodes = []
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
     # has non-unit costs, we start by treating all costs as one. When we find
@@ -248,12 +226,12 @@ def run_sat(configs, executable, sas_file, plan_prefix, final_config,
     return exitcodes
 
 
-def run_opt(configs, executable, sas_file, plan_prefix, remaining_time_at_start,
+def run_opt(configs, executable, sas_file, plan_manager, remaining_time_at_start,
             memory):
     exitcodes = []
     for pos, (relative_time, args) in enumerate(configs):
         timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        exitcode = run_search(executable, args, sas_file, plan_prefix, timeout, memory)
+        exitcode = run_search(executable, args, sas_file, plan_manager, timeout, memory)
         exitcodes.append(exitcode)
 
         if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
@@ -353,11 +331,13 @@ def run(portfolio, executable, sas_file, plan_prefix):
     remaining_time_at_start = float(timeout) - get_elapsed_time()
     print("remaining time at start: %.2f" % remaining_time_at_start)
 
+    plan_manager = PlanManager(plan_prefix)
+
     if optimal:
-        exitcodes = run_opt(configs, executable, sas_file, plan_prefix,
+        exitcodes = run_opt(configs, executable, sas_file, plan_manager,
                             remaining_time_at_start, memory)
     else:
-        exitcodes = run_sat(configs, executable, sas_file, plan_prefix,
+        exitcodes = run_sat(configs, executable, sas_file, plan_manager,
                             final_config, final_config_builder,
                             remaining_time_at_start, memory)
     exitcode = generate_exitcode(exitcodes)

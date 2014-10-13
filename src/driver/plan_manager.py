@@ -44,9 +44,6 @@ class PlanManager(object):
     def get_plan_counter(self):
         return len(self._plan_costs)
 
-    def get_next_plan_file(self):
-        return self._get_plan_file(self.get_plan_counter() + 1)
-
     def get_best_plan_cost(self):
         """Return best plan cost found so far. Return string
         "infinity" if no plans found yet."""
