@@ -5,6 +5,7 @@
 #include "rng.h"
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -256,6 +257,19 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 throw ArgError("missing argument after --plan-file");
             ++i;
             g_plan_filename = args[i];
+        } else if (arg.compare("--plan-counter") == 0) {
+            if (is_last)
+                throw ArgError("missing argument after --plan-counter");
+            ++i;
+            try {
+                g_plan_counter = stoi(args[i]);
+            } catch (invalid_argument &) {
+                throw ArgError("argument for --plan-counter must be an integer");
+            } catch (out_of_range &) {
+                throw ArgError("argument for --plan-counter is too large");
+            }
+            if (g_plan_counter < 0)
+                throw ArgError("argument for --plan-counter must be non-negative");
         } else {
             throw ArgError("unknown option " + arg);
         }
