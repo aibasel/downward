@@ -66,69 +66,58 @@ void write_reentrant(int filedescr, const char *message) {
     }
 }
 
-void print_peak_memory_reentrant() {
-    // On error, produces a warning on cerr.
-    bool found = false;
-    char memory_in_kb[32];
-
-#if OPERATING_SYSTEM == OSX
-    // TODO
-#elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
-    // TODO
-#else
-    int proc_file_descr = open("/proc/self/status", O_RDONLY);
-    if (proc_file_descr > 0) {
-        char buffer[128];
-        const char magic[] = "\nVmPeak:";
-        size_t pos_magic = 0;
-        size_t pos_copy = 0;
-        bool scanning = true;
-
-        while (read(proc_file_descr, buffer, sizeof(buffer)) > 0) {
-            for (size_t i = 0; i < sizeof(buffer); ++i) {
-                if (scanning) {
-                    // Scan for the magic word.
-                    if (buffer[i] == magic[pos_magic]) {
-                        ++pos_magic;
-                        if (pos_magic == sizeof(magic) - 1) {
-                            scanning = false;
-                        }
-                    } else {
-                        pos_magic = 0;
-                    }
-                } else {
-                    // Skip spaces, then copy everything until the next space.
-                    if (pos_copy >= sizeof(memory_in_kb)) {
-                        break;
-                    } else if (buffer[i] == ' ' || buffer[i] == '\t') {
-                        if (pos_copy == 0) {
-                            // Spaces before the memory.
-                            continue;
-                        }
-                        // Spaces after the memory.
-                        memory_in_kb[pos_copy] = '\0';
-                        found = true;
-                        break;
-                    } else {
-                        memory_in_kb[pos_copy] = buffer[i];
-                        ++pos_copy;
-                    }
-                }
-            }
-            if (found) break;
-        }
-        close(proc_file_descr);
-    }
-#endif
-    if (!found) {
-        write_reentrant(STDERR_FILENO,
-                        "warning: could not determine peak memory\n");
-        strcpy(memory_in_kb, "-1");
-    }
-    char buffer[128];
-    if (sprintf(buffer, "Peak memory: %s KB\n", memory_in_kb) < 0)
+void write_reentrant_char(int filedescr, const char c) {
+    if (write(filedescr, &c, 1) != 1) {
         abort();
-    write_reentrant(STDOUT_FILENO, buffer);
+    }
+}
+
+void print_peak_memory_reentrant() {
+#if OPERATING_SYSTEM == OSX || OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
+    print_peak_memory();
+#else
+    // TODO: Test for EINTR
+    int proc_file_descr = open("/proc/self/status", O_RDONLY);
+
+    if (proc_file_descr == -1) {
+        write_reentrant(STDERR_FILENO,
+                        "critical error: could not open /proc/self/status\n");
+        abort();
+    }
+
+    const char magic[] = "\nVmPeak:";
+    char c;
+    size_t pos_magic = 0;
+    const size_t len_magic = sizeof(magic) - 1;
+
+    // Find magic word.
+    while (pos_magic != len_magic && read(proc_file_descr, &c, 1) > 0) {
+        if (c == magic[pos_magic]) {
+            ++pos_magic;
+        } else {
+            pos_magic = 0;
+        }
+    }
+
+    if (pos_magic != len_magic) {
+        write_reentrant(STDERR_FILENO,
+                        "critical error: could not find VmPeak in /proc/self/status\n");
+        abort();
+    }
+
+    write_reentrant(STDOUT_FILENO, "Peak memory: ");
+
+    // Skip over whitespace.
+    while (read(proc_file_descr, &c, 1) > 0 && isspace(c))
+        ;
+
+    do {
+        write_reentrant_char(STDOUT_FILENO, c);
+    } while (read(proc_file_descr, &c, 1) > 0 && !isspace(c));
+
+    write_reentrant(STDOUT_FILENO, " KB\n");
+    close(proc_file_descr);
+#endif
 }
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
@@ -191,7 +180,7 @@ void signal_handler(int signal_number) {
     raise(signal_number);
 }
 
-int get_peak_memory_in_kb(bool use_buffered_input) {
+int get_peak_memory_in_kb() {
     // On error, produces a warning on cerr and returns -1.
     int memory_in_kb = -1;
 
@@ -211,9 +200,6 @@ int get_peak_memory_in_kb(bool use_buffered_input) {
     memory_in_kb = pmc.PeakPagefileUsage / 1024;
 #else
     ifstream procfile;
-    if (!use_buffered_input) {
-        procfile.rdbuf()->pubsetbuf(0, 0);
-    }
     procfile.open("/proc/self/status");
     string word;
     while (procfile.good()) {
@@ -234,8 +220,8 @@ int get_peak_memory_in_kb(bool use_buffered_input) {
     return memory_in_kb;
 }
 
-void print_peak_memory(bool use_buffered_input) {
-    cout << "Peak memory: " << get_peak_memory_in_kb(use_buffered_input) << " KB" << endl;
+void print_peak_memory() {
+    cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
 }
 
 

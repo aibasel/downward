@@ -48,8 +48,8 @@ extern void exit_with(ExitCode returncode) __attribute__((noreturn));
 
 extern void register_event_handlers();
 
-extern int get_peak_memory_in_kb(bool use_buffered_input = true);
-extern void print_peak_memory(bool use_buffered_input = true);
+extern int get_peak_memory_in_kb();
+extern void print_peak_memory();
 
 /* Test if the product of two numbers is bounded by a third number.
    Safe against overflow. The caller must guarantee
