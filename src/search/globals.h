@@ -66,6 +66,7 @@ extern CausalGraph *g_causal_graph;
 extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
+extern int g_plan_counter;
 extern RandomNumberGenerator g_rng;
 // Only one global object for now. Could later be changed to use one instance
 // for each problem in this case the method GlobalState::get_id would also have to be
