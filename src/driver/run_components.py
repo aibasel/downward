@@ -34,14 +34,16 @@ def run_translate(args):
     logging.info("Running translator.")
     logging.info("translator inputs: %s" % args.translate_inputs)
     logging.info("translator arguments: %s" % args.translate_options)
-    call_cmd(TRANSLATE, args.translate_inputs + args.translate_options)
+    call_cmd(TRANSLATE, args.translate_inputs + args.translate_options,
+             args.debug)
 
 
 def run_preprocess(args):
     logging.info("Running preprocessor.")
     logging.info("preprocessor input: %s" % args.preprocess_input)
     logging.info("preprocessor arguments: %s" % args.preprocess_options)
-    call_cmd(PREPROCESS, args.preprocess_options, stdin=args.preprocess_input)
+    call_cmd(PREPROCESS, args.preprocess_options, args.debug,
+             stdin=args.preprocess_input)
 
 
 def run_search(args):
