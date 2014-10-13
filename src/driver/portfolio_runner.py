@@ -27,7 +27,7 @@ import subprocess
 import sys
 import traceback
 
-from plan_manager import PlanManager
+from .plan_manager import PlanManager
 
 
 DEFAULT_TIMEOUT = 1800
