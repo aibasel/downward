@@ -326,27 +326,20 @@ bool TransitionSystem::is_normalized() const {
     return (num_labels == labels->get_size()) && transitions_sorted_unique;
 }
 
-void TransitionSystem::normalize() {
+void TransitionSystem::normalize_transitions() {
     /* This method sorts all transitions and removes duplicate transitions.
-       It also maps the labels so that they are up to date with the labels
-       object. */
+       Note that currently we do not detect the case where a label
+       becomes irrelevant due to shrinking. This could be a future
+       optimization.
+    */
 
     assert(!is_normalized());
     //cout << tag() << "normalizing" << endl;
 
     typedef vector<pair<AbstractStateRef, int> > StateBucket;
 
-    /* First, partition by target state. Possibly replace labels by
-       their new label which they are mapped to via label reduction and clear
-       away the transitions that have been processed. */
+    // First, partition by target state.
     vector<StateBucket> target_buckets(num_states);
-
-    /* We handle "old" and "new" labels separately. The following loop
-       goes over all labels that were already known when we last
-       normalized. It ignores labels that are no longer current
-       because they have been mapped to fresh labels in the last label
-       reduction. (These labels are handled separately in the next
-       loop.) */
 
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_label_reduced(label_no)) {
@@ -364,83 +357,6 @@ void TransitionSystem::normalize() {
         vector<Transition> ().swap(transitions);
     }
 
-    /* Now we handle "new" labels. We iterate over the fresh labels and
-       determine the "old" labels from which they were generated to combine
-       their transitions.
-
-       Some complications arise when we combine labels of which some
-       are relevant and others are not. In this case, we test if all
-       transitions of relevant labels are self-loops. If this happens,
-       we make the new label irrelevant. Otherwise, the new labels is
-       relevant and we must materialize all previously implicit
-       self-loops.
-
-       Note that currently we do not detect the case where a label
-       becomes irrelevant due to shrinking. This could be a future
-       optimization.
-    */
-
-    /* labels_made_irrelevant stores labels for which we collect
-       transitions that later turn out to be unnecessary because the
-       label becomes irrelevant.
-    */
-    hash_set<int> labels_made_irrelevant;
-    for (int reduced_label_no = num_labels; reduced_label_no < labels->get_size();
-         ++reduced_label_no) {
-        const Label *reduced_label = labels->get_label_by_index(reduced_label_no);
-        const vector<Label *> &parents = reduced_label->get_parents();
-        bool some_parent_is_irrelevant = false;
-        bool all_transitions_are_self_loops = true;
-        for (size_t i = 0; i < parents.size(); ++i) {
-            const Label *parent = parents[i];
-            int parent_id = parent->get_id();
-            // We require that we only have to deal with one label reduction at
-            // a time when normalizing. Otherwise the following assertion could
-            // be broken and we would need to consider parents' parents and so
-            // on...
-            assert(parent_id < num_labels);
-            vector<Transition> &transitions =
-                transitions_by_label[parent_id];
-
-            if (relevant_labels[parent_id]) {
-                for (size_t j = 0; j < transitions.size(); ++j) {
-                    const Transition &t = transitions[j];
-                    target_buckets[t.target].push_back(
-                        make_pair(t.src, reduced_label_no));
-                    if (t.target != t.src) {
-                        all_transitions_are_self_loops = false;
-                    }
-                }
-                vector<Transition> ().swap(transitions);
-
-                // mark parent as irrelevant (unused labels should not be
-                // marked as relevant in order to avoid confusions when
-                // considering all relevant labels).
-                relevant_labels[parent_id] = false;
-            } else {
-                some_parent_is_irrelevant = true;
-            }
-        }
-        if (some_parent_is_irrelevant) {
-            if (all_transitions_are_self_loops) {
-                // new label is irrelevant (implicit self-loops)
-                // remove all transitions (later)
-                labels_made_irrelevant.insert(reduced_label_no);
-            } else {
-                // new label is relevant
-                relevant_labels[reduced_label_no] = true;
-                // make self loops explicit
-                for (int i = 0; i < num_states; ++i) {
-                    target_buckets[i].push_back(
-                        make_pair(i, reduced_label_no));
-                }
-            }
-        } else {
-            // new label is relevant
-            relevant_labels[reduced_label_no] = true;
-        }
-    }
-
     // Second, partition by src state.
     vector<StateBucket> src_buckets(num_states);
 
@@ -449,11 +365,7 @@ void TransitionSystem::normalize() {
         for (size_t i = 0; i < bucket.size(); ++i) {
             AbstractStateRef src = bucket[i].first;
             int label_no = bucket[i].second;
-            if (labels_made_irrelevant.count(label_no)) {
-                assert(transitions_by_label[label_no].empty());
-            } else {
-                src_buckets[src].push_back(make_pair(target, label_no));
-            }
+            src_buckets[src].push_back(make_pair(target, label_no));
         }
     }
     vector<StateBucket> ().swap(target_buckets);
@@ -774,7 +686,7 @@ void TransitionSystem::apply_abstraction(
     // TODO do not check if transitions are sorted but just assume they are not?
     if (!are_transitions_sorted_unique()) {
         transitions_sorted_unique = false;
-        normalize();
+        normalize_transitions();
     }
 
     compute_distances_and_prune();
@@ -784,28 +696,123 @@ void TransitionSystem::apply_label_reduction(const vector<vector<int> > &label_m
                                              bool only_equivalent_labels) {
     //cout << tag() << " applying label mapping" << endl;
     if (only_equivalent_labels) {
+        /* Here we handle those transitions systems for which we know that
+           only locally equivalent labels are combined. We simply take the
+           transitions of one of the parent labels and move them to the new
+           label's position and delete all transitions of the old labels.
+         */
         for (size_t i = 0; i < label_mapping.size(); ++i) {
-            const vector<int> &reduced_label_nos = label_mapping[i];
-            assert(reduced_label_nos.size() > 1);
-            vector<Transition> &trans = transitions_by_label[num_labels];
-            assert(trans.empty());
-            trans.swap(transitions_by_label[reduced_label_nos[0]]);
-            bool label_relevant = relevant_labels[reduced_label_nos[0]];
+            const vector<int> &old_label_nos = label_mapping[i];
+            assert(old_label_nos.size() > 1);
+            vector<Transition> &new_transitions = transitions_by_label[num_labels];
+            assert(new_transitions.empty());
+            new_transitions.reserve(transitions_by_label[old_label_nos[0]].size());
+            new_transitions.swap(transitions_by_label[old_label_nos[0]]);
+            bool label_relevant = relevant_labels[old_label_nos[0]];
             relevant_labels[num_labels] = label_relevant;
-            for (size_t j = 1; j < reduced_label_nos.size(); ++j) {
-                int label_no = reduced_label_nos[j];
-                vector<Transition> &other_trans = transitions_by_label[label_no];
-                assert(other_trans == trans);
-                assert(relevant_labels[label_no] == label_relevant);
-                vector<Transition>().swap(other_trans);
+            // mark reduced label as irrelevant (unused labels should not be
+            // marked as relevant in order to avoid confusions when
+            // considering all relevant labels).
+            relevant_labels[old_label_nos[0]] = false;
+            for (size_t j = 1; j < old_label_nos.size(); ++j) {
+                int old_label_no = old_label_nos[j];
+                // We require that we only have to deal with one label reduction at
+                // a time when normalizing. Otherwise the following assertion could
+                // be broken and we would need to consider parents' parents and so
+                // on...
+                assert(old_label_no < num_labels);
+                vector<Transition> &old_transitions = transitions_by_label[old_label_no];
+                assert(old_transitions == new_transitions);
+                assert(relevant_labels[old_label_no] == label_relevant);
+                // mark reduced label as irrelevant (unused labels should not be
+                // marked as relevant in order to avoid confusions when
+                // considering all relevant labels).
+                relevant_labels[old_label_no] = false;
+                vector<Transition>().swap(old_transitions);
             }
             ++num_labels;
         }
         assert(num_labels == labels->get_size());
         assert(are_transitions_sorted_unique());
     } else {
-        normalize();
-        //clear_distances();
+        /* Here we handle the one transition system for every label reduction
+           based on theta-combinability for which non locally equivalent labels
+           may be combined.
+
+           Some complications arise when we combine labels of which some
+           are relevant and others are not. In this case, we test if all
+           transitions of relevant labels are self-loops. If this happens,
+           we make the new label irrelevant. Otherwise, the new labels is
+           relevant and we must materialize all previously implicit
+           self-loops.
+        */
+
+        for (size_t i = 0; i < label_mapping.size(); ++i) {
+            const vector<int> &old_label_nos = label_mapping[i];
+            assert(old_label_nos.size() > 1);
+            // new_transitions collects all transitions from all old labels
+            set<Transition> new_transitions;
+            bool some_parent_is_irrelevant = false;
+            bool all_transitions_are_self_loops = true;
+            for (size_t j = 0; j < old_label_nos.size(); ++j) {
+                int old_label_no = old_label_nos[j];
+                // We require that we only have to deal with one label reduction at
+                // a time when normalizing. Otherwise the following assertion could
+                // be broken and we would need to consider parents' parents and so
+                // on...
+                assert(old_label_no < num_labels);
+                vector<Transition> &old_transitions = transitions_by_label[old_label_no];
+
+                if (relevant_labels[old_label_no]) {
+                    new_transitions.insert(old_transitions.begin(), old_transitions.end());
+                    if (all_transitions_are_self_loops) {
+                        for (size_t k = 0; k < old_transitions.size(); ++k) {
+                            const Transition &t = old_transitions[k];
+                            if (t.target != t.src) {
+                                all_transitions_are_self_loops = false;
+                                break;
+                            }
+                        }
+                    }
+                    vector<Transition> ().swap(old_transitions);
+
+                    // mark parent as irrelevant (unused labels should not be
+                    // marked as relevant in order to avoid confusions when
+                    // considering all relevant labels).
+                    relevant_labels[old_label_no] = false;
+                } else {
+                    some_parent_is_irrelevant = true;
+                }
+            }
+            if (some_parent_is_irrelevant) {
+                if (all_transitions_are_self_loops) {
+                    // new label is irrelevant (implicit self-loops)
+                    // remove all transitions
+                    relevant_labels[num_labels] = false;
+                    new_transitions.clear();
+                } else {
+                    // new label is relevant
+                    relevant_labels[num_labels] = true;
+                    // make self loops explicit
+                    for (int i = 0; i < num_states; ++i) {
+                        new_transitions.insert(Transition(i, i));
+                    }
+                }
+            } else {
+                // new label is relevant
+                relevant_labels[num_labels] = true;
+            }
+            vector<Transition> &transitions = transitions_by_label[num_labels];
+            assert(transitions.empty());
+            transitions.reserve(new_transitions.size());
+            for (set<Transition>::const_iterator it = new_transitions.begin();
+                 it != new_transitions.end(); ++it) {
+                transitions.push_back(*it);
+            }
+            ++num_labels;
+        }
+        assert(num_labels == labels->get_size());
+        assert(are_transitions_sorted_unique());
     }
 }
 
@@ -1149,7 +1156,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
     // TODO do not check if transitions are sorted but just assume they are not?
     if (!are_transitions_sorted_unique()) {
         transitions_sorted_unique = false;
-        normalize();
+        normalize_transitions();
     }
 
     compute_distances_and_prune();
