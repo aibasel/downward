@@ -62,6 +62,7 @@ HEADERS = \
           segmented_vector.h \
           per_state_information.h \
           pref_evaluator.h \
+          reentrant.h \
           relaxation_heuristic.h \
           rng.h \
           search_engine.h \
