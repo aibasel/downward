@@ -297,6 +297,8 @@ string OptionParser::usage(string progname) {
         "    Use random seed SEED\n\n"
         "--internal-plan-file FILENAME\n"
         "    Plan will be output to a file called FILENAME\n\n"
+        "--internal-plan-counter COUNTER\n"
+        "    Start enumerating plan files with COUNTER, i.e. FILENAME.COUNTER\n\n"
         "See http://www.fast-downward.org/ for details.";
     return usage;
 }
