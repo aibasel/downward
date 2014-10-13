@@ -145,6 +145,9 @@ def run_search(executable, args, sas_file, plan_file, timeout=None, memory=None)
 
 def get_elapsed_time():
     """
+    Return the CPU time taken by the python process and its child
+    processes.
+
     Note: According to the os.times documentation, Windows sets the
     child time components to 0, so time slices for portfolios will be
     allocated slightly wrongly there.
