@@ -4,6 +4,7 @@
 #include <csignal>
 #include <cstdio>
 #include <cstring>
+#include <errno.h>
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
@@ -60,8 +61,10 @@ void register_event_handlers() {
 }
 
 void write_reentrant(int filedescr, const char *message, int len) {
-    if (write(filedescr, message, len) != len) {
-        abort();
+    while(len > 0) {
+        int written = TEMP_FAILURE_RETRY(write(filedescr, message, len));
+        message += written;
+        len -= written;
     }
 }
 
@@ -82,13 +85,15 @@ void write_reentrant_int(int filedescr, int value) {
         abort();
 }
 
+char read_char_reentrant(int filedescr, char *c) {
+    return TEMP_FAILURE_RETRY(read(filedescr, c, 1));
+}
+
 void print_peak_memory_reentrant() {
 #if OPERATING_SYSTEM == OSX || OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
     print_peak_memory();
 #else
-    // TODO: Test for EINTR
-    int proc_file_descr = open("/proc/self/status", O_RDONLY);
-
+    int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
     if (proc_file_descr == -1) {
         write_reentrant_str(STDERR_FILENO,
                         "critical error: could not open /proc/self/status\n");
@@ -101,7 +106,7 @@ void print_peak_memory_reentrant() {
     const size_t len_magic = sizeof(magic) - 1;
 
     // Find magic word.
-    while (pos_magic != len_magic && read(proc_file_descr, &c, 1) > 0) {
+    while (pos_magic != len_magic && read_char_reentrant(proc_file_descr, &c) == 1) {
         if (c == magic[pos_magic]) {
             ++pos_magic;
         } else {
@@ -118,15 +123,15 @@ void print_peak_memory_reentrant() {
     write_reentrant_str(STDOUT_FILENO, "Peak memory: ");
 
     // Skip over whitespace.
-    while (read(proc_file_descr, &c, 1) > 0 && isspace(c))
+    while (read_char_reentrant(proc_file_descr, &c) == 1 && isspace(c))
         ;
 
     do {
         write_reentrant_char(STDOUT_FILENO, c);
-    } while (read(proc_file_descr, &c, 1) > 0 && !isspace(c));
+    } while (read_char_reentrant(proc_file_descr, &c) == 1 && !isspace(c));
 
     write_reentrant_str(STDOUT_FILENO, " KB\n");
-    close(proc_file_descr);
+    TEMP_FAILURE_RETRY(close(proc_file_descr));
 #endif
 }
 
