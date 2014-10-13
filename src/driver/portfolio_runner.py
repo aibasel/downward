@@ -27,8 +27,6 @@ import subprocess
 import sys
 import traceback
 
-from .plan_manager import PlanManager
-
 
 DEFAULT_TIMEOUT = 1800
 
@@ -288,7 +286,7 @@ def get_portfolio_attributes(portfolio):
     return attributes
 
 
-def run(portfolio, executable, sas_file, plan_prefix):
+def run(portfolio, executable, sas_file, plan_manager):
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
@@ -331,8 +329,6 @@ def run(portfolio, executable, sas_file, plan_prefix):
 
     remaining_time_at_start = float(timeout) - get_elapsed_time()
     print("remaining time at start: %.2f" % remaining_time_at_start)
-
-    plan_manager = PlanManager(plan_prefix)
 
     if optimal:
         exitcodes = run_opt(configs, executable, sas_file, plan_manager,

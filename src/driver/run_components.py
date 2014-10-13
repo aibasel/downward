@@ -68,7 +68,7 @@ def run_search(args):
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
         portfolio_runner.run(
-            args.portfolio, executable, args.search_input, args.plan_file)
+            args.portfolio, executable, args.search_input, plan_manager)
     else:
         if not args.search_options:
             raise ValueError(
