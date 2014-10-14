@@ -85,8 +85,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             reduced_labels = true;
-            assert(transition_system->is_normalized());
-            assert(other_transition_system->is_normalized());
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
         }
@@ -111,8 +109,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (!reduced_labels) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
         }
-        assert(transition_system->is_normalized());
-        assert(other_transition_system->is_normalized());
         if (!reduced_labels) {
             // only print statistics if we just possibly reduced labels
             other_transition_system->statistics(use_expensive_statistics);

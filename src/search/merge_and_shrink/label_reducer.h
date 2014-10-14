@@ -44,7 +44,7 @@ class LabelReducer {
     void apply_lr_and_del_equiv_rel(
         const std::vector<TransitionSystem *> &all_transition_systems,
         int ts_index,
-        const std::vector<std::vector<int> > &label_mapping,
+        const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
         std::vector<EquivalenceRelation *> &cached_equivalence_relations) const;
 
     // exact label reduction
@@ -56,7 +56,7 @@ class LabelReducer {
     // returns true iff at least one new label has been created
     bool reduce_exactly(const EquivalenceRelation *relation,
                         std::vector<Label *> &labels,
-                        std::vector<std::vector<int> > &label_mapping) const;
+                        std::vector<std::pair<int, std::vector<int> > > &label_mapping) const;
 public:
     explicit LabelReducer(const Options &options);
     ~LabelReducer() {}

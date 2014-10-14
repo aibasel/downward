@@ -36,11 +36,12 @@ LabelReducer::LabelReducer(const Options &options)
 void LabelReducer::apply_lr_and_del_equiv_rel(
     const vector<TransitionSystem *> &all_transition_systems,
     int ts_index,
-    const vector<vector<int> > &label_mapping,
+    const vector<pair<int, vector<int> > > &label_mapping,
     vector<EquivalenceRelation *> &cached_equivalence_relations) const {
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         if (all_transition_systems[i]) {
-            all_transition_systems[i]->apply_label_reduction(label_mapping, static_cast<int>(i) != ts_index);
+            all_transition_systems[i]->apply_label_reduction(label_mapping,
+                                                             static_cast<int>(i) != ts_index);
             if (cached_equivalence_relations[i]) {
                 delete cached_equivalence_relations[i];
                 cached_equivalence_relations[i] = 0;
@@ -75,7 +76,7 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         EquivalenceRelation *relation = compute_outside_equivalence(
             next_merge.first, all_transition_systems,
             labels, local_equivalence_relations);
-        vector<vector<int> > label_mapping;
+        vector<pair<int, vector<int> > > label_mapping;
         bool have_reduced = reduce_exactly(relation, labels, label_mapping);
         if (have_reduced) {
             apply_lr_and_del_equiv_rel(all_transition_systems,
@@ -130,7 +131,7 @@ void LabelReducer::reduce_labels(pair<int, int> next_merge,
         TransitionSystem *current_transition_system = all_transition_systems[ts_index];
 
         bool have_reduced = false;
-        vector<vector<int> > label_mapping;
+        vector<pair<int, vector<int> > > label_mapping;
         if (current_transition_system != 0) {
             EquivalenceRelation *relation = compute_outside_equivalence(
                 ts_index, all_transition_systems,
@@ -180,7 +181,6 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
     TransitionSystem *transition_system = all_transition_systems[ts_index];
     assert(transition_system);
     //cout << transition_system->tag() << "compute combinable labels" << endl;
-    assert(transition_system->is_normalized());
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
@@ -201,13 +201,8 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
         if (!ts || ts == transition_system) {
             continue;
         }
-        assert(ts->is_normalized());
-        //cout << transition_system->tag();
         if (!local_equivalence_relations[i]) {
-            //cout << "compute local equivalence relation" << endl;
             local_equivalence_relations[i] = ts->compute_local_equivalence_relation();
-        } else {
-            //cout << "use cached local equivalence relation" << endl;
         }
         relation->refine(*local_equivalence_relations[i]);
     }
@@ -216,7 +211,7 @@ EquivalenceRelation *LabelReducer::compute_outside_equivalence(
 
 bool LabelReducer::reduce_exactly(const EquivalenceRelation *relation,
                                   vector<Label *> &labels,
-                                  vector<vector<int> > &label_mapping) const {
+                                  vector<pair<int, vector<int> > > &label_mapping) const {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
@@ -236,7 +231,7 @@ bool LabelReducer::reduce_exactly(const EquivalenceRelation *relation,
         if (equivalent_labels.size() > 1) {
             Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
             labels.push_back(new_label);
-            label_mapping.push_back(equivalent_label_nos);
+            label_mapping.push_back(make_pair(new_label->get_id(), equivalent_label_nos));
         }
         if (!equivalent_labels.empty()) {
             ++num_labels_after_reduction;
