@@ -27,19 +27,19 @@ overridden again. (See below for examples.)"""
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
-     ["./plan.py", "../benchmarks/gripper/prob01.pddl",
+     ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
       "--search", '"astar(lmcut())"']),
     ("Translate and preprocess, run no search:",
-     ["./plan.py", "--translate", "--preprocess",
+     ["./fast-downward.py", "--translate", "--preprocess",
       "../benchmarks/gripper/prob01.pddl"]),
     ("Run predefined configuration (LAMA-2011) on preprocessed task:",
-     ["./plan.py", "--alias", "seq-sat-lama-2011", "output"]),
+     ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output"]),
     ("Run a portfolio on a preprocessed task:",
-     ["./plan.py", "--portfolio", "my-portfolio.py", "output"]),
+     ["./fast-downward.py", "--portfolio", "my-portfolio.py", "output"]),
     ("Run the search component in debug mode (with assertions enabled):",
-     ["./plan.py", "--debug", "output", "--search", '"astar(ipdb())"']),
+     ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
-     ["./plan.py", "../benchmarks/gripper/prob01.pddl",
+     ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
       "--translate-options", "--relaxed",
       "--search-options", "--search", '"astar(lmcut())"']),
 ]
@@ -270,7 +270,7 @@ def parse_args():
     # argument that doesn't belong to the driver doesn't look like an
     # option, i.e., doesn't start with "-". This is usually satisfied
     # because the argument is a filename; in exceptional cases, "--"
-    # can be used as an explicit separator. For example, "./plan.py --
+    # can be used as an explicit separator. For example, "./fast-downward.py --
     # --help" passes "--help" to the search code.
 
     args = parser.parse_args()
