@@ -194,13 +194,13 @@ SearchEngine *OptionParser::parse_cmd_line(
 }
 
 
-int OptionParser::parse_int_arg(const string &value, const string &arg_name) {
+int OptionParser::parse_int_arg(const string &name, const string &value) {
     try {
         return stoi(value);
     } catch (invalid_argument &) {
-        throw ArgError("argument for " + arg_name + " must be an integer");
+        throw ArgError("argument for " + name + " must be an integer");
     } catch (out_of_range &) {
-        throw ArgError("argument for " + arg_name + " is out of range");
+        throw ArgError("argument for " + name + " is out of range");
     }
 }
 
@@ -232,7 +232,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --random-seed");
             ++i;
-            int seed = parse_int_arg(args[i], arg);
+            int seed = parse_int_arg(arg, args[i]);
             srand(seed);
             g_rng.seed(seed);
             cout << "random seed: " << seed << endl;
@@ -274,7 +274,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --internal-plan-counter");
             ++i;
-            g_plan_counter = parse_int_arg(args[i], "--internal-plan-counter");
+            g_plan_counter = parse_int_arg(arg, args[i]);
             if (g_plan_counter <= 0)
                 throw ArgError("argument for --internal-plan-counter must be positive");
         } else {
