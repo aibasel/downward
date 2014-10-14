@@ -194,7 +194,7 @@ SearchEngine *OptionParser::parse_cmd_line(
 }
 
 
-int OptionParser::parse_int(const string &value, const string &arg_name) {
+int OptionParser::parse_int_arg(const string &value, const string &arg_name) {
     try {
         return stoi(value);
     } catch (invalid_argument &) {
@@ -232,9 +232,10 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --random-seed");
             ++i;
-            srand(atoi(args[i].c_str()));
-            g_rng.seed(atoi(args[i].c_str()));
-            cout << "random seed " << args[i] << endl;
+            int seed = parse_int_arg(args[i], arg);
+            srand(seed);
+            g_rng.seed(seed);
+            cout << "random seed: " << seed << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
@@ -273,7 +274,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --internal-plan-counter");
             ++i;
-            g_plan_counter = parse_int(args[i], "--internal-plan-counter");
+            g_plan_counter = parse_int_arg(args[i], "--internal-plan-counter");
             if (g_plan_counter <= 0)
                 throw ArgError("argument for --internal-plan-counter must be positive");
         } else {
