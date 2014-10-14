@@ -194,6 +194,17 @@ SearchEngine *OptionParser::parse_cmd_line(
 }
 
 
+int OptionParser::parse_int(const string &value, const string &arg_name) {
+    try {
+        return stoi(value);
+    } catch (invalid_argument &) {
+        throw ArgError("argument for " + arg_name + " must be an integer");
+    } catch (out_of_range &) {
+        throw ArgError("argument for " + arg_name + " is out of range");
+    }
+}
+
+
 SearchEngine *OptionParser::parse_cmd_line_aux(
     const vector<string> &args, bool dry_run) {
     SearchEngine *engine(0);
@@ -262,13 +273,7 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --internal-plan-counter");
             ++i;
-            try {
-                g_plan_counter = stoi(args[i]);
-            } catch (invalid_argument &) {
-                throw ArgError("argument for --internal-plan-counter must be an integer");
-            } catch (out_of_range &) {
-                throw ArgError("argument for --internal-plan-counter is too large");
-            }
+            g_plan_counter = parse_int(args[i], "--internal-plan-counter");
             if (g_plan_counter <= 0)
                 throw ArgError("argument for --internal-plan-counter must be positive");
         } else {
