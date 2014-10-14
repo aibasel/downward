@@ -157,7 +157,7 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
     run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
     if run_timeout <= 0:
         return None
-    args = list(configs[pos][1])
+    _, args = configs[pos]
     adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager)
     args.extend([
         "--internal-plan-counter", str(plan_manager.get_plan_counter() + 1)])
