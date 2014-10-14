@@ -197,6 +197,7 @@ SearchEngine *OptionParser::parse_cmd_line(
 SearchEngine *OptionParser::parse_cmd_line_aux(
     const vector<string> &args, bool dry_run) {
     SearchEngine *engine(0);
+    // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = args[i];
         bool is_last = (i == args.size() - 1);
@@ -268,8 +269,8 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             } catch (out_of_range &) {
                 throw ArgError("argument for --internal-plan-counter is too large");
             }
-            if (g_plan_counter < 0)
-                throw ArgError("argument for --internal-plan-counter must be non-negative");
+            if (g_plan_counter <= 0)
+                throw ArgError("argument for --internal-plan-counter must be positive");
         } else {
             throw ArgError("unknown option " + arg);
         }
