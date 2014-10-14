@@ -64,7 +64,7 @@ void save_plan(const vector<const GlobalOperator *> &plan) {
     filename << g_plan_filename;
     if (g_plan_counter != 0)
         filename << "." << g_plan_counter;
-    ofstream outfile(filename.str().c_str(), ios::out);
+    ofstream outfile(filename.str());
     for (size_t i = 0; i < plan.size(); ++i) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
