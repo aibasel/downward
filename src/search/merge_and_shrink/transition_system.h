@@ -53,20 +53,24 @@ class TransitionSystem {
     static const int PRUNED_STATE = -1;
     static const int DISTANCE_UNKNOWN = -2;
 
-    // There should only be one instance of Labels at runtime. It is created
-    // and managed by MergeAndShrinkHeuristic. All transition system instances have
-    // a copy of this object to ease access to the set of labels.
+    /*
+      There should only be one instance of Labels at runtime. It is created
+      and managed by MergeAndShrinkHeuristic. All transition system instances
+      have a pointer to this object to ease access to the set of labels.
+    */
     const Labels *labels;
-    /* num_labels equals to the number of labels that this transition system is
-       "aware of", i.e. that have
-       been incorporated into transitions_by_label. Whenever new labels are
-       generated through label reduction, we do *not* update all transition systems
-       immediately. This equals labels->size() after normalizing. */
+    /*
+      num_labels is always equal to labels->size(), with the exception during
+      label reduction. Whenever new labels are generated through label
+      reduction, this is updated immediately afterwards.
+    */
     int num_labels;
-    /* transitions_by_label and relevant_labels both have size of (2 * n) - 1
-       if n is the number of operators, because when applying label reduction,
-       at most n - 1 fresh labels can be generated in addition to the n
-       original labels. */
+    /*
+      transitions_by_label and relevant_labels both have size of (2 * n) - 1
+      if n is the number of operators, because when applying label reduction,
+      at most n - 1 fresh labels can be generated in addition to the n
+      original labels.
+    */
     std::vector<std::vector<Transition> > transitions_by_label;
     std::vector<bool> relevant_labels;
 
@@ -86,6 +90,16 @@ class TransitionSystem {
 
     mutable int peak_memory;
 
+    /*
+      A transition system is in valid state if:
+       - Transitions are sorted (by labels, by states) and there are no
+         duplicates (are_transitions_sorted_unique() == true)
+       - All labels are incorporated (is_label_reduced() == true))
+       - Distances are computed and stored (are_distances_computed() == true)
+    */
+    bool is_valid() const;
+
+    // Methods related to computation of distances
     void clear_distances();
     void compute_init_distances_unit_cost();
     void compute_goal_distances_unit_cost();
@@ -95,27 +109,15 @@ class TransitionSystem {
     bool are_distances_computed() const;
     void compute_distances_and_prune();
 
-    // are_transitions_sorted_unique() is used to determine whether the
-    // transitions of an transition system are sorted uniquely or not after
-    // construction (composite transition system) and shrinking (apply_abstraction).
+    // Methods related to the representation of transitions
     bool are_transitions_sorted_unique() const;
     void normalize_transitions();
-    void apply_locally_equivalent_label_mapping(
-        const std::vector<int> &old_label_nos);
-    void apply_general_label_mapping(
-        const std::vector<int> &old_label_nos);
-
+    bool is_label_reduced() const;
+    void apply_general_label_mapping(int new_label_no,
+                                     const std::vector<int> &old_label_nos);
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
-
-    /*
-      Print "atomic transition system #x" for atomic transition systems,
-      where x is the variable. For composite transition systems, print
-      "transition system (xyz)" for the transition system containing variables
-      x, y and z.
-    */
     virtual std::string description() const = 0;
-
 protected:
     std::vector<int> varset;
 
@@ -130,29 +132,21 @@ public:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels);
     void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
-    void apply_label_reduction(const std::vector<std::vector<int> > &label_mapping,
+    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
+    void release_memory();
 
-    // Method to identify the transition system in output. It upper-cases the
-    // first letter of description() and appends ": ".
+    EquivalenceRelation *compute_local_equivalence_relation() const;
+    /*
+      Method to identify the transition system in output.
+      Print "Atomic transition system #x: " for atomic transition systems,
+      where x is the variable. For composite transition systems, print
+      "Transition system (xyz): " for the transition system containing variables
+      x, y and z.
+    */
     std::string tag() const;
-
     // get_label_cost_by_index is public exclusively for ShrinkBisimulation
     int get_label_cost_by_index(int label_no) const;
-    /*
-      A transition system is normalized if:
-       - Transitions are sorted (by labels, by states) and there are no
-         duplicates.
-       - All labels are incorporated
-       - Distances are computed and stored
-      TODO: combine is_normalized with are_distances_computed()
-      NOTE: normalize() does *not* compute distances, as to avoid recomputing
-      distances after every label reduction. We compute distances after
-      creating transition systems and after applying abstractions.
-    */
-    bool is_normalized() const;
-    EquivalenceRelation *compute_local_equivalence_relation() const;
-
     bool is_solvable() const;
     int get_cost(const GlobalState &state) const;
     void statistics(bool include_expensive_statistics) const;
@@ -161,11 +155,8 @@ public:
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
     int get_peak_memory_estimate() const;
-    void release_memory();
-    void dump_fields() const;
-    void dump_relevant_labels() const;
-    void dump() const;
-
+    void dump_attributes() const;
+    void dump_dot_graph() const;
     int get_size() const {
         return num_states;
     }
@@ -192,7 +183,9 @@ public:
     const std::vector<Transition> &get_transitions_for_label(int label_no) const {
         return transitions_by_label[label_no];
     }
-    int get_num_labels() const;
+    int get_num_labels() const {
+        return num_labels;
+    }
 
     // Methods only used by MergeDFP.
     void compute_label_ranks(std::vector<int> &label_ranks) const;
