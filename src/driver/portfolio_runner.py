@@ -95,8 +95,7 @@ def adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager):
 
 def run_search(executable, args, sas_file, plan_manager, timeout=None, memory=None):
     complete_args = [executable] + args + [
-        "--internal-plan-file", plan_manager.get_plan_prefix(),
-        "--internal-plan-counter", str(plan_manager.get_plan_counter() + 1)]
+        "--internal-plan-file", plan_manager.get_plan_prefix()]
     print("args: %s" % complete_args)
     sys.stdout.flush()
 
@@ -160,6 +159,8 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
         return None
     args = list(configs[pos][1])
     adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager)
+    args.extend([
+        "--internal-plan-counter", str(plan_manager.get_plan_counter() + 1)])
     result = run_search(executable, args, sas_file, plan_manager, run_timeout, memory)
     plan_manager.process_new_plans()
     return result
