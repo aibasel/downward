@@ -100,6 +100,10 @@ class TransitionSystem {
     // construction (composite transition system) and shrinking (apply_abstraction).
     bool are_transitions_sorted_unique() const;
     void normalize_transitions();
+    void apply_locally_equivalent_label_mapping(
+        const std::vector<int> &old_label_nos);
+    void apply_general_label_mapping(
+        const std::vector<int> &old_label_nos);
 
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
