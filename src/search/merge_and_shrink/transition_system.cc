@@ -724,6 +724,8 @@ void TransitionSystem::apply_label_reduction(const vector<vector<int> > &label_m
                 vector<Transition> &old_transitions = transitions_by_label[old_label_no];
                 assert(old_transitions == new_transitions);
                 assert(relevant_labels[old_label_no] == label_relevant);
+                assert(get_label_cost_by_index(old_label_nos[j - 1])
+                       == get_label_cost_by_index(old_label_no));
                 // mark reduced label as irrelevant (unused labels should not be
                 // marked as relevant in order to avoid confusions when
                 // considering all relevant labels).
@@ -814,6 +816,9 @@ void TransitionSystem::apply_label_reduction(const vector<vector<int> > &label_m
         assert(num_labels == labels->get_size());
         assert(are_transitions_sorted_unique());
     }
+    // NOTE: as we currently only combine labels of the same cost, we do not
+    // need to recompute distances after label reduction.
+    assert(are_distances_computed());
 }
 
 bool TransitionSystem::is_solvable() const {
