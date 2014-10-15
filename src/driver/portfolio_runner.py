@@ -66,7 +66,7 @@ def set_limit(kind, soft, hard):
               (kind, (soft, hard), err, resource.getrlimit(kind)), file=sys.stderr)
 
 
-def adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager):
+def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
     g_bound = plan_manager.get_best_plan_cost()
     plan_counter = plan_manager.get_plan_counter()
     print("g bound: %s" % g_bound)
@@ -157,8 +157,9 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
     run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
     if run_timeout <= 0:
         return None
-    _, args = configs[pos]
-    adapt_search(args, search_cost_type, heuristic_cost_type, plan_manager)
+    _, args_template = configs[pos]
+    args = list(args_template)
+    adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager)
     args.extend([
         "--internal-plan-counter", str(plan_manager.get_plan_counter() + 1)])
     result = run_search(executable, args, sas_file, plan_manager, run_timeout, memory)
@@ -178,7 +179,6 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
     while configs:
         configs_next_round = []
         for pos, (relative_time, args) in enumerate(configs):
-            args = list(args)
             exitcode = run_sat_config(
                 configs, pos, search_cost_type, heuristic_cost_type,
                 executable, sas_file, plan_manager, remaining_time_at_start,
@@ -191,7 +191,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 return exitcodes
 
             if exitcode == EXIT_PLAN_FOUND:
-                configs_next_round.append(configs[pos][:])
+                configs_next_round.append(args)
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
                     print("Switch to real costs and repeat last run.")
@@ -210,7 +210,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                         return exitcodes
                 if final_config_builder:
                     print("Build final config.")
-                    final_config = final_config_builder(args[:])
+                    final_config = final_config_builder(args)
                     break
 
         if final_config:
@@ -222,7 +222,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
     if final_config:
         print("Abort portfolio and run final config.")
         exitcode = run_sat_config(
-            [(1, list(final_config))], 0, search_cost_type,
+            [(1, final_config)], 0, search_cost_type,
             heuristic_cost_type, executable, sas_file, plan_manager,
             remaining_time_at_start, memory)
         if exitcode is not None:
