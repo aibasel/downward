@@ -19,7 +19,7 @@ struct FluentSetComparer {
         if (fs1.size() != fs2.size()) {
             return fs1.size() < fs2.size();
         }
-        for (int i = 0; i < fs1.size(); i++) {
+        for (size_t i = 0; i < fs1.size(); ++i) {
             if (fs1[i].first != fs2[i].first) {
                 return fs1[i].first < fs2[i].first;
             }
@@ -138,7 +138,7 @@ private:
     void get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset);
 
     void get_m_sets(int m, std::vector<FluentSet> &subsets,
-                    const State &s);
+                    const GlobalState &s);
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);

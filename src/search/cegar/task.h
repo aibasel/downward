@@ -2,8 +2,9 @@
 #define CEGAR_TASK_H
 
 #include "utils.h"
-#include "../operator.h"
-#include "../state.h"
+
+#include "../global_operator.h"
+#include "../global_state.h"
 
 #include <set>
 #include <string>
@@ -19,7 +20,7 @@ private:
     std::vector<int> variable_domain;
     std::vector<std::tr1::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
-    std::vector<Operator> operators;
+    std::vector<GlobalOperator> operators;
     std::vector<int> original_operator_numbers;
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
@@ -37,11 +38,11 @@ private:
 
 public:
     Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
-         std::vector<Operator> ops, std::vector<int> initial_state_data_,
+         std::vector<GlobalOperator> ops, std::vector<int> initial_state_data_,
          std::vector<Fact> goal_facts);
 
     const std::vector<Fact> &get_goal() const {return goal; }
-    const std::vector<Operator> &get_operators() const {return operators; }
+    const std::vector<GlobalOperator> &get_operators() const {return operators; }
 
     void set_goal(const Fact &fact);
     void compute_possibly_before_facts(const Fact &last_fact, FactSet *reached);
@@ -51,7 +52,7 @@ public:
     void keep_single_effect(const Fact &last_fact);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
-    bool translate_state(const State &state, int *translated) const;
+    bool translate_state(const GlobalState &state, int *translated) const;
 
     void combine_facts(int var, std::tr1::unordered_set<int> &values);
 

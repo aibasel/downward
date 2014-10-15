@@ -1,7 +1,7 @@
 #include "operator_cost.h"
 
+#include "global_operator.h"
 #include "globals.h"
-#include "operator.h"
 #include "option_parser.h"
 #include "utilities.h"
 
@@ -9,7 +9,7 @@
 #include <vector>
 using namespace std;
 
-int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
+int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type) {
     if (op.is_axiom())
         return 0;
     switch (cost_type) {
@@ -18,7 +18,7 @@ int get_adjusted_action_cost(const Operator &op, OperatorCost cost_type) {
     case ONE:
         return 1;
     case PLUSONE:
-        if (g_min_action_cost == 1 && g_max_action_cost == 1)
+        if (is_unit_cost())
             return 1;
         else
             return op.get_cost() + 1;

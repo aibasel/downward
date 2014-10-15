@@ -11,7 +11,7 @@ using namespace std;
   Bucket-based implementation of an open list.
   Nodes with identical heuristic value are expanded in FIFO order.
 
-  It would be easy to templatize the "State *" and "Operator *"
+  It would be easy to templatize the "GlobalState *" and "GlobalOperator *"
   datatypes, because these are only used as anonymous data. However,
   there is little point in applying such generalizations before there
   is any need for them.
@@ -55,12 +55,13 @@ int BucketOpenList<Entry>::insert(const Entry &entry) {
     }
     int key = last_evaluated_value;
     assert(key >= 0);
-    if (key >= buckets.size())
+    int num_buckets = buckets.size();
+    if (key >= num_buckets)
         buckets.resize(key + 1);
     if (key < lowest_bucket)
         lowest_bucket = key;
     buckets[key].push_back(entry);
-    size++;
+    ++size;
     return 1;
 }
 
@@ -68,8 +69,8 @@ template<class Entry>
 Entry BucketOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
     while (buckets[lowest_bucket].empty())
-        lowest_bucket++;
-    size--;
+        ++lowest_bucket;
+    --size;
     if (key) {
         assert(key->empty());
         key->push_back(lowest_bucket);

@@ -1,14 +1,15 @@
 #include "globals.h"
-#include "operator.h"
+
 #include "option_parser.h"
-#include "ext/tree_util.hh"
+#include "search_engine.h"
 #include "timer.h"
 #include "utilities.h"
-#include "search_engine.h"
 
+#include "ext/tree_util.hh"
 
 #include <iostream>
 #include <new>
+
 using namespace std;
 
 int main(int argc, const char **argv) {
@@ -24,14 +25,18 @@ int main(int argc, const char **argv) {
 
     SearchEngine *engine = 0;
 
-    //the input will be parsed twice:
-    //once in dry-run mode, to check for simple input errors,
-    //then in normal mode
+    // The command line is parsed twice: once in dry-run mode, to
+    // check for simple input errors, and then in normal mode.
+    bool unit_cost = is_unit_cost();
     try {
-        OptionParser::parse_cmd_line(argc, argv, true);
-        engine = OptionParser::parse_cmd_line(argc, argv, false);
-    } catch (ParseError &pe) {
-        cerr << pe << endl;
+        OptionParser::parse_cmd_line(argc, argv, true, unit_cost);
+        engine = OptionParser::parse_cmd_line(argc, argv, false, unit_cost);
+    } catch (ArgError &error) {
+        cerr << error << endl;
+        OptionParser::usage(argv[0]);
+        exit_with(EXIT_INPUT_ERROR);
+    } catch (ParseError &error) {
+        cerr << error << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
 

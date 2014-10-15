@@ -3,8 +3,8 @@
 #include "pdb_heuristic.h"
 #include "zero_one_pdbs_heuristic.h"
 
+#include "../causal_graph.h"
 #include "../globals.h"
-#include "../legacy_causal_graph.h"
 #include "../plugin.h"
 #include "../rng.h"
 #include "../timer.h"
@@ -47,7 +47,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
 
     vector<vector<vector<bool> > > new_pattern_collections;
     new_pattern_collections.reserve(num_collections);
-    for (size_t i = 0; i < num_collections; ++i) {
+    for (int i = 0; i < num_collections; ++i) {
         int selected;
         if (total_so_far == 0) {
             // All fitness values are 0 => choose uniformly.
@@ -104,7 +104,10 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     while (!vars_to_check.empty()) {
         int var = vars_to_check.back();
         vars_to_check.pop_back();
-        const vector<int> &rel = g_legacy_causal_graph->get_predecessors(var);
+        // A variable is relevant to the pattern if it is a goal variable or if
+        // there is a pre->eff arc from the variable to a relevant variable.
+        // Note that there is no point in considering eff->eff arcs here.
+        const vector<int> &rel = g_causal_graph->get_eff_to_pre(var);
         for (size_t i = 0; i < rel.size(); ++i) {
             int var_no = rel[i];
             if (in_original_pattern.count(var_no) &&
@@ -117,6 +120,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     }
 
     pattern.assign(in_pruned_pattern.begin(), in_pruned_pattern.end());
+    sort(pattern.begin(), pattern.end());
 }
 
 bool PatternGenerationEdelkamp::is_pattern_too_large(
@@ -125,8 +129,7 @@ bool PatternGenerationEdelkamp::is_pattern_too_large(
     int mem = 1;
     for (size_t i = 0; i < pattern.size(); ++i) {
         int domain_size = g_variable_domain[pattern[i]];
-        // test against overflow and pdb_max_size
-        if (mem > pdb_max_size / domain_size)
+        if (!is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
         mem *= domain_size;
     }
@@ -207,20 +210,19 @@ void PatternGenerationEdelkamp::bin_packing() {
         variables.push_back(i);
     }
 
-    for (size_t i = 0; i < num_collections; ++i) {
+    for (int i = 0; i < num_collections; ++i) {
         // random variable ordering for all pattern collections
         random_shuffle(variables.begin(), variables.end(), g_rng);
         vector<vector<bool> > pattern_collection;
         vector<bool> pattern(g_variable_name.size(), false);
-        size_t current_size = 1;
+        int current_size = 1;
         for (size_t j = 0; j < variables.size(); ++j) {
             int var = variables[j];
             int next_var_size = g_variable_domain[var];
             if (next_var_size > pdb_max_size) // var never fits into a bin
                 continue;
-            // test against overflow and pdb_max_size
-            if (current_size > pdb_max_size / next_var_size) { // open a new bin for var
-                // current_size * next_var_size > pdb_max_size
+            if (!is_product_within_limit(current_size, next_var_size, pdb_max_size)) {
+                // Open a new bin for var.
                 pattern_collection.push_back(pattern);
                 pattern.clear();
                 pattern.resize(g_variable_name.size(), false);
@@ -273,7 +275,8 @@ void PatternGenerationEdelkamp::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Genetic Algorithm PDB",
+    parser.document_synopsis(
+        "Genetic Algorithm PDB",
         "The following paper describes the automated creation of pattern databases "
         "with a genetic algorithm. Pattern collections are initially created with a "
         "bin-packing algorithm. The genetic algorithm is used to optimize the pattern "
@@ -286,40 +289,42 @@ static Heuristic *_parse(OptionParser &parser) {
         "In //Proceedings of the 4th Workshop on Model Checking and Artificial Intelligence "
         "(!MoChArt 2006)//, pp. 35-50, 2007.");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
-    parser.document_note("Note",
-                         "This pattern generation method uses the zero/one pattern database heuristic.");
-    parser.document_note("Implementation Notes",
-                         "The standard genetic algorithm procedure as described in the paper is "
-                         "implemented in Fast Downward. The implementation is close to the paper.\n\n"
-                         "+ Initialization<<BR>>"
-                         "In Fast Downward bin-packing with the next-fit strategy is used. A bin "
-                         "corresponds to a pattern which contains variables up to ``pdb_max_size``. "
-                         "With this method each variable occurs exactly in one pattern of a collection. "
-                         "There are ``num_collections`` collections created.\n"
-                         "+ Mutation<<BR>>"
-                         "With probability ``mutation_probability`` a bit is flipped meaning that "
-                         "either a variable is added to a pattern or deleted from a pattern.\n"
-                         "+ Recombination<<BR>>"
-                         "Recombination isn't implemented in Fast Downward. In the paper recombination "
-                         "is described but not used.\n"
-                         "+ Evaluation<<BR>>"
-                         "For each pattern collection the mean heuristic value is computed. For a "
-                         "single pattern database the mean heuristic value is the sum of all pattern "
-                         "database entries divided through the number of entries. Entries with infinite "
-                         "heuristic values are ignored in this calculation. The sum of these individual "
-                         "mean heuristic values yield the mean heuristic value of the collection.\n"
-                         "+ Selection<<BR>>"
-                         "The higher the mean heuristic value of a pattern collection is, the more "
-                         "likely this pattern collection should be selected for the next generation. "
-                         "Therefore the mean heuristic values are normalized and converted into "
-                         "probabilities and Roulette Wheel Selection is used.\n"
-                         "+\n\n", true);
+    parser.document_note(
+        "Note",
+        "This pattern generation method uses the zero/one pattern database heuristic.");
+    parser.document_note(
+        "Implementation Notes",
+        "The standard genetic algorithm procedure as described in the paper is "
+        "implemented in Fast Downward. The implementation is close to the paper.\n\n"
+        "+ Initialization<<BR>>"
+        "In Fast Downward bin-packing with the next-fit strategy is used. A bin "
+        "corresponds to a pattern which contains variables up to ``pdb_max_size``. "
+        "With this method each variable occurs exactly in one pattern of a collection. "
+        "There are ``num_collections`` collections created.\n"
+        "+ Mutation<<BR>>"
+        "With probability ``mutation_probability`` a bit is flipped meaning that "
+        "either a variable is added to a pattern or deleted from a pattern.\n"
+        "+ Recombination<<BR>>"
+        "Recombination isn't implemented in Fast Downward. In the paper recombination "
+        "is described but not used.\n"
+        "+ Evaluation<<BR>>"
+        "For each pattern collection the mean heuristic value is computed. For a "
+        "single pattern database the mean heuristic value is the sum of all pattern "
+        "database entries divided through the number of entries. Entries with infinite "
+        "heuristic values are ignored in this calculation. The sum of these individual "
+        "mean heuristic values yield the mean heuristic value of the collection.\n"
+        "+ Selection<<BR>>"
+        "The higher the mean heuristic value of a pattern collection is, the more "
+        "likely this pattern collection should be selected for the next generation. "
+        "Therefore the mean heuristic values are normalized and converted into "
+        "probabilities and Roulette Wheel Selection is used.\n"
+        "+\n\n", true);
 
     parser.add_option<int>("pdb_max_size", "maximal number of states per pattern database ", "50000");
     parser.add_option<int>("num_collections", "number of pattern collections to maintain in the genetic algorithm (population size)", "5");

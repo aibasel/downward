@@ -3,8 +3,8 @@
 
 #include "../additive_heuristic.h"
 #include "../causal_graph.h"
-#include "../operator.h"
-#include "../state.h"
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../landmarks/landmark_graph.h"
 
 #include <boost/dynamic_bitset.hpp>
@@ -32,15 +32,15 @@ typedef std::pair<int, std::vector<int> > Split;
 typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
 
-bool is_not_marked(Operator &op);
+bool is_not_marked(GlobalOperator &op);
 
-int get_pre(const Operator &op, int var);
-int get_eff(const Operator &op, int var);
-int get_post(const Operator &op, int var);
+int get_pre(const GlobalOperator &op, int var);
+int get_eff(const GlobalOperator &op, int var);
+int get_post(const GlobalOperator &op, int var);
 
-void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits);
+void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state, Splits *splits);
 
-void get_unmet_goals(const std::vector<Fact> &goals, const State &state, Splits *splits);
+void get_unmet_goals(const std::vector<Fact> &goals, const GlobalState &state, Splits *splits);
 
 struct hash_state_id {
     size_t operator()(const StateID &id) const {

@@ -1,35 +1,62 @@
-## Set USE_LP to 1 to enable linear programming stuff.
-USE_LP=0
+## Variables prefixed with "DOWNWARD_" are used to configure the
+## build. They can be changed on the command line or set as
+## environment variables.
 
-## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
-## static linking of the executable in release mode.
+## By default, build in 32-bit mode. Use DOWNWARD_BITWIDTH=64
+## to build in 64-bit mode and DOWNWARD_BITWIDTH=native to use
+## the native bitness of the OS.
+DOWNWARD_BITWIDTH ?= 32
+
+## Set DOWNWARD_USE_LP to 1 to enable linear programming stuff.
+DOWNWARD_USE_LP ?= 0
+
+## Fast Downward uses the Open Solver Interface (OSI) by the
+## COIN-OR project for access to LP solvers. Set DOWNWARD_COIN_ROOT
+## to a path where OSI is installed.
+DOWNWARD_COIN_ROOT ?= /opt/coin
+
+## To use an LP solver through OSI, set the following variables
+## to paths for the solver's "include" and "lib" directories.
+DOWNWARD_CLP_INCDIR ?= $(DOWNWARD_COIN_ROOT)/include/coin
+DOWNWARD_CLP_LIBDIR ?= $(DOWNWARD_COIN_ROOT)/lib
+DOWNWARD_CPLEX_INCDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/include/ilcplex
+DOWNWARD_CPLEX_LIBDIR ?= /opt/ibm/ILOG/CPLEX_Studio1251/cplex/lib/x86_sles10_4.1/static_pic
+DOWNWARD_GUROBI_INCDIR ?=
+DOWNWARD_GUROBI_LIBDIR ?=
+
+
+## Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to
+## disable/enable static linking of the executable in release mode.
 ## On OS X, this is unsupported and will be silently disabled.
-LINK_RELEASE_STATICALLY=1
+DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 
 ## On a supported operating system, there should be no need to override
-## the OS setting. If the provided code does not work even though your
-## operating system is a supported one, please report this as a bug.
-OS=auto
+## the DOWNWARD_OS setting. If the provided code does not work even
+## though your operating system is a supported one, please report this
+## as a bug.
+DOWNWARD_OS ?= auto
 
 
 HEADERS = \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
+          countdown_timer.h \
           domain_transition_graph.h \
           eager_search.h \
           enforced_hill_climbing_search.h \
+          equivalence_relation.h \
           exact_timer.h \
           g_evaluator.h \
+          global_operator.h \
+          global_state.h \
           globals.h \
           heuristic.h \
           int_packer.h \
           ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
-          legacy_causal_graph.h \
           max_evaluator.h \
-          operator.h \
           operator_cost.h \
           option_parser.h \
           option_parser_util.h \
@@ -42,13 +69,13 @@ HEADERS = \
           search_node_info.h \
           search_progress.h \
           search_space.h \
-          state.h \
           state_id.h \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
           timer.h \
           utilities.h \
+          variable_order_finder.h \
           weighted_evaluator.h \
           \
           open_lists/alternation_open_list.h \
@@ -56,6 +83,8 @@ HEADERS = \
           open_lists/pareto_open_list.h \
           open_lists/standard_scalar_open_list.h \
           open_lists/tiebreaking_open_list.h \
+          \
+          lp_solver_interface.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
@@ -75,9 +104,7 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-HEADERS += merge_and_shrink/abstraction.h \
-           merge_and_shrink/equivalence_relation.h \
-           merge_and_shrink/label.h \
+HEADERS += merge_and_shrink/label.h \
            merge_and_shrink/labels.h \
            merge_and_shrink/label_reducer.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
@@ -89,7 +116,7 @@ HEADERS += merge_and_shrink/abstraction.h \
            merge_and_shrink/shrink_fh.h \
            merge_and_shrink/shrink_random.h \
            merge_and_shrink/shrink_strategy.h \
-           merge_and_shrink/variable_order_finder.h \
+           merge_and_shrink/transition_system.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
@@ -135,37 +162,39 @@ HEADERS += cegar/cegar_heuristic.h \
            cegar/task.h \
            cegar/utils.h \
 
-SHELL = /bin/bash
-
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
-TARGET  = downward
+TARGET = downward
+
+default: release
 
 ARGS_PROFILE = --search 'astar(lmcut())' < profile-input.pre
 
+SHELL = /bin/bash
 
-ifeq ($(OS), auto)
-UNAME := $(shell uname)
-UNAME_O := $(shell uname -o)
-ifeq ($(UNAME), Darwin)
-OS=osx
-endif
-ifeq ($(UNAME), Linux)
-OS=linux
-endif
-ifeq ($(UNAME_O), Cygwin)
-## For now, we treat Linux and Cygwin equally in this Makefile, so we
-## just call Cygwin "linux".
-OS=linux
-endif
-ifeq ($(OS), auto)
-$(warning OS detection failed -- setting to Linux and hoping for the best!)
-OS=linux
-endif
+ifeq ($(DOWNWARD_OS), auto)
+    UNAME := $(shell uname)
+
+    ifeq ($(UNAME), Darwin)
+        DOWNWARD_OS=osx
+    else ifeq ($(UNAME), Linux)
+        DOWNWARD_OS=linux
+    else
+        UNAME_O := $(shell uname -o)
+    endif
+
+    ifeq ($(UNAME_O), Cygwin)
+        DOWNWARD_OS=windows
+    else ifeq ($(UNAME_O), Msys)
+        DOWNWARD_OS=windows
+    else ifeq ($(DOWNWARD_OS), auto)
+        $(warning OS detection failed -- setting to Linux and hoping for the best!)
+        DOWNWARD_OS=linux
+    endif
 endif
 
-ifeq ($(OS), osx)
-## Disable static linking on OS X.
-LINK_RELEASE_STATICALLY=0
+ifeq ($(DOWNWARD_OS), osx)
+    ## Disable static linking on OS X.
+    DOWNWARD_LINK_RELEASE_STATICALLY=0
 endif
 
 
@@ -185,38 +214,54 @@ TARGET_DEBUG    = $(TARGET)$(TARGET_SUFFIX_DEBUG)
 OBJECTS_PROFILE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_PROFILE).o)
 TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
 
-CC     = g++
-DEPEND = g++ -MM
+DEPEND = $(CXX) -MM
 
-## CCOPT, LINKOPT, POSTLINKOPT are options for compiler and linker
+## CXXFLAGS, LDFLAGS, POSTLINKOPT are options for compiler and linker
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CCOPT = -Iext
-CCOPT += -g
-CCOPT += -m32
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+ifeq ($(DOWNWARD_BITWIDTH), 32)
+    BITWIDTHOPT = -m32
+else ifeq ($(DOWNWARD_BITWIDTH), 64)
+    BITWIDTHOPT = -m64
+else ifneq ($(DOWNWARD_BITWIDTH), native)
+    $(error Bad value for DOWNWARD_BITWIDTH)
+endif
+
+CXXFLAGS =
+CXXFLAGS += -g
+CXXFLAGS += $(BITWIDTHOPT)
+# Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
+CXXFLAGS += -std=c++0x -Wall -Wextra -pedantic -Wno-deprecated -Werror
+
+CXXFLAGS += -Iext
+ifeq ($(DOWNWARD_OS), osx)
+    ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
+    CXXFLAGS += -I/opt/local/include/
+endif
+
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
 ## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+ifeq ($(DOWNWARD_OS), linux) # workarounds only valid for Linux...
+    HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
+    HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
-HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
-HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
+    ifdef HAVE_GCC_4_4
+        CXXFLAGS += -I/usr/include/c++/4.4/i686-linux-gnu
+    endif
 
-ifdef HAVE_GCC_4_4
-    CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+    ifdef HAVE_GCC_4_5
+        CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
+    endif
 endif
 
-ifdef HAVE_GCC_4_5
-    CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
-endif
-
-LINKOPT  = -g
-LINKOPT += -m32
-LINKOPT +=
+LDFLAGS =
+LDFLAGS += $(BITWIDTHOPT)
+LDFLAGS += -g
 
 POSTLINKOPT =
 
@@ -228,49 +273,45 @@ POSTLINKOPT =
 ## NOTE: This precludes some uses of exceptions.
 ##        For details, see man gcc on -static-libgcc.
 
-CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3
-CCOPT_PROFILE  = -O3 -pg
+CXXFLAGS_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
+CXXFLAGS_DEBUG    = -O3
+CXXFLAGS_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE =
-LINKOPT_DEBUG    =
-LINKOPT_PROFILE  = -pg
+LDFLAGS_RELEASE  =
+LDFLAGS_DEBUG    =
+LDFLAGS_PROFILE  = -pg
 
 POSTLINKOPT_RELEASE =
 POSTLINKOPT_DEBUG   =
 POSTLINKOPT_PROFILE =
 
-ifeq ($(LINK_RELEASE_STATICALLY), 1)
-LINKOPT_RELEASE += -static -static-libgcc
+ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
+    LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-ifeq ($(OS), linux)
-ifeq ($(LINK_RELEASE_STATICALLY), 0)
-POSTLINKOPT_RELEASE += -lrt
-else
-POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+ifeq ($(DOWNWARD_OS), linux)
+    ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
+        POSTLINKOPT_RELEASE += -lrt
+    else
+        POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+    endif
+    POSTLINKOPT_DEBUG  += -lrt
+    POSTLINKOPT_PROFILE += -lrt
+else ifeq ($(DOWNWARD_OS), windows)
+    POSTLINKOPT_RELEASE += -lpsapi
+    POSTLINKOPT_DEBUG += -lpsapi
+    POSTLINKOPT_PROFILE += -lpsapi
 endif
-POSTLINKOPT_DEBUG  += -lrt
-POSTLINKOPT_PROFILE += -lrt
-# POSTLINKOPT_PROFILE += -lc_p
-endif
 
 
-## Define the default target up here so that the LP stuff below
-## doesn't define a default target.
+ifeq ($(DOWNWARD_USE_LP),1)
 
-default: release
+$(DOWNWARD_COIN_ROOT):
+	$(error COIN is no longer bundled with Fast Downward. Please install COIN outside of the repository and set up the environment variable DOWNWARD_COIN_ROOT to the new path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
 
-ifeq ($(USE_LP),1)
-
-COIN_ROOT = lp/coin
-
-$(COIN_ROOT):
-	cd lp && ./setup
-
-$(TARGET_RELEASE) $(OBJECTS_RELEASE): $(COIN_ROOT)
-$(TARGET_DEBUG) $(OBJECTS_DEBUG): $(COIN_ROOT)
-$(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
+$(TARGET_RELEASE) $(OBJECTS_RELEASE): $(DOWNWARD_COIN_ROOT)
+$(TARGET_DEBUG) $(OBJECTS_DEBUG): $(DOWNWARD_COIN_ROOT)
+$(TARGET_PROFILE) $(OBJECTS_PROFILE): $(DOWNWARD_COIN_ROOT)
 
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
@@ -283,7 +324,33 @@ $(TARGET_PROFILE) $(OBJECTS_PROFILE): $(COIN_ROOT)
 ## libraries. See
 ## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
 
-COIN_LIBS = OsiClp Clp CoinUtils Osi
+COIN_LIBS =
+COIN_CXXFLAGS =
+COIN_LDFLAGS =
+
+COIN_HAS_CPX := $(shell test -d $(DOWNWARD_CPLEX_INCDIR) && test -f $(DOWNWARD_CPLEX_LIBDIR)/libcplex.a && test -f $(DOWNWARD_COIN_ROOT)/lib/libOsiCpx.a && echo 1)
+ifeq ($(COIN_HAS_CPX),1)
+COIN_LIBS += OsiCpx cplex
+COIN_CXXFLAGS += -D COIN_HAS_CPX
+COIN_LDFLAGS += -L$(DOWNWARD_CPLEX_LIBDIR) -pthread
+endif
+
+COIN_HAS_GRB := $(shell test -d $(DOWNWARD_GUROBI_INCDIR) && test -f $(DOWNWARD_GUROBI_LIBDIR)/libgurobi.a && test -f $(DOWNWARD_COIN_ROOT)/lib/OsiGrb.a && echo 1)
+ifeq ($(COIN_HAS_GRB),1)
+COIN_LIBS += OsiGrb gurobi
+COIN_CXXFLAGS += -D COIN_HAS_GRB
+COIN_LDFLAGS += -L$(DOWNWARD_GUROBI_LIBDIR) -pthread
+endif
+
+COIN_HAS_CLP := $(shell test -d $(DOWNWARD_CLP_INCDIR) && test -f $(DOWNWARD_CLP_LIBDIR)/libClp.a && test -f $(DOWNWARD_COIN_ROOT)/lib/libOsiClp.a && echo 1)
+ifeq ($(COIN_HAS_CLP),1)
+COIN_LIBS += OsiClp Clp
+COIN_CXXFLAGS += -D COIN_HAS_CLP
+COIN_LDFLAGS += -L$(DOWNWARD_CLP_LIBDIR)
+endif
+
+## Basic Osi libs must be added after (!) all osi solver libs
+COIN_LIBS += Osi CoinUtils
 
 ## We want to always link the COIN libraries statically, even if static
 ## linking is otherwise disabled. We accomplish this by
@@ -291,21 +358,21 @@ COIN_LIBS = OsiClp Clp CoinUtils Osi
 ## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
 
-COIN_CCOPT = -I$(COIN_ROOT)/include/coin -D USE_LP -D COIN_USE_CLP
+COIN_CXXFLAGS += -I$(DOWNWARD_COIN_ROOT)/include/coin -D USE_LP
 ifeq ($(OS), osx)
-COIN_LINKOPT = -L$(COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
 else
-COIN_LINKOPT = -L$(COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
+COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
 endif
 
-CCOPT += $(COIN_CCOPT)
+CXXFLAGS += $(COIN_CXXFLAGS)
 
-POSTLINKOPT_RELEASE += $(COIN_LINKOPT)
-POSTLINKOPT_DEBUG += $(COIN_LINKOPT)
-POSTLINKOPT_PROFILE += $(COIN_LINKOPT)
+POSTLINKOPT_RELEASE += $(COIN_LDFLAGS)
+POSTLINKOPT_DEBUG += $(COIN_LDFLAGS)
+POSTLINKOPT_PROFILE += $(COIN_LDFLAGS)
 
-ifeq ($(OS), linux)
-ifeq ($(LINK_RELEASE_STATICALLY), 0)
+ifeq ($(DOWNWARD_OS), linux)
+ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
 POSTLINKOPT_RELEASE += -Wl,-Bdynamic
 endif
 POSTLINKOPT_DEBUG   += -Wl,-Bdynamic
@@ -321,33 +388,33 @@ all: release debug profile
 release: $(TARGET_RELEASE)
 
 $(TARGET_RELEASE): $(OBJECTS_RELEASE)
-	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
 
 $(OBJECTS_RELEASE): .obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_RELEASE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_RELEASE) -c $< -o $@
 
 ## Build rules for the debug target follow.
 
 debug: $(TARGET_DEBUG)
 
 $(TARGET_DEBUG): $(OBJECTS_DEBUG)
-	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
 
 $(OBJECTS_DEBUG): .obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_DEBUG) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DEBUG) -c $< -o $@
 
 ## Build rules for the profile target follow.
 
 profile: $(TARGET_PROFILE)
 
 $(TARGET_PROFILE): $(OBJECTS_PROFILE)
-	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
 
 $(OBJECTS_PROFILE): .obj/%$(OBJECT_SUFFIX_PROFILE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_PROFILE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_PROFILE) -c $< -o $@
 
 ## Additional targets follow.
 
@@ -371,7 +438,7 @@ distclean: clean
 Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 	for source in $(SOURCES) ; do \
-	    $(DEPEND) $$source > Makefile.temp0; \
+	    $(DEPEND) $(CXXFLAGS) $$source > Makefile.temp0; \
 	    objfile=$${source%%.cc}.o; \
 	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
 	    cat Makefile.temp0 >> Makefile.temp; \
@@ -383,9 +450,9 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 
 ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(MAKECMDGOALS),distclean)
--include Makefile.depend
-endif
+    ifneq ($(MAKECMDGOALS),distclean)
+        -include Makefile.depend
+    endif
 endif
 
 .PHONY: default all release debug profile clean distclean

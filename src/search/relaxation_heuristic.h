@@ -5,11 +5,11 @@
 
 #include <vector>
 
-class Operator;
-class State;
+class GlobalOperator;
+class GlobalState;
 
-class Proposition;
-class UnaryOperator;
+struct Proposition;
+struct UnaryOperator;
 
 struct UnaryOperator {
     int operator_no; // -1 for axioms; index into g_operators otherwise
@@ -45,7 +45,7 @@ struct Proposition {
 };
 
 class RelaxationHeuristic : public Heuristic {
-    void build_unary_operators(const Operator &op, int operator_no);
+    void build_unary_operators(const GlobalOperator &op, int operator_no);
     void simplify();
 protected:
     std::vector<UnaryOperator> unary_operators;
@@ -53,7 +53,7 @@ protected:
     std::vector<Proposition *> goal_propositions;
 
     virtual void initialize();
-    virtual int compute_heuristic(const State &state) = 0;
+    virtual int compute_heuristic(const GlobalState &state) = 0;
 public:
     RelaxationHeuristic(const Options &options);
     virtual ~RelaxationHeuristic();

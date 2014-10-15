@@ -10,7 +10,7 @@
 #include <tr1/unordered_set>
 #include <vector>
 
-class State;
+class GlobalState;
 
 namespace cegar_heuristic {
 class Abstraction;
@@ -64,7 +64,7 @@ class CegarHeuristic : public Heuristic {
 protected:
     virtual void print_statistics();
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 
 public:
     explicit CegarHeuristic(const Options &options);

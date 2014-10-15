@@ -19,7 +19,7 @@ Node::Node(AbstractState *state)
 void Node::split(int var, const vector<int> &values, AbstractState *left, AbstractState *right) {
     Node *helper = this;
     right_child = new Node(right);
-    for (int i = 0; i < values.size(); ++i) {
+    for (size_t i = 0; i < values.size(); ++i) {
         helper->var = var;
         helper->value = values[i];
         helper->right_child = right_child;
