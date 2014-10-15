@@ -38,11 +38,9 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, operator_costs);
         pattern_databases.push_back(pdb_heuristic);
 
-        // get used operators and set their cost for further iterations to 0 (action cost partitioning)
-        const vector<bool> &used_ops = pdb_heuristic->get_relevant_operators();
-        assert(used_ops.size() == operator_costs.size());
-        for (size_t j = 0; j < used_ops.size(); ++j) {
-            if (used_ops[j])
+        // Set cost of relevant operators to 0 for further iterations (action cost partitioning).
+        for (size_t j = 0; j < g_operators.size(); ++j) {
+            if (pdb_heuristic->is_operator_relevant(g_operators[j]))
                 operator_costs[j] = 0;
         }
 

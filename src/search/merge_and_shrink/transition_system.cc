@@ -1151,4 +1151,3 @@ int CompositeTransitionSystem::memory_estimate() const {
         result += sizeof(AbstractStateRef) * lookup_table[i].capacity();
     return result;
 }
-
