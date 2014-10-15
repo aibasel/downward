@@ -3,11 +3,11 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../utilities.h"
 
 #include <vector>
@@ -38,12 +38,10 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, operator_costs);
         pattern_databases.push_back(pdb_heuristic);
 
-        // get used operators and set their cost for further iterations to 0 (action cost partitioning)
-        const vector<bool> &used_ops = pdb_heuristic->get_relevant_operators();
-        assert(used_ops.size() == operator_costs.size());
-        for (size_t k = 0; k < used_ops.size(); ++k) {
-            if (used_ops[k])
-                operator_costs[k] = 0;
+        // Set cost of relevant operators to 0 for further iterations (action cost partitioning).
+        for (size_t j = 0; j < g_operators.size(); ++j) {
+            if (pdb_heuristic->is_operator_relevant(g_operators[j]))
+                operator_costs[j] = 0;
         }
 
         approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();
@@ -61,7 +59,7 @@ ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
 void ZeroOnePDBsHeuristic::initialize() {
 }
 
-int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) {
+int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &state) {
     // since we use action cost partitioning, we can simply add up all h-values
     // from the patterns in the pattern collection
     int h_val = 0;
@@ -81,7 +79,8 @@ void ZeroOnePDBsHeuristic::dump() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Zero-One PDB",
+    parser.document_synopsis(
+        "Zero-One PDB",
         "The zero/one pattern database heuristic is simply the sum of the "
         "heuristic values of all patterns in the pattern collection. In contrast "
         "to the canonical pattern database heuristic, there is no need to check "
@@ -92,7 +91,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "into account for one pattern (the first one which it affects) and set "
         "to zero for all other affected patterns.");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "not supported");
+    parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
     parser.document_property("consistent", "yes");

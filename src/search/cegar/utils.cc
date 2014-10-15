@@ -9,10 +9,9 @@
 
 #include <ext/hash_map>
 
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
-#include "../state.h"
 #include "../timer.h"
 #include "../utilities.h"
 #include "../landmarks/h_m_landmarks.h"
@@ -32,71 +31,58 @@ static char *cegar_memory_padding = 0;
 // Save previous out-of-memory handler.
 static void (*global_out_of_memory_handler)(void) = 0;
 
-bool is_not_marked(Operator &op) {
+bool is_not_marked(GlobalOperator &op) {
     return !op.is_marked();
 }
 
-int get_pre(const Operator &op, int var) {
-    for (int i = 0; i < op.get_prevail().size(); i++) {
-        const Prevail &prevail = op.get_prevail()[i];
-        if (prevail.var == var)
-            return prevail.prev;
-    }
-    for (int i = 0; i < op.get_pre_post().size(); i++) {
-        const PrePost &pre_post = op.get_pre_post()[i];
-        if (pre_post.var == var)
-            return pre_post.pre;
+int get_pre(const GlobalOperator &op, int var) {
+    for (size_t i = 0; i < op.get_preconditions().size(); i++) {
+        const GlobalCondition &precondition = op.get_preconditions()[i];
+        if (precondition.var == var)
+            return precondition.val;
     }
     return UNDEFINED;
 }
 
-int get_eff(const Operator &op, int var) {
-    for (int i = 0; i < op.get_pre_post().size(); ++i) {
-        const PrePost &pre_post = op.get_pre_post()[i];
-        if (pre_post.var == var)
-            return pre_post.post;
+int get_eff(const GlobalOperator &op, int var) {
+    for (size_t i = 0; i < op.get_effects().size(); ++i) {
+        const GlobalEffect &effect = op.get_effects()[i];
+        if (effect.var == var)
+            return effect.val;
     }
     return UNDEFINED;
 }
 
-int get_post(const Operator &op, int var) {
-    for (int i = 0; i < op.get_prevail().size(); ++i) {
-        const Prevail &prevail = op.get_prevail()[i];
-        if (prevail.var == var)
-            return prevail.prev;
+int get_post(const GlobalOperator &op, int var) {
+    for (size_t i = 0; i < op.get_effects().size(); ++i) {
+        const GlobalEffect &effect = op.get_effects()[i];
+        if (effect.var == var)
+            return effect.val;
     }
-    for (int i = 0; i < op.get_pre_post().size(); ++i) {
-        const PrePost &pre_post = op.get_pre_post()[i];
-        if (pre_post.var == var)
-            return pre_post.post;
+    for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
+        const GlobalCondition &precondition = op.get_preconditions()[i];
+        if (precondition.var == var)
+            return precondition.val;
     }
     return UNDEFINED;
 }
 
-void get_unmet_preconditions(const Operator &op, const State &state, Splits *splits) {
+void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state, Splits *splits) {
     assert(splits->empty());
-    for (int i = 0; i < op.get_prevail().size(); ++i) {
-        const Prevail &prevail = op.get_prevail()[i];
-        if (state[prevail.var] != prevail.prev) {
+    for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
+        const GlobalCondition &precondition = op.get_preconditions()[i];
+        if (state[precondition.var] != precondition.val) {
             vector<int> wanted;
-            wanted.push_back(prevail.prev);
-            splits->push_back(make_pair(prevail.var, wanted));
-        }
-    }
-    for (int i = 0; i < op.get_pre_post().size(); ++i) {
-        const PrePost &pre_post = op.get_pre_post()[i];
-        if ((pre_post.pre != -1) && (state[pre_post.var] != pre_post.pre)) {
-            vector<int> wanted;
-            wanted.push_back(pre_post.pre);
-            splits->push_back(make_pair(pre_post.var, wanted));
+            wanted.push_back(precondition.val);
+            splits->push_back(make_pair(precondition.var, wanted));
         }
     }
     assert(splits->empty() == op.is_applicable(state));
 }
 
-void get_unmet_goals(const vector<Fact> &goals, const State &state, Splits *splits) {
+void get_unmet_goals(const vector<Fact> &goals, const GlobalState &state, Splits *splits) {
     assert(splits->empty());
-    for (int i = 0; i < goals.size(); i++) {
+    for (size_t i = 0; i < goals.size(); i++) {
         int var = goals[i].first;
         int value = goals[i].second;
         if (state[var] != value) {
@@ -151,7 +137,7 @@ void write_landmark_graph(const LandmarkGraph &graph) {
         }
     }
     // Mark goal facts red.
-    for (int i = 0; i < g_goal.size(); i++) {
+    for (size_t i = 0; i < g_goal.size(); i++) {
         dotfile << "  \"" << get_node_name(g_goal[i]) << "\" [color=red];" << endl;
     }
     dotfile << "}" << endl;
@@ -165,13 +151,13 @@ void write_causal_graph() {
         exit_with(EXIT_CRITICAL_ERROR);
     }
     dotfile << "digraph causalgraph {" << endl;
-    for (int var = 0; var < g_variable_domain.size(); ++var) {
+    for (size_t var = 0; var < g_variable_domain.size(); ++var) {
         const vector<int> &successors = g_causal_graph->get_successors(var);
-        for (int i = 0; i < successors.size(); ++i) {
+        for (size_t i = 0; i < successors.size(); ++i) {
             dotfile << "  " << var << " -> " << successors[i] << ";" << endl;
         }
     }
-    for (int i = 0; i < g_goal.size(); i++) {
+    for (size_t i = 0; i < g_goal.size(); i++) {
         int var = g_goal[i].first;
         dotfile << var << " [color=red];" << endl;
     }
@@ -225,7 +211,7 @@ string to_string(Fact fact) {
 string to_string(const vector<int> &v) {
     string sep = "";
     stringstream out;
-    for (int i = 0; i < v.size(); ++i) {
+    for (size_t i = 0; i < v.size(); ++i) {
         out << sep << v[i];
         sep = ",";
     }

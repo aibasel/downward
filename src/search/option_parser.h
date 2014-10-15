@@ -61,11 +61,18 @@ public:
 };
 
 
-//int needs a specialization to allow "infinity" (=numeric_limits<int>::max())
+// int needs a specialization to allow "infinity".
 template <>
 class TokenParser<int> {
 public:
     static inline int parse(OptionParser &p);
+};
+
+// double needs a specialization to allow "infinity".
+template <>
+class TokenParser<double> {
+public:
+    static inline double parse(OptionParser &p);
 };
 
 
@@ -137,12 +144,16 @@ By calling addArgument, the parse tree is partially parsed,
 and the result is added to the Options.
  */
 class OptionParser {
+    static SearchEngine *parse_cmd_line_aux(
+        const std::vector<std::string> &args, bool dry_run);
 public:
     OptionParser(std::string config, bool dr);
     OptionParser(ParseTree pt, bool dr);
 
     //this is where input from the commandline goes:
-    static SearchEngine *parse_cmd_line(int argc, const char **argv, bool dr);
+    static SearchEngine *parse_cmd_line(
+        int argc, const char **argv, bool dr, bool is_unit_cost);
+
     static std::string usage(std::string progname);
 
     //this function initiates parsing of T (the root node of parse_tree
@@ -172,9 +183,10 @@ public:
     void document_synopsis(std::string name, std::string note) const;
     void document_property(std::string property, std::string note) const;
     void document_language_support(std::string feature, std::string note) const;
-    void document_note(std::string name, std::string note, bool long_text=false) const;
+    void document_note(std::string name, std::string note, bool long_text = false) const;
     void document_hide() const;
 
+    static void static_error(std::string msg);
     void error(std::string msg);
     void warning(std::string msg);
 
@@ -301,6 +313,20 @@ int TokenParser<int>::parse(OptionParser &p) {
         int x;
         if ((str_stream >> x).fail()) {
             p.error("could not parse int argument " + pt->value);
+        }
+        return x;
+    }
+}
+
+double TokenParser<double>::parse(OptionParser &p) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (pt->value.compare("infinity") == 0) {
+        return std::numeric_limits<double>::infinity();
+    } else {
+        std::stringstream str_stream(pt->value);
+        double x;
+        if ((str_stream >> x).fail()) {
+            p.error("could not parse double argument " + pt->value);
         }
         return x;
     }

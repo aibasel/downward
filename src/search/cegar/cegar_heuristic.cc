@@ -3,9 +3,10 @@
 #include "abstraction.h"
 #include "abstract_state.h"
 #include "utils.h"
+
+#include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
 
@@ -45,14 +46,14 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
         write_causal_graph();
     }
 
-    for (int i = 0; i < g_operators.size(); ++i)
+    for (size_t i = 0; i < g_operators.size(); ++i)
         remaining_costs.push_back(g_operators[i].get_cost());
 }
 
 CegarHeuristic::~CegarHeuristic() {
     delete[] temp_state_buffer;
     temp_state_buffer = 0;
-    for (int i = 0; i < abstractions.size(); ++i)
+    for (size_t i = 0; i < abstractions.size(); ++i)
         delete abstractions[i];
 }
 
@@ -178,7 +179,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
     if (!facts.empty()) {
         cout << "h^add values: ";
-        for (int i = 0; i < facts.size(); ++i) {
+        for (size_t i = 0; i < facts.size(); ++i) {
             cout << to_string(facts[i]) << ":" << original_task.get_hadd_value(facts[i].first, facts[i].second) << " ";
         }
     }
@@ -284,7 +285,7 @@ void CegarHeuristic::initialize() {
     } else {
         decompositions.push_back(decomposition);
     }
-    for (int i = 0; i < decompositions.size(); ++i) {
+    for (size_t i = 0; i < decompositions.size(); ++i) {
         cout << endl << "Using decomposition " << decompositions[i] << endl;
         build_abstractions(decompositions[i]);
         cout << endl;
@@ -311,16 +312,16 @@ void CegarHeuristic::print_statistics() {
     cout << "Total abstract states: " << num_states << endl;
     cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
     double sum_avg_h = 0;
-    for (int i = 0; i < avg_h_values.size(); ++i)
+    for (size_t i = 0; i < avg_h_values.size(); ++i)
         sum_avg_h += avg_h_values[i];
     cout << "Average h: " << sum_avg_h << endl;
     cout << endl;
 }
 
-int CegarHeuristic::compute_heuristic(const State &state) {
+int CegarHeuristic::compute_heuristic(const GlobalState &state) {
     assert(abstractions.size() == tasks.size());
     int sum_h = 0;
-    for (int i = 0; i < abstractions.size(); ++i) {
+    for (size_t i = 0; i < abstractions.size(); ++i) {
         Task &task = tasks[i];
 
         const int *buffer = 0;

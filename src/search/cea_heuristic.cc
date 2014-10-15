@@ -1,15 +1,16 @@
 #include "cea_heuristic.h"
 
 #include "domain_transition_graph.h"
+#include "global_operator.h"
+#include "global_state.h"
 #include "globals.h"
-#include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "state.h"
 
 #include <cassert>
 #include <limits>
 #include <vector>
+
 using namespace std;
 
 
@@ -211,7 +212,7 @@ bool ContextEnhancedAdditiveHeuristic::is_local_problem_set_up(
 
 void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
     LocalProblem *problem, int base_priority,
-    int start_value, const State &state) {
+    int start_value, const GlobalState &state) {
     assert(problem->base_priority == -1);
     problem->base_priority = base_priority;
 
@@ -271,7 +272,7 @@ void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
 }
 
 void ContextEnhancedAdditiveHeuristic::expand_transition(
-    LocalTransition *trans, const State &state) {
+    LocalTransition *trans, const GlobalState &state) {
     /* Called when the source of trans is reached by Dijkstra
        exploration. Try to compute cost for the target of the
        transition from the source cost, action cost, and set-up costs
@@ -331,7 +332,7 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
     try_to_fire_transition(trans);
 }
 
-int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
+int ContextEnhancedAdditiveHeuristic::compute_costs(const GlobalState &state) {
     while (!node_queue.empty()) {
         pair<int, LocalProblemNode *> top_pair = node_queue.pop();
         int curr_priority = top_pair.first;
@@ -352,14 +353,14 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
 }
 
 void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
-    LocalProblem *problem, LocalProblemNode *node, const State &state) {
+    LocalProblem *problem, LocalProblemNode *node, const GlobalState &state) {
     assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
     LocalTransition *first_on_path = node->reached_by;
     if (first_on_path) {
         node->reached_by = 0; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
-            const Operator *op = first_on_path->label->op;
+            const GlobalOperator *op = first_on_path->label->op;
             if (g_min_action_cost != 0 || op->is_applicable(state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
@@ -395,13 +396,13 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     goal_node = &goal_problem->nodes[1];
 
     local_problem_index.resize(num_variables);
-    for (size_t var_no = 0; var_no < num_variables; ++var_no) {
+    for (int var_no = 0; var_no < num_variables; ++var_no) {
         int num_values = g_variable_domain[var_no];
         local_problem_index[var_no].resize(num_values, 0);
     }
 }
 
-int ContextEnhancedAdditiveHeuristic::compute_heuristic(const State &state) {
+int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &state) {
     initialize_heap();
     goal_problem->base_priority = -1;
     for (size_t i = 0; i < local_problems.size(); ++i)
@@ -441,7 +442,7 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Context-enhanced additive heuristic", "");
     parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional_effects", "supported");
+    parser.document_language_support("conditional effects", "supported");
     parser.document_language_support(
         "axioms",
         "supported (in the sense that the planner won't complain -- "

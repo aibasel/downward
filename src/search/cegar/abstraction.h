@@ -2,9 +2,10 @@
 #define CEGAR_ABSTRACTION_H
 
 #include "split_tree.h"
+
+#include "../global_state.h"
 #include "../priority_queue.h"
 #include "../rng.h"
-#include "../state.h"
 #include "../timer.h"
 
 #include <limits>
@@ -108,7 +109,7 @@ private:
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw
     // from appearing in the next round again.
-    bool check_and_break_solution(State conc_state, AbstractState *abs_state);
+    bool check_and_break_solution(GlobalState conc_state, AbstractState *abs_state);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;
@@ -135,7 +136,7 @@ public:
     bool has_released_memory() const {return memory_released; }
 
     // Methods for additive abstractions.
-    int get_op_index(const Operator *op) const;
+    int get_op_index(const GlobalOperator *op) const;
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
     void get_needed_costs(std::vector<int> *needed_costs);

@@ -1,5 +1,6 @@
 #include "heuristic.h"
-#include "operator.h"
+
+#include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
 
@@ -12,32 +13,24 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
-
-    is_unit_cost = true;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        if (get_adjusted_cost(g_operators[i]) != 1) {
-            is_unit_cost = false;
-            break;
-        }
-    }
 }
 
 Heuristic::~Heuristic() {
 }
 
-void Heuristic::set_preferred(const Operator *op) {
+void Heuristic::set_preferred(const GlobalOperator *op) {
     if (!op->is_marked()) {
         op->mark();
         preferred_operators.push_back(op);
     }
 }
 
-void Heuristic::evaluate(const State &state) {
+void Heuristic::evaluate(const GlobalState &state) {
     if (heuristic == NOT_INITIALIZED)
         initialize();
     preferred_operators.clear();
     heuristic = compute_heuristic(state);
-    for (int i = 0; i < preferred_operators.size(); i++)
+    for (size_t i = 0; i < preferred_operators.size(); ++i)
         preferred_operators[i]->unmark();
     assert(heuristic == DEAD_END || heuristic >= 0);
 
@@ -51,7 +44,7 @@ void Heuristic::evaluate(const State &state) {
 
 #ifndef NDEBUG
     if (heuristic != DEAD_END) {
-        for (int i = 0; i < preferred_operators.size(); i++)
+        for (size_t i = 0; i < preferred_operators.size(); ++i)
             assert(preferred_operators[i]->is_applicable(state));
     }
 #endif
@@ -86,15 +79,15 @@ int Heuristic::get_heuristic() {
     return heuristic;
 }
 
-void Heuristic::get_preferred_operators(std::vector<const Operator *> &result) {
+void Heuristic::get_preferred_operators(std::vector<const GlobalOperator *> &result) {
     assert(heuristic >= 0);
     result.insert(result.end(),
                   preferred_operators.begin(),
                   preferred_operators.end());
 }
 
-bool Heuristic::reach_state(const State & /*parent_state*/,
-                            const Operator & /*op*/, const State & /*state*/) {
+bool Heuristic::reach_state(const GlobalState & /*parent_state*/,
+                            const GlobalOperator & /*op*/, const GlobalState & /*state*/) {
     return false;
 }
 
@@ -104,7 +97,7 @@ int Heuristic::get_value() const {
 
 void Heuristic::evaluate(int, bool) {
     return;
-    // if this is called, evaluate(const State &state) or set_evaluator_value(int val)
+    // if this is called, evaluate(const GlobalState &state) or set_evaluator_value(int val)
     // should already have been called
 }
 
@@ -116,7 +109,7 @@ void Heuristic::set_evaluator_value(int val) {
     evaluator_value = val;
 }
 
-int Heuristic::get_adjusted_cost(const Operator &op) const {
+int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 

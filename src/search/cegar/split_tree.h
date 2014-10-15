@@ -2,7 +2,8 @@
 #define CEGAR_SPLIT_TREE_H
 
 #include "utils.h"
-#include "../state.h"
+
+#include "../global_state.h"
 
 #include <vector>
 

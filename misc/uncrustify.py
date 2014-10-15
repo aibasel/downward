@@ -83,7 +83,11 @@ def _get_files(repo, patterns, options):
     """
     ctx = repo[None]
     match = match_func(repo, ctx, patterns, options)
-    ctx.status(clean=True, ignored=True, unknown=True)
+    try:
+        ctx.status(listclean=True, listignored=True, listunknown=True)
+    except TypeError:
+        # Compatibility with older Mercurial versions.
+        ctx.status(clean=True, ignored=True, unknown=True)
     files = []
     for file_list in [ctx.clean(), ctx.modified(), ctx.added()]:
         for filename in file_list:

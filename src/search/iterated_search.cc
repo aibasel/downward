@@ -36,7 +36,8 @@ SearchEngine *IteratedSearch::get_search_engine(
 }
 
 SearchEngine *IteratedSearch::create_phase(int p) {
-    if (p >= engine_configs.size()) {
+    int num_phases = engine_configs.size();
+    if (p >= num_phases) {
         /* We've gone through all searches. We continue if
            repeat_last_phase is true, but *not* if we didn't find a
            solution the last time around, since then this search would
@@ -54,7 +55,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
     return get_search_engine(p);
 }
 
-int IteratedSearch::step() {
+SearchStatus IteratedSearch::step() {
     current_search = create_phase(phase);
     if (current_search == NULL) {
         return found_solution() ? SOLVED : FAILED;
@@ -62,7 +63,7 @@ int IteratedSearch::step() {
     if (pass_bound) {
         current_search->set_bound(best_bound);
     }
-    phase++;
+    ++phase;
 
     current_search->search();
 
@@ -97,7 +98,7 @@ int IteratedSearch::step() {
     return step_return_value();
 }
 
-int IteratedSearch::step_return_value() {
+SearchStatus IteratedSearch::step_return_value() {
     if (iterated_found_solution)
         cout << "Best solution cost so far: " << best_bound << endl;
 
@@ -187,7 +188,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
         vector<ParseTree> configs = opts.get_list<ParseTree>("engine_configs");
-        for (size_t i(0); i != configs.size(); ++i) {
+        for (size_t i = 0; i < configs.size(); ++i) {
             OptionParser test_parser(configs[i], true);
             test_parser.start_parsing<SearchEngine *>();
         }

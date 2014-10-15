@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 try:
     # Python 3.x
     import builtins
@@ -7,22 +5,22 @@ except ImportError:
     # Python 2.x
     import __builtin__ as builtins
 
-import sys
 import os.path
 import re
+import sys
 
-from . import parser
+from . import lisp_parser
+from . import parsing_functions
 
-from . import tasks
 
 def parse_pddl_file(type, filename):
     try:
         # The builtin open function is shadowed by this module's open function.
-        return parser.parse_nested_list(builtins.open(filename))
+        return lisp_parser.parse_nested_list(builtins.open(filename))
     except IOError as e:
         raise SystemExit("Error: Could not read file: %s\nReason: %s." %
                          (e.filename, e))
-    except parser.ParseError as e:
+    except lisp_parser.ParseError as e:
         raise SystemExit("Error: Could not parse %s file: %s\n" % (type, filename))
 
 def open(task_filename=None, domain_filename=None):
@@ -52,7 +50,7 @@ def open(task_filename=None, domain_filename=None):
 
     domain_pddl = parse_pddl_file("domain", domain_filename)
     task_pddl = parse_pddl_file("task", task_filename)
-    return tasks.Task.parse(domain_pddl, task_pddl)
+    return parsing_functions.parse_task(domain_pddl, task_pddl)
 
 if __name__ == "__main__":
     open().dump()

@@ -1,19 +1,16 @@
 #include "shrink_fh.h"
 
-#include "abstraction.h"
+#include "transition_system.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../utilities.h"
 
 #include <cassert>
-#include <limits>
 #include <map>
 #include <vector>
 
 using namespace std;
-
-
-static const int infinity = numeric_limits<int>::max();
 
 
 ShrinkFH::ShrinkFH(const Options &opts)
@@ -37,16 +34,16 @@ void ShrinkFH::dump_strategy_specific_options() const {
 }
 
 void ShrinkFH::partition_into_buckets(
-    const Abstraction &abs, vector<Bucket> &buckets) const {
+    const TransitionSystem &ts, vector<Bucket> &buckets) const {
     assert(buckets.empty());
-    // The following line converts to double to avoid overflow.
-    int max_f = abs.get_max_f();
-    if (static_cast<double>(max_f) * max_f / 2.0 > abs.size()) {
+    int max_f = ts.get_max_f();
+    // Calculate with double to avoid overflow.
+    if (static_cast<double>(max_f) * max_f / 2.0 > ts.get_size()) {
         // Use map because an average bucket in the vector structure
         // would contain less than 1 element (roughly).
-        ordered_buckets_use_map(abs, buckets);
+        ordered_buckets_use_map(ts, buckets);
     } else {
-        ordered_buckets_use_vector(abs, buckets);
+        ordered_buckets_use_vector(ts, buckets);
     }
 }
 
@@ -81,14 +78,15 @@ static void collect_f_h_buckets(
 }
 
 void ShrinkFH::ordered_buckets_use_map(
-    const Abstraction &abs,
+    const TransitionSystem &ts,
     vector<Bucket> &buckets) const {
     map<int, map<int, Bucket > > states_by_f_and_h;
     int bucket_count = 0;
-    for (AbstractStateRef state = 0; state < abs.size(); ++state) {
-        int g = abs.get_init_distance(state);
-        int h = abs.get_goal_distance(state);
-        if (g != infinity && h != infinity) {
+    int num_states = ts.get_size();
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
+        int g = ts.get_init_distance(state);
+        int h = ts.get_goal_distance(state);
+        if (g != INF && h != INF) {
             int f = g + h;
             Bucket &bucket = states_by_f_and_h[f][h];
             if (bucket.empty())
@@ -107,24 +105,25 @@ void ShrinkFH::ordered_buckets_use_map(
             states_by_f_and_h.begin(), states_by_f_and_h.end(),
             h_start, buckets);
     }
-    assert(buckets.size() == bucket_count);
+    assert(static_cast<int>(buckets.size()) == bucket_count);
 }
 
 void ShrinkFH::ordered_buckets_use_vector(
-    const Abstraction &abs,
+    const TransitionSystem &ts,
     vector<Bucket> &buckets) const {
     vector<vector<Bucket > > states_by_f_and_h;
-    states_by_f_and_h.resize(abs.get_max_f() + 1);
-    for (int f = 0; f <= abs.get_max_f(); ++f)
-        states_by_f_and_h[f].resize(min(f, abs.get_max_h()) + 1);
+    states_by_f_and_h.resize(ts.get_max_f() + 1);
+    for (int f = 0; f <= ts.get_max_f(); ++f)
+        states_by_f_and_h[f].resize(min(f, ts.get_max_h()) + 1);
     int bucket_count = 0;
-    for (AbstractStateRef state = 0; state < abs.size(); ++state) {
-        int g = abs.get_init_distance(state);
-        int h = abs.get_goal_distance(state);
-        if (g != infinity && h != infinity) {
+    int num_states = ts.get_size();
+    for (AbstractStateRef state = 0; state < num_states; ++state) {
+        int g = ts.get_init_distance(state);
+        int h = ts.get_goal_distance(state);
+        if (g != INF && h != INF) {
             int f = g + h;
-            assert(f >= 0 && f < states_by_f_and_h.size());
-            assert(h >= 0 && h < states_by_f_and_h[f].size());
+            assert(in_bounds(f, states_by_f_and_h));
+            assert(in_bounds(h, states_by_f_and_h[f]));
             Bucket &bucket = states_by_f_and_h[f][h];
             if (bucket.empty())
                 ++bucket_count;
@@ -133,8 +132,8 @@ void ShrinkFH::ordered_buckets_use_vector(
     }
 
     buckets.reserve(bucket_count);
-    int f_init = (f_start == HIGH ? abs.get_max_f() : 0);
-    int f_end = (f_start == HIGH ? 0 : abs.get_max_f());
+    int f_init = (f_start == HIGH ? ts.get_max_f() : 0);
+    int f_end = (f_start == HIGH ? 0 : ts.get_max_f());
     int f_incr = (f_init > f_end ? -1 : 1);
     for (int f = f_init; f != f_end + f_incr; f += f_incr) {
         int h_init = (h_start == HIGH ? states_by_f_and_h[f].size() - 1 : 0);
@@ -148,16 +147,7 @@ void ShrinkFH::ordered_buckets_use_vector(
             }
         }
     }
-    assert(buckets.size() == bucket_count);
-}
-
-ShrinkStrategy *ShrinkFH::create_default(int max_states) {
-    Options opts;
-    opts.set("max_states", max_states);
-    opts.set("max_states_before_merge", max_states);
-    opts.set<int>("shrink_f", ShrinkFH::HIGH);
-    opts.set<int>("shrink_h", ShrinkFH::LOW);
-    return new ShrinkFH(opts);
+    assert(static_cast<int>(buckets.size()) == bucket_count);
 }
 
 static ShrinkStrategy *_parse(OptionParser &parser) {

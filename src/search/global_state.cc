@@ -1,4 +1,4 @@
-#include "state.h"
+#include "global_state.h"
 
 #include "globals.h"
 #include "utilities.h"
@@ -10,8 +10,8 @@
 using namespace std;
 
 
-State::State(const PackedStateBin *buffer_, const StateRegistry &registry_,
-             StateID id_)
+GlobalState::GlobalState(const PackedStateBin *buffer_, const StateRegistry &registry_,
+                         StateID id_)
     : buffer(buffer_),
       registry(&registry_),
       id(id_) {
@@ -19,22 +19,22 @@ State::State(const PackedStateBin *buffer_, const StateRegistry &registry_,
     assert(id != StateID::no_state);
 }
 
-State::~State() {
+GlobalState::~GlobalState() {
 }
 
-int State::operator[](int index) const {
+int GlobalState::operator[](size_t index) const {
     return g_state_packer->get(buffer, index);
 }
 
-void State::dump_pddl() const {
-    for (int i = 0; i < g_variable_domain.size(); i++) {
+void GlobalState::dump_pddl() const {
+    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         const string &fact_name = g_fact_names[i][(*this)[i]];
         if (fact_name != "<none of those>")
             cout << fact_name << endl;
     }
 }
 
-void State::dump_fdr() const {
+void GlobalState::dump_fdr() const {
     for (size_t i = 0; i < g_variable_domain.size(); ++i)
         cout << "  #" << i << " [" << g_variable_name[i] << "] -> "
              << (*this)[i] << endl;

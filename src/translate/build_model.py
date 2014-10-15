@@ -331,6 +331,7 @@ def compute_model(prog):
 
 if __name__ == "__main__":
     import sys
+    import pddl_parser
     import pddl_to_prolog
     silent = False
     if len(sys.argv) >= 2 and sys.argv[1] == "--silent":
@@ -338,7 +339,7 @@ if __name__ == "__main__":
         del sys.argv[1]
 
     print("Parsing...")
-    task = pddl.open()
+    task = pddl_parser.open()
     print("Writing rules...")
     prog = pddl_to_prolog.translate(task)
 

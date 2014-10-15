@@ -1,6 +1,6 @@
 #include "equivalence_relation.h"
 
-#include "../utilities.h"
+#include "utilities.h"
 
 #include <cassert>
 

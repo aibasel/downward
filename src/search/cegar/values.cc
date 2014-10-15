@@ -24,11 +24,12 @@ void Values::initialize_static_members(const vector<int> &variable_domain_) {
     inverse_masks.clear();
     borders.clear();
     facts = 0;
-    for (int var = 0; var < variable_domain.size(); ++var) {
+    int num_vars = variable_domain.size();
+    for (int var = 0; var < num_vars; ++var) {
         borders.push_back(facts);
         facts += variable_domain[var];
     }
-    for (int var = 0; var < variable_domain.size(); ++var) {
+    for (int var = 0; var < num_vars; ++var) {
         // -----0000 -> --1110000 --> 001110000
         Bitset mask(borders[var]);
         mask.resize(borders[var] + variable_domain[var], true);
@@ -64,7 +65,7 @@ bool Values::test(int var, int value) const {
     return values.test(pos(var, value));
 }
 
-int Values::count(int var) const {
+size_t Values::count(int var) const {
     // Profiling showed that an explicit loop is faster than doing:
     // (values & masks[var]).count(); (even if using a temp bitset).
     int num_values = 0;
@@ -91,11 +92,11 @@ bool Values::abstracts(const Values &other) const {
     return other.values.is_subset_of(values);
 }
 
-void Values::get_possible_splits(const Values &flaw, const State conc_state,
+void Values::get_possible_splits(const Values &flaw, const GlobalState &conc_state,
                                  Splits *splits) const {
     assert(splits->empty());
     Bitset intersection(values & flaw.values);
-    for (int var = 0; var < borders.size(); ++var) {
+    for (size_t var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var]))) {
             vector<int> wanted;
             for (int pos = borders[var]; pos < borders[var] + variable_domain[var]; ++pos) {
@@ -112,20 +113,20 @@ void Values::get_possible_splits(const Values &flaw, const State conc_state,
 string Values::str() const {
     ostringstream oss;
     string sep = "";
-    for (int var = 0; var < borders.size(); ++var) {
-        int next_border = borders[var] + variable_domain[var];
+    for (size_t var = 0; var < borders.size(); ++var) {
+        size_t next_border = borders[var] + variable_domain[var];
         vector<int> facts;
-        int pos = (var == 0) ? values.find_first() : values.find_next(borders[var] - 1);
+        size_t pos = (var == 0) ? values.find_first() : values.find_next(borders[var] - 1);
         while (pos != Bitset::npos && pos < next_border) {
             facts.push_back(pos - borders[var]);
             pos = values.find_next(pos);
         }
         assert(!facts.empty());
-        if (facts.size() < variable_domain[var]) {
+        if (facts.size() < static_cast<size_t>(variable_domain[var])) {
             oss << sep << var << "={";
             sep = ",";
             string value_sep = "";
-            for (int i = 0; i < facts.size(); ++i) {
+            for (size_t i = 0; i < facts.size(); ++i) {
                 oss << value_sep << facts[i];
                 value_sep = ",";
             }

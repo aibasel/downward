@@ -12,9 +12,9 @@ namespace cegar_heuristic {
 class AbstractState;
 class Task;
 class Values;
-typedef std::pair<const Operator *, AbstractState *> Arc;
+typedef std::pair<const GlobalOperator*, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
-typedef std::vector<const Operator *> Loops;
+typedef std::vector<const GlobalOperator*> Loops;
 
 class AbstractState {
 private:
@@ -37,15 +37,15 @@ private:
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
 
-    const Operator *prev_solution_op;
-    const Operator *next_solution_op;
+    const GlobalOperator *prev_solution_op;
+    const GlobalOperator *next_solution_op;
     AbstractState *prev_solution_state;
     AbstractState *next_solution_state;
 
     // This state's node in the refinement hierarchy.
     Node *node;
 
-    void remove_arc(Arcs &arcs, const Operator *op, AbstractState *other);
+    void remove_arc(Arcs &arcs, const GlobalOperator *op, AbstractState *other);
     void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_loops(int var, AbstractState *v1, AbstractState *v2);
@@ -57,23 +57,23 @@ public:
     ~AbstractState();
 
     // Let "result" be the set of states in which applying "op" leads to this state.
-    void regress(const Operator &op, AbstractState *result) const;
+    void regress(const GlobalOperator &op, AbstractState *result) const;
 
     // Return the size of var's abstract domain for this state.
-    int count(int var) const;
+    size_t count(int var) const;
 
     // Separate the values in "wanted" from the other values in the abstract domain.
     void split(int var, std::vector<int> wanted, AbstractState *v1, AbstractState *v2);
 
-    void add_arc(const Operator *op, AbstractState *other);
-    void remove_next_arc(const Operator *op, AbstractState *other);
-    void remove_prev_arc(const Operator *op, AbstractState *other);
-    void add_loop(const Operator *op);
+    void add_arc(const GlobalOperator *op, AbstractState *other);
+    void remove_next_arc(const GlobalOperator *op, AbstractState *other);
+    void remove_prev_arc(const GlobalOperator *op, AbstractState *other);
+    void add_loop(const GlobalOperator *op);
 
-    void get_possible_splits(const AbstractState &desired, const State &prev_conc_state,
+    void get_possible_splits(const AbstractState &desired, const GlobalState &prev_conc_state,
                              Splits *conditions) const;
 
-    bool is_abstraction_of(const State &conc_state) const;
+    bool is_abstraction_of(const GlobalState &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool is_abstraction_of_goal() const;
 
@@ -85,10 +85,10 @@ public:
     int get_distance() {return distance; }
     void set_h(int dist) {node->set_h(dist); }
     int get_h() {return node->get_h(); }
-    void set_prev_solution_op(const Operator *prev) {prev_solution_op = prev; }
-    void set_next_solution_op(const Operator *next) {next_solution_op = next; }
-    const Operator *get_prev_solution_op() const {return prev_solution_op; }
-    const Operator *get_next_solution_op() const {return next_solution_op; }
+    void set_prev_solution_op(const GlobalOperator *prev) {prev_solution_op = prev; }
+    void set_next_solution_op(const GlobalOperator *next) {next_solution_op = next; }
+    const GlobalOperator *get_prev_solution_op() const {return prev_solution_op; }
+    const GlobalOperator *get_next_solution_op() const {return next_solution_op; }
     void set_prev_solution_state(AbstractState *prev) {prev_solution_state = prev; }
     void set_next_solution_state(AbstractState *next) {next_solution_state = next; }
     AbstractState *get_prev_solution_state() const {return prev_solution_state; }

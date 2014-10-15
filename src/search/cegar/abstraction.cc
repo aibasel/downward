@@ -3,9 +3,10 @@
 #include "abstract_state.h"
 #include "task.h"
 #include "utils.h"
+
 #include "../additive_heuristic.h"
+#include "../global_operator.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../rng.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
@@ -61,7 +62,7 @@ Abstraction::Abstraction(const Task *task_)
     original_initial_state_data.swap(g_initial_state_data);
 
     split_tree.set_root(single);
-    for (int i = 0; i < task->get_operators().size(); ++i) {
+    for (size_t i = 0; i < task->get_operators().size(); ++i) {
         single->add_loop(&task->get_operators()[i]);
     }
     states.insert(init);
@@ -131,20 +132,20 @@ void Abstraction::build() {
     update_h_values();
     // Remember number of states before we release the memory.
     num_states = get_num_states();
-    assert(num_states == states.size());
+    assert(num_states == static_cast<int>(states.size()));
     print_statistics();
 }
 
 void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
     if (DEBUG) {
         cout << "Unmet conditions: ";
-        for (int i = 0; i < splits.size(); ++i) {
+        for (size_t i = 0; i < splits.size(); ++i) {
             cout << splits[i].first << "=" << to_string(splits[i].second) << " ";
         }
         cout << endl;
     }
     int i = pick_split_index(*state, splits);
-    assert(i >= 0 && i < splits.size());
+    assert(in_bounds(i, splits));
     int var = splits[i].first;
     const vector<int> &wanted = splits[i].second;
     refine(state, var, wanted);
@@ -231,15 +232,15 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             assert(forward);
             assert(!use_h);
             assert(needed_costs->size() == task->get_operators().size());
-            for (int i = 0; i < state->get_loops().size(); ++i) {
-                const Operator *op = state->get_loops()[i];
+            for (size_t i = 0; i < state->get_loops().size(); ++i) {
+                const GlobalOperator *op = state->get_loops()[i];
                 const int op_index = get_op_index(op);
                 (*needed_costs)[op_index] = max((*needed_costs)[op_index], 0);
             }
         }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (Arcs::iterator it = successors.begin(); it != successors.end(); ++it) {
-            const Operator *op = it->first;
+            const GlobalOperator *op = it->first;
             AbstractState *successor = it->second;
 
             // Collect needed operator costs for additive abstractions.
@@ -290,7 +291,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
     return true;
 }
 
-bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
+bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState *abs_state) {
     assert(abs_state->is_abstraction_of(conc_state));
 
     if (DEBUG)
@@ -298,7 +299,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
              << " (is init: " << (abs_state == init) << ")" << endl;
 
     StatesToSplits states_to_splits;
-    queue<pair<AbstractState *, State> > unseen;
+    queue<pair<AbstractState *, GlobalState> > unseen;
     unordered_set<StateID, hash_state_id> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
@@ -329,7 +330,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         }
         Arcs &arcs_out = abs_state->get_arcs_out();
         for (Arcs::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-            const Operator *op = it->first;
+            const GlobalOperator *op = it->first;
             AbstractState *next_abs = it->second;
             assert(!use_astar || (abs_state->get_next_solution_op() &&
                                   abs_state->get_next_solution_state()));
@@ -337,13 +338,13 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                               next_abs != abs_state->get_next_solution_state()))
                 continue;
             if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
-                // Operator is not part of an optimal path.
+                // GlobalOperator is not part of an optimal path.
                 continue;
             if (op->is_applicable(conc_state)) {
                 if (DEBUG)
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op->get_name() << endl;
-                State next_conc = registry->get_successor_state(conc_state, *op);
+                GlobalState next_conc = registry->get_successor_state(conc_state, *op);
                 if (next_abs->is_abstraction_of(next_conc)) {
                     if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
@@ -362,7 +363,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             } else if (splits.empty()) {
                 // Only find unmet preconditions if we haven't found any splits already.
                 if (DEBUG)
-                    cout << "      Operator not applicable: " << op->get_name() << endl;
+                    cout << "      GlobalOperator not applicable: " << op->get_name() << endl;
                 ++unmet_preconditions;
                 get_unmet_preconditions(*op, conc_state, &splits);
             }
@@ -395,7 +396,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     }
     if (DEBUG) {
         cout << "Split: " << state.str() << endl;
-        for (int i = 0; i < splits.size(); ++i) {
+        for (size_t i = 0; i < splits.size(); ++i) {
             const Split &split = splits[i];
             int var = split.first;
             const vector<int> &wanted = split.second;
@@ -412,7 +413,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
         int max_rest = -1;
         int min_rest = INF;
-        for (int i = 0; i < splits.size(); ++i) {
+        for (size_t i = 0; i < splits.size(); ++i) {
             int rest = state.count(splits[i].first);
             assert(rest >= 2);
             if (rest > max_rest && pick == MIN_CONSTRAINED) {
@@ -427,7 +428,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     } else if (pick == MIN_REFINED || pick == MAX_REFINED) {
         double min_refinement = 0.0;
         double max_refinement = -1.1;
-        for (int i = 0; i < splits.size(); ++i) {
+        for (size_t i = 0; i < splits.size(); ++i) {
             double all_values = task->get_num_values(splits[i].first);
             double rest = state.count(splits[i].first);
             assert(all_values >= 2);
@@ -448,10 +449,10 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     } else if (pick == MIN_HADD || pick == MAX_HADD) {
         int min_hadd = INF;
         int max_hadd = -2;
-        for (int i = 0; i < splits.size(); ++i) {
+        for (size_t i = 0; i < splits.size(); ++i) {
             int var = splits[i].first;
             const vector<int> &values = splits[i].second;
-            for (int j = 0; j < values.size(); ++j) {
+            for (size_t j = 0; j < values.size(); ++j) {
                 int value = values[j];
                 int hadd_value = task->get_hadd_value(var, value);
                 if (hadd_value == -1 && pick == MIN_HADD) {
@@ -471,8 +472,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
         cout << "Invalid pick strategy: " << pick << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    assert(cond >= 0);
-    assert(cond < splits.size());
+    assert(in_bounds(cond, splits));
     return cond;
 }
 
@@ -480,7 +480,7 @@ void Abstraction::extract_solution(AbstractState *goal) const {
     assert(get_min_goal_distance() != INF);
     AbstractState *current = goal;
     while (current != init) {
-        const Operator *prev_op = current->get_prev_solution_op();
+        const GlobalOperator *prev_op = current->get_prev_solution_op();
         AbstractState *prev_state = current->get_prev_solution_state();
         prev_state->set_next_solution_op(prev_op);
         prev_state->set_next_solution_state(current);
@@ -551,7 +551,7 @@ void Abstraction::write_dot_file(int num) {
         AbstractState *current_state = *it;
         Arcs &next = current_state->get_arcs_out();
         for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
-            const Operator *op = it->first;
+            const GlobalOperator *op = it->first;
             AbstractState *next_state = it->second;
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
@@ -559,7 +559,7 @@ void Abstraction::write_dot_file(int num) {
         if (draw_loops) {
             Loops &loops = current_state->get_loops();
             for (Loops::iterator it = loops.begin(); it != loops.end(); ++it) {
-                const Operator *op = *it;
+                const GlobalOperator *op = *it;
                 dotfile << current_state->str() << " -> " << current_state->str()
                         << " [label=\"" << op->get_name() << "\"];" << endl;
             }
@@ -574,9 +574,9 @@ void Abstraction::write_dot_file(int num) {
     dotfile.close();
 }
 
-int Abstraction::get_op_index(const Operator *op) const {
+int Abstraction::get_op_index(const GlobalOperator *op) const {
     int op_index = op - &*task->get_operators().begin();
-    assert(op_index >= 0 && op_index < task->get_operators().size());
+    assert(in_bounds(op_index, task->get_operators()));
     return op_index;
 }
 
@@ -631,7 +631,7 @@ void Abstraction::print_statistics() {
         total_loops += loops.size();
         arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
                     sizeof(prev) + sizeof(Arc) * prev.capacity() +
-                    sizeof(loops) + sizeof(Operator *) * loops.capacity();
+                    sizeof(loops) + sizeof(GlobalOperator *) * loops.capacity();
     }
     assert(nexts == prevs);
 

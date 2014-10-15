@@ -14,13 +14,13 @@ class IPCMaxHeuristic : public Heuristic {
     bool dead_end_reliable;
 
 protected:
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 
 public:
     IPCMaxHeuristic(const Options &options);
     ~IPCMaxHeuristic();
-    virtual bool reach_state(const State &parent_state, const Operator &op,
-                             const State &state);
+    virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                             const GlobalState &state);
 };
 
 #endif

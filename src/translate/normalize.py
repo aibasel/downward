@@ -23,8 +23,7 @@ class PreconditionProxy(ConditionProxy):
     def build_rules(self, rules):
         action = self.owner
         rule_head = get_action_predicate(action)
-        rule_body = list(condition_to_rule_body(action.parameters,
-                                                self.condition))
+        rule_body = condition_to_rule_body(action.parameters, self.condition)
         rules.append((rule_body, rule_head))
     def get_type_map(self):
         return self.owner.type_map
@@ -63,7 +62,7 @@ class AxiomConditionProxy(ConditionProxy):
     def build_rules(self, rules):
         axiom = self.owner
         app_rule_head = get_axiom_predicate(axiom)
-        app_rule_body = list(condition_to_rule_body(axiom.parameters, self.condition))
+        app_rule_body = condition_to_rule_body(axiom.parameters, self.condition)
         rules.append((app_rule_body, app_rule_head))
         params = axiom.parameters[:axiom.num_external_parameters]
         eff_rule_head = pddl.Atom(axiom.name, [par.name for par in params])
@@ -90,7 +89,7 @@ class GoalConditionProxy(ConditionProxy):
         assert False, "Disjunctive goals not (yet) implemented."
     def build_rules(self, rules):
         rule_head = pddl.Atom("@goal-reachable", [])
-        rule_body = list(condition_to_rule_body([], self.condition))
+        rule_body = condition_to_rule_body([], self.condition)
         rules.append((rule_body, rule_head))
     def get_type_map(self):
         # HACK!
@@ -368,23 +367,31 @@ def build_exploration_rules(task):
     return result
 
 def condition_to_rule_body(parameters, condition):
+    result = []
     for par in parameters:
-        yield pddl.Atom(par.type, [par.name])
+        result.append(par.get_atom())
     if not isinstance(condition, pddl.Truth):
         if isinstance(condition, pddl.ExistentialCondition):
             for par in condition.parameters:
-                yield pddl.Atom(par.type, [par.name])
+                result.append(par.get_atom())
             condition = condition.parts[0]
         if isinstance(condition, pddl.Conjunction):
             parts = condition.parts
         else:
             parts = (condition,)
         for part in parts:
-            assert isinstance(part, pddl.Literal), "Condition not normalized"
+            if isinstance(part, pddl.Falsity):
+                # Use an atom in the body that is always false because
+                # it is not initially true and doesn't occur in the
+                # head of any rule.
+                return [pddl.Atom("@always-false", [])]
+            assert isinstance(part, pddl.Literal), "Condition not normalized: %r" % part
             if not part.negated:
-                yield part
+                result.append(part)
+    return result
 
 if __name__ == "__main__":
-    task = pddl.open()
+    import pddl_parser
+    task = pddl_parser.open()
     normalize(task)
     task.dump()

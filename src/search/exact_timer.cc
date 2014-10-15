@@ -10,7 +10,9 @@
 #if OPERATING_SYSTEM == OSX
 #include <mach/mach_time.h>
 #elif OPERATING_SYSTEM == CYGWIN
-#define CLOCK_PROCESS_CPUTIME_ID (clockid_t)2
+#ifndef CLOCK_PROCESS_CPUTIME_ID
+#define CLOCK_PROCESS_CPUTIME_ID (clockid_t(2))
+#endif
 #endif
 
 using namespace std;

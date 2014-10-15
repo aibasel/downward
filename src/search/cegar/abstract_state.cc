@@ -3,13 +3,14 @@
 #include "task.h"
 #include "values.h"
 
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
-#include "../state.h"
 
 #include <algorithm>
 #include <cassert>
 #include <sstream>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -39,24 +40,24 @@ string AbstractState::str() const {
     return oss.str();
 }
 
-void AbstractState::regress(const Operator &op, AbstractState *result) const {
+void AbstractState::regress(const GlobalOperator &op, AbstractState *result) const {
     *result->values = *values;
-    for (int i = 0; i < op.get_prevail().size(); i++) {
-        const Prevail &prevail = op.get_prevail()[i];
-        result->values->set(prevail.var, prevail.prev);
+    unordered_set<int> precondition_vars;
+    for (size_t i = 0; i < op.get_preconditions().size(); i++) {
+        const GlobalCondition &precondition = op.get_preconditions()[i];
+        result->values->set(precondition.var, precondition.val);
+        precondition_vars.insert(precondition.var);
     }
-    for (int i = 0; i < op.get_pre_post().size(); i++) {
-        const PrePost &pre_post = op.get_pre_post()[i];
-        if (pre_post.pre != UNDEFINED) {
-            result->values->set(pre_post.var, pre_post.pre);
-        } else {
-            result->values->add_all(pre_post.var);
+    for (size_t i = 0; i < op.get_effects().size(); i++) {
+        const GlobalEffect &effect = op.get_effects()[i];
+        if (precondition_vars.count(effect.var) == 0) {
+            result->values->add_all(effect.var);
         }
     }
 }
 
 void AbstractState::get_possible_splits(const AbstractState &desired,
-                                        const State &prev_conc_state,
+                                        const GlobalState &prev_conc_state,
                                         Splits *splits)
 const {
     values->get_possible_splits(*desired.values, prev_conc_state, splits);
@@ -66,13 +67,13 @@ bool AbstractState::domains_intersect(const AbstractState *other, int var) {
     return values->domains_intersect(*other->values, var);
 }
 
-int AbstractState::count(int var) const {
+size_t AbstractState::count(int var) const {
     return values->count(var);
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (Arcs::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
-        const Operator *op = it->first;
+        const GlobalOperator *op = it->first;
         AbstractState *u = it->second;
         assert(u != this);
         int post = get_post(*op, var);
@@ -96,7 +97,7 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (Arcs::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-        const Operator *op = it->first;
+        const GlobalOperator *op = it->first;
         AbstractState *w = it->second;
         assert(w != this);
         int pre = get_pre(*op, var);
@@ -123,8 +124,8 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
 }
 
 void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) {
-    for (int i = 0; i < loops.size(); ++i) {
-        const Operator *op = loops[i];
+    for (size_t i = 0; i < loops.size(); ++i) {
+        const GlobalOperator *op = loops[i];
         int pre = get_pre(*op, var);
         int post = get_post(*op, var);
         if (pre == UNDEFINED) {
@@ -161,14 +162,14 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     // The desired value has to be in the set of possible values.
     assert(wanted.size() >= 1);
     assert(values->count(var) > wanted.size());
-    for (int i = 0; i < wanted.size(); ++i)
+    for (size_t i = 0; i < wanted.size(); ++i)
         assert(values->test(var, wanted[i]));
 
     *v1->values = *values;
     *v2->values = *values;
 
     v2->values->remove_all(var);
-    for (int i = 0; i < wanted.size(); ++i) {
+    for (size_t i = 0; i < wanted.size(); ++i) {
         // In v1 var can have all of the previous values except the wanted ones.
         v1->values->remove(var, wanted[i]);
 
@@ -196,7 +197,7 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     v2->set_h(h);
 }
 
-void AbstractState::add_arc(const Operator *op, AbstractState *other) {
+void AbstractState::add_arc(const GlobalOperator *op, AbstractState *other) {
     // Experiments showed that keeping the arcs sorted for faster removal
     // increases the overall processing time. Out of 30 domains it made no
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
@@ -207,11 +208,11 @@ void AbstractState::add_arc(const Operator *op, AbstractState *other) {
     other->arcs_in.push_back(Arc(op, this));
 }
 
-void AbstractState::add_loop(const Operator *op) {
+void AbstractState::add_loop(const GlobalOperator *op) {
     loops.push_back(op);
 }
 
-void AbstractState::remove_arc(Arcs &arcs, const Operator *op, AbstractState *other) {
+void AbstractState::remove_arc(Arcs &arcs, const GlobalOperator *op, AbstractState *other) {
     Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
     assert(pos != arcs.end());
     // For PODs assignment is faster than swapping.
@@ -219,15 +220,15 @@ void AbstractState::remove_arc(Arcs &arcs, const Operator *op, AbstractState *ot
     arcs.pop_back();
 }
 
-void AbstractState::remove_next_arc(const Operator *op, AbstractState *other) {
+void AbstractState::remove_next_arc(const GlobalOperator *op, AbstractState *other) {
     remove_arc(arcs_out, op, other);
 }
 
-void AbstractState::remove_prev_arc(const Operator *op, AbstractState *other) {
+void AbstractState::remove_prev_arc(const GlobalOperator *op, AbstractState *other) {
     remove_arc(arcs_in, op, other);
 }
 
-bool AbstractState::is_abstraction_of(const State &conc_state) const {
+bool AbstractState::is_abstraction_of(const GlobalState &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
     for (int var = 0; var < task->get_num_vars(); ++var) {
         if (!values->test(var, conc_state[var]))
@@ -243,7 +244,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 bool AbstractState::is_abstraction_of_goal() const {
     const vector<Fact> &goals = task->get_goals();
     assert(!goals.empty());
-    for (int i = 0; i < goals.size(); ++i) {
+    for (size_t i = 0; i < goals.size(); ++i) {
         if (!values->test(goals[i].first, goals[i].second))
             return false;
     }

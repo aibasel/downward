@@ -39,12 +39,12 @@ private:
     void add_all(int var);
     void remove_all(int var);
     bool test(int var, int value) const;
-    int count(int var) const;
+    size_t count(int var) const;
     bool domains_intersect(const Values &other, int var);
     // Return true if all abstract domains are supersets of the
     // other's respective domains.
     bool abstracts(const Values &other) const;
-    void get_possible_splits(const Values &flaw, const State conc_state, Splits *splits) const;
+    void get_possible_splits(const Values &flaw, const GlobalState &conc_state, Splits *splits) const;
 
     std::string str() const;
 
