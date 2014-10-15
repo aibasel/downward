@@ -63,7 +63,6 @@ PDBHeuristic::PDBHeuristic(
     : Heuristic(opts) {
     verify_no_axioms_no_conditional_effects();
     assert(operator_costs.empty() || operator_costs.size() == g_operators.size());
-    relevant_operators.resize(g_operators.size(), false);
 
     Timer timer;
     set_pattern(opts.get_list<int>("pattern"), operator_costs);
@@ -74,7 +73,7 @@ PDBHeuristic::PDBHeuristic(
 PDBHeuristic::~PDBHeuristic() {
 }
 
-void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, int> > &prev_pairs,
+void PDBHeuristic::multiply_out(int pos, int cost, vector<pair<int, int> > &prev_pairs,
                                 vector<pair<int, int> > &pre_pairs,
                                 vector<pair<int, int> > &eff_pairs,
                                 const vector<pair<int, int> > &effects_without_pre,
@@ -83,7 +82,6 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
             operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers));
-            relevant_operators[op_no] = true;
         }
     } else {
         // For each possible value for the current variable, build an
@@ -97,7 +95,7 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
             } else {
                 prev_pairs.push_back(make_pair(var, i));
             }
-            multiply_out(pos + 1, op_no, cost, prev_pairs, pre_pairs, eff_pairs,
+            multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
                          effects_without_pre, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
@@ -109,9 +107,9 @@ void PDBHeuristic::multiply_out(int pos, int op_no, int cost, vector<pair<int, i
     }
 }
 
-void PDBHeuristic::build_abstract_operators(int op_no, int cost,
+void PDBHeuristic::build_abstract_operators(const GlobalOperator &op, int cost,
+                                            const std::vector<int> &variable_to_index,
                                             vector<AbstractOperator> &operators) {
-    const GlobalOperator &op = g_operators[op_no];
     vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
     vector<pair<int, int> > pre_pairs; // all variable value pairs that are a precondition (value != -1)
     vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect
@@ -144,20 +142,26 @@ void PDBHeuristic::build_abstract_operators(int op_no, int cost,
             }
         }
     }
-    multiply_out(0, op_no, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
+    multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
 }
 
 void PDBHeuristic::create_pdb(const std::vector<int> &operator_costs) {
+    vector<int> variable_to_index(g_variable_name.size(), -1);
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        variable_to_index[pattern[i]] = i;
+    }
+
     // compute all abstract operators
     vector<AbstractOperator> operators;
     for (size_t i = 0; i < g_operators.size(); ++i) {
+        const GlobalOperator &op = g_operators[i];
         int op_cost;
         if (operator_costs.empty()) {
-            op_cost = get_adjusted_cost(g_operators[i]);
+            op_cost = get_adjusted_cost(op);
         } else {
             op_cost = operator_costs[i];
         }
-        build_abstract_operators(i, op_cost, operators);
+        build_abstract_operators(op, op_cost, variable_to_index, operators);
     }
 
     // build the match tree
@@ -215,11 +219,9 @@ void PDBHeuristic::set_pattern(const vector<int> &pat,
     assert(is_sorted_unique(pat));
     pattern = pat;
     hash_multipliers.reserve(pattern.size());
-    variable_to_index.resize(g_variable_name.size(), -1);
     num_states = 1;
     for (size_t i = 0; i < pattern.size(); ++i) {
         hash_multipliers.push_back(num_states);
-        variable_to_index[pattern[i]] = i;
         num_states *= g_variable_domain[pattern[i]];
     }
     create_pdb(operator_costs);
@@ -257,18 +259,29 @@ int PDBHeuristic::compute_heuristic(const GlobalState &state) {
 
 double PDBHeuristic::compute_mean_finite_h() const {
     double sum = 0;
-    int size = num_states;
+    int size = 0;
     for (size_t i = 0; i < distances.size(); ++i) {
-        if (distances[i] == numeric_limits<int>::max()) {
-            --size;
-            continue;
+        if (distances[i] != numeric_limits<int>::max()) {
+            sum += distances[i];
+            ++size;
         }
-        sum += distances[i];
     }
-    if (size == 0) { // empty pattern or all states are dead-end
+    if (size == 0) { // All states are dead ends.
         return numeric_limits<double>::infinity();
-    } else
-        return sum / num_states;
+    } else {
+        return sum / size;
+    }
+}
+
+bool PDBHeuristic::is_operator_relevant(const GlobalOperator &op) const {
+    const std::vector<GlobalEffect> &effects = op.get_effects();
+    for (size_t i = 0; i < effects.size(); ++i) {
+        int var = effects[i].var;
+        if (binary_search(pattern.begin(), pattern.end(), var)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static Heuristic *_parse(OptionParser &parser) {
