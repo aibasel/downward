@@ -5,7 +5,7 @@
   Methods in this file are meant to be used in event handlers. They
   should all be "re-entrant", i.e. they must not use static variables,
   global data, or locks. Only some system calls such as
-  open/read/write/close are guaranteed to re-entrant. See
+  open/read/write/close are guaranteed to be re-entrant. See
     https://www.securecoding.cert.org/confluence/display/seccode/
     SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers
     #SIG30-C.Callonlyasynchronous-safefunctionswithinsignalhandlers-
