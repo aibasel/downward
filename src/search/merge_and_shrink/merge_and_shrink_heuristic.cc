@@ -32,7 +32,7 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    labels->dump_options();
+    labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
