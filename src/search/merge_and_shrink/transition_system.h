@@ -98,6 +98,7 @@ class TransitionSystem {
        - Distances are computed and stored (are_distances_computed() == true)
     */
     bool is_valid() const;
+    int get_label_cost_by_index(int label_no) const;
 
     // Methods related to computation of distances
     void clear_distances();
@@ -145,8 +146,6 @@ public:
       x, y and z.
     */
     std::string tag() const;
-    // get_label_cost_by_index is public exclusively for ShrinkBisimulation
-    int get_label_cost_by_index(int label_no) const;
     bool is_solvable() const;
     int get_cost(const GlobalState &state) const;
     void statistics(bool include_expensive_statistics) const;
@@ -183,8 +182,8 @@ public:
     const std::vector<Transition> &get_transitions_for_label(int label_no) const {
         return transitions_by_label[label_no];
     }
-    int get_num_labels() const {
-        return num_labels;
+    const Labels *get_labels() const {
+        return labels;
     }
 
     // Methods only used by MergeDFP.

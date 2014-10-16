@@ -1,10 +1,10 @@
 #include "transition_system.h"
 
-#include "label.h"
 #include "labels.h"
 #include "shrink_fh.h"
 
 #include "../equivalence_relation.h"
+#include "../global_operator.h"
 #include "../globals.h"
 #include "../priority_queue.h"
 #include "../timer.h"
@@ -60,6 +60,11 @@ bool TransitionSystem::is_valid () const {
     return (are_distances_computed()
             && are_transitions_sorted_unique()
             && is_label_reduced());
+}
+
+int TransitionSystem::get_label_cost_by_index(int label_no) const {
+    assert(!labels->is_label_reduced(label_no));
+    return labels->get_label_cost(label_no);
 }
 
 void TransitionSystem::clear_distances() {
@@ -122,10 +127,11 @@ void TransitionSystem::compute_distances_and_prune() {
     bool is_unit_cost = true;
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
         if (relevant_labels[label_no]) {
-            const Label *label = labels->get_label_by_index(label_no);
-            if (label->get_cost() != 1) {
-                is_unit_cost = false;
-                break;
+            if (!labels->is_label_reduced(label_no)) {
+                if (labels->get_label_cost(label_no) != 1) {
+                    is_unit_cost = false;
+                    break;
+                }
             }
         }
     }
@@ -259,12 +265,14 @@ static void dijkstra_search(
 void TransitionSystem::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        int label_cost = get_label_cost_by_index(label_no);
-        const vector<Transition> &transitions = transitions_by_label[label_no];
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &trans = transitions[j];
-            forward_graph[trans.src].push_back(
-                make_pair(trans.target, label_cost));
+        if (!labels->is_label_reduced(label_no)) {
+            int label_cost = get_label_cost_by_index(label_no);
+            const vector<Transition> &transitions = transitions_by_label[label_no];
+            for (size_t j = 0; j < transitions.size(); ++j) {
+                const Transition &trans = transitions[j];
+                forward_graph[trans.src].push_back(
+                    make_pair(trans.target, label_cost));
+            }
         }
     }
 
@@ -283,12 +291,14 @@ void TransitionSystem::compute_init_distances_general_cost() {
 void TransitionSystem::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        int label_cost = get_label_cost_by_index(label_no);
-        const vector<Transition> &transitions = transitions_by_label[label_no];
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &trans = transitions[j];
-            backward_graph[trans.target].push_back(
-                make_pair(trans.src, label_cost));
+        if (!labels->is_label_reduced(label_no)) {
+            int label_cost = get_label_cost_by_index(label_no);
+            const vector<Transition> &transitions = transitions_by_label[label_no];
+            for (size_t j = 0; j < transitions.size(); ++j) {
+                const Transition &trans = transitions[j];
+                backward_graph[trans.target].push_back(
+                    make_pair(trans.src, label_cost));
+            }
         }
     }
 
@@ -452,10 +462,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     // Note that when building atomic transition systems, no other labels than the
     // original operators have been added yet.
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
-        const Label *label = labels->get_label_by_index(label_no);
-        const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(label);
-        const vector<GlobalCondition> &preconditions = op_label->get_preconditions();
-        const vector<GlobalEffect> &effects = op_label->get_effects();
+        assert(!labels->is_label_reduced(label_no));
+        const vector<GlobalCondition> &preconditions = labels->get_operator_label_preconditions(label_no);
+        const vector<GlobalEffect> &effects = labels->get_operator_label_effects(label_no);
         hash_map<int, int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (size_t i = 0; i < preconditions.size(); ++i)
@@ -679,10 +688,6 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         // First, assert that all old labels are in the correct range and of the same cost
         for (size_t j = 0; j < old_label_nos.size(); ++j) {
             assert(old_label_nos[j] < num_labels);
-            if (j != 0) {
-                assert(get_label_cost_by_index(old_label_nos[j])
-                       == get_label_cost_by_index(old_label_nos[j - 1]));
-            }
         }
 
         // Second, compute the new label's transitions and its relevance state
@@ -781,11 +786,6 @@ string TransitionSystem::tag() const {
     string desc(description());
     desc[0] = toupper(desc[0]);
     return desc + ": ";
-}
-
-int TransitionSystem::get_label_cost_by_index(int label_no) const {
-    const Label *label = labels->get_label_by_index(label_no);
-    return label->get_cost();
 }
 
 bool TransitionSystem::is_solvable() const {

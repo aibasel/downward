@@ -6,6 +6,8 @@
 #include <vector>
 
 class EquivalenceRelation;
+class GlobalCondition;
+class GlobalEffect;
 class Label;
 class Options;
 class TransitionSystem;
@@ -76,10 +78,10 @@ public:
     ~Labels() {}
     void reduce(std::pair<int, int> next_merge,
                 const std::vector<TransitionSystem *> &all_transition_systems);
-    // TODO: consider removing get_label_by_index and forwarding all required
-    // methods of Label and giving access to them by label number.
-    const Label *get_label_by_index(int index) const;
     bool is_label_reduced(int label_no) const;
+    int get_label_cost(int label_no) const;
+    const std::vector<GlobalCondition> &get_operator_label_preconditions(int label_no) const;
+    const std::vector<GlobalEffect> &get_operator_label_effects(int label_no) const;
     void dump_labels() const;
     void dump_label_reduction_options() const;
 

@@ -4,14 +4,13 @@
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
+#include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
-//#include "../utilities.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
-//#include <iostream>
-//#include <limits>
 
 using namespace std;
 
@@ -77,7 +76,7 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
             assert(*jt < static_cast<int>(labels.size()));
             Label *label = labels[*jt];
-            if (!label->is_reduced()) {
+            if (label) {
                 // only consider non-reduced labels
                 equivalent_labels.push_back(label);
                 equivalent_label_nos.push_back(*jt);
@@ -85,8 +84,13 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
             }
         }
         if (equivalent_labels.size() > 1) {
-            Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
+            Label *new_label = new CompositeLabel(labels.size(), equivalent_labels[0]->get_cost());
             labels.push_back(new_label);
+            for (size_t i = 0; i < equivalent_label_nos.size(); ++i) {
+                int old_label_no = equivalent_label_nos[i];
+                delete labels[old_label_no];
+                labels[old_label_no] = 0;
+            }
             label_mapping.push_back(make_pair(new_label->get_id(), equivalent_label_nos));
         }
         if (!equivalent_labels.empty()) {
@@ -121,10 +125,9 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
     vector<pair<int, int> > annotated_labels;
     annotated_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const Label *label = labels[label_no];
-        assert(label->get_id() == label_no);
-        if (!label->is_reduced()) {
+        if (!is_label_reduced(label_no)) {
             // only consider non-reduced labels
+            assert(labels[label_no]->get_id() == label_no);
             annotated_labels.push_back(make_pair(0, label_no));
         }
     }
@@ -266,13 +269,26 @@ void Labels::reduce(pair<int, int> next_merge,
         delete cached_local_equivalence_relations[i];
 }
 
-const Label *Labels::get_label_by_index(int index) const {
-    assert(in_bounds(index, labels));
-    return labels[index];
+bool Labels::is_label_reduced(int label_no) const {
+    assert(in_bounds(label_no, labels));
+    return labels[label_no] == 0;
 }
 
-bool Labels::is_label_reduced(int label_no) const {
-    return get_label_by_index(label_no)->is_reduced();
+int Labels::get_label_cost(int label_no) const {
+    assert(!is_label_reduced(label_no));
+    return labels[label_no]->get_cost();
+}
+
+const vector<GlobalCondition> &Labels::get_operator_label_preconditions(int label_no) const {
+    assert(in_bounds(label_no, g_operators));
+    const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(labels[label_no]);
+    return op_label->get_preconditions();
+}
+
+const vector<GlobalEffect> &Labels::get_operator_label_effects(int label_no) const {
+    assert(in_bounds(label_no, g_operators));
+    const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(labels[label_no]);
+    return op_label->get_effects();
 }
 
 void Labels::dump_labels() const {
