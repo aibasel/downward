@@ -6,8 +6,6 @@
 #include <vector>
 
 class EquivalenceRelation;
-class GlobalCondition;
-class GlobalEffect;
 class Label;
 class Options;
 class TransitionSystem;
@@ -80,8 +78,6 @@ public:
                 const std::vector<TransitionSystem *> &all_transition_systems);
     bool is_label_reduced(int label_no) const;
     int get_label_cost(int label_no) const;
-    const std::vector<GlobalCondition> &get_operator_label_preconditions(int label_no) const;
-    const std::vector<GlobalEffect> &get_operator_label_effects(int label_no) const;
     void dump_labels() const;
     void dump_label_reduction_options() const;
 

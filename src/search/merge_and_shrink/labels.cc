@@ -26,9 +26,7 @@ Labels::Labels(const Options &options, OperatorCost cost_type)
         labels.reserve(g_operators.size() * 2 - 1);
     }
     for (size_t i = 0; i < g_operators.size(); ++i) {
-        labels.push_back(new OperatorLabel(i, get_adjusted_action_cost(g_operators[i], cost_type),
-                                           g_operators[i].get_preconditions(),
-                                           g_operators[i].get_effects()));
+        labels.push_back(new Label(i, get_adjusted_action_cost(g_operators[i], cost_type)));
     }
 
     // Compute the transition system order
@@ -84,7 +82,7 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
             }
         }
         if (equivalent_labels.size() > 1) {
-            Label *new_label = new CompositeLabel(labels.size(), equivalent_labels[0]->get_cost());
+            Label *new_label = new Label(labels.size(), equivalent_labels[0]->get_cost());
             labels.push_back(new_label);
             for (size_t i = 0; i < equivalent_label_nos.size(); ++i) {
                 int old_label_no = equivalent_label_nos[i];
@@ -277,18 +275,6 @@ bool Labels::is_label_reduced(int label_no) const {
 int Labels::get_label_cost(int label_no) const {
     assert(!is_label_reduced(label_no));
     return labels[label_no]->get_cost();
-}
-
-const vector<GlobalCondition> &Labels::get_operator_label_preconditions(int label_no) const {
-    assert(in_bounds(label_no, g_operators));
-    const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(labels[label_no]);
-    return op_label->get_preconditions();
-}
-
-const vector<GlobalEffect> &Labels::get_operator_label_effects(int label_no) const {
-    assert(in_bounds(label_no, g_operators));
-    const OperatorLabel *op_label = dynamic_cast<const OperatorLabel *>(labels[label_no]);
-    return op_label->get_effects();
 }
 
 void Labels::dump_labels() const {
