@@ -459,12 +459,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
         result.push_back(new AtomicTransitionSystem(labels, var_no));
 
     // Step 2: Add transitions.
-    // Note that when building atomic transition systems, no other labels than the
-    // original operators have been added yet.
-    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
-        assert(!labels->is_label_reduced(label_no));
-        const vector<GlobalCondition> &preconditions = labels->get_operator_label_preconditions(label_no);
-        const vector<GlobalEffect> &effects = labels->get_operator_label_effects(label_no);
+    for (size_t label_no = 0; label_no < g_operators.size(); ++label_no) {
+        const vector<GlobalCondition> &preconditions = g_operators[label_no].get_preconditions();
+        const vector<GlobalEffect> &effects = g_operators[label_no].get_effects();
         hash_map<int, int> pre_val;
         vector<bool> has_effect_on_var(g_variable_domain.size(), false);
         for (size_t i = 0; i < preconditions.size(); ++i)
