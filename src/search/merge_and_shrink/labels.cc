@@ -129,7 +129,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
         }
     }
     EquivalenceRelation *relation =
-            EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
+        EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         TransitionSystem *ts = all_transition_systems[i];
