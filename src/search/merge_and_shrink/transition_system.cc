@@ -551,6 +551,8 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     }
 
     for (size_t i = 0; i < result.size(); ++i) {
+        // Need to set the correct number of labels *after* generating them
+        result[i]->num_labels = labels->get_size();
         result[i]->compute_distances_and_prune();
         assert(result[i]->is_valid());
     }
