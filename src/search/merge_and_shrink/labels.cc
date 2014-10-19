@@ -7,43 +7,44 @@
 #include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
 
 using namespace std;
 
-Labels::Labels(const Options &options, OperatorCost cost_type)
+Labels::Labels(const Options &options)
     : label_reduction_method(
           LabelReductionMethod(options.get_enum("label_reduction_method"))),
       label_reduction_system_order(
           LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
-    // Generate a label for every operator
-    if (!g_operators.empty()) {
-        if (g_operators.size() * 2 - 1 > labels.max_size())
-            exit_with(EXIT_OUT_OF_MEMORY);
-        labels.reserve(g_operators.size() * 2 - 1);
-    }
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        labels.push_back(new Label(i, get_adjusted_action_cost(g_operators[i], cost_type)));
-    }
+    // Reserve memory
+    size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
+    if (max_transition_system_count > transition_system_order.max_size())
+        exit_with(EXIT_OUT_OF_MEMORY);
+    transition_system_order.reserve(max_transition_system_count);
+    size_t max_labels_count = g_operators.size() * 2 - 1;
+    if (max_labels_count > labels.max_size())
+        exit_with(EXIT_OUT_OF_MEMORY);
+    labels.reserve(max_labels_count);
 
     // Compute the transition system order
-    size_t max_no_systems = g_variable_domain.size() * 2 - 1;
-    transition_system_order.reserve(max_no_systems);
     if (label_reduction_system_order == REGULAR
         || label_reduction_system_order == RANDOM) {
-        for (size_t i = 0; i < max_no_systems; ++i)
+        for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (label_reduction_system_order == RANDOM) {
             random_shuffle(transition_system_order.begin(), transition_system_order.end());
         }
     } else {
         assert(label_reduction_system_order == REVERSE);
-        for (size_t i = 0; i < max_no_systems; ++i)
-            transition_system_order.push_back(max_no_systems - 1 - i);
+        for (size_t i = 0; i < max_transition_system_count; ++i)
+            transition_system_order.push_back(max_transition_system_count - 1 - i);
     }
+}
+
+void Labels::add_label(int label_no, int cost) {
+    labels.push_back(new Label(label_no, cost));
 }
 
 void Labels::notify_transition_systems(

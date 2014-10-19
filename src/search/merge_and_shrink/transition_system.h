@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
+#include "../operator_cost.h"
+
 #include <ext/slist>
 #include <iostream>
 #include <string>
@@ -131,7 +133,8 @@ public:
     virtual ~TransitionSystem();
 
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
-                                                Labels *labels);
+                                                Labels *labels,
+                                                OperatorCost cost_type);
     void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);

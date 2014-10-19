@@ -449,21 +449,25 @@ void TransitionSystem::apply_general_label_mapping(int new_label_no,
 }
 
 void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *> &result,
-                                                       Labels *labels) {
+                                                       Labels *labels,
+                                                       OperatorCost cost_type) {
     assert(result.empty());
     cout << "Building atomic transition systems... " << endl;
-    int var_count = g_variable_domain.size();
 
     // Step 1: Create the transition system objects without transitions.
+    int var_count = g_variable_domain.size();
     for (int var_no = 0; var_no < var_count; ++var_no)
         result.push_back(new AtomicTransitionSystem(labels, var_no));
 
     // Step 2: Add transitions.
-    for (size_t label_no = 0; label_no < g_operators.size(); ++label_no) {
-        const vector<GlobalCondition> &preconditions = g_operators[label_no].get_preconditions();
-        const vector<GlobalEffect> &effects = g_operators[label_no].get_effects();
+    int op_count = g_operators.size();
+    for (int label_no = 0; label_no < op_count; ++label_no) {
+        const GlobalOperator &op = g_operators[label_no];
+        labels->add_label(label_no, get_adjusted_action_cost(op, cost_type));
+        const vector<GlobalCondition> &preconditions = op.get_preconditions();
+        const vector<GlobalEffect> &effects = op.get_effects();
         hash_map<int, int> pre_val;
-        vector<bool> has_effect_on_var(g_variable_domain.size(), false);
+        vector<bool> has_effect_on_var(var_count, false);
         for (size_t i = 0; i < preconditions.size(); ++i)
             pre_val[preconditions[i].var] = preconditions[i].val;
 
