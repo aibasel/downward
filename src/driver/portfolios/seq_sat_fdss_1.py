@@ -1,10 +1,6 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import portfolio
-
-# NOTE: when using iterated search included, we must include the option
-#       "plan_counter=PLANCOUNTER"
+OPTIMAL = False
 
 CONFIGS = [
     # alt_lazy_ff_cg
@@ -74,6 +70,4 @@ CONFIGS = [
 FINAL_CONFIG = [
     "--heuristic", "h=ff(cost_type=H_COST_TYPE)",
     "--search",
-    "iterated(eager(single(sum([g(),weight(h,3)])),preferred=h,cost_type=S_COST_TYPE,bound=BOUND),bound=BOUND,repeat_last=true,plan_counter=PLANCOUNTER)"]
-
-portfolio.run(configs=CONFIGS, optimal=False, final_config=FINAL_CONFIG)
+    "iterated(eager(single(sum([g(),weight(h,3)])),preferred=h,cost_type=S_COST_TYPE,bound=BOUND),bound=BOUND,repeat_last=true)"]

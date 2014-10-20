@@ -123,4 +123,8 @@ bool in_bounds(size_t index, const T &container) {
     return index < container.size();
 }
 
+template<typename T>
+void unused_parameter(const T &) {
+}
+
 #endif
