@@ -14,6 +14,9 @@ performed:
     configs use default_configs_satisficing and
     suite_satisficing_with_ipc11.
 
+* Run experiment with different time limit:
+  * issue479/issue479-5min.py shows how to set the limit.
+
 * Add a custom log parser:
   * issue469/issue469.py adds a parser for raw_memory
 
