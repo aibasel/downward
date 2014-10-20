@@ -20,3 +20,5 @@ exp = common_setup.IssueExperiment(
     )
 
 exp.add_absolute_report_step(attributes=['coverage', 'error', 'run_dir'])
+
+exp()
