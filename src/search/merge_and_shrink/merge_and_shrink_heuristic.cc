@@ -32,7 +32,7 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    labels->dump_options();
+    labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
@@ -85,15 +85,10 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             reduced_labels = true;
-            transition_system->normalize();
-            other_transition_system->normalize();
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
         }
 
-        // distances need to be computed before shrinking
-        transition_system->compute_distances_and_prune();
-        other_transition_system->compute_distances_and_prune();
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -114,8 +109,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (!reduced_labels) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
         }
-        transition_system->normalize();
-        other_transition_system->normalize();
         if (!reduced_labels) {
             // only print statistics if we just possibly reduced labels
             other_transition_system->statistics(use_expensive_statistics);
@@ -148,7 +141,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
     }
 
-    final_transition_system->compute_distances_and_prune();
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 
