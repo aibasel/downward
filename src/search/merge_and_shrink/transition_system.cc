@@ -453,9 +453,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
                                                        OperatorCost cost_type) {
     assert(result.empty());
     cout << "Building atomic transition systems... " << endl;
+    int var_count = g_variable_domain.size();
 
     // Step 1: Create the transition system objects without transitions.
-    int var_count = g_variable_domain.size();
     for (int var_no = 0; var_no < var_count; ++var_no)
         result.push_back(new AtomicTransitionSystem(labels, var_no));
 
