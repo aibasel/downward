@@ -23,10 +23,12 @@ Labels::Labels(const Options &options)
     if (max_transition_system_count > transition_system_order.max_size())
         exit_with(EXIT_OUT_OF_MEMORY);
     transition_system_order.reserve(max_transition_system_count);
-    size_t max_labels_count = g_operators.size() * 2 - 1;
-    if (max_labels_count > labels.max_size())
-        exit_with(EXIT_OUT_OF_MEMORY);
-    labels.reserve(max_labels_count);
+    if (!g_operators.empty()) {
+        size_t max_labels_count = g_operators.size() * 2 - 1;
+        if (max_labels_count > labels.max_size())
+            exit_with(EXIT_OUT_OF_MEMORY);
+        labels.reserve(max_labels_count);
+    }
 
     // Compute the transition system order
     if (label_reduction_system_order == REGULAR
