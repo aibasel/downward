@@ -33,6 +33,17 @@
 
 set -e
 
+if [[ $# == 0 ]]; then
+    MODE=repo
+    echo "no arguments: will try to get master.cfg from repository web server"
+elif [[ $# == 1 ]]; then
+    MODE=file
+    SRC="$(readlink -f "$1")"
+else
+    echo "usage: $(basename "$0") [MASTER_CFG]" 1>&2
+    exit 2
+fi
+
 ## Note: X and Y are defined in such a convoluted way because we want
 ## ~buildslave/.profile to be read to set up the buildslave's login
 ## shell. This requires running bash between sudo and the desired
@@ -42,7 +53,13 @@ Y="sudo -u buildslave -H bash -l -c"
 
 cd /var/lib/buildbot/masters/downward
 $X "mv master.cfg master.cfg.bak"
-$X "wget http://hg.fast-downward.org/raw-file/default/misc/buildbot/master.cfg"
+if [[ $MODE == repo ]]; then
+    echo "fetching master.cfg with wget..."
+    $X "wget http://hg.fast-downward.org/raw-file/default/misc/buildbot/master.cfg"
+else
+    echo "copying master.cfg from $SRC..."
+    $X "cp \"$SRC\" master.cfg"
+fi
 $X "chmod go-r master.cfg"
 $X "buildbot checkconfig"
 $X "buildbot restart"
@@ -50,5 +67,5 @@ $X "rm master.cfg.bak"
 
 sudo service apache2 restart
 
-cd /home/buildslave/downward-slave
+cd /home/buildslave/aidev
 $Y "buildslave restart"
