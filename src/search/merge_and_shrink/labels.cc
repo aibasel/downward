@@ -18,19 +18,14 @@ Labels::Labels(const Options &options)
           LabelReductionMethod(options.get_enum("label_reduction_method"))),
       label_reduction_system_order(
           LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
-    // Reserve memory
-    size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
-    if (max_transition_system_count > transition_system_order.max_size())
-        exit_with(EXIT_OUT_OF_MEMORY);
-    transition_system_order.reserve(max_transition_system_count);
+    // Reserve memory for labels
     if (!g_operators.empty()) {
-        size_t max_labels_count = g_operators.size() * 2 - 1;
-        if (max_labels_count > labels.max_size())
-            exit_with(EXIT_OUT_OF_MEMORY);
-        labels.reserve(max_labels_count);
+        labels.reserve(g_operators.size() * 2 - 1);
     }
 
     // Compute the transition system order
+    size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
+    transition_system_order.reserve(max_transition_system_count);
     if (label_reduction_system_order == REGULAR
         || label_reduction_system_order == RANDOM) {
         for (size_t i = 0; i < max_transition_system_count; ++i)
@@ -45,8 +40,8 @@ Labels::Labels(const Options &options)
     }
 }
 
-void Labels::add_label(int label_no, int cost) {
-    labels.push_back(new Label(label_no, cost));
+void Labels::add_label(int cost) {
+    labels.push_back(new Label(cost));
 }
 
 void Labels::notify_transition_systems(
@@ -85,14 +80,15 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
             }
         }
         if (equivalent_labels.size() > 1) {
-            Label *new_label = new Label(labels.size(), equivalent_labels[0]->get_cost());
+            int new_label_no = labels.size();
+            Label *new_label = new Label(equivalent_labels[0]->get_cost());
             labels.push_back(new_label);
             for (size_t i = 0; i < equivalent_label_nos.size(); ++i) {
                 int old_label_no = equivalent_label_nos[i];
                 delete labels[old_label_no];
                 labels[old_label_no] = 0;
             }
-            label_mapping.push_back(make_pair(new_label->get_id(), equivalent_label_nos));
+            label_mapping.push_back(make_pair(new_label_no, equivalent_label_nos));
         }
         if (!equivalent_labels.empty()) {
             ++num_labels_after_reduction;
@@ -126,9 +122,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
     vector<pair<int, int> > annotated_labels;
     annotated_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (!is_label_reduced(label_no)) {
-            // only consider non-reduced labels
-            assert(labels[label_no]->get_id() == label_no);
+        if (labels[label_no]) {
             annotated_labels.push_back(make_pair(0, label_no));
         }
     }
@@ -270,21 +264,22 @@ void Labels::reduce(pair<int, int> next_merge,
         delete cached_local_equivalence_relations[i];
 }
 
-bool Labels::is_label_reduced(int label_no) const {
+bool Labels::is_current_label(int label_no) const {
     assert(in_bounds(label_no, labels));
-    return labels[label_no] == 0;
+    return labels[label_no];
 }
 
 int Labels::get_label_cost(int label_no) const {
-    assert(!is_label_reduced(label_no));
+    assert(labels[label_no]);
     return labels[label_no]->get_cost();
 }
 
 void Labels::dump_labels() const {
-    cout << "no of labels: " << labels.size() << endl;
-    for (size_t i = 0; i < labels.size(); ++i) {
-        const Label *label = labels[i];
-        label->dump();
+    cout << "active labels:" << endl;
+    for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
+        if (labels[label_no]) {
+            cout << "label " << label_no << ", cost " << labels[label_no]->get_cost() << endl;
+        }
     }
 }
 
