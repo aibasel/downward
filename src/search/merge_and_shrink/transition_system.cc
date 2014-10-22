@@ -56,10 +56,10 @@ TransitionSystem::TransitionSystem(Labels *labels_)
 TransitionSystem::~TransitionSystem() {
 }
 
-bool TransitionSystem::is_valid () const {
-    return (are_distances_computed()
-            && are_transitions_sorted_unique()
-            && is_label_reduced());
+bool TransitionSystem::is_valid() const {
+    return are_distances_computed()
+           && are_transitions_sorted_unique()
+           && is_label_reduced();
 }
 
 void TransitionSystem::clear_distances() {
