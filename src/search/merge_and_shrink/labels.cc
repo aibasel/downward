@@ -1,6 +1,5 @@
 #include "labels.h"
 
-#include "label.h"
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
@@ -12,6 +11,22 @@
 #include <cassert>
 
 using namespace std;
+
+class Label {
+    /*
+      This class implements labels as used by merge-and-shrink transition systems.
+      Labels are opaque tokens that have an associated cost.
+    */
+    int cost;
+public:
+    explicit Label(int cost_)
+        : cost(cost_) {
+    }
+    ~Label() {}
+    int get_cost() const {
+        return cost;
+    }
+};
 
 Labels::Labels(const Options &options)
     : label_reduction_method(
