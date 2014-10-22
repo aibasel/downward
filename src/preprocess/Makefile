@@ -1,12 +1,22 @@
-## Set LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable
-## static linking of the executable in release mode.
+## Variables prefixed with "DOWNWARD_" are used to configure the
+## build. They can be changed on the command line or set as
+## environment variables.
+
+## By default, build in 32-bit mode. Use DOWNWARD_BITWIDTH=64
+## to build in 64-bit mode and DOWNWARD_BITWIDTH=native to use
+## the native bitness of the OS.
+DOWNWARD_BITWIDTH ?= 32
+
+## Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to
+## disable/enable static linking of the executable in release mode.
 ## On OS X, this is unsupported and will be silently disabled.
-LINK_RELEASE_STATICALLY=1
+DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 
 ## On a supported operating system, there should be no need to override
-## the OS setting. If the provided code does not work even though your
-## operating system is a supported one, please report this as a bug.
-OS=auto
+## the DOWNWARD_OS setting. If the provided code does not work even
+## though your operating system is a supported one, please report this
+## as a bug.
+DOWNWARD_OS ?= auto
 
 
 HEADERS = \
@@ -25,28 +35,39 @@ HEADERS = \
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = preprocess
 
+default: release
+
 ARGS_PROFILE =
 
+SHELL = /bin/bash
 
-ifeq ($(OS), auto)
-UNAME := $(shell uname)
-ifeq ($(UNAME), Darwin)
-OS=osx
-endif
-ifeq ($(UNAME), Linux)
-OS=linux
-endif
-ifeq ($(OS), auto)
-$(warning OS detection failed -- setting to Linux and hoping for the best!)
-OS=linux
-endif
+ifeq ($(DOWNWARD_OS), auto)
+    UNAME := $(shell uname)
+
+    ifeq ($(UNAME), Darwin)
+        DOWNWARD_OS=osx
+    else ifeq ($(UNAME), Linux)
+        DOWNWARD_OS=linux
+    else
+        UNAME_O := $(shell uname -o)
+    endif
+
+    ifeq ($(UNAME_O), Cygwin)
+        ## For now, we treat Linux and Cygwin equally in this
+        ## Makefile, so we just call Cygwin "linux".
+        DOWNWARD_OS=linux
+    else ifeq ($(UNAME_O), Msys)
+        DOWNWARD_OS=windows
+    else ifeq ($(DOWNWARD_OS), auto)
+        $(warning OS detection failed -- setting to Linux and hoping for the best!)
+        DOWNWARD_OS=linux
+    endif
 endif
 
-ifeq ($(OS), osx)
-## Disable static linking on OS X.
-LINK_RELEASE_STATICALLY=0
+ifeq ($(DOWNWARD_OS), osx)
+    ## Disable static linking on OS X.
+    DOWNWARD_LINK_RELEASE_STATICALLY=0
 endif
-
 
 
 OBJECT_SUFFIX_RELEASE =
@@ -65,70 +86,85 @@ TARGET_DEBUG    = $(TARGET)$(TARGET_SUFFIX_DEBUG)
 OBJECTS_PROFILE = $(SOURCES:%.cc=.obj/%$(OBJECT_SUFFIX_PROFILE).o)
 TARGET_PROFILE  = $(TARGET)$(TARGET_SUFFIX_PROFILE)
 
+DEPEND = $(CXX) -MM
 
-CC     = g++
-DEPEND = g++ -MM
-
-## CCOPT, LINKOPT, POSTLINKOPT are options for compiler and linker
+## CXXFLAGS, LDFLAGS, POSTLINKOPT are options for compiler and linker
 ## that are used for all three targets (release, debug, and profile).
 ## (POSTLINKOPT are options that appear *after* all object files.)
 
-CCOPT  =
-CCOPT += -m32
-CCOPT += -g
-CCOPT += -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror
+ifeq ($(DOWNWARD_BITWIDTH), 32)
+    BITWIDTHOPT = -m32
+else ifeq ($(DOWNWARD_BITWIDTH), 64)
+    BITWIDTHOPT = -m64
+else ifneq ($(DOWNWARD_BITWIDTH), native)
+    $(error Bad value for DOWNWARD_BITWIDTH)
+endif
+
+CXXFLAGS =
+CXXFLAGS += -g
+CXXFLAGS += $(BITWIDTHOPT)
+# Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
+CXXFLAGS += -std=c++0x -Wall -Wextra -pedantic -Wno-sign-compare -Wno-deprecated -Werror
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
 ## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
+ifeq ($(DOWNWARD_OS), linux) # workarounds only valid for Linux...
+    HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
+    HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
 
-HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
-HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
+    ifdef HAVE_GCC_4_4
+        CXXFLAGS += -I/usr/include/c++/4.4/i686-linux-gnu
+    endif
 
-ifdef HAVE_GCC_4_4
-    CCOPT += -I/usr/include/c++/4.4/i686-linux-gnu
+    ifdef HAVE_GCC_4_5
+        CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
+    endif
 endif
 
-ifdef HAVE_GCC_4_5
-    CCOPT += -I/usr/include/c++/4.5/i686-linux-gnu
-endif
-
-LINKOPT  =
-LINKOPT += -m32
-LINKOPT += -g
+LDFLAGS =
+LDFLAGS += $(BITWIDTHOPT)
+LDFLAGS += -g
 
 POSTLINKOPT =
 
 ## Additional specialized options for the various targets follow.
 ## In release mode, we link statically since this makes it more likely
 ## that local compiles will work on the various grids (gkigrid, Black
-## Forest Grid).
+## Forest Grid, maia).
 ##
 ## NOTE: This precludes some uses of exceptions.
 ##        For details, see man gcc on -static-libgcc.
 
-CCOPT_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
-CCOPT_DEBUG    = -O3
-CCOPT_PROFILE  = -O3 -pg
+CXXFLAGS_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
+CXXFLAGS_DEBUG    = -O3
+CXXFLAGS_PROFILE  = -O3 -pg
 
-LINKOPT_RELEASE =
-LINKOPT_DEBUG    =
-LINKOPT_PROFILE  = -pg
-# LINKOPT_PROFILE += -lc_p
+LDFLAGS_RELEASE  =
+LDFLAGS_DEBUG    =
+LDFLAGS_PROFILE  = -pg
 
-ifeq ($(LINK_RELEASE_STATICALLY), 1)
-LINKOPT_RELEASE += -static -static-libgcc
+POSTLINKOPT_RELEASE =
+POSTLINKOPT_DEBUG   =
+POSTLINKOPT_PROFILE =
+
+ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
+    LDFLAGS_RELEASE += -static -static-libgcc
 endif
 
-POSTLINKOPT_RELEASE  =
-POSTLINKOPT_DEBUG    =
-POSTLINKOPT_PROFILE  =
+ifeq ($(DOWNWARD_OS), linux)
+    ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
+        POSTLINKOPT_RELEASE += -lrt
+    else
+        POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+    endif
+    POSTLINKOPT_DEBUG  += -lrt
+    POSTLINKOPT_PROFILE += -lrt
+endif
 
-default: release
 
-SHELL = /bin/bash
 
 all: release debug profile
 
@@ -137,33 +173,33 @@ all: release debug profile
 release: $(TARGET_RELEASE)
 
 $(TARGET_RELEASE): $(OBJECTS_RELEASE)
-	$(CC) $(LINKOPT) $(LINKOPT_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_RELEASE) $(OBJECTS_RELEASE) $(POSTLINKOPT) $(POSTLINKOPT_RELEASE) -o $(TARGET_RELEASE)
 
 $(OBJECTS_RELEASE): .obj/%$(OBJECT_SUFFIX_RELEASE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_RELEASE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_RELEASE) -c $< -o $@
 
 ## Build rules for the debug target follow.
 
 debug: $(TARGET_DEBUG)
 
 $(TARGET_DEBUG): $(OBJECTS_DEBUG)
-	$(CC) $(LINKOPT) $(LINKOPT_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_DEBUG) $(OBJECTS_DEBUG) $(POSTLINKOPT) $(POSTLINKOPT_DEBUG) -o $(TARGET_DEBUG)
 
 $(OBJECTS_DEBUG): .obj/%$(OBJECT_SUFFIX_DEBUG).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_DEBUG) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DEBUG) -c $< -o $@
 
 ## Build rules for the profile target follow.
 
 profile: $(TARGET_PROFILE)
 
 $(TARGET_PROFILE): $(OBJECTS_PROFILE)
-	$(CC) $(LINKOPT) $(LINKOPT_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
+	$(CXX) $(LDFLAGS) $(LDFLAGS_PROFILE) $(OBJECTS_PROFILE) $(POSTLINKOPT) $(POSTLINKOPT_PROFILE) -o $(TARGET_PROFILE)
 
 $(OBJECTS_PROFILE): .obj/%$(OBJECT_SUFFIX_PROFILE).o: %.cc
 	@mkdir -p $$(dirname $@)
-	$(CC) $(CCOPT) $(CCOPT_PROFILE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_PROFILE) -c $< -o $@
 
 ## Additional targets follow.
 
@@ -180,14 +216,14 @@ clean:
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)
 
-## Note: If we just call gcc -MM on a source file that lives within a
+## NOTE: If we just call gcc -MM on a source file that lives within a
 ## subdirectory, it will strip the directory part in the output. Hence
 ## the for loop with the sed call.
 
 Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 	for source in $(SOURCES) ; do \
-	    $(DEPEND) $$source > Makefile.temp0; \
+	    $(DEPEND) $(CXXFLAGS) $$source > Makefile.temp0; \
 	    objfile=$${source%%.cc}.o; \
 	    sed -i -e "s@^[^:]*:@$$objfile:@" Makefile.temp0; \
 	    cat Makefile.temp0 >> Makefile.temp; \
@@ -199,9 +235,9 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 	rm -f Makefile.temp
 
 ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(MAKECMDGOALS),distclean)
--include Makefile.depend
-endif
+    ifneq ($(MAKECMDGOALS),distclean)
+        -include Makefile.depend
+    endif
 endif
 
 .PHONY: default all release debug profile clean distclean

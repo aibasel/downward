@@ -1,10 +1,10 @@
 #include "ff_heuristic.h"
 
+#include "global_operator.h"
+#include "global_state.h"
 #include "globals.h"
-#include "operator.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "state.h"
 
 #include <cassert>
 #include <vector>
@@ -32,12 +32,12 @@ void FFHeuristic::initialize() {
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
-    const State &state, Proposition *goal) {
+    const GlobalState &state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
         if (unary_op) { // We have not yet chained back to a start node.
-            for (int i = 0; i < unary_op->precondition.size(); i++)
+            for (size_t i = 0; i < unary_op->precondition.size(); ++i)
                 mark_preferred_operators_and_relaxed_plan(
                     state, unary_op->precondition[i]);
             int operator_no = unary_op->operator_no;
@@ -50,7 +50,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // so we perform it to save work.
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
-                    const Operator *op = &g_operators[operator_no];
+                    const GlobalOperator *op = &g_operators[operator_no];
                     if (op->is_applicable(state))
                         set_preferred(op);
                 }
@@ -59,17 +59,17 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
     }
 }
 
-int FFHeuristic::compute_heuristic(const State &state) {
+int FFHeuristic::compute_heuristic(const GlobalState &state) {
     int h_add = compute_add_and_ff(state);
     if (h_add == DEAD_END)
         return h_add;
 
     // Collecting the relaxed plan also sets the preferred operators.
-    for (int i = 0; i < goal_propositions.size(); i++)
+    for (size_t i = 0; i < goal_propositions.size(); ++i)
         mark_preferred_operators_and_relaxed_plan(state, goal_propositions[i]);
 
     int h_ff = 0;
-    for (int op_no = 0; op_no < relaxed_plan.size(); op_no++) {
+    for (size_t op_no = 0; op_no < relaxed_plan.size(); ++op_no) {
         if (relaxed_plan[op_no]) {
             relaxed_plan[op_no] = false; // Clean up for next computation.
             h_ff += get_adjusted_cost(g_operators[op_no]);
@@ -79,7 +79,20 @@ int FFHeuristic::compute_heuristic(const State &state) {
 }
 
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("FF heuristic", "See also Synergy.");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional effects", "supported");
+    parser.document_language_support(
+        "axioms",
+        "supported (in the sense that the planner won't complain -- "
+        "handling of axioms might be very stupid "
+        "and even render the heuristic unsafe)");
+    parser.document_property("admissible", "no");
+    parser.document_property("consistent", "no");
+    parser.document_property("safe", "yes for tasks without axioms");
+    parser.document_property("preferred operators", "yes");
+
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -88,4 +101,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         return new FFHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("ff", _parse);
+static Plugin<Heuristic> _plugin("ff", _parse);

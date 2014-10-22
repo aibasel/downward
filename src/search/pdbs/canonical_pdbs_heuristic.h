@@ -33,7 +33,7 @@ class CanonicalPDBsHeuristic : public Heuristic {
     void dump_cliques() const;
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const State &state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     CanonicalPDBsHeuristic(const Options &opts);
     virtual ~CanonicalPDBsHeuristic();
@@ -41,9 +41,21 @@ public:
     // add a new pattern to the collection and recomputes maximal cliques
     void add_pattern(const std::vector<int> &pattern);
 
+    /* Prune pattern set P = {P_1, ..., P_k} if there exists another pattern set
+       Q = {Q_1, ..., Q_l} where each P_i is a subset of some Q_j:
+       this implies h^P <= h^Q for all states. */
+    void dominance_pruning();
+
     // checks for all max cliques if they would be additive to this pattern
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
+
+    // to avoid unneccessary overhead in the sampling procedure of iPDB, provide
+    // this method to only evaluate the heuristic to check whether a
+    // given state is a dead end or not (see issue404).
+    // set Heuristic's evaluator_value to DEAD_END if state is a dead end and to
+    // 0 otherwise.
+    void evaluate_dead_end(const GlobalState &state);
     const std::vector<PDBHeuristic *> &get_pattern_databases() const {return pattern_databases; }
     int get_size() const {return size; }
     void dump() const;

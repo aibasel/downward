@@ -1,0 +1,125 @@
+#! /bin/bash
+
+set -e
+
+STDERR="$(pwd)/calibration-test.err"
+STDOUT="$(pwd)/calibration-test.log"
+LOG="$(pwd)/calibration-test.results"
+TMP="$(pwd)/calibration-test.tmp"
+
+cd "$(dirname "$0")/../src"
+
+function log {
+    echo "$@" | tee -a "$STDOUT" | tee -a "$LOG"
+}
+
+function compile {
+    echo "Compiling..." | tee -a "$STDOUT"
+    (
+        set +e
+        ./build_all distclean
+        ./build_all USE_LP=1
+    ) 1>> "$STDOUT" 2>> "$STDERR"
+}
+
+function solve-task {
+    DOMAIN="$1"
+    PROBLEM="$2"
+    shift 2
+
+    log "Solving $PROBLEM..."
+
+    DOMAIN="../benchmarks/$DOMAIN"
+    PROBLEM="../benchmarks/$PROBLEM"
+
+    START_TIME=$(date +%s.%N)
+    (
+        set +e
+        # Set time limit of 30 minutes and memory limit of 2 GB.
+        ulimit -t 1800
+        ulimit -v 2097152
+
+        ./plan "$DOMAIN" "$PROBLEM" "$@" | tee "$TMP"
+        echo
+    ) 1>> "$STDOUT" 2>> "$STDERR"
+    END_TIME=$(date +%s.%N)
+    ELAPSED=$(echo $END_TIME - $START_TIME | bc)
+
+    log "$(grep '^Done\|Evaluated [0-9]\|^Total\|^Peak\|^Plan cost' "$TMP" | \
+             sed -e 's/Done!/Translator:/' -e 's/Total time:/Search:/' \
+                 -e 's/\[\|\]//g' )"
+    rm "$TMP"
+    log $(printf "Elapsed wall-clock time: %.3f seconds" $ELAPSED)
+
+    ./validate "$DOMAIN" "$PROBLEM" sas_plan* | tee "$TMP" \
+        1>> "$STDOUT" 2>> "$STDERR"
+    log "$(grep '^Plan \(invalid\|valid\)' "$TMP")"
+    rm "$TMP"
+
+    ./cleanup 1>> "$STDOUT" 2>> "$STDERR"
+
+    log
+}
+
+rm -f "$STDOUT" "$STDERR" "$LOG"
+
+compile
+
+log
+
+log "Testing blind search..."
+solve-task \
+    blocks/domain.pddl \
+    blocks/probBLOCKS-9-0.pddl \
+    --search "astar(blind())"
+
+log "Testing seq-opt-lmcut..."
+solve-task \
+    transport-opt08-strips/p24-domain.pddl \
+    transport-opt08-strips/p24.pddl \
+    ipc seq-opt-lmcut
+
+log "Testing seq-opt-bjolp..."
+solve-task \
+    parcprinter-08-strips/p14-domain.pddl \
+    parcprinter-08-strips/p14.pddl \
+    ipc seq-opt-bjolp
+
+log "Testing lazy search with h^cea..."
+solve-task \
+    satellite/domain.pddl \
+    satellite/p30-HC-pfile10.pddl \
+    --heuristic "h=cea()" --search "lazy_greedy(h, preferred=h)"
+
+log "Testing eager search with h^FF..."
+solve-task \
+    logistics98/domain.pddl \
+    logistics98/prob22.pddl \
+    --heuristic "h=ff()" --search "eager_greedy(h, preferred=h)"
+
+log "Testing merge-and-shrink..."
+MAS="merge_and_shrink(
+         merge_strategy=merge_linear(variable_order=reverse_level),
+         shrink_strategy=shrink_bisimulation(
+             max_states=infinity,
+             threshold=1,
+             greedy=true,
+             group_by_h=true))"
+solve-task \
+    logistics00/domain.pddl \
+    logistics00/probLOGISTICS-9-0.pddl \
+    --heuristic "h=$MAS" --search "astar(h)"
+
+log "Testing landmarks with optimal cost partitioning..."
+LM="lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true)"
+solve-task \
+    sokoban-opt08-strips/p07-domain.pddl \
+    sokoban-opt08-strips/p07.pddl \
+    --heuristic "h=$LM" --search "astar(h,mpd=true)"
+
+if [ -s "$STDERR" ]; then
+    log "There was output on stderr. Please check calibration-test.err."
+else
+    log "There was no output on stderr."
+    rm "$STDERR"
+fi

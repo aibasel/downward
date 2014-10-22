@@ -9,9 +9,9 @@
 #include <ext/hash_set>
 #include <cassert>
 
-#include "../operator.h"
 #include "exploration.h"
 #include "landmark_types.h"
+#include "../global_operator.h"
 #include "../option_parser.h"
 
 enum edge_type {
@@ -70,16 +70,16 @@ public:
         return in_goal;
     }
 
-    bool is_true_in_state(const State &state) const {
+    bool is_true_in_state(const GlobalState &state) const {
         if (disjunctive) {
-            for (unsigned int i = 0; i < vars.size(); i++) {
+            for (size_t i = 0; i < vars.size(); ++i) {
                 if (state[vars[i]] == vals[i]) {
                     return true;
                 }
             }
             return false;
         } else { // conjunctive or simple
-            for (int i = 0; i < vars.size(); i++) {
+            for (size_t i = 0; i < vars.size(); ++i) {
                 if (state[vars[i]] != vals[i]) {
                     return false;
                 }
@@ -101,13 +101,13 @@ struct LandmarkNodeComparer {
         if (a->vars.size() < b->vars.size()) {
             return false;
         }
-        for (int i = 0; i < a->vars.size(); i++) {
+        for (size_t i = 0; i < a->vars.size(); ++i) {
             if (a->vars[i] > b->vars[i])
                 return true;
             if (a->vars[i] < b->vars[i])
                 return false;
         }
-        for (int i = 0; i < a->vals.size(); i++) {
+        for (size_t i = 0; i < a->vals.size(); ++i) {
             if (a->vals[i] > b->vals[i])
                 return true;
             if (a->vals[i] < b->vals[i])
@@ -131,20 +131,29 @@ public:
     LandmarkNode *get_lm_for_index(int);
     int get_needed_cost() const {return needed_cost; }
     int get_reached_cost() const {return reached_cost; }
-    LandmarkNode *get_landmark(const pair<int, int> &prop) const;
+    LandmarkNode *get_landmark(const std::pair<int, int> &prop) const;
+
+    // TODO: the following method should not exist. Ideally, we want the
+    // information about support for conditional effects to reside in the
+    // landmark factory classes. For now, this cannot easily be done since the
+    // factories do not exist anymore when the landmark heuristic is
+    // constructed.
+    bool supports_conditional_effects() {return conditional_effects_supported; }
 
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
-    inline const set<LandmarkNode *> &get_nodes() const {
+    inline const std::set<LandmarkNode *> &get_nodes() const {
         return nodes;
     }
-    inline const Operator &get_operator_for_lookup_index(int op_no) const {
-        const Operator &op = (op_no < g_operators.size()) ?
-                             g_operators[op_no] : g_axioms[op_no - g_operators.size()];
-        return op;
+    inline const GlobalOperator &get_operator_for_lookup_index(int op_no) const {
+        int num_ops = g_operators.size();
+        if (op_no < num_ops)
+            return g_operators[op_no];
+        else
+            return g_axioms[op_no - num_ops];
     }
     inline int number_of_landmarks() const {
-        assert(landmarks_count == nodes.size());
+        assert(landmarks_count == static_cast<int>(nodes.size()));
         return landmarks_count;
     }
     Exploration *get_exploration() const {return exploration; }
@@ -155,17 +164,17 @@ public:
     LandmarkGraph(const Options &opts);
     virtual ~LandmarkGraph() {}
 
-    inline LandmarkNode &get_simple_lm_node(const pair<int, int> &a) const {
+    inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
         assert(simple_landmark_exists(a));
         return *(simple_lms_to_nodes.find(a)->second);
     }
-    inline LandmarkNode &get_disj_lm_node(const pair<int, int> &a) const {
+    inline LandmarkNode &get_disj_lm_node(const std::pair<int, int> &a) const {
         // Note: this only works because every proposition appears in only one disj. LM
         assert(!simple_landmark_exists(a));
         assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
         return *(disj_lms_to_nodes.find(a)->second);
     }
-    inline const std::vector<int> &get_operators_including_eff(const pair<int, int> &eff) const {
+    inline const std::vector<int> &get_operators_including_eff(const std::pair<int, int> &eff) const {
         return operators_eff_lookup[eff.first][eff.second];
     }
 
@@ -187,14 +196,14 @@ public:
         return lm_cost_type;
     }
 
-    bool simple_landmark_exists(const pair<int, int> &lm) const; // not needed by HMLandmark
-    bool disj_landmark_exists(const set<pair<int, int> > &lm) const; // not needed by HMLandmark
-    bool landmark_exists(const pair<int, int> &lm) const; // not needed by HMLandmark
-    bool exact_same_disj_landmark_exists(const set<pair<int, int> > &lm) const;
+    bool simple_landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
+    bool disj_landmark_exists(const std::set<std::pair<int, int> > &lm) const; // not needed by HMLandmark
+    bool landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
+    bool exact_same_disj_landmark_exists(const std::set<std::pair<int, int> > &lm) const;
 
-    LandmarkNode &landmark_add_simple(const pair<int, int> &lm);
-    LandmarkNode &landmark_add_disjunctive(const set<pair<int, int> > &lm);
-    LandmarkNode &landmark_add_conjunctive(const set<pair<int, int> > &lm);
+    LandmarkNode &landmark_add_simple(const std::pair<int, int> &lm);
+    LandmarkNode &landmark_add_disjunctive(const std::set<std::pair<int, int> > &lm);
+    LandmarkNode &landmark_add_conjunctive(const std::set<std::pair<int, int> > &lm);
     void rm_landmark_node(LandmarkNode *node);
     LandmarkNode &make_disj_node_simple(std::pair<int, int> lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
@@ -214,11 +223,12 @@ private:
     bool conjunctive_landmarks;
     bool no_orders;
     OperatorCost lm_cost_type;
+    bool conditional_effects_supported;
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
-    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
-    __gnu_cxx::hash_map<pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
+    __gnu_cxx::hash_map<std::pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
+    __gnu_cxx::hash_map<std::pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
     std::set<LandmarkNode *> nodes;
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int> > > operators_eff_lookup;

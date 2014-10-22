@@ -20,7 +20,7 @@ struct hash<const std::vector<int> > {
     size_t operator()(const std::vector<int> &vec) const {
         size_t hash_value = 0x345678;
         size_t mult = 1000003;
-        for (int i = vec.size() - 1; i >= 0; i--) {
+        for (int i = vec.size() - 1; i >= 0; --i) {
             hash_value = (hash_value ^ vec[i]) * mult;
             mult += 82520 + i + i;
         }

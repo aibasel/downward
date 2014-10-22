@@ -7,7 +7,7 @@
 #include "../globals.h"
 
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
-    list<LandmarkNode *> open_landmarks;
+    std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int> > disjunction_classes;
 
     void find_forward_orders(const std::vector<std::vector<int> > &lvl_var,
@@ -15,7 +15,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     void add_lm_forward_orders();
 
     void get_greedy_preconditions_for_lm(const LandmarkNode *lmp,
-                                         const Operator &o, __gnu_cxx::hash_map<int, int> &result) const;
+                                         const GlobalOperator &o, __gnu_cxx::hash_map<int, int> &result) const;
     void compute_shared_preconditions(__gnu_cxx::hash_map<int, int> &shared_pre, std::vector<
                                           std::vector<int> > &lvl_var, LandmarkNode *bp);
     void compute_disjunctive_preconditions(

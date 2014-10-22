@@ -4,8 +4,7 @@
 #include "../option_parser.h"
 #include "../utilities.h"
 
-#include "../merge_and_shrink/variable_order_finder.h"
-
+#include "../variable_order_finder.h"
 #include <vector>
 
 using namespace std;
@@ -27,11 +26,11 @@ static void validate_and_normalize_pattern(
     if (!pattern.empty()) {
         if (pattern.front() < 0)
             parser.error("variable number too low in pattern");
-        if (pattern.back() >= g_variable_domain.size())
+        int num_variables = g_variable_domain.size();
+        if (pattern.back() >= num_variables)
             parser.error("variable number too high in pattern");
     }
 }
-
 
 static void validate_and_normalize_patterns(
     OptionParser &parser, vector<vector<int> > &pattern_collection) {
@@ -39,11 +38,10 @@ static void validate_and_normalize_patterns(
       - Validate and normalize each pattern (see there).
       - Sort collection lexicographically and remove duplicate patterns.
       - Warn if duplicate patterns exist.
-     */
+    */
 
     for (size_t i = 0; i < pattern_collection.size(); ++i)
         validate_and_normalize_pattern(parser, pattern_collection[i]);
-
     sort(pattern_collection.begin(), pattern_collection.end());
     vector<vector<int> >::iterator it = unique(
         pattern_collection.begin(), pattern_collection.end());
@@ -52,7 +50,6 @@ static void validate_and_normalize_patterns(
         parser.warning("duplicate patterns have been removed");
     }
 }
-
 
 static void build_pattern_for_size_limit(
     OptionParser &parser, int size_limit, vector<int> &pattern) {
@@ -65,17 +62,15 @@ static void build_pattern_for_size_limit(
     if (size_limit < 1)
         parser.error("abstraction size must be at least 1");
 
-    VariableOrderFinder order(MERGE_LINEAR_GOAL_CG_LEVEL);
-    size_t size = 1;
+    VariableOrderFinder order(GOAL_CG_LEVEL);
+    int size = 1;
     while (true) {
         if (order.done())
             break;
         int next_var = order.next();
         int next_var_size = g_variable_domain[next_var];
 
-        // Test if (size * next_var_size > size_limit) while guarding
-        // against overflow.
-        if ((size_limit - 1) / next_var_size <= size)
+        if (!is_product_within_limit(size, next_var_size, size_limit))
             break;
 
         pattern.push_back(next_var);
@@ -84,7 +79,6 @@ static void build_pattern_for_size_limit(
 
     validate_and_normalize_pattern(parser, pattern);
 }
-
 
 static void build_combo_patterns(
     OptionParser &parser, int size_limit,
@@ -103,7 +97,6 @@ static void build_combo_patterns(
     }
 }
 
-
 static void build_singleton_patterns(
     vector<vector<int> > &pattern_collection) {
     // Build singleton pattern from each goal variable.
@@ -112,14 +105,21 @@ static void build_singleton_patterns(
         pattern_collection.push_back(vector<int>(1, g_goal[i].first));
 }
 
-
 void parse_pattern(OptionParser &parser, Options &opts) {
     parser.add_option<int>(
-        "max_states", 1000000, "maximum abstraction size");
+        "max_states",
+        "maximal number of abstract states in the pattern database",
+        "1000000");
     parser.add_list_option<int>(
-        "pattern", "the pattern", OptionFlags(false));
+        "pattern",
+        "list of variable numbers of the planning task that should be used as pattern. "
+        "Default: the variables are selected automatically based on a simple greedy strategy.",
+        "",
+        OptionFlags(false));
 
     opts = parser.parse();
+    if (parser.help_mode())
+        return;
 
     vector<int> pattern;
     if (opts.contains("pattern")) {
@@ -128,7 +128,6 @@ void parse_pattern(OptionParser &parser, Options &opts) {
         build_pattern_for_size_limit(
             parser, opts.get<int>("max_states"), pattern);
     }
-
     validate_and_normalize_pattern(parser, pattern);
     opts.set("pattern", pattern);
 
@@ -136,16 +135,21 @@ void parse_pattern(OptionParser &parser, Options &opts) {
         cout << "pattern: " << pattern << endl;
 }
 
-
 void parse_patterns(OptionParser &parser, Options &opts) {
     parser.add_list_option<vector<int> >(
-        "patterns", "the pattern collection", OptionFlags(false));
+        "patterns",
+        "list of patterns (which are lists of variable numbers of the planning task) "
+        "Default: each goal variable is used as a single-variable pattern in the collection.",
+        "",
+        OptionFlags(false));
     parser.add_option<bool>(
-        "combo", false, "use the combo strategy");
+        "combo", "use the combo strategy", "false");
     parser.add_option<int>(
-        "max_states", 1000000, "maximum abstraction size for combo strategy");
+        "max_states", "maximum abstraction size for combo strategy", "1000000");
 
     opts = parser.parse();
+    if (parser.help_mode())
+        return;
 
     vector<vector<int> > pattern_collection;
     if (opts.contains("patterns")) {
@@ -167,7 +171,7 @@ void parse_patterns(OptionParser &parser, Options &opts) {
     }
 
     /* Validation is only necessary at this stage if the patterns were
-       manually speficied, but does not hurt in other cases.
+       manually specified, but does not hurt in other cases.
        Normalization is always useful. */
     validate_and_normalize_patterns(parser, pattern_collection);
     opts.set("patterns", pattern_collection);

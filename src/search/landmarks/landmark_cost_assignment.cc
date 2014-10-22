@@ -2,25 +2,9 @@
 
 #include "landmark_graph.h"
 
+#include "../utilities.h"
+
 #ifdef USE_LP
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#ifdef COIN_USE_CLP
-#include "OsiClpSolverInterface.hpp"
-typedef OsiClpSolverInterface OsiXxxSolverInterface;
-#endif
-
-#ifdef COIN_USE_OSL
-#include "OsiOslSolverInterface.hpp"
-typedef OsiOslSolverInterface OsiXxxSolverInterface;
-#include "ekk_c_api.h"
-#endif
-
-#ifdef COIN_USE_CPX
-#include "OsiCpxSolverInterface.hpp"
-typedef OsiCpxSolverInterface OsiXxxSolverInterface;
-#endif
-
-#include "CoinPackedVector.hpp"
 #include "CoinPackedMatrix.hpp"
 #include <sys/times.h>
 #endif
@@ -85,10 +69,10 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
             if (use_action_landmarks && achievers.size() == 1) {
                 // We have found an action landmark for this state.
                 int op_id = *achievers.begin();
-                assert(op_id >= 0 && op_id < g_operators.size());
+                assert(in_bounds(op_id, g_operators));
                 if (!action_landmarks[op_id]) {
                     action_landmarks[op_id] = true;
-                    const Operator &op = lm_graph.get_operator_for_lookup_index(
+                    const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
                         op_id);
                     h += get_adjusted_action_cost(op, cost_type);
                 }
@@ -97,8 +81,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {
                     int op_id = *ach_it;
-                    assert(op_id >= 0 && op_id < g_operators.size());
-                    achieved_lms_by_op[op_id]++;
+                    assert(in_bounds(op_id, g_operators));
+                    ++achieved_lms_by_op[op_id];
                 }
             }
         }
@@ -119,7 +103,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
             for (ach_it = achievers.begin(); ach_it != achievers.end();
                  ++ach_it) {
                 int op_id = *ach_it;
-                assert(op_id >= 0 && op_id < g_operators.size());
+                assert(in_bounds(op_id, g_operators));
                 if (action_landmarks[op_id]) {
                     covered_by_action_lm = true;
                     break;
@@ -129,8 +113,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {
                     int op_id = *ach_it;
-                    assert(op_id >= 0 && op_id < g_operators.size());
-                    achieved_lms_by_op[op_id]--;
+                    assert(in_bounds(op_id, g_operators));
+                    --achieved_lms_by_op[op_id];
                 }
             } else {
                 relevant_lms.push_back(&node);
@@ -139,7 +123,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
     }
 
     // Third pass: Count shared costs for the remaining landmarks.
-    for (int i = 0; i < relevant_lms.size(); i++) {
+    for (size_t i = 0; i < relevant_lms.size(); ++i) {
         LandmarkNode &node = *relevant_lms[i];
         int lmn_status = node.get_status();
         const set<int> &achievers = get_achievers(lmn_status, node);
@@ -148,8 +132,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
         for (ach_it = achievers.begin(); ach_it != achievers.end();
              ++ach_it) {
             int op_id = *ach_it;
-            assert(op_id >= 0 && op_id < g_operators.size());
-            const Operator &op = lm_graph.get_operator_for_lookup_index(
+            assert(in_bounds(op_id, g_operators));
+            const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
                 op_id);
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);
@@ -163,13 +147,15 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type)
+    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type)
     : LandmarkCostAssignment(graph, cost_type) {
 #ifdef USE_LP
-    si = new OsiXxxSolverInterface();
+    si = create_lp_solver(solver_type);
 #else
+    // silence unused variable warning
+    (void)solver_type;
     cerr << "You must build the planner with the USE_LP symbol defined" << endl;
-    ::exit(1);
+    exit_with(EXIT_CRITICAL_ERROR);
 #endif
 }
 
@@ -193,8 +179,8 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
 
         // The LP has one variable (column) per landmark and one
         // inequality (row) per operator.
-        int n_cols = lm_graph.number_of_landmarks();
-        int n_rows = g_operators.size();
+        int num_cols = lm_graph.number_of_landmarks();
+        int num_rows = g_operators.size();
 
         // Set up lower bounds, upper bounds and objective function
         // coefficients for the landmarks.
@@ -202,11 +188,11 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         // so the coefficients are all 1.
         // The range of cost(lm_1) is {0} if the landmark is already
         // reached; otherwise it is [0, infinity].
-        double *objective = new double[n_cols];
-        double *col_lb = new double[n_cols];
-        double *col_ub = new double[n_cols];
+        double *objective = new double[num_cols];
+        double *col_lb = new double[num_cols];
+        double *col_ub = new double[num_cols];
 
-        for (int lm_id = 0; lm_id < n_cols; ++lm_id) {
+        for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
             const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
             bool reached = (lm->get_status() == lm_reached);
             objective[lm_id] = 1.0;
@@ -217,10 +203,10 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         // Set up lower bounds and upper bounds for the inequalities.
         // These simply say that the operator's total cost must fall
         // between 0 and the real operator cost.
-        double *row_lb = new double[n_rows];
-        double *row_ub = new double[n_rows];
-        for (int op_id = 0; op_id < g_operators.size(); ++op_id) {
-            const Operator &op = g_operators[op_id];
+        double *row_lb = new double[num_rows];
+        double *row_ub = new double[num_rows];
+        for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
+            const GlobalOperator &op = g_operators[op_id];
             row_lb[op_id] = 0;
             row_ub[op_id] = get_adjusted_action_cost(op, cost_type);
         }
@@ -234,7 +220,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         vector<int> operator_indices;
         vector<int> landmark_indices;
 
-        for (int lm_id = 0; lm_id < n_cols; ++lm_id) {
+        for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
             const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
             int lm_status = lm->get_status();
             if (lm_status != lm_reached) {
@@ -244,7 +230,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {
                     int op_id = *ach_it;
-                    assert(op_id >= 0 && op_id < g_operators.size());
+                    assert(in_bounds(op_id, g_operators));
                     operator_indices.push_back(op_id);
                     landmark_indices.push_back(lm_id);
                 }
@@ -292,13 +278,10 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
         */
         return h;
     } catch (CoinError &ex) {
-        cerr << "Exception:" << ex.message() << endl
-             << " from method " << ex.methodName() << endl
-             << " from class " << ex.className() << endl;
-        ::exit(1);
+        handle_coin_error(ex);
     }
-    ;
 #else
-    ::abort(); // Should be unreachable if USE_LP is not set.
+    // Should be unreachable if USE_LP is not set.
+    exit_with(EXIT_CRITICAL_ERROR);
 #endif
 }

@@ -1,14 +1,15 @@
 #include "canonical_pdbs_heuristic.h"
 
+#include "dominance_pruner.h"
 #include "max_cliques.h"
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../global_operator.h"
+#include "../global_state.h"
 #include "../globals.h"
-#include "../operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -92,9 +93,9 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     assert(are_additive.empty());
     int num_vars = g_variable_domain.size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
-    for (size_t k = 0; k < g_operators.size(); ++k) {
-        const Operator &o = g_operators[k];
-        const vector<PrePost> effects = o.get_pre_post();
+    for (size_t i = 0; i < g_operators.size(); ++i) {
+        const GlobalOperator &o = g_operators[i];
+        const vector<GlobalEffect> effects = o.get_effects();
         for (size_t e1 = 0; e1 < effects.size(); ++e1) {
             for (size_t e2 = 0; e2 < effects.size(); ++e2) {
                 are_additive[effects[e1].var][effects[e2].var] = false;
@@ -103,20 +104,44 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     }
 }
 
+void CanonicalPDBsHeuristic::dominance_pruning() {
+    Timer timer;
+    int num_patterns = pattern_databases.size();
+    int num_cliques = max_cliques.size();
+
+    DominancePruner(pattern_databases, max_cliques).prune();
+
+    // Adjust size.
+    size = 0;
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        size += pattern_databases[i]->get_size();
+    }
+
+    cout << "Pruned " << num_cliques - max_cliques.size() <<
+    " of " << num_cliques << " cliques" << endl;
+    cout << "Pruned " << num_patterns - pattern_databases.size() <<
+    " of " << num_patterns << " PDBs" << endl;
+
+    cout << "Dominance pruning took " << timer << endl;
+}
+
 void CanonicalPDBsHeuristic::initialize() {
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
+int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &state) {
     int max_h = 0;
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
+
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        pattern_databases[i]->evaluate(state);
+        if (pattern_databases[i]->is_dead_end())
+            return DEAD_END;
+    }
     for (size_t i = 0; i < max_cliques.size(); ++i) {
         const vector<PDBHeuristic *> &clique = max_cliques[i];
         int clique_h = 0;
         for (size_t j = 0; j < clique.size(); ++j) {
-            clique[j]->evaluate(state);
-            if (clique[j]->is_dead_end())
-                return -1;
             clique_h += clique[j]->get_heuristic();
         }
         max_h = max(max_h, clique_h);
@@ -198,6 +223,18 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
+void CanonicalPDBsHeuristic::evaluate_dead_end(const GlobalState &state) {
+    int evaluator_value = 0;
+    for (size_t i = 0; i < pattern_databases.size(); ++i) {
+        pattern_databases[i]->evaluate(state);
+        if (pattern_databases[i]->is_dead_end()) {
+            evaluator_value = DEAD_END;
+            break;
+        }
+    }
+    set_evaluator_value(evaluator_value);
+}
+
 void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
     // print compatibility graph
     cout << "Compatibility graph" << endl;
@@ -233,7 +270,21 @@ void CanonicalPDBsHeuristic::dump() const {
     }
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Canonical PDB",
+        "The canonical pattern database heuristic is calculated as follows. "
+        "For a given pattern collection C, the value of the canonical heuristic "
+        "function is the maximum over all maximal additive subsets A in C, where "
+        "the value for one subset S in A is the sum of the heuristic values for "
+        "all patterns in S for a given state.");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
     Heuristic::add_options_to_parser(parser);
     Options opts;
     parse_patterns(parser, opts);
@@ -244,4 +295,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return new CanonicalPDBsHeuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("cpdbs", _parse);
+static Plugin<Heuristic> _plugin("cpdbs", _parse);

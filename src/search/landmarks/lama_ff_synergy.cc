@@ -31,19 +31,19 @@ LamaFFSynergy::LamaFFSynergy(const Options &opts)
     initialized = false;
 }
 
-void LamaFFSynergy::get_lama_preferred_operators(std::vector<const Operator *> &result) {
+void LamaFFSynergy::get_lama_preferred_operators(std::vector<const GlobalOperator *> &result) {
     result.insert(result.end(),
                   lama_preferred_operators.begin(),
                   lama_preferred_operators.end());
 }
 
-void LamaFFSynergy::get_ff_preferred_operators(std::vector<const Operator *> &result) {
+void LamaFFSynergy::get_ff_preferred_operators(std::vector<const GlobalOperator *> &result) {
     result.insert(result.end(),
                   ff_preferred_operators.begin(),
                   ff_preferred_operators.end());
 }
 
-void LamaFFSynergy::compute_heuristics(const State &state) {
+void LamaFFSynergy::compute_heuristics(const GlobalState &state) {
     /* Compute heuristics and pref. ops. and store results;
        actual work is delegated to the heuristics. */
 
@@ -68,17 +68,26 @@ void LamaFFSynergy::compute_heuristics(const State &state) {
     }
 }
 
-bool LamaFFSynergy::lama_reach_state(const State &parent_state,
-                                     const Operator &op, const State &state) {
+bool LamaFFSynergy::lama_reach_state(const GlobalState &parent_state,
+                                     const GlobalOperator &op, const GlobalState &state) {
     return lama_heuristic->reach_state(parent_state, op, state);
 }
 
 static Synergy *_parse(OptionParser &parser) {
-    Synergy *syn = new Synergy;
+    parser.document_synopsis(
+        "LAMA-FF synergy",
+        "If the FF heuristic should be used "
+        "(for its estimates or its preferred operators) "
+        "and we want to use preferred operators of the "
+        "landmark count heuristic, we can exploit synergy effects by "
+        "using the LAMA-FF synergy. "
+        "This synergy can only be used via Predefinition "
+        "(see OptionSyntax#Predefinitions), for example:\n"
+        "\"hlm,hff=lm_ff_syn(...)\"");
     parser.add_option<LandmarkGraph *>("lm_graph");
-    parser.add_option<bool>("admissible", false, "get admissible estimate");
-    parser.add_option<bool>("optimal", false, "optimal cost sharing");
-    parser.add_option<bool>("alm", true, "use action landmarks");
+    parser.add_option<bool>("admissible", "get admissible estimate", "false");
+    parser.add_option<bool>("optimal", "optimal cost sharing", "false");
+    parser.add_option<bool>("alm", "use action landmarks", "true");
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
@@ -92,7 +101,7 @@ static Synergy *_parse(OptionParser &parser) {
 
     LamaFFSynergy *lama_ff_synergy =
         new LamaFFSynergy(opts);
-
+    Synergy *syn = new Synergy;
     syn->heuristics.push_back(lama_ff_synergy->get_lama_heuristic_proxy());
     syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
     return syn;

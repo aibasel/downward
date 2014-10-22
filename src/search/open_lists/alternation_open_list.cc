@@ -10,9 +10,33 @@ using namespace std;
 
 template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
-    parser.add_list_option<OpenList<Entry> *>("sublists");
-    parser.add_option<int>("boost", 0,
-                           "boost value for preferred operator open lists");
+    parser.document_synopsis("Alternation open list",
+                             "alternates between several open lists.");
+    parser.document_note(
+        "Preferred operators",
+        "Preferred operators are only taken from sub-open-lists "
+        "that do not consider the evaluated state a dead end.");
+    parser.document_note(
+        "Dead ends",
+        "A state is considered a dead end if "
+        "either all alternated open lists agree that it is a dead end "
+        "or at least one reliable open list considers it a dead end. "
+        "A state is never inserted into a sub-open-list "
+        "that considers it a dead end.");
+    parser.document_note(
+        "Note",
+        "The treatment of dead ends is different from "
+        "the one described in the "
+        "[technical report http://tr.informatik.uni-freiburg.de/reports/report258/report00258.ps.gz] "
+        "\"The More, the Merrier: Combining Heuristic Estimators "
+        "for Satisficing Planning (Extended Version)\" "
+        "(Department of Computer Science at Freiburg University, "
+        "No. 258, 2010)");
+    parser.add_list_option<OpenList<Entry> *>("sublists", "sub open lists");
+    parser.add_option<int>("boost",
+                           "boost value for sub-open-lists "
+                           "that are restricted to preferred operator nodes",
+                           "0");
 
     Options opts = parser.parse();
     if (parser.help_mode())
@@ -47,7 +71,7 @@ AlternationOpenList<Entry>::~AlternationOpenList() {
 template<class Entry>
 int AlternationOpenList<Entry>::insert(const Entry &entry) {
     int new_entries = 0;
-    for (size_t i = 0; i < open_lists.size(); i++)
+    for (size_t i = 0; i < open_lists.size(); ++i)
         if (!open_lists[i]->is_dead_end())
             new_entries += open_lists[i]->insert(entry);
     size += new_entries;
@@ -59,10 +83,10 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
     if (key) {
         cerr << "not implemented -- see msg639 in the tracker" << endl;
-        ::abort();
+        exit_with(EXIT_UNSUPPORTED);
     }
     int best = -1;
-    for (size_t i = 0; i < open_lists.size(); i++) {
+    for (size_t i = 0; i < open_lists.size(); ++i) {
         if (!open_lists[i]->empty() &&
             (best == -1 || priorities[i] < priorities[best])) {
             best = i;
@@ -71,8 +95,8 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     last_used_list = best;
     OpenList<Entry> *best_list = open_lists[best];
     assert(!best_list->empty());
-    size--;
-    priorities[best]++;
+    --size;
+    ++priorities[best];
     return best_list->remove_min(0);
 }
 
@@ -84,7 +108,7 @@ bool AlternationOpenList<Entry>::empty() const {
 template<class Entry>
 void AlternationOpenList<Entry>::clear() {
     size = 0;
-    for (size_t i = 0; i < open_lists.size(); i++)
+    for (size_t i = 0; i < open_lists.size(); ++i)
         open_lists[i]->clear();
 }
 
@@ -99,7 +123,7 @@ void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
 
     dead_end = true;
     dead_end_reliable = false;
-    for (size_t i = 0; i < open_lists.size(); i++) {
+    for (size_t i = 0; i < open_lists.size(); ++i) {
         open_lists[i]->evaluate(g, preferred);
         if (open_lists[i]->is_dead_end()) {
             if (open_lists[i]->dead_end_is_reliable()) {
@@ -125,14 +149,14 @@ bool AlternationOpenList<Entry>::dead_end_is_reliable() const {
 
 template<class Entry>
 void AlternationOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
-    for (size_t i = 0; i < open_lists.size(); i++)
+    for (size_t i = 0; i < open_lists.size(); ++i)
         open_lists[i]->get_involved_heuristics(hset);
 }
 
 template<class Entry>
 int AlternationOpenList<Entry>::boost_preferred() {
     int total_boost = 0;
-    for (size_t i = 0; i < open_lists.size(); i++) {
+    for (size_t i = 0; i < open_lists.size(); ++i) {
         // if the open list is not an alternation open list
         // (these have always only_preferred==false) and
         // it takes only preferred states, we boost it
