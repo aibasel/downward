@@ -190,22 +190,28 @@ endif(USE_LP)
 set(search_main_SRCS
           axioms.cc
           causal_graph.cc
-          closed_list.cc
           combining_evaluator.cc
+          countdown_timer.cc
           domain_transition_graph.cc
           eager_search.cc
           enforced_hill_climbing_search.cc
+          equivalence_relation.cc
           exact_timer.cc
           g_evaluator.cc
+          global_operator.cc
+          global_state.cc
           globals.cc
           heuristic.cc
+          int_packer.cc
           ipc_max_heuristic.cc
           iterated_search.cc
           lazy_search.cc
           max_evaluator.cc
-          operator.cc
           operator_cost.cc
           option_parser.cc
+          option_parser_util.cc
+          segmented_vector.cc
+          per_state_information.cc
           pref_evaluator.cc
           relaxation_heuristic.cc
           rng.cc
@@ -213,17 +219,20 @@ set(search_main_SRCS
           search_node_info.cc
           search_progress.cc
           search_space.cc
-          state.cc
+          state_id.cc
+          state_registry.cc
           successor_generator.cc
           sum_evaluator.cc
           timer.cc
           utilities.cc
+          variable_order_finder.cc
           weighted_evaluator.cc
           open_lists/alternation_open_list.cc
           open_lists/open_list_buckets.cc
           open_lists/pareto_open_list.cc
           open_lists/standard_scalar_open_list.cc
           open_lists/tiebreaking_open_list.cc
+          lp_solver_interface.cc
 )
 
 
@@ -238,6 +247,7 @@ set(search_plugin_SRCS
 
 )
 
+
 # The recipe for defining a pluging should be fairly self-explanatory.  The text in double-quotes is
 # a free-form natural language description, used in the CMake GUI to explain what the flag means.
 
@@ -245,6 +255,7 @@ option(PLUGIN_ADDITIVE_HEURISTIC "The additive heuristic" TRUE)
 if(PLUGIN_ADDITIVE_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} additive_heuristic.cc)
 endif(PLUGIN_ADDITIVE_HEURISTIC)
+
 
 option(PLUGIN_BLIND_SEARCH_HEURISTIC "The 'blind search' heuristic" TRUE)
 if(PLUGIN_BLIND_SEARCH_HEURISTIC)
@@ -296,26 +307,26 @@ endif(PLUGIN_MAX_HEURISTIC)
 
 option(PLUGIN_MAS_HEURISTIC "The Merge-and-Shrink heuristic" TRUE)
 if(PLUGIN_MAS_HEURISTIC)
-
     set(search_plugin_SRCS
         ${search_plugin_SRCS}
-        merge_and_shrink/abstraction.cc
-        merge_and_shrink/label_reducer.cc
+        merge_and_shrink/label.cc
+        merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
+        merge_and_shrink/merge_dfp.cc
+        merge_and_shrink/merge_linear.cc
+        merge_and_shrink/merge_strategy.cc
         merge_and_shrink/shrink_bisimulation.cc
         merge_and_shrink/shrink_bucket_based.cc
         merge_and_shrink/shrink_fh.cc
         merge_and_shrink/shrink_random.cc
         merge_and_shrink/shrink_strategy.cc
-        merge_and_shrink/variable_order_finder.cc
+        merge_and_shrink/transition_system.cc
     )
-
 endif(PLUGIN_MAS_HEURISTIC)
 
 
 option(PLUGIN_LANDMARKS "Plugin containing the code to reason with landmarks" TRUE)
 if(PLUGIN_LANDMARKS)
-
     set(search_plugin_SRCS
         ${search_plugin_SRCS}
         landmarks/exploration.cc
@@ -332,13 +343,11 @@ if(PLUGIN_LANDMARKS)
         landmarks/landmark_factory_zhu_givan.cc
         landmarks/util.cc
     )
-
 endif(PLUGIN_LANDMARKS)
 
 
-option(PLUGIN_LEARNING "Plugin containing the code to reason with learning" TRUE)
+option(PLUGIN_LEARNING "Plugin containing the code to reason with learning" FALSE)
 if(PLUGIN_LEARNING)
-
     set(search_plugin_SRCS
         ${search_plugin_SRCS}
         learning/AODE.cc
@@ -353,16 +362,15 @@ if(PLUGIN_LEARNING)
         learning/state_space_sample.cc
         learning/state_vars_feature_extractor.cc
     )
-
 endif(PLUGIN_LEARNING)
 
 
 option(PLUGIN_PDBS "Plugin containing the code for PDBs" TRUE)
 if(PLUGIN_PDBS)
-
     set(search_plugin_SRCS
         ${search_plugin_SRCS}
         pdbs/canonical_pdbs_heuristic.cc
+        pdbs/dominance_pruner.cc
         pdbs/match_tree.cc
         pdbs/max_cliques.cc
         pdbs/pattern_generation_edelkamp.cc
@@ -371,7 +379,6 @@ if(PLUGIN_PDBS)
         pdbs/util.cc
         pdbs/zero_one_pdbs_heuristic.cc
     )
-
 endif(PLUGIN_PDBS)
 
 
