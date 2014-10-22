@@ -2,7 +2,6 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(TARGET "downward")
-set(SIZES 1 2 4)
 
 project(${TARGET})
 
@@ -376,42 +375,26 @@ if(PLUGIN_PDBS)
 endif(PLUGIN_PDBS)
 
 
-## == Defining the executable targets ==
+## == Defining the executable target ==
 
-function(make_target BYTES)
+add_executable(${TARGET}
+    planner.cc
+    ${search_main_SRCS}
+    ${search_plugin_SRCS}
+)
 
-    set(BYTES_TARGET "${TARGET}-${BYTES}")
-    set(BYTES_FLAGS "-DSTATE_VAR_BYTES=${BYTES}")
-    add_executable(${BYTES_TARGET}
-        planner.cc
-        ${search_main_SRCS}
-        ${search_plugin_SRCS}
+if(USE_LP)
+    target_link_libraries(${TARGET}
+        ${RT_LIBRARY}
+        ${OSICLP_LIBRARIES} ${CLP_LIBRARIES}  ${COINUTILS_LIBRARIES} ${OSI_LIBRARIES}
     )
 
-    if(USE_LP)
+    ## WARNING: In the original Makefile, there were lines manipulating the linker flags by adding -Wl,-Bstatic and suchlike.
+    ##          These have gone, replaced by passing --enable-shared=no to the Osi build to make sure only static libraries
+    ##          exist in the first place.
 
-        set(BYTES_FLAGS "${BYTES_FLAGS} -D USE_LP -D COIN_USE_CLP")
+else(USE_LP)
 
-        target_link_libraries(${BYTES_TARGET}
-            ${RT_LIBRARY}
-            ${OSICLP_LIBRARIES} ${CLP_LIBRARIES}  ${COINUTILS_LIBRARIES} ${OSI_LIBRARIES}
-        )
+    target_link_libraries(${TARGET} ${RT_LIBRARY})
 
-        ## WARNING: In the original Makefile, there were lines manipulating the linker flags by adding -Wl,-Bstatic and suchlike.
-        ##          These have gone, replaced by passing --enable-shared=no to the Osi build to make sure only static libraries
-        ##          exist in the first place.
-
-    else(USE_LP)
-
-        target_link_libraries(${BYTES_TARGET} ${RT_LIBRARY})
-
-    endif(USE_LP)
-
-    set_target_properties(${BYTES_TARGET} PROPERTIES COMPILE_FLAGS ${BYTES_FLAGS})
-
-endfunction(make_target)
-
-
-foreach(BYTES ${SIZES})
-    make_target(${BYTES})
-endforeach(BYTES)
+endif(USE_LP)
