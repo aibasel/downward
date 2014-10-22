@@ -62,11 +62,6 @@ bool TransitionSystem::is_valid () const {
             && is_label_reduced());
 }
 
-int TransitionSystem::get_label_cost_by_index(int label_no) const {
-    assert(labels->is_current_label(label_no));
-    return labels->get_label_cost(label_no);
-}
-
 void TransitionSystem::clear_distances() {
     max_f = DISTANCE_UNKNOWN;
     max_g = DISTANCE_UNKNOWN;
@@ -266,7 +261,7 @@ void TransitionSystem::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
-            int label_cost = get_label_cost_by_index(label_no);
+            int label_cost = labels->get_label_cost(label_no);
             const vector<Transition> &transitions = transitions_by_label[label_no];
             for (size_t j = 0; j < transitions.size(); ++j) {
                 const Transition &trans = transitions[j];
@@ -292,7 +287,7 @@ void TransitionSystem::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
-            int label_cost = get_label_cost_by_index(label_no);
+            int label_cost = labels->get_label_cost(label_no);
             const vector<Transition> &transitions = transitions_by_label[label_no];
             for (size_t j = 0; j < transitions.size(); ++j) {
                 const Transition &trans = transitions[j];
@@ -748,7 +743,7 @@ EquivalenceRelation *TransitionSystem::compute_local_equivalence_relation() cons
             if (considered_labels[label_no]) {
                 continue;
             }
-            int label_cost = get_label_cost_by_index(label_no);
+            int label_cost = labels->get_label_cost(label_no);
             annotated_labels.push_back(make_pair(annotation, label_no));
             const vector<Transition> &transitions = transitions_by_label[label_no];
             for (int other_label_no = label_no + 1; other_label_no < num_labels;
@@ -757,7 +752,7 @@ EquivalenceRelation *TransitionSystem::compute_local_equivalence_relation() cons
                     if (considered_labels[other_label_no]) {
                         continue;
                     }
-                    if (label_cost != get_label_cost_by_index(other_label_no)) {
+                    if (label_cost != labels->get_label_cost(other_label_no)) {
                         continue;
                     }
                     if (relevant_labels[label_no] != relevant_labels[other_label_no]) {

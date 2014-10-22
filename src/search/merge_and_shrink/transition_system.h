@@ -100,7 +100,6 @@ class TransitionSystem {
        - Distances are computed and stored (are_distances_computed() == true)
     */
     bool is_valid() const;
-    int get_label_cost_by_index(int label_no) const;
 
     // Methods related to computation of distances
     void clear_distances();
