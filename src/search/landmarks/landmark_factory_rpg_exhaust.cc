@@ -1,7 +1,7 @@
 #include <vector>
 
 #include "landmark_factory_rpg_exhaust.h"
-#include "../state.h"
+#include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -17,17 +17,18 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
     cout << "Generating landmarks by testing all facts with RPG method" << endl;
 
     // insert goal landmarks and mark them as goals
-    for (unsigned i = 0; i < g_goal.size(); i++) {
+    for (size_t i = 0; i < g_goal.size(); ++i) {
         LandmarkNode *lmp = &lm_graph->landmark_add_simple(g_goal[i]);
         lmp->in_goal = true;
     }
     // test all other possible facts
-    for (int i = 0; i < g_variable_name.size(); i++)
-        for (int j = 0; j < g_variable_domain[i]; j++) {
+    const GlobalState &initial_state = g_initial_state();
+    for (size_t i = 0; i < g_variable_name.size(); ++i) {
+        for (int j = 0; j < g_variable_domain[i]; ++j) {
             const pair<int, int> lm = make_pair(i, j);
             if (!lm_graph->simple_landmark_exists(lm)) {
                 LandmarkNode *new_lm = &lm_graph->landmark_add_simple(lm);
-                if ((*g_initial_state)[lm.first] != lm.second && relaxed_task_solvable(true, new_lm)) {
+                if (initial_state[lm.first] != lm.second && relaxed_task_solvable(true, new_lm)) {
                     assert(lm_graph->landmark_exists(lm));
                     LandmarkNode *node;
                     if (lm_graph->simple_landmark_exists(lm))
@@ -38,13 +39,24 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
                 }
             }
         }
-
+    }
 }
 
 static LandmarkGraph *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Exhaustive Landmarks",
+        "Exhaustively checks for each fact if it is a landmark."
+        "This check is done using relaxed planning.");
+    parser.document_note(
+        "Relevant options",
+        "reasonable_orders, only_causal_landmarks");
     LandmarkGraph::add_options_to_parser(parser);
 
     Options opts = parser.parse();
+
+    parser.document_language_support("conditional_effects",
+                                     "ignored, i.e. not supported");
+    opts.set<bool>("supports_conditional_effects", false);
 
     if (parser.dry_run()) {
         return 0;

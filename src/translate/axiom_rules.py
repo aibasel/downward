@@ -165,8 +165,12 @@ def negate(axioms):
     result = [pddl.PropositionalAxiom(axioms[0].name, [], axioms[0].effect.negate())]
     for axiom in axioms:
         condition = axiom.condition
-        assert len(condition) > 0, "Negated axiom impossible; cannot deal with that"
-        if len(condition) == 1: # Handle easy special case quickly.
+        if len(condition) == 0:
+            # The derived fact we want to negate is triggered with an
+            # empty condition, so it is always true and its negation
+            # is always false.
+            return []
+        elif len(condition) == 1: # Handle easy special case quickly.
             new_literal = condition[0].negate()
             for result_axiom in result:
                 result_axiom.condition.append(new_literal)

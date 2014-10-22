@@ -1,5 +1,4 @@
 #include "selective_max_heuristic.h"
-#include "../successor_generator.h"
 #include "maximum_heuristic.h"
 #include "naive_bayes_classifier.h"
 #include "state_vars_feature_extractor.h"
@@ -7,8 +6,11 @@
 #include "AODE.h"
 #include "probe_state_space_sample.h"
 #include "PDB_state_space_sample.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../rng.h"
+#include "../successor_generator.h"
 
 #include <cassert>
 #include <limits>
@@ -51,7 +53,7 @@ SelectiveMaxHeuristic::SelectiveMaxHeuristic(const Options &opts)
 }
 
 SelectiveMaxHeuristic::~SelectiveMaxHeuristic() {
-    for (int i = 0; i < num_pairs; i++) {
+    for (int i = 0; i < num_pairs; ++i) {
         delete classifiers[i];
     }
     delete hvalue;
@@ -88,7 +90,7 @@ void SelectiveMaxHeuristic::initialize() {
 
     //cout << "Stage 1 Done" << endl;
 
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         num_evaluated[i] = 0;
         num_winner[i] = 0;
         num_only_winner[i] = 0;
@@ -113,7 +115,7 @@ void SelectiveMaxHeuristic::initialize() {
     feature_extractor = feature_extractor_types.create();
     cout << "Number of features: " << feature_extractor->get_num_features() << endl;
 
-    for (int i = 0; i < num_pairs; i++) {
+    for (int i = 0; i < num_pairs; ++i) {
         switch (classifier_type) {
         case NB:
             classifiers[i] = new NBClassifier();
@@ -122,8 +124,7 @@ void SelectiveMaxHeuristic::initialize() {
             classifiers[i] = new AODEClassifier();
             break;
         default:
-            cerr << "Unknown classifier type" << endl;
-            exit(353);
+            ABORT("Unknown classifier type.");
         }
         classifiers[i]->set_feature_extractor(feature_extractor);
         classifiers[i]->buildClassifier(num_classes);
@@ -138,7 +139,7 @@ void SelectiveMaxHeuristic::initialize() {
 }
 
 void SelectiveMaxHeuristic::reset_statistics() {
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         num_evaluated[i] = 0;
         num_winner[i] = 0;
         num_only_winner[i] = 0;
@@ -158,13 +159,14 @@ void SelectiveMaxHeuristic::train() {
     total_training_time.reset();
 
     MaxHeuristic max(Heuristic::default_options());
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         max.add_heuristic(heuristics[i]);
     }
 
     // initialize all heuristics
     int goal_depth_estimate = 0;
-    max.evaluate(*g_initial_state);
+    // TODO for now we use the global state registry for all states (even temporary states like this): see issue386.
+    max.evaluate(g_initial_state());
     int h0 = max.get_heuristic();
     goal_depth_estimate = 2 * h0;
 
@@ -183,7 +185,7 @@ void SelectiveMaxHeuristic::train() {
         sample = new ProbeStateSpaceSample(goal_depth_estimate,
                                            2 * min_training_set / goal_depth_estimate,
                                            min_training_set);
-        for (int i = 0; i < heuristics.size(); i++)
+        for (size_t i = 0; i < heuristics.size(); ++i)
             sample->add_heuristic(heuristics[i]);
         break;
     /*
@@ -195,12 +197,11 @@ void SelectiveMaxHeuristic::train() {
         sample = new PDBStateSpaceSample(goal_depth_estimate,
                                          min_training_set,
                                          min_training_set);
-        for (int i = 0; i < heuristics.size(); i++)
+        for (size_t i = 0; i < heuristics.size(); ++i)
             sample->add_heuristic(heuristics[i]);
         break;
     default:
-        cerr << "Unknown state space sample" << endl;
-        exit(931);
+        ABORT("Unknown state space sample type");
     }
 
     sample->collect();
@@ -217,14 +218,14 @@ void SelectiveMaxHeuristic::train() {
 
     //cout << "Collecting Timing Data" << endl;
     ExactTimer retimer;
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         total_computation_time[i] = sample->get_computation_time(i) + 1;
         if (retime_heuristics) {
             total_computation_time[i] = 0;
             double before = retimer();
             sample_t::const_iterator it;
-            for (it = training_set.begin(); it != training_set.end(); it++) {
-                const State s = (*it).first;
+            for (it = training_set.begin(); it != training_set.end(); ++it) {
+                const GlobalState s = (*it).first;
                 heuristics[i]->evaluate(s);
             }
             double after = retimer();
@@ -238,8 +239,8 @@ void SelectiveMaxHeuristic::train() {
     // Calculate Thresholds
     int classifier_index = 0;
     cout << "Thresholds" << endl;
-    for (int i = 0; i < num_heuristics; i++) {
-        for (int j = i + 1; j < num_heuristics; j++) {
+    for (int i = 0; i < num_heuristics; ++i) {
+        for (int j = i + 1; j < num_heuristics; ++j) {
             cout << "Training pair: " << i << ", " << j << endl;
             if (total_computation_time[i] > total_computation_time[j]) {
                 expensive[classifier_index] = i;
@@ -267,9 +268,9 @@ void SelectiveMaxHeuristic::train() {
 
             sample_t::const_iterator it;
             //while (training_set.has_more_states()) {
-            for (it = training_set.begin(); it != training_set.end(); it++) {
-                //const State s = training_set.get_next_state();
-                const State s = (*it).first;
+            for (it = training_set.begin(); it != training_set.end(); ++it) {
+                //const GlobalState s = training_set.get_next_state();
+                const GlobalState s = (*it).first;
                 int value_expensive = training_set[s][expensive[classifier_index]];
                 int value_cheap = training_set[s][cheap[classifier_index]];
 
@@ -280,7 +281,7 @@ void SelectiveMaxHeuristic::train() {
                 }
                 classifiers[classifier_index]->addExample(&s, tag);
             }
-            classifier_index++;
+            ++classifier_index;
         }
     }
 
@@ -293,16 +294,16 @@ void SelectiveMaxHeuristic::train() {
 
     // reset statistics and heuristics after training
     reset_statistics();
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         heuristics[i]->reset();
     }
 
     //cout << "Freed Memory" << endl;
 }
 
-int SelectiveMaxHeuristic::eval_heuristic(const State &state, int index, bool count) {
+int SelectiveMaxHeuristic::eval_heuristic(const GlobalState &state, int index, bool count) {
     if (count)
-        num_evaluated[index]++;
+        ++num_evaluated[index];
     computed[index] = true;
 
     heuristics[index]->evaluate(state);
@@ -318,42 +319,42 @@ int SelectiveMaxHeuristic::eval_heuristic(const State &state, int index, bool co
     return hvalue[index];
 }
 
-int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
-    num_evals++;
+int SelectiveMaxHeuristic::compute_heuristic(const GlobalState &state) {
+    ++num_evals;
     dead_end = false;
 
     // initialize vector
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         hvalue[i] = 0;
         computed[i] = false;
     }
 
     // compute the heuristics that are always computed
-    for (int i = 0; i < num_always_calc; i++) {
+    for (int i = 0; i < num_always_calc; ++i) {
         eval_heuristic(state, i, true);
     }
 
     if (random_selection) {
-        int h = num_always_calc + (rand() % (num_heuristics - num_always_calc));
+        int h = num_always_calc + g_rng(num_heuristics - num_always_calc);
         eval_heuristic(state, h, true);
         return calc_max();
     }
 
     if (perfect_mode) {
-        for (int i = num_always_calc; i < num_heuristics; i++) {
+        for (int i = num_always_calc; i < num_heuristics; ++i) {
             eval_heuristic(state, i, false);
         }
 
-        for (int i = 0; i < num_pairs; i++) {
+        for (int i = 0; i < num_pairs; ++i) {
             int c = cheap[i];
             int e = expensive[i];
             double thr = threshold[i];
 
             if ((hvalue[e] - hvalue[c]) > thr) {
-                num_evaluated[e]++;
+                ++num_evaluated[e];
                 return hvalue[e];
             } else {
-                num_evaluated[c]++;
+                ++num_evaluated[c];
                 return hvalue[c];
             }
         }
@@ -376,26 +377,26 @@ int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
 
     if (test_mode) {
         // evaluate all heuristics
-        for (int i = 0; i < heuristics.size(); i++) {
+        for (size_t i = 0; i < heuristics.size(); ++i) {
             if (!computed[i]) {
                 eval_heuristic(state, i, false);
             }
         }
-        for (int classifier_index = 0; classifier_index < num_pairs; classifier_index++) {
+        for (int classifier_index = 0; classifier_index < num_pairs; ++classifier_index) {
             int diff = hvalue[expensive[classifier_index]] - hvalue[cheap[classifier_index]];
             classifiers[classifier_index]->distributionForInstance(&state, dist);
             //cout << hvalue[i] << " " << hvalue[j] << " " << diff << " " << dist[1] << endl;
             if (dist[1] > 0.5) {
                 if (diff > threshold[classifier_index]) {
-                    correct1_classifications++;
+                    ++correct1_classifications;
                 } else {
-                    incorrect1_classifications++;
+                    ++incorrect1_classifications;
                 }
             } else {
                 if (diff > threshold[classifier_index]) {
-                    incorrect0_classifications++;
+                    ++incorrect0_classifications;
                 } else {
-                    correct0_classifications++;
+                    ++correct0_classifications;
                 }
             }
         }
@@ -405,17 +406,17 @@ int SelectiveMaxHeuristic::compute_heuristic(const State &state) {
 }
 
 
-void SelectiveMaxHeuristic::learn(const State &state) {
+void SelectiveMaxHeuristic::learn(const GlobalState &state) {
     total_training_time.resume();
     //calculate all (remaining) heuristics
-    for (int i = num_always_calc; i < heuristics.size(); i++) {
+    for (int i = num_always_calc; i < heuristics.size(); ++i) {
         eval_heuristic(state, i, true);
     }
 
     //go over all pairs of heuristics to learn the difference
     int classifier_index = 0;
-    for (int i = 0; i < num_heuristics; i++) {
-        for (int j = i + 1; j < num_heuristics; j++) {
+    for (int i = 0; i < num_heuristics; ++i) {
+        for (int j = i + 1; j < num_heuristics; ++j) {
             // compute the difference (cap at +/- max_diff)
             int diff = hvalue[expensive[classifier_index]] - hvalue[cheap[classifier_index]];
             int tag = 0;
@@ -423,24 +424,24 @@ void SelectiveMaxHeuristic::learn(const State &state) {
                 tag = 1;
             }
 
-            training_set_size++;
+            ++training_set_size;
             classifiers[classifier_index]->addExample(&state, tag);
-            classifier_index++;
+            ++classifier_index;
         }
     }
     total_training_time.stop();
 }
 
-void SelectiveMaxHeuristic::classify(const State &state) {
+void SelectiveMaxHeuristic::classify(const GlobalState &state) {
     total_classification_time.resume();
     double max_confidence = 0.0;
     int best_heuristics = -1;
 
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         heuristic_conf[i] = 0.0;
     }
 
-    for (int classifier_index = 0; classifier_index < num_pairs; classifier_index++) {
+    for (int classifier_index = 0; classifier_index < num_pairs; ++classifier_index) {
         classifiers[classifier_index]->distributionForInstance(&state, dist);
         // get confidence for h_i better than h_j and for h_j better than h_i
         double confidence_expensive = dist[1];
@@ -451,7 +452,7 @@ void SelectiveMaxHeuristic::classify(const State &state) {
     }
 
 
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         //cout << i << " " << heuristic_conf[i]  << endl;
         if (heuristic_conf[i] > max_confidence) {
             max_confidence = heuristic_conf[i];
@@ -466,7 +467,7 @@ void SelectiveMaxHeuristic::classify(const State &state) {
         eval_heuristic(state, best_heuristics, true);
     } else {
         // otherwise, learn from this state
-        num_learn_from_no_confidence++;
+        ++num_learn_from_no_confidence;
         //cout << "no confidence: " << max_confidence << endl;
         learn(state);
     }
@@ -482,26 +483,26 @@ int SelectiveMaxHeuristic::calc_max() {
         // calculate the max
         int winner_id = -1;
         int winner_count = 0;
-        for (int i = 0; i < num_heuristics; i++) {
+        for (int i = 0; i < num_heuristics; ++i) {
             //cout << hvalue[i] << " ";
             if (hvalue[i] > max) {
                 max = hvalue[i];
                 winner_id = i;
                 winner_count = 1;
             } else if (hvalue[i] == max) {
-                winner_count++;
+                ++winner_count;
             }
         }
         //cout << endl;
 
         //update statistics
         if (winner_count == 1) {
-            num_winner[winner_id]++;
-            num_only_winner[winner_id]++;
+            ++num_winner[winner_id];
+            ++num_only_winner[winner_id];
         } else {
-            for (int i = 0; i < num_heuristics; i++) {
+            for (int i = 0; i < num_heuristics; ++i) {
                 if (hvalue[i] == max) {
-                    num_winner[i]++;
+                    ++num_winner[i];
                 }
             }
         }
@@ -510,11 +511,11 @@ int SelectiveMaxHeuristic::calc_max() {
     return max;
 }
 
-bool SelectiveMaxHeuristic::reach_state(const State &parent_state, const Operator &op,
-                                        const State &state) {
+bool SelectiveMaxHeuristic::reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+                                        const GlobalState &state) {
     int ret = false;
     int val;
-    for (int i = 0; i < num_heuristics; i++) {
+    for (int i = 0; i < num_heuristics; ++i) {
         val = heuristics[i]->reach_state(parent_state, op, state);
         ret = ret || val;
     }
@@ -543,7 +544,7 @@ void SelectiveMaxHeuristic::print_statistics() const {
 
     double eval_time = 0;
     cout << "heuristic,  evaluated, winner,   only winner, total time, average time" << endl;
-    for (int i = 0; i < heuristics.size(); i++) {
+    for (size_t i = 0; i < heuristics.size(); ++i) {
         cout << i /*heuristics[i]->get_name()*/ << " , " <<
         num_evaluated[i] << " , " <<
         num_winner[i] << " , " <<
@@ -556,29 +557,53 @@ void SelectiveMaxHeuristic::print_statistics() const {
     cout << "Total evaluation time: " << eval_time << endl;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_list_option<Heuristic *>("heuristics");
-    parser.add_option<double>("alpha", 1.0, "alpha");
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Selective-max heuristic", "");
+    parser.document_language_support(
+        "action costs",
+        "if supported by all component heuristics");
+    parser.document_language_support(
+        "conditional effects",
+        "if supported by all component heuristics");
+    parser.document_language_support(
+        "axioms",
+        "if supported by all component heuristics");
+    parser.document_property(
+        "admissible",
+        "if all component heuristics are admissible");
+    parser.document_property("consistent", "no");
+    parser.document_property(
+        "safe",
+        "if all component heuristics are safe");
+    parser.document_property("preferred operators", "no (not yet)");
+
+    parser.add_list_option<Heuristic *>("heuristics", "heuristics");
+    parser.add_option<double>("alpha", "alpha", "1.0");
     vector<string> classifier_types;
     classifier_types.push_back("NB");
     classifier_types.push_back("AODE");
     parser.add_enum_option(
-        "classifier", classifier_types, "NB", "classifier type");
-    parser.add_option<double>("conf_threshold", 0.6, "confidence threshold");
-    parser.add_option<int>("training_set", 100, "minimum size of training set");
-    parser.add_option<int>("eval_always", 0,
-                           "number of heuristics that should always be evaluated");
-    parser.add_option<bool>("random_sel", false, "random selection");
-    parser.add_option<bool>("retime", false, "retime heuristics");
-    vector<string>sample_types;
+        "classifier", classifier_types, "classifier type", "NB");
+    parser.add_option<double>("conf_threshold", "confidence threshold", "0.6");
+    parser.add_option<int>("training_set", "minimum size of training set", "100");
+    parser.add_option<int>(
+        "eval_always",
+        "number of heuristics that should always be evaluated", "0");
+    parser.add_option<bool>("random_sel", "random selection", "false");
+    parser.add_option<bool>("retime", "retime heuristics", "false");
+    vector<string> sample_types;
+    vector<string> sample_types_doc;
     sample_types.push_back("Probe");
+    sample_types_doc.push_back("stochastic hill-climbing probes of Karpas & Domshlak, IJCAI 2009");
     sample_types.push_back("ProbAStar");
+    sample_types_doc.push_back("probabilistic A* sampling");
     sample_types.push_back("PDB");
+    sample_types_doc.push_back("sampling method of Haslum et al., AAAI 2007");
     parser.add_enum_option(
-        "sample", sample_types, "Probe", "state space sample type");
-    parser.add_option<bool>("uniform", false, "uniform sampling");
-    parser.add_option<bool>("zero_threshold", false,
-                            "set threshold constant 0");
+        "sample", sample_types, "state space sample type", "Probe", sample_types_doc);
+    parser.add_option<bool>("uniform", "uniform sampling", "false");
+    parser.add_option<bool>("zero_threshold",
+                            "set threshold constant 0", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -590,7 +615,7 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         vector<Heuristic *> heuristics_ =
             opts.get_list<Heuristic *>("heuristics");
         heur = new SelectiveMaxHeuristic(opts);
-        for (unsigned int i = 0; i < heuristics_.size(); i++) {
+        for (size_t i = 0; i < heuristics_.size(); ++i) {
             heur->add_heuristic(heuristics_[i]);
         }
         heur->set_alpha(opts.get<double>("alpha"));
@@ -608,4 +633,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return heur;
 }
 
-static Plugin<ScalarEvaluator> _plugin("selmax", _parse);
+static Plugin<Heuristic> _plugin("selmax", _parse);

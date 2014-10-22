@@ -1,23 +1,23 @@
 #include "globals.h"
-#include "operator.h"
+
 #include "option_parser.h"
-#include "ext/tree_util.hh"
+#include "search_engine.h"
 #include "timer.h"
 #include "utilities.h"
-#include "search_engine.h"
 
+#include "ext/tree_util.hh"
 
 #include <iostream>
+#include <new>
+
 using namespace std;
-
-
 
 int main(int argc, const char **argv) {
     register_event_handlers();
 
     if (argc < 2) {
         cout << OptionParser::usage(argv[0]) << endl;
-        exit(1);
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     if (string(argv[1]).compare("--help") != 0)
@@ -25,15 +25,19 @@ int main(int argc, const char **argv) {
 
     SearchEngine *engine = 0;
 
-    //the input will be parsed twice:
-    //once in dry-run mode, to check for simple input errors,
-    //then in normal mode
+    // The command line is parsed twice: once in dry-run mode, to
+    // check for simple input errors, and then in normal mode.
+    bool unit_cost = is_unit_cost();
     try {
-        OptionParser::parse_cmd_line(argc, argv, true);
-        engine = OptionParser::parse_cmd_line(argc, argv, false);
-    } catch (ParseError &pe) {
-        cout << pe << endl;
-        exit(1);
+        OptionParser::parse_cmd_line(argc, argv, true, unit_cost);
+        engine = OptionParser::parse_cmd_line(argc, argv, false, unit_cost);
+    } catch (ArgError &error) {
+        cerr << error << endl;
+        OptionParser::usage(argv[0]);
+        exit_with(EXIT_INPUT_ERROR);
+    } catch (ParseError &error) {
+        cerr << error << endl;
+        exit_with(EXIT_INPUT_ERROR);
     }
 
     Timer search_timer;
@@ -47,5 +51,9 @@ int main(int argc, const char **argv) {
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << g_timer << endl;
 
-    return engine->found_solution() ? 0 : 1;
+    if (engine->found_solution()) {
+        exit_with(EXIT_PLAN_FOUND);
+    } else {
+        exit_with(EXIT_UNSOLVED_INCOMPLETE);
+    }
 }

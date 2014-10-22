@@ -55,12 +55,13 @@ void MatchTree::build_recursively(
 
     const vector<pair<int, int> > &regression_preconditions = op.get_regression_preconditions();
     Node *node = *edge_from_parent;
-    if (pre_index == regression_preconditions.size()) { // all preconditions have been checked, insert op
+    if (pre_index == static_cast<int>(regression_preconditions.size())) {
+        // All preconditions have been checked, insert op.
         node->applicable_operators.push_back(&op);
     } else {
         const pair<int, int> &var_val = regression_preconditions[pre_index];
 
-        // setup node correctly or insert a new node if necessary
+        // Set up node correctly or insert a new node if necessary.
         if (node->test_var == -1) { // node is a leaf
             node->test_var = var_val.first;
             int test_var_size = g_variable_domain[pattern[var_val.first]];
@@ -70,7 +71,8 @@ void MatchTree::build_recursively(
                 node->successors[i] = 0;
             }
         } else if (node->test_var > var_val.first) {
-            // The variable to test has been left out: must insert new node and treat it as the "node".
+            // The variable to test has been left out: must insert new
+            // node and treat it as the "node".
             Node *new_node = new Node(var_val.first, g_variable_domain[pattern[var_val.first]]);
             // The new node gets the left out variable as test_var.
             *edge_from_parent = new_node;
@@ -78,12 +80,16 @@ void MatchTree::build_recursively(
             node = new_node; // The new node is now the node of interest.
         }
 
-        // setup edge to the correct child (for which we want to call this function recursively)
+        // Set up edge to the correct child (for which we want to call
+        // this function recursively).
         Node **edge_to_child = 0;
-        if (node->test_var == var_val.first) { // operator has a precondition on test_var
+        if (node->test_var == var_val.first) {
+            // Operator has a precondition on test_var.
             edge_to_child = &node->successors[var_val.second];
             ++pre_index;
-        } else { // operator doesn't have a precondition on test_var, follow/create *-edge
+        } else {
+            // Operator doesn't have a precondition on test_var:
+            // follow/create *-edge.
             assert(node->test_var < var_val.first);
             edge_to_child = &node->star_successor;
         }

@@ -7,6 +7,7 @@
 #include <limits>
 #include <set>
 
+using namespace std;
 
 
 HMHeuristic::HMHeuristic(const Options &opts)
@@ -14,22 +15,30 @@ HMHeuristic::HMHeuristic(const Options &opts)
       m(opts.get<int>("m")) {
 }
 
+
 HMHeuristic::~HMHeuristic() {
 }
 
+
+bool HMHeuristic::dead_ends_are_reliable() const {
+    return !has_axioms() && !has_conditional_effects();
+}
+
+
 void HMHeuristic::initialize() {
-    cout << "Using h^" << m << endl;
-    cout << "The implementation of the h^m heuristic is preliminary" << endl
-         << "It is SLOOOOOOOOOOOW" << endl
-         << "Please do not use this for comparison" << endl;
+    cout << "Using h^" << m << "." << endl;
+    cout << "The implementation of the h^m heuristic is preliminary." << endl
+         << "It is SLOOOOOOOOOOOW." << endl
+         << "Please do not use this for comparison!" << endl;
     generate_all_tuples();
 }
 
-int HMHeuristic::compute_heuristic(const State &state) {
+
+int HMHeuristic::compute_heuristic(const GlobalState &state) {
     if (test_goal(state)) {
         return 0;
     } else {
-        tuple s_tup;
+        Tuple s_tup;
         state_to_tuple(state, s_tup);
 
         init_hm_table(s_tup);
@@ -45,11 +54,11 @@ int HMHeuristic::compute_heuristic(const State &state) {
 }
 
 
-void HMHeuristic::init_hm_table(tuple &t) {
-    map<tuple, int>::iterator it;
-    for (it = hm_table.begin(); it != hm_table.end(); it++) {
-        pair<tuple, int> hm_ent = *it;
-        tuple &tup = hm_ent.first;
+void HMHeuristic::init_hm_table(Tuple &t) {
+    map<Tuple, int>::iterator it;
+    for (it = hm_table.begin(); it != hm_table.end(); ++it) {
+        pair<Tuple, int> hm_ent = *it;
+        Tuple &tup = hm_ent.first;
         int h_val = check_tuple_in_tuple(tup, t);
         hm_table[tup] = h_val;
     }
@@ -59,24 +68,25 @@ void HMHeuristic::init_hm_table(tuple &t) {
 void HMHeuristic::update_hm_table() {
     int round = 0;
     do {
-        round++;
+        ++round;
         was_updated = false;
 
-        for (int op_id = 0; op_id < g_operators.size(); op_id++) {
-            const Operator &op = g_operators[op_id];
-            tuple pre;
+        for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
+            const GlobalOperator &op = g_operators[op_id];
+            Tuple pre;
             get_operator_pre(op, pre);
 
             int c1 = eval(pre);
             if (c1 != numeric_limits<int>::max()) {
-                tuple eff;
-                vector<tuple> partial_eff;
+                Tuple eff;
+                vector<Tuple> partial_eff;
                 get_operator_eff(op, eff);
-                generate_all_partial_tuple(eff, partial_eff);
-                for (int i = 0; i < partial_eff.size(); i++) {
+                generate_all_partial_tuples(eff, partial_eff);
+                for (size_t i = 0; i < partial_eff.size(); ++i) {
                     update_hm_entry(partial_eff[i], c1 + get_adjusted_cost(op));
 
-                    if (partial_eff[i].size() < m) {
+                    int eff_size = partial_eff[i].size();
+                    if (eff_size < m) {
                         extend_tuple(partial_eff[i], op);
                     }
                 }
@@ -85,24 +95,25 @@ void HMHeuristic::update_hm_table() {
     } while (was_updated);
 }
 
-void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
-    map<tuple, int>::const_iterator it;
-    for (it = hm_table.begin(); it != hm_table.end(); it++) {
-        pair<tuple, int> hm_ent = *it;
-        tuple &entry = hm_ent.first;
+
+void HMHeuristic::extend_tuple(Tuple &t, const GlobalOperator &op) {
+    map<Tuple, int>::const_iterator it;
+    for (it = hm_table.begin(); it != hm_table.end(); ++it) {
+        pair<Tuple, int> hm_ent = *it;
+        Tuple &entry = hm_ent.first;
         bool contradict = false;
-        for (int i = 0; i < entry.size(); i++) {
+        for (size_t i = 0; i < entry.size(); ++i) {
             if (contradict_effect_of(op, entry[i].first, entry[i].second)) {
                 contradict = true;
                 break;
             }
         }
         if (!contradict && (entry.size() > t.size()) && (check_tuple_in_tuple(t, entry) == 0)) {
-            tuple pre;
+            Tuple pre;
             get_operator_pre(op, pre);
 
-            tuple others;
-            for (int i = 0; i < entry.size(); i++) {
+            Tuple others;
+            for (size_t i = 0; i < entry.size(); ++i) {
                 pair<int, int> fact = entry[i];
                 if (find(t.begin(), t.end(), fact) == t.end()) {
                     others.push_back(fact);
@@ -117,7 +128,7 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
 
             set<int> vars;
             bool is_valid = true;
-            for (int i = 0; i < pre.size(); i++) {
+            for (size_t i = 0; i < pre.size(); ++i) {
                 if (vars.count(pre[i].first) != 0) {
                     is_valid = false;
                     break;
@@ -135,14 +146,15 @@ void HMHeuristic::extend_tuple(tuple &t, const Operator &op) {
     }
 }
 
-int HMHeuristic::eval(tuple &t) {
-    vector<tuple> partial;
-    generate_all_partial_tuple(t, partial);
+
+int HMHeuristic::eval(Tuple &t) const {
+    vector<Tuple> partial;
+    generate_all_partial_tuples(t, partial);
     int max = 0;
-    for (int i = 0; i < partial.size(); i++) {
+    for (size_t i = 0; i < partial.size(); ++i) {
         assert(hm_table.count(partial[i]) == 1);
 
-        int h = hm_table[partial[i]];
+        int h = hm_table.find(partial[i])->second; // C++11: use "at"
         if (h > max) {
             max = h;
         }
@@ -150,7 +162,8 @@ int HMHeuristic::eval(tuple &t) {
     return max;
 }
 
-int HMHeuristic::update_hm_entry(tuple &t, int val) {
+
+int HMHeuristic::update_hm_entry(Tuple &t, int val) {
     assert(hm_table.count(t) == 1);
     if (hm_table[t] > val) {
         hm_table[t] = val;
@@ -159,50 +172,12 @@ int HMHeuristic::update_hm_entry(tuple &t, int val) {
     return val;
 }
 
-void HMHeuristic::generate_all_tuples(int var, int sz, tuple &base) {
-    if (sz == 1) {
-        for (int i = var; i < g_variable_domain.size(); i++) {
-            for (int j = 0; j < g_variable_domain[i]; j++) {
-                tuple tup(base);
-                tup.push_back(make_pair(i, j));
-                hm_table[tup] = 0;
-            }
-        }
-    } else {
-        for (int i = var; i < g_variable_domain.size(); i++) {
-            for (int j = 0; j < g_variable_domain[i]; j++) {
-                tuple tup(base);
-                tup.push_back(make_pair(i, j));
-                hm_table[tup] = 0;
-                generate_all_tuples(i + 1, sz - 1, tup);
-            }
-        }
-    }
-}
 
-void HMHeuristic::generate_all_partial_tuple(tuple &base_tuple, tuple &t,
-                                             int index, int sz, vector<tuple> &res) {
-    if (sz == 1) {
-        for (int i = index; i < base_tuple.size(); i++) {
-            tuple tup(t);
-            tup.push_back(base_tuple[i]);
-            res.push_back(tup);
-        }
-    } else {
-        for (int i = index; i < base_tuple.size(); i++) {
-            tuple tup(t);
-            tup.push_back(base_tuple[i]);
-            res.push_back(tup);
-            generate_all_partial_tuple(base_tuple, tup, i + 1, sz - 1, res);
-        }
-    }
-}
-
-
-int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) {
-    for (int i = 0; i < tup.size(); i++) {
+int HMHeuristic::check_tuple_in_tuple(
+    const Tuple &tup, const Tuple &big_tuple) const {
+    for (size_t i = 0; i < tup.size(); ++i) {
         bool found = false;
-        for (int j = 0; j < big_tuple.size(); j++) {
+        for (size_t j = 0; j < big_tuple.size(); ++j) {
             if (tup[i] == big_tuple[j]) {
                 found = true;
                 break;
@@ -215,8 +190,155 @@ int HMHeuristic::check_tuple_in_tuple(const tuple &tup, const tuple &big_tuple) 
     return 0;
 }
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.add_option<int>("m", 2);
+
+void HMHeuristic::state_to_tuple(const GlobalState &state, Tuple &t) const {
+    for (size_t i = 0; i < g_variable_domain.size(); ++i)
+        t.push_back(make_pair(i, state[i]));
+}
+
+
+int HMHeuristic::get_operator_pre_value(
+    const GlobalOperator &op, int var) const {
+    for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
+        if (op.get_preconditions()[i].var == var)
+            return op.get_preconditions()[i].val;
+    }
+    return -1;
+}
+
+
+void HMHeuristic::get_operator_pre(const GlobalOperator &op, Tuple &t) const {
+    for (size_t i = 0; i < op.get_preconditions().size(); ++i)
+        t.push_back(make_pair(op.get_preconditions()[i].var,
+                              op.get_preconditions()[i].val));
+    sort(t.begin(), t.end());
+}
+
+
+void HMHeuristic::get_operator_eff(const GlobalOperator &op, Tuple &t) const {
+    for (size_t i = 0; i < op.get_effects().size(); ++i)
+        t.push_back(make_pair(op.get_effects()[i].var,
+                              op.get_effects()[i].val));
+    sort(t.begin(), t.end());
+}
+
+
+bool HMHeuristic::is_pre_of(const GlobalOperator &op, int var) const {
+    // TODO if preconditions will be always sorted we should use a log-n
+    // search instead
+    for (size_t j = 0; j < op.get_preconditions().size(); ++j) {
+        if (op.get_preconditions()[j].var == var) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool HMHeuristic::is_effect_of(const GlobalOperator &op, int var) const {
+    for (size_t j = 0; j < op.get_effects().size(); ++j) {
+        if (op.get_effects()[j].var == var) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool HMHeuristic::contradict_effect_of(
+    const GlobalOperator &op, int var, int val) const {
+    for (size_t j = 0; j < op.get_effects().size(); ++j) {
+        if (op.get_effects()[j].var == var && op.get_effects()[j].val != val) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void HMHeuristic::generate_all_tuples() {
+    Tuple t;
+    generate_all_tuples_aux(0, m, t);
+}
+
+
+void HMHeuristic::generate_all_tuples_aux(int var, int sz, Tuple &base) {
+    int num_variables = g_variable_domain.size();
+    for (int i = var; i < num_variables; ++i) {
+        for (int j = 0; j < g_variable_domain[i]; ++j) {
+            Tuple tup(base);
+            tup.push_back(make_pair(i, j));
+            hm_table[tup] = 0;
+            if (sz > 1) {
+                generate_all_tuples_aux(i + 1, sz - 1, tup);
+            }
+        }
+    }
+}
+
+
+void HMHeuristic::generate_all_partial_tuples(
+    Tuple &base_tuple, vector<Tuple> &res) const {
+    Tuple t;
+    generate_all_partial_tuples_aux(base_tuple, t, 0, m, res);
+}
+
+
+void HMHeuristic::generate_all_partial_tuples_aux(
+    Tuple &base_tuple, Tuple &t, int index, int sz, vector<Tuple> &res) const {
+    if (sz == 1) {
+        for (size_t i = index; i < base_tuple.size(); ++i) {
+            Tuple tup(t);
+            tup.push_back(base_tuple[i]);
+            res.push_back(tup);
+        }
+    } else {
+        for (size_t i = index; i < base_tuple.size(); ++i) {
+            Tuple tup(t);
+            tup.push_back(base_tuple[i]);
+            res.push_back(tup);
+            generate_all_partial_tuples_aux(base_tuple, tup, i + 1, sz - 1, res);
+        }
+    }
+}
+
+
+void HMHeuristic::dump_table() const {
+    map<Tuple, int>::const_iterator it;
+    for (it = hm_table.begin(); it != hm_table.end(); ++it) {
+        pair<Tuple, int> hm_ent = *it;
+        cout << "h[";
+        dump_tuple(hm_ent.first);
+        cout << "] = " << hm_ent.second << endl;
+    }
+}
+
+
+void HMHeuristic::dump_tuple(Tuple &tup) const {
+    cout << tup[0].first << "=" << tup[0].second;
+    for (size_t i = 1; i < tup.size(); ++i)
+        cout << "," << tup[i].first << "=" << tup[i].second;
+}
+
+
+static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("h^m heuristic", "");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional effects", "ignored");
+    parser.document_language_support("axioms", "ignored");
+    parser.document_property("admissible",
+                             "yes for tasks without conditional "
+                             "effects or axioms");
+    parser.document_property("consistent",
+                             "yes for tasks without conditional "
+                             "effects or axioms");
+
+    parser.document_property("safe",
+                             "yes for tasks without conditional "
+                             "effects or axioms");
+    parser.document_property("preferred operators", "no");
+
+    parser.add_option<int>("m", "subset size", "2");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -226,4 +348,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 
-static Plugin<ScalarEvaluator> _plugin("hm", _parse);
+static Plugin<Heuristic> _plugin("hm", _parse);

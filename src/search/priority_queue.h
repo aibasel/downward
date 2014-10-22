@@ -1,12 +1,13 @@
 #ifndef PRIORITY_QUEUE_H
 #define PRIORITY_QUEUE_H
 
+#include "utilities.h"
+
 #include <cassert>
 #include <iostream>
 #include <queue>
 #include <utility>
 #include <vector>
-
 
 /*
   We define three priority queue classes here: HeapQueue (heap-based),
@@ -132,12 +133,13 @@ class BucketQueue : public AbstractQueue<Value> {
 
     typedef std::vector<Value> Bucket;
     std::vector<Bucket> buckets;
-    mutable size_t current_bucket_no;
-    size_t num_entries;
-    size_t num_pushes;
+    mutable int current_bucket_no;
+    int num_entries;
+    int num_pushes;
 
     void update_current_bucket_no() const {
-        while (current_bucket_no < buckets.size() &&
+        int num_buckets = buckets.size();
+        while (current_bucket_no < num_buckets &&
                buckets[current_bucket_no].empty())
             ++current_bucket_no;
     }
@@ -147,7 +149,7 @@ class BucketQueue : public AbstractQueue<Value> {
         // order, removing them from this queue as a side effect.
         assert(result.empty());
         result.reserve(num_entries);
-        for (size_t key = current_bucket_no; num_entries; ++key) {
+        for (int key = current_bucket_no; num_entries != 0; ++key) {
             Bucket &bucket = buckets[key];
             for (size_t i = 0; i < bucket.size(); ++i)
                 result.push_back(std::make_pair(key, bucket[i]));
@@ -167,8 +169,9 @@ public:
     virtual void push(int key, const Value &value) {
         ++num_entries;
         ++num_pushes;
-        assert(num_pushes); // Check against overflow.
-        if (key >= buckets.size())
+        assert(num_pushes > 0); // Check against overflow.
+        int num_buckets = buckets.size();
+        if (key >= num_buckets)
             buckets.resize(key + 1);
         else if (key < current_bucket_no)
             current_bucket_no = key;
@@ -176,7 +179,7 @@ public:
     }
 
     virtual Entry pop() {
-        assert(num_entries);
+        assert(num_entries > 0);
         --num_entries;
         update_current_bucket_no();
         Bucket &current_bucket = buckets[current_bucket_no];
@@ -190,10 +193,11 @@ public:
     }
 
     virtual void clear() {
-        for (size_t i = current_bucket_no; num_entries; ++i) {
-            assert(i < buckets.size());
-            assert(buckets[i].size() <= num_entries);
-            num_entries -= buckets[i].size();
+        for (int i = current_bucket_no; num_entries != 0; ++i) {
+            assert(in_bounds(i, buckets));
+            int bucket_size = buckets[i].size();
+            assert(bucket_size <= num_entries);
+            num_entries -= bucket_size;
             buckets[i].clear();
         }
         current_bucket_no = 0;

@@ -3,18 +3,19 @@
 
 #include <vector>
 
-#include "open_lists/open_list.h"
-#include "search_engine.h"
-#include "search_space.h"
-#include "state.h"
-#include "timer.h"
 #include "evaluator.h"
+#include "global_state.h"
+#include "search_engine.h"
 #include "search_progress.h"
+#include "search_space.h"
+#include "timer.h"
 
+#include "open_lists/open_list.h"
+
+class GlobalOperator;
 class Heuristic;
-class Operator;
-class ScalarEvaluator;
 class Options;
+class ScalarEvaluator;
 
 class EagerSearch : public SearchEngine {
     // Search Behavior parameters
@@ -22,20 +23,19 @@ class EagerSearch : public SearchEngine {
     bool do_pathmax; // whether to use pathmax correction
     bool use_multi_path_dependence;
 
-    OpenList<state_var_t *> *open_list;
+    OpenList<StateID> *open_list;
     ScalarEvaluator *f_evaluator;
 
 protected:
-    int step();
-    pair<SearchNode, bool> fetch_next_node();
-    bool check_goal(const SearchNode &node);
+    SearchStatus step();
+    std::pair<SearchNode, bool> fetch_next_node();
     void update_jump_statistic(const SearchNode &node);
-    void print_heuristic_values(const vector<int> &values) const;
+    void print_heuristic_values(const std::vector<int> &values) const;
     void reward_progress();
 
-    vector<Heuristic *> heuristics;
-    vector<Heuristic *> preferred_operator_heuristics;
-    vector<Heuristic *> estimate_heuristics;
+    std::vector<Heuristic *> heuristics;
+    std::vector<Heuristic *> preferred_operator_heuristics;
+    std::vector<Heuristic *> estimate_heuristics;
     // TODO: in the long term this
     // should disappear into the open list
 

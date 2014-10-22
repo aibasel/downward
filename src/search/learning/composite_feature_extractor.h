@@ -1,9 +1,10 @@
 #ifndef LEARNING_COMPOSITE_FEATURE_EXTRACTOR_H
 #define LEARNING_COMPOSITE_FEATURE_EXTRACTOR_H
 
-#include <vector>
 #include "feature_extractor.h"
-#include "../state.h"
+#include "../global_state.h"
+
+#include <vector>
 
 class CompositeFeatureExtractor : public FeatureExtractor {
 protected:

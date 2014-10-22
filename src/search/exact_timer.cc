@@ -1,16 +1,23 @@
 #include "exact_timer.h"
 
+#include "utilities.h"
+
 #include <ctime>
 #include <ostream>
 #include <unistd.h>
 
-#ifdef __APPLE__
+
+#if OPERATING_SYSTEM == OSX
 #include <mach/mach_time.h>
+#elif OPERATING_SYSTEM == CYGWIN
+#ifndef CLOCK_PROCESS_CPUTIME_ID
+#define CLOCK_PROCESS_CPUTIME_ID (clockid_t(2))
+#endif
 #endif
 
 using namespace std;
 
-#ifdef __APPLE__
+#if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
     uint64_t difference = end - start;
     static mach_timebase_info_data_t info = {
@@ -39,7 +46,7 @@ ExactTimer::~ExactTimer() {
 
 double ExactTimer::current_clock() const {
     timespec tp;
-#ifdef __APPLE__
+#if OPERATING_SYSTEM == OSX
     static uint64_t start = mach_absolute_time();
     uint64_t end = mach_absolute_time();
     mach_absolute_difference(end, start, &tp);
@@ -76,7 +83,7 @@ double ExactTimer::reset() {
     return result;
 }
 
-ostream & operator<<(ostream &os, const ExactTimer &timer) {
+ostream &operator<<(ostream &os, const ExactTimer &timer) {
     double value = timer() / 1e9;
     if (value < 0 && value > -1e-10)
         value = 0.0;  // We sometimes get inaccuracies from God knows where.

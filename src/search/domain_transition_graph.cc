@@ -6,22 +6,24 @@ using namespace std;
 using namespace __gnu_cxx;
 
 #include "domain_transition_graph.h"
+#include "global_operator.h"
 #include "globals.h"
-#include "operator.h"
+#include "utilities.h"
+
 
 void DomainTransitionGraph::read_all(istream &in) {
     int var_count = g_variable_domain.size();
 
     // First step: Allocate graphs and nodes.
     g_transition_graphs.reserve(var_count);
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         int range = g_variable_domain[var];
         DomainTransitionGraph *dtg = new DomainTransitionGraph(var, range);
         g_transition_graphs.push_back(dtg);
     }
 
     // Second step: Read transitions from file.
-    for (int var = 0; var < var_count; var++)
+    for (int var = 0; var < var_count; ++var)
         g_transition_graphs[var]->read_data(in);
 
     // Third step: Simplify transitions.
@@ -30,10 +32,10 @@ void DomainTransitionGraph::read_all(istream &in) {
     // domains, but not for ADL domains.
 
     cout << "Simplifying transitions..." << flush;
-    for (int var = 0; var < var_count; var++) {
+    for (int var = 0; var < var_count; ++var) {
         vector<ValueNode> &nodes = g_transition_graphs[var]->nodes;
-        for (int value = 0; value < nodes.size(); value++)
-            for (int i = 0; i < nodes[value].transitions.size(); i++)
+        for (size_t value = 0; value < nodes.size(); ++value)
+            for (size_t i = 0; i < nodes[value].transitions.size(); ++i)
                 nodes[value].transitions[i].simplify();
     }
     cout << " done!" << endl;
@@ -43,7 +45,7 @@ DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
     is_axiom = g_axiom_layers[var_index] != -1;
     var = var_index;
     nodes.reserve(node_count);
-    for (int value = 0; value < node_count; value++)
+    for (int value = 0; value < node_count; ++value)
         nodes.push_back(ValueNode(this, value));
     last_helpful_transition_extraction_time = -1;
 }
@@ -58,10 +60,10 @@ void DomainTransitionGraph::read_data(istream &in) {
     //       that transitions in the input are not grouped by target
     //       like they should be. Change this.
 
-    for (int origin = 0; origin < nodes.size(); origin++) {
+    for (size_t origin = 0; origin < nodes.size(); ++origin) {
         int trans_count;
         in >> trans_count;
-        for (int i = 0; i < trans_count; i++) {
+        for (int i = 0; i < trans_count; ++i) {
             int target, operator_index;
             in >> target;
             in >> operator_index;
@@ -83,7 +85,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             in >> precond_count;
 
             vector<pair<int, int> > precond_pairs; // Needed to build up cea_effect.
-            for (int j = 0; j < precond_count; j++) {
+            for (int j = 0; j < precond_count; ++j) {
                 int global_var, val;
                 in >> global_var >> val;
                 precond_pairs.push_back(make_pair(global_var, val));
@@ -106,12 +108,12 @@ void DomainTransitionGraph::read_data(istream &in) {
                 int cea_parent = global_to_cea_parent[global_var];
                 cea_precond.push_back(LocalAssignment(cea_parent, val));
             }
-            Operator *the_operator;
+            GlobalOperator *the_operator;
             if (is_axiom) {
-                assert(operator_index >= 0 && operator_index < g_axioms.size());
+                assert(in_bounds(operator_index, g_axioms));
                 the_operator = &g_axioms[operator_index];
             } else {
-                assert(operator_index >= 0 && operator_index < g_operators.size());
+                assert(in_bounds(operator_index, g_operators));
                 the_operator = &g_operators[operator_index];
             }
 
@@ -120,11 +122,19 @@ void DomainTransitionGraph::read_data(istream &in) {
             // afterthought.
             sort(precond_pairs.begin(), precond_pairs.end());
 
-            const vector<PrePost> &pre_post = the_operator->get_pre_post();
-            for (int j = 0; j < pre_post.size(); j++) {
-                int var_no = pre_post[j].var;
-                int pre = pre_post[j].pre;
-                int post = pre_post[j].post;
+            hash_map<int, int> pre_map;
+            const vector<GlobalCondition> &preconditions = the_operator->get_preconditions();
+            for (size_t j = 0; j < preconditions.size(); ++j)
+                pre_map[preconditions[j].var] = preconditions[j].val;
+
+            const vector<GlobalEffect> &effects = the_operator->get_effects();
+            for (size_t j = 0; j < effects.size(); ++j) {
+                int var_no = effects[j].var;
+                int pre = -1;
+                hash_map<int, int>::const_iterator pre_it = pre_map.find(var_no);
+                if (pre_it != pre_map.end())
+                    pre = pre_it->second;
+                int post = effects[j].val;
 
                 if (var_no == var || !global_to_cea_parent.count(var_no)) {
                     // This is either an effect on the variable we're
@@ -138,9 +148,9 @@ void DomainTransitionGraph::read_data(istream &in) {
                 if (pre != -1)
                     triggercond_pairs.push_back(make_pair(var_no, pre));
 
-                const vector<Prevail> &cond = pre_post[j].cond;
-                for (int k = 0; k < cond.size(); k++)
-                    triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].prev));
+                const vector<GlobalCondition> &cond = effects[j].conditions;
+                for (size_t k = 0; k < cond.size(); ++k)
+                    triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].val));
                 sort(triggercond_pairs.begin(), triggercond_pairs.end());
 
                 if (includes(precond_pairs.begin(), precond_pairs.end(),
@@ -171,10 +181,10 @@ void DomainTransitionGraph::dump() const {
 
 void DomainTransitionGraph::get_successors(int value, vector<int> &result) const {
     assert(result.empty());
-    assert(value >= 0 && value < nodes.size());
+    assert(in_bounds(value, nodes));
     const vector<ValueTransition> &transitions = nodes[value].transitions;
     result.reserve(transitions.size());
-    for (int i = 0; i < transitions.size(); i++)
+    for (size_t i = 0; i < transitions.size(); ++i)
         result.push_back(transitions[i].target->value);
 }
 
@@ -182,7 +192,7 @@ class hash_pair_vector {
 public:
     size_t operator()(const vector<pair<int, int> > &vec) const {
         unsigned long hash_value = 0;
-        for (int i = 0; i < vec.size(); i++) {
+        for (size_t i = 0; i < vec.size(); ++i) {
             hash_value = 17 * hash_value + vec[i].first;
             hash_value = 17 * hash_value + vec[i].second;
         }
@@ -214,10 +224,10 @@ void ValueTransition::simplify_labels(
     HashMap label_index;
     label_index.resize(label_vec.size() * 2);
 
-    for (int i = 0; i < label_vec.size(); i++) {
+    for (size_t i = 0; i < label_vec.size(); ++i) {
         HashKey key;
         const vector<LocalAssignment> &conditions = label_vec[i].precond;
-        for (int j = 0; j < conditions.size(); j++)
+        for (size_t j = 0; j < conditions.size(); ++j)
             key.push_back(make_pair(conditions[j].local_var, conditions[j].value));
         sort(key.begin(), key.end());
         label_index[key] = i;
@@ -232,9 +242,9 @@ void ValueTransition::simplify_labels(
         int powerset_size = (1 << key.size()) - 1; // -1: only consider proper subsets
         bool match = false;
         if (powerset_size <= 31) { // HACK! Don't spend too much time here...
-            for (int mask = 0; mask < powerset_size; mask++) {
+            for (int mask = 0; mask < powerset_size; ++mask) {
                 HashKey subset;
-                for (int i = 0; i < key.size(); i++)
+                for (size_t i = 0; i < key.size(); ++i)
                     if (mask & (1 << i))
                         subset.push_back(key[i]);
                 HashMap::iterator found = label_index.find(subset);
