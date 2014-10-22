@@ -63,7 +63,7 @@ bool TransitionSystem::is_valid () const {
 }
 
 int TransitionSystem::get_label_cost_by_index(int label_no) const {
-    assert(!labels->is_label_reduced(label_no));
+    assert(labels->is_current_label(label_no));
     return labels->get_label_cost(label_no);
 }
 
@@ -127,7 +127,7 @@ void TransitionSystem::compute_distances_and_prune() {
     bool is_unit_cost = true;
     for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
         if (relevant_labels[label_no]) {
-            if (!labels->is_label_reduced(label_no)) {
+            if (labels->is_current_label(label_no)) {
                 if (labels->get_label_cost(label_no) != 1) {
                     is_unit_cost = false;
                     break;
@@ -265,7 +265,7 @@ static void dijkstra_search(
 void TransitionSystem::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (!labels->is_label_reduced(label_no)) {
+        if (labels->is_current_label(label_no)) {
             int label_cost = get_label_cost_by_index(label_no);
             const vector<Transition> &transitions = transitions_by_label[label_no];
             for (size_t j = 0; j < transitions.size(); ++j) {
@@ -291,7 +291,7 @@ void TransitionSystem::compute_init_distances_general_cost() {
 void TransitionSystem::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (!labels->is_label_reduced(label_no)) {
+        if (labels->is_current_label(label_no)) {
             int label_cost = get_label_cost_by_index(label_no);
             const vector<Transition> &transitions = transitions_by_label[label_no];
             for (size_t j = 0; j < transitions.size(); ++j) {
@@ -345,17 +345,15 @@ void TransitionSystem::normalize_transitions() {
     vector<StateBucket> target_buckets(num_states);
 
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_label_reduced(label_no)) {
-            // Skip all labels that have been reduced
-            continue;
+        if (labels->is_current_label(label_no)) {
+            vector<Transition> &transitions = transitions_by_label[label_no];
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const Transition &t = transitions[i];
+                target_buckets[t.target].push_back(
+                    make_pair(t.src, label_no));
+            }
+            vector<Transition>().swap(transitions);
         }
-        vector<Transition> &transitions = transitions_by_label[label_no];
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            const Transition &t = transitions[i];
-            target_buckets[t.target].push_back(
-                make_pair(t.src, label_no));
-        }
-        vector<Transition>().swap(transitions);
     }
 
     // Second, partition by src state.
@@ -463,7 +461,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     int op_count = g_operators.size();
     for (int label_no = 0; label_no < op_count; ++label_no) {
         const GlobalOperator &op = g_operators[label_no];
-        labels->add_label(label_no, get_adjusted_action_cost(op, cost_type));
+        labels->add_label(get_adjusted_action_cost(op, cost_type));
         const vector<GlobalCondition> &preconditions = op.get_preconditions();
         const vector<GlobalEffect> &effects = op.get_effects();
         hash_map<int, int> pre_val;
@@ -622,21 +620,19 @@ void TransitionSystem::apply_abstraction(
     vector<vector<Transition> > new_transitions_by_label(
         transitions_by_label.size());
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_label_reduced(label_no)) {
-            // do not consider non-leaf labels
-            continue;
-        }
-        const vector<Transition> &transitions =
-            transitions_by_label[label_no];
-        vector<Transition> &new_transitions =
-            new_transitions_by_label[label_no];
-        new_transitions.reserve(transitions.size());
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            const Transition &trans = transitions[i];
-            int src = abstraction_mapping[trans.src];
-            int target = abstraction_mapping[trans.target];
-            if (src != PRUNED_STATE && target != PRUNED_STATE)
-                new_transitions.push_back(Transition(src, target));
+        if (labels->is_current_label(label_no)) {
+            const vector<Transition> &transitions =
+                transitions_by_label[label_no];
+            vector<Transition> &new_transitions =
+                new_transitions_by_label[label_no];
+            new_transitions.reserve(transitions.size());
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const Transition &trans = transitions[i];
+                int src = abstraction_mapping[trans.src];
+                int target = abstraction_mapping[trans.target];
+                if (src != PRUNED_STATE && target != PRUNED_STATE)
+                    new_transitions.push_back(Transition(src, target));
+            }
         }
     }
     vector<vector<Transition> >().swap(transitions_by_label);
@@ -748,39 +744,35 @@ EquivalenceRelation *TransitionSystem::compute_local_equivalence_relation() cons
     vector<pair<int, int> > annotated_labels;
     int annotation = 0;
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_label_reduced(label_no)) {
-            // do not consider non-leaf labels
-            continue;
+        if (labels->is_current_label(label_no)) {
+            if (considered_labels[label_no]) {
+                continue;
+            }
+            int label_cost = get_label_cost_by_index(label_no);
+            annotated_labels.push_back(make_pair(annotation, label_no));
+            const vector<Transition> &transitions = transitions_by_label[label_no];
+            for (int other_label_no = label_no + 1; other_label_no < num_labels;
+                 ++other_label_no) {
+                if (labels->is_current_label(other_label_no)) {
+                    if (considered_labels[other_label_no]) {
+                        continue;
+                    }
+                    if (label_cost != get_label_cost_by_index(other_label_no)) {
+                        continue;
+                    }
+                    if (relevant_labels[label_no] != relevant_labels[other_label_no]) {
+                        continue;
+                    }
+                    const vector<Transition> &other_transitions = transitions_by_label[other_label_no];
+                    if ((transitions.empty() && other_transitions.empty())
+                        || (transitions == other_transitions)) {
+                        considered_labels[other_label_no] = true;
+                        annotated_labels.push_back(make_pair(annotation, other_label_no));
+                    }
+                }
+            }
+            ++annotation;
         }
-        if (considered_labels[label_no]) {
-            continue;
-        }
-        int label_cost = get_label_cost_by_index(label_no);
-        annotated_labels.push_back(make_pair(annotation, label_no));
-        const vector<Transition> &transitions = transitions_by_label[label_no];
-        for (int other_label_no = label_no + 1; other_label_no < num_labels;
-             ++other_label_no) {
-            if (labels->is_label_reduced(other_label_no)) {
-                // do not consider non-leaf labels
-                continue;
-            }
-            if (considered_labels[other_label_no]) {
-                continue;
-            }
-            if (label_cost != get_label_cost_by_index(other_label_no)) {
-                continue;
-            }
-            if (relevant_labels[label_no] != relevant_labels[other_label_no]) {
-                continue;
-            }
-            const vector<Transition> &other_transitions = transitions_by_label[other_label_no];
-            if ((transitions.empty() && other_transitions.empty())
-                || (transitions == other_transitions)) {
-                considered_labels[other_label_no] = true;
-                annotated_labels.push_back(make_pair(annotation, other_label_no));
-            }
-        }
-        ++annotation;
     }
     return EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 }
