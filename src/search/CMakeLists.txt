@@ -14,11 +14,24 @@ project(${TARGET})
 ###     to change them in CMakeCache.txt or pass -DMY_OPTION to cmake.
 
 ## == Path containing some helper CMake modules ==
-set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 include("FastDownwardOptions")
 include("FastDownwardPlugins")
 
+
+# Default to Release build, unless specified otherwise
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "RELEASE")
+endif(NOT CMAKE_BUILD_TYPE)
+
+# First, make a lower-case version of the build type
+string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
+
+# Use distinct names for the different targets
+if(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
+   set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
+endif(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
 
 
 ## == Definition of build flags ==
@@ -31,10 +44,20 @@ include("FastDownwardPlugins")
 ## * -DCMAKE_BUILD_TYPE=RelWithDebInfo - -O3 optimisation, static binary, but with debugging information
 ## * -DCMAKE_BUILD_TYPE=Profile        - -O3 optimisation, profile information linked in
 ##
+## We overwrite the default configuration to include "-g", allow cross
+## compilation and switch to pedantic error reporting.
 
-# Target-agnostic build flags, taken from the legacy downward Makefile.
-set(CMAKE_CXX_FLAGS "-Iext -m32 -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror")
-set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
+set(CMAKE_CXX_FLAGS "")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BITWIDTHOPT}")
+# Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra -pedantic -Wno-deprecated -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Iext")
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/local/include/")
+endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
@@ -42,7 +65,6 @@ set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -m32")
 ## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
 ## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
 if(CMAKE_COMPILER_IS_GNUCXX)
-
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
                     OUTPUT_VARIABLE GCC_VERSION)
     string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${GCC_VERSION})
@@ -51,88 +73,48 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
         message(STATUS "Version ${GCC_MAJOR}.${GCC_MINOR} < 4.6")
         # If the original list wasn't part of the string the result will be two list items.
-        set(CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/c++/${GCC_MAJOR}.${GCC_MINOR}/i686-linux-gnu")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/c++/${GCC_MAJOR}.${GCC_MINOR}/i686-linux-gnu")
     endif(GCC_VERSION VERSION_LESS 4.6)
-
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
+set(CMAKE_CXX_LINK_FLAGS "")
+set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${BITWIDTHOPT}")
+set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -g")
 
-# Default to Release build, unless specified otherwise
-if(NOT CMAKE_BUILD_TYPE)
-    #message("** Defaulting to Release build **")
-    set(CMAKE_BUILD_TYPE "RELEASE")
-endif()
 
+## Configuration-specific options
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
+set(CMAKE_CXX_FLAGS_DEBUG "-O3")
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
+
+set(CMAKE_CXX_LINK_FLAGS_PROFILE "-pg")
 
 # Here, we modify the default Release build compile flags to make a static executable
 # This is done slightly differently for different compilers: the -static-libgcc flag
 # makes no sense if using the Intel compiler.
+if(DOWNWARD_LINK_RELEASE_STATICALLY)
+    set(CMAKE_CXX_LINK_FLAGS_RELEASE "${CMAKE_CXX_LINK_FLAGS_RELEASE} -static")
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        set(CMAKE_CXX_LINK_FLAGS_RELEASE "${CMAKE_CXX_LINK_FLAGS_RELEASE} -static-libgcc")
+    endif(CMAKE_COMPILER_IS_GNUCXX)
+endif(DOWNWARD_LINK_RELEASE_STATICALLY)
 
-# WARNING: Note that unlike the legacy Makefile, -g is *not enabled* in Release build.
-#          Either use the RelWithDebInfo build, or add -g to the line below.
-
-
-# First, make a lower-case version of the build type
-string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
-
-# Note that we should use static-linkage for the two sorts of release build
-if(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL "relwithdebinfo")
-   set(STATIC_BUILD TRUE)
-endif(LOWER_CASE_BUILD_TYPE STREQUAL "release" OR LOWER_CASE_BUILD_TYPE STREQUAL "relwithdebinfo")
-
-# Disable static linking on OS X.
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(STATIC_BUILD FALSE)
-endif()
-
-
-# Use distinct names for the different targets
-if(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
-   set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
-endif(NOT LOWER_CASE_BUILD_TYPE STREQUAL "release")
-
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O3")
-
-    if(STATIC_BUILD)
-        #message("-- Building statically linked executable")
-        set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -static -static-libgcc")
-    endif(STATIC_BUILD)
-
-else(CMAKE_COMPILER_IS_GNUCXX)
-
-    # Sensible defaults for other compilers
-
-    message(WARNING "Not using GNU compiler - currently untested")
-
-    set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 -DNDEBUG -fomit-frame-pointer")
-    set(CMAKE_CXX_LINK_FLAGS_RELEASE "-static")
-
-    if(STATIC_BUILD)
-        #message("-- Building statically linked executable")
-        set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -static")
-    endif(STATIC_BUILD)
-
-endif(CMAKE_COMPILER_IS_GNUCXX)
-
-# Set the desired level of debugging for the Debug build, and to link in the rt library
-
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_LINK_FLAGS_DEBUG "-g")
-
-# Define the profile build.  Incidentally, cMake doesn't have one of these by default,
-# so this also demonstrates that it's fairly easy to add a custom build type (e.g. if you
-# wanted a specific optimisation--debugging--static combination).
-
-set(CMAKE_CXX_FLAGS_PROFILE "-pg -O3")
-set(CMAKE_CXX_LINK_FLAGS_PROFILE "-pg")
 
 # Finally, find the rt library for the exact timer
+set(POSTLINKOPT "")
 
-find_library(RT_LIBRARY rt)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    find_library(RT_LIBRARY rt)
+    if(DOWNWARD_LINK_RELEASE_STATICALLY)
+        set(RT_LIBRARY "-Wl,-Bstatic ${RT_LIBRARY}")
+    endif(DOWNWARD_LINK_RELEASE_STATICALLY)
+    set(POSTLINKOPT "${POSTLINKOPT} ${RT_LIBRARY}")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    find_library(PSAPI_LIBRARY psapi)
+    set(POSTLINKOPT "${POSTLINKOPT} ${PSAPI_LIBRARY}")
+endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+
 
 ## == Finding (and if necessary, compiling) the LP libraries ==
 
