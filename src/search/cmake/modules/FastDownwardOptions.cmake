@@ -7,6 +7,13 @@ set(DOWNWARD_BITWIDTH
     CACHE STRING
     "By default, build in 32-bit mode. Set to '64' to build in \
      64-bit mode and to 'native' to use the native bitness of the OS.")
+if (${DOWNWARD_BITWIDTH} STREQUAL "32")
+    set(BITWIDTHOPT, "-m32")
+elseif (${DOWNWARD_BITWIDTH} STREQUAL "64")
+    set(BITWIDTHOPT, "-m64")
+elseif (NOT ${DOWNWARD_BITWIDTH} STREQUAL, "native")
+    message( FATAL_ERROR "Bad value for DOWNWARD_BITWIDTH." )
+endif
 
 option(DOWNWARD_USE_LP
        "Enable linear programming stuff."
@@ -17,6 +24,10 @@ option(DOWNWARD_LINK_RELEASE_STATICALLY
         disable/enable static linking of the executable in release mode. \
         On OS X, this is unsupported and will be silently disabled."
        YES)
+if (${APPLE})
+    set(DOWNWARD_LINK_RELEASE_STATICALLY NO)
+endif
+
 
 set(DOWNWARD_OS
     "auto"
