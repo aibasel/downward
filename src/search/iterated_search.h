@@ -13,7 +13,6 @@ class IteratedSearch : public SearchEngine {
     bool last_phase_found_solution;
     int best_bound;
     bool iterated_found_solution;
-    int plan_counter;
 
     SearchEngine *current_search;
     std::string current_search_name;

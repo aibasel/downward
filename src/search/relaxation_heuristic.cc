@@ -4,6 +4,7 @@
 #include "global_state.h"
 #include "globals.h"
 #include "task.h"
+#include "utilities.h"
 
 #include <cstddef>
 #include <cassert>
