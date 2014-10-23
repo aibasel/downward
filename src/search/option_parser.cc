@@ -5,6 +5,7 @@
 #include "rng.h"
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -195,9 +196,21 @@ SearchEngine *OptionParser::parse_cmd_line(
 }
 
 
+int OptionParser::parse_int_arg(const string &name, const string &value) {
+    try {
+        return stoi(value);
+    } catch (invalid_argument &) {
+        throw ArgError("argument for " + name + " must be an integer");
+    } catch (out_of_range &) {
+        throw ArgError("argument for " + name + " is out of range");
+    }
+}
+
+
 SearchEngine *OptionParser::parse_cmd_line_aux(
     const vector<string> &args, bool dry_run) {
     SearchEngine *engine(0);
+    // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
         string arg = args[i];
         bool is_last = (i == args.size() - 1);
@@ -221,9 +234,10 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --random-seed");
             ++i;
-            srand(atoi(args[i].c_str()));
-            g_rng.seed(atoi(args[i].c_str()));
-            cout << "random seed " << args[i] << endl;
+            int seed = parse_int_arg(arg, args[i]);
+            srand(seed);
+            g_rng.seed(seed);
+            cout << "random seed: " << seed << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
             cout << "Help:" << endl;
             bool txt2tags = false;
@@ -253,11 +267,18 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
             dp->print_all();
             cout << "Help output finished." << endl;
             exit(0);
-        } else if (arg.compare("--plan-file") == 0) {
+        } else if (arg.compare("--internal-plan-file") == 0) {
             if (is_last)
-                throw ArgError("missing argument after --plan-file");
+                throw ArgError("missing argument after --internal-plan-file");
             ++i;
             g_plan_filename = args[i];
+        } else if (arg.compare("--internal-plan-counter") == 0) {
+            if (is_last)
+                throw ArgError("missing argument after --internal-plan-counter");
+            ++i;
+            g_plan_counter = parse_int_arg(arg, args[i]);
+            if (g_plan_counter <= 0)
+                throw ArgError("argument for --internal-plan-counter must be positive");
         } else {
             throw ArgError("unknown option " + arg);
         }
@@ -283,8 +304,10 @@ string OptionParser::usage(string progname) {
         "    by the name that is specified in the definition.\n"
         "--random-seed SEED\n"
         "    Use random seed SEED\n\n"
-        "--plan-file FILENAME\n"
+        "--internal-plan-file FILENAME\n"
         "    Plan will be output to a file called FILENAME\n\n"
+        "--internal-plan-counter COUNTER\n"
+        "    Start enumerating plan files with COUNTER, i.e. FILENAME.COUNTER\n\n"
         "See http://www.fast-downward.org/ for details.";
     return usage;
 }

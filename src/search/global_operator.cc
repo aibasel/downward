@@ -68,8 +68,6 @@ GlobalOperator::GlobalOperator(istream &in, bool axiom) {
         read_pre_post(in);
         check_magic(in, "end_rule");
     }
-
-    marker1 = marker2 = false;
 }
 
 void GlobalCondition::dump() const {

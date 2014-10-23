@@ -57,29 +57,25 @@ int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
     return plan_cost;
 }
 
-void save_plan(const vector<const GlobalOperator *> &plan, int iter) {
+void save_plan(const vector<const GlobalOperator *> &plan) {
     // TODO: Refactor: this is only used by the SearchEngine classes
     //       and hence should maybe be moved into the SearchEngine.
-    ofstream outfile;
-    if (iter == 0) {
-        outfile.open(g_plan_filename.c_str(), ios::out);
-    } else {
-        ostringstream out;
-        out << g_plan_filename << "." << iter;
-        outfile.open(out.str().c_str(), ios::out);
-    }
+    ostringstream filename;
+    filename << g_plan_filename;
+    if (g_plan_counter != 0)
+        filename << "." << g_plan_counter;
+    ofstream outfile(filename.str());
     for (size_t i = 0; i < plan.size(); ++i) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
     }
-    outfile.close();
     int plan_cost = calculate_plan_cost(plan);
-    ofstream statusfile;
-    statusfile.open("plan_numbers_and_cost", ios::out | ios::app);
-    statusfile << iter << " " << plan_cost << endl;
-    statusfile.close();
+    outfile << "; cost = " << plan_cost << " ("
+            << (is_unit_cost() ? "unit cost" : "general cost") << ")" << endl;
+    outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
+    ++g_plan_counter;
 }
 
 bool peek_magic(istream &in, string magic) {
@@ -385,5 +381,6 @@ CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
+int g_plan_counter = 0;
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;

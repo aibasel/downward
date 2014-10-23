@@ -67,7 +67,7 @@ def run_plan_script(task_type, relpath, search):
     problem = os.path.join(REPO_BASE, "benchmarks", relpath)
     print "\nRun %(search)s on %(task_type)s task:" % locals()
     return subprocess.call(
-        [os.path.join(REPO_BASE, "src", "plan"), problem, "--search", search])
+        [os.path.join(REPO_BASE, "src", "fast-downward.py"), problem, "--search", search])
 
 
 def cleanup():

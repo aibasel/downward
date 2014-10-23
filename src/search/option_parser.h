@@ -151,6 +151,7 @@ By calling addArgument, the parse tree is partially parsed,
 and the result is added to the Options.
  */
 class OptionParser {
+    static int parse_int_arg(const std::string &name, const std::string &value);
     static SearchEngine *parse_cmd_line_aux(
         const std::vector<std::string> &args, bool dry_run);
 public:
