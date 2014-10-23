@@ -16,6 +16,7 @@ project(${TARGET})
 ## == Path containing some helper CMake modules ==
 set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
+include("FastDownwardOptions")
 include("FastDownwardPlugins")
 
 
