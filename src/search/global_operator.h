@@ -88,8 +88,6 @@ public:
         marked = false;
     }
 
-    mutable bool marker1, marker2; // HACK! HACK!
-
     int get_cost() const {return cost; }
 };
 
