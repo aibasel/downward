@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
+#include "../operator_cost.h"
+
 #include <ext/slist>
 #include <iostream>
 #include <string>
@@ -130,7 +132,8 @@ public:
     virtual ~TransitionSystem();
 
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
-                                                Labels *labels);
+                                                Labels *labels,
+                                                OperatorCost cost_type);
     void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
@@ -145,8 +148,6 @@ public:
       x, y and z.
     */
     std::string tag() const;
-    // get_label_cost_by_index is public exclusively for ShrinkBisimulation
-    int get_label_cost_by_index(int label_no) const;
     bool is_solvable() const;
     int get_cost(const GlobalState &state) const;
     void statistics(bool include_expensive_statistics) const;
@@ -183,8 +184,8 @@ public:
     const std::vector<Transition> &get_transitions_for_label(int label_no) const {
         return transitions_by_label[label_no];
     }
-    int get_num_labels() const {
-        return num_labels;
+    const Labels *get_labels() const {
+        return labels;
     }
 
     // Methods only used by MergeDFP.
