@@ -21,8 +21,8 @@ class TypedOpenList : public OpenList<Entry> {
 
     std::vector<std::pair<std::size_t, Bucket> > bucket_list;
 
-    typedef typename std::unordered_map<std::size_t, int> BucketMap;
-    BucketMap key_to_bucket_index;
+    typedef typename std::unordered_map<std::size_t, int> KeyToBucketIndex;
+    KeyToBucketIndex key_to_bucket_index;
 
     int size;
     bool dead_end;
