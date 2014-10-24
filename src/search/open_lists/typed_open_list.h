@@ -3,15 +3,16 @@
 
 #include "open_list.h"
 #include "pareto_open_list.h"
+
 #include "../plugin.h"
 
 #include <cstddef>
 #include <unordered_map>
 #include <vector>
 
-class ScalarEvaluator;
 class Options;
 class OptionParser;
+class ScalarEvaluator;
 
 
 template<class Entry>
