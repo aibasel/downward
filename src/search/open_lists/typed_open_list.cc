@@ -27,9 +27,9 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
         key[i] = evaluators[i]->get_value();
     }
     // The hash function is located in pareto_open_list.h
-    size_t hash = __gnu_cxx::hash< const std::vector<int> >() (key);
+    size_t hash = __gnu_cxx::hash< const vector<int> >() (key);
 
-    typename BucketMap::iterator it = key_to_bucket_index.find(hash);
+    typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(hash);
     if (it == key_to_bucket_index.end()) {
         bucket_list.push_back(make_pair(hash, Bucket()));
         bucket_list.back().second.push_back(entry); // TODO: c++11 list init
@@ -67,7 +67,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
         size_t moved_bucket_hash = bucket_list.back().first;
         key_to_bucket_index[moved_bucket_hash] = bucket_id;
         assert(bucket_id < bucket_list.size());
-        std::swap(bucket_list[bucket_id], bucket_list.back());
+        swap(bucket_list[bucket_id], bucket_list.back());
         bucket_list.pop_back();
         key_to_bucket_index.erase(hash);
     }
