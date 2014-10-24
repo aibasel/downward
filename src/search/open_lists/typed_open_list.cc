@@ -26,14 +26,12 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
     for (size_t i = 0; i < evaluators.size(); ++i) {
         key[i] = evaluators[i]->get_value();
     }
-    // The hash function is located in pareto_open_list.h
-    size_t hash = __gnu_cxx::hash< const vector<int> >() (key);
 
-    typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(hash);
+    typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(key);
     if (it == key_to_bucket_index.end()) {
-        keys_and_buckets.push_back(make_pair(hash, Bucket()));
+        keys_and_buckets.push_back(make_pair(key, Bucket()));
         keys_and_buckets.back().second.push_back(entry); // TODO: c++11 list init
-        key_to_bucket_index[hash] = keys_and_buckets.size() - 1;
+        key_to_bucket_index[key] = keys_and_buckets.size() - 1;
     } else {
         size_t bucket_index = it->second;
         assert(bucket_index < keys_and_buckets.size());
@@ -54,8 +52,8 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     }
 
     int bucket_id = g_rng.next(keys_and_buckets.size());
-    pair<size_t, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
-    size_t hash = key_and_bucket.first;
+    pair<Key, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
+    Key key_copy = key_and_bucket.first;
     Bucket &bucket = key_and_bucket.second;
 
     int pos = g_rng.next(bucket.size());
@@ -64,12 +62,12 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     swap_and_pop_from_vector(bucket, pos);
     if (bucket.empty()) {
         // Swap the empty bucket with the last bucket, then delete it.
-        size_t moved_bucket_hash = keys_and_buckets.back().first;
-        key_to_bucket_index[moved_bucket_hash] = bucket_id;
+        Key moved_bucket_key = keys_and_buckets.back().first;
+        key_to_bucket_index[moved_bucket_key] = bucket_id;
         assert(bucket_id < keys_and_buckets.size());
         swap(keys_and_buckets[bucket_id], keys_and_buckets.back());
         keys_and_buckets.pop_back();
-        key_to_bucket_index.erase(hash);
+        key_to_bucket_index.erase(key_copy);
     }
     --size;
     return result;

@@ -17,12 +17,15 @@ class ScalarEvaluator;
 
 template<class Entry>
 class TypedOpenList : public OpenList<Entry> {
+    typedef  std::vector<int> Key;
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
 
-    std::vector<std::pair<std::size_t, Bucket> > keys_and_buckets;
+    std::vector<std::pair<Key, Bucket> > keys_and_buckets;
 
-    typedef typename std::unordered_map<std::size_t, int> KeyToBucketIndex;
+
+    // The hash function is located in pareto_open_list.h
+    typedef typename std::unordered_map<Key, int, __gnu_cxx::hash< const Key > > KeyToBucketIndex;
     KeyToBucketIndex key_to_bucket_index;
 
     int size;
