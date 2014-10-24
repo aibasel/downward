@@ -61,7 +61,7 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     int pos = g_rng.next(bucket.size());
     Entry result = bucket[pos];
 
-    fast_remove_from_vector(bucket, pos);
+    swap_and_pop_from_vector(bucket, pos);
     if (bucket.empty()) {
         // Swap the empty bucket with the last bucket, then delete it.
         size_t moved_bucket_hash = bucket_list.back().first;
