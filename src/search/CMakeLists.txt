@@ -126,15 +126,54 @@ endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
 ## == Finding (and if necessary, compiling) the LP libraries ==
 if(DOWNWARD_USE_LP)
-    find_package(OSI REQUIRED)
-    find_package(Clp REQUIRED)
-    find_package(CoinUtils REQUIRED)
+    ## We want to link the Linear Programming libraries statically since
+    ## they are unlikely to be preinstalled on the grids we use for
+    ## evaluation. Static linking is a bit tricky: we need to specify the
+    ## libraries *after* the source files and in such an order that if A
+    ## depends on B, A is listed before B. (In case of dependency cycles,
+    ## we can and must list them multiple times.) The following set of
+    ## libraries and their ordering have been determined experimentally
+    ## and hence might break if we use more functions from the LP
+    ## libraries. See
+    ## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
 
-    # We define here that the appropriate include paths are used.  Note, however, that we do not need
-    # to define library paths as e.g. ${CLP_LIBRARIES} contains an absolute path to a CLP library.
-    include_directories(${OSI_INCLUDES}/coin ${CLP_INCLUDES}/coin ${COINUTILS_INCLUDES}/coin)
-    target_link_libraries(${TARGET}
-        ${OSICLP_LIBRARIES} ${CLP_LIBRARIES} ${COINUTILS_LIBRARIES} ${OSI_LIBRARIES}
+    ## We want to always link the COIN libraries statically, even if static
+    ## linking is otherwise disabled. We accomplish this by
+    ## using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
+    ## afterwards (unless in release mode with static linking enabled). See
+    ## http://ubuntuforums.org/showthread.php?t=491455
+    set(_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
+    find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
+    find_package(CoinUtils REQUIRED)
+    add_definitions("-D USE_LP")
+
+    if(OSI_Cpx_FOUND)
+        find_package(Cplex REQUIRED)
+        add_definitions("-D COIN_HAS_CPX")
+        set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${CMAKE_CXX_LINK_FLAGS_CPLEX}")
+    endif(OSI_Cpx_FOUND)
+
+    if(OSI_Clp_FOUND)
+        find_package(Clp REQUIRED)
+        add_definitions("-D COIN_HAS_CLP")
+    endif(OSI_Clp_FOUND)
+
+    if(OSI_Grb_FOUND)
+        message(FATAL_ERROR "Gurobi is not tested yet. Try to copy the config of cplex above and the file cmake/modules/FindCplex.cmake and adapt them for gurobi.")
+        add_definitions("-D COIN_HAS_GRB")
+    endif(OSI_Grb_FOUND)
+
+    include_directories(
+        ${OSI_INCLUDES} ${COINUTILS_INCLUDES}
+        ${CPLEX_INCLUDES} ${CLP_INCLUDES} ${GUROBI_INCLUDES}
     )
+    target_link_libraries(${TARGET}
+        ${OSI_LIBRARIES} ${COINUTILS_LIBRARIES}
+        ${CPLEX_LIBRARIES} ${CLP_LIBRARIES} ${GUROBI_LIBRARIES}
+    )
+
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${_CMAKE_FIND_LIBRARY_SUFFIXES})
 endif(DOWNWARD_USE_LP)
 
