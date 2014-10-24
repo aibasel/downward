@@ -19,7 +19,7 @@ class TypedOpenList : public OpenList<Entry> {
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
 
-    std::vector<std::pair<std::size_t, Bucket> > bucket_list;
+    std::vector<std::pair<std::size_t, Bucket> > keys_and_buckets;
 
     typedef typename std::unordered_map<std::size_t, int> KeyToBucketIndex;
     KeyToBucketIndex key_to_bucket_index;

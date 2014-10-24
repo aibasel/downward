@@ -31,13 +31,13 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
 
     typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(hash);
     if (it == key_to_bucket_index.end()) {
-        bucket_list.push_back(make_pair(hash, Bucket()));
-        bucket_list.back().second.push_back(entry); // TODO: c++11 list init
-        key_to_bucket_index[hash] = bucket_list.size() - 1;
+        keys_and_buckets.push_back(make_pair(hash, Bucket()));
+        keys_and_buckets.back().second.push_back(entry); // TODO: c++11 list init
+        key_to_bucket_index[hash] = keys_and_buckets.size() - 1;
     } else {
         size_t bucket_index = it->second;
-        assert(bucket_index < bucket_list.size());
-        bucket_list[bucket_index].second.push_back(entry);
+        assert(bucket_index < keys_and_buckets.size());
+        keys_and_buckets[bucket_index].second.push_back(entry);
     }
 
     ++size;
@@ -53,10 +53,10 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
         exit_with(EXIT_UNSUPPORTED);
     }
 
-    int bucket_id = g_rng.next(bucket_list.size());
-    pair<size_t, Bucket> &hash_bucket_pair = bucket_list[bucket_id];
-    size_t hash = hash_bucket_pair.first;
-    Bucket &bucket = hash_bucket_pair.second;
+    int bucket_id = g_rng.next(keys_and_buckets.size());
+    pair<size_t, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
+    size_t hash = key_and_bucket.first;
+    Bucket &bucket = key_and_bucket.second;
 
     int pos = g_rng.next(bucket.size());
     Entry result = bucket[pos];
@@ -64,11 +64,11 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
     swap_and_pop_from_vector(bucket, pos);
     if (bucket.empty()) {
         // Swap the empty bucket with the last bucket, then delete it.
-        size_t moved_bucket_hash = bucket_list.back().first;
+        size_t moved_bucket_hash = keys_and_buckets.back().first;
         key_to_bucket_index[moved_bucket_hash] = bucket_id;
-        assert(bucket_id < bucket_list.size());
-        swap(bucket_list[bucket_id], bucket_list.back());
-        bucket_list.pop_back();
+        assert(bucket_id < keys_and_buckets.size());
+        swap(keys_and_buckets[bucket_id], keys_and_buckets.back());
+        keys_and_buckets.pop_back();
         key_to_bucket_index.erase(hash);
     }
     --size;
@@ -82,7 +82,7 @@ bool TypedOpenList<Entry>::empty() const {
 
 template<class Entry>
 void TypedOpenList<Entry>::clear() {
-    bucket_list.clear();
+    keys_and_buckets.clear();
     key_to_bucket_index.clear();
     size = 0;
 }
