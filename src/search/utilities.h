@@ -126,7 +126,7 @@ bool in_bounds(size_t index, const T &container) {
 }
 
 template<typename T>
-void fast_remove_from_vector(std::vector<T> &vec, std::size_t pos) {
+void swap_and_pop_from_vector(std::vector<T> &vec, std::size_t pos) {
     assert(pos < vec.size());
     std::swap(vec[pos], vec.back());
     vec.pop_back();
