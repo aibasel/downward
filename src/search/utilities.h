@@ -40,8 +40,6 @@ enum ExitCode {
     // Search ended without finding a solution.
     EXIT_UNSOLVED_INCOMPLETE = 5,
     EXIT_OUT_OF_MEMORY = 6,
-    // Currently unused.
-    EXIT_TIMEOUT = 7
 };
 
 extern void exit_with(ExitCode returncode) __attribute__((noreturn));
