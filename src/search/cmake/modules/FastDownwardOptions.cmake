@@ -8,11 +8,11 @@ set(DOWNWARD_BITWIDTH
     "By default, build in 32-bit mode. Set to '64' to build in 64-bit mode and to 'native' to use the native bitness of the OS.")
 if(${DOWNWARD_BITWIDTH} STREQUAL "32")
     set(BITWIDTHOPT "-m32")
-elseif (${DOWNWARD_BITWIDTH} STREQUAL "64")
+elseif(${DOWNWARD_BITWIDTH} STREQUAL "64")
     set(BITWIDTHOPT "-m64")
-elseif (NOT ${DOWNWARD_BITWIDTH} STREQUAL "native")
+elseif(NOT ${DOWNWARD_BITWIDTH} STREQUAL "native")
     message( FATAL_ERROR "Bad value for DOWNWARD_BITWIDTH." )
-endif(${DOWNWARD_BITWIDTH} STREQUAL "32")
+endif()
 
 option(DOWNWARD_USE_LP
        "Enable linear programming stuff."
@@ -23,4 +23,4 @@ option(DOWNWARD_LINK_RELEASE_STATICALLY
        YES)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(DOWNWARD_LINK_RELEASE_STATICALLY NO)
-endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+endif()

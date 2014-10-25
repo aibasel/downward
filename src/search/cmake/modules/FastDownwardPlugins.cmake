@@ -70,55 +70,55 @@ set(search_plugin_SRCS
 option(PLUGIN_ADDITIVE_HEURISTIC "The additive heuristic" TRUE)
 if(PLUGIN_ADDITIVE_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} additive_heuristic.cc)
-endif(PLUGIN_ADDITIVE_HEURISTIC)
+endif()
 
 
 option(PLUGIN_BLIND_SEARCH_HEURISTIC "The 'blind search' heuristic" TRUE)
 if(PLUGIN_BLIND_SEARCH_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} blind_search_heuristic.cc)
-endif(PLUGIN_BLIND_SEARCH_HEURISTIC)
+endif()
 
 
 option(PLUGIN_CEA_HEURISTIC "The context-enhanced additive heuristic" TRUE)
 if(PLUGIN_CEA_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} cea_heuristic.cc)
-endif(PLUGIN_CEA_HEURISTIC)
+endif()
 
 
 option(PLUGIN_CG_HEURISTIC "The causal graph heuristic" TRUE)
 if(PLUGIN_CG_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} cg_heuristic.cc cg_cache.cc)
-endif(PLUGIN_CG_HEURISTIC)
+endif()
 
 
 option(PLUGIN_FF_HEURISTIC "The FF heuristic (an implementation of the RPG heuristic)" TRUE)
 if(PLUGIN_FF_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} ff_heuristic.cc)
-endif(PLUGIN_FF_HEURISTIC)
+endif()
 
 
 option(PLUGIN_GOAL_COUNT_HEURISTIC "The goal-counting heuristic" TRUE)
 if(PLUGIN_GOAL_COUNT_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} goal_count_heuristic.cc)
-endif(PLUGIN_GOAL_COUNT_HEURISTIC)
+endif()
 
 
 option(PLUGIN_HM_HEURISTIC "The h^m heuristic" TRUE)
 if(PLUGIN_HM_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} hm_heuristic.cc)
-endif(PLUGIN_HM_HEURISTIC)
+endif()
 
 
 option(PLUGIN_LM_CUT_HEURISTIC "The LM-cut heuristic" TRUE)
 if(PLUGIN_LM_CUT_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} lm_cut_heuristic.cc)
-endif(PLUGIN_LM_CUT_HEURISTIC)
+endif()
 
 
 option(PLUGIN_MAX_HEURISTIC "The Max heuristic" TRUE)
 if(PLUGIN_MAX_HEURISTIC)
     set(search_plugin_SRCS ${search_plugin_SRCS} max_heuristic.cc)
-endif(PLUGIN_MAX_HEURISTIC)
+endif()
 
 
 option(PLUGIN_MAS_HEURISTIC "The Merge-and-Shrink heuristic" TRUE)
@@ -138,7 +138,7 @@ if(PLUGIN_MAS_HEURISTIC)
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
     )
-endif(PLUGIN_MAS_HEURISTIC)
+endif()
 
 
 option(PLUGIN_LANDMARKS "Plugin containing the code to reason with landmarks" TRUE)
@@ -159,7 +159,7 @@ if(PLUGIN_LANDMARKS)
         landmarks/landmark_factory_zhu_givan.cc
         landmarks/util.cc
     )
-endif(PLUGIN_LANDMARKS)
+endif()
 
 
 option(PLUGIN_LEARNING "Plugin containing the code to reason with learning" FALSE)
@@ -178,7 +178,7 @@ if(PLUGIN_LEARNING)
         learning/state_space_sample.cc
         learning/state_vars_feature_extractor.cc
     )
-endif(PLUGIN_LEARNING)
+endif()
 
 
 option(PLUGIN_PDBS "Plugin containing the code for PDBs" TRUE)
@@ -195,4 +195,4 @@ if(PLUGIN_PDBS)
         pdbs/util.cc
         pdbs/zero_one_pdbs_heuristic.cc
     )
-endif(PLUGIN_PDBS)
+endif()
