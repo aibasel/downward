@@ -12,10 +12,18 @@ find_path(CPLEX_INCLUDES
     ${_COIN_ROOT_OPTS}
 )
 
+if(${DOWNWARD_BITWIDTH} STREQUAL "32")
+    set(CPLEX_LIB_PATH "/lib/x86_sles10_4.1/static_pic")
+elseif(${DOWNWARD_BITWIDTH} STREQUAL "64")
+    set(CPLEX_LIB_PATH "/lib/x86-64_sles10_4.1/static_pic")
+else()
+    set(CPLEX_LIB_PATH "/lib/x86_sles10_4.1/static_pic /lib/x86-64_sles10_4.1/static_pic")
+endif()
+
 find_library(CPLEX_LIBRARIES
     cplex
     PATHS
-    /lib/x86_sles10_4.1/static_pic
+    ${CPLEX_LIB_PATH}
     ${_COIN_ROOT_OPTS}
 )
 
