@@ -127,7 +127,7 @@ bool in_bounds(size_t index, const T &container) {
 
 template<typename T>
 void swap_and_pop_from_vector(std::vector<T> &vec, std::size_t pos) {
-    assert(pos < vec.size());
+    assert(in_bounds(pos, vec));
     std::swap(vec[pos], vec.back());
     vec.pop_back();
 }
