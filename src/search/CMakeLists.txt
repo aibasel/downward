@@ -23,8 +23,11 @@ include("FastDownwardPlugins")
 # Default to Release build, unless specified otherwise
 if(NOT CMAKE_BUILD_TYPE)
     message("Defaulting to release build.")
-    set(CMAKE_BUILD_TYPE "RELEASE")
-endif(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release
+        CACHE STRING
+        "Choose the type of build, options are: Release (default), Debug, Profile."
+        FORCE)
+endif()
 
 # First, make a lower-case version of the build type
 string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
@@ -55,7 +58,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Iext")
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/local/include/")
-endif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+endif()
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
@@ -66,14 +69,14 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
                     OUTPUT_VARIABLE GCC_VERSION)
     string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${GCC_VERSION})
-    if (GCC_VERSION VERSION_LESS 4.6)
+    if(GCC_VERSION VERSION_LESS 4.6)
         list(GET GCC_VERSION_COMPONENTS 0 GCC_MAJOR)
         list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
         message(STATUS "Version ${GCC_MAJOR}.${GCC_MINOR} < 4.6")
         # If the original list wasn't part of the string the result will be two list items.
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/c++/${GCC_MAJOR}.${GCC_MINOR}/i686-linux-gnu")
-    endif(GCC_VERSION VERSION_LESS 4.6)
-endif(CMAKE_COMPILER_IS_GNUCXX)
+    endif()
+endif()
 
 set(CMAKE_CXX_LINK_FLAGS "")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${BITWIDTHOPT}")
@@ -93,17 +96,17 @@ set(CMAKE_CXX_LINK_FLAGS_PROFILE "-pg")
 if(DOWNWARD_LINK_RELEASE_STATICALLY)
     if(CMAKE_COMPILER_IS_GNUCXX)
         set(CMAKE_CXX_LINK_FLAGS_RELEASE "${CMAKE_CXX_LINK_FLAGS_RELEASE} -static-libgcc")
-    endif(CMAKE_COMPILER_IS_GNUCXX)
+    endif()
 
     if(${LOWER_CASE_BUILD_TYPE} STREQUAL "release")
         if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-        else(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        else()
             set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
             message(WARNING "Static release build is only tested on linux.")
-        endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    endif(${LOWER_CASE_BUILD_TYPE} STREQUAL "release")
-endif(DOWNWARD_LINK_RELEASE_STATICALLY)
+        endif()
+    endif()
+endif()
 
 ## == Defining the executable target ==
 
@@ -121,7 +124,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_library(PSAPI_LIBRARY psapi)
     target_link_libraries(${TARGET} ${PSAPI_LIBRARY})
-endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+endif()
 
 
 ## == Finding (and if necessary, compiling) the LP libraries ==
@@ -153,17 +156,17 @@ if(DOWNWARD_USE_LP)
         find_package(Cplex REQUIRED)
         add_definitions("-D COIN_HAS_CPX")
         set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${CMAKE_CXX_LINK_FLAGS_CPLEX}")
-    endif(OSI_Cpx_FOUND)
+    endif()
 
     if(OSI_Clp_FOUND)
         find_package(Clp REQUIRED)
         add_definitions("-D COIN_HAS_CLP")
-    endif(OSI_Clp_FOUND)
+    endif()
 
     if(OSI_Grb_FOUND)
         message(FATAL_ERROR "Gurobi is not tested yet. Try to copy the config of cplex above and the file cmake/modules/FindCplex.cmake and adapt them for gurobi.")
         add_definitions("-D COIN_HAS_GRB")
-    endif(OSI_Grb_FOUND)
+    endif()
 
     include_directories(
         ${OSI_INCLUDES} ${COINUTILS_INCLUDES}
@@ -175,5 +178,5 @@ if(DOWNWARD_USE_LP)
     )
 
     set(CMAKE_FIND_LIBRARY_SUFFIXES ${_CMAKE_FIND_LIBRARY_SUFFIXES})
-endif(DOWNWARD_USE_LP)
+endif()
 
