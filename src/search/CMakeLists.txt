@@ -21,11 +21,12 @@ include("FastDownwardPlugins")
 
 
 # Default to Release build, unless specified otherwise
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile")
 if(NOT CMAKE_BUILD_TYPE)
     message("Defaulting to release build.")
     set(CMAKE_BUILD_TYPE Release
         CACHE STRING
-        "Choose the type of build, options are: Release (default), Debug, Profile."
+        "Choose the type of build, options are: ${CMAKE_CONFIGURATION_TYPES}."
         FORCE)
 endif()
 
