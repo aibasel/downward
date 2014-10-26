@@ -1,6 +1,22 @@
 # Version 2.6 introduces functions.
 cmake_minimum_required(VERSION 2.6)
 
+# Default to Release build, unless specified otherwise
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile")
+if(NOT CMAKE_BUILD_TYPE)
+    message("Defaulting to release build.")
+    set(CMAKE_BUILD_TYPE Release
+        CACHE STRING
+        "Choose the type of build, options are: ${CMAKE_CONFIGURATION_TYPES}."
+        FORCE)
+endif()
+
+# Default tool chain forces a 32 bit compilation
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    message("Defaulting to 32 bit compilation.")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/toolchain-32bit.cmake")
+endif()
+
 set(TARGET "downward")
 
 project(${TARGET})
@@ -16,19 +32,14 @@ project(${TARGET})
 ## == Path containing some helper CMake modules ==
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
-include("FastDownwardOptions")
-include("FastDownwardPlugins")
-
-
-# Default to Release build, unless specified otherwise
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile")
-if(NOT CMAKE_BUILD_TYPE)
-    message("Defaulting to release build.")
-    set(CMAKE_BUILD_TYPE Release
-        CACHE STRING
-        "Choose the type of build, options are: ${CMAKE_CONFIGURATION_TYPES}."
-        FORCE)
+option(DOWNWARD_LINK_RELEASE_STATICALLY
+       "Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable static linking of the executable in release mode. On OS X, this is unsupported and will be silently disabled."
+       YES)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    set(DOWNWARD_LINK_RELEASE_STATICALLY NO)
 endif()
+
+include("FastDownwardPlugins")
 
 # First, make a lower-case version of the build type
 string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
@@ -127,56 +138,57 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 
-## == Finding (and if necessary, compiling) the LP libraries ==
-if(DOWNWARD_USE_LP)
-    ## We want to link the Linear Programming libraries statically since
-    ## they are unlikely to be preinstalled on the grids we use for
-    ## evaluation. Static linking is a bit tricky: we need to specify the
-    ## libraries *after* the source files and in such an order that if A
-    ## depends on B, A is listed before B. (In case of dependency cycles,
-    ## we can and must list them multiple times.) The following set of
-    ## libraries and their ordering have been determined experimentally
-    ## and hence might break if we use more functions from the LP
-    ## libraries. See
-    ## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
+## == Finding the LP libraries ==
+## We want to link the Linear Programming libraries statically since
+## they are unlikely to be preinstalled on the grids we use for
+## evaluation. Static linking is a bit tricky: we need to specify the
+## libraries *after* the source files and in such an order that if A
+## depends on B, A is listed before B. (In case of dependency cycles,
+## we can and must list them multiple times.) The following set of
+## libraries and their ordering have been determined experimentally
+## and hence might break if we use more functions from the LP
+## libraries. See
+## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
 
-    ## We want to always link the COIN libraries statically, even if static
-    ## linking is otherwise disabled. We accomplish this by
-    ## using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
-    ## afterwards (unless in release mode with static linking enabled). See
-    ## http://ubuntuforums.org/showthread.php?t=491455
-    set(_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+## We want to always link the COIN libraries statically, even if static
+## linking is otherwise disabled. We accomplish this by
+## using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
+## afterwards (unless in release mode with static linking enabled). See
+## http://ubuntuforums.org/showthread.php?t=491455
+set(_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 
-    find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
-    find_package(CoinUtils REQUIRED)
+find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
+find_package(CoinUtils)
+
+if(OSI_FOUND AND COINUTILS_FOUND)
     add_definitions("-D USE_LP")
+    include_directories(${OSI_INCLUDES} ${COINUTILS_INCLUDES})
+    target_link_libraries(${TARGET} ${OSI_LIBRARIES} ${COINUTILS_LIBRARIES})
 
     if(OSI_Cpx_FOUND)
-        find_package(Cplex REQUIRED)
-        add_definitions("-D COIN_HAS_CPX")
-        set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${CMAKE_CXX_LINK_FLAGS_CPLEX}")
+        find_package(Cplex)
+        if (CPLEX_FOUND)
+            message("cplex")
+            add_definitions("-D COIN_HAS_CPX")
+            set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${CMAKE_CXX_LINK_FLAGS_CPLEX}")
+            include_directories(${CPLEX_INCLUDES})
+            target_link_libraries(${TARGET} ${CPLEX_LIBRARIES})
+        endif()
     endif()
 
     if(OSI_Clp_FOUND)
-        find_package(Clp REQUIRED)
-        add_definitions("-D COIN_HAS_CLP")
+        find_package(Clp)
+        if (CLP_FOUND)
+            add_definitions("-D COIN_HAS_CLP")
+            include_directories(${CLP_INCLUDES})
+            target_link_libraries(${TARGET} ${CLP_LIBRARIES})
+        endif()
     endif()
 
     if(OSI_Grb_FOUND)
         message(FATAL_ERROR "Gurobi is not tested yet. Try to copy the config of cplex above and the file cmake/modules/FindCplex.cmake and adapt them for gurobi.")
         add_definitions("-D COIN_HAS_GRB")
     endif()
-
-    include_directories(
-        ${OSI_INCLUDES} ${COINUTILS_INCLUDES}
-        ${CPLEX_INCLUDES} ${CLP_INCLUDES} ${GUROBI_INCLUDES}
-    )
-    target_link_libraries(${TARGET}
-        ${OSI_LIBRARIES} ${COINUTILS_LIBRARIES}
-        ${CPLEX_LIBRARIES} ${CLP_LIBRARIES} ${GUROBI_LIBRARIES}
-    )
-
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${_CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
-
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${_CMAKE_FIND_LIBRARY_SUFFIXES})
