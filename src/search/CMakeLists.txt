@@ -49,12 +49,11 @@ set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
 ## We overwrite the default configuration to include "-g", allow cross
 ## compilation and switch to pedantic error reporting.
 
-set(CMAKE_CXX_FLAGS "")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BITWIDTHOPT}")
 # Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra -pedantic -Wno-deprecated -Werror")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Iext")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wno-deprecated -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}/ext")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
