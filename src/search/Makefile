@@ -63,7 +63,6 @@ HEADERS = \
           segmented_vector.h \
           per_state_information.h \
           pref_evaluator.h \
-          reentrant.h \
           relaxation_heuristic.h \
           rng.h \
           search_engine.h \
@@ -154,7 +153,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/util.h \
            pdbs/zero_one_pdbs_heuristic.h \
 
-SOURCES = planner.cc reentrant_linux.cc $(HEADERS:%.h=%.cc)
+SOURCES = planner.cc system_unix.cc system_windows.cc $(HEADERS:%.h=%.cc)
 TARGET = downward
 
 default: release

@@ -1,25 +1,17 @@
-// For linux, we have an OS-specific implementation in reentrant_linux.cc
-#if OPERATING_SYSTEM != LINUX
-// TODO: find re-entrant alternative on other systems.
-#include "reentrant.h"
+#include "system.h"
 
 #include "utilities.h"
 
+// For linux, we have an OS-specific implementation in reentrant_linux.cc
+#if OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
+// TODO: find re-entrant alternative on other systems.
+
 #include <csignal>
 #include <iostream>
+#include <psapi.h>
+#include <windows.h>
 using namespace std;
 
-
-void print_peak_memory() {
-    cout << "Peak memory: "
-         << get_peak_memory_in_kb() << " KB" << endl;
-}
-
-#if OPERATING_SYSTEM == OSX
-void exit_handler() {
-    print_peak_memory();
-}
-#endif
 
 void out_of_memory_handler() {
     cout << "Failed to allocate memory." << endl;
@@ -27,10 +19,35 @@ void out_of_memory_handler() {
 }
 
 void signal_handler(int signal_number) {
-    print_peak_memory();
+    cout << "Peak memory: "
+         << get_peak_memory_in_kb() << " KB" << endl;
     cout << "caught signal " << signal_number
          << " -- exiting" << endl;
     raise(signal_number);
+}
+
+void register_event_handlers() {
+    // When running out of memory, release some emergency memory and
+    // terminate.
+    set_new_handler(out_of_memory_handler);
+
+    struct sigaction default_signal_action;
+    default_signal_action.sa_handler = signal_handler;
+    // Block all signals we handle while one of them is handled.
+    sigemptyset(&default_signal_action.sa_mask);
+    sigaddset(&default_signal_action.sa_mask, SIGABRT);
+    sigaddset(&default_signal_action.sa_mask, SIGTERM);
+    sigaddset(&default_signal_action.sa_mask, SIGSEGV);
+    sigaddset(&default_signal_action.sa_mask, SIGINT);
+    sigaddset(&default_signal_action.sa_mask, SIGXCPU);
+    // Reset handler to default action after completion.
+    default_signal_action.sa_flags = SA_RESETHAND;
+
+    sigaction(SIGABRT, &default_signal_action, 0);
+    sigaction(SIGTERM, &default_signal_action, 0);
+    sigaction(SIGSEGV, &default_signal_action, 0);
+    sigaction(SIGINT, &default_signal_action, 0);
+    sigaction(SIGXCPU, &default_signal_action, 0);
 }
 
 void report_exit_code_reentrant(int exitcode) {
