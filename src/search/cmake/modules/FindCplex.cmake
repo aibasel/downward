@@ -12,11 +12,12 @@ find_path(CPLEX_INCLUDES
     ${_COIN_ROOT_OPTS}
 )
 
-if(${DOWNWARD_BITWIDTH} STREQUAL "32")
+if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
     set(CPLEX_LIB_PATH "/lib/x86_sles10_4.1/static_pic")
-elseif(${DOWNWARD_BITWIDTH} STREQUAL "64")
+elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
     set(CPLEX_LIB_PATH "/lib/x86-64_sles10_4.1/static_pic")
 else()
+    message(WARNING "Bitwidth could not be detected, guessing location of CPLEX")
     set(CPLEX_LIB_PATH "/lib/x86_sles10_4.1/static_pic /lib/x86-64_sles10_4.1/static_pic")
 endif()
 
