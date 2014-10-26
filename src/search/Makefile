@@ -154,7 +154,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/util.h \
            pdbs/zero_one_pdbs_heuristic.h \
 
-SOURCES = planner.cc $(HEADERS:%.h=%.cc)
+SOURCES = planner.cc reentrant_linux.cc $(HEADERS:%.h=%.cc)
 TARGET = downward
 
 default: release
