@@ -1,6 +1,6 @@
 #include "utilities.h"
 
-#include "reentrant.h"
+#include "system.h"
 
 #include <cassert>
 #include <csignal>
@@ -8,39 +8,6 @@
 #include <iostream>
 #include <limits>
 using namespace std;
-
-void register_event_handlers() {
-    // When running out of memory, release some emergency memory and
-    // terminate.
-    set_new_handler(out_of_memory_handler);
-
-    // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
-    // print the peak memory usage.
-#if OPERATING_SYSTEM == LINUX
-    on_exit(exit_handler, 0);
-#elif OPERATING_SYSTEM == OSX
-    atexit(exit_handler);
-#elif OPERATING_SYSTEM == CYGWIN || OPERATING_SYSTEM == WINDOWS
-    // nothing
-#endif
-    struct sigaction default_signal_action;
-    default_signal_action.sa_handler = signal_handler;
-    // Block all signals we handle while one of them is handled.
-    sigemptyset(&default_signal_action.sa_mask);
-    sigaddset(&default_signal_action.sa_mask, SIGABRT);
-    sigaddset(&default_signal_action.sa_mask, SIGTERM);
-    sigaddset(&default_signal_action.sa_mask, SIGSEGV);
-    sigaddset(&default_signal_action.sa_mask, SIGINT);
-    sigaddset(&default_signal_action.sa_mask, SIGXCPU);
-    // Reset handler to default action after completion.
-    default_signal_action.sa_flags = SA_RESETHAND;
-
-    sigaction(SIGABRT, &default_signal_action, 0);
-    sigaction(SIGTERM, &default_signal_action, 0);
-    sigaction(SIGSEGV, &default_signal_action, 0);
-    sigaction(SIGINT, &default_signal_action, 0);
-    sigaction(SIGXCPU, &default_signal_action, 0);
-}
 
 void exit_with(ExitCode exitcode) {
     report_exit_code_reentrant(exitcode);
