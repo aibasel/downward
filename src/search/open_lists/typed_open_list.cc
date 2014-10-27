@@ -133,7 +133,7 @@ OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
         "Type-based open list that uses multiple evaluators to put nodes "
         "into buckets. When retrieving a node, a bucket is chosen "
         "uniformly at random and one of the contained nodes is selected "
-        "randomly.");
+        "uniformy randomly.");
     parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to group the nodes by.");
 
     Options opts = parser.parse();
