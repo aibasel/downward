@@ -6,9 +6,16 @@
 // TODO: find re-entrant alternatives on Windows/Cygwin.
 
 #include <csignal>
+#include <ctime>
 #include <iostream>
 #include <psapi.h>
 #include <windows.h>
+
+#if OPERATING_SYSTEM == CYGWIN
+#ifndef CLOCK_PROCESS_CPUTIME_ID
+#define CLOCK_PROCESS_CPUTIME_ID (clockid_t(2))
+#endif
+#endif
 using namespace std;
 
 
@@ -23,6 +30,41 @@ void signal_handler(int signal_number) {
     cout << "caught signal " << signal_number
          << " -- exiting" << endl;
     raise(signal_number);
+}
+
+double current_system_clock() {
+    // http://nadeausoftware.com/articles/2012/03/c_c_tip_how_measure_cpu_time_benchmarking
+    FILETIME createTime;
+    FILETIME exitTime;
+    FILETIME kernelTime;
+    FILETIME userTime;
+    if (GetProcessTimes(GetCurrentProcess(),
+                        &createTime, &exitTime, &kernelTime, &userTime) != -1) {
+        SYSTEMTIME userSystemTime;
+        if (FileTimeToSystemTime(&userTime, &userSystemTime) != -1)
+            return double(userSystemTime.wHour) * 3600.0 +
+                   double(userSystemTime.wMinute) * 60.0 +
+                   double(userSystemTime.wSecond) +
+                   double(userSystemTime.wMilliseconds) / 1000.0;
+    }
+    return -1;
+}
+
+double current_system_clock_exact() {
+    timespec tp;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
+    return (tp.tv_sec * 1e9) + tp.tv_nsec;
+}
+
+int get_peak_memory_in_kb() {
+    // The file /proc/self/status is present under Cygwin, but contains no peak memory info.
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc), sizeof(pmc));
+    if (memory_in_kb == -1) {
+        cerr << "warning: could not determine peak memory" << endl;
+        return -1;
+    }
+    return pmc.PeakPagefileUsage / 1024;
 }
 
 void register_event_handlers() {

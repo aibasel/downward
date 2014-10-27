@@ -5,9 +5,9 @@
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
 /*
   NOTE:
-  Methods in this file are meant to be used in event handlers. They
-  should all be "re-entrant", i.e. they must not use static variables,
-  global data, or locks. Only some system calls such as
+  Methods with the suffix "_reentrant" are meant to be used in event
+  handlers. They should all be "re-entrant", i.e. they must not use
+  static variables, global data, or locks. Only some system calls such as
   open/read/write/close are guaranteed to be re-entrant. See
     https://www.securecoding.cert.org/confluence/display/seccode/
     SIG30-C.+Call+only+asynchronous-safe+functions+within+signal+handlers
@@ -25,11 +25,18 @@
 #include <csignal>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <errno.h>
 #include <fcntl.h>
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <sys/times.h>
 #include <unistd.h>
+
 #if OPERATING_SYSTEM == OSX
 #include <mach/mach.h>
+#include <mach/mach_time.h>
 #endif
 using namespace std;
 
@@ -150,6 +157,83 @@ void signal_handler(int signal_number) {
     write_reentrant_int(STDOUT_FILENO, signal_number);
     write_reentrant_str(STDOUT_FILENO, " -- exiting\n");
     raise(signal_number);
+}
+
+#if OPERATING_SYSTEM == OSX
+void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
+    uint64_t difference = end - start;
+    static mach_timebase_info_data_t info = {
+        0, 0
+    };
+
+    if (info.denom == 0)
+        mach_timebase_info(&info);
+
+    uint64_t elapsednano = difference * (info.numer / info.denom);
+
+    tp->tv_sec = elapsednano * 1e-9;
+    tp->tv_nsec = elapsednano - (tp->tv_sec * 1e9);
+}
+#endif
+
+double current_system_clock() {
+    struct tms the_tms;
+    times(&the_tms);
+    clock_t clocks = the_tms.tms_utime + the_tms.tms_stime;
+    return double(clocks) / sysconf(_SC_CLK_TCK);
+}
+
+double current_system_clock_exact() {
+    timespec tp;
+#if OPERATING_SYSTEM == OSX
+    static uint64_t start = mach_absolute_time();
+    uint64_t end = mach_absolute_time();
+    mach_absolute_difference(end, start, &tp);
+#else
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
+#endif
+    return (tp.tv_sec * 1e9) + tp.tv_nsec;
+}
+
+/*
+  NOTE: we have two variants of this method
+        get_peak_memory_in_kb() is used during the regular execution.
+        get_peak_memory_in_kb_reentrant() is used in signal handlers.
+        The latter is slower but guarantees re-entrancy.
+*/
+int get_peak_memory_in_kb() {
+    // On error, produces a warning on cerr and returns -1.
+    int memory_in_kb = -1;
+
+#if OPERATING_SYSTEM == OSX
+    // Based on http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+    task_basic_info t_info;
+    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+
+    if (task_info(mach_task_self(), TASK_BASIC_INFO,
+                  reinterpret_cast<task_info_t>(&t_info),
+                  &t_info_count) == KERN_SUCCESS)
+        memory_in_kb = t_info.virtual_size / 1024;
+#else
+    ifstream procfile;
+    procfile.open("/proc/self/status");
+    string word;
+    while (procfile.good()) {
+        procfile >> word;
+        if (word == "VmPeak:") {
+            procfile >> memory_in_kb;
+            break;
+        }
+        // Skip to end of line.
+        procfile.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+    if (procfile.fail())
+        memory_in_kb = -1;
+#endif
+
+    if (memory_in_kb == -1)
+        cerr << "warning: could not determine peak memory" << endl;
+    return memory_in_kb;
 }
 
 void register_event_handlers() {
