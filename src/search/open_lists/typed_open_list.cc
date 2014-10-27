@@ -1,5 +1,5 @@
 // HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LISTS_TYPED_OPEN_LIST_H
+#ifdef OPEN_LISTS_TYPE_BASED_OPEN_LIST_H
 
 #include "../globals.h"
 #include "../option_parser.h"
@@ -20,7 +20,7 @@ using namespace std;
 */
 
 template<class Entry>
-TypedOpenList<Entry>::TypedOpenList(const Options &opts)
+TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
     : evaluators(opts.get_list<ScalarEvaluator *>("sublists")),
       size(0),
       dead_end(false),
@@ -28,11 +28,11 @@ TypedOpenList<Entry>::TypedOpenList(const Options &opts)
 }
 
 template<class Entry>
-TypedOpenList<Entry>::~TypedOpenList() {
+TypeBasedOpenList<Entry>::~TypeBasedOpenList() {
 }
 
 template<class Entry>
-int TypedOpenList<Entry>::insert(const Entry &entry) {
+int TypeBasedOpenList<Entry>::insert(const Entry &entry) {
     vector<int> key(evaluators.size());
     for (size_t i = 0; i < evaluators.size(); ++i) {
         key[i] = evaluators[i]->get_value();
@@ -54,7 +54,7 @@ int TypedOpenList<Entry>::insert(const Entry &entry) {
 }
 
 template<class Entry>
-Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
+Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
 
     if (key) {
@@ -85,19 +85,19 @@ Entry TypedOpenList<Entry>::remove_min(vector<int> *key) {
 }
 
 template<class Entry>
-bool TypedOpenList<Entry>::empty() const {
+bool TypeBasedOpenList<Entry>::empty() const {
     return size == 0;
 }
 
 template<class Entry>
-void TypedOpenList<Entry>::clear() {
+void TypeBasedOpenList<Entry>::clear() {
     keys_and_buckets.clear();
     key_to_bucket_index.clear();
     size = 0;
 }
 
 template<class Entry>
-void TypedOpenList<Entry>::evaluate(int g, bool preferred) {
+void TypeBasedOpenList<Entry>::evaluate(int g, bool preferred) {
     /*
       Treat as a dead end if
       1. at least one heuristic reliably recognizes it as a dead end, or
@@ -122,23 +122,23 @@ void TypedOpenList<Entry>::evaluate(int g, bool preferred) {
 }
 
 template<class Entry>
-bool TypedOpenList<Entry>::is_dead_end() const {
+bool TypeBasedOpenList<Entry>::is_dead_end() const {
     return dead_end;
 }
 
 template<class Entry>
-bool TypedOpenList<Entry>::dead_end_is_reliable() const {
+bool TypeBasedOpenList<Entry>::dead_end_is_reliable() const {
     return dead_end_reliable;
 }
 
 template<class Entry>
-void TypedOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
+void TypeBasedOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
     for (size_t i = 0; i < evaluators.size(); i++)
         evaluators[i]->get_involved_heuristics(hset);
 }
 
 template<class Entry>
-OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
+OpenList<Entry> *TypeBasedOpenList<Entry>::_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Type-based open list",
         "Type-based open list that uses multiple evaluators to put nodes "
@@ -155,7 +155,7 @@ OpenList<Entry> *TypedOpenList<Entry>::_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new TypedOpenList<Entry>(opts);
+        return new TypeBasedOpenList<Entry>(opts);
 }
 
 #endif

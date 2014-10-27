@@ -41,7 +41,7 @@ public:
         Registry<OpenList<Entry > *>::instance()->register_object(
             "pareto", ParetoOpenList<Entry>::_parse);
         Registry<OpenList<Entry > *>::instance()->register_object(
-            "typed", TypedOpenList<Entry>::_parse);
+            "typed", TypeBasedOpenList<Entry>::_parse);
     }
 };
 
