@@ -3,9 +3,6 @@
 
 #include "heuristic.h"
 
-#include <string>
-#include <vector>
-
 class Options;
 
 // TODO: as soon as search doesn't need at least one heuristic this should inherit from ScalarEvaluator
