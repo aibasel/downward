@@ -13,10 +13,10 @@ using namespace std;
  When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected uniformy randomly.
  Based on:
     Richard Valenzano, Nathan R. Sturtevant,
-    Jonathan Schaeﬀer, and Fan Xie. A comparison of knowledge-based GBFS
+    Jonathan Schaeffer, and Fan Xie. A comparison of knowledge-based GBFS
     enhancements and knowledge-free exploration. In Proceedings of the Twenty-
     Fourth International Conference on Automated Planning and Scheduling (ICAPS
-    2014), pages 375–379. AAAI Press, 2014.
+    2014), pages 375-379. AAAI Press, 2014."
 */
 
 template<class Entry>
@@ -33,9 +33,10 @@ TypeBasedOpenList<Entry>::~TypeBasedOpenList() {
 
 template<class Entry>
 int TypeBasedOpenList<Entry>::insert(const Entry &entry) {
-    vector<int> key(evaluators.size());
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        key[i] = evaluators[i]->get_value();
+    vector<int> key;
+    key.reserve(evaluators.size());
+    for (vector<ScalarEvaluator *>::iterator it = evaluators.begin(); it != evaluators.end(); ++it) {
+        key.push_back((*it)->get_value());
     }
 
     typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(key);
