@@ -16,7 +16,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &);
 
 public:
-    ConstEvaluator(const Options &opts);
+    explicit ConstEvaluator(const Options &opts);
     virtual ~ConstEvaluator();
 
     virtual void evaluate(int, bool) {}
