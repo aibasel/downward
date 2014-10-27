@@ -19,7 +19,6 @@ int get_peak_memory_in_kb() {
     int memory_in_kb = -1;
 
 #if OPERATING_SYSTEM == OSX
-    unused_parameter(use_buffered_input);
     // Based on http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
     task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
@@ -29,7 +28,6 @@ int get_peak_memory_in_kb() {
                   &t_info_count) == KERN_SUCCESS)
         memory_in_kb = t_info.virtual_size / 1024;
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
-    unused_parameter(use_buffered_input);
     // The file /proc/self/status is present under Cygwin, but contains no peak memory info.
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc), sizeof(pmc));

@@ -2,9 +2,8 @@
 
 #include "utilities.h"
 
-// For linux, we have an OS-specific implementation in reentrant_linux.cc
 #if OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
-// TODO: find re-entrant alternative on other systems.
+// TODO: find re-entrant alternatives on Windows/Cygwin.
 
 #include <csignal>
 #include <iostream>
