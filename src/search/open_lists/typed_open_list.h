@@ -1,5 +1,5 @@
-#ifndef OPEN_LISTS_TYPED_OPEN_LIST_H
-#define OPEN_LISTS_TYPED_OPEN_LIST_H
+#ifndef OPEN_LISTS_TYPE_BASED_OPEN_LIST_H
+#define OPEN_LISTS_TYPE_BASED_OPEN_LIST_H
 
 #include "open_list.h"
 #include "pareto_open_list.h"
@@ -16,7 +16,7 @@ class ScalarEvaluator;
 
 
 template<class Entry>
-class TypedOpenList : public OpenList<Entry> {
+class TypeBasedOpenList : public OpenList<Entry> {
     typedef std::vector<int> Key;
     typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
@@ -36,8 +36,8 @@ protected:
     Evaluator *get_evaluator() {return this; }
 
 public:
-    explicit TypedOpenList(const Options &opts);
-    virtual ~TypedOpenList();
+    explicit TypeBasedOpenList(const Options &opts);
+    virtual ~TypeBasedOpenList();
 
     // OpenList interface
     virtual int insert(const Entry &entry);
