@@ -36,7 +36,7 @@ protected:
     Evaluator *get_evaluator() {return this; }
 
 public:
-    TypedOpenList(const Options &opts);
+    explicit TypedOpenList(const Options &opts);
     virtual ~TypedOpenList();
 
     // OpenList interface
