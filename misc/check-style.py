@@ -5,8 +5,6 @@
 Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
 """
 
-# TODO: Add uncrustify?
-
 from __future__ import print_function
 
 import os.path
@@ -37,10 +35,19 @@ def check_include_guard_convention():
     return subprocess.call("./check-include-guard-convention.py") == 0
 
 
+def check_preprocessor_and_search_style():
+    output = subprocess.check_output(["hg", "uncrustify", "-X", "re:^src/VAL"])
+    if output:
+        print('Run "hg uncrustify -m" to fix the style in the following files:')
+        print(output.rstrip())
+    return not output
+
+
 def main():
     ok = True
     ok &= check_translator_style()
     ok &= check_include_guard_convention()
+    ok &= check_preprocessor_and_search_style()
     if not ok:
         sys.exit(1)
 
