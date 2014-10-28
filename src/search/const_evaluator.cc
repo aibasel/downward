@@ -20,10 +20,6 @@ bool ConstEvaluator::is_dead_end() const {
     return false;
 }
 
-bool ConstEvaluator::dead_end_is_reliable() const {
-    return true;
-}
-
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Constant evaluator",
                              "Returns a constant value.");
