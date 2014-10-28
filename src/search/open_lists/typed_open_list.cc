@@ -9,14 +9,14 @@
 using namespace std;
 
 /*
- Type-based open list that uses multiple evaluators to put nodes into buckets.
- When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected uniformy randomly.
- Based on:
-    Richard Valenzano, Nathan R. Sturtevant,
-    Jonathan Schaeffer, and Fan Xie. A comparison of knowledge-based GBFS
-    enhancements and knowledge-free exploration. In Proceedings of the Twenty-
-    Fourth International Conference on Automated Planning and Scheduling (ICAPS
-    2014), pages 375-379. AAAI Press, 2014."
+  Type-based open list that uses multiple evaluators to put nodes into buckets.
+  When retrieving a node, a bucket is chosen uniformly at random and one of the contained nodes is selected uniformy randomly.
+  Based on:
+     Richard Valenzano, Nathan R. Sturtevant,
+     Jonathan Schaeffer, and Fan Xie. A comparison of knowledge-based GBFS
+     enhancements and knowledge-free exploration. In Proceedings of the Twenty-Fourth
+     International Conference on Automated Planning and Scheduling (ICAPS 2014),
+     pages 375-379. AAAI Press, 2014.
 */
 
 template<class Entry>
