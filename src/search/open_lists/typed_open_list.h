@@ -2,7 +2,6 @@
 #define OPEN_LISTS_TYPE_BASED_OPEN_LIST_H
 
 #include "open_list.h"
-#include "pareto_open_list.h"
 
 #include "../plugin.h"
 
@@ -23,9 +22,7 @@ class TypeBasedOpenList : public OpenList<Entry> {
 
     std::vector<std::pair<Key, Bucket> > keys_and_buckets;
 
-
-    // The hash function is located in pareto_open_list.h
-    typedef typename std::unordered_map<Key, int, __gnu_cxx::hash<const std::vector<int> > > KeyToBucketIndex;
+    typedef typename std::unordered_map<Key, int, hash_int_vector> KeyToBucketIndex;
     KeyToBucketIndex key_to_bucket_index;
 
     int size;

@@ -94,6 +94,12 @@ size_t hash_number_sequence(const Sequence &data, size_t length) {
     return hash_value;
 }
 
+struct hash_int_vector {
+    size_t operator()(const std::vector<int> &vec) const {
+        return hash_number_sequence(vec, vec.size());
+    }
+};
+
 struct hash_int_pair {
     size_t operator()(const std::pair<int, int> &key) const {
         return size_t(key.first * 1337 + key.second);
