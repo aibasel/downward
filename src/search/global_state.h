@@ -1,5 +1,5 @@
-#ifndef STATE_H
-#define STATE_H
+#ifndef GLOBAL_STATE_H
+#define GLOBAL_STATE_H
 
 #include "int_packer.h"
 #include "state_id.h"

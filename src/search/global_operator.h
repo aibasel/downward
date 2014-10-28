@@ -1,5 +1,5 @@
-#ifndef OPERATOR_H
-#define OPERATOR_H
+#ifndef GLOBAL_OPERATOR_H
+#define GLOBAL_OPERATOR_H
 
 #include "global_state.h"
 #include "globals.h"
