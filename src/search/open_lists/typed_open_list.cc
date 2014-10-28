@@ -88,12 +88,8 @@ void TypeBasedOpenList<Entry>::clear() {
 
 template<class Entry>
 void TypeBasedOpenList<Entry>::evaluate(int g, bool preferred) {
-    /*
-      Treat as a dead end if
-      1. at least one heuristic reliably recognizes it as a dead end, or
-      2. all heuristics unreliably recognize it as a dead end
-      In case 1., the dead end is reliable; in case 2. it is not.
-    */
+    // The code is taken from AlternationOpenList
+    // TODO: see issue494, common implementation of evaluate for multi evaluator open lists
 
     dead_end = true;
     dead_end_reliable = false;
