@@ -13,30 +13,12 @@
 
 class ScalarEvaluator;
 
-namespace __gnu_cxx {
-template<>
-struct hash<const std::vector<int> > {
-    // hash function adapted from Python's hash function for tuples.
-    size_t operator()(const std::vector<int> &vec) const {
-        size_t hash_value = 0x345678;
-        size_t mult = 1000003;
-        for (int i = vec.size() - 1; i >= 0; --i) {
-            hash_value = (hash_value ^ vec[i]) * mult;
-            mult += 82520 + i + i;
-        }
-        hash_value += 97531;
-        return hash_value;
-    }
-};
-}
-
 template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
     typedef std::deque<Entry> Bucket;
     typedef std::vector<int> KeyType;
     //typedef std::map<const KeyType, Bucket> BucketMap;
-    typedef typename __gnu_cxx::hash_map<const KeyType, Bucket,
-                                         __gnu_cxx::hash<const std::vector<int> > > BucketMap;
+    typedef typename __gnu_cxx::hash_map<const KeyType, Bucket, hash_int_vector> BucketMap;
     typedef std::set<KeyType> KeySet; // no hash_set (see insert method)
 
     BucketMap buckets;
