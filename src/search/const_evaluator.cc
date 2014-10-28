@@ -30,7 +30,7 @@ static Heuristic *_parse(OptionParser &parser) {
         return 0;
     } else {
         if (opts.get<int>("values") < 0) {
-            parser.error("value must be a value >= 0");
+            parser.error("value must be >= 0");
         }
         return new ConstEvaluator(opts);
     }
