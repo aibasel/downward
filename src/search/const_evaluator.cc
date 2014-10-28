@@ -30,10 +30,14 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("value", "the constant value", "1");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.dry_run())
+    if (parser.dry_run()) {
         return 0;
-    else
+    } else {
+        if (opts.get<int>("values") < 0) {
+            parser.error("value must be a value >= 0");
+        }
         return new ConstEvaluator(opts);
+    }
 }
 
 static Plugin<Heuristic> _plugin("const", _parse);
