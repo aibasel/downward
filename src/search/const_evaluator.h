@@ -18,7 +18,6 @@ public:
 
     virtual void evaluate(int, bool) {}
     virtual bool is_dead_end() const;
-    virtual bool dead_end_is_reliable() const;
 };
 
 #endif
