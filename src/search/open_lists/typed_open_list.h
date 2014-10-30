@@ -16,7 +16,7 @@ class ScalarEvaluator;
 /*
   Type-based open list that uses multiple evaluators to put nodes into buckets.
   When retrieving a node, a bucket is chosen uniformly at random
-  and one of the contained nodes is selected uniformy randomly.
+  and one of the contained nodes is selected uniformly randomly.
   Based on:
     Richard Valenzano, Nathan R. Sturtevant,
     Jonathan Schaeffer, and Fan Xie. A comparison of knowledge-based GBFS
