@@ -1,14 +1,42 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
+import glob
 import os.path
+import sys
 
-for filename in sys.argv[1:]:
-    assert filename.endswith(".h"), filename
-    guard = filename.replace(".", "_").replace("/", "_").replace("-", "_").upper()
-    expected = "#ifndef " + guard
-    for line in open(filename):
-        line = line.rstrip("\n")
-        if line.startswith("#ifndef"):
-            print line == expected, filename, line
+DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.join(os.path.dirname(DIR), "src")
+
+
+def check_header_files(component):
+    component_dir = os.path.join(SRC_DIR, component)
+    header_files = (glob.glob(os.path.join(component_dir, "*.h")) +
+                    glob.glob(os.path.join(component_dir, "*", "*.h")))
+    errors = []
+    for filename in header_files:
+        assert filename.endswith(".h"), filename
+        rel_filename = os.path.relpath(filename, start=component_dir)
+        guard = rel_filename.replace(".", "_").replace("/", "_").replace("-", "_").upper()
+        expected = "#ifndef " + guard
+        for line in open(filename):
+            line = line.rstrip("\n")
+            if line.startswith("#ifndef"):
+                if line != expected:
+                    errors.append('%s uses guard "%s" but should use "%s"' %
+                                  (filename, line, expected))
+    return errors
+
+
+def main():
+    errors = []
+    errors.extend(check_header_files("preprocess"))
+    errors.extend(check_header_files("search"))
+    for error in errors:
+        print error
+    if errors:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

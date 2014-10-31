@@ -77,7 +77,7 @@ bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
 
 void SearchEngine::save_plan_if_necessary() const {
     if (found_solution())
-        save_plan(get_plan(), 0);
+        save_plan(get_plan());
 }
 
 int SearchEngine::get_adjusted_cost(const GlobalOperator &op) const {
