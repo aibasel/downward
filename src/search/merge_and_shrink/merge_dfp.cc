@@ -1,7 +1,6 @@
 #include "merge_dfp.h"
 
 #include "transition_system.h"
-#include "label.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"

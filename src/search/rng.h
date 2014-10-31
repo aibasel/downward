@@ -24,7 +24,6 @@ public:
     int operator()(int bound) { // same as next()
         return next(bound);
     }
-    double next();              // same as next_half_open()
     double operator()() {       // same as next_half_open()
         return next_half_open();
     }

@@ -1,7 +1,6 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import portfolio
+OPTIMAL = True
 
 CONFIGS = [
     (1, ["--search",
@@ -15,5 +14,3 @@ CONFIGS = [
     (1, ["--search",
            "astar(blind())"]),
      ]
-
-portfolio.run(CONFIGS, optimal=True)

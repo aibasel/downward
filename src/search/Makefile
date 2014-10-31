@@ -106,9 +106,7 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-HEADERS += merge_and_shrink/label.h \
-           merge_and_shrink/labels.h \
-           merge_and_shrink/label_reducer.h \
+HEADERS += merge_and_shrink/labels.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
            merge_and_shrink/merge_dfp.h \
            merge_and_shrink/merge_linear.h \

@@ -1,5 +1,5 @@
-#ifndef OPERATOR_H
-#define OPERATOR_H
+#ifndef GLOBAL_OPERATOR_H
+#define GLOBAL_OPERATOR_H
 
 #include "global_state.h"
 #include "globals.h"
@@ -87,8 +87,6 @@ public:
     void unmark() const {
         marked = false;
     }
-
-    mutable bool marker1, marker2; // HACK! HACK!
 
     int get_cost() const {return cost; }
 };
