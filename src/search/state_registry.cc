@@ -47,6 +47,8 @@ GlobalState StateRegistry::lookup_state(StateID id) const {
 const GlobalState &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
         PackedStateBin *buffer = new PackedStateBin[g_state_packer->get_num_bins()];
+        // Avoid garbage values in half-full bins.
+        fill_n(buffer, g_state_packer->get_num_bins(), 0);
         for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
             g_state_packer->set(buffer, i, g_initial_state_data[i]);
         }
