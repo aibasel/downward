@@ -1,8 +1,6 @@
 #ifndef MERGE_AND_SHRINK_LABELS_H
 #define MERGE_AND_SHRINK_LABELS_H
 
-#include "../operator_cost.h"
-
 #include <vector>
 
 class EquivalenceRelation;
@@ -72,14 +70,13 @@ class Labels {
         std::vector<EquivalenceRelation *> &cached_local_equivalence_relations) const;
 
 public:
-    Labels(const Options &options, OperatorCost cost_type);
+    explicit Labels(const Options &options);
     ~Labels() {}
+    void add_label(int cost);
     void reduce(std::pair<int, int> next_merge,
                 const std::vector<TransitionSystem *> &all_transition_systems);
-    // TODO: consider removing get_label_by_index and forwarding all required
-    // methods of Label and giving access to them by label number.
-    const Label *get_label_by_index(int index) const;
-    bool is_label_reduced(int label_no) const;
+    bool is_current_label(int label_no) const;
+    int get_label_cost(int label_no) const;
     void dump_labels() const;
     void dump_label_reduction_options() const;
 

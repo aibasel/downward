@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    labels = new Labels(opts, cost_type);
+    labels = new Labels(opts);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -58,12 +58,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    // vector of all transition systems. entries with 0 have been merged.
+    // Set of all transition systems. Entries with 0 have been merged.
     vector<TransitionSystem *> all_transition_systems;
     if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
         exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
-    TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels);
+    TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels, cost_type);
 
     cout << "Merging transition systems..." << endl;
 
