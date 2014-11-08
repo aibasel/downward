@@ -82,9 +82,6 @@ void exit_with(ExitCode exitcode) {
     case EXIT_OUT_OF_MEMORY:
         cout << "Memory limit has been reached." << endl;
         break;
-    case EXIT_TIMEOUT:
-        cout << "Time limit has been reached." << endl;
-        break;
     default:
         cerr << "Exitcode: " << exitcode << endl;
         ABORT("Unknown exitcode.");

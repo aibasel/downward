@@ -1,52 +1,62 @@
 #include "labels.h"
 
-#include "label.h"
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
+#include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
-//#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
-//#include <iostream>
-//#include <limits>
 
 using namespace std;
 
-Labels::Labels(const Options &options, OperatorCost cost_type)
+class Label {
+    /*
+      This class implements labels as used by merge-and-shrink transition systems.
+      Labels are opaque tokens that have an associated cost.
+    */
+    int cost;
+public:
+    explicit Label(int cost_)
+        : cost(cost_) {
+    }
+    ~Label() {}
+    int get_cost() const {
+        return cost;
+    }
+};
+
+Labels::Labels(const Options &options)
     : label_reduction_method(
           LabelReductionMethod(options.get_enum("label_reduction_method"))),
       label_reduction_system_order(
           LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
-    // Generate a label for every operator
+    // Reserve memory for labels
     if (!g_operators.empty()) {
-        if (g_operators.size() * 2 - 1 > labels.max_size())
-            exit_with(EXIT_OUT_OF_MEMORY);
         labels.reserve(g_operators.size() * 2 - 1);
-    }
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        labels.push_back(new OperatorLabel(i, get_adjusted_action_cost(g_operators[i], cost_type),
-                                           g_operators[i].get_preconditions(),
-                                           g_operators[i].get_effects()));
     }
 
     // Compute the transition system order
-    size_t max_no_systems = g_variable_domain.size() * 2 - 1;
-    transition_system_order.reserve(max_no_systems);
+    size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
+    transition_system_order.reserve(max_transition_system_count);
     if (label_reduction_system_order == REGULAR
         || label_reduction_system_order == RANDOM) {
-        for (size_t i = 0; i < max_no_systems; ++i)
+        for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (label_reduction_system_order == RANDOM) {
             random_shuffle(transition_system_order.begin(), transition_system_order.end());
         }
     } else {
         assert(label_reduction_system_order == REVERSE);
-        for (size_t i = 0; i < max_no_systems; ++i)
-            transition_system_order.push_back(max_no_systems - 1 - i);
+        for (size_t i = 0; i < max_transition_system_count; ++i)
+            transition_system_order.push_back(max_transition_system_count - 1 - i);
     }
+}
+
+void Labels::add_label(int cost) {
+    labels.push_back(new Label(cost));
 }
 
 void Labels::notify_transition_systems(
@@ -77,7 +87,7 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
             assert(*jt < static_cast<int>(labels.size()));
             Label *label = labels[*jt];
-            if (!label->is_reduced()) {
+            if (label) {
                 // only consider non-reduced labels
                 equivalent_labels.push_back(label);
                 equivalent_label_nos.push_back(*jt);
@@ -85,9 +95,15 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
             }
         }
         if (equivalent_labels.size() > 1) {
-            Label *new_label = new CompositeLabel(labels.size(), equivalent_labels);
+            int new_label_no = labels.size();
+            Label *new_label = new Label(equivalent_labels[0]->get_cost());
             labels.push_back(new_label);
-            label_mapping.push_back(make_pair(new_label->get_id(), equivalent_label_nos));
+            for (size_t i = 0; i < equivalent_label_nos.size(); ++i) {
+                int old_label_no = equivalent_label_nos[i];
+                delete labels[old_label_no];
+                labels[old_label_no] = 0;
+            }
+            label_mapping.push_back(make_pair(new_label_no, equivalent_label_nos));
         }
         if (!equivalent_labels.empty()) {
             ++num_labels_after_reduction;
@@ -121,10 +137,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
     vector<pair<int, int> > annotated_labels;
     annotated_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const Label *label = labels[label_no];
-        assert(label->get_id() == label_no);
-        if (!label->is_reduced()) {
-            // only consider non-reduced labels
+        if (labels[label_no]) {
             annotated_labels.push_back(make_pair(0, label_no));
         }
     }
@@ -266,20 +279,22 @@ void Labels::reduce(pair<int, int> next_merge,
         delete cached_local_equivalence_relations[i];
 }
 
-const Label *Labels::get_label_by_index(int index) const {
-    assert(in_bounds(index, labels));
-    return labels[index];
+bool Labels::is_current_label(int label_no) const {
+    assert(in_bounds(label_no, labels));
+    return labels[label_no];
 }
 
-bool Labels::is_label_reduced(int label_no) const {
-    return get_label_by_index(label_no)->is_reduced();
+int Labels::get_label_cost(int label_no) const {
+    assert(labels[label_no]);
+    return labels[label_no]->get_cost();
 }
 
 void Labels::dump_labels() const {
-    cout << "no of labels: " << labels.size() << endl;
-    for (size_t i = 0; i < labels.size(); ++i) {
-        const Label *label = labels[i];
-        label->dump();
+    cout << "active labels:" << endl;
+    for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
+        if (labels[label_no]) {
+            cout << "label " << label_no << ", cost " << labels[label_no]->get_cost() << endl;
+        }
     }
 }
 
