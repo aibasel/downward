@@ -283,7 +283,7 @@ void read_everything(istream &in) {
     cout << "Facts: " << num_facts << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() *
-            g_state_packer->get_bin_size_in_bytes() << endl;
+    g_state_packer->get_bin_size_in_bytes() << endl;
 
     cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
