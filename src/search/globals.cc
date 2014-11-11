@@ -268,15 +268,22 @@ void read_everything(istream &in) {
     cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
-    cout << "Variables: " << g_variable_domain.size() << endl;
-    cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() *
-    g_state_packer->get_bin_size_in_bytes() << endl;
     cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
     g_state_registry = new StateRegistry;
+
+    int num_vars = g_variable_domain.size();
+    int num_facts = 0;
+    for (int var = 0; var < num_vars; ++var)
+        num_facts += g_variable_domain[var];
+
+    cout << "Variables: " << num_vars << endl;
+    cout << "Facts: " << num_facts << endl;
+    cout << "Bytes per state: "
+         << g_state_packer->get_num_bins() *
+            g_state_packer->get_bin_size_in_bytes() << endl;
 
     cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
