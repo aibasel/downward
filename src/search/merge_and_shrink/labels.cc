@@ -62,16 +62,11 @@ void Labels::add_label(int cost) {
 void Labels::notify_transition_systems(
     int ts_index,
     const vector<TransitionSystem *> &all_transition_systems,
-    const vector<pair<int, vector<int> > > &label_mapping,
-    vector<EquivalenceRelation *> &cached_equivalence_relations) const {
+    const vector<pair<int, vector<int> > > &label_mapping) const {
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         if (all_transition_systems[i]) {
             all_transition_systems[i]->apply_label_reduction(label_mapping,
                                                              static_cast<int>(i) != ts_index);
-            if (cached_equivalence_relations[i]) {
-                delete cached_equivalence_relations[i];
-                cached_equivalence_relations[i] = 0;
-            }
         }
     }
 }
@@ -121,8 +116,7 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
 
 EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
     int ts_index,
-    const vector<TransitionSystem *> &all_transition_systems,
-    vector<EquivalenceRelation *> &cached_local_equivalence_relations) const {
+    const vector<TransitionSystem *> &all_transition_systems) const {
     /*
       Returns an equivalence relation over labels s.t. l ~ l'
       iff l and l' are locally equivalent in all transition systems
@@ -149,10 +143,9 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
         if (!ts || ts == transition_system) {
             continue;
         }
-        if (!cached_local_equivalence_relations[i]) {
-            cached_local_equivalence_relations[i] = ts->compute_local_equivalence_relation();
-        }
-        relation->refine(*cached_local_equivalence_relations[i]);
+        const EquivalenceRelation *local_equivalence_relation
+                = ts->get_local_equivalence_relation();
+        relation->refine(*local_equivalence_relation);
     }
     return relation;
 }
@@ -176,39 +169,30 @@ void Labels::reduce(pair<int, int> next_merge,
         assert(all_transition_systems[next_merge.first]);
         assert(all_transition_systems[next_merge.second]);
 
-        vector<EquivalenceRelation *> cached_local_equivalence_relations(
-            all_transition_systems.size(), 0);
-
         EquivalenceRelation *relation = compute_combinable_equivalence_relation(
             next_merge.first,
-            all_transition_systems,
-            cached_local_equivalence_relations);
+            all_transition_systems);
         vector<pair<int, vector<int> > > label_mapping;
         bool have_reduced = apply_label_reduction(relation, label_mapping);
         if (have_reduced) {
             notify_transition_systems(next_merge.first,
                                       all_transition_systems,
-                                      label_mapping,
-                                      cached_local_equivalence_relations);
+                                      label_mapping);
         }
         delete relation;
-        label_mapping.clear();
+        relation = 0;
+        vector<pair<int, vector<int> > >().swap(label_mapping);
 
         relation = compute_combinable_equivalence_relation(
             next_merge.second,
-            all_transition_systems,
-            cached_local_equivalence_relations);
+            all_transition_systems);
         have_reduced = apply_label_reduction(relation, label_mapping);
         if (have_reduced) {
             notify_transition_systems(next_merge.second,
                                       all_transition_systems,
-                                      label_mapping,
-                                      cached_local_equivalence_relations);
+                                      label_mapping);
         }
         delete relation;
-
-        for (size_t i = 0; i < cached_local_equivalence_relations.size(); ++i)
-            delete cached_local_equivalence_relations[i];
         return;
     }
 
@@ -231,8 +215,6 @@ void Labels::reduce(pair<int, int> next_merge,
     }
 
     int num_unsuccessful_iterations = 0;
-    vector<EquivalenceRelation *> cached_local_equivalence_relations(
-        all_transition_systems.size(), 0);
 
     for (int i = 0; i < max_iterations; ++i) {
         int ts_index = transition_system_order[tso_index];
@@ -243,8 +225,7 @@ void Labels::reduce(pair<int, int> next_merge,
         if (current_transition_system != 0) {
             EquivalenceRelation *relation =
                 compute_combinable_equivalence_relation(ts_index,
-                                                        all_transition_systems,
-                                                        cached_local_equivalence_relations);
+                                                        all_transition_systems);
             have_reduced = apply_label_reduction(relation, label_mapping);
             delete relation;
         }
@@ -253,8 +234,7 @@ void Labels::reduce(pair<int, int> next_merge,
             num_unsuccessful_iterations = 0;
             notify_transition_systems(ts_index,
                                       all_transition_systems,
-                                      label_mapping,
-                                      cached_local_equivalence_relations);
+                                      label_mapping);
         } else {
             // Even if the transition system has been removed, we need to count
             // it as unsuccessful iterations (the size of the vector matters).
@@ -274,9 +254,6 @@ void Labels::reduce(pair<int, int> next_merge,
             }
         }
     }
-
-    for (size_t i = 0; i < cached_local_equivalence_relations.size(); ++i)
-        delete cached_local_equivalence_relations[i];
 }
 
 bool Labels::is_current_label(int label_no) const {
