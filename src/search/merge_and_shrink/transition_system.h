@@ -61,6 +61,7 @@ class TransitionSystem {
       have a pointer to this object to ease access to the set of labels.
     */
     const Labels *labels;
+    EquivalenceRelation *equivalent_labels;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
@@ -97,6 +98,7 @@ class TransitionSystem {
        - Transitions are sorted (by labels, by states) and there are no
          duplicates (are_transitions_sorted_unique() == true)
        - All labels are incorporated (is_label_reduced() == true))
+       - Locally equivalent labels are computed (are_equivalent_labels_computed() == true)
        - Distances are computed and stored (are_distances_computed() == true)
     */
     bool is_valid() const;
@@ -117,6 +119,8 @@ class TransitionSystem {
     bool is_label_reduced() const;
     void apply_general_label_mapping(int new_label_no,
                                      const std::vector<int> &old_label_nos);
+    bool are_equivalent_labels_computed() const;
+    void compute_local_equivalence_relation();
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
@@ -139,7 +143,9 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    EquivalenceRelation *compute_local_equivalence_relation() const;
+    const EquivalenceRelation *get_local_equivalence_relation() const {
+        return equivalent_labels;
+    }
     /*
       Method to identify the transition system in output.
       Print "Atomic transition system #x: " for atomic transition systems,
