@@ -62,6 +62,7 @@ class TransitionSystem {
     */
     const Labels *labels;
     EquivalenceRelation *equivalent_labels;
+    std::vector<int> label_to_representative;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
@@ -93,6 +94,7 @@ class TransitionSystem {
 
     mutable int peak_memory;
 
+    void reset_label_to_representative_mapping();
     /*
       A transition system is in valid state if:
        - Transitions are sorted (by labels, by states) and there are no
@@ -188,7 +190,12 @@ public:
         return goal_distances[state];
     }
     const std::vector<Transition> &get_transitions_for_label(int label_no) const {
-        return transitions_by_label[label_no];
+        int representative = label_to_representative[label_no];
+        if (representative == -1) {
+            std::cout << "oups" << std::endl;
+            exit(1);
+        }
+        return transitions_by_label[representative];
     }
     const Labels *get_labels() const {
         return labels;
