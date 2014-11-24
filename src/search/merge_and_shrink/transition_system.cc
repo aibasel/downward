@@ -57,6 +57,17 @@ TransitionSystem::~TransitionSystem() {
     delete equivalent_labels;
 }
 
+void TransitionSystem::reset_label_to_representative_mapping() {
+    vector<int>().swap(label_to_representative);
+    label_to_representative.reserve(g_operators.empty() ? 0 : g_operators.size() * 2 - 1);
+    for (int i = 0; i < num_labels; ++i) {
+        label_to_representative.push_back(i);
+    }
+    for (size_t i = num_labels; i < 2 * g_operators.size() - 1; ++i) {
+        label_to_representative.push_back(-1);
+    }
+}
+
 bool TransitionSystem::is_valid() const {
     return are_distances_computed()
            && are_transitions_sorted_unique()
@@ -197,7 +208,7 @@ static void breadth_first_search(
 void TransitionSystem::compute_init_distances_unit_cost() {
     vector<vector<AbstractStateRef> > forward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const vector<Transition> &transitions = transitions_by_label[label_no];
+        const vector<Transition> &transitions = get_transitions_for_label(label_no);
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &trans = transitions[j];
             forward_graph[trans.src].push_back(trans.target);
@@ -217,7 +228,7 @@ void TransitionSystem::compute_init_distances_unit_cost() {
 void TransitionSystem::compute_goal_distances_unit_cost() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const vector<Transition> &transitions = transitions_by_label[label_no];
+        const vector<Transition> &transitions = get_transitions_for_label(label_no);
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &trans = transitions[j];
             backward_graph[trans.target].push_back(trans.src);
@@ -264,7 +275,7 @@ void TransitionSystem::compute_init_distances_general_cost() {
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             int label_cost = labels->get_label_cost(label_no);
-            const vector<Transition> &transitions = transitions_by_label[label_no];
+            const vector<Transition> &transitions = get_transitions_for_label(label_no);
             for (size_t j = 0; j < transitions.size(); ++j) {
                 const Transition &trans = transitions[j];
                 forward_graph[trans.src].push_back(
@@ -290,7 +301,7 @@ void TransitionSystem::compute_goal_distances_general_cost() {
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             int label_cost = labels->get_label_cost(label_no);
-            const vector<Transition> &transitions = transitions_by_label[label_no];
+            const vector<Transition> &transitions = get_transitions_for_label(label_no);
             for (size_t j = 0; j < transitions.size(); ++j) {
                 const Transition &trans = transitions[j];
                 backward_graph[trans.target].push_back(
@@ -316,8 +327,8 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
       Determine whether the transitions are sorted uniquely or not.
       (Currently used after construction and shrinking.)
     */
-    for (size_t i = 0; i < transitions_by_label.size(); ++i) {
-        const vector<Transition> &transitions = transitions_by_label[i];
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        const vector<Transition> &transitions = get_transitions_for_label(label_no);
         if (!is_sorted_unique(transitions)) {
             return false;
         }
@@ -343,7 +354,8 @@ void TransitionSystem::normalize_transitions() {
 
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
-            vector<Transition> &transitions = transitions_by_label[label_no];
+            vector<Transition> &transitions
+                    = transitions_by_label[label_to_representative[label_no]];
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
                 target_buckets[t.target].push_back(
@@ -366,7 +378,7 @@ void TransitionSystem::normalize_transitions() {
     }
     vector<StateBucket>().swap(target_buckets);
 
-    // Finally, partition by operator and drop duplicates.
+    // Finally, partition by label and drop duplicates.
     for (AbstractStateRef src = 0; src < num_states; ++src) {
         StateBucket &bucket = src_buckets[src];
         for (size_t i = 0; i < bucket.size(); ++i) {
@@ -403,7 +415,7 @@ void TransitionSystem::apply_general_label_mapping(int new_label_no,
     bool all_transitions_are_self_loops = true;
     for (size_t j = 0; j < old_label_nos.size(); ++j) {
         int old_label_no = old_label_nos[j];
-        vector<Transition> &old_transitions = transitions_by_label[old_label_no];
+        const vector<Transition> &old_transitions = get_transitions_for_label(old_label_no);
         if (relevant_labels[old_label_no]) {
             new_transitions.insert(old_transitions.begin(), old_transitions.end());
             if (all_transitions_are_self_loops) {
@@ -452,10 +464,7 @@ void TransitionSystem::compute_local_equivalence_relation() {
       If label l1 is irrelevant and label l2 is relevant but has exactly the
       transitions of an irrelevant label, we do not detect the equivalence.
     */
-    if (equivalent_labels) {
-        delete equivalent_labels;
-        equivalent_labels = 0;
-    }
+    assert(!equivalent_labels);
 
     assert(are_transitions_sorted_unique());
     vector<bool> considered_labels(num_labels, false);
@@ -468,7 +477,7 @@ void TransitionSystem::compute_local_equivalence_relation() {
             }
             int label_cost = labels->get_label_cost(label_no);
             annotated_labels.push_back(make_pair(annotation, label_no));
-            const vector<Transition> &transitions = transitions_by_label[label_no];
+            const vector<Transition> &transitions = get_transitions_for_label(label_no);
             for (int other_label_no = label_no + 1; other_label_no < num_labels;
                  ++other_label_no) {
                 if (labels->is_current_label(other_label_no)) {
@@ -481,7 +490,8 @@ void TransitionSystem::compute_local_equivalence_relation() {
                     if (relevant_labels[label_no] != relevant_labels[other_label_no]) {
                         continue;
                     }
-                    const vector<Transition> &other_transitions = transitions_by_label[other_label_no];
+                    const vector<Transition> &other_transitions
+                            = get_transitions_for_label(other_label_no);
                     if ((transitions.empty() && other_transitions.empty())
                         || (transitions == other_transitions)) {
                         considered_labels[other_label_no] = true;
@@ -494,6 +504,24 @@ void TransitionSystem::compute_local_equivalence_relation() {
     }
     equivalent_labels = EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 }
+
+//void TransitionSystem::store_equivalent_labels_once() {
+//    for (BlockListConstIter it = equivalent_labels->begin();
+//         it != equivalent_labels->end(); ++it) {
+//        const Block &block = *it;
+//        int min_label_no = *block.begin();
+//        for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
+//            assert(*jt < num_labels);
+//            if (jt == block.begin())
+//                continue;
+//            int label_no = *jt;
+//            assert(min_label_no < label_no);
+//            assert(transitions_by_labels[label_no] == transitions_by_label[min_label_no]);
+//            vector<Transition>().swap(transitions_by_label[label_no]);
+//            label_to_representative[label_no] = min_label_no;
+//        }
+//    }
+//}
 
 void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *> &result,
                                                        Labels *labels,
@@ -600,7 +628,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     for (size_t i = 0; i < result.size(); ++i) {
         // Need to set the correct number of labels *after* generating them
         result[i]->num_labels = labels->get_size();
+        result[i]->reset_label_to_representative_mapping();
         result[i]->compute_local_equivalence_relation();
+//        result[i]->store_equivalent_labels_once();
         result[i]->compute_distances_and_prune();
         assert(result[i]->is_valid());
     }
@@ -613,11 +643,6 @@ void TransitionSystem::apply_abstraction(
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
         return;
-    }
-
-    if (equivalent_labels) {
-        delete equivalent_labels;
-        equivalent_labels = 0;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
@@ -677,7 +702,7 @@ void TransitionSystem::apply_abstraction(
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             const vector<Transition> &transitions =
-                transitions_by_label[label_no];
+                get_transitions_for_label(label_no);
             vector<Transition> &new_transitions =
                 new_transitions_by_label[label_no];
             new_transitions.reserve(transitions.size());
@@ -720,6 +745,11 @@ void TransitionSystem::apply_abstraction(
     if (!are_transitions_sorted_unique()) {
         normalize_transitions();
     }
+    if (equivalent_labels) {
+        delete equivalent_labels;
+        equivalent_labels = 0;
+        reset_label_to_representative_mapping();
+    }
     compute_local_equivalence_relation();
     if (must_clear_distances) {
         compute_distances_and_prune();
@@ -734,10 +764,6 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     assert(are_distances_computed());
     assert(are_transitions_sorted_unique());
     assert(are_equivalent_labels_computed());
-    if (equivalent_labels) {
-        delete equivalent_labels;
-        equivalent_labels = 0;
-    }
     //cout << tag() << " applying label mapping" << endl;
     for (size_t i = 0; i < label_mapping.size(); ++i) {
         const vector<int> &old_label_nos = label_mapping[i].second;
@@ -745,7 +771,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         int new_label_no = label_mapping[i].first;
         assert(new_label_no == num_labels);
 
-        // First, assert that all old labels are in the correct range and of the same cost
+        // First, assert that all old labels are in the correct range
         for (size_t j = 0; j < old_label_nos.size(); ++j) {
             assert(old_label_nos[j] < num_labels);
         }
@@ -755,16 +781,17 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             /* Here we handle those transitions systems for which we know that
                only locally equivalent labels are combined. We simply take the
                transitions of one of the parent labels and move them to the new
-               label's position and delete all transitions of the old labels.
+               label's position (and in step 3, we delete all transitions of
+               the old labels).
             */
 
             vector<Transition> &new_label_transitions = transitions_by_label[new_label_no];
             assert(new_label_transitions.empty());
-            new_label_transitions.swap(transitions_by_label[old_label_nos[0]]);
+            new_label_transitions.swap(transitions_by_label[label_to_representative[old_label_nos[0]]]);
             bool new_label_relevant = relevant_labels[old_label_nos[0]];
             relevant_labels[new_label_no] = new_label_relevant;
             for (size_t j = 1; j < old_label_nos.size(); ++j) {
-                assert(transitions_by_label[old_label_nos[j]] == new_label_transitions);
+//                assert(transitions_by_label[old_label_nos[j]] == new_label_transitions);
                 assert(relevant_labels[old_label_nos[j]] == new_label_relevant);
             }
         } else {
@@ -779,13 +806,20 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                considering all relevant labels).
             */
             relevant_labels[old_label_nos[j]] = false;
+            //vector<Transition>().swap(transitions_by_label[label_to_representative[old_label_nos[j]]]);
             vector<Transition>().swap(transitions_by_label[old_label_nos[j]]);
         }
 
+        //label_to_representative[new_label_no] = new_label_no;
         ++num_labels;
     }
     // NOTE: as we currently only combine labels of the same cost, we do not
     // need to recompute distances after label reduction.
+    if (equivalent_labels) {
+        delete equivalent_labels;
+        equivalent_labels = 0;
+    }
+    reset_label_to_representative_mapping();
     compute_local_equivalence_relation();
     assert(is_valid());
 }
@@ -910,7 +944,7 @@ void TransitionSystem::dump_dot_graph() const {
     }
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         // reduced labels are automatically skipped because trans is then empty
-        const vector<Transition> &trans = transitions_by_label[label_no];
+        const vector<Transition> &trans = get_transitions_for_label(label_no);
         for (size_t i = 0; i < trans.size(); ++i) {
             int src = trans[i].src;
             int target = trans[i].target;
@@ -927,7 +961,7 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
     label_ranks.reserve(transitions_by_label.size());
     for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
         if (relevant_labels[label_no]) {
-            const vector<Transition> &transitions = transitions_by_label[label_no];
+            const vector<Transition> &transitions = get_transitions_for_label(label_no);
             int label_rank = INF;
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
@@ -1066,9 +1100,9 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
             relevant_labels[label_no] = true;
             vector<Transition> &transitions = transitions_by_label[label_no];
             const vector<Transition> &bucket1 =
-                ts1->transitions_by_label[label_no];
+                ts1->get_transitions_for_label(label_no);
             const vector<Transition> &bucket2 =
-                ts2->transitions_by_label[label_no];
+                ts2->get_transitions_for_label(label_no);
             if (relevant1 && relevant2) {
                 if (bucket1.size() * bucket2.size() > transitions.max_size())
                     exit_with(EXIT_OUT_OF_MEMORY);
@@ -1117,6 +1151,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         }
     }
 
+    reset_label_to_representative_mapping();
     // TODO do not check if transitions are sorted but just assume they are not?
     if (!are_transitions_sorted_unique()) {
         normalize_transitions();
