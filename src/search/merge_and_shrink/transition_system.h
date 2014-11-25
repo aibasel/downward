@@ -63,6 +63,7 @@ class TransitionSystem {
     const Labels *labels;
     EquivalenceRelation *equivalent_labels;
     std::vector<int> label_to_representative;
+    std::vector<std::vector<int> > representative_to_labels;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
@@ -166,6 +167,8 @@ public:
     int get_peak_memory_estimate() const;
     void dump_attributes() const;
     void dump_dot_graph() const;
+    void dump_transitions() const;
+    void dump_equivalence_relation() const;
     int get_size() const {
         return num_states;
     }
@@ -189,14 +192,7 @@ public:
     int get_goal_distance(int state) const {
         return goal_distances[state];
     }
-    const std::vector<Transition> &get_transitions_for_label(int label_no) const {
-        int representative = label_to_representative[label_no];
-        if (representative == -1) {
-            std::cout << "oups" << std::endl;
-            exit(1);
-        }
-        return transitions_by_label[representative];
-    }
+    const std::vector<Transition> &get_transitions_for_label(int label_no) const;
     const Labels *get_labels() const {
         return labels;
     }
