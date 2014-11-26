@@ -18,11 +18,10 @@ class ScalarEvaluator;
   When retrieving a node, a bucket is chosen uniformly at random
   and one of the contained nodes is selected uniformly randomly.
   Based on:
-    Richard Valenzano, Nathan R. Sturtevant,
-    Jonathan Schaeffer, and Fan Xie. A comparison of knowledge-based GBFS
-    enhancements and knowledge-free exploration. In Proceedings of the Twenty-Fourth
-    International Conference on Automated Planning and Scheduling (ICAPS 2014),
-    pages 375-379. AAAI Press, 2014.
+    Fan Xie, Martin Mueller, Robert C. Holte, and Tatsuya Imai. Type-based
+    exploration with multiple search queues for satisficing planning.
+    In Proceedings of the Twenty-Eighth AAAI Conference on Artificial
+    Intelligence (AAAI 2014). AAAI Press, 2014.
 */
 
 template<class Entry>
