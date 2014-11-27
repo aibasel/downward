@@ -3,6 +3,7 @@
 #include "utilities.h"
 
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 
@@ -36,6 +37,51 @@ EquivalenceRelation::EquivalenceRelation(int n, const list<Block> &blocks_)
 }
 
 EquivalenceRelation::~EquivalenceRelation() {
+}
+
+bool EquivalenceRelation::update(const vector<int> &existing_elements,
+                                 int new_element) {
+    /*
+      Remove all existing elements from their block(s), remove the entry in
+      element_positions and check if all the removed elements are from the
+      same block.
+    */
+    bool all_from_one_block = true;
+    BlockListIter canonical_block_it = element_positions[existing_elements[0]].first;
+    bool canonical_block_valid = true;
+    for (size_t i = 0; i < existing_elements.size(); ++i) {
+        int old_element = existing_elements[i];
+        BlockListIter block_it = element_positions[old_element].first;
+        ElementListIter element_it = element_positions[old_element].second;
+        block_it->erase(element_it);
+        element_positions.erase(old_element);
+        if (all_from_one_block && block_it != canonical_block_it) {
+            // Not all elements are from the same block
+            all_from_one_block = false;
+        }
+        if (block_it->empty()) {
+            if (block_it == canonical_block_it) {
+                canonical_block_valid = false;
+            }
+            blocks.erase(block_it);
+        }
+    }
+
+    /*
+      Insert new_element into the same block if all removed elements were
+      from that same block, or into a new one otherwise.
+    */
+    assert(new_element == num_elements);
+    ++num_elements;
+    BlockListIter new_block_it;
+    if (all_from_one_block && canonical_block_valid) {
+        new_block_it = canonical_block_it;
+    } else {
+        new_block_it = add_empty_block();
+    }
+    ElementListIter elem_it = new_block_it->insert(new_element);
+    element_positions[new_element] = make_pair(new_block_it, elem_it);
+    return all_from_one_block;
 }
 
 int EquivalenceRelation::get_num_elements() const {
@@ -154,5 +200,19 @@ void EquivalenceRelation::refine(const Block &block_X) {
         } else {
             modified_block->it_intersection_block = blocks.end();
         }
+    }
+}
+
+void EquivalenceRelation::dump() const {
+    cout << "equivalence relation: " << endl;
+    for (BlockListConstIter it_block = blocks.begin();
+         it_block != blocks.end(); ++it_block) {
+        const Block &block = *it_block;
+        cout << "block: ";
+        for (ElementListConstIter it_element = block.begin();
+             it_element != block.end(); ++it_element) {
+            cout << *it_element << ", ";
+        }
+        cout << endl;
     }
 }

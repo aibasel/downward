@@ -811,6 +811,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     assert(are_transitions_sorted_unique());
     assert(are_equivalent_labels_computed());
     //cout << tag() << " applying label mapping" << endl;
+//    bool debug = (varset.size() == 1 && varset[0] == 0);
     bool debug = false;
     if (debug) {
         cout << tag() << " label reduction" << endl;
@@ -842,6 +843,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
           Second, compute the new label's transitions, its relevance state
           and update label representative data structures.
         */
+        int representative_of_reduced_labels = -1;
         if (only_equivalent_labels) {
             /* Here we handle those transitions systems for which we know that
                only locally equivalent labels are combined. We simply take the
@@ -852,9 +854,11 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
             vector<Transition> &new_label_transitions = transitions_by_label[new_label_no];
             assert(new_label_transitions.empty());
-            new_label_transitions = transitions_by_label[label_to_representative[old_label_nos[0]]];
+            new_label_transitions =
+                transitions_by_label[label_to_representative[old_label_nos[0]]];
             if (debug) {
-                cout << "copying transitions from label " << label_to_representative[old_label_nos[0]]
+                cout << "copying transitions from label "
+                     << label_to_representative[old_label_nos[0]]
                      << " to " << new_label_no << endl;
                 for (size_t i = 0; i < new_label_transitions.size(); ++i) {
                     cout << new_label_transitions[i].src << "->"
@@ -866,6 +870,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             for (size_t j = 1; j < old_label_nos.size(); ++j) {
                 assert(relevant_labels[old_label_nos[j]] == new_label_relevant);
             }
+            representative_of_reduced_labels = label_to_representative[old_label_nos[0]];
         } else {
             // Here we handle the general case of label reduction.
             apply_general_label_mapping(new_label_no, old_label_nos);
@@ -877,9 +882,9 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 }
             }
         }
-        label_to_representative[new_label_no] = new_label_no;
-        assert(representative_to_labels[new_label_no].empty());
-        representative_to_labels[new_label_no].push_back(new_label_no);
+//        label_to_representative[new_label_no] = new_label_no;
+//        assert(representative_to_labels[new_label_no].empty());
+//        representative_to_labels[new_label_no].push_back(new_label_no);
 
         /*
           Third, go over all old labels and delete their transitions, possibly
@@ -945,6 +950,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
           are reduced at this time). Move the transitions of the representative
           to the new representative.
         */
+        int new_representative_of_reduced_labels = -1;
         for (size_t j = 0; j < representative_old_labels.size(); ++j) {
             int old_label_no = representative_old_labels[j];
             if (debug) {
@@ -977,27 +983,48 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     label_to_representative[label_no] = new_repr;
                     representative_to_labels[new_repr].push_back(label_no);
                 }
-                assert(transitions_by_label[new_repr].empty());
+//                assert(transitions_by_label[new_repr].empty());
+                // TODO: this is possibly wrong
                 transitions_by_label[new_repr].swap(transitions_by_label[old_label_no]);
+                new_representative_of_reduced_labels = new_repr;
             }
             vector<int>().swap(represented_labels);
         }
 
         ++num_labels;
-//        bool equivalent_old_labels =
-//                equivalent_labels->update(old_label_nos, new_label_no);
-//        if (only_equivalent_labels) {
-//            assert(equivalent_old_labels);
-//        }
+        bool equivalent_old_labels =
+                equivalent_labels->update(old_label_nos, new_label_no);
+        if (only_equivalent_labels) {
+            assert(equivalent_old_labels);
+            if (new_representative_of_reduced_labels != -1) {
+                label_to_representative[new_label_no] = new_representative_of_reduced_labels;
+                representative_to_labels[new_representative_of_reduced_labels].push_back(new_label_no);
+                // TODO: this is possibly wrong
+                vector<Transition>().swap(transitions_by_label[new_label_no]);
+            } else {
+                assert(representative_of_reduced_labels != -1);
+                label_to_representative[new_label_no] = representative_of_reduced_labels;
+                representative_to_labels[representative_of_reduced_labels].push_back(new_label_no);
+                vector<Transition>().swap(transitions_by_label[new_label_no]);
+            }
+        } else {
+            assert(representative_of_reduced_labels == -1);
+            label_to_representative[new_label_no] = new_label_no;
+            representative_to_labels[new_label_no].push_back(new_label_no);
+        }
     }
 
     // NOTE: as we currently only combine labels of the same cost, we do not
     // need to recompute distances after label reduction.
-    if (equivalent_labels) {
-        delete equivalent_labels;
-        equivalent_labels = 0;
+//    if (equivalent_labels) {
+//        delete equivalent_labels;
+//        equivalent_labels = 0;
+//    }
+//    compute_local_equivalence_relation();
+    if (debug) {
+        cout << tag() << endl;
+        equivalent_labels->dump();
     }
-    compute_local_equivalence_relation();
     if (debug) {
         cout << "label to representative: " << label_to_representative << endl;
         cout << "representative to labels: ";
