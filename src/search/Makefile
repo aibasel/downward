@@ -83,7 +83,7 @@ HEADERS = \
           open_lists/pareto_open_list.h \
           open_lists/standard_scalar_open_list.h \
           open_lists/tiebreaking_open_list.h \
-          open_lists/typed_open_list.h \
+          open_lists/type_based_open_list.h \
           \
           lp_solver_interface.h \
 
