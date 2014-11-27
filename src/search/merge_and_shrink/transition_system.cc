@@ -210,8 +210,11 @@ static void breadth_first_search(
 
 void TransitionSystem::compute_init_distances_unit_cost() {
     vector<vector<AbstractStateRef> > forward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const vector<Transition> &transitions = get_transitions_for_label(label_no);
+    for (BlockListConstIter it = equivalent_labels->begin();
+         it != equivalent_labels->end(); ++it) {
+        const Block &block = *it;
+        int representative_label_no = *block.begin();
+        const vector<Transition> &transitions = transitions_by_label[representative_label_no];
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &trans = transitions[j];
             forward_graph[trans.src].push_back(trans.target);
@@ -230,8 +233,11 @@ void TransitionSystem::compute_init_distances_unit_cost() {
 
 void TransitionSystem::compute_goal_distances_unit_cost() {
     vector<vector<AbstractStateRef> > backward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const vector<Transition> &transitions = get_transitions_for_label(label_no);
+    for (BlockListConstIter it = equivalent_labels->begin();
+         it != equivalent_labels->end(); ++it) {
+        const Block &block = *it;
+        int representative_label_no = *block.begin();
+        const vector<Transition> &transitions = transitions_by_label[representative_label_no];
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &trans = transitions[j];
             backward_graph[trans.target].push_back(trans.src);
@@ -275,15 +281,16 @@ static void dijkstra_search(
 
 void TransitionSystem::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_current_label(label_no)) {
-            int label_cost = labels->get_label_cost(label_no);
-            const vector<Transition> &transitions = get_transitions_for_label(label_no);
-            for (size_t j = 0; j < transitions.size(); ++j) {
-                const Transition &trans = transitions[j];
-                forward_graph[trans.src].push_back(
-                    make_pair(trans.target, label_cost));
-            }
+    for (BlockListConstIter it = equivalent_labels->begin();
+         it != equivalent_labels->end(); ++it) {
+        const Block &block = *it;
+        int representative_label_no = *block.begin();
+        int label_cost = labels->get_label_cost(representative_label_no);
+        const vector<Transition> &transitions = transitions_by_label[representative_label_no];
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const Transition &trans = transitions[j];
+            forward_graph[trans.src].push_back(
+                make_pair(trans.target, label_cost));
         }
     }
 
@@ -301,15 +308,16 @@ void TransitionSystem::compute_init_distances_general_cost() {
 
 void TransitionSystem::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(num_states);
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_current_label(label_no)) {
-            int label_cost = labels->get_label_cost(label_no);
-            const vector<Transition> &transitions = get_transitions_for_label(label_no);
-            for (size_t j = 0; j < transitions.size(); ++j) {
-                const Transition &trans = transitions[j];
-                backward_graph[trans.target].push_back(
-                    make_pair(trans.src, label_cost));
-            }
+    for (BlockListConstIter it = equivalent_labels->begin();
+         it != equivalent_labels->end(); ++it) {
+        const Block &block = *it;
+        int representative_label_no = *block.begin();
+        int label_cost = labels->get_label_cost(representative_label_no);
+        const vector<Transition> &transitions = transitions_by_label[representative_label_no];
+        for (size_t j = 0; j < transitions.size(); ++j) {
+            const Transition &trans = transitions[j];
+            backward_graph[trans.target].push_back(
+                make_pair(trans.src, label_cost));
         }
     }
 
@@ -347,6 +355,10 @@ void TransitionSystem::normalize_transitions() {
       Note that currently we do not detect the case where a label
       becomes irrelevant due to shrinking. This could be a future
       optimization.
+
+      Note that when this method is called, transitions_by_label has been
+      computed from scratch and no equivalence relation is known, hence we
+      need to iterate over all labels, collecting transitions.
     */
 
     assert(!are_transitions_sorted_unique());
@@ -359,22 +371,13 @@ void TransitionSystem::normalize_transitions() {
 
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
-            const vector<Transition> &transitions
-                    = get_transitions_for_label(label_no);
+            vector<Transition> &transitions = transitions_by_label[label_no];
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
                 target_buckets[t.target].push_back(
                     make_pair(t.src, label_no));
             }
-        }
-    }
-    /*
-      We need this extra loop because we can remove the transitions of the
-      representative of a label only after processing all represented labels
-    */
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_current_label(label_no)) {
-            vector<Transition>().swap(transitions_by_label[label_no]);
+            vector<Transition>().swap(transitions);
         }
     }
 
@@ -729,10 +732,14 @@ void TransitionSystem::apply_abstraction(
 
     vector<vector<Transition> > new_transitions_by_label(
         transitions_by_label.size());
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_current_label(label_no)) {
-            const vector<Transition> &transitions =
-                get_transitions_for_label(label_no);
+    for (BlockListConstIter it = equivalent_labels->begin();
+         it != equivalent_labels->end(); ++it) {
+        const Block &block = *it;
+        int representative_label_no = *block.begin();
+        const vector<Transition> &transitions =
+            transitions_by_label[representative_label_no];
+        for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
+            int label_no = *jt;
             vector<Transition> &new_transitions =
                 new_transitions_by_label[label_no];
             new_transitions.reserve(transitions.size());
@@ -775,6 +782,15 @@ void TransitionSystem::apply_abstraction(
     if (!are_transitions_sorted_unique()) {
         normalize_transitions();
     }
+    /*
+      TODO: there is a dangerous dependency on the order in which things are
+      done here: compute_distances relies on an existing equivalence relation,
+      hence after shrinking and normalizing, we currently *first* have to
+      compute the new equivalence relations before computing distances. This
+      makes sense on the one hand, but on the other hand, the computation of
+      distances may trigger another round of shrinking, normalizing, computation
+      of equivalence relation etc.
+    */
     if (equivalent_labels) {
         delete equivalent_labels;
         equivalent_labels = 0;
@@ -968,6 +984,11 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         }
 
         ++num_labels;
+//        bool equivalent_old_labels =
+//                equivalent_labels->update(old_label_nos, new_label_no);
+//        if (only_equivalent_labels) {
+//            assert(equivalent_old_labels);
+//        }
     }
 
     // NOTE: as we currently only combine labels of the same cost, we do not
