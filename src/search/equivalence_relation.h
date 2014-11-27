@@ -67,6 +67,7 @@ public:
     EquivalenceRelation(int n);
     EquivalenceRelation(int n, const std::list<Block> &blocks_);
     ~EquivalenceRelation();
+    bool update(const std::vector<int> &existing_elements, int new_element);
 
     int get_num_elements() const;
     int get_num_explicit_elements() const;
@@ -89,6 +90,8 @@ public:
       The amortized runtime is linear in the number of elements specified in other.
     */
     void refine(const EquivalenceRelation &other);
+
+    void dump() const;
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.
