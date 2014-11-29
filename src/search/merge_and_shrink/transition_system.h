@@ -63,7 +63,6 @@ class TransitionSystem {
     const Labels *labels;
     EquivalenceRelation *equivalent_labels;
     std::vector<int> label_to_representative;
-    std::vector<std::vector<int> > representative_to_labels;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
@@ -105,6 +104,7 @@ class TransitionSystem {
        - Distances are computed and stored (are_distances_computed() == true)
     */
     bool is_valid() const;
+    void check_equivrel_consistent() const;
 
     // Methods related to computation of distances
     void clear_distances();
@@ -168,7 +168,6 @@ public:
     void dump_attributes() const;
     void dump_dot_graph() const;
     void dump_transitions() const;
-    void dump_equivalence_relation() const;
     int get_size() const {
         return num_states;
     }

@@ -40,7 +40,8 @@ EquivalenceRelation::~EquivalenceRelation() {
 }
 
 bool EquivalenceRelation::update(const vector<int> &existing_elements,
-                                 int new_element) {
+                                 int new_element,
+                                 int &new_representative) {
     /*
       Remove all existing elements from their block(s), remove the entry in
       element_positions and check if all the removed elements are from the
@@ -80,6 +81,7 @@ bool EquivalenceRelation::update(const vector<int> &existing_elements,
         new_block_it = add_empty_block();
     }
     ElementListIter elem_it = new_block_it->insert(new_element);
+    new_representative = *new_block_it->begin();
     element_positions[new_element] = make_pair(new_block_it, elem_it);
     return all_from_one_block;
 }
