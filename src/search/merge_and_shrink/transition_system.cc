@@ -69,32 +69,38 @@ void TransitionSystem::reset_label_to_representative_mapping() {
 }
 
 bool TransitionSystem::is_valid() const {
-    check_equivrel_consistent();
+    assert(check_equivrel_consistent());
     return are_distances_computed()
            && are_transitions_sorted_unique()
            && are_equivalent_labels_computed()
            && is_label_reduced();
 }
 
-void TransitionSystem::check_equivrel_consistent() const {
+bool TransitionSystem::check_equivrel_consistent() const {
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (label_to_representative[label_no] != label_no) {
-            assert(transitions_by_label[label_no].empty());
+            if (!transitions_by_label[label_no].empty())
+                return false;
         }
     }
     for (BlockListConstIter block = equivalent_labels->begin();
          block != equivalent_labels->end(); ++block) {
         int min_label_no = *block->begin();
-        assert(label_to_representative[min_label_no] == min_label_no);
+        if (label_to_representative[min_label_no] != min_label_no)
+            return false;
         for (ElementListConstIter jt = block->begin(); jt != block->end(); ++jt) {
             if (jt == block->begin())
                 continue;
             int label_no = *jt;
-            assert(min_label_no < label_no);
-            assert(transitions_by_label[label_no].empty());
-            assert(label_to_representative[label_no] == min_label_no);
+            if (min_label_no >= label_no)
+                return false;
+            if (!transitions_by_label[label_no].empty())
+                return false;
+            if (!label_to_representative[label_no] == min_label_no)
+                return false;
         }
     }
+    return true;
 }
 
 void TransitionSystem::clear_distances() {
@@ -863,8 +869,9 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             }
             bool equivalent_old_labels =
                 equivalent_labels->update(old_label_nos, new_label_no, new_representative);
-            if (only_equivalent_labels) {
-                assert(equivalent_old_labels);
+            if (only_equivalent_labels && !equivalent_old_labels) {
+                cerr << "equivalence relation update failed" << endl;
+                exit_with(EXIT_CRITICAL_ERROR);
             }
 
             if (debug) {

@@ -104,7 +104,7 @@ class TransitionSystem {
        - Distances are computed and stored (are_distances_computed() == true)
     */
     bool is_valid() const;
-    void check_equivrel_consistent() const;
+    bool check_equivrel_consistent() const;
 
     // Methods related to computation of distances
     void clear_distances();
