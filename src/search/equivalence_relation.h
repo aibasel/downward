@@ -67,7 +67,12 @@ public:
     EquivalenceRelation(int n);
     EquivalenceRelation(int n, const std::list<Block> &blocks_);
     ~EquivalenceRelation();
-    bool update(const std::vector<int> &existing_elements, int new_element);
+    bool update(const std::vector<int> &existing_elements, int new_element,
+                int &new_representative);
+    // Cannot be declared const due to operator[]
+    BlockListConstIter get_block_iterator_for_element(int element) {
+        return element_positions[element].first;
+    }
 
     int get_num_elements() const;
     int get_num_explicit_elements() const;
