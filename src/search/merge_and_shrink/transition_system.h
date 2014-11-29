@@ -168,6 +168,7 @@ public:
     void dump_attributes() const;
     void dump_dot_graph() const;
     void dump_transitions() const;
+    void dump_equivalence_relation() const;
     int get_size() const {
         return num_states;
     }

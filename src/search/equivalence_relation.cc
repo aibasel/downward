@@ -86,6 +86,14 @@ bool EquivalenceRelation::update(const vector<int> &existing_elements,
     return all_from_one_block;
 }
 
+void EquivalenceRelation::move_element_to_block(int element_of_to_block, int element) {
+    BlockListIter elements_block = element_positions[element].first;
+    blocks.erase(elements_block);
+    BlockListIter to_block_it = element_positions[element_of_to_block].first;
+    ElementListIter elem_it = to_block_it->insert(element);
+    element_positions[element] = make_pair(to_block_it, elem_it);
+}
+
 int EquivalenceRelation::get_num_elements() const {
     return num_elements;
 }
