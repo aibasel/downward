@@ -86,12 +86,34 @@ bool EquivalenceRelation::update(const vector<int> &existing_elements,
     return all_from_one_block;
 }
 
-void EquivalenceRelation::move_element_to_block(int element_of_to_block, int element) {
-    BlockListIter elements_block = element_positions[element].first;
-    blocks.erase(elements_block);
-    BlockListIter to_block_it = element_positions[element_of_to_block].first;
-    ElementListIter elem_it = to_block_it->insert(element);
-    element_positions[element] = make_pair(to_block_it, elem_it);
+void EquivalenceRelation::remove_elements(const vector<int> &existing_elements) {
+    /*
+      Remove all existing elements from their block(s) and remove the entry in
+      element_positions.
+    */
+    for (size_t i = 0; i < existing_elements.size(); ++i) {
+        int old_element = existing_elements[i];
+        BlockListIter block_it = element_positions[old_element].first;
+        ElementListIter element_it = element_positions[old_element].second;
+        block_it->erase(element_it);
+        element_positions.erase(old_element);
+        if (block_it->empty()) {
+            blocks.erase(block_it);
+        }
+    }
+}
+
+void EquivalenceRelation::insert(int new_element, int existing_element) {
+    BlockListIter block_it;
+    if (existing_element == -1) {
+        block_it = add_empty_block();
+    } else {
+        block_it = element_positions[existing_element].first;
+    }
+    ElementListIter elem_it = block_it->insert(new_element);
+    element_positions[new_element] = make_pair(block_it, elem_it);
+    assert(new_element == num_elements);
+    ++num_elements;
 }
 
 int EquivalenceRelation::get_num_elements() const {

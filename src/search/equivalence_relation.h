@@ -69,7 +69,8 @@ public:
     ~EquivalenceRelation();
     bool update(const std::vector<int> &existing_elements, int new_element,
                 int &new_representative);
-    void move_element_to_block(int element_of_to_block, int element);
+    void remove_elements(const std::vector<int> &existing_elements);
+    void insert(int new_element, int existing_element);
     // Cannot be declared const due to operator[]
     BlockListConstIter get_block_iterator_for_element(int element) {
         return element_positions[element].first;
