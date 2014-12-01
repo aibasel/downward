@@ -981,8 +981,10 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         /*
           For every new label, check if its transitions are locally equivalent
           to those of an existing label or of another new label. Update the
-          equivalence relation accordingly. Also delete transitions of new
-          labels that are represented by another one.
+          equivalence relation and the label to representative mapping
+          accordingly. Delete transitions of new labels that are
+          represented by another one and also any left over transitions of
+          reduced labels.
         */
         for (size_t i = 0; i < label_mapping.size(); ++i) {
             int new_label_no = label_mapping[i].first;
@@ -1015,25 +1017,18 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 vector<Transition>().swap(transitions_by_label[new_label_no]);
             }
             label_to_representative[new_label_no] = new_labels_representative;
-        }
 
-        if (debug) {
-            cout << "after update:" << endl;
-            equivalent_labels->dump();
-        }
-
-        /*
-          We can only delete the old labels' transitions here and not when
-          computing the new labels' transitions already, because we possibly
-          need them if a representative changed, which we only figure out
-          after updating the equivalence realtion.
-        */
-        for (size_t i = 0; i < label_mapping.size(); ++i) {
+            // Remove left over transitions of reduced labels
             const vector<int> &old_label_nos = label_mapping[i].second;
             for (size_t j = 0; j < old_label_nos.size(); ++j) {
                 int old_label_no = old_label_nos[j];
                 vector<Transition>().swap(transitions_by_label[old_label_no]);
             }
+        }
+
+        if (debug) {
+            cout << "after update:" << endl;
+            equivalent_labels->dump();
         }
     }
 
