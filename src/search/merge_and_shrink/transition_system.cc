@@ -1201,20 +1201,24 @@ void TransitionSystem::dump_equivalence_relation() const {
 void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
     assert(is_valid());
     assert(label_ranks.empty());
-    label_ranks.reserve(transitions_by_label.size());
-    for (size_t label_no = 0; label_no < transitions_by_label.size(); ++label_no) {
-        if (relevant_labels[label_no]) {
-            const vector<Transition> &transitions = get_transitions_for_label(label_no);
+    // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
+    label_ranks.resize(transitions_by_label.size(), -1);
+    for (BlockListConstIter block_it = equivalent_labels->begin();
+         block_it != equivalent_labels->end(); ++block_it) {
+        int representative_label_no = *block_it->begin();
+        if (relevant_labels[representative_label_no]) {
+            const vector<Transition> &transitions = transitions_by_label[representative_label_no];
+            // Relevant labels with no transitions have a rank of infinity.
             int label_rank = INF;
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
                 label_rank = min(label_rank, goal_distances[t.target]);
             }
-            // relevant labels with no transitions have a rank of infinity (they
-            // block snychronization)
-            label_ranks.push_back(label_rank);
-        } else {
-            label_ranks.push_back(-1);
+            for (ElementListConstIter elem_it = block_it->begin();
+                 elem_it != block_it->end(); ++elem_it) {
+                int label_no = *elem_it;
+                label_ranks[label_no] = label_rank;
+            }
         }
     }
 }
