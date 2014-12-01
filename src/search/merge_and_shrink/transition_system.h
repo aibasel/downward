@@ -94,7 +94,6 @@ class TransitionSystem {
 
     mutable int peak_memory;
 
-    void reset_label_to_representative_mapping();
     /*
       A transition system is in valid state if:
        - Transitions are sorted (by labels, by states) and there are no

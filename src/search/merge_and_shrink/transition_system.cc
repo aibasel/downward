@@ -57,47 +57,45 @@ TransitionSystem::~TransitionSystem() {
     delete equivalent_labels;
 }
 
-void TransitionSystem::reset_label_to_representative_mapping() {
-    vector<int>().swap(label_to_representative);
-    label_to_representative.reserve(g_operators.empty() ? 0 : g_operators.size() * 2 - 1);
-    for (int i = 0; i < num_labels; ++i) {
-        label_to_representative.push_back(i);
-    }
-    for (size_t i = num_labels; i < 2 * g_operators.size() - 1; ++i) {
-        label_to_representative.push_back(-1);
-    }
-}
-
 bool TransitionSystem::is_valid() const {
-    assert(check_equivrel_consistent());
-    return are_distances_computed()
-           && are_transitions_sorted_unique()
-           && are_equivalent_labels_computed()
-           && is_label_reduced();
+    bool valid = are_distances_computed()
+            && are_transitions_sorted_unique()
+            && are_equivalent_labels_computed()
+            && is_label_reduced();
+    if (valid) {
+        assert(check_equivrel_consistent());
+    }
+    return valid;
 }
 
 bool TransitionSystem::check_equivrel_consistent() const {
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (label_to_representative[label_no] != label_no) {
-            if (!transitions_by_label[label_no].empty())
+        int repr = label_to_representative[label_no];
+        if (repr == -1 || repr != label_no) {
+            if (!transitions_by_label[label_no].empty()) {
                 return false;
+            }
         }
     }
     for (BlockListConstIter block = equivalent_labels->begin();
          block != equivalent_labels->end(); ++block) {
         int min_label_no = *block->begin();
-        if (label_to_representative[min_label_no] != min_label_no)
+        if (label_to_representative[min_label_no] != min_label_no) {
             return false;
+        }
         for (ElementListConstIter jt = block->begin(); jt != block->end(); ++jt) {
             if (jt == block->begin())
                 continue;
             int label_no = *jt;
-            if (min_label_no >= label_no)
+            if (min_label_no >= label_no) {
                 return false;
-            if (!transitions_by_label[label_no].empty())
+            }
+            if (!transitions_by_label[label_no].empty()) {
                 return false;
-            if (!label_to_representative[label_no] == min_label_no)
+            }
+            if (label_to_representative[label_no] != min_label_no) {
                 return false;
+            }
         }
     }
     return true;
@@ -514,7 +512,13 @@ void TransitionSystem::compute_local_equivalence_relation() {
     */
     assert(!equivalent_labels);
     assert(are_transitions_sorted_unique());
-    reset_label_to_representative_mapping();
+
+    /*
+      Overwrite all entries of label_to_representative with -1 to make sure
+      that also when shrinking, the content is properly reset before assiging
+      new representatives below.
+    */
+    label_to_representative.assign(g_operators.empty() ? 0 : g_operators.size() * 2 - 1, -1);
 
     vector<bool> considered_labels(num_labels, false);
     vector<pair<int, int> > annotated_labels;
@@ -562,6 +566,7 @@ void TransitionSystem::compute_local_equivalence_relation() {
          it != equivalent_labels->end(); ++it) {
         const Block &block = *it;
         int min_label_no = *block.begin();
+        label_to_representative[min_label_no] = min_label_no;
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
             assert(*jt < num_labels);
             if (jt == block.begin())
@@ -679,7 +684,6 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     for (size_t i = 0; i < result.size(); ++i) {
         // Need to set the correct number of labels *after* generating them
         result[i]->num_labels = labels->get_size();
-        result[i]->reset_label_to_representative_mapping();
         result[i]->compute_local_equivalence_relation();
         result[i]->compute_distances_and_prune();
         assert(result[i]->is_valid());
