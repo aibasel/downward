@@ -889,16 +889,15 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             assert(old_label_nos[j] < num_labels);
         }
 
-        /*
-          Second, compute the new label's transitions. Also update data
-          structures of locally equivalent labels if only reducing locally
-          equivalent labels. Otherwise this can only be done after incorporating
-          all new labels.
-        */
+        // Second, handle the actual label reduction.
         if (only_equivalent_labels) {
             /*
-              Compute transitions of the new label and add the new label to the
-              equivalence relation. Also update the label to representative
+              If all reduced labels are locally equivalent, then the new label
+              must have the same transition as those reduced ones.
+
+              Add the new label to the equivalence relation. Take care of the
+              case that transitions must be moved from a reduced representative
+              label to a new one. Also update the label to representative
               mapping.
             */
             replace_labels_by_locally_equivalent_one(new_label_no, old_label_nos);
@@ -915,85 +914,46 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             apply_general_label_mapping(new_label_no, old_label_nos);
             // For now, only remove reduced labels from the equivalence relation
             equivalent_labels->remove_elements(old_label_nos);
-            /*
-              Go over the equivalence relation and delete all transitions of
-              labels which are represented by another, locally equivalent
-              label. Update the label representatives data structures
-              accordingly.
-              Note that we miss all those equivalence groups which became
-              empty (because all labels of the group are reduced) and are not
-              present anymore. Thus their transitions must be removed
-              separatedly (see "fourth").
-            */
-//            for (BlockListConstIter it = equivalent_labels->begin();
-//                 it != equivalent_labels->end(); ++it) {
-//                const Block &block = *it;
-//                int min_label_no = *block.begin();
-//                if (min_label_no == new_label_no)
-//                    continue;
-//                int representative_of_min_label_no = label_to_representative[min_label_no];
-//                if (representative_of_min_label_no != min_label_no) {
-//                    // min_label_no used to be represented by representative_of_min_label_no
-//                    if (debug) {
-//                        cout << "label " << min_label_no << " used to be represented by "
-//                             << representative_of_min_label_no << ", but now is a "
-//                                "representative itself" << endl;
-//                    }
-//                    assert(transitions_by_label[min_label_no].empty());
-//                    transitions_by_label[min_label_no].swap(
-//                        transitions_by_label[representative_of_min_label_no]);
-//                    for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
-//                        int label_no = *jt;
-//                        label_to_representative[label_no] = min_label_no;
-//                        if (jt != block.begin()) {
-//                            assert(min_label_no < label_no);
-//                            assert(transitions_by_label[label_no].empty());
-//                        }
-//                    }
-//                }
-//            }
-//            label_to_representative[new_label_no] = new_label_no;
         }
 
         /*
           Third, set all reduced labels to irrelevant and set their
-          representative to the dummy value -1. Also make sure that there are
-          no transitions left over.
+          representative to the dummy value -1.
+
+          Note that reduced labels must be marked as irrelevant in order to
+          avoid confusion between reduced labels and labels with empty
+          transitions when computing a composite transition system.
         */
         for (size_t j = 0; j < old_label_nos.size(); ++j) {
             int old_label_no = old_label_nos[j];
             label_to_representative[old_label_no] = -1;
-            /*
-              Mark reduced label as irrelevant (unused labels must not be
-              marked as relevant in order to avoid confusions when
-              considering all relevant labels, i.e. at CompositeTransitionSystem()).
-            */
             relevant_labels[old_label_no] = false;
-//            if (!only_equivalent_labels && !transitions_by_label[old_label_no].empty()) {
-//                /*
-//                  This case triggers if reducing non locally equivalent labels
-//                  which do not represent other labels and whose transitions
-//                  have hence not been moved to a new representative in the
-//                  "third" procedure above. Thus they must be removed here.
-//                */
-//                vector<Transition>().swap(transitions_by_label[old_label_no]);
-//            }
         }
         ++num_labels;
     }
 
     if (!only_equivalent_labels) {
-        // TODO: if we move this into the above loop for every single new label,
-        // can we restrict looping over the old equivalence relation, comparing
-        // to the new label in question and updating manually the equivalence
-        // relation? Problem: new labels could be equivalent to other reduced
-        // labels which are only handled in a later iteration. Also we don't
-        // know the cost of such other possibly removed labels.
+        /*
+          If reducing labels which have not necessarily been locally equivalent
+          before, we still need to do the following:
+           - For all reduced labels that have been representatives, we must
+             move their transitions to the new representative (if the group
+             of locally equivalent labels did not become empty) and update the
+             label to representative mapping.
+           - For all new labels (whose transitions we computed above), we must
+             check if they are locally equivalent to existing or other new
+             labels and update the equivalence relation and the label to
+             representative mapping.
+           - We must remove all left over transitions of reduced labels (this
+             can happen if the entire group of locally equivalent labels has
+             been reduced)
+        */
+
         /*
           Go over the equivalence relation and check for all representatives
-          whether they have been representative before or not. If not, move the
+          if they have been a representative before. If so, move the
           transitions of the previous (now reduced) representative to the new
-          one. Update label_to_representative accordingly.
+          one. Update the label to representative mapping accordingly.
         */
         for (BlockListConstIter it = equivalent_labels->begin();
              it != equivalent_labels->end(); ++it) {
@@ -1017,7 +977,6 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 }
             }
         }
-
 
         /*
           For every new label, check if its transitions are locally equivalent
