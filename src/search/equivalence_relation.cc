@@ -39,57 +39,49 @@ EquivalenceRelation::EquivalenceRelation(int n, const list<Block> &blocks_)
 EquivalenceRelation::~EquivalenceRelation() {
 }
 
-bool EquivalenceRelation::update(const vector<int> &existing_elements,
-                                 int new_element,
-                                 int &new_representative) {
+int EquivalenceRelation::replace_elements_by_new_one(
+    const std::vector<int> &existing_elements,
+    int new_element) {
+    assert(new_element == num_elements);
+
     /*
-      Remove all existing elements from their block(s), remove the entry in
-      element_positions and check if all the removed elements are from the
-      same block.
+      Remove all existing elements from their block and remove the entry in
+      element_positions.
     */
-    bool all_from_one_block = true;
     BlockListIter canonical_block_it = element_positions[existing_elements[0]].first;
-    bool canonical_block_valid = true;
     for (size_t i = 0; i < existing_elements.size(); ++i) {
         int old_element = existing_elements[i];
-        BlockListIter block_it = element_positions[old_element].first;
+        assert(element_positions[old_element].first == canonical_block_it);
         ElementListIter element_it = element_positions[old_element].second;
-        block_it->erase(element_it);
+        canonical_block_it->erase(element_it);
         element_positions.erase(old_element);
-        if (all_from_one_block && block_it != canonical_block_it) {
-            // Not all elements are from the same block
-            all_from_one_block = false;
-        }
-        if (block_it->empty()) {
-            if (block_it == canonical_block_it) {
-                canonical_block_valid = false;
-            }
-            blocks.erase(block_it);
-        }
+    }
+
+    if (canonical_block_it->empty()) {
+        /*
+          Note that if all labels from a block are replaced by a single new
+          one, we could use the same block, but for the sake of the blocks
+          being orderd (by the smallest element contained in the block), we
+          delete the old empty block and create a new one.
+        */
+        blocks.erase(canonical_block_it);
+        canonical_block_it = add_empty_block();
     }
 
     /*
-      Insert new_element into the same block if all removed elements were
-      from that same block, or into a new one otherwise.
+      Insert the new element into the block of the removed elements, if it
+      did not become empty, or into the newly created block (see above).
     */
-    assert(new_element == num_elements);
+    ElementListIter elem_it = canonical_block_it->insert(new_element);
+    element_positions[new_element] = make_pair(canonical_block_it, elem_it);
     ++num_elements;
-    BlockListIter new_block_it;
-    if (all_from_one_block && canonical_block_valid) {
-        new_block_it = canonical_block_it;
-    } else {
-        new_block_it = add_empty_block();
-    }
-    ElementListIter elem_it = new_block_it->insert(new_element);
-    new_representative = *new_block_it->begin();
-    element_positions[new_element] = make_pair(new_block_it, elem_it);
-    return all_from_one_block;
+    return *canonical_block_it->begin();
 }
 
 void EquivalenceRelation::remove_elements(const vector<int> &existing_elements) {
     /*
-      Remove all existing elements from their block(s) and remove the entry in
-      element_positions.
+      Remove all existing elements from their block (and the block itself if
+      it becomes empty) and remove their entries in element_positions.
     */
     for (size_t i = 0; i < existing_elements.size(); ++i) {
         int old_element = existing_elements[i];

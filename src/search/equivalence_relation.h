@@ -67,8 +67,8 @@ public:
     EquivalenceRelation(int n);
     EquivalenceRelation(int n, const std::list<Block> &blocks_);
     ~EquivalenceRelation();
-    bool update(const std::vector<int> &existing_elements, int new_element,
-                int &new_representative);
+    int replace_elements_by_new_one(const std::vector<int> &existing_elements,
+                                    int new_element);
     void remove_elements(const std::vector<int> &existing_elements);
     void insert(int new_element, int existing_element);
     // Cannot be declared const due to operator[]
