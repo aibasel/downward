@@ -833,8 +833,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     bool debug = false;
     if (debug) {
         cout << tag() << " label reduction" << endl;
-        cout << "label to representative: " << label_to_representative << endl;
-        dump_transitions();
+//        cout << "label to representative: " << label_to_representative << endl;
+//        dump_transitions();
         equivalent_labels->dump();
     }
     // Go over the mapping of reduced labels to new label one by one.
@@ -1005,7 +1005,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     continue;
                 if (relevant_labels[representative_label_no] != new_label_relevant)
                     continue;
-                const vector<Transition> &other_transitions = transitions_by_label[representative_label_no];
+                const vector<Transition> &other_transitions = get_transitions_for_label(representative_label_no);
                 if ((new_transitions.empty() && other_transitions.empty())
                     || (new_transitions == other_transitions)) {
                     new_labels_representative = representative_label_no;
@@ -1070,12 +1070,11 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     // NOTE: as we currently only combine labels of the same cost, we do not
     // need to recompute distances after label reduction.
     if (debug) {
-        cout << "label to representative: " << label_to_representative << endl;
-        dump_transitions();
+//        cout << "label to representative: " << label_to_representative << endl;
+//        dump_transitions();
         equivalent_labels->dump();
     }
     assert(is_valid());
-    check_equivrel_consistent();
 }
 
 void TransitionSystem::release_memory() {
@@ -1223,6 +1222,7 @@ void TransitionSystem::dump_transitions() const {
 }
 
 void TransitionSystem::dump_equivalence_relation() const {
+    cout << tag() << endl;
     equivalent_labels->dump();
 }
 
