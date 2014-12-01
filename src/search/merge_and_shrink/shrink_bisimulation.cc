@@ -1,8 +1,8 @@
 #include "shrink_bisimulation.h"
 
-#include "labels.h"
 #include "transition_system.h"
 
+#include "../equivalence_relation.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -124,7 +124,7 @@ void ShrinkBisimulation::shrink(
     //       *after* composition we'd be above the size limit, so
     //       target can either be less or larger than threshold.
     if (must_shrink(ts, min(target, threshold))) {
-        EquivalenceRelation equivalence_relation;
+        StateEquivalenceRelation equivalence_relation;
         compute_abstraction(ts, target, equivalence_relation);
         apply(ts, equivalence_relation, target);
     }
@@ -195,25 +195,28 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    const Labels *labels = ts.get_labels();
-    int num_labels = labels->get_size();
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels->is_current_label(label_no)) {
-            const vector<Transition> &transitions =
-                ts.get_transitions_for_label(label_no);
-            int label_cost = labels->get_label_cost(label_no);
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &trans = transitions[i];
-                assert(signatures[trans.src + 1].state == trans.src);
-                bool skip_transition = false;
-                if (greedy) {
-                    int src_h = ts.get_goal_distance(trans.src);
-                    int target_h = ts.get_goal_distance(trans.target);
-                    assert(target_h + label_cost >= src_h);
-                    skip_transition = (target_h + label_cost != src_h);
-                }
-                if (!skip_transition) {
-                    int target_group = state_to_group[trans.target];
+    const EquivalenceRelation *equivalent_labels = ts.get_local_equivalence_relation();
+    for (BlockListConstIter block_it = equivalent_labels->begin();
+         block_it != equivalent_labels->end(); ++block_it) {
+        int representative_label_no = *block_it->begin();
+        const vector<Transition> &transitions =
+            ts.get_transitions_for_label(representative_label_no);
+        int label_cost = ts.get_label_cost(representative_label_no);
+        for (size_t i = 0; i < transitions.size(); ++i) {
+            const Transition &trans = transitions[i];
+            assert(signatures[trans.src + 1].state == trans.src);
+            bool skip_transition = false;
+            if (greedy) {
+                int src_h = ts.get_goal_distance(trans.src);
+                int target_h = ts.get_goal_distance(trans.target);
+                assert(target_h + label_cost >= src_h);
+                skip_transition = (target_h + label_cost != src_h);
+            }
+            if (!skip_transition) {
+                int target_group = state_to_group[trans.target];
+                for (ElementListConstIter elem_it = block_it->begin();
+                     elem_it != block_it->end(); ++elem_it) {
+                    int label_no = *elem_it;
                     signatures[trans.src + 1].succ_signature.push_back(
                         make_pair(label_no, target_group));
                 }
@@ -252,7 +255,7 @@ void ShrinkBisimulation::compute_signatures(
 void ShrinkBisimulation::compute_abstraction(
     TransitionSystem &ts,
     int target_size,
-    EquivalenceRelation &equivalence_relation) {
+    StateEquivalenceRelation &equivalence_relation) {
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);

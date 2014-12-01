@@ -1232,6 +1232,10 @@ const vector<Transition> &TransitionSystem::get_transitions_for_label(int label_
     return transitions_by_label[representative];
 }
 
+int TransitionSystem::get_label_cost(int label_no) const {
+    return labels->get_label_cost(label_no);
+}
+
 
 
 AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)

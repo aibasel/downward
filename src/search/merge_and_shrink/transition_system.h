@@ -194,9 +194,7 @@ public:
         return goal_distances[state];
     }
     const std::vector<Transition> &get_transitions_for_label(int label_no) const;
-    const Labels *get_labels() const {
-        return labels;
-    }
+    int get_label_cost(int label_no) const;
 
     // Methods only used by MergeDFP.
     void compute_label_ranks(std::vector<int> &label_ranks) const;
