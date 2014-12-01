@@ -999,7 +999,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     continue;
                 if (relevant_labels[representative_label_no] != new_label_relevant)
                     continue;
-                const vector<Transition> &other_transitions = get_transitions_for_label(representative_label_no);
+                const vector<Transition> &other_transitions = transitions_by_label[representative_label_no];
                 if ((new_transitions.empty() && other_transitions.empty())
                     || (new_transitions == other_transitions)) {
                     new_labels_representative = representative_label_no;
