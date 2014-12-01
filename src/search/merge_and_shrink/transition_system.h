@@ -119,6 +119,8 @@ class TransitionSystem {
     bool are_transitions_sorted_unique() const;
     void normalize_transitions();
     bool is_label_reduced() const;
+    void replace_labels_by_locally_equivalent_one(int new_label_no,
+                                                  const std::vector<int> &old_label_nos);
     void apply_general_label_mapping(int new_label_no,
                                      const std::vector<int> &old_label_nos);
     bool are_equivalent_labels_computed() const;
