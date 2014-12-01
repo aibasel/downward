@@ -1147,6 +1147,7 @@ void TransitionSystem::dump_attributes() const {
 }
 
 void TransitionSystem::dump_dot_graph() const {
+    assert(is_valid());
     cout << "digraph transition system";
     for (size_t i = 0; i < varset.size(); ++i)
         cout << "_" << varset[i];
@@ -1160,14 +1161,20 @@ void TransitionSystem::dump_dot_graph() const {
         if (is_init)
             cout << "    start -> node" << i << ";" << endl;
     }
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        // reduced labels are automatically skipped because trans is then empty
-        const vector<Transition> &trans = get_transitions_for_label(label_no);
+    for (BlockListConstIter block_it = equivalent_labels->begin();
+         block_it != equivalent_labels->end(); ++block_it) {
+        const vector<Transition> &trans = transitions_by_label[*block_it->begin()];
         for (size_t i = 0; i < trans.size(); ++i) {
             int src = trans[i].src;
             int target = trans[i].target;
-            cout << "    node" << src << " -> node" << target << " [label = o_"
-                 << label_no << "];" << endl;
+            cout << "    node" << src << " -> node" << target << " [labels = ";
+            for (ElementListConstIter elem_it = block_it->begin();
+                 elem_it != block_it->end(); ++elem_it) {
+                if (elem_it != block_it->begin())
+                    cout << ",";
+                cout << "l" << *elem_it;
+            }
+            cout << "];" << endl;
         }
     }
     cout << "}" << endl;
