@@ -456,21 +456,15 @@ void TransitionSystem::replace_labels_by_locally_equivalent_one(
     */
 
     // Update the equivalence relation.
-    int new_representative = -1;
-    bool equivalent_old_labels =
-        equivalent_labels->update(old_label_nos, new_label_no, new_representative);
-    assert(new_representative != -1);
-    if (!equivalent_old_labels) {
-        cerr << "equivalence relation update failed" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
+    int new_representative = equivalent_labels->replace_elements_by_new_one(
+        old_label_nos, new_label_no);
 
     int old_representative = label_to_representative[old_label_nos[0]];
     if (new_representative != old_representative) {
         /*
           If the previous representative of the block from which all
           reduced labels stem has been reduced, we need to move its
-          transitions to a new representative and update label to
+          transitions to the new representative and update the label to
           representative mapping.
         */
         vector<Transition> &new_representative_transitions =
@@ -855,17 +849,14 @@ void TransitionSystem::apply_abstraction(
         delete equivalent_labels;
         equivalent_labels = 0;
     }
-
     // TODO do not check if transitions are sorted but just assume they are not?
     if (!are_transitions_sorted_unique()) {
         normalize_transitions();
     }
-
     compute_local_equivalence_relation();
     if (must_clear_distances) {
         compute_distances_and_prune();
     }
-
     assert(is_valid());
 }
 
@@ -905,6 +896,11 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
           all new labels.
         */
         if (only_equivalent_labels) {
+            /*
+              Compute transitions of the new label and add the new label to the
+              equivalence relation. Also update the label to representative
+              mapping.
+            */
             replace_labels_by_locally_equivalent_one(new_label_no, old_label_nos);
             if (debug) {
                 cout << "after update:" << endl;
@@ -917,6 +913,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             */
             // Compute transitions of the new label.
             apply_general_label_mapping(new_label_no, old_label_nos);
+            // For now, only remove reduced labels from the equivalence relation
             equivalent_labels->remove_elements(old_label_nos);
             /*
               Go over the equivalence relation and delete all transitions of
