@@ -444,6 +444,49 @@ bool TransitionSystem::is_label_reduced() const {
     return num_labels == labels->get_size();
 }
 
+void TransitionSystem::replace_labels_by_locally_equivalent_one(
+    int new_label_no,
+    const std::vector<int> &old_label_nos) {
+    /*
+      Here we handle those transitions systems for which we know that
+      only locally equivalent labels are combined. We simply move the
+      transitions of the old representative of the reduced labels to
+      the new representative of the reduced and new labels. Note that
+      this representative may not have changed.
+    */
+
+    // Update the equivalence relation.
+    int new_representative = -1;
+    bool equivalent_old_labels =
+        equivalent_labels->update(old_label_nos, new_label_no, new_representative);
+    assert(new_representative != -1);
+    if (!equivalent_old_labels) {
+        cerr << "equivalence relation update failed" << endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
+
+    int old_representative = label_to_representative[old_label_nos[0]];
+    if (new_representative != old_representative) {
+        /*
+          If the previous representative of the block from which all
+          reduced labels stem has been reduced, we need to move its
+          transitions to a new representative and update label to
+          representative mapping.
+        */
+        vector<Transition> &new_representative_transitions =
+            transitions_by_label[new_representative];
+        assert(new_representative_transitions.empty());
+        new_representative_transitions.swap(transitions_by_label[old_representative]);
+        BlockListConstIter block = equivalent_labels->get_block_iterator_for_element(new_representative);
+        for (ElementListConstIter elem_it = block->begin();
+             elem_it != block->end(); ++elem_it) {
+            label_to_representative[*elem_it] = new_representative;
+        }
+    }
+    relevant_labels[new_label_no] = relevant_labels[old_representative];
+    label_to_representative[new_label_no] = new_representative;
+}
+
 void TransitionSystem::apply_general_label_mapping(int new_label_no,
                                                    const std::vector<int> &old_label_nos) {
     /*
@@ -862,58 +905,11 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
           all new labels.
         */
         if (only_equivalent_labels) {
-            /*
-              Here we handle those transitions systems for which we know that
-              only locally equivalent labels are combined. We simply move the
-              transitions of the old representative of the reduced labels to
-              the new representative of the reduced and new labels. Note that
-              this representative may not have changed.
-            */
-
-            // Update the equivalence relation.
-            int new_representative = -1;
-            bool equivalent_old_labels =
-                equivalent_labels->update(old_label_nos, new_label_no, new_representative);
-            assert(new_representative != -1);
-            if (only_equivalent_labels && !equivalent_old_labels) {
-                cerr << "equivalence relation update failed" << endl;
-                exit_with(EXIT_CRITICAL_ERROR);
-            }
+            replace_labels_by_locally_equivalent_one(new_label_no, old_label_nos);
             if (debug) {
                 cout << "after update:" << endl;
                 equivalent_labels->dump();
             }
-
-            int old_representative = label_to_representative[old_label_nos[0]];
-            if (new_representative != old_representative) {
-                /*
-                  If the previous representative of the block from which all
-                  reduced labels stem has been reduced, we need to move its
-                  transitions to a new representative and update label to
-                  representative mapping.
-                */
-                vector<Transition> &new_representative_transitions =
-                    transitions_by_label[new_representative];
-                assert(new_representative_transitions.empty());
-                new_representative_transitions.swap(transitions_by_label[old_representative]);
-                if (debug) {
-                    cout << "moving transitions from label "
-                         << old_representative
-                         << " to " << new_representative << endl;
-                }
-                BlockListConstIter block = equivalent_labels->get_block_iterator_for_element(new_representative);
-                for (ElementListConstIter elem_it = block->begin();
-                     elem_it != block->end(); ++elem_it) {
-                    label_to_representative[*elem_it] = new_representative;
-                }
-            } else {
-                if (debug) {
-                    cout << "no need to move transitions; representative "
-                            "did not change" << endl;
-                }
-            }
-            relevant_labels[new_label_no] = relevant_labels[old_representative];
-            label_to_representative[new_label_no] = new_representative;
         } else {
             /*
               Here we handle those label reductions for which not all
@@ -997,6 +993,36 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         // labels which are only handled in a later iteration. Also we don't
         // know the cost of such other possibly removed labels.
         /*
+          Go over the equivalence relation and check for all representatives
+          whether they have been representative before or not. If not, move the
+          transitions of the previous (now reduced) representative to the new
+          one. Update label_to_representative accordingly.
+        */
+        for (BlockListConstIter it = equivalent_labels->begin();
+             it != equivalent_labels->end(); ++it) {
+            const Block &block = *it;
+            int min_label_no = *block.begin();
+            if (label_to_representative[min_label_no] != min_label_no) {
+                if (debug) {
+                    cout << "new repr " << min_label_no << " used to be "
+                            "represtend by " << label_to_representative[min_label_no] << endl;
+                }
+                transitions_by_label[min_label_no].swap(transitions_by_label[label_to_representative[min_label_no]]);
+                label_to_representative[min_label_no] = min_label_no;
+                for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
+                    assert(*jt < num_labels);
+                    if (jt == block.begin())
+                        continue;
+                    int label_no = *jt;
+                    assert(min_label_no < label_no);
+                    assert(transitions_by_label[label_no].empty());
+                    label_to_representative[label_no] = min_label_no;
+                }
+            }
+        }
+
+
+        /*
           For every new label, check if its transitions are locally equivalent
           to those of an existing label or of another new label. Update the
           equivalence relation accordingly. Also delete transitions of new
@@ -1038,35 +1064,6 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         if (debug) {
             cout << "after update:" << endl;
             equivalent_labels->dump();
-        }
-
-        /*
-          Go over the equivalence relation and check for all representatives
-          whether they have been representative before or not. If not, move the
-          transitions of the previous (now reduced) representative to the new
-          one. Update label_to_representative accordingly.
-        */
-        for (BlockListConstIter it = equivalent_labels->begin();
-             it != equivalent_labels->end(); ++it) {
-            const Block &block = *it;
-            int min_label_no = *block.begin();
-            if (label_to_representative[min_label_no] != min_label_no) {
-                if (debug) {
-                    cout << "new repr " << min_label_no << " used to be "
-                            "represtend by " << label_to_representative[min_label_no] << endl;
-                }
-                transitions_by_label[min_label_no].swap(transitions_by_label[label_to_representative[min_label_no]]);
-                label_to_representative[min_label_no] = min_label_no;
-                for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
-                    assert(*jt < num_labels);
-                    if (jt == block.begin())
-                        continue;
-                    int label_no = *jt;
-                    assert(min_label_no < label_no);
-                    assert(transitions_by_label[label_no].empty());
-                    label_to_representative[label_no] = min_label_no;
-                }
-            }
         }
 
         /*
