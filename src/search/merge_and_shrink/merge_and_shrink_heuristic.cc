@@ -147,6 +147,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     final_transition_system->statistics(use_expensive_statistics);
     final_transition_system->release_memory();
 
+    // TODO: delete labels here?
+
     cout << "Order of merged transition systems: ";
     for (size_t i = 1; i < transition_system_order.size(); i += 2) {
         cout << transition_system_order[i - 1] << " " << transition_system_order[i] << ", ";

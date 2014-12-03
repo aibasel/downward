@@ -200,7 +200,7 @@ void ShrinkBisimulation::compute_signatures(
          block_it != equivalent_labels->end(); ++block_it) {
         int representative_label_no = *block_it->begin();
         const vector<Transition> &transitions =
-            ts.get_transitions_for_label(representative_label_no);
+            ts.get_transitions_for_relevant_label(representative_label_no);
         int label_cost = ts.get_label_cost(representative_label_no);
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];

@@ -76,7 +76,7 @@ class TransitionSystem {
       original labels.
     */
     std::vector<std::vector<Transition> > transitions_by_label;
-    std::vector<bool> relevant_labels;
+    std::vector<Transition> empty_transitions;
 
     int num_states;
 
@@ -116,6 +116,7 @@ class TransitionSystem {
     void compute_distances_and_prune();
 
     // Methods related to the representation of transitions
+    bool is_label_relevant(int label_no) const;
     bool are_transitions_sorted_unique() const;
     void normalize_transitions();
     bool is_label_reduced() const;
@@ -168,6 +169,7 @@ public:
     int get_peak_memory_estimate() const;
     void dump_attributes() const;
     void dump_dot_graph() const;
+    void dump_grouped_transitions() const;
     void dump_transitions() const;
     void dump_equivalence_relation() const;
     int get_size() const {
@@ -194,6 +196,7 @@ public:
         return goal_distances[state];
     }
     const std::vector<Transition> &get_transitions_for_label(int label_no) const;
+    const std::vector<Transition> &get_transitions_for_relevant_label(int label_no) const;
     int get_label_cost(int label_no) const;
 
     // Methods only used by MergeDFP.
