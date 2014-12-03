@@ -357,14 +357,11 @@ bool TransitionSystem::is_label_relevant(int label_no) const {
     assert(labels->is_current_label(label_no));
     const vector<Transition> &transitions = get_transitions_for_label(label_no);
     if (static_cast<int>(transitions.size()) == num_states) {
-        bool label_relevant = false;
         for (size_t i = 0; i < transitions.size(); ++i) {
             if (transitions[i].target != transitions[i].src) {
-                label_relevant = true;
                 return true;
             }
         }
-        assert(!label_relevant);
         return false;
     } else {
         return true;
