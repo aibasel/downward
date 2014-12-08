@@ -92,7 +92,7 @@ void TypeBasedOpenList<Entry>::evaluate(int g, bool preferred) {
 
     dead_end = true;
     dead_end_reliable = false;
-    for (size_t i = 0; i < evaluators.size(); i++) {
+    for (size_t i = 0; i < evaluators.size(); ++i) {
         evaluators[i]->evaluate(g, preferred);
         if (evaluators[i]->is_dead_end()) {
             if (evaluators[i]->dead_end_is_reliable()) {
@@ -118,7 +118,7 @@ bool TypeBasedOpenList<Entry>::dead_end_is_reliable() const {
 
 template<class Entry>
 void TypeBasedOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
-    for (size_t i = 0; i < evaluators.size(); i++)
+    for (size_t i = 0; i < evaluators.size(); ++i)
         evaluators[i]->get_involved_heuristics(hset);
 }
 
