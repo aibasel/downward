@@ -54,7 +54,6 @@ Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
 
     int bucket_id = g_rng.next(keys_and_buckets.size());
     pair<Key, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
-    Key key_copy = key_and_bucket.first;
     Bucket &bucket = key_and_bucket.second;
 
     int pos = g_rng.next(bucket.size());
@@ -63,6 +62,7 @@ Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
     swap_and_pop_from_vector(bucket, pos);
     if (bucket.empty()) {
         // Swap the empty bucket with the last bucket, then delete it.
+        Key key_copy = key_and_bucket.first;
         Key moved_bucket_key = keys_and_buckets.back().first;
         key_to_bucket_index[moved_bucket_key] = bucket_id;
         assert(bucket_id < keys_and_buckets.size());
