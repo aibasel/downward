@@ -15,6 +15,7 @@ class ScalarEvaluator;
 
 /*
   Type-based open list that uses multiple evaluators to put nodes into buckets.
+  A bucket contains all entries with the same evaluator results.
   When retrieving a node, a bucket is chosen uniformly at random
   and one of the contained nodes is selected uniformly randomly.
   Based on:
