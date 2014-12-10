@@ -90,7 +90,7 @@ class Action(object):
                             objects_by_type, effects)
         if effects:
             if self.cost is None:
-                cost = 0
+                cost = 1
             else:
                 cost = int(self.cost.instantiate(var_mapping, init_facts).expression.value)
             return PropositionalAction(name, precondition, effects, cost)
