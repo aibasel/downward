@@ -84,6 +84,7 @@ HEADERS = \
           open_lists/standard_scalar_open_list.h \
           open_lists/tiebreaking_open_list.h \
           \
+          linear_program.h \
           lp_solver_interface.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
