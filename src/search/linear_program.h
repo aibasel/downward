@@ -52,6 +52,7 @@ struct LPVariable {
 class OsiSolverInterface;
 
 class LP {
+    bool is_initialized;
     bool is_solved;
     int num_permanent_constraints;
     bool has_temporary_constraints;
