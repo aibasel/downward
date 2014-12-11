@@ -3,14 +3,15 @@
 
 #include "operator_cost.h"
 #include "scalar_evaluator.h"
-#include "task.h"
 
 #include <vector>
 
 class GlobalOperator;
 class GlobalState;
+class Operator;
 class OptionParser;
 class Options;
+class Task;
 
 class Heuristic : public ScalarEvaluator {
     enum {NOT_INITIALIZED = -2};

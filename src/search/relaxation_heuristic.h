@@ -5,8 +5,9 @@
 
 #include <vector>
 
-class Operator;
+class Fact;
 class GlobalState;
+class Operator;
 
 struct Proposition;
 struct UnaryOperator;

@@ -2,6 +2,7 @@
 
 #include "option_parser.h"
 #include "plugin.h"
+#include "task.h"
 
 using namespace std;
 
