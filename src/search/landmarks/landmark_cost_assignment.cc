@@ -2,16 +2,14 @@
 
 #include "landmark_graph.h"
 
+#include "../linear_program.h"
 #include "../utilities.h"
-
-#ifdef USE_LP
-#include "CoinPackedMatrix.hpp"
-#include <sys/times.h>
-#endif
 
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <sys/times.h>
+
 
 using namespace std;
 
@@ -147,141 +145,98 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type)
-    : LandmarkCostAssignment(graph, cost_type) {
-#ifdef USE_LP
-    si = create_lp_solver(solver_type);
-#else
-    // silence unused variable warning
-    (void)solver_type;
-    cerr << "You must build the planner with the USE_LP symbol defined" << endl;
-    exit_with(EXIT_CRITICAL_ERROR);
-#endif
+    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type_)
+    : LandmarkCostAssignment(graph, cost_type),
+      solver_type(solver_type_) {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::~LandmarkEfficientOptimalSharedCostAssignment() {
-#ifdef USE_LP
-    delete si;
-#endif
 }
 
 double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
-#ifdef USE_LP
-    try {
-        // TODO: This could probably be speeded up by taking some of
-        //       the relevant dynamic memory management out of the
-        //       method, using loadProblem instead of assignProblem.
-        // TODO: We could also do the same thing with action landmarks we
-        //       do in the uniform cost partitioning case.
+    // TODO: This could probably be speeded up by taking some of
+    //       the relevant dynamic memory management out of the
+    //       method, using loadProblem instead of assignProblem.
+    // TODO: We could also do the same thing with action landmarks we
+    //       do in the uniform cost partitioning case.
 
-        struct tms start, end_build, end_solve, end_all;
-        times(&start);
+    struct tms start, end_build, end_solve, end_all;
+    times(&start);
 
-        // The LP has one variable (column) per landmark and one
-        // inequality (row) per operator.
-        int num_cols = lm_graph.number_of_landmarks();
-        int num_rows = g_operators.size();
+    // The LP has one variable (column) per landmark and one
+    // inequality (row) per operator.
+    int num_cols = lm_graph.number_of_landmarks();
+    int num_rows = g_operators.size();
 
-        // Set up lower bounds, upper bounds and objective function
-        // coefficients for the landmarks.
-        // We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
-        // so the coefficients are all 1.
-        // The range of cost(lm_1) is {0} if the landmark is already
-        // reached; otherwise it is [0, infinity].
-        double *objective = new double[num_cols];
-        double *col_lb = new double[num_cols];
-        double *col_ub = new double[num_cols];
-
-        for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-            const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
-            bool reached = (lm->get_status() == lm_reached);
-            objective[lm_id] = 1.0;
-            col_lb[lm_id] = 0.0;
-            col_ub[lm_id] = reached ? 0.0 : si->getInfinity();
+    // Set up lower bounds, upper bounds and objective function
+    // coefficients for the landmarks.
+    // We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
+    // so the coefficients are all 1.
+    // The range of cost(lm_1) is {0} if the landmark is already
+    // reached; otherwise it is [0, infinity].
+    vector<LPVariable> variables(num_cols, LPVariable(0.0, 0.0, 1.0));
+    for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
+        const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
+        if (lm->get_status() == lm_reached) {
+            variables[lm_id].upper_bound = numeric_limits<double>::infinity();
         }
+    }
 
-        // Set up lower bounds and upper bounds for the inequalities.
-        // These simply say that the operator's total cost must fall
-        // between 0 and the real operator cost.
-        double *row_lb = new double[num_rows];
-        double *row_ub = new double[num_rows];
-        for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
-            const GlobalOperator &op = g_operators[op_id];
-            row_lb[op_id] = 0;
-            row_ub[op_id] = get_adjusted_action_cost(op, cost_type);
-        }
+    // Set up lower bounds and upper bounds for the inequalities.
+    // These simply say that the operator's total cost must fall
+    // between 0 and the real operator cost.
+    vector<LPConstraint> constraints(num_rows);
+    for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
+        const GlobalOperator &op = g_operators[op_id];
+        constraints[op_id].lower_bound = 0;
+        constraints[op_id].upper_bound = get_adjusted_action_cost(op, cost_type);
+    }
 
-        // Define the constraint matrix. The constraints are of the form
-        // cost(lm_i1) + cost(lm_i2) + ... + cost(lm_in) <= cost(o)
-        // where lm_i1 ... lm_in are the landmarks for which o is a
-        // relevant achiever. Hence, we add a triple (op, lm, 1.0)
-        // for each relevant achiever op of landmark lm, denoting that
-        // in the op-th row and lm-th column, the matrix has a 1.0 entry.
-        vector<int> operator_indices;
-        vector<int> landmark_indices;
-
-        for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-            const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
-            int lm_status = lm->get_status();
-            if (lm_status != lm_reached) {
-                const set<int> &achievers = get_achievers(lm_status, *lm);
-                assert(!achievers.empty());
-                set<int>::const_iterator ach_it;
-                for (ach_it = achievers.begin(); ach_it != achievers.end();
-                     ++ach_it) {
-                    int op_id = *ach_it;
-                    assert(in_bounds(op_id, g_operators));
-                    operator_indices.push_back(op_id);
-                    landmark_indices.push_back(lm_id);
-                }
+    // Define the constraint matrix. The constraints are of the form
+    // cost(lm_i1) + cost(lm_i2) + ... + cost(lm_in) <= cost(o)
+    // where lm_i1 ... lm_in are the landmarks for which o is a
+    // relevant achiever. Hence, we add a triple (op, lm, 1.0)
+    // for each relevant achiever op of landmark lm, denoting that
+    // in the op-th row and lm-th column, the matrix has a 1.0 entry.
+    for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
+        const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
+        int lm_status = lm->get_status();
+        if (lm_status != lm_reached) {
+            const set<int> &achievers = get_achievers(lm_status, *lm);
+            assert(!achievers.empty());
+            set<int>::const_iterator ach_it;
+            for (ach_it = achievers.begin(); ach_it != achievers.end();
+                 ++ach_it) {
+                int op_id = *ach_it;
+                assert(in_bounds(op_id, g_operators));
+                constraints[op_id].insert(lm_id, 1.0);
             }
         }
-        size_t num_constraints = operator_indices.size();
-        vector<double> coefficients(num_constraints, 1.0);
-
-        CoinPackedMatrix *matrix = new CoinPackedMatrix(
-            false,
-            &*operator_indices.begin(),
-            &*landmark_indices.begin(),
-            &*coefficients.begin(),
-            num_constraints);
-
-        // Load the problem to OSI.
-        // The OSI algorithm will delete (resp. delete[]) these six.
-        si->assignProblem(matrix, col_lb, col_ub, objective, row_lb, row_ub);
-        // We want to maximize the objective function.
-        si->setObjSense(-1);
-
-        times(&end_build);
-
-        // Solve the linear program.
-        si->messageHandler()->setLogLevel(0);
-        si->initialSolve();
-        times(&end_solve);
-
-        double h = si->getObjValue();
-
-        // We might call si->reset() here, but this makes the overall
-        // code a bit slower in small tests, presumably due to dynamic
-        // memory managment overhead in the LP library. So we don't
-        // call it. This LP will be cleaned up once the next one is
-        // constructed.
-
-        times(&end_all);
-        /*
-        int total_ms = (end_all.tms_utime - start.tms_utime) * 10;
-        int build_ms = (end_build.tms_utime - start.tms_utime) * 10;
-        int solve_ms = (end_solve.tms_utime - end_build.tms_utime) * 10;
-
-        cout << "Build: " << build_ms << " , Solve: " << solve_ms
-             << " , Total: " << total_ms << endl;
-        */
-        return h;
-    } catch (CoinError &ex) {
-        handle_coin_error(ex);
     }
-#else
-    // Should be unreachable if USE_LP is not set.
-    exit_with(EXIT_CRITICAL_ERROR);
-#endif
+    LP lp(solver_type, variables, constraints, MAXIMIZE);
+    times(&end_build);
+
+    // Solve the linear program.
+    lp.solve();
+    times(&end_solve);
+
+    assert(lp.has_optimal_solution());
+    double h = lp.get_objective_value();
+
+    // We might call si->reset() here, but this makes the overall
+    // code a bit slower in small tests, presumably due to dynamic
+    // memory managment overhead in the LP library. So we don't
+    // call it. This LP will be cleaned up once the next one is
+    // constructed.
+
+    times(&end_all);
+    /*
+    int total_ms = (end_all.tms_utime - start.tms_utime) * 10;
+    int build_ms = (end_build.tms_utime - start.tms_utime) * 10;
+    int solve_ms = (end_solve.tms_utime - end_build.tms_utime) * 10;
+
+    cout << "Build: " << build_ms << " , Solve: " << solve_ms
+         << " , Total: " << total_ms << endl;
+    */
+    return h;
 }

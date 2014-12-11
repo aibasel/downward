@@ -121,11 +121,4 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     exit_with(EXIT_CRITICAL_ERROR);
 }
 
-void handle_coin_error(const CoinError &error) {
-    cerr << "Coin threw exception: " << error.message() << endl
-         << " from method " << error.methodName() << endl
-         << " from class " << error.className() << endl;
-    exit_with(EXIT_CRITICAL_ERROR);
-}
-
 #endif
