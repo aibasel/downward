@@ -177,7 +177,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     vector<LPVariable> variables(num_cols, LPVariable(0.0, 0.0, 1.0));
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
-        if (lm->get_status() == lm_reached) {
+        if (lm->get_status() != lm_reached) {
             variables[lm_id].upper_bound = numeric_limits<double>::infinity();
         }
     }
