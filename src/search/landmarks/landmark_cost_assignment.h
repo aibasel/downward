@@ -2,13 +2,13 @@
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
 #include "../globals.h"
-#include "../lp_solver_interface.h"
 #include "../operator_cost.h"
 
 #include <set>
 
 class LandmarkGraph;
 class LandmarkNode;
+enum class LPSolverType;
 
 class LandmarkCostAssignment {
     const std::set<int> empty;

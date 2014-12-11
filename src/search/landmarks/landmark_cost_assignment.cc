@@ -213,7 +213,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             }
         }
     }
-    LP lp(solver_type, variables, constraints, MAXIMIZE);
+    LP lp(solver_type, variables, constraints, LPObjectiveSense::MAXIMIZE);
     times(&end_build);
 
     // Solve the linear program.
