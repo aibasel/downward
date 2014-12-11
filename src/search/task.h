@@ -7,19 +7,20 @@
 #include <cstddef>
 #include <utility>
 
-class Fact;
+
+class Axioms;
 class Conditions;
-class Variable;
-class Variables;
-class Preconditions;
-class EffectConditions;
 class Effect;
+class EffectConditions;
 class Effects;
+class Fact;
+class Goals;
 class Operator;
 class Operators;
-class Axioms;
-class Goals;
+class Preconditions;
 class Task;
+class Variable;
+class Variables;
 
 // Currently, we still need to map Operators to GlobalOperators for some things
 // like marking preferred operators. In the long run this mapping should go away.
