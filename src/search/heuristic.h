@@ -21,7 +21,7 @@ class Heuristic : public ScalarEvaluator {
 
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
-    Task task;
+    Task *task;
     OperatorCost cost_type;
     enum {DEAD_END = -1};
     virtual void initialize() {}
