@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <string>
 #include <utility>
 
 
@@ -167,6 +168,7 @@ public:
     Effects get_effects() const {return Effects(interface, index, is_an_axiom); }
     int get_cost() const {return interface.get_operator_cost(index, is_an_axiom); }
     bool is_axiom() const {return is_an_axiom; }
+    std::string get_name() const {return interface.get_operator_name(index, is_an_axiom); }
     const GlobalOperator *get_global_operator() const {
         return interface.get_global_operator(index, is_an_axiom);
     }
