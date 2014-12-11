@@ -15,12 +15,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <deque>
+#include <functional>
 #include <iostream>
 #include <fstream>
 #include <limits>
 #include <set>
 #include <string>
 #include <sstream>
+#include <unordered_map>
 using namespace std;
 using namespace __gnu_cxx;
 
@@ -1021,6 +1023,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 }
 
 void TransitionSystem::release_memory() {
+    equivalent_labels = 0;
     delete equivalent_labels;
     vector<int>().swap(label_to_representative);
     vector<vector<Transition> >().swap(transitions_by_label);
@@ -1328,6 +1331,16 @@ int AtomicTransitionSystem::memory_estimate() const {
 
 
 
+namespace std {
+    template<>
+    class hash<BlockListConstIter> {
+    public:
+        size_t operator()(const BlockListConstIter &block_it) const {
+            return *block_it->begin();
+        }
+    };
+}
+
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                                                      TransitionSystem *ts1,
                                                      TransitionSystem *ts2)
@@ -1362,6 +1375,91 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         }
     }
 
+    bool debug = false;
+    int multiplier = ts2_size;
+    list<Block> new_blocks;
+    label_to_representative.resize(g_operators.empty() ? 0 : g_operators.size() * 2 - 1, -1);
+
+    for (BlockListConstIter block1_it = ts1->equivalent_labels->begin();
+         block1_it != ts1->equivalent_labels->end(); ++block1_it) {
+        // Distribute the labels of this block among the "buckets"
+        // corresponding to the blocks of ts2.
+        unordered_map<BlockListConstIter, vector<int>> buckets;
+        for (ElementListConstIter elem_it = block1_it->begin();
+             elem_it != block1_it->end(); ++elem_it) {
+            int label_no = *elem_it;
+            BlockListConstIter block2_it = ts2->
+                equivalent_labels->get_block_iterator_for_element(label_no);
+            buckets[block2_it].push_back(label_no);
+        }
+        // Now buckets contains all equivalence classes that are
+        // refinements of block1.
+
+        // Now create the new blocks together with their transitions.
+        int block1_representative_label_no = *block1_it->begin();
+        assert(ts1->label_to_representative[block1_representative_label_no]
+            == block1_representative_label_no);
+        const vector<Transition> &transitions1 =
+            ts1->transitions_by_label[block1_representative_label_no];
+        vector<int> dead_labels;
+        for (unordered_map<BlockListConstIter, vector<int>>::iterator bucket_it = buckets.begin();
+             bucket_it != buckets.end(); ++bucket_it) {
+            int block2_representative_label_no = *bucket_it->first->begin();
+            assert(ts2->label_to_representative[block2_representative_label_no]
+                == block2_representative_label_no);
+            const vector<Transition> &transitions2 =
+                ts2->transitions_by_label[block2_representative_label_no];
+            const vector<int> &new_labels = bucket_it->second;
+
+            vector<Transition> new_transitions;
+            // TODO: test against overflow?
+            if (transitions1.size() * transitions2.size() > new_transitions.max_size())
+                exit_with(EXIT_OUT_OF_MEMORY);
+            new_transitions.reserve(transitions1.size() * transitions2.size());
+            for (size_t i = 0; i < transitions1.size(); ++i) {
+                int src1 = transitions1[i].src;
+                int target1 = transitions1[i].target;
+                for (size_t j = 0; j < transitions2.size(); ++j) {
+                    int src2 = transitions2[j].src;
+                    int target2 = transitions2[j].target;
+                    int src = src1 * multiplier + src2;
+                    int target = target1 * multiplier + target2;
+                    new_transitions.push_back(Transition(src, target));
+                }
+            }
+
+            if (new_transitions.empty()) {
+                dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
+            } else {
+                sort(new_transitions.begin(), new_transitions.end());
+                assert(is_sorted_unique(new_transitions));
+                Block new_block;
+                new_block.it_intersection_block = new_blocks.end();
+                int new_representative = new_labels[0];
+                for (size_t i = 0; i < new_labels.size(); ++i) {
+                    int label_no = new_labels[i];
+                    new_block.insert(label_no);
+                    label_to_representative[label_no] = new_representative;
+                }
+                transitions_by_label[new_representative].swap(new_transitions);
+                new_blocks.push_back(new_block);
+            }
+        }
+        if (!dead_labels.empty()) {
+            Block new_block;
+            new_block.it_intersection_block = new_blocks.end();
+            int new_representative = dead_labels[0];
+            for (size_t i = 0; i < dead_labels.size(); ++i) {
+                int label_no = dead_labels[i];
+                new_block.insert(label_no);
+                label_to_representative[label_no] = new_representative;
+            }
+            new_blocks.push_back(new_block);
+        }
+    }
+
+    equivalent_labels = new EquivalenceRelation(num_labels, new_blocks);
+
     /* Note:
        The way we construct the transitions of the new composite transition system,
        we cannot easily guarantee that they are sorted. Given that we have
@@ -1375,56 +1473,56 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
        first transition system and multiplying in out with the transitions of the
        second transition, we obtain the desired order (a,c,d).
      */
-    bool debug = false;
-    int multiplier = ts2_size;
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (!labels->is_current_label(label_no))
-            continue;
-        vector<Transition> &transitions = transitions_by_label[label_no];
-        const vector<Transition> &bucket1 =
-            ts1->get_transitions_for_label(label_no);
-        const vector<Transition> &bucket2 =
-            ts2->get_transitions_for_label(label_no);
-        if (debug) {
-            cout << "label " << label_no << endl;
-            if (ts1->is_label_relevant(label_no)) {
-                cout << "transitions component 1:" << endl;
-                for (size_t i = 0; i < bucket1.size(); ++i) {
-                    cout << bucket1[i].src << "->" << bucket1[i].target << endl;
-                }
-            } else {
-                cout << "is irrelevant in component 1" << endl;
-            }
-            if (ts2->is_label_relevant(label_no)) {
-                cout << "transitions component 2:" << endl;
-                for (size_t i = 0; i < bucket2.size(); ++i) {
-                    cout << bucket2[i].src << "->" << bucket2[i].target << endl;
-                }
-            } else {
-                cout << "is irrelevant in component 2" << endl;
-            }
-        }
-        if (bucket1.size() * bucket2.size() > transitions.max_size())
-            exit_with(EXIT_OUT_OF_MEMORY);
-        transitions.reserve(bucket1.size() * bucket2.size());
-        for (size_t i = 0; i < bucket1.size(); ++i) {
-            int src1 = bucket1[i].src;
-            int target1 = bucket1[i].target;
-            for (size_t j = 0; j < bucket2.size(); ++j) {
-                int src2 = bucket2[j].src;
-                int target2 = bucket2[j].target;
-                int src = src1 * multiplier + src2;
-                int target = target1 * multiplier + target2;
-                transitions.push_back(Transition(src, target));
-            }
-        }
-    }
+//    for (int label_no = 0; label_no < num_labels; ++label_no) {
+//        if (!labels->is_current_label(label_no))
+//            continue;
+//        vector<Transition> &transitions = transitions_by_label[label_no];
+//        const vector<Transition> &bucket1 =
+//            ts1->get_transitions_for_label(label_no);
+//        const vector<Transition> &bucket2 =
+//            ts2->get_transitions_for_label(label_no);
+//        if (debug) {
+//            cout << "label " << label_no << endl;
+//            if (ts1->is_label_relevant(label_no)) {
+//                cout << "transitions component 1:" << endl;
+//                for (size_t i = 0; i < bucket1.size(); ++i) {
+//                    cout << bucket1[i].src << "->" << bucket1[i].target << endl;
+//                }
+//            } else {
+//                cout << "is irrelevant in component 1" << endl;
+//            }
+//            if (ts2->is_label_relevant(label_no)) {
+//                cout << "transitions component 2:" << endl;
+//                for (size_t i = 0; i < bucket2.size(); ++i) {
+//                    cout << bucket2[i].src << "->" << bucket2[i].target << endl;
+//                }
+//            } else {
+//                cout << "is irrelevant in component 2" << endl;
+//            }
+//        }
+//        if (bucket1.size() * bucket2.size() > transitions.max_size())
+//            exit_with(EXIT_OUT_OF_MEMORY);
+//        transitions.reserve(bucket1.size() * bucket2.size());
+//        for (size_t i = 0; i < bucket1.size(); ++i) {
+//            int src1 = bucket1[i].src;
+//            int target1 = bucket1[i].target;
+//            for (size_t j = 0; j < bucket2.size(); ++j) {
+//                int src2 = bucket2[j].src;
+//                int target2 = bucket2[j].target;
+//                int src = src1 * multiplier + src2;
+//                int target = target1 * multiplier + target2;
+//                transitions.push_back(Transition(src, target));
+//            }
+//        }
+//    }
 
     // TODO do not check if transitions are sorted but just assume they are not?
-    if (!are_transitions_sorted_unique()) {
-        normalize_transitions();
-    }
-    compute_local_equivalence_relation();
+    assert(are_transitions_sorted_unique());
+//    if (!are_transitions_sorted_unique()) {
+//        normalize_transitions();
+//    }
+    assert(are_equivalent_labels_computed());
+//    compute_local_equivalence_relation();
     if (debug) {
         dump_transitions();
     }
