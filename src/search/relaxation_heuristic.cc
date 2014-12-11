@@ -30,7 +30,7 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
-    Variables vars = task.get_variables();
+    Variables vars = task->get_variables();
     int num_vars = vars.size();
     propositions.resize(num_vars);
     for (int var = 0; var < num_vars; var++) {
@@ -40,7 +40,7 @@ void RelaxationHeuristic::initialize() {
     }
 
     // Build goal propositions.
-    Goals goals = task.get_goals();
+    Goals goals = task->get_goals();
     size_t num_goals = goals.size();
     for (size_t i = 0; i < num_goals; i++) {
         Proposition *prop = get_proposition(goals[i]);
@@ -49,11 +49,11 @@ void RelaxationHeuristic::initialize() {
     }
 
     // Build unary operators for operators and axioms.
-    Operators operators = task.get_operators();
+    Operators operators = task->get_operators();
     size_t num_operators = operators.size();
     for (size_t i = 0; i < num_operators; i++)
         build_unary_operators(operators[i], i);
-    Axioms axioms = task.get_axioms();
+    Axioms axioms = task->get_axioms();
     size_t num_axioms = axioms.size();
     for (size_t i = 0; i < num_axioms; i++)
         build_unary_operators(axioms[i], -1);
