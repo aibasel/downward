@@ -38,7 +38,9 @@ LP::LP(LPSolverType solver_type,
    const std::vector<LPVariable> &variables,
    const std::vector<LPConstraint> &constraints,
    LPObjectiveSense sense)
-    : has_temporary_constraints(false) {
+    : is_initialized(false),
+      is_solved(false),
+      has_temporary_constraints(false) {
     lp_solver = create_lp_solver(solver_type);
     //----------------------------------------------------------------------
     int num_columns = variables.size();
@@ -65,8 +67,6 @@ LP::LP(LPSolverType solver_type,
         double *row_lb = get_lower_bounds<LPConstraint>(constraints);
         double *row_ub = get_upper_bounds<LPConstraint>(constraints);
         lp_solver->assignProblem(matrix, col_lb, col_ub, objective, row_lb, row_ub);
-        lp_solver->initialSolve();
-        is_solved = true;
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -206,7 +206,12 @@ void LP::set_variable_upper_bound(int index, double bound) {
 
 void LP::solve() {
     try {
-        lp_solver->resolve();
+        if (is_initialized) {
+            lp_solver->resolve();
+        } else {
+            lp_solver->initialSolve();
+            is_initialized = true;
+        }
         if (lp_solver->isAbandoned()) {
             // The documentation of OSI is not very clear here but memory seems
             // to be the most common cause for this in our case.
