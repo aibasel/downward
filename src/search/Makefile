@@ -85,7 +85,7 @@ HEADERS = \
           open_lists/tiebreaking_open_list.h \
           \
           linear_program.h \
-          lp_solver_interface.h \
+          lp_internals.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply

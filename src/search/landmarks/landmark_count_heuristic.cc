@@ -1,5 +1,6 @@
 #include "landmark_count_heuristic.h"
 
+#include "../linear_program.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 

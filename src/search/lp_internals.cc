@@ -1,26 +1,36 @@
-#include "lp_solver_interface.h"
+#include "lp_internals.h"
 
-#include "option_parser.h"
+#ifdef USE_LP
+#include "linear_program.h"
 #include "utilities.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wsign-compare"
+
+#include <OsiSolverInterface.hpp>
+
 #ifdef COIN_HAS_CLP
 #include <OsiClpSolverInterface.hpp>
 #endif
+
 #ifdef COIN_HAS_CPX
 #include <OsiCpxSolverInterface.hpp>
 #endif
+
 #ifdef COIN_HAS_GRB
 #include <OsiGrbSolverInterface.hpp>
 #endif
+
 #pragma GCC diagnostic pop
 
 using namespace std;
 
 // CPLEX warning that is misleadingly reported with the severity of a critical error.
 static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
+// CPLEX warning from writeMps if no column names are defined.
+static const string CPLEX_WARNING_WRITE_MPS_COLUMNS = "CPX0000  Default column names x1, x2 ... being created.";
+static const string CPLEX_WARNING_WRITE_MPS_ROWS = "CPX0000  Default row    names c1, c2 ... being created.";
 static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
 static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
 static const string CPLEX_ERROR_OOM_DEVEX = "CPX0000  Not enough memory for devex.";
@@ -30,7 +40,6 @@ static const string CPLEX_ERROR_OOM_DEVEX = "CPX0000  Not enough memory for deve
   error message. This class will report any error messages as usual but will
   exit with a critical error afterwards.
 */
-#ifdef USE_LP
 class ErrorCatchingCoinMessageHandler : public CoinMessageHandler {
 public:
     ErrorCatchingCoinMessageHandler()
@@ -49,7 +58,9 @@ public:
             currentMessage_.detail() is always empty
             currentMessage_.message() also is empty (NFI)
         */
-        if (messageBuffer_ == CPLEX_WARNING_COMPRESS) {
+        if (messageBuffer_ == CPLEX_WARNING_COMPRESS ||
+            messageBuffer_ == CPLEX_WARNING_WRITE_MPS_COLUMNS ||
+            messageBuffer_ == CPLEX_WARNING_WRITE_MPS_ROWS) {
             CoinMessageHandler::checkSeverity();
         } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
                    messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
@@ -60,40 +71,18 @@ public:
         }
     }
 };
-#endif
 
-void add_lp_solver_option_to_parser(OptionParser &parser) {
-    parser.document_note(
-        "Note",
-        "to use an LP solver, you must build the planner with USE_LP=1. "
-        "See LPBuildInstructions.");
-    vector<string> lp_solvers;
-    vector<string> lp_solvers_doc;
-    lp_solvers.push_back("CLP");
-    lp_solvers_doc.push_back("default LP solver shipped with the COIN library");
-    lp_solvers.push_back("CPLEX");
-    lp_solvers_doc.push_back("commercial solver by IBM");
-    lp_solvers.push_back("GUROBI");
-    lp_solvers_doc.push_back("commercial solver");
-    parser.add_enum_option("lpsolver",
-                           lp_solvers,
-                           "external solver that should be used to solve linear programs",
-                           "CPLEX",
-                           lp_solvers_doc);
-}
-
-#ifdef USE_LP
 OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     string missing_symbol;
     switch (solver_type) {
-    case CLP:
+    case LPSolverType::CLP:
 #ifdef COIN_HAS_CLP
         return new OsiClpSolverInterface();
 #else
         missing_symbol = "COIN_HAS_CLP";
 #endif
         break;
-    case CPLEX:
+    case LPSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
         {
             OsiSolverInterface *lp_solver = new OsiCpxSolverInterface();
@@ -104,7 +93,7 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
         missing_symbol = "COIN_HAS_CPX";
 #endif
         break;
-    case GUROBI:
+    case LPSolverType::GUROBI:
 #ifdef COIN_HAS_GRB
         return new OsiGrbSolverInterface();
 #else
@@ -115,6 +104,14 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
         ABORT("Unknown LP solver type.");
     }
     cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
+    exit_with(EXIT_CRITICAL_ERROR);
+}
+
+__attribute__((noreturn))
+void handle_coin_error(const CoinError &error) {
+    cerr << "Coin threw exception: " << error.message() << endl
+         << " from method " << error.methodName() << endl
+         << " from class " << error.className() << endl;
     exit_with(EXIT_CRITICAL_ERROR);
 }
 
