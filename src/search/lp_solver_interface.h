@@ -2,8 +2,10 @@
 #define LP_SOLVER_INTERFACE_H
 
 #ifdef USE_LP
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <OsiSolverInterface.hpp>
+#pragma GCC diagnostic pop
 #endif
 
 class OptionParser;

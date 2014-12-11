@@ -2,8 +2,14 @@
 
 #include "utilities.h"
 
+#ifdef USE_LP
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <OsiSolverInterface.hpp>
 #include <CoinPackedMatrix.hpp>
 #include <CoinPackedVector.hpp>
+#pragma GCC diagnostic pop
+#endif
 
 #include <cassert>
 #include <limits>
@@ -223,7 +229,7 @@ bool LP::has_optimal_solution() const {
     }
 }
 
-double LP::objective_value() const {
+double LP::get_objective_value() const {
     assert(is_solved);
     try {
         return lp_solver->getObjValue();

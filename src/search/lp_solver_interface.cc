@@ -3,8 +3,10 @@
 #include "option_parser.h"
 #include "utilities.h"
 
-#ifdef COIN_HAS_CLP
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#ifdef COIN_HAS_CLP
 #include <OsiClpSolverInterface.hpp>
 #endif
 #ifdef COIN_HAS_CPX
@@ -13,6 +15,7 @@
 #ifdef COIN_HAS_GRB
 #include <OsiGrbSolverInterface.hpp>
 #endif
+#pragma GCC diagnostic pop
 
 using namespace std;
 
