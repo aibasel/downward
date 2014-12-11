@@ -34,6 +34,22 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
+#ifdef USE_LP
+/*
+  Print the CoinError and then exit with EXIT_CRITICAL_ERROR.
+  Note that out-of-memory conditions occurring within CPLEX code cannot
+  be caught by a try/catch block. When CPLEX runs out of memory,
+  the planner will attempt to terminate gracefully, like it does with
+  uncaught out-of-memory exceptions in other parts of the code.
+*/
+__attribute__((noreturn))
+void handle_coin_error(const CoinError &error) {
+    cerr << "Coin threw exception: " << error.message() << endl
+         << " from method " << error.methodName() << endl
+         << " from class " << error.className() << endl;
+    exit_with(EXIT_CRITICAL_ERROR);
+}
+
 LP::LP(LPSolverType solver_type,
    const std::vector<LPVariable> &variables,
    const std::vector<LPConstraint> &constraints,
@@ -268,3 +284,17 @@ void LP::print_statistics() const {
     cout << "LP variables: " << get_num_variables() << endl;
     cout << "LP constraints: " << get_num_constraints() << endl;
 }
+#else
+LP::LP(LPSolverType solver_type,
+   const std::vector<LPVariable> &variables,
+   const std::vector<LPConstraint> &constraints,
+   LPObjectiveSense sense) {
+    // silence unused variable warnings
+    unused_parameter(solver_type);
+    unused_parameter(variables);
+    unused_parameter(constraints);
+    unused_parameter(sense);
+    cerr << "You must build the planner with the USE_LP symbol defined" << endl;
+    exit_with(EXIT_CRITICAL_ERROR);
+}
+#endif
