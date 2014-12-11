@@ -88,7 +88,6 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     switch (solver_type) {
     case CLP:
 #ifdef COIN_HAS_CLP
-        cout << "Using LP solver Clp" << endl;
         return new OsiClpSolverInterface();
 #else
         missing_symbol = "COIN_HAS_CLP";
@@ -97,7 +96,6 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     case CPLEX:
 #ifdef COIN_HAS_CPX
         {
-            cout << "Using LP solver CPLEX" << endl;
             OsiSolverInterface *lp_solver = new OsiCpxSolverInterface();
             lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler());
             return lp_solver;
@@ -108,7 +106,6 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
         break;
     case GUROBI:
 #ifdef COIN_HAS_GRB
-        cout << "Using LP solver Gurobi" << endl;
         return new OsiGrbSolverInterface();
 #else
         missing_symbol = "COIN_HAS_GRB";
