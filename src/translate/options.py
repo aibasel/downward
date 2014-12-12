@@ -37,6 +37,10 @@ def parse_args():
         "severe performance penalty due to weaker relevance analysis "
         "(see issue7).")
     argparser.add_argument(
+        "--keep-unreachable-facts",
+        dest="filter_unreachable_facts", action="store_false",
+        help="keep facts that can't be reached from the initial state")
+    argparser.add_argument(
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
     return argparser.parse_args()

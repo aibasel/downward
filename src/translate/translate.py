@@ -39,8 +39,6 @@ import tools
 # derived variable is synonymous with another variable (derived or
 # non-derived).
 
-DETECT_UNREACHABLE = True
-
 DEBUG = False
 
 simplified_effect_condition_counter = 0
@@ -537,7 +535,7 @@ def pddl_to_sas(task):
     print("%d implied preconditions added" %
           added_implied_precondition_counter)
 
-    if DETECT_UNREACHABLE:
+    if options.filter_unreachable_facts:
         with timers.timing("Detecting unreachable propositions", block=True):
             try:
                 simplify.filter_unreachable_propositions(sas_task)
