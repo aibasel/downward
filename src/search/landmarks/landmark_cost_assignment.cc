@@ -177,14 +177,14 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         if (lm->get_status() != lm_reached) {
-            variables[lm_id].upper_bound = numeric_limits<double>::infinity();
+            variables[lm_id].upper_bound = lp.get_infinity();
         }
     }
 
     // Set up lower bounds and upper bounds for the inequalities.
     // These simply say that the operator's total cost must fall
     // between 0 and the real operator cost.
-    vector<LPConstraint> constraints(num_rows);
+    vector<LPConstraint> constraints(num_rows, LPConstraint(0.0, 0.0));
     for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
         const GlobalOperator &op = g_operators[op_id];
         constraints[op_id].lower_bound = 0;

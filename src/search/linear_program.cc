@@ -38,9 +38,11 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
                            lp_solvers_doc);
 }
 
-LPConstraint::LPConstraint()
-    : lower_bound(-numeric_limits<double>::infinity()),
-      upper_bound(numeric_limits<double>::infinity()) {
+#ifdef USE_LP
+
+LPConstraint::LPConstraint(double lower_bound_, double upper_bound_)
+    : lower_bound(lower_bound_),
+      upper_bound(upper_bound_) {
 }
 
 LPConstraint::~LPConstraint() {
@@ -66,8 +68,6 @@ LPVariable::LPVariable(double lower_bound_, double upper_bound_,
 LPVariable::~LPVariable() {
 }
 
-#ifdef USE_LP
-
 LP::LP(LPSolverType solver_type)
     : is_initialized(false),
       is_solved(false),
@@ -80,20 +80,12 @@ LP::~LP() {
     delete lp_solver;
 }
 
-double LP::translate_infinity(double value) const {
-    if (value == numeric_limits<double>::infinity())
-        return lp_solver->getInfinity();
-    else if (value == -numeric_limits<double>::infinity())
-        return -lp_solver->getInfinity();
-    return value;
-}
-
 template<typename T>
 double *LP::build_array(const vector<T> &vec,
                         function<double(const T&)> func) const {
     double *result = new double[vec.size()];
     for (size_t i = 0; i < vec.size(); ++i) {
-        result[i] = translate_infinity(func(vec[i]));
+        result[i] = func(vec[i]);
     }
     return result;
 }
@@ -107,7 +99,7 @@ CoinPackedVectorBase **LP::get_rows(const std::vector<LPConstraint> &constraints
         CoinPackedVector *coin_vector = new CoinPackedVector(false);
         coin_vector->reserve(variables.size());
         for (size_t j = 0; j < variables.size(); ++j) {
-            coin_vector->insert(variables[j], translate_infinity(coefficients[j]));
+            coin_vector->insert(variables[j], coefficients[j]);
         }
         rows[i] = coin_vector;
     }
@@ -130,6 +122,10 @@ void LP::assign_problem(LPObjectiveSense sense,
         matrix->setDimensions(0, num_columns);
         CoinPackedVectorBase **rows = get_rows(constraints);
         matrix->appendRows(num_rows, rows);
+        for (size_t i = 0; i < constraints.size(); ++i) {
+            delete rows[i];
+        }
+        delete[] rows;
         double *col_lb = build_array<LPVariable>(
             variables,
             [](const LPVariable &var) {return var.lower_bound; });
@@ -151,10 +147,6 @@ void LP::assign_problem(LPObjectiveSense sense,
             lp_solver->setObjSense(-1);
         }
         lp_solver->assignProblem(matrix, col_lb, col_ub, objective, row_lb, row_ub);
-        for (size_t i = 0; i < constraints.size(); ++i) {
-            delete rows[i];
-        }
-        delete[] rows;
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -196,10 +188,18 @@ void LP::clear_temporary_constraints() {
     }
 }
 
+double LP::get_infinity() {
+    try {
+        return lp_solver->getInfinity();
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+}
+
 void LP::set_objective_coefficient(int index, double coefficient) {
     assert(index < get_num_variables());
     try {
-        lp_solver->setObjCoeff(index, translate_infinity(coefficient));
+        lp_solver->setObjCoeff(index, coefficient);
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -209,7 +209,7 @@ void LP::set_objective_coefficient(int index, double coefficient) {
 void LP::set_constraint_lower_bound(int index, double bound) {
     assert(index < get_num_constraints());
     try {
-        lp_solver->setRowLower(index, translate_infinity(bound));
+        lp_solver->setRowLower(index, bound);
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -219,7 +219,7 @@ void LP::set_constraint_lower_bound(int index, double bound) {
 void LP::set_constraint_upper_bound(int index, double bound) {
     assert(index < get_num_constraints());
     try {
-        lp_solver->setRowUpper(index, translate_infinity(bound));
+        lp_solver->setRowUpper(index, bound);
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -229,7 +229,7 @@ void LP::set_constraint_upper_bound(int index, double bound) {
 void LP::set_variable_lower_bound(int index, double bound) {
     assert(index < get_num_variables());
     try {
-        lp_solver->setColLower(index, translate_infinity(bound));
+        lp_solver->setColLower(index, bound);
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -239,7 +239,7 @@ void LP::set_variable_lower_bound(int index, double bound) {
 void LP::set_variable_upper_bound(int index, double bound) {
     assert(index < get_num_variables());
     try {
-        lp_solver->setColUpper(index, translate_infinity(bound));
+        lp_solver->setColUpper(index, bound);
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
@@ -314,14 +314,5 @@ int LP::get_num_constraints() const {
 void LP::print_statistics() const {
     cout << "LP variables: " << get_num_variables() << endl;
     cout << "LP constraints: " << get_num_constraints() << endl;
-}
-#else
-LP::LP(LPSolverType solver_type) {
-    unused_parameter(solver_type);
-    cerr << "You must build the planner with the USE_LP symbol defined" << endl;
-    exit_with(EXIT_CRITICAL_ERROR);
-}
-
-LP::~LP() {
 }
 #endif
