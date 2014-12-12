@@ -15,6 +15,13 @@ def parse_args():
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="output relaxed task (no delete effects)")
     argparser.add_argument(
+        "--full-encoding",
+        dest="use_partial_encoding", action="store_false",
+        help="By default we represent facts that occur in multiple "
+        "mutex groups only in one variable. Using this parameter adds "
+        "these facts to multiple variables. This can make the meaning "
+        "of the variables clearer, but increases the number of facts.")
+    argparser.add_argument(
         "--invariant-generation-max-candidates", default=100000,
         help="max number of candidates for invariant generation "
         "(default: %(default)ds). Set to 0 to disable invariant "

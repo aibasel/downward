@@ -39,7 +39,6 @@ import tools
 # derived variable is synonymous with another variable (derived or
 # non-derived).
 
-USE_PARTIAL_ENCODING = True
 DETECT_UNREACHABLE = True
 DUMP_TASK = False
 
@@ -511,12 +510,11 @@ def pddl_to_sas(task):
 
     with timers.timing("Computing fact groups", block=True):
         groups, mutex_groups, translation_key = fact_groups.compute_groups(
-            task, atoms, reachable_action_params,
-            partial_encoding=USE_PARTIAL_ENCODING)
+            task, atoms, reachable_action_params)
 
     with timers.timing("Building STRIPS to SAS dictionary"):
         ranges, strips_to_sas = strips_to_sas_dictionary(
-            groups, assert_partial=USE_PARTIAL_ENCODING)
+            groups, assert_partial=options.use_partial_encoding)
 
     with timers.timing("Building dictionary for full mutex groups"):
         mutex_ranges, mutex_dict = strips_to_sas_dictionary(
