@@ -15,6 +15,13 @@ def parse_args():
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="output relaxed task (no delete effects)")
     argparser.add_argument(
+        "--invariant-generation-max-candidates", default=100000,
+        help="max number of candidates for invariant generation "
+        "(default: %(default)ds). Set to 0 to disable invariant "
+        "generation and obtain only binary variables. The limit is "
+        "needed for grounded input files that would otherwise produce "
+        "too many candidates.")
+    argparser.add_argument(
         "--invariant-generation-max-time", default=300,
         help="max time for invariant generation (default: %(default)ds)")
     return argparser.parse_args()

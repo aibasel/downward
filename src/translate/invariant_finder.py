@@ -84,9 +84,6 @@ def get_initial_invariants(task):
             part = invariants.InvariantPart(predicate.name, order, omitted_arg)
             yield invariants.Invariant((part,))
 
-# Input file might be grounded, beware of too many invariant candidates
-MAX_CANDIDATES = 100000
-
 def find_invariants(task, reachable_action_params):
     candidates = deque(get_initial_invariants(task))
     print(len(candidates), "initial candidates")
@@ -95,7 +92,8 @@ def find_invariants(task, reachable_action_params):
     balance_checker = BalanceChecker(task, reachable_action_params)
 
     def enqueue_func(invariant):
-        if len(seen_candidates) < MAX_CANDIDATES and invariant not in seen_candidates:
+        if (len(seen_candidates) < options.invariant_generation_max_candidates and
+                invariant not in seen_candidates):
             candidates.append(invariant)
             seen_candidates.add(invariant)
 
