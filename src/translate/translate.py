@@ -41,10 +41,6 @@ import tools
 
 DETECT_UNREACHABLE = True
 
-## Setting the following variable to True can cause a severe
-## performance penalty due to weaker relevance analysis (see issue7).
-ADD_IMPLIED_PRECONDITIONS = False
-
 DEBUG = False
 
 simplified_effect_condition_counter = 0
@@ -275,7 +271,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
 
 def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                        implied_facts):
-    if ADD_IMPLIED_PRECONDITIONS:
+    if options.add_implied_preconditions:
         implied_precondition = set()
         for fact in condition.items():
             implied_precondition.update(implied_facts[fact])
@@ -299,7 +295,7 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                                                   eff_condition_lists):
                     global simplified_effect_condition_counter
                     simplified_effect_condition_counter += 1
-                if (ADD_IMPLIED_PRECONDITIONS and pre == -1 and
+                if (options.add_implied_preconditions and pre == -1 and
                         (var, 1 - post) in implied_precondition):
                     global added_implied_precondition_counter
                     added_implied_precondition_counter += 1
@@ -519,7 +515,7 @@ def pddl_to_sas(task):
         mutex_ranges, mutex_dict = strips_to_sas_dictionary(
             mutex_groups, assert_partial=False)
 
-    if ADD_IMPLIED_PRECONDITIONS:
+    if options.add_implied_preconditions:
         with timers.timing("Building implied facts dictionary..."):
             implied_facts = build_implied_facts(strips_to_sas, groups,
                                                 mutex_groups)

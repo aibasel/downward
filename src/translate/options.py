@@ -32,6 +32,11 @@ def parse_args():
         "--invariant-generation-max-time", default=300,
         help="max time for invariant generation (default: %(default)ds)")
     argparser.add_argument(
+        "--add-implied-preconditions", action="store_true",
+        help="infer additional preconditions. This setting can cause a "
+        "severe performance penalty due to weaker relevance analysis "
+        "(see issue7).")
+    argparser.add_argument(
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
     return argparser.parse_args()
