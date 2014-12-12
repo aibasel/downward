@@ -76,7 +76,7 @@ class LpSolver {
     LP_METHOD(CoinPackedVectorBase **create_rows(
                   const std::vector<LpConstraint> &constraints))
 public:
-    LP_METHOD(LpSolver(LpSolverType solver_type))
+    LP_METHOD(explicit LpSolver(LpSolverType solver_type))
     LP_METHOD(~LpSolver())
 
     LP_METHOD(void assign_problem(
