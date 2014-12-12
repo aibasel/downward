@@ -31,6 +31,9 @@ def parse_args():
     argparser.add_argument(
         "--invariant-generation-max-time", default=300,
         help="max time for invariant generation (default: %(default)ds)")
+    argparser.add_argument(
+        "--dump-task", action="store_true",
+        help="dump human-readable SAS+ representation of the task")
     return argparser.parse_args()
 
 
