@@ -144,7 +144,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type)
+    LandmarkGraph &graph, OperatorCost cost_type, LpSolverType solver_type)
     : LandmarkCostAssignment(graph, cost_type),
       lp(solver_type) {
 }
@@ -173,7 +173,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     // so the coefficients are all 1.
     // The range of cost(lm_1) is {0} if the landmark is already
     // reached; otherwise it is [0, infinity].
-    vector<LPVariable> variables(num_cols, LPVariable(0.0, 0.0, 1.0));
+    vector<LpVariable> variables(num_cols, LpVariable(0.0, 0.0, 1.0));
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         if (lm->get_status() != lm_reached) {
@@ -184,7 +184,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     // Set up lower bounds and upper bounds for the inequalities.
     // These simply say that the operator's total cost must fall
     // between 0 and the real operator cost.
-    vector<LPConstraint> constraints(num_rows, LPConstraint(0.0, 0.0));
+    vector<LpConstraint> constraints(num_rows, LpConstraint(0.0, 0.0));
     for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
         const GlobalOperator &op = g_operators[op_id];
         constraints[op_id].lower_bound = 0;

@@ -1,4 +1,4 @@
-#include "linear_program.h"
+#include "lp_solver.h"
 
 #include "lp_internals.h"
 #include "option_parser.h"
@@ -40,15 +40,15 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
 
 #ifdef USE_LP
 
-LPConstraint::LPConstraint(double lower_bound_, double upper_bound_)
+LpConstraint::LpConstraint(double lower_bound_, double upper_bound_)
     : lower_bound(lower_bound_),
       upper_bound(upper_bound_) {
 }
 
-LPConstraint::~LPConstraint() {
+LpConstraint::~LpConstraint() {
 }
 
-CoinPackedVectorBase *LPConstraint::create_coin_vector() const {
+CoinPackedVectorBase *LpConstraint::create_coin_vector() const {
     assert(variables.size() == coefficients.size());
     return new CoinShallowPackedVector(variables.size(),
                                        variables.data(),
@@ -56,27 +56,27 @@ CoinPackedVectorBase *LPConstraint::create_coin_vector() const {
                                        false);
 }
 
-bool LPConstraint::empty() const {
+bool LpConstraint::empty() const {
     return variables.empty();
 }
 
-void LPConstraint::insert(int index, double coefficient) {
+void LpConstraint::insert(int index, double coefficient) {
     assert(find(variables.begin(), variables.end(), index) == variables.end());
     variables.push_back(index);
     coefficients.push_back(coefficient);
 }
 
-LPVariable::LPVariable(double lower_bound_, double upper_bound_,
+LpVariable::LpVariable(double lower_bound_, double upper_bound_,
                        double objective_coefficient_)
     : lower_bound(lower_bound_),
       upper_bound(upper_bound_),
       objective_coefficient(objective_coefficient_) {
 }
 
-LPVariable::~LPVariable() {
+LpVariable::~LpVariable() {
 }
 
-LP::LP(LPSolverType solver_type)
+LpSolver::LpSolver(LpSolverType solver_type)
     : is_initialized(false),
       is_solved(false),
       num_permanent_constraints(0),
@@ -84,12 +84,12 @@ LP::LP(LPSolverType solver_type)
     lp_solver = create_lp_solver(solver_type);
 }
 
-LP::~LP() {
+LpSolver::~LpSolver() {
     delete lp_solver;
 }
 
 template<typename T>
-double *LP::build_array(const vector<T> &vec,
+double *LpSolver::build_array(const vector<T> &vec,
                         function<double(const T&)> func) const {
     double *result = new double[vec.size()];
     for (size_t i = 0; i < vec.size(); ++i) {
@@ -98,7 +98,7 @@ double *LP::build_array(const vector<T> &vec,
     return result;
 }
 
-CoinPackedVectorBase **LP::create_rows(const std::vector<LPConstraint> &constraints) {
+CoinPackedVectorBase **LpSolver::create_rows(const std::vector<LpConstraint> &constraints) {
     CoinPackedVectorBase **rows = new CoinPackedVectorBase *[constraints.size()];
     for (size_t i = 0; i < constraints.size(); ++i) {
         rows[i] = constraints[i].create_coin_vector();
@@ -106,9 +106,9 @@ CoinPackedVectorBase **LP::create_rows(const std::vector<LPConstraint> &constrai
     return rows;
 }
 
-void LP::assign_problem(LPObjectiveSense sense,
-                        const std::vector<LPVariable> &variables,
-                        const std::vector<LPConstraint> &constraints) {
+void LpSolver::assign_problem(LPObjectiveSense sense,
+                        const std::vector<LpVariable> &variables,
+                        const std::vector<LpConstraint> &constraints) {
     int num_columns = variables.size();
     int num_rows = constraints.size();
     num_permanent_constraints = num_rows;
@@ -126,21 +126,21 @@ void LP::assign_problem(LPObjectiveSense sense,
             delete rows[i];
         }
         delete[] rows;
-        double *col_lb = build_array<LPVariable>(
+        double *col_lb = build_array<LpVariable>(
             variables,
-            [](const LPVariable &var) {return var.lower_bound; });
-        double *col_ub = build_array<LPVariable>(
+            [](const LpVariable &var) {return var.lower_bound; });
+        double *col_ub = build_array<LpVariable>(
             variables,
-            [](const LPVariable &var) {return var.upper_bound; });
-        double *objective = build_array<LPVariable>(
+            [](const LpVariable &var) {return var.upper_bound; });
+        double *objective = build_array<LpVariable>(
             variables,
-            [](const LPVariable &var) {return var.objective_coefficient; });
-        double *row_lb = build_array<LPConstraint>(
+            [](const LpVariable &var) {return var.objective_coefficient; });
+        double *row_lb = build_array<LpConstraint>(
             constraints,
-            [](const LPConstraint &constraint) {return constraint.lower_bound; });
-        double *row_ub = build_array<LPConstraint>(
+            [](const LpConstraint &constraint) {return constraint.lower_bound; });
+        double *row_ub = build_array<LpConstraint>(
             constraints,
-            [](const LPConstraint &constraint) {return constraint.upper_bound; });
+            [](const LpConstraint &constraint) {return constraint.upper_bound; });
         if (sense == LPObjectiveSense::MINIMIZE) {
             lp_solver->setObjSense(1);
         } else {
@@ -152,16 +152,16 @@ void LP::assign_problem(LPObjectiveSense sense,
     }
 }
 
-int LP::add_temporary_constraints(const std::vector<LPConstraint> &constraints) {
+int LpSolver::add_temporary_constraints(const std::vector<LpConstraint> &constraints) {
     int index_of_first_constraint = get_num_constraints();
     if (!constraints.empty()) {
         try {
-            double *row_lb = build_array<LPConstraint>(
+            double *row_lb = build_array<LpConstraint>(
                 constraints,
-                [](const LPConstraint &constraint) {return constraint.lower_bound; });
-            double *row_ub = build_array<LPConstraint>(
+                [](const LpConstraint &constraint) {return constraint.lower_bound; });
+            double *row_ub = build_array<LpConstraint>(
                 constraints,
-                [](const LPConstraint &constraint) {return constraint.upper_bound; });
+                [](const LpConstraint &constraint) {return constraint.upper_bound; });
             CoinPackedVectorBase **rows = create_rows(constraints);
             lp_solver->addRows(constraints.size(), rows, row_lb, row_ub);
             for (size_t i = 0; i < constraints.size(); ++i) {
@@ -177,7 +177,7 @@ int LP::add_temporary_constraints(const std::vector<LPConstraint> &constraints) 
     return index_of_first_constraint;
 }
 
-void LP::clear_temporary_constraints() {
+void LpSolver::clear_temporary_constraints() {
     if (has_temporary_constraints) {
         try {
             lp_solver->restoreBaseModel(num_permanent_constraints);
@@ -188,7 +188,7 @@ void LP::clear_temporary_constraints() {
     }
 }
 
-double LP::get_infinity() {
+double LpSolver::get_infinity() {
     try {
         return lp_solver->getInfinity();
     } catch (CoinError &error) {
@@ -196,7 +196,7 @@ double LP::get_infinity() {
     }
 }
 
-void LP::set_objective_coefficient(int index, double coefficient) {
+void LpSolver::set_objective_coefficient(int index, double coefficient) {
     assert(index < get_num_variables());
     try {
         lp_solver->setObjCoeff(index, coefficient);
@@ -206,7 +206,7 @@ void LP::set_objective_coefficient(int index, double coefficient) {
     is_solved = false;
 }
 
-void LP::set_constraint_lower_bound(int index, double bound) {
+void LpSolver::set_constraint_lower_bound(int index, double bound) {
     assert(index < get_num_constraints());
     try {
         lp_solver->setRowLower(index, bound);
@@ -216,7 +216,7 @@ void LP::set_constraint_lower_bound(int index, double bound) {
     is_solved = false;
 }
 
-void LP::set_constraint_upper_bound(int index, double bound) {
+void LpSolver::set_constraint_upper_bound(int index, double bound) {
     assert(index < get_num_constraints());
     try {
         lp_solver->setRowUpper(index, bound);
@@ -226,7 +226,7 @@ void LP::set_constraint_upper_bound(int index, double bound) {
     is_solved = false;
 }
 
-void LP::set_variable_lower_bound(int index, double bound) {
+void LpSolver::set_variable_lower_bound(int index, double bound) {
     assert(index < get_num_variables());
     try {
         lp_solver->setColLower(index, bound);
@@ -236,7 +236,7 @@ void LP::set_variable_lower_bound(int index, double bound) {
     is_solved = false;
 }
 
-void LP::set_variable_upper_bound(int index, double bound) {
+void LpSolver::set_variable_upper_bound(int index, double bound) {
     assert(index < get_num_variables());
     try {
         lp_solver->setColUpper(index, bound);
@@ -246,7 +246,7 @@ void LP::set_variable_upper_bound(int index, double bound) {
     is_solved = false;
 }
 
-void LP::solve() {
+void LpSolver::solve() {
     try {
         if (is_initialized) {
             lp_solver->resolve();
@@ -267,7 +267,7 @@ void LP::solve() {
     }
 }
 
-bool LP::has_optimal_solution() const {
+bool LpSolver::has_optimal_solution() const {
     assert(is_solved);
     try {
         return !lp_solver->isProvenPrimalInfeasible() && lp_solver->isProvenOptimal();
@@ -276,7 +276,7 @@ bool LP::has_optimal_solution() const {
     }
 }
 
-double LP::get_objective_value() const {
+double LpSolver::get_objective_value() const {
     assert(is_solved);
     try {
         return lp_solver->getObjValue();
@@ -285,7 +285,7 @@ double LP::get_objective_value() const {
     }
 }
 
-std::vector<double> LP::extract_solution() const {
+std::vector<double> LpSolver::extract_solution() const {
     assert(is_solved);
     try {
         const double *sol = lp_solver->getColSolution();
@@ -295,7 +295,7 @@ std::vector<double> LP::extract_solution() const {
     }
 }
 
-int LP::get_num_variables() const {
+int LpSolver::get_num_variables() const {
     try {
         return lp_solver->getNumCols();
     } catch (CoinError &error) {
@@ -303,7 +303,7 @@ int LP::get_num_variables() const {
     }
 }
 
-int LP::get_num_constraints() const {
+int LpSolver::get_num_constraints() const {
     try {
         return lp_solver->getNumRows();
     } catch (CoinError &error) {
@@ -311,7 +311,7 @@ int LP::get_num_constraints() const {
     }
 }
 
-void LP::print_statistics() const {
+void LpSolver::print_statistics() const {
     cout << "LP variables: " << get_num_variables() << endl;
     cout << "LP constraints: " << get_num_constraints() << endl;
 }
