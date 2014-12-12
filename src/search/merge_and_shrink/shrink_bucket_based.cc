@@ -2,6 +2,9 @@
 
 #include "transition_system.h"
 
+#include "../globals.h"
+#include "../rng.h"
+
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -83,12 +86,10 @@ void ShrinkBucketBased::compute_abstraction(
             assert(budget_for_this_bucket >= 2 &&
                    budget_for_this_bucket < static_cast<int>(groups.size()));
             while (static_cast<int>(groups.size()) > budget_for_this_bucket) {
-                // TODO: Use g_rng once the PDB code has been merged.
-                size_t pos1 = static_cast<size_t>(rand()) % groups.size();
+                size_t pos1 = g_rng(groups.size());
                 size_t pos2;
                 do {
-                    // TODO: Use g_rng once the PDB code has been merged.
-                    pos2 = static_cast<size_t>(rand()) % groups.size();
+                    pos2 = g_rng(groups.size());
                 } while (pos1 == pos2);
                 groups[pos1].splice(groups[pos1].begin(), groups[pos2]);
                 swap(groups[pos2], groups.back());
