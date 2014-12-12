@@ -13,7 +13,6 @@ if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
 
 
-import argparse
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
@@ -22,6 +21,7 @@ import axiom_rules
 import fact_groups
 import instantiate
 import normalize
+import options
 import pddl
 import pddl_parser
 import sas_tasks
@@ -635,29 +635,15 @@ def dump_statistics(sas_task):
         print("Translator peak memory: %d KB" % peak_memory)
 
 
-def parse_args():
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument(
-        "domain", nargs="?", help="path to domain pddl file")
-    argparser.add_argument(
-        "task", help="path to task pddl file")
-    argparser.add_argument(
-        "--relaxed", dest="generate_relaxed_task", action="store_true",
-        help="output relaxed task (no delete effects)")
-    return argparser.parse_args()
-
-
 def main():
-    args = parse_args()
-
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl_parser.open(task_filename=args.task, domain_filename=args.domain)
+        task = pddl_parser.open(task_filename=options.task, domain_filename=options.domain)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
-    if args.generate_relaxed_task:
+    if options.generate_relaxed_task:
         # Remove delete effects.
         for action in task.actions:
             for index, effect in reversed(list(enumerate(action.effects))):
