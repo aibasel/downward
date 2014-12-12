@@ -74,28 +74,26 @@ public:
 
 OsiSolverInterface *create_lp_solver(LpSolverType solver_type) {
     string missing_symbol;
+    OsiSolverInterface *lp_solver = 0;
     switch (solver_type) {
     case LpSolverType::CLP:
 #ifdef COIN_HAS_CLP
-        return new OsiClpSolverInterface();
+        lp_solver = new OsiClpSolverInterface;
 #else
         missing_symbol = "COIN_HAS_CLP";
 #endif
         break;
     case LpSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
-        {
-            OsiSolverInterface *lp_solver = new OsiCpxSolverInterface();
-            lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler());
-            return lp_solver;
-        }
+        lp_solver = new OsiCpxSolverInterface;
+        lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
 #else
         missing_symbol = "COIN_HAS_CPX";
 #endif
         break;
     case LpSolverType::GUROBI:
 #ifdef COIN_HAS_GRB
-        return new OsiGrbSolverInterface();
+        lp_solver = new OsiGrbSolverInterface;
 #else
         missing_symbol = "COIN_HAS_GRB";
 #endif
@@ -103,8 +101,12 @@ OsiSolverInterface *create_lp_solver(LpSolverType solver_type) {
     default:
         ABORT("Unknown LP solver type.");
     }
-    cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
-    exit_with(EXIT_CRITICAL_ERROR);
+    if (lp_solver) {
+        return lp_solver;
+    } else {
+        cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
 }
 
 __attribute__((noreturn))
