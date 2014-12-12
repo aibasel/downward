@@ -23,6 +23,7 @@ struct DoubleEpsilonEquality {
 };
 
 class Block {
+    Block() {}
     std::list<int> elements;
     /*
       During the refinement step of EquivalenceRelation, every existing block B
@@ -32,7 +33,9 @@ class Block {
       is created and stored in B for easier access.
     */
     friend class EquivalenceRelation;
+    BlockListIter it_intersection_block;
 public:
+    explicit Block(BlockListIter block_it);
     bool empty() const;
     ElementListIter insert(int element);
     void erase(ElementListIter it);
@@ -40,8 +43,6 @@ public:
     ElementListIter end() {return elements.end(); }
     ElementListConstIter begin() const {return elements.begin(); }
     ElementListConstIter end() const {return elements.end(); }
-    // HACK!
-    BlockListIter it_intersection_block;
 };
 
 class EquivalenceRelation {
