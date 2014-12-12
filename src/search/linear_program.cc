@@ -48,6 +48,14 @@ LPConstraint::LPConstraint(double lower_bound_, double upper_bound_)
 LPConstraint::~LPConstraint() {
 }
 
+CoinPackedVectorBase *LPConstraint::create_coin_vector() const {
+    assert(variables.size() == coefficients.size());
+    return new CoinShallowPackedVector(variables.size(),
+                                       variables.data(),
+                                       coefficients.data(),
+                                       false);
+}
+
 bool LPConstraint::empty() const {
     return variables.empty();
 }
@@ -90,18 +98,10 @@ double *LP::build_array(const vector<T> &vec,
     return result;
 }
 
-CoinPackedVectorBase **LP::get_rows(const std::vector<LPConstraint> &constraints) {
+CoinPackedVectorBase **LP::create_rows(const std::vector<LPConstraint> &constraints) {
     CoinPackedVectorBase **rows = new CoinPackedVectorBase *[constraints.size()];
     for (size_t i = 0; i < constraints.size(); ++i) {
-        const vector <int> &variables = constraints[i].get_variables();
-        const vector <double> &coefficients = constraints[i].get_coefficients();
-        assert(variables.size() == coefficients.size());
-        CoinPackedVector *coin_vector = new CoinPackedVector(false);
-        coin_vector->reserve(variables.size());
-        for (size_t j = 0; j < variables.size(); ++j) {
-            coin_vector->insert(variables[j], coefficients[j]);
-        }
-        rows[i] = coin_vector;
+        rows[i] = constraints[i].create_coin_vector();
     }
     return rows;
 }
@@ -120,7 +120,7 @@ void LP::assign_problem(LPObjectiveSense sense,
         */
         CoinPackedMatrix *matrix = new CoinPackedMatrix(false, 0, 0);
         matrix->setDimensions(0, num_columns);
-        CoinPackedVectorBase **rows = get_rows(constraints);
+        CoinPackedVectorBase **rows = create_rows(constraints);
         matrix->appendRows(num_rows, rows);
         for (size_t i = 0; i < constraints.size(); ++i) {
             delete rows[i];
@@ -162,7 +162,7 @@ int LP::add_temporary_constraints(const std::vector<LPConstraint> &constraints) 
             double *row_ub = build_array<LPConstraint>(
                 constraints,
                 [](const LPConstraint &constraint) {return constraint.upper_bound; });
-            CoinPackedVectorBase **rows = get_rows(constraints);
+            CoinPackedVectorBase **rows = create_rows(constraints);
             lp_solver->addRows(constraints.size(), rows, row_lb, row_ub);
             for (size_t i = 0; i < constraints.size(); ++i) {
                 delete rows[i];

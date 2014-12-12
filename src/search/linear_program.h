@@ -46,8 +46,7 @@ public:
 
     double lower_bound;
     double upper_bound;
-    const std::vector<int> &get_variables() const {return variables; }
-    const std::vector<double> &get_coefficients() const {return coefficients; }
+    LP_METHOD(CoinPackedVectorBase *create_coin_vector() const)
 
     LP_METHOD(bool empty() const)
     LP_METHOD(void insert(int index, double coefficient))
@@ -74,7 +73,7 @@ class LP {
     template<typename T>
     LP_METHOD(double *build_array(const std::vector<T> &vec,
                   std::function<double(const T&)> func) const)
-    LP_METHOD(CoinPackedVectorBase **get_rows(
+    LP_METHOD(CoinPackedVectorBase **create_rows(
                   const std::vector<LPConstraint> &constraints))
 public:
     LP_METHOD(LP(LPSolverType solver_type))
