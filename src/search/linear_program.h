@@ -6,11 +6,17 @@
 #include <functional>
 #include <vector>
 
+/*
+  All methods that use COIN specific classes only do something useful
+  if the planner is compiled with USE_LP. Otherwise, they just print
+  an error message and abort.
+ */
 #ifdef USE_LP
 #define LP_METHOD(X) X;
 #else
 #define LP_METHOD(X) __attribute__((noreturn)) X {\
-    ABORT("LP method called without USE_LP");\
+    ABORT("LP method called without USE_LP. " \
+          << "You must build the planner with the USE_LP symbol defined.");\
 }
 #endif
 
@@ -28,20 +34,23 @@ class OsiSolverInterface;
 
 void add_lp_solver_option_to_parser(OptionParser &parser);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
 public:
-    LPConstraint();
-    ~LPConstraint();
+    LP_METHOD(LPConstraint(double lower_bound_, double upper_bound_))
+    LP_METHOD(~LPConstraint())
 
     double lower_bound;
     double upper_bound;
     const std::vector<int> &get_variables() const {return variables; }
     const std::vector<double> &get_coefficients() const {return coefficients; }
 
-    bool empty() const;
-    void insert(int index, double coefficient);
+    LP_METHOD(bool empty() const)
+    LP_METHOD(void insert(int index, double coefficient))
 };
 
 struct LPVariable {
@@ -49,8 +58,10 @@ struct LPVariable {
     double upper_bound;
     double objective_coefficient;
 
-    LPVariable(double lower_bound_, double upper_bound_, double objective_coefficient_);
-    ~LPVariable();
+    LP_METHOD(LPVariable(double lower_bound_,
+                         double upper_bound_,
+                         double objective_coefficient_))
+    LP_METHOD(~LPVariable())
 };
 
 class LP {
@@ -60,23 +71,14 @@ class LP {
     bool has_temporary_constraints;
     OsiSolverInterface *lp_solver;
 
-    /*
-      All methods except the constructor only do something useful
-      if the planner is compiled with USE_LP. Otherwise, the constructor
-      just prints an error message and exits. All other methods should not
-      be reachable this way so they just abort.
-     */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-    LP_METHOD(double translate_infinity(double value) const)
     template<typename T>
     LP_METHOD(double *build_array(const std::vector<T> &vec,
                   std::function<double(const T&)> func) const)
     LP_METHOD(CoinPackedVectorBase **get_rows(
                   const std::vector<LPConstraint> &constraints))
 public:
-    LP(LPSolverType solver_type);
-    ~LP();
+    LP_METHOD(LP(LPSolverType solver_type))
+    LP_METHOD(~LP())
 
     LP_METHOD(void assign_problem(
                   LPObjectiveSense sense,
@@ -84,6 +86,7 @@ public:
                   const std::vector<LPConstraint> &constraints))
     LP_METHOD(int add_temporary_constraints(const std::vector<LPConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
+    LP_METHOD(double get_infinity())
 
     LP_METHOD(void set_objective_coefficient(int index, double coefficient))
     LP_METHOD(void set_constraint_lower_bound(int index, double bound))
