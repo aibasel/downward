@@ -6,7 +6,10 @@
 
 #include "rng.h"
 
+#include <algorithm>
 #include <ctime>
+#include <random>
+
 using namespace std;
 
 static const int M = 397;
@@ -134,4 +137,9 @@ int RandomNumberGenerator::next(int bound) {
     } while (value + static_cast<unsigned int>(bound) >= 0x80000000UL);
     // Just using modulo doesn't lead to uniform distribution. This does.
     return static_cast<int>(value % bound);
+}
+
+template<class T>
+void RandomNumberGenerator::shuffle(vector<T> &vec) {
+    shuffle(vec.begin(), vec.end(), default_random_engine(seed));
 }

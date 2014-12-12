@@ -1,6 +1,8 @@
 #ifndef RNG_H
 #define RNG_H
 
+#include <vector>
+
 class RandomNumberGenerator {
     static const int N = 624;
     unsigned int mt[N];
@@ -27,6 +29,8 @@ public:
     double operator()() {       // same as next_half_open()
         return next_half_open();
     }
+    template<class T>
+    void shuffle(std::vector<T> &vec);
 };
 
 /*
