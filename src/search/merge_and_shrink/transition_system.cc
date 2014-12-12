@@ -1375,11 +1375,9 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         }
     }
 
-    bool debug = false;
     int multiplier = ts2_size;
     list<Block> new_blocks;
     label_to_representative.resize(g_operators.empty() ? 0 : g_operators.size() * 2 - 1, -1);
-
     for (BlockListConstIter block1_it = ts1->equivalent_labels->begin();
          block1_it != ts1->equivalent_labels->end(); ++block1_it) {
         // Distribute the labels of this block among the "buckets"
@@ -1409,8 +1407,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 == block2_representative_label_no);
             const vector<Transition> &transitions2 =
                 ts2->transitions_by_label[block2_representative_label_no];
-            const vector<int> &new_labels = bucket_it->second;
 
+            // Create the new transitions for this bucket
             vector<Transition> new_transitions;
             // TODO: test against overflow?
             if (transitions1.size() * transitions2.size() > new_transitions.max_size())
@@ -1428,13 +1426,14 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 }
             }
 
+            // Create a new block if the transitions are not empty
+            const vector<int> &new_labels = bucket_it->second;
             if (new_transitions.empty()) {
                 dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
             } else {
                 sort(new_transitions.begin(), new_transitions.end());
                 assert(is_sorted_unique(new_transitions));
-                Block new_block;
-                new_block.it_intersection_block = new_blocks.end();
+                Block new_block(new_blocks.end());
                 int new_representative = new_labels[0];
                 for (size_t i = 0; i < new_labels.size(); ++i) {
                     int label_no = new_labels[i];
@@ -1446,8 +1445,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
             }
         }
         if (!dead_labels.empty()) {
-            Block new_block;
-            new_block.it_intersection_block = new_blocks.end();
+            Block new_block(new_blocks.end());
             int new_representative = dead_labels[0];
             for (size_t i = 0; i < dead_labels.size(); ++i) {
                 int label_no = dead_labels[i];
@@ -1460,72 +1458,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
     equivalent_labels = new EquivalenceRelation(num_labels, new_blocks);
 
-    /* Note:
-       The way we construct the transitions of the new composite transition system,
-       we cannot easily guarantee that they are sorted. Given that we have
-       transitions a->b and c->d in transition system one and two, we would like to
-       have (a,c)->(b,d) in the resultin transition system. There is no obvious way
-       at looking at the transitions of transition systems one and two that would
-       result in the desired ordering. Even in the case that the second
-       transition systems has only self loops, this is not trivial, as we would like
-       to sort transitions to (a,c,b). Only in the case that the first
-       transition system has only self-lopos, by looking at each transition of the
-       first transition system and multiplying in out with the transitions of the
-       second transition, we obtain the desired order (a,c,d).
-     */
-//    for (int label_no = 0; label_no < num_labels; ++label_no) {
-//        if (!labels->is_current_label(label_no))
-//            continue;
-//        vector<Transition> &transitions = transitions_by_label[label_no];
-//        const vector<Transition> &bucket1 =
-//            ts1->get_transitions_for_label(label_no);
-//        const vector<Transition> &bucket2 =
-//            ts2->get_transitions_for_label(label_no);
-//        if (debug) {
-//            cout << "label " << label_no << endl;
-//            if (ts1->is_label_relevant(label_no)) {
-//                cout << "transitions component 1:" << endl;
-//                for (size_t i = 0; i < bucket1.size(); ++i) {
-//                    cout << bucket1[i].src << "->" << bucket1[i].target << endl;
-//                }
-//            } else {
-//                cout << "is irrelevant in component 1" << endl;
-//            }
-//            if (ts2->is_label_relevant(label_no)) {
-//                cout << "transitions component 2:" << endl;
-//                for (size_t i = 0; i < bucket2.size(); ++i) {
-//                    cout << bucket2[i].src << "->" << bucket2[i].target << endl;
-//                }
-//            } else {
-//                cout << "is irrelevant in component 2" << endl;
-//            }
-//        }
-//        if (bucket1.size() * bucket2.size() > transitions.max_size())
-//            exit_with(EXIT_OUT_OF_MEMORY);
-//        transitions.reserve(bucket1.size() * bucket2.size());
-//        for (size_t i = 0; i < bucket1.size(); ++i) {
-//            int src1 = bucket1[i].src;
-//            int target1 = bucket1[i].target;
-//            for (size_t j = 0; j < bucket2.size(); ++j) {
-//                int src2 = bucket2[j].src;
-//                int target2 = bucket2[j].target;
-//                int src = src1 * multiplier + src2;
-//                int target = target1 * multiplier + target2;
-//                transitions.push_back(Transition(src, target));
-//            }
-//        }
-//    }
-
-    // TODO do not check if transitions are sorted but just assume they are not?
     assert(are_transitions_sorted_unique());
-//    if (!are_transitions_sorted_unique()) {
-//        normalize_transitions();
-//    }
     assert(are_equivalent_labels_computed());
-//    compute_local_equivalence_relation();
-    if (debug) {
-        dump_transitions();
-    }
     compute_distances_and_prune();
     assert(is_valid());
 }

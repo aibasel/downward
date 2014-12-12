@@ -7,6 +7,10 @@
 
 using namespace std;
 
+Block::Block(BlockListIter block_it)
+    : it_intersection_block(block_it) {
+}
+
 bool Block::empty() const {
     return elements.empty();
 }
