@@ -2,7 +2,6 @@
 
 #include "landmark_graph.h"
 
-#include "../linear_program.h"
 #include "../utilities.h"
 
 #include <cstdlib>
@@ -145,9 +144,9 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type_)
+    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type)
     : LandmarkCostAssignment(graph, cost_type),
-      solver_type(solver_type_) {
+      lp(solver_type) {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::~LandmarkEfficientOptimalSharedCostAssignment() {
@@ -213,7 +212,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             }
         }
     }
-    LP lp(solver_type, variables, constraints, LPObjectiveSense::MAXIMIZE);
+    lp.assign_problem(LPObjectiveSense::MAXIMIZE, variables, constraints);
     times(&end_build);
 
     // Solve the linear program.

@@ -2,13 +2,13 @@
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
 #include "../globals.h"
+#include "../linear_program.h"
 #include "../operator_cost.h"
 
 #include <set>
 
 class LandmarkGraph;
 class LandmarkNode;
-enum class LPSolverType;
 
 class LandmarkCostAssignment {
     const std::set<int> empty;
@@ -35,7 +35,7 @@ public:
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
-    LPSolverType solver_type;
+    LP lp;
 public:
     LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();

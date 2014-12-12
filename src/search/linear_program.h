@@ -75,12 +75,13 @@ class LP {
     LP_METHOD(CoinPackedVectorBase **get_rows(
                   const std::vector<LPConstraint> &constraints))
 public:
-    LP(LPSolverType solver_type,
-       const std::vector<LPVariable> &variables,
-       const std::vector<LPConstraint> &constraints,
-       LPObjectiveSense sense);
+    LP(LPSolverType solver_type);
     ~LP();
 
+    LP_METHOD(void assign_problem(
+                  LPObjectiveSense sense,
+                  const std::vector<LPVariable> &variables,
+                  const std::vector<LPConstraint> &constraints))
     LP_METHOD(int add_temporary_constraints(const std::vector<LPConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
 
