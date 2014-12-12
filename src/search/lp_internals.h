@@ -10,9 +10,9 @@
 
 class CoinError;
 class OsiSolverInterface;
-enum class LPSolverType;
+enum class LpSolverType;
 
-OsiSolverInterface *create_lp_solver(LPSolverType solver_type);
+OsiSolverInterface *create_lp_solver(LpSolverType solver_type);
 
 /*
   Print the CoinError and then exit with EXIT_CRITICAL_ERROR.

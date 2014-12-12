@@ -1,6 +1,6 @@
 #include "landmark_count_heuristic.h"
 
-#include "../linear_program.h"
+#include "../lp_solver.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 
@@ -40,7 +40,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
                 lgraph,
                 OperatorCost(opts.get_enum("cost_type")),
-                LPSolverType(opts.get_enum("lpsolver")));
+                LpSolverType(opts.get_enum("lpsolver")));
 #else
             cerr << "You must build the planner with the USE_LP symbol defined." << endl
                  << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;

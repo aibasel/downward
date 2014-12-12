@@ -1,7 +1,7 @@
 #include "lp_internals.h"
 
 #ifdef USE_LP
-#include "linear_program.h"
+#include "lp_solver.h"
 #include "utilities.h"
 
 #pragma GCC diagnostic push
@@ -72,17 +72,17 @@ public:
     }
 };
 
-OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
+OsiSolverInterface *create_lp_solver(LpSolverType solver_type) {
     string missing_symbol;
     switch (solver_type) {
-    case LPSolverType::CLP:
+    case LpSolverType::CLP:
 #ifdef COIN_HAS_CLP
         return new OsiClpSolverInterface();
 #else
         missing_symbol = "COIN_HAS_CLP";
 #endif
         break;
-    case LPSolverType::CPLEX:
+    case LpSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
         {
             OsiSolverInterface *lp_solver = new OsiCpxSolverInterface();
@@ -93,7 +93,7 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
         missing_symbol = "COIN_HAS_CPX";
 #endif
         break;
-    case LPSolverType::GUROBI:
+    case LpSolverType::GUROBI:
 #ifdef COIN_HAS_GRB
         return new OsiGrbSolverInterface();
 #else

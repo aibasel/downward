@@ -20,7 +20,7 @@
 }
 #endif
 
-enum class LPSolverType {
+enum class LpSolverType {
     CLP, CPLEX, GUROBI
 };
 
@@ -37,12 +37,12 @@ void add_lp_solver_option_to_parser(OptionParser &parser);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-class LPConstraint {
+class LpConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
 public:
-    LP_METHOD(LPConstraint(double lower_bound_, double upper_bound_))
-    LP_METHOD(~LPConstraint())
+    LP_METHOD(LpConstraint(double lower_bound_, double upper_bound_))
+    LP_METHOD(~LpConstraint())
 
     double lower_bound;
     double upper_bound;
@@ -52,18 +52,18 @@ public:
     LP_METHOD(void insert(int index, double coefficient))
 };
 
-struct LPVariable {
+struct LpVariable {
     double lower_bound;
     double upper_bound;
     double objective_coefficient;
 
-    LP_METHOD(LPVariable(double lower_bound_,
+    LP_METHOD(LpVariable(double lower_bound_,
                          double upper_bound_,
                          double objective_coefficient_))
-    LP_METHOD(~LPVariable())
+    LP_METHOD(~LpVariable())
 };
 
-class LP {
+class LpSolver {
     bool is_initialized;
     bool is_solved;
     int num_permanent_constraints;
@@ -74,16 +74,16 @@ class LP {
     LP_METHOD(double *build_array(const std::vector<T> &vec,
                   std::function<double(const T&)> func) const)
     LP_METHOD(CoinPackedVectorBase **create_rows(
-                  const std::vector<LPConstraint> &constraints))
+                  const std::vector<LpConstraint> &constraints))
 public:
-    LP_METHOD(LP(LPSolverType solver_type))
-    LP_METHOD(~LP())
+    LP_METHOD(LpSolver(LpSolverType solver_type))
+    LP_METHOD(~LpSolver())
 
     LP_METHOD(void assign_problem(
                   LPObjectiveSense sense,
-                  const std::vector<LPVariable> &variables,
-                  const std::vector<LPConstraint> &constraints))
-    LP_METHOD(int add_temporary_constraints(const std::vector<LPConstraint> &constraints))
+                  const std::vector<LpVariable> &variables,
+                  const std::vector<LpConstraint> &constraints))
+    LP_METHOD(int add_temporary_constraints(const std::vector<LpConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity())
 
