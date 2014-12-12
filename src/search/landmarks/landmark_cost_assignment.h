@@ -35,7 +35,7 @@ public:
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
-    LpSolver lp;
+    LpSolver lp_solver;
 public:
     LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph, OperatorCost cost_type, LpSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();

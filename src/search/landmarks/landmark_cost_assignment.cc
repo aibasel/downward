@@ -146,7 +146,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
     LandmarkGraph &graph, OperatorCost cost_type, LpSolverType solver_type)
     : LandmarkCostAssignment(graph, cost_type),
-      lp(solver_type) {
+      lp_solver(solver_type) {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::~LandmarkEfficientOptimalSharedCostAssignment() {
@@ -177,7 +177,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const LandmarkNode *lm = lm_graph.get_lm_for_index(lm_id);
         if (lm->get_status() != lm_reached) {
-            variables[lm_id].upper_bound = lp.get_infinity();
+            variables[lm_id].upper_bound = lp_solver.get_infinity();
         }
     }
 
@@ -212,15 +212,16 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             }
         }
     }
-    lp.assign_problem(LPObjectiveSense::MAXIMIZE, variables, constraints);
+    lp_solver.assign_problem(LPObjectiveSense::MAXIMIZE, variables, constraints);
+
     times(&end_build);
 
     // Solve the linear program.
-    lp.solve();
+    lp_solver.solve();
     times(&end_solve);
 
-    assert(lp.has_optimal_solution());
-    double h = lp.get_objective_value();
+    assert(lp_solver.has_optimal_solution());
+    double h = lp_solver.get_objective_value();
 
     // We might call si->reset() here, but this makes the overall
     // code a bit slower in small tests, presumably due to dynamic
