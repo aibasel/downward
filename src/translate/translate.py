@@ -40,7 +40,6 @@ import tools
 # non-derived).
 
 DETECT_UNREACHABLE = True
-DUMP_TASK = False
 
 ## Setting the following variable to True can cause a severe
 ## performance penalty due to weaker relevance analysis (see issue7).
@@ -424,7 +423,7 @@ def translate_task(strips_to_sas, ranges, translation_key,
     #for axiom in axioms:
     #  axiom.dump()
 
-    if DUMP_TASK:
+    if options.dump_task:
         # Remove init facts that don't occur in strips_to_sas: they're constant.
         nonconstant_init = filter(strips_to_sas.get, init)
         dump_task(nonconstant_init, goals, actions, axioms, axiom_layer_dict)
