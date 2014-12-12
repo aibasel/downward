@@ -334,47 +334,44 @@ void TransitionSystem::normalize_transitions() {
     assert(!are_transitions_sorted_unique());
     //cout << tag() << "normalizing" << endl;
 
-    typedef vector<pair<AbstractStateRef, int> > StateBucket;
+    typedef vector<AbstractStateRef> StateBucket;
 
     // First, partition by target state.
     vector<StateBucket> target_buckets(num_states);
+    vector<StateBucket> src_buckets(num_states);
 
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             vector<Transition> &transitions = transitions_by_label[label_no];
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
-                target_buckets[t.target].push_back(
-                    make_pair(t.src, label_no));
+                target_buckets[t.target].push_back(t.src);
             }
             vector<Transition>().swap(transitions);
-        }
-    }
 
-    // Second, partition by src state.
-    vector<StateBucket> src_buckets(num_states);
+            // Second, partition by src state.
+            for (AbstractStateRef target = 0; target < num_states; ++target) {
+                StateBucket &bucket = target_buckets[target];
+                for (size_t i = 0; i < bucket.size(); ++i) {
+                    AbstractStateRef src = bucket[i];
+                    src_buckets[src].push_back(target);
+                }
+            }
+            target_buckets.assign(num_states, vector<int>());
 
-    for (AbstractStateRef target = 0; target < num_states; ++target) {
-        StateBucket &bucket = target_buckets[target];
-        for (size_t i = 0; i < bucket.size(); ++i) {
-            AbstractStateRef src = bucket[i].first;
-            int label_no = bucket[i].second;
-            src_buckets[src].push_back(make_pair(target, label_no));
-        }
-    }
-    vector<StateBucket>().swap(target_buckets);
+            // Finally, partition by label and drop duplicates.
+            for (AbstractStateRef src = 0; src < num_states; ++src) {
+                StateBucket &bucket = src_buckets[src];
+                for (size_t i = 0; i < bucket.size(); ++i) {
+                    int target = bucket[i];
 
-    // Finally, partition by operator and drop duplicates.
-    for (AbstractStateRef src = 0; src < num_states; ++src) {
-        StateBucket &bucket = src_buckets[src];
-        for (size_t i = 0; i < bucket.size(); ++i) {
-            int target = bucket[i].first;
-            int label_no = bucket[i].second;
-
-            vector<Transition> &op_bucket = transitions_by_label[label_no];
-            Transition trans(src, target);
-            if (op_bucket.empty() || op_bucket.back() != trans)
-                op_bucket.push_back(trans);
+                    vector<Transition> &op_bucket = transitions_by_label[label_no];
+                    Transition trans(src, target);
+                    if (op_bucket.empty() || op_bucket.back() != trans)
+                        op_bucket.push_back(trans);
+                }
+            }
+            src_buckets.assign(num_states, vector<int>());
         }
     }
 
