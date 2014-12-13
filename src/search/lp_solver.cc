@@ -112,6 +112,7 @@ void LpSolver::assign_problem(LPObjectiveSense sense,
     int num_columns = variables.size();
     int num_rows = constraints.size();
     num_permanent_constraints = num_rows;
+    is_initialized = false;
     try {
         /*
           Note that using assignProblem instead of loadProblem, the ownership of
