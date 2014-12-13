@@ -324,27 +324,14 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 }
 
 void TransitionSystem::normalize_transitions() {
-    /*
-      This method sorts all transitions and removes duplicate transitions.
-      Note that currently we do not detect the case where a label
-      becomes irrelevant due to shrinking. This could be a future
-      optimization.
-    */
-
+    // This method sorts all transitions and removes duplicate transitions.
     assert(!are_transitions_sorted_unique());
-    //cout << tag() << "normalizing" << endl;
-
-    typedef vector<AbstractStateRef> StateBucket;
-
-    // First, partition by target state.
-    vector<StateBucket> target_buckets(num_states);
-    vector<StateBucket> src_buckets(num_states);
 
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             vector<Transition> &transitions = transitions_by_label[label_no];
             sort(transitions.begin(), transitions.end());
-            transitions.erase(unique(transitions.begin(), transitions.end() ), transitions.end());
+            transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
         }
     }
 
