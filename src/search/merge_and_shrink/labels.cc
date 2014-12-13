@@ -6,6 +6,7 @@
 #include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
+#include "../rng.h"
 
 #include <algorithm>
 #include <cassert>
@@ -46,7 +47,7 @@ Labels::Labels(const Options &options)
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (label_reduction_system_order == RANDOM) {
-            random_shuffle(transition_system_order.begin(), transition_system_order.end());
+            shuffle_vector(transition_system_order, g_rng);
         }
     } else {
         assert(label_reduction_system_order == REVERSE);
