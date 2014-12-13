@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import logging
 
 from . import aliases
 
@@ -70,6 +71,13 @@ class RawHelpFormatter(argparse.HelpFormatter):
             return argparse.HelpFormatter._format_args(self, action, default_metavar)
 
 
+def _rindex(seq, element):
+    """Like list.index, but gives the index of the *last* occurrence."""
+    seq = list(reversed(seq))
+    reversed_index = seq.index(element)
+    return len(seq) - 1 - reversed_index
+
+
 def _split_off_filenames(planner_args):
     """Given the list of arguments to be passed on to the planner
     components, split it into a prefix of filenames and a suffix of
@@ -85,7 +93,7 @@ def _split_off_filenames(planner_args):
     of options, and all previous arguments are filenames."""
 
     if "--" in planner_args:
-        separator_pos = planner_args.rindex("--")
+        separator_pos = _rindex(planner_args, "--")
         num_filenames = separator_pos
         del planner_args[separator_pos]
     else:
@@ -191,18 +199,32 @@ def _set_components_and_inputs(parser, args):
 
     assert args.components
     first = args.components[0]
+    num_files = len(args.filenames)
+    # When passing --help to any of the components (or -h to the
+    # translator), we don't require input filenames and silently
+    # swallow any that are provided. This is undocument to avoid
+    # cluttering the driver's --help output.
     if first == "translate":
-        if len(args.filenames) not in [1, 2]:
+        if "--help" in args.translate_options or "-h" in args.translate_options:
+            args.translate_inputs = []
+        elif num_files in [1, 2]:
+            args.translate_inputs = args.filenames
+        else:
             parser.error("translator needs one or two input files")
-        args.translate_inputs = args.filenames
     elif first == "preprocess":
-        if len(args.filenames) != 1:
+        if "--help" in args.preprocess_options:
+            args.preprocess_input = None
+        elif num_files == 1:
+            args.preprocess_input, = args.filenames
+        else:
             parser.error("preprocessor needs exactly one input file")
-        args.preprocess_input, = args.filenames
     elif first == "search":
-        if len(args.filenames) != 1:
+        if "--help" in args.search_options:
+            args.search_input = None
+        elif num_files == 1:
+            args.search_input, = args.filenames
+        else:
             parser.error("search needs exactly one input file")
-        args.search_input, = args.filenames
     else:
         assert False, first
 
