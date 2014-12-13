@@ -102,6 +102,7 @@ OsiSolverInterface *create_lp_solver(LpSolverType solver_type) {
         ABORT("Unknown LP solver type.");
     }
     if (lp_solver) {
+        lp_solver->messageHandler()->setLogLevel(0);
         return lp_solver;
     } else {
         cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
