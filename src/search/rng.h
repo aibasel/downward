@@ -11,10 +11,8 @@ class RandomNumberGenerator {
 public:
     RandomNumberGenerator();         // seed with time-dependent value
     RandomNumberGenerator(int seed); // seed with int; see comments for seed()
-    RandomNumberGenerator(unsigned int *array, int count); // seed with array
 
     void seed(int s);
-    void seed(unsigned int *array, int len);
 
     unsigned int next32();      // random integer in [0..2^32-1]
     int next31();               // random integer in [0..2^31-1]

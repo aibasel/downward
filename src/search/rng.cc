@@ -13,11 +13,6 @@ RandomNumberGenerator::RandomNumberGenerator(int s) {
     rng.seed(s);
 }
 
-RandomNumberGenerator::RandomNumberGenerator(
-    unsigned int *init_key, int key_length) {
-    seed(init_key, key_length);
-}
-
 void RandomNumberGenerator::seed(int se) {
     // Seeds should not be zero. Other possible solutions (such as s |= 1)
     // lead to more confusion, because often-used low seeds like 2 and 3 would
@@ -25,11 +20,6 @@ void RandomNumberGenerator::seed(int se) {
     // note in header file).
     unsigned int s = (static_cast<unsigned int>(se) << 1) + 1;
     rng.seed(s);
-}
-
-void RandomNumberGenerator::seed(unsigned int *init_key, int key_length) {
-    seed_seq sequence(init_key, init_key + key_length);
-    rng.seed(sequence);
 }
 
 unsigned int RandomNumberGenerator::next32() {
