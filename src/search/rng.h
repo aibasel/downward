@@ -8,15 +8,12 @@
 #include <vector>
 
 class RandomNumberGenerator {
-    static const int N = 624;
-    unsigned int mt[N];
-    int mti;
+    // Mersenne Twister random number generator.
+    std::mt19937 rng;
 public:
     RandomNumberGenerator();         // seed with time-dependent value
     RandomNumberGenerator(int seed); // seed with int; see comments for seed()
     RandomNumberGenerator(unsigned int *array, int count); // seed with array
-    RandomNumberGenerator(const RandomNumberGenerator &copy);
-    RandomNumberGenerator &operator=(const RandomNumberGenerator &copy);
 
     void seed(int s);
     void seed(unsigned int *array, int len);
@@ -41,11 +38,6 @@ void shuffle_vector(std::vector<T> &vec, RandomNumberGenerator &rng) {
     std::default_random_engine generator(1);
     shuffle(vec.begin(), vec.end(), generator);
 }
-
-/*
-  TODO: Add a static assertion that guarantees that ints are 32 bit.
-        In cases where they are not, need to adapt the code.
- */
 
 /*
   Notes on seeding
