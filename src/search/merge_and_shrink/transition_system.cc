@@ -343,35 +343,8 @@ void TransitionSystem::normalize_transitions() {
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             vector<Transition> &transitions = transitions_by_label[label_no];
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &t = transitions[i];
-                target_buckets[t.target].push_back(t.src);
-            }
-            vector<Transition>().swap(transitions);
-
-            // Second, partition by src state.
-            for (AbstractStateRef target = 0; target < num_states; ++target) {
-                StateBucket &bucket = target_buckets[target];
-                for (size_t i = 0; i < bucket.size(); ++i) {
-                    AbstractStateRef src = bucket[i];
-                    src_buckets[src].push_back(target);
-                }
-            }
-            target_buckets.assign(num_states, vector<int>());
-
-            // Finally, partition by label and drop duplicates.
-            for (AbstractStateRef src = 0; src < num_states; ++src) {
-                StateBucket &bucket = src_buckets[src];
-                for (size_t i = 0; i < bucket.size(); ++i) {
-                    int target = bucket[i];
-
-                    vector<Transition> &op_bucket = transitions_by_label[label_no];
-                    Transition trans(src, target);
-                    if (op_bucket.empty() || op_bucket.back() != trans)
-                        op_bucket.push_back(trans);
-                }
-            }
-            src_buckets.assign(num_states, vector<int>());
+            sort(transitions.begin(), transitions.end());
+            transitions.erase(unique(transitions.begin(), transitions.end() ), transitions.end());
         }
     }
 
