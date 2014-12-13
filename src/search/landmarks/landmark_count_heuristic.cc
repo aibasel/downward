@@ -36,16 +36,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             exit_with(EXIT_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
-#ifdef USE_LP
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
                 lgraph,
                 OperatorCost(opts.get_enum("cost_type")),
                 LpSolverType(opts.get_enum("lpsolver")));
-#else
-            cerr << "You must build the planner with the USE_LP symbol defined." << endl
-                 << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
-            exit_with(EXIT_INPUT_ERROR);
-#endif
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(
                 lgraph, opts.get<bool>("alm"),

@@ -15,8 +15,11 @@
 #define LP_METHOD(X) X;
 #else
 #define LP_METHOD(X) __attribute__((noreturn)) X {\
-    ABORT("LP method called without USE_LP. " \
-          << "You must build the planner with the USE_LP symbol defined.");\
+    ABORT("LP method called but the planner was compiled without LP support." \
+          << std::endl \
+          << "See http://www.fast-downward.org/LPBuildInstructions " \
+          << std::endl \
+          << "to install an LP solver and use it in the planner.");\
 }
 #endif
 
