@@ -1,6 +1,10 @@
 #ifndef RNG_H
 #define RNG_H
 
+#include "utilities.h"
+
+#include <algorithm>
+#include <random>
 #include <vector>
 
 class RandomNumberGenerator {
@@ -29,9 +33,14 @@ public:
     double operator()() {       // same as next_half_open()
         return next_half_open();
     }
-    template<class T>
-    void shuffle(std::vector<T> &vec);
 };
+
+template <class T>
+void shuffle_vector(std::vector<T> &vec, RandomNumberGenerator &rng) {
+    unused_parameter(rng);
+    std::default_random_engine generator(1);
+    shuffle(vec.begin(), vec.end(), generator);
+}
 
 /*
   TODO: Add a static assertion that guarantees that ints are 32 bit.
