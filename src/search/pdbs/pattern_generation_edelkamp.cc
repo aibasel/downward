@@ -212,7 +212,7 @@ void PatternGenerationEdelkamp::bin_packing() {
 
     for (int i = 0; i < num_collections; ++i) {
         // random variable ordering for all pattern collections
-        shuffle_vector(variables, g_rng);
+        g_rng.shuffle(variables);
         vector<vector<bool> > pattern_collection;
         vector<bool> pattern(g_variable_name.size(), false);
         int current_size = 1;

@@ -29,13 +29,12 @@ public:
         return next_half_open();
     }
     template <class T>
-    friend void shuffle_vector(std::vector<T> &vec, RandomNumberGenerator &rng);
+    void shuffle(std::vector<T> &vec) {
+        std::shuffle(vec.begin(), vec.end(), rng);
+    }
 };
 
-template <class T>
-void shuffle_vector(std::vector<T> &vec, RandomNumberGenerator &rng) {
-    shuffle(vec.begin(), vec.end(), rng.rng);
-}
+
 
 /*
   Notes on seeding
