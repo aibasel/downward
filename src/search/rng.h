@@ -30,13 +30,13 @@ public:
     double operator()() {       // same as next_half_open()
         return next_half_open();
     }
+    template <class T>
+    friend void shuffle_vector(std::vector<T> &vec, RandomNumberGenerator &rng);
 };
 
 template <class T>
 void shuffle_vector(std::vector<T> &vec, RandomNumberGenerator &rng) {
-    unused_parameter(rng);
-    std::default_random_engine generator(1);
-    shuffle(vec.begin(), vec.end(), generator);
+    shuffle(vec.begin(), vec.end(), rng.rng);
 }
 
 /*
