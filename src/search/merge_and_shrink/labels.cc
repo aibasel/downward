@@ -47,7 +47,7 @@ Labels::Labels(const Options &options)
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (label_reduction_system_order == RANDOM) {
-            shuffle_vector(transition_system_order, g_rng);
+            g_rng.shuffle(transition_system_order);
         }
     } else {
         assert(label_reduction_system_order == REVERSE);
