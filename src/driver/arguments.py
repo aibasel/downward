@@ -201,7 +201,7 @@ def _set_components_and_inputs(parser, args):
     num_files = len(args.filenames)
     # When passing --help to any of the components (or -h to the
     # translator), we don't require input filenames and silently
-    # swallow any that are provided. This is undocument to avoid
+    # swallow any that are provided. This is undocumented to avoid
     # cluttering the driver's --help output.
     if first == "translate":
         if "--help" in args.translate_options or "-h" in args.translate_options:
