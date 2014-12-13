@@ -1,8 +1,6 @@
 #ifndef RNG_H
 #define RNG_H
 
-#include "utilities.h"
-
 #include <algorithm>
 #include <random>
 #include <vector>
