@@ -325,8 +325,6 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 
 void TransitionSystem::normalize_transitions() {
     // This method sorts all transitions and removes duplicate transitions.
-    assert(!are_transitions_sorted_unique());
-
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             vector<Transition> &transitions = transitions_by_label[label_no];
@@ -334,7 +332,6 @@ void TransitionSystem::normalize_transitions() {
             transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
         }
     }
-
     assert(are_transitions_sorted_unique());
 }
 
