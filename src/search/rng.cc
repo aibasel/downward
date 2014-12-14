@@ -20,8 +20,8 @@ void RandomNumberGenerator::seed(int seed) {
 }
 
 double RandomNumberGenerator::operator()() {
-    unsigned int a = next_uint() >> 5, b = next_uint() >> 6;
-    return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
+    uniform_real_distribution<double> distribution(0.0, 1.0);
+    return distribution(rng);
 }
 
 int RandomNumberGenerator::operator()(int bound) {
