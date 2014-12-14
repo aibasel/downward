@@ -38,6 +38,11 @@ public:
     }
 
     template <class T>
+    T &choose(std::vector<T> &vec) {
+        return vec[(*this)(vec.size())];
+    }
+
+    template <class T>
     void shuffle(std::vector<T> &vec) {
         std::shuffle(vec.begin(), vec.end(), rng);
     }
