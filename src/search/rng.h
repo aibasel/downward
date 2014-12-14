@@ -16,11 +16,6 @@ public:
 
     void seed(int seed);
 
-    // random integer in [0..2^32-1]
-    unsigned int next_uint() {
-        return rng();
-    }
-
     double operator()();        // random double in [0..1), 2^53 possible values
     int operator()(int bound);  // random integer in [0..bound), bound < 2^31
 
