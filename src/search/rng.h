@@ -16,18 +16,14 @@ public:
 
     void seed(int seed);
 
-    unsigned int next32();      // random integer in [0..2^32-1]
-    int next31();               // random integer in [0..2^31-1]
-    double next_half_open();    // random float in [0..1), 2^53 possible values
-    double next_closed();       // random float in [0..1], 2^53 possible values
-    double next_open();         // random float in (0..1), 2^53 possible values
-    int next(int bound);        // random integer in [0..bound), bound < 2^31
-    int operator()(int bound) { // same as next()
-        return next(bound);
+    // random integer in [0..2^32-1]
+    unsigned int next_uint() {
+        return rng();
     }
-    double operator()() {       // same as next_half_open()
-        return next_half_open();
-    }
+
+    double operator()();        // random double in [0..1), 2^53 possible values
+    int operator()(int bound);  // random integer in [0..bound), bound < 2^31
+
     template <class T>
     void shuffle(std::vector<T> &vec) {
         std::shuffle(vec.begin(), vec.end(), rng);
