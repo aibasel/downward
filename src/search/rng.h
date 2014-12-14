@@ -20,6 +20,8 @@ public:
     RandomNumberGenerator(const RandomNumberGenerator &) = delete;
     RandomNumberGenerator &operator=(const RandomNumberGenerator &) = delete;
 
+    ~RandomNumberGenerator();
+
     void seed(int seed);
 
     // Return random double in [0..1).

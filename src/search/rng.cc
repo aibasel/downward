@@ -14,6 +14,9 @@ RandomNumberGenerator::RandomNumberGenerator(int seed_) {
     seed(seed_);
 }
 
+RandomNumberGenerator::~RandomNumberGenerator() {
+}
+
 void RandomNumberGenerator::seed(int seed) {
     rng.seed(seed);
 }
