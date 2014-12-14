@@ -9,17 +9,12 @@ RandomNumberGenerator::RandomNumberGenerator() {
     rng.seed(static_cast<int>(time(0)));
 }
 
-RandomNumberGenerator::RandomNumberGenerator(int s) {
-    rng.seed(s);
+RandomNumberGenerator::RandomNumberGenerator(int seed) {
+    rng.seed(seed);
 }
 
-void RandomNumberGenerator::seed(int se) {
-    // Seeds should not be zero. Other possible solutions (such as s |= 1)
-    // lead to more confusion, because often-used low seeds like 2 and 3 would
-    // be identical. This leads to collisions only for rarely used seeds (see
-    // note in header file).
-    unsigned int s = (static_cast<unsigned int>(se) << 1) + 1;
-    rng.seed(s);
+void RandomNumberGenerator::seed(int seed) {
+    rng.seed(seed);
 }
 
 unsigned int RandomNumberGenerator::next32() {
