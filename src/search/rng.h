@@ -9,8 +9,8 @@ class RandomNumberGenerator {
     // Mersenne Twister random number generator.
     std::mt19937 rng;
 public:
-    RandomNumberGenerator();         // seed with time-dependent value
-    RandomNumberGenerator(int seed); // seed with integer
+    RandomNumberGenerator();          // seed with time-dependent value
+    RandomNumberGenerator(int seed_); // seed with integer
 
     void seed(int seed);
 

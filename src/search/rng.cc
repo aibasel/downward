@@ -1,16 +1,17 @@
 #include "rng.h"
 
-#include <ctime>
+#include <chrono>
 
 using namespace std;
 
 
 RandomNumberGenerator::RandomNumberGenerator() {
-    rng.seed(static_cast<int>(time(0)));
+    unsigned int secs = chrono::system_clock::now().time_since_epoch().count();
+    seed(secs);
 }
 
-RandomNumberGenerator::RandomNumberGenerator(int seed) {
-    rng.seed(seed);
+RandomNumberGenerator::RandomNumberGenerator(int seed_) {
+    seed(seed_);
 }
 
 void RandomNumberGenerator::seed(int seed) {
