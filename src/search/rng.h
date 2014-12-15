@@ -13,13 +13,9 @@ class RandomNumberGenerator {
 public:
     // Seed with time-dependent value.
     RandomNumberGenerator();
-
-    // Seed with integer.
-    explicit RandomNumberGenerator(int seed_);
-
+    explicit RandomNumberGenerator(int seed);
     RandomNumberGenerator(const RandomNumberGenerator &) = delete;
     RandomNumberGenerator &operator=(const RandomNumberGenerator &) = delete;
-
     ~RandomNumberGenerator();
 
     void seed(int seed);
