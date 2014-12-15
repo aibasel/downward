@@ -19,8 +19,8 @@ ElementListIter Block::insert(int element) {
     return elements.insert(elements.end(), element);
 }
 
-void Block::erase(ElementListIter it) {
-    elements.erase(it);
+ElementListIter Block::erase(ElementListIter it) {
+    return elements.erase(it);
 }
 
 EquivalenceRelation::EquivalenceRelation(int n)
@@ -67,6 +67,10 @@ int EquivalenceRelation::replace_elements_by_new_one(
           one, we could use the same block, but for the sake of the blocks
           being orderd (by the smallest element contained in the block), we
           delete the old empty block and create a new one.
+
+          TODO: due to the incremental way of calling this, all old elements
+          of a block can be removed one after the other, leaving the block
+          with only new elements, breaking the order.
         */
         blocks.erase(canonical_block_it);
         canonical_block_it = add_empty_block();
@@ -112,6 +116,33 @@ void EquivalenceRelation::insert(int new_element, int existing_element) {
     ++num_elements;
 }
 
+void EquivalenceRelation::integrate_second_into_first(BlockListIter block1_it,
+                                                      BlockListIter block2_it) {
+    vector<int> elements;
+    elements.reserve(block1_it->size() + block2_it->size());
+    ElementListIter elem_it = block1_it->begin();
+    while (elem_it != block1_it->end()) {
+        int element = *elem_it;
+        elements.push_back(element);
+        elem_it = block1_it->erase(elem_it);
+    }
+    assert(block1_it->empty());
+    elem_it = block2_it->begin();
+    while (elem_it != block2_it->end()) {
+        int element = *elem_it;
+        elements.push_back(element);
+        elem_it = block2_it->erase(elem_it);
+    }
+    assert(block2_it->empty());
+    sort(elements.begin(), elements.end());
+    BlockListIter new_block_it = block1_it;
+    for (size_t i = 0; i < elements.size(); ++i) {
+        int element = elements[i];
+        ElementListIter elem_it = new_block_it->insert(element);
+        element_positions[element] = make_pair(block1_it, elem_it);
+    }
+}
+
 int EquivalenceRelation::get_num_elements() const {
     return num_elements;
 }
@@ -136,6 +167,26 @@ BlockListIter EquivalenceRelation::add_empty_block() {
     Block empty;
     empty.it_intersection_block = blocks.end();
     return blocks.insert(blocks.end(), empty);
+}
+
+void EquivalenceRelation::sort_blocks() {
+    blocks.sort();
+}
+
+bool EquivalenceRelation::are_blocks_sorted() const {
+    int previous_element = -1;
+    for (BlockListConstIter block_it = blocks.begin();
+         block_it != blocks.end(); ++block_it) {
+        if (*block_it->begin() <= previous_element) {
+            return false;
+        }
+        previous_element = *block_it->begin();
+    }
+    return true;
+}
+
+BlockListIter EquivalenceRelation::erase(BlockListIter block_it) {
+    return blocks.erase(block_it);
 }
 
 /*
