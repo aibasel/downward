@@ -11,8 +11,7 @@ class RandomNumberGenerator {
     std::mt19937 rng;
 
 public:
-    // Seed with time-dependent value.
-    RandomNumberGenerator();
+    RandomNumberGenerator();  // Seed with time-dependent value.
     explicit RandomNumberGenerator(int seed);
     RandomNumberGenerator(const RandomNumberGenerator &) = delete;
     RandomNumberGenerator &operator=(const RandomNumberGenerator &) = delete;
@@ -34,8 +33,13 @@ public:
     }
 
     template <class T>
-    T &choose(std::vector<T> &vec) {
-        return vec[(*this)(vec.size())];
+    typename std::vector<T>::const_iterator choose(const std::vector<T> &vec) {
+        return vec.begin() + operator()(vec.size());
+    }
+
+    template <class T>
+    typename std::vector<T>::iterator choose(std::vector<T> &vec) {
+        return vec.begin() + operator()(vec.size());
     }
 
     template <class T>

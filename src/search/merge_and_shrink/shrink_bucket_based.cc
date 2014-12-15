@@ -86,13 +86,13 @@ void ShrinkBucketBased::compute_abstraction(
             assert(budget_for_this_bucket >= 2 &&
                    budget_for_this_bucket < static_cast<int>(groups.size()));
             while (static_cast<int>(groups.size()) > budget_for_this_bucket) {
-                size_t pos1 = g_rng(groups.size());
-                size_t pos2;
-                do {
-                    pos2 = g_rng(groups.size());
-                } while (pos1 == pos2);
-                groups[pos1].splice(groups[pos1].begin(), groups[pos2]);
-                swap(groups[pos2], groups.back());
+                auto it1 = g_rng.choose(groups);
+                auto it2 = it1;
+                while (it1 == it2) {
+                    it2 = g_rng.choose(groups);
+                }
+                it1->splice(it1->begin(), *it2);
+                swap(*it2, groups.back());
                 assert(groups.back().empty());
                 groups.pop_back();
             }
