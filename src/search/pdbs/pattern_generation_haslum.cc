@@ -142,7 +142,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
             if (applicable_ops.empty()) {
                 break;
             } else {
-                const GlobalOperator *random_op = g_rng.choose(applicable_ops);
+                const GlobalOperator *random_op = *g_rng.choose(applicable_ops);
                 assert(random_op->is_applicable(current_state));
                 current_state = sample_registry.get_successor_state(current_state, *random_op);
                 // if current state is a dead end, then restart with initial state
