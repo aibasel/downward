@@ -64,6 +64,7 @@ bool TransitionSystem::is_valid() const {
             && are_equivalent_labels_computed()
             && is_label_reduced();
     if (valid) {
+        assert(equivalent_labels->are_blocks_sorted());
         assert(check_equivrel_consistent());
     }
     return valid;
@@ -370,6 +371,11 @@ bool TransitionSystem::is_label_relevant(int label_no) const {
     }
 }
 
+void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
+    sort(transitions.begin(), transitions.end());
+    transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
+}
+
 bool TransitionSystem::are_transitions_sorted_unique() const {
     /*
       Determine whether the transitions are sorted uniquely or not.
@@ -396,8 +402,7 @@ void TransitionSystem::normalize_transitions() {
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             vector<Transition> &transitions = transitions_by_label[label_no];
-            sort(transitions.begin(), transitions.end());
-            transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
+            normalize_given_transitions(transitions);
         }
     }
     assert(are_transitions_sorted_unique());
@@ -669,6 +674,8 @@ void TransitionSystem::apply_abstraction(
         return;
     }
 
+    bool debug = false;
+
     cout << tag() << "applying abstraction (" << get_size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
@@ -721,32 +728,66 @@ void TransitionSystem::apply_abstraction(
     vector<int>().swap(goal_distances);
     vector<bool>().swap(goal_states);
 
-    vector<vector<Transition> > new_transitions_by_label(
-        transitions_by_label.size());
+    // Update all transitions. Locally equivalent labels remain locally equivalent.
     for (BlockListConstIter it = equivalent_labels->begin();
          it != equivalent_labels->end(); ++it) {
         const Block &block = *it;
         int representative_label_no = *block.begin();
-        const vector<Transition> &transitions =
+        vector<Transition> &transitions =
             transitions_by_label[representative_label_no];
-        for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
-            int label_no = *jt;
-            vector<Transition> &new_transitions =
-                new_transitions_by_label[label_no];
-            new_transitions.reserve(transitions.size());
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &trans = transitions[i];
-                int src = abstraction_mapping[trans.src];
-                int target = abstraction_mapping[trans.target];
-                if (src != PRUNED_STATE && target != PRUNED_STATE)
-                    new_transitions.push_back(Transition(src, target));
+        assert(is_sorted_unique(transitions_by_label[representative_label_no]));
+        vector<Transition> new_transitions;
+        for (size_t i = 0; i < transitions.size(); ++i) {
+            const Transition &trans = transitions[i];
+            int src = abstraction_mapping[trans.src];
+            int target = abstraction_mapping[trans.target];
+            if (src != PRUNED_STATE && target != PRUNED_STATE)
+                new_transitions.push_back(Transition(src, target));
+        }
+        normalize_given_transitions(new_transitions);
+        transitions.swap(new_transitions);
+        assert(is_sorted_unique(transitions_by_label[representative_label_no]));
+    }
+
+    // For every block of equivalent labels, check if their transitions are
+    // locally equivalent with other blocks.
+    BlockListIter end_block = equivalent_labels->end();
+    for (BlockListIter block1_it = equivalent_labels->begin();
+         block1_it != end_block; ++block1_it) {
+        assert(!block1_it->empty());
+        int block1_representative_label_no = *block1_it->begin();
+        if (debug)
+            cout << "block representative: " << block1_representative_label_no << endl;
+        int cost1 = labels->get_label_cost(block1_representative_label_no);
+        if (debug)
+            cout << "cost: " << cost1 << endl;
+        vector<Transition> &trans1 = transitions_by_label[block1_representative_label_no];
+        for (BlockListIter block2_it = block1_it;
+             block2_it != end_block; ++block2_it) {
+            if (block2_it == block1_it)
+                continue;
+            int block2_representative_label_no = *block2_it->begin();
+            assert(block1_representative_label_no < block2_representative_label_no);
+            if (debug)
+                cout << "other block representative: " << block2_representative_label_no << endl;
+            if (labels->get_label_cost(block2_representative_label_no) == cost1) {
+                vector<Transition> &trans2 =
+                    transitions_by_label[block2_representative_label_no];
+                if ((trans1.empty() && trans2.empty()) || trans1 == trans2) {
+                    for (ElementListConstIter elem_it = block2_it->begin();
+                         elem_it != block2_it->end(); ++elem_it) {
+                        label_to_representative[*elem_it] = block1_representative_label_no;
+                    }
+                    equivalent_labels->integrate_second_into_first(block1_it, block2_it);
+                    vector<Transition>().swap(trans2);
+                    block2_it = equivalent_labels->erase(block2_it);
+                    --block2_it;
+                }
             }
         }
     }
-    vector<vector<Transition> >().swap(transitions_by_label);
 
     num_states = new_num_states;
-    transitions_by_label.swap(new_transitions_by_label);
     init_distances.swap(new_init_distances);
     goal_distances.swap(new_goal_distances);
     goal_states.swap(new_goal_states);
@@ -778,15 +819,7 @@ void TransitionSystem::apply_abstraction(
       distances may trigger another round of shrinking, normalizing, computation
       of equivalence relation etc.
     */
-    if (equivalent_labels) {
-        delete equivalent_labels;
-        equivalent_labels = 0;
-    }
-    // TODO do not check if transitions are sorted but just assume they are not?
-    if (!are_transitions_sorted_unique()) {
-        normalize_transitions();
-    }
-    compute_local_equivalence_relation();
+    equivalent_labels->sort_blocks();
     if (must_clear_distances) {
         compute_distances_and_prune();
     }
@@ -959,6 +992,12 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             cout << "after update:" << endl;
             equivalent_labels->dump();
         }
+        // TODO: for some reasons, blocks are not sorted necessarily at this
+        // point, e.g. not for rovers problem28.
+//        assert(equivalent_labels->are_blocks_sorted());
+        equivalent_labels->sort_blocks();
+    } else {
+        equivalent_labels->sort_blocks();
     }
 
     // NOTE: as we currently only combine labels of the same cost, we do not
@@ -1406,6 +1445,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
     }
 
     equivalent_labels = new EquivalenceRelation(num_labels, new_blocks);
+    equivalent_labels->sort_blocks();
 
     assert(are_transitions_sorted_unique());
     assert(are_equivalent_labels_computed());

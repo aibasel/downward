@@ -37,12 +37,22 @@ class Block {
 public:
     explicit Block(BlockListIter block_it);
     bool empty() const;
+    int size() const {
+        return elements.size();
+    }
     ElementListIter insert(int element);
-    void erase(ElementListIter it);
+    ElementListIter erase(ElementListIter it);
     ElementListIter begin() {return elements.begin(); }
     ElementListIter end() {return elements.end(); }
     ElementListConstIter begin() const {return elements.begin(); }
     ElementListConstIter end() const {return elements.end(); }
+    bool operator<(const Block &rhs) const {
+        if (empty())
+            return true;
+        if (rhs.empty())
+            return false;
+        return elements.front() < rhs.elements.front();
+    }
 };
 
 class EquivalenceRelation {
@@ -73,12 +83,13 @@ public:
                                     int new_element);
     void remove_elements(const std::vector<int> &existing_elements);
     void insert(int new_element, int existing_element);
+    void integrate_second_into_first(BlockListIter block1_it, BlockListIter block2_it);
+    void sort_blocks();
+    bool are_blocks_sorted() const;
+    BlockListIter erase(BlockListIter block_it);
     // Cannot be declared const due to operator[]
     BlockListConstIter get_block_iterator_for_element(int element) {
         return element_positions[element].first;
-    }
-    const std::list<Block> &get_blocks() const {
-        return blocks;
     }
 
     int get_num_elements() const;
@@ -90,6 +101,8 @@ public:
     //       The same question goes for get_num_blocks().
     //       This is also a problem with get_num_elements() as there can be less
     //       explicitly specified elements than num_elements.
+    BlockListIter begin() {return blocks.begin(); }
+    BlockListIter end() {return blocks.end(); }
     BlockListConstIter begin() const {return blocks.begin(); }
     BlockListConstIter end() const {return blocks.end(); }
 

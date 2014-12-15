@@ -117,6 +117,7 @@ class TransitionSystem {
 
     // Methods related to the representation of transitions
     bool is_label_relevant(int label_no) const;
+    void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     void normalize_transitions();
     bool is_label_reduced() const;
