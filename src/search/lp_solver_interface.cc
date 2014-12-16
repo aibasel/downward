@@ -5,6 +5,7 @@
 
 #ifdef COIN_HAS_CLP
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Woverflow"
 #include <OsiClpSolverInterface.hpp>
 #endif
 #ifdef COIN_HAS_CPX
