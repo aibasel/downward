@@ -10,7 +10,7 @@ using namespace std;
 
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
-    : evaluators(opts.get_list<ScalarEvaluator *>("sublists")),
+    : evaluators(opts.get_list<ScalarEvaluator *>("evaluators")),
       size(0),
       dead_end(false),
       dead_end_reliable(false) {
@@ -131,13 +131,13 @@ OpenList<Entry> *TypeBasedOpenList<Entry>::_parse(OptionParser &parser) {
         "When retrieving a node, a bucket is chosen "
         "uniformly at random and one of the contained nodes is selected "
         "uniformly randomly.");
-    parser.add_list_option<ScalarEvaluator *>("sublists", "The evaluators to group the nodes by.");
+    parser.add_list_option<ScalarEvaluator *>("evaluators", "Evaluators used to determine the bucket for each entry.");
 
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
 
-    opts.verify_list_non_empty<ScalarEvaluator *>("sublists");
+    opts.verify_list_non_empty<ScalarEvaluator *>("evaluators");
     if (parser.dry_run())
         return 0;
     else
