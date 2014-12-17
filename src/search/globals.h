@@ -24,7 +24,7 @@ bool test_goal(const GlobalState &state);
   one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
 */
 void save_plan(const std::vector<const GlobalOperator *> &plan,
-               bool generates_multiple_plan_files=false);
+               bool generates_multiple_plan_files = false);
 int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 
 void read_everything(std::istream &in);
