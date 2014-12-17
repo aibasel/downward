@@ -103,6 +103,7 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
         int pre = get_pre(*op, var);
         int post = get_post(*op, var);
         if (post == UNDEFINED) {
+            assert(pre == UNDEFINED);
             // If the domains of v1 and w don't intersect, we must add the other arc.
             bool v1_and_w_intersect = v1->domains_intersect(w, var);
             if (v1_and_w_intersect) {
