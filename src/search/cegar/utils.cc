@@ -1,20 +1,22 @@
 #include "utils.h"
 
-#include <cassert>
-#include <fstream>
-#include <set>
-#include <sstream>
-#include <tr1/unordered_map>
-#include <vector>
-
-#include <ext/hash_map>
-
 #include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../timer.h"
 #include "../utilities.h"
-#include "../landmarks/h_m_landmarks.h"
+
+#include "../landmarks/landmark_graph.h"
+
+#include <ext/hash_map>
+
+#include <algorithm>
+#include <cassert>
+#include <fstream>
+#include <set>
+#include <sstream>
+#include <unordered_map>
+#include <vector>
 
 using namespace std;
 using namespace std::tr1;
@@ -119,13 +121,10 @@ void write_landmark_graph(const LandmarkGraph &graph) {
     dotfile << "digraph landmarkgraph {" << endl;
 
 
-    for (set<LandmarkNode *>::const_iterator it = nodes2.begin(); it
-         != nodes2.end(); it++) {
-        LandmarkNode *node_p = *it;
+    for (const auto *node_p: nodes2) {
         Fact node_fact = get_fact(node_p);
-        for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator parent_it =
-                 node_p->parents.begin(); parent_it != node_p->parents.end(); ++parent_it) {
-            const LandmarkNode *parent_p = parent_it->first;
+        for (const auto &parent_pair : node_p->parents) {
+            const LandmarkNode *parent_p = parent_pair.first;
             Fact parent_fact = get_fact(parent_p);
             dotfile << "  \"" << get_node_name(parent_fact) << "\" -> "
                     << "\"" << get_node_name(node_fact) << "\";" << endl;
@@ -144,6 +143,20 @@ void write_landmark_graph(const LandmarkGraph &graph) {
     dotfile.close();
 }
 
+string get_variable_name(int var) {
+    string name = g_fact_names[var][0];
+    name = name.substr(5);
+    return "\"" + name + "\"";
+}
+
+bool is_goal_var(int var) {
+    for (size_t i = 0; i < g_goal.size(); ++i) {
+        if (g_goal[i].first == var)
+            return true;
+    }
+    return false;
+}
+
 void write_causal_graph() {
     ofstream dotfile("causal-graph.dot");
     if (!dotfile.is_open()) {
@@ -154,12 +167,14 @@ void write_causal_graph() {
     for (size_t var = 0; var < g_variable_domain.size(); ++var) {
         const vector<int> &successors = g_causal_graph->get_successors(var);
         for (size_t i = 0; i < successors.size(); ++i) {
-            dotfile << "  " << var << " -> " << successors[i] << ";" << endl;
+            if (g_initial_state()[successors[i]] == 1 && !is_goal_var(var))
+                dotfile << "  " << get_variable_name(var) << " -> "
+                        << get_variable_name(successors[i]) << ";" << endl;
         }
     }
     for (size_t i = 0; i < g_goal.size(); i++) {
         int var = g_goal[i].first;
-        dotfile << var << " [color=red];" << endl;
+        dotfile << "  " << get_variable_name(var) << " [color=red];" << endl;
     }
     dotfile << "}" << endl;
     dotfile.close();
