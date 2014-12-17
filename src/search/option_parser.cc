@@ -275,8 +275,8 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 throw ArgError("missing argument after --internal-previous-portfolio-plans");
             ++i;
             g_is_part_of_portfolio = true;
-            g_previously_generated_plans = parse_int_arg(arg, args[i]);
-            if (g_previously_generated_plans <= 0)
+            g_num_previously_generated_plans = parse_int_arg(arg, args[i]);
+            if (g_num_previously_generated_plans <= 0)
                 throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
         } else {
             throw ArgError("unknown option " + arg);
