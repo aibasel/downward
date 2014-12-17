@@ -103,8 +103,7 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_
     assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
-    for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
-             node->parents.begin(); it != node->parents.end(); ++it) {
+    for (auto it = node->parents.begin(); it != node->parents.end(); ++it) {
         const LandmarkNode *parent = it->first;
         open.push_back(parent);
     }
@@ -116,8 +115,7 @@ void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_
         closed.insert(ancestor);
         Fact ancestor_fact = get_fact(ancestor);
         (*groups)[ancestor_fact.first].insert(ancestor_fact.second);
-        for (__gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
-                 ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
+        for (auto it = ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
             const LandmarkNode *parent = it->first;
             open.push_back(parent);
         }
