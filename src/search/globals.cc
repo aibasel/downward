@@ -63,7 +63,7 @@ void save_plan(const vector<const GlobalOperator *> &plan,
     //       and hence should maybe be moved into the SearchEngine.
     ostringstream filename;
     filename << g_plan_filename;
-    int plan_number = g_previously_generated_plans + 1;
+    int plan_number = g_num_previously_generated_plans + 1;
     if (generates_multiple_plan_files || g_is_part_of_portfolio) {
         filename << "." << plan_number;
     } else {
@@ -80,7 +80,7 @@ void save_plan(const vector<const GlobalOperator *> &plan,
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
-    ++g_previously_generated_plans;
+    ++g_num_previously_generated_plans;
 }
 
 bool peek_magic(istream &in, string magic) {
@@ -393,7 +393,7 @@ CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
-int g_previously_generated_plans = 0;
+int g_num_previously_generated_plans = 0;
 bool g_is_part_of_portfolio = false;
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;
