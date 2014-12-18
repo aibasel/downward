@@ -72,7 +72,7 @@ extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
-extern bool g_is_part_of_portfolio;
+extern bool g_is_part_of_anytime_portfolio;
 extern RandomNumberGenerator g_rng;
 // Only one global object for now. Could later be changed to use one instance
 // for each problem in this case the method GlobalState::get_id would also have to be
