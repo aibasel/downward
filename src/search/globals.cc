@@ -64,7 +64,7 @@ void save_plan(const vector<const GlobalOperator *> &plan,
     ostringstream filename;
     filename << g_plan_filename;
     int plan_number = g_num_previously_generated_plans + 1;
-    if (generates_multiple_plan_files || g_is_part_of_portfolio) {
+    if (generates_multiple_plan_files || g_is_part_of_anytime_portfolio) {
         filename << "." << plan_number;
     } else {
         assert(plan_number == 1);
@@ -394,6 +394,6 @@ CausalGraph *g_causal_graph;
 Timer g_timer;
 string g_plan_filename = "sas_plan";
 int g_num_previously_generated_plans = 0;
-bool g_is_part_of_portfolio = false;
+bool g_is_part_of_anytime_portfolio = false;
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;
