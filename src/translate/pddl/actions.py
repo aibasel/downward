@@ -66,7 +66,8 @@ class Action(object):
         result.effects = [eff.untyped() for eff in self.effects]
         return result
 
-    def instantiate(self, var_mapping, init_facts, fluent_facts, objects_by_type):
+    def instantiate(self, var_mapping, init_facts, fluent_facts,
+        objects_by_type, metric):
         """Return a PropositionalAction which corresponds to the instantiation of
         this action with the arguments in var_mapping. Only fluent parts of the
         conditions (those in fluent_facts) are included. init_facts are evaluated
@@ -89,10 +90,13 @@ class Action(object):
             eff.instantiate(var_mapping, init_facts, fluent_facts,
                             objects_by_type, effects)
         if effects:
-            if self.cost is None:
-                cost = 0
+            if metric:
+                if self.cost is None:
+                    cost = 0
+                else:
+                    cost = int(self.cost.instantiate(var_mapping, init_facts).expression.value)
             else:
-                cost = int(self.cost.instantiate(var_mapping, init_facts).expression.value)
+                cost = 1
             return PropositionalAction(name, precondition, effects, cost)
         else:
             return None

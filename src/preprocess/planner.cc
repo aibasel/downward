@@ -103,5 +103,5 @@ int main(int argc, const char **) {
                        mutexes, initial_state, goals,
                        operators, axioms, successor_generator,
                        transition_graphs, causal_graph);
-    cout << "done" << endl << endl;
+    cout << "done" << endl;
 }

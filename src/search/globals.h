@@ -19,7 +19,12 @@ class Timer;
 class StateRegistry;
 
 bool test_goal(const GlobalState &state);
-void save_plan(const std::vector<const GlobalOperator *> &plan, int iter);
+/*
+  Set generates_multiple_plan_files to true if the planner can find more than
+  one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
+*/
+void save_plan(const std::vector<const GlobalOperator *> &plan,
+               bool generates_multiple_plan_files = false);
 int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 
 void read_everything(std::istream &in);
@@ -66,6 +71,8 @@ extern CausalGraph *g_causal_graph;
 extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;
+extern int g_num_previously_generated_plans;
+extern bool g_is_part_of_anytime_portfolio;
 extern RandomNumberGenerator g_rng;
 // Only one global object for now. Could later be changed to use one instance
 // for each problem in this case the method GlobalState::get_id would also have to be

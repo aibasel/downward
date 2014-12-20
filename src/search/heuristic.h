@@ -4,9 +4,6 @@
 #include "scalar_evaluator.h"
 #include "operator_cost.h"
 
-#include <map>
-#include <set>
-#include <string>
 #include <vector>
 
 class GlobalOperator;
@@ -45,12 +42,13 @@ public:
     virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
                              const GlobalState &state);
 
-    // for abstract parent ScalarEvaluator
-    int get_value() const;
-    void evaluate(int g, bool preferred);
-    bool dead_end_is_reliable() const;
+    // virtual methods inherited from Evaluator and ScalarEvaluator:
+    virtual int get_value() const;
+    virtual void evaluate(int g, bool preferred);
+    virtual bool dead_end_is_reliable() const;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) {hset.insert(this); }
+
     void set_evaluator_value(int val);
-    void get_involved_heuristics(std::set<Heuristic *> &hset) {hset.insert(this); }
     OperatorCost get_cost_type() const {return cost_type; }
 
     static void add_options_to_parser(OptionParser &parser);

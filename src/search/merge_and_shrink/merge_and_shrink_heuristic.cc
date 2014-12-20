@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    labels = new Labels(opts, cost_type);
+    labels = new Labels(opts);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -32,7 +32,7 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    labels->dump_options();
+    labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
@@ -58,12 +58,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    // vector of all transition systems. entries with 0 have been merged.
+    // Set of all transition systems. Entries with 0 have been merged.
     vector<TransitionSystem *> all_transition_systems;
     if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
         exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
-    TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels);
+    TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels, cost_type);
 
     cout << "Merging transition systems..." << endl;
 
@@ -85,15 +85,10 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (shrink_strategy->reduce_labels_before_shrinking()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             reduced_labels = true;
-            transition_system->normalize();
-            other_transition_system->normalize();
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
         }
 
-        // distances need to be computed before shrinking
-        transition_system->compute_distances_and_prune();
-        other_transition_system->compute_distances_and_prune();
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -114,8 +109,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (!reduced_labels) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
         }
-        transition_system->normalize();
-        other_transition_system->normalize();
         if (!reduced_labels) {
             // only print statistics if we just possibly reduced labels
             other_transition_system->statistics(use_expensive_statistics);
@@ -148,7 +141,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         }
     }
 
-    final_transition_system->compute_distances_and_prune();
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 

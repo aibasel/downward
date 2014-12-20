@@ -5,6 +5,7 @@
 
 #ifdef COIN_HAS_CLP
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Woverflow"
 #include <OsiClpSolverInterface.hpp>
 #endif
 #ifdef COIN_HAS_CPX
@@ -20,6 +21,7 @@ using namespace std;
 static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
 static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
 static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
+static const string CPLEX_ERROR_OOM_DEVEX = "CPX0000  Not enough memory for devex.";
 
 /*
   CPLEX sometimes does not report errors as exceptions and only prints an
@@ -47,7 +49,9 @@ public:
         */
         if (messageBuffer_ == CPLEX_WARNING_COMPRESS) {
             CoinMessageHandler::checkSeverity();
-        } else if (messageBuffer_ == CPLEX_ERROR_OOM || messageBuffer_ == CPLEX_ERROR_OOM_PRE) {
+        } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
+                   messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
+                   messageBuffer_ == CPLEX_ERROR_OOM_DEVEX) {
             exit_with(EXIT_OUT_OF_MEMORY);
         } else {
             exit_with(EXIT_CRITICAL_ERROR);

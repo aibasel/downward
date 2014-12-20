@@ -57,29 +57,30 @@ int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
     return plan_cost;
 }
 
-void save_plan(const vector<const GlobalOperator *> &plan, int iter) {
+void save_plan(const vector<const GlobalOperator *> &plan,
+               bool generates_multiple_plan_files) {
     // TODO: Refactor: this is only used by the SearchEngine classes
     //       and hence should maybe be moved into the SearchEngine.
-    ofstream outfile;
-    if (iter == 0) {
-        outfile.open(g_plan_filename.c_str(), ios::out);
+    ostringstream filename;
+    filename << g_plan_filename;
+    int plan_number = g_num_previously_generated_plans + 1;
+    if (generates_multiple_plan_files || g_is_part_of_anytime_portfolio) {
+        filename << "." << plan_number;
     } else {
-        ostringstream out;
-        out << g_plan_filename << "." << iter;
-        outfile.open(out.str().c_str(), ios::out);
+        assert(plan_number == 1);
     }
+    ofstream outfile(filename.str());
     for (size_t i = 0; i < plan.size(); ++i) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
         outfile << "(" << plan[i]->get_name() << ")" << endl;
     }
-    outfile.close();
     int plan_cost = calculate_plan_cost(plan);
-    ofstream statusfile;
-    statusfile.open("plan_numbers_and_cost", ios::out | ios::app);
-    statusfile << iter << " " << plan_cost << endl;
-    statusfile.close();
+    outfile << "; cost = " << plan_cost << " ("
+            << (is_unit_cost() ? "unit cost" : "general cost") << ")" << endl;
+    outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
+    ++g_num_previously_generated_plans;
 }
 
 bool peek_magic(istream &in, string magic) {
@@ -272,15 +273,22 @@ void read_everything(istream &in) {
     cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
-    cout << "Variables: " << g_variable_domain.size() << endl;
-    cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() *
-    g_state_packer->get_bin_size_in_bytes() << endl;
     cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
     g_state_registry = new StateRegistry;
+
+    int num_vars = g_variable_domain.size();
+    int num_facts = 0;
+    for (int var = 0; var < num_vars; ++var)
+        num_facts += g_variable_domain[var];
+
+    cout << "Variables: " << num_vars << endl;
+    cout << "Facts: " << num_facts << endl;
+    cout << "Bytes per state: "
+         << g_state_packer->get_num_bins() *
+    g_state_packer->get_bin_size_in_bytes() << endl;
 
     cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
@@ -385,5 +393,7 @@ CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
+int g_num_previously_generated_plans = 0;
+bool g_is_part_of_anytime_portfolio = false;
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;

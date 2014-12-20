@@ -1,5 +1,5 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef HELPER_FUNCTIONS_H
+#define HELPER_FUNCTIONS_H
 
 #include "state.h"
 #include "variable.h"
