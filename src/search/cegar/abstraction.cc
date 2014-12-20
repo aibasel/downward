@@ -23,12 +23,11 @@
 #include <queue>
 #include <set>
 #include <sstream>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 using namespace std;
-using namespace std::tr1;
 
 namespace cegar_heuristic {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;

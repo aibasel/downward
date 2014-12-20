@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <string>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -20,7 +20,7 @@ namespace cegar_heuristic {
 class AbstractState;
 class Task;
 
-typedef std::tr1::unordered_set<AbstractState *> AbstractStates;
+typedef std::unordered_set<AbstractState *> AbstractStates;
 
 const int STATES_LOG_STEP = 1000;
 
