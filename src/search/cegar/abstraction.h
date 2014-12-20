@@ -16,7 +16,7 @@
 
 class StateRegistry;
 
-namespace cegar_heuristic {
+namespace cegar {
 class AbstractState;
 class Task;
 

@@ -29,7 +29,7 @@
 
 using namespace std;
 
-namespace cegar_heuristic {
+namespace cegar {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
 Abstraction::Abstraction(const Task *task_)

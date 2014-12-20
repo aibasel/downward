@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-namespace cegar_heuristic {
+namespace cegar {
 extern bool DEBUG;
 
 const int UNDEFINED = -1;

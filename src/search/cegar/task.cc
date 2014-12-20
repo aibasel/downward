@@ -10,7 +10,7 @@
 
 using namespace std;
 
-namespace cegar_heuristic {
+namespace cegar {
 Task::Task(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
            vector<int> initial_state_data_, vector<Fact> goal_facts)
     : initial_state_data(initial_state_data_),
