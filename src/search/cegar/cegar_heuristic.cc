@@ -16,11 +16,10 @@
 #include <cassert>
 #include <cmath>
 #include <string>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
-using namespace std::tr1;
 
 namespace cegar_heuristic {
 CegarHeuristic::CegarHeuristic(const Options &opts)

@@ -13,7 +13,7 @@
 #include <ostream>
 #include <set>
 #include <string>
-#include <tr1/unordered_set>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -68,7 +68,7 @@ std::string to_string(int i);
 std::string to_string(Fact fact);
 std::string to_string(const std::vector<int> &v);
 std::string to_string(const std::set<int> &s);
-std::string to_string(const std::tr1::unordered_set<int> &s);
+std::string to_string(const std::unordered_set<int> &s);
 
 std::ostream &operator<<(std::ostream &os, const Fact &fact);
 }

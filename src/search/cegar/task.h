@@ -11,14 +11,14 @@
 #include <vector>
 
 namespace cegar_heuristic {
-typedef std::tr1::unordered_set<Fact, hash_fact> FactSet;
+typedef std::unordered_set<Fact, hash_fact> FactSet;
 
 class Task {
 private:
     std::vector<int> initial_state_data;
     std::vector<Fact> goal;
     std::vector<int> variable_domain;
-    std::vector<std::tr1::unordered_set<int> > unreachable_facts;
+    std::vector<std::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
     std::vector<GlobalOperator> operators;
     std::vector<int> original_operator_numbers;
@@ -54,7 +54,7 @@ public:
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
     bool translate_state(const GlobalState &state, int *translated) const;
 
-    void combine_facts(int var, std::tr1::unordered_set<int> &values);
+    void combine_facts(int var, std::unordered_set<int> &values);
 
     void install();
     void release_memory();
@@ -67,7 +67,7 @@ public:
     const std::vector<Fact> &get_goals() const {return goal; }
     const std::vector<int> &get_initial_state_data() const {return initial_state_data; }
     const std::vector<int> &get_variable_domain() const {return variable_domain; }
-    const std::vector<std::tr1::unordered_set<int> > &get_unreachable_facts() const {return unreachable_facts; }
+    const std::vector<std::unordered_set<int> > &get_unreachable_facts() const {return unreachable_facts; }
 
     int get_projected_index(int var, int value) const {return task_index[var][value]; }
 
