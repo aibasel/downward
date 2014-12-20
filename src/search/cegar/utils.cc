@@ -121,7 +121,7 @@ void write_landmark_graph(const LandmarkGraph &graph) {
     dotfile << "digraph landmarkgraph {" << endl;
 
 
-    for (const auto *node_p: nodes2) {
+    for (const auto *node_p : nodes2) {
         Fact node_fact = get_fact(node_p);
         for (const auto &parent_pair : node_p->parents) {
             const LandmarkNode *parent_p = parent_pair.first;
