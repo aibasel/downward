@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace cegar_heuristic {
+namespace cegar {
 class AbstractState;
 
 class Values {

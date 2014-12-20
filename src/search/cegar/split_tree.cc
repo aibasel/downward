@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace cegar_heuristic {
+namespace cegar {
 Node::Node(AbstractState *state)
     : abs_state(state),
       left_child(0),

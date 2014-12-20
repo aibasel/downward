@@ -12,7 +12,7 @@
 
 class GlobalState;
 
-namespace cegar_heuristic {
+namespace cegar {
 class Abstraction;
 class Task;
 

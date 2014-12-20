@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace cegar_heuristic {
+namespace cegar {
 vector<int> Values::variable_domain;
 int Values::facts = -1;
 vector<int> Values::borders;

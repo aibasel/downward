@@ -21,7 +21,7 @@
 
 using namespace std;
 
-namespace cegar_heuristic {
+namespace cegar {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),

@@ -20,7 +20,7 @@
 
 using namespace std;
 
-namespace cegar_heuristic {
+namespace cegar {
 bool DEBUG = false;
 
 // For values <= 50 MB the planner is often killed during the search.

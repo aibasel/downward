@@ -16,7 +16,7 @@
 
 using namespace std;
 
-namespace cegar_heuristic {
+namespace cegar {
 AbstractState::AbstractState(const Task *task_)
     : task(task_),
       values(new Values()),

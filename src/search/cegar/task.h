@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace cegar_heuristic {
+namespace cegar {
 typedef std::unordered_set<Fact, hash_fact> FactSet;
 
 class Task {

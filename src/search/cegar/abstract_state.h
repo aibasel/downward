@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace cegar_heuristic {
+namespace cegar {
 class AbstractState;
 class Task;
 class Values;
