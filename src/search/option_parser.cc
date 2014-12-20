@@ -233,7 +233,6 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 throw ArgError("missing argument after --random-seed");
             ++i;
             int seed = parse_int_arg(arg, args[i]);
-            srand(seed);
             g_rng.seed(seed);
             cout << "random seed: " << seed << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
