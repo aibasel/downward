@@ -1,5 +1,6 @@
 #include "shrink_bisimulation.h"
 
+#include "labels.h"
 #include "transition_system.h"
 
 #include "../option_parser.h"
@@ -194,25 +195,28 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    int num_labels = ts.get_num_labels();
+    const Labels *labels = ts.get_labels();
+    int num_labels = labels->get_size();
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const vector<Transition> &transitions =
-            ts.get_transitions_for_label(label_no);
-        int label_cost = ts.get_label_cost_by_index(label_no);
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            const Transition &trans = transitions[i];
-            assert(signatures[trans.src + 1].state == trans.src);
-            bool skip_transition = false;
-            if (greedy) {
-                int src_h = ts.get_goal_distance(trans.src);
-                int target_h = ts.get_goal_distance(trans.target);
-                assert(target_h + label_cost >= src_h);
-                skip_transition = (target_h + label_cost != src_h);
-            }
-            if (!skip_transition) {
-                int target_group = state_to_group[trans.target];
-                signatures[trans.src + 1].succ_signature.push_back(
-                    make_pair(label_no, target_group));
+        if (labels->is_current_label(label_no)) {
+            const vector<Transition> &transitions =
+                ts.get_transitions_for_label(label_no);
+            int label_cost = labels->get_label_cost(label_no);
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const Transition &trans = transitions[i];
+                assert(signatures[trans.src + 1].state == trans.src);
+                bool skip_transition = false;
+                if (greedy) {
+                    int src_h = ts.get_goal_distance(trans.src);
+                    int target_h = ts.get_goal_distance(trans.target);
+                    assert(target_h + label_cost >= src_h);
+                    skip_transition = (target_h + label_cost != src_h);
+                }
+                if (!skip_transition) {
+                    int target_group = state_to_group[trans.target];
+                    signatures[trans.src + 1].succ_signature.push_back(
+                        make_pair(label_no, target_group));
+                }
             }
         }
     }

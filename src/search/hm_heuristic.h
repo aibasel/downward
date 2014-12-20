@@ -1,8 +1,9 @@
 #ifndef HM_HEURISTIC_H
 #define HM_HEURISTIC_H
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
