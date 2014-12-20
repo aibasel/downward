@@ -12,9 +12,9 @@ namespace cegar_heuristic {
 class AbstractState;
 class Task;
 class Values;
-typedef std::pair<const GlobalOperator*, AbstractState *> Arc;
+typedef std::pair<const GlobalOperator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
-typedef std::vector<const GlobalOperator*> Loops;
+typedef std::vector<const GlobalOperator *> Loops;
 
 class AbstractState {
 private:

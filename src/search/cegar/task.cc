@@ -94,7 +94,7 @@ void Task::remove_inapplicable_operators(const FactSet reached_facts) {
 
 void Task::keep_single_effect(const Fact &last_fact) {
     for (size_t i = 0; i < operators.size(); ++i) {
-       GlobalOperator&op = operators[i];
+        GlobalOperator &op = operators[i];
         // If op achieves last_fact set eff(op) = {last_fact}.
         if (get_eff(op, last_fact.first) == last_fact.second)
             op.keep_single_effect(last_fact.first, last_fact.second);
