@@ -103,8 +103,7 @@ endif
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-# Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
-CXXFLAGS += -std=c++0x -Wall -Wextra -pedantic -Wno-sign-compare -Wno-deprecated -Werror
+CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Wno-sign-compare -Wno-deprecated -Werror
 
 ## The following lines contain workarounds for bugs when
 ## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
