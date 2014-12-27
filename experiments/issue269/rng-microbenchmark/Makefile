@@ -1,76 +1,17 @@
-## Variables prefixed with "DOWNWARD_" are used to configure the
-## build. They can be changed on the command line or set as
-## environment variables.
-
-## By default, build in 32-bit mode. Use DOWNWARD_BITWIDTH=64
-## to build in 64-bit mode and DOWNWARD_BITWIDTH=native to use
-## the native bitness of the OS.
-DOWNWARD_BITWIDTH ?= 32
-
-## Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to
-## disable/enable static linking of the executable in release mode.
-## On OS X, this is unsupported and will be silently disabled.
-DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
-
-## On a supported operating system, there should be no need to override
-## the DOWNWARD_OS setting. If the provided code does not work even
-## though your operating system is a supported one, please report this
-## as a bug.
-DOWNWARD_OS ?= auto
-
+DOWNWARD_BITWIDTH=32
 
 HEADERS = \
-          axiom.h \
-          causal_graph.h \
-          domain_transition_graph.h \
-          helper_functions.h \
-          max_dag.h \
-          mutex_group.h \
-          operator.h \
-          scc.h \
-          state.h \
-          successor_generator.h \
-          variable.h \
+          alt_inlined_rng.h \
+          inlined_rng.h \
+          old_rng.h \
+          rng.h \
 
-SOURCES = planner.cc $(HEADERS:%.h=%.cc)
-TARGET = preprocess
+SOURCES = main.cc $(HEADERS:%.h=%.cc)
+TARGET = benchmark
 
 default: release
 
-ARGS_PROFILE =
-
-SHELL = /bin/bash
-
-ifeq ($(DOWNWARD_OS), auto)
-    UNAME := $(shell uname)
-
-    ifeq ($(UNAME), Darwin)
-        DOWNWARD_OS=osx
-    else ifeq ($(UNAME), Linux)
-        DOWNWARD_OS=linux
-    else
-        UNAME_O := $(shell uname -o)
-    endif
-
-    ifeq ($(UNAME_O), Cygwin)
-        ## For now, we treat Linux and Cygwin equally in this
-        ## Makefile, so we just call Cygwin "linux".
-        DOWNWARD_OS=linux
-    else ifeq ($(UNAME_O), Msys)
-        DOWNWARD_OS=windows
-    else ifeq ($(DOWNWARD_OS), auto)
-        $(warning OS detection failed -- setting to Linux and hoping for the best!)
-        DOWNWARD_OS=linux
-    endif
-endif
-
-ifeq ($(DOWNWARD_OS), osx)
-    ## Disable static linking on OS X.
-    DOWNWARD_LINK_RELEASE_STATICALLY=0
-endif
-
-
-OBJECT_SUFFIX_RELEASE =
+OBJECT_SUFFIX_RELEASE = .release
 TARGET_SUFFIX_RELEASE =
 OBJECT_SUFFIX_DEBUG   = .debug
 TARGET_SUFFIX_DEBUG   = -debug
@@ -103,21 +44,14 @@ endif
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Wno-sign-compare -Wno-deprecated -Werror
+# Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
+CXXFLAGS += -std=c++0x -Wall -Wextra -pedantic -Wno-deprecated -Werror
 
 LDFLAGS =
 LDFLAGS += $(BITWIDTHOPT)
 LDFLAGS += -g
 
 POSTLINKOPT =
-
-## Additional specialized options for the various targets follow.
-## In release mode, we link statically since this makes it more likely
-## that local compiles will work on the various grids (gkigrid, Black
-## Forest Grid, maia).
-##
-## NOTE: This precludes some uses of exceptions.
-##        For details, see man gcc on -static-libgcc.
 
 CXXFLAGS_RELEASE  = -O3 -DNDEBUG -fomit-frame-pointer
 CXXFLAGS_DEBUG    = -O3
@@ -131,21 +65,11 @@ POSTLINKOPT_RELEASE =
 POSTLINKOPT_DEBUG   =
 POSTLINKOPT_PROFILE =
 
-ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 1)
-    LDFLAGS_RELEASE += -static -static-libgcc
-endif
+LDFLAGS_RELEASE += -static -static-libgcc
 
-ifeq ($(DOWNWARD_OS), linux)
-    ifeq ($(DOWNWARD_LINK_RELEASE_STATICALLY), 0)
-        POSTLINKOPT_RELEASE += -lrt
-    else
-        POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
-    endif
-    POSTLINKOPT_DEBUG  += -lrt
-    POSTLINKOPT_PROFILE += -lrt
-endif
-
-
+POSTLINKOPT_RELEASE += -Wl,-Bstatic -lrt
+POSTLINKOPT_DEBUG  += -lrt
+POSTLINKOPT_PROFILE += -lrt
 
 all: release debug profile
 
@@ -192,7 +116,7 @@ clean:
 	rm -rf .obj
 	rm -f *~ *.pyc
 	rm -f Makefile.depend gmon.out PROFILE core
-	rm -f output
+	rm -f sas_plan
 
 distclean: clean
 	rm -f $(TARGET_RELEASE) $(TARGET_DEBUG) $(TARGET_PROFILE)

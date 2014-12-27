@@ -324,60 +324,14 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 }
 
 void TransitionSystem::normalize_transitions() {
-    /*
-      This method sorts all transitions and removes duplicate transitions.
-      Note that currently we do not detect the case where a label
-      becomes irrelevant due to shrinking. This could be a future
-      optimization.
-    */
-
-    assert(!are_transitions_sorted_unique());
-    //cout << tag() << "normalizing" << endl;
-
-    typedef vector<pair<AbstractStateRef, int> > StateBucket;
-
-    // First, partition by target state.
-    vector<StateBucket> target_buckets(num_states);
-
+    // This method sorts all transitions and removes duplicate transitions.
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels->is_current_label(label_no)) {
             vector<Transition> &transitions = transitions_by_label[label_no];
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &t = transitions[i];
-                target_buckets[t.target].push_back(
-                    make_pair(t.src, label_no));
-            }
-            vector<Transition>().swap(transitions);
+            sort(transitions.begin(), transitions.end());
+            transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
         }
     }
-
-    // Second, partition by src state.
-    vector<StateBucket> src_buckets(num_states);
-
-    for (AbstractStateRef target = 0; target < num_states; ++target) {
-        StateBucket &bucket = target_buckets[target];
-        for (size_t i = 0; i < bucket.size(); ++i) {
-            AbstractStateRef src = bucket[i].first;
-            int label_no = bucket[i].second;
-            src_buckets[src].push_back(make_pair(target, label_no));
-        }
-    }
-    vector<StateBucket>().swap(target_buckets);
-
-    // Finally, partition by operator and drop duplicates.
-    for (AbstractStateRef src = 0; src < num_states; ++src) {
-        StateBucket &bucket = src_buckets[src];
-        for (size_t i = 0; i < bucket.size(); ++i) {
-            int target = bucket[i].first;
-            int label_no = bucket[i].second;
-
-            vector<Transition> &op_bucket = transitions_by_label[label_no];
-            Transition trans(src, target);
-            if (op_bucket.empty() || op_bucket.back() != trans)
-                op_bucket.push_back(trans);
-        }
-    }
-
     assert(are_transitions_sorted_unique());
 }
 
