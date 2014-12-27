@@ -4,9 +4,6 @@
 #include "scalar_evaluator.h"
 #include "operator_cost.h"
 
-#include <map>
-#include <set>
-#include <string>
 #include <vector>
 
 class GlobalOperator;
