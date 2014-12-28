@@ -38,8 +38,6 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
                            lp_solvers_doc);
 }
 
-#ifdef USE_LP
-
 LpConstraint::LpConstraint(double lower_bound_, double upper_bound_)
     : lower_bound(lower_bound_),
       upper_bound(upper_bound_) {
@@ -48,12 +46,9 @@ LpConstraint::LpConstraint(double lower_bound_, double upper_bound_)
 LpConstraint::~LpConstraint() {
 }
 
-CoinPackedVectorBase *LpConstraint::create_coin_vector() const {
-    assert(variables.size() == coefficients.size());
-    return new CoinShallowPackedVector(variables.size(),
-                                       variables.data(),
-                                       coefficients.data(),
-                                       false);
+void LpConstraint::clear() {
+    variables.clear();
+    coefficients.clear();
 }
 
 bool LpConstraint::empty() const {
@@ -61,7 +56,7 @@ bool LpConstraint::empty() const {
 }
 
 void LpConstraint::insert(int index, double coefficient) {
-    assert(find(variables.begin(), variables.end(), index) == variables.end());
+    assert(variables.empty() || variables.back() < index);
     variables.push_back(index);
     coefficients.push_back(coefficient);
 }
@@ -76,6 +71,8 @@ LpVariable::LpVariable(double lower_bound_, double upper_bound_,
 LpVariable::~LpVariable() {
 }
 
+#ifdef USE_LP
+
 LpSolver::LpSolver(LpSolverType solver_type)
     : is_initialized(false),
       is_solved(false),
@@ -88,90 +85,108 @@ LpSolver::~LpSolver() {
     delete lp_solver;
 }
 
-template<typename T>
-double *LpSolver::build_array(const vector<T> &vec,
-                        function<double(const T&)> func) const {
-    double *result = new double[vec.size()];
-    for (size_t i = 0; i < vec.size(); ++i) {
-        result[i] = func(vec[i]);
-    }
-    return result;
+void LpSolver::clear_temporary_data() {
+    elements.clear();
+    indices.clear();
+    starts.clear();
+    col_lb.clear();
+    col_ub.clear();
+    objective.clear();
+    row_lb.clear();
+    row_ub.clear();
 }
 
-CoinPackedVectorBase **LpSolver::create_rows(const std::vector<LpConstraint> &constraints) {
-    CoinPackedVectorBase **rows = new CoinPackedVectorBase *[constraints.size()];
-    for (size_t i = 0; i < constraints.size(); ++i) {
-        rows[i] = constraints[i].create_coin_vector();
-    }
-    return rows;
-}
-
-void LpSolver::assign_problem(LPObjectiveSense sense,
-                        const std::vector<LpVariable> &variables,
-                        const std::vector<LpConstraint> &constraints) {
+void LpSolver::load_problem(LPObjectiveSense sense,
+                            const std::vector<LpVariable> &variables,
+                            const std::vector<LpConstraint> &constraints) {
     int num_columns = variables.size();
     int num_rows = constraints.size();
     num_permanent_constraints = num_rows;
     is_initialized = false;
+    clear_temporary_data();
+    for (const LpVariable &var : variables) {
+        col_lb.push_back(var.lower_bound);
+        col_ub.push_back(var.upper_bound);
+        objective.push_back(var.objective_coefficient);
+    }
+    for (const LpConstraint &constraint : constraints) {
+        row_lb.push_back(constraint.lower_bound);
+        row_ub.push_back(constraint.upper_bound);
+    }
+
+    if (sense == LPObjectiveSense::MINIMIZE) {
+        lp_solver->setObjSense(1);
+    } else {
+        lp_solver->setObjSense(-1);
+    }
+
+    for (size_t i = 0; i < constraints.size(); ++i) {
+        const LpConstraint &constraint = constraints[i];
+        const vector<int> &vars = constraint.get_variables();
+        const vector<double> &coeffs = constraint.get_coefficients();
+        assert(vars.size() == coeffs.size());
+        starts.push_back(elements.size());
+        indices.insert(indices.end(), vars.begin(), vars.end());
+        elements.insert(elements.end(), coeffs.begin(), coeffs.end());
+    }
+    /*
+      There are two ways to pass the lengths of vectors to a CoinMatrix:
+      1) 'starts' contains one enty per vector and we pass a separate array
+         of vector 'lengths' to the ctor
+      2) If there are no gaps in the elements, we can also add elements.size()
+         as a last entry in the vector 'starts' and leave the parameter for
+         'lengths' at its default (0).
+      OSI recreates the 'lengths' array in any case and uses optimized code
+      for the second case, so we use it here.
+     */
+    starts.push_back(elements.size());
     try {
-        /*
-          Note that using assignProblem instead of loadProblem, the ownership of
-          the data is transfered to the LP solver. It will delete the matrix,
-          bounds and the objective so we do not delete them afterwards.
-        */
-        CoinPackedMatrix *matrix = new CoinPackedMatrix(false, 0, 0);
-        matrix->setDimensions(0, num_columns);
-        CoinPackedVectorBase **rows = create_rows(constraints);
-        matrix->appendRows(num_rows, rows);
-        for (size_t i = 0; i < constraints.size(); ++i) {
-            delete rows[i];
-        }
-        delete[] rows;
-        double *col_lb = build_array<LpVariable>(
-            variables,
-            [](const LpVariable &var) {return var.lower_bound; });
-        double *col_ub = build_array<LpVariable>(
-            variables,
-            [](const LpVariable &var) {return var.upper_bound; });
-        double *objective = build_array<LpVariable>(
-            variables,
-            [](const LpVariable &var) {return var.objective_coefficient; });
-        double *row_lb = build_array<LpConstraint>(
-            constraints,
-            [](const LpConstraint &constraint) {return constraint.lower_bound; });
-        double *row_ub = build_array<LpConstraint>(
-            constraints,
-            [](const LpConstraint &constraint) {return constraint.upper_bound; });
-        if (sense == LPObjectiveSense::MINIMIZE) {
-            lp_solver->setObjSense(1);
-        } else {
-            lp_solver->setObjSense(-1);
-        }
-        lp_solver->assignProblem(matrix, col_lb, col_ub, objective, row_lb, row_ub);
+        CoinPackedMatrix matrix(false,
+                                num_columns,
+                                num_rows,
+                                elements.size(),
+                                elements.data(),
+                                indices.data(),
+                                starts.data(),
+                                0);
+        lp_solver->loadProblem(matrix,
+                               col_lb.data(),
+                               col_ub.data(),
+                               objective.data(),
+                               row_lb.data(),
+                               row_ub.data());
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
+    clear_temporary_data();
 }
 
 int LpSolver::add_temporary_constraints(const std::vector<LpConstraint> &constraints) {
     int index_of_first_constraint = get_num_constraints();
     if (!constraints.empty()) {
+        clear_temporary_data();
         try {
-            double *row_lb = build_array<LpConstraint>(
-                constraints,
-                [](const LpConstraint &constraint) {return constraint.lower_bound; });
-            double *row_ub = build_array<LpConstraint>(
-                constraints,
-                [](const LpConstraint &constraint) {return constraint.upper_bound; });
-            CoinPackedVectorBase **rows = create_rows(constraints);
-            lp_solver->addRows(constraints.size(), rows, row_lb, row_ub);
-            for (size_t i = 0; i < constraints.size(); ++i) {
-                delete rows[i];
+            int num_rows = constraints.size();
+            for (int i = 0; i < num_rows; ++i) {
+                const LpConstraint &constraint = constraints[i];
+                row_lb.push_back(constraint.lower_bound);
+                row_ub.push_back(constraint.upper_bound);
+                rows.push_back(new CoinShallowPackedVector(
+                    constraint.get_variables().size(),
+                    constraint.get_variables().data(),
+                    constraint.get_coefficients().data(),
+                    false));
             }
-            delete[] rows;
+
+            lp_solver->addRows(num_rows,
+                               rows.data(), row_lb.data(), row_ub.data());
+            for (auto row : rows) {
+                delete row;
+            }
         } catch (CoinError &error) {
             handle_coin_error(error);
         }
+        clear_temporary_data();
         has_temporary_constraints = true;
         is_solved = false;
     }

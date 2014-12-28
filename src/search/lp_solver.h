@@ -44,15 +44,18 @@ class LpConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
 public:
-    LP_METHOD(LpConstraint(double lower_bound_, double upper_bound_))
-    LP_METHOD(~LpConstraint())
+    LpConstraint(double lower_bound_, double upper_bound_);
+    ~LpConstraint();
 
     double lower_bound;
     double upper_bound;
-    LP_METHOD(CoinPackedVectorBase *create_coin_vector() const)
+    const std::vector<int> &get_variables() const {return variables; }
+    const std::vector<double> &get_coefficients() const {return coefficients; }
 
-    LP_METHOD(bool empty() const)
-    LP_METHOD(void insert(int index, double coefficient))
+    void clear();
+    bool empty() const;
+    // Coefficients must be added ordered by index, without duplicate indices.
+    void insert(int index, double coefficient);
 };
 
 struct LpVariable {
@@ -73,6 +76,21 @@ class LpSolver {
     bool has_temporary_constraints;
     OsiSolverInterface *lp_solver;
 
+    /*
+      Temporary data for assigning a new problem. We keep the vectors
+      around to avoid recreating them in every assignment.
+     */
+    std::vector<double> elements;
+    std::vector<int> indices;
+    std::vector<int> starts;
+    std::vector<double> col_lb;
+    std::vector<double> col_ub;
+    std::vector<double> objective;
+    std::vector<double> row_lb;
+    std::vector<double> row_ub;
+    std::vector<CoinPackedVectorBase *> rows;
+    void clear_temporary_data();
+
     template<typename T>
     LP_METHOD(double *build_array(const std::vector<T> &vec,
                   std::function<double(const T&)> func) const)
@@ -82,7 +100,7 @@ public:
     LP_METHOD(explicit LpSolver(LpSolverType solver_type))
     LP_METHOD(~LpSolver())
 
-    LP_METHOD(void assign_problem(
+    LP_METHOD(void load_problem(
                   LPObjectiveSense sense,
                   const std::vector<LpVariable> &variables,
                   const std::vector<LpConstraint> &constraints))
