@@ -72,18 +72,18 @@ public:
     }
 };
 
-OsiSolverInterface *create_lp_solver(LpSolverType solver_type) {
+OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     string missing_symbol;
     OsiSolverInterface *lp_solver = 0;
     switch (solver_type) {
-    case LpSolverType::CLP:
+    case LPSolverType::CLP:
 #ifdef COIN_HAS_CLP
         lp_solver = new OsiClpSolverInterface;
 #else
         missing_symbol = "COIN_HAS_CLP";
 #endif
         break;
-    case LpSolverType::CPLEX:
+    case LPSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
         lp_solver = new OsiCpxSolverInterface;
         lp_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
@@ -91,7 +91,7 @@ OsiSolverInterface *create_lp_solver(LpSolverType solver_type) {
         missing_symbol = "COIN_HAS_CPX";
 #endif
         break;
-    case LpSolverType::GUROBI:
+    case LPSolverType::GUROBI:
 #ifdef COIN_HAS_GRB
         lp_solver = new OsiGrbSolverInterface;
 #else

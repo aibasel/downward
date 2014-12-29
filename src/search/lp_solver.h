@@ -23,7 +23,7 @@
 }
 #endif
 
-enum class LpSolverType {
+enum class LPSolverType {
     CLP, CPLEX, GUROBI
 };
 
@@ -37,12 +37,12 @@ class OsiSolverInterface;
 
 void add_lp_solver_option_to_parser(OptionParser &parser);
 
-class LpConstraint {
+class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
 public:
-    LpConstraint(double lower_bound_, double upper_bound_);
-    ~LpConstraint();
+    LPConstraint(double lower_bound_, double upper_bound_);
+    ~LPConstraint();
 
     double lower_bound;
     double upper_bound;
@@ -55,20 +55,20 @@ public:
     void insert(int index, double coefficient);
 };
 
-struct LpVariable {
+struct LPVariable {
     double lower_bound;
     double upper_bound;
     double objective_coefficient;
 
-    LpVariable(double lower_bound_,
+    LPVariable(double lower_bound_,
                double upper_bound_,
                double objective_coefficient_);
-    ~LpVariable();
+    ~LPVariable();
 };
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-class LpSolver {
+class LPSolver {
     bool is_initialized;
     bool is_solved;
     int num_permanent_constraints;
@@ -90,14 +90,14 @@ class LpSolver {
     std::vector<CoinPackedVectorBase *> rows;
     void clear_temporary_data();
 public:
-    LP_METHOD(explicit LpSolver(LpSolverType solver_type))
-    LP_METHOD(~LpSolver())
+    LP_METHOD(explicit LPSolver(LPSolverType solver_type))
+    LP_METHOD(~LPSolver())
 
     LP_METHOD(void load_problem(
                   LPObjectiveSense sense,
-                  const std::vector<LpVariable> &variables,
-                  const std::vector<LpConstraint> &constraints))
-    LP_METHOD(void add_temporary_constraints(const std::vector<LpConstraint> &constraints))
+                  const std::vector<LPVariable> &variables,
+                  const std::vector<LPConstraint> &constraints))
+    LP_METHOD(void add_temporary_constraints(const std::vector<LPConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity())
 

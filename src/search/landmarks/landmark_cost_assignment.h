@@ -36,18 +36,18 @@ public:
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
-    LpSolver lp_solver;
+    LPSolver lp_solver;
     /*
       We keep the vectors for LP variables and constraints around instead of
       recreating them for every state. The actual constraints have to be
       recreated because the coefficient matrix of the LP changes from state to
       state. Reusing the vectors still saves some dynamic allocation overhead.
      */
-    std::vector<LpVariable> lp_variables;
-    std::vector<LpConstraint> lp_constraints;
-    std::vector<LpConstraint> non_empty_lp_constraints;
+    std::vector<LPVariable> lp_variables;
+    std::vector<LPConstraint> lp_constraints;
+    std::vector<LPConstraint> non_empty_lp_constraints;
 public:
-    LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph, OperatorCost cost_type, LpSolverType solver_type);
+    LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
     virtual double cost_sharing_h_value();
