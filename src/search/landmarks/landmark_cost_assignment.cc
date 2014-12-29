@@ -144,7 +144,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type, LpSolverType solver_type)
+    LandmarkGraph &graph, OperatorCost cost_type, LPSolverType solver_type)
     : LandmarkCostAssignment(graph, cost_type),
       lp_solver(solver_type) {
     // The LP has one variable (column) per landmark and one
@@ -155,12 +155,12 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     // We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
     // so the coefficients are all 1.
     // Variable bounds are state-dependent; we initinialize the range to {0}.
-    lp_variables.resize(num_cols, LpVariable(0.0, 0.0, 1.0));
+    lp_variables.resize(num_cols, LPVariable(0.0, 0.0, 1.0));
 
     // Set up lower bounds and upper bounds for the inequalities.
     // These simply say that the operator's total cost must fall
     // between 0 and the real operator cost.
-    lp_constraints.resize(num_rows, LpConstraint(0.0, 0.0));
+    lp_constraints.resize(num_rows, LPConstraint(0.0, 0.0));
     for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
         const GlobalOperator &op = g_operators[op_id];
         lp_constraints[op_id].lower_bound = 0;
@@ -203,7 +203,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
       in the op-th row and lm-th column, the matrix has a 1.0 entry.
      */
     // Reuse previous constraint objects to save the effort of recreating them.
-    for (LpConstraint &constraint : lp_constraints) {
+    for (LPConstraint &constraint : lp_constraints) {
         constraint.clear();
     }
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
@@ -228,7 +228,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
      */
     // TODO: do not copy the data here.
     non_empty_lp_constraints.clear();
-    for (const LpConstraint &constraint : lp_constraints) {
+    for (const LPConstraint &constraint : lp_constraints) {
         if (!constraint.empty())
             non_empty_lp_constraints.push_back(constraint);
     }
