@@ -14,12 +14,12 @@
 #ifdef USE_LP
 #define LP_METHOD(X) X;
 #else
-#define LP_METHOD(X) __attribute__((noreturn)) X {\
-    ABORT("LP method called but the planner was compiled without LP support." \
-          << std::endl \
-          << "See http://www.fast-downward.org/LPBuildInstructions " \
-          << std::endl \
-          << "to install an LP solver and use it in the planner.");\
+#define LP_METHOD(X) __attribute__((noreturn)) X { \
+        ABORT("LP method called but the planner was compiled without LP support." \
+              << std::endl \
+              << "See http://www.fast-downward.org/LPBuildInstructions " \
+              << std::endl \
+              << "to install an LP solver and use it in the planner."); \
 }
 #endif
 
@@ -36,9 +36,6 @@ class OptionParser;
 class OsiSolverInterface;
 
 void add_lp_solver_option_to_parser(OptionParser &parser);
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 class LpConstraint {
     std::vector<int> variables;
@@ -63,12 +60,14 @@ struct LpVariable {
     double upper_bound;
     double objective_coefficient;
 
-    LP_METHOD(LpVariable(double lower_bound_,
-                         double upper_bound_,
-                         double objective_coefficient_))
-    LP_METHOD(~LpVariable())
+    LpVariable(double lower_bound_,
+               double upper_bound_,
+               double objective_coefficient_);
+    ~LpVariable();
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 class LpSolver {
     bool is_initialized;
     bool is_solved;
@@ -90,12 +89,6 @@ class LpSolver {
     std::vector<double> row_ub;
     std::vector<CoinPackedVectorBase *> rows;
     void clear_temporary_data();
-
-    template<typename T>
-    LP_METHOD(double *build_array(const std::vector<T> &vec,
-                  std::function<double(const T&)> func) const)
-    LP_METHOD(CoinPackedVectorBase **create_rows(
-                  const std::vector<LpConstraint> &constraints))
 public:
     LP_METHOD(explicit LpSolver(LpSolverType solver_type))
     LP_METHOD(~LpSolver())
@@ -122,7 +115,7 @@ public:
     LP_METHOD(int get_num_variables() const)
     LP_METHOD(int get_num_constraints() const)
     LP_METHOD(void print_statistics() const)
-#pragma GCC diagnostic pop
 };
+#pragma GCC diagnostic pop
 
 #endif
