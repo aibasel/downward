@@ -132,8 +132,8 @@ void LpSolver::load_problem(LPObjectiveSense sense,
     }
     /*
       There are two ways to pass the lengths of vectors to a CoinMatrix:
-      1) 'starts' contains one enty per vector and we pass a separate array
-         of vector 'lengths' to the ctor
+      1) 'starts' contains one entry per vector and we pass a separate array
+         of vector 'lengths' to the constructor.
       2) If there are no gaps in the elements, we can also add elements.size()
          as a last entry in the vector 'starts' and leave the parameter for
          'lengths' at its default (0).
@@ -165,26 +165,26 @@ void LpSolver::load_problem(LPObjectiveSense sense,
 void LpSolver::add_temporary_constraints(const std::vector<LpConstraint> &constraints) {
     if (!constraints.empty()) {
         clear_temporary_data();
-        try {
-            int num_rows = constraints.size();
-            for (int i = 0; i < num_rows; ++i) {
-                const LpConstraint &constraint = constraints[i];
-                row_lb.push_back(constraint.lower_bound);
-                row_ub.push_back(constraint.upper_bound);
-                rows.push_back(new CoinShallowPackedVector(
-                    constraint.get_variables().size(),
-                    constraint.get_variables().data(),
-                    constraint.get_coefficients().data(),
-                    false));
-            }
+        int num_rows = constraints.size();
+        for (int i = 0; i < num_rows; ++i) {
+            const LpConstraint &constraint = constraints[i];
+            row_lb.push_back(constraint.lower_bound);
+            row_ub.push_back(constraint.upper_bound);
+            rows.push_back(new CoinShallowPackedVector(
+                               constraint.get_variables().size(),
+                               constraint.get_variables().data(),
+                               constraint.get_coefficients().data(),
+                               false));
+        }
 
+        try {
             lp_solver->addRows(num_rows,
                                rows.data(), row_lb.data(), row_ub.data());
-            for (auto row : rows) {
-                delete row;
-            }
         } catch (CoinError &error) {
             handle_coin_error(error);
+        }
+        for (CoinPackedVectorBase *row : rows) {
+            delete row;
         }
         clear_temporary_data();
         has_temporary_constraints = true;

@@ -235,7 +235,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
 
     // Load the problem into the LP solver.
     lp_solver.load_problem(LPObjectiveSense::MAXIMIZE,
-                             lp_variables, non_empty_lp_constraints);
+                           lp_variables, non_empty_lp_constraints);
 
     times(&end_build);
 
