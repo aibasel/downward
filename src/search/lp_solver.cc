@@ -162,8 +162,7 @@ void LpSolver::load_problem(LPObjectiveSense sense,
     clear_temporary_data();
 }
 
-int LpSolver::add_temporary_constraints(const std::vector<LpConstraint> &constraints) {
-    int index_of_first_constraint = get_num_constraints();
+void LpSolver::add_temporary_constraints(const std::vector<LpConstraint> &constraints) {
     if (!constraints.empty()) {
         clear_temporary_data();
         try {
@@ -191,7 +190,6 @@ int LpSolver::add_temporary_constraints(const std::vector<LpConstraint> &constra
         has_temporary_constraints = true;
         is_solved = false;
     }
-    return index_of_first_constraint;
 }
 
 void LpSolver::clear_temporary_constraints() {
