@@ -94,6 +94,7 @@ void LpSolver::clear_temporary_data() {
     objective.clear();
     row_lb.clear();
     row_ub.clear();
+    rows.clear();
 }
 
 void LpSolver::load_problem(LPObjectiveSense sense,
