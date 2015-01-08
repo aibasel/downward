@@ -46,7 +46,7 @@ int TypeBasedOpenList<Entry>::insert(const Entry &entry) {
 template<class Entry>
 Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
     assert(size > 0);
-    int bucket_id = g_rng(keys_and_buckets.size());
+    size_t bucket_id = g_rng(keys_and_buckets.size());
     pair<Key, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
     Bucket &bucket = key_and_bucket.second;
 
