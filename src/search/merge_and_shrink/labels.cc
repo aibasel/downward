@@ -143,9 +143,11 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
         if (!ts || ts == transition_system) {
             continue;
         }
-        const EquivalenceRelation *local_equivalence_relation
-                = ts->get_local_equivalence_relation();
-        relation->refine(*local_equivalence_relation);
+        const list<list<int>> &grouped_labels = ts->get_grouped_labels();
+        for (list<list<int>>::const_iterator group_it = grouped_labels.begin();
+             group_it != grouped_labels.end(); ++group_it) {
+            relation->refine(*group_it);
+        }
     }
     return relation;
 }

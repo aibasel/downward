@@ -3,12 +3,13 @@
 
 #include "../operator_cost.h"
 
+#include <ext/hash_map>
 #include <ext/slist>
 #include <iostream>
+#include <list>
 #include <string>
 #include <vector>
 
-class EquivalenceRelation;
 class GlobalState;
 class Label;
 class Labels;
@@ -61,7 +62,12 @@ class TransitionSystem {
       have a pointer to this object to ease access to the set of labels.
     */
     const Labels *labels;
-    EquivalenceRelation *equivalent_labels;
+    std::list<std::list<int>> equivalent_labels;
+    typedef std::list<std::list<int>>::iterator BlockListIter;
+    typedef std::list<std::list<int>>::const_iterator BlockListConstIter;
+    typedef std::list<int>::iterator ElementListIter;
+    typedef std::list<int>::const_iterator ElementListConstIter;
+    __gnu_cxx::hash_map<int, std::pair<BlockListIter, ElementListIter>> label_to_iter;
     std::vector<int> label_to_representative;
     /*
       num_labels is always equal to labels->size(), with the exception during
@@ -125,7 +131,6 @@ class TransitionSystem {
                                                   const std::vector<int> &old_label_nos);
     void apply_general_label_mapping(int new_label_no,
                                      const std::vector<int> &old_label_nos);
-    bool are_equivalent_labels_computed() const;
     void compute_local_equivalence_relation();
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
@@ -149,7 +154,7 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    const EquivalenceRelation *get_local_equivalence_relation() const {
+    const std::list<std::list<int>> &get_grouped_labels() const {
         return equivalent_labels;
     }
     /*
@@ -172,7 +177,6 @@ public:
     void dump_dot_graph() const;
     void dump_grouped_transitions() const;
     void dump_transitions() const;
-    void dump_equivalence_relation() const;
     int get_size() const {
         return num_states;
     }

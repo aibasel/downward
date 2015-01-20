@@ -195,10 +195,10 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    const EquivalenceRelation *equivalent_labels = ts.get_local_equivalence_relation();
-    for (BlockListConstIter block_it = equivalent_labels->begin();
-         block_it != equivalent_labels->end(); ++block_it) {
-        int representative_label_no = *block_it->begin();
+    const list<list<int>> &grouped_labels = ts.get_grouped_labels();
+    for (list<list<int>>::const_iterator group_it = grouped_labels.begin();
+         group_it != grouped_labels.end(); ++group_it) {
+        int representative_label_no = group_it->front();
         const vector<Transition> &transitions =
             ts.get_transitions_for_relevant_label(representative_label_no);
         int label_cost = ts.get_label_cost(representative_label_no);
@@ -214,8 +214,8 @@ void ShrinkBisimulation::compute_signatures(
             }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
-                for (ElementListConstIter elem_it = block_it->begin();
-                     elem_it != block_it->end(); ++elem_it) {
+                for (list<int>::const_iterator elem_it = group_it->begin();
+                     elem_it != group_it->end(); ++elem_it) {
                     int label_no = *elem_it;
                     signatures[trans.src + 1].succ_signature.push_back(
                         make_pair(label_no, target_group));
