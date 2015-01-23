@@ -196,12 +196,18 @@ void ShrinkBisimulation::compute_signatures(
 
     // Step 2: Add transition information.
     const list<list<int>> &grouped_labels = ts.get_grouped_labels();
-    for (list<list<int>>::const_iterator group_it = grouped_labels.begin();
+    for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        int representative_label_no = group_it->front();
+        if (!ts.is_label_group_relevant(*group_it)) {
+            // TODO: this is included to achieve the same behavior as earlier,
+            // where irrelevant labels were implicitly represented and had
+            // empty transitions. Note that this seems also to be an important
+            // factor for computation time.
+            continue;
+        }
         const vector<Transition> &transitions =
-            ts.get_transitions_for_relevant_label(representative_label_no);
-        int label_cost = ts.get_label_cost(representative_label_no);
+            ts.get_const_transitions_for_group(*group_it);
+        int cost = ts.get_cost_for_label_group(*group_it);
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
@@ -209,14 +215,14 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = ts.get_goal_distance(trans.src);
                 int target_h = ts.get_goal_distance(trans.target);
-                assert(target_h + label_cost >= src_h);
-                skip_transition = (target_h + label_cost != src_h);
+                assert(target_h + cost >= src_h);
+                skip_transition = (target_h + cost != src_h);
             }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
-                for (list<int>::const_iterator elem_it = group_it->begin();
-                     elem_it != group_it->end(); ++elem_it) {
-                    int label_no = *elem_it;
+                for (LabelConstIter label_it = group_it->begin();
+                     label_it != group_it->end(); ++label_it) {
+                    int label_no = *label_it;
                     signatures[trans.src + 1].succ_signature.push_back(
                         make_pair(label_no, target_group));
                 }
