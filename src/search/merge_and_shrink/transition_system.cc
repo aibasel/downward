@@ -1118,25 +1118,26 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 sort(new_transitions.begin(), new_transitions.end());
                 assert(is_sorted_unique(new_transitions));
                 LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
-                int new_index = new_labels[0];
+                int new_index = transitions_by_group_index.size();
                 for (size_t i = 0; i < new_labels.size(); ++i) {
                     int label_no = new_labels[i];
                     LabelIter label_it = group_it->insert(group_it->end(), label_no);
                     label_to_iter[label_no] = make_pair(group_it, label_it);
                     label_to_transition_group_index[label_no] = new_index;
                 }
-                transitions_by_group_index[new_index].swap(new_transitions);
+                transitions_by_group_index.push_back(vector<Transition>());
+                transitions_by_group_index.back().swap(new_transitions);
             }
         }
         if (!dead_labels.empty()) {
             // TODO: replicated code from just above.
             LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
-            int new_representative = dead_labels[0];
+            int new_index = transitions_by_group_index.size();
             for (size_t i = 0; i < dead_labels.size(); ++i) {
                 int label_no = dead_labels[i];
                 LabelIter label_it = group_it->insert(group_it->end(), label_no);
                 label_to_iter[label_no] = make_pair(group_it, label_it);
-                label_to_transition_group_index[label_no] = new_representative;
+                label_to_transition_group_index[label_no] = new_index;
             }
             // No need to swap empty transitions
         }
