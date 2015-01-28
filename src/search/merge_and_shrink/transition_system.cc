@@ -1134,6 +1134,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
             // TODO: replicated code from just above.
             LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
             int new_index = transitions_by_group_index.size();
+            transitions_by_group_index.push_back(vector<Transition>());
             for (size_t i = 0; i < dead_labels.size(); ++i) {
                 int label_no = dead_labels[i];
                 LabelIter label_it = group_it->insert(group_it->end(), label_no);
