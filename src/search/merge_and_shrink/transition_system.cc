@@ -988,6 +988,7 @@ AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
         LabelIter label_it = group_it->insert(group_it->end(), label_no);
         assert(*label_it == label_no);
         label_to_iter[label_no] = make_pair(group_it, label_it);
+        transitions_by_group_index.push_back(vector<Transition>());
         label_to_transition_group_index[label_no] = label_no;
     }
 }
