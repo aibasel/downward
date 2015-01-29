@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <deque>
+#include <ext/hash_map>
 #include <functional>
 #include <iostream>
 #include <fstream>
@@ -49,7 +50,7 @@ const int TransitionSystem::DISTANCE_UNKNOWN;
 TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_),
       transitions_by_group_index(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
-      label_to_transition_group_index(g_operators.empty() ? 0 : g_operators.size() * 2 - 1, -1),
+      label_to_positions(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
       num_labels(labels->get_size()),
       peak_memory(0) {
     clear_distances();
@@ -310,7 +311,7 @@ void TransitionSystem::compute_goal_distances_general_cost() {
 }
 
 const vector<Transition> &TransitionSystem::get_const_transitions_for_label(int label_no) const {
-    int transitions_index = label_to_transition_group_index[label_no];
+    int transitions_index = get<0>(label_to_positions[label_no]);
     return transitions_by_group_index[transitions_index];
 }
 
@@ -321,7 +322,7 @@ vector<Transition> &TransitionSystem::get_transitions_for_group(const list<int> 
 int TransitionSystem::get_transitions_index_for_group(const std::list<int> &group) const {
     assert(!group.empty());
     int any_label_no = group.front();
-    int index = label_to_transition_group_index[any_label_no];
+    int index = get<0>(label_to_positions[any_label_no]);
     assert(index != -1);
     return index;
 }
@@ -365,9 +366,9 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                     for (LabelConstIter group2_label_it = group2_it->begin();
                          group2_label_it != group2_it->end(); ++group2_label_it) {
                         int other_label_no = *group2_label_it;
-                        label_to_transition_group_index[other_label_no] = get_transitions_index_for_group(*group1_it);
                         LabelIter label_it = group1_it->insert(group1_it->end(), other_label_no);
-                        label_to_iter[other_label_no] = make_pair(group1_it, label_it);
+                        int group1_index = get_transitions_index_for_group(*group1_it);
+                        label_to_positions[other_label_no] = make_tuple(group1_index, group1_it, label_it);
                     }
                     grouped_labels.erase(group2_it);
                     --group2_it;
@@ -630,22 +631,21 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
               Remove all existing labels from their list and remove the entry in
               label_to_group.
             */
-            LabelGroupIter canonical_group_it = label_to_iter[old_label_nos[0]].first;
+            LabelGroupIter canonical_group_it = get<1>(label_to_positions[old_label_nos[0]]);
             int transitions_index = get_transitions_index_for_group(*canonical_group_it);
             for (size_t i = 0; i < old_label_nos.size(); ++i) {
                 int label_no = old_label_nos[i];
-                assert(label_to_iter[label_no].first == canonical_group_it);
-                LabelIter label_it = label_to_iter[label_no].second;
+                assert(get<1>(label_to_positions[label_no]) == canonical_group_it);
+                LabelIter label_it = get<2>(label_to_positions[label_no]);
                 canonical_group_it->erase(label_it);
-                label_to_iter.erase(label_no);
+                // Note: we cannot invalidate the tupel label_to_positions[label_no]
             }
 
             /*
               Add the new label to the list and add an entry to label_to_group.
             */
             LabelIter label_it = canonical_group_it->insert(canonical_group_it->end(), new_label_no);
-            label_to_iter[new_label_no] = make_pair(canonical_group_it, label_it);
-            label_to_transition_group_index[new_label_no] = transitions_index;
+            label_to_positions[new_label_no] = make_tuple(transitions_index, canonical_group_it, label_it);
         } else {
             /*
               Here we handle those label reductions for which not all
@@ -673,15 +673,16 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
             /*
               Remove all existing labels from their group (and the group itself if
-              it becomes empty) and remove their entries in label_to_iter.
+              it becomes empty) and update label_to_positions
             */
             for (size_t i = 0; i < old_label_nos.size(); ++i) {
                 int label_no = old_label_nos[i];
-                LabelGroupIter group_it = label_to_iter[label_no].first;
-                LabelIter label_it = label_to_iter[label_no].second;
-                int transitions_index = get_transitions_index_for_group(*group_it);
+                int transitions_index;
+                LabelGroupIter group_it;
+                LabelIter label_it;
+                tie(transitions_index, group_it, label_it) = label_to_positions[label_no];
                 group_it->erase(label_it);
-                label_to_iter.erase(label_no);
+                // Note: we cannot invalidate the tupel label_to_positions[label_no]
                 if (group_it->empty()) {
                     grouped_labels.erase(group_it);
                     vector<Transition>().swap(transitions_by_group_index[transitions_index]);
@@ -709,9 +710,9 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 if ((new_transitions.empty() && other_transitions.empty())
                     || (new_transitions == other_transitions)) {
                     found_equivalent_labels = true;
+                    int transitions_index = get_transitions_index_for_group(*group_it);
                     LabelIter label_it = group_it->insert(group_it->end(), new_label_no);
-                    label_to_iter[new_label_no] = make_pair(group_it, label_it);
-                    label_to_transition_group_index[new_label_no] = get_transitions_index_for_group(*group_it);
+                    label_to_positions[new_label_no] = make_tuple(transitions_index, group_it, label_it);
                     vector<Transition>().swap(transitions_by_group_index[new_label_no]);
                     break;
                 }
@@ -719,8 +720,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             if (!found_equivalent_labels) {
                 LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
                 LabelIter label_it = group_it->insert(group_it->end(), new_label_no);
-                label_to_iter[new_label_no] = make_pair(group_it, label_it);
-                label_to_transition_group_index[new_label_no] = new_label_no;
+                label_to_positions[new_label_no] = make_tuple(new_label_no, group_it, label_it);
             }
         }
     }
@@ -730,9 +730,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
 void TransitionSystem::release_memory() {
     list<list<int>>().swap(grouped_labels);
-    hash_map<int, pair<LabelGroupIter, LabelIter>>().swap(label_to_iter);
     vector<vector<Transition> >().swap(transitions_by_group_index);
-    vector<int>().swap(label_to_transition_group_index);
+    vector<tuple<int, LabelGroupIter, LabelIter>>().swap(label_to_positions);
 }
 
 const vector<Transition> &TransitionSystem::get_const_transitions_for_group(const list<int> &group) const {
@@ -793,9 +792,7 @@ int TransitionSystem::memory_estimate() const {
         const vector<Transition> &transitions = get_const_transitions_for_group(label_list);
         result += sizeof(vector<Transition>) * transitions.capacity();
     }
-    // TODO: is the following correct? how to estimate memory usage for unordered_map?
-    result += sizeof(pair<int, pair<LabelGroupIter, LabelIter>>) * label_to_iter.size();
-    result += sizeof(int) * label_to_transition_group_index.capacity();
+    result += sizeof(vector<tuple<int, LabelGroupIter, LabelIter>>) * label_to_positions.capacity();
     result += sizeof(int) * init_distances.capacity();
     result += sizeof(int) * goal_distances.capacity();
     result += sizeof(bool) * goal_states.capacity();
@@ -893,7 +890,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
              label_it != group_it->end(); ++label_it) {
             if (label_it != group_it->begin())
                 cout << ",";
-            cout << *label_it << " (represented by " << label_to_transition_group_index[*label_it] << ")";
+            cout << *label_it << " (represented by " << get<0>(label_to_positions[*label_it]) << ")";
         }
         cout << endl;
         cout << "transitions: ";
@@ -913,7 +910,6 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
     assert(is_valid());
     assert(label_ranks.empty());
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
-    // TODO: this was transitions_by_label.size instead of num_labels
     label_ranks.resize(num_labels, -1);
 
     for (LabelGroupConstIter group_it = grouped_labels.begin();
@@ -981,8 +977,7 @@ AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
         LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
         LabelIter label_it = group_it->insert(group_it->end(), label_no);
         assert(*label_it == label_no);
-        label_to_iter[label_no] = make_pair(group_it, label_it);
-        label_to_transition_group_index[label_no] = label_no;
+        label_to_positions[label_no] = make_tuple(label_no, group_it, label_it);
     }
 }
 
@@ -1072,7 +1067,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         for (LabelConstIter label_it = group1_it->begin();
              label_it != group1_it->end(); ++label_it) {
             int label_no = *label_it;
-            LabelGroupConstIter group2_it = ts2->label_to_iter[label_no].first;
+            // TODO: hash via index
+            LabelGroupConstIter group2_it = get<1>(ts2->label_to_positions[label_no]);
             buckets[group2_it].push_back(label_no);
         }
         // Now buckets contains all equivalence classes that are
@@ -1112,25 +1108,23 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 sort(new_transitions.begin(), new_transitions.end());
                 assert(is_sorted_unique(new_transitions));
                 LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
-                int new_index = new_labels[0];
+                int new_transitions_index = new_labels[0];
                 for (size_t i = 0; i < new_labels.size(); ++i) {
                     int label_no = new_labels[i];
                     LabelIter label_it = group_it->insert(group_it->end(), label_no);
-                    label_to_iter[label_no] = make_pair(group_it, label_it);
-                    label_to_transition_group_index[label_no] = new_index;
+                    label_to_positions[label_no] = make_tuple(new_transitions_index, group_it, label_it);
                 }
-                transitions_by_group_index[new_index].swap(new_transitions);
+                transitions_by_group_index[new_transitions_index].swap(new_transitions);
             }
         }
         if (!dead_labels.empty()) {
             // TODO: replicated code from just above.
             LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
-            int new_representative = dead_labels[0];
+            int new_transitions_index = dead_labels[0];
             for (size_t i = 0; i < dead_labels.size(); ++i) {
                 int label_no = dead_labels[i];
                 LabelIter label_it = group_it->insert(group_it->end(), label_no);
-                label_to_iter[label_no] = make_pair(group_it, label_it);
-                label_to_transition_group_index[label_no] = new_representative;
+                label_to_positions[label_no] = make_tuple(new_transitions_index, group_it, label_it);
             }
             // No need to swap empty transitions
         }

@@ -3,11 +3,11 @@
 
 #include "../operator_cost.h"
 
-#include <ext/hash_map>
 #include <ext/slist>
 #include <iostream>
 #include <list>
 #include <string>
+#include <tuple>
 #include <vector>
 
 class GlobalState;
@@ -68,9 +68,8 @@ class TransitionSystem {
     */
     const Labels *labels;
     std::list<std::list<int>> grouped_labels;
-    __gnu_cxx::hash_map<int, std::pair<LabelGroupIter, LabelIter>> label_to_iter;
     std::vector<std::vector<Transition> > transitions_by_group_index;
-    std::vector<int> label_to_transition_group_index;
+    std::vector<std::tuple<int, LabelGroupIter, LabelIter>> label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
