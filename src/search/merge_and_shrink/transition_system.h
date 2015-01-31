@@ -53,8 +53,6 @@ typedef std::list<std::list<int>>::iterator LabelGroupIter;
 typedef std::list<std::list<int>>::const_iterator LabelGroupConstIter;
 typedef std::list<int>::iterator LabelIter;
 typedef std::list<int>::const_iterator LabelConstIter;
-typedef std::list<std::vector<Transition>>::iterator TransitionGroupIter;
-typedef std::list<std::vector<Transition>>::const_iterator TransitionGroupConstIter;
 
 class TransitionSystem {
     friend class AtomicTransitionSystem;
@@ -70,8 +68,8 @@ class TransitionSystem {
     */
     const Labels *labels;
     std::list<std::list<int>> grouped_labels;
-    std::list<std::vector<Transition> > grouped_transitions;
-    std::vector<std::tuple<TransitionGroupIter, LabelGroupIter, LabelIter>> label_to_positions;
+    std::vector<std::vector<Transition> > transitions_by_group_index;
+    std::vector<std::tuple<int, LabelGroupIter, LabelIter>> label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
@@ -126,9 +124,8 @@ class TransitionSystem {
 
     // Methods related to the representation of transitions
     const std::vector<Transition> &get_const_transitions_for_label(int label_no) const;
-    std::vector<Transition> &get_transitions_for_label(int label_no);
-    std::vector<Transition> &get_transitions_for_label_group(const std::list<int> &label_group);
-    TransitionGroupIter get_transition_group_iterator_for_label_group(const std::list<int> &label_group) const;
+    std::vector<Transition> &get_transitions_for_group(const std::list<int> &group);
+    int get_transitions_index_for_group(const std::list<int> &group) const;
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     bool is_label_reduced() const;
@@ -155,9 +152,9 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    const std::vector<Transition> &get_const_transitions_for_label_group(const std::list<int> &label_group) const;
-    bool is_label_group_relevant(const std::list<int> &label_group) const;
-    int get_cost_for_label_group(const std::list<int> &label_group) const;
+    const std::vector<Transition> &get_const_transitions_for_group(const std::list<int> &group) const;
+    bool is_label_group_relevant(const std::list<int> &group) const;
+    int get_cost_for_label_group(const std::list<int> &group) const;
     const std::list<std::list<int>> &get_grouped_labels() const {
         return grouped_labels;
     }
@@ -241,5 +238,3 @@ public:
 };
 
 #endif
-
-
