@@ -1014,16 +1014,6 @@ int AtomicTransitionSystem::memory_estimate() const {
 
 
 
-namespace std {
-    template<>
-    class hash<std::list<std::list<int>>::const_iterator> {
-    public:
-        size_t operator()(const std::list<std::list<int>>::const_iterator &group_it) const {
-            return group_it->front();
-        }
-    };
-}
-
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                                                      TransitionSystem *ts1,
                                                      TransitionSystem *ts2)
@@ -1063,13 +1053,13 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
          group1_it != ts1->grouped_labels.end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
-        unordered_map<LabelGroupConstIter, vector<int>> buckets;
+        unordered_map<int, vector<int>> buckets;
         for (LabelConstIter label_it = group1_it->begin();
              label_it != group1_it->end(); ++label_it) {
             int label_no = *label_it;
             // TODO: hash via index
-            LabelGroupConstIter group2_it = get<1>(ts2->label_to_positions[label_no]);
-            buckets[group2_it].push_back(label_no);
+            int group2_transitions_index = get<0>(ts2->label_to_positions[label_no]);
+            buckets[group2_transitions_index].push_back(label_no);
         }
         // Now buckets contains all equivalence classes that are
         // refinements of group1.
@@ -1077,10 +1067,10 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         // Now create the new groups together with their transitions.;
         const vector<Transition> &transitions1 = ts1->get_const_transitions_for_group(*group1_it);
         vector<int> dead_labels;
-        for (unordered_map<LabelGroupConstIter, vector<int>>::iterator bucket_it = buckets.begin();
+        for (unordered_map<int, vector<int>>::iterator bucket_it = buckets.begin();
              bucket_it != buckets.end(); ++bucket_it) {
             const vector<Transition> &transitions2 =
-                ts2->get_const_transitions_for_group(*bucket_it->first);
+                ts2->transitions_by_group_index[bucket_it->first];
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
