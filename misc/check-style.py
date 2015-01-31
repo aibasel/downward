@@ -19,7 +19,7 @@ SRC_DIR = os.path.join(os.path.dirname(DIR), "src")
 def check_translator_style():
     output = subprocess.check_output([
         "./reindent.py", "--dryrun", "--recurse", "--verbose",
-        os.path.join(SRC_DIR, "translate")]).decode("utf-8")
+        os.path.join(SRC_DIR, "translate")], cwd=DIR).decode("utf-8")
     ok = True
     for line in output.splitlines():
         match = re.match("^checking (.+) ... changed.$", line)
@@ -32,7 +32,7 @@ def check_translator_style():
 
 
 def check_include_guard_convention():
-    return subprocess.call("./check-include-guard-convention.py") == 0
+    return subprocess.call("./check-include-guard-convention.py", cwd=DIR) == 0
 
 
 def check_preprocessor_and_search_style():
