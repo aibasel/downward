@@ -206,7 +206,7 @@ void ShrinkBisimulation::compute_signatures(
             // factor for computation time.
             continue;
         }
-        const vector<Transition> &transitions =ts.get_const_transitions_for_label_group(labels);
+        const vector<Transition> &transitions =ts.get_const_transitions_for_group(labels);
         int cost = ts.get_cost_for_label_group(labels);
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
