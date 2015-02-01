@@ -23,7 +23,7 @@ def parse_args():
     argparser.add_argument(
         "--invariant-generation-max-candidates", default=100000, type=int,
         help="max number of candidates for invariant generation "
-        "(default: %(default)ds). Set to 0 to disable invariant "
+        "(default: %(default)d). Set to 0 to disable invariant "
         "generation and obtain only binary variables. The limit is "
         "needed for grounded input files that would otherwise produce "
         "too many candidates.")
