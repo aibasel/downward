@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import argparse
@@ -22,14 +21,14 @@ def parse_args():
         "these facts to multiple variables. This can make the meaning "
         "of the variables clearer, but increases the number of facts.")
     argparser.add_argument(
-        "--invariant-generation-max-candidates", default=100000,
+        "--invariant-generation-max-candidates", default=100000, type=int,
         help="max number of candidates for invariant generation "
         "(default: %(default)ds). Set to 0 to disable invariant "
         "generation and obtain only binary variables. The limit is "
         "needed for grounded input files that would otherwise produce "
         "too many candidates.")
     argparser.add_argument(
-        "--invariant-generation-max-time", default=300,
+        "--invariant-generation-max-time", default=300, type=int,
         help="max time for invariant generation (default: %(default)ds)")
     argparser.add_argument(
         "--add-implied-preconditions", action="store_true",
