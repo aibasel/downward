@@ -199,13 +199,6 @@ void ShrinkBisimulation::compute_signatures(
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
         const list<int> &labels = *group_it;
-        if (!ts.is_label_group_relevant(labels)) {
-            // TODO: this is included to achieve the same behavior as earlier,
-            // where irrelevant labels were implicitly represented and had
-            // empty transitions. Note that this seems also to be an important
-            // factor for computation time.
-            continue;
-        }
         const vector<Transition> &transitions = ts.get_const_transitions_for_group(labels);
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
