@@ -102,11 +102,7 @@ class TransitionSystem {
        - Distances are computed and stored (are_distances_computed() == true).
        - Locally equivalent labels are computed. This cannot explicitly be
          test because of labels and transitions being coupled in the data
-         structure representing transitions (and there is no separate notion
-         of equivalence relation), but we can make sure that this data
-         structure is consistent, which means that all entries in
-         label_to_iterators are entries with labels_and_transitions
-         (are_labels_and_transitions_consistent() == true).
+         structure representing transitions.
       Note that those tests are expensive to compute and hence only used as
       an assertion.
     */
