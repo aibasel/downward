@@ -923,7 +923,9 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
             const vector<Transition> &transitions = get_const_transitions_for_group(*group_it);
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
-                label_rank = min(label_rank, goal_distances[t.target]);
+                if (t.target != t.src) {
+                    label_rank = min(label_rank, goal_distances[t.target]);
+                }
             }
 //        }
         for (LabelConstIter label_it = group_it->begin();
