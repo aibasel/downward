@@ -19,7 +19,8 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
+      use_expensive_statistics(opts.get<bool>("expensive_statistics")),
+      ms_only(opts.get<bool>("ms_only")) {
     labels = new Labels(opts);
 }
 
@@ -147,6 +148,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     final_transition_system->statistics(use_expensive_statistics);
     final_transition_system->release_memory();
 
+    // TODO: delete labels here?
+
     cout << "Order of merged transition systems: ";
     for (size_t i = 1; i < transition_system_order.size(); i += 2) {
         cout << transition_system_order[i - 1] << " " << transition_system_order[i] << ", ";
@@ -175,6 +178,9 @@ void MergeAndShrinkHeuristic::initialize() {
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
+    if (ms_only) {
+        return DEAD_END;
+    }
     int cost = final_transition_system->get_cost(state);
     if (cost == -1)
         return DEAD_END;
@@ -296,6 +302,9 @@ static Heuristic *_parse(OptionParser &parser) {
                             "(in terms of time and memory). When this is used, the planner "
                             "prints a big warning on stderr with information on the performance impact. "
                             "Don't use when benchmarking!)",
+                            "false");
+    parser.add_option<bool>("ms_only",
+                            "terminate planner after merge-and-shrink finished",
                             "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

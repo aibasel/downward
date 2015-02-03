@@ -5,10 +5,11 @@
 
 #include <ext/slist>
 #include <iostream>
+#include <list>
 #include <string>
+#include <tuple>
 #include <vector>
 
-class EquivalenceRelation;
 class GlobalState;
 class Label;
 class Labels;
@@ -48,6 +49,11 @@ struct Transition {
     }
 };
 
+typedef std::list<std::list<int>>::iterator LabelGroupIter;
+typedef std::list<std::list<int>>::const_iterator LabelGroupConstIter;
+typedef std::list<int>::iterator LabelIter;
+typedef std::list<int>::const_iterator LabelConstIter;
+
 class TransitionSystem {
     friend class AtomicTransitionSystem;
     friend class CompositeTransitionSystem;
@@ -61,20 +67,15 @@ class TransitionSystem {
       have a pointer to this object to ease access to the set of labels.
     */
     const Labels *labels;
+    std::list<std::list<int>> grouped_labels;
+    std::vector<std::vector<Transition> > transitions_by_group_index;
+    std::vector<std::tuple<int, LabelGroupIter, LabelIter>> label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
       reduction, this is updated immediately afterwards.
     */
     int num_labels;
-    /*
-      transitions_by_label and relevant_labels both have size of (2 * n) - 1
-      if n is the number of operators, because when applying label reduction,
-      at most n - 1 fresh labels can be generated in addition to the n
-      original labels.
-    */
-    std::vector<std::vector<Transition> > transitions_by_label;
-    std::vector<bool> relevant_labels;
 
     int num_states;
 
@@ -87,17 +88,23 @@ class TransitionSystem {
     int max_g;
     int max_h;
 
-    bool transitions_sorted_unique;
     bool goal_relevant;
 
     mutable int peak_memory;
 
     /*
-      A transition system is in valid state if:
-       - Transitions are sorted (by labels, by states) and there are no
-         duplicates (are_transitions_sorted_unique() == true)
-       - All labels are incorporated (is_label_reduced() == true))
-       - Distances are computed and stored (are_distances_computed() == true)
+      Invariant of this class:
+      A transition system is in a valid state iff:
+       - The transitions for every group of locally equivalent labels are
+         sorted (by source, by target) and there are no duplicates
+         (are_transitions_sorted_unique() == true).
+       - All labels are incorporated (is_label_reduced() == true)).
+       - Distances are computed and stored (are_distances_computed() == true).
+       - Locally equivalent labels are computed. This cannot explicitly be
+         test because of labels and transitions being coupled in the data
+         structure representing transitions.
+      Note that those tests are expensive to compute and hence only used as
+      an assertion.
     */
     bool is_valid() const;
 
@@ -111,12 +118,15 @@ class TransitionSystem {
     bool are_distances_computed() const;
     void compute_distances_and_prune();
 
-    // Methods related to the representation of transitions
+    // Methods related to the representation of transitions and labels
+    const std::vector<Transition> &get_const_transitions_for_label(int label_no) const;
+    std::vector<Transition> &get_transitions_for_group(const std::list<int> &group);
+    int get_transitions_index_for_group(const std::list<int> &group) const;
+    void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
-    void normalize_transitions();
+    bool is_label_group_relevant(const std::list<int> &group) const;
     bool is_label_reduced() const;
-    void apply_general_label_mapping(int new_label_no,
-                                     const std::vector<int> &old_label_nos);
+    void compute_locally_equivalent_labels();
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
@@ -139,7 +149,11 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    EquivalenceRelation *compute_local_equivalence_relation() const;
+    const std::vector<Transition> &get_const_transitions_for_group(const std::list<int> &group) const;
+    int get_cost_for_label_group(const std::list<int> &group) const;
+    const std::list<std::list<int>> &get_grouped_labels() const {
+        return grouped_labels;
+    }
     /*
       Method to identify the transition system in output.
       Print "Atomic transition system #x: " for atomic transition systems,
@@ -156,8 +170,8 @@ public:
     // TODO: Find a better way of doing this that doesn't require
     //       a mutable attribute?
     int get_peak_memory_estimate() const;
-    void dump_attributes() const;
     void dump_dot_graph() const;
+    void dump_labels_and_transitions() const;
     int get_size() const {
         return num_states;
     }
@@ -180,12 +194,6 @@ public:
     }
     int get_goal_distance(int state) const {
         return goal_distances[state];
-    }
-    const std::vector<Transition> &get_transitions_for_label(int label_no) const {
-        return transitions_by_label[label_no];
-    }
-    const Labels *get_labels() const {
-        return labels;
     }
 
     // Methods only used by MergeDFP.
