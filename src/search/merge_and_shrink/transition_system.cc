@@ -26,10 +26,10 @@
 using namespace std;
 using namespace __gnu_cxx;
 
-/* Implementation note: Transitions are grouped by their labels,
+/* Implementation note: Transitions are grouped by thei label groups,
  not by source state or any such thing. Such a grouping is beneficial
- for fast generation of products because we can iterate operator by
- operator, and it also allows applying transition system mappings very
+ for fast generation of products because we can iterate label group by
+ label group, and it also allows applying transition system mappings very
  efficiently.
 
  We rarely need to be able to efficiently query the successors of a
@@ -112,6 +112,7 @@ void TransitionSystem::compute_distances_and_prune() {
 
     cout << tag() << flush;
     assert(!are_distances_computed());
+    assert(are_transitions_sorted_unique());
     assert(init_distances.empty() && goal_distances.empty());
 
     if (init_state == PRUNED_STATE) {
@@ -341,6 +342,24 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
         }
     }
     return true;
+}
+
+bool TransitionSystem::is_label_group_relevant(const list<int> &group) const {
+    /*
+      Returns true iff the label corresponds to the earlier notion of an
+      "irrelevant label", i.e. it has exactly a self loop for every state.
+    */
+    const vector<Transition> &transitions = get_const_transitions_for_group(group);
+    if (static_cast<int>(transitions.size()) == num_states) {
+        for (size_t i = 0; i < transitions.size(); ++i) {
+            if (transitions[i].target != transitions[i].src) {
+                return true;
+            }
+        }
+        return false;
+    } else {
+        return true;
+    }
 }
 
 bool TransitionSystem::is_label_reduced() const {
@@ -738,24 +757,6 @@ const vector<Transition> &TransitionSystem::get_const_transitions_for_group(cons
     return transitions_by_group_index[get_transitions_index_for_group(group)];
 }
 
-bool TransitionSystem::is_label_group_relevant(const list<int> &group) const {
-    /*
-      Returns true iff the label corresponds to the earlier notion of an
-      "irrelevant label", i.e. it has exactly a self loop for every state.
-    */
-    const vector<Transition> &transitions = get_const_transitions_for_group(group);
-    if (static_cast<int>(transitions.size()) == num_states) {
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            if (transitions[i].target != transitions[i].src) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-        return true;
-    }
-}
-
 int TransitionSystem::get_cost_for_label_group(const list<int> &group) const {
     return labels->get_label_cost(group.front());
 }
@@ -1074,8 +1075,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
-            // TODO: test against overflow?
-            if (transitions1.size() * transitions2.size() > new_transitions.max_size())
+            // Test against overflow: size(trans1) * size(trans2) <= max-size
+            if (transitions1.size() > new_transitions.max_size() / transitions2.size())
                 exit_with(EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {

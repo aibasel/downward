@@ -118,12 +118,13 @@ class TransitionSystem {
     bool are_distances_computed() const;
     void compute_distances_and_prune();
 
-    // Methods related to the representation of transitions
+    // Methods related to the representation of transitions and labels
     const std::vector<Transition> &get_const_transitions_for_label(int label_no) const;
     std::vector<Transition> &get_transitions_for_group(const std::list<int> &group);
     int get_transitions_index_for_group(const std::list<int> &group) const;
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
+    bool is_label_group_relevant(const std::list<int> &group) const;
     bool is_label_reduced() const;
     void compute_locally_equivalent_labels();
     int total_transitions() const;
@@ -149,7 +150,6 @@ public:
     void release_memory();
 
     const std::vector<Transition> &get_const_transitions_for_group(const std::list<int> &group) const;
-    bool is_label_group_relevant(const std::list<int> &group) const;
     int get_cost_for_label_group(const std::list<int> &group) const;
     const std::list<std::list<int>> &get_grouped_labels() const {
         return grouped_labels;
