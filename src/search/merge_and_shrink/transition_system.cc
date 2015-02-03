@@ -916,16 +916,16 @@ void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
          group_it != grouped_labels.end(); ++group_it) {
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
-//        bool group_relevant = is_label_group_relevant(*group_it);
-//        if (!group_relevant) {
-//            label_rank = -1;
-//        } else {
+        bool group_relevant = is_label_group_relevant(*group_it);
+        if (!group_relevant) {
+            label_rank = -1;
+        } else {
             const vector<Transition> &transitions = get_const_transitions_for_group(*group_it);
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
                 label_rank = min(label_rank, goal_distances[t.target]);
             }
-//        }
+        }
         for (LabelConstIter label_it = group_it->begin();
              label_it != group_it->end(); ++label_it) {
             int label_no = *label_it;
