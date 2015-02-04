@@ -344,24 +344,6 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
     return true;
 }
 
-bool TransitionSystem::is_label_group_relevant(const list<int> &group) const {
-    /*
-      Returns true iff the label corresponds to the earlier notion of an
-      "irrelevant label", i.e. it has exactly a self loop for every state.
-    */
-    const vector<Transition> &transitions = get_const_transitions_for_group(group);
-    if (static_cast<int>(transitions.size()) == num_states) {
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            if (transitions[i].target != transitions[i].src) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-        return true;
-    }
-}
-
 bool TransitionSystem::is_label_reduced() const {
     return num_labels == labels->get_size();
 }
@@ -904,34 +886,6 @@ void TransitionSystem::dump_labels_and_transitions() const {
             cout << src << " -> " << target;
         }
         cout << endl;
-    }
-}
-
-void TransitionSystem::compute_label_ranks(vector<int> &label_ranks) const {
-    assert(is_valid());
-    assert(label_ranks.empty());
-    // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
-    label_ranks.resize(num_labels, -1);
-
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        // Relevant labels with no transitions have a rank of infinity.
-        int label_rank = INF;
-        bool group_relevant = is_label_group_relevant(*group_it);
-        if (!group_relevant) {
-            label_rank = -1;
-        } else {
-            const vector<Transition> &transitions = get_const_transitions_for_group(*group_it);
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &t = transitions[i];
-                label_rank = min(label_rank, goal_distances[t.target]);
-            }
-        }
-        for (LabelConstIter label_it = group_it->begin();
-             label_it != group_it->end(); ++label_it) {
-            int label_no = *label_it;
-            label_ranks[label_no] = label_rank;
-        }
     }
 }
 

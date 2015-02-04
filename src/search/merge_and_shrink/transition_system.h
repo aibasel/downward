@@ -124,7 +124,6 @@ class TransitionSystem {
     int get_transitions_index_for_group(const std::list<int> &group) const;
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
-    bool is_label_group_relevant(const std::list<int> &group) const;
     bool is_label_reduced() const;
     void compute_locally_equivalent_labels();
     int total_transitions() const;
@@ -192,12 +191,16 @@ public:
     int get_init_distance(int state) const {
         return init_distances[state];
     }
+
+    // Used by both shrink strategies and MergeDFP
     int get_goal_distance(int state) const {
         return goal_distances[state];
     }
 
     // Methods only used by MergeDFP.
-    void compute_label_ranks(std::vector<int> &label_ranks) const;
+    int get_num_labels() const {
+        return num_labels;
+    }
     bool is_goal_relevant() const {
         return goal_relevant;
     }
