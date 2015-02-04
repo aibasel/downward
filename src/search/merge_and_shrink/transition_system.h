@@ -49,8 +49,8 @@ struct Transition {
     }
 };
 
-typedef std::list<std::list<int>>::iterator LabelGroupIter;
-typedef std::list<std::list<int>>::const_iterator LabelGroupConstIter;
+typedef std::list<std::list<int> >::iterator LabelGroupIter;
+typedef std::list<std::list<int> >::const_iterator LabelGroupConstIter;
 typedef std::list<int>::iterator LabelIter;
 typedef std::list<int>::const_iterator LabelConstIter;
 
@@ -67,9 +67,9 @@ class TransitionSystem {
       have a pointer to this object to ease access to the set of labels.
     */
     const Labels *labels;
-    std::list<std::list<int>> grouped_labels;
+    std::list<std::list<int> > grouped_labels;
     std::vector<std::vector<Transition> > transitions_by_group_index;
-    std::vector<std::tuple<int, LabelGroupIter, LabelIter>> label_to_positions;
+    std::vector<std::tuple<int, LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
@@ -150,7 +150,7 @@ public:
 
     const std::vector<Transition> &get_const_transitions_for_group(const std::list<int> &group) const;
     int get_cost_for_label_group(const std::list<int> &group) const;
-    const std::list<std::list<int>> &get_grouped_labels() const {
+    const std::list<std::list<int> > &get_grouped_labels() const {
         return grouped_labels;
     }
     /*

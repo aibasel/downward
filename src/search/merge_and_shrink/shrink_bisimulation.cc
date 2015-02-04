@@ -194,7 +194,7 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    const list<list<int>> &grouped_labels = ts.get_grouped_labels();
+    const list<list<int> > &grouped_labels = ts.get_grouped_labels();
     int label_group_counter = 0;
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
