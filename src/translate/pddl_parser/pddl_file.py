@@ -46,6 +46,3 @@ def open(task_filename=None, domain_filename=None):
     domain_pddl = parse_pddl_file("domain", domain_filename)
     task_pddl = parse_pddl_file("task", task_filename)
     return parsing_functions.parse_task(domain_pddl, task_pddl)
-
-if __name__ == "__main__":
-    open().dump()
