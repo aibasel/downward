@@ -144,7 +144,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
         if (!ts || ts == transition_system) {
             continue;
         }
-        const list<list<int>> &grouped_labels = ts->get_grouped_labels();
+        const list<list<int> > &grouped_labels = ts->get_grouped_labels();
         for (LabelGroupConstIter group_it = grouped_labels.begin();
              group_it != grouped_labels.end(); ++group_it) {
             relation->refine(*group_it);

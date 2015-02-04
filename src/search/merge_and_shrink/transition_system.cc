@@ -61,8 +61,8 @@ TransitionSystem::~TransitionSystem() {
 
 bool TransitionSystem::is_valid() const {
     return are_distances_computed()
-        && are_transitions_sorted_unique()
-        && is_label_reduced();
+           && are_transitions_sorted_unique()
+           && is_label_reduced();
 }
 
 void TransitionSystem::clear_distances() {
@@ -730,9 +730,9 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 }
 
 void TransitionSystem::release_memory() {
-    list<list<int>>().swap(grouped_labels);
+    list<list<int> >().swap(grouped_labels);
     vector<vector<Transition> >().swap(transitions_by_group_index);
-    vector<tuple<int, LabelGroupIter, LabelIter>>().swap(label_to_positions);
+    vector<tuple<int, LabelGroupIter, LabelIter> >().swap(label_to_positions);
 }
 
 const vector<Transition> &TransitionSystem::get_const_transitions_for_group(const list<int> &group) const {
@@ -775,7 +775,7 @@ int TransitionSystem::memory_estimate() const {
         const vector<Transition> &transitions = get_const_transitions_for_group(label_list);
         result += sizeof(vector<Transition>) * transitions.capacity();
     }
-    result += sizeof(vector<tuple<int, LabelGroupIter, LabelIter>>) * label_to_positions.capacity();
+    result += sizeof(vector<tuple<int, LabelGroupIter, LabelIter> >) * label_to_positions.capacity();
     result += sizeof(int) * init_distances.capacity();
     result += sizeof(int) * goal_distances.capacity();
     result += sizeof(bool) * goal_states.capacity();
@@ -1008,7 +1008,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
          group1_it != ts1->grouped_labels.end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
-        unordered_map<int, vector<int>> buckets;
+        unordered_map<int, vector<int> > buckets;
         for (LabelConstIter label_it = group1_it->begin();
              label_it != group1_it->end(); ++label_it) {
             int label_no = *label_it;
@@ -1022,7 +1022,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         // Now create the new groups together with their transitions.;
         const vector<Transition> &transitions1 = ts1->get_const_transitions_for_group(*group1_it);
         vector<int> dead_labels;
-        for (unordered_map<int, vector<int>>::iterator bucket_it = buckets.begin();
+        for (unordered_map<int, vector<int> >::iterator bucket_it = buckets.begin();
              bucket_it != buckets.end(); ++bucket_it) {
             const vector<Transition> &transitions2 =
                 ts2->transitions_by_group_index[bucket_it->first];

@@ -215,4 +215,3 @@ void EquivalenceRelation::refine(const list<int> &block_X) {
         }
     }
 }
-
