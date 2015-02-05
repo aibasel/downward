@@ -1029,8 +1029,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
-            // Test against overflow: size(trans1) * size(trans2) <= max-size
-            if (transitions1.size() > new_transitions.max_size() / transitions2.size())
+            // TODO: test against overflow? pitfall: transitions could be empty!
+            if (transitions1.size() * transitions2.size() > new_transitions.max_size())
                 exit_with(EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {
