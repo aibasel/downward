@@ -2,37 +2,6 @@
 
 OPTIMAL = False
 
-# NOTE: when using iterated search included, we must include the option
-#       "plan_counter=PLANCOUNTER"
-
-#    114.00 seconds for add_lm_lazy_greedy
-#    187.00 seconds for ff_lm_lazy_greedy
-#     33.00 seconds for add_lm_eager_greedy
-#     35.00 seconds for ff_lm_eager_greedy
-#     39.00 seconds for cea_lm_lazy_greedy
-#    120.00 seconds for add_ff_eager_greedy
-#     40.00 seconds for cg_ff_eager_greedy
-#     17.00 seconds for add_ff_lazy_greedy
-#     40.00 seconds for add_cg_lazy_greedy
-#     79.00 seconds for add_lm_lazy_wastar
-#    159.00 seconds for ff_lm_lazy_wastar
-#     39.00 seconds for cea_lm_lazy_wastar
-#     78.00 seconds for cg_lm_eager_greedy
-#     39.00 seconds for cea_ff_lazy_wastar
-#     37.00 seconds for cea_lm_eager_wastar
-#     40.00 seconds for cg_ff_lazy_wastar
-#     40.00 seconds for ff_lm_eager_wastar
-#     77.00 seconds for add_eager_wastar
-#     40.00 seconds for cea_ff_eager_wastar
-#     78.00 seconds for cg_lm_eager_wastar
-#     40.00 seconds for cea_eager_greedy
-#     39.00 seconds for cg_lm_lazy_wastar
-#     40.00 seconds for cea_lazy_wastar
-#     72.00 seconds for ff_eager_wastar
-#     38.00 seconds for cg_eager_wastar
-#     38.00 seconds for ff_lazy_wastar
-#    116.00 seconds for cg_lazy_greedy
-
 CONFIGS = [
     # add_lm_lazy_greedy
     (114, ["--heuristic", "hadd=add(cost_type=H_COST_TYPE)",
