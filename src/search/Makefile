@@ -329,7 +329,7 @@ COIN_LIBS += Osi CoinUtils
 ## http://ubuntuforums.org/showthread.php?t=491455
 
 COIN_CXXFLAGS += -I$(DOWNWARD_COIN_ROOT)/include/coin -D USE_LP
-ifeq ($(OS), osx)
+ifeq ($(DOWNWARD_OS), osx)
 COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
 else
 COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
