@@ -54,20 +54,16 @@ class Labels {
     LabelReductionSystemOrder label_reduction_system_order;
     std::vector<int> transition_system_order;
 
-    // Apply the label mapping to all transition systems. Also clear cache.
-    void notify_transition_systems(
-        int ts_index,
-        const std::vector<TransitionSystem *> &all_transition_systems,
-        const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
-        std::vector<EquivalenceRelation *> &cached_equivalence_relations) const;
+    // Apply the label mapping to all transition systems.
+    void notify_transition_systems(int ts_index,
+                                   const std::vector<TransitionSystem *> &all_transition_systems,
+                                   const std::vector<std::pair<int, std::vector<int> > > &label_mapping) const;
     // Apply the given label equivalence relation to the set of labels
     bool apply_label_reduction(
         const EquivalenceRelation *relation,
         std::vector<std::pair<int, std::vector<int> > > &label_mapping);
-    EquivalenceRelation *compute_combinable_equivalence_relation(
-        int ts_index,
-        const std::vector<TransitionSystem *> &all_transition_systems,
-        std::vector<EquivalenceRelation *> &cached_local_equivalence_relations) const;
+    EquivalenceRelation *compute_combinable_equivalence_relation(int ts_index,
+                                                                 const std::vector<TransitionSystem *> &all_transition_systems) const;
 
 public:
     explicit Labels(const Options &options);

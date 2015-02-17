@@ -90,6 +90,9 @@ public:
     */
     void refine(const EquivalenceRelation &other);
 
+    // See refine(const Block &block)
+    void refine(const std::list<int> &block_X);
+
     /*
       Creates an equivalence relation over the numbers 0 to n -1.
       The vector annotated_elements cointains pairs (A, e) where A is an arbitrary

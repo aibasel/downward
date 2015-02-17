@@ -19,7 +19,8 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
+      use_expensive_statistics(opts.get<bool>("expensive_statistics")),
+      terminate(opts.get<bool>("terminate")) {
     labels = new Labels(opts);
 }
 
@@ -147,6 +148,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     final_transition_system->statistics(use_expensive_statistics);
     final_transition_system->release_memory();
 
+    // TODO: delete labels here?
+
     cout << "Order of merged transition systems: ";
     for (size_t i = 1; i < transition_system_order.size(); i += 2) {
         cout << transition_system_order[i - 1] << " " << transition_system_order[i] << ", ";
@@ -175,6 +178,9 @@ void MergeAndShrinkHeuristic::initialize() {
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
+    if (terminate) {
+        return DEAD_END;
+    }
     int cost = final_transition_system->get_cost(state);
     if (cost == -1)
         return DEAD_END;
@@ -290,13 +296,19 @@ static Heuristic *_parse(OptionParser &parser) {
                            "RANDOM",
                            label_reduction_system_order_doc);
 
-    parser.add_option<bool>("expensive_statistics",
-                            "show statistics on \"unique unlabeled edges\" (WARNING: "
-                            "these are *very* slow, i.e. too expensive to show by default "
-                            "(in terms of time and memory). When this is used, the planner "
-                            "prints a big warning on stderr with information on the performance impact. "
-                            "Don't use when benchmarking!)",
-                            "false");
+    parser.add_option<bool>(
+        "expensive_statistics",
+        "show statistics on \"unique unlabeled edges\" (WARNING: "
+        "these are *very* slow, i.e. too expensive to show by default "
+        "(in terms of time and memory). When this is used, the planner "
+        "prints a big warning on stderr with information on the performance "
+        "impact. Don't use when benchmarking!)",
+        "false");
+    parser.add_option<bool>(
+        "terminate",
+        "terminate planner after heuristic computation finished (by reporting "
+        "all states as dead ends)",
+        "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 

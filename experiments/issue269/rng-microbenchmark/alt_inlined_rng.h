@@ -6,7 +6,9 @@
 
 class AltInlinedRandomNumberGenerator {
     std::mt19937 rng;
-    std::uniform_real_distribution<double> double_distribution {0.0, 1.0};
+    std::uniform_real_distribution<double> double_distribution {
+        0.0, 1.0
+    };
 public:
     explicit AltInlinedRandomNumberGenerator(int seed) {
         rng.seed(seed);
