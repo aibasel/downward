@@ -1,12 +1,46 @@
 #include "global_task_interface.h"
 
+#include "global_operator.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "task.h"
 
+#include <cassert>
+
 using namespace std;
 
 class Task;
+
+
+static GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) {
+    if (is_axiom) {
+        assert(in_bounds(index, g_axioms));
+        return g_axioms[index];
+    } else {
+        assert(in_bounds(index, g_operators));
+        return g_operators[index];
+    }
+}
+
+int GlobalTaskInterface::get_num_variables() const {
+    return g_variable_domain.size();
+}
+
+int GlobalTaskInterface::get_variable_domain_size(int var) const {
+    return g_variable_domain[var];
+}
+
+int GlobalTaskInterface::get_operator_cost(int index, bool is_axiom) const {
+    return get_operator_or_axiom(index, is_axiom).get_cost();
+}
+
+const std::string &GlobalTaskInterface::get_operator_name(int index, bool is_axiom) const {
+    return get_operator_or_axiom(index, is_axiom).get_name();
+}
+
+int GlobalTaskInterface::get_num_operators() const {
+    return g_operators.size();
+}
 
 int GlobalTaskInterface::get_num_operator_preconditions(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_preconditions().size();
@@ -43,6 +77,18 @@ pair<int, int> GlobalTaskInterface::get_operator_effect(
 
 const GlobalOperator *GlobalTaskInterface::get_global_operator(int index, bool is_axiom) const {
     return &get_operator_or_axiom(index, is_axiom);
+}
+
+int GlobalTaskInterface::get_num_axioms() const {
+    return g_axioms.size();
+}
+
+int GlobalTaskInterface::get_num_goals() const {
+    return g_goal.size();
+}
+
+std::pair<int, int> GlobalTaskInterface::get_goal_fact(int index) const {
+    return g_goal[index];
 }
 
 static Task *_parse(OptionParser &parser) {
