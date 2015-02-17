@@ -6,8 +6,8 @@
 #include "task.h"
 #include "utilities.h"
 
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
 #include <vector>
 using namespace std;
 
@@ -33,16 +33,16 @@ void RelaxationHeuristic::initialize() {
     Variables vars = task->get_variables();
     int num_vars = vars.size();
     propositions.resize(num_vars);
-    for (int var = 0; var < num_vars; var++) {
+    for (int var = 0; var < num_vars; ++var) {
         int num_values = vars[var].get_domain_size();
-        for (int value = 0; value < num_values; value++)
+        for (int value = 0; value < num_values; ++value)
             propositions[var].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
     Goals goals = task->get_goals();
     size_t num_goals = goals.size();
-    for (size_t i = 0; i < num_goals; i++) {
+    for (size_t i = 0; i < num_goals; ++i) {
         Proposition *prop = get_proposition(goals[i]);
         prop->is_goal = true;
         goal_propositions.push_back(prop);
@@ -51,11 +51,11 @@ void RelaxationHeuristic::initialize() {
     // Build unary operators for operators and axioms.
     Operators operators = task->get_operators();
     size_t num_operators = operators.size();
-    for (size_t i = 0; i < num_operators; i++)
+    for (size_t i = 0; i < num_operators; ++i)
         build_unary_operators(operators[i], i);
     Axioms axioms = task->get_axioms();
     size_t num_axioms = axioms.size();
-    for (size_t i = 0; i < num_axioms; i++)
+    for (size_t i = 0; i < num_axioms; ++i)
         build_unary_operators(axioms[i], -1);
 
     // Simplify unary operators.
