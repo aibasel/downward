@@ -382,7 +382,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("remove_inapplicable_operators", "filter inapplicable operators", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<int>("min_hadd", "ignore facts with too low h^add values", "0");
-    parser.add_option<bool>("general_costs", "allow negative costs in cost-partitioning", "false");
+    parser.add_option<bool>("general_costs", "allow negative costs in cost-partitioning", "true");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
     parser.add_option<bool>("dump_graphs", "write causal and landmark graphs", "false");
