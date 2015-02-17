@@ -33,7 +33,7 @@ public:
     int get_operator_cost(int index, bool is_axiom) const override {
         return get_operator_or_axiom(index, is_axiom).get_cost();
     }
-    std::string get_operator_name(int index, bool is_axiom) const override {
+    const std::string &get_operator_name(int index, bool is_axiom) const override {
         return get_operator_or_axiom(index, is_axiom).get_name();
     }
     int get_num_operators() const override {
