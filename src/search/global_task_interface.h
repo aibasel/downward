@@ -6,8 +6,6 @@
 #include <string>
 #include <utility>
 
-class GlobalOperator;
-
 
 class GlobalTaskInterface : public TaskInterface {
 public:
