@@ -9,8 +9,6 @@
 
 using namespace std;
 
-class Task;
-
 
 static GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) {
     if (is_axiom) {
