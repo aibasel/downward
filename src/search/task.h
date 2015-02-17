@@ -36,7 +36,9 @@ public:
     Fact(const TaskInterface &interface_, int var_id_, int value_);
     ~Fact() {}
     Variable get_variable() const;
-    int get_value() const {return value; }
+    int get_value() const {
+        return value;
+    }
 };
 
 
@@ -59,8 +61,12 @@ public:
     Variable(const TaskInterface &interface_, int id_)
         : interface(interface_), id(id_) {}
     ~Variable() {}
-    int get_id() const {return id; }
-    int get_domain_size() const {return interface.get_variable_domain_size(id); }
+    int get_id() const {
+        return id;
+    }
+    int get_domain_size() const {
+        return interface.get_variable_domain_size(id);
+    }
     Fact get_fact(int index) const {
         assert(index < get_domain_size());
         return Fact(interface, id, index);
@@ -74,7 +80,9 @@ public:
     explicit Variables(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Variables() {}
-    std::size_t size() const {return interface.get_num_variables(); }
+    std::size_t size() const {
+        return interface.get_num_variables();
+    }
     Variable operator[](std::size_t index) const {
         assert(index < size());
         return Variable(interface, index);
@@ -89,8 +97,10 @@ public:
     Preconditions(const TaskInterface &interface_, int op_index_, bool is_axiom_)
         : Conditions(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Preconditions() {}
-    std::size_t size() const {return interface.get_num_operator_preconditions(op_index, is_axiom); }
-    Fact operator[](std::size_t fact_index) const {
+    std::size_t size() const override {
+        return interface.get_num_operator_preconditions(op_index, is_axiom);
+    }
+    Fact operator[](std::size_t fact_index) const override {
         assert(fact_index < size());
         std::pair<int, int> fact =
             interface.get_operator_precondition(op_index, fact_index, is_axiom);
@@ -108,10 +118,10 @@ public:
         const TaskInterface &interface_, int op_index_, int eff_index_, bool is_axiom_)
         : Conditions(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
     ~EffectConditions() {}
-    std::size_t size() const {
+    std::size_t size() const override {
         return interface.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
-    Fact operator[](std::size_t index) const {
+    Fact operator[](std::size_t index) const override {
         assert(index < size());
         std::pair<int, int> fact =
             interface.get_operator_effect_condition(op_index, eff_index, index, is_axiom);
@@ -148,7 +158,9 @@ public:
     Effects(const TaskInterface &interface_, int op_index_, bool is_axiom_)
         : interface(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Effects() {}
-    std::size_t size() const {return interface.get_num_operator_effects(op_index, is_axiom); }
+    std::size_t size() const {
+        return interface.get_num_operator_effects(op_index, is_axiom);
+    }
     Effect operator[](std::size_t eff_index) const {
         assert(eff_index < size());
         return Effect(interface, op_index, eff_index, is_axiom);
@@ -164,11 +176,21 @@ public:
     Operator(const TaskInterface &interface_, int index_, bool is_axiom)
         : interface(interface_), index(index_), is_an_axiom(is_axiom) {}
     ~Operator() {}
-    Preconditions get_preconditions() const {return Preconditions(interface, index, is_an_axiom); }
-    Effects get_effects() const {return Effects(interface, index, is_an_axiom); }
-    int get_cost() const {return interface.get_operator_cost(index, is_an_axiom); }
-    bool is_axiom() const {return is_an_axiom; }
-    std::string get_name() const {return interface.get_operator_name(index, is_an_axiom); }
+    Preconditions get_preconditions() const {
+        return Preconditions(interface, index, is_an_axiom);
+    }
+    Effects get_effects() const {
+        return Effects(interface, index, is_an_axiom);
+    }
+    int get_cost() const {
+        return interface.get_operator_cost(index, is_an_axiom);
+    }
+    bool is_axiom() const {
+        return is_an_axiom;
+    }
+    std::string get_name() const {
+        return interface.get_operator_name(index, is_an_axiom);
+    }
     const GlobalOperator *get_global_operator() const {
         return interface.get_global_operator(index, is_an_axiom);
     }
@@ -181,7 +203,9 @@ public:
     explicit Operators(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Operators() {}
-    std::size_t size() const {return interface.get_num_operators(); }
+    std::size_t size() const {
+        return interface.get_num_operators();
+    }
     Operator operator[](std::size_t index) const {
         assert(index < size());
         return Operator(interface, index, false);
@@ -195,7 +219,9 @@ public:
     explicit Axioms(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Axioms() {}
-    std::size_t size() const {return interface.get_num_axioms(); }
+    std::size_t size() const {
+        return interface.get_num_axioms();
+    }
     Operator operator[](std::size_t index) const {
         assert(index < size());
         return Operator(interface, index, true);
@@ -208,8 +234,10 @@ public:
     explicit Goals(const TaskInterface &interface_)
         : Conditions(interface_) {}
     ~Goals() {}
-    std::size_t size() const {return interface.get_num_goals(); }
-    Fact operator[](std::size_t index) const {
+    std::size_t size() const override {
+        return interface.get_num_goals();
+    }
+    Fact operator[](std::size_t index) const override {
         assert(index < size());
         std::pair<int, int> fact = interface.get_goal_fact(index);
         return Fact(interface, fact.first, fact.second);
@@ -222,11 +250,21 @@ class Task {
 public:
     explicit Task(const TaskInterface *interface_)
         : interface(interface_) {}
-    ~Task() {delete interface; }
-    Variables get_variables() const {return Variables(*interface); }
-    Operators get_operators() const {return Operators(*interface); }
-    Axioms get_axioms() const {return Axioms(*interface); }
-    Goals get_goals() const {return Goals(*interface); }
+    ~Task() {
+        delete interface;
+    }
+    Variables get_variables() const {
+        return Variables(*interface);
+    }
+    Operators get_operators() const {
+        return Operators(*interface);
+    }
+    Axioms get_axioms() const {
+        return Axioms(*interface);
+    }
+    Goals get_goals() const {
+        return Goals(*interface);
+    }
 };
 
 #endif
