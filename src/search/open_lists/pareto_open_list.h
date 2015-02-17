@@ -3,7 +3,6 @@
 
 #include "open_list.h"
 #include "../evaluator.h"
-#include "../option_parser.h"
 
 #include <deque>
 #include <ext/hash_map>
@@ -11,6 +10,8 @@
 #include <vector>
 #include <utility>
 
+class Options;
+class OptionParser;
 class ScalarEvaluator;
 
 namespace __gnu_cxx {
