@@ -188,7 +188,7 @@ public:
     bool is_axiom() const {
         return is_an_axiom;
     }
-    std::string get_name() const {
+    const std::string &get_name() const {
         return interface.get_operator_name(index, is_an_axiom);
     }
     const GlobalOperator *get_global_operator() const {

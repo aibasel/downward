@@ -14,7 +14,7 @@ public:
     virtual int get_variable_domain_size(int var) const = 0;
 
     virtual int get_operator_cost(int index, bool is_axiom) const = 0;
-    virtual std::string get_operator_name(int index, bool is_axiom) const = 0;
+    virtual const std::string &get_operator_name(int index, bool is_axiom) const = 0;
     virtual int get_num_operators() const = 0;
     virtual int get_num_operator_preconditions(int index, bool is_axiom) const = 0;
     virtual std::pair<int, int> get_operator_precondition(

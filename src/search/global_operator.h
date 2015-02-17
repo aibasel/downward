@@ -67,7 +67,7 @@ class GlobalOperator {
 public:
     explicit GlobalOperator(std::istream &in, bool is_axiom);
     void dump() const;
-    std::string get_name() const {return name; }
+    const std::string &get_name() const {return name; }
 
     bool is_axiom() const {return is_an_axiom; }
 
