@@ -14,7 +14,6 @@ SCRIPTS = [
     "normalize.py",
     "pddl_to_prolog.py",
     "translate.py",
-    "pddl_parser/pddl_file.py",
 ]
 
 def test_scripts():
