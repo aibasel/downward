@@ -74,7 +74,6 @@ HEADERS = \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
-          task.h \
           timer.h \
           utilities.h \
           variable_order_finder.h \
