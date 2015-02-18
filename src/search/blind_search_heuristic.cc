@@ -5,7 +5,9 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "task.h"
 
+#include <cstddef>
 #include <limits>
 #include <utility>
 using namespace std;
@@ -13,9 +15,11 @@ using namespace std;
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
-    for (size_t i = 0; i < g_operators.size(); ++i)
+    Operators ops = task->get_operators();
+    size_t num_operators = ops.size();
+    for (size_t i = 0; i < num_operators; ++i)
         min_operator_cost = min(min_operator_cost,
-                                get_adjusted_cost(g_operators[i]));
+                                get_adjusted_cost(ops[i]));
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {

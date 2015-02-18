@@ -3,6 +3,7 @@
 #include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
+#include "task.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -11,7 +12,8 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    : task(opts.get<Task *>("task")),
+      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 }
 
@@ -113,8 +115,19 @@ int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
+int Heuristic::get_adjusted_cost(const Operator &op) const {
+    if (op.is_axiom())
+        return 0;
+    else
+        return get_adjusted_action_cost(op.get_cost(), cost_type);
+}
+
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
+    parser.add_option<Task *>(
+        "task",
+        "Task that the heuristic should operate on. Currently only global_task is supported.",
+        "global_task");
 }
 
 //this solution to get default values seems not optimal:
