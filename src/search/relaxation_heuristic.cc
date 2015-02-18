@@ -3,9 +3,11 @@
 #include "global_operator.h"
 #include "global_state.h"
 #include "globals.h"
+#include "task.h"
 #include "utilities.h"
 
 #include <cassert>
+#include <cstddef>
 #include <vector>
 using namespace std;
 
@@ -28,24 +30,33 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
-    propositions.resize(g_variable_domain.size());
-    for (size_t var = 0; var < g_variable_domain.size(); ++var) {
-        for (int value = 0; value < g_variable_domain[var]; ++value)
+    Variables vars = task->get_variables();
+    int num_vars = vars.size();
+    propositions.resize(num_vars);
+    for (int var = 0; var < num_vars; ++var) {
+        int num_values = vars[var].get_domain_size();
+        for (int value = 0; value < num_values; ++value)
             propositions[var].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int var = g_goal[i].first, val = g_goal[i].second;
-        propositions[var][val].is_goal = true;
-        goal_propositions.push_back(&propositions[var][val]);
+    Goals goals = task->get_goals();
+    size_t num_goals = goals.size();
+    for (size_t i = 0; i < num_goals; ++i) {
+        Proposition *prop = get_proposition(goals[i]);
+        prop->is_goal = true;
+        goal_propositions.push_back(prop);
     }
 
     // Build unary operators for operators and axioms.
-    for (size_t i = 0; i < g_operators.size(); ++i)
-        build_unary_operators(g_operators[i], i);
-    for (size_t i = 0; i < g_axioms.size(); ++i)
-        build_unary_operators(g_axioms[i], -1);
+    Operators operators = task->get_operators();
+    size_t num_operators = operators.size();
+    for (size_t i = 0; i < num_operators; ++i)
+        build_unary_operators(operators[i], i);
+    Axioms axioms = task->get_axioms();
+    size_t num_axioms = axioms.size();
+    for (size_t i = 0; i < num_axioms; ++i)
+        build_unary_operators(axioms[i], -1);
 
     // Simplify unary operators.
     simplify();
@@ -58,28 +69,37 @@ void RelaxationHeuristic::initialize() {
     }
 }
 
-void RelaxationHeuristic::build_unary_operators(const GlobalOperator &op, int op_no) {
+Proposition *RelaxationHeuristic::get_proposition(const Fact &fact) {
+    int var = fact.get_variable().get_id();
+    int value = fact.get_value();
+    assert(in_bounds(var, propositions));
+    assert(in_bounds(value, propositions[var]));
+    return &propositions[var][value];
+}
+
+void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
     int base_cost = get_adjusted_cost(op);
-    const vector<GlobalCondition> &preconditions = op.get_preconditions();
-    const vector<GlobalEffect> &effects = op.get_effects();
-    vector<Proposition *> precondition;
-    for (size_t i = 0; i < preconditions.size(); ++i) {
-        assert(in_bounds(preconditions[i].var, g_variable_domain));
-        assert(preconditions[i].val >= 0 && preconditions[i].val < g_variable_domain[preconditions[i].var]);
-        precondition.push_back(&propositions[preconditions[i].var][preconditions[i].val]);
+    vector<Proposition *> precondition_props;
+    Preconditions preconditions = op.get_preconditions();
+    size_t num_preconditions = preconditions.size();
+    for (size_t i = 0; i < num_preconditions; ++i) {
+        Fact fact = preconditions[i];
+        precondition_props.push_back(get_proposition(fact));
     }
-    for (size_t i = 0; i < effects.size(); ++i) {
-        assert(in_bounds(effects[i].var, g_variable_domain));
-        assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
-        Proposition *effect = &propositions[effects[i].var][effects[i].val];
-        const vector<GlobalCondition> &eff_cond = effects[i].conditions;
-        for (size_t j = 0; j < eff_cond.size(); ++j) {
-            assert(in_bounds(eff_cond[j].var, g_variable_domain));
-            assert(eff_cond[j].val >= 0 && eff_cond[j].val < g_variable_domain[eff_cond[j].var]);
-            precondition.push_back(&propositions[eff_cond[j].var][eff_cond[j].val]);
+    Effects effects = op.get_effects();
+    size_t num_effects = effects.size();
+    for (size_t i = 0; i < num_effects; ++i) {
+        Effect effect = effects[i];
+        Fact effect_fact = effect.get_fact();
+        Proposition *effect_prop = get_proposition(effect_fact);
+        EffectConditions eff_conds = effect.get_conditions();
+        size_t num_eff_conds = eff_conds.size();
+        for (size_t j = 0; j < num_eff_conds; ++j) {
+            Fact eff_cond = eff_conds[j];
+            precondition_props.push_back(get_proposition(eff_cond));
         }
-        unary_operators.push_back(UnaryOperator(precondition, effect, op_no, base_cost));
-        precondition.erase(precondition.end() - eff_cond.size(), precondition.end());
+        unary_operators.push_back(UnaryOperator(precondition_props, effect_prop, op_no, base_cost));
+        precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());
     }
 }
 
