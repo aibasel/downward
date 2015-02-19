@@ -40,10 +40,8 @@ void RelaxationHeuristic::initialize() {
     }
 
     // Build goal propositions.
-    Goals goals = task->get_goals();
-    size_t num_goals = goals.size();
-    for (size_t i = 0; i < num_goals; ++i) {
-        Proposition *prop = get_proposition(goals[i]);
+    for (Fact goal : task->get_goals()) {
+        Proposition *prop = get_proposition(goal);
         prop->is_goal = true;
         goal_propositions.push_back(prop);
     }

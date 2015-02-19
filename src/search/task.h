@@ -244,6 +244,34 @@ public:
     }
 };
 
+class Iterator {
+    Goals goals;
+    int pos;
+
+public:
+    Iterator(Goals goals_, int pos_)
+        : goals(goals_), pos(pos_) {}
+
+    Fact operator*() {
+        return goals[pos];
+    }
+    Iterator& operator++() {
+        ++pos;
+        return *this;
+    }
+    bool operator!=(const Iterator& it) const {
+        return pos != it.pos;
+    }
+};
+
+inline Iterator begin(Goals& goals) {
+   return Iterator(goals, 0);
+}
+
+inline Iterator end(Goals& goals) {
+   return Iterator(goals, goals.size());
+}
+
 
 class Task {
     const TaskInterface *interface;
