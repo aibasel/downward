@@ -48,6 +48,7 @@ protected:
     explicit Conditions(const TaskInterface &interface_)
         : interface(interface_) {}
 public:
+    using item_type = Fact;
     virtual ~Conditions() {}
     virtual std::size_t size() const = 0;
     virtual Fact operator[](std::size_t index) const = 0;
@@ -77,6 +78,7 @@ public:
 class Variables {
     const TaskInterface &interface;
 public:
+    using item_type = Variable;
     explicit Variables(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Variables() {}
@@ -155,6 +157,7 @@ class Effects {
     int op_index;
     bool is_axiom;
 public:
+    using item_type = Effect;
     Effects(const TaskInterface &interface_, int op_index_, bool is_axiom_)
         : interface(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Effects() {}
@@ -200,6 +203,7 @@ public:
 class Operators {
     const TaskInterface &interface;
 public:
+    using item_type = Operator;
     explicit Operators(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Operators() {}
@@ -216,6 +220,7 @@ public:
 class Axioms {
     const TaskInterface &interface;
 public:
+    using item_type = Operator;
     explicit Axioms(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Axioms() {}
@@ -243,38 +248,6 @@ public:
         return Fact(interface, fact.first, fact.second);
     }
 };
-
-
-template<class Collection, class Item>
-class Iterator {
-    Collection collection;
-    std::size_t pos;
-
-public:
-    Iterator(Collection collection_, std::size_t pos_)
-        : collection(collection_), pos(pos_) {}
-
-    Item operator*() {
-        return collection[pos];
-    }
-    Iterator& operator++() {
-        ++pos;
-        return *this;
-    }
-    bool operator!=(const Iterator& it) const {
-        return pos != it.pos;
-    }
-};
-
-template<class Collection>
-inline Iterator<Collection, Fact> begin(Collection& collection) {
-   return {collection, 0};
-}
-
-template<class Collection>
-inline Iterator<Collection, Fact> end(Collection& collection) {
-   return {collection, collection.size()};
-}
 
 
 class Task {
@@ -311,5 +284,36 @@ inline Variable Fact::get_variable() const {
     return Variable(interface, var_id);
 }
 
+// Allow range-based for loops.
+template<class Collection>
+class Iterator {
+    Collection collection;
+    std::size_t pos;
+
+public:
+    Iterator(Collection collection_, std::size_t pos_)
+        : collection(collection_), pos(pos_) {}
+
+    typename Collection::item_type operator*() {
+        return collection[pos];
+    }
+    Iterator& operator++() {
+        ++pos;
+        return *this;
+    }
+    bool operator!=(const Iterator& it) const {
+        return pos != it.pos;
+    }
+};
+
+template<class Collection>
+inline Iterator<Collection> begin(Collection& collection) {
+   return {collection, 0};
+}
+
+template<class Collection>
+inline Iterator<Collection> end(Collection& collection) {
+   return {collection, collection.size()};
+}
 
 #endif
