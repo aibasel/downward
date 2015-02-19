@@ -299,23 +299,23 @@ public:
     typename Collection::item_type operator*() {
         return collection[pos];
     }
-    Iterator& operator++() {
+    Iterator &operator++() {
         ++pos;
         return *this;
     }
-    bool operator!=(const Iterator& it) const {
+    bool operator!=(const Iterator &it) const {
         return pos != it.pos;
     }
 };
 
 template<class Collection>
-inline Iterator<Collection> begin(Collection& collection) {
-   return Iterator<Collection>(collection, 0);
+inline Iterator<Collection> begin(Collection &collection) {
+    return Iterator<Collection>(collection, 0);
 }
 
 template<class Collection>
-inline Iterator<Collection> end(Collection& collection) {
-   return Iterator<Collection>(collection, collection.size());
+inline Iterator<Collection> end(Collection &collection) {
+    return Iterator<Collection>(collection, collection.size());
 }
 
 #endif
