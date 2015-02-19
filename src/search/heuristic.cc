@@ -133,6 +133,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
+    opts.set<Task *>("task", 0);  // TODO: Use correct task.
     opts.set<int>("cost_type", 0);
     return opts;
 }
