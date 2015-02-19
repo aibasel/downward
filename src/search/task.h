@@ -284,7 +284,9 @@ inline Variable Fact::get_variable() const {
     return Variable(interface, var_id);
 }
 
-// Allow range-based for loops.
+
+// Support range-based for loops.
+
 template<class Collection>
 class Iterator {
     Collection collection;
@@ -308,12 +310,12 @@ public:
 
 template<class Collection>
 inline Iterator<Collection> begin(Collection& collection) {
-   return {collection, 0};
+   return Iterator<Collection>(collection, 0);
 }
 
 template<class Collection>
 inline Iterator<Collection> end(Collection& collection) {
-   return {collection, collection.size()};
+   return Iterator<Collection>(collection, collection.size());
 }
 
 #endif
