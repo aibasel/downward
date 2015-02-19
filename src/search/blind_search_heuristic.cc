@@ -15,11 +15,8 @@ using namespace std;
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
-    Operators ops = task->get_operators();
-    size_t num_operators = ops.size();
-    for (size_t i = 0; i < num_operators; ++i)
-        min_operator_cost = min(min_operator_cost,
-                                get_adjusted_cost(ops[i]));
+    for (Operator op : task->get_operators())
+        min_operator_cost = min(min_operator_cost, get_adjusted_cost(op));
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
