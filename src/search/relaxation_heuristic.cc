@@ -47,14 +47,11 @@ void RelaxationHeuristic::initialize() {
     }
 
     // Build unary operators for operators and axioms.
-    Operators operators = task->get_operators();
-    size_t num_operators = operators.size();
-    for (size_t i = 0; i < num_operators; ++i)
-        build_unary_operators(operators[i], i);
-    Axioms axioms = task->get_axioms();
-    size_t num_axioms = axioms.size();
-    for (size_t i = 0; i < num_axioms; ++i)
-        build_unary_operators(axioms[i], -1);
+    //int op_no = 0;
+    //for (Operator op : task->get_operators())
+    //    build_unary_operators(op, op_no++);
+    //for (Axiom axiom : task->get_axioms())
+    //    build_unary_operators(axiom, -1);
 
     // Simplify unary operators.
     simplify();
