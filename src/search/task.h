@@ -244,16 +244,18 @@ public:
     }
 };
 
+
+template<class Collection, class Item>
 class Iterator {
-    Goals goals;
-    int pos;
+    Collection collection;
+    std::size_t pos;
 
 public:
-    Iterator(Goals goals_, int pos_)
-        : goals(goals_), pos(pos_) {}
+    Iterator(Collection collection_, std::size_t pos_)
+        : collection(collection_), pos(pos_) {}
 
-    Fact operator*() {
-        return goals[pos];
+    Item operator*() {
+        return collection[pos];
     }
     Iterator& operator++() {
         ++pos;
@@ -264,12 +266,14 @@ public:
     }
 };
 
-inline Iterator begin(Goals& goals) {
-   return Iterator(goals, 0);
+template<class Collection>
+inline Iterator<Collection, Fact> begin(Collection& collection) {
+   return {collection, 0};
 }
 
-inline Iterator end(Goals& goals) {
-   return Iterator(goals, goals.size());
+template<class Collection>
+inline Iterator<Collection, Fact> end(Collection& collection) {
+   return {collection, collection.size()};
 }
 
 
