@@ -9,6 +9,9 @@ class OptionParser;
 
 enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
 
+int get_adjusted_action_cost(int cost, OperatorCost cost_type);
+int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type);
+
 class AdaptCosts : public TaskInterface {
     const TaskInterface &base;
     const OperatorCost cost_type;
@@ -40,8 +43,6 @@ public:
     virtual std::pair<int, int> get_goal_fact(int index) const override;
 };
 
-int get_adjusted_action_cost(int cost, OperatorCost cost_type);
-int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type);
 void add_cost_type_option_to_parser(OptionParser &parser);
 
 #endif

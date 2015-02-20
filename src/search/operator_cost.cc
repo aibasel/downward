@@ -13,6 +13,30 @@
 using namespace std;
 
 
+int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
+    switch (cost_type) {
+    case NORMAL:
+        return cost;
+    case ONE:
+        return 1;
+    case PLUSONE:
+        if (is_unit_cost())
+            return 1;
+        else
+            return cost + 1;
+    default:
+        ABORT("Unknown cost type");
+    }
+}
+
+int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type) {
+    if (op.is_axiom())
+        return 0;
+    else
+        return get_adjusted_action_cost(op.get_cost(), cost_type);
+}
+
+
 AdaptCosts::AdaptCosts(const TaskInterface &base_, const Options &opts)
     : base(base_),
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
@@ -85,29 +109,6 @@ std::pair<int, int> AdaptCosts::get_goal_fact(int index) const {
     return base.get_goal_fact(index);
 }
 
-
-int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
-    switch (cost_type) {
-    case NORMAL:
-        return cost;
-    case ONE:
-        return 1;
-    case PLUSONE:
-        if (is_unit_cost())
-            return 1;
-        else
-            return cost + 1;
-    default:
-        ABORT("Unknown cost type");
-    }
-}
-
-int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type) {
-    if (op.is_axiom())
-        return 0;
-    else
-        return get_adjusted_action_cost(op.get_cost(), cost_type);
-}
 
 void add_cost_type_option_to_parser(OptionParser &parser) {
     vector<string> cost_types;
