@@ -48,7 +48,7 @@ protected:
     explicit Conditions(const TaskInterface &interface_)
         : interface(interface_) {}
 public:
-    using item_type = Fact;
+    using ItemType = Fact;
     virtual ~Conditions() {}
     virtual std::size_t size() const = 0;
     virtual Fact operator[](std::size_t index) const = 0;
@@ -78,7 +78,7 @@ public:
 class Variables {
     const TaskInterface &interface;
 public:
-    using item_type = Variable;
+    using ItemType = Variable;
     explicit Variables(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Variables() {}
@@ -157,7 +157,7 @@ class Effects {
     int op_index;
     bool is_axiom;
 public:
-    using item_type = Effect;
+    using ItemType = Effect;
     Effects(const TaskInterface &interface_, int op_index_, bool is_axiom_)
         : interface(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Effects() {}
@@ -203,7 +203,7 @@ public:
 class Operators {
     const TaskInterface &interface;
 public:
-    using item_type = Operator;
+    using ItemType = Operator;
     explicit Operators(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Operators() {}
@@ -220,7 +220,7 @@ public:
 class Axioms {
     const TaskInterface &interface;
 public:
-    using item_type = Operator;
+    using ItemType = Operator;
     explicit Axioms(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Axioms() {}
@@ -296,7 +296,7 @@ public:
     ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
         : collection(collection_), pos(pos_) {}
 
-    typename ProxyCollection::item_type operator*() {
+    typename ProxyCollection::ItemType operator*() {
         return collection[pos];
     }
     ProxyIterator &operator++() {
