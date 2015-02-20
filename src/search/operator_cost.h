@@ -4,14 +4,16 @@
 #include "task_interface.h"
 
 class GlobalOperator;
+class Options;
 class OptionParser;
 
 enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
 
 class AdaptCosts : public TaskInterface {
     const TaskInterface &base;
+    const OperatorCost cost_type;
 public:
-    explicit AdaptCosts(const TaskInterface &base_);
+    explicit AdaptCosts(const TaskInterface &base_, const Options &opts);
     ~AdaptCosts();
 
     virtual int get_num_variables() const override;
