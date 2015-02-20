@@ -48,6 +48,7 @@ protected:
     explicit Conditions(const TaskInterface &interface_)
         : interface(interface_) {}
 public:
+    using ItemType = Fact;
     virtual ~Conditions() {}
     virtual std::size_t size() const = 0;
     virtual Fact operator[](std::size_t index) const = 0;
@@ -77,6 +78,7 @@ public:
 class Variables {
     const TaskInterface &interface;
 public:
+    using ItemType = Variable;
     explicit Variables(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Variables() {}
@@ -155,6 +157,7 @@ class Effects {
     int op_index;
     bool is_axiom;
 public:
+    using ItemType = Effect;
     Effects(const TaskInterface &interface_, int op_index_, bool is_axiom_)
         : interface(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~Effects() {}
@@ -200,6 +203,7 @@ public:
 class Operators {
     const TaskInterface &interface;
 public:
+    using ItemType = Operator;
     explicit Operators(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Operators() {}
@@ -216,6 +220,7 @@ public:
 class Axioms {
     const TaskInterface &interface;
 public:
+    using ItemType = Operator;
     explicit Axioms(const TaskInterface &interface_)
         : interface(interface_) {}
     ~Axioms() {}
@@ -279,5 +284,38 @@ inline Variable Fact::get_variable() const {
     return Variable(interface, var_id);
 }
 
+
+// Basic iterator support for proxy classes.
+
+template<class ProxyCollection>
+class ProxyIterator {
+    const ProxyCollection &collection;
+    std::size_t pos;
+
+public:
+    ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
+        : collection(collection_), pos(pos_) {}
+
+    typename ProxyCollection::ItemType operator*() {
+        return collection[pos];
+    }
+    ProxyIterator &operator++() {
+        ++pos;
+        return *this;
+    }
+    bool operator!=(const ProxyIterator &it) const {
+        return pos != it.pos;
+    }
+};
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
+}
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
 
 #endif
