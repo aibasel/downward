@@ -13,8 +13,9 @@
 using namespace std;
 
 
-AdaptCosts::AdaptCosts(const TaskInterface &base_)
-    : base(base_) {
+AdaptCosts::AdaptCosts(const TaskInterface &base_, const Options &opts)
+    : base(base_),
+      cost_type(OperatorCost(opts.get<int>("cost_type"))) {
 }
 
 AdaptCosts::~AdaptCosts() {
@@ -137,11 +138,13 @@ void add_cost_type_option_to_parser(OptionParser &parser) {
 
 
 static Task *_parse(OptionParser &parser) {
+    add_cost_type_option_to_parser(parser);
+    Options opts = parser.parse();
     if (parser.dry_run()) {
         return 0;
     } else {
         GlobalTaskInterface *base = new GlobalTaskInterface();
-        return new Task(new AdaptCosts(*base));
+        return new Task(new AdaptCosts(*base, opts));
     }
 }
 
