@@ -287,35 +287,35 @@ inline Variable Fact::get_variable() const {
 
 // Support range-based for loops.
 
-template<class Collection>
-class Iterator {
-    const Collection &collection;
+template<class ProxyCollection>
+class ProxyIterator {
+    const ProxyCollection &collection;
     std::size_t pos;
 
 public:
-    Iterator(const Collection &collection_, std::size_t pos_)
+    ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
         : collection(collection_), pos(pos_) {}
 
-    typename Collection::item_type operator*() {
+    typename ProxyCollection::item_type operator*() {
         return collection[pos];
     }
-    Iterator &operator++() {
+    ProxyIterator &operator++() {
         ++pos;
         return *this;
     }
-    bool operator!=(const Iterator &it) const {
+    bool operator!=(const ProxyIterator &it) const {
         return pos != it.pos;
     }
 };
 
-template<class Collection>
-inline Iterator<Collection> begin(Collection &collection) {
-    return Iterator<Collection>(collection, 0);
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
 }
 
-template<class Collection>
-inline Iterator<Collection> end(Collection &collection) {
-    return Iterator<Collection>(collection, collection.size());
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
 }
 
 #endif
