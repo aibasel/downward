@@ -9,6 +9,79 @@
 #include <vector>
 using namespace std;
 
+
+IgnoreCosts::IgnoreCosts(const TaskInterface &base_)
+    : base(base_) {
+}
+
+IgnoreCosts::~IgnoreCosts() {
+}
+
+int IgnoreCosts::get_num_variables() const {
+    return base.get_num_variables();
+}
+
+int IgnoreCosts::get_variable_domain_size(int var) const {
+    return base.get_variable_domain_size(var);
+}
+
+int IgnoreCosts::get_operator_cost(int, bool) const {
+    return 1;
+}
+
+const std::string &IgnoreCosts::get_operator_name(int index, bool is_axiom) const {
+    return base.get_operator_name(index, is_axiom);
+}
+
+int IgnoreCosts::get_num_operators() const {
+    return base.get_num_operators();
+}
+
+int IgnoreCosts::get_num_operator_preconditions(int index, bool is_axiom) const {
+    return base.get_num_operator_preconditions(index, is_axiom);
+}
+
+pair<int, int> IgnoreCosts::get_operator_precondition(
+    int op_index, int fact_index, bool is_axiom) const {
+    return base.get_operator_precondition(op_index, fact_index, is_axiom);
+}
+
+int IgnoreCosts::get_num_operator_effects(int op_index, bool is_axiom) const {
+    return base.get_num_operator_effects(op_index, is_axiom);
+}
+
+int IgnoreCosts::get_num_operator_effect_conditions(
+    int op_index, int eff_index, bool is_axiom) const {
+    return base.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
+}
+
+pair<int, int> IgnoreCosts::get_operator_effect_condition(
+    int op_index, int eff_index, int cond_index, bool is_axiom) const {
+    return base.get_operator_effect_condition(op_index, eff_index, cond_index, is_axiom);
+}
+
+pair<int, int> IgnoreCosts::get_operator_effect(
+    int op_index, int eff_index, bool is_axiom) const {
+    return base.get_operator_effect(op_index, eff_index, is_axiom);
+}
+
+const GlobalOperator *IgnoreCosts::get_global_operator(int index, bool is_axiom) const {
+    return base.get_global_operator(index, is_axiom);
+}
+
+int IgnoreCosts::get_num_axioms() const {
+    return base.get_num_axioms();
+}
+
+int IgnoreCosts::get_num_goals() const {
+    return base.get_num_goals();
+}
+
+std::pair<int, int> IgnoreCosts::get_goal_fact(int index) const {
+    return base.get_goal_fact(index);
+}
+
+
 int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
     switch (cost_type) {
     case NORMAL:
