@@ -53,8 +53,8 @@ int AdaptCosts::get_variable_domain_size(int var) const {
     return base.get_variable_domain_size(var);
 }
 
-int AdaptCosts::get_operator_cost(int, bool) const {
-    return 1;
+int AdaptCosts::get_operator_cost(int index, bool is_axiom) const {
+    return get_adjusted_action_cost(base.get_operator_cost(index, is_axiom), cost_type);
 }
 
 const std::string &AdaptCosts::get_operator_name(int index, bool is_axiom) const {
