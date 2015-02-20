@@ -8,11 +8,11 @@ class OptionParser;
 
 enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
 
-class IgnoreCosts : public TaskInterface {
+class AdaptCosts : public TaskInterface {
     const TaskInterface &base;
 public:
-    explicit IgnoreCosts(const TaskInterface &base_);
-    ~IgnoreCosts();
+    explicit AdaptCosts(const TaskInterface &base_);
+    ~AdaptCosts();
 
     virtual int get_num_variables() const override;
     virtual int get_variable_domain_size(int var) const override;
