@@ -1,8 +1,11 @@
 #include "operator_cost.h"
 
 #include "global_operator.h"
+#include "global_task_interface.h"
 #include "globals.h"
 #include "option_parser.h"
+#include "plugin.h"
+#include "task.h"
 #include "utilities.h"
 
 #include <cstdlib>
@@ -131,3 +134,15 @@ void add_cost_type_option_to_parser(OptionParser &parser) {
         "NORMAL",
         cost_types_doc);
 }
+
+
+static Task *_parse(OptionParser &parser) {
+    if (parser.dry_run()) {
+        return 0;
+    } else {
+        GlobalTaskInterface *base = new GlobalTaskInterface();
+        return new Task(new AdaptCosts(*base));
+    }
+}
+
+static Plugin<Task> _plugin("adapt_costs", _parse);
