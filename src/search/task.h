@@ -285,7 +285,7 @@ inline Variable Fact::get_variable() const {
 }
 
 
-// Support range-based for loops.
+// Basic iterator support for proxy classes.
 
 template<class ProxyCollection>
 class ProxyIterator {
