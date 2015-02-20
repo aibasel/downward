@@ -289,11 +289,11 @@ inline Variable Fact::get_variable() const {
 
 template<class Collection>
 class Iterator {
-    Collection collection;
+    const Collection &collection;
     std::size_t pos;
 
 public:
-    Iterator(Collection collection_, std::size_t pos_)
+    Iterator(const Collection &collection_, std::size_t pos_)
         : collection(collection_), pos(pos_) {}
 
     typename Collection::item_type operator*() {
