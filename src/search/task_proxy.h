@@ -19,6 +19,7 @@ class GoalsProxy;
 class OperatorProxy;
 class OperatorsProxy;
 class PreconditionsProxy;
+class StateProxy;
 class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
@@ -26,6 +27,40 @@ class VariablesProxy;
 // Currently, we still need to map Operators to GlobalOperators for some things
 // like marking preferred operators. In the long run this mapping should go away.
 class GlobalOperator;
+
+
+// Basic iterator support for proxy classes.
+
+template<class ProxyCollection>
+class ProxyIterator {
+    const ProxyCollection &collection;
+    std::size_t pos;
+
+public:
+    ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
+        : collection(collection_), pos(pos_) {}
+
+    typename ProxyCollection::ItemType operator*() {
+        return collection[pos];
+    }
+    ProxyIterator &operator++() {
+        ++pos;
+        return *this;
+    }
+    bool operator!=(const ProxyIterator &it) const {
+        return pos != it.pos;
+    }
+};
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
+}
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
 
 
 class FactProxy {
@@ -194,6 +229,7 @@ public:
     const std::string &get_name() const {
         return task.get_operator_name(index, is_an_axiom);
     }
+    bool is_applicable(StateProxy &state) const;
     const GlobalOperator *get_global_operator() const {
         return task.get_global_operator(index, is_an_axiom);
     }
@@ -250,6 +286,26 @@ public:
 };
 
 
+class StateProxy {
+    const AbstractTask &task;
+    const int index;
+public:
+    using ItemType = FactProxy;
+    explicit StateProxy(const AbstractTask &task_, int index_)
+        : task(task_), index(index_) {
+    }
+    ~StateProxy() {}
+    std::size_t size() const {
+        return task.get_num_variables();
+    }
+    FactProxy operator[](std::size_t var_id) const {
+        assert(var_id < size());
+        int value = task.get_variable_value_in_state(index, var_id);
+        return FactProxy(task, var_id, value);
+    }
+};
+
+
 class TaskProxy {
     const AbstractTask *task;
 public:
@@ -270,6 +326,9 @@ public:
     GoalsProxy get_goals() const {
         return GoalsProxy(*task);
     }
+    StateProxy get_state(int state_id) const {
+        return StateProxy(*task, state_id);
+    }
 };
 
 
@@ -284,38 +343,13 @@ inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(task, var_id);
 }
 
-
-// Basic iterator support for proxy classes.
-
-template<class ProxyCollection>
-class ProxyIterator {
-    const ProxyCollection &collection;
-    std::size_t pos;
-
-public:
-    ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
-        : collection(collection_), pos(pos_) {}
-
-    typename ProxyCollection::ItemType operator*() {
-        return collection[pos];
+inline bool OperatorProxy::is_applicable(StateProxy &state) const {
+    for (FactProxy precondition : get_preconditions()) {
+        std::size_t var_id = precondition.get_variable().get_id();
+        if (precondition.get_value() != state[var_id].get_value())
+            return false;
     }
-    ProxyIterator &operator++() {
-        ++pos;
-        return *this;
-    }
-    bool operator!=(const ProxyIterator &it) const {
-        return pos != it.pos;
-    }
-};
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, 0);
-}
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, collection.size());
+    return true;
 }
 
 #endif
