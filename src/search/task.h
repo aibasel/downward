@@ -29,11 +29,11 @@ class GlobalOperator;
 
 
 class FactProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
     int var_id;
     int value;
 public:
-    FactProxy(const AbstractTask &interface_, int var_id_, int value_);
+    FactProxy(const AbstractTask &task_, int var_id_, int value_);
     ~FactProxy() {}
     VariableProxy get_variable() const;
     int get_value() const {
@@ -44,9 +44,9 @@ public:
 
 class ConditionsProxy {
 protected:
-    const AbstractTask &interface;
-    explicit ConditionsProxy(const AbstractTask &interface_)
-        : interface(interface_) {}
+    const AbstractTask &task;
+    explicit ConditionsProxy(const AbstractTask &task_)
+        : task(task_) {}
 public:
     using ItemType = FactProxy;
     virtual ~ConditionsProxy() {}
@@ -56,38 +56,38 @@ public:
 
 
 class VariableProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
     int id;
 public:
-    VariableProxy(const AbstractTask &interface_, int id_)
-        : interface(interface_), id(id_) {}
+    VariableProxy(const AbstractTask &task_, int id_)
+        : task(task_), id(id_) {}
     ~VariableProxy() {}
     int get_id() const {
         return id;
     }
     int get_domain_size() const {
-        return interface.get_variable_domain_size(id);
+        return task.get_variable_domain_size(id);
     }
     FactProxy get_fact(int index) const {
         assert(index < get_domain_size());
-        return FactProxy(interface, id, index);
+        return FactProxy(task, id, index);
     }
 };
 
 
 class VariablesProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
 public:
     using ItemType = VariableProxy;
-    explicit VariablesProxy(const AbstractTask &interface_)
-        : interface(interface_) {}
+    explicit VariablesProxy(const AbstractTask &task_)
+        : task(task_) {}
     ~VariablesProxy() {}
     std::size_t size() const {
-        return interface.get_num_variables();
+        return task.get_num_variables();
     }
     VariableProxy operator[](std::size_t index) const {
         assert(index < size());
-        return VariableProxy(interface, index);
+        return VariableProxy(task, index);
     }
 };
 
@@ -96,17 +96,17 @@ class PreconditionsProxy : public ConditionsProxy {
     int op_index;
     bool is_axiom;
 public:
-    PreconditionsProxy(const AbstractTask &interface_, int op_index_, bool is_axiom_)
-        : ConditionsProxy(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
+    PreconditionsProxy(const AbstractTask &task_, int op_index_, bool is_axiom_)
+        : ConditionsProxy(task_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~PreconditionsProxy() {}
     std::size_t size() const override {
-        return interface.get_num_operator_preconditions(op_index, is_axiom);
+        return task.get_num_operator_preconditions(op_index, is_axiom);
     }
     FactProxy operator[](std::size_t fact_index) const override {
         assert(fact_index < size());
         std::pair<int, int> fact =
-            interface.get_operator_precondition(op_index, fact_index, is_axiom);
-        return FactProxy(interface, fact.first, fact.second);
+            task.get_operator_precondition(op_index, fact_index, is_axiom);
+        return FactProxy(task, fact.first, fact.second);
     }
 };
 
@@ -117,171 +117,171 @@ class EffectConditionsProxy : public ConditionsProxy {
     bool is_axiom;
 public:
     EffectConditionsProxy(
-        const AbstractTask &interface_, int op_index_, int eff_index_, bool is_axiom_)
-        : ConditionsProxy(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
+        const AbstractTask &task_, int op_index_, int eff_index_, bool is_axiom_)
+        : ConditionsProxy(task_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
     ~EffectConditionsProxy() {}
     std::size_t size() const override {
-        return interface.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
+        return task.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
         std::pair<int, int> fact =
-            interface.get_operator_effect_condition(op_index, eff_index, index, is_axiom);
-        return FactProxy(interface, fact.first, fact.second);
+            task.get_operator_effect_condition(op_index, eff_index, index, is_axiom);
+        return FactProxy(task, fact.first, fact.second);
     }
 };
 
 
 class EffectProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
     int op_index;
     int eff_index;
     bool is_axiom;
 public:
-    EffectProxy(const AbstractTask &interface_, int op_index_, int eff_index_, bool is_axiom_)
-        : interface(interface_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
+    EffectProxy(const AbstractTask &task_, int op_index_, int eff_index_, bool is_axiom_)
+        : task(task_), op_index(op_index_), eff_index(eff_index_), is_axiom(is_axiom_) {}
     ~EffectProxy() {}
     EffectConditionsProxy get_conditions() const {
-        return EffectConditionsProxy(interface, op_index, eff_index, is_axiom);
+        return EffectConditionsProxy(task, op_index, eff_index, is_axiom);
     }
     FactProxy get_fact() const {
         std::pair<int, int> fact =
-            interface.get_operator_effect(op_index, eff_index, is_axiom);
-        return FactProxy(interface, fact.first, fact.second);
+            task.get_operator_effect(op_index, eff_index, is_axiom);
+        return FactProxy(task, fact.first, fact.second);
     }
 };
 
 
 class EffectsProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
     int op_index;
     bool is_axiom;
 public:
     using ItemType = EffectProxy;
-    EffectsProxy(const AbstractTask &interface_, int op_index_, bool is_axiom_)
-        : interface(interface_), op_index(op_index_), is_axiom(is_axiom_) {}
+    EffectsProxy(const AbstractTask &task_, int op_index_, bool is_axiom_)
+        : task(task_), op_index(op_index_), is_axiom(is_axiom_) {}
     ~EffectsProxy() {}
     std::size_t size() const {
-        return interface.get_num_operator_effects(op_index, is_axiom);
+        return task.get_num_operator_effects(op_index, is_axiom);
     }
     EffectProxy operator[](std::size_t eff_index) const {
         assert(eff_index < size());
-        return EffectProxy(interface, op_index, eff_index, is_axiom);
+        return EffectProxy(task, op_index, eff_index, is_axiom);
     }
 };
 
 
 class OperatorProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
     int index;
     bool is_an_axiom;
 public:
-    OperatorProxy(const AbstractTask &interface_, int index_, bool is_axiom)
-        : interface(interface_), index(index_), is_an_axiom(is_axiom) {}
+    OperatorProxy(const AbstractTask &task_, int index_, bool is_axiom)
+        : task(task_), index(index_), is_an_axiom(is_axiom) {}
     ~OperatorProxy() {}
     PreconditionsProxy get_preconditions() const {
-        return PreconditionsProxy(interface, index, is_an_axiom);
+        return PreconditionsProxy(task, index, is_an_axiom);
     }
     EffectsProxy get_effects() const {
-        return EffectsProxy(interface, index, is_an_axiom);
+        return EffectsProxy(task, index, is_an_axiom);
     }
     int get_cost() const {
-        return interface.get_operator_cost(index, is_an_axiom);
+        return task.get_operator_cost(index, is_an_axiom);
     }
     bool is_axiom() const {
         return is_an_axiom;
     }
     const std::string &get_name() const {
-        return interface.get_operator_name(index, is_an_axiom);
+        return task.get_operator_name(index, is_an_axiom);
     }
     const GlobalOperator *get_global_operator() const {
-        return interface.get_global_operator(index, is_an_axiom);
+        return task.get_global_operator(index, is_an_axiom);
     }
 };
 
 
 class OperatorsProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
 public:
     using ItemType = OperatorProxy;
-    explicit OperatorsProxy(const AbstractTask &interface_)
-        : interface(interface_) {}
+    explicit OperatorsProxy(const AbstractTask &task_)
+        : task(task_) {}
     ~OperatorsProxy() {}
     std::size_t size() const {
-        return interface.get_num_operators();
+        return task.get_num_operators();
     }
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
-        return OperatorProxy(interface, index, false);
+        return OperatorProxy(task, index, false);
     }
 };
 
 
 class AxiomsProxy {
-    const AbstractTask &interface;
+    const AbstractTask &task;
 public:
     using ItemType = OperatorProxy;
-    explicit AxiomsProxy(const AbstractTask &interface_)
-        : interface(interface_) {}
+    explicit AxiomsProxy(const AbstractTask &task_)
+        : task(task_) {}
     ~AxiomsProxy() {}
     std::size_t size() const {
-        return interface.get_num_axioms();
+        return task.get_num_axioms();
     }
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
-        return OperatorProxy(interface, index, true);
+        return OperatorProxy(task, index, true);
     }
 };
 
 
 class GoalsProxy : public ConditionsProxy {
 public:
-    explicit GoalsProxy(const AbstractTask &interface_)
-        : ConditionsProxy(interface_) {}
+    explicit GoalsProxy(const AbstractTask &task_)
+        : ConditionsProxy(task_) {}
     ~GoalsProxy() {}
     std::size_t size() const override {
-        return interface.get_num_goals();
+        return task.get_num_goals();
     }
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
-        std::pair<int, int> fact = interface.get_goal_fact(index);
-        return FactProxy(interface, fact.first, fact.second);
+        std::pair<int, int> fact = task.get_goal_fact(index);
+        return FactProxy(task, fact.first, fact.second);
     }
 };
 
 
 class TaskProxy {
-    const AbstractTask *interface;
+    const AbstractTask *task;
 public:
-    explicit TaskProxy(const AbstractTask *interface_)
-        : interface(interface_) {}
+    explicit TaskProxy(const AbstractTask *task_)
+        : task(task_) {}
     ~TaskProxy() {
-        delete interface;
+        delete task;
     }
     VariablesProxy get_variables() const {
-        return VariablesProxy(*interface);
+        return VariablesProxy(*task);
     }
     OperatorsProxy get_operators() const {
-        return OperatorsProxy(*interface);
+        return OperatorsProxy(*task);
     }
     AxiomsProxy get_axioms() const {
-        return AxiomsProxy(*interface);
+        return AxiomsProxy(*task);
     }
     GoalsProxy get_goals() const {
-        return GoalsProxy(*interface);
+        return GoalsProxy(*task);
     }
 };
 
 
-inline FactProxy::FactProxy(const AbstractTask &interface_, int var_id_, int value_)
-    : interface(interface_), var_id(var_id_), value(value_) {
-    assert(var_id >= 0 && var_id < interface.get_num_variables());
+inline FactProxy::FactProxy(const AbstractTask &task_, int var_id_, int value_)
+    : task(task_), var_id(var_id_), value(value_) {
+    assert(var_id >= 0 && var_id < task.get_num_variables());
     assert(value >= 0 && value < get_variable().get_domain_size());
 }
 
 
 inline VariableProxy FactProxy::get_variable() const {
-    return VariableProxy(interface, var_id);
+    return VariableProxy(task, var_id);
 }
 
 
