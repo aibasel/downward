@@ -1,6 +1,5 @@
 #include "additive_heuristic.h"
 
-#include "global_operator.h"
 #include "global_state.h"
 #include "option_parser.h"
 #include "plugin.h"
@@ -63,9 +62,10 @@ void AdditiveHeuristic::setup_exploration_queue() {
     }
 }
 
-void AdditiveHeuristic::setup_exploration_queue_state(const GlobalState &state) {
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        Proposition *init_prop = &propositions[var][state[var]];
+void AdditiveHeuristic::setup_exploration_queue_state(StateProxy state) {
+    for (auto fact : state) {
+        int var_id = fact.get_variable().get_id();
+        Proposition *init_prop = &propositions[var_id][state[var_id].get_value()];
         enqueue_if_necessary(init_prop, 0, 0);
     }
 }
@@ -98,7 +98,7 @@ void AdditiveHeuristic::relaxed_exploration() {
 }
 
 void AdditiveHeuristic::mark_preferred_operators(
-    const GlobalState &state, Proposition *goal) {
+    StateProxy state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
@@ -114,14 +114,14 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // about, this would also be a sufficient condition.
                 OperatorProxy op = task->get_operators()[operator_no];
                 const GlobalOperator *global_op = op.get_global_operator();
-                if (global_op->is_applicable(state))
+                if (op.is_applicable(state))
                     set_preferred(global_op);
             }
         }
     }
 }
 
-int AdditiveHeuristic::compute_add_and_ff(const GlobalState &state) {
+int AdditiveHeuristic::compute_add_and_ff(StateProxy state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();
@@ -136,7 +136,8 @@ int AdditiveHeuristic::compute_add_and_ff(const GlobalState &state) {
     return total_cost;
 }
 
-int AdditiveHeuristic::compute_heuristic(const GlobalState &state) {
+int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
+    StateProxy state = task->get_state(global_state.get_id().hash());
     int h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (size_t i = 0; i < goal_propositions.size(); ++i)

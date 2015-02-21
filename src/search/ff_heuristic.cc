@@ -33,7 +33,7 @@ void FFHeuristic::initialize() {
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
-    const GlobalState &state, Proposition *goal) {
+    StateProxy state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
@@ -53,7 +53,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // about, it would also imply applicability.
                     OperatorProxy op = task->get_operators()[operator_no];
                     const GlobalOperator *global_op = op.get_global_operator();
-                    if (global_op->is_applicable(state))
+                    if (op.is_applicable(state))
                         set_preferred(global_op);
                 }
             }
@@ -61,7 +61,8 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
     }
 }
 
-int FFHeuristic::compute_heuristic(const GlobalState &state) {
+int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
+    StateProxy state = task->get_state(global_state.get_id().hash());
     int h_add = compute_add_and_ff(state);
     if (h_add == DEAD_END)
         return h_add;
