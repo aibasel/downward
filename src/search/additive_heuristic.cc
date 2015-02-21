@@ -136,7 +136,7 @@ int AdditiveHeuristic::compute_add_and_ff(StateProxy state) {
 }
 
 int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
-    StateProxy state = task->get_state(global_state.get_id().hash());
+    StateProxy state = transform_state(global_state);
     int h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (size_t i = 0; i < goal_propositions.size(); ++i)

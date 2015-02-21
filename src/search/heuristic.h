@@ -3,15 +3,14 @@
 
 #include "operator_cost.h"
 #include "scalar_evaluator.h"
+#include "task_proxy.h"
 
 #include <vector>
 
 class GlobalOperator;
 class GlobalState;
-class OperatorProxy;
 class OptionParser;
 class Options;
-class TaskProxy;
 
 class Heuristic : public ScalarEvaluator {
     enum {NOT_INITIALIZED = -2};
@@ -34,6 +33,7 @@ protected:
     void set_preferred(OperatorProxy op);
     int get_adjusted_cost(const GlobalOperator &op) const;
     int get_adjusted_cost(const OperatorProxy &op) const;
+    StateProxy transform_state(const GlobalState &global_state) const;
 public:
     Heuristic(const Options &options);
     virtual ~Heuristic();

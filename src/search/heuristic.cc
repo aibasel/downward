@@ -126,6 +126,10 @@ int Heuristic::get_adjusted_cost(const OperatorProxy &op) const {
         return get_adjusted_action_cost(op.get_cost(), cost_type);
 }
 
+StateProxy Heuristic::transform_state(const GlobalState &global_state) const {
+    return task->get_state(global_state.get_id().hash());
+}
+
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     parser.add_option<TaskProxy *>(
