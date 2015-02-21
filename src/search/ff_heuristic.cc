@@ -59,7 +59,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
 }
 
 int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
-    StateProxy state = task->get_state(global_state.get_id().hash());
+    StateProxy state = transform_state(global_state);
     int h_add = compute_add_and_ff(state);
     if (h_add == DEAD_END)
         return h_add;
