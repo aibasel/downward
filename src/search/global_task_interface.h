@@ -7,7 +7,7 @@
 #include <utility>
 
 
-class GlobalTaskInterface : public TaskInterface {
+class RootTask : public AbstractTask {
 public:
     virtual int get_num_variables() const override;
     virtual int get_variable_domain_size(int var) const override;

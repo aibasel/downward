@@ -5,9 +5,9 @@
 
 #include <vector>
 
-class Fact;
+class FactProxy;
 class GlobalState;
-class Operator;
+class OperatorProxy;
 
 struct Proposition;
 struct UnaryOperator;
@@ -46,8 +46,8 @@ struct Proposition {
 };
 
 class RelaxationHeuristic : public Heuristic {
-    Proposition *get_proposition(const Fact &fact);
-    void build_unary_operators(const Operator &op, int operator_no);
+    Proposition *get_proposition(const FactProxy &fact);
+    void build_unary_operators(const OperatorProxy &op, int operator_no);
     void simplify();
 protected:
     std::vector<UnaryOperator> unary_operators;

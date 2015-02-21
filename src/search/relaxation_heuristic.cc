@@ -30,16 +30,16 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
-    Variables variables = task->get_variables();
+    VariablesProxy variables = task->get_variables();
     propositions.resize(variables.size());
-    for (Variable var : variables) {
+    for (VariableProxy var : variables) {
         int num_values = var.get_domain_size();
         for (int value = 0; value < num_values; ++value)
             propositions[var.get_id()].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
-    for (Fact goal : task->get_goals()) {
+    for (FactProxy goal : task->get_goals()) {
         Proposition *prop = get_proposition(goal);
         prop->is_goal = true;
         goal_propositions.push_back(prop);
@@ -47,9 +47,9 @@ void RelaxationHeuristic::initialize() {
 
     // Build unary operators for operators and axioms.
     int op_no = 0;
-    for (Operator op : task->get_operators())
+    for (OperatorProxy op : task->get_operators())
         build_unary_operators(op, op_no++);
-    for (Operator axiom : task->get_axioms())
+    for (OperatorProxy axiom : task->get_axioms())
         build_unary_operators(axiom, -1);
 
     // Simplify unary operators.
@@ -63,7 +63,7 @@ void RelaxationHeuristic::initialize() {
     }
 }
 
-Proposition *RelaxationHeuristic::get_proposition(const Fact &fact) {
+Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
     int var = fact.get_variable().get_id();
     int value = fact.get_value();
     assert(in_bounds(var, propositions));
@@ -71,16 +71,16 @@ Proposition *RelaxationHeuristic::get_proposition(const Fact &fact) {
     return &propositions[var][value];
 }
 
-void RelaxationHeuristic::build_unary_operators(const Operator &op, int op_no) {
+void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {
     int base_cost = get_adjusted_cost(op);
     vector<Proposition *> precondition_props;
-    for (Fact precondition : op.get_preconditions()) {
+    for (FactProxy precondition : op.get_preconditions()) {
         precondition_props.push_back(get_proposition(precondition));
     }
-    for (Effect effect : op.get_effects()) {
+    for (EffectProxy effect : op.get_effects()) {
         Proposition *effect_prop = get_proposition(effect.get_fact());
-        EffectConditions eff_conds = effect.get_conditions();
-        for (Fact eff_cond : eff_conds) {
+        EffectConditionsProxy eff_conds = effect.get_conditions();
+        for (FactProxy eff_cond : eff_conds) {
             precondition_props.push_back(get_proposition(eff_cond));
         }
         unary_operators.push_back(UnaryOperator(precondition_props, effect_prop, op_no, base_cost));
