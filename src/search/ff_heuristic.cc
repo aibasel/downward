@@ -1,8 +1,6 @@
 #include "ff_heuristic.h"
 
-#include "global_operator.h"
 #include "global_state.h"
-#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "task_proxy.h"
@@ -75,7 +73,7 @@ int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
     for (size_t op_no = 0; op_no < relaxed_plan.size(); ++op_no) {
         if (relaxed_plan[op_no]) {
             relaxed_plan[op_no] = false; // Clean up for next computation.
-            h_ff += get_adjusted_cost(g_operators[op_no]);
+            h_ff += get_adjusted_cost(task->get_operators()[op_no]);
         }
     }
     return h_ff;
