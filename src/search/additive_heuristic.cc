@@ -65,7 +65,7 @@ void AdditiveHeuristic::setup_exploration_queue() {
 void AdditiveHeuristic::setup_exploration_queue_state(StateProxy state) {
     for (auto fact : state) {
         int var_id = fact.get_variable().get_id();
-        Proposition *init_prop = &propositions[var_id][state[var_id].get_value()];
+        Proposition *init_prop = &propositions[var_id][fact.get_value()];
         enqueue_if_necessary(init_prop, 0, 0);
     }
 }
