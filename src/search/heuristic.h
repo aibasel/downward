@@ -31,6 +31,7 @@ protected:
     // multiple times -- it will still only appear in the list of
     // preferred operators for this heuristic once.
     void set_preferred(const GlobalOperator *op);
+    void set_preferred(OperatorProxy op);
     int get_adjusted_cost(const GlobalOperator &op) const;
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
