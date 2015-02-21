@@ -6,10 +6,10 @@
 
 class GlobalOperator;
 
-class TaskInterface {
+class AbstractTask {
 public:
-    TaskInterface() {}
-    virtual ~TaskInterface() {}
+    AbstractTask() {}
+    virtual ~AbstractTask() {}
     virtual int get_num_variables() const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
 

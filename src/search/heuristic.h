@@ -8,10 +8,10 @@
 
 class GlobalOperator;
 class GlobalState;
-class Operator;
+class OperatorProxy;
 class OptionParser;
 class Options;
-class Task;
+class TaskProxy;
 
 class Heuristic : public ScalarEvaluator {
     enum {NOT_INITIALIZED = -2};
@@ -22,7 +22,7 @@ class Heuristic : public ScalarEvaluator {
 
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
-    Task *task;
+    TaskProxy *task;
     OperatorCost cost_type;
     enum {DEAD_END = -1};
     virtual void initialize() {}
@@ -32,7 +32,7 @@ protected:
     // preferred operators for this heuristic once.
     void set_preferred(const GlobalOperator *op);
     int get_adjusted_cost(const GlobalOperator &op) const;
-    int get_adjusted_cost(const Operator &op) const;
+    int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     Heuristic(const Options &options);
     virtual ~Heuristic();
