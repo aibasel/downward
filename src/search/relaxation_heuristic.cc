@@ -3,7 +3,7 @@
 #include "global_operator.h"
 #include "global_state.h"
 #include "globals.h"
-#include "task.h"
+#include "task_proxy.h"
 #include "utilities.h"
 
 #include <cassert>

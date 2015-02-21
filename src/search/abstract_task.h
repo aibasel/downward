@@ -1,5 +1,5 @@
-#ifndef TASK_INTERFACE_H
-#define TASK_INTERFACE_H
+#ifndef ABSTRACT_TASK_H
+#define ABSTRACT_TASK_H
 
 #include <string>
 #include <utility>

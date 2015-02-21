@@ -1,7 +1,7 @@
-#ifndef GLOBAL_TASK_INTERFACE_H
-#define GLOBAL_TASK_INTERFACE_H
+#ifndef ROOT_TASK_H
+#define ROOT_TASK_H
 
-#include "task_interface.h"
+#include "abstract_task.h"
 
 #include <string>
 #include <utility>
