@@ -31,6 +31,8 @@ public:
 
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
+
+    virtual int get_variable_value_in_state(int state_id, int var_id) const override;
 };
 
 #endif
