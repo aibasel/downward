@@ -27,6 +27,10 @@ void Heuristic::set_preferred(const GlobalOperator *op) {
     }
 }
 
+void Heuristic::set_preferred(OperatorProxy op) {
+    set_preferred(op.get_global_operator());
+}
+
 void Heuristic::evaluate(const GlobalState &state) {
     if (heuristic == NOT_INITIALIZED)
         initialize();
