@@ -1,7 +1,7 @@
-#ifndef TASK_H
-#define TASK_H
+#ifndef TASK_PROXY_H
+#define TASK_PROXY_H
 
-#include "task_interface.h"
+#include "abstract_task.h"
 
 #include <cassert>
 #include <cstddef>

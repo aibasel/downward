@@ -5,7 +5,7 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task.h"
+#include "task_proxy.h"
 
 #include <cstddef>
 #include <limits>

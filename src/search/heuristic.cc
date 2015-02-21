@@ -3,7 +3,7 @@
 #include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
-#include "task.h"
+#include "task_proxy.h"
 
 #include <cassert>
 #include <cstdlib>
