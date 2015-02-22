@@ -364,9 +364,8 @@ inline bool OperatorProxy::is_applicable(const State &state) const {
 
 inline bool test_goals(GoalsProxy goals, const State &state) {
     for (auto goal : goals) {
-        if (state[goal.get_variable()] != goal) {
+        if (state[goal.get_variable()] != goal)
             return false;
-        }
     }
     return true;
 }
