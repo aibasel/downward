@@ -31,7 +31,7 @@ void FFHeuristic::initialize() {
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
-    StateProxy state, Proposition *goal) {
+    const StateProxy &state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
