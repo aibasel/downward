@@ -37,7 +37,7 @@ protected:
     int get_adjusted_cost(const GlobalOperator &op) const;
     int get_adjusted_cost(const OperatorProxy &op) const;
     // TODO: Make private once all heuristics use the TaskProxy class.
-    State transform_state(const GlobalState &global_state) const;
+    State convert_global_state(const GlobalState &global_state) const;
 public:
     Heuristic(const Options &options);
     virtual ~Heuristic();

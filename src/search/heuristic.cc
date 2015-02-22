@@ -126,7 +126,7 @@ int Heuristic::get_adjusted_cost(const OperatorProxy &op) const {
         return get_adjusted_action_cost(op.get_cost(), cost_type);
 }
 
-State Heuristic::transform_state(const GlobalState &global_state) const {
+State Heuristic::convert_global_state(const GlobalState &global_state) const {
     return task->convert_global_state(global_state);
 }
 
