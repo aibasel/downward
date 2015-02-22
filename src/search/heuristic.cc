@@ -126,7 +126,7 @@ int Heuristic::get_adjusted_cost(const OperatorProxy &op) const {
         return get_adjusted_action_cost(op.get_cost(), cost_type);
 }
 
-StateProxy Heuristic::transform_state(const GlobalState &global_state) const {
+State Heuristic::transform_state(const GlobalState &global_state) const {
     // TODO: Use unpacked values directly once issue348 is merged.
     int num_vars = task->get_variables().size();
     vector<int> values(num_vars);
