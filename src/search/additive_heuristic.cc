@@ -112,7 +112,7 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
                 OperatorProxy op = task->get_operators()[operator_no];
-                if (op.is_applicable(state))
+                if (is_applicable(op, state))
                     set_preferred(op);
             }
         }

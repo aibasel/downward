@@ -50,7 +50,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
                     OperatorProxy op = task->get_operators()[operator_no];
-                    if (op.is_applicable(state))
+                    if (is_applicable(op, state))
                         set_preferred(op);
                 }
             }
