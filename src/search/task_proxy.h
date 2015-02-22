@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 #include <utility>
+#include <vector>
 
 
 class AxiomsProxy;
@@ -294,20 +295,21 @@ public:
 
 class StateProxy {
     const AbstractTask &task;
-    const int index;
+    const std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    explicit StateProxy(const AbstractTask &task_, int index_)
-        : task(task_), index(index_) {
+    explicit StateProxy(const AbstractTask &task_, std::vector<int> values_)
+        : task(task_), values(values_) {
+        // TODO: Let AbstractTask::get_num_* methods return size_t.
+        assert(size() == static_cast<std::size_t>(task.get_num_variables()));
     }
     ~StateProxy() {}
     std::size_t size() const {
-        return task.get_num_variables();
+        return values.size();
     }
     FactProxy operator[](std::size_t var_id) const {
         assert(var_id < size());
-        int value = task.get_variable_value_in_state(index, var_id);
-        return FactProxy(task, var_id, value);
+        return FactProxy(task, var_id, values[var_id]);
     }
     FactProxy operator[](VariableProxy var) const {
         return (*this)[var.get_id()];
@@ -335,8 +337,8 @@ public:
     GoalsProxy get_goals() const {
         return GoalsProxy(*task);
     }
-    StateProxy get_state(int state_id) const {
-        return StateProxy(*task, state_id);
+    StateProxy get_state(const std::vector<int> &values) const {
+        return StateProxy(*task, values);
     }
 };
 
