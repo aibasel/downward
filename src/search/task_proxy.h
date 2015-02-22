@@ -74,6 +74,12 @@ public:
     int get_value() const {
         return value;
     }
+    bool operator==(FactProxy other) {
+        return (var_id == other.var_id) && (value == other.value);
+    }
+    bool operator!=(FactProxy other) {
+        return !(*this == other);
+    }
 };
 
 
@@ -303,6 +309,9 @@ public:
         int value = task.get_variable_value_in_state(index, var_id);
         return FactProxy(task, var_id, value);
     }
+    FactProxy operator[](VariableProxy var) const {
+        return (*this)[var.get_id()];
+    }
 };
 
 
@@ -345,8 +354,7 @@ inline VariableProxy FactProxy::get_variable() const {
 
 inline bool OperatorProxy::is_applicable(StateProxy &state) const {
     for (FactProxy precondition : get_preconditions()) {
-        std::size_t var_id = precondition.get_variable().get_id();
-        if (precondition.get_value() != state[var_id].get_value())
+        if (state[precondition.get_variable()] != precondition)
             return false;
     }
     return true;
