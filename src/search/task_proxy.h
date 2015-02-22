@@ -232,7 +232,6 @@ public:
     const std::string &get_name() const {
         return task.get_operator_name(index, is_an_axiom);
     }
-    bool is_applicable(const State &state) const;
     const GlobalOperator *get_global_operator() const {
         return task.get_global_operator(index, is_an_axiom);
     }
@@ -352,16 +351,17 @@ inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(task, var_id);
 }
 
-inline bool OperatorProxy::is_applicable(const State &state) const {
-    for (FactProxy precondition : get_preconditions()) {
+
+inline bool is_applicable(OperatorProxy op, const State &state) {
+    for (auto precondition : op.get_preconditions()) {
         if (state[precondition.get_variable()] != precondition)
             return false;
     }
     return true;
 }
 
-inline bool test_goals(GoalsProxy goals, const State &state) {
-    for (auto goal : goals) {
+inline bool is_goal_state(TaskProxy task, const State &state) {
+    for (auto goal : task.get_goals()) {
         if (state[goal.get_variable()] != goal)
             return false;
     }
