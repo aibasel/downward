@@ -135,7 +135,7 @@ int AdditiveHeuristic::compute_add_and_ff(const State &state) {
 }
 
 int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state(convert_global_state(global_state));
+    State state = convert_global_state(global_state);
     int h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (size_t i = 0; i < goal_propositions.size(); ++i)
