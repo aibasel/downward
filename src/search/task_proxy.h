@@ -290,13 +290,13 @@ public:
 
 
 class State {
-    const AbstractTask &task;
+    const AbstractTask *task;
     const std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    explicit State(const AbstractTask &task_, std::vector<int> &&values_)
+    explicit State(const AbstractTask *task_, std::vector<int> &&values_)
         : task(task_), values(values_) {
-        assert(static_cast<int>(size()) == task.get_num_variables());
+        assert(static_cast<int>(size()) == task->get_num_variables());
     }
     ~State() {}
     std::size_t size() const {
@@ -304,7 +304,7 @@ public:
     }
     FactProxy operator[](std::size_t var_id) const {
         assert(var_id < size());
-        return FactProxy(task, var_id, values[var_id]);
+        return FactProxy(*task, var_id, values[var_id]);
     }
     FactProxy operator[](VariableProxy var) const {
         return (*this)[var.get_id()];
@@ -332,7 +332,7 @@ public:
         return GoalsProxy(*task);
     }
     State convert_global_state(const GlobalState &global_state) const {
-        return State(*task, task->get_state_values(global_state));
+        return State(task, task->get_state_values(global_state));
     }
 };
 
