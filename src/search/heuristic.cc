@@ -132,7 +132,7 @@ StateProxy Heuristic::transform_state(const GlobalState &global_state) const {
     vector<int> values(num_vars);
     for (int var = 0; var < num_vars; ++var)
         values[var] = global_state[var];
-    return task->get_state(values);
+    return task->transform_state(values);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
