@@ -294,8 +294,8 @@ class State {
     const std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    explicit State(const AbstractTask *task_, std::vector<int> &&values_)
-        : task(task_), values(values_) {
+    State(const AbstractTask &task_, std::vector<int> &&values_)
+        : task(&task_), values(values_) {
         assert(static_cast<int>(size()) == task->get_num_variables());
     }
     ~State() {}
@@ -336,7 +336,7 @@ public:
         return GoalsProxy(*task);
     }
     State convert_global_state(const GlobalState &global_state) const {
-        return State(task, task->get_state_values(global_state));
+        return State(*task, task->get_state_values(global_state));
     }
 };
 
