@@ -298,7 +298,7 @@ class State {
     const std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    explicit State(const AbstractTask &task_, std::vector<int> values_)
+    explicit State(const AbstractTask &task_, std::vector<int> &&values_)
         : task(task_), values(values_) {
         // TODO: Let AbstractTask::get_num_* methods return size_t.
         assert(size() == static_cast<std::size_t>(task.get_num_variables()));
