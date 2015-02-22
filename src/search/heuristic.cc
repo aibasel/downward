@@ -127,12 +127,7 @@ int Heuristic::get_adjusted_cost(const OperatorProxy &op) const {
 }
 
 State Heuristic::transform_state(const GlobalState &global_state) const {
-    // TODO: Use unpacked values directly once issue348 is merged.
-    int num_vars = task->get_variables().size();
-    vector<int> values(num_vars);
-    for (int var = 0; var < num_vars; ++var)
-        values[var] = global_state[var];
-    return task->transform_state(values);
+    return task->convert_global_state(global_state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
