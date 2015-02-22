@@ -25,10 +25,6 @@ class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
 
-// Currently, we still need to map Operators to GlobalOperators for some things
-// like marking preferred operators. In the long run this mapping should go away.
-class GlobalOperator;
-
 
 // Basic iterator support for proxy classes.
 
