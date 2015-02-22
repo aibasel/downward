@@ -25,7 +25,7 @@ void BlindSearchHeuristic::initialize() {
 }
 
 int BlindSearchHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = convert_global_state(global_state);
+    State state(convert_global_state(global_state));
     if (test_goals(task->get_goals(), state))
         return 0;
     else
