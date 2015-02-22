@@ -318,7 +318,6 @@ public:
     explicit TaskProxy(const AbstractTask *task_)
         : task(task_) {}
     ~TaskProxy() {
-        delete task;
     }
     VariablesProxy get_variables() const {
         return VariablesProxy(*task);
