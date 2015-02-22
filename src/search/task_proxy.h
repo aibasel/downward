@@ -299,6 +299,10 @@ public:
         assert(static_cast<int>(size()) == task->get_num_variables());
     }
     ~State() {}
+    State(State &&other)
+        : task(other.task), values(std::move(other.values)) {
+        other.task = 0;
+    }
     std::size_t size() const {
         return values.size();
     }
