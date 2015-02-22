@@ -11,7 +11,6 @@ class StateID {
     friend std::ostream &operator<<(std::ostream &os, StateID id);
     template<typename>
     friend class PerStateInformation;
-    friend class RootTask;
 
     int value;
     explicit StateID(int value_)

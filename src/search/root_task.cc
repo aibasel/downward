@@ -4,7 +4,6 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "state_registry.h"
 #include "task_proxy.h"
 
 #include <cassert>
@@ -87,12 +86,12 @@ int RootTask::get_num_goals() const {
     return g_goal.size();
 }
 
-std::pair<int, int> RootTask::get_goal_fact(int index) const {
+pair<int, int> RootTask::get_goal_fact(int index) const {
     return g_goal[index];
 }
 
-int RootTask::get_variable_value_in_state(int state_id, int var_id) const {
-    return g_state_registry->lookup_state(StateID(state_id))[var_id];
+vector<int> RootTask::get_state_values(const vector<int> &global_state_values) const {
+    return global_state_values;
 }
 
 static TaskProxy *_parse(OptionParser &parser) {

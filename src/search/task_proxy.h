@@ -337,8 +337,8 @@ public:
     GoalsProxy get_goals() const {
         return GoalsProxy(*task);
     }
-    StateProxy get_state(const std::vector<int> &values) const {
-        return StateProxy(*task, values);
+    StateProxy get_state(const std::vector<int> &global_state_values) const {
+        return StateProxy(*task, task->get_state_values(global_state_values));
     }
 };
 
