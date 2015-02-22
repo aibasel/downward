@@ -3,7 +3,7 @@
 #include "global_state.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task_proxy.h"
+#include "task_tools.h"
 
 #include <cassert>
 #include <vector>

@@ -351,21 +351,4 @@ inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(task, var_id);
 }
 
-
-inline bool is_applicable(OperatorProxy op, const State &state) {
-    for (auto precondition : op.get_preconditions()) {
-        if (state[precondition.get_variable()] != precondition)
-            return false;
-    }
-    return true;
-}
-
-inline bool is_goal_state(TaskProxy task, const State &state) {
-    for (auto goal : task.get_goals()) {
-        if (state[goal.get_variable()] != goal)
-            return false;
-    }
-    return true;
-}
-
 #endif
