@@ -62,7 +62,7 @@ void AdditiveHeuristic::setup_exploration_queue() {
     }
 }
 
-void AdditiveHeuristic::setup_exploration_queue_state(const StateProxy &state) {
+void AdditiveHeuristic::setup_exploration_queue_state(const State &state) {
     for (auto fact : state) {
         Proposition *init_prop = get_proposition(fact);
         enqueue_if_necessary(init_prop, 0, 0);
@@ -97,7 +97,7 @@ void AdditiveHeuristic::relaxed_exploration() {
 }
 
 void AdditiveHeuristic::mark_preferred_operators(
-    const StateProxy &state, Proposition *goal) {
+    const State &state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
@@ -119,7 +119,7 @@ void AdditiveHeuristic::mark_preferred_operators(
     }
 }
 
-int AdditiveHeuristic::compute_add_and_ff(const StateProxy &state) {
+int AdditiveHeuristic::compute_add_and_ff(const State &state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();
@@ -135,7 +135,7 @@ int AdditiveHeuristic::compute_add_and_ff(const StateProxy &state) {
 }
 
 int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
-    StateProxy state = transform_state(global_state);
+    State state = transform_state(global_state);
     int h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (size_t i = 0; i < goal_propositions.size(); ++i)

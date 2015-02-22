@@ -20,7 +20,7 @@ class GoalsProxy;
 class OperatorProxy;
 class OperatorsProxy;
 class PreconditionsProxy;
-class StateProxy;
+class State;
 class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
@@ -236,7 +236,7 @@ public:
     const std::string &get_name() const {
         return task.get_operator_name(index, is_an_axiom);
     }
-    bool is_applicable(const StateProxy &state) const;
+    bool is_applicable(const State &state) const;
     const GlobalOperator *get_global_operator() const {
         return task.get_global_operator(index, is_an_axiom);
     }
@@ -293,17 +293,17 @@ public:
 };
 
 
-class StateProxy {
+class State {
     const AbstractTask &task;
     const std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    explicit StateProxy(const AbstractTask &task_, std::vector<int> values_)
+    explicit State(const AbstractTask &task_, std::vector<int> values_)
         : task(task_), values(values_) {
         // TODO: Let AbstractTask::get_num_* methods return size_t.
         assert(size() == static_cast<std::size_t>(task.get_num_variables()));
     }
-    ~StateProxy() {}
+    ~State() {}
     std::size_t size() const {
         return values.size();
     }
@@ -337,8 +337,8 @@ public:
     GoalsProxy get_goals() const {
         return GoalsProxy(*task);
     }
-    StateProxy transform_state(const std::vector<int> &global_state_values) const {
-        return StateProxy(*task, task->get_state_values(global_state_values));
+    State transform_state(const std::vector<int> &global_state_values) const {
+        return State(*task, task->get_state_values(global_state_values));
     }
 };
 
@@ -354,7 +354,7 @@ inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(task, var_id);
 }
 
-inline bool OperatorProxy::is_applicable(const StateProxy &state) const {
+inline bool OperatorProxy::is_applicable(const State &state) const {
     for (FactProxy precondition : get_preconditions()) {
         if (state[precondition.get_variable()] != precondition)
             return false;
