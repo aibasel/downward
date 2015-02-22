@@ -90,8 +90,13 @@ pair<int, int> RootTask::get_goal_fact(int index) const {
     return g_goal[index];
 }
 
-vector<int> RootTask::get_state_values(const vector<int> &global_state_values) const {
-    return global_state_values;
+vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
+    // TODO: Use unpacked values directly once issue348 is merged.
+    int num_vars = g_variable_domain.size();
+    vector<int> values(num_vars);
+    for (int var = 0; var < num_vars; ++var)
+        values[var] = global_state[var];
+    return values;
 }
 
 static TaskProxy *_parse(OptionParser &parser) {
