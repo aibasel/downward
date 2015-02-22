@@ -286,17 +286,19 @@ public:
 };
 
 
-class StateProxy : public ConditionsProxy {
+class StateProxy {
+    const AbstractTask &task;
     const int index;
 public:
+    using ItemType = FactProxy;
     explicit StateProxy(const AbstractTask &task_, int index_)
-        : ConditionsProxy(task_), index(index_) {
+        : task(task_), index(index_) {
     }
     ~StateProxy() {}
-    std::size_t size() const override {
+    std::size_t size() const {
         return task.get_num_variables();
     }
-    FactProxy operator[](std::size_t var_id) const override {
+    FactProxy operator[](std::size_t var_id) const {
         assert(var_id < size());
         int value = task.get_variable_value_in_state(index, var_id);
         return FactProxy(task, var_id, value);
