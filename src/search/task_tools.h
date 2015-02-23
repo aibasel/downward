@@ -5,7 +5,7 @@
 
 
 inline bool is_applicable(OperatorProxy op, const State &state) {
-    for (auto precondition : op.get_preconditions()) {
+    for (FactProxy precondition : op.get_preconditions()) {
         if (state[precondition.get_variable()] != precondition)
             return false;
     }
@@ -13,7 +13,7 @@ inline bool is_applicable(OperatorProxy op, const State &state) {
 }
 
 inline bool is_goal_state(TaskProxy task, const State &state) {
-    for (auto goal : task.get_goals()) {
+    for (FactProxy goal : task.get_goals()) {
         if (state[goal.get_variable()] != goal)
             return false;
     }
