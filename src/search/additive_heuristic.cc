@@ -63,7 +63,7 @@ void AdditiveHeuristic::setup_exploration_queue() {
 }
 
 void AdditiveHeuristic::setup_exploration_queue_state(const State &state) {
-    for (auto fact : state) {
+    for (FactProxy fact : state) {
         Proposition *init_prop = get_proposition(fact);
         enqueue_if_necessary(init_prop, 0, 0);
     }
