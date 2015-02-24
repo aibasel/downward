@@ -5,7 +5,9 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "task_proxy.h"
 
+#include <cstddef>
 #include <limits>
 #include <utility>
 using namespace std;
@@ -13,9 +15,8 @@ using namespace std;
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
-    for (size_t i = 0; i < g_operators.size(); ++i)
-        min_operator_cost = min(min_operator_cost,
-                                get_adjusted_cost(g_operators[i]));
+    for (OperatorProxy op : task->get_operators())
+        min_operator_cost = min(min_operator_cost, get_adjusted_cost(op));
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {

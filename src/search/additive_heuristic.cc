@@ -4,6 +4,7 @@
 #include "global_state.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "task_proxy.h"
 
 #include <cassert>
 #include <vector>
@@ -111,9 +112,10 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // more expensive applicability test.
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
-                const GlobalOperator *op = &g_operators[operator_no];
-                if (op->is_applicable(state))
-                    set_preferred(op);
+                OperatorProxy op = task->get_operators()[operator_no];
+                const GlobalOperator *global_op = op.get_global_operator();
+                if (global_op->is_applicable(state))
+                    set_preferred(global_op);
             }
         }
     }

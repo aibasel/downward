@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "task_proxy.h"
 
 #include <cassert>
 #include <vector>
@@ -28,7 +29,7 @@ FFHeuristic::~FFHeuristic() {
 void FFHeuristic::initialize() {
     cout << "Initializing FF heuristic..." << endl;
     AdditiveHeuristic::initialize();
-    relaxed_plan.resize(g_operators.size(), false);
+    relaxed_plan.resize(task->get_operators().size(), false);
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
@@ -50,9 +51,10 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // so we perform it to save work.
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
-                    const GlobalOperator *op = &g_operators[operator_no];
-                    if (op->is_applicable(state))
-                        set_preferred(op);
+                    OperatorProxy op = task->get_operators()[operator_no];
+                    const GlobalOperator *global_op = op.get_global_operator();
+                    if (global_op->is_applicable(state))
+                        set_preferred(global_op);
                 }
             }
         }
