@@ -11,6 +11,8 @@ class MergeDFP : public MergeStrategy {
     // as argument to the get_next method.
     int border_atomics_composites;
     int get_corrected_index(int index) const;
+    void compute_label_ranks(const TransitionSystem *transition_system,
+                             std::vector<int> &label_ranks) const;
 protected:
     virtual void dump_strategy_specific_options() const {}
 public:

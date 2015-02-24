@@ -23,8 +23,8 @@ protected:
     */
 
     typedef int AbstractStateRef;
-    typedef __gnu_cxx::slist<AbstractStateRef> EquivalenceClass;
-    typedef std::vector<EquivalenceClass> EquivalenceRelation;
+    typedef __gnu_cxx::slist<AbstractStateRef> StateEquivalenceClass;
+    typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
 public:
     // HACK/TODO: The following method would usually be protected, but
     // the option parser requires it to be public for the
@@ -40,7 +40,7 @@ protected:
         std::size_t size1, std::size_t size2) const;
     bool must_shrink(const TransitionSystem &ts, int threshold) const;
     void apply(TransitionSystem &ts,
-               EquivalenceRelation &equivalence_relation,
+               StateEquivalenceRelation &equivalence_relation,
                int threshold) const;
 public:
     ShrinkStrategy(const Options &opts);

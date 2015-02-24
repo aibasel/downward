@@ -109,7 +109,7 @@ void ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1, TransitionSystem
 
 void ShrinkStrategy::apply(
     TransitionSystem &ts,
-    EquivalenceRelation &equivalence_relation,
+    StateEquivalenceRelation &equivalence_relation,
     int target) const {
     // TODO: We currently violate this; see issue250
     //assert(equivalence_relation.size() <= target);

@@ -2,13 +2,14 @@
 #define OPEN_LISTS_STANDARD_SCALAR_OPEN_LIST_H
 
 #include "open_list.h"
-#include "../option_parser.h"
 
 #include <deque>
 #include <map>
 #include <vector>
 #include <utility>
 
+class Options;
+class OptionParser;
 class ScalarEvaluator;
 
 template<class Entry>
