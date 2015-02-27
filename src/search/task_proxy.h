@@ -347,12 +347,12 @@ class State {
     const std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    State(const AbstractTask &task_, std::vector<int> &&values_)
+    State(const AbstractTask &task_, std::vector<int> && values_)
         : task(&task_), values(values_) {
         assert(static_cast<int>(size()) == task->get_num_variables());
     }
     ~State() {}
-    State(State &&other)
+    State(State && other)
         : task(other.task), values(std::move(other.values)) {
         other.task = 0;
     }
