@@ -27,6 +27,10 @@ void Heuristic::set_preferred(const GlobalOperator *op) {
     }
 }
 
+void Heuristic::set_preferred(OperatorProxy op) {
+    set_preferred(op.get_global_operator());
+}
+
 void Heuristic::evaluate(const GlobalState &state) {
     if (heuristic == NOT_INITIALIZED)
         initialize();
@@ -120,6 +124,10 @@ int Heuristic::get_adjusted_cost(const OperatorProxy &op) const {
         return 0;
     else
         return get_adjusted_action_cost(op.get_cost(), cost_type);
+}
+
+State Heuristic::convert_global_state(const GlobalState &global_state) const {
+    return task->convert_global_state(global_state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
