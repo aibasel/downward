@@ -5,6 +5,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 
 class RootTask : public AbstractTask {
@@ -31,6 +32,8 @@ public:
 
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
+
+    virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
 };
 
 #endif
