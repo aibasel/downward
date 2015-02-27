@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <string>
 #include <utility>
+#include <vector>
 
 
 class AxiomsProxy;
@@ -19,13 +20,98 @@ class GoalsProxy;
 class OperatorProxy;
 class OperatorsProxy;
 class PreconditionsProxy;
+class State;
 class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
 
-// Currently, we still need to map Operators to GlobalOperators for some things
-// like marking preferred operators. In the long run this mapping should go away.
-class GlobalOperator;
+/*
+  Overview of the task interface.
+
+  The task interface is divided into two parts: a set of proxy classes
+  for accessing task information (TaskProxy, OperatorProxy, etc.) and
+  task implementations (subclasses of AbstractTask). Each proxy class
+  knows which AbstractTask it belongs to and uses its methods to retrieve
+  information about the task. RootTask is the AbstractTask that
+  encapsulates the unmodified original task that the planner received
+  as input.
+
+  Example code for creating a new task object and accessing its operators:
+
+      TaskProxy task = new TaskProxy(new RootTask());
+      for (OperatorProxy op : task->get_operators())
+          cout << op.get_name() << endl;
+
+  Since proxy classes only store a reference to the AbstractTask and some
+  indices, they can be copied cheaply and be passed by value instead of
+  by reference.
+
+  In addition to the lightweight proxy classes, the task interface
+  consists of the State class, which is used to hold state information
+  for TaskProxy tasks. The State class provides methods similar to the
+  proxy classes, but since State objects own the state data they should
+  be passed by reference.
+
+  For now, only the heuristics work with the TaskProxy classes and hence
+  potentially on a transformed view of the original task. The search
+  algorithms keep working on the original unmodified task using the
+  GlobalState, GlobalOperator etc. classes. We therefore need to do two
+  conversions: converting GlobalStates to State objects for the heuristic
+  computation and converting OperatorProxy objects used by the heuristic
+  to GlobalOperators for reporting preferred operators. These conversions
+  are done by the Heuristic base class. Until all heuristics use the new
+  task interface, heuristics can use Heuristic::convert_global_state() to
+  convert GlobalStates to States. Afterwards, the heuristics are passed a
+  State object directly. To mark operators as preferred, heuristics can
+  use Heuristic::set_preferred() which currently works for both
+  OperatorProxy and GlobalOperator objects.
+
+      int FantasyHeuristic::compute_heuristic(const GlobalState &global_state) {
+          State state = convert_global_state(global_state);
+          set_preferred(task->get_operators()[42]);
+          int sum = 0;
+          for (FactProxy fact : state)
+              sum += fact.get_value();
+          return sum;
+      }
+
+  For helper functions that work on task related objects, please see the
+  task_tools.h module.
+*/
+
+
+// Basic iterator support for proxy classes.
+
+template<class ProxyCollection>
+class ProxyIterator {
+    const ProxyCollection &collection;
+    std::size_t pos;
+
+public:
+    ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
+        : collection(collection_), pos(pos_) {}
+
+    typename ProxyCollection::ItemType operator*() {
+        return collection[pos];
+    }
+    ProxyIterator &operator++() {
+        ++pos;
+        return *this;
+    }
+    bool operator!=(const ProxyIterator &it) const {
+        return pos != it.pos;
+    }
+};
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
+}
+
+template<class ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
 
 
 class FactProxy {
@@ -38,6 +124,12 @@ public:
     VariableProxy get_variable() const;
     int get_value() const {
         return value;
+    }
+    bool operator==(FactProxy other) {
+        return (var_id == other.var_id) && (value == other.value);
+    }
+    bool operator!=(FactProxy other) {
+        return !(*this == other);
     }
 };
 
@@ -250,13 +342,39 @@ public:
 };
 
 
+class State {
+    const AbstractTask *task;
+    const std::vector<int> values;
+public:
+    using ItemType = FactProxy;
+    State(const AbstractTask &task_, std::vector<int> &&values_)
+        : task(&task_), values(values_) {
+        assert(static_cast<int>(size()) == task->get_num_variables());
+    }
+    ~State() {}
+    State(State &&other)
+        : task(other.task), values(std::move(other.values)) {
+        other.task = 0;
+    }
+    std::size_t size() const {
+        return values.size();
+    }
+    FactProxy operator[](std::size_t var_id) const {
+        assert(var_id < size());
+        return FactProxy(*task, var_id, values[var_id]);
+    }
+    FactProxy operator[](VariableProxy var) const {
+        return (*this)[var.get_id()];
+    }
+};
+
+
 class TaskProxy {
     const AbstractTask *task;
 public:
     explicit TaskProxy(const AbstractTask *task_)
         : task(task_) {}
     ~TaskProxy() {
-        delete task;
     }
     VariablesProxy get_variables() const {
         return VariablesProxy(*task);
@@ -270,6 +388,9 @@ public:
     GoalsProxy get_goals() const {
         return GoalsProxy(*task);
     }
+    State convert_global_state(const GlobalState &global_state) const {
+        return State(*task, task->get_state_values(global_state));
+    }
 };
 
 
@@ -282,40 +403,6 @@ inline FactProxy::FactProxy(const AbstractTask &task_, int var_id_, int value_)
 
 inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(task, var_id);
-}
-
-
-// Basic iterator support for proxy classes.
-
-template<class ProxyCollection>
-class ProxyIterator {
-    const ProxyCollection &collection;
-    std::size_t pos;
-
-public:
-    ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
-        : collection(collection_), pos(pos_) {}
-
-    typename ProxyCollection::ItemType operator*() {
-        return collection[pos];
-    }
-    ProxyIterator &operator++() {
-        ++pos;
-        return *this;
-    }
-    bool operator!=(const ProxyIterator &it) const {
-        return pos != it.pos;
-    }
-};
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, 0);
-}
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, collection.size());
 }
 
 #endif
