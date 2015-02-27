@@ -33,7 +33,10 @@ class VariablesProxy;
   task implementations (subclasses of AbstractTask). Each proxy class
   knows which AbstractTask it belongs to and uses its methods to retrieve
   information about the task. RootTask is the AbstractTask that
-  encapsulates the original "global" task.
+  encapsulates the unmodified original task that the planner received
+  as input.
+
+  Example code for creating a new task object and accessing its operators:
 
       TaskProxy task = new TaskProxy(new RootTask());
       for (OperatorProxy op : task->get_operators())
@@ -45,11 +48,12 @@ class VariablesProxy;
 
   In addition to the lightweight proxy classes, the task interface
   consists of the State class, which is used to hold state information
-  for TaskProxy tasks. Since State objects own the state data they should
+  for TaskProxy tasks. The State class provides methods similar to the
+  proxy classes, but since State objects own the state data they should
   be passed by reference.
 
   For now, only the heuristics work with the TaskProxy classes and hence
-  potentially on a transformed view of the "global" task. The search
+  potentially on a transformed view of the original task. The search
   algorithms keep working on the original unmodified task using the
   GlobalState, GlobalOperator etc. classes. We therefore need to do two
   conversions: converting GlobalStates to State objects for the heuristic
