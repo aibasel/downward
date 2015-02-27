@@ -46,7 +46,6 @@ struct Proposition {
 };
 
 class RelaxationHeuristic : public Heuristic {
-    Proposition *get_proposition(const FactProxy &fact);
     void build_unary_operators(const OperatorProxy &op, int operator_no);
     void simplify();
 protected:
@@ -54,6 +53,7 @@ protected:
     std::vector<std::vector<Proposition> > propositions;
     std::vector<Proposition *> goal_propositions;
 
+    Proposition *get_proposition(const FactProxy &fact);
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state) = 0;
 public:
