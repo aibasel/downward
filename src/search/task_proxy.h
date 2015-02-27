@@ -25,6 +25,56 @@ class TaskProxy;
 class VariableProxy;
 class VariablesProxy;
 
+/*
+  Overview of the task interface.
+
+  The task interface is divided into two parts: a set of proxy classes
+  for accessing task information (TaskProxy, OperatorProxy, etc.) and
+  task implementations (subclasses of AbstractTask). Each proxy class
+  knows which AbstractTask it belongs to and uses its methods to retrieve
+  information about the task. RootTask is the AbstractTask that
+  encapsulates the original "global" task.
+
+      TaskProxy task = new TaskProxy(new RootTask());
+      for (OperatorProxy op : task->get_operators())
+          cout << op.get_name() << endl;
+
+  Since proxy classes only store a reference to the AbstractTask and some
+  indices, they can be copied cheaply and be passed by value instead of
+  by reference.
+
+  In addition to the lightweight proxy classes, the task interface
+  consists of the State class, which is used to hold state information
+  for TaskProxy tasks. Since State objects own the state data they should
+  be passed by reference.
+
+  For now, only the heuristics work with the TaskProxy classes and hence
+  potentially on a transformed view of the "global" task. The search
+  algorithms keep working on the original unmodified task using the
+  GlobalState, GlobalOperator etc. classes. We therefore need to do two
+  conversions: converting GlobalStates to State objects for the heuristic
+  computation and converting OperatorProxy objects used by the heuristic
+  to GlobalOperators for reporting preferred operators. These conversions
+  are done by the Heuristic base class. Until all heuristics use the new
+  task interface, heuristics can use Heuristic::convert_global_state() to
+  convert GlobalStates to States. Afterwards, the heuristics are passed a
+  State object directly. To mark operators as preferred, heuristics can
+  use Heuristic::set_preferred() which currently works for both
+  OperatorProxy and GlobalOperator objects.
+
+      int FantasyHeuristic::compute_heuristic(const GlobalState &global_state) {
+          State state = convert_global_state(global_state);
+          set_preferred(task->get_operators()[42]);
+          int sum = 0;
+          for (FactProxy fact : state)
+              sum += fact.get_value();
+          return sum;
+      }
+
+  For helper functions that work on task related objects, please see the
+  task_tools.h module.
+*/
+
 
 // Basic iterator support for proxy classes.
 
