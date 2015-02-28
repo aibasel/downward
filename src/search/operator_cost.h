@@ -12,12 +12,12 @@ enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
 int get_adjusted_action_cost(int cost, OperatorCost cost_type);
 int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type);
 
-class AdaptCosts : public AbstractTask {
-    const AbstractTask &base;
+class CostAdaptedTask : public AbstractTask {
+    const AbstractTask &parent;
     const OperatorCost cost_type;
 public:
-    explicit AdaptCosts(const AbstractTask &base_, const Options &opts);
-    ~AdaptCosts();
+    explicit CostAdaptedTask(const AbstractTask &base_, const Options &opts);
+    ~CostAdaptedTask();
 
     virtual int get_num_variables() const override;
     virtual int get_variable_domain_size(int var) const override;
