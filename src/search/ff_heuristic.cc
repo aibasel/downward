@@ -1,11 +1,9 @@
 #include "ff_heuristic.h"
 
-#include "global_operator.h"
 #include "global_state.h"
-#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task.h"
+#include "task_tools.h"
 
 #include <cassert>
 #include <vector>
@@ -33,7 +31,7 @@ void FFHeuristic::initialize() {
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
-    const GlobalState &state, Proposition *goal) {
+    const State &state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
@@ -51,17 +49,17 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // so we perform it to save work.
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
-                    Operator op = task->get_operators()[operator_no];
-                    const GlobalOperator *global_op = op.get_global_operator();
-                    if (global_op->is_applicable(state))
-                        set_preferred(global_op);
+                    OperatorProxy op = task->get_operators()[operator_no];
+                    if (is_applicable(op, state))
+                        set_preferred(op);
                 }
             }
         }
     }
 }
 
-int FFHeuristic::compute_heuristic(const GlobalState &state) {
+int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
     int h_add = compute_add_and_ff(state);
     if (h_add == DEAD_END)
         return h_add;
@@ -74,7 +72,7 @@ int FFHeuristic::compute_heuristic(const GlobalState &state) {
     for (size_t op_no = 0; op_no < relaxed_plan.size(); ++op_no) {
         if (relaxed_plan[op_no]) {
             relaxed_plan[op_no] = false; // Clean up for next computation.
-            h_ff += get_adjusted_cost(g_operators[op_no]);
+            h_ff += get_adjusted_cost(task->get_operators()[op_no]);
         }
     }
     return h_ff;

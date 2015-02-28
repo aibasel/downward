@@ -330,13 +330,8 @@ def compute_model(prog):
     return queue.queue
 
 if __name__ == "__main__":
-    import sys
     import pddl_parser
     import pddl_to_prolog
-    silent = False
-    if len(sys.argv) >= 2 and sys.argv[1] == "--silent":
-        silent = True
-        del sys.argv[1]
 
     print("Parsing...")
     task = pddl_parser.open()
@@ -344,7 +339,6 @@ if __name__ == "__main__":
     prog = pddl_to_prolog.translate(task)
 
     model = compute_model(prog)
-    if not silent:
-        for atom in model:
-            print(atom)
+    for atom in model:
+        print(atom)
     print("%d atoms" % len(model))

@@ -1,13 +1,14 @@
-#ifndef GLOBAL_TASK_INTERFACE_H
-#define GLOBAL_TASK_INTERFACE_H
+#ifndef ROOT_TASK_H
+#define ROOT_TASK_H
 
-#include "task_interface.h"
+#include "abstract_task.h"
 
 #include <string>
 #include <utility>
+#include <vector>
 
 
-class GlobalTaskInterface : public TaskInterface {
+class RootTask : public AbstractTask {
 public:
     virtual int get_num_variables() const override;
     virtual int get_variable_domain_size(int var) const override;
@@ -31,6 +32,8 @@ public:
 
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
+
+    virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
 };
 
 #endif

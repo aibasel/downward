@@ -1,15 +1,17 @@
-#ifndef TASK_INTERFACE_H
-#define TASK_INTERFACE_H
+#ifndef ABSTRACT_TASK_H
+#define ABSTRACT_TASK_H
 
 #include <string>
 #include <utility>
+#include <vector>
 
 class GlobalOperator;
+class GlobalState;
 
-class TaskInterface {
+class AbstractTask {
 public:
-    TaskInterface() {}
-    virtual ~TaskInterface() {}
+    AbstractTask() {}
+    virtual ~AbstractTask() {}
     virtual int get_num_variables() const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
 
@@ -32,6 +34,8 @@ public:
 
     virtual int get_num_goals() const = 0;
     virtual std::pair<int, int> get_goal_fact(int index) const = 0;
+
+    virtual std::vector<int> get_state_values(const GlobalState &global_state) const = 0;
 };
 
 #endif

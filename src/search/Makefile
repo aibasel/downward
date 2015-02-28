@@ -51,7 +51,6 @@ HEADERS = \
           global_operator.h \
           global_state.h \
           globals.h \
-          global_task_interface.h \
           heuristic.h \
           int_packer.h \
           ipc_max_heuristic.h \
@@ -66,6 +65,7 @@ HEADERS = \
           pref_evaluator.h \
           relaxation_heuristic.h \
           rng.h \
+          root_task.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \

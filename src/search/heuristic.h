@@ -3,15 +3,14 @@
 
 #include "operator_cost.h"
 #include "scalar_evaluator.h"
+#include "task_proxy.h"
 
 #include <vector>
 
 class GlobalOperator;
 class GlobalState;
-class Operator;
 class OptionParser;
 class Options;
-class Task;
 
 class Heuristic : public ScalarEvaluator {
     enum {NOT_INITIALIZED = -2};
@@ -22,17 +21,23 @@ class Heuristic : public ScalarEvaluator {
 
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
-    Task *task;
+    TaskProxy *task;
     OperatorCost cost_type;
     enum {DEAD_END = -1};
     virtual void initialize() {}
+    // TODO: Call with State directly once all heuristics support it.
     virtual int compute_heuristic(const GlobalState &state) = 0;
     // Usage note: It's OK to set the same operator as preferred
     // multiple times -- it will still only appear in the list of
     // preferred operators for this heuristic once.
+    // TODO: Make private once all heuristics use the TaskProxy class.
     void set_preferred(const GlobalOperator *op);
+    void set_preferred(OperatorProxy op);
+    // TODO: Remove once all heuristics use the TaskProxy class.
     int get_adjusted_cost(const GlobalOperator &op) const;
-    int get_adjusted_cost(const Operator &op) const;
+    int get_adjusted_cost(const OperatorProxy &op) const;
+    // TODO: Make private once all heuristics use the TaskProxy class.
+    State convert_global_state(const GlobalState &global_state) const;
 public:
     Heuristic(const Options &options);
     virtual ~Heuristic();

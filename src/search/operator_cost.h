@@ -1,22 +1,22 @@
 #ifndef OPERATOR_COST_H
 #define OPERATOR_COST_H
 
-#include "task_interface.h"
+#include "abstract_task.h"
 
 class GlobalOperator;
-class Options;
 class OptionParser;
+class Options;
 
 enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
 
 int get_adjusted_action_cost(int cost, OperatorCost cost_type);
 int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type);
 
-class AdaptCosts : public TaskInterface {
-    const TaskInterface &base;
+class AdaptCosts : public AbstractTask {
+    const AbstractTask &base;
     const OperatorCost cost_type;
 public:
-    explicit AdaptCosts(const TaskInterface &base_, const Options &opts);
+    explicit AdaptCosts(const AbstractTask &base_, const Options &opts);
     ~AdaptCosts();
 
     virtual int get_num_variables() const override;
@@ -41,6 +41,8 @@ public:
 
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
+
+    virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
 };
 
 void add_cost_type_option_to_parser(OptionParser &parser);
