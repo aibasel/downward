@@ -1,17 +1,16 @@
 #include "operator_cost.h"
 
 #include "global_operator.h"
-#include "global_task_interface.h"
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task.h"
+#include "root_task.h"
+#include "task_proxy.h"
 #include "utilities.h"
 
 #include <cstdlib>
 #include <vector>
 using namespace std;
-
 
 int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
     switch (cost_type) {
@@ -37,7 +36,7 @@ int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type) {
 }
 
 
-AdaptCosts::AdaptCosts(const TaskInterface &base_, const Options &opts)
+AdaptCosts::AdaptCosts(const AbstractTask &base_, const Options &opts)
     : base(base_),
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
 }
@@ -109,6 +108,10 @@ std::pair<int, int> AdaptCosts::get_goal_fact(int index) const {
     return base.get_goal_fact(index);
 }
 
+std::vector<int> AdaptCosts::get_state_values(const GlobalState &global_state) const {
+    return base.get_state_values(global_state);
+}
+
 
 void add_cost_type_option_to_parser(OptionParser &parser) {
     vector<string> cost_types;
@@ -138,15 +141,14 @@ void add_cost_type_option_to_parser(OptionParser &parser) {
 }
 
 
-static Task *_parse(OptionParser &parser) {
+static TaskProxy *_parse(OptionParser &parser) {
     add_cost_type_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run()) {
         return 0;
     } else {
-        GlobalTaskInterface *base = new GlobalTaskInterface();
-        return new Task(new AdaptCosts(*base, opts));
+        return new TaskProxy(new AdaptCosts(*(new RootTask()), opts));
     }
 }
 
-static Plugin<Task> _plugin("adapt_costs", _parse);
+static Plugin<TaskProxy> _plugin("adapt_costs", _parse);

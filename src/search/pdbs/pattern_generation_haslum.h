@@ -13,11 +13,11 @@ class CountdownTimer;
 class GlobalState;
 class Options;
 class PDBHeuristic;
-class Task;
+class TaskProxy;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
-    Task *task;
+    TaskProxy *task;
     const int pdb_max_size; // maximum number of states for each pdb
     const int collection_max_size; // maximum added size of all pdbs
     const int num_samples;

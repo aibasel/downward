@@ -1,11 +1,9 @@
 #include "blind_search_heuristic.h"
 
-#include "global_operator.h"
 #include "global_state.h"
-#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task.h"
+#include "task_tools.h"
 
 #include <cstddef>
 #include <limits>
@@ -15,11 +13,8 @@ using namespace std;
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
-    Operators ops = task->get_operators();
-    size_t num_operators = ops.size();
-    for (size_t i = 0; i < num_operators; ++i)
-        min_operator_cost = min(min_operator_cost,
-                                get_adjusted_cost(ops[i]));
+    for (OperatorProxy op : task->get_operators())
+        min_operator_cost = min(min_operator_cost, get_adjusted_cost(op));
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
@@ -29,8 +24,9 @@ void BlindSearchHeuristic::initialize() {
     cout << "Initializing blind search heuristic..." << endl;
 }
 
-int BlindSearchHeuristic::compute_heuristic(const GlobalState &state) {
-    if (test_goal(state))
+int BlindSearchHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
+    if (is_goal_state(*task, state))
         return 0;
     else
         return min_operator_cost;
