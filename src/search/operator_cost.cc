@@ -5,7 +5,6 @@
 #include "option_parser.h"
 #include "plugin.h"
 #include "root_task.h"
-#include "task_proxy.h"
 #include "utilities.h"
 
 #include <cstdlib>
@@ -36,8 +35,8 @@ int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type) {
 }
 
 
-CostAdaptedTask::CostAdaptedTask(const AbstractTask &base_, const Options &opts)
-    : parent(base_),
+CostAdaptedTask::CostAdaptedTask(const Options &opts)
+    : parent(*opts.get<AbstractTask *>("parent")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
 }
 
@@ -114,6 +113,10 @@ std::vector<int> CostAdaptedTask::get_state_values(const GlobalState &global_sta
 
 
 void add_cost_type_option_to_parser(OptionParser &parser) {
+    parser.add_option<AbstractTask *>(
+        "parent",
+        "parent task or transformation",
+        "global_task");
     vector<string> cost_types;
     vector<string> cost_types_doc;
     cost_types.push_back("NORMAL");
@@ -141,14 +144,14 @@ void add_cost_type_option_to_parser(OptionParser &parser) {
 }
 
 
-static TaskProxy *_parse(OptionParser &parser) {
+static AbstractTask *_parse(OptionParser &parser) {
     add_cost_type_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run()) {
         return 0;
     } else {
-        return new TaskProxy(new CostAdaptedTask(*(new RootTask()), opts));
+        return new CostAdaptedTask(opts);
     }
 }
 
-static Plugin<TaskProxy> _plugin("adapt_costs", _parse);
+static Plugin<AbstractTask> _plugin("adapt_costs", _parse);

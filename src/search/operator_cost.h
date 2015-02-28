@@ -16,7 +16,7 @@ class CostAdaptedTask : public AbstractTask {
     const AbstractTask &parent;
     const OperatorCost cost_type;
 public:
-    explicit CostAdaptedTask(const AbstractTask &base_, const Options &opts);
+    explicit CostAdaptedTask(const Options &opts);
     ~CostAdaptedTask();
 
     virtual int get_num_variables() const override;

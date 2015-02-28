@@ -4,7 +4,6 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task_proxy.h"
 
 #include <cassert>
 
@@ -99,11 +98,11 @@ vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     return values;
 }
 
-static TaskProxy *_parse(OptionParser &parser) {
+static AbstractTask *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new TaskProxy(new RootTask());
+        return new RootTask();
 }
 
-static Plugin<TaskProxy> _plugin("global_task", _parse);
+static Plugin<AbstractTask> _plugin("global_task", _parse);
