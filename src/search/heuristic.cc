@@ -15,13 +15,14 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    assert(!(opts.contains("transform") && opts.contains("task_proxy")));
     /*
       This code is only intended for the transitional period while we still
       support the "old style" of adjusting costs for the heuristics (via the
       cost_type parameter) in parallel with the "new style" (via task
       transformations). Once all heuristics are adapted to support task
       transformations and we can remove the "cost_type" attribute, the options
-      should always contain a task.
+      should always contain a task (either an AbstractTask or a TaskProxy).
     */
     if (opts.contains("transform") && cost_type != NORMAL) {
         cerr << "You may specify either the cost_type option of the heuristic "
@@ -29,7 +30,10 @@ Heuristic::Heuristic(const Options &opts)
                 "but not both." << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    if (opts.contains("transform")) {
+    // The "task_proxy" option is only passed for internally constructed heuristics.
+    if (opts.contains("task_proxy")) {
+        task = opts.get<TaskProxy *>("task_proxy");
+    } else if (opts.contains("transform")) {
         task = new TaskProxy(opts.get<AbstractTask *>("transform"));
     } else {
         Options options;
