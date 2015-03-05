@@ -145,6 +145,7 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
+    // TODO: When the cost_type option is gone, use "no_transform" as default here.
     parser.add_option<AbstractTask *>(
         "transform",
         "Optional task transformation for the heuristic. "

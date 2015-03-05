@@ -105,4 +105,4 @@ static AbstractTask *_parse(OptionParser &parser) {
         return new RootTask();
 }
 
-static Plugin<AbstractTask> _plugin("global_task", _parse);
+static Plugin<AbstractTask> _plugin("no_transform", _parse);
