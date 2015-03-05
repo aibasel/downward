@@ -3,6 +3,7 @@
 #include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
+#include "root_task.h"
 #include "task_proxy.h"
 
 #include <cassert>
@@ -12,8 +13,14 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : task(opts.get<TaskProxy *>("task")),
+    : task(0),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    if (opts.contains("task")) {
+        task = opts.get<TaskProxy *>("task");
+    } else {
+        // TODO: Use get_root_task().
+        task = new TaskProxy(new RootTask());
+    }
     heuristic = NOT_INITIALIZED;
 }
 
@@ -149,8 +156,10 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     parser.add_option<TaskProxy *>(
         "task",
-        "Task that the heuristic should operate on. Choose from global_task and adapt_costs.",
-        "global_task");
+        "Optional task transformation for the heuristic. "
+        "Currently only adapt_costs is available.",
+        "",
+        OptionFlags(false));
 }
 
 //this solution to get default values seems not optimal:
