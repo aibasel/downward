@@ -13,15 +13,14 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : task(0),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     /*
       This code is only intended for the transitional period while we still
       support the "old style" of adjusting costs for the heuristics (via the
       cost_type parameter) in parallel with the "new style" (via task
       transformations). Once all heuristics are adapted to support task
       transformations and we can remove the "cost_type" attribute, the options
-      should always contain a TaskProxy pointer.
+      should always contain a task.
     */
     if (opts.contains("transform") && cost_type != NORMAL) {
         cerr << "You may specify either the cost_type option of the heuristic "
@@ -30,7 +29,7 @@ Heuristic::Heuristic(const Options &opts)
         exit_with(EXIT_INPUT_ERROR);
     }
     if (opts.contains("transform")) {
-        task = opts.get<TaskProxy *>("transform");
+        task = new TaskProxy(opts.get<AbstractTask *>("transform"));
     } else {
         task = new TaskProxy(new CostAdaptedTask(cost_type));
     }
@@ -38,6 +37,7 @@ Heuristic::Heuristic(const Options &opts)
 }
 
 Heuristic::~Heuristic() {
+    delete task;
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
@@ -145,7 +145,7 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
-    parser.add_option<TaskProxy *>(
+    parser.add_option<AbstractTask *>(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
@@ -156,7 +156,6 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
-    opts.set<TaskProxy *>("transform", 0);  // TODO: Use correct task.
     opts.set<int>("cost_type", 0);
     return opts;
 }
