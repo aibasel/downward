@@ -31,7 +31,8 @@ using namespace std;
 struct HillClimbingTimeout : public exception {};
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
-    : pdb_max_size(opts.get<int>("pdb_max_size")),
+    : task(opts.get<TaskProxy *>("task")),
+      pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
@@ -86,6 +87,7 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &
     for (size_t i = 0; i < new_candidates.size(); ++i) {
         if (generated_patterns.count(new_candidates[i]) == 0) {
             Options opts;
+            opts.set<TaskProxy *>("task", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<int> >("pattern", new_candidates[i]);
             candidate_pdbs.push_back(new PDBHeuristic(opts, false));
@@ -142,9 +144,9 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
             if (applicable_ops.empty()) {
                 break;
             } else {
-                int random = g_rng.next(applicable_ops.size()); // [0..applicable_os.size())
-                assert(applicable_ops[random]->is_applicable(current_state));
-                current_state = sample_registry.get_successor_state(current_state, *applicable_ops[random]);
+                const GlobalOperator *random_op = *g_rng.choose(applicable_ops);
+                assert(random_op->is_applicable(current_state));
+                current_state = sample_registry.get_successor_state(current_state, *random_op);
                 // if current state is a dead end, then restart with initial state
                 current_heuristic->evaluate_dead_end(current_state);
                 if (current_heuristic->is_dead_end())
@@ -343,6 +345,7 @@ void PatternGenerationHaslum::initialize() {
         initial_pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
     Options opts;
+    opts.set<TaskProxy *>("task", task);
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);

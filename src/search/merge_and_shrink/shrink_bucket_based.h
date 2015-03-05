@@ -34,7 +34,7 @@ private:
     void compute_abstraction(
         const std::vector<Bucket> &buckets,
         int target_size,
-        EquivalenceRelation &equivalence_relation) const;
+        StateEquivalenceRelation &equivalence_relation) const;
 
 protected:
     virtual void partition_into_buckets(
