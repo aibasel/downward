@@ -422,7 +422,7 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 
 ifneq ($(MAKECMDGOALS),clean)
     ifneq ($(MAKECMDGOALS),distclean)
-        -include Makefile.depend
+        include Makefile.depend
     endif
 endif
 
