@@ -14,7 +14,7 @@ BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
     for (OperatorProxy op : task->get_operators())
-        min_operator_cost = min(min_operator_cost, get_cost_transitional(op));
+        min_operator_cost = min(min_operator_cost, op.get_cost());
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {

@@ -139,28 +139,6 @@ int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
     return get_adjusted_action_cost(op, cost_type);
 }
 
-int Heuristic::get_cost_transitional(const OperatorProxy &op) const {
-    /*
-      This method is only intended for the transitional period while we still
-      support the "old style" of adjusting costs for the heuristics (via the
-      cost_type parameter) in parallel with the "new style" (via task
-      transformations). Once all heuristics are adapted to support task
-      transformations and we can remove the "cost_type" attribute,
-      Heuristic::get_cost_transitional(op) can be replaced by op.get_cost().
-    */
-    if (op.is_axiom())
-        /*
-          HACK: We need this to ensure the "old-style" behaviour of
-          always using cost 0 for all axioms, but it also means that a
-          task transformation cannot use non-zero costs for axioms.
-          Once we get rid of cost_type, we can start supporting positive-cost
-          axioms if we want (whatever that means).
-        */
-        return 0;
-    else
-        return get_adjusted_action_cost(op.get_cost(), cost_type);
-}
-
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
     return task->convert_global_state(global_state);
 }
