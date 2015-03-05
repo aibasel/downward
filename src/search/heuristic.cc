@@ -15,6 +15,14 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : task(0),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    /*
+      This code is only intended for the transitional period while we still
+      support the "old style" of adjusting costs for the heuristics (via the
+      cost_type parameter) in parallel with the "new style" (via task
+      transformations). Once all heuristics are adapted to support task
+      transformations and we can remove the "cost_type" attribute, the options
+      should always contain a TaskProxy pointer.
+    */
     if (opts.contains("task") && cost_type != NORMAL) {
         cerr << "You may specify either the cost_type option of the heuristic "
                 "(deprecated) or use transform=adapt_costs() (recommended), "
