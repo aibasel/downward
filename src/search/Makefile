@@ -277,8 +277,11 @@ endif
 
 ifeq ($(DOWNWARD_USE_LP),1)
 
-$(DOWNWARD_COIN_ROOT):
-	$(error COIN is no longer bundled with Fast Downward. Please install COIN outside of the repository and set up the environment variable DOWNWARD_COIN_ROOT to the new path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
+COIN_ROOT_FOUND := $(shell test -d $(DOWNWARD_COIN_ROOT) && echo 1)
+
+ifneq ($(COIN_ROOT_FOUND),1)
+    $(error COIN not found. Please install COIN and set up the environment variable DOWNWARD_COIN_ROOT to its path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
+endif
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(DOWNWARD_COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(DOWNWARD_COIN_ROOT)
