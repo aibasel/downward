@@ -8,8 +8,8 @@ class OptionParser;
 class Options;
 
 class CostAdaptedTask : public AbstractTask {
-    const AbstractTask &parent;
     const OperatorCost cost_type;
+    const AbstractTask &parent;
 public:
     explicit CostAdaptedTask(const Options &opts);
     ~CostAdaptedTask();
