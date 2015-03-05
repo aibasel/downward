@@ -23,14 +23,14 @@ Heuristic::Heuristic(const Options &opts)
       transformations and we can remove the "cost_type" attribute, the options
       should always contain a TaskProxy pointer.
     */
-    if (opts.contains("task") && cost_type != NORMAL) {
+    if (opts.contains("transform") && cost_type != NORMAL) {
         cerr << "You may specify either the cost_type option of the heuristic "
                 "(deprecated) or use transform=adapt_costs() (recommended), "
                 "but not both." << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    if (opts.contains("task")) {
-        task = opts.get<TaskProxy *>("task");
+    if (opts.contains("transform")) {
+        task = opts.get<TaskProxy *>("transform");
     } else {
         task = new TaskProxy(new CostAdaptedTask(cost_type));
     }
@@ -146,7 +146,7 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     parser.add_option<TaskProxy *>(
-        "task",
+        "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
         "",
@@ -156,7 +156,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
-    opts.set<TaskProxy *>("task", 0);  // TODO: Use correct task.
+    opts.set<TaskProxy *>("transform", 0);  // TODO: Use correct task.
     opts.set<int>("cost_type", 0);
     return opts;
 }
