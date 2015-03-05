@@ -7,7 +7,8 @@ except ImportError:
 
 import os.path
 import re
-import sys
+
+import options
 
 from . import lisp_parser
 from . import parsing_functions
@@ -24,14 +25,8 @@ def parse_pddl_file(type, filename):
         raise SystemExit("Error: Could not parse %s file: %s\n" % (type, filename))
 
 def open(task_filename=None, domain_filename=None):
-    if task_filename is None:
-        if len(sys.argv) not in (2, 3):
-            raise SystemExit("Error: Need exactly one or two command line arguments.\n"
-                             "Usage: %s [<domain.pddl>] <task.pddl>" % sys.argv[0])
-
-        task_filename = sys.argv[-1]
-        if len(sys.argv) == 3:
-            domain_filename = sys.argv[1]
+    task_filename = task_filename or options.task
+    domain_filename = domain_filename or options.domain
 
     if not domain_filename:
         dirname, basename = os.path.split(task_filename)
@@ -51,6 +46,3 @@ def open(task_filename=None, domain_filename=None):
     domain_pddl = parse_pddl_file("domain", domain_filename)
     task_pddl = parse_pddl_file("task", task_filename)
     return parsing_functions.parse_task(domain_pddl, task_pddl)
-
-if __name__ == "__main__":
-    open().dump()

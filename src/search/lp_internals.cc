@@ -7,7 +7,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wsign-compare"
-
+#pragma GCC diagnostic ignored "-Woverflow"
 #include <OsiSolverInterface.hpp>
 
 #ifdef COIN_HAS_CLP

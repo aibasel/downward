@@ -25,18 +25,18 @@ def test_normalization():
     prog.normalize()
     output = StringIO()
     prog.dump(file=output)
-    assert output.getvalue() == """\
-Atom at(foo, bar).
-Atom truck(bollerwagen).
-Atom truck(segway).
+    sorted_output = "\n".join(sorted(output.getvalue().splitlines()))
+    assert sorted_output == """\
+Atom @object(bar).
 Atom @object(bollerwagen).
 Atom @object(foo).
-Atom @object(bar).
 Atom @object(segway).
-Atom foo().
+Atom at(foo, bar).
 Atom bar(X).
+Atom foo().
+Atom truck(bollerwagen).
+Atom truck(segway).
+none Atom at(?X, ?X@0) :- Atom truck(?X), Atom location(?Y), Atom =(?X, ?X@0).
 none Atom at(?X, ?Y) :- Atom truck(?X), Atom @object(?Y).
 none Atom at(?X, ?Y) :- Atom truck(X), Atom location(?Y), Atom @object(?X).
-none Atom at(?X, ?X@0) :- Atom truck(?X), Atom location(?Y), Atom =(?X, ?X@0).
-none Atom q(?Y, ?Y@0) :- Atom p(?Y, ?Z, ?Y, ?Z), Atom =(?Y, ?Y@0), Atom =(?Y, ?Y@1), Atom =(?Z, ?Z@2).
-"""
+none Atom q(?Y, ?Y@0) :- Atom p(?Y, ?Z, ?Y, ?Z), Atom =(?Y, ?Y@0), Atom =(?Y, ?Y@1), Atom =(?Z, ?Z@2)."""
