@@ -47,7 +47,7 @@ class OpenList;
 class SearchEngine;
 class MergeStrategy;
 class ShrinkStrategy;
-class TaskProxy;
+class AbstractTask;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.
@@ -133,9 +133,9 @@ public:
 };
 
 template <>
-class TokenParser<TaskProxy *> {
+class TokenParser<AbstractTask *> {
 public:
-    static inline TaskProxy *parse(OptionParser &p);
+    static inline AbstractTask *parse(OptionParser &p);
 };
 
 template <class T>
@@ -419,8 +419,8 @@ Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
     return lookup_in_registry<Synergy>(p);
 }
 
-TaskProxy *TokenParser<TaskProxy *>::parse(OptionParser &p) {
-    return lookup_in_registry<TaskProxy>(p);
+AbstractTask *TokenParser<AbstractTask *>::parse(OptionParser &p) {
+    return lookup_in_registry<AbstractTask>(p);
 }
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
