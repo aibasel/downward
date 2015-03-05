@@ -19,6 +19,7 @@ Heuristic::Heuristic(const Options &opts)
 }
 
 Heuristic::~Heuristic() {
+    delete task;
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
