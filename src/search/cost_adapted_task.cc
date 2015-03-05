@@ -2,6 +2,7 @@
 
 #include "option_parser.h"
 #include "plugin.h"
+#include "root_task.h"
 
 #include <string>
 #include <vector>
@@ -10,8 +11,8 @@ using namespace std;
 
 
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
-    : parent(*opts.get<AbstractTask *>("parent")),
-      cost_type(OperatorCost(opts.get<int>("cost_type"))) {
+    : cost_type(OperatorCost(opts.get<int>("cost_type"))),
+      parent(*(new RootTask())) {
 }
 
 CostAdaptedTask::~CostAdaptedTask() {
@@ -87,10 +88,6 @@ vector<int> CostAdaptedTask::get_state_values(const GlobalState &global_state) c
 
 
 static AbstractTask *_parse(OptionParser &parser) {
-    parser.add_option<AbstractTask *>(
-        "parent",
-        "parent task or transformation",
-        "global_task");
     add_cost_type_option_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run()) {
