@@ -4,6 +4,7 @@
 #include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
+#include "root_task.h"
 #include "task_proxy.h"
 
 #include <cassert>
@@ -31,7 +32,10 @@ Heuristic::Heuristic(const Options &opts)
     if (opts.contains("transform")) {
         task = new TaskProxy(opts.get<AbstractTask *>("transform"));
     } else {
-        task = new TaskProxy(new CostAdaptedTask(cost_type));
+        Options options;
+        options.set<AbstractTask *>("transform", new RootTask());
+        options.set<int>("cost_type", cost_type);
+        task = new TaskProxy(new CostAdaptedTask(options));
     }
     heuristic = NOT_INITIALIZED;
 }
@@ -157,6 +161,8 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
+    // TODO: When the cost_type option is gone, uncomment the following line:
+    // opts.set<AbstractTask *>("transform", get_global_task());
     opts.set<int>("cost_type", 0);
     return opts;
 }

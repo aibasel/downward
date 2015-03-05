@@ -11,8 +11,8 @@ using namespace std;
 
 
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
-    : cost_type(OperatorCost(opts.get<int>("cost_type"))),
-      parent(*(new RootTask())) {
+    : parent(*opts.get<AbstractTask *>("transform")),
+      cost_type(OperatorCost(opts.get<int>("cost_type"))) {
 }
 
 CostAdaptedTask::~CostAdaptedTask() {
@@ -89,13 +89,16 @@ vector<int> CostAdaptedTask::get_state_values(const GlobalState &global_state) c
 
 
 static AbstractTask *_parse(OptionParser &parser) {
+    parser.add_option<AbstractTask *>(
+        "transform",
+        "Parent task transformation",
+        "no_transform");
     add_cost_type_option_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return 0;
-    } else {
+    else
         return new CostAdaptedTask(opts);
-    }
 }
 
 static Plugin<AbstractTask> _plugin("adapt_costs", _parse);
