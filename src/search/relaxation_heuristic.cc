@@ -72,7 +72,7 @@ Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
 }
 
 void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_no) {
-    int base_cost = get_adjusted_cost(op);
+    int base_cost = get_cost_transitional(op);
     vector<Proposition *> precondition_props;
     for (FactProxy precondition : op.get_preconditions()) {
         precondition_props.push_back(get_proposition(precondition));
