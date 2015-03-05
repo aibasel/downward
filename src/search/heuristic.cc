@@ -1,9 +1,9 @@
 #include "heuristic.h"
 
+#include "cost_adapted_task.h"
 #include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
-#include "root_task.h"
 #include "task_proxy.h"
 
 #include <cassert>
@@ -15,11 +15,16 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : task(0),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    if (opts.contains("task") && cost_type != NORMAL) {
+        cerr << "You may specify either the cost_type option of the heuristic "
+                "(deprecated) or use transform=adapt_costs() (recommended), "
+                "but not both." << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
     if (opts.contains("task")) {
         task = opts.get<TaskProxy *>("task");
     } else {
-        // TODO: Use get_root_task().
-        task = new TaskProxy(new RootTask());
+        task = new TaskProxy(new CostAdaptedTask(cost_type));
     }
     heuristic = NOT_INITIALIZED;
 }
