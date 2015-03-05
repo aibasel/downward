@@ -16,6 +16,7 @@ CostAdaptedTask::CostAdaptedTask(const Options &opts)
 }
 
 CostAdaptedTask::~CostAdaptedTask() {
+    delete &parent;
 }
 
 int CostAdaptedTask::get_num_variables() const {
