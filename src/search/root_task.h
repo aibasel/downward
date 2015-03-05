@@ -36,4 +36,6 @@ public:
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
 };
 
+RootTask *get_root_task();
+
 #endif

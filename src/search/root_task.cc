@@ -10,6 +10,9 @@
 using namespace std;
 
 
+static RootTask *root_task = new RootTask();
+
+
 static GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) {
     if (is_axiom) {
         assert(in_bounds(index, g_axioms));
@@ -98,11 +101,16 @@ vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     return values;
 }
 
+
+RootTask *get_root_task() {
+    return root_task;
+}
+
 static AbstractTask *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new RootTask();
+        return get_root_task();
 }
 
 static Plugin<AbstractTask> _plugin("no_transform", _parse);
