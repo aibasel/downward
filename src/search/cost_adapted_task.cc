@@ -3,6 +3,7 @@
 #include "option_parser.h"
 #include "plugin.h"
 #include "root_task.h"
+#include "task_proxy.h"
 
 #include <string>
 #include <vector>
@@ -88,14 +89,13 @@ vector<int> CostAdaptedTask::get_state_values(const GlobalState &global_state) c
 }
 
 
-static AbstractTask *_parse(OptionParser &parser) {
+static TaskProxy *_parse(OptionParser &parser) {
     add_cost_type_option_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.dry_run()) {
+    if (parser.dry_run())
         return 0;
-    } else {
-        return new CostAdaptedTask(opts);
-    }
+    else
+        return new TaskProxy(new CostAdaptedTask(opts));
 }
 
-static Plugin<AbstractTask> _plugin("adapt_costs", _parse);
+static Plugin<TaskProxy> _plugin("adapt_costs", _parse);
