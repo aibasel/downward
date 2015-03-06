@@ -10,7 +10,7 @@ using namespace std;
 
 
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
-    : DelegatingTask(*opts.get<AbstractTask *>("transform")),
+    : DelegatingTask(opts.get<AbstractTask *>("transform")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
 }
 
@@ -18,7 +18,7 @@ CostAdaptedTask::~CostAdaptedTask() {
 }
 
 int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
-    return get_adjusted_action_cost(parent.get_operator_cost(index, is_axiom), cost_type);
+    return get_adjusted_action_cost(parent->get_operator_cost(index, is_axiom), cost_type);
 }
 
 
