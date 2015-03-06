@@ -32,10 +32,8 @@ void RelaxationHeuristic::initialize() {
     int prop_id = 0;
     VariablesProxy variables = task->get_variables();
     propositions.resize(variables.size());
-    for (VariableProxy var : variables) {
-        int num_values = var.get_domain_size();
-        for (int value = 0; value < num_values; ++value)
-            propositions[var.get_id()].push_back(Proposition(prop_id++));
+    for (FactProxy fact : variables.get_facts()) {
+        propositions[fact.get_variable().get_id()].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
