@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <limits>
+#include <memory>
 
 using namespace std;
 
@@ -37,7 +38,7 @@ Heuristic::Heuristic(const Options &opts)
         task = new TaskProxy(opts.get<AbstractTask *>("transform"));
     } else {
         Options options;
-        options.set<AbstractTask *>("transform", get_root_task());
+        options.set<AbstractTask *>("transform", get_root_task().get());
         options.set<int>("cost_type", cost_type);
         task = new TaskProxy(new CostAdaptedTask(options));
     }
