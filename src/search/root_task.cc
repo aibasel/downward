@@ -29,11 +29,15 @@ int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
 }
 
+const string &RootTask::get_fact_name(int var_id, int value) const {
+    return g_fact_names[var_id][value];
+}
+
 int RootTask::get_operator_cost(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_cost();
 }
 
-const std::string &RootTask::get_operator_name(int index, bool is_axiom) const {
+const string &RootTask::get_operator_name(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_name();
 }
 

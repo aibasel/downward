@@ -125,6 +125,9 @@ public:
     int get_value() const {
         return value;
     }
+    const std::string &get_name() const {
+        return task.get_fact_name(var_id, value);
+    }
     bool operator==(FactProxy other) {
         return (var_id == other.var_id) && (value == other.value);
     }
