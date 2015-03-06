@@ -4,6 +4,9 @@
 #include "abstract_task.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 
 class DelegatingTask : public AbstractTask {

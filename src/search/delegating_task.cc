@@ -1,8 +1,5 @@
 #include "delegating_task.h"
 
-#include <string>
-#include <vector>
-
 using namespace std;
 
 

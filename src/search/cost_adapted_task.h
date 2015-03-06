@@ -16,6 +16,4 @@ public:
     virtual int get_operator_cost(int index, bool is_axiom) const override;
 };
 
-void add_cost_type_option_to_parser(OptionParser &parser);
-
 #endif
