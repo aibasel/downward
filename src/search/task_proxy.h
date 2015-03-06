@@ -343,6 +343,9 @@ public:
     const std::string &get_name() const {
         return task.get_operator_name(index, is_an_axiom);
     }
+    int get_id() const {
+        return index;
+    }
     const GlobalOperator *get_global_operator() const {
         return task.get_global_operator(index, is_an_axiom);
     }
