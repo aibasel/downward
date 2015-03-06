@@ -20,4 +20,12 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
     return true;
 }
 
+inline bool is_unit_cost(TaskProxy task) {
+    for (OperatorProxy op : task.get_operators()) {
+        if (op.get_cost() != 1)
+            return false;
+    }
+    return true;
+}
+
 #endif
