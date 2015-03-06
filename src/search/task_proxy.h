@@ -87,12 +87,11 @@ template<class ProxyCollection>
 class ProxyIterator {
     const ProxyCollection &collection;
     std::size_t pos;
-
 public:
     ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
         : collection(collection_), pos(pos_) {}
 
-    typename ProxyCollection::ItemType operator*() {
+    typename ProxyCollection::ItemType operator*() const {
         return collection[pos];
     }
     ProxyIterator &operator++() {
@@ -135,10 +134,41 @@ public:
 };
 
 
+/*
+  The standard ProxyIterator expects the collections to provide random access.
+  Since randomly accessing the i-th fact involves looping over the variables,
+  we use a custom iterator for FactsProxy that only provides sequential access.
+*/
+class FactsProxyIterator {
+    const AbstractTask &task;
+    int var_id;
+    int value;
+public:
+    FactsProxyIterator(const AbstractTask &task_, int var_id_, int value_)
+        : task(task_), var_id(var_id_), value(value_) {}
+    ~FactsProxyIterator() {}
+    FactProxy operator*() const {
+        return FactProxy(task, var_id, value);
+    }
+    FactsProxyIterator &operator++() {
+        int num_facts = task.get_variable_domain_size(var_id);
+        assert(value < num_facts);
+        ++value;
+        if (value == num_facts) {
+            ++var_id;
+            value = 0;
+        }
+        return *this;
+    }
+    bool operator!=(const FactsProxyIterator &it) const {
+        return var_id != it.var_id || value != it.value;
+    }
+};
+
+
 class FactsProxy {
     const AbstractTask &task;
 public:
-    using ItemType = FactProxy;
     explicit FactsProxy(const AbstractTask &task_)
         : task(task_) {}
     ~FactsProxy() {}
@@ -148,17 +178,11 @@ public:
             num_facts += task.get_variable_domain_size(var);
         return num_facts;
     }
-    FactProxy operator[](std::size_t index) const {
-        assert(index < size());
-        int seen_facts = 0;
-        int var = 0;
-        for (; var < task.get_num_variables(); ++var) {
-            int var_facts = task.get_variable_domain_size(var);
-            if (seen_facts + var_facts > static_cast<int>(index))
-                break;
-            seen_facts += var_facts;
-        }
-        return FactProxy(task, var, index - seen_facts);
+    FactsProxyIterator begin() {
+        return FactsProxyIterator(task, 0, 0);
+    }
+    FactsProxyIterator end() {
+        return FactsProxyIterator(task, task.get_num_variables(), 0);
     }
 };
 
