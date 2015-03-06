@@ -28,4 +28,12 @@ inline bool is_unit_cost(TaskProxy task) {
     return true;
 }
 
+inline bool has_axioms(TaskProxy task) {
+    for (OperatorProxy op : task.get_operators()) {
+        if (op.is_axiom())
+            return true;
+    }
+    return false;
+}
+
 #endif
