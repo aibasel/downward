@@ -166,8 +166,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
-    // TODO: When the cost_type option is gone, uncomment the following line:
-    // opts.set<AbstractTask *>("transform", get_global_task());
+    opts.set<AbstractTask *>("transform", get_root_task().get());
     opts.set<int>("cost_type", 0);
     return opts;
 }
