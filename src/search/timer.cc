@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "utilities.h"
 
+#include <iomanip>
 #include <ostream>
 #include <unistd.h>
 
@@ -79,6 +80,6 @@ ostream &operator<<(ostream &os, const Timer &timer) {
         value = 0.0;  // We sometimes get inaccuracies from god knows where.
     if (value < 1e-10)
         value = 0.0;  // Don't care about such small values.
-    os << value << "s";
+    os << fixed << setprecision(2) << value << "s";
     return os;
 }
