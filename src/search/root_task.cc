@@ -33,8 +33,8 @@ int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
 }
 
-const string &RootTask::get_fact_name(int var_id, int value) const {
-    return g_fact_names[var_id][value];
+const string &RootTask::get_fact_name(int var, int value) const {
+    return g_fact_names[var][value];
 }
 
 int RootTask::get_operator_cost(int index, bool is_axiom) const {
