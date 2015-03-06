@@ -6,7 +6,7 @@
 using namespace std;
 
 
-DelegatingTask::DelegatingTask(const AbstractTask *parent_)
+DelegatingTask::DelegatingTask(const shared_ptr<AbstractTask> parent_)
     : parent(parent_) {
 }
 

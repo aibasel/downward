@@ -3,6 +3,7 @@
 #include "option_parser.h"
 #include "plugin.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -10,7 +11,7 @@ using namespace std;
 
 
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
-    : DelegatingTask(opts.get<AbstractTask *>("transform")),
+    : DelegatingTask(shared_ptr<AbstractTask>(opts.get<AbstractTask *>("transform"))),
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
 }
 
