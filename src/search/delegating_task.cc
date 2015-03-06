@@ -11,7 +11,6 @@ DelegatingTask::DelegatingTask(const AbstractTask &parent_)
 }
 
 DelegatingTask::~DelegatingTask() {
-    delete &parent;
 }
 
 int DelegatingTask::get_num_variables() const {
