@@ -75,6 +75,7 @@ HEADERS = \
           successor_generator.h \
           sum_evaluator.h \
           timer.h \
+          tracer.h \
           utilities.h \
           variable_order_finder.h \
           weighted_evaluator.h \
