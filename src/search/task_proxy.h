@@ -16,6 +16,7 @@ class EffectProxy;
 class EffectConditionsProxy;
 class EffectsProxy;
 class FactProxy;
+class FactsProxy;
 class GoalsProxy;
 class OperatorProxy;
 class OperatorsProxy;
@@ -130,6 +131,34 @@ public:
     }
     bool operator!=(FactProxy other) {
         return !(*this == other);
+    }
+};
+
+
+class FactsProxy {
+    const AbstractTask &task;
+public:
+    using ItemType = FactProxy;
+    explicit FactsProxy(const AbstractTask &task_)
+        : task(task_) {}
+    ~FactsProxy() {}
+    std::size_t size() const {
+        int num_facts = 0;
+        for (int var = 0; var < task.get_num_variables(); ++var)
+            num_facts += task.get_variable_domain_size(var);
+        return num_facts;
+    }
+    FactProxy operator[](std::size_t index) const {
+        assert(index < size());
+        int seen_facts = 0;
+        int var = 0;
+        for (; var < task.get_num_variables(); ++var) {
+            int var_facts = task.get_variable_domain_size(var);
+            if (seen_facts + var_facts > static_cast<int>(index))
+                break;
+            seen_facts += var_facts;
+        }
+        return FactProxy(task, var, index - seen_facts);
     }
 };
 
