@@ -27,8 +27,8 @@ Heuristic::Heuristic(const Options &opts)
     */
     if (opts.contains("transform") && cost_type != NORMAL) {
         cerr << "You may specify either the cost_type option of the heuristic "
-                "(deprecated) or use transform=adapt_costs() (recommended), "
-                "but not both." << endl;
+             << "(deprecated) or use transform=adapt_costs() (recommended), "
+             << "but not both." << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
     // The "task_proxy" option is only passed for internally constructed heuristics.
