@@ -72,7 +72,7 @@ public:
     }
 };
 
-OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
+unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
     string missing_symbol;
     OsiSolverInterface *lp_solver = 0;
     switch (solver_type) {
@@ -103,7 +103,7 @@ OsiSolverInterface *create_lp_solver(LPSolverType solver_type) {
     }
     if (lp_solver) {
         lp_solver->messageHandler()->setLogLevel(0);
-        return lp_solver;
+        return unique_ptr<OsiSolverInterface>(lp_solver);
     } else {
         cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
         exit_with(EXIT_CRITICAL_ERROR);

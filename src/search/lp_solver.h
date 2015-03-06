@@ -1,9 +1,10 @@
-#ifndef LINEAR_PROGRAM_H
-#define LINEAR_PROGRAM_H
+#ifndef LP_SOLVER_H
+#define LP_SOLVER_H
 
 #include "utilities.h"
 
 #include <functional>
+#include <memory>
 #include <vector>
 
 /*
@@ -15,11 +16,9 @@
 #define LP_METHOD(X) X;
 #else
 #define LP_METHOD(X) __attribute__((noreturn)) X { \
-        ABORT("LP method called but the planner was compiled without LP support." \
-              << std::endl \
-              << "See http://www.fast-downward.org/LPBuildInstructions " \
-              << std::endl \
-              << "to install an LP solver and use it in the planner."); \
+        ABORT("LP method called but the planner was compiled without LP support.\n" \
+              "See http://www.fast-downward.org/LPBuildInstructions\n" \
+              "to install an LP solver and use it in the planner."); \
 }
 #endif
 
@@ -40,14 +39,19 @@ void add_lp_solver_option_to_parser(OptionParser &parser);
 class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
+    double lower_bound;
+    double upper_bound;
 public:
     LPConstraint(double lower_bound_, double upper_bound_);
     ~LPConstraint();
 
-    double lower_bound;
-    double upper_bound;
     const std::vector<int> &get_variables() const {return variables; }
     const std::vector<double> &get_coefficients() const {return coefficients; }
+
+    double get_lower_bound() const {return lower_bound; }
+    void set_lower_bound(double lb) {lower_bound = lb; }
+    double get_upper_bound() const {return upper_bound; }
+    void set_upper_bound(double ub) {upper_bound = ub; }
 
     void clear();
     bool empty() const;
@@ -73,7 +77,7 @@ class LPSolver {
     bool is_solved;
     int num_permanent_constraints;
     bool has_temporary_constraints;
-    OsiSolverInterface *lp_solver;
+    std::unique_ptr<OsiSolverInterface> lp_solver;
 
     /*
       Temporary data for assigning a new problem. We keep the vectors
@@ -99,7 +103,7 @@ public:
                   const std::vector<LPConstraint> &constraints))
     LP_METHOD(void add_temporary_constraints(const std::vector<LPConstraint> &constraints))
     LP_METHOD(void clear_temporary_constraints())
-    LP_METHOD(double get_infinity())
+    LP_METHOD(double get_infinity() const)
 
     LP_METHOD(void set_objective_coefficient(int index, double coefficient))
     LP_METHOD(void set_constraint_lower_bound(int index, double bound))
@@ -108,8 +112,29 @@ public:
     LP_METHOD(void set_variable_upper_bound(int index, double bound))
 
     LP_METHOD(void solve())
+
+    /*
+      Return true if the solving the LP showed that it is bounded feasible and
+      the discovered solution is guaranteed to be optimal. We test for
+      optimality explicitly because solving the LP sometime finds suboptimal
+      solutions due to numerical difficulties.
+      The LP has to be solved with a call to solve() before calling this method.
+    */
     LP_METHOD(bool has_optimal_solution() const)
+
+    /*
+      Return the objective value found after solving an LP.
+      The LP has to be solved with a call to solve() and has to have an optimal
+      solution before calling this method.
+    */
     LP_METHOD(double get_objective_value() const)
+
+    /*
+      Return the solution found after solving an LP as a vector with one entry
+      per variable.
+      The LP has to be solved with a call to solve() and has to have an optimal
+      solution before calling this method.
+    */
     LP_METHOD(std::vector<double> extract_solution() const)
 
     LP_METHOD(int get_num_variables() const)

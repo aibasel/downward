@@ -26,7 +26,7 @@
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \
                    << ", line " << __LINE__ << ": " << std::endl \
-                   << msg << std::endl), \
+                   << (msg) << std::endl), \
         (abort()), \
         (void)0 \
     )
