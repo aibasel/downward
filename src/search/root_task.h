@@ -13,7 +13,7 @@ public:
     virtual int get_num_variables() const override;
     virtual const std::string &get_variable_name(int var) const override;
     virtual int get_variable_domain_size(int var) const override;
-    virtual const std::string &get_fact_name(int var_id, int value) const override;
+    virtual const std::string &get_fact_name(int var, int value) const override;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
     virtual const std::string &get_operator_name(int index, bool is_axiom) const override;
