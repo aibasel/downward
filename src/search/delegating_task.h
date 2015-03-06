@@ -5,9 +5,9 @@
 
 class DelegatingTask : public AbstractTask {
 protected:
-    const AbstractTask &parent;
+    const AbstractTask *parent;
 public:
-    explicit DelegatingTask(const AbstractTask &parent_);
+    explicit DelegatingTask(const AbstractTask *parent_);
     virtual ~DelegatingTask();
 
     virtual int get_num_variables() const override;
