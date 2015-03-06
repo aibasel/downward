@@ -210,6 +210,9 @@ public:
         assert(index < size());
         return VariableProxy(task, index);
     }
+    FactsProxy get_facts() const {
+        return FactsProxy(task);
+    }
 };
 
 
