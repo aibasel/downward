@@ -4,6 +4,7 @@
 #include "abstract_task.h"
 
 class DelegatingTask : public AbstractTask {
+protected:
     const AbstractTask &parent;
 public:
     explicit DelegatingTask(const AbstractTask &parent_);
