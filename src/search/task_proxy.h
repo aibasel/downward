@@ -201,6 +201,9 @@ public:
     virtual ~ConditionsProxy() {}
     virtual std::size_t size() const = 0;
     virtual FactProxy operator[](std::size_t index) const = 0;
+    bool empty() const {
+        return size() == 0;
+    }
 };
 
 

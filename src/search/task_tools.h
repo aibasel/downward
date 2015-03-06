@@ -39,7 +39,7 @@ inline bool has_axioms(TaskProxy task) {
 inline bool has_conditional_effects(TaskProxy task) {
     for (OperatorProxy op : task.get_operators()) {
         for (EffectProxy effect : op.get_effects()) {
-            if (effect.get_conditions().size() != 0)
+            if (!effect.get_conditions().empty())
                 return true;
         }
     }
