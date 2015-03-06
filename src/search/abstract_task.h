@@ -13,6 +13,7 @@ public:
     AbstractTask() {}
     virtual ~AbstractTask() {}
     virtual int get_num_variables() const = 0;
+    virtual const std::string &get_variable_name(int var) const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
     virtual const std::string &get_fact_name(int var_id, int value) const = 0;
 

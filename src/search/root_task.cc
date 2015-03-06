@@ -25,6 +25,10 @@ int RootTask::get_num_variables() const {
     return g_variable_domain.size();
 }
 
+const string &RootTask::get_variable_name(int var) const {
+    return g_variable_name[var];
+}
+
 int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
 }

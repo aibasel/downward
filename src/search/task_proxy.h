@@ -217,6 +217,9 @@ public:
     int get_id() const {
         return id;
     }
+    const std::string &get_name() const {
+        return task.get_variable_name(id);
+    }
     int get_domain_size() const {
         return task.get_variable_domain_size(id);
     }
