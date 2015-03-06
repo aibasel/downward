@@ -3,11 +3,14 @@
 
 #include "abstract_task.h"
 
+#include <memory>
+
+
 class DelegatingTask : public AbstractTask {
 protected:
-    const AbstractTask *parent;
+    const std::shared_ptr<AbstractTask> parent;
 public:
-    explicit DelegatingTask(const AbstractTask *parent_);
+    explicit DelegatingTask(const std::shared_ptr<AbstractTask> parent_);
     virtual ~DelegatingTask();
 
     virtual int get_num_variables() const override;
