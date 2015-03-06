@@ -82,7 +82,6 @@ LPSolver::LPSolver(LPSolverType solver_type)
 }
 
 LPSolver::~LPSolver() {
-    delete lp_solver;
 }
 
 void LPSolver::clear_temporary_data() {
@@ -100,19 +99,18 @@ void LPSolver::clear_temporary_data() {
 void LPSolver::load_problem(LPObjectiveSense sense,
                             const std::vector<LPVariable> &variables,
                             const std::vector<LPConstraint> &constraints) {
-    int num_columns = variables.size();
-    int num_rows = constraints.size();
-    num_permanent_constraints = num_rows;
-    is_initialized = false;
     clear_temporary_data();
+    is_initialized = false;
+    num_permanent_constraints = constraints.size();
+
     for (const LPVariable &var : variables) {
         col_lb.push_back(var.lower_bound);
         col_ub.push_back(var.upper_bound);
         objective.push_back(var.objective_coefficient);
     }
     for (const LPConstraint &constraint : constraints) {
-        row_lb.push_back(constraint.lower_bound);
-        row_ub.push_back(constraint.upper_bound);
+        row_lb.push_back(constraint.get_lower_bound());
+        row_ub.push_back(constraint.get_upper_bound());
     }
 
     if (sense == LPObjectiveSense::MINIMIZE) {
@@ -121,8 +119,7 @@ void LPSolver::load_problem(LPObjectiveSense sense,
         lp_solver->setObjSense(-1);
     }
 
-    for (size_t i = 0; i < constraints.size(); ++i) {
-        const LPConstraint &constraint = constraints[i];
+    for (const LPConstraint &constraint : constraints) {
         const vector<int> &vars = constraint.get_variables();
         const vector<double> &coeffs = constraint.get_coefficients();
         assert(vars.size() == coeffs.size());
@@ -141,10 +138,11 @@ void LPSolver::load_problem(LPObjectiveSense sense,
       for the second case, so we use it here.
      */
     starts.push_back(elements.size());
+
     try {
         CoinPackedMatrix matrix(false,
-                                num_columns,
-                                num_rows,
+                                variables.size(),
+                                constraints.size(),
                                 elements.size(),
                                 elements.data(),
                                 indices.data(),
@@ -159,6 +157,7 @@ void LPSolver::load_problem(LPObjectiveSense sense,
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
+
     clear_temporary_data();
 }
 
@@ -166,10 +165,9 @@ void LPSolver::add_temporary_constraints(const std::vector<LPConstraint> &constr
     if (!constraints.empty()) {
         clear_temporary_data();
         int num_rows = constraints.size();
-        for (int i = 0; i < num_rows; ++i) {
-            const LPConstraint &constraint = constraints[i];
-            row_lb.push_back(constraint.lower_bound);
-            row_ub.push_back(constraint.upper_bound);
+        for (const LPConstraint &constraint : constraints) {
+            row_lb.push_back(constraint.get_lower_bound());
+            row_ub.push_back(constraint.get_upper_bound());
             rows.push_back(new CoinShallowPackedVector(
                                constraint.get_variables().size(),
                                constraint.get_variables().data(),
@@ -200,10 +198,11 @@ void LPSolver::clear_temporary_constraints() {
             handle_coin_error(error);
         }
         has_temporary_constraints = false;
+        is_solved = false;
     }
 }
 
-double LPSolver::get_infinity() {
+double LPSolver::get_infinity() const {
     try {
         return lp_solver->getInfinity();
     } catch (CoinError &error) {
@@ -285,14 +284,16 @@ void LPSolver::solve() {
 bool LPSolver::has_optimal_solution() const {
     assert(is_solved);
     try {
-        return !lp_solver->isProvenPrimalInfeasible() && lp_solver->isProvenOptimal();
+        return !lp_solver->isProvenPrimalInfeasible() &&
+               !lp_solver->isProvenDualInfeasible () &&
+               lp_solver->isProvenOptimal();
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
 }
 
 double LPSolver::get_objective_value() const {
-    assert(is_solved);
+    assert(has_optimal_solution());
     try {
         return lp_solver->getObjValue();
     } catch (CoinError &error) {
@@ -301,7 +302,7 @@ double LPSolver::get_objective_value() const {
 }
 
 std::vector<double> LPSolver::extract_solution() const {
-    assert(is_solved);
+    assert(has_optimal_solution());
     try {
         const double *sol = lp_solver->getColSolution();
         return std::vector<double>(sol, sol + get_num_variables());
@@ -330,4 +331,5 @@ void LPSolver::print_statistics() const {
     cout << "LP variables: " << get_num_variables() << endl;
     cout << "LP constraints: " << get_num_constraints() << endl;
 }
+
 #endif

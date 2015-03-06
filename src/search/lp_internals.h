@@ -1,18 +1,21 @@
 #ifndef LP_INTERNALS_H
 #define LP_INTERNALS_H
+
 /*
   This file provides some internal functions for the LP solver code.
   They could be implemented to linear_program.cc but we moved them here
   to avoid a long and complex file. They should not be necessary outside
   of linear_program.cc. If you need them, think about extending the
   LP class instead.
- */
+*/
+
+#include <memory>
 
 class CoinError;
 class OsiSolverInterface;
 enum class LPSolverType;
 
-OsiSolverInterface *create_lp_solver(LPSolverType solver_type);
+std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
 
 /*
   Print the CoinError and then exit with EXIT_CRITICAL_ERROR.
