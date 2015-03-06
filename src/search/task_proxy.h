@@ -173,8 +173,9 @@ public:
         : task(task_) {}
     ~FactsProxy() {}
     std::size_t size() const {
+        int num_vars = task.get_num_variables();
         int num_facts = 0;
-        for (int var = 0; var < task.get_num_variables(); ++var)
+        for (int var = 0; var < num_vars; ++var)
             num_facts += task.get_variable_domain_size(var);
         return num_facts;
     }
