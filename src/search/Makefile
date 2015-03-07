@@ -44,7 +44,6 @@ HEADERS = \
           countdown_timer.h \
           domain_transition_graph.h \
           eager_search.h \
-          enforced_hill_climbing_search.h \
           equivalence_relation.h \
           evaluation_context.h \
           exact_timer.h \
@@ -55,8 +54,6 @@ HEADERS = \
           heuristic.h \
           int_packer.h \
           ipc_max_heuristic.h \
-          iterated_search.h \
-          lazy_search.h \
           max_evaluator.h \
           operator_cost.h \
           option_parser.h \
