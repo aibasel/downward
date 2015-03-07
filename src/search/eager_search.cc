@@ -18,7 +18,6 @@ EagerSearch::EagerSearch(
     const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      do_pathmax(opts.get<bool>("pathmax")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<StateID> *>("open")) {
     if (opts.contains("f_eval")) {
@@ -48,8 +47,6 @@ void EagerSearch::initialize() {
          << (reopen_closed_nodes ? " with" : " without")
          << " reopening closed nodes, (real) bound = " << bound
          << endl;
-    if (do_pathmax)
-        cout << "Using pathmax correction" << endl;
     if (use_multi_path_dependence)
         cout << "Using multi-path dependence (LM-A*)" << endl;
     assert(open_list != NULL);
@@ -186,15 +183,6 @@ SearchStatus EagerSearch::step() {
 
             //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
-            if (do_pathmax) {
-                if ((node.get_h() - get_adjusted_cost(*op)) > succ_h) {
-                    //cout << "Pathmax correction: " << succ_h << " -> " << node.get_h() - get_adjusted_cost(*op) << endl;
-                    succ_h = node.get_h() - get_adjusted_cost(*op);
-                    heuristics[0]->set_evaluator_value(succ_h);
-                    open_list->evaluate(node.get_g() + get_adjusted_cost(*op), is_preferred);
-                    search_progress.inc_pathmax_corrections();
-                }
-            }
             succ_node.open(succ_h, node, op);
 
             open_list->insert(succ_state.get_id());
@@ -204,16 +192,14 @@ SearchStatus EagerSearch::step() {
         } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(*op)) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
-                //TODO:CR - test if we should add a reevaluate flag and if it helps
-                // if we reopen closed nodes, do that
                 if (succ_node.is_closed()) {
-                    /* TODO: Verify that the heuristic is inconsistent.
-                     * Otherwise, this is a bug. This is a serious
-                     * assertion because it can show that a heuristic that
-                     * was thought to be consistent isn't. Therefore, it
-                     * should be present also in release builds, so don't
-                     * use a plain assert. */
-                    //TODO:CR - add a consistent flag to heuristics, and add an assert here based on it
+                    /*
+                      TODO: It would be nice if we had a way to test
+                      that reopening is expected behaviour, i.e., exit
+                      with an error when this is something where
+                      reopening should not occur (e.g. A* with a
+                      consistent heuristic).
+                    */
                     search_progress.inc_reopened();
                 }
                 succ_node.reopen(node, op);
@@ -342,8 +328,6 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<OpenList<StateID> *>("open", "open list");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
-    parser.add_option<bool>("pathmax",
-                            "use pathmax correction", "false");
     parser.add_option<ScalarEvaluator *>(
         "f_eval",
         "set evaluator for jump statistics. "
@@ -383,11 +367,9 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--heuristic h=evaluator\n"
         "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
-        "               reopen_closed=true, pathmax=false, progress_evaluator=sum([g(), h]))\n"
+        "               reopen_closed=true, progress_evaluator=sum([g(), h]))\n"
         "```\n", true);
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
-    parser.add_option<bool>("pathmax",
-                            "use pathmax correction", "false");
     parser.add_option<bool>("mpd",
                             "use multi-path dependence (LM-A*)", "false");
     SearchEngine::add_options_to_parser(parser);
@@ -496,7 +478,6 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
         opts.set("open", open);
         opts.set("reopen_closed", false);
-        opts.set("pathmax", false);
         opts.set("mpd", false);
         ScalarEvaluator *sep = 0;
         opts.set("f_eval", sep);
