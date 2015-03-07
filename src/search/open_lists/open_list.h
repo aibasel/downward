@@ -35,7 +35,7 @@ public:
     // it is handled by the open list whether the entry will
     // be inserted
 
-    virtual int boost_preferred() {return 0; }
+    virtual void boost_preferred() {}
 
     virtual bool is_dead_end() const override final {
         ABORT("OpenList::is_dead_end() should disappear. Don't call it.");

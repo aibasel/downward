@@ -20,12 +20,12 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
     if (parser.help_mode())
-        return 0;
+        return nullptr;
 
     if (opts.get_list<OpenList<Entry> *>("sublists").empty())
         parser.error("need at least one internal open list");
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return new AlternationOpenList<Entry>(opts);
 }
@@ -38,9 +38,11 @@ AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
 }
 
 template<class Entry>
-AlternationOpenList<Entry>::AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
-                                                int boost_influence)
-    : open_lists(sublists), priorities(sublists.size(), 0),
+AlternationOpenList<Entry>::AlternationOpenList(
+    const vector<OpenList<Entry> *> &sublists,
+    int boost_influence)
+    : open_lists(sublists),
+      priorities(sublists.size(), 0),
       boosting(boost_influence) {
 }
 
@@ -73,7 +75,7 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     OpenList<Entry> *best_list = open_lists[best];
     assert(!best_list->empty());
     ++priorities[best];
-    return best_list->remove_min(0);
+    return best_list->remove_min(nullptr);
 }
 
 template<class Entry>
@@ -86,8 +88,8 @@ bool AlternationOpenList<Entry>::empty() const {
 
 template<class Entry>
 void AlternationOpenList<Entry>::clear() {
-    for (size_t i = 0; i < open_lists.size(); ++i)
-        open_lists[i]->clear();
+    for (OpenList<Entry> *sublist : open_lists)
+        sublist->clear();
 }
 
 template<class Entry>
@@ -97,33 +99,17 @@ void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
 }
 
 template<class Entry>
-void AlternationOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
-    for (size_t i = 0; i < open_lists.size(); ++i)
-        open_lists[i]->get_involved_heuristics(hset);
+void AlternationOpenList<Entry>::get_involved_heuristics(
+    set<Heuristic *> &hset) {
+    for (OpenList<Entry> *sublist : open_lists)
+        sublist->get_involved_heuristics(hset);
 }
 
 template<class Entry>
-int AlternationOpenList<Entry>::boost_preferred() {
-    int total_boost = 0;
-    for (size_t i = 0; i < open_lists.size(); ++i) {
-        // if the open list is not an alternation open list
-        // (these have always only_preferred==false) and
-        // it takes only preferred states, we boost it
-        if (open_lists[i]->only_preferred_states()) {
+void AlternationOpenList<Entry>::boost_preferred() {
+    for (size_t i = 0; i < open_lists.size(); ++i)
+        if (open_lists[i]->only_preferred_states())
             priorities[i] -= boosting;
-            total_boost += boosting;
-        }
-        // otherwise, we tell it to boost its lists (which
-        // has no effect on non-alterntion lists)
-        else {
-            int boosted = open_lists[i]->boost_preferred();
-            // now we have to boost this alternation open list
-            // as well to give its boosting some effect
-            priorities[i] -= boosted;
-            total_boost += boosted;
-        }
-    }
-    return total_boost; // can be used by "parent" alternation list
 }
 
 #endif
