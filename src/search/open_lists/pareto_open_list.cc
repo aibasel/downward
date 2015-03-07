@@ -101,7 +101,8 @@ ParetoOpenList<Entry>::~ParetoOpenList() {
 }
 
 template<class Entry>
-void ParetoOpenList<Entry>::insert(const Entry &entry) {
+void ParetoOpenList<Entry>::insert(
+    EvaluationContext &/*eval_context*/, const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return;
     const std::vector<int> &key = last_evaluated_value;

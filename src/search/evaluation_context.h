@@ -83,6 +83,8 @@ public:
 
     void evaluate_heuristic(Heuristic *heur);
 
+    void hacky_set_evaluator_value(Heuristic *heur, int value);
+
     /*
       Use get_heuristic_value() to query finite heuristic value. It is
       an error (guarded by an assertion) to call this method for

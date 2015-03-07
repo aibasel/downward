@@ -29,6 +29,10 @@ void EvaluationContext::evaluate_heuristic(Heuristic *heur) {
     get_result(heur);
 }
 
+void EvaluationContext::hacky_set_evaluator_value(Heuristic *heur, int value) {
+    heuristic_results[heur].h_value = value;
+}
+
 bool EvaluationContext::is_heuristic_infinite(Heuristic *heur) {
     return get_result(heur).is_heuristic_infinite();
 }

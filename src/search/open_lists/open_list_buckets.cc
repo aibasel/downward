@@ -47,7 +47,8 @@ BucketOpenList<Entry>::~BucketOpenList() {
 }
 
 template<class Entry>
-void BucketOpenList<Entry>::insert(const Entry &entry) {
+void BucketOpenList<Entry>::insert(
+    EvaluationContext &/*eval_context*/, const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return;
     if (get_evaluator()->is_dead_end())

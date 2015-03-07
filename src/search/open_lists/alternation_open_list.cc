@@ -49,9 +49,10 @@ AlternationOpenList<Entry>::~AlternationOpenList() {
 }
 
 template<class Entry>
-void AlternationOpenList<Entry>::insert(const Entry &entry) {
+void AlternationOpenList<Entry>::insert(
+    EvaluationContext &eval_context, const Entry &entry) {
     for (size_t i = 0; i < open_lists.size(); ++i)
-        open_lists[i]->insert(entry);
+        open_lists[i]->insert(eval_context, entry);
 }
 
 template<class Entry>

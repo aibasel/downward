@@ -50,7 +50,8 @@ StandardScalarOpenList<Entry>::~StandardScalarOpenList() {
 }
 
 template<class Entry>
-void StandardScalarOpenList<Entry>::insert(const Entry &entry) {
+void StandardScalarOpenList<Entry>::insert(
+    EvaluationContext &/*eval_context*/, const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return;
     if (get_evaluator()->is_dead_end())

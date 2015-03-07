@@ -53,7 +53,8 @@ TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
 }
 
 template<class Entry>
-void TieBreakingOpenList<Entry>::insert(const Entry &entry) {
+void TieBreakingOpenList<Entry>::insert(
+    EvaluationContext &/*eval_context*/, const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return;
     if (evaluators[0]->is_dead_end() && allow_unsafe_pruning)
