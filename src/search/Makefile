@@ -46,6 +46,7 @@ HEADERS = \
           eager_search.h \
           enforced_hill_climbing_search.h \
           equivalence_relation.h \
+          evaluation_context.h \
           exact_timer.h \
           g_evaluator.h \
           global_operator.h \
