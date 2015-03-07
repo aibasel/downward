@@ -14,8 +14,7 @@
 #include <set>
 using namespace std;
 
-EagerSearch::EagerSearch(
-    const Options &opts)
+EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
@@ -42,14 +41,13 @@ EvaluationContext EagerSearch::evaluate_state(const GlobalState &state) {
 }
 
 void EagerSearch::initialize() {
-    //TODO children classes should output which kind of search
     cout << "Conducting best first search"
          << (reopen_closed_nodes ? " with" : " without")
          << " reopening closed nodes, (real) bound = " << bound
          << endl;
     if (use_multi_path_dependence)
         cout << "Using multi-path dependence (LM-A*)" << endl;
-    assert(open_list != NULL);
+    assert(open_list != nullptr);
 
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
@@ -90,7 +88,7 @@ void EagerSearch::initialize() {
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial(heuristics[0]->get_value());
 
-        open_list->insert(initial_state.get_id());
+        open_list->insert(eval_context, initial_state.get_id());
     }
 }
 
@@ -147,15 +145,13 @@ SearchStatus EagerSearch::step() {
 
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
+            /*
+              Note: we must call reach_state for each heuristic, so
+              don't break out of the for loop early.
+            */
             bool h_is_dirty = false;
-            for (size_t j = 0; j < heuristics.size(); ++j) {
-                /*
-                  Note that we can't break out of the loop when
-                  h_is_dirty is set to true or use short-circuit
-                  evaluation here. We must call reach_state for each
-                  heuristic for its side effects.
-                */
-                if (heuristics[j]->reach_state(s, *op, succ_state))
+            for (Heuristic *heuristic : heuristics) {
+                if (heuristic->reach_state(s, *op, succ_state))
                     h_is_dirty = true;
             }
             if (h_is_dirty && use_multi_path_dependence)
@@ -169,23 +165,17 @@ SearchStatus EagerSearch::step() {
             search_progress.inc_evaluated_states();
             succ_node.clear_h_dirty();
 
-            // Note that we cannot use succ_node.get_g() here as the
-            // node is not yet open. Furthermore, we cannot open it
-            // before having checked that we're not in a dead end. The
-            // division of responsibilities is a bit tricky here -- we
-            // may want to refactor this later.
-            open_list->evaluate(node.get_g() + get_adjusted_cost(*op), is_preferred);
             if (eval_context.is_dead_end()) {
                 succ_node.mark_as_dead_end();
                 search_progress.inc_dead_ends();
                 continue;
             }
 
-            //TODO:CR - add an ID to each state, and then we can use a vector to save per-state information
             int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
 
-            open_list->insert(succ_state.get_id());
+            open_list->evaluate(succ_node.get_g(), is_preferred);
+            open_list->insert(eval_context, succ_state.get_id());
             if (search_progress.check_h_progress(eval_context, succ_node.get_g())) {
                 reward_progress();
             }
@@ -203,12 +193,20 @@ SearchStatus EagerSearch::step() {
                     search_progress.inc_reopened();
                 }
                 succ_node.reopen(node, op);
+
+                EvaluationContext eval_context(succ_state);
+                /*
+                  TODO: The following is of course bogus and should be
+                  fixed soon.
+                */
+                eval_context.hacky_set_evaluator_value(
+                    heuristics[0], succ_node.get_h());
                 heuristics[0]->set_evaluator_value(succ_node.get_h());
                 // TODO: this appears fishy to me. Why is here only heuristic[0]
                 // involved? Is this still feasible in the current version?
                 open_list->evaluate(succ_node.get_g(), is_preferred);
 
-                open_list->insert(succ_state.get_id());
+                open_list->insert(eval_context, succ_state.get_id());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
                 // Note that this could cause an incompatibility between
@@ -276,7 +274,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 if (new_h > node.get_h()) {
                     assert(node.is_open());
                     node.increase_h(new_h);
-                    open_list->insert(node.get_state_id());
+                    open_list->insert(eval_context, node.get_state_id());
                     continue;
                 }
             }

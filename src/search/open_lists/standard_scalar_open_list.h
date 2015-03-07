@@ -31,7 +31,8 @@ public:
                            bool preferred_only);
     virtual ~StandardScalarOpenList() override;
 
-    virtual void insert(const Entry &entry) override;
+    virtual void insert(EvaluationContext &eval_context,
+                        const Entry &entry) override;
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;

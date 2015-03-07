@@ -7,6 +7,9 @@
 
 #include <vector>
 
+class EvaluationContext;
+
+
 template<class Entry>
 class OpenList : public Evaluator {
 protected:
@@ -17,7 +20,8 @@ public:
     OpenList(bool preferred_only = false) : only_preferred(preferred_only) {}
     virtual ~OpenList() {}
 
-    virtual void insert(const Entry &entry) = 0;
+    virtual void insert(EvaluationContext &eval_context,
+                        const Entry &entry) = 0;
     virtual Entry remove_min(std::vector<int> *key = 0) = 0;
     // If key is non-null, it must point to an empty vector.
     // Then remove_min stores the key for the popped element there.
