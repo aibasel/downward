@@ -12,26 +12,6 @@ template<class Entry>
 OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
     parser.document_synopsis("Alternation open list",
                              "alternates between several open lists.");
-    parser.document_note(
-        "Preferred operators",
-        "Preferred operators are only taken from sub-open-lists "
-        "that do not consider the evaluated state a dead end.");
-    parser.document_note(
-        "Dead ends",
-        "A state is considered a dead end if "
-        "either all alternated open lists agree that it is a dead end "
-        "or at least one reliable open list considers it a dead end. "
-        "A state is never inserted into a sub-open-list "
-        "that considers it a dead end.");
-    parser.document_note(
-        "Note",
-        "The treatment of dead ends is different from "
-        "the one described in the "
-        "[technical report http://tr.informatik.uni-freiburg.de/reports/report258/report00258.ps.gz] "
-        "\"The More, the Merrier: Combining Heuristic Estimators "
-        "for Satisficing Planning (Extended Version)\" "
-        "(Department of Computer Science at Freiburg University, "
-        "No. 258, 2010)");
     parser.add_list_option<OpenList<Entry> *>("sublists", "sub open lists");
     parser.add_option<int>("boost",
                            "boost value for sub-open-lists "
@@ -111,37 +91,8 @@ void AlternationOpenList<Entry>::clear() {
 
 template<class Entry>
 void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
-    /*
-      Treat as a dead end if
-      1. at least one heuristic reliably recognizes it as a dead end, or
-      2. all heuristics unreliably recognize it as a dead end
-      In case 1., the dead end is reliable; in case 2. it is not.
-     */
-
-    dead_end = true;
-    dead_end_reliable = false;
-    for (size_t i = 0; i < open_lists.size(); ++i) {
-        open_lists[i]->evaluate(g, preferred);
-        if (open_lists[i]->is_dead_end()) {
-            if (open_lists[i]->dead_end_is_reliable()) {
-                dead_end = true; // Might have been set to false.
-                dead_end_reliable = true;
-                break;
-            }
-        } else {
-            dead_end = false;
-        }
-    }
-}
-
-template<class Entry>
-bool AlternationOpenList<Entry>::is_dead_end() const {
-    return dead_end;
-}
-
-template<class Entry>
-bool AlternationOpenList<Entry>::dead_end_is_reliable() const {
-    return dead_end_reliable;
+    for (OpenList<Entry> *sublist : open_lists)
+        sublist->evaluate(g, preferred);
 }
 
 template<class Entry>

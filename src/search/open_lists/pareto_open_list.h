@@ -52,8 +52,6 @@ class ParetoOpenList : public OpenList<Entry> {
     void remove_key(const KeyType key);
     bool last_preferred;
 
-    bool dead_end;
-    bool dead_end_reliable;
 protected:
     Evaluator *get_evaluator() {return this; }
 
@@ -73,8 +71,6 @@ public:
 
     // tuple evaluator interface
     virtual void evaluate(int g, bool preferred) override;
-    virtual bool is_dead_end() const override;
-    virtual bool dead_end_is_reliable() const override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     static OpenList<Entry> *_parse(OptionParser &p);

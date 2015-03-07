@@ -53,7 +53,7 @@ template<class Entry>
 void StandardScalarOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
         return;
-    if (dead_end)
+    if (get_evaluator()->is_dead_end())
         return;
     int key = last_evaluated_value;
     buckets[key].push_back(entry);
@@ -96,18 +96,6 @@ void StandardScalarOpenList<Entry>::evaluate(int g, bool preferred) {
     get_evaluator()->evaluate(g, preferred);
     last_evaluated_value = get_evaluator()->get_value();
     last_preferred = preferred;
-    dead_end = get_evaluator()->is_dead_end();
-    dead_end_reliable = get_evaluator()->dead_end_is_reliable();
-}
-
-template<class Entry>
-bool StandardScalarOpenList<Entry>::is_dead_end() const {
-    return dead_end;
-}
-
-template<class Entry>
-bool StandardScalarOpenList<Entry>::dead_end_is_reliable() const {
-    return dead_end_reliable;
 }
 
 template<class Entry>
