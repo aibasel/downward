@@ -40,7 +40,7 @@ public:
     virtual void evaluate(int g, bool preferred) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
-    virtual int boost_preferred() override;
+    virtual void boost_preferred() override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };
