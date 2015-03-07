@@ -25,8 +25,12 @@ EvaluationContext::EvaluationContext(const GlobalState &state)
     : state(state) {
 }
 
-bool EvaluationContext::is_dead_end(Heuristic *heur) {
-    return get_result(heur).is_dead_end();
+void EvaluationContext::evaluate_heuristic(Heuristic *heur) {
+    get_result(heur);
+}
+
+bool EvaluationContext::is_heuristic_infinite(Heuristic *heur) {
+    return get_result(heur).is_heuristic_infinite();
 }
 
 int EvaluationContext::get_heuristic_value(Heuristic *heur) {
@@ -42,4 +46,19 @@ int EvaluationContext::get_heuristic_value_or_infinity(Heuristic *heur) {
 const vector<const GlobalOperator *> &
 EvaluationContext::get_preferred_operators(Heuristic *heur) {
     return get_result(heur).preferred_operators;
+}
+
+bool EvaluationContext::is_dead_end() const {
+    bool all_estimates_are_infinite = true;
+    for (const auto &entry : heuristic_results) {
+        const Heuristic *heur = entry.first;
+        const HeuristicResult &result = entry.second;
+        if (result.is_heuristic_infinite()) {
+            if (heur->dead_ends_are_reliable())
+                return true;
+        } else {
+            all_estimates_are_infinite = false;
+        }
+    }
+    return all_estimates_are_infinite && !heuristic_results.empty();
 }
