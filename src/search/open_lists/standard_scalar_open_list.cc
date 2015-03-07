@@ -50,15 +50,14 @@ StandardScalarOpenList<Entry>::~StandardScalarOpenList() {
 }
 
 template<class Entry>
-int StandardScalarOpenList<Entry>::insert(const Entry &entry) {
+void StandardScalarOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
-        return 0;
+        return;
     if (dead_end)
-        return 0;
+        return;
     int key = last_evaluated_value;
     buckets[key].push_back(entry);
     ++size;
-    return 1;
 }
 
 template<class Entry>

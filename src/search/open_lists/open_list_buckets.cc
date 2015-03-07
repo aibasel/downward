@@ -47,12 +47,11 @@ BucketOpenList<Entry>::~BucketOpenList() {
 }
 
 template<class Entry>
-int BucketOpenList<Entry>::insert(const Entry &entry) {
+void BucketOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
-        return 0;
-    if (dead_end) {
-        return 0;
-    }
+        return;
+    if (dead_end)
+        return;
     int key = last_evaluated_value;
     assert(key >= 0);
     int num_buckets = buckets.size();
@@ -62,7 +61,6 @@ int BucketOpenList<Entry>::insert(const Entry &entry) {
         lowest_bucket = key;
     buckets[key].push_back(entry);
     ++size;
-    return 1;
 }
 
 template<class Entry>

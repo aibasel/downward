@@ -53,14 +53,14 @@ OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
     : open_lists(opts.get_list<OpenList<Entry> *>("sublists")),
-      priorities(open_lists.size(), 0), size(0),
+      priorities(open_lists.size(), 0),
       boosting(opts.get<int>("boost")) {
 }
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const vector<OpenList<Entry> *> &sublists,
                                                 int boost_influence)
-    : open_lists(sublists), priorities(sublists.size(), 0), size(0),
+    : open_lists(sublists), priorities(sublists.size(), 0),
       boosting(boost_influence) {
 }
 
@@ -69,18 +69,13 @@ AlternationOpenList<Entry>::~AlternationOpenList() {
 }
 
 template<class Entry>
-int AlternationOpenList<Entry>::insert(const Entry &entry) {
-    int new_entries = 0;
+void AlternationOpenList<Entry>::insert(const Entry &entry) {
     for (size_t i = 0; i < open_lists.size(); ++i)
-        if (!open_lists[i]->is_dead_end())
-            new_entries += open_lists[i]->insert(entry);
-    size += new_entries;
-    return new_entries;
+        open_lists[i]->insert(entry);
 }
 
 template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
-    assert(size > 0);
     if (key) {
         cerr << "not implemented -- see msg639 in the tracker" << endl;
         exit_with(EXIT_UNSUPPORTED);
@@ -92,22 +87,24 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
             best = i;
         }
     }
+    assert(best != -1);
     last_used_list = best;
     OpenList<Entry> *best_list = open_lists[best];
     assert(!best_list->empty());
-    --size;
     ++priorities[best];
     return best_list->remove_min(0);
 }
 
 template<class Entry>
 bool AlternationOpenList<Entry>::empty() const {
-    return size == 0;
+    for (const OpenList<Entry> *sublist : open_lists)
+        if (!sublist->empty())
+            return false;
+    return true;
 }
 
 template<class Entry>
 void AlternationOpenList<Entry>::clear() {
-    size = 0;
     for (size_t i = 0; i < open_lists.size(); ++i)
         open_lists[i]->clear();
 }
@@ -177,12 +174,4 @@ int AlternationOpenList<Entry>::boost_preferred() {
     return total_boost; // can be used by "parent" alternation list
 }
 
-template<class Entry>
-void AlternationOpenList<Entry>::boost_last_used_list() {
-    priorities[last_used_list] -= boosting;
-
-    // for the case that the last used list is an alternation
-    // list
-    open_lists[last_used_list]->boost_last_used_list();
-}
 #endif

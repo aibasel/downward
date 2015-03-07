@@ -53,16 +53,14 @@ TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
 }
 
 template<class Entry>
-int TieBreakingOpenList<Entry>::insert(const Entry &entry) {
+void TieBreakingOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
-        return 0;
-    if (first_is_dead_end && allow_unsafe_pruning) {
-        return 0;
-    }
+        return;
+    if (first_is_dead_end && allow_unsafe_pruning)
+        return;
     const std::vector<int> &key = last_evaluated_value;
     buckets[key].push_back(entry);
     ++size;
-    return 1;
 }
 
 template<class Entry>
