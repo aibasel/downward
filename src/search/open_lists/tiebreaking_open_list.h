@@ -32,25 +32,25 @@ class TieBreakingOpenList : public OpenList<Entry> {
     const std::vector<int> &get_value(); // currently not used
     int dimension() const;
 protected:
-    Evaluator *get_evaluator() {return this; }
+    virtual Evaluator *get_evaluator() override {return this; }
 
 public:
     TieBreakingOpenList(const Options &opts);
     TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
                         bool preferred_only, bool unsafe_pruning);
-    ~TieBreakingOpenList();
+    virtual ~TieBreakingOpenList() override;
 
     // open list interface
-    int insert(const Entry &entry);
-    Entry remove_min(std::vector<int> *key = 0);
-    bool empty() const;
-    void clear();
+    virtual void insert(const Entry &entry) override;
+    virtual Entry remove_min(std::vector<int> *key = 0) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
 
     // tuple evaluator interface
-    void evaluate(int g, bool preferred);
-    bool is_dead_end() const;
-    bool dead_end_is_reliable() const;
-    void get_involved_heuristics(std::set<Heuristic *> &hset);
+    virtual void evaluate(int g, bool preferred) override;
+    virtual bool is_dead_end() const override;
+    virtual bool dead_end_is_reliable() const override;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };

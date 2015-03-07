@@ -101,9 +101,9 @@ ParetoOpenList<Entry>::~ParetoOpenList() {
 }
 
 template<class Entry>
-int ParetoOpenList<Entry>::insert(const Entry &entry) {
+void ParetoOpenList<Entry>::insert(const Entry &entry) {
     if (OpenList<Entry>::only_preferred && !last_preferred)
-        return 0;
+        return;
     const std::vector<int> &key = last_evaluated_value;
     Bucket &bucket = buckets[key];
     bool newkey = bucket.empty();
@@ -128,7 +128,6 @@ int ParetoOpenList<Entry>::insert(const Entry &entry) {
         // insert new key
         nondominated.insert(key);
     }
-    return 1;
 }
 
 template<class Entry>
