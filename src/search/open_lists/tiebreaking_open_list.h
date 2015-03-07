@@ -23,9 +23,6 @@ class TieBreakingOpenList : public OpenList<Entry> {
     std::vector<ScalarEvaluator *> evaluators;
     std::vector<int> last_evaluated_value;
     bool last_preferred;
-    bool dead_end;
-    bool first_is_dead_end;
-    bool dead_end_reliable;
     bool allow_unsafe_pruning; // don't insert if main evaluator
     // says dead end, even if not reliably
 
@@ -48,8 +45,6 @@ public:
 
     // tuple evaluator interface
     virtual void evaluate(int g, bool preferred) override;
-    virtual bool is_dead_end() const override;
-    virtual bool dead_end_is_reliable() const override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);

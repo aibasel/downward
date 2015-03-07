@@ -20,8 +20,6 @@ class BucketOpenList : public OpenList<Entry> {
     ScalarEvaluator *evaluator;
     int last_evaluated_value;
     bool last_preferred;
-    bool dead_end;
-    bool dead_end_reliable;
 protected:
     ScalarEvaluator *get_evaluator() {return evaluator; }
 
@@ -35,8 +33,6 @@ public:
     virtual void clear() override;
 
     virtual void evaluate(int g, bool preferred) override;
-    virtual bool is_dead_end() const override;
-    virtual bool dead_end_is_reliable() const override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);

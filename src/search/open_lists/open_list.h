@@ -2,6 +2,9 @@
 #define OPEN_LISTS_OPEN_LIST_H
 
 #include "../evaluator.h"
+
+#include "../utilities.h"
+
 #include <vector>
 
 template<class Entry>
@@ -30,6 +33,14 @@ public:
 
     virtual int boost_preferred() {return 0; }
     virtual void boost_last_used_list() {return; }
+
+    virtual bool is_dead_end() const override final {
+        ABORT("OpenList::is_dead_end() should disappear. Don't call it.");
+    }
+
+    virtual bool dead_end_is_reliable() const override final {
+        ABORT("OpenList::dead_end_is_reliable() should disappear. Don't call it.");
+    }
 };
 
 #endif

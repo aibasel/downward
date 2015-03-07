@@ -166,34 +166,16 @@ void ParetoOpenList<Entry>::clear() {
 
 template<class Entry>
 void ParetoOpenList<Entry>::evaluate(int g, bool preferred) {
-    dead_end = false;
-    dead_end_reliable = false;
     for (size_t i = 0; i < evaluators.size(); ++i) {
         evaluators[i]->evaluate(g, preferred);
-
-        // check for dead end
-        if (evaluators[i]->is_dead_end()) {
+        if (evaluators[i]->is_dead_end())
             last_evaluated_value[i] = std::numeric_limits<int>::max();
-            dead_end = true;
-            if (evaluators[i]->dead_end_is_reliable()) {
-                dead_end_reliable = true;
-            }
-        } else { // add value if no dead end
+        else
             last_evaluated_value[i] = evaluators[i]->get_value();
-        }
     }
     last_preferred = preferred;
 }
 
-template<class Entry>
-bool ParetoOpenList<Entry>::is_dead_end() const {
-    return dead_end;
-}
-
-template<class Entry>
-bool ParetoOpenList<Entry>::dead_end_is_reliable() const {
-    return dead_end_reliable;
-}
 
 template<class Entry>
 void ParetoOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {

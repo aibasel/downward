@@ -15,8 +15,6 @@ class AlternationOpenList : public OpenList<Entry> {
     std::vector<OpenList<Entry> *> open_lists;
     std::vector<int> priorities;
 
-    bool dead_end;
-    bool dead_end_reliable;
     // roughly speaking, boosting is how often the boosted queue should be
     // preferred when removing an entry
     int boosting;
@@ -39,8 +37,6 @@ public:
 
     // Evaluator interface
     virtual void evaluate(int g, bool preferred) override;
-    virtual bool is_dead_end() const override;
-    virtual bool dead_end_is_reliable() const override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     virtual int boost_preferred() override;
