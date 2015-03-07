@@ -1,5 +1,6 @@
 #include "eager_search.h"
 
+#include "evaluation_context.h"
 #include "globals.h"
 #include "heuristic.h"
 #include "option_parser.h"
@@ -63,20 +64,20 @@ void EagerSearch::initialize() {
         f_evaluator->get_involved_heuristics(hset);
     }
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
-        heuristics.push_back(*it);
-    }
-
+    heuristics.assign(hset.begin(), hset.end());
     assert(!heuristics.empty());
 
     const GlobalState &initial_state = g_initial_state();
-    for (size_t i = 0; i < heuristics.size(); ++i)
-        heuristics[i]->evaluate(initial_state);
+    EvaluationContext eval_context(initial_state);
+    for (Heuristic *heur : heuristics) {
+        heur->evaluate(initial_state);
+        eval_context.evaluate_heuristic(heur);
+    }
     open_list->evaluate(0, false);
     search_progress.inc_evaluated_states();
     search_progress.inc_evaluations(heuristics.size());
 
-    if (open_list->is_dead_end()) {
+    if (eval_context.is_dead_end()) {
         cout << "Initial state is a dead end." << endl;
     } else {
         search_progress.get_initial_h_values();
