@@ -20,7 +20,6 @@ class ScalarEvaluator;
 class EagerSearch : public SearchEngine {
     // Search Behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
-    bool do_pathmax; // whether to use pathmax correction
     bool use_multi_path_dependence;
 
     OpenList<StateID> *open_list;
