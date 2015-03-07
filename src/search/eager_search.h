@@ -26,6 +26,7 @@ class EagerSearch : public SearchEngine {
     OpenList<StateID> *open_list;
     ScalarEvaluator *f_evaluator;
 
+    EvaluationContext evaluate_state(const GlobalState &state);
 protected:
     SearchStatus step();
     std::pair<SearchNode, bool> fetch_next_node();
