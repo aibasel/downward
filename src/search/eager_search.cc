@@ -80,12 +80,12 @@ void EagerSearch::initialize() {
     if (eval_context.is_dead_end()) {
         cout << "Initial state is a dead end." << endl;
     } else {
-        search_progress.get_initial_h_values();
+        search_progress.set_initial_h_values(eval_context);
         if (f_evaluator) {
             f_evaluator->evaluate(0, false);
             search_progress.report_f_value(f_evaluator->get_value());
         }
-        search_progress.check_h_progress(0);
+        search_progress.check_h_progress(eval_context, 0);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial(heuristics[0]->get_value());
 
@@ -164,8 +164,11 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
-            for (size_t j = 0; j < heuristics.size(); ++j)
-                heuristics[j]->evaluate(succ_state);
+            EvaluationContext eval_context(succ_state);
+            for (Heuristic *heur : heuristics) {
+                heur->evaluate(succ_state);
+                eval_context.evaluate_heuristic(heur);
+            }
             succ_node.clear_h_dirty();
             search_progress.inc_evaluated_states();
             search_progress.inc_evaluations(heuristics.size());
@@ -197,7 +200,7 @@ SearchStatus EagerSearch::step() {
             succ_node.open(succ_h, node, op);
 
             open_list->insert(succ_state.get_id());
-            if (search_progress.check_h_progress(succ_node.get_g())) {
+            if (search_progress.check_h_progress(eval_context, succ_node.get_g())) {
                 reward_progress();
             }
         } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(*op)) {
