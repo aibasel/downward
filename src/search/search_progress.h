@@ -90,7 +90,8 @@ public:
       Call the following function with the heuristic evaluation
       results of the initial state. Calling this function is mandatory
       before calling other methods that keep track of heuristic
-      values.
+      values. It also prints the initial h value (in the same format
+      as check_h_progress.)
 
       TODO: Logically EvaluationContext should be "const" here, but we
       don't currently have a good const interface for

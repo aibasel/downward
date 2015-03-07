@@ -32,6 +32,16 @@ EagerSearch::EagerSearch(
     }
 }
 
+EvaluationContext EagerSearch::evaluate_state(const GlobalState &state) {
+    EvaluationContext eval_context(state);
+    for (Heuristic *heur : heuristics) {
+        heur->evaluate(state);
+        eval_context.evaluate_heuristic(heur);
+    }
+    search_progress.inc_evaluations(heuristics.size());
+    return eval_context;
+}
+
 void EagerSearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting best first search"
@@ -68,14 +78,9 @@ void EagerSearch::initialize() {
     assert(!heuristics.empty());
 
     const GlobalState &initial_state = g_initial_state();
-    EvaluationContext eval_context(initial_state);
-    for (Heuristic *heur : heuristics) {
-        heur->evaluate(initial_state);
-        eval_context.evaluate_heuristic(heur);
-    }
-    open_list->evaluate(0, false);
+    EvaluationContext eval_context = evaluate_state(initial_state);
     search_progress.inc_evaluated_states();
-    search_progress.inc_evaluations(heuristics.size());
+    open_list->evaluate(0, false);
 
     if (eval_context.is_dead_end()) {
         cout << "Initial state is a dead end." << endl;
@@ -85,7 +90,6 @@ void EagerSearch::initialize() {
             f_evaluator->evaluate(0, false);
             search_progress.report_f_value(f_evaluator->get_value());
         }
-        search_progress.check_h_progress(eval_context, 0);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial(heuristics[0]->get_value());
 
@@ -164,14 +168,9 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
-            EvaluationContext eval_context(succ_state);
-            for (Heuristic *heur : heuristics) {
-                heur->evaluate(succ_state);
-                eval_context.evaluate_heuristic(heur);
-            }
-            succ_node.clear_h_dirty();
+            EvaluationContext eval_context = evaluate_state(succ_state);
             search_progress.inc_evaluated_states();
-            search_progress.inc_evaluations(heuristics.size());
+            succ_node.clear_h_dirty();
 
             // Note that we cannot use succ_node.get_g() here as the
             // node is not yet open. Furthermore, we cannot open it
@@ -179,8 +178,7 @@ SearchStatus EagerSearch::step() {
             // division of responsibilities is a bit tricky here -- we
             // may want to refactor this later.
             open_list->evaluate(node.get_g() + get_adjusted_cost(*op), is_preferred);
-            bool dead_end = open_list->is_dead_end();
-            if (dead_end) {
+            if (eval_context.is_dead_end()) {
                 succ_node.mark_as_dead_end();
                 search_progress.inc_dead_ends();
                 continue;
@@ -278,14 +276,12 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             }
             assert(node.get_h() == pushed_h);
             if (!node.is_closed() && node.is_h_dirty()) {
-                for (size_t i = 0; i < heuristics.size(); ++i)
-                    heuristics[i]->evaluate(node.get_state());
+                EvaluationContext eval_context = evaluate_state(
+                    node.get_state());
                 node.clear_h_dirty();
-                search_progress.inc_evaluations(heuristics.size());
 
                 open_list->evaluate(node.get_g(), false);
-                bool dead_end = open_list->is_dead_end();
-                if (dead_end) {
+                if (eval_context.is_dead_end()) {
                     node.mark_as_dead_end();
                     search_progress.inc_dead_ends();
                     continue;

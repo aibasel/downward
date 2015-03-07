@@ -54,6 +54,7 @@ void SearchProgress::set_initial_h_values(EvaluationContext &eval_context) {
         initial_heuristic_values.push_back(h_value);
         best_heuristic_values.push_back(h_value);
     }
+    print_best_heuristic_values(0);
 }
 
 bool SearchProgress::check_h_progress(EvaluationContext &eval_context, int g) {
