@@ -27,26 +27,14 @@ bool WeightedEvaluator::dead_end_is_reliable() const {
 
 EvaluationResult WeightedEvaluator::compute_result(
     EvaluationContext &eval_context) {
-    EvaluationResult result = evaluator->compute_result(eval_context);
-    /*
-      TODO/NOTE: Note that this copies the preferred operators of the
-      subevaluator, too. (Our previous implementation of this was a
-      ScalarEvaluator, which could not have preferred operators.)
-
-      It is not yet fully clear how we ultimately want to handle
-      preferred operators in the new
-      EvaluationResult/EvaluationContext framework; in particular, if
-      we want to keep them as part of each EvaluationResult or only
-      have a single set of preferred operators in the whole
-      EvaluationContext object. But I think the latter probably won't
-      work easily if we want to do something like "use alternation
-      between FF and CG heuristic, use only FF's preferred operators,
-      and only compute each heuristic once.
-    */
-    if (!result.is_infinite()) {
-        // TODO: catch overflow?
-        result.set_h_value(w * result.get_h_value());
+    // Note that this produces no preferred operators.
+    EvaluationResult result;
+    int h_val = eval_context.get_heuristic_value_or_infinity(evaluator);
+    if (h_val != EvaluationResult::INFINITE) {
+        // TODO: Check for overflow?
+        h_val *= w;
     }
+    result.set_h_value(h_val);
     return result;
 }
 
