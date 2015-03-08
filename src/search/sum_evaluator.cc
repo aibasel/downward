@@ -1,7 +1,7 @@
 #include "sum_evaluator.h"
 
-#include <limits>
 #include <cassert>
+#include <limits>
 
 #include "option_parser.h"
 #include "plugin.h"

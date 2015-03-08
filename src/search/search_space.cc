@@ -38,6 +38,7 @@ bool SearchNode::is_new() const {
 }
 
 int SearchNode::get_g() const {
+    assert(info.g >= 0);
     return info.g;
 }
 
