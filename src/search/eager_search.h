@@ -34,7 +34,6 @@ protected:
     void start_f_value_statistics(const EvaluationContext &eval_context);
     void update_f_value_statistics(const GlobalState &state,
                                    const SearchNode &node);
-    void print_heuristic_values(const std::vector<int> &values) const;
     void reward_progress();
 
     std::vector<Heuristic *> heuristics;
