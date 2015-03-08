@@ -43,8 +43,7 @@ public:
     virtual ~Heuristic();
 
     void evaluate(const GlobalState &state);
-    bool is_dead_end() const;
-    int get_heuristic();
+
     // changed to virtual, so HeuristicProxy can delegate this:
     virtual void get_preferred_operators(std::vector<const GlobalOperator *> &result);
     virtual bool dead_ends_are_reliable() const {return true; }
@@ -53,7 +52,6 @@ public:
 
     // virtual methods inherited from Evaluator and ScalarEvaluator:
     virtual int get_value() const;
-    virtual void evaluate(int g, bool preferred);
     virtual bool dead_end_is_reliable() const;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) {hset.insert(this); }
 
@@ -62,6 +60,9 @@ public:
 
     static void add_options_to_parser(OptionParser &parser);
     static Options default_options();
+
+    virtual EvaluationResult compute_result(
+        EvaluationContext &eval_context) override;
 };
 
 #endif

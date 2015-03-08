@@ -1,6 +1,7 @@
 #ifndef EVALUATION_CONTEXT_H
 #define EVALUATION_CONTEXT_H
 
+#include "evaluation_result.h"
 #include "global_state.h"
 
 #include <limits>
@@ -10,11 +11,18 @@ class GlobalOperator;
 class ScalarEvaluator;
 
 /*
+  TODO: Now that we have an explicit EvaluationResult class, it's
+  perhaps not such a great idea to duplicate all its access methods
+  like "get_heuristic_value()" etc. on EvaluationContext. Might be a
+  simpler interface to just give EvaluationContext an operator[]
+  method or other simple way of accessing a given EvaluationResult
+  and then use the methods of the result directly.
+*/
+
+/*
   TODO/NOTE: The code currently uses "ScalarEvaluator" everywhere, but
   this should eventually be replaced by "Heuristic" once these are
-  unified, so the naming conventions of the attributes and methods
-  already reflect the future where all occurrences of
-  "ScalarEvaluator" will be replaced by "Heuristic".
+  unified.
 */
 
 /*
@@ -63,33 +71,16 @@ class ScalarEvaluator;
 */
 
 class EvaluationContext {
-    static const int INFINITE = std::numeric_limits<int>::max();
-    static const int UNINITIALIZED = -2;
-
-    struct HeuristicResult {
-        int h_value;
-        std::vector<const GlobalOperator *> preferred_operators;
-
-        HeuristicResult() : h_value(UNINITIALIZED) {
-        }
-
-        bool is_uninitialized() const {
-            return h_value == UNINITIALIZED;
-        }
-
-        bool is_heuristic_infinite() const {
-            return h_value == INFINITE;
-        }
-    };
-
     GlobalState state;
     int g_value;
     bool preferred;
-    std::unordered_map<ScalarEvaluator *, HeuristicResult> heuristic_results;
+    std::unordered_map<ScalarEvaluator *, EvaluationResult> eval_results;
 
-    const HeuristicResult &get_result(ScalarEvaluator *heur);
+    const EvaluationResult &get_result(ScalarEvaluator *heur);
 public:
     EvaluationContext(const GlobalState &state, int g, bool preferred);
+
+    const GlobalState &get_state() const;
 
     void evaluate_heuristic(ScalarEvaluator *heur);
 

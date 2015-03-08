@@ -2,7 +2,7 @@
 #define UTILITIES_H
 
 #include <cstdlib>
-#include <ostream>
+#include <iostream>
 #include <utility>
 #include <vector>
 #include <tr1/functional>
