@@ -27,6 +27,8 @@ class EagerSearch : public SearchEngine {
 
     EvaluationContext evaluate_state(
         const GlobalState &state, int g, bool preferred);
+    EvaluationContext evaluate_state_for_preferred_ops(
+        const GlobalState &state, int g, bool preferred);
 protected:
     SearchStatus step();
     std::pair<SearchNode, bool> fetch_next_node();

@@ -39,6 +39,15 @@ EvaluationContext EagerSearch::evaluate_state(
     return eval_context;
 }
 
+EvaluationContext EagerSearch::evaluate_state_for_preferred_ops(
+    const GlobalState &state, int g, bool preferred) {
+    EvaluationContext eval_context(state, g, preferred);
+    for (Heuristic *heur : preferred_operator_heuristics)
+        eval_context.evaluate_heuristic(heur);
+    search_progress.inc_evaluations(preferred_operator_heuristics.size());
+    return eval_context;
+}
+
 void EagerSearch::initialize() {
     cout << "Conducting best first search"
          << (reopen_closed_nodes ? " with" : " without")
@@ -110,14 +119,16 @@ SearchStatus EagerSearch::step() {
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
-    for (size_t i = 0; i < preferred_operator_heuristics.size(); ++i) {
-        Heuristic *h = preferred_operator_heuristics[i];
-        h->evaluate(s);
-        if (!h->is_dead_end()) {
-            // In an alternation search with unreliable heuristics, it is
-            // possible that this heuristic considers the state a dead end.
-            vector<const GlobalOperator *> preferred;
-            h->get_preferred_operators(preferred);
+    EvaluationContext eval_context = evaluate_state_for_preferred_ops(
+        s, node.get_g(), false);
+    for (Heuristic *heur : preferred_operator_heuristics) {
+        /* In an alternation search with unreliable heuristics, it is
+           possible that this heuristic considers the state a dead
+           end. We only want to ask for preferred operators for
+           finite-value heuristics. */
+        if (!eval_context.is_heuristic_infinite(heur)) {
+            vector<const GlobalOperator *> preferred =
+                eval_context.get_preferred_operators(heur);
             preferred_ops.insert(preferred.begin(), preferred.end());
         }
     }
@@ -157,8 +168,14 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
+
+            // Careful: succ_node.get_g() is not available here yet,
+            // hence the stupid computation of succ_g.
+            // TODO: Make this less fragile.
+            int succ_g = node.get_g() + get_adjusted_cost(*op);
+
             EvaluationContext eval_context = evaluate_state(
-                succ_state, succ_node.get_g(), is_preferred);
+                succ_state, succ_g, is_preferred);
             search_progress.inc_evaluated_states();
             succ_node.clear_h_dirty();
 
@@ -168,7 +185,7 @@ SearchStatus EagerSearch::step() {
                 continue;
             }
 
-            int succ_h = heuristics[0]->get_heuristic();
+            int succ_h = eval_context.get_heuristic_value(heuristics[0]);
             succ_node.open(succ_h, node, op);
 
             open_list->insert(eval_context, succ_state.get_id());
@@ -262,7 +279,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     search_progress.inc_dead_ends();
                     continue;
                 }
-                int new_h = heuristics[0]->get_heuristic();
+
+                int new_h = eval_context.get_heuristic_value(heuristics[0]);
                 if (new_h > node.get_h()) {
                     assert(node.is_open());
                     node.increase_h(new_h);

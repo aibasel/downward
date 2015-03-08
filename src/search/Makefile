@@ -37,6 +37,8 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 DOWNWARD_OS ?= auto
 
 
+# TODO: Add removed search algorithms back in.
+
 HEADERS = \
           axioms.h \
           causal_graph.h \
@@ -117,19 +119,21 @@ HEADERS += merge_and_shrink/labels.h \
            merge_and_shrink/shrink_strategy.h \
            merge_and_shrink/transition_system.h \
 
-HEADERS += landmarks/exploration.h \
-           landmarks/h_m_landmarks.h \
-           landmarks/lama_ff_synergy.h \
-           landmarks/landmark_cost_assignment.h \
-           landmarks/landmark_count_heuristic.h \
-           landmarks/landmark_status_manager.h \
-           landmarks/landmark_graph_merged.h \
-           landmarks/landmark_graph.h \
-           landmarks/landmark_factory.h \
-           landmarks/landmark_factory_rpg_exhaust.h \
-           landmarks/landmark_factory_rpg_sasp.h \
-           landmarks/landmark_factory_zhu_givan.h \
-           landmarks/util.h \
+# TODO: Add landmark code back in.
+
+# HEADERS += landmarks/exploration.h \
+#            landmarks/h_m_landmarks.h \
+#            landmarks/lama_ff_synergy.h \
+#            landmarks/landmark_cost_assignment.h \
+#            landmarks/landmark_count_heuristic.h \
+#            landmarks/landmark_status_manager.h \
+#            landmarks/landmark_graph_merged.h \
+#            landmarks/landmark_graph.h \
+#            landmarks/landmark_factory.h \
+#            landmarks/landmark_factory_rpg_exhaust.h \
+#            landmarks/landmark_factory_rpg_sasp.h \
+#            landmarks/landmark_factory_zhu_givan.h \
+#            landmarks/util.h \
 
 # HEADERS += learning/AODE.h \
 #            learning/classifier.h \
@@ -143,15 +147,17 @@ HEADERS += landmarks/exploration.h \
 #            learning/state_space_sample.h \
 #            learning/state_vars_feature_extractor.h \
 
-HEADERS += pdbs/canonical_pdbs_heuristic.h \
-           pdbs/dominance_pruner.h \
-           pdbs/match_tree.h \
-           pdbs/max_cliques.h \
-           pdbs/pattern_generation_edelkamp.h \
-           pdbs/pattern_generation_haslum.h \
-           pdbs/pdb_heuristic.h \
-           pdbs/util.h \
-           pdbs/zero_one_pdbs_heuristic.h \
+# TODO: Add PDB code back in.
+
+# HEADERS += pdbs/canonical_pdbs_heuristic.h \
+#            pdbs/dominance_pruner.h \
+#            pdbs/match_tree.h \
+#            pdbs/max_cliques.h \
+#            pdbs/pattern_generation_edelkamp.h \
+#            pdbs/pattern_generation_haslum.h \
+#            pdbs/pdb_heuristic.h \
+#            pdbs/util.h \
+#            pdbs/zero_one_pdbs_heuristic.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward
