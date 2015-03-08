@@ -19,15 +19,13 @@ SumEvaluator::~SumEvaluator() {
 
 int SumEvaluator::combine_values(const vector<int> &values) {
     int result = 0;
-    for (size_t i = 0; i < values.size(); ++i) {
-        assert(values[i] >= 0);
-        result += values[i];
+    for (int value : values) {
+        assert(value >= 0);
+        result += value;
         assert(result >= 0); // Check against overflow.
     }
     return result;
 }
-
-
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
     parser.document_synopsis("Sum evaluator",
