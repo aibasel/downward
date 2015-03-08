@@ -1,4 +1,7 @@
 #include "g_evaluator.h"
+
+#include "evaluation_context.h"
+#include "evaluation_result.h"
 #include "option_parser.h"
 #include "plugin.h"
 
@@ -8,20 +11,14 @@ GEvaluator::GEvaluator() {
 GEvaluator::~GEvaluator() {
 }
 
-void GEvaluator::evaluate(int g, bool) {
-    value = g;
-}
-
-bool GEvaluator::is_dead_end() const {
-    return false;
-}
-
 bool GEvaluator::dead_end_is_reliable() const {
     return true;
 }
 
-int GEvaluator::get_value() const {
-    return value;
+EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
+    EvaluationResult result;
+    result.set_h_value(eval_context.get_g_value());
+    return result;
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {

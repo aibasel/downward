@@ -10,7 +10,7 @@
 /*
   CombiningEvaluator is the base class for SumEvaluator and
   MaxEvaluator, which captures the common aspects of their behaviour.
-  */
+*/
 
 class CombiningEvaluator : public ScalarEvaluator {
     std::vector<ScalarEvaluator *> subevaluators;

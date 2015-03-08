@@ -1,5 +1,7 @@
 #include "heuristic.h"
 
+#include "evaluation_context.h"
+#include "evaluation_result.h"
 #include "global_operator.h"
 #include "option_parser.h"
 #include "operator_cost.h"
@@ -57,34 +59,6 @@ void Heuristic::evaluate(const GlobalState &state) {
     evaluator_value = heuristic;
 }
 
-bool Heuristic::is_dead_end() const {
-    return evaluator_value == DEAD_END;
-}
-
-int Heuristic::get_heuristic() {
-    // The -1 value for dead ends is an implementation detail which is
-    // not supposed to leak. Thus, calling this for dead ends is an
-    // error. Call "is_dead_end()" first.
-
-    /*
-      TODO: I've commented the assertion out for now because there is
-      currently code that calls get_heuristic for dead ends. For
-      example, if we use alternation with h^FF and h^cea and have an
-      instance where the initial state has infinite h^cea value, we
-      should expand this state since h^cea is unreliable. The search
-      progress class will then want to print the h^cea value of the
-      initial state since this is the "best know h^cea state" so far.
-
-      However, we should clean up the code again so that the assertion
-      is valid or rethink the interface so that we don't need it.
-     */
-
-    // assert(heuristic >= 0);
-    if (heuristic == DEAD_END)
-        return numeric_limits<int>::max();
-    return heuristic;
-}
-
 void Heuristic::get_preferred_operators(std::vector<const GlobalOperator *> &result) {
     assert(heuristic >= 0);
     result.insert(result.end(),
@@ -99,12 +73,6 @@ bool Heuristic::reach_state(const GlobalState & /*parent_state*/,
 
 int Heuristic::get_value() const {
     return evaluator_value;
-}
-
-void Heuristic::evaluate(int, bool) {
-    return;
-    // if this is called, evaluate(const GlobalState &state) or set_evaluator_value(int val)
-    // should already have been called
 }
 
 bool Heuristic::dead_end_is_reliable() const {
@@ -144,4 +112,14 @@ Options Heuristic::default_options() {
     opts.set<TaskProxy *>("task", 0);  // TODO: Use correct task.
     opts.set<int>("cost_type", 0);
     return opts;
+}
+
+EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
+    EvaluationResult result;
+    evaluate(eval_context.get_state());
+    result.set_h_value(heuristic);
+    vector<const GlobalOperator *> pref_ops;
+    get_preferred_operators(pref_ops);
+    result.set_preferred_operators(pref_ops);
+    return result;
 }

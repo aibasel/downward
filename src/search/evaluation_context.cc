@@ -1,5 +1,6 @@
 #include "evaluation_context.h"
 
+#include "evaluation_result.h"
 #include "heuristic.h"
 #include "scalar_evaluator.h"
 
@@ -15,35 +16,15 @@ EvaluationContext::EvaluationContext(
       preferred(is_preferred) {
 }
 
-const EvaluationContext::HeuristicResult &
-EvaluationContext::get_result(ScalarEvaluator *heur) {
-    HeuristicResult &result = heuristic_results[heur];
-    if (result.is_uninitialized()) {
-        /*
-          TODO: This code is currently messy because we have to
-          support both heuristics and other kinds of scalar
-          evaluators. This messiness is temporary. See the general
-          comments in the header file.
-        */
-
-        Heuristic *h = dynamic_cast<Heuristic *>(heur);
-        if (h != nullptr) {
-            // We have an actual heuristic.
-            h->evaluate(state);
-        } else {
-            // We have non-heuristic scalar evaluator.
-            heur->evaluate(g_value, preferred);
-        }
-        if (heur->is_dead_end())
-            result.h_value = INFINITE;
-        else
-            result.h_value = heur->get_value();
-        if (h != nullptr) {
-            // We have an actual heuristic.
-            h->get_preferred_operators(result.preferred_operators);
-        }
-    }
+const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
+    EvaluationResult &result = eval_results[heur];
+    if (result.is_uninitialized())
+        result = heur->compute_result(*this);
     return result;
+}
+
+const GlobalState &EvaluationContext::get_state() const {
+    return state;
 }
 
 void EvaluationContext::evaluate_heuristic(ScalarEvaluator *heur) {
@@ -51,7 +32,7 @@ void EvaluationContext::evaluate_heuristic(ScalarEvaluator *heur) {
 }
 
 void EvaluationContext::hacky_set_evaluator_value(ScalarEvaluator *heur, int value) {
-    heuristic_results[heur].h_value = value;
+    eval_results[heur].set_h_value(value);
 }
 
 int EvaluationContext::get_g_value() const {
@@ -63,36 +44,36 @@ bool EvaluationContext::is_preferred() const {
 }
 
 bool EvaluationContext::is_heuristic_infinite(ScalarEvaluator *heur) {
-    return get_result(heur).is_heuristic_infinite();
+    return get_result(heur).is_infinite();
 }
 
 int EvaluationContext::get_heuristic_value(ScalarEvaluator *heur) {
-    int h = get_result(heur).h_value;
-    assert(h != INFINITE);
+    int h = get_result(heur).get_h_value();
+    assert(h != EvaluationResult::INFINITE);
     return h;
 }
 
 int EvaluationContext::get_heuristic_value_or_infinity(ScalarEvaluator *heur) {
-    return get_result(heur).h_value;
+    return get_result(heur).get_h_value();
 }
 
 const vector<const GlobalOperator *> &
 EvaluationContext::get_preferred_operators(ScalarEvaluator *heur) {
-    return get_result(heur).preferred_operators;
+    return get_result(heur).get_preferred_operators();
 }
 
 bool EvaluationContext::is_dead_end() const {
     bool all_estimates_are_infinite = true;
     bool at_least_one_estimate = false;
-    for (const auto &entry : heuristic_results) {
+    for (const auto &entry : eval_results) {
         const ScalarEvaluator *heur = entry.first;
-        const HeuristicResult &result = entry.second;
+        const EvaluationResult &result = entry.second;
         const Heuristic *h = dynamic_cast<const Heuristic *>(heur);
         if (h != nullptr) {
             /* Only consider actual heuristics.
                TODO: Get rid of the cast and test once we've unified
                Heuristic and ScalarEvaluator. */
-            if (result.is_heuristic_infinite()) {
+            if (result.is_infinite()) {
                 if (h->dead_ends_are_reliable())
                     return true;
             } else {
