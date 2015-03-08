@@ -2,7 +2,7 @@
 #define OPEN_LISTS_ALTERNATION_OPEN_LIST_H
 
 #include "open_list.h"
-#include "../evaluator.h"
+
 #include "../plugin.h"
 
 #include <vector>

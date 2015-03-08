@@ -38,24 +38,28 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
     // TODO: Make private once all heuristics use the TaskProxy class.
     State convert_global_state(const GlobalState &global_state) const;
-public:
-    Heuristic(const Options &options);
-    virtual ~Heuristic();
 
     void evaluate(const GlobalState &state);
+public:
+    Heuristic(const Options &options);
+    virtual ~Heuristic() override;
 
     // changed to virtual, so HeuristicProxy can delegate this:
-    virtual void get_preferred_operators(std::vector<const GlobalOperator *> &result);
-    virtual bool dead_ends_are_reliable() const {return true; }
-    virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
-                             const GlobalState &state);
+    virtual void get_preferred_operators(
+        std::vector<const GlobalOperator *> &result);
+    virtual bool dead_ends_are_reliable() const {
+        return true;
+    }
+    virtual bool reach_state(
+        const GlobalState &parent_state, const GlobalOperator &op,
+        const GlobalState &state);
 
-    // virtual methods inherited from Evaluator and ScalarEvaluator:
-    virtual int get_value() const;
-    virtual bool dead_end_is_reliable() const;
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) {hset.insert(this); }
+    // virtual methods inherited from ScalarEvaluator:
+    virtual bool dead_end_is_reliable() const override;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
+        hset.insert(this);
+    }
 
-    void set_evaluator_value(int val);
     OperatorCost get_cost_type() const {return cost_type; }
 
     static void add_options_to_parser(OptionParser &parser);

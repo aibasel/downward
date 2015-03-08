@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "evaluator.h"
 #include "global_state.h"
 #include "search_engine.h"
 #include "search_progress.h"

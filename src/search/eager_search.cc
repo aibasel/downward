@@ -1,13 +1,13 @@
 #include "eager_search.h"
 
 #include "evaluation_context.h"
+#include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
 #include "option_parser.h"
-#include "successor_generator.h"
-#include "g_evaluator.h"
-#include "sum_evaluator.h"
 #include "plugin.h"
+#include "successor_generator.h"
+#include "sum_evaluator.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -92,7 +92,7 @@ void EagerSearch::initialize() {
         search_progress.set_initial_h_values(eval_context);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
-        node.open_initial(heuristics[0]->get_value());
+        node.open_initial(eval_context.get_heuristic_value(heuristics[0]));
 
         open_list->insert(eval_context, initial_state.get_id());
     }
@@ -215,7 +215,6 @@ SearchStatus EagerSearch::step() {
                 */
                 eval_context.hacky_set_evaluator_value(
                     heuristics[0], succ_node.get_h());
-                heuristics[0]->set_evaluator_value(succ_node.get_h());
                 open_list->insert(eval_context, succ_state.get_id());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
@@ -328,7 +327,6 @@ void EagerSearch::update_f_value_statistics(
         EvaluationContext eval_context(state, node.get_g(), false);
         // TODO: The following is of course bogus and should be fixed soon.
         eval_context.hacky_set_evaluator_value(heuristics[0], node.get_h());
-        heuristics[0]->set_evaluator_value(node.get_h());
         eval_context.evaluate_heuristic(f_evaluator);
         int new_f_value = eval_context.get_heuristic_value(f_evaluator);
         /*
