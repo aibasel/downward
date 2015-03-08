@@ -1,17 +1,13 @@
 #ifndef OPEN_LISTS_OPEN_LIST_H
 #define OPEN_LISTS_OPEN_LIST_H
 
-#include "../evaluator.h"
-
-#include "../utilities.h"
-
 #include <vector>
 
 class EvaluationContext;
 
 
 template<class Entry>
-class OpenList : public Evaluator {
+class OpenList {
 protected:
     bool only_preferred;
 
@@ -36,17 +32,7 @@ public:
 
     virtual void boost_preferred() {}
 
-    virtual void evaluate(int /*g*/, bool /*preferred*/) override final {
-        ABORT("OpenList::evaluate() should disappear. Don't call it.");
-    }
-
-    virtual bool is_dead_end() const override final {
-        ABORT("OpenList::is_dead_end() should disappear. Don't call it.");
-    }
-
-    virtual bool dead_end_is_reliable() const override final {
-        ABORT("OpenList::dead_end_is_reliable() should disappear. Don't call it.");
-    }
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
 };
 
 #endif

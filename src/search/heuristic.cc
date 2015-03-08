@@ -71,16 +71,8 @@ bool Heuristic::reach_state(const GlobalState & /*parent_state*/,
     return false;
 }
 
-int Heuristic::get_value() const {
-    return evaluator_value;
-}
-
 bool Heuristic::dead_end_is_reliable() const {
     return dead_ends_are_reliable();
-}
-
-void Heuristic::set_evaluator_value(int val) {
-    evaluator_value = val;
 }
 
 int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {

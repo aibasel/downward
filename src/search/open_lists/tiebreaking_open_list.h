@@ -2,7 +2,6 @@
 #define OPEN_LISTS_TIEBREAKING_OPEN_LIST_H
 
 #include "open_list.h"
-#include "../evaluator.h"
 
 #include <deque>
 #include <map>
