@@ -1,11 +1,14 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_TIEBREAKING_OPEN_LIST_H
 
+#include "../evaluation_context.h"
+#include "../option_parser.h"
+#include "../scalar_evaluator.h"
+
 #include <iostream>
 #include <cassert>
 #include <limits>
-#include "../scalar_evaluator.h"
-#include "../option_parser.h"
+
 using namespace std;
 
 /*
@@ -36,7 +39,6 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0), evaluators(opts.get_list<ScalarEvaluator *>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
-    last_evaluated_value.resize(evaluators.size());
 }
 
 template<class Entry>
@@ -45,7 +47,6 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(
     bool preferred_only, bool unsafe_pruning)
     : OpenList<Entry>(preferred_only), size(0), evaluators(evals),
       allow_unsafe_pruning(unsafe_pruning) {
-    last_evaluated_value.resize(evaluators.size());
 }
 
 template<class Entry>
@@ -54,12 +55,18 @@ TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
 
 template<class Entry>
 void TieBreakingOpenList<Entry>::insert(
-    EvaluationContext &/*eval_context*/, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred && !last_preferred)
+    EvaluationContext &eval_context, const Entry &entry) {
+    if (OpenList<Entry>::only_preferred && !eval_context.is_preferred())
         return;
-    if (evaluators[0]->is_dead_end() && allow_unsafe_pruning)
+    if (eval_context.is_heuristic_infinite(evaluators[0])
+        && allow_unsafe_pruning)
         return;
-    const std::vector<int> &key = last_evaluated_value;
+
+    vector<int> key;
+    key.reserve(evaluators.size());
+    for (ScalarEvaluator *evaluator : evaluators)
+        key.push_back(eval_context.get_heuristic_value_or_infinity(evaluator));
+
     buckets[key].push_back(entry);
     ++size;
 }
@@ -92,24 +99,6 @@ template<class Entry>
 void TieBreakingOpenList<Entry>::clear() {
     buckets.clear();
     size = 0;
-}
-
-template<class Entry>
-void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        evaluators[i]->evaluate(g, preferred);
-
-        if (evaluators[i]->is_dead_end())
-            last_evaluated_value[i] = std::numeric_limits<int>::max();
-        else
-            last_evaluated_value[i] = evaluators[i]->get_value();
-    }
-    last_preferred = preferred;
-}
-
-template<class Entry>
-const std::vector<int> &TieBreakingOpenList<Entry>::get_value() {
-    return last_evaluated_value;
 }
 
 template<class Entry>

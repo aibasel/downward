@@ -13,7 +13,6 @@ class EvaluationContext;
 template<class Entry>
 class OpenList : public Evaluator {
 protected:
-    virtual Evaluator *get_evaluator() = 0;
     bool only_preferred;
 
 public:
@@ -36,6 +35,10 @@ public:
     // be inserted
 
     virtual void boost_preferred() {}
+
+    virtual void evaluate(int /*g*/, bool /*preferred*/) override final {
+        ABORT("OpenList::evaluate() should disappear. Don't call it.");
+    }
 
     virtual bool is_dead_end() const override final {
         ABORT("OpenList::is_dead_end() should disappear. Don't call it.");

@@ -18,11 +18,6 @@ class BucketOpenList : public OpenList<Entry> {
     int size;
 
     ScalarEvaluator *evaluator;
-    int last_evaluated_value;
-    bool last_preferred;
-protected:
-    ScalarEvaluator *get_evaluator() {return evaluator; }
-
 public:
     explicit BucketOpenList(const Options &opts);
     virtual ~BucketOpenList() override;
@@ -33,7 +28,6 @@ public:
     virtual bool empty() const override;
     virtual void clear() override;
 
-    virtual void evaluate(int g, bool preferred) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);

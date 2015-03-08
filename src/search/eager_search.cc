@@ -313,6 +313,12 @@ void EagerSearch::update_f_value_statistics(
         heuristics[0]->set_evaluator_value(node.get_h());
         eval_context.evaluate_heuristic(f_evaluator);
         int new_f_value = eval_context.get_heuristic_value(f_evaluator);
+        /*
+        cout << "f = " << new_f_value
+             << " g = " << node.get_g()
+             << " h = " << eval_context.get_heuristic_value(heuristics[0])
+             << endl;
+        */
         search_progress.report_f_value(new_f_value);
     }
 }

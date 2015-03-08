@@ -20,9 +20,6 @@ class AlternationOpenList : public OpenList<Entry> {
     int boosting;
     int last_used_list;
 
-protected:
-    Evaluator *get_evaluator() {return this; }
-
 public:
     AlternationOpenList(const Options &opts);
     AlternationOpenList(const std::vector<OpenList<Entry> *> &sublists,
@@ -37,7 +34,6 @@ public:
     virtual void clear() override;
 
     // Evaluator interface
-    virtual void evaluate(int g, bool preferred) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     virtual void boost_preferred() override;

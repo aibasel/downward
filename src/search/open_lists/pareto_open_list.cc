@@ -85,7 +85,6 @@ ParetoOpenList<Entry>::ParetoOpenList(const std::vector<ScalarEvaluator *> &eval
                                       bool preferred_only, bool state_uniform_selection_)
     : OpenList<Entry>(preferred_only),
       state_uniform_selection(state_uniform_selection_), evaluators(evals) {
-    last_evaluated_value.resize(evaluators.size());
 }
 
 template<class Entry>
@@ -93,7 +92,6 @@ ParetoOpenList<Entry>::ParetoOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       state_uniform_selection(opts.get<bool>("state_uniform_selection")),
       evaluators(opts.get_list<ScalarEvaluator *>("evals")) {
-    last_evaluated_value.resize(evaluators.size());
 }
 
 template<class Entry>
@@ -102,10 +100,15 @@ ParetoOpenList<Entry>::~ParetoOpenList() {
 
 template<class Entry>
 void ParetoOpenList<Entry>::insert(
-    EvaluationContext &/*eval_context*/, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred && !last_preferred)
+    EvaluationContext &eval_context, const Entry &entry) {
+    if (OpenList<Entry>::only_preferred && !eval_context.is_preferred())
         return;
-    const std::vector<int> &key = last_evaluated_value;
+
+    vector<int> key;
+    key.reserve(evaluators.size());
+    for (ScalarEvaluator *evaluator : evaluators)
+        key.push_back(eval_context.get_heuristic_value_or_infinity(evaluator));
+
     Bucket &bucket = buckets[key];
     bool newkey = bucket.empty();
     bucket.push_back(entry);
@@ -164,19 +167,6 @@ void ParetoOpenList<Entry>::clear() {
     buckets.clear();
     nondominated.clear();
 }
-
-template<class Entry>
-void ParetoOpenList<Entry>::evaluate(int g, bool preferred) {
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        evaluators[i]->evaluate(g, preferred);
-        if (evaluators[i]->is_dead_end())
-            last_evaluated_value[i] = std::numeric_limits<int>::max();
-        else
-            last_evaluated_value[i] = evaluators[i]->get_value();
-    }
-    last_preferred = preferred;
-}
-
 
 template<class Entry>
 void ParetoOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {

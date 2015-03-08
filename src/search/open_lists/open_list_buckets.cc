@@ -48,12 +48,12 @@ BucketOpenList<Entry>::~BucketOpenList() {
 
 template<class Entry>
 void BucketOpenList<Entry>::insert(
-    EvaluationContext &/*eval_context*/, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred && !last_preferred)
+    EvaluationContext &eval_context, const Entry &entry) {
+    if (OpenList<Entry>::only_preferred && !eval_context.is_preferred())
         return;
-    if (get_evaluator()->is_dead_end())
+    if (eval_context.is_heuristic_infinite(evaluator))
         return;
-    int key = last_evaluated_value;
+    int key = eval_context.get_heuristic_value(evaluator);
     assert(key >= 0);
     int num_buckets = buckets.size();
     if (key >= num_buckets)
@@ -90,13 +90,6 @@ void BucketOpenList<Entry>::clear() {
     buckets.clear();
     lowest_bucket = numeric_limits<int>::max();
     size = 0;
-}
-
-template<class Entry>
-void BucketOpenList<Entry>::evaluate(int g, bool preferred) {
-    get_evaluator()->evaluate(g, preferred);
-    last_evaluated_value = get_evaluator()->get_value();
-    last_preferred = preferred;
 }
 
 template<class Entry>

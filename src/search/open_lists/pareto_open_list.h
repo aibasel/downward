@@ -44,16 +44,11 @@ class ParetoOpenList : public OpenList<Entry> {
     KeySet nondominated;
     bool state_uniform_selection;
     std::vector<ScalarEvaluator *> evaluators;
-    std::vector<int> last_evaluated_value;
 
     bool dominates(const KeyType &v1, const KeyType &v2);
     bool is_nondominated(const KeyType &vec,
                          KeySet &domination_candidates);
     void remove_key(const KeyType key);
-    bool last_preferred;
-
-protected:
-    Evaluator *get_evaluator() {return this; }
 
 public:
     ParetoOpenList(const std::vector<ScalarEvaluator *> &evals,
@@ -71,7 +66,6 @@ public:
     virtual void clear() override;
 
     // tuple evaluator interface
-    virtual void evaluate(int g, bool preferred) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 
     static OpenList<Entry> *_parse(OptionParser &p);
