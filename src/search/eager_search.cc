@@ -339,14 +339,6 @@ void EagerSearch::update_f_value_statistics(
     }
 }
 
-void EagerSearch::print_heuristic_values(const vector<int> &values) const {
-    for (size_t i = 0; i < values.size(); ++i) {
-        cout << values[i];
-        if (i != values.size() - 1)
-            cout << "/";
-    }
-}
-
 static SearchEngine *_parse(OptionParser &parser) {
     //open lists are currently registered with the parser on demand,
     //because for templated classes the usual method of registering
