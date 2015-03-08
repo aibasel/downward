@@ -1,6 +1,7 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_STANDARD_SCALAR_OPEN_LIST_H
 
+#include "../evaluation_context.h"
 #include "../scalar_evaluator.h"
 #include "../option_parser.h"
 
@@ -51,12 +52,12 @@ StandardScalarOpenList<Entry>::~StandardScalarOpenList() {
 
 template<class Entry>
 void StandardScalarOpenList<Entry>::insert(
-    EvaluationContext &/*eval_context*/, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred && !last_preferred)
+    EvaluationContext &eval_context, const Entry &entry) {
+    if (OpenList<Entry>::only_preferred && !eval_context.is_preferred())
         return;
-    if (get_evaluator()->is_dead_end())
+    if (eval_context.is_heuristic_infinite(evaluator))
         return;
-    int key = last_evaluated_value;
+    int key = eval_context.get_heuristic_value(evaluator);
     buckets[key].push_back(entry);
     ++size;
 }
@@ -90,13 +91,6 @@ template<class Entry>
 void StandardScalarOpenList<Entry>::clear() {
     buckets.clear();
     size = 0;
-}
-
-template<class Entry>
-void StandardScalarOpenList<Entry>::evaluate(int g, bool preferred) {
-    get_evaluator()->evaluate(g, preferred);
-    last_evaluated_value = get_evaluator()->get_value();
-    last_preferred = preferred;
 }
 
 template<class Entry>

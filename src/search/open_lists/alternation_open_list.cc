@@ -1,6 +1,7 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_ALTERNATION_OPEN_LIST_H
 
+#include "../evaluation_context.h"
 #include "../option_parser.h"
 
 #include <cassert>
@@ -90,12 +91,6 @@ template<class Entry>
 void AlternationOpenList<Entry>::clear() {
     for (OpenList<Entry> *sublist : open_lists)
         sublist->clear();
-}
-
-template<class Entry>
-void AlternationOpenList<Entry>::evaluate(int g, bool preferred) {
-    for (OpenList<Entry> *sublist : open_lists)
-        sublist->evaluate(g, preferred);
 }
 
 template<class Entry>
