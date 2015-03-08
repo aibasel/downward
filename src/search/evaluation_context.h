@@ -7,7 +7,15 @@
 #include <unordered_map>
 
 class GlobalOperator;
-class Heuristic;
+class ScalarEvaluator;
+
+/*
+  TODO/NOTE: The code currently uses "ScalarEvaluator" everywhere, but
+  this should eventually be replaced by "Heuristic" once these are
+  unified, so the naming conventions of the attributes and methods
+  already reflect the future where all occurrences of
+  "ScalarEvaluator" will be replaced by "Heuristic".
+*/
 
 /*
   TODO/NOTE: I'm a bit conflicted how to use the EvaluationContext
@@ -75,19 +83,24 @@ class EvaluationContext {
     };
 
     GlobalState state;
-    std::unordered_map<Heuristic *, HeuristicResult> heuristic_results;
+    int g_value;
+    bool preferred;
+    std::unordered_map<ScalarEvaluator *, HeuristicResult> heuristic_results;
 
-    const HeuristicResult &get_result(Heuristic *heur);
+    const HeuristicResult &get_result(ScalarEvaluator *heur);
 public:
-    EvaluationContext(const GlobalState &state);
+    EvaluationContext(const GlobalState &state, int g, bool preferred);
 
-    void evaluate_heuristic(Heuristic *heur);
+    void evaluate_heuristic(ScalarEvaluator *heur);
 
-    void hacky_set_evaluator_value(Heuristic *heur, int value);
+    void hacky_set_evaluator_value(ScalarEvaluator *heur, int value);
+
+    int get_g_value() const;
+    bool is_preferred() const;
 
     /*
-      Use get_heuristic_value() to query finite heuristic value. It is
-      an error (guarded by an assertion) to call this method for
+      Use get_heuristic_value() to query finite heuristic values. It
+      is an error (guarded by an assertion) to call this method for
       states with infinite heuristic values, because such states often
       need to be treated specially and we want to catch cases where we
       forget to do this.
@@ -96,11 +109,11 @@ public:
       treated uniformly, use get_heuristic_value_or_infinity(), which
       returns numeric_limits<int>::max() for infinite estimates.
     */
-    bool is_heuristic_infinite(Heuristic *heur);
-    int get_heuristic_value(Heuristic *heur);
-    int get_heuristic_value_or_infinity(Heuristic *heur);
+    bool is_heuristic_infinite(ScalarEvaluator *heur);
+    int get_heuristic_value(ScalarEvaluator *heur);
+    int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
     const std::vector<const GlobalOperator *> &get_preferred_operators(
-        Heuristic *heur);
+        ScalarEvaluator *heur);
 
     /*
       Determine if the state is a dead-end, using the information of

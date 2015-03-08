@@ -24,7 +24,7 @@ protected:
     ScalarEvaluator *get_evaluator() {return evaluator; }
 
 public:
-    BucketOpenList(const Options &opts);
+    explicit BucketOpenList(const Options &opts);
     virtual ~BucketOpenList() override;
 
     virtual void insert(EvaluationContext &eval_context,

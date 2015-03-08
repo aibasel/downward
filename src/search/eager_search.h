@@ -25,11 +25,14 @@ class EagerSearch : public SearchEngine {
     OpenList<StateID> *open_list;
     ScalarEvaluator *f_evaluator;
 
-    EvaluationContext evaluate_state(const GlobalState &state);
+    EvaluationContext evaluate_state(
+        const GlobalState &state, int g, bool preferred);
 protected:
     SearchStatus step();
     std::pair<SearchNode, bool> fetch_next_node();
-    void update_jump_statistic(const SearchNode &node);
+    void start_f_value_statistics(const EvaluationContext &eval_context);
+    void update_f_value_statistics(const GlobalState &state,
+                                   const SearchNode &node);
     void print_heuristic_values(const std::vector<int> &values) const;
     void reward_progress();
 

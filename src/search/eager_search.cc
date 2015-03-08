@@ -30,12 +30,11 @@ EagerSearch::EagerSearch(const Options &opts)
     }
 }
 
-EvaluationContext EagerSearch::evaluate_state(const GlobalState &state) {
-    EvaluationContext eval_context(state);
-    for (Heuristic *heur : heuristics) {
-        heur->evaluate(state);
+EvaluationContext EagerSearch::evaluate_state(
+    const GlobalState &state, int g, bool preferred) {
+    EvaluationContext eval_context(state, g, preferred);
+    for (Heuristic *heur : heuristics)
         eval_context.evaluate_heuristic(heur);
-    }
     search_progress.inc_evaluations(heuristics.size());
     return eval_context;
 }
@@ -73,25 +72,22 @@ void EagerSearch::initialize() {
     assert(!heuristics.empty());
 
     const GlobalState &initial_state = g_initial_state();
-    EvaluationContext eval_context = evaluate_state(initial_state);
+    // Note: we consider the initial state as reached by a preferred
+    // operator.
+    EvaluationContext eval_context = evaluate_state(initial_state, 0, true);
     search_progress.inc_evaluated_states();
-    open_list->evaluate(0, false);
 
     if (eval_context.is_dead_end()) {
         cout << "Initial state is a dead end." << endl;
     } else {
         search_progress.set_initial_h_values(eval_context);
-        if (f_evaluator) {
-            f_evaluator->evaluate(0, false);
-            search_progress.report_f_value(f_evaluator->get_value());
-        }
+        start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial(heuristics[0]->get_value());
 
         open_list->insert(eval_context, initial_state.get_id());
     }
 }
-
 
 void EagerSearch::statistics() const {
     search_progress.print_statistics();
@@ -161,7 +157,8 @@ SearchStatus EagerSearch::step() {
         if (succ_node.is_new()) {
             // We have not seen this state before.
             // Evaluate and create a new node.
-            EvaluationContext eval_context = evaluate_state(succ_state);
+            EvaluationContext eval_context = evaluate_state(
+                succ_state, succ_node.get_g(), is_preferred);
             search_progress.inc_evaluated_states();
             succ_node.clear_h_dirty();
 
@@ -174,7 +171,6 @@ SearchStatus EagerSearch::step() {
             int succ_h = heuristics[0]->get_heuristic();
             succ_node.open(succ_h, node, op);
 
-            open_list->evaluate(succ_node.get_g(), is_preferred);
             open_list->insert(eval_context, succ_state.get_id());
             if (search_progress.check_h_progress(eval_context, succ_node.get_g())) {
                 reward_progress();
@@ -194,7 +190,8 @@ SearchStatus EagerSearch::step() {
                 }
                 succ_node.reopen(node, op);
 
-                EvaluationContext eval_context(succ_state);
+                EvaluationContext eval_context(
+                    succ_state, succ_node.get_g(), is_preferred);
                 /*
                   TODO: The following is of course bogus and should be
                   fixed soon.
@@ -202,10 +199,6 @@ SearchStatus EagerSearch::step() {
                 eval_context.hacky_set_evaluator_value(
                     heuristics[0], succ_node.get_h());
                 heuristics[0]->set_evaluator_value(succ_node.get_h());
-                // TODO: this appears fishy to me. Why is here only heuristic[0]
-                // involved? Is this still feasible in the current version?
-                open_list->evaluate(succ_node.get_g(), is_preferred);
-
                 open_list->insert(eval_context, succ_state.get_id());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
@@ -261,10 +254,9 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             assert(node.get_h() == pushed_h);
             if (!node.is_closed() && node.is_h_dirty()) {
                 EvaluationContext eval_context = evaluate_state(
-                    node.get_state());
+                    node.get_state(), node.get_g(), false);
                 node.clear_h_dirty();
 
-                open_list->evaluate(node.get_g(), false);
                 if (eval_context.is_dead_end()) {
                     node.mark_as_dead_end();
                     search_progress.inc_dead_ends();
@@ -282,7 +274,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
 
         node.close();
         assert(!node.is_dead_end());
-        update_jump_statistic(node);
+        update_f_value_statistics(s, node);
         search_progress.inc_expanded();
         return make_pair(node, true);
     }
@@ -298,11 +290,29 @@ void EagerSearch::dump_search_space() {
     search_space.dump();
 }
 
-void EagerSearch::update_jump_statistic(const SearchNode &node) {
+void EagerSearch::start_f_value_statistics(
+    const EvaluationContext &eval_context) {
     if (f_evaluator) {
+        /* TODO: Copying the context here is expensive and ugly, but I
+           want eval_context to be const here for now while we're
+           cleaning up the rest of the code. This should of course be
+           improved later. */
+        EvaluationContext copied_context(eval_context);
+        copied_context.evaluate_heuristic(f_evaluator);
+        int f_value = copied_context.get_heuristic_value(f_evaluator);
+        search_progress.report_f_value(f_value);
+    }
+}
+
+void EagerSearch::update_f_value_statistics(
+    const GlobalState &state, const SearchNode &node) {
+    if (f_evaluator) {
+        EvaluationContext eval_context(state, node.get_g(), false);
+        // TODO: The following is of course bogus and should be fixed soon.
+        eval_context.hacky_set_evaluator_value(heuristics[0], node.get_h());
         heuristics[0]->set_evaluator_value(node.get_h());
-        f_evaluator->evaluate(node.get_g(), false);
-        int new_f_value = f_evaluator->get_value();
+        eval_context.evaluate_heuristic(f_evaluator);
+        int new_f_value = eval_context.get_heuristic_value(f_evaluator);
         search_progress.report_f_value(new_f_value);
     }
 }
