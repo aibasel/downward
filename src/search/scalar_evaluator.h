@@ -2,14 +2,18 @@
 #define SCALAR_EVALUATOR_H
 
 #include "evaluation_result.h"
-#include "evaluator.h"
-#include "utilities.h"
+
+#include <set>
 
 class EvaluationContext;
+class Heuristic;
 
-class ScalarEvaluator : public Evaluator {
+class ScalarEvaluator {
 public:
     virtual ~ScalarEvaluator() {}
+
+    virtual bool dead_end_is_reliable() const = 0;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
 
     /*
       We should make sure that evaluators don't directly call
@@ -21,14 +25,6 @@ public:
     */
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) = 0;
-
-    virtual bool is_dead_end() const override final {
-        ABORT("ScalarEvaluator::is_dead_end() should disappear. Don't call it.");
-    }
-
-    virtual void evaluate(int /*g*/, bool /*preferred*/) override final {
-        ABORT("ScalarEvaluator::evaluate() should disappear. Don't call it.");
-    }
 };
 
 #endif
