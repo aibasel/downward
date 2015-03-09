@@ -285,7 +285,7 @@ bool LPSolver::has_optimal_solution() const {
     assert(is_solved);
     try {
         return !lp_solver->isProvenPrimalInfeasible() &&
-               !lp_solver->isProvenDualInfeasible () &&
+               !lp_solver->isProvenDualInfeasible() &&
                lp_solver->isProvenOptimal();
     } catch (CoinError &error) {
         handle_coin_error(error);
