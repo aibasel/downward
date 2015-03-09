@@ -2,7 +2,7 @@
 #define UTILITIES_H
 
 #include <cstdlib>
-#include <ostream>
+#include <iostream>
 #include <utility>
 #include <vector>
 #include <tr1/functional>
@@ -25,7 +25,8 @@
 #define ABORT(msg) \
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \
-                   << ", line " << __LINE__ << ": " << msg << std::endl), \
+                   << ", line " << __LINE__ << ": " << std::endl \
+                   << (msg) << std::endl), \
         (abort()), \
         (void)0 \
     )
