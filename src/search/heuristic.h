@@ -12,6 +12,14 @@ class GlobalState;
 class OptionParser;
 class Options;
 
+/*
+  TODO: Heuristic still has some internal state related to the
+  "current evaluation" that should go away because we're moving away
+  from thismodel, namely the "preferred_operators" variable. We can
+  get rid of it, for example, by passing an EvaluationResult value by
+  reference into compute_heuristic, or having it return one.
+*/
+
 class Heuristic : public ScalarEvaluator {
     bool initialized;
 
@@ -61,7 +69,7 @@ public:
     static Options default_options();
 
     virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) override;
+        EvaluationContext &eval_context) override final;
 };
 
 #endif
