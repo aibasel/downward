@@ -14,9 +14,9 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : task(opts.get<TaskProxy *>("task")),
+    : initialized(false),
+      task(opts.get<TaskProxy *>("task")),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
-    heuristic = NOT_INITIALIZED;
 }
 
 Heuristic::~Heuristic() {
@@ -33,34 +33,7 @@ void Heuristic::set_preferred(OperatorProxy op) {
     set_preferred(op.get_global_operator());
 }
 
-void Heuristic::evaluate(const GlobalState &state) {
-    if (heuristic == NOT_INITIALIZED)
-        initialize();
-    preferred_operators.clear();
-    heuristic = compute_heuristic(state);
-    for (size_t i = 0; i < preferred_operators.size(); ++i)
-        preferred_operators[i]->unmark();
-    assert(heuristic == DEAD_END || heuristic >= 0);
-
-    if (heuristic == DEAD_END) {
-        // It is ok to have preferred operators in dead-end states.
-        // This allows a heuristic to mark preferred operators on-the-fly,
-        // selecting the first ones before it is clear that all goals
-        // can be reached.
-        preferred_operators.clear();
-    }
-
-#ifndef NDEBUG
-    if (heuristic != DEAD_END) {
-        for (size_t i = 0; i < preferred_operators.size(); ++i)
-            assert(preferred_operators[i]->is_applicable(state));
-    }
-#endif
-    evaluator_value = heuristic;
-}
-
 void Heuristic::get_preferred_operators(std::vector<const GlobalOperator *> &result) {
-    assert(heuristic >= 0);
     result.insert(result.end(),
                   preferred_operators.begin(),
                   preferred_operators.end());
@@ -108,7 +81,37 @@ Options Heuristic::default_options() {
 
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
-    evaluate(eval_context.get_state());
+
+    if (!initialized) {
+        initialize();
+        initialized = true;
+    }
+
+    preferred_operators.clear();
+    const GlobalState &state = eval_context.get_state();
+    int heuristic = compute_heuristic(state);
+    for (size_t i = 0; i < preferred_operators.size(); ++i)
+        preferred_operators[i]->unmark();
+    assert(heuristic == DEAD_END || heuristic >= 0);
+
+    if (heuristic == DEAD_END) {
+        /*
+          It is permissible to mark preferred operators for dead-end
+          states (thus allowing a heuristic to mark them on-the-fly
+          before knowing the final result), but if it turns out we
+          have a dead end, we don't want to actually report any
+          preferred operators.
+        */
+        preferred_operators.clear();
+    }
+
+#ifndef NDEBUG
+    if (heuristic != DEAD_END) {
+        for (size_t i = 0; i < preferred_operators.size(); ++i)
+            assert(preferred_operators[i]->is_applicable(state));
+    }
+#endif
+
     result.set_h_value(heuristic);
     vector<const GlobalOperator *> pref_ops;
     get_preferred_operators(pref_ops);
