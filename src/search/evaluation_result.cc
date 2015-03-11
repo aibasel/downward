@@ -32,10 +32,7 @@ void EvaluationResult::set_preferred_operators(
     const std::vector<const GlobalOperator *> & preferred_ops) {
     /*
       TODO: Make this more efficient, for example by enabling
-      movement? Or perhaps we don't want a separate set of preferred
-      operators in each evaluation result in the first place, only
-      storing preferred operators once in the EvaluationContext
-      instead?
+      movement?
     */
     preferred_operators = preferred_ops;
 }
