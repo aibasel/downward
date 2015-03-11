@@ -13,11 +13,7 @@ class OptionParser;
 class Options;
 
 class Heuristic : public ScalarEvaluator {
-    enum {NOT_INITIALIZED = -2};
-    int heuristic;
-    int evaluator_value; // usually equal to heuristic but can be different
-    // if set with set_evaluator_value which is done if we use precalculated
-    // estimates, eg. when re-opening a search node
+    bool initialized;
 
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
@@ -39,7 +35,6 @@ protected:
     // TODO: Make private once all heuristics use the TaskProxy class.
     State convert_global_state(const GlobalState &global_state) const;
 
-    void evaluate(const GlobalState &state);
 public:
     Heuristic(const Options &options);
     virtual ~Heuristic() override;
