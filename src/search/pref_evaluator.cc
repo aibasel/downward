@@ -12,10 +12,6 @@ PrefEvaluator::PrefEvaluator() {
 PrefEvaluator::~PrefEvaluator() {
 }
 
-bool PrefEvaluator::dead_end_is_reliable() const {
-    return true;
-}
-
 EvaluationResult PrefEvaluator::compute_result(
     EvaluationContext &eval_context) {
     EvaluationResult result;

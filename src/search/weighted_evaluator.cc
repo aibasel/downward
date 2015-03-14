@@ -21,8 +21,8 @@ WeightedEvaluator::WeightedEvaluator(ScalarEvaluator *eval, int weight)
 WeightedEvaluator::~WeightedEvaluator() {
 }
 
-bool WeightedEvaluator::dead_end_is_reliable() const {
-    return evaluator->dead_end_is_reliable();
+bool WeightedEvaluator::dead_ends_are_reliable() const {
+    return evaluator->dead_ends_are_reliable();
 }
 
 EvaluationResult WeightedEvaluator::compute_result(

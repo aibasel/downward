@@ -23,7 +23,7 @@ public:
     virtual ~CombiningEvaluator() override;
 
     /*
-      Note: dead_end_is_reliable() is a state-independent method, so
+      Note: dead_ends_are_reliable() is a state-independent method, so
       it only returns true if all subevaluators report dead ends reliably.
 
       Note that we could get more fine-grained information when
@@ -35,7 +35,7 @@ public:
       compute it.
     */
 
-    virtual bool dead_end_is_reliable() const override;
+    virtual bool dead_ends_are_reliable() const override;
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
