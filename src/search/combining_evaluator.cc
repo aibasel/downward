@@ -11,14 +11,14 @@ CombiningEvaluator::CombiningEvaluator(
     : subevaluators(subevaluators_) {
     all_dead_ends_are_reliable = true;
     for (const ScalarEvaluator *subevaluator : subevaluators)
-        if (!subevaluator->dead_end_is_reliable())
+        if (!subevaluator->dead_ends_are_reliable())
             all_dead_ends_are_reliable = false;
 }
 
 CombiningEvaluator::~CombiningEvaluator() {
 }
 
-bool CombiningEvaluator::dead_end_is_reliable() const {
+bool CombiningEvaluator::dead_ends_are_reliable() const {
     return all_dead_ends_are_reliable;
 }
 

@@ -27,7 +27,7 @@ int IPCMaxHeuristic::compute_heuristic(const GlobalState &state) {
         if (evaluators[i]->is_dead_end()) {
             value = numeric_limits<int>::max();
             dead_end = true;
-            if (evaluators[i]->dead_end_is_reliable()) {
+            if (evaluators[i]->dead_ends_are_reliable()) {
                 dead_end_reliable = true;
                 value = -1;
                 break;

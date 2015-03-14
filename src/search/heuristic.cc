@@ -39,13 +39,11 @@ void Heuristic::get_preferred_operators(std::vector<const GlobalOperator *> &res
                   preferred_operators.end());
 }
 
-bool Heuristic::reach_state(const GlobalState & /*parent_state*/,
-                            const GlobalOperator & /*op*/, const GlobalState & /*state*/) {
+bool Heuristic::reach_state(
+    const GlobalState & /*parent_state*/,
+    const GlobalOperator & /*op*/,
+    const GlobalState & /*state*/) {
     return false;
-}
-
-bool Heuristic::dead_end_is_reliable() const {
-    return dead_ends_are_reliable();
 }
 
 int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {

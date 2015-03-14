@@ -69,6 +69,7 @@ HEADERS = \
           relaxation_heuristic.h \
           rng.h \
           root_task.h \
+          scalar_evaluator.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \

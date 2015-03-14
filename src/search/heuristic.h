@@ -50,15 +50,11 @@ public:
     // changed to virtual, so HeuristicProxy can delegate this:
     virtual void get_preferred_operators(
         std::vector<const GlobalOperator *> &result);
-    virtual bool dead_ends_are_reliable() const {
-        return true;
-    }
+
     virtual bool reach_state(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state);
 
-    // virtual methods inherited from ScalarEvaluator:
-    virtual bool dead_end_is_reliable() const override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
         hset.insert(this);
     }

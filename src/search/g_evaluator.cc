@@ -5,16 +5,6 @@
 #include "option_parser.h"
 #include "plugin.h"
 
-GEvaluator::GEvaluator() {
-}
-
-GEvaluator::~GEvaluator() {
-}
-
-bool GEvaluator::dead_end_is_reliable() const {
-    return true;
-}
-
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
     result.set_h_value(eval_context.get_g_value());
@@ -22,8 +12,9 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 }
 
 static ScalarEvaluator *_parse(OptionParser &parser) {
-    parser.document_synopsis("g-value evaluator",
-                             "Returns the current g-value of the search.");
+    parser.document_synopsis(
+        "g-value evaluator",
+        "Returns the g-value (path cost) of the search node.");
     parser.parse();
     if (parser.dry_run())
         return 0;
