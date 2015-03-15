@@ -85,6 +85,7 @@ HEADERS = \
           weighted_evaluator.h \
           \
           open_lists/alternation_open_list.h \
+          open_lists/open_list.h \
           open_lists/open_list_buckets.h \
           open_lists/pareto_open_list.h \
           open_lists/standard_scalar_open_list.h \
