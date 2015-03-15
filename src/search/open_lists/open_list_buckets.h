@@ -18,12 +18,15 @@ class BucketOpenList : public OpenList<Entry> {
     int size;
 
     ScalarEvaluator *evaluator;
+
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
 public:
     explicit BucketOpenList(const Options &opts);
     virtual ~BucketOpenList() override;
 
-    virtual void insert(EvaluationContext &eval_context,
-                        const Entry &entry) override;
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;

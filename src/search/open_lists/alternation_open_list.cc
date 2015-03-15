@@ -52,7 +52,7 @@ AlternationOpenList<Entry>::~AlternationOpenList() {
 }
 
 template<class Entry>
-void AlternationOpenList<Entry>::insert(
+void AlternationOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     for (size_t i = 0; i < open_lists.size(); ++i)
         open_lists[i]->insert(eval_context, entry);
@@ -103,7 +103,7 @@ void AlternationOpenList<Entry>::get_involved_heuristics(
 template<class Entry>
 void AlternationOpenList<Entry>::boost_preferred() {
     for (size_t i = 0; i < open_lists.size(); ++i)
-        if (open_lists[i]->only_preferred_states())
+        if (open_lists[i]->only_contains_preferred_entries())
             priorities[i] -= boosting;
 }
 

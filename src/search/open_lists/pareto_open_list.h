@@ -49,6 +49,10 @@ class ParetoOpenList : public OpenList<Entry> {
                          KeySet &domination_candidates);
     void remove_key(const KeyType key);
 
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
 public:
     ParetoOpenList(const std::vector<ScalarEvaluator *> &evals,
                    bool preferred_only, bool state_uniform_selection_);
@@ -56,8 +60,6 @@ public:
     virtual ~ParetoOpenList() override;
 
     // open list interface
-    virtual void insert(EvaluationContext &eval_context,
-                        const Entry &entry) override;
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override {
         return nondominated.empty();

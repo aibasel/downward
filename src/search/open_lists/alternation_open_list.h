@@ -20,15 +20,17 @@ class AlternationOpenList : public OpenList<Entry> {
     int boosting;
     int last_used_list;
 
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
 public:
-    AlternationOpenList(const Options &opts);
+    explicit AlternationOpenList(const Options &opts);
     AlternationOpenList(const std::vector<OpenList<Entry> *> &sublists,
                         int boost_influence);
     virtual ~AlternationOpenList() override;
 
     // OpenList interface
-    virtual void insert(EvaluationContext &eval_context,
-                        const Entry &entry) override;
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;

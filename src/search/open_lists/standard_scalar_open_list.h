@@ -20,14 +20,17 @@ class StandardScalarOpenList : public OpenList<Entry> {
     int size;
 
     ScalarEvaluator *evaluator;
+
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
 public:
     explicit StandardScalarOpenList(const Options &opts);
     StandardScalarOpenList(ScalarEvaluator *eval,
                            bool preferred_only);
     virtual ~StandardScalarOpenList() override;
 
-    virtual void insert(EvaluationContext &eval_context,
-                        const Entry &entry) override;
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;

@@ -54,10 +54,8 @@ TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
 }
 
 template<class Entry>
-void TieBreakingOpenList<Entry>::insert(
+void TieBreakingOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred_states() && !eval_context.is_preferred())
-        return;
     if (eval_context.is_heuristic_infinite(evaluators[0])
         && allow_unsafe_pruning)
         return;

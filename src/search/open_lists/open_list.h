@@ -45,9 +45,17 @@ protected:
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context, const Entry &entry);
 
+    /*
+      Insert an entry into the open list. This is called by insert, so
+      see comments there. This method will not be called if
+      is_reliable_dead_end() is true or if only_preferred is true and
+      the entry to be inserted is not preferred. Hence, these
+      conditions need not be checked by the implementation.
+    */
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) = 0;
+
 public:
-    // TODO: Not sure if this preferred_only argument belongs here and
-    //       should stay.
     explicit OpenList(bool preferred_only = false);
     virtual ~OpenList() = default;
 
@@ -58,14 +66,17 @@ public:
       not want to insert (e.g. because they have an infinite estimate
       or because it is a non-preferred successor and the open list
       only wants preferred successors. In this case, the open list
-      should simply not insert the entry.
+      will remain unchanged.
 
       This method will often compute heuristic estimates etc. as a
       side effect, which is handled within the EvaluationContext
       class.
+
+      Implementation note: uses the template method pattern, with
+      do_insertion performing the bulk of the work. See comments for
+      do_insertion.
     */
-    virtual void insert(EvaluationContext &eval_context,
-                        const Entry &entry) = 0;
+    void insert(EvaluationContext &eval_context, const Entry &entry);
 
     /*
       Remove and return the entry that should be expanded next.
@@ -116,14 +127,22 @@ public:
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
 
     /*
-      TODO: The following method needs cleaning up. Do we need it at
-      all? Old comment follows:
+      Accessor method for only_preferred.
 
-      should only be used within alternation open lists a search does
-      not have to care about this because it is handled by the open
-      list whether the entry will be inserted
+      The only use case for this at the moment is for alternation open
+      lists, which boost those sublists which only include preferred
+      entries.
+
+      TODO: Is this sufficient reason to have this method? We could
+      get rid of it if instead AlternationOpenList would be passed
+      information upon construction which lists should be boosted on
+      progress. This could also make the code more general (it would
+      be easy to boost different lists by different amounts, and
+      boosting would not have to be tied to preferredness). We should
+      discuss the best way to proceed here.
     */
-    bool only_preferred_states() const {
+
+    bool only_contains_preferred_entries() const {
         return only_preferred;
     }
 };
