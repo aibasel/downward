@@ -25,6 +25,10 @@ class TieBreakingOpenList : public OpenList<Entry> {
 
     int dimension() const;
 
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
 public:
     TieBreakingOpenList(const Options &opts);
     TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
@@ -32,8 +36,6 @@ public:
     virtual ~TieBreakingOpenList() override;
 
     // open list interface
-    virtual void insert(EvaluationContext &eval_context,
-                        const Entry &entry) override;
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;

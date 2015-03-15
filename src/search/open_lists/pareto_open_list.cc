@@ -99,11 +99,8 @@ ParetoOpenList<Entry>::~ParetoOpenList() {
 }
 
 template<class Entry>
-void ParetoOpenList<Entry>::insert(
+void ParetoOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred_states() && !eval_context.is_preferred())
-        return;
-
     vector<int> key;
     key.reserve(evaluators.size());
     for (ScalarEvaluator *evaluator : evaluators)
