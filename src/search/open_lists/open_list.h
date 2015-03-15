@@ -1,6 +1,7 @@
 #ifndef OPEN_LISTS_OPEN_LIST_H
 #define OPEN_LISTS_OPEN_LIST_H
 
+#include <set>
 #include <vector>
 
 class EvaluationContext;
