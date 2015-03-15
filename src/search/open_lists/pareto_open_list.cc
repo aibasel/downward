@@ -101,7 +101,7 @@ ParetoOpenList<Entry>::~ParetoOpenList() {
 template<class Entry>
 void ParetoOpenList<Entry>::insert(
     EvaluationContext &eval_context, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred && !eval_context.is_preferred())
+    if (OpenList<Entry>::only_preferred_states() && !eval_context.is_preferred())
         return;
 
     vector<int> key;

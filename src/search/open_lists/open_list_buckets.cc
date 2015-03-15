@@ -49,7 +49,7 @@ BucketOpenList<Entry>::~BucketOpenList() {
 template<class Entry>
 void BucketOpenList<Entry>::insert(
     EvaluationContext &eval_context, const Entry &entry) {
-    if (OpenList<Entry>::only_preferred && !eval_context.is_preferred())
+    if (OpenList<Entry>::only_preferred_states() && !eval_context.is_preferred())
         return;
     if (eval_context.is_heuristic_infinite(evaluator))
         return;
