@@ -78,21 +78,19 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
     int num_labels_after_reduction = 0;
     for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
         const Block &block = *it;
-        vector<Label *> equivalent_labels;
         vector<int> equivalent_label_nos;
         for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
             assert(*jt < static_cast<int>(labels.size()));
             Label *label = labels[*jt];
             if (label) {
                 // only consider non-reduced labels
-                equivalent_labels.push_back(label);
                 equivalent_label_nos.push_back(*jt);
                 ++num_labels;
             }
         }
-        if (equivalent_labels.size() > 1) {
+        if (equivalent_label_nos.size() > 1) {
             int new_label_no = labels.size();
-            Label *new_label = new Label(equivalent_labels[0]->get_cost());
+            Label *new_label = new Label(labels[equivalent_label_nos[0]]->get_cost());
             labels.push_back(new_label);
             for (size_t i = 0; i < equivalent_label_nos.size(); ++i) {
                 int old_label_no = equivalent_label_nos[i];
@@ -101,7 +99,7 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
             }
             label_mapping.push_back(make_pair(new_label_no, equivalent_label_nos));
         }
-        if (!equivalent_labels.empty()) {
+        if (!equivalent_label_nos.empty()) {
             ++num_labels_after_reduction;
         }
     }
