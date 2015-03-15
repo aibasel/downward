@@ -8,11 +8,9 @@ class EvaluationContext;
 
 template<class Entry>
 class OpenList {
-protected:
-    // TODO: Get rid of this? If we want it, perhaps we don't want it
-    // in the base class.
     bool only_preferred;
 
+protected:
     /*
       Return true if the open list can guarantee that the state
       associated with the evaluation context is unsolvable.
