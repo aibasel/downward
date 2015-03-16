@@ -57,8 +57,8 @@ public:
     virtual int insert(const Entry &entry) override {
         std::vector<int> key;
         key.reserve(evaluators.size());
-        for (ScalarEvaluator *e : evaluators) {
-            key.push_back(e->get_value());
+        for (ScalarEvaluator *evaluator : evaluators) {
+            key.push_back(evaluator->get_value());
         }
 
         typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(key);
@@ -121,10 +121,10 @@ public:
 
         dead_end = true;
         dead_end_reliable = false;
-        for (ScalarEvaluator *e : evaluators) {
-            e->evaluate(g, preferred);
-            if (e->is_dead_end()) {
-                if (e->dead_end_is_reliable()) {
+        for (ScalarEvaluator *evaluator : evaluators) {
+            evaluator->evaluate(g, preferred);
+            if (evaluator->is_dead_end()) {
+                if (evaluator->dead_end_is_reliable()) {
                     dead_end = true; // Might have been set to false.
                     dead_end_reliable = true;
                     break;
@@ -144,8 +144,8 @@ public:
     }
 
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
-        for (ScalarEvaluator *e : evaluators) {
-            e->get_involved_heuristics(hset);
+        for (ScalarEvaluator *evaluator : evaluators) {
+            evaluator->get_involved_heuristics(hset);
         }
     }
 
