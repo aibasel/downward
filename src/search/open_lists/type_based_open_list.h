@@ -3,15 +3,14 @@
 
 #include "open_list.h"
 
-#include "../plugin.h"
+#include "../globals.h"
+#include "../option_parser.h"
+#include "../rng.h"
+#include "../utilities.h"
 
 #include <cstddef>
 #include <unordered_map>
 #include <vector>
-
-class Options;
-class OptionParser;
-class ScalarEvaluator;
 
 /*
   Type-based open list that uses multiple evaluators to put nodes into buckets.
@@ -44,25 +43,129 @@ protected:
     Evaluator *get_evaluator() {return this; }
 
 public:
-    explicit TypeBasedOpenList(const Options &opts);
-    virtual ~TypeBasedOpenList();
+    explicit TypeBasedOpenList(const Options &opts)
+        : evaluators(opts.get_list<ScalarEvaluator *>("evaluators")),
+          size(0),
+          dead_end(false),
+          dead_end_reliable(false) {
+    }
+    virtual ~TypeBasedOpenList() {
+    }
 
-    // OpenList interface
-    virtual int insert(const Entry &entry);
-    virtual Entry remove_min(std::vector<int> *key = 0);
-    virtual bool empty() const;
-    virtual void clear();
+    virtual int insert(const Entry &entry) {
+        std::vector<int> key;
+        key.reserve(evaluators.size());
+        for (std::vector<ScalarEvaluator *>::iterator it = evaluators.begin(); it != evaluators.end(); ++it) {
+            key.push_back((*it)->get_value());
+        }
 
-    // Evaluator interface
-    virtual void evaluate(int g, bool preferred);
-    virtual bool is_dead_end() const;
-    virtual bool dead_end_is_reliable() const;
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset);
+        typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(key);
+        if (it == key_to_bucket_index.end()) {
+            keys_and_buckets.push_back(make_pair(key, Bucket {entry}
+                                                 ));
+            key_to_bucket_index[key] = keys_and_buckets.size() - 1;
+        } else {
+            size_t bucket_index = it->second;
+            assert(bucket_index < keys_and_buckets.size());
+            keys_and_buckets[bucket_index].second.push_back(entry);
+        }
 
-    static OpenList<Entry> *_parse(OptionParser &parser);
+        ++size;
+        return 1;
+    }
+
+    virtual Entry remove_min(std::vector<int> *key = 0) {
+        assert(size > 0);
+        size_t bucket_id = g_rng(keys_and_buckets.size());
+        std::pair<Key, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
+        Bucket &bucket = key_and_bucket.second;
+
+        if (key) {
+            assert(key->empty());
+            *key = key_and_bucket.first;
+        }
+
+        int pos = g_rng(bucket.size());
+        Entry result = bucket[pos];
+
+        swap_and_pop_from_vector(bucket, pos);
+        if (bucket.empty()) {
+            // Swap the empty bucket with the last bucket, then delete it.
+            Key key_copy = key_and_bucket.first;
+            Key moved_bucket_key = keys_and_buckets.back().first;
+            key_to_bucket_index[moved_bucket_key] = bucket_id;
+            assert(bucket_id < keys_and_buckets.size());
+            swap(keys_and_buckets[bucket_id], keys_and_buckets.back());
+            keys_and_buckets.pop_back();
+            key_to_bucket_index.erase(key_copy);
+        }
+        --size;
+        return result;
+    }
+
+    virtual bool empty() const {
+        return size == 0;
+    }
+
+    virtual void clear() {
+        keys_and_buckets.clear();
+        key_to_bucket_index.clear();
+        size = 0;
+    }
+
+    virtual void evaluate(int g, bool preferred) {
+        // The code is taken from AlternationOpenList
+        // TODO: see issue494, common implementation of evaluate for multi evaluator open lists
+
+        dead_end = true;
+        dead_end_reliable = false;
+        for (size_t i = 0; i < evaluators.size(); ++i) {
+            evaluators[i]->evaluate(g, preferred);
+            if (evaluators[i]->is_dead_end()) {
+                if (evaluators[i]->dead_end_is_reliable()) {
+                    dead_end = true; // Might have been set to false.
+                    dead_end_reliable = true;
+                    break;
+                }
+            } else {
+                dead_end = false;
+            }
+        }
+    }
+
+    virtual bool is_dead_end() const {
+        return dead_end;
+    }
+
+    virtual bool dead_end_is_reliable() const {
+        return dead_end_reliable;
+    }
+
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) {
+        for (size_t i = 0; i < evaluators.size(); ++i)
+            evaluators[i]->get_involved_heuristics(hset);
+    }
+
+    static OpenList<Entry> *_parse(OptionParser &parser) {
+        parser.document_synopsis(
+            "Type-based open list",
+            "Type-based open list that uses multiple evaluators to put nodes "
+            "into buckets. A bucket contains all entries with the same evaluator results. "
+            "When retrieving a node, a bucket is chosen "
+            "uniformly at random and one of the contained nodes is selected "
+            "uniformly randomly.");
+        parser.add_list_option<ScalarEvaluator *>("evaluators", "Evaluators used to determine the bucket for each entry.");
+
+        Options opts = parser.parse();
+        if (parser.help_mode())
+            return 0;
+
+        opts.verify_list_non_empty<ScalarEvaluator *>("evaluators");
+        if (parser.dry_run())
+            return 0;
+        else
+            return new TypeBasedOpenList<Entry>(opts);
+    }
 };
 
-#include "type_based_open_list.cc"
-
-// HACK! Need a better strategy of dealing with templates, also in the Makefile.
 #endif
