@@ -40,7 +40,9 @@ class TypeBasedOpenList : public OpenList<Entry> {
     bool dead_end_reliable;
 
 protected:
-    Evaluator *get_evaluator() {return this; }
+    virtual Evaluator *get_evaluator() override {
+        return this;
+    }
 
 public:
     explicit TypeBasedOpenList(const Options &opts)
@@ -49,10 +51,10 @@ public:
           dead_end(false),
           dead_end_reliable(false) {
     }
-    virtual ~TypeBasedOpenList() {
-    }
 
-    virtual int insert(const Entry &entry) {
+    virtual ~TypeBasedOpenList() override = default;
+
+    virtual int insert(const Entry &entry) override {
         std::vector<int> key;
         key.reserve(evaluators.size());
         for (std::vector<ScalarEvaluator *>::iterator it = evaluators.begin(); it != evaluators.end(); ++it) {
@@ -74,7 +76,7 @@ public:
         return 1;
     }
 
-    virtual Entry remove_min(std::vector<int> *key = 0) {
+    virtual Entry remove_min(std::vector<int> *key = 0) override {
         assert(size > 0);
         size_t bucket_id = g_rng(keys_and_buckets.size());
         std::pair<Key, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
@@ -103,17 +105,17 @@ public:
         return result;
     }
 
-    virtual bool empty() const {
+    virtual bool empty() const override {
         return size == 0;
     }
 
-    virtual void clear() {
+    virtual void clear() override {
         keys_and_buckets.clear();
         key_to_bucket_index.clear();
         size = 0;
     }
 
-    virtual void evaluate(int g, bool preferred) {
+    virtual void evaluate(int g, bool preferred) override {
         // The code is taken from AlternationOpenList
         // TODO: see issue494, common implementation of evaluate for multi evaluator open lists
 
@@ -133,15 +135,15 @@ public:
         }
     }
 
-    virtual bool is_dead_end() const {
+    virtual bool is_dead_end() const override {
         return dead_end;
     }
 
-    virtual bool dead_end_is_reliable() const {
+    virtual bool dead_end_is_reliable() const override {
         return dead_end_reliable;
     }
 
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) {
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
         for (size_t i = 0; i < evaluators.size(); ++i)
             evaluators[i]->get_involved_heuristics(hset);
     }
