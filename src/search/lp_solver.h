@@ -77,7 +77,9 @@ class LPSolver {
     bool is_solved;
     int num_permanent_constraints;
     bool has_temporary_constraints;
+#ifdef USE_LP
     std::unique_ptr<OsiSolverInterface> lp_solver;
+#endif
 
     /*
       Temporary data for assigning a new problem. We keep the vectors
