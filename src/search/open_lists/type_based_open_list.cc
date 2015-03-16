@@ -30,8 +30,8 @@ int TypeBasedOpenList<Entry>::insert(const Entry &entry) {
 
     typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(key);
     if (it == key_to_bucket_index.end()) {
-        keys_and_buckets.push_back(make_pair(key, Bucket()));
-        keys_and_buckets.back().second.push_back(entry); // TODO: c++11 list init
+        keys_and_buckets.push_back(make_pair(key, Bucket {entry}
+                                             ));
         key_to_bucket_index[key] = keys_and_buckets.size() - 1;
     } else {
         size_t bucket_index = it->second;
@@ -143,5 +143,4 @@ OpenList<Entry> *TypeBasedOpenList<Entry>::_parse(OptionParser &parser) {
     else
         return new TypeBasedOpenList<Entry>(opts);
 }
-
 #endif
