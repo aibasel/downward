@@ -18,8 +18,8 @@
   When retrieving a node, a bucket is chosen uniformly at random
   and one of the contained nodes is selected uniformly randomly.
   Based on:
-    Fan Xie, Martin Mueller, Robert C. Holte, and Tatsuya Imai. Type-based
-    exploration with multiple search queues for satisficing planning.
+    Fan Xie, Martin Mueller, Robert C. Holte, and Tatsuya Imai.
+    Type-Based Exploration with Multiple Search Queues for Satisficing Planning.
     In Proceedings of the Twenty-Eighth AAAI Conference on Artificial
     Intelligence (AAAI 2014). AAAI Press, 2014.
 */
