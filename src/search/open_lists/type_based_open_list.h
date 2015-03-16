@@ -26,10 +26,10 @@
 
 template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
-    typedef std::vector<int> Key;
-    typedef std::vector<Entry> Bucket;
     std::vector<ScalarEvaluator *> evaluators;
 
+    typedef std::vector<int> Key;
+    typedef std::vector<Entry> Bucket;
     std::vector<std::pair<Key, Bucket> > keys_and_buckets;
 
     typedef typename std::unordered_map<Key, int, hash_int_vector> KeyToBucketIndex;
@@ -57,8 +57,8 @@ public:
     virtual int insert(const Entry &entry) override {
         std::vector<int> key;
         key.reserve(evaluators.size());
-        for (std::vector<ScalarEvaluator *>::iterator it = evaluators.begin(); it != evaluators.end(); ++it) {
-            key.push_back((*it)->get_value());
+        for (ScalarEvaluator *e : evaluators) {
+            key.push_back(e->get_value());
         }
 
         typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(key);
@@ -121,10 +121,10 @@ public:
 
         dead_end = true;
         dead_end_reliable = false;
-        for (size_t i = 0; i < evaluators.size(); ++i) {
-            evaluators[i]->evaluate(g, preferred);
-            if (evaluators[i]->is_dead_end()) {
-                if (evaluators[i]->dead_end_is_reliable()) {
+        for (ScalarEvaluator *e : evaluators) {
+            e->evaluate(g, preferred);
+            if (e->is_dead_end()) {
+                if (e->dead_end_is_reliable()) {
                     dead_end = true; // Might have been set to false.
                     dead_end_reliable = true;
                     break;
@@ -144,8 +144,9 @@ public:
     }
 
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {
-        for (size_t i = 0; i < evaluators.size(); ++i)
-            evaluators[i]->get_involved_heuristics(hset);
+        for (ScalarEvaluator *e : evaluators) {
+            e->get_involved_heuristics(hset);
+        }
     }
 
     static OpenList<Entry> *_parse(OptionParser &parser) {
