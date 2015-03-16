@@ -11,7 +11,7 @@
   All methods that use COIN specific classes only do something useful
   if the planner is compiled with USE_LP. Otherwise, they just print
   an error message and abort.
- */
+*/
 #ifdef USE_LP
 #define LP_METHOD(X) X;
 #else
@@ -77,12 +77,14 @@ class LPSolver {
     bool is_solved;
     int num_permanent_constraints;
     bool has_temporary_constraints;
+#ifdef USE_LP
     std::unique_ptr<OsiSolverInterface> lp_solver;
+#endif
 
     /*
       Temporary data for assigning a new problem. We keep the vectors
       around to avoid recreating them in every assignment.
-     */
+    */
     std::vector<double> elements;
     std::vector<int> indices;
     std::vector<int> starts;

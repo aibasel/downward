@@ -3,8 +3,10 @@
 
 #include "landmark_factory.h"
 #include "landmark_graph.h"
-#include <ext/hash_set>
+
 #include "../globals.h"
+
+#include <ext/hash_set>
 
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
     std::list<LandmarkNode *> open_landmarks;
