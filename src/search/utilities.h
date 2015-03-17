@@ -5,7 +5,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <tr1/functional>
+#include <functional>
 
 #define LINUX 0
 #define OSX 1
@@ -107,7 +107,7 @@ class hash_pointer {
 public:
     size_t operator()(const void *p) const {
         //return size_t(reinterpret_cast<int>(p));
-        std::tr1::hash<const void *> my_hash_class;
+        std::hash<const void *> my_hash_class;
         return my_hash_class(p);
     }
 };
