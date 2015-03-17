@@ -7,10 +7,9 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <tr1/unordered_set>
+#include <unordered_set>
 
 using namespace std;
-using namespace std::tr1;
 
 
 /*

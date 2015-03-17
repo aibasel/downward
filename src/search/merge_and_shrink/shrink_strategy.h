@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <ext/slist>
+#include <forward_list>
 
 class TransitionSystem;
 class OptionParser;
@@ -23,7 +23,7 @@ protected:
     */
 
     typedef int AbstractStateRef;
-    typedef __gnu_cxx::slist<AbstractStateRef> StateEquivalenceClass;
+    typedef std::forward_list<AbstractStateRef> StateEquivalenceClass;
     typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
 public:
     // HACK/TODO: The following method would usually be protected, but

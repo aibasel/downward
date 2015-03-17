@@ -10,7 +10,6 @@
 #include <iostream>
 #include <vector>
 using namespace std;
-using namespace __gnu_cxx;
 
 
 ShrinkStrategy::ShrinkStrategy(const Options &opts)
