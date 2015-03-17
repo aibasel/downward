@@ -2,7 +2,9 @@
 
 #include "option_parser.h"
 #include "plugin.h"
+#include "utilities.h"
 
+#include <iostream>
 #include <memory>
 
 using namespace std;
@@ -25,10 +27,25 @@ bool CostAdaptedTask::compute_is_unit_cost() {
 
 int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
     int original_cost = parent->get_operator_cost(index, is_axiom);
+
     // Don't change axiom costs. Usually they have cost 0, but we don't enforce this.
     if (is_axiom)
         return original_cost;
-    return get_adjusted_action_cost(original_cost, cost_type);
+
+    switch (cost_type) {
+    case NORMAL:
+        return original_cost;
+    case ONE:
+        return 1;
+    case PLUSONE:
+        if (is_unit_cost)
+            return 1;
+        else
+            return original_cost + 1;
+    default:
+        cerr << "Unknown cost type" << endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
 }
 
 
