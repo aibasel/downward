@@ -30,7 +30,7 @@ class EagerSearch : public SearchEngine {
 protected:
     SearchStatus step();
     std::pair<SearchNode, bool> fetch_next_node();
-    void start_f_value_statistics(const EvaluationContext &eval_context);
+    void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(const SearchNode &node);
     void reward_progress();
 
