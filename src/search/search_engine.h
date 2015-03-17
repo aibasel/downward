@@ -9,8 +9,9 @@ class Options;
 
 #include "global_operator.h"
 #include "operator_cost.h"
-#include "search_space.h"
 #include "search_progress.h"
+#include "search_space.h"
+#include "search_statistics.h"
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
@@ -24,6 +25,13 @@ private:
 protected:
     SearchSpace search_space;
     SearchProgress search_progress;
+    /*
+      TODO: It would perhaps be nice to rename the following attribute
+      to "statistics", but then we'd also need to rename the method
+      currently called "statistics" (which would also be a good idea
+      because we generally use verbs for method names).
+    */
+    SearchStatistics search_statistics;
     int bound;
     OperatorCost cost_type;
     double max_time;
