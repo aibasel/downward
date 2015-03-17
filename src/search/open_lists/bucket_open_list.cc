@@ -1,5 +1,5 @@
 // HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LISTS_OPEN_LIST_BUCKETS_H
+#ifdef OPEN_LISTS_BUCKET_OPEN_LIST_H
 
 #include "../option_parser.h"
 #include "../scalar_evaluator.h"
