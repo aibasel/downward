@@ -21,7 +21,6 @@ Heuristic::Heuristic(const Options &opts)
 }
 
 Heuristic::~Heuristic() {
-    delete task;
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
@@ -161,9 +160,9 @@ TaskProxy *get_task_from_options(const Options &opts) {
       transformations). Once all heuristics are adapted to support task
       transformations and we can remove the "cost_type" attribute, the options
       should always contain a task (either an AbstractTask or a TaskProxy). When
-      that is the case, get_task_from_options() should only be integrated into
-      the Heuristic constructor and the PDB heuristic generators (ipdb, gapdb,
-      etc.) should directly call opts.get<TaskProxy *>("transform").
+      that is the case, get_task_from_options() should be integrated into the
+      Heuristic constructor and the PDB heuristic generators (ipdb, gapdb)
+      should directly call opts.get<TaskProxy *>("transform").
     */
     OperatorCost cost_type = OperatorCost(opts.get_enum("cost_type"));
     if (opts.contains("transform") && cost_type != NORMAL) {

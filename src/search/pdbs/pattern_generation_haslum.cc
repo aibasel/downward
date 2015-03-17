@@ -31,7 +31,7 @@ using namespace std;
 struct HillClimbingTimeout : public exception {};
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
-    : task(opts.get<TaskProxy *>("transform")),
+    : task(get_task_from_options(opts)),
       pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
@@ -436,7 +436,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "confidence interval) is not applicable to this implementation, as it doesn't use A* "
         "search but constructs the entire pattern databases for all candidate patterns anyway.\n"
         "The search is ended if there is no more improvement (or the improvement is smaller "
-        "than the minimal improvement which can be set as an option), how ever there is no "
+        "than the minimal improvement which can be set as an option), however there is no "
         "limit of iterations of the local search. This is similar to the techniques used in "
         "the original implementation as described in the paper.", true);
 
