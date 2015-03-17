@@ -18,12 +18,9 @@ class SearchStatistics;
 */
 
 class SearchProgress {
-    // Heuristics for which we collect statistics
     std::vector<Heuristic *> heuristics;
-
-    // Statistics related to h values
-    std::vector<int> initial_heuristic_values;  // heuristic values of the initial state
-    std::vector<int> best_heuristic_values;     // best heuristic values so far
+    std::vector<int> initial_heuristic_values;
+    std::vector<int> best_heuristic_values;
 
     void print_best_heuristic_values(
         int g, const SearchStatistics &statistics) const;
