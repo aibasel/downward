@@ -21,7 +21,7 @@ using namespace __gnu_cxx;
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
-    : task(opts.get<TaskProxy *>("transform")),
+    : task(get_task_from_options(opts)),
       pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
