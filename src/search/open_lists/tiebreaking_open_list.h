@@ -5,12 +5,13 @@
 
 #include <deque>
 #include <map>
-#include <vector>
 #include <utility>
+#include <vector>
 
-class ScalarEvaluator;
-class Options;
 class OptionParser;
+class Options;
+class ScalarEvaluator;
+
 
 template<class Entry>
 class TieBreakingOpenList : public OpenList<Entry> {
@@ -20,8 +21,12 @@ class TieBreakingOpenList : public OpenList<Entry> {
     int size;
 
     std::vector<ScalarEvaluator *> evaluators;
-    bool allow_unsafe_pruning; // don't insert if main evaluator
-    // says dead end, even if not reliably
+    /*
+      If allow_unsafe_pruning is true, we ignore (don't insert) states
+      which the first evaluator considers a dead end, even if it is
+      not a safe heuristic.
+    */
+    bool allow_unsafe_pruning;
 
     int dimension() const;
 
@@ -30,18 +35,17 @@ protected:
                               const Entry &entry) override;
 
 public:
-    TieBreakingOpenList(const Options &opts);
+    explicit TieBreakingOpenList(const Options &opts);
     TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
                         bool preferred_only, bool unsafe_pruning);
-    virtual ~TieBreakingOpenList() override;
+    virtual ~TieBreakingOpenList() override = default;
 
-    // open list interface
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;
-
-    // tuple evaluator interface
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };

@@ -10,52 +10,26 @@ using namespace std;
 
 
 template<class Entry>
-OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
-    parser.document_synopsis("Alternation open list",
-                             "alternates between several open lists.");
-    parser.add_list_option<OpenList<Entry> *>("sublists", "sub open lists");
-    parser.add_option<int>("boost",
-                           "boost value for sub-open-lists "
-                           "that are restricted to preferred operator nodes",
-                           "0");
-
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-
-    if (opts.get_list<OpenList<Entry> *>("sublists").empty())
-        parser.error("need at least one internal open list");
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return new AlternationOpenList<Entry>(opts);
-}
-
-template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
     : open_lists(opts.get_list<OpenList<Entry> *>("sublists")),
       priorities(open_lists.size(), 0),
-      boosting(opts.get<int>("boost")) {
+      boost_amount(opts.get<int>("boost")) {
 }
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(
     const vector<OpenList<Entry> *> &sublists,
-    int boost_influence)
+    int boost_amount)
     : open_lists(sublists),
       priorities(sublists.size(), 0),
-      boosting(boost_influence) {
-}
-
-template<class Entry>
-AlternationOpenList<Entry>::~AlternationOpenList() {
+      boost_amount(boost_amount) {
 }
 
 template<class Entry>
 void AlternationOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    for (size_t i = 0; i < open_lists.size(); ++i)
-        open_lists[i]->insert(eval_context, entry);
+    for (OpenList<Entry> *sublist : open_lists)
+        sublist->insert(eval_context, entry);
 }
 
 template<class Entry>
@@ -72,7 +46,6 @@ Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
         }
     }
     assert(best != -1);
-    last_used_list = best;
     OpenList<Entry> *best_list = open_lists[best];
     assert(!best_list->empty());
     ++priorities[best];
@@ -94,6 +67,13 @@ void AlternationOpenList<Entry>::clear() {
 }
 
 template<class Entry>
+void AlternationOpenList<Entry>::boost_preferred() {
+    for (size_t i = 0; i < open_lists.size(); ++i)
+        if (open_lists[i]->only_contains_preferred_entries())
+            priorities[i] -= boost_amount;
+}
+
+template<class Entry>
 void AlternationOpenList<Entry>::get_involved_heuristics(
     set<Heuristic *> &hset) {
     for (OpenList<Entry> *sublist : open_lists)
@@ -101,10 +81,33 @@ void AlternationOpenList<Entry>::get_involved_heuristics(
 }
 
 template<class Entry>
-void AlternationOpenList<Entry>::boost_preferred() {
-    for (size_t i = 0; i < open_lists.size(); ++i)
-        if (open_lists[i]->only_contains_preferred_entries())
-            priorities[i] -= boosting;
+bool AlternationOpenList<Entry>::is_reliable_dead_end(
+    EvaluationContext &eval_context, const Entry &entry) {
+    for (OpenList<Entry> *sublist : open_lists)
+        if (sublist->is_reliable_dead_end(eval_context, entry))
+            return true;
+    return false;
+}
+
+template<class Entry>
+OpenList<Entry> *AlternationOpenList<Entry>::_parse(OptionParser &parser) {
+    parser.document_synopsis("Alternation open list",
+                             "alternates between several open lists.");
+    parser.add_list_option<OpenList<Entry> *>(
+        "sublists",
+        "open lists between which this one alternates");
+    parser.add_option<int>(
+        "boost",
+        "boost value for contained open lists that are restricted "
+        "to preferred successors",
+        "0");
+
+    Options opts = parser.parse();
+    opts.verify_list_non_empty<OpenList<Entry> *>("sublists");
+    if (parser.dry_run())
+        return nullptr;
+    else
+        return new AlternationOpenList<Entry>(opts);
 }
 
 #endif

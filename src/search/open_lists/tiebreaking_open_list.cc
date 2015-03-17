@@ -11,10 +11,6 @@
 
 using namespace std;
 
-/*
-  Bucket-based implementation of a open list.
-  Nodes with identical heuristic value are expanded in FIFO order.
-*/
 
 template<class Entry>
 OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &parser) {
@@ -47,10 +43,6 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(
     bool preferred_only, bool unsafe_pruning)
     : OpenList<Entry>(preferred_only), size(0), evaluators(evals),
       allow_unsafe_pruning(unsafe_pruning) {
-}
-
-template<class Entry>
-TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
 }
 
 template<class Entry>
@@ -105,9 +97,20 @@ int TieBreakingOpenList<Entry>::dimension() const {
 }
 
 template<class Entry>
-void TieBreakingOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        evaluators[i]->get_involved_heuristics(hset);
-    }
+void TieBreakingOpenList<Entry>::get_involved_heuristics(
+    std::set<Heuristic *> &hset) {
+    for (ScalarEvaluator *evaluator : evaluators)
+        evaluator->get_involved_heuristics(hset);
 }
+
+template<class Entry>
+bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
+    EvaluationContext &eval_context, const Entry &/*entry*/) {
+    for (ScalarEvaluator *evaluator : evaluators)
+        if (eval_context.is_heuristic_infinite(evaluator) &&
+            evaluator->dead_ends_are_reliable())
+            return true;
+    return false;
+}
+
 #endif
