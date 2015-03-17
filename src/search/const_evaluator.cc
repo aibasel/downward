@@ -9,9 +9,6 @@ ConstEvaluator::ConstEvaluator(const Options &opts)
       value(opts.get<int>("value")) {
 }
 
-ConstEvaluator::~ConstEvaluator() {
-}
-
 int ConstEvaluator::compute_heuristic(const GlobalState &) {
     return value;
 }
