@@ -75,11 +75,11 @@ void TransitionSystem::clear_distances() {
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
     assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
-    vector<slist<AbstractStateRef> > equivalence_relation;
+    vector<forward_list<AbstractStateRef> > equivalence_relation;
     equivalence_relation.reserve(num_states);
     for (int state = 0; state < num_states; ++state) {
         if (!to_be_pruned_states[state]) {
-            slist<AbstractStateRef> group;
+            forward_list<AbstractStateRef> group;
             group.push_front(state);
             equivalence_relation.push_back(group);
         }
@@ -504,7 +504,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
 }
 
 void TransitionSystem::apply_abstraction(
-    vector<slist<AbstractStateRef> > &collapsed_groups) {
+    vector<forward_list<AbstractStateRef> > &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
@@ -515,7 +515,7 @@ void TransitionSystem::apply_abstraction(
     cout << tag() << "applying abstraction (" << get_size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
-    typedef slist<AbstractStateRef> Group;
+    typedef forward_list<AbstractStateRef> Group;
 
     vector<int> abstraction_mapping(num_states, PRUNED_STATE);
 
