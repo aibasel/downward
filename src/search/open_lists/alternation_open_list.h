@@ -15,11 +15,7 @@ class AlternationOpenList : public OpenList<Entry> {
     std::vector<OpenList<Entry> *> open_lists;
     std::vector<int> priorities;
 
-    // roughly speaking, boosting is how often the boosted queue should be
-    // preferred when removing an entry
-    int boosting;
-    int last_used_list;
-
+    const int boost_amount;
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
                               const Entry &entry) override;
@@ -27,18 +23,16 @@ protected:
 public:
     explicit AlternationOpenList(const Options &opts);
     AlternationOpenList(const std::vector<OpenList<Entry> *> &sublists,
-                        int boost_influence);
-    virtual ~AlternationOpenList() override;
+                        int boost_amount);
+    virtual ~AlternationOpenList() override = default;
 
-    // OpenList interface
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;
-
-    // Evaluator interface
-    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
-
     virtual void boost_preferred() override;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };

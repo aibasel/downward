@@ -2,13 +2,18 @@
 #define OPEN_LISTS_OPEN_LIST_BUCKETS_H
 
 #include "open_list.h"
-#include "../scalar_evaluator.h"
 
 #include <deque>
-#include <utility>
 #include <vector>
 
 class Options;
+class ScalarEvaluator;
+
+/*
+  Bucket-based implementation of an open list.
+
+  Nodes with identical heuristic value are expanded in FIFO order.
+*/
 
 template<class Entry>
 class BucketOpenList : public OpenList<Entry> {
@@ -25,13 +30,14 @@ protected:
 
 public:
     explicit BucketOpenList(const Options &opts);
-    virtual ~BucketOpenList() override;
+    virtual ~BucketOpenList() override = default;
 
     virtual Entry remove_min(std::vector<int> *key = 0) override;
     virtual bool empty() const override;
     virtual void clear() override;
-
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };

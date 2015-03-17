@@ -6,11 +6,11 @@
 #include <deque>
 #include <ext/hash_map>
 #include <set>
-#include <vector>
 #include <utility>
+#include <vector>
 
-class Options;
 class OptionParser;
+class Options;
 class ScalarEvaluator;
 
 namespace __gnu_cxx {
@@ -34,40 +34,37 @@ template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
     typedef std::deque<Entry> Bucket;
     typedef std::vector<int> KeyType;
-    //typedef std::map<const KeyType, Bucket> BucketMap;
-    typedef typename __gnu_cxx::hash_map<const KeyType, Bucket,
-                                         __gnu_cxx::hash<const std::vector<int> > > BucketMap;
-    typedef std::set<KeyType> KeySet; // no hash_set (see insert method)
+    typedef typename __gnu_cxx::hash_map<
+        const KeyType, Bucket,
+        __gnu_cxx::hash<const std::vector<int>>> BucketMap;
+    typedef std::set<KeyType> KeySet;
 
     BucketMap buckets;
     KeySet nondominated;
     bool state_uniform_selection;
     std::vector<ScalarEvaluator *> evaluators;
 
-    bool dominates(const KeyType &v1, const KeyType &v2);
-    bool is_nondominated(const KeyType &vec,
-                         KeySet &domination_candidates);
-    void remove_key(const KeyType key);
+    bool dominates(const KeyType &v1, const KeyType &v2) const;
+    bool is_nondominated(
+        const KeyType &vec, KeySet &domination_candidates) const;
+    void remove_key(const KeyType &key);
 
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
                               const Entry &entry) override;
 
 public:
+    explicit ParetoOpenList(const Options &opts);
     ParetoOpenList(const std::vector<ScalarEvaluator *> &evals,
-                   bool preferred_only, bool state_uniform_selection_);
-    ParetoOpenList(const Options &opts);
-    virtual ~ParetoOpenList() override;
+                   bool preferred_only, bool state_uniform_selection);
+    virtual ~ParetoOpenList() override = default;
 
-    // open list interface
     virtual Entry remove_min(std::vector<int> *key = 0) override;
-    virtual bool empty() const override {
-        return nondominated.empty();
-    }
+    virtual bool empty() const override;
     virtual void clear() override;
-
-    // tuple evaluator interface
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
     static OpenList<Entry> *_parse(OptionParser &p);
 };
