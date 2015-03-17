@@ -11,9 +11,9 @@ class EvaluationContext;
 /*
   This class helps track search progress.
 
-  It keeps counters for expanded, generated and evaluated states (and
-  some other statistics) and provides uniform output for all search
-  methods.
+  It maintains a vector of best heuristic values and can determine if
+  a given state has a better heuristic value in at least one of the
+  heueristics that all previously seen ones.
 */
 
 class SearchProgress {
