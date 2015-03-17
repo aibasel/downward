@@ -154,8 +154,22 @@ void ParetoOpenList<Entry>::get_involved_heuristics(
 }
 
 template<class Entry>
+bool ParetoOpenList<Entry>::is_dead_end(
+    EvaluationContext &eval_context) const {
+    // TODO: Document this behaviour.
+    // If one safe heuristic detects a dead end, return true.
+    if (is_reliable_dead_end(eval_context))
+        return true;
+    // Otherwise, return true if all heuristics agree this is a dead-end.
+    for (ScalarEvaluator *evaluator : evaluators)
+        if (!eval_context.is_heuristic_infinite(evaluator))
+            return false;
+    return true;
+}
+
+template<class Entry>
 bool ParetoOpenList<Entry>::is_reliable_dead_end(
-    EvaluationContext &eval_context, const Entry &/*entry*/) {
+    EvaluationContext &eval_context) const {
     for (ScalarEvaluator *evaluator : evaluators)
         if (eval_context.is_heuristic_infinite(evaluator) &&
             evaluator->dead_ends_are_reliable())

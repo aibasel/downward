@@ -20,8 +20,6 @@ BucketOpenList<Entry>::BucketOpenList(const Options &opts)
 template<class Entry>
 void BucketOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    if (eval_context.is_heuristic_infinite(evaluator))
-        return;
     int key = eval_context.get_heuristic_value(evaluator);
     assert(key >= 0);
     int num_buckets = buckets.size();
@@ -67,10 +65,15 @@ void BucketOpenList<Entry>::get_involved_heuristics(
 }
 
 template<class Entry>
+bool BucketOpenList<Entry>::is_dead_end(
+    EvaluationContext &eval_context) const {
+    return eval_context.is_heuristic_infinite(evaluator);
+}
+
+template<class Entry>
 bool BucketOpenList<Entry>::is_reliable_dead_end(
-    EvaluationContext &eval_context, const Entry &/*entry*/) {
-    return eval_context.is_heuristic_infinite(evaluator) &&
-        evaluator->dead_ends_are_reliable();
+    EvaluationContext &eval_context) const {
+    return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
 template<class Entry>

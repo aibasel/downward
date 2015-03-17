@@ -31,8 +31,10 @@ public:
     virtual void clear() override;
     virtual void boost_preferred() override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
-        EvaluationContext &eval_context, const Entry &entry) override;
+        EvaluationContext &eval_context) const override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };

@@ -15,9 +15,9 @@ protected:
     /*
       Insert an entry into the open list. This is called by insert, so
       see comments there. This method will not be called if
-      is_reliable_dead_end() is true or if only_preferred is true and
-      the entry to be inserted is not preferred. Hence, these
-      conditions need not be checked by the implementation.
+      is_dead_end() is true or if only_preferred is true and the entry
+      to be inserted is not preferred. Hence, these conditions need
+      not be checked by the implementation.
     */
     virtual void do_insertion(EvaluationContext &eval_context,
                               const Entry &entry) = 0;
@@ -30,14 +30,13 @@ public:
       Insert an entry into the open list.
 
       This method may be called with entries that the open list does
-      not want to insert (e.g. because they have an infinite estimate
-      or because it is a non-preferred successor and the open list
+      not want to insert, e.g. because they have an infinite estimate
+      or because they are non-preferred successor and the open list
       only wants preferred successors. In this case, the open list
       will remain unchanged.
 
-      This method will often compute heuristic estimates etc. as a
-      side effect, which is handled within the EvaluationContext
-      class.
+      This method will often compute heuristic estimates as a side
+      effect, which are cached in the EvaluationContext class.
 
       Implementation note: uses the template method pattern, with
       do_insertion performing the bulk of the work. See comments for
@@ -108,39 +107,24 @@ public:
       boosting would not have to be tied to preferredness). We should
       discuss the best way to proceed here.
     */
-
-    bool only_contains_preferred_entries() const {
-        return only_preferred;
-    }
+    bool only_contains_preferred_entries() const;
 
     /*
-      Return true if the open list can guarantee that the state
-      associated with the evaluation context is unsolvable.
+      is_dead_end and is_reliable_dead_end return true if the state
+      associated with the passed-in evaluation context is deemed a
+      dead end by the open list.
 
-      Usually, this happens when the open list uses a safe heuristic
-      that assigns an infinite estimate to the state. It is always
-      permissible for implementations of this method to return false,
-      but this may lead to some extra search effort.
+      The difference between the two methods is that
+      is_reliable_dead_end must guarantee that the associated state is
+      actually unsolvable, i.e., it must not believe the claims of
+      unsafe heuristics.
 
-      Like OpenList::insert, this method will usually evaluate
-      heuristic values, which are then stored in eval_context as a
-      side effect.
-
-      Intended usage: This should only be called "internally" (by
-      OpenList::insert or by the is_reliable_dead_end implementations
-      of open lists containing other open lists). OpenList::insert
-      automatically calls this method, so there is no point in
-      protecting calls to OpenList::insert with calls to this method.
-
-      The main use case for this method is to implement "look before
-      you leap" when inserting into open lists with multiple
-      components, such as alternation open lists. If a given open list
-      has several components and the second one reliable recognizes a
-      state as a dead end, then the state should not be inserted into
-      the first one either.
+      Like OpenList::insert, the methods usually evaluate heuristic
+      values, which are then cached in eval_context as a side effect.
     */
+    virtual bool is_dead_end(EvaluationContext &eval_context) const = 0;
     virtual bool is_reliable_dead_end(
-        EvaluationContext &eval_context, const Entry &entry) = 0;
+        EvaluationContext &eval_context) const = 0;
 };
 
 #include "open_list.cc"

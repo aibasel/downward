@@ -81,10 +81,23 @@ void AlternationOpenList<Entry>::get_involved_heuristics(
 }
 
 template<class Entry>
-bool AlternationOpenList<Entry>::is_reliable_dead_end(
-    EvaluationContext &eval_context, const Entry &entry) {
+bool AlternationOpenList<Entry>::is_dead_end(
+    EvaluationContext &eval_context) const {
+    // If one sublist is sure we have a dead end, return true.
+    if (is_reliable_dead_end(eval_context))
+        return true;
+    // Otherwise, return true if all sublists agree this is a dead-end.
     for (OpenList<Entry> *sublist : open_lists)
-        if (sublist->is_reliable_dead_end(eval_context, entry))
+        if (!sublist->is_dead_end(eval_context))
+            return false;
+    return true;
+}
+
+template<class Entry>
+bool AlternationOpenList<Entry>::is_reliable_dead_end(
+    EvaluationContext &eval_context) const {
+    for (OpenList<Entry> *sublist : open_lists)
+        if (sublist->is_reliable_dead_end(eval_context))
             return true;
     return false;
 }

@@ -48,10 +48,6 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(
 template<class Entry>
 void TieBreakingOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    if (eval_context.is_heuristic_infinite(evaluators[0])
-        && allow_unsafe_pruning)
-        return;
-
     vector<int> key;
     key.reserve(evaluators.size());
     for (ScalarEvaluator *evaluator : evaluators)
@@ -104,8 +100,27 @@ void TieBreakingOpenList<Entry>::get_involved_heuristics(
 }
 
 template<class Entry>
+bool TieBreakingOpenList<Entry>::is_dead_end(
+    EvaluationContext &eval_context) const {
+    // TODO: Properly document this behaviour.
+    // If one safe heuristic detects a dead end, return true.
+    if (is_reliable_dead_end(eval_context))
+        return true;
+    // If the first heuristic detects a dead-end and we allow "unsafe
+    // pruning", return true.
+    if (allow_unsafe_pruning &&
+        eval_context.is_heuristic_infinite(evaluators[0]))
+        return true;
+    // Otherwise, return true if all heuristics agree this is a dead-end.
+    for (ScalarEvaluator *evaluator : evaluators)
+        if (!eval_context.is_heuristic_infinite(evaluator))
+            return false;
+    return true;
+}
+
+template<class Entry>
 bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
-    EvaluationContext &eval_context, const Entry &/*entry*/) {
+    EvaluationContext &eval_context) const {
     for (ScalarEvaluator *evaluator : evaluators)
         if (eval_context.is_heuristic_infinite(evaluator) &&
             evaluator->dead_ends_are_reliable())
