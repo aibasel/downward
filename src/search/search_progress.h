@@ -6,7 +6,6 @@
 #include <vector>
 
 class EvaluationContext;
-class SearchStatistics;
 
 
 /*
@@ -22,8 +21,6 @@ class SearchProgress {
     std::vector<int> initial_heuristic_values;
     std::vector<int> best_heuristic_values;
 
-    void print_best_heuristic_values(
-        int g, const SearchStatistics &statistics) const;
 public:
     SearchProgress() = default;
     ~SearchProgress() = default;
@@ -35,15 +32,9 @@ public:
       Call the following function with the heuristic evaluation
       results of the initial state. Calling this function is mandatory
       before calling other methods that keep track of heuristic
-      values. It also prints the initial h value (in the same format
-      as check_h_progress.)
-
-      TODO: Logically EvaluationContext should be "const" here, but we
-      don't currently have a good const interface for
-      EvaluationContext.
+      values.
     */
-    void set_initial_h_values(EvaluationContext &eval_context,
-                              const SearchStatistics &statistics);
+    void set_initial_h_values(EvaluationContext &eval_context);
 
     /*
       Call this function with the heuristic evaluation results of an
@@ -52,19 +43,13 @@ public:
 
       The method keeps track of the lowest-ever value of each
       heuristic, returning true and producing statistics output if
-      there is a new best value for any heuristic. The g value passed
-      into this function is only used for output, so passing in a
-      dummy value will not cause problems (other than ugly output).
-
-      TODO: Logically EvaluationContext should be "const" here, but we
-      don't currently have a good const interface for
-      EvaluationContext.
+      there is a new best value for any heuristic.
     */
-    bool check_h_progress(EvaluationContext &eval_context, int g,
-                          const SearchStatistics &statistics);
+    bool check_h_progress(EvaluationContext &eval_context);
 
     // output
     void print_initial_h_values() const;
+    void print_best_heuristic_values() const;
 };
 
 #endif

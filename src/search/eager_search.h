@@ -42,6 +42,7 @@ protected:
 
     virtual void initialize();
 
+    void print_best_h_line(int g) const;
 public:
     explicit EagerSearch(const Options &opts);
     virtual ~EagerSearch() = default;
