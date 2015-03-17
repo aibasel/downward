@@ -74,6 +74,7 @@ HEADERS = \
           search_node_info.h \
           search_progress.h \
           search_space.h \
+          search_statistics.h \
           state_id.h \
           state_registry.h \
           successor_generator.h \
