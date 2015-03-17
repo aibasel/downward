@@ -93,10 +93,10 @@ class IssueExperiment(DownwardExperiment):
 
     DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
 
-    # TODO: Add something about errors/exit codes.
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
         "coverage",
+        "error",
         "evaluations",
         "expansions",
         "expansions_until_last_jump",
