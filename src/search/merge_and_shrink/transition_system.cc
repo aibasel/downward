@@ -873,7 +873,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
              label_it != group_it->end(); ++label_it) {
             if (label_it != group_it->begin())
                 cout << ",";
-            cout << *label_it << " (represented by " << get<0>(label_to_positions[*label_it]) << ")";
+            cout << *label_it;
         }
         cout << endl;
         cout << "transitions: ";
@@ -886,6 +886,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
             cout << src << " -> " << target;
         }
         cout << endl;
+        cout << "cost: " << get_cost_for_label_group(*group_it) << endl;
     }
 }
 
@@ -1003,7 +1004,19 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         }
     }
 
+    /*
+      We can compute the local equivalence relation of a composite T
+      from the local equivalence relations of the two components T1 and T2:
+      l and l' are locally equivalent in T iff:
+      (A) they are local equivalent in T1 and in T2, or
+      (B) they are both dead in T (e.g., this includes the case where
+          l is dead in T1 only and l' is dead in T2 only, so they are not
+          locally equivalent in either of the components).
+
+      Currently we only group labels together that have the same cost.
+    */
     int multiplier = ts2_size;
+    vector<int> dead_labels;
     for (LabelGroupConstIter group1_it = ts1->grouped_labels.begin();
          group1_it != ts1->grouped_labels.end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
@@ -1021,7 +1034,6 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
         // Now create the new groups together with their transitions.;
         const vector<Transition> &transitions1 = ts1->get_const_transitions_for_group(*group1_it);
-        vector<int> dead_labels;
         for (unordered_map<int, vector<int> >::iterator bucket_it = buckets.begin();
              bucket_it != buckets.end(); ++bucket_it) {
             const vector<Transition> &transitions2 =
@@ -1062,16 +1074,37 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                 transitions_by_group_index[new_transitions_index].swap(new_transitions);
             }
         }
-        if (!dead_labels.empty()) {
-            // TODO: replicated code from just above.
+    }
+
+    /*
+      We collect all dead labels separately, because the bucket refining
+      does not work in cases where there is at least two dead labels l1
+      and l2 in the composite, where l1 was only a dead label in the first
+      component and l2 was only a dead label in the second component.
+
+      Here, we go over the set of dead labels and split them according
+      to their cost.
+    */
+    if (!dead_labels.empty()) {
+        for (vector<int>::iterator dead_label_it = dead_labels.begin();
+             dead_label_it != dead_labels.end(); ++dead_label_it) {
+            int label_no = *dead_label_it;
             LabelGroupIter group_it = grouped_labels.insert(grouped_labels.end(), list<int>());
-            int new_transitions_index = dead_labels[0];
-            for (size_t i = 0; i < dead_labels.size(); ++i) {
-                int label_no = dead_labels[i];
-                LabelIter label_it = group_it->insert(group_it->end(), label_no);
-                label_to_positions[label_no] = make_tuple(new_transitions_index, group_it, label_it);
+            LabelIter label_it = group_it->insert(group_it->end(), label_no);
+            label_to_positions[label_no] = make_tuple(label_no, group_it, label_it);
+            int label_cost = labels->get_label_cost(label_no);
+            for (vector<int>::iterator other_label_it = dead_label_it;
+                 other_label_it != dead_labels.end(); ++other_label_it) {
+                if (other_label_it == dead_label_it)
+                    continue;
+                int other_label_no = *other_label_it;
+                if (labels->get_label_cost(other_label_no) == label_cost) {
+                    LabelIter label_it = group_it->insert(group_it->end(), other_label_no);
+                    label_to_positions[other_label_no] = make_tuple(label_no, group_it, label_it);
+                    dead_labels.erase(other_label_it);
+                    --other_label_it;
+                }
             }
-            // No need to swap empty transitions
         }
     }
 
