@@ -13,11 +13,12 @@ CostAdaptedTask::CostAdaptedTask(const Options &opts)
       cost_type(OperatorCost(opts.get<int>("cost_type"))) {
 }
 
-CostAdaptedTask::~CostAdaptedTask() {
-}
-
 int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
-    return get_adjusted_action_cost(parent->get_operator_cost(index, is_axiom), cost_type);
+    int original_cost = parent->get_operator_cost(index, is_axiom);
+    // Don't change axiom costs. Usually they have cost 0, but we don't enforce this.
+    if (is_axiom)
+        return original_cost;
+    return get_adjusted_action_cost(original_cost, cost_type);
 }
 
 

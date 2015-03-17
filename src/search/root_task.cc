@@ -10,9 +10,6 @@
 using namespace std;
 
 
-static shared_ptr<RootTask> root_task = make_shared<RootTask>();
-
-
 static GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) {
     if (is_axiom) {
         assert(in_bounds(index, g_axioms));
@@ -99,11 +96,6 @@ vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     for (int var = 0; var < num_vars; ++var)
         values[var] = global_state[var];
     return values;
-}
-
-
-const shared_ptr<RootTask> get_root_task() {
-    return root_task;
 }
 
 static AbstractTask *_parse(OptionParser &parser) {

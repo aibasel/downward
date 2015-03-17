@@ -27,27 +27,26 @@ If NT shall be predefinable:
   should add an explanation to OptionParser::usage().
 */
 
+#include "heuristic.h"
+#include "option_parser_util.h"
 
-
-#include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <limits>
 #include <algorithm>
+#include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
-#include "option_parser_util.h"
-#include "heuristic.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
-class OptionParser;
+class AbstractTask;
 class LandmarkGraph;
+class MergeStrategy;
 template<class Entry>
 class OpenList;
+class OptionParser;
 class SearchEngine;
-class MergeStrategy;
 class ShrinkStrategy;
-class AbstractTask;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.
