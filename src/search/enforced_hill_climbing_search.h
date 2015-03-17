@@ -52,10 +52,10 @@ protected:
     void get_successors(const GlobalState &state, vector<const GlobalOperator *> &ops);
     void evaluate(const GlobalState &parent, const GlobalOperator *op, const GlobalState &state);
 public:
-    EnforcedHillClimbingSearch(const Options &opts);
-    virtual ~EnforcedHillClimbingSearch();
+    explicit EnforcedHillClimbingSearch(const Options &opts);
+    virtual ~EnforcedHillClimbingSearch() override;
 
-    virtual void statistics() const;
+    virtual void print_statistics() const override;
 };
 
 #endif

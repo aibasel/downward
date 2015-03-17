@@ -40,7 +40,7 @@ EvaluationContext EagerSearch::evaluate_state(
       heuristic evaluations happen "under the hood" here.
     */
     EvaluationContext eval_context(state, g, preferred);
-    search_statistics.inc_evaluations(heuristics.size());
+    statistics.inc_evaluations(heuristics.size());
     return eval_context;
 }
 
@@ -48,7 +48,7 @@ EvaluationContext EagerSearch::evaluate_state_for_preferred_ops(
     const GlobalState &state, int g, bool preferred) {
     // TODO: See comment for evaluate_state()
     EvaluationContext eval_context(state, g, preferred);
-    search_statistics.inc_evaluations(preferred_operator_heuristics.size());
+    statistics.inc_evaluations(preferred_operator_heuristics.size());
     return eval_context;
 }
 
@@ -88,13 +88,12 @@ void EagerSearch::initialize() {
     // Note: we consider the initial state as reached by a preferred
     // operator.
     EvaluationContext eval_context = evaluate_state(initial_state, 0, true);
-    search_statistics.inc_evaluated_states();
+    statistics.inc_evaluated_states();
 
     if (open_list->is_dead_end(eval_context)) {
         cout << "Initial state is a dead end." << endl;
     } else {
-        search_progress.set_initial_h_values(
-            eval_context, search_statistics);
+        search_progress.set_initial_h_values(eval_context, statistics);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial(eval_context.get_heuristic_value(heuristics[0]));
@@ -103,10 +102,10 @@ void EagerSearch::initialize() {
     }
 }
 
-void EagerSearch::statistics() const {
+void EagerSearch::print_statistics() const {
     search_progress.print_initial_h_values();
-    search_statistics.print_detailed_statistics();
-    search_space.statistics();
+    statistics.print_detailed_statistics();
+    search_space.print_statistics();
 }
 
 SearchStatus EagerSearch::step() {
@@ -138,7 +137,7 @@ SearchStatus EagerSearch::step() {
             preferred_ops.insert(preferred.begin(), preferred.end());
         }
     }
-    search_statistics.inc_evaluations(preferred_operator_heuristics.size());
+    statistics.inc_evaluations(preferred_operator_heuristics.size());
 
     for (size_t i = 0; i < applicable_ops.size(); ++i) {
         const GlobalOperator *op = applicable_ops[i];
@@ -147,7 +146,7 @@ SearchStatus EagerSearch::step() {
             continue;
 
         GlobalState succ_state = g_state_registry->get_successor_state(s, *op);
-        search_statistics.inc_generated();
+        statistics.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
         SearchNode succ_node = search_space.get_node(succ_state);
@@ -182,12 +181,12 @@ SearchStatus EagerSearch::step() {
 
             EvaluationContext eval_context = evaluate_state(
                 succ_state, succ_g, is_preferred);
-            search_statistics.inc_evaluated_states();
+            statistics.inc_evaluated_states();
             succ_node.clear_h_dirty();
 
             if (open_list->is_dead_end(eval_context)) {
                 succ_node.mark_as_dead_end();
-                search_statistics.inc_dead_ends();
+                statistics.inc_dead_ends();
                 continue;
             }
 
@@ -196,7 +195,7 @@ SearchStatus EagerSearch::step() {
 
             open_list->insert(eval_context, succ_state.get_id());
             if (search_progress.check_h_progress(
-                    eval_context, succ_node.get_g(), search_statistics)) {
+                    eval_context, succ_node.get_g(), statistics)) {
                 reward_progress();
             }
         } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(*op)) {
@@ -210,7 +209,7 @@ SearchStatus EagerSearch::step() {
                       reopening should not occur (e.g. A* with a
                       consistent heuristic).
                     */
-                    search_statistics.inc_reopened();
+                    statistics.inc_reopened();
                 }
                 succ_node.reopen(node, op);
 
@@ -294,7 +293,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
 
                 if (open_list->is_dead_end(eval_context)) {
                     node.mark_as_dead_end();
-                    search_statistics.inc_dead_ends();
+                    statistics.inc_dead_ends();
                     continue;
                 }
 
@@ -311,7 +310,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         node.close();
         assert(!node.is_dead_end());
         update_f_value_statistics(node);
-        search_statistics.inc_expanded();
+        statistics.inc_expanded();
         return make_pair(node, true);
     }
 }
@@ -330,7 +329,7 @@ void EagerSearch::start_f_value_statistics(
     EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_heuristic_value(f_evaluator);
-        search_statistics.report_f_value_progress(f_value);
+        statistics.report_f_value_progress(f_value);
     }
 }
 
@@ -341,7 +340,7 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
           an arbitrary f evaluator.
         */
         int new_f_value = node.get_g() + node.get_h();
-        search_statistics.report_f_value_progress(new_f_value);
+        statistics.report_f_value_progress(new_f_value);
     }
 }
 

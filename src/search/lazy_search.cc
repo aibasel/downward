@@ -204,7 +204,7 @@ void LazySearch::reward_progress() {
     open_list->boost_preferred();
 }
 
-void LazySearch::statistics() const {
+void LazySearch::print_statistics() const {
     search_progress.print_statistics();
 }
 

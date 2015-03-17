@@ -25,13 +25,7 @@ private:
 protected:
     SearchSpace search_space;
     SearchProgress search_progress;
-    /*
-      TODO: It would perhaps be nice to rename the following attribute
-      to "statistics", but then we'd also need to rename the method
-      currently called "statistics" (which would also be a good idea
-      because we generally use verbs for method names).
-    */
-    SearchStatistics search_statistics;
+    SearchStatistics statistics;
     int bound;
     OperatorCost cost_type;
     double max_time;
@@ -45,8 +39,7 @@ protected:
 public:
     SearchEngine(const Options &opts);
     virtual ~SearchEngine();
-    virtual void statistics() const;
-    virtual void heuristic_statistics() const {}
+    virtual void print_statistics() const;
     virtual void save_plan_if_necessary() const;
     bool found_solution() const;
     SearchStatus get_status() const;

@@ -30,10 +30,10 @@ class IteratedSearch : public SearchEngine {
     virtual void initialize();
     virtual SearchStatus step();
 public:
-    IteratedSearch(const Options &opts);
-    virtual ~IteratedSearch();
+    explicit IteratedSearch(const Options &opts);
+    virtual ~IteratedSearch() override;
     virtual void save_plan_if_necessary() const;
-    void statistics() const;
+    virtual void print_statistics() const override;
 };
 
 #endif
