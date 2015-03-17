@@ -9,6 +9,11 @@
 #include <vector>
 
 
+/*
+  Task transformation that delegates all calls to the corresponding methods of
+  the parent task. You should inherit from this class instead of AbstractTask
+  if you need specialized behavior for only some of the methods.
+*/
 class DelegatingTask : public AbstractTask {
 protected:
     const std::shared_ptr<AbstractTask> parent;
