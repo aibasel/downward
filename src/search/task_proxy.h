@@ -388,6 +388,9 @@ public:
     std::size_t size() const {
         return task.get_num_axioms();
     }
+    bool empty() const {
+        return size() == 0;
+    }
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
         return OperatorProxy(task, index, true);
