@@ -3,11 +3,8 @@
 using namespace std;
 
 
-DelegatingTask::DelegatingTask(const shared_ptr<AbstractTask> parent_)
-    : parent(parent_) {
-}
-
-DelegatingTask::~DelegatingTask() {
+DelegatingTask::DelegatingTask(const shared_ptr<AbstractTask> parent)
+    : parent(parent) {
 }
 
 int DelegatingTask::get_num_variables() const {

@@ -2,9 +2,9 @@
 
 #include "cost_adapted_task.h"
 #include "global_operator.h"
+#include "globals.h"
 #include "option_parser.h"
 #include "operator_cost.h"
-#include "root_task.h"
 #include "task_proxy.h"
 
 #include <cassert>
@@ -16,6 +16,11 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+    /*
+      If the heuristic is created by the parser, the options must contain an
+      AbstractTask. If it is created internally, the options must contain a
+      TaskProxy. It is an error if both are present.
+    */
     assert(!(opts.contains("transform") && opts.contains("task_proxy")));
     /*
       This code is only intended for the transitional period while we still
@@ -31,7 +36,6 @@ Heuristic::Heuristic(const Options &opts)
              << "but not both." << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    // The "task_proxy" option is only passed for internally constructed heuristics.
     if (opts.contains("task_proxy")) {
         task = opts.get<TaskProxy *>("task_proxy");
     } else if (opts.contains("transform")) {
@@ -154,7 +158,8 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
-    // TODO: When the cost_type option is gone, use "no_transform" as default here.
+    // TODO: When the cost_type option is gone, use "no_transform" as default here
+    //       and remove the OptionFlags argument.
     parser.add_option<AbstractTask *>(
         "transform",
         "Optional task transformation for the heuristic. "

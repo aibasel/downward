@@ -3,7 +3,6 @@
 
 #include "abstract_task.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,7 +35,5 @@ public:
 
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
 };
-
-const std::shared_ptr<RootTask> get_root_task();
 
 #endif
