@@ -32,18 +32,22 @@ EagerSearch::EagerSearch(const Options &opts)
 
 EvaluationContext EagerSearch::evaluate_state(
     const GlobalState &state, int g, bool preferred) {
+    /*
+      TODO: This method can disappear once we have
+      refactored/rewritten the search progress class. It is of course
+      incredibly fragile to use heuristics.size() in such a way here
+      -- this part of the code should not need to know how many
+      heuristic evaluations happen "under the hood" here.
+    */
     EvaluationContext eval_context(state, g, preferred);
-    for (Heuristic *heur : heuristics)
-        eval_context.evaluate_heuristic(heur);
     search_progress.inc_evaluations(heuristics.size());
     return eval_context;
 }
 
 EvaluationContext EagerSearch::evaluate_state_for_preferred_ops(
     const GlobalState &state, int g, bool preferred) {
+    // TODO: See comment for evaluate_state()
     EvaluationContext eval_context(state, g, preferred);
-    for (Heuristic *heur : preferred_operator_heuristics)
-        eval_context.evaluate_heuristic(heur);
     search_progress.inc_evaluations(preferred_operator_heuristics.size());
     return eval_context;
 }
@@ -315,7 +319,6 @@ void EagerSearch::start_f_value_statistics(
            cleaning up the rest of the code. This should of course be
            improved later. */
         EvaluationContext copied_context(eval_context);
-        copied_context.evaluate_heuristic(f_evaluator);
         int f_value = copied_context.get_heuristic_value(f_evaluator);
         search_progress.report_f_value(f_value);
     }
@@ -327,7 +330,6 @@ void EagerSearch::update_f_value_statistics(
         EvaluationContext eval_context(state, node.get_g(), false);
         // TODO: The following is of course bogus and should be fixed soon.
         eval_context.hacky_set_evaluator_value(heuristics[0], node.get_h());
-        eval_context.evaluate_heuristic(f_evaluator);
         int new_f_value = eval_context.get_heuristic_value(f_evaluator);
         /*
         cout << "f = " << new_f_value

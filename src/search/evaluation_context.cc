@@ -27,10 +27,6 @@ const GlobalState &EvaluationContext::get_state() const {
     return state;
 }
 
-void EvaluationContext::evaluate_heuristic(ScalarEvaluator *heur) {
-    get_result(heur);
-}
-
 void EvaluationContext::hacky_set_evaluator_value(ScalarEvaluator *heur, int value) {
     eval_results[heur].set_h_value(value);
 }
