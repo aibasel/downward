@@ -14,10 +14,10 @@ protected:
 
 public:
     explicit ConstEvaluator(const Options &opts);
-    virtual ~ConstEvaluator();
+    virtual ~ConstEvaluator() override = default;
 
-    virtual void evaluate(int, bool) {}
-    virtual bool is_dead_end() const;
+    virtual void evaluate(int, bool) override {}
+    virtual bool is_dead_end() const override;
 };
 
 #endif
