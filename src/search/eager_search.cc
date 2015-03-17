@@ -93,13 +93,21 @@ void EagerSearch::initialize() {
     if (open_list->is_dead_end(eval_context)) {
         cout << "Initial state is a dead end." << endl;
     } else {
-        search_progress.set_initial_h_values(eval_context, statistics);
+        search_progress.set_initial_h_values(eval_context);
+        print_best_h_line(0);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
         node.open_initial(eval_context.get_heuristic_value(heuristics[0]));
 
         open_list->insert(eval_context, initial_state.get_id());
     }
+}
+
+void EagerSearch::print_best_h_line(int g) const {
+    search_progress.print_best_heuristic_values();
+    cout << " [g=" << g << ", ";
+    statistics.print_basic_statistics();
+    cout << "]" << endl;
 }
 
 void EagerSearch::print_statistics() const {
@@ -194,8 +202,8 @@ SearchStatus EagerSearch::step() {
             succ_node.open(succ_h, node, op);
 
             open_list->insert(eval_context, succ_state.get_id());
-            if (search_progress.check_h_progress(
-                    eval_context, succ_node.get_g(), statistics)) {
+            if (search_progress.check_h_progress(eval_context)) {
+                print_best_h_line(succ_node.get_g());
                 reward_progress();
             }
         } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(*op)) {
