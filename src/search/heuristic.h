@@ -11,6 +11,7 @@ class GlobalOperator;
 class GlobalState;
 class OptionParser;
 class Options;
+class TaskProxy;
 
 class Heuristic : public ScalarEvaluator {
     enum {NOT_INITIALIZED = -2};
@@ -62,5 +63,7 @@ public:
     static void add_options_to_parser(OptionParser &parser);
     static Options default_options();
 };
+
+TaskProxy *get_task_from_options(const Options &opts);
 
 #endif
