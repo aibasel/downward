@@ -28,8 +28,6 @@ StandardScalarOpenList<Entry>::StandardScalarOpenList(
 template<class Entry>
 void StandardScalarOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
-    if (eval_context.is_heuristic_infinite(evaluator))
-        return;
     int key = eval_context.get_heuristic_value(evaluator);
     buckets[key].push_back(entry);
     ++size;
@@ -73,10 +71,15 @@ void StandardScalarOpenList<Entry>::get_involved_heuristics(
 }
 
 template<class Entry>
+bool StandardScalarOpenList<Entry>::is_dead_end(
+    EvaluationContext &eval_context) const {
+    return eval_context.is_heuristic_infinite(evaluator);
+}
+
+template<class Entry>
 bool StandardScalarOpenList<Entry>::is_reliable_dead_end(
-    EvaluationContext &eval_context, const Entry &/*entry*/) {
-    return eval_context.is_heuristic_infinite(evaluator) &&
-        evaluator->dead_ends_are_reliable();
+    EvaluationContext &eval_context) const {
+    return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
 template<class Entry>

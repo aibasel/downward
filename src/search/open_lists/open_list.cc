@@ -18,9 +18,13 @@ void OpenList<Entry>::insert(
     EvaluationContext &eval_context, const Entry &entry) {
     if (only_preferred && !eval_context.is_preferred())
         return;
-    if (is_reliable_dead_end(eval_context, entry))
-        return;
-    do_insertion(eval_context, entry);
+    if (!is_dead_end(eval_context))
+        do_insertion(eval_context, entry);
+}
+
+template<class Entry>
+bool OpenList<Entry>::only_contains_preferred_entries() const {
+    return only_preferred;
 }
 
 #endif
