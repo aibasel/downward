@@ -1,15 +1,16 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
-#include <vector>
-#include <string>
-#include <map>
-#include <iostream>
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/open_list_buckets.h"
-#include "open_lists/tiebreaking_open_list.h"
 #include "open_lists/alternation_open_list.h"
+#include "open_lists/bucket_open_list.h"
 #include "open_lists/pareto_open_list.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 template <class T>
 class Plugin {

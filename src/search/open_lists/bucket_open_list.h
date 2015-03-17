@@ -1,5 +1,5 @@
-#ifndef OPEN_LISTS_OPEN_LIST_BUCKETS_H
-#define OPEN_LISTS_OPEN_LIST_BUCKETS_H
+#ifndef OPEN_LISTS_BUCKET_OPEN_LIST_H
+#define OPEN_LISTS_BUCKET_OPEN_LIST_H
 
 #include "open_list.h"
 
@@ -42,7 +42,7 @@ public:
     static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
-#include "open_list_buckets.cc"
+#include "bucket_open_list.cc"
 
 // HACK! Need a better strategy of dealing with templates, also in the Makefile.
 
