@@ -45,13 +45,14 @@ protected:
     void reward_progress();
 
     void get_successor_operators(std::vector<const GlobalOperator *> &ops);
-public:
 
-    LazySearch(const Options &opts);
-    virtual ~LazySearch();
+public:
+    explicit LazySearch(const Options &opts);
+    virtual ~LazySearch() = default;
+
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 
-    virtual void statistics() const;
+    virtual void print_statistics() const override;
 };
 
 #endif

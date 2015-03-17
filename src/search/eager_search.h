@@ -43,8 +43,10 @@ protected:
     virtual void initialize();
 
 public:
-    EagerSearch(const Options &opts);
-    void statistics() const;
+    explicit EagerSearch(const Options &opts);
+    virtual ~EagerSearch() = default;
+
+    virtual void print_statistics() const override;
 
     void dump_search_space();
 };

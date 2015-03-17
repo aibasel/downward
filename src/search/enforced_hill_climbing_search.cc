@@ -218,7 +218,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
     return FAILED;
 }
 
-void EnforcedHillClimbingSearch::statistics() const {
+void EnforcedHillClimbingSearch::print_statistics() const {
     search_progress.print_statistics();
 
     cout << "EHC Phases: " << num_ehc_phases << endl;
