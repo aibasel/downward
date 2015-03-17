@@ -61,25 +61,3 @@ const vector<const GlobalOperator *> &
 EvaluationContext::get_preferred_operators(ScalarEvaluator *heur) {
     return get_result(heur).get_preferred_operators();
 }
-
-bool EvaluationContext::is_dead_end() const {
-    bool all_estimates_are_infinite = true;
-    bool at_least_one_estimate = false;
-    for (const auto &entry : eval_results) {
-        const ScalarEvaluator *heur = entry.first;
-        const EvaluationResult &result = entry.second;
-        const Heuristic *h = dynamic_cast<const Heuristic *>(heur);
-        if (h != nullptr) {
-            /* Only consider actual heuristics.
-               TODO: Get rid of the cast and test once we've unified
-               Heuristic and ScalarEvaluator. */
-            if (result.is_infinite()) {
-                if (h->dead_ends_are_reliable())
-                    return true;
-            } else {
-                all_estimates_are_infinite = false;
-            }
-        }
-    }
-    return at_least_one_estimate && all_estimates_are_infinite;
-}
