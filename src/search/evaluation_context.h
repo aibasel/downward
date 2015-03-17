@@ -107,6 +107,11 @@ public:
         ScalarEvaluator *heur);
 
     /*
+      TODO: This method should go away; this functionality belongs
+            into the open lists instead. Currently they have an
+            is_reliable_dead_end() method, but with our current design
+            it seems we also need a plain is_dead_end() method.
+
       Determine if the state is a dead-end, using the information of
       all heuristics that have been computed. A state is considered a
       dead-end if at least one heuristic has been computed and
