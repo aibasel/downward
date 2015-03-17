@@ -10,7 +10,17 @@ using namespace std;
 
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
     : DelegatingTask(shared_ptr<AbstractTask>(opts.get<AbstractTask *>("transform"))),
-      cost_type(OperatorCost(opts.get<int>("cost_type"))) {
+      cost_type(OperatorCost(opts.get<int>("cost_type"))),
+      is_unit_cost(compute_is_unit_cost()) {
+}
+
+bool CostAdaptedTask::compute_is_unit_cost() {
+    int num_ops = parent->get_num_operators();
+    for (int op_index = 0; op_index < num_ops; ++op_index) {
+        if (parent->get_operator_cost(op_index, false) != 1)
+            return false;
+    }
+    return true;
 }
 
 int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {

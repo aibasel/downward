@@ -20,6 +20,8 @@ class Options;
 */
 class CostAdaptedTask : public DelegatingTask {
     const OperatorCost cost_type;
+    const bool is_unit_cost;
+    bool compute_is_unit_cost();
 public:
     explicit CostAdaptedTask(const Options &opts);
     virtual ~CostAdaptedTask() override = default;
