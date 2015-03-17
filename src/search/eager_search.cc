@@ -327,20 +327,19 @@ void EagerSearch::dump_search_space() {
 }
 
 void EagerSearch::start_f_value_statistics(
-    const EvaluationContext &eval_context) {
+    EvaluationContext &eval_context) {
     if (f_evaluator) {
-        /* TODO: Copying the context here is expensive and ugly, but I
-           want eval_context to be const here for now while we're
-           cleaning up the rest of the code. This should of course be
-           improved later. */
-        EvaluationContext copied_context(eval_context);
-        int f_value = copied_context.get_heuristic_value(f_evaluator);
+        int f_value = eval_context.get_heuristic_value(f_evaluator);
         search_statistics.report_f_value_progress(f_value);
     }
 }
 
 void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     if (f_evaluator) {
+        /*
+          TODO: This code doesn't fit the idea of supporting
+          an arbitrary f evaluator.
+        */
         int new_f_value = node.get_g() + node.get_h();
         search_statistics.report_f_value_progress(new_f_value);
     }
