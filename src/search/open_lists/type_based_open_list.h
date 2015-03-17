@@ -153,11 +153,13 @@ public:
         parser.document_synopsis(
             "Type-based open list",
             "Type-based open list that uses multiple evaluators to put nodes "
-            "into buckets. A bucket contains all entries with the same evaluator results. "
-            "When retrieving a node, a bucket is chosen "
+            "into buckets. A bucket contains all entries with the same "
+            "evaluator results. When retrieving a node, a bucket is chosen "
             "uniformly at random and one of the contained nodes is selected "
             "uniformly randomly.");
-        parser.add_list_option<ScalarEvaluator *>("evaluators", "Evaluators used to determine the bucket for each entry.");
+        parser.add_list_option<ScalarEvaluator *>(
+                    "evaluators",
+                    "Evaluators used to determine the bucket for each entry.");
 
         Options opts = parser.parse();
         if (parser.help_mode())
