@@ -28,6 +28,7 @@ class SearchStatistics {
     int lastjump_evaluated_states;
     int lastjump_generated_states;
 
+    void print_f_line() const;
 public:
     SearchStatistics();
     ~SearchStatistics() = default;
@@ -51,11 +52,25 @@ public:
     int get_generated_ops() const {return generated_ops; }
     int get_pathmax_corrections() const {return pathmax_corrections; }
 
-    // record jumps and possibly output
-    void report_f_value(int f);
+    /*
+      Call the following method with the f value of every expanded
+      state. It will notice "jumps" (i.e., when the expanded f value
+      is the highest f value encountered so far), print some
+      statistics on jumps, and keep track of expansions etc. up to the
+      last jump.
 
-    // output only
-    void print_f_line() const;
+      Statistics until the final jump are often useful to report in
+      A*-style searches because they are not affected by tie-breaking
+      as the overall statistics. (With a non-random, admissible and
+      consistent heuristic, the number of expanded, evaluated and
+      generated states until the final jump is fully determined by the
+      state space and heuristic, independently of things like the
+      order in which successors are generated or the tie-breaking
+      performed by the open list.)
+    */
+    void report_f_value_progress(int f);
+
+    // output
     void print_basic_statistics() const;
     void print_detailed_statistics() const;
 };

@@ -1,12 +1,12 @@
 #include "search_statistics.h"
 
-#include "evaluation_context.h"
 #include "globals.h"
 #include "timer.h"
 #include "utilities.h"
 
 #include <iostream>
 using namespace std;
+
 
 SearchStatistics::SearchStatistics() {
     expanded_states = 0;
@@ -26,7 +26,7 @@ SearchStatistics::SearchStatistics() {
     lastjump_f_value = -1;
 }
 
-void SearchStatistics::report_f_value(int f) {
+void SearchStatistics::report_f_value_progress(int f) {
     if (f > lastjump_f_value) {
         lastjump_f_value = f;
         print_f_line();
