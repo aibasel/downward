@@ -58,8 +58,6 @@ public:
 
     const GlobalState &get_state() const;
 
-    void hacky_set_evaluator_value(ScalarEvaluator *heur, int value);
-
     int get_g_value() const;
     bool is_preferred() const;
 

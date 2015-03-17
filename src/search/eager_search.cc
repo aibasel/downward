@@ -213,12 +213,24 @@ SearchStatus EagerSearch::step() {
 
                 EvaluationContext eval_context(
                     succ_state, succ_node.get_g(), is_preferred);
+
                 /*
-                  TODO: The following is of course bogus and should be
-                  fixed soon.
+                  Note: our old code used to retrieve the h value from
+                  the search node here. Our new code recomputes it as
+                  necessary, thus avoiding the incredibly ugliness of
+                  the old "set_evaluator_value" approch, which also
+                  did not generalize properly to settings with more
+                  than one heuristic.
+
+                  Reopening should not happen all that frequently, so
+                  the performance impact of this is hopefully not that
+                  large. In the medium term, we want the heuristics to
+                  remember heuristic values for states themselves if
+                  desired by the user, so that such recomputations
+                  will just involve a look-up by the Heuristic object
+                  rather than a recomputation of the heuristic value
+                  from scratch.
                 */
-                eval_context.hacky_set_evaluator_value(
-                    heuristics[0], succ_node.get_h());
                 open_list->insert(eval_context, succ_state.get_id());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
@@ -295,7 +307,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
 
         node.close();
         assert(!node.is_dead_end());
-        update_f_value_statistics(s, node);
+        update_f_value_statistics(node);
         search_progress.inc_expanded();
         return make_pair(node, true);
     }
@@ -324,19 +336,9 @@ void EagerSearch::start_f_value_statistics(
     }
 }
 
-void EagerSearch::update_f_value_statistics(
-    const GlobalState &state, const SearchNode &node) {
+void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     if (f_evaluator) {
-        EvaluationContext eval_context(state, node.get_g(), false);
-        // TODO: The following is of course bogus and should be fixed soon.
-        eval_context.hacky_set_evaluator_value(heuristics[0], node.get_h());
-        int new_f_value = eval_context.get_heuristic_value(f_evaluator);
-        /*
-        cout << "f = " << new_f_value
-             << " g = " << node.get_g()
-             << " h = " << eval_context.get_heuristic_value(heuristics[0])
-             << endl;
-        */
+        int new_f_value = node.get_g() + node.get_h();
         search_progress.report_f_value(new_f_value);
     }
 }

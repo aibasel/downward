@@ -27,10 +27,6 @@ const GlobalState &EvaluationContext::get_state() const {
     return state;
 }
 
-void EvaluationContext::hacky_set_evaluator_value(ScalarEvaluator *heur, int value) {
-    eval_results[heur].set_h_value(value);
-}
-
 int EvaluationContext::get_g_value() const {
     return g_value;
 }
