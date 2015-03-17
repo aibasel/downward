@@ -86,7 +86,7 @@ void EagerSearch::initialize() {
     EvaluationContext eval_context = evaluate_state(initial_state, 0, true);
     search_progress.inc_evaluated_states();
 
-    if (eval_context.is_dead_end()) {
+    if (open_list->is_dead_end(eval_context)) {
         cout << "Initial state is a dead end." << endl;
     } else {
         search_progress.set_initial_h_values(eval_context);
@@ -179,7 +179,7 @@ SearchStatus EagerSearch::step() {
             search_progress.inc_evaluated_states();
             succ_node.clear_h_dirty();
 
-            if (eval_context.is_dead_end()) {
+            if (open_list->is_dead_end(eval_context)) {
                 succ_node.mark_as_dead_end();
                 search_progress.inc_dead_ends();
                 continue;
@@ -273,7 +273,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     node.get_state(), node.get_g(), false);
                 node.clear_h_dirty();
 
-                if (eval_context.is_dead_end()) {
+                if (open_list->is_dead_end(eval_context)) {
                     node.mark_as_dead_end();
                     search_progress.inc_dead_ends();
                     continue;

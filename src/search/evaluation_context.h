@@ -58,6 +58,10 @@ class ScalarEvaluator;
   the heuristic value available for methods that use all heuristic
   information like "EvaluationContext::is_dead_end().
 
+      Later update: EvaluationContext::is_dead_end() is gone now, so
+      we're now quite some ways towards rectifying this and getting
+      rid of this need to precompute.
+
   But this means that it is easy to forget to call evaluate_heuristic
   without noticing that we lose dead-end pruning power, so it may
   ultimately be a better idea to *require* that evaluate_heuristic is
@@ -105,20 +109,6 @@ public:
     int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
     const std::vector<const GlobalOperator *> &get_preferred_operators(
         ScalarEvaluator *heur);
-
-    /*
-      TODO: This method should go away; this functionality belongs
-            into the open lists instead. Currently they have an
-            is_reliable_dead_end() method, but with our current design
-            it seems we also need a plain is_dead_end() method.
-
-      Determine if the state is a dead-end, using the information of
-      all heuristics that have been computed. A state is considered a
-      dead-end if at least one heuristic has been computed and
-      - all heuristic estimate are infinite, or
-      - the estimate of at least one safe heuristic is infinite
-    */
-    bool is_dead_end() const;
 };
 
 #endif
