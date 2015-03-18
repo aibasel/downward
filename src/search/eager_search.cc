@@ -64,9 +64,8 @@ void EagerSearch::initialize() {
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
-        search_progress.add_heuristic(*it);
-    }
+    for (Heuristic *heuristic : hset)
+        search_progress.add_heuristic(heuristic);
 
     // add heuristics that are used for preferred operators (in case they are
     // not also used in the open list)
@@ -146,9 +145,7 @@ SearchStatus EagerSearch::step() {
     }
     statistics.inc_evaluations(preferred_operator_heuristics.size());
 
-    for (size_t i = 0; i < applicable_ops.size(); ++i) {
-        const GlobalOperator *op = applicable_ops[i];
-
+    for (const GlobalOperator *op : applicable_ops) {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
@@ -498,12 +495,12 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
             open = new StandardScalarOpenList<StateID>(evals[0], false);
         } else {
             vector<OpenList<StateID> *> inner_lists;
-            for (size_t i = 0; i < evals.size(); ++i) {
+            for (ScalarEvaluator *evaluator : evals) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<StateID>(evals[i], false));
+                    new StandardScalarOpenList<StateID>(evaluator, false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<StateID>(evals[i], true));
+                        new StandardScalarOpenList<StateID>(evaluator, true));
                 }
             }
             open = new AlternationOpenList<StateID>(
