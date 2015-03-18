@@ -23,18 +23,6 @@ EagerSearch::EagerSearch(const Options &opts)
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")) {
 }
 
-EvaluationContext EagerSearch::evaluate_state(
-    const GlobalState &state, int g, bool preferred) {
-    EvaluationContext eval_context(state, g, preferred, statistics);
-    return eval_context;
-}
-
-EvaluationContext EagerSearch::evaluate_state_for_preferred_ops(
-    const GlobalState &state, int g, bool preferred) {
-    EvaluationContext eval_context(state, g, preferred, statistics);
-    return eval_context;
-}
-
 void EagerSearch::initialize() {
     cout << "Conducting best first search"
          << (reopen_closed_nodes ? " with" : " without")
@@ -65,7 +53,8 @@ void EagerSearch::initialize() {
     const GlobalState &initial_state = g_initial_state();
     // Note: we consider the initial state as reached by a preferred
     // operator.
-    EvaluationContext eval_context = evaluate_state(initial_state, 0, true);
+    EvaluationContext eval_context(initial_state, 0, true, statistics);
+
     statistics.inc_evaluated_states();
 
     if (open_list->is_dead_end(eval_context)) {
@@ -109,8 +98,7 @@ SearchStatus EagerSearch::step() {
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
-    EvaluationContext eval_context = evaluate_state_for_preferred_ops(
-        s, node.get_g(), false);
+    EvaluationContext eval_context(s, node.get_g(), false, statistics);
     for (Heuristic *heur : preferred_operator_heuristics) {
         /* In an alternation search with unreliable heuristics, it is
            possible that this heuristic considers the state a dead
@@ -161,8 +149,8 @@ SearchStatus EagerSearch::step() {
             // TODO: Make this less fragile.
             int succ_g = node.get_g() + get_adjusted_cost(*op);
 
-            EvaluationContext eval_context = evaluate_state(
-                succ_state, succ_g, is_preferred);
+            EvaluationContext eval_context(
+                succ_state, succ_g, is_preferred, statistics);
             statistics.inc_evaluated_states();
             succ_node.clear_h_dirty();
 
@@ -269,8 +257,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             }
             assert(node.get_h() == pushed_h);
             if (!node.is_closed() && node.is_h_dirty()) {
-                EvaluationContext eval_context = evaluate_state(
-                    node.get_state(), node.get_g(), false);
+                EvaluationContext eval_context(
+                    node.get_state(), node.get_g(), false, statistics);
                 node.clear_h_dirty();
 
                 if (open_list->is_dead_end(eval_context)) {
@@ -307,8 +295,7 @@ void EagerSearch::dump_search_space() const {
     search_space.dump();
 }
 
-void EagerSearch::start_f_value_statistics(
-    EvaluationContext &eval_context) {
+void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_heuristic_value(f_evaluator);
         statistics.report_f_value_progress(f_value);
