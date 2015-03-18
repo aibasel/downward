@@ -14,7 +14,8 @@
 using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
-    : initialized(false),
+    : description(opts.get_unparsed_config()),
+      initialized(false),
       task(opts.get<TaskProxy *>("task")),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
 }
@@ -119,5 +120,5 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 }
 
 string Heuristic::get_description() const {
-    return "unknown heuristic";
+    return description;
 }

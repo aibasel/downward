@@ -22,6 +22,7 @@ class Options;
 */
 
 class Heuristic : public ScalarEvaluator {
+    std::string description;
     bool initialized;
 
     std::vector<const GlobalOperator *> preferred_operators;

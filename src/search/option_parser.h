@@ -214,6 +214,7 @@ public:
     }
 
 private:
+    std::string unparsed_config;
     Options opts;
     ParseTree parse_tree;
     bool dry_run_;
