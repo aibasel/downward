@@ -374,7 +374,7 @@ tree<T> subtree(
 class Options {
 public:
     Options(bool hm = false)
-        : unparsed_config("<unavailable>"),
+        : unparsed_config("<missing>"),
           help_mode(hm) {
     }
 
