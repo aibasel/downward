@@ -22,14 +22,11 @@ for key, value in list(CONFIGS.items()):
             if ", pathmax=false" in arg:
                 # pathmax is gone in this branch
                 value[pos] = arg.replace(", pathmax=false", "")
-
-# Remove the following config for which there seems to a bug
-del CONFIGS["pareto_lmcut"]
-# TODO: Change the name of the config? It doesn't seem to use lmcut
-
-SUITE = downward.suites.suite_satisficing_with_ipc11()
 print(sorted(CONFIGS.keys()))
 print(len(CONFIGS))
+
+
+SUITE = downward.suites.suite_satisficing_with_ipc11()
 
 import common_setup
 
