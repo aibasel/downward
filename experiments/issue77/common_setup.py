@@ -78,7 +78,7 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return (node.endswith("cluster") or
+    return ("cluster" in node or
             node.startswith("gkigrid") or
             node in ["habakuk", "turtur"])
 
@@ -93,16 +93,16 @@ class IssueExperiment(DownwardExperiment):
 
     DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
 
-    # TODO: Once we have reference results, we should add "quality".
-    # TODO: Add something about errors/exit codes.
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
         "coverage",
+        "error",
         "evaluations",
         "expansions",
         "expansions_until_last_jump",
         "generated",
         "memory",
+        "quality",
         "run_dir",
         "score_evaluations",
         "score_expansions",
@@ -298,7 +298,8 @@ class IssueExperiment(DownwardExperiment):
             for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
                 report = CompareRevisionsReport(rev1, rev2, **kwargs)
                 outfile = os.path.join(self.eval_dir,
-                                       "%s-%s-compare.html" % (rev1, rev2))
+                                       "%s-%s-%s-compare.html" %
+                                       (self.name, rev1, rev2))
                 report(self.eval_dir, outfile)
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
@@ -322,26 +323,30 @@ class IssueExperiment(DownwardExperiment):
         def is_portfolio(config_nick):
             return "fdss" in config_nick
 
+        def make_scatter_plot(config_nick, rev1, rev2, attribute):
+            name = "-".join([self.name, rev1, rev2, attribute, config_nick])
+            print "Make scatter plot for", name
+            algo1 = "%s-%s" % (rev1, config_nick)
+            algo2 = "%s-%s" % (rev2, config_nick)
+            report = ScatterPlotReport(
+                filter_config=[algo1, algo2],
+                attributes=[attribute],
+                get_category=lambda run1, run2: run1["domain"],
+                legend_location=(1.3, 0.5))
+            report(self.eval_dir,
+                   os.path.join(scatter_dir, rev1 + "-" + rev2, name))
+
         def make_scatter_plots():
             for config_nick in self._config_nicks:
+                if is_portfolio(config_nick):
+                    valid_attributes = [
+                        attr for attr in attributes
+                        if attr in self.PORTFOLIO_ATTRIBUTES]
+                else:
+                    valid_attributes = attributes
                 for rev1, rev2 in itertools.combinations(
                         self.revision_nicks, 2):
-                    algo1 = "%s-%s" % (rev1, config_nick)
-                    algo2 = "%s-%s" % (rev2, config_nick)
-                    if is_portfolio(config_nick):
-                        valid_attributes = [
-                            attr for attr in attributes
-                            if attr in self.PORTFOLIO_ATTRIBUTES]
-                    else:
-                        valid_attributes = attributes
                     for attribute in valid_attributes:
-                        name = "-".join([rev1, rev2, attribute, config_nick])
-                        print "Make scatter plot for", name
-                        report = ScatterPlotReport(
-                            filter_config=[algo1, algo2],
-                            attributes=[attribute],
-                            get_category=lambda run1, run2: run1["domain"],
-                            legend_location=(1.3, 0.5))
-                        report(self.eval_dir, os.path.join(scatter_dir, name))
+                        make_scatter_plot(config_nick, rev1, rev2, attribute)
 
         self.add_step(Step("make-scatter-plots", make_scatter_plots))
