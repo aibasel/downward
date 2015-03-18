@@ -53,3 +53,14 @@ const vector<const GlobalOperator *> &
 EvaluationContext::get_preferred_operators(ScalarEvaluator *heur) {
     return get_result(heur).get_preferred_operators();
 }
+
+int EvaluationContext::get_number_of_evaluated_heuristics() const {
+    int result = 0;
+    for (const auto &element : eval_results) {
+        const ScalarEvaluator *eval = element.first;
+        const Heuristic *heur = dynamic_cast<const Heuristic *>(eval);
+        if (heur)
+            ++result;
+    }
+    return result;
+}
