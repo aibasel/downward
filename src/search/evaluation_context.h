@@ -78,6 +78,17 @@ public:
     const std::vector<const GlobalOperator *> &get_preferred_operators(
         ScalarEvaluator *heur);
 
+    /*
+      TODO: The following method is currently used (only) to count the
+      number of heuristic evaluations in the search algorithms, and to
+      make sure we count them correctly, we call it whenever an
+      EvaluationContext goes out of scope. This is tedious and
+      fragile, and it may be a better idea to have EvaluationContext
+      be directly associated with a statistics object that it notifies
+      whenever a new heuristic evaluation happens.
+    */
+    int get_number_of_evaluated_heuristics() const;
+
     template<class Callback>
     void for_each_evaluator_value(const Callback &callback) const {
         for (const auto &element : eval_results) {

@@ -25,23 +25,13 @@ EagerSearch::EagerSearch(const Options &opts)
 
 EvaluationContext EagerSearch::evaluate_state(
     const GlobalState &state, int g, bool preferred) {
-    /*
-      TODO: This method can disappear once we have
-      refactored/rewritten the search progress class. It is of course
-      incredibly fragile to use heuristics.size() in such a way here
-      -- this part of the code should not need to know how many
-      heuristic evaluations happen "under the hood" here.
-    */
     EvaluationContext eval_context(state, g, preferred);
-    statistics.inc_evaluations(heuristics.size());
     return eval_context;
 }
 
 EvaluationContext EagerSearch::evaluate_state_for_preferred_ops(
     const GlobalState &state, int g, bool preferred) {
-    // TODO: See comment for evaluate_state()
     EvaluationContext eval_context(state, g, preferred);
-    statistics.inc_evaluations(preferred_operator_heuristics.size());
     return eval_context;
 }
 
@@ -89,6 +79,8 @@ void EagerSearch::initialize() {
 
         open_list->insert(eval_context, initial_state.get_id());
     }
+    statistics.inc_evaluations(
+        eval_context.get_number_of_evaluated_heuristics());
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -132,7 +124,8 @@ SearchStatus EagerSearch::step() {
             preferred_ops.insert(preferred.begin(), preferred.end());
         }
     }
-    statistics.inc_evaluations(preferred_operator_heuristics.size());
+    statistics.inc_evaluations(
+        eval_context.get_number_of_evaluated_heuristics());
 
     for (const GlobalOperator *op : applicable_ops) {
         if ((node.get_real_g() + op->get_cost()) >= bound)
@@ -180,6 +173,8 @@ SearchStatus EagerSearch::step() {
             if (open_list->is_dead_end(eval_context)) {
                 succ_node.mark_as_dead_end();
                 statistics.inc_dead_ends();
+                statistics.inc_evaluations(
+                    eval_context.get_number_of_evaluated_heuristics());
                 continue;
             }
 
@@ -191,6 +186,8 @@ SearchStatus EagerSearch::step() {
                 print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }
+            statistics.inc_evaluations(
+                eval_context.get_number_of_evaluated_heuristics());
         } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(*op)) {
             // We found a new cheapest path to an open or closed state.
             if (reopen_closed_nodes) {
@@ -227,6 +224,8 @@ SearchStatus EagerSearch::step() {
                   from scratch.
                 */
                 open_list->insert(eval_context, succ_state.get_id());
+                statistics.inc_evaluations(
+                    eval_context.get_number_of_evaluated_heuristics());
             } else {
                 // if we do not reopen closed nodes, we just update the parent pointers
                 // Note that this could cause an incompatibility between
@@ -287,6 +286,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 if (open_list->is_dead_end(eval_context)) {
                     node.mark_as_dead_end();
                     statistics.inc_dead_ends();
+                    statistics.inc_evaluations(
+                        eval_context.get_number_of_evaluated_heuristics());
                     continue;
                 }
 
@@ -295,8 +296,13 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     assert(node.is_open());
                     node.increase_h(new_h);
                     open_list->insert(eval_context, node.get_state_id());
+                    statistics.inc_evaluations(
+                        eval_context.get_number_of_evaluated_heuristics());
                     continue;
                 }
+
+                statistics.inc_evaluations(
+                    eval_context.get_number_of_evaluated_heuristics());
             }
         }
 
