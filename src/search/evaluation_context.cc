@@ -3,6 +3,7 @@
 #include "evaluation_result.h"
 #include "heuristic.h"
 #include "scalar_evaluator.h"
+#include "search_statistics.h"
 
 #include <cassert>
 
@@ -10,16 +11,24 @@ using namespace std;
 
 
 EvaluationContext::EvaluationContext(
-    const GlobalState &state, int g, bool is_preferred)
+    const GlobalState &state, int g_value, bool is_preferred,
+    SearchStatistics &statistics)
     : state(state),
-      g_value(g),
-      preferred(is_preferred) {
+      g_value(g_value),
+      preferred(is_preferred),
+      statistics(statistics) {
 }
 
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
     EvaluationResult &result = eval_results[heur];
-    if (result.is_uninitialized())
+    if (result.is_uninitialized()) {
         result = heur->compute_result(*this);
+        if (dynamic_cast<const Heuristic *>(heur)) {
+            /* Only count evaluations of actual Heuristics, not arbitrary
+               scalar evaluators. */
+            statistics.inc_evaluations();
+        }
+    }
     return result;
 }
 
@@ -52,15 +61,4 @@ int EvaluationContext::get_heuristic_value_or_infinity(ScalarEvaluator *heur) {
 const vector<const GlobalOperator *> &
 EvaluationContext::get_preferred_operators(ScalarEvaluator *heur) {
     return get_result(heur).get_preferred_operators();
-}
-
-int EvaluationContext::get_number_of_evaluated_heuristics() const {
-    int result = 0;
-    for (const auto &element : eval_results) {
-        const ScalarEvaluator *eval = element.first;
-        const Heuristic *heur = dynamic_cast<const Heuristic *>(eval);
-        if (heur)
-            ++result;
-    }
-    return result;
 }
