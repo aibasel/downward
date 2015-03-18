@@ -20,26 +20,20 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
     return true;
 }
 
-inline bool is_unit_cost(TaskProxy task) {
-    for (OperatorProxy op : task.get_operators()) {
-        if (op.get_cost() != 1)
-            return false;
-    }
-    return true;
-}
+/*
+  Return true iff all operators have cost 1.
 
-inline bool has_axioms(TaskProxy task) {
-    return !task.get_axioms().empty();
-}
+  This function potentially loops over all operators, so it might be slow for
+  big tasks.
+*/
+bool is_unit_cost(TaskProxy task);
 
-inline bool has_conditional_effects(TaskProxy task) {
-    for (OperatorProxy op : task.get_operators()) {
-        for (EffectProxy effect : op.get_effects()) {
-            if (!effect.get_conditions().empty())
-                return true;
-        }
-    }
-    return false;
-}
+bool has_axioms(TaskProxy task);
+
+/*
+  This function potentially loops over all operators, so it might be slow for
+  big tasks.
+*/
+bool has_conditional_effects(TaskProxy task);
 
 #endif
