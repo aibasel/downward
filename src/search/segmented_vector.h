@@ -96,7 +96,7 @@ public:
         }
     }
 
-    Entry &operator[](size_t index) {
+    Entry & operator[](size_t index) {
         assert(index < the_size);
         size_t segment = get_segment(index);
         size_t offset = get_offset(index);

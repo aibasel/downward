@@ -129,8 +129,8 @@ class StateRegistry {
       i.e. the actual state data is compared, not the memory location.
     */
     typedef std::unordered_set<StateID,
-                                StateIDSemanticHash,
-                                StateIDSemanticEqual> StateIDSet;
+                               StateIDSemanticHash,
+                               StateIDSemanticEqual> StateIDSet;
 
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;

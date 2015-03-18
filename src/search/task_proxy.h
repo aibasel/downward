@@ -94,7 +94,7 @@ public:
     typename ProxyCollection::ItemType operator*() {
         return collection[pos];
     }
-    ProxyIterator &operator++() {
+    ProxyIterator & operator++() {
         ++pos;
         return *this;
     }

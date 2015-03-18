@@ -104,7 +104,7 @@ class Exploration : public Heuristic {
     void setup_exploration_queue(const GlobalState &state,
                                  const std::vector<std::pair<int, int> > &excluded_props,
                                  const std::unordered_set<const GlobalOperator *,
-                                                           ex_hash_operator_ptr> &excluded_ops,
+                                                          ex_hash_operator_ptr> &excluded_ops,
                                  bool use_h_max);
     inline void setup_exploration_queue(const GlobalState &state, bool h_max) {
         std::vector<std::pair<int, int> > excluded_props;
@@ -134,7 +134,7 @@ public:
                                             bool level_out,
                                             const std::vector<std::pair<int, int> > &excluded_props,
                                             const std::unordered_set<const GlobalOperator *,
-                                                                      ex_hash_operator_ptr> &excluded_ops,
+                                                                     ex_hash_operator_ptr> &excluded_ops,
                                             bool compute_lvl_ops);
     std::vector<const GlobalOperator *> exported_ops; // only needed for landmarks count heuristic ha
 

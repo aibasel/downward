@@ -8,7 +8,7 @@
 
 class StateID {
     friend class StateRegistry;
-    friend std::ostream &operator<<(std::ostream &os, StateID id);
+    friend std::ostream & operator<<(std::ostream &os, StateID id);
     template<typename>
     friend class PerStateInformation;
 
@@ -38,7 +38,7 @@ public:
     }
 };
 
-std::ostream &operator<<(std::ostream &os, StateID id);
+std::ostream & operator<<(std::ostream &os, StateID id);
 
 namespace std {
 template<>
