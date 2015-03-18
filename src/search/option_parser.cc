@@ -390,7 +390,8 @@ static ParseTree generate_parse_tree(string config) {
 }
 
 OptionParser::OptionParser(const string config, bool dr)
-    : opts(false),
+    : unparsed_config(config),
+      opts(false),
       parse_tree(generate_parse_tree(config)),
       dry_run_(dr),
       help_mode_(false),
@@ -399,7 +400,8 @@ OptionParser::OptionParser(const string config, bool dr)
 
 
 OptionParser::OptionParser(ParseTree pt, bool dr)
-    : opts(false),
+    : unparsed_config("<unavailable>"),
+      opts(false),
       parse_tree(pt),
       dry_run_(dr),
       help_mode_(false),
@@ -498,6 +500,7 @@ Options OptionParser::parse() {
         }
         last_key = pti->key;
     }
+    opts.set_unparsed_config(unparsed_config);
     return opts;
 }
 
