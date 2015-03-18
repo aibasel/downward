@@ -52,8 +52,14 @@ bool ParetoOpenList<Entry>::is_nondominated(
 
 template<class Entry>
 void ParetoOpenList<Entry>::remove_key(const KeyType &key) {
-    nondominated.erase(key);
-    buckets.erase(key);
+    /*
+      We must copy the key because it is likely to live inside the
+      data structures from which we remove it here and hence becomes
+      invalid at that point.
+    */
+    vector<int> copied_key(key);
+    nondominated.erase(copied_key);
+    buckets.erase(copied_key);
     KeySet candidates;
     for (const auto &bucket_pair : buckets) {
         const KeyType &bucket_key = bucket_pair.first;
@@ -65,7 +71,7 @@ void ParetoOpenList<Entry>::remove_key(const KeyType &key) {
           vectors, we add it to the candidates.
         */
         if (!nondominated.count(bucket_key) &&
-            dominates(key, bucket_key) &&
+            dominates(copied_key, bucket_key) &&
             is_nondominated(bucket_key, nondominated))
             candidates.insert(bucket_key);
     }
