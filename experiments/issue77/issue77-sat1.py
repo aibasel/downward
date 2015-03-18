@@ -27,7 +27,7 @@ for key, value in list(CONFIGS.items()):
 del CONFIGS["pareto_lmcut"]
 # TODO: Change the name of the config? It doesn't seem to use lmcut
 
-SUITE = downward.suites.suite_satisficing_with_ipc11
+SUITE = downward.suites.suite_satisficing_with_ipc11()
 print(sorted(CONFIGS.keys()))
 print(len(CONFIGS))
 
