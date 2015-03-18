@@ -18,16 +18,9 @@ EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<OpenList<StateID> *>("open")) {
-    if (opts.contains("f_eval")) {
-        f_evaluator = opts.get<ScalarEvaluator *>("f_eval");
-    } else {
-        f_evaluator = nullptr;
-    }
-    if (opts.contains("preferred")) {
-        preferred_operator_heuristics =
-            opts.get_list<Heuristic *>("preferred");
-    }
+      open_list(opts.get<OpenList<StateID> *>("open")),
+      f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
+      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")) {
 }
 
 EvaluationContext EagerSearch::evaluate_state(
@@ -425,6 +418,8 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         opts.set("open", open);
         opts.set("f_eval", f_eval);
         opts.set("reopen_closed", true);
+        vector<Heuristic *> preferred_list;
+        opts.set("preferred", preferred_list);
         engine = new EagerSearch(opts);
     }
 
