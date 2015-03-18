@@ -117,3 +117,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     result.set_preferred_operators(pref_ops);
     return result;
 }
+
+string Heuristic::get_description() const {
+    return "unknown heuristic";
+}

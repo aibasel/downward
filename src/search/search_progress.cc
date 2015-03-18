@@ -35,8 +35,8 @@ bool SearchProgress::process_heuristic_value(const Heuristic *heuristic, int h) 
 
 void SearchProgress::output_line(const string &description,
                                  const Heuristic *heuristic, int h) const {
-    cout << description << " heuristic value for " << heuristic
-         << ": " << h << endl;
+    cout << description << " heuristic value for "
+         << heuristic->get_description() << ": " << h << endl;
 }
 
 bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
