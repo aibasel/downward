@@ -10,8 +10,8 @@ class GlobalState;
 
 class AbstractTask {
 public:
-    AbstractTask() {}
-    virtual ~AbstractTask() {}
+    AbstractTask() = default;
+    virtual ~AbstractTask() = default;
     virtual int get_num_variables() const = 0;
     virtual const std::string &get_variable_name(int var) const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
