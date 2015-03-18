@@ -6,7 +6,6 @@
 #include "../globals.h"
 
 #include <cassert>
-#include <ext/hash_map>
 #include <list>
 #include <map>
 #include <set>
@@ -14,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-using namespace __gnu_cxx;
 using namespace std;
 
 LandmarkGraph::LandmarkGraph(const Options &opts)
@@ -52,12 +50,12 @@ LandmarkNode *LandmarkGraph::get_landmark(const pair<int, int> &prop) const {
      landmark exists.
      */
     LandmarkNode *node_p = 0;
-    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
+    unordered_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
         simple_lms_to_nodes.find(prop);
     if (it != simple_lms_to_nodes.end())
         node_p = it->second;
     else {
-        hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
+        unordered_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
             it2 = disj_lms_to_nodes.find(prop);
         if (it2 != disj_lms_to_nodes.end())
             node_p = it2->second;
@@ -101,7 +99,7 @@ void LandmarkGraph::count_costs() {
 }
 
 bool LandmarkGraph::simple_landmark_exists(const pair<int, int> &lm) const {
-    hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
+    unordered_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator it =
         simple_lms_to_nodes.find(lm);
     assert(it == simple_lms_to_nodes.end() || !it->second->disjunctive);
     return it != simple_lms_to_nodes.end();
@@ -119,7 +117,7 @@ bool LandmarkGraph::disj_landmark_exists(const set<pair<int, int> > &lm) const {
     // Test whether ONE of the facts in lm is present in some disj. LM
     for (set<pair<int, int> >::const_iterator it = lm.begin(); it != lm.end(); ++it) {
         const pair<int, int> &prop = *it;
-        hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
+        unordered_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
             it2 = disj_lms_to_nodes.find(prop);
         if (it2 != disj_lms_to_nodes.end())
             return true;
@@ -132,7 +130,7 @@ bool LandmarkGraph::exact_same_disj_landmark_exists(const set<pair<int, int> > &
     LandmarkNode *lmn = NULL;
     for (set<pair<int, int> >::const_iterator it = lm.begin(); it != lm.end(); ++it) {
         const pair<int, int> &prop = *it;
-        hash_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
+        unordered_map<pair<int, int>, LandmarkNode *, hash_int_pair>::const_iterator
             it2 = disj_lms_to_nodes.find(prop);
         if (it2 == disj_lms_to_nodes.end())
             return false;
@@ -192,13 +190,13 @@ LandmarkNode &LandmarkGraph::landmark_add_conjunctive(const set<pair<int, int> >
 }
 
 void LandmarkGraph::rm_landmark_node(LandmarkNode *node) {
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+    for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
              node->parents.begin(); it != node->parents.end(); ++it) {
         LandmarkNode &parent = *(it->first);
         parent.children.erase(node);
         assert(parent.children.find(node) == parent.children.end());
     }
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+    for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
              node->children.begin(); it != node->children.end(); ++it) {
         LandmarkNode &child = *(it->first);
         child.parents.erase(node);
@@ -271,7 +269,7 @@ void LandmarkGraph::dump() const {
          != nodes2.end(); ++it) {
         LandmarkNode *node_p = *it;
         dump_node(node_p);
-        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
+        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
              parent_it = node_p->parents.begin(); parent_it
              != node_p->parents.end(); ++parent_it) {
             const edge_type &edge = parent_it->second;
@@ -296,7 +294,7 @@ void LandmarkGraph::dump() const {
             }
             dump_node(parent_p);
         }
-        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
+        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
              child_it = node_p->children.begin(); child_it
              != node_p->children.end(); ++child_it) {
             const edge_type &edge = child_it->second;

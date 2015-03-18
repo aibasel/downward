@@ -14,7 +14,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <deque>
-#include <ext/hash_map>
 #include <functional>
 #include <iostream>
 #include <fstream>
@@ -24,7 +23,6 @@
 #include <sstream>
 #include <unordered_map>
 using namespace std;
-using namespace __gnu_cxx;
 
 /* Implementation note: Transitions are grouped by thei label groups,
  not by source state or any such thing. Such a grouping is beneficial
@@ -399,7 +397,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
         labels->add_label(get_adjusted_action_cost(op, cost_type));
         const vector<GlobalCondition> &preconditions = op.get_preconditions();
         const vector<GlobalEffect> &effects = op.get_effects();
-        hash_map<int, int> pre_val;
+        unordered_map<int, int> pre_val;
         vector<bool> has_effect_on_var(var_count, false);
         for (size_t i = 0; i < preconditions.size(); ++i)
             pre_val[preconditions[i].var] = preconditions[i].val;
@@ -413,7 +411,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             // Determine possible values that var can have when this
             // operator is applicable.
             int pre_value = -1;
-            hash_map<int, int>::const_iterator pre_val_it = pre_val.find(var);
+            unordered_map<int, int>::const_iterator pre_val_it = pre_val.find(var);
             if (pre_val_it != pre_val.end())
                 pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;

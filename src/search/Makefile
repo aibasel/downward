@@ -224,7 +224,7 @@ endif
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Wno-deprecated -Werror
+CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Werror
 
 CXXFLAGS += -Iext
 ifeq ($(DOWNWARD_OS), osx)

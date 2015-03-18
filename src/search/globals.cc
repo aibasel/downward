@@ -19,12 +19,11 @@
 #include <limits>
 #include <set>
 #include <string>
-#include <vector>
 #include <sstream>
-using namespace std;
+#include <vector>
+#include <unordered_map>
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+using namespace std;
 
 static const int PRE_FILE_VERSION = 3;
 

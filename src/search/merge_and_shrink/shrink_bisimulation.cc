@@ -7,11 +7,8 @@
 
 #include <cassert>
 #include <iostream>
-#include <ext/hash_map>
 
 using namespace std;
-using namespace __gnu_cxx;
-
 
 /* A successor signature characterizes the behaviour of an abstract
    state in so far as bisimulation cares about it. States with
@@ -151,7 +148,7 @@ int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
        unsolvable.
     */
 
-    typedef hash_map<int, int> GroupMap;
+    typedef unordered_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < ts.get_size(); ++state) {

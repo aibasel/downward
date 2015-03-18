@@ -6,13 +6,13 @@
 #include "task_proxy.h"
 #include "utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <vector>
-using namespace std;
+#include <unordered_map>
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+using namespace std;
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
@@ -131,9 +131,9 @@ void RelaxationHeuristic::simplify() {
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
     typedef pair<vector<Proposition *>, Proposition *> HashKey;
-    typedef hash_map<HashKey, int, hash_unary_operator> HashMap;
+    typedef unordered_map<HashKey, int, hash_unary_operator> HashMap;
     HashMap unary_operator_index;
-    unary_operator_index.resize(unary_operators.size() * 2);
+    unary_operator_index.reserve(unary_operators.size() * 2);
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];

@@ -6,7 +6,7 @@
 #include "../utilities.h"
 
 #include <vector>
-#include <ext/hash_set>
+#include <unordered_set>
 
 class DominancePruner {
 private:
@@ -14,7 +14,7 @@ private:
     std::vector<std::vector<PDBHeuristic *> > &max_cliques;
 
     // Precomputed superset relation of patterns.
-    typedef __gnu_cxx::hash_set<std::pair<PDBHeuristic *, PDBHeuristic *>,
+    typedef std::unordered_set<std::pair<PDBHeuristic *, PDBHeuristic *>,
                                 hash_pointer_pair> PDBRelation;
     PDBRelation superset_relation;
     void compute_superset_relation();

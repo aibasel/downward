@@ -7,13 +7,9 @@
 
 #include <cassert>
 #include <vector>
+#include <unordered_map>
+
 using namespace std;
-
-#include <ext/hash_map>
-using namespace __gnu_cxx;
-
-
-
 
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)

@@ -9,7 +9,7 @@
 #include "utilities.h"
 
 #include <set>
-#include <ext/hash_set>
+#include <unordered_set>
 
 /*
   Overview of classes relevant to storing and working with registered states.
@@ -128,7 +128,7 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    typedef __gnu_cxx::hash_set<StateID,
+    typedef std::unordered_set<StateID,
                                 StateIDSemanticHash,
                                 StateIDSemanticEqual> StateIDSet;
 

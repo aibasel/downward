@@ -15,9 +15,8 @@
 #include <iostream>
 #include <limits>
 #include <vector>
-#include <ext/hash_set>
+#include <unordered_set>
 
-using namespace __gnu_cxx;
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
@@ -89,8 +88,8 @@ void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bo
 
 void PatternGenerationEdelkamp::remove_irrelevant_variables(
     vector<int> &pattern) const {
-    hash_set<int> in_original_pattern(pattern.begin(), pattern.end());
-    hash_set<int> in_pruned_pattern;
+    unordered_set<int> in_original_pattern(pattern.begin(), pattern.end());
+    unordered_set<int> in_pruned_pattern;
 
     vector<int> vars_to_check;
     for (size_t i = 0; i < g_goal.size(); ++i) {

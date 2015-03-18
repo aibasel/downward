@@ -7,7 +7,6 @@
 #include <fstream>
 #include <limits>
 
-using namespace __gnu_cxx;
 using namespace std;
 
 LandmarkFactory::LandmarkFactory(const Options &opts)
@@ -89,7 +88,7 @@ bool LandmarkFactory::is_landmark_precondition(const GlobalOperator &o,
 }
 
 bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
-                                            vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
+                                            vector<unordered_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
@@ -102,7 +101,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
             const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(i);
-            lvl_op[i] = hash_map<pair<int, int>, int, hash_int_pair> ();
+            lvl_op[i] = unordered_map<pair<int, int>, int, hash_int_pair> ();
             const vector<GlobalEffect> &effects = op.get_effects();
             for (size_t j = 0; j < effects.size(); ++j)
                 lvl_op[i].insert(make_pair(make_pair(effects[j].var,
@@ -116,7 +115,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
                             numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
-    hash_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
+    unordered_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     if (exclude != NULL) {
         for (size_t op = 0; op < g_operators.size(); ++op) {
@@ -150,14 +149,14 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     if (landmark.in_goal)
         return true;
     vector<vector<int> > lvl_var;
-    vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+    vector<unordered_map<pair<int, int>, int, hash_int_pair> > lvl_op;
     // Initialize lvl_var to numeric_limits<int>::max()
     lvl_var.resize(g_variable_name.size());
     for (size_t var = 0; var < g_variable_name.size(); ++var) {
         lvl_var[var].resize(g_variable_domain[var],
                             numeric_limits<int>::max());
     }
-    hash_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
+    unordered_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
     vector<pair<int, int> > exclude_props;
     for (size_t op = 0; op < g_operators.size(); ++op) {
         if (is_landmark_precondition(g_operators[op], &landmark)) {
@@ -328,7 +327,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             if (node_a->conjunctive)
                 continue;
 
-            hash_map<int, int> shared_eff;
+            unordered_map<int, int> shared_eff;
             bool init = true;
             const vector<int> &ops = lm_graph->get_operators_including_eff(a);
             // Intersect operators that achieve a one by one
@@ -347,7 +346,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 set<pair<int, int> > trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(effects,
                                                                                trivially_conditioned_effects);
-                hash_map<int, int> next_eff;
+                unordered_map<int, int> next_eff;
                 for (size_t j = 0; j < effects.size(); ++j) {
                     if (effects[j].conditions.empty() && effects[j].var != a.first) {
                         next_eff.insert(make_pair(effects[j].var, effects[j].val));
@@ -361,10 +360,10 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 if (init)
                     swap(shared_eff, next_eff);
                 else {
-                    hash_map<int, int> result;
-                    for (hash_map<int, int>::iterator it1 = shared_eff.begin(); it1
+                    unordered_map<int, int> result;
+                    for (unordered_map<int, int>::iterator it1 = shared_eff.begin(); it1
                          != shared_eff.end(); ++it1) {
-                        hash_map<int, int>::iterator it2 = next_eff.find(it1->first);
+                        unordered_map<int, int>::iterator it2 = next_eff.find(it1->first);
                         if (it2 != next_eff.end() && it2->second == it1->second)
                             result.insert(*it1);
                     }
@@ -373,7 +372,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 init = false;
             }
             // Test whether one of the shared effects is inconsistent with b
-            for (hash_map<int, int>::iterator it = shared_eff.begin(); it
+            for (unordered_map<int, int>::iterator it = shared_eff.begin(); it
                  != shared_eff.end(); ++it)
                 if (make_pair(it->first, it->second) != a && make_pair(it->first,
                                                                        it->second) != b && are_mutex(*it, b))
@@ -430,13 +429,13 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
         } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
-            hash_set<LandmarkNode *, hash_pointer> interesting_nodes(
+            unordered_set<LandmarkNode *, hash_pointer> interesting_nodes(
                 g_variable_name.size());
-            for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+            for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
                      node_p->children.begin(); it != node_p->children.end(); ++it) {
                 if (it->second >= greedy_necessary) { // found node2: node_p ->_gn node2
                     LandmarkNode &node2 = *(it->first);
-                    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator
+                    for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator
                          it2 = node2.parents.begin(); it2
                          != node2.parents.end(); ++it2) {   // find parent
                         edge_type &edge = it2->second;
@@ -455,7 +454,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
             }
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
-            for (hash_set<LandmarkNode *, hash_pointer>::iterator it3 =
+            for (unordered_set<LandmarkNode *, hash_pointer>::iterator it3 =
                      interesting_nodes.begin(); it3 != interesting_nodes.end(); ++it3) {
                 if (*it3 == node_p || (*it3)->disjunctive)
                     continue;
@@ -471,14 +470,14 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
 }
 
 void LandmarkFactory::collect_ancestors(
-    hash_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
+    unordered_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
     bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
 
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;
-    hash_set<LandmarkNode *, hash_pointer> closed_nodes;
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+    unordered_set<LandmarkNode *, hash_pointer> closed_nodes;
+    for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
              node.parents.begin(); it != node.parents.end(); ++it) {
         edge_type &edge = it->second;
         LandmarkNode &parent = *(it->first);
@@ -492,7 +491,7 @@ void LandmarkFactory::collect_ancestors(
     }
     while (!open_nodes.empty()) {
         LandmarkNode &node2 = *(open_nodes.front());
-        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
                  node2.parents.begin(); it != node2.parents.end(); ++it) {
             edge_type &edge = it->second;
             LandmarkNode &parent = *(it->first);
@@ -635,7 +634,7 @@ void LandmarkFactory::discard_all_orderings() {
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
-    hash_set<LandmarkNode *, hash_pointer> acyclic_node_set(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *, hash_pointer> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
     for (set<LandmarkNode *>::iterator it = lm_graph->get_nodes().begin(); it != lm_graph->get_nodes().end(); ++it) {
         LandmarkNode &lmn = **it;
@@ -680,12 +679,12 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     return true;
 }
 
-int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, hash_set<
+int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, unordered_set<
                                             LandmarkNode *, hash_pointer> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, edge_type> > path;
-    hash_set<LandmarkNode *, hash_pointer> visited = hash_set<LandmarkNode *,
+    unordered_set<LandmarkNode *, hash_pointer> visited = unordered_set<LandmarkNode *,
                                                               hash_pointer> (lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
@@ -710,7 +709,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, hash_set<
         }
         visited.insert(cur);
         bool empty = true;
-        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
+        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
              it = cur->children.begin(); it != cur->children.end(); ++it) {
             edge_type edge = it->second;
             LandmarkNode *child_p = it->first;
@@ -749,7 +748,7 @@ int LandmarkFactory::calculate_lms_cost() const {
 
 void LandmarkFactory::compute_predecessor_information(
     LandmarkNode *bp,
-    vector<vector<int> > &lvl_var, vector<hash_map<pair<int, int>, int,
+    vector<vector<int> > &lvl_var, vector<unordered_map<pair<int, int>, int,
                                                    hash_int_pair> > &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
@@ -773,7 +772,7 @@ void LandmarkFactory::calc_achievers() {
         }
 
         vector<vector<int> > lvl_var;
-        vector<hash_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+        vector<unordered_map<pair<int, int>, int, hash_int_pair> > lvl_op;
         compute_predecessor_information(&lmn, lvl_var, lvl_op);
 
         set<int>::iterator ach_it;
