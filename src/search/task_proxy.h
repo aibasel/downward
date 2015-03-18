@@ -128,20 +128,15 @@ public:
     const std::string &get_name() const {
         return task.get_fact_name(var_id, value);
     }
-    bool operator==(FactProxy other) {
-        return (var_id == other.var_id) && (value == other.value);
+    bool operator==(FactProxy const &other) const {
+        return var_id == other.var_id && value == other.value;
     }
-    bool operator!=(FactProxy other) {
+    bool operator!=(FactProxy other) const {
         return !(*this == other);
     }
 };
 
 
-/*
-  The standard ProxyIterator expects the collections to provide random access.
-  Since randomly accessing the i-th fact involves looping over the variables,
-  we use a custom iterator for FactsProxy that only provides sequential access.
-*/
 class FactsProxyIterator {
     const AbstractTask &task;
     int var_id;
@@ -154,6 +149,7 @@ public:
         return FactProxy(task, var_id, value);
     }
     FactsProxyIterator &operator++() {
+        assert(var_id < task.get_num_variables());
         int num_facts = task.get_variable_domain_size(var_id);
         assert(value < num_facts);
         ++value;
@@ -163,29 +159,30 @@ public:
         }
         return *this;
     }
-    bool operator!=(const FactsProxyIterator &it) const {
-        return var_id != it.var_id || value != it.value;
+    bool operator==(const FactsProxyIterator &other) const {
+        return var_id == other.var_id && value == other.value;
+    }
+    bool operator!=(const FactsProxyIterator &other) const {
+        return !(*this == other);
     }
 };
 
 
+/*
+  Proxy class for the collection of all facts of a task.
+
+  We don't implement size() because it would not be constant-time.
+*/
 class FactsProxy {
     const AbstractTask &task;
 public:
     explicit FactsProxy(const AbstractTask &task_)
         : task(task_) {}
     ~FactsProxy() {}
-    std::size_t size() const {
-        int num_vars = task.get_num_variables();
-        int num_facts = 0;
-        for (int var = 0; var < num_vars; ++var)
-            num_facts += task.get_variable_domain_size(var);
-        return num_facts;
-    }
-    FactsProxyIterator begin() {
+    FactsProxyIterator begin() const {
         return FactsProxyIterator(task, 0, 0);
     }
-    FactsProxyIterator end() {
+    FactsProxyIterator end() const {
         return FactsProxyIterator(task, task.get_num_variables(), 0);
     }
 };
