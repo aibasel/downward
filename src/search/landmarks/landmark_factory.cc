@@ -382,7 +382,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
         /* // Experimentally commenting this out -- see issue202.
         // 3. Exists LM x, inconsistent x, b and x->_gn a
         const LandmarkNode &node = *node_a;
-        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
+        for (unordered_map<LandmarkNode *, edge_type>::const_iterator it =
                  node.parents.begin(); it != node.parents.end(); ++it) {
             edge_type edge = it->second;
             for (size_t i = 0; i < it->first->vars.size(); ++i) {
@@ -429,13 +429,13 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
         } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
-            unordered_set<LandmarkNode *, hash_pointer> interesting_nodes(
+            unordered_set<LandmarkNode *> interesting_nodes(
                 g_variable_name.size());
-            for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+            for (unordered_map<LandmarkNode *, edge_type>::iterator it =
                      node_p->children.begin(); it != node_p->children.end(); ++it) {
                 if (it->second >= greedy_necessary) { // found node2: node_p ->_gn node2
                     LandmarkNode &node2 = *(it->first);
-                    for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator
+                    for (unordered_map<LandmarkNode *, edge_type>::iterator
                          it2 = node2.parents.begin(); it2
                          != node2.parents.end(); ++it2) {   // find parent
                         edge_type &edge = it2->second;
@@ -454,7 +454,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
             }
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
-            for (unordered_set<LandmarkNode *, hash_pointer>::iterator it3 =
+            for (unordered_set<LandmarkNode *>::iterator it3 =
                      interesting_nodes.begin(); it3 != interesting_nodes.end(); ++it3) {
                 if (*it3 == node_p || (*it3)->disjunctive)
                     continue;
@@ -470,14 +470,14 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
 }
 
 void LandmarkFactory::collect_ancestors(
-    unordered_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
+    unordered_set<LandmarkNode *> &result, LandmarkNode &node,
     bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
 
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;
-    unordered_set<LandmarkNode *, hash_pointer> closed_nodes;
-    for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+    unordered_set<LandmarkNode *> closed_nodes;
+    for (unordered_map<LandmarkNode *, edge_type>::iterator it =
              node.parents.begin(); it != node.parents.end(); ++it) {
         edge_type &edge = it->second;
         LandmarkNode &parent = *(it->first);
@@ -491,7 +491,7 @@ void LandmarkFactory::collect_ancestors(
     }
     while (!open_nodes.empty()) {
         LandmarkNode &node2 = *(open_nodes.front());
-        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+        for (unordered_map<LandmarkNode *, edge_type>::iterator it =
                  node2.parents.begin(); it != node2.parents.end(); ++it) {
             edge_type &edge = it->second;
             LandmarkNode &parent = *(it->first);
@@ -634,7 +634,7 @@ void LandmarkFactory::discard_all_orderings() {
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
-    unordered_set<LandmarkNode *, hash_pointer> acyclic_node_set(lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
     for (set<LandmarkNode *>::iterator it = lm_graph->get_nodes().begin(); it != lm_graph->get_nodes().end(); ++it) {
         LandmarkNode &lmn = **it;
@@ -680,12 +680,11 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
 }
 
 int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, unordered_set<
-                                            LandmarkNode *, hash_pointer> &acyclic_node_set) {
+                                            LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, edge_type> > path;
-    unordered_set<LandmarkNode *, hash_pointer> visited = unordered_set<LandmarkNode *,
-                                                              hash_pointer> (lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *> (lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
@@ -709,7 +708,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, unordered_set<
         }
         visited.insert(cur);
         bool empty = true;
-        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
+        for (unordered_map<LandmarkNode *, edge_type>::const_iterator
              it = cur->children.begin(); it != cur->children.end(); ++it) {
             edge_type edge = it->second;
             LandmarkNode *child_p = it->first;

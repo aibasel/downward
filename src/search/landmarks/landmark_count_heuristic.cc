@@ -163,9 +163,9 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
                                                          const LandmarkSet &reached) const {
-    const unordered_map<LandmarkNode *, edge_type, hash_pointer> &parents =
+    const unordered_map<LandmarkNode *, edge_type> &parents =
         node.parents;
-    for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
+    for (unordered_map<LandmarkNode *, edge_type>::const_iterator
          parent_it = parents.begin(); parent_it != parents.end(); ++parent_it) {
         LandmarkNode &parent = *(parent_it->first);
         if (reached.find(&parent) == reached.end()) {

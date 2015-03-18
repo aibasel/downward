@@ -152,7 +152,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         node.vals.push_back(a.second);
         // Clean orders: let disj. LM {D1,...,Dn} be ordered before L. We
         // cannot infer that any one of D1,...Dn by itself is ordered before L
-        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::iterator it =
+        for (unordered_map<LandmarkNode *, edge_type>::iterator it =
                  node.children.begin(); it != node.children.end(); ++it)
             it->first->parents.erase(&node);
         node.children.clear();
