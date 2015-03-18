@@ -46,7 +46,7 @@ bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
             const Heuristic *heur = dynamic_cast<const Heuristic *>(evaluator);
             if (heur) {
                 if (process_heuristic_value(heur, h)) {
-                    output_line("new best", heur, h);
+                    output_line("New best", heur, h);
                     result = true;
                 }
             }
@@ -58,6 +58,6 @@ void SearchProgress::print_initial_h_values() const {
     for (const auto &entry : initial_heuristic_values) {
         const Heuristic *heur = entry.first;
         int h = entry.second;
-        output_line("initial", heur, h);
+        output_line("Initial", heur, h);
     }
 }
