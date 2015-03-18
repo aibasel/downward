@@ -18,29 +18,29 @@ size_t hash_number_sequence(const Sequence &data, size_t length) {
     return hash_value;
 }
 
-struct hash_int_pair {
-    size_t operator()(const std::pair<int, int> &key) const {
-        return size_t(key.first * 1337 + key.second);
-    }
-};
-
 namespace std{
 
-template<typename T>
-struct hash<std::pair<T, T>>{
-    size_t operator()(const std::pair<T, T> &key) const {
-        return std::hash<T>(key.first) * 1337 + std::hash<T>(key.second);
+
+
+// based on boost
+template<typename TA, typename TB>
+struct  hash<std::pair<TA, TB>>{
+
+
+    inline void hash_combine_impl(size_t& seed, size_t value) const
+    {
+        seed ^= value + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    }
+
+    size_t operator()(const std::pair<TA, TB> &key) const {
+        size_t seed = 0;
+        const std::hash<TA> hash_a;
+        const std::hash<TB> hash_b;
+        hash_combine_impl(seed,hash_a(key.first));
+        hash_combine_impl(seed,hash_b(key.second));
+        return seed;
     }
 };
-
-//TODO: this is basically a copy of the std::hash<T*> just for pairs so we should find a possbility to reuse it.
-template<typename T>
-struct hash<std::pair<T*, T*>>{
-    size_t operator()(const std::pair<T*, T*> &key) const {
-        return  reinterpret_cast<size_t>(key.first) * 1337 + reinterpret_cast<size_t>(key.second);
-    }
-};
-
 
 }
 

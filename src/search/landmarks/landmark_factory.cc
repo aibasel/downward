@@ -88,7 +88,7 @@ bool LandmarkFactory::is_landmark_precondition(const GlobalOperator &o,
 }
 
 bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
-                                            vector<unordered_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
+                                            vector<unordered_map<pair<int, int>, int> > &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
@@ -101,7 +101,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
         lvl_op.resize(g_operators.size() + g_axioms.size());
         for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
             const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(i);
-            lvl_op[i] = unordered_map<pair<int, int>, int, hash_int_pair> ();
+            lvl_op[i] = unordered_map<pair<int, int>, int> ();
             const vector<GlobalEffect> &effects = op.get_effects();
             for (size_t j = 0; j < effects.size(); ++j)
                 lvl_op[i].insert(make_pair(make_pair(effects[j].var,
@@ -149,7 +149,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     if (landmark.in_goal)
         return true;
     vector<vector<int> > lvl_var;
-    vector<unordered_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+    vector<unordered_map<pair<int, int>, int> > lvl_op;
     // Initialize lvl_var to numeric_limits<int>::max()
     lvl_var.resize(g_variable_name.size());
     for (size_t var = 0; var < g_variable_name.size(); ++var) {
@@ -745,10 +745,8 @@ int LandmarkFactory::calculate_lms_cost() const {
     return result;
 }
 
-void LandmarkFactory::compute_predecessor_information(
-    LandmarkNode *bp,
-    vector<vector<int> > &lvl_var, vector<unordered_map<pair<int, int>, int,
-                                                   hash_int_pair> > &lvl_op) {
+void LandmarkFactory::compute_predecessor_information(LandmarkNode *bp,
+    vector<vector<int> > &lvl_var, std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
@@ -771,7 +769,7 @@ void LandmarkFactory::calc_achievers() {
         }
 
         vector<vector<int> > lvl_var;
-        vector<unordered_map<pair<int, int>, int, hash_int_pair> > lvl_op;
+        vector<unordered_map<pair<int, int>, int> > lvl_op;
         compute_predecessor_information(&lmn, lvl_var, lvl_op);
 
         set<int>::iterator ach_it;

@@ -6,5 +6,5 @@
 #include <utility>
 #include <unordered_set>
 
-typedef std::unordered_set<std::pair<int, int>, hash_int_pair> lm_set;
+typedef std::unordered_set<std::pair<int, int>> lm_set;
 #endif
