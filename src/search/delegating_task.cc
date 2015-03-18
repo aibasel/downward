@@ -11,8 +11,16 @@ int DelegatingTask::get_num_variables() const {
     return parent->get_num_variables();
 }
 
+const string &DelegatingTask::get_variable_name(int var) const {
+    return parent->get_variable_name(var);
+}
+
 int DelegatingTask::get_variable_domain_size(int var) const {
     return parent->get_variable_domain_size(var);
+}
+
+const string &DelegatingTask::get_fact_name(int var, int value) const {
+    return parent->get_fact_name(var, value);
 }
 
 int DelegatingTask::get_operator_cost(int index, bool is_axiom) const {
@@ -69,6 +77,10 @@ int DelegatingTask::get_num_goals() const {
 
 pair<int, int> DelegatingTask::get_goal_fact(int index) const {
     return parent->get_goal_fact(index);
+}
+
+std::vector<int> DelegatingTask::get_initial_state_values() const {
+    return parent->get_initial_state_values();
 }
 
 vector<int> DelegatingTask::get_state_values(const GlobalState &global_state) const {
