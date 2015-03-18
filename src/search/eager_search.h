@@ -36,7 +36,6 @@ protected:
 
     std::vector<Heuristic *> heuristics;
     std::vector<Heuristic *> preferred_operator_heuristics;
-    std::vector<Heuristic *> estimate_heuristics;
     // TODO: in the long term this
     // should disappear into the open list
 
