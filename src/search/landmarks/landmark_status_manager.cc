@@ -196,7 +196,7 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
         node.parents;
     /*
       cout << "in is_leaf, reached is ----- " << endl;
-      hash_set<const LandmarkNode*, hash_pointer>::const_iterator it;
+      unordered_set<const LandmarkNode*, hash_pointer>::const_iterator it;
       for(it = reached.begin(); it != reached.end(); ++it) {
       cout << *it << " ";
       lgraph.dump_node(*it);

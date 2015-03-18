@@ -211,12 +211,12 @@ void ValueTransition::simplify_labels(
     // Remove labels with duplicate or dominated conditions.
 
     /*
-      Algorithm: Put all transitions into a hash_map
+      Algorithm: Put all transitions into a unordered_map
       (key: condition, value: index in label list).
       This already gets rid of transitions with identical conditions.
 
-      Then go through the hash_map, checking for each element if
-      none of the subset conditions are part of the hash_map.
+      Then go through the unordered_map, checking for each element if
+      none of the subset conditions are part of the unordered_map.
       Put the element into the new labels list iff this is the case.
      */
 

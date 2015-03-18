@@ -431,7 +431,7 @@ void Exploration::collect_ha(ExProposition *goal,
 
 // TODO: this should be in landmark class
 bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
-    // TODO: change landmarks to set or hash_set
+    // TODO: change landmarks to set or unordered_set
     for (size_t i = 0; i < landmarks.size(); ++i)
         if (landmarks[i].first == var && landmarks[i].second == val)
             return true;
