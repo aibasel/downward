@@ -5,6 +5,7 @@
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
 
+#include <string>
 #include <vector>
 
 class GlobalOperator;
@@ -66,6 +67,8 @@ public:
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override final;
+
+    std::string get_description() const;
 };
 
 #endif
