@@ -20,4 +20,17 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
     return true;
 }
 
+/*
+  Return true iff all operators have cost 1.
+
+  Runtime: O(n), where n is the number of operators.
+*/
+bool is_unit_cost(TaskProxy task);
+
+// Runtime: O(1)
+bool has_axioms(TaskProxy task);
+
+// Runtime: O(n), where n is the number of operators.
+bool has_conditional_effects(TaskProxy task);
+
 #endif
