@@ -746,7 +746,7 @@ int LandmarkFactory::calculate_lms_cost() const {
 }
 
 void LandmarkFactory::compute_predecessor_information(LandmarkNode *bp,
-    vector<vector<int> > &lvl_var, std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op) {
+                                                      vector<vector<int> > &lvl_var, std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */

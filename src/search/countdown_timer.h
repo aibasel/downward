@@ -12,9 +12,9 @@ public:
     explicit CountdownTimer(double max_time);
     ~CountdownTimer();
     bool is_expired() const;
-    friend std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
+    friend std::ostream & operator<<(std::ostream &os, const CountdownTimer &cd_timer);
 };
 
-std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
+std::ostream & operator<<(std::ostream &os, const CountdownTimer &cd_timer);
 
 #endif

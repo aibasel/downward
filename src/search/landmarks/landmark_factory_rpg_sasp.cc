@@ -531,7 +531,7 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     for (node_it = lm_graph->get_nodes().begin(); node_it != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &node = **node_it;
 
-        for (unordered_set<pair<int, int>>::iterator it2 =
+        for (unordered_set < pair < int, int >> ::iterator it2 =
                  node.forward_orders.begin(); it2 != node.forward_orders.end(); ++it2) {
             pair<int, int> node2_pair = *it2;
 
