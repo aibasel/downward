@@ -52,7 +52,7 @@ public:
     landmark_status status;
     bool is_derived;
 
-    std::unordered_set<std::pair<int, int>, hash_int_pair> forward_orders;
+    std::unordered_set<std::pair<int, int>> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
@@ -226,8 +226,8 @@ private:
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
-    std::unordered_map<std::pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
-    std::unordered_map<std::pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
+    std::unordered_map<std::pair<int, int>, LandmarkNode *> simple_lms_to_nodes;
+    std::unordered_map<std::pair<int, int>, LandmarkNode *> disj_lms_to_nodes;
     std::set<LandmarkNode *> nodes;
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int> > > operators_eff_lookup;

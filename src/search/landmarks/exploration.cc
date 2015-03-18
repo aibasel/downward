@@ -335,7 +335,7 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_var,
-                                                     std::vector<std::unordered_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op,
+                                                     std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op,
                                                      bool level_out,
                                                      const vector<pair<int, int> > &excluded_props,
                                                      const std::unordered_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,

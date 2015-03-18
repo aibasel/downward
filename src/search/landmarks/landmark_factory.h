@@ -29,13 +29,13 @@ protected:
                                       const LandmarkNode *exclude,
                                       bool compute_lvl_op = false) const {
         std::vector<std::vector<int> > lvl_var;
-        std::vector<std::unordered_map<std::pair<int, int>, int, hash_int_pair> > lvl_op;
+        std::vector<std::unordered_map<std::pair<int, int>, int> > lvl_op;
         return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
     void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
     void compute_predecessor_information(LandmarkNode *bp,
                                          std::vector<std::vector<int> > &lvl_var,
-                                         std::vector<std::unordered_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op);
+                                         std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op);
 
     // protected not private for LandmarkFactoryRpgSearch
     bool achieves_non_conditional(const GlobalOperator &o, const LandmarkNode *lmp) const;
@@ -56,7 +56,7 @@ private:
     void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
     bool relaxed_task_solvable(std::vector<std::vector<int> > &lvl_var,
-                               std::vector<std::unordered_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op,
+                               std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op,
                                bool level_out,
                                const LandmarkNode *exclude,
                                bool compute_lvl_op = false) const;

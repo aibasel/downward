@@ -130,8 +130,7 @@ public:
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,
-                                            std::vector<std::unordered_map<std::pair<int, int>, int,
-                                                                            hash_int_pair> > &lvl_op,
+                                            std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op,
                                             bool level_out,
                                             const std::vector<std::pair<int, int> > &excluded_props,
                                             const std::unordered_set<const GlobalOperator *,
