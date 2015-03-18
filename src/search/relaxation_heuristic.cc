@@ -115,12 +115,12 @@ void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
     /*
-      Algorithm: Put all unary operators into a hash_map
+      Algorithm: Put all unary operators into a unordered_map
       (key: condition and effect; value: index in operator vector.
       This gets rid of operators with identical conditions.
 
-      Then go through the hash_map, checking for each element if
-      none of the possible dominators are part of the hash_map.
+      Then go through the unordered_map, checking for each element if
+      none of the possible dominators are part of the unordered_map.
       Put the element into the new operator vector iff this is the case.
 
       In both loops, be careful to ensure that a higher-cost operator

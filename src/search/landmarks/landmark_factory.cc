@@ -382,7 +382,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
         /* // Experimentally commenting this out -- see issue202.
         // 3. Exists LM x, inconsistent x, b and x->_gn a
         const LandmarkNode &node = *node_a;
-        for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
+        for (unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator it =
                  node.parents.begin(); it != node.parents.end(); ++it) {
             edge_type edge = it->second;
             for (size_t i = 0; i < it->first->vars.size(); ++i) {
