@@ -9,7 +9,7 @@ REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
 
 TASKS = {
-    "strips": "gripper/prob01.pddl",
+    "strips": "miconic/s1-0.pddl",
     "axioms": "philosophers/p01-phil2.pddl",
     "cond-eff": "miconic-simpleadl/s1-0.pddl",
 }

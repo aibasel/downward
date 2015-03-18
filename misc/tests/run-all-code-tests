@@ -6,6 +6,7 @@ set -u
 cd "$(dirname "$0")"
 
 ./test-exitcodes.py
+./test-standard-configs.py
 ./test-translator.py
 
 py.test ../../src/driver/tests.py
