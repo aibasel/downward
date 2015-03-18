@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <utility>
+#include <vector>
 
 
 template<class Sequence>
@@ -20,7 +21,12 @@ size_t hash_number_sequence(const Sequence &data, size_t length) {
 
 namespace std{
 
-
+template<typename T, typename A>
+struct hash<const std::vector<T,A> > {
+    size_t operator()(const std::vector<T,A> &vec) const {
+        return ::hash_number_sequence(vec, vec.size());
+    }
+};
 
 // based on boost
 template<typename TA, typename TB>

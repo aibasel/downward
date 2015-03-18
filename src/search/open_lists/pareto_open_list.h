@@ -3,6 +3,7 @@
 
 #include "open_list.h"
 #include "../evaluator.h"
+#include "../utilities.h"
 
 #include <deque>
 #include <unordered_map>
@@ -13,23 +14,6 @@
 class Options;
 class OptionParser;
 class ScalarEvaluator;
-
-namespace std {
-template<>
-struct hash<const std::vector<int> > {
-    // hash function adapted from Python's hash function for tuples.
-    size_t operator()(const std::vector<int> &vec) const {
-        size_t hash_value = 0x345678;
-        size_t mult = 1000003;
-        for (int i = vec.size() - 1; i >= 0; --i) {
-            hash_value = (hash_value ^ vec[i]) * mult;
-            mult += 82520 + i + i;
-        }
-        hash_value += 97531;
-        return hash_value;
-    }
-};
-}
 
 template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
