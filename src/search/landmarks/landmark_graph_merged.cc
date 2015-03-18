@@ -4,8 +4,6 @@
 
 #include <set>
 
-using namespace __gnu_cxx;
-
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
     : LandmarkFactory(opts),
       lm_graphs(opts.get_list<LandmarkGraph *>("lm_graphs")) {
@@ -90,7 +88,7 @@ void LandmarkGraphMerged::generate_landmarks() {
             const LandmarkNode &from_orig = **it;
             LandmarkNode *from = get_matching_landmark(from_orig);
             if (from) {
-                hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator to_it;
+                unordered_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator to_it;
                 for (to_it = from_orig.children.begin(); to_it != from_orig.children.end(); ++to_it) {
                     const LandmarkNode &to_orig = *to_it->first;
                     edge_type e_type = to_it->second;

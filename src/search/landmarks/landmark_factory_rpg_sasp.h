@@ -6,7 +6,9 @@
 
 #include "../globals.h"
 
-#include <ext/hash_set>
+#include <vector>
+#include <unordered_map>
+
 
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
     std::list<LandmarkNode *> open_landmarks;
@@ -17,8 +19,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     void add_lm_forward_orders();
 
     void get_greedy_preconditions_for_lm(const LandmarkNode *lmp,
-                                         const GlobalOperator &o, __gnu_cxx::hash_map<int, int> &result) const;
-    void compute_shared_preconditions(__gnu_cxx::hash_map<int, int> &shared_pre, std::vector<
+                                         const GlobalOperator &o, std::unordered_map<int, int> &result) const;
+    void compute_shared_preconditions(std::unordered_map<int, int> &shared_pre, std::vector<
                                           std::vector<int> > &lvl_var, LandmarkNode *bp);
     void compute_disjunctive_preconditions(
         std::vector<std::set<std::pair<int, int> > > &disjunctive_pre,
@@ -33,7 +35,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     void approximate_lookahead_orders(const std::vector<std::vector<int> > &lvl_var,
                                       LandmarkNode *lmp);
     static bool domain_connectivity(const std::pair<int, int> &landmark,
-                                    const __gnu_cxx::hash_set<int> &exclude);
+                                    const std::unordered_set<int> &exclude);
 
     void build_disjunction_classes();
 public:

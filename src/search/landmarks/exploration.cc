@@ -4,11 +4,11 @@
 #include "../globals.h"
 #include "../utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <limits>
 
 using namespace std;
-using namespace __gnu_cxx;
 
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
@@ -167,8 +167,7 @@ public:
 // heuristic computation
 void Exploration::setup_exploration_queue(const GlobalState &state,
                                           const vector<pair<int, int> > &excluded_props,
-                                          const hash_set<const GlobalOperator *,
-                                                         ex_hash_operator_ptr> &excluded_ops,
+                                          const std::unordered_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,
                                           bool use_h_max = false) {
     prop_queue.clear();
 
@@ -336,10 +335,10 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_var,
-                                                     vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
+                                                     std::vector<std::unordered_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op,
                                                      bool level_out,
                                                      const vector<pair<int, int> > &excluded_props,
-                                                     const hash_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,
+                                                     const std::unordered_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(g_initial_state(), excluded_props, excluded_ops, true);
@@ -354,7 +353,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
         }
     }
     if (compute_lvl_ops) {
-        hash_map< const GlobalOperator *, int, ex_hash_operator_ptr> operator_index;
+        unordered_map< const GlobalOperator *, int, ex_hash_operator_ptr> operator_index;
         for (size_t i = 0; i < g_operators.size(); ++i) {
             operator_index.insert(make_pair(&g_operators[i], i));
         }

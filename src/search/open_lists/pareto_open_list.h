@@ -5,7 +5,7 @@
 #include "../evaluator.h"
 
 #include <deque>
-#include <ext/hash_map>
+#include <unordered_map>
 #include <set>
 #include <vector>
 #include <utility>
@@ -14,7 +14,7 @@ class Options;
 class OptionParser;
 class ScalarEvaluator;
 
-namespace __gnu_cxx {
+namespace std {
 template<>
 struct hash<const std::vector<int> > {
     // hash function adapted from Python's hash function for tuples.
@@ -36,8 +36,7 @@ class ParetoOpenList : public OpenList<Entry> {
     typedef std::deque<Entry> Bucket;
     typedef std::vector<int> KeyType;
     //typedef std::map<const KeyType, Bucket> BucketMap;
-    typedef typename __gnu_cxx::hash_map<const KeyType, Bucket,
-                                         __gnu_cxx::hash<const std::vector<int> > > BucketMap;
+    typedef typename std::unordered_map<const KeyType, Bucket> BucketMap;
     typedef std::set<KeyType> KeySet; // no hash_set (see insert method)
 
     BucketMap buckets;

@@ -4,7 +4,7 @@
 #include "../utilities.h"
 
 #include <utility>
-#include <ext/hash_set>
+#include <unordered_set>
 
-typedef __gnu_cxx::hash_set<std::pair<int, int>, hash_int_pair> lm_set;
+typedef std::unordered_set<std::pair<int, int>, hash_int_pair> lm_set;
 #endif
