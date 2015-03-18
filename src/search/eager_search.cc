@@ -325,7 +325,7 @@ void EagerSearch::reward_progress() {
     open_list->boost_preferred();
 }
 
-void EagerSearch::dump_search_space() {
+void EagerSearch::dump_search_space() const {
     search_space.dump();
 }
 
