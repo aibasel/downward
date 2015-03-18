@@ -65,7 +65,6 @@ void EagerSearch::initialize() {
     open_list->get_involved_heuristics(hset);
 
     for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
-        estimate_heuristics.push_back(*it);
         search_progress.add_heuristic(*it);
     }
 
