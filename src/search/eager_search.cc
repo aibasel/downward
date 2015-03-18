@@ -22,7 +22,7 @@ EagerSearch::EagerSearch(const Options &opts)
     if (opts.contains("f_eval")) {
         f_evaluator = opts.get<ScalarEvaluator *>("f_eval");
     } else {
-        f_evaluator = 0;
+        f_evaluator = nullptr;
     }
     if (opts.contains("preferred")) {
         preferred_operator_heuristics =
@@ -268,7 +268,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         }
         vector<int> last_key_removed;
         StateID id = open_list->remove_min(
-            use_multi_path_dependence ? &last_key_removed : 0);
+            use_multi_path_dependence ? &last_key_removed : nullptr);
         // TODO is there a way we can avoid creating the state here and then
         //      recreate it outside of this function with node.get_state()?
         //      One way would be to store GlobalState objects inside SearchNodes
@@ -371,7 +371,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    EagerSearch *engine = 0;
+    EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
         opts.set<bool>("mpd", false);
         engine = new EagerSearch(opts);
@@ -406,7 +406,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    EagerSearch *engine = 0;
+    EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
         GEvaluator *g = new GEvaluator();
         vector<ScalarEvaluator *> sum_evals;
@@ -484,7 +484,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     Options opts = parser.parse();
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
-    EagerSearch *engine = 0;
+    EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
         vector<ScalarEvaluator *> evals =
             opts.get_list<ScalarEvaluator *>("evals");
@@ -510,8 +510,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         opts.set("open", open);
         opts.set("reopen_closed", false);
         opts.set("mpd", false);
-        ScalarEvaluator *sep = 0;
-        opts.set("f_eval", sep);
+        ScalarEvaluator *evaluator = nullptr;
+        opts.set("f_eval", evaluator);
         opts.set("preferred", preferred_list);
         engine = new EagerSearch(opts);
     }
