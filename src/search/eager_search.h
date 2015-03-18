@@ -33,7 +33,7 @@ class EagerSearch : public SearchEngine {
     void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(const SearchNode &node);
     void reward_progress();
-    void print_best_h_line(int g) const;
+    void print_checkpoint_line(int g) const;
 
 protected:
     virtual void initialize() override;

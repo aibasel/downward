@@ -1,55 +1,53 @@
 #ifndef SEARCH_PROGRESS_H
 #define SEARCH_PROGRESS_H
 
-#include "heuristic.h"
-
-#include <vector>
+#include <unordered_map>
 
 class EvaluationContext;
+class Heuristic;
 
 
 /*
   This class helps track search progress.
 
-  It maintains a vector of best heuristic values and can determine if
-  a given state has a better heuristic value in at least one of the
-  heueristics that all previously seen ones.
+  It maintains a record of best heuristic values and can determine if
+  an evaluated state has a better heuristic value in at least one of
+  the heuristics than all previously seen ones.
 */
 
 class SearchProgress {
-    std::vector<Heuristic *> heuristics;
-    std::vector<int> initial_heuristic_values;
-    std::vector<int> best_heuristic_values;
+    std::unordered_map<const Heuristic *, int> initial_heuristic_values;
+    std::unordered_map<const Heuristic *, int> best_heuristic_values;
+
+    bool process_heuristic_value(const Heuristic *heuristic, int h);
+    void output_line(const std::string &description,
+                     const Heuristic *heuristic, int h) const;
 
 public:
     SearchProgress() = default;
     ~SearchProgress() = default;
 
-    // Methods related to heuristic values
-    void add_heuristic(Heuristic *heur);
+    /*
+      Call the following function after each state evaluation.
+
+      It keeps track of the initial and best heuristic value for each
+      heuristic evaluated, returning true if at least one heuristic
+      value is the best value seen for this heuristic so far. (This
+      includes the case where the evaluation context includes a
+      heuristic that has not been evaluated previously, e.g. after
+      evaluating the initial state.)
+
+      Prints one line of output for each new best heuristic value.
+    */
+    bool check_progress(const EvaluationContext &eval_context);
 
     /*
-      Call the following function with the heuristic evaluation
-      results of the initial state. Calling this function is mandatory
-      before calling other methods that keep track of heuristic
-      values.
+      Print information on the first heuristic value seen for each heuristic.
+
+      (This assumes that check_progress has previously been called to
+      feed information to the SearchProgress instance.)
     */
-    void set_initial_h_values(EvaluationContext &eval_context);
-
-    /*
-      Call this function with the heuristic evaluation results of an
-      evaluated state. All calls to set_initial_h_value and
-      check_h_progress must use the same heuristics in the same order.
-
-      The method keeps track of the lowest-ever value of each
-      heuristic, returning true and producing statistics output if
-      there is a new best value for any heuristic.
-    */
-    bool check_h_progress(EvaluationContext &eval_context);
-
-    // output
     void print_initial_h_values() const;
-    void print_best_heuristic_values() const;
 };
 
 #endif
