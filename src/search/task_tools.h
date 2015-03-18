@@ -23,17 +23,14 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
 /*
   Return true iff all operators have cost 1.
 
-  This function potentially loops over all operators, so it might be slow for
-  big tasks.
+  Runtime: O(n), where n is the number of operators.
 */
 bool is_unit_cost(TaskProxy task);
 
+// Runtime: O(1)
 bool has_axioms(TaskProxy task);
 
-/*
-  This function potentially loops over all operators, so it might be slow for
-  big tasks.
-*/
+// Runtime: O(n), where n is the number of operators.
 bool has_conditional_effects(TaskProxy task);
 
 #endif
