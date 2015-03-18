@@ -16,7 +16,7 @@ CostAdaptedTask::CostAdaptedTask(const Options &opts)
       is_unit_cost(compute_is_unit_cost()) {
 }
 
-bool CostAdaptedTask::compute_is_unit_cost() {
+bool CostAdaptedTask::compute_is_unit_cost() const {
     int num_ops = parent->get_num_operators();
     for (int op_index = 0; op_index < num_ops; ++op_index) {
         if (parent->get_operator_cost(op_index, false) != 1)
