@@ -411,6 +411,14 @@ public:
     }
 
     template <class T>
+    T get(std::string key, const T& default_value) const {
+        if (storage.count(key))
+            return get<T>(key);
+        else
+            return default_value;
+    }
+
+    template <class T>
     void verify_list_non_empty(std::string key) const {
         if (!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T> >(key);
