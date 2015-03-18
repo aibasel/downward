@@ -14,8 +14,7 @@ private:
     std::vector<std::vector<PDBHeuristic *> > &max_cliques;
 
     // Precomputed superset relation of patterns.
-    typedef std::unordered_set<std::pair<PDBHeuristic *, PDBHeuristic *>,
-                                hash_pointer_pair> PDBRelation;
+    typedef std::unordered_set<std::pair<PDBHeuristic *, PDBHeuristic *>> PDBRelation;
     PDBRelation superset_relation;
     void compute_superset_relation();
 

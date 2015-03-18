@@ -48,12 +48,12 @@ private:
     void approximate_reasonable_orders(bool obedient_orders);
     void mk_acyclic_graph();
     int loop_acyclic_graph(LandmarkNode &lmn,
-                           std::unordered_set<LandmarkNode *, hash_pointer> &acyclic_node_set);
+                           std::unordered_set<LandmarkNode *> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
                                          std::list<std::pair<LandmarkNode *, edge_type> > &path,
                                          std::list<std::pair<LandmarkNode *, edge_type> >::iterator it);
     int calculate_lms_cost() const;
-    void collect_ancestors(std::unordered_set<LandmarkNode *, hash_pointer> &result, LandmarkNode &node,
+    void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
     bool relaxed_task_solvable(std::vector<std::vector<int> > &lvl_var,
                                std::vector<std::unordered_map<std::pair<int, int>, int, hash_int_pair> > &lvl_op,

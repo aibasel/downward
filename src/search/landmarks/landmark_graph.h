@@ -43,8 +43,8 @@ public:
     std::vector<int> vals;
     bool disjunctive;
     bool conjunctive;
-    std::unordered_map<LandmarkNode *, edge_type, hash_pointer> parents;
-    std::unordered_map<LandmarkNode *, edge_type, hash_pointer> children;
+    std::unordered_map<LandmarkNode *, edge_type> parents;
+    std::unordered_map<LandmarkNode *, edge_type> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;
@@ -117,7 +117,7 @@ struct LandmarkNodeComparer {
 };
 
 
-typedef std::unordered_set<LandmarkNode *, hash_pointer> LandmarkSet;
+typedef std::unordered_set<LandmarkNode *> LandmarkSet;
 
 class LandmarkGraph {
 public:

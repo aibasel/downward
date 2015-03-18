@@ -176,10 +176,10 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
 
 
 bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const LandmarkNode &node) const {
-    const unordered_map<LandmarkNode *, edge_type, hash_pointer > &children =
+    const unordered_map<LandmarkNode *, edge_type > &children =
         node.children;
 
-    for (unordered_map<LandmarkNode *, edge_type, hash_pointer >::const_iterator child_it =
+    for (unordered_map<LandmarkNode *, edge_type >::const_iterator child_it =
              children.begin(); child_it != children.end(); ++child_it) {
         LandmarkNode *child_p = child_it->first;
         if (child_it->second >= greedy_necessary &&
@@ -192,18 +192,18 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
 bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
                                              const vector<bool> &reached) const {
 //Note: this is the same as !check_node_orders_disobeyed
-    const unordered_map<LandmarkNode *, edge_type, hash_pointer > &parents =
+    const unordered_map<LandmarkNode *, edge_type > &parents =
         node.parents;
     /*
       cout << "in is_leaf, reached is ----- " << endl;
-      unordered_set<const LandmarkNode*, hash_pointer>::const_iterator it;
+      unordered_set<const LandmarkNode*>::const_iterator it;
       for(it = reached.begin(); it != reached.end(); ++it) {
       cout << *it << " ";
       lgraph.dump_node(*it);
       }
       cout << "---------" << endl;
     */
-    for (unordered_map<LandmarkNode *, edge_type, hash_pointer >::const_iterator parent_it =
+    for (unordered_map<LandmarkNode *, edge_type >::const_iterator parent_it =
              parents.begin(); parent_it != parents.end(); ++parent_it) {
         LandmarkNode *parent_p = parent_it->first;
 
