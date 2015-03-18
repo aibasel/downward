@@ -11,7 +11,9 @@
 class RootTask : public AbstractTask {
 public:
     virtual int get_num_variables() const override;
+    virtual const std::string &get_variable_name(int var) const override;
     virtual int get_variable_domain_size(int var) const override;
+    virtual const std::string &get_fact_name(int var, int value) const override;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
     virtual const std::string &get_operator_name(int index, bool is_axiom) const override;
@@ -33,6 +35,7 @@ public:
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
 
+    virtual std::vector<int> get_initial_state_values() const override;
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
 };
 

@@ -16,6 +16,7 @@ class EffectProxy;
 class EffectConditionsProxy;
 class EffectsProxy;
 class FactProxy;
+class FactsProxy;
 class GoalsProxy;
 class OperatorProxy;
 class OperatorsProxy;
@@ -86,12 +87,11 @@ template<class ProxyCollection>
 class ProxyIterator {
     const ProxyCollection &collection;
     std::size_t pos;
-
 public:
     ProxyIterator(const ProxyCollection &collection_, std::size_t pos_)
         : collection(collection_), pos(pos_) {}
 
-    typename ProxyCollection::ItemType operator*() {
+    typename ProxyCollection::ItemType operator*() const {
         return collection[pos];
     }
     ProxyIterator &operator++() {
@@ -125,11 +125,65 @@ public:
     int get_value() const {
         return value;
     }
-    bool operator==(FactProxy other) {
-        return (var_id == other.var_id) && (value == other.value);
+    const std::string &get_name() const {
+        return task.get_fact_name(var_id, value);
     }
-    bool operator!=(FactProxy other) {
+    bool operator==(FactProxy const &other) const {
+        return var_id == other.var_id && value == other.value;
+    }
+    bool operator!=(FactProxy other) const {
         return !(*this == other);
+    }
+};
+
+
+class FactsProxyIterator {
+    const AbstractTask &task;
+    int var_id;
+    int value;
+public:
+    FactsProxyIterator(const AbstractTask &task_, int var_id_, int value_)
+        : task(task_), var_id(var_id_), value(value_) {}
+    ~FactsProxyIterator() {}
+    FactProxy operator*() const {
+        return FactProxy(task, var_id, value);
+    }
+    FactsProxyIterator &operator++() {
+        assert(var_id < task.get_num_variables());
+        int num_facts = task.get_variable_domain_size(var_id);
+        assert(value < num_facts);
+        ++value;
+        if (value == num_facts) {
+            ++var_id;
+            value = 0;
+        }
+        return *this;
+    }
+    bool operator==(const FactsProxyIterator &other) const {
+        return var_id == other.var_id && value == other.value;
+    }
+    bool operator!=(const FactsProxyIterator &other) const {
+        return !(*this == other);
+    }
+};
+
+
+/*
+  Proxy class for the collection of all facts of a task.
+
+  We don't implement size() because it would not be constant-time.
+*/
+class FactsProxy {
+    const AbstractTask &task;
+public:
+    explicit FactsProxy(const AbstractTask &task_)
+        : task(task_) {}
+    ~FactsProxy() {}
+    FactsProxyIterator begin() const {
+        return FactsProxyIterator(task, 0, 0);
+    }
+    FactsProxyIterator end() const {
+        return FactsProxyIterator(task, task.get_num_variables(), 0);
     }
 };
 
@@ -144,6 +198,9 @@ public:
     virtual ~ConditionsProxy() {}
     virtual std::size_t size() const = 0;
     virtual FactProxy operator[](std::size_t index) const = 0;
+    bool empty() const {
+        return size() == 0;
+    }
 };
 
 
@@ -156,6 +213,9 @@ public:
     ~VariableProxy() {}
     int get_id() const {
         return id;
+    }
+    const std::string &get_name() const {
+        return task.get_variable_name(id);
     }
     int get_domain_size() const {
         return task.get_variable_domain_size(id);
@@ -180,6 +240,9 @@ public:
     VariableProxy operator[](std::size_t index) const {
         assert(index < size());
         return VariableProxy(task, index);
+    }
+    FactsProxy get_facts() const {
+        return FactsProxy(task);
     }
 };
 
@@ -286,6 +349,9 @@ public:
     const std::string &get_name() const {
         return task.get_operator_name(index, is_an_axiom);
     }
+    int get_id() const {
+        return index;
+    }
     const GlobalOperator *get_global_operator() const {
         return task.get_global_operator(index, is_an_axiom);
     }
@@ -301,6 +367,9 @@ public:
     ~OperatorsProxy() {}
     std::size_t size() const {
         return task.get_num_operators();
+    }
+    bool empty() const {
+        return size() == 0;
     }
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
@@ -318,6 +387,9 @@ public:
     ~AxiomsProxy() {}
     std::size_t size() const {
         return task.get_num_axioms();
+    }
+    bool empty() const {
+        return size() == 0;
     }
     OperatorProxy operator[](std::size_t index) const {
         assert(index < size());
@@ -387,6 +459,9 @@ public:
     }
     GoalsProxy get_goals() const {
         return GoalsProxy(*task);
+    }
+    State get_initial_state() const {
+        return State(*task, task->get_initial_state_values());
     }
     State convert_global_state(const GlobalState &global_state) const {
         return State(*task, task->get_state_values(global_state));
