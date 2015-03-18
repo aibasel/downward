@@ -390,24 +390,29 @@ static ParseTree generate_parse_tree(string config) {
 }
 
 OptionParser::OptionParser(const string config, bool dr)
-    : unparsed_config(config),
-      opts(false),
+    : opts(false),
       parse_tree(generate_parse_tree(config)),
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
+    set_unparsed_config();
 }
 
 
 OptionParser::OptionParser(ParseTree pt, bool dr)
-    : unparsed_config("<unavailable>"),
-      opts(false),
+    : opts(false),
       parse_tree(pt),
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
+    set_unparsed_config();
 }
 
+void OptionParser::set_unparsed_config() {
+    ostringstream stream;
+    kptree::print_tree_bracketed<ParseNode>(parse_tree, stream);
+    unparsed_config = stream.str();
+}
 
 string str_to_lower(string s) {
     transform(s.begin(), s.end(), s.begin(), ::tolower);

@@ -222,6 +222,8 @@ private:
 
     ParseTree::sibling_iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
+
+    void set_unparsed_config();
 };
 
 //Definitions of OptionParsers template functions:
