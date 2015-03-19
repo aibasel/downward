@@ -115,7 +115,7 @@ class StateRegistry {
             : state_data_pool(state_data_pool_) {
         }
 
-        size_t operator()(StateID lhs, StateID rhs) const {
+        bool operator()(StateID lhs, StateID rhs) const {
             size_t size = g_state_packer->get_num_bins();
             const PackedStateBin *lhs_data = state_data_pool[lhs.value];
             const PackedStateBin *rhs_data = state_data_pool[rhs.value];
