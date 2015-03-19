@@ -445,11 +445,11 @@ const GlobalOperator *LandmarkTask::get_global_operator(int index, bool is_axiom
 }
 
 int LandmarkTask::get_num_goals() const {
-    return parent->get_num_goals();
+    return goals.size();
 }
 
 pair<int, int> LandmarkTask::get_goal_fact(int index) const {
-    return parent->get_goal_fact(index);
+    return goals[index];
 }
 
 std::vector<int> LandmarkTask::get_initial_state_values() const {
