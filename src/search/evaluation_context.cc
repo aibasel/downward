@@ -19,6 +19,10 @@ EvaluationContext::EvaluationContext(
       statistics(statistics) {
 }
 
+EvaluationContext::EvaluationContext(const GlobalState &state)
+    : EvaluationContext(state, 0, false, nullptr) {
+}
+
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
     EvaluationResult &result = eval_results[heur];
     if (result.is_uninitialized()) {
