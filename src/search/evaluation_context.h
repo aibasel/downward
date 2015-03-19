@@ -50,13 +50,14 @@ class EvaluationContext {
     GlobalState state;
     int g_value;
     bool preferred;
-    SearchStatistics &statistics;
+    SearchStatistics *statistics;
     std::unordered_map<ScalarEvaluator *, EvaluationResult> eval_results;
 
     const EvaluationResult &get_result(ScalarEvaluator *heur);
 public:
+    // Use "statistics = nullptr" if no statististics are desired.
     EvaluationContext(const GlobalState &state, int g_value,
-                      bool is_preferred, SearchStatistics &statistics);
+                      bool is_preferred, SearchStatistics *statistics);
     ~EvaluationContext() = default;
 
     const GlobalState &get_state() const;
