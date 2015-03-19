@@ -12,7 +12,7 @@ using namespace std;
 
 EvaluationContext::EvaluationContext(
     const GlobalState &state, int g_value, bool is_preferred,
-    SearchStatistics &statistics)
+    SearchStatistics *statistics)
     : state(state),
       g_value(g_value),
       preferred(is_preferred),
@@ -23,10 +23,10 @@ const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
     EvaluationResult &result = eval_results[heur];
     if (result.is_uninitialized()) {
         result = heur->compute_result(*this);
-        if (dynamic_cast<const Heuristic *>(heur)) {
+        if (statistics && dynamic_cast<const Heuristic *>(heur)) {
             /* Only count evaluations of actual Heuristics, not arbitrary
                scalar evaluators. */
-            statistics.inc_evaluations();
+            statistics->inc_evaluations();
         }
     }
     return result;
