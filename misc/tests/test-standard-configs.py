@@ -26,6 +26,7 @@ if "astar_selmax_lmcut_lmcount" in CONFIGS:
 
 def run_plan_script(task, nick, config):
     print "\nRun %(nick)s on %(task)s:" % locals()
+    sys.stdout.flush()
     subprocess.check_call([FAST_DOWNWARD, task] + config)
 
 
