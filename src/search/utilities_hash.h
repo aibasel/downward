@@ -12,7 +12,7 @@ inline void hash_combine_impl(size_t &seed, size_t value) {
 }
 
 template<typename T>
-inline void hash_combine(size_t &seed, const T &value){
+inline void hash_combine(size_t &seed, const T &value) {
     const std::hash<T> hasher;
     return hash_combine_impl(seed, hasher(value));
 }
@@ -20,15 +20,15 @@ inline void hash_combine(size_t &seed, const T &value){
 template<typename Sequence>
 size_t hash_number_sequence(const Sequence &data, size_t length) {
     size_t seed = 0;
-    for(size_t i = 0;i<length;++i){
-        hash_combine(seed,data[i]);
+    for (size_t i = 0; i < length; ++i) {
+        hash_combine(seed, data[i]);
     }
     return seed;
 }
 
 template<typename Sequence>
 inline size_t hash_number_sequence(const Sequence &data) {
-    return hash_number_sequence(data,data.size());
+    return hash_number_sequence(data, data.size());
 }
 
 namespace std {
@@ -41,7 +41,6 @@ struct hash<const std::vector<T, A> > {
 
 template<typename TA, typename TB>
 struct  hash < std::pair < TA, TB > > {
-
     size_t operator()(const std::pair<TA, TB> &key) const {
         size_t seed = 0;
         const std::hash<TA> hash_a;
@@ -53,12 +52,12 @@ struct  hash < std::pair < TA, TB > > {
 };
 
 template<typename T, typename A>
-struct hash<pair<vector<T*,A>, T*> > {
+struct hash<pair<vector<T *, A>, T *> > {
 public:
-    size_t operator()(const pair<vector<T*,A>, T*> &key) const {
+    size_t operator()(const pair<vector<T *, A>, T *> &key) const {
         size_t seed = 0;
-        hash_combine(seed,key.second);
-        hash_combine_impl(seed,hash_number_sequence(key.first));
+        hash_combine(seed, key.second);
+        hash_combine_impl(seed, hash_number_sequence(key.first));
         return seed;
     }
 };
