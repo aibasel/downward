@@ -88,12 +88,13 @@ class PDBHeuristic : public Heuristic {
       possible values of the variable (with precondition = -1), one
       abstract operator with a concrete value (!= -1) is computed.
     */
-    void multiply_out(int pos, int cost,
-                      std::vector<std::pair<int, int> > &prev_pairs,
-                      std::vector<std::pair<int, int> > &pre_pairs,
-                      std::vector<std::pair<int, int> > &eff_pairs,
-                      const std::vector<std::pair<int, int> > &effects_without_pre,
-                      std::vector<AbstractOperator> &operators);
+    void multiply_out(
+        int pos, int cost,
+        std::vector<std::pair<int, int> > &prev_pairs,
+        std::vector<std::pair<int, int> > &pre_pairs,
+        std::vector<std::pair<int, int> > &eff_pairs,
+        const std::vector<std::pair<int, int> > &effects_without_pre,
+        std::vector<AbstractOperator> &operators);
 
     /*
       Computes all abstract operators for a given concrete operator (by
@@ -101,9 +102,10 @@ class PDBHeuristic : public Heuristic {
       call to recursive method multiyply_out. variable_to_index maps
       variables in the task to their index in the pattern or -1.
     */
-    void build_abstract_operators(const GlobalOperator &op, int cost,
-                                  const std::vector<int> &variable_to_index,
-                                  std::vector<AbstractOperator> &operators);
+    void build_abstract_operators(
+        const GlobalOperator &op, int cost,
+        const std::vector<int> &variable_to_index,
+        std::vector<AbstractOperator> &operators);
 
     /*
       Computes all abstract operators, builds the match tree (successor
@@ -112,7 +114,8 @@ class PDBHeuristic : public Heuristic {
       specify individual operator costs for each operator for action
       cost partitioning. If left empty, default operator costs are used.
     */
-    void create_pdb(const std::vector<int> &operator_costs = std::vector<int>());
+    void create_pdb(
+        const std::vector<int> &operator_costs = std::vector<int>());
 
     /*
       Sets the pattern for the PDB and initializes hash_multipliers and
@@ -120,8 +123,9 @@ class PDBHeuristic : public Heuristic {
       for each operator for action cost partitioning. If left empty,
       default operator costs are used.
     */
-    void set_pattern(const std::vector<int> &pattern,
-                     const std::vector<int> &operator_costs = std::vector<int>());
+    void set_pattern(
+        const std::vector<int> &pattern,
+        const std::vector<int> &operator_costs = std::vector<int>());
 
     /*
       For a given abstract state (given as index), the according values
@@ -129,8 +133,9 @@ class PDBHeuristic : public Heuristic {
       given pairs of goal variables and values. Returns true iff the
       state is a goal state.
     */
-    bool is_goal_state(const std::size_t state_index,
-                       const std::vector<std::pair<int, int> > &abstract_goal) const;
+    bool is_goal_state(
+        const std::size_t state_index,
+        const std::vector<std::pair<int, int> > &abstract_goal) const;
 
     /*
       The given concrete state is used to calculate the index of the
@@ -139,8 +144,8 @@ class PDBHeuristic : public Heuristic {
     */
     std::size_t hash_index(const GlobalState &state) const;
 protected:
-    virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual void initialize() override;
+    virtual int compute_heuristic(const GlobalState &state) override;
 public:
     /*
       Important: It is assumed that the pattern (passed via Options) is
@@ -155,13 +160,17 @@ public:
     PDBHeuristic(const Options &opts,
                  bool dump = true,
                  const std::vector<int> &operator_costs = std::vector<int>());
-    virtual ~PDBHeuristic();
+    virtual ~PDBHeuristic() override;
 
     // Returns the pattern (i.e. all variables used) of the PDB
-    const std::vector<int> &get_pattern() const {return pattern; }
+    const std::vector<int> &get_pattern() const {
+        return pattern;
+    }
 
     // Returns the size (number of abstrat states) of the PDB
-    std::size_t get_size() const {return num_states; }
+    std::size_t get_size() const {
+        return num_states;
+    }
 
     /*
       Returns the average h-value over all states, where dead-ends are
