@@ -29,7 +29,7 @@ struct hash<const std::vector<T, A> > {
 
 // based on boost
 template<typename TA, typename TB>
-struct  hash < std::pair < TA, TB >> {
+struct  hash < std::pair < TA, TB > > {
     inline void hash_combine_impl(size_t &seed, size_t value) const {
         seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
