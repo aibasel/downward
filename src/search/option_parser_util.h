@@ -25,6 +25,7 @@ class SearchEngine;
 class OptionParser;
 template<class Entry>
 class OpenList;
+class AbstractTask;
 
 
 struct ParseNode {
@@ -260,6 +261,13 @@ template <>
 struct TypeNamer<ShrinkStrategy *> {
     static std::string name() {
         return "ShrinkStrategy";
+    }
+};
+
+template <>
+struct TypeNamer<AbstractTask *> {
+    static std::string name() {
+        return "AbstractTask";
     }
 };
 

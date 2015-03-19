@@ -1,9 +1,9 @@
 #include "additive_heuristic.h"
 
-#include "global_operator.h"
 #include "global_state.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "task_tools.h"
 
 #include <cassert>
 #include <vector>
@@ -62,9 +62,9 @@ void AdditiveHeuristic::setup_exploration_queue() {
     }
 }
 
-void AdditiveHeuristic::setup_exploration_queue_state(const GlobalState &state) {
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        Proposition *init_prop = &propositions[var][state[var]];
+void AdditiveHeuristic::setup_exploration_queue_state(const State &state) {
+    for (FactProxy fact : state) {
+        Proposition *init_prop = get_proposition(fact);
         enqueue_if_necessary(init_prop, 0, 0);
     }
 }
@@ -97,7 +97,7 @@ void AdditiveHeuristic::relaxed_exploration() {
 }
 
 void AdditiveHeuristic::mark_preferred_operators(
-    const GlobalState &state, Proposition *goal) {
+    const State &state, Proposition *goal) {
     if (!goal->marked) { // Only consider each subgoal once.
         goal->marked = true;
         UnaryOperator *unary_op = goal->reached_by;
@@ -111,15 +111,15 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // more expensive applicability test.
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
-                const GlobalOperator *op = &g_operators[operator_no];
-                if (op->is_applicable(state))
+                OperatorProxy op = task->get_operators()[operator_no];
+                if (is_applicable(op, state))
                     set_preferred(op);
             }
         }
     }
 }
 
-int AdditiveHeuristic::compute_add_and_ff(const GlobalState &state) {
+int AdditiveHeuristic::compute_add_and_ff(const State &state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();
@@ -134,7 +134,8 @@ int AdditiveHeuristic::compute_add_and_ff(const GlobalState &state) {
     return total_cost;
 }
 
-int AdditiveHeuristic::compute_heuristic(const GlobalState &state) {
+int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
     int h = compute_add_and_ff(state);
     if (h != DEAD_END) {
         for (size_t i = 0; i < goal_propositions.size(); ++i)

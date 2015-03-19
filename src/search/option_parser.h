@@ -27,25 +27,25 @@ If NT shall be predefinable:
   should add an explanation to OptionParser::usage().
 */
 
+#include "heuristic.h"
+#include "option_parser_util.h"
 
-
-#include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <limits>
 #include <algorithm>
+#include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
-#include "option_parser_util.h"
-#include "heuristic.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
-class OptionParser;
+class AbstractTask;
 class LandmarkGraph;
+class MergeStrategy;
 template<class Entry>
 class OpenList;
+class OptionParser;
 class SearchEngine;
-class MergeStrategy;
 class ShrinkStrategy;
 
 /*
@@ -129,6 +129,12 @@ template <>
 class TokenParser<ShrinkStrategy *> {
 public:
     static inline ShrinkStrategy *parse(OptionParser &p);
+};
+
+template <>
+class TokenParser<AbstractTask *> {
+public:
+    static inline AbstractTask *parse(OptionParser &p);
 };
 
 template <class T>
@@ -410,6 +416,10 @@ ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
 
 Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
     return lookup_in_registry<Synergy>(p);
+}
+
+AbstractTask *TokenParser<AbstractTask *>::parse(OptionParser &p) {
+    return lookup_in_registry<AbstractTask>(p);
 }
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {

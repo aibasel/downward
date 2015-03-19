@@ -1,15 +1,15 @@
 #include "causal_graph.h"
 
 #include "global_operator.h"
+#include "globals.h"
 #include "utilities.h"
 
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <tr1/unordered_set>
+#include <unordered_set>
 
 using namespace std;
-using namespace std::tr1;
 
 
 /*
