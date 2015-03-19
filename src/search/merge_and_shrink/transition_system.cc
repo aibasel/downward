@@ -614,6 +614,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     assert(are_transitions_sorted_unique());
 
     // Go over the mapping of reduced labels to new label one by one.
+    vector<bool> group_affected(cost_by_group_index.size(), false);
     for (size_t i = 0; i < label_mapping.size(); ++i) {
         const vector<int> &old_label_nos = label_mapping[i].second;
         assert(old_label_nos.size() >= 2);
@@ -678,7 +679,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
             /*
               Remove all existing labels from their group (and the group itself if
-              it becomes empty) and update label_to_positions
+              it becomes empty). We store all groups from which we removed labels
+              to recompute their cost later.
             */
             for (size_t i = 0; i < old_label_nos.size(); ++i) {
                 int label_no = old_label_nos[i];
@@ -691,6 +693,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 if (group_it->empty()) {
                     grouped_labels.erase(group_it);
                     vector<Transition>().swap(transitions_by_group_index[transitions_index]);
+                } else {
+                    group_affected[transitions_index] = true;
                 }
             }
         }
@@ -728,6 +732,25 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 LabelIter label_it = group_it->insert(group_it->end(), new_label_no);
                 label_to_positions[new_label_no] = make_tuple(new_label_no, group_it, label_it);
                 cost_by_group_index[new_label_no] = new_label_cost;
+            }
+        }
+
+        /*
+          For every label groupd where we removed a label from, recompute
+          the cost.
+        */
+        for (LabelGroupConstIter group_it = grouped_labels.begin();
+             group_it != grouped_labels.end(); ++group_it) {
+            int transitions_index = get_transitions_index_for_group(*group_it);
+            if (group_affected[transitions_index]) {
+                cost_by_group_index[transitions_index] = INF;
+                for (LabelConstIter label_it = group_it->begin();
+                     label_it != group_it->end(); ++label_it) {
+                    int cost = labels->get_label_cost(*label_it);
+                    if (cost < cost_by_group_index[transitions_index]) {
+                        cost_by_group_index[transitions_index] = cost;
+                    }
+                }
             }
         }
     }
