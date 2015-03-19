@@ -306,9 +306,9 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
     assert(!node_a->disjunctive && !node_b->disjunctive);
 
     for (size_t bi = 0; bi < node_b->vars.size(); ++bi) {
-        pair<int, int> b = make_pair(node_b->vars[bi], node_b->vals[bi]);
+        pair<const int, int> b = make_pair(node_b->vars[bi], node_b->vals[bi]);
         for (size_t ai = 0; ai < node_a->vars.size(); ++ai) {
-            pair<int, int> a = make_pair(node_a->vars[ai], node_a->vals[ai]);
+            pair<const int, int> a = make_pair(node_a->vars[ai], node_a->vals[ai]);
 
             if (a.first == b.first && a.second == b.second) {
                 if (!node_a->conjunctive || !node_b->conjunctive)
@@ -361,21 +361,18 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                     swap(shared_eff, next_eff);
                 else {
                     unordered_map<int, int> result;
-                    for (unordered_map<int, int>::iterator it1 = shared_eff.begin(); it1
-                         != shared_eff.end(); ++it1) {
-                        unordered_map<int, int>::iterator it2 = next_eff.find(it1->first);
-                        if (it2 != next_eff.end() && it2->second == it1->second)
-                            result.insert(*it1);
+                    for (auto &eff1 : shared_eff) {
+                        unordered_map<int, int>::iterator it2 = next_eff.find(eff1.first);
+                        if (it2 != next_eff.end() && it2->second == eff1.second)
+                            result.insert(eff1);
                     }
                     swap(shared_eff, result);
                 }
                 init = false;
             }
             // Test whether one of the shared effects is inconsistent with b
-            for (unordered_map<int, int>::iterator it = shared_eff.begin(); it
-                 != shared_eff.end(); ++it)
-                if (make_pair(it->first, it->second) != a && make_pair(it->first,
-                                                                       it->second) != b && are_mutex(*it, b))
+            for (auto &eff : shared_eff)
+                if (eff != a && eff != b && are_mutex(eff, b))
                     return true;
         }
 
@@ -708,10 +705,9 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, unordered_set<
         }
         visited.insert(cur);
         bool empty = true;
-        for (unordered_map<LandmarkNode *, edge_type>::const_iterator
-             it = cur->children.begin(); it != cur->children.end(); ++it) {
-            edge_type edge = it->second;
-            LandmarkNode *child_p = it->first;
+        for (const auto &child : cur->children) {
+            edge_type edge = child.second;
+            LandmarkNode *child_p = child.first;
             if (acyclic_node_set.find(child_p) == acyclic_node_set.end()) {
                 path.push_back(make_pair(cur, edge));
                 cur = child_p;
