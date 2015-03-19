@@ -30,7 +30,6 @@ private:
     void move_fact(int var, int before, int after);
     void update_facts(int var, int num_values, const std::vector<int> &new_task_index);
     void find_and_apply_new_fact_ordering(int var, std::set<int> &unordered_values, int value_for_rest);
-    void remove_unmarked_operators();
 
     void setup_hadd();
 
