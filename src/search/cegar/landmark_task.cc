@@ -31,8 +31,8 @@ bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
     return false;
 }
 
-void compute_possibly_before_facts(TaskProxy task, FactProxy last_fact, unordered_set<FactProxy> &pb_facts) {
-    assert(pb_facts.empty());
+unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy last_fact) {
+    unordered_set<FactProxy> pb_facts;
 
     // Add facts from initial state.
     for (FactProxy fact : task.get_initial_state())
@@ -54,6 +54,13 @@ void compute_possibly_before_facts(TaskProxy task, FactProxy last_fact, unordere
             }
         }
     }
+    return pb_facts;
+}
+
+LandmarkTask::LandmarkTask(TaskProxy orig_task, FactProxy landmark)
+    : DelegatingTask(get_root_task()) {
+    unordered_set<FactProxy> pb_facts = compute_possibly_before_facts(orig_task, landmark);
+    unused_parameter(pb_facts);
 }
 
 LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
@@ -76,10 +83,6 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
             task_index[var][value] = value;
         }
     }
-    TaskProxy orig_task = TaskProxy(parent.get());
-    FactProxy last_fact = orig_task.get_goals()[0];
-    unordered_set<FactProxy> reachable_facts;
-    compute_possibly_before_facts(orig_task, last_fact, reachable_facts);
 }
 
 void LandmarkTask::keep_single_effect(const Fact &last_fact) {
