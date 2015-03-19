@@ -3,6 +3,7 @@
 
 #include "utils.h"
 
+#include "../delegating_task.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 
@@ -13,7 +14,7 @@
 namespace cegar {
 typedef std::unordered_set<Fact, hash_fact> FactSet;
 
-class LandmarkTask {
+class LandmarkTask : DelegatingTask {
 private:
     std::vector<int> initial_state_data;
     std::vector<Fact> goal;

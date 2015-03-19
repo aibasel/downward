@@ -1,6 +1,8 @@
 #include "landmark_task.h"
 
 #include "values.h"
+
+#include "../globals.h"
 #include "../state_registry.h"
 #include "../timer.h"
 #include "../utilities.h"
@@ -13,7 +15,8 @@ using namespace std;
 namespace cegar {
 LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
            vector<int> initial_state_data_, vector<Fact> goal_facts)
-    : initial_state_data(initial_state_data_),
+    : DelegatingTask(get_root_task()),
+      initial_state_data(initial_state_data_),
       goal(goal_facts),
       variable_domain(domain),
       unreachable_facts(domain.size()),
