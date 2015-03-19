@@ -52,7 +52,7 @@ public:
     landmark_status status;
     bool is_derived;
 
-    std::unordered_set < std::pair < int, int >> forward_orders;
+    std::unordered_set < std::pair < int, int > > forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 

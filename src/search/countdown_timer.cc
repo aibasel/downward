@@ -20,7 +20,7 @@ bool CountdownTimer::is_expired() const {
     return max_time != numeric_limits<double>::infinity() && timer() >= max_time;
 }
 
-ostream & operator<<(ostream &os, const CountdownTimer &cd_timer) {
+ostream &operator<<(ostream &os, const CountdownTimer &cd_timer) {
     os << cd_timer.timer;
     return os;
 }

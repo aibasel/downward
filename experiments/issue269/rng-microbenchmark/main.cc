@@ -12,7 +12,7 @@ using namespace std;
 
 
 void benchmark(const string &desc, int num_calls,
-               const function<void()> &func) {
+               const function<void ()> &func) {
     cout << "Running " << desc << " " << num_calls << " times:" << flush;
     clock_t start = clock();
     for (int i = 0; i < num_calls; ++i)

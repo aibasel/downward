@@ -43,7 +43,7 @@ struct Transition {
         return !(*this < other);
     }
 
-    friend std::ostream & operator<<(std::ostream &os, const Transition &trans) {
+    friend std::ostream &operator<<(std::ostream &os, const Transition &trans) {
         os << trans.src << "->" << trans.target;
         return os;
     }

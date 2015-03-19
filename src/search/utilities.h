@@ -68,7 +68,7 @@ extern bool is_sorted_unique(const std::vector<T> &values) {
 
 namespace std {
 template<class T>
-ostream & operator<<(ostream &stream, const vector<T> &vec) {
+ostream &operator<<(ostream &stream, const vector<T> &vec) {
     stream << "[";
     for (size_t i = 0; i < vec.size(); ++i) {
         if (i != 0)
