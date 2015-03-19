@@ -77,6 +77,7 @@ HEADERS = \
           timer.h \
           tracer.h \
           utilities.h \
+          utilities_hash.h \
           variable_order_finder.h \
           weighted_evaluator.h \
           \
