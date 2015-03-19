@@ -65,7 +65,6 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
       unreachable_facts(domain.size()),
       fact_names(names),
       operators(ops),
-      original_operator_numbers(ops.size()),
       orig_index(domain.size()),
       task_index(domain.size()),
       additive_heuristic(0) {
@@ -77,8 +76,6 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
             task_index[var][value] = value;
         }
     }
-    for (size_t i = 0; i < operators.size(); ++i)
-        original_operator_numbers[i] = i;
     TaskProxy orig_task = TaskProxy(parent.get());
     FactProxy last_fact = orig_task.get_goals()[0];
     unordered_set<FactProxy> reachable_facts;
@@ -101,10 +98,8 @@ void LandmarkTask::set_goal(const Fact &fact) {
 }
 
 void LandmarkTask::adapt_operator_costs(const vector<int> &remaining_costs) {
-    if (operators.size() != original_operator_numbers.size())
-        ABORT("Updating original_operator_numbers not implemented.");
     for (size_t i = 0; i < operators.size(); ++i) {
-        operators[i].set_cost(remaining_costs[original_operator_numbers[i]]);
+        operators[i].set_cost(remaining_costs[i]);
     }
 }
 
@@ -113,9 +108,8 @@ void LandmarkTask::adapt_remaining_costs(vector<int> &remaining_costs, const vec
         cout << "Remaining: " << to_string(remaining_costs) << endl;
     if (DEBUG)
         cout << "Needed:    " << to_string(needed_costs) << endl;
-    assert(operators.size() == original_operator_numbers.size());
     for (size_t i = 0; i < operators.size(); ++i) {
-        int op_number = original_operator_numbers[i];
+        int op_number = i;
         assert(in_bounds(op_number, remaining_costs));
         assert(remaining_costs[op_number] >= 0);
         assert(needed_costs[i] <= remaining_costs[op_number]);
