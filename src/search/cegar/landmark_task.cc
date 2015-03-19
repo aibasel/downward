@@ -61,6 +61,10 @@ LandmarkTask::LandmarkTask(TaskProxy orig_task, FactProxy landmark)
     : DelegatingTask(get_root_task()) {
     unordered_set<FactProxy> pb_facts = compute_possibly_before_facts(orig_task, landmark);
     unused_parameter(pb_facts);
+    OperatorsProxy operators = orig_task.get_operators();
+    vector<int> orig_costs(operators.size());
+    for (OperatorProxy op : operators)
+        orig_costs[op.get_id()] = op.get_cost();
 }
 
 LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
