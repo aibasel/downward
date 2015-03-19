@@ -1,8 +1,9 @@
 #ifndef CEGAR_CEGAR_HEURISTIC_H
 #define CEGAR_CEGAR_HEURISTIC_H
 
-#include "task.h"
+#include "landmark_task.h"
 #include "utils.h"
+
 #include "../heuristic.h"
 #include "../option_parser.h"
 
@@ -14,7 +15,7 @@ class GlobalState;
 
 namespace cegar {
 class Abstraction;
-class Task;
+class LandmarkTask;
 
 enum GoalOrder {
     ORIGINAL,
@@ -38,8 +39,8 @@ class CegarHeuristic : public Heuristic {
     const int max_time;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
-    Task original_task;
-    std::vector<Task> tasks;
+    LandmarkTask original_task;
+    std::vector<LandmarkTask> tasks;
     std::vector<Abstraction *> abstractions;
     int num_states;
     std::vector<double> avg_h_values;
@@ -49,7 +50,7 @@ class CegarHeuristic : public Heuristic {
     LandmarkGraph get_landmark_graph() const;
     void get_prev_landmarks(Fact fact, std::unordered_map<int, std::unordered_set<int> > *groups) const;
 
-    void add_operators(Task &task);
+    void add_operators(LandmarkTask &task);
 
     // Compute the possibly-before-set of facts that can be reached in the
     // delete-relaxation before last_fact is reached the first time.
@@ -58,7 +59,7 @@ class CegarHeuristic : public Heuristic {
     void order_facts(std::vector<Fact> &facts) const;
     void get_fact_landmarks(std::vector<Fact> *facts) const;
     void get_facts(std::vector<Fact> &facts, Decomposition decomposition) const;
-    void install_task(Task &task) const;
+    void install_task(LandmarkTask &task) const;
     void build_abstractions(Decomposition decomposition);
 
 protected:

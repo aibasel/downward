@@ -1,6 +1,6 @@
 #include "abstract_state.h"
 
-#include "task.h"
+#include "landmark_task.h"
 #include "values.h"
 
 #include "../global_operator.h"
@@ -17,7 +17,7 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(const Task *task_)
+AbstractState::AbstractState(const LandmarkTask *task_)
     : task(task_),
       values(new Values()),
       distance(UNDEFINED),

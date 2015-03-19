@@ -29,7 +29,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       max_states(options.get<int>("max_states")),
       max_time(options.get<int>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
-      original_task(Task::get_original_task()),
+      original_task(LandmarkTask::get_original_task()),
       num_states(0),
       landmark_graph(get_landmark_graph()),
       temp_state_buffer(new int[g_variable_domain.size()]) {
@@ -57,8 +57,8 @@ CegarHeuristic::~CegarHeuristic() {
 }
 
 struct SortHaddValuesUp {
-    const Task &task;
-    explicit SortHaddValuesUp(const Task &task_) : task(task_) {}
+    const LandmarkTask &task;
+    explicit SortHaddValuesUp(const LandmarkTask &task_) : task(task_) {}
     bool operator()(Fact a, Fact b) {
         return task.get_hadd_value(a.first, a.second) < task.get_hadd_value(b.first, b.second);
     }
@@ -156,7 +156,7 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
     order_facts(facts);
 }
 
-void CegarHeuristic::install_task(Task &task) const {
+void CegarHeuristic::install_task(LandmarkTask &task) const {
     task.adapt_operator_costs(remaining_costs);
     task.dump();
     task.install();
@@ -183,7 +183,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
-        Task task = original_task;
+        LandmarkTask task = original_task;
         if (decomposition != NONE) {
             bool combine_facts = (options.get<bool>("combine_facts") && decomposition == LANDMARKS);
             task.set_goal(facts[i]);
@@ -318,7 +318,7 @@ int CegarHeuristic::compute_heuristic(const GlobalState &state) {
     assert(abstractions.size() == tasks.size());
     int sum_h = 0;
     for (size_t i = 0; i < abstractions.size(); ++i) {
-        Task &task = tasks[i];
+        LandmarkTask &task = tasks[i];
 
         const int *buffer = 0;
         // TODO: Use the state's buffer directly.

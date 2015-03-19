@@ -1,4 +1,4 @@
-#include "task.h"
+#include "landmark_task.h"
 
 #include "values.h"
 #include "../state_registry.h"
@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace cegar {
-Task::Task(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
+LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
            vector<int> initial_state_data_, vector<Fact> goal_facts)
     : initial_state_data(initial_state_data_),
       goal(goal_facts),
@@ -44,7 +44,7 @@ bool operator_applicable(const GlobalOperator &op, const FactSet &reached) {
     return true;
 }
 
-void Task::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached) {
+void LandmarkTask::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached) {
     // Add facts from initial state.
     for (size_t var = 0; var < variable_domain.size(); ++var)
         reached->insert(Fact(var, initial_state_data[var]));
@@ -69,7 +69,7 @@ void Task::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached
     }
 }
 
-void Task::remove_unmarked_operators() {
+void LandmarkTask::remove_unmarked_operators() {
     assert(operators.size() == original_operator_numbers.size());
     vector<int> new_original_operator_numbers;
     for (size_t i = 0; i < original_operator_numbers.size(); ++i) {
@@ -81,7 +81,7 @@ void Task::remove_unmarked_operators() {
     assert(operators.size() == original_operator_numbers.size());
 }
 
-void Task::remove_inapplicable_operators(const FactSet reached_facts) {
+void LandmarkTask::remove_inapplicable_operators(const FactSet reached_facts) {
     for (size_t i = 0; i < operators.size(); ++i) {
         GlobalOperator &op = operators[i];
         op.unmark();
@@ -91,7 +91,7 @@ void Task::remove_inapplicable_operators(const FactSet reached_facts) {
     remove_unmarked_operators();
 }
 
-void Task::keep_single_effect(const Fact &last_fact) {
+void LandmarkTask::keep_single_effect(const Fact &last_fact) {
     for (size_t i = 0; i < operators.size(); ++i) {
         GlobalOperator &op = operators[i];
         // If op achieves last_fact set eff(op) = {last_fact}.
@@ -100,13 +100,13 @@ void Task::keep_single_effect(const Fact &last_fact) {
     }
 }
 
-void Task::set_goal(const Fact &fact) {
+void LandmarkTask::set_goal(const Fact &fact) {
     additive_heuristic = 0;
     goal.clear();
     goal.push_back(fact);
 }
 
-void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
+void LandmarkTask::adapt_operator_costs(const vector<int> &remaining_costs) {
     if (operators.size() != original_operator_numbers.size())
         ABORT("Updating original_operator_numbers not implemented.");
     for (size_t i = 0; i < operators.size(); ++i) {
@@ -114,7 +114,7 @@ void Task::adapt_operator_costs(const vector<int> &remaining_costs) {
     }
 }
 
-void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const {
+void LandmarkTask::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const {
     if (DEBUG)
         cout << "Remaining: " << to_string(remaining_costs) << endl;
     if (DEBUG)
@@ -132,7 +132,7 @@ void Task::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int>
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
-void Task::move_fact(int var, int before, int after) {
+void LandmarkTask::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     assert(in_bounds(before, task_index[var]));
@@ -166,7 +166,7 @@ void Task::move_fact(int var, int before, int after) {
     }
 }
 
-void Task::update_facts(int var, int num_values, const vector<int> &new_task_index) {
+void LandmarkTask::update_facts(int var, int num_values, const vector<int> &new_task_index) {
     assert(num_values >= 1);
     int num_indices = new_task_index.size();
     assert(num_indices == variable_domain[var]);
@@ -189,7 +189,7 @@ void Task::update_facts(int var, int num_values, const vector<int> &new_task_ind
     assert(static_cast<int>(fact_names[var].size()) == num_values);
 }
 
-void Task::find_and_apply_new_fact_ordering(int var, set<int> &unordered_values, int value_for_rest) {
+void LandmarkTask::find_and_apply_new_fact_ordering(int var, set<int> &unordered_values, int value_for_rest) {
     // Save renamings by filling the free indices with facts from the back.
     assert(!unordered_values.empty());
     int num_values = unordered_values.size();
@@ -213,7 +213,7 @@ void Task::find_and_apply_new_fact_ordering(int var, set<int> &unordered_values,
     update_facts(var, num_values, new_task_index);
 }
 
-void Task::save_unreachable_facts(const FactSet &reached_facts) {
+void LandmarkTask::save_unreachable_facts(const FactSet &reached_facts) {
     assert(!reached_facts.empty());
     int num_vars = variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
@@ -234,7 +234,7 @@ void Task::save_unreachable_facts(const FactSet &reached_facts) {
     }
 }
 
-void Task::combine_facts(int var, unordered_set<int> &values) {
+void LandmarkTask::combine_facts(int var, unordered_set<int> &values) {
     assert(values.size() >= 2);
     set<int> mapped_values;
     for (unordered_set<int>::iterator it = values.begin(); it != values.end(); ++it) {
@@ -262,7 +262,7 @@ void Task::combine_facts(int var, unordered_set<int> &values) {
     fact_names[var][projected_value] = name.str();
 }
 
-void Task::setup_hadd() {
+void LandmarkTask::setup_hadd() {
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     dump_name();
     Options opts;
@@ -290,20 +290,20 @@ void Task::setup_hadd() {
     delete registry;
 }
 
-int Task::get_hadd_value(int var, int value) const {
+int LandmarkTask::get_hadd_value(int var, int value) const {
     assert(additive_heuristic);
     assert(in_bounds(var, variable_domain));
     assert(value < variable_domain[var]);
     return additive_heuristic->get_cost(var, value);
 }
 
-Task Task::get_original_task() {
-    Task task(g_variable_domain, g_fact_names, g_operators, g_initial_state_data, g_goal);
+LandmarkTask LandmarkTask::get_original_task() {
+    LandmarkTask task(g_variable_domain, g_fact_names, g_operators, g_initial_state_data, g_goal);
     task.setup_hadd();
     return task;
 }
 
-void Task::install() {
+void LandmarkTask::install() {
     g_goal = goal;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
@@ -312,13 +312,13 @@ void Task::install() {
     setup_hadd();
 }
 
-void Task::release_memory() {
+void LandmarkTask::release_memory() {
     vector<GlobalOperator>().swap(operators);
     delete additive_heuristic;
     additive_heuristic = 0;
 }
 
-bool Task::translate_state(const GlobalState &state, int *translated) const {
+bool LandmarkTask::translate_state(const GlobalState &state, int *translated) const {
     // TODO: Loop only over changed values.
     int num_vars = variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
@@ -333,7 +333,7 @@ bool Task::translate_state(const GlobalState &state, int *translated) const {
     return true;
 }
 
-double Task::get_state_space_fraction(const Task &global_task) const {
+double LandmarkTask::get_state_space_fraction(const LandmarkTask &global_task) const {
     double fraction = 1.0;
     for (size_t var = 0; var < variable_domain.size(); ++var) {
         assert(variable_domain[var] <= global_task.get_variable_domain()[var]);
@@ -342,14 +342,14 @@ double Task::get_state_space_fraction(const Task &global_task) const {
     return fraction;
 }
 
-void Task::dump_facts() const {
+void LandmarkTask::dump_facts() const {
     for (size_t var = 0; var < variable_domain.size(); ++var) {
         for (int value = 0; value < variable_domain[var]; ++value)
             cout << "    " << var << "=" << value << ": " << fact_names[var][value] << endl;
     }
 }
 
-void Task::dump_name() const {
+void LandmarkTask::dump_name() const {
     cout << "Task ";
     string sep = "";
     for (size_t i = 0; i < goal.size(); ++i) {
@@ -360,7 +360,7 @@ void Task::dump_name() const {
     cout << endl;
 }
 
-void Task::dump() const {
+void LandmarkTask::dump() const {
     dump_name();
     int num_facts = 0;
     for (size_t var = 0; var < variable_domain.size(); ++var)
