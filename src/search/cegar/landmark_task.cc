@@ -392,14 +392,6 @@ void LandmarkTask::dump() const {
     }
 }
 
-int LandmarkTask::get_num_variables() const {
-    return parent->get_num_variables();
-}
-
-const string &LandmarkTask::get_variable_name(int var) const {
-    return parent->get_variable_name(var);
-}
-
 int LandmarkTask::get_variable_domain_size(int var) const {
     return parent->get_variable_domain_size(var);
 }
@@ -450,10 +442,6 @@ pair<int, int> LandmarkTask::get_operator_effect(
 
 const GlobalOperator *LandmarkTask::get_global_operator(int index, bool is_axiom) const {
     return parent->get_global_operator(index, is_axiom);
-}
-
-int LandmarkTask::get_num_axioms() const {
-    return parent->get_num_axioms();
 }
 
 int LandmarkTask::get_num_goals() const {
