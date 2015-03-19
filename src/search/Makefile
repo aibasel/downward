@@ -125,21 +125,21 @@ HEADERS += merge_and_shrink/labels.h \
            merge_and_shrink/shrink_strategy.h \
            merge_and_shrink/transition_system.h \
 
-# TODO: Add landmark code back in.
+# TODO: Put this back into the landmark block:
+#          landmarks/lama_ff_synergy.h \
 
-# HEADERS += landmarks/exploration.h \
-#            landmarks/h_m_landmarks.h \
-#            landmarks/lama_ff_synergy.h \
-#            landmarks/landmark_cost_assignment.h \
-#            landmarks/landmark_count_heuristic.h \
-#            landmarks/landmark_status_manager.h \
-#            landmarks/landmark_graph_merged.h \
-#            landmarks/landmark_graph.h \
-#            landmarks/landmark_factory.h \
-#            landmarks/landmark_factory_rpg_exhaust.h \
-#            landmarks/landmark_factory_rpg_sasp.h \
-#            landmarks/landmark_factory_zhu_givan.h \
-#            landmarks/util.h \
+HEADERS += landmarks/exploration.h \
+           landmarks/h_m_landmarks.h \
+           landmarks/landmark_cost_assignment.h \
+           landmarks/landmark_count_heuristic.h \
+           landmarks/landmark_status_manager.h \
+           landmarks/landmark_graph_merged.h \
+           landmarks/landmark_graph.h \
+           landmarks/landmark_factory.h \
+           landmarks/landmark_factory_rpg_exhaust.h \
+           landmarks/landmark_factory_rpg_sasp.h \
+           landmarks/landmark_factory_zhu_givan.h \
+           landmarks/util.h \
 
 # HEADERS += learning/AODE.h \
 #            learning/classifier.h \
