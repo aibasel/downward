@@ -22,7 +22,6 @@ private:
     std::vector<std::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
     std::vector<GlobalOperator> operators;
-    std::vector<int> original_operator_numbers;
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
     mutable AdditiveHeuristic *additive_heuristic;
