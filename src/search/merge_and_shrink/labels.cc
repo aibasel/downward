@@ -77,12 +77,12 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
                                    vector<pair<int, vector<int> > > &label_mapping) {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
-        const Block &block = *it;
+    for (BlockListConstIter group_it = relation->begin(); group_it != relation->end(); ++group_it) {
+        const Block &block = *group_it;
         unordered_map<int, vector<int> > equivalent_label_nos;
-        for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
-            assert(*jt < static_cast<int>(labels.size()));
-            int label_no = *jt;
+        for (ElementListConstIter label_it = block.begin(); label_it != block.end(); ++label_it) {
+            assert(*label_it < static_cast<int>(labels.size()));
+            int label_no = *label_it;
             Label *label = labels[label_no];;
             if (label) {
                 // only consider non-reduced labels
