@@ -85,18 +85,6 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
     compute_possibly_before_facts(orig_task, last_fact, reachable_facts);
 }
 
-void LandmarkTask::remove_unmarked_operators() {
-    assert(operators.size() == original_operator_numbers.size());
-    vector<int> new_original_operator_numbers;
-    for (size_t i = 0; i < original_operator_numbers.size(); ++i) {
-        if (operators[i].is_marked())
-            new_original_operator_numbers.push_back(original_operator_numbers[i]);
-    }
-    operators.erase(remove_if(operators.begin(), operators.end(), is_not_marked), operators.end());
-    original_operator_numbers = new_original_operator_numbers;
-    assert(operators.size() == original_operator_numbers.size());
-}
-
 void LandmarkTask::keep_single_effect(const Fact &last_fact) {
     for (size_t i = 0; i < operators.size(); ++i) {
         GlobalOperator &op = operators[i];
