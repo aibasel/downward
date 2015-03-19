@@ -43,10 +43,8 @@ template<typename TA, typename TB>
 struct  hash < std::pair < TA, TB > > {
     size_t operator()(const std::pair<TA, TB> &key) const {
         size_t seed = 0;
-        const std::hash<TA> hash_a;
-        const std::hash<TB> hash_b;
-        hash_combine_impl(seed, hash_a(key.first));
-        hash_combine_impl(seed, hash_b(key.second));
+        hash_combine(seed, key.first);
+        hash_combine(seed, key.second);
         return seed;
     }
 };
