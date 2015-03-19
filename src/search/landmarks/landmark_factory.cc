@@ -426,12 +426,10 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
         } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
-            unordered_set<LandmarkNode *> interesting_nodes(
-                g_variable_name.size());
-            for (unordered_map<LandmarkNode *, edge_type>::iterator it =
-                     node_p->children.begin(); it != node_p->children.end(); ++it) {
-                if (it->second >= greedy_necessary) { // found node2: node_p ->_gn node2
-                    LandmarkNode &node2 = *(it->first);
+            unordered_set<LandmarkNode *> interesting_nodes(g_variable_name.size());
+            for (const auto &child : node_p->children) {
+                if (child.second >= greedy_necessary) { // found node2: node_p ->_gn node2
+                    LandmarkNode &node2 = *(child.first);
                     for (unordered_map<LandmarkNode *, edge_type>::iterator
                          it2 = node2.parents.begin(); it2
                          != node2.parents.end(); ++it2) {   // find parent
@@ -451,15 +449,14 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
             }
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
-            for (unordered_set<LandmarkNode *>::iterator it3 =
-                     interesting_nodes.begin(); it3 != interesting_nodes.end(); ++it3) {
-                if (*it3 == node_p || (*it3)->disjunctive)
+            for (LandmarkNode *n : interesting_nodes) {
+                if (n == node_p || n->disjunctive)
                     continue;
-                if (interferes(*it3, node_p)) {
+                if (interferes(n, node_p)) {
                     if (!obedient_orders)
-                        edge_add(**it3, *node_p, reasonable);
+                        edge_add(*n, *node_p, reasonable);
                     else
-                        edge_add(**it3, *node_p, obedient_reasonable);
+                        edge_add(*n, *node_p, obedient_reasonable);
                 }
             }
         }
@@ -474,10 +471,9 @@ void LandmarkFactory::collect_ancestors(
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;
     unordered_set<LandmarkNode *> closed_nodes;
-    for (unordered_map<LandmarkNode *, edge_type>::iterator it =
-             node.parents.begin(); it != node.parents.end(); ++it) {
-        edge_type &edge = it->second;
-        LandmarkNode &parent = *(it->first);
+    for (const auto &p : node.parents) {
+        const edge_type &edge = p.second;
+        LandmarkNode &parent = *(p.first);
         if (edge >= natural || (use_reasonable && edge == reasonable))
             if (closed_nodes.find(&parent) == closed_nodes.end()) {
                 open_nodes.push_back(&parent);
@@ -488,10 +484,9 @@ void LandmarkFactory::collect_ancestors(
     }
     while (!open_nodes.empty()) {
         LandmarkNode &node2 = *(open_nodes.front());
-        for (unordered_map<LandmarkNode *, edge_type>::iterator it =
-                 node2.parents.begin(); it != node2.parents.end(); ++it) {
-            edge_type &edge = it->second;
-            LandmarkNode &parent = *(it->first);
+        for (const auto &p : node2.parents) {
+            const edge_type &edge = p.second;
+            LandmarkNode &parent = *(p.first);
             if (edge >= natural || (use_reasonable && edge == reasonable)) {
                 if (closed_nodes.find(&parent) == closed_nodes.end()) {
                     open_nodes.push_back(&parent);
