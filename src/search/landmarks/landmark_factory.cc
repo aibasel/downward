@@ -115,7 +115,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
                             numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
-    unordered_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
+    unordered_set<const GlobalOperator *> exclude_ops;
     vector<pair<int, int> > exclude_props;
     if (exclude != NULL) {
         for (size_t op = 0; op < g_operators.size(); ++op) {
@@ -156,7 +156,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
         lvl_var[var].resize(g_variable_domain[var],
                             numeric_limits<int>::max());
     }
-    unordered_set<const GlobalOperator *, ex_hash_operator_ptr> exclude_ops;
+    unordered_set<const GlobalOperator *> exclude_ops;
     vector<pair<int, int> > exclude_props;
     for (size_t op = 0; op < g_operators.size(); ++op) {
         if (is_landmark_precondition(g_operators[op], &landmark)) {
