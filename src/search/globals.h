@@ -81,6 +81,6 @@ extern RandomNumberGenerator g_rng;
 // changed.
 extern StateRegistry *g_state_registry;
 
-const std::shared_ptr<AbstractTask> get_root_task();
+extern const std::shared_ptr<AbstractTask> g_root_task();
 
 #endif

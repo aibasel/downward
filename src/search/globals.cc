@@ -374,7 +374,7 @@ const GlobalState &g_initial_state() {
     return g_state_registry->get_initial_state();
 }
 
-const shared_ptr<AbstractTask> get_root_task() {
+const shared_ptr<AbstractTask> g_root_task() {
     static shared_ptr<AbstractTask> root_task = make_shared<RootTask>();
     return root_task;
 }
