@@ -189,18 +189,6 @@ void DomainTransitionGraph::get_successors(int value, vector<int> &result) const
         result.push_back(transitions[i].target->value);
 }
 
-class hash_pair_vector {
-public:
-    size_t operator()(const vector<pair<int, int> > &vec) const {
-        unsigned long hash_value = 0;
-        for (size_t i = 0; i < vec.size(); ++i) {
-            hash_value = 17 * hash_value + vec[i].first;
-            hash_value = 17 * hash_value + vec[i].second;
-        }
-        return size_t(hash_value);
-    }
-};
-
 void ValueTransition::simplify() {
     simplify_labels(labels);
     simplify_labels(cea_labels);
@@ -221,7 +209,7 @@ void ValueTransition::simplify_labels(
      */
 
     typedef vector<pair<int, int> > HashKey;
-    typedef unordered_map<HashKey, int, hash_pair_vector> HashMap;
+    typedef unordered_map<HashKey, int> HashMap;
     HashMap label_index;
     label_index.reserve(label_vec.size() * 2);
 

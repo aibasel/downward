@@ -33,7 +33,7 @@ inline size_t hash_number_sequence(const Sequence &data) {
 
 namespace std {
 template<typename T, typename A>
-struct hash<const std::vector<T, A> > {
+struct hash<std::vector<T, A> > {
     size_t operator()(const std::vector<T, A> &vec) const {
         return ::hash_number_sequence(vec, vec.size());
     }

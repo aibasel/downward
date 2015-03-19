@@ -20,7 +20,7 @@ class ParetoOpenList : public OpenList<Entry> {
     typedef std::deque<Entry> Bucket;
     typedef std::vector<int> KeyType;
     //typedef std::map<const KeyType, Bucket> BucketMap;
-    typedef typename std::unordered_map<const KeyType, Bucket> BucketMap;
+    typedef typename std::unordered_map<KeyType, Bucket> BucketMap;
     typedef std::set<KeyType> KeySet; // no unordered_set (see insert method)
 
     BucketMap buckets;
