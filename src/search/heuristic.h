@@ -12,6 +12,7 @@ class GlobalOperator;
 class GlobalState;
 class OptionParser;
 class Options;
+class TaskProxy;
 
 /*
   TODO: Heuristic still has some internal state related to the
@@ -41,7 +42,6 @@ protected:
     void set_preferred(OperatorProxy op);
     // TODO: Remove once all heuristics use the TaskProxy class.
     int get_adjusted_cost(const GlobalOperator &op) const;
-    int get_adjusted_cost(const OperatorProxy &op) const;
     // TODO: Make private once all heuristics use the TaskProxy class.
     State convert_global_state(const GlobalState &global_state) const;
 
@@ -71,5 +71,7 @@ public:
 
     std::string get_description() const;
 };
+
+TaskProxy *get_task_from_options(const Options &opts);
 
 #endif

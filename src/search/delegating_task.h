@@ -1,15 +1,26 @@
-#ifndef ROOT_TASK_H
-#define ROOT_TASK_H
+#ifndef DELEGATING_TASK_H
+#define DELEGATING_TASK_H
 
 #include "abstract_task.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 
-class RootTask : public AbstractTask {
+/*
+  Task transformation that delegates all calls to the corresponding methods of
+  the parent task. You should inherit from this class instead of AbstractTask
+  if you need specialized behavior for only some of the methods.
+*/
+class DelegatingTask : public AbstractTask {
+protected:
+    const std::shared_ptr<AbstractTask> parent;
 public:
+    explicit DelegatingTask(const std::shared_ptr<AbstractTask> parent);
+    virtual ~DelegatingTask() override = default;
+
     virtual int get_num_variables() const override;
     virtual const std::string &get_variable_name(int var) const override;
     virtual int get_variable_domain_size(int var) const override;

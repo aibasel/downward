@@ -74,7 +74,7 @@ void ShrinkBucketBased::compute_abstraction(
                 }
             }
             StateEquivalenceClass &group = equiv_relation.back();
-            group.insert_after(group.begin(), bucket.begin(), bucket.end());
+            group.insert_after(group.before_begin(), bucket.begin(), bucket.end());
         } else {
             // Complicated case: must combine until bucket budget is met.
             // First create singleton groups.
@@ -91,7 +91,7 @@ void ShrinkBucketBased::compute_abstraction(
                 while (it1 == it2) {
                     it2 = g_rng.choose(groups);
                 }
-                it1->splice_after(it1->begin(), *it2);
+                it1->splice_after(it1->before_begin(), *it2);
                 swap(*it2, groups.back());
                 assert(groups.back().empty());
                 groups.pop_back();
