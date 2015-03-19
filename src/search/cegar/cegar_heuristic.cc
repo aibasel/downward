@@ -190,11 +190,9 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             Fact &last_fact = facts[i];
             FactSet reached_facts;
             if (decomposition == LANDMARKS) {
-                task.compute_possibly_before_facts(last_fact, &reached_facts);
+                //task.compute_possibly_before_facts(last_fact, &reached_facts);
             }
-            if (decomposition == LANDMARKS && !options.get<bool>("general_costs") &&
-                options.get<bool>("remove_inapplicable_operators")) {
-                task.remove_inapplicable_operators(reached_facts);
+            if (decomposition == LANDMARKS && !options.get<bool>("general_costs")) {
                 task.keep_single_effect(last_fact);
             }
             if (decomposition == LANDMARKS) {
@@ -379,7 +377,6 @@ static Heuristic *_parse(OptionParser &parser) {
                            "LANDMARKS_AND_GOALS");
     parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
-    parser.add_option<bool>("remove_inapplicable_operators", "filter inapplicable operators", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<int>("min_hadd", "ignore facts with too low h^add values", "0");
     parser.add_option<bool>("general_costs", "allow negative costs in cost-partitioning", "true");

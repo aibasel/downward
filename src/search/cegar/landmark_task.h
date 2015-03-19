@@ -46,10 +46,8 @@ public:
     const std::vector<GlobalOperator> &get_operators() const {return operators; }
 
     void set_goal(const Fact &fact);
-    void compute_possibly_before_facts(const Fact &last_fact, FactSet *reached);
     void save_unreachable_facts(const FactSet &reached_facts);
     // Only keep operators with all preconditions in reachable set of facts.
-    void remove_inapplicable_operators(const FactSet reachable_facts);
     void keep_single_effect(const Fact &last_fact);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;

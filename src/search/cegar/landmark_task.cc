@@ -4,6 +4,7 @@
 
 #include "../globals.h"
 #include "../state_registry.h"
+#include "../task_proxy.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -13,6 +14,48 @@
 using namespace std;
 
 namespace cegar {
+
+bool operator_applicable(OperatorProxy op, const unordered_set<FactProxy> &facts) {
+    for (FactProxy precondition : op.get_preconditions()) {
+        if (facts.count(precondition) == 0)
+            return false;
+    }
+    return true;
+}
+
+bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
+    for (EffectProxy effect : op.get_effects()) {
+        if (effect.get_fact() == fact)
+            return true;
+    }
+    return false;
+}
+
+void compute_possibly_before_facts(TaskProxy task, FactProxy last_fact, unordered_set<FactProxy> &pb_facts) {
+    assert(pb_facts.empty());
+
+    // Add facts from initial state.
+    for (FactProxy fact : task.get_initial_state())
+        pb_facts.insert(fact);
+
+    // Until no more facts can be added:
+    size_t last_num_reached = 0;
+    while (last_num_reached != pb_facts.size()) {
+        last_num_reached = pb_facts.size();
+        for (OperatorProxy op : task.get_operators()) {
+            // Ignore operators that achieve last_fact.
+            if (operator_achieves_fact(op, last_fact))
+                continue;
+            // Add all facts that are achieved by an applicable operator.
+            if (operator_applicable(op, pb_facts)) {
+                for (EffectProxy effect : op.get_effects()) {
+                    pb_facts.insert(effect.get_fact());
+                }
+            }
+        }
+    }
+}
+
 LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
            vector<int> initial_state_data_, vector<Fact> goal_facts)
     : DelegatingTask(get_root_task()),
@@ -36,40 +79,10 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
     }
     for (size_t i = 0; i < operators.size(); ++i)
         original_operator_numbers[i] = i;
-}
-
-bool operator_applicable(const GlobalOperator &op, const FactSet &reached) {
-    for (size_t i = 0; i < op.get_preconditions().size(); i++) {
-        const GlobalCondition &precondition = op.get_preconditions()[i];
-        if (reached.count(Fact(precondition.var, precondition.val)) == 0)
-            return false;
-    }
-    return true;
-}
-
-void LandmarkTask::compute_possibly_before_facts(const Fact &last_fact, FactSet *reached) {
-    // Add facts from initial state.
-    for (size_t var = 0; var < variable_domain.size(); ++var)
-        reached->insert(Fact(var, initial_state_data[var]));
-
-    // Until no more facts can be added:
-    size_t last_num_reached = 0;
-    while (last_num_reached != reached->size()) {
-        last_num_reached = reached->size();
-        for (size_t i = 0; i < operators.size(); ++i) {
-            GlobalOperator &op = operators[i];
-            // Ignore operators that achieve last_fact.
-            if (get_eff(op, last_fact.first) == last_fact.second)
-                continue;
-            // Add all facts that are achieved by an applicable operator.
-            if (operator_applicable(op, *reached)) {
-                for (size_t i = 0; i < op.get_effects().size(); i++) {
-                    const GlobalEffect &effect = op.get_effects()[i];
-                    reached->insert(Fact(effect.var, effect.val));
-                }
-            }
-        }
-    }
+    TaskProxy orig_task = TaskProxy(parent.get());
+    FactProxy last_fact = orig_task.get_goals()[0];
+    unordered_set<FactProxy> reachable_facts;
+    compute_possibly_before_facts(orig_task, last_fact, reachable_facts);
 }
 
 void LandmarkTask::remove_unmarked_operators() {
@@ -82,16 +95,6 @@ void LandmarkTask::remove_unmarked_operators() {
     operators.erase(remove_if(operators.begin(), operators.end(), is_not_marked), operators.end());
     original_operator_numbers = new_original_operator_numbers;
     assert(operators.size() == original_operator_numbers.size());
-}
-
-void LandmarkTask::remove_inapplicable_operators(const FactSet reached_facts) {
-    for (size_t i = 0; i < operators.size(); ++i) {
-        GlobalOperator &op = operators[i];
-        op.unmark();
-        if (operator_applicable(op, reached_facts))
-            op.mark();
-    }
-    remove_unmarked_operators();
 }
 
 void LandmarkTask::keep_single_effect(const Fact &last_fact) {

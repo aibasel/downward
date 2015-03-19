@@ -535,4 +535,14 @@ inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(task, var_id);
 }
 
+namespace std {
+template<>
+struct hash<FactProxy> {
+    size_t operator()(const FactProxy &fact) const {
+        // TODO: Reuse hash function.
+        return static_cast<size_t>(fact.get_variable().get_id() * 1337 + fact.get_value());
+    }
+};
+}
+
 #endif
