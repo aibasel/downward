@@ -17,7 +17,7 @@ typedef std::unordered_set<Fact, hash_fact> FactSet;
 class LandmarkTask : DelegatingTask {
 private:
     std::vector<int> initial_state_data;
-    std::vector<Fact> goal;
+    std::vector<Fact> goals;
     std::vector<int> variable_domain;
     std::vector<std::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
@@ -42,7 +42,7 @@ public:
          std::vector<GlobalOperator> ops, std::vector<int> initial_state_data_,
          std::vector<Fact> goal_facts);
 
-    const std::vector<Fact> &get_goal() const {return goal; }
+    const std::vector<Fact> &get_goal() const {return goals; }
     const std::vector<GlobalOperator> &get_operators() const {return operators; }
 
     void set_goal(const Fact &fact);
@@ -65,7 +65,7 @@ public:
     int get_hadd_value(int var, int value) const;
     int get_num_vars() const {return variable_domain.size(); }
     int get_num_values(int var) const {return variable_domain[var]; }
-    const std::vector<Fact> &get_goals() const {return goal; }
+    const std::vector<Fact> &get_goals() const {return goals; }
     const std::vector<int> &get_initial_state_data() const {return initial_state_data; }
     const std::vector<int> &get_variable_domain() const {return variable_domain; }
     const std::vector<std::unordered_set<int> > &get_unreachable_facts() const {return unreachable_facts; }

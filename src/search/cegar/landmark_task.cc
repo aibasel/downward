@@ -17,7 +17,7 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
            vector<int> initial_state_data_, vector<Fact> goal_facts)
     : DelegatingTask(get_root_task()),
       initial_state_data(initial_state_data_),
-      goal(goal_facts),
+      goals(goal_facts),
       variable_domain(domain),
       unreachable_facts(domain.size()),
       fact_names(names),
@@ -105,8 +105,8 @@ void LandmarkTask::keep_single_effect(const Fact &last_fact) {
 
 void LandmarkTask::set_goal(const Fact &fact) {
     additive_heuristic = 0;
-    goal.clear();
-    goal.push_back(fact);
+    goals.clear();
+    goals.push_back(fact);
 }
 
 void LandmarkTask::adapt_operator_costs(const vector<int> &remaining_costs) {
@@ -141,8 +141,8 @@ void LandmarkTask::move_fact(int var, int before, int after) {
     assert(in_bounds(before, task_index[var]));
     if (after == UNDEFINED) {
         assert(initial_state_data[var] != before);
-        for (size_t i = 0; i < goal.size(); ++i) {
-            assert(goal[i].first != var || goal[i].second != before);
+        for (size_t i = 0; i < goals.size(); ++i) {
+            assert(goals[i].first != var || goals[i].second != before);
         }
         task_index[var][orig_index[var][before]] = UNDEFINED;
         return;
@@ -158,9 +158,9 @@ void LandmarkTask::move_fact(int var, int before, int after) {
     fact_names[var][after] = fact_names[var][before];
     if (initial_state_data[var] == before)
         initial_state_data[var] = after;
-    for (size_t i = 0; i < goal.size(); ++i) {
-        if (var == goal[i].first && before == goal[i].second)
-            goal[i].second = after;
+    for (size_t i = 0; i < goals.size(); ++i) {
+        if (var == goals[i].first && before == goals[i].second)
+            goals[i].second = after;
     }
     unordered_set<int>::iterator it = unreachable_facts[var].find(before);
     if (it != unreachable_facts[var].end()) {
@@ -307,7 +307,7 @@ LandmarkTask LandmarkTask::get_original_task() {
 }
 
 void LandmarkTask::install() {
-    g_goal = goal;
+    g_goal = goals;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
     g_operators = operators;
@@ -355,9 +355,9 @@ void LandmarkTask::dump_facts() const {
 void LandmarkTask::dump_name() const {
     cout << "Task ";
     string sep = "";
-    for (size_t i = 0; i < goal.size(); ++i) {
-        cout << sep << goal[i].first << "=" << orig_index[goal[i].first][goal[i].second]
-             << ":" << fact_names[goal[i].first][goal[i].second];
+    for (size_t i = 0; i < goals.size(); ++i) {
+        cout << sep << goals[i].first << "=" << orig_index[goals[i].first][goals[i].second]
+             << ":" << fact_names[goals[i].first][goals[i].second];
         sep = " ";
     }
     cout << endl;
