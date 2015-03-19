@@ -153,21 +153,10 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
     }
 }
 
-class hash_unary_operator {
-public:
-    size_t operator()(const pair<vector<ExProposition *>, ExProposition *> &key) const {
-        size_t hash_value = reinterpret_cast<size_t>(key.second);
-        const vector<ExProposition *> &vec = key.first;
-        for (size_t i = 0; i < vec.size(); ++i)
-            hash_value = 17 * hash_value + reinterpret_cast<size_t>(vec[i]);
-        return hash_value;
-    }
-};
-
 // heuristic computation
 void Exploration::setup_exploration_queue(const GlobalState &state,
                                           const vector<pair<int, int> > &excluded_props,
-                                          const std::unordered_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,
+                                          const std::unordered_set<const GlobalOperator *> &excluded_ops,
                                           bool use_h_max = false) {
     prop_queue.clear();
 
@@ -338,7 +327,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
                                                      std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op,
                                                      bool level_out,
                                                      const vector<pair<int, int> > &excluded_props,
-                                                     const std::unordered_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,
+                                                     const std::unordered_set<const GlobalOperator *> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(g_initial_state(), excluded_props, excluded_ops, true);
@@ -353,7 +342,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
         }
     }
     if (compute_lvl_ops) {
-        unordered_map< const GlobalOperator *, int, ex_hash_operator_ptr> operator_index;
+        unordered_map< const GlobalOperator *, int> operator_index;
         for (size_t i = 0; i < g_operators.size(); ++i) {
             operator_index.insert(make_pair(&g_operators[i], i));
         }

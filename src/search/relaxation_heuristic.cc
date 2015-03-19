@@ -88,24 +88,6 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_
     }
 }
 
-class hash_unary_operator {
-public:
-    size_t operator()(const pair<vector<Proposition *>, Proposition *> &key) const {
-        // NOTE: We used to hash the Proposition* values directly, but
-        // this had the disadvantage that the results were not
-        // reproducible. This propagates through to the heuristic
-        // computation: runs on different computers could lead to
-        // different initial h values, for example.
-
-        unsigned long hash_value = key.second->id;
-        const vector<Proposition *> &vec = key.first;
-        for (size_t i = 0; i < vec.size(); ++i)
-            hash_value = 17 * hash_value + vec[i]->id;
-        return size_t(hash_value);
-    }
-};
-
-
 static bool compare_prop_pointer(const Proposition *p1, const Proposition *p2) {
     return p1->id < p2->id;
 }
@@ -131,7 +113,7 @@ void RelaxationHeuristic::simplify() {
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
     typedef pair<vector<Proposition *>, Proposition *> HashKey;
-    typedef unordered_map<HashKey, int, hash_unary_operator> HashMap;
+    typedef unordered_map<HashKey, int> HashMap;
     HashMap unary_operator_index;
     unary_operator_index.reserve(unary_operators.size() * 2);
 
