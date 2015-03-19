@@ -58,6 +58,13 @@ public:
     // Use "statistics = nullptr" if no statististics are desired.
     EvaluationContext(const GlobalState &state, int g_value,
                       bool is_preferred, SearchStatistics *statistics);
+
+    /*
+      Use the following constructor when you don't care about g
+      values, preferredness or statistics, e.g. when sampling states
+      for heuristics.
+    */
+    explicit EvaluationContext(const GlobalState &state);
     ~EvaluationContext() = default;
 
     const GlobalState &get_state() const;
