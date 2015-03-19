@@ -51,12 +51,13 @@ public:
         const std::vector<int> &new_pattern,
         std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
 
-    // to avoid unneccessary overhead in the sampling procedure of iPDB, provide
-    // this method to only evaluate the heuristic to check whether a
-    // given state is a dead end or not (see issue404).
-    // set Heuristic's evaluator_value to DEAD_END if state is a dead end and to
-    // 0 otherwise.
-    void evaluate_dead_end(const GlobalState &state);
+    /*
+      The following method offers a quick dead-end check for the
+      sampling procedure of iPDB. This exists because we can much more
+      efficiently test if the canonical heuristic is infinite than
+      computing the exact heuristic value.
+    */
+    bool is_dead_end(const GlobalState &state) const;
     const std::vector<PDBHeuristic *> &get_pattern_databases() const {
         return pattern_databases;
     }

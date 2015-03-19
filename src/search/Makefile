@@ -153,17 +153,15 @@ HEADERS += merge_and_shrink/labels.h \
 #            learning/state_space_sample.h \
 #            learning/state_vars_feature_extractor.h \
 
-# TODO: Add PDB code back in.
-
-# HEADERS += pdbs/canonical_pdbs_heuristic.h \
-#            pdbs/dominance_pruner.h \
-#            pdbs/match_tree.h \
-#            pdbs/max_cliques.h \
-#            pdbs/pattern_generation_edelkamp.h \
-#            pdbs/pattern_generation_haslum.h \
-#            pdbs/pdb_heuristic.h \
-#            pdbs/util.h \
-#            pdbs/zero_one_pdbs_heuristic.h \
+HEADERS += pdbs/canonical_pdbs_heuristic.h \
+           pdbs/dominance_pruner.h \
+           pdbs/match_tree.h \
+           pdbs/max_cliques.h \
+           pdbs/pattern_generation_edelkamp.h \
+           pdbs/pattern_generation_haslum.h \
+           pdbs/pdb_heuristic.h \
+           pdbs/util.h \
+           pdbs/zero_one_pdbs_heuristic.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward
