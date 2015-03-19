@@ -115,7 +115,7 @@ static AbstractTask *_parse(OptionParser &parser) {
         return 0;
     else
         // TODO (issue456): Return shared pointer.
-        return get_root_task().get();
+        return g_root_task().get();
 }
 
 static Plugin<AbstractTask> _plugin("no_transform", _parse);
