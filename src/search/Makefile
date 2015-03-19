@@ -160,10 +160,10 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
 
 HEADERS += cegar/cegar_heuristic.h \
            cegar/abstract_state.h \
+           cegar/landmark_task.h \
            cegar/values.h \
            cegar/abstraction.h \
            cegar/split_tree.h \
-           cegar/task.h \
            cegar/utils.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)

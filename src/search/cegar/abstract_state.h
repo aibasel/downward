@@ -10,7 +10,7 @@
 
 namespace cegar {
 class AbstractState;
-class Task;
+class LandmarkTask;
 class Values;
 typedef std::pair<const GlobalOperator *, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
@@ -22,7 +22,7 @@ private:
     AbstractState(const AbstractState &);
     AbstractState &operator=(const AbstractState &);
 
-    const Task *task;
+    const LandmarkTask *task;
 
     // Abstract domains for each variable.
     Values *values;
@@ -53,7 +53,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var);
 
 public:
-    explicit AbstractState(const Task *task_);
+    explicit AbstractState(const LandmarkTask *task_);
     ~AbstractState();
 
     // Let "result" be the set of states in which applying "op" leads to this state.

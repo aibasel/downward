@@ -18,7 +18,7 @@ class StateRegistry;
 
 namespace cegar {
 class AbstractState;
-class Task;
+class LandmarkTask;
 
 typedef std::unordered_set<AbstractState *> AbstractStates;
 
@@ -45,7 +45,7 @@ private:
     Abstraction(const Abstraction &);
     Abstraction &operator=(const Abstraction &);
 
-    const Task *task;
+    const LandmarkTask *task;
     StateRegistry *registry;
 
     // Set of all valid states, i.e. states that have not been split.
@@ -118,7 +118,7 @@ private:
     void find_solution() const;
 
 public:
-    explicit Abstraction(const Task *t);
+    explicit Abstraction(const LandmarkTask *t);
     ~Abstraction();
 
     void separate_unreachable_facts();

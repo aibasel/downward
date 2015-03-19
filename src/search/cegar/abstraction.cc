@@ -1,7 +1,7 @@
 #include "abstraction.h"
 
 #include "abstract_state.h"
-#include "task.h"
+#include "landmark_task.h"
 #include "utils.h"
 
 #include "../additive_heuristic.h"
@@ -32,7 +32,7 @@ using namespace std;
 namespace cegar {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
-Abstraction::Abstraction(const Task *task_)
+Abstraction::Abstraction(const LandmarkTask *task_)
     : task(task_),
       single(new AbstractState(task_)),
       init(single),

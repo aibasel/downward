@@ -1,5 +1,5 @@
-#ifndef CEGAR_TASK_H
-#define CEGAR_TASK_H
+#ifndef CEGAR_LANDMARK_TASK_H
+#define CEGAR_LANDMARK_TASK_H
 
 #include "utils.h"
 
@@ -13,7 +13,7 @@
 namespace cegar {
 typedef std::unordered_set<Fact, hash_fact> FactSet;
 
-class Task {
+class LandmarkTask {
 private:
     std::vector<int> initial_state_data;
     std::vector<Fact> goal;
@@ -37,7 +37,7 @@ private:
     void dump_facts() const;
 
 public:
-    Task(std::vector<int> domain, std::vector<std::vector<std::string> > names,
+    LandmarkTask(std::vector<int> domain, std::vector<std::vector<std::string> > names,
          std::vector<GlobalOperator> ops, std::vector<int> initial_state_data_,
          std::vector<Fact> goal_facts);
 
@@ -59,7 +59,7 @@ public:
     void install();
     void release_memory();
 
-    static Task get_original_task();
+    static LandmarkTask get_original_task();
 
     int get_hadd_value(int var, int value) const;
     int get_num_vars() const {return variable_domain.size(); }
@@ -71,7 +71,7 @@ public:
 
     int get_projected_index(int var, int value) const {return task_index[var][value]; }
 
-    double get_state_space_fraction(const Task &global_task) const;
+    double get_state_space_fraction(const LandmarkTask &global_task) const;
 
     void dump() const;
 };
