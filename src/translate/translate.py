@@ -13,7 +13,6 @@ if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
 
 
-import argparse
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
@@ -22,6 +21,7 @@ import axiom_rules
 import fact_groups
 import instantiate
 import normalize
+import options
 import pddl
 import pddl_parser
 import sas_tasks
@@ -38,14 +38,6 @@ import tools
 # simplifications might be possible elsewhere, for example if a
 # derived variable is synonymous with another variable (derived or
 # non-derived).
-
-USE_PARTIAL_ENCODING = True
-DETECT_UNREACHABLE = True
-DUMP_TASK = False
-
-## Setting the following variable to True can cause a severe
-## performance penalty due to weaker relevance analysis (see issue7).
-ADD_IMPLIED_PRECONDITIONS = False
 
 DEBUG = False
 
@@ -277,7 +269,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
 
 def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                        implied_facts):
-    if ADD_IMPLIED_PRECONDITIONS:
+    if options.add_implied_preconditions:
         implied_precondition = set()
         for fact in condition.items():
             implied_precondition.update(implied_facts[fact])
@@ -301,7 +293,7 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                                                   eff_condition_lists):
                     global simplified_effect_condition_counter
                     simplified_effect_condition_counter += 1
-                if (ADD_IMPLIED_PRECONDITIONS and pre == -1 and
+                if (options.add_implied_preconditions and pre == -1 and
                         (var, 1 - post) in implied_precondition):
                     global added_implied_precondition_counter
                     added_implied_precondition_counter += 1
@@ -425,7 +417,7 @@ def translate_task(strips_to_sas, ranges, translation_key,
     #for axiom in axioms:
     #  axiom.dump()
 
-    if DUMP_TASK:
+    if options.dump_task:
         # Remove init facts that don't occur in strips_to_sas: they're constant.
         nonconstant_init = filter(strips_to_sas.get, init)
         dump_task(nonconstant_init, goals, actions, axioms, axiom_layer_dict)
@@ -511,18 +503,17 @@ def pddl_to_sas(task):
 
     with timers.timing("Computing fact groups", block=True):
         groups, mutex_groups, translation_key = fact_groups.compute_groups(
-            task, atoms, reachable_action_params,
-            partial_encoding=USE_PARTIAL_ENCODING)
+            task, atoms, reachable_action_params)
 
     with timers.timing("Building STRIPS to SAS dictionary"):
         ranges, strips_to_sas = strips_to_sas_dictionary(
-            groups, assert_partial=USE_PARTIAL_ENCODING)
+            groups, assert_partial=options.use_partial_encoding)
 
     with timers.timing("Building dictionary for full mutex groups"):
         mutex_ranges, mutex_dict = strips_to_sas_dictionary(
             mutex_groups, assert_partial=False)
 
-    if ADD_IMPLIED_PRECONDITIONS:
+    if options.add_implied_preconditions:
         with timers.timing("Building implied facts dictionary..."):
             implied_facts = build_implied_facts(strips_to_sas, groups,
                                                 mutex_groups)
@@ -544,7 +535,7 @@ def pddl_to_sas(task):
     print("%d implied preconditions added" %
           added_implied_precondition_counter)
 
-    if DETECT_UNREACHABLE:
+    if options.filter_unreachable_facts:
         with timers.timing("Detecting unreachable propositions", block=True):
             try:
                 simplify.filter_unreachable_propositions(sas_task)
@@ -635,29 +626,15 @@ def dump_statistics(sas_task):
         print("Translator peak memory: %d KB" % peak_memory)
 
 
-def parse_args():
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument(
-        "domain", nargs="?", help="path to domain pddl file")
-    argparser.add_argument(
-        "task", help="path to task pddl file")
-    argparser.add_argument(
-        "--relaxed", dest="generate_relaxed_task", action="store_true",
-        help="output relaxed task (no delete effects)")
-    return argparser.parse_args()
-
-
 def main():
-    args = parse_args()
-
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl_parser.open(task_filename=args.task, domain_filename=args.domain)
+        task = pddl_parser.open(task_filename=options.task, domain_filename=options.domain)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
-    if args.generate_relaxed_task:
+    if options.generate_relaxed_task:
         # Remove delete effects.
         for action in task.actions:
             for index, effect in reversed(list(enumerate(action.effects))):

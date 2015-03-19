@@ -21,7 +21,8 @@ using namespace __gnu_cxx;
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
-    : pdb_max_size(opts.get<int>("pdb_max_size")),
+    : task(get_task_from_options(opts)),
+      pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
       mutation_probability(opts.get<double>("mutation_probability")),
@@ -183,6 +184,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
         } else {
             // generate the pattern collection heuristic and get its fitness value.
             Options opts;
+            opts.set<TaskProxy *>("task_proxy", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
             ZeroOnePDBsHeuristic *zoppch =

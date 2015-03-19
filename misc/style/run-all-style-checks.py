@@ -13,7 +13,8 @@ import subprocess
 import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
-SRC_DIR = os.path.join(os.path.dirname(DIR), "src")
+REPO = os.path.dirname(os.path.dirname(DIR))
+SRC_DIR = os.path.join(REPO, "src")
 
 
 def check_translator_style():
@@ -48,7 +49,9 @@ def main():
     ok &= check_translator_style()
     ok &= check_include_guard_convention()
     ok &= check_preprocessor_and_search_style()
-    if not ok:
+    if ok:
+        print("All style checks passed")
+    else:
         sys.exit(1)
 
 
