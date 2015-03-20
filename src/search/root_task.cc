@@ -4,7 +4,6 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "task_proxy.h"
 
 #include <cassert>
 
@@ -25,15 +24,23 @@ int RootTask::get_num_variables() const {
     return g_variable_domain.size();
 }
 
+const string &RootTask::get_variable_name(int var) const {
+    return g_variable_name[var];
+}
+
 int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
+}
+
+const string &RootTask::get_fact_name(int var, int value) const {
+    return g_fact_names[var][value];
 }
 
 int RootTask::get_operator_cost(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_cost();
 }
 
-const std::string &RootTask::get_operator_name(int index, bool is_axiom) const {
+const string &RootTask::get_operator_name(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_name();
 }
 
@@ -90,6 +97,10 @@ pair<int, int> RootTask::get_goal_fact(int index) const {
     return g_goal[index];
 }
 
+vector<int> RootTask::get_initial_state_values() const {
+    return get_state_values(g_initial_state());
+}
+
 vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     // TODO: Use unpacked values directly once issue348 is merged.
     int num_vars = g_variable_domain.size();
@@ -99,11 +110,12 @@ vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     return values;
 }
 
-static TaskProxy *_parse(OptionParser &parser) {
+static AbstractTask *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new TaskProxy(new RootTask());
+        // TODO (issue456): Return shared pointer.
+        return g_root_task().get();
 }
 
-static Plugin<TaskProxy> _plugin("global_task", _parse);
+static Plugin<AbstractTask> _plugin("no_transform", _parse);
