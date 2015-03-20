@@ -3,13 +3,13 @@
 
 #include "open_list.h"
 #include "../evaluator.h"
-#include "../utilities.h"
+#include "../utilities_hash.h"
 
 #include <deque>
 #include <unordered_map>
 #include <set>
-#include <vector>
 #include <utility>
+#include <vector>
 
 class Options;
 class OptionParser;
@@ -19,8 +19,7 @@ template<class Entry>
 class ParetoOpenList : public OpenList<Entry> {
     typedef std::deque<Entry> Bucket;
     typedef std::vector<int> KeyType;
-    //typedef std::map<const KeyType, Bucket> BucketMap;
-    typedef typename std::unordered_map<KeyType, Bucket> BucketMap;
+    typedef std::unordered_map<KeyType, Bucket> BucketMap;
     typedef std::set<KeyType> KeySet; // no unordered_set (see insert method)
 
     BucketMap buckets;

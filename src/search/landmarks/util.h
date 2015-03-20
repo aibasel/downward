@@ -1,8 +1,8 @@
 #ifndef LANDMARKS_UTIL_H
 #define LANDMARKS_UTIL_H
 
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 struct GlobalCondition;
 class GlobalOperator;

@@ -190,7 +190,6 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
 //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
-
         if (true) // Note: no condition on edge type here
             if (!reached[parent_node->get_id()]) {
                 //cout << "parent is not in reached: ";
