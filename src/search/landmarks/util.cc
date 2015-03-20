@@ -19,10 +19,10 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     if (a.size() > b.size())
         return _intersect(b, a);
     unordered_map<int, int> result;
-    for (const auto &pair : a) {
-        const auto it = b.find(pair.first);
-        if (it != b.end() && it->second == pair.second)
-            result.insert(pair);
+    for (const auto &pair_a : a) {
+        const auto it_b = b.find(pair_a.first);
+        if (it_b != b.end() && it_b->second == pair_a.second)
+            result.insert(pair_a);
     }
     return result;
 }
