@@ -14,7 +14,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <deque>
-#include <ext/hash_map>
 #include <functional>
 #include <iostream>
 #include <fstream>
@@ -23,8 +22,8 @@
 #include <string>
 #include <sstream>
 #include <unordered_map>
+
 using namespace std;
-using namespace __gnu_cxx;
 
 /* Implementation note: Transitions are grouped by thei label groups,
  not by source state or any such thing. Such a grouping is beneficial
@@ -76,11 +75,11 @@ void TransitionSystem::clear_distances() {
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
     assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
-    vector<slist<AbstractStateRef> > equivalence_relation;
+    vector<forward_list<AbstractStateRef> > equivalence_relation;
     equivalence_relation.reserve(num_states);
     for (int state = 0; state < num_states; ++state) {
         if (!to_be_pruned_states[state]) {
-            slist<AbstractStateRef> group;
+            forward_list<AbstractStateRef> group;
             group.push_front(state);
             equivalence_relation.push_back(group);
         }
@@ -401,7 +400,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
         labels->add_label(get_adjusted_action_cost(op, cost_type));
         const vector<GlobalCondition> &preconditions = op.get_preconditions();
         const vector<GlobalEffect> &effects = op.get_effects();
-        hash_map<int, int> pre_val;
+        unordered_map<int, int> pre_val;
         vector<bool> has_effect_on_var(var_count, false);
         for (size_t i = 0; i < preconditions.size(); ++i)
             pre_val[preconditions[i].var] = preconditions[i].val;
@@ -415,7 +414,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             // Determine possible values that var can have when this
             // operator is applicable.
             int pre_value = -1;
-            hash_map<int, int>::const_iterator pre_val_it = pre_val.find(var);
+            unordered_map<int, int>::const_iterator pre_val_it = pre_val.find(var);
             if (pre_val_it != pre_val.end())
                 pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;
@@ -508,7 +507,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
 }
 
 void TransitionSystem::apply_abstraction(
-    vector<slist<AbstractStateRef> > &collapsed_groups) {
+    vector<forward_list<AbstractStateRef> > &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
@@ -519,7 +518,7 @@ void TransitionSystem::apply_abstraction(
     cout << tag() << "applying abstraction (" << get_size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
-    typedef slist<AbstractStateRef> Group;
+    typedef forward_list<AbstractStateRef> Group;
 
     vector<int> abstraction_mapping(num_states, PRUNED_STATE);
 

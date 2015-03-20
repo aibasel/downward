@@ -10,10 +10,12 @@ class GlobalState;
 
 class AbstractTask {
 public:
-    AbstractTask() {}
-    virtual ~AbstractTask() {}
+    AbstractTask() = default;
+    virtual ~AbstractTask() = default;
     virtual int get_num_variables() const = 0;
+    virtual const std::string &get_variable_name(int var) const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
+    virtual const std::string &get_fact_name(int var, int value) const = 0;
 
     virtual int get_operator_cost(int index, bool is_axiom) const = 0;
     virtual const std::string &get_operator_name(int index, bool is_axiom) const = 0;
@@ -35,6 +37,7 @@ public:
     virtual int get_num_goals() const = 0;
     virtual std::pair<int, int> get_goal_fact(int index) const = 0;
 
+    virtual std::vector<int> get_initial_state_values() const = 0;
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const = 0;
 };
 

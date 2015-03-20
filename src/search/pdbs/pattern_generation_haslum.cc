@@ -31,7 +31,7 @@ using namespace std;
 struct HillClimbingTimeout : public exception {};
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
-    : task(opts.get<TaskProxy *>("task")),
+    : task(get_task_from_options(opts)),
       pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
@@ -87,7 +87,7 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &
     for (size_t i = 0; i < new_candidates.size(); ++i) {
         if (generated_patterns.count(new_candidates[i]) == 0) {
             Options opts;
-            opts.set<TaskProxy *>("task", task);
+            opts.set<TaskProxy *>("task_proxy", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<int> >("pattern", new_candidates[i]);
             candidate_pdbs.push_back(new PDBHeuristic(opts, false));
@@ -345,7 +345,7 @@ void PatternGenerationHaslum::initialize() {
         initial_pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
     Options opts;
-    opts.set<TaskProxy *>("task", task);
+    opts.set<TaskProxy *>("task_proxy", task);
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
@@ -436,7 +436,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "confidence interval) is not applicable to this implementation, as it doesn't use A* "
         "search but constructs the entire pattern databases for all candidate patterns anyway.\n"
         "The search is ended if there is no more improvement (or the improvement is smaller "
-        "than the minimal improvement which can be set as an option), how ever there is no "
+        "than the minimal improvement which can be set as an option), however there is no "
         "limit of iterations of the local search. This is similar to the techniques used in "
         "the original implementation as described in the paper.", true);
 
