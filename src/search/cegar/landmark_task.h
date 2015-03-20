@@ -35,6 +35,9 @@ private:
     void dump_name() const;
     void dump_facts() const;
 
+    int translate_fact(int var, int value);
+    int get_orig_op_index(int index) const;
+
 public:
     LandmarkTask(std::vector<int> domain, std::vector<std::vector<std::string> > names,
          std::vector<GlobalOperator> ops, std::vector<int> initial_state_data_,
@@ -46,8 +49,6 @@ public:
 
     void set_goal(const Fact &fact);
     void save_unreachable_facts(const FactSet &reached_facts);
-    // Only keep operators with all preconditions in reachable set of facts.
-    void keep_single_effect(const Fact &last_fact);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
     bool translate_state(const GlobalState &state, int *translated) const;

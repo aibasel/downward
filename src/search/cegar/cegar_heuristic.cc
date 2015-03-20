@@ -192,9 +192,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             if (decomposition == LANDMARKS) {
                 //task.compute_possibly_before_facts(last_fact, &reached_facts);
             }
-            if (decomposition == LANDMARKS && !options.get<bool>("general_costs")) {
-                task.keep_single_effect(last_fact);
-            }
             if (decomposition == LANDMARKS) {
                 reached_facts.insert(last_fact);
                 task.save_unreachable_facts(reached_facts);

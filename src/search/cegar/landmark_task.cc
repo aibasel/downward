@@ -57,14 +57,19 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
     return pb_facts;
 }
 
+Fact get_raw_fact(FactProxy fact) {
+    return make_pair(fact.get_variable().get_id(), fact.get_value());
+}
+
 LandmarkTask::LandmarkTask(TaskProxy orig_task, FactProxy landmark)
     : DelegatingTask(get_root_task()) {
     unordered_set<FactProxy> pb_facts = compute_possibly_before_facts(orig_task, landmark);
     unused_parameter(pb_facts);
     OperatorsProxy operators = orig_task.get_operators();
     vector<int> orig_costs(operators.size());
-    for (OperatorProxy op : operators)
+    for (OperatorProxy op : operators) {
         orig_costs[op.get_id()] = op.get_cost();
+    }
 }
 
 LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
@@ -89,13 +94,13 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
     }
 }
 
-void LandmarkTask::keep_single_effect(const Fact &last_fact) {
-    for (size_t i = 0; i < operators.size(); ++i) {
-        GlobalOperator &op = operators[i];
-        // If op achieves last_fact set eff(op) = {last_fact}.
-        if (get_eff(op, last_fact.first) == last_fact.second)
-            op.keep_single_effect(last_fact.first, last_fact.second);
-    }
+int LandmarkTask::translate_fact(int var, int value) {
+    return task_index[var][value];
+}
+
+int LandmarkTask::get_orig_op_index(int index) const {
+    // TODO: Update this if we ever drop operators.
+    return index;
 }
 
 void LandmarkTask::set_goal(const Fact &fact) {
@@ -419,12 +424,14 @@ int LandmarkTask::get_num_operator_effects(int op_index, bool is_axiom) const {
 
 int LandmarkTask::get_num_operator_effect_conditions(
     int op_index, int eff_index, bool is_axiom) const {
-    return parent->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
+    return parent->get_num_operator_effect_conditions(
+        get_orig_op_index(op_index), eff_index, is_axiom);
 }
 
 pair<int, int> LandmarkTask::get_operator_effect_condition(
     int op_index, int eff_index, int cond_index, bool is_axiom) const {
-    return parent->get_operator_effect_condition(op_index, eff_index, cond_index, is_axiom);
+    return parent->get_operator_effect_condition(
+        get_orig_op_index(op_index), eff_index, cond_index, is_axiom);
 }
 
 pair<int, int> LandmarkTask::get_operator_effect(
@@ -433,7 +440,7 @@ pair<int, int> LandmarkTask::get_operator_effect(
 }
 
 const GlobalOperator *LandmarkTask::get_global_operator(int index, bool is_axiom) const {
-    return parent->get_global_operator(index, is_axiom);
+    return parent->get_global_operator(get_orig_op_index(index), is_axiom);
 }
 
 int LandmarkTask::get_num_goals() const {
