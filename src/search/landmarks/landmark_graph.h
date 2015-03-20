@@ -13,6 +13,7 @@
 #include "landmark_types.h"
 #include "../global_operator.h"
 #include "../option_parser.h"
+#include "../utilities_hash.h"
 
 enum edge_type {
     /* NOTE: The code relies on the fact that larger numbers are

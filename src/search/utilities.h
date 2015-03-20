@@ -7,8 +7,6 @@
 #include <vector>
 #include <functional>
 
-#include "utilities_hash.h"
-
 #define LINUX 0
 #define OSX 1
 #define CYGWIN 2

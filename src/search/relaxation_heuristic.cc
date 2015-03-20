@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "task_proxy.h"
 #include "utilities.h"
+#include "utilities_hash.h"
 
 #include <algorithm>
 #include <cassert>

@@ -3,6 +3,7 @@
 #include "landmark_graph.h"
 
 #include "../utilities.h"
+#include "../utilities_hash.h"
 
 #include <cstdlib>
 #include <iostream>

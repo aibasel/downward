@@ -7,6 +7,7 @@
 #include "segmented_vector.h"
 #include "state_id.h"
 #include "utilities.h"
+#include "utilities_hash.h"
 
 #include <set>
 #include <unordered_set>
