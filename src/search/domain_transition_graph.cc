@@ -10,6 +10,7 @@ using namespace std;
 #include "global_operator.h"
 #include "globals.h"
 #include "utilities.h"
+#include "utilities_hash.h"
 
 
 void DomainTransitionGraph::read_all(istream &in) {

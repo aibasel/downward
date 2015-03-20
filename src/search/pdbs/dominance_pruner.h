@@ -4,6 +4,7 @@
 #include "pdb_heuristic.h"
 
 #include "../utilities.h"
+#include "../utilities_hash.h"
 
 #include <unordered_set>
 #include <vector>
