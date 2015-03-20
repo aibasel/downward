@@ -362,7 +362,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 else {
                     unordered_map<int, int> result;
                     for (auto &eff1 : shared_eff) {
-                        unordered_map<int, int>::iterator it2 = next_eff.find(eff1.first);
+                        const auto it2 = next_eff.find(eff1.first);
                         if (it2 != next_eff.end() && it2->second == eff1.second)
                             result.insert(eff1);
                     }
