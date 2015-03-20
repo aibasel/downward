@@ -15,19 +15,17 @@ bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vec
     return true;
 }
 
-
 unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unordered_map<int, int> &b) {
     if (a.size() > b.size())
         return _intersect(b, a);
     unordered_map<int, int> result;
-    for (unordered_map<int, int>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1) {
-        unordered_map<int, int>::const_iterator it2 = b.find(it1->first);
-        if (it2 != b.end() && it2->second == it1->second)
-            result.insert(*it1);
+    for (const auto &pair : a) {
+        const auto it = b.find(pair.first);
+        if (it != b.end() && it->second == pair.second)
+            result.insert(pair);
     }
     return result;
 }
-
 
 bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int> > &lvl_var, const LandmarkNode *lmp) {
     /* Check whether operator o can possibly make landmark lmp true in a
