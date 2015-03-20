@@ -6,7 +6,6 @@
 #include "task_tools.h"
 
 #include <cassert>
-#include <unordered_map>
 
 using namespace std;
 
