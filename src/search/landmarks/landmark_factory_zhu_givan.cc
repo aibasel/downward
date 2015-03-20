@@ -7,10 +7,10 @@
 #include "../plugin.h"
 
 #include <iostream>
-#include <vector>
-#include <utility>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
@@ -110,9 +110,8 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
         proposition_layer next_prop_layer(current_prop_layer);
         unordered_set<int> next_triggered;
         changes = false;
-        for (unordered_set<int>::const_iterator it = triggered.begin(); it
-             != triggered.end(); ++it) {
-            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(*it);
+        for (int op_no : triggered) {
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(op_no);
             if (operator_applicable(op, current_prop_layer)) {
                 lm_set changed = apply_operator_and_propagate_labels(op,
                                                                      current_prop_layer, next_prop_layer);

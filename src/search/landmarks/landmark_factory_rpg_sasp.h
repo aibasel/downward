@@ -6,8 +6,8 @@
 
 #include "../globals.h"
 
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
