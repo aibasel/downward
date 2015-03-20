@@ -63,8 +63,9 @@ Fact get_raw_fact(FactProxy fact) {
 
 LandmarkTask::LandmarkTask(TaskProxy orig_task, FactProxy landmark)
     : DelegatingTask(get_root_task()) {
-    unordered_set<FactProxy> pb_facts = compute_possibly_before_facts(orig_task, landmark);
-    unused_parameter(pb_facts);
+    unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(orig_task, landmark);
+    reachable_facts.insert(landmark);
+    save_unreachable_facts(orig_task.get_variables(), reachable_facts);
     OperatorsProxy operators = orig_task.get_operators();
     vector<int> orig_costs(operators.size());
     for (OperatorProxy op : operators) {
@@ -213,21 +214,21 @@ void LandmarkTask::find_and_apply_new_fact_ordering(int var, set<int> &unordered
     update_facts(var, num_values, new_task_index);
 }
 
-void LandmarkTask::save_unreachable_facts(const FactSet &reached_facts) {
-    assert(!reached_facts.empty());
-    int num_vars = variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        int num_values = variable_domain[var];
-        assert(static_cast<int>(task_index[var].size()) == num_values);
-        assert(unreachable_facts[var].empty());
+void LandmarkTask::save_unreachable_facts(VariablesProxy variables, const unordered_set<FactProxy> &reachable_facts) {
+    assert(!reachable_facts.empty());
+    for (VariableProxy var : variables) {
+        int var_id = var.get_id();
+        int num_values = var.get_domain_size();
+        assert(static_cast<int>(task_index[var_id].size()) == num_values);
+        assert(unreachable_facts[var_id].empty());
         set<int> unordered_values;
         for (int value = 0; value < num_values; ++value) {
-            if (reached_facts.count(Fact(var, value)) == 1) {
+            if (reachable_facts.count(var.get_fact(value)) == 1) {
                 unordered_values.insert(value);
             } else {
                 if (DEBUG)
-                    cout << "Remove fact " << Fact(var, value) << endl;
-                unreachable_facts[var].insert(value);
+                    cout << "Remove fact " << Fact(var_id, value) << endl;
+                unreachable_facts[var_id].insert(value);
             }
         }
         //find_and_apply_new_fact_ordering(var, unordered_values, UNDEFINED);
