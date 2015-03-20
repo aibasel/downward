@@ -463,7 +463,8 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
 }
 
 void LandmarkFactory::collect_ancestors(
-    unordered_set<LandmarkNode *> &result, LandmarkNode &node,
+    unordered_set<LandmarkNode *> &result,
+    LandmarkNode &node,
     bool use_reasonable) {
     /* Returns all ancestors in the landmark graph of landmark node "start" */
 
@@ -670,12 +671,12 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
     return true;
 }
 
-int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, unordered_set<
-                                            LandmarkNode *> &acyclic_node_set) {
+int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
+                                        unordered_set<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
     list<pair<LandmarkNode *, edge_type> > path;
-    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *> (lm_graph->number_of_landmarks());
+    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
@@ -735,8 +736,10 @@ int LandmarkFactory::calculate_lms_cost() const {
     return result;
 }
 
-void LandmarkFactory::compute_predecessor_information(LandmarkNode *bp,
-                                                      vector<vector<int> > &lvl_var, std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op) {
+void LandmarkFactory::compute_predecessor_information(
+    LandmarkNode *bp,
+    vector<vector<int> > &lvl_var,
+    std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
