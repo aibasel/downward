@@ -50,13 +50,11 @@ LandmarkNode *LandmarkGraph::get_landmark(const pair<int, int> &prop) const {
      landmark exists.
      */
     LandmarkNode *node_p = 0;
-    unordered_map<pair<int, int>, LandmarkNode *>::const_iterator it =
-        simple_lms_to_nodes.find(prop);
+    const auto it =simple_lms_to_nodes.find(prop);
     if (it != simple_lms_to_nodes.end())
         node_p = it->second;
     else {
-        unordered_map<pair<int, int>, LandmarkNode *>::const_iterator
-            it2 = disj_lms_to_nodes.find(prop);
+        const auto it2 = disj_lms_to_nodes.find(prop);
         if (it2 != disj_lms_to_nodes.end())
             node_p = it2->second;
     }
