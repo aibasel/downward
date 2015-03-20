@@ -258,8 +258,8 @@ void LandmarkGraph::dump() const {
     for (const LandmarkNode *node_p : nodes2) {
         dump_node(node_p);
         for (const auto &parent : node_p->parents) {
-            const edge_type &edge = parent.second;
             const LandmarkNode *parent_node = parent.first;
+            const edge_type &edge = parent.second;
             cout << "\t\t<-_";
             switch (edge) {
             case necessary:
@@ -281,8 +281,8 @@ void LandmarkGraph::dump() const {
             dump_node(parent_node);
         }
         for (const auto &child : node_p->children) {
-            const edge_type &edge = child.second;
             const LandmarkNode *child_node = child.first;
+            const edge_type &edge = child.second;
             cout << "\t\t->_";
             switch (edge) {
             case necessary:
