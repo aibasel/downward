@@ -188,15 +188,6 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
 bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
                                              const vector<bool> &reached) const {
 //Note: this is the same as !check_node_orders_disobeyed
-    /*
-      cout << "in is_leaf, reached is ----- " << endl;
-      unordered_set<const LandmarkNode*>::const_iterator it;
-      for(it = reached.begin(); it != reached.end(); ++it) {
-      cout << *it << " ";
-      lgraph.dump_node(*it);
-      }
-      cout << "---------" << endl;
-    */
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
 
