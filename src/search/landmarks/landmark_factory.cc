@@ -701,11 +701,11 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
         visited.insert(cur);
         bool empty = true;
         for (const auto &child : cur->children) {
-            LandmarkNode &child_p = *child.first;
+            LandmarkNode *child_p = child.first;
             const edge_type edge = child.second;
-            if (acyclic_node_set.find(&child_p) == acyclic_node_set.end()) {
+            if (acyclic_node_set.find(child_p) == acyclic_node_set.end()) {
                 path.push_back(make_pair(cur, edge));
-                cur = &child_p;
+                cur = child_p;
                 empty = false;
                 break;
             }
