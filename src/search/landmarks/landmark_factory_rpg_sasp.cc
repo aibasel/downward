@@ -152,9 +152,9 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         node.vals.push_back(a.second);
         // Clean orders: let disj. LM {D1,...,Dn} be ordered before L. We
         // cannot infer that any one of D1,...Dn by itself is ordered before L
-        for (unordered_map<LandmarkNode *, edge_type>::iterator it =
-                 node.children.begin(); it != node.children.end(); ++it)
-            it->first->parents.erase(&node);
+        for (const auto &child : node.children) {
+            child.first->parents.erase(&node);
+        }
         node.children.clear();
         node.forward_orders.clear();
 
@@ -330,9 +330,8 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
             ++num_ops;
             unordered_map<int, int> next_pre;
             get_greedy_preconditions_for_lm(bp, op, next_pre);
-            for (unordered_map<int, int>::iterator it = next_pre.begin(); it
-                 != next_pre.end(); ++it) {
-                int disj_class = disjunction_classes[it->first][it->second];
+            for (const auto &pre : next_pre) {
+                int disj_class = disjunction_classes[pre.first][pre.second];
                 if (disj_class == -1) {
                     // This fact may not participate in any disjunctive LMs
                     // since it has no associated predicate.
@@ -341,18 +340,17 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                if (!lm_graph->simple_landmark_exists(*it)) {
-                    preconditions[disj_class].push_back(*it);
+                if (!lm_graph->simple_landmark_exists(pre)) {
+                    preconditions[disj_class].push_back(pre);
                     used_operators[disj_class].insert(i);
                 }
             }
         }
     }
-    for (unordered_map<int, vector<pair<int, int> > >::iterator it =
-             preconditions.begin(); it != preconditions.end(); ++it) {
-        if (static_cast<int>(used_operators[it->first].size()) == num_ops) {
+    for (const auto &pre : preconditions) {
+        if (static_cast<int>(used_operators[pre.first].size()) == num_ops) {
             set<pair<int, int> > pre_set; // the set gets rid of duplicate predicates
-            pre_set.insert(it->second.begin(), it->second.end());
+            pre_set.insert(pre.second.begin(), pre.second.end());
             if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
                 disjunctive_pre.push_back(pre_set);
             }
@@ -389,9 +387,8 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
             unordered_map<int, int> shared_pre;
             compute_shared_preconditions(shared_pre, lvl_var, bp);
             // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
-            for (unordered_map<int, int>::iterator it = shared_pre.begin(); it
-                 != shared_pre.end(); ++it) {
-                found_simple_lm_and_order(*it, *bp, greedy_necessary);
+            for (const auto &pre : shared_pre) {
+                found_simple_lm_and_order(pre, *bp, greedy_necessary);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(lvl_var, bp);
@@ -527,20 +524,14 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
-    set<LandmarkNode *>::const_iterator node_it;
-    for (node_it = lm_graph->get_nodes().begin(); node_it != lm_graph->get_nodes().end(); ++node_it) {
-        LandmarkNode &node = **node_it;
-
-        for (unordered_set < pair < int, int > > ::iterator it2 =
-                 node.forward_orders.begin(); it2 != node.forward_orders.end(); ++it2) {
-            pair<int, int> node2_pair = *it2;
-
+    for (LandmarkNode *node : lm_graph->get_nodes()) {
+        for (const auto &node2_pair : node->forward_orders) {
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
-                edge_add(node, node2, natural);
+                edge_add(*node, node2, natural);
             }
         }
-        node.forward_orders.clear();
+        node->forward_orders.clear();
     }
 }
 
