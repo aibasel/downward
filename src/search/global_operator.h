@@ -85,8 +85,6 @@ public:
     void set_cost(int new_cost);
 
     void rename_fact(int variable, int before, int after);
-
-    void keep_single_effect(int var, int value);
 };
 
 #endif

@@ -126,13 +126,6 @@ void GlobalOperator::rename_fact(int variable, int before, int after) {
     }
 }
 
-void GlobalOperator::keep_single_effect(int var, int value) {
-    effects.clear();
-    vector<GlobalCondition> effect_conditions;
-    GlobalEffect effect(var, value, effect_conditions);
-    effects.push_back(effect);
-}
-
 void GlobalCondition::dump() const {
     cout << g_variable_name[var] << ": " << val;
 }
