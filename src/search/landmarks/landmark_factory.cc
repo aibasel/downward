@@ -371,7 +371,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 init = false;
             }
             // Test whether one of the shared effects is inconsistent with b
-            for (auto &eff : shared_eff)
+            for (const auto &eff : shared_eff)
                 if (eff != a && eff != b && are_mutex(eff, b))
                     return true;
         }
@@ -428,13 +428,12 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
             // Use hash set to filter duplicates.
             unordered_set<LandmarkNode *> interesting_nodes(g_variable_name.size());
             for (const auto &child : node_p->children) {
-                if (child.second >= greedy_necessary) { // found node2: node_p ->_gn node2
-                    LandmarkNode &node2 = *(child.first);
-                    for (unordered_map<LandmarkNode *, edge_type>::iterator
-                         it2 = node2.parents.begin(); it2
-                         != node2.parents.end(); ++it2) {   // find parent
-                        edge_type &edge = it2->second;
-                        LandmarkNode &parent = *(it2->first);
+                const LandmarkNode &node2 = *child.first;
+                const edge_type &edge2 = child.second;
+                if (edge2 >= greedy_necessary) { // found node2: node_p ->_gn node2
+                    for (const auto &p : node2.parents) {   // find parent
+                        LandmarkNode &parent = *(p.first);
+                        const edge_type &edge = p.second;
                         if (parent.disjunctive)
                             continue;
                         if ((edge >= natural || (obedient_orders && edge == reasonable)) &&
@@ -449,14 +448,14 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
             }
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
-            for (LandmarkNode *n : interesting_nodes) {
-                if (n == node_p || n->disjunctive)
+            for (LandmarkNode *node : interesting_nodes) {
+                if (node == node_p || node->disjunctive)
                     continue;
-                if (interferes(n, node_p)) {
+                if (interferes(node, node_p)) {
                     if (!obedient_orders)
-                        edge_add(*n, *node_p, reasonable);
+                        edge_add(*node, *node_p, reasonable);
                     else
-                        edge_add(*n, *node_p, obedient_reasonable);
+                        edge_add(*node, *node_p, obedient_reasonable);
                 }
             }
         }
@@ -472,8 +471,8 @@ void LandmarkFactory::collect_ancestors(
     list<LandmarkNode *> open_nodes;
     unordered_set<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
-        const edge_type &edge = p.second;
         LandmarkNode &parent = *(p.first);
+        const edge_type &edge = p.second;
         if (edge >= natural || (use_reasonable && edge == reasonable))
             if (closed_nodes.find(&parent) == closed_nodes.end()) {
                 open_nodes.push_back(&parent);
@@ -485,8 +484,8 @@ void LandmarkFactory::collect_ancestors(
     while (!open_nodes.empty()) {
         LandmarkNode &node2 = *(open_nodes.front());
         for (const auto &p : node2.parents) {
-            const edge_type &edge = p.second;
             LandmarkNode &parent = *(p.first);
+            const edge_type &edge = p.second;
             if (edge >= natural || (use_reasonable && edge == reasonable)) {
                 if (closed_nodes.find(&parent) == closed_nodes.end()) {
                     open_nodes.push_back(&parent);
@@ -701,11 +700,11 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn, unordered_set<
         visited.insert(cur);
         bool empty = true;
         for (const auto &child : cur->children) {
-            edge_type edge = child.second;
-            LandmarkNode *child_p = child.first;
-            if (acyclic_node_set.find(child_p) == acyclic_node_set.end()) {
+            LandmarkNode &child_p = *child.first;
+            const edge_type edge = child.second;
+            if (acyclic_node_set.find(&child_p) == acyclic_node_set.end()) {
                 path.push_back(make_pair(cur, edge));
-                cur = child_p;
+                cur = &child_p;
                 empty = false;
                 break;
             }
