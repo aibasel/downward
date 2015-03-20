@@ -5,8 +5,8 @@
 #include <list>
 #include <map>
 #include <set>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "exploration.h"
 #include "landmark_types.h"
