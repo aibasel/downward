@@ -176,14 +176,10 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
 
 
 bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const LandmarkNode &node) const {
-    const unordered_map<LandmarkNode *, edge_type > &children =
-        node.children;
-
-    for (unordered_map<LandmarkNode *, edge_type >::const_iterator child_it =
-             children.begin(); child_it != children.end(); ++child_it) {
-        LandmarkNode *child_p = child_it->first;
-        if (child_it->second >= greedy_necessary &&
-            child_p->status == lm_not_reached)
+    for (const auto &child : node.children) {
+        LandmarkNode *child_node = child.first;
+        if (child.second >= greedy_necessary &&
+            child_node->status == lm_not_reached)
             return true;
     }
     return false;
@@ -192,8 +188,6 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
 bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
                                              const vector<bool> &reached) const {
 //Note: this is the same as !check_node_orders_disobeyed
-    const unordered_map<LandmarkNode *, edge_type > &parents =
-        node.parents;
     /*
       cout << "in is_leaf, reached is ----- " << endl;
       unordered_set<const LandmarkNode*>::const_iterator it;
@@ -203,12 +197,11 @@ bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
       }
       cout << "---------" << endl;
     */
-    for (unordered_map<LandmarkNode *, edge_type >::const_iterator parent_it =
-             parents.begin(); parent_it != parents.end(); ++parent_it) {
-        LandmarkNode *parent_p = parent_it->first;
+    for (const auto &parent : node.parents) {
+        LandmarkNode *parent_node = parent.first;
 
         if (true) // Note: no condition on edge type here
-            if (!reached[parent_p->get_id()]) {
+            if (!reached[parent_node->get_id()]) {
                 //cout << "parent is not in reached: ";
                 //cout << parent_p << " ";
                 //lm_graph.dump_node(parent_p);

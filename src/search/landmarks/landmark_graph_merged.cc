@@ -83,18 +83,15 @@ void LandmarkGraphMerged::generate_landmarks() {
     cout << "Adding orderings" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const set<LandmarkNode *> &nodes = lm_graphs[i]->get_nodes();
-        set<LandmarkNode *>::const_iterator it;
-        for (it = nodes.begin(); it != nodes.end(); ++it) {
-            const LandmarkNode &from_orig = **it;
-            LandmarkNode *from = get_matching_landmark(from_orig);
+        for (const LandmarkNode *from_orig : nodes) {
+            LandmarkNode *from = get_matching_landmark(*from_orig);
             if (from) {
-                unordered_map<LandmarkNode *, edge_type>::const_iterator to_it;
-                for (to_it = from_orig.children.begin(); to_it != from_orig.children.end(); ++to_it) {
-                    const LandmarkNode &to_orig = *to_it->first;
-                    edge_type e_type = to_it->second;
-                    LandmarkNode *to = get_matching_landmark(to_orig);
-                    if (to) {
-                        edge_add(*from, *to, e_type);
+                for (const auto &to : from_orig->children) {
+                    const LandmarkNode &to_orig = *to.first;
+                    edge_type e_type = to.second;
+                    LandmarkNode *to_node = get_matching_landmark(to_orig);
+                    if (to_node) {
+                        edge_add(*from, *to_node, e_type);
                     } else {
                         cout << "Discarded to ordering" << endl;
                     }
