@@ -83,7 +83,7 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
         for (ElementListConstIter label_it = block.begin(); label_it != block.end(); ++label_it) {
             assert(*label_it < static_cast<int>(labels.size()));
             int label_no = *label_it;
-            Label *label = labels[label_no];;
+            Label *label = labels[label_no];
             if (label) {
                 // only consider non-reduced labels
                 int cost = label->get_cost();
