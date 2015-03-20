@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-// combination of hash values is based on boost
+// combination of hash values is based on Boost
 //TODO: move helper functions to a namespace?
 template<typename T>
 inline void hash_combine(size_t &hash, const T &value) {

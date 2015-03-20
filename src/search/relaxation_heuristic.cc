@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 using namespace std;
 
@@ -97,7 +97,7 @@ void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
     /*
-      Algorithm: Put all unary operators into a unordered_map
+      Algorithm: Put all unary operators into an unordered_map
       (key: condition and effect; value: index in operator vector.
       This gets rid of operators with identical conditions.
 

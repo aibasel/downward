@@ -3,8 +3,8 @@
 
 #include "../utilities.h"
 
-#include <utility>
 #include <unordered_set>
+#include <utility>
 
-typedef std::unordered_set < std::pair < int, int > > lm_set;
+typedef std::unordered_set<std::pair<int, int> > lm_set;
 #endif
