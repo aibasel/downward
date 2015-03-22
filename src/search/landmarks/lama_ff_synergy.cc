@@ -11,8 +11,8 @@ using namespace std;
 
 
 LamaFFSynergy::LamaFFSynergy(const Options &opts)
-    : lama_master_heuristic(this),
-      ff_slave_heuristic(this, &lama_master_heuristic),
+    : lama_master_heuristic(new LamaMasterHeuristic(this)),
+      ff_slave_heuristic(new FFSlaveHeuristic(this, lama_master_heuristic.get())),
       lm_pref(opts.get<bool>("pref")),
       lm_admissible(opts.get<bool>("admissible")),
       lm_optimal(opts.get<bool>("optimal")),
