@@ -14,18 +14,21 @@ class OptionParser;
 class Options;
 class TaskProxy;
 
-/*
-  TODO: Heuristic still has some internal state related to the
-  "current evaluation" that should go away because we're moving away
-  from thismodel, namely the "preferred_operators" variable. We can
-  get rid of it, for example, by passing an EvaluationResult value by
-  reference into compute_heuristic, or having it return one.
-*/
-
 class Heuristic : public ScalarEvaluator {
     std::string description;
     bool initialized;
 
+    /*
+      TODO: We might want to get rid of the preferred_operators
+      attribute. It is currently only used by compute_result() and the
+      methods it calls (compute_heuristic() directly, further methods
+      indirectly), and we could e.g. change this by having
+      compute_heuristic return an EvaluationResult object.
+
+      If we do this, we should be mindful of the cost incurred by not
+      being able to reuse a vector from one iteration to the next, but
+      this seems to be the only potential downside.
+    */
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
     TaskProxy *task;
@@ -48,10 +51,6 @@ protected:
 public:
     Heuristic(const Options &options);
     virtual ~Heuristic() override;
-
-    // changed to virtual, so HeuristicProxy can delegate this:
-    virtual void get_preferred_operators(
-        std::vector<const GlobalOperator *> &result);
 
     virtual bool reach_state(
         const GlobalState &parent_state, const GlobalOperator &op,

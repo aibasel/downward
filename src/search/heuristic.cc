@@ -36,12 +36,6 @@ void Heuristic::set_preferred(OperatorProxy op) {
     set_preferred(op.get_global_operator());
 }
 
-void Heuristic::get_preferred_operators(std::vector<const GlobalOperator *> &result) {
-    result.insert(result.end(),
-                  preferred_operators.begin(),
-                  preferred_operators.end());
-}
-
 bool Heuristic::reach_state(
     const GlobalState & /*parent_state*/,
     const GlobalOperator & /*op*/,
@@ -85,7 +79,8 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
         initialized = true;
     }
 
-    preferred_operators.clear();
+    assert(preferred_operators.empty());
+
     const GlobalState &state = eval_context.get_state();
     int heuristic = compute_heuristic(state);
     for (size_t i = 0; i < preferred_operators.size(); ++i)
@@ -112,9 +107,8 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 #endif
 
     result.set_h_value(heuristic);
-    vector<const GlobalOperator *> pref_ops;
-    get_preferred_operators(pref_ops);
-    result.set_preferred_operators(pref_ops);
+    result.set_preferred_operators(preferred_operators);
+    preferred_operators.clear();
     return result;
 }
 
