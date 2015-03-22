@@ -19,7 +19,7 @@ using namespace std;
   There are four heuristic objects involved at the moment:
   - two externally visible ones (seen by the search), using the (local)
     classes LamaMasterHeuristic and FFSlaveHeuristic
-  - two internal once that appear within the LamaFFSynergy object only,
+  - two internal ones that appear within the LamaFFSynergy object only,
     using the "normal" landmark classes LandmarkCountHeuristic and
     Exploration.
 
