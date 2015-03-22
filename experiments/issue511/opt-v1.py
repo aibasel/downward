@@ -4,17 +4,15 @@
 from downward import suites
 
 import common_setup
-import configs
 
 
-REVS = ["issue508-base", "issue508-v1"]
+REVS = ["issue511-base", "issue511-v1"]
 LIMITS = {"search_time": 1800}
 SUITE = suites.suite_optimal_with_ipc11()
-
-configs_optimal_core = configs.default_configs_optimal(ipc=False)
-CONFIGS = {}
-for nick in ["astar_merge_and_shrink_bisim", "astar_merge_and_shrink_greedy_bisim"]:
-    CONFIGS[nick] = configs_optimal_core[nick]
+CONFIGS = {
+    "astar_blind": ["--search", "astar(blind())"],
+    "astar_hmax": ["--search", "astar(hmax())"],
+}
 
 exp = common_setup.IssueExperiment(
     search_revisions=REVS,
