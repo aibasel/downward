@@ -102,10 +102,6 @@ LamaFFSynergy::LamaFFSynergy(const Options &opts)
     : lama_master_heuristic(new LamaMasterHeuristic(this)),
       ff_slave_heuristic(new FFSlaveHeuristic(
                              this, lama_master_heuristic.get())),
-      lm_pref(opts.get<bool>("pref")),
-      lm_admissible(opts.get<bool>("admissible")),
-      lm_optimal(opts.get<bool>("optimal")),
-      use_action_landmarks(opts.get<bool>("alm")),
       lama_heuristic(new LandmarkCountHeuristic(opts)),
       exploration(lama_heuristic->get_exploration()) {
     cout << "Initializing LAMA-FF synergy object" << endl;

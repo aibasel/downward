@@ -30,10 +30,6 @@ class LamaFFSynergy {
 
     std::unique_ptr<LamaMasterHeuristic> lama_master_heuristic;
     std::unique_ptr<FFSlaveHeuristic> ff_slave_heuristic;
-    const bool lm_pref;
-    const bool lm_admissible;
-    const bool lm_optimal;
-    const bool use_action_landmarks;
 
     std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
     Exploration *exploration;
