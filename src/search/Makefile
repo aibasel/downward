@@ -128,11 +128,9 @@ HEADERS += merge_and_shrink/labels.h \
            merge_and_shrink/shrink_strategy.h \
            merge_and_shrink/transition_system.h \
 
-# TODO: Put this back into the landmark block:
-#          landmarks/lama_ff_synergy.h \
-
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
+           landmarks/lama_ff_synergy.h \
            landmarks/landmark_cost_assignment.h \
            landmarks/landmark_count_heuristic.h \
            landmarks/landmark_status_manager.h \
