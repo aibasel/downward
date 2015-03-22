@@ -2,95 +2,110 @@
 #define LANDMARKS_LAMA_FF_SYNERGY_H
 
 #include "../heuristic.h"
+#include "../utilities.h"
+
+// TODO: Get rid of these includes after moving all the code into the
+// cc file.
+#include "../evaluation_context.h"
+#include "../evaluation_result.h"
+
 #include "exploration.h"
 #include "landmark_count_heuristic.h"
 
 class LamaFFSynergy {
-    class HeuristicProxy : public Heuristic {
-protected:
+    class LamaMasterHeuristic : public Heuristic {
         LamaFFSynergy *synergy;
-        bool is_first_proxy;
 
-        virtual void initialize();
-        virtual int get_heuristic_value() = 0;
-        virtual void get_preferred_operators(std::vector<const GlobalOperator *> &result) = 0;
-public:
-        HeuristicProxy(LamaFFSynergy *synergy_);
-        virtual ~HeuristicProxy() {}
+    protected:
+        virtual int compute_heuristic(const GlobalState &/*state*/) {
+            ABORT("This method should never be called.");
+        }
 
-        virtual int compute_heuristic(const GlobalState &state) {
-            if (is_first_proxy)
-                synergy->compute_heuristics(state);
-            return get_heuristic_value();
+    public:
+        explicit LamaMasterHeuristic(LamaFFSynergy *synergy)
+            : Heuristic(Heuristic::default_options()),
+              synergy(synergy) {
         }
-    };
 
-    class FFHeuristicProxy : public HeuristicProxy {
-        virtual int get_heuristic_value() {
-            return synergy->ff_heuristic_value;
-        }
-        virtual void get_preferred_operators(std::vector<const GlobalOperator *> &result) {
-            synergy->get_ff_preferred_operators(result);
-        }
-public:
-        FFHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {}
-    };
+        virtual ~LamaMasterHeuristic() override = default;
 
-    class LamaHeuristicProxy : public HeuristicProxy {
-        virtual int get_heuristic_value() {
-            return synergy->lama_heuristic_value;
+        virtual EvaluationResult compute_result(
+            EvaluationContext &eval_context) override {
+            synergy->compute_heuristics(eval_context);
+            return synergy->lama_result;
         }
-        virtual void get_preferred_operators(std::vector<const GlobalOperator *> &result) {
-            synergy->get_lama_preferred_operators(result);
-        }
-public:
-        LamaHeuristicProxy(LamaFFSynergy *synergy_) : HeuristicProxy(synergy_) {}
-        virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
-                                 const GlobalState &state) {
+
+        virtual bool reach_state(
+            const GlobalState &parent_state, const GlobalOperator &op,
+            const GlobalState &state) override {
             return synergy->lama_reach_state(parent_state, op, state);
         }
     };
 
-    friend class HeuristicProxy;
-    friend class LamaHeuristicProxy;
-    friend class FFHeuristicProxy;
+    class FFSlaveHeuristic : public Heuristic {
+        LamaFFSynergy *synergy;
+        LamaMasterHeuristic *master;
 
-    LamaHeuristicProxy lama_heuristic_proxy;
-    FFHeuristicProxy ff_heuristic_proxy;
+    protected:
+        virtual int compute_heuristic(const GlobalState &/*state*/) {
+            ABORT("This method should never be called.");
+        }
+
+    public:
+        explicit FFSlaveHeuristic(LamaFFSynergy *synergy,
+                                  LamaMasterHeuristic *master)
+            : Heuristic(Heuristic::default_options()),
+              synergy(synergy),
+              master(master) {
+        }
+
+        virtual EvaluationResult compute_result(
+            EvaluationContext &eval_context) override {
+            /* Asking for the master's heuristic value triggers both
+               heuristic computations if they have not been computed
+               yet. If they have been computed yet, then both
+               heuristic values are already cached, and this is just a
+               quick lookup. In either case, the result is
+               subsequently available in the synergy object. */
+            eval_context.get_heuristic_value_or_infinity(master);
+            return synergy->ff_result;
+        }
+
+        virtual ~FFSlaveHeuristic() override = default;
+    };
+
+    friend class LamaMasterHeuristic;
+    friend class FFSlaveHeuristic;
+
+    LamaMasterHeuristic lama_master_heuristic;
+    FFSlaveHeuristic ff_slave_heuristic;
+    const bool lm_pref;
+    const bool lm_admissible;
+    const bool lm_optimal;
+    const bool use_action_landmarks;
+
     LandmarkCountHeuristic *lama_heuristic;
     Exploration *exploration;
-    bool lm_pref;
-    bool lm_admissible;
-    bool lm_optimal;
-    bool use_action_landmarks;
-    std::vector<const GlobalOperator *> lama_preferred_operators;
-    std::vector<const GlobalOperator *> ff_preferred_operators;
-    bool initialized;
 
-    void initialize() {
-        // Value change only serves to determine first proxy.
-        initialized = true;
-    }
+    EvaluationResult lama_result;
+    EvaluationResult ff_result;
 
-    bool lama_reach_state(const GlobalState &parent_state, const GlobalOperator &op,
-                          const GlobalState &state);
+    bool lama_reach_state(
+        const GlobalState &parent_state, const GlobalOperator &op,
+        const GlobalState &state);
 
-    void compute_heuristics(const GlobalState &);
-    void get_lama_preferred_operators(std::vector<const GlobalOperator *> &result);
-    void get_ff_preferred_operators(std::vector<const GlobalOperator *> &result);
+    void compute_heuristics(EvaluationContext &eval_context);
+
 public:
-    LamaFFSynergy(const Options &opts);
-    ~LamaFFSynergy() {}
-
-    int lama_heuristic_value;
-    int ff_heuristic_value;
-
-    Heuristic *get_ff_heuristic_proxy() {
-        return &ff_heuristic_proxy;
-    }
+    explicit LamaFFSynergy(const Options &opts);
+    ~LamaFFSynergy() = default;
 
     Heuristic *get_lama_heuristic_proxy() {
-        return &lama_heuristic_proxy;
+        return &lama_master_heuristic;
+    }
+
+    Heuristic *get_ff_heuristic_proxy() {
+        return &ff_slave_heuristic;
     }
 };
 

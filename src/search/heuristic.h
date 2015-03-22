@@ -67,7 +67,7 @@ public:
     static Options default_options();
 
     virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) override final;
+        EvaluationContext &eval_context) override;
 
     std::string get_description() const;
 };
