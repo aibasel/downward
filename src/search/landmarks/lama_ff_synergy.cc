@@ -13,6 +13,27 @@
 using namespace std;
 
 
+/*
+  Implementation notes:
+
+  There are four heuristic objects involved at the moment:
+  - two externally visible ones (seen by the search), using the (local)
+    classes LamaMasterHeuristic and FFSlaveHeuristic
+  - two internal once that appear within the LamaFFSynergy object only,
+    using the "normal" landmark classes LandmarkCountHeuristic and
+    Exploration.
+
+  It should be quite possible to simplify this in the future. In
+  principle, there is no need to have more than two heuristic objects.
+
+  The "master" heuristic is the one that triggers the actual heuristic
+  computation by asking the Synergy object to compute and store the
+  heuristic values. The "slave" heuristic makes sure that the
+  heuristic values stored in the synergy are up to date by asking for
+  the master heuristic's value (which will trigger a computation if
+  necessary).
+*/
+
 class LamaMasterHeuristic : public Heuristic {
     LamaFFSynergy *synergy;
 

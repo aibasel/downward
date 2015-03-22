@@ -11,6 +11,19 @@ class LandmarkCountHeuristic;
 class FFSlaveHeuristic;
 class LamaMasterHeuristic;
 
+/*
+  TODO: The synergy class stores EvaluationResult objects for "the
+  current state", a concept we want to move away with.
+
+  A different and perhaps better implementation would get rid of the
+  lama_result and ff_result members of LamaFFSynergy and instead only
+  use the EvaluationContext. But this would require either extending
+  the interface of EvaluationContext or perform some more significant
+  restructuring of the landmark code. We have wanted to do the latter
+  for a while, so it perhaps make sense to defer a change of the
+  synergy implementation until this point.
+*/
+
 class LamaFFSynergy {
     friend class LamaMasterHeuristic;
     friend class FFSlaveHeuristic;
