@@ -12,6 +12,8 @@
 #include "exploration.h"
 #include "landmark_count_heuristic.h"
 
+#include <memory>
+
 class LamaFFSynergy {
     class LamaMasterHeuristic : public Heuristic {
         LamaFFSynergy *synergy;
@@ -77,8 +79,8 @@ class LamaFFSynergy {
     friend class LamaMasterHeuristic;
     friend class FFSlaveHeuristic;
 
-    LamaMasterHeuristic lama_master_heuristic;
-    FFSlaveHeuristic ff_slave_heuristic;
+    std::unique_ptr<LamaMasterHeuristic> lama_master_heuristic;
+    std::unique_ptr<FFSlaveHeuristic> ff_slave_heuristic;
     const bool lm_pref;
     const bool lm_admissible;
     const bool lm_optimal;
@@ -101,11 +103,11 @@ public:
     ~LamaFFSynergy() = default;
 
     Heuristic *get_lama_heuristic_proxy() {
-        return &lama_master_heuristic;
+        return lama_master_heuristic.get();
     }
 
     Heuristic *get_ff_heuristic_proxy() {
-        return &ff_slave_heuristic;
+        return ff_slave_heuristic.get();
     }
 };
 
