@@ -20,8 +20,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
 
     void get_greedy_preconditions_for_lm(const LandmarkNode *lmp,
                                          const GlobalOperator &o, std::unordered_map<int, int> &result) const;
-    void compute_shared_preconditions(std::unordered_map<int, int> &shared_pre, std::vector<
-                                          std::vector<int> > &lvl_var, LandmarkNode *bp);
+    void compute_shared_preconditions(std::unordered_map<int, int> &shared_pre,
+                                      std::vector<std::vector<int> > &lvl_var,
+                                      LandmarkNode *bp);
     void compute_disjunctive_preconditions(
         std::vector<std::set<std::pair<int, int> > > &disjunctive_pre,
         std::vector<std::vector<int> > &lvl_var, LandmarkNode *bp);

@@ -178,8 +178,7 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
 bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const LandmarkNode &node) const {
     for (const auto &child : node.children) {
         LandmarkNode *child_node = child.first;
-        if (child.second >= greedy_necessary &&
-            child_node->status == lm_not_reached)
+        if (child.second >= greedy_necessary && child_node->status == lm_not_reached)
             return true;
     }
     return false;

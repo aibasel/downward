@@ -110,8 +110,8 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
         proposition_layer next_prop_layer(current_prop_layer);
         unordered_set<int> next_triggered;
         changes = false;
-        for (int op_no : triggered) {
-            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(op_no);
+        for (int op_index : triggered) {
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(op_index);
             if (operator_applicable(op, current_prop_layer)) {
                 lm_set changed = apply_operator_and_propagate_labels(op,
                                                                      current_prop_layer, next_prop_layer);
