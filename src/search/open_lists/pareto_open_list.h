@@ -2,12 +2,13 @@
 #define OPEN_LISTS_PARETO_OPEN_LIST_H
 
 #include "open_list.h"
+
 #include "../evaluator.h"
 #include "../utilities_hash.h"
 
 #include <deque>
-#include <unordered_map>
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
