@@ -43,7 +43,6 @@ struct hash<std::pair<TA, TB> > {
         return hash;
     }
 };
-
 }
 
 #endif

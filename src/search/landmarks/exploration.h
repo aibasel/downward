@@ -7,8 +7,8 @@
 #include "landmark_types.h"
 
 #include <cassert>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 class GlobalOperator;
 class GlobalState;
