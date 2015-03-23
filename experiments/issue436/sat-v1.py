@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from downward import suites
-from downward import configs
+import configs
 
 import common_setup
 
 
 REVS = ["issue436-base", "issue436-v1"]
 LIMITS = {"search_time": 1800}
-SUITE = suites.suite_optimal_with_ipc11()
+SUITE = suites.suite_satisficing_with_ipc11()
 
 configs_satisficing_core = configs.configs_satisficing_core()
 CONFIGS = {}
@@ -26,9 +26,6 @@ exp = common_setup.IssueExperiment(
 
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
-exp.add_report(common_setup.RegressionReport(
-    revision_nicks=exp.revision_nicks,
-    config_nicks=CONFIGS.keys()))
 
 
 exp()
