@@ -13,11 +13,7 @@ SUITE = suites.suite_optimal_with_ipc11()
 
 configs_satisficing_core = configs.configs_satisficing_core()
 CONFIGS = {}
-for name in ["eager_greedy_add", "eager_greedy_ff",
-             "lazy_greedy_add", "lazy_greedy_ff",
-             "astar_lmcount_lm_merged_rhw_hm",
-             "pareto_lmcut",
-             "astar_merge_and_shrink_bisim"]:
+for name in ['lazy_greedy_add', 'eager_greedy_ff', 'eager_greedy_add', 'lazy_greedy_ff', 'pareto_ff']:
     CONFIGS[name] = configs_satisficing_core[name]
 
 
