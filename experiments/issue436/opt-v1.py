@@ -11,12 +11,12 @@ REVS = ["issue436-base", "issue436-v1"]
 LIMITS = {"search_time": 1800}
 SUITE = suites.suite_optimal_with_ipc11()
 
-configs_satisficing_core = configs.configs_satisficing_core()
+configs_optimal_core = configs.configs_optimal_core()
 CONFIGS = {}
 for name in ['astar_merge_and_shrink_greedy_bisim', 'astar_merge_and_shrink_dfp_bisim',
              'astar_ipdb', 'astar_hmax', 'astar_blind', 'astar_lmcut',
              'astar_merge_and_shrink_bisim', 'astar_lmcount_lm_merged_rhw_hm']:
-    CONFIGS[name] = configs_satisficing_core[name]
+    CONFIGS[name] = configs_optimal_core[name]
 
 
 exp = common_setup.IssueExperiment(
