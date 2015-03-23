@@ -40,16 +40,6 @@ struct  hash<std::pair<TA, TB> > {
     }
 };
 
-template<typename TA, typename TB>
-struct hash<std::pair<vector<TA>, TB> > {
-public:
-    size_t operator()(const pair<vector<TA>, TB> &pair) const {
-        size_t hash = 0;
-        hash_combine(hash, pair.second);
-        hash_combine(hash, pair.first);
-        return hash;
-    }
-};
 }
 
 #endif
