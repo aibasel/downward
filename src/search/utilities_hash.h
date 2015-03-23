@@ -5,11 +5,15 @@
 #include <utility>
 #include <vector>
 
-// combination of hash values is based on Boost
-//TODO: move helper functions to a namespace?
+/*
+  Hash a new value and combine it with an existing hash.
+
+  This function should only be called from within this module.
+*/
 template<typename T>
 inline void hash_combine(size_t &hash, const T &value) {
     const std::hash<T> hasher;
+    // The combination of hash values is based on Boost.
     hash ^= hasher(value) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 }
 
@@ -31,7 +35,7 @@ struct hash<std::vector<T> > {
 };
 
 template<typename TA, typename TB>
-struct  hash<std::pair<TA, TB> > {
+struct hash<std::pair<TA, TB> > {
     size_t operator()(const std::pair<TA, TB> &pair) const {
         size_t hash = 0;
         hash_combine(hash, pair.first);
