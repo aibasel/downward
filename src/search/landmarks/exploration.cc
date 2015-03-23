@@ -94,7 +94,7 @@ void Exploration::write_overflow_warning() {
     }
 }
 
-void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_goals) {
+void Exploration::set_additional_goals(const vector<pair<int, int> > &add_goals) {
     //Clear previous additional goals.
     for (size_t i = 0; i < termination_propositions.size(); ++i) {
         int var = termination_propositions[i]->var, val = termination_propositions[i]->val;
@@ -157,7 +157,7 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
 // heuristic computation
 void Exploration::setup_exploration_queue(const GlobalState &state,
                                           const vector<pair<int, int> > &excluded_props,
-                                          const std::unordered_set<const GlobalOperator *> &excluded_ops,
+                                          const unordered_set<const GlobalOperator *> &excluded_ops,
                                           bool use_h_max = false) {
     prop_queue.clear();
 
@@ -325,10 +325,10 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_var,
-                                                     std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op,
+                                                     vector<unordered_map<pair<int, int>, int> > &lvl_op,
                                                      bool level_out,
                                                      const vector<pair<int, int> > &excluded_props,
-                                                     const std::unordered_set<const GlobalOperator *> &excluded_ops,
+                                                     const unordered_set<const GlobalOperator *> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(g_initial_state(), excluded_props, excluded_ops, true);
