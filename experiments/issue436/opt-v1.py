@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from downward import suites
-from downward import configs
+import configs
 
 import common_setup
 
@@ -28,9 +28,5 @@ exp = common_setup.IssueExperiment(
 
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
-exp.add_report(common_setup.RegressionReport(
-    revision_nicks=exp.revision_nicks,
-    config_nicks=CONFIGS.keys()))
-
 
 exp()
