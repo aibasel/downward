@@ -35,7 +35,7 @@ from downward.checkouts import Translator, Preprocessor, Planner
 from downward import checkouts
 from downward.reports.absolute import AbsoluteReport
 
-from check import Check, RegressionCheckReport
+from regression_test import Check, RegressionCheckReport
 
 
 DIR = os.path.dirname(os.path.abspath(__file__))

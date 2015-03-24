@@ -69,6 +69,7 @@ class TransitionSystem {
     const Labels *labels;
     std::list<std::list<int> > grouped_labels;
     std::vector<std::vector<Transition> > transitions_by_group_index;
+    std::vector<int> cost_by_group_index;
     std::vector<std::tuple<int, LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
