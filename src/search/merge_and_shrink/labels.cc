@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <unordered_map>
 
 using namespace std;
 
@@ -76,33 +77,37 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
                                    vector<pair<int, vector<int> > > &label_mapping) {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (BlockListConstIter it = relation->begin(); it != relation->end(); ++it) {
-        const Block &block = *it;
-        vector<Label *> equivalent_labels;
-        vector<int> equivalent_label_nos;
-        for (ElementListConstIter jt = block.begin(); jt != block.end(); ++jt) {
-            assert(*jt < static_cast<int>(labels.size()));
-            Label *label = labels[*jt];
+    for (BlockListConstIter group_it = relation->begin(); group_it != relation->end(); ++group_it) {
+        const Block &block = *group_it;
+        unordered_map<int, vector<int> > equivalent_label_nos;
+        for (ElementListConstIter label_it = block.begin(); label_it != block.end(); ++label_it) {
+            assert(*label_it < static_cast<int>(labels.size()));
+            int label_no = *label_it;
+            Label *label = labels[label_no];
             if (label) {
                 // only consider non-reduced labels
-                equivalent_labels.push_back(label);
-                equivalent_label_nos.push_back(*jt);
+                int cost = label->get_cost();
+                equivalent_label_nos[cost].push_back(label_no);
                 ++num_labels;
             }
         }
-        if (equivalent_labels.size() > 1) {
-            int new_label_no = labels.size();
-            Label *new_label = new Label(equivalent_labels[0]->get_cost());
-            labels.push_back(new_label);
-            for (size_t i = 0; i < equivalent_label_nos.size(); ++i) {
-                int old_label_no = equivalent_label_nos[i];
-                delete labels[old_label_no];
-                labels[old_label_no] = 0;
+        for (auto it = equivalent_label_nos.begin();
+             it != equivalent_label_nos.end(); ++it) {
+            const vector<int> &label_nos = it->second;
+            if (label_nos.size() > 1) {
+                int new_label_no = labels.size();
+                Label *new_label = new Label(labels[label_nos[0]]->get_cost());
+                labels.push_back(new_label);
+                for (size_t i = 0; i < label_nos.size(); ++i) {
+                    int old_label_no = label_nos[i];
+                    delete labels[old_label_no];
+                    labels[old_label_no] = 0;
+                }
+                label_mapping.push_back(make_pair(new_label_no, label_nos));
             }
-            label_mapping.push_back(make_pair(new_label_no, equivalent_label_nos));
-        }
-        if (!equivalent_labels.empty()) {
-            ++num_labels_after_reduction;
+            if (!label_nos.empty()) {
+                ++num_labels_after_reduction;
+            }
         }
     }
     int number_reduced_labels = num_labels - num_labels_after_reduction;

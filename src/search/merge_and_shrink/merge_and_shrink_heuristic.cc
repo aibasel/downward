@@ -171,6 +171,7 @@ void MergeAndShrinkHeuristic::initialize() {
     if (!final_transition_system->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
     }
+    cout << "Final transition system size: " << final_transition_system->get_size() << endl;
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
