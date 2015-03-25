@@ -50,11 +50,11 @@ LandmarkNode *LandmarkGraph::get_landmark(const pair<int, int> &prop) const {
      landmark exists.
      */
     LandmarkNode *node_p = 0;
-    const auto it = simple_lms_to_nodes.find(prop);
+    auto it = simple_lms_to_nodes.find(prop);
     if (it != simple_lms_to_nodes.end())
         node_p = it->second;
     else {
-        const auto it2 = disj_lms_to_nodes.find(prop);
+        auto it2 = disj_lms_to_nodes.find(prop);
         if (it2 != disj_lms_to_nodes.end())
             node_p = it2->second;
     }
@@ -97,7 +97,7 @@ void LandmarkGraph::count_costs() {
 }
 
 bool LandmarkGraph::simple_landmark_exists(const pair<int, int> &lm) const {
-    const auto it = simple_lms_to_nodes.find(lm);
+    auto it = simple_lms_to_nodes.find(lm);
     assert(it == simple_lms_to_nodes.end() || !it->second->disjunctive);
     return it != simple_lms_to_nodes.end();
 }
@@ -123,7 +123,7 @@ bool LandmarkGraph::exact_same_disj_landmark_exists(const set<pair<int, int> > &
     // Test whether a disj. LM exists which consists EXACTLY of those facts in lm
     LandmarkNode *lmn = NULL;
     for (const auto &prop : lm) {
-        const auto it2 = disj_lms_to_nodes.find(prop);
+        auto it2 = disj_lms_to_nodes.find(prop);
         if (it2 == disj_lms_to_nodes.end())
             return false;
         else {

@@ -361,8 +361,8 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                     swap(shared_eff, next_eff);
                 else {
                     unordered_map<int, int> result;
-                    for (auto &eff1 : shared_eff) {
-                        const auto it2 = next_eff.find(eff1.first);
+                    for (const auto &eff1 : shared_eff) {
+                        auto it2 = next_eff.find(eff1.first);
                         if (it2 != next_eff.end() && it2->second == eff1.second)
                             result.insert(eff1);
                     }
@@ -702,7 +702,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
         bool empty = true;
         for (const auto &child : cur->children) {
             LandmarkNode *child_p = child.first;
-            const edge_type edge = child.second;
+            edge_type edge = child.second;
             if (acyclic_node_set.find(child_p) == acyclic_node_set.end()) {
                 path.push_back(make_pair(cur, edge));
                 cur = child_p;
