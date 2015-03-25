@@ -87,11 +87,6 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_
     }
 }
 
-static bool compare_prop_pointer(const Proposition *p1, const Proposition *p2) {
-    return p1->id < p2->id;
-}
-
-
 void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
@@ -118,7 +113,7 @@ void RelaxationHeuristic::simplify() {
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
-        sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
+        sort(op.precondition.begin(), op.precondition.end());
         HashKey key(op.precondition, op.effect);
         pair<HashMap::iterator, bool> inserted = unary_operator_index.insert(
             make_pair(key, i));
