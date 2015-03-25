@@ -200,7 +200,7 @@ void ValueTransition::simplify_labels(
     // Remove labels with duplicate or dominated conditions.
 
     /*
-      Algorithm: Put all transitions into a unordered_map
+      Algorithm: Put all transitions into an unordered_map
       (key: condition, value: index in label list).
       This already gets rid of transitions with identical conditions.
 
