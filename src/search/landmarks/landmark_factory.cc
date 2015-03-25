@@ -378,13 +378,12 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
 
         /* // Experimentally commenting this out -- see issue202.
         // 3. Exists LM x, inconsistent x, b and x->_gn a
-        const LandmarkNode &node = *node_a;
-        for (unordered_map<LandmarkNode *, edge_type>::const_iterator it =
-                 node.parents.begin(); it != node.parents.end(); ++it) {
-            edge_type edge = it->second;
-            for (size_t i = 0; i < it->first->vars.size(); ++i) {
-                pair<int, int> parent_prop = make_pair(it->first->vars[i],
-                                                       it->first->vals[i]);
+        for (const auto &parent : node_a->parents) {
+            const LandmarkNode &node = *parent.first;
+            edge_type edge = parent.second;
+            for (size_t i = 0; i < node.vars.size(); ++i) {
+                pair<const int, int> parent_prop = make_pair(node.vars[i],
+                                                       node.vals[i]);
                 if (edge >= greedy_necessary && parent_prop != b && are_mutex(
                         parent_prop, b))
                     return true;
