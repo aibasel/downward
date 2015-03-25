@@ -414,7 +414,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             // Determine possible values that var can have when this
             // operator is applicable.
             int pre_value = -1;
-            const auto pre_val_it = pre_val.find(var);
+            auto pre_val_it = pre_val.find(var);
             if (pre_val_it != pre_val.end())
                 pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;
