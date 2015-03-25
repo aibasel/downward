@@ -109,7 +109,7 @@ void RelaxationHeuristic::simplify() {
     typedef pair<vector<Proposition *>, Proposition *> HashKey;
     typedef unordered_map<HashKey, int> HashMap;
     HashMap unary_operator_index;
-    unary_operator_index.reserve(unary_operators.size() * 2);
+    unary_operator_index.reserve(unary_operators.size());
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];

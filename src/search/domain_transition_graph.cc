@@ -212,7 +212,7 @@ void ValueTransition::simplify_labels(
     typedef vector<pair<int, int> > HashKey;
     typedef unordered_map<HashKey, int> HashMap;
     HashMap label_index;
-    label_index.reserve(label_vec.size() * 2);
+    label_index.reserve(label_vec.size());
 
     for (size_t i = 0; i < label_vec.size(); ++i) {
         HashKey key;
