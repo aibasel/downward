@@ -53,7 +53,7 @@ public:
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
     bool translate_state(const GlobalState &state, int *translated) const;
 
-    void combine_facts(int var, std::unordered_set<int> &values);
+    void combine_facts(int var, const std::unordered_set<int> &values);
 
     void install();
     void release_memory();

@@ -57,10 +57,6 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
     return pb_facts;
 }
 
-Fact get_raw_fact(FactProxy fact) {
-    return make_pair(fact.get_variable().get_id(), fact.get_value());
-}
-
 LandmarkTask::LandmarkTask(TaskProxy orig_task, FactProxy landmark)
     : DelegatingTask(get_root_task()) {
     unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(orig_task, landmark);
@@ -235,12 +231,12 @@ void LandmarkTask::save_unreachable_facts(VariablesProxy variables, const unorde
     }
 }
 
-void LandmarkTask::combine_facts(int var, unordered_set<int> &values) {
+void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     assert(values.size() >= 2);
     set<int> mapped_values;
-    for (unordered_set<int>::iterator it = values.begin(); it != values.end(); ++it) {
-        assert(task_index[var][*it] != UNDEFINED);
-        mapped_values.insert(task_index[var][*it]);
+    for (int value : values) {
+        assert(task_index[var][value] != UNDEFINED);
+        mapped_values.insert(task_index[var][value]);
     }
     if (DEBUG)
         cout << "Combine " << var << ": mapped " << to_string(mapped_values) << endl;
@@ -256,8 +252,8 @@ void LandmarkTask::combine_facts(int var, unordered_set<int> &values) {
     // Set combined fact_name.
     stringstream name;
     string sep = "";
-    for (set<int>::iterator it = mapped_values.begin(); it != mapped_values.end(); ++it) {
-        name << sep << fact_names[var][*it];
+    for (int value : mapped_values) {
+        name << sep << fact_names[var][value];
         sep = " OR ";
     }
     fact_names[var][projected_value] = name.str();

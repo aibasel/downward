@@ -13,6 +13,7 @@
 #include <ostream>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -31,6 +32,7 @@ typedef boost::dynamic_bitset<> Bitset;
 typedef std::pair<int, std::vector<int> > Split;
 typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
+typedef std::unordered_map<int, std::unordered_set<int> > VariableToValues;
 
 bool is_not_marked(GlobalOperator &op);
 
