@@ -119,12 +119,6 @@ int LandmarkTask::get_orig_op_index(int index) const {
     return index;
 }
 
-void LandmarkTask::set_goal(const Fact &fact) {
-    additive_heuristic = 0;
-    goals.clear();
-    goals.push_back(fact);
-}
-
 void LandmarkTask::adapt_operator_costs(const vector<int> &remaining_costs) {
     for (size_t i = 0; i < operators.size(); ++i) {
         operators[i].set_cost(remaining_costs[i]);
