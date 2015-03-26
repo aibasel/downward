@@ -5,6 +5,7 @@
 #include "../globals.h"
 #include "../state_registry.h"
 #include "../task_proxy.h"
+#include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -60,7 +61,24 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
 LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
                            FactProxy landmark,
                            const VariableToValues &fact_groups)
-    : DelegatingTask(parent) {
+    : DelegatingTask(parent),
+      initial_state_data(parent->get_initial_state_values()),
+      goals({get_raw_fact(landmark)}),
+      unreachable_facts(parent->get_num_variables()),
+      orig_index(parent->get_num_variables()),
+      task_index(parent->get_num_variables()),
+      additive_heuristic(0) {
+    operators = g_operators;
+    fact_names = g_fact_names;
+    variable_domain = g_variable_domain;
+    for (size_t var = 0; var < variable_domain.size(); ++var) {
+        orig_index[var].resize(variable_domain[var]);
+        task_index[var].resize(variable_domain[var]);
+        for (int value = 0; value < variable_domain[var]; ++value) {
+            orig_index[var][value] = value;
+            task_index[var][value] = value;
+        }
+    }
     TaskProxy orig_task = TaskProxy(parent.get());
     unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(orig_task, landmark);
     reachable_facts.insert(landmark);
