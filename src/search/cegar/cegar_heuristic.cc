@@ -191,13 +191,15 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         if (decomposition != NONE) {
             bool combine_facts = (options.get<bool>("combine_facts") && decomposition == LANDMARKS);
             task.set_goal(facts[i]);
+            VariableToValues groups;
             if (combine_facts) {
-                VariableToValues groups = get_prev_landmarks(landmark);
+                groups = get_prev_landmarks(landmark);
                 for (const auto &group : groups) {
                     if (group.second.size() >= 2)
                         task.combine_facts(group.first, group.second);
                 }
             }
+            LandmarkTask landmark_task = LandmarkTask(orig_task, landmark, groups);
         }
         install_task(task);
         if (decomposition != NONE) {
