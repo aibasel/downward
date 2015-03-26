@@ -11,14 +11,11 @@ REVS = ["issue436-base", "issue436-v1"]
 LIMITS = {"search_time": 1800}
 SUITE = suites.suite_satisficing_with_ipc11()
 
-configs_satisficing_core = configs.configs_satisficing_core()
-configs_satisficing_extended = configs.configs_satisficing_extended()
+default_configs_satisficing = configs.default_configs_satisficing(extended=True)
 CONFIGS = {}
-for name in ['lazy_greedy_add', 'eager_greedy_ff', 'eager_greedy_add', 'lazy_greedy_ff']:
-    CONFIGS[name] = configs_satisficing_core[name]
-for name in ['pareto_ff']:
-    CONFIGS[name] = configs_satisficing_extended[name]
-
+for name in ['lazy_greedy_add', 'eager_greedy_ff', 'eager_greedy_add', 'lazy_greedy_ff', 'pareto_ff']:
+    CONFIGS[name] = default_configs_satisficing[name]
+    
 exp = common_setup.IssueExperiment(
     search_revisions=REVS,
     configs=CONFIGS,
