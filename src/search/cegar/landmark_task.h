@@ -22,6 +22,7 @@ private:
     std::vector<std::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
     std::vector<GlobalOperator> operators;
+    std::vector<int> op_costs;
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
     mutable AdditiveHeuristic *additive_heuristic;
@@ -42,7 +43,10 @@ public:
     LandmarkTask(std::vector<int> domain, std::vector<std::vector<std::string> > names,
          std::vector<GlobalOperator> ops, std::vector<int> initial_state_data_,
          std::vector<Fact> goal_facts);
-    LandmarkTask(TaskProxy orig_task, FactProxy landmark, const VariableToValues &fact_groups);
+    LandmarkTask(TaskProxy orig_task,
+                 FactProxy landmark,
+                 const VariableToValues &fact_groups,
+                 std::vector<int> op_costs);
 
     const std::vector<Fact> &get_goal() const {return goals; }
     const std::vector<GlobalOperator> &get_operators() const {return operators; }

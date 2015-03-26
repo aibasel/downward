@@ -199,7 +199,11 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
                         task.combine_facts(group.first, group.second);
                 }
             }
-            LandmarkTask landmark_task = LandmarkTask(orig_task, landmark, groups);
+            vector<int> op_costs;
+            op_costs.reserve(orig_task.get_operators().size());
+            for (OperatorProxy op : orig_task.get_operators())
+                op_costs.push_back(op.get_cost());
+            LandmarkTask landmark_task = LandmarkTask(orig_task, landmark, groups, op_costs);
         }
         install_task(task);
         if (decomposition != NONE) {
