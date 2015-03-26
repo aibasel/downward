@@ -65,7 +65,6 @@ public:
     const std::vector<Fact> &get_goal() const {return goals; }
     const std::vector<GlobalOperator> &get_operators() const {return operators; }
 
-    void set_goal(const Fact &fact);
     void save_unreachable_facts(VariablesProxy variables, const std::unordered_set<FactProxy> &reachable_facts);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
