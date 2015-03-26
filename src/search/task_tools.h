@@ -3,6 +3,8 @@
 
 #include "task_proxy.h"
 
+#include <utility>
+
 
 inline bool is_applicable(OperatorProxy op, const State &state) {
     for (FactProxy precondition : op.get_preconditions()) {
@@ -32,5 +34,9 @@ bool has_axioms(TaskProxy task);
 
 // Runtime: O(n), where n is the number of operators.
 bool has_conditional_effects(TaskProxy task);
+
+inline std::pair<int, int> get_raw_fact(FactProxy fact) {
+    return std::make_pair(fact.get_variable().get_id(), fact.get_value());
+}
 
 #endif
