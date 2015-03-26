@@ -96,13 +96,10 @@ public:
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;
 
-    virtual int get_num_operator_preconditions(int index, bool is_axiom) const override;
     virtual std::pair<int, int> get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;
-    virtual int get_num_operator_effects(int op_index, bool is_axiom) const override;
     virtual std::pair<int, int> get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
-    virtual const GlobalOperator *get_global_operator(int index, bool is_axiom) const override;
 
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
