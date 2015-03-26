@@ -186,7 +186,8 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
         LandmarkTask task = original_task;
-        TaskProxy orig_task = TaskProxy(get_root_task().get());
+        shared_ptr<AbstractTask> orig_task_impl = get_root_task();
+        TaskProxy orig_task = TaskProxy(orig_task_impl.get());
         FactProxy landmark = orig_task.get_variables()[facts[i].first].get_fact(facts[i].second);
         if (decomposition != NONE) {
             bool combine_facts = (options.get<bool>("combine_facts") && decomposition == LANDMARKS);
@@ -203,7 +204,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             op_costs.reserve(orig_task.get_operators().size());
             for (OperatorProxy op : orig_task.get_operators())
                 op_costs.push_back(op.get_cost());
-            LandmarkTask landmark_task = LandmarkTask(orig_task, landmark, groups, op_costs);
+            LandmarkTask landmark_task = LandmarkTask(orig_task_impl, landmark, groups, op_costs);
         }
         install_task(task);
         if (decomposition != NONE) {

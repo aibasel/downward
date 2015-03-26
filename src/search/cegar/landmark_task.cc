@@ -57,12 +57,13 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
     return pb_facts;
 }
 
-LandmarkTask::LandmarkTask(TaskProxy orig_task,
+LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
                            FactProxy landmark,
                            const VariableToValues &fact_groups,
                            vector<int> op_costs)
-    : DelegatingTask(get_root_task()),
+    : DelegatingTask(parent),
       op_costs(op_costs) {
+    TaskProxy orig_task = TaskProxy(parent.get());
     assert(orig_task.get_operators().size() == op_costs.size());
     unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(orig_task, landmark);
     reachable_facts.insert(landmark);
