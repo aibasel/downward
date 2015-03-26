@@ -68,9 +68,13 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
       orig_index(parent->get_num_variables()),
       task_index(parent->get_num_variables()),
       additive_heuristic(0) {
+    TaskProxy orig_task = TaskProxy(parent.get());
+    assert(variable_domain.empty());
+    for (VariableProxy var : orig_task.get_variables()) {
+        variable_domain.push_back(var.get_domain_size());
+    }
     operators = g_operators;
     fact_names = g_fact_names;
-    variable_domain = g_variable_domain;
     for (size_t var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -79,7 +83,6 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
             task_index[var][value] = value;
         }
     }
-    TaskProxy orig_task = TaskProxy(parent.get());
     unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(orig_task, landmark);
     reachable_facts.insert(landmark);
     save_unreachable_facts(orig_task.get_variables(), reachable_facts);
@@ -252,7 +255,7 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     set<int> mapped_values;
     for (int value : values) {
         assert(task_index[var][value] != UNDEFINED);
-        mapped_values.insert(task_index[var][value]);
+        mapped_values.insert(get_task_value(var, value));
     }
     if (DEBUG)
         cout << "Combine " << var << ": mapped " << to_string(mapped_values) << endl;
