@@ -37,6 +37,11 @@ private:
     void dump_facts() const;
 
     int translate_fact(int var, int value);
+    int get_orig_value(int var, int value) const {
+        assert(in_bounds(var, orig_index));
+        assert(in_bounds(value, orig_index[var]));
+        return orig_index[var][value];
+    }
     int get_orig_op_index(int index) const;
 
 public:
@@ -81,16 +86,10 @@ public:
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;
 
-    virtual const std::string &get_operator_name(int index, bool is_axiom) const override;
-    virtual int get_num_operators() const override;
     virtual int get_num_operator_preconditions(int index, bool is_axiom) const override;
     virtual std::pair<int, int> get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;
     virtual int get_num_operator_effects(int op_index, bool is_axiom) const override;
-    virtual int get_num_operator_effect_conditions(
-        int op_index, int eff_index, bool is_axiom) const override;
-    virtual std::pair<int, int> get_operator_effect_condition(
-        int op_index, int eff_index, int cond_index, bool is_axiom) const override;
     virtual std::pair<int, int> get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
     virtual const GlobalOperator *get_global_operator(int index, bool is_axiom) const override;

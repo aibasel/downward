@@ -389,19 +389,11 @@ void LandmarkTask::dump() const {
 }
 
 int LandmarkTask::get_variable_domain_size(int var) const {
-    return parent->get_variable_domain_size(var);
+    return variable_domain[var];
 }
 
 const string &LandmarkTask::get_fact_name(int var, int value) const {
-    return parent->get_fact_name(var, value);
-}
-
-const string &LandmarkTask::get_operator_name(int index, bool is_axiom) const {
-    return parent->get_operator_name(index, is_axiom);
-}
-
-int LandmarkTask::get_num_operators() const {
-    return parent->get_num_operators();
+    return parent->get_fact_name(var, get_orig_value(var, value));
 }
 
 int LandmarkTask::get_num_operator_preconditions(int index, bool is_axiom) const {
@@ -410,23 +402,12 @@ int LandmarkTask::get_num_operator_preconditions(int index, bool is_axiom) const
 
 pair<int, int> LandmarkTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
-    return parent->get_operator_precondition(op_index, fact_index, is_axiom);
+    pair<int, int> fact = parent->get_operator_precondition(op_index, fact_index, is_axiom);
+    return make_pair(fact.first, get_orig_value(fact.first, fact.second));
 }
 
 int LandmarkTask::get_num_operator_effects(int op_index, bool is_axiom) const {
     return parent->get_num_operator_effects(op_index, is_axiom);
-}
-
-int LandmarkTask::get_num_operator_effect_conditions(
-    int op_index, int eff_index, bool is_axiom) const {
-    return parent->get_num_operator_effect_conditions(
-        get_orig_op_index(op_index), eff_index, is_axiom);
-}
-
-pair<int, int> LandmarkTask::get_operator_effect_condition(
-    int op_index, int eff_index, int cond_index, bool is_axiom) const {
-    return parent->get_operator_effect_condition(
-        get_orig_op_index(op_index), eff_index, cond_index, is_axiom);
 }
 
 pair<int, int> LandmarkTask::get_operator_effect(
