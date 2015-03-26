@@ -392,27 +392,14 @@ const string &LandmarkTask::get_fact_name(int var, int value) const {
     return parent->get_fact_name(var, get_orig_value(var, value));
 }
 
-int LandmarkTask::get_num_operator_preconditions(int index, bool is_axiom) const {
-    return parent->get_num_operator_preconditions(index, is_axiom);
-}
-
 pair<int, int> LandmarkTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
-    pair<int, int> fact = parent->get_operator_precondition(op_index, fact_index, is_axiom);
-    return make_pair(fact.first, get_orig_value(fact.first, fact.second));
-}
-
-int LandmarkTask::get_num_operator_effects(int op_index, bool is_axiom) const {
-    return parent->get_num_operator_effects(op_index, is_axiom);
+    return get_task_fact(parent->get_operator_precondition(op_index, fact_index, is_axiom));
 }
 
 pair<int, int> LandmarkTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
-    return parent->get_operator_effect(op_index, eff_index, is_axiom);
-}
-
-const GlobalOperator *LandmarkTask::get_global_operator(int index, bool is_axiom) const {
-    return parent->get_global_operator(get_orig_op_index(index), is_axiom);
+    return get_task_fact(parent->get_operator_effect(op_index, eff_index, is_axiom));
 }
 
 int LandmarkTask::get_num_goals() const {
@@ -424,10 +411,17 @@ pair<int, int> LandmarkTask::get_goal_fact(int index) const {
 }
 
 std::vector<int> LandmarkTask::get_initial_state_values() const {
-    return parent->get_initial_state_values();
+    return initial_state_data;
 }
 
 vector<int> LandmarkTask::get_state_values(const GlobalState &global_state) const {
-    return parent->get_state_values(global_state);
+    int num_vars = variable_domain.size();
+    vector<int> state_data(num_vars);
+    for (int var = 0; var < num_vars; ++var) {
+        int value = task_index[var][global_state[var]];
+        assert(value != UNDEFINED);
+        state_data[var] = value;
+    }
+    return state_data;
 }
 }
