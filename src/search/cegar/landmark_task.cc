@@ -93,10 +93,6 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
     }
 }
 
-int LandmarkTask::translate_fact(int var, int value) {
-    return task_index[var][value];
-}
-
 int LandmarkTask::get_orig_op_index(int index) const {
     // TODO: Update this if we ever drop operators.
     return index;
