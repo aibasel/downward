@@ -43,7 +43,7 @@ public:
     LandmarkTask(std::vector<int> domain, std::vector<std::vector<std::string> > names,
          std::vector<GlobalOperator> ops, std::vector<int> initial_state_data_,
          std::vector<Fact> goal_facts);
-    LandmarkTask(TaskProxy orig_task,
+    LandmarkTask(std::shared_ptr<AbstractTask> parent,
                  FactProxy landmark,
                  const VariableToValues &fact_groups,
                  std::vector<int> op_costs);
