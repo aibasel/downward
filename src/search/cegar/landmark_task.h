@@ -45,8 +45,7 @@ public:
          std::vector<Fact> goal_facts);
     LandmarkTask(std::shared_ptr<AbstractTask> parent,
                  FactProxy landmark,
-                 const VariableToValues &fact_groups,
-                 std::vector<int> op_costs);
+                 const VariableToValues &fact_groups);
 
     const std::vector<Fact> &get_goal() const {return goals; }
     const std::vector<GlobalOperator> &get_operators() const {return operators; }
@@ -82,7 +81,6 @@ public:
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;
 
-    virtual int get_operator_cost(int index, bool) const override;
     virtual const std::string &get_operator_name(int index, bool is_axiom) const override;
     virtual int get_num_operators() const override;
     virtual int get_num_operator_preconditions(int index, bool is_axiom) const override;

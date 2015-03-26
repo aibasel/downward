@@ -186,6 +186,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
         LandmarkTask task = original_task;
+        // TODO: Use cost adapted task as parent task.
         shared_ptr<AbstractTask> orig_task_impl = get_root_task();
         TaskProxy orig_task = TaskProxy(orig_task_impl.get());
         FactProxy landmark = orig_task.get_variables()[facts[i].first].get_fact(facts[i].second);
@@ -200,11 +201,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
                         task.combine_facts(group.first, group.second);
                 }
             }
-            vector<int> op_costs;
-            op_costs.reserve(orig_task.get_operators().size());
-            for (OperatorProxy op : orig_task.get_operators())
-                op_costs.push_back(op.get_cost());
-            LandmarkTask landmark_task = LandmarkTask(orig_task_impl, landmark, groups, op_costs);
+            LandmarkTask landmark_task = LandmarkTask(orig_task_impl, landmark, groups);
         }
         install_task(task);
         if (decomposition != NONE) {
