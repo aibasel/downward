@@ -382,8 +382,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             const LandmarkNode &node = *parent.first;
             edge_type edge = parent.second;
             for (size_t i = 0; i < node.vars.size(); ++i) {
-                pair<const int, int> parent_prop = make_pair(node.vars[i],
-                                                       node.vals[i]);
+                pair<const int, int> parent_prop = make_pair(node.vars[i], node.vals[i]);
                 if (edge >= greedy_necessary && parent_prop != b && are_mutex(
                         parent_prop, b))
                     return true;
