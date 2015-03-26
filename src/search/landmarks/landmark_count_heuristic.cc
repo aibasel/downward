@@ -165,7 +165,7 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
                                                          const LandmarkSet &reached) const {
     for (const auto &parent : node.parents) {
-        if (reached.find(parent.first) == reached.end()) {
+        if (reached.count(parent.first) == 0) {
             return true;
         }
     }

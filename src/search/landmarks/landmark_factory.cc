@@ -473,7 +473,7 @@ void LandmarkFactory::collect_ancestors(
         LandmarkNode &parent = *(p.first);
         const edge_type &edge = p.second;
         if (edge >= natural || (use_reasonable && edge == reasonable))
-            if (closed_nodes.find(&parent) == closed_nodes.end()) {
+            if (closed_nodes.count(&parent) == 0) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
                 result.insert(&parent);
@@ -486,7 +486,7 @@ void LandmarkFactory::collect_ancestors(
             LandmarkNode &parent = *(p.first);
             const edge_type &edge = p.second;
             if (edge >= natural || (use_reasonable && edge == reasonable)) {
-                if (closed_nodes.find(&parent) == closed_nodes.end()) {
+                if (closed_nodes.count(&parent) == 0) {
                     open_nodes.push_back(&parent);
                     closed_nodes.insert(&parent);
                     result.insert(&parent);
