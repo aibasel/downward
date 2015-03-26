@@ -9,6 +9,7 @@
 #include "../plugin.h"
 #include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
+#include "../task_tools.h"
 
 #include <ext/hash_map>
 
@@ -96,29 +97,30 @@ LandmarkGraph CegarHeuristic::get_landmark_graph() const {
   duplicates. Start at the node for the given fact and collect for each
   variable the facts that have to be made true before the fact is made
   true for the first time. */
-void CegarHeuristic::get_prev_landmarks(Fact fact, unordered_map<int, unordered_set<int> > *groups) const {
-    assert(groups->empty());
-    LandmarkNode *node = landmark_graph.get_landmark(fact);
+VariableToValues CegarHeuristic::get_prev_landmarks(FactProxy fact) const {
+    unordered_map<int, unordered_set<int> > groups;
+    LandmarkNode *node = landmark_graph.get_landmark(get_raw_fact(fact));
     assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
-    for (auto it = node->parents.begin(); it != node->parents.end(); ++it) {
-        const LandmarkNode *parent = it->first;
+    for (const auto &parent_and_edge: node->parents) {
+        const LandmarkNode *parent = parent_and_edge.first;
         open.push_back(parent);
     }
     while (!open.empty()) {
         const LandmarkNode *ancestor = open.back();
         open.pop_back();
-        if (closed.count(ancestor) == 1)
+        if (closed.count(ancestor))
             continue;
         closed.insert(ancestor);
         Fact ancestor_fact = get_fact(ancestor);
-        (*groups)[ancestor_fact.first].insert(ancestor_fact.second);
+        groups[ancestor_fact.first].insert(ancestor_fact.second);
         for (auto it = ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
             const LandmarkNode *parent = it->first;
             open.push_back(parent);
         }
     }
+    return groups;
 }
 
 void CegarHeuristic::order_facts(vector<Fact> &facts) const {
@@ -184,16 +186,16 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
         LandmarkTask task = original_task;
+        TaskProxy orig_task = TaskProxy(get_root_task().get());
+        FactProxy landmark = orig_task.get_variables()[facts[i].first].get_fact(facts[i].second);
         if (decomposition != NONE) {
             bool combine_facts = (options.get<bool>("combine_facts") && decomposition == LANDMARKS);
             task.set_goal(facts[i]);
             if (combine_facts) {
-                unordered_map<int, unordered_set<int> > groups;
-                get_prev_landmarks(facts[i], &groups);
-                for (unordered_map<int, unordered_set<int> >::iterator it =
-                         groups.begin(); it != groups.end(); ++it) {
-                    if (it->second.size() >= 2)
-                        task.combine_facts(it->first, it->second);
+                VariableToValues groups = get_prev_landmarks(landmark);
+                for (const auto &group : groups) {
+                    if (group.second.size() >= 2)
+                        task.combine_facts(group.first, group.second);
                 }
             }
         }
