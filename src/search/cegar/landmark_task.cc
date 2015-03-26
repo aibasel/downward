@@ -59,20 +59,12 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
 
 LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
                            FactProxy landmark,
-                           const VariableToValues &fact_groups,
-                           vector<int> op_costs)
-    : DelegatingTask(parent),
-      op_costs(op_costs) {
+                           const VariableToValues &fact_groups)
+    : DelegatingTask(parent) {
     TaskProxy orig_task = TaskProxy(parent.get());
-    assert(orig_task.get_operators().size() == op_costs.size());
     unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(orig_task, landmark);
     reachable_facts.insert(landmark);
     save_unreachable_facts(orig_task.get_variables(), reachable_facts);
-    OperatorsProxy operators = orig_task.get_operators();
-    vector<int> orig_costs(operators.size());
-    for (OperatorProxy op : operators) {
-        orig_costs[op.get_id()] = op.get_cost();
-    }
     for (const auto &group : fact_groups) {
         if (group.second.size() >= 2)
             combine_facts(group.first, group.second);
@@ -119,7 +111,6 @@ void LandmarkTask::set_goal(const Fact &fact) {
 void LandmarkTask::adapt_operator_costs(const vector<int> &remaining_costs) {
     for (size_t i = 0; i < operators.size(); ++i) {
         operators[i].set_cost(remaining_costs[i]);
-        op_costs[i] = remaining_costs[i];
     }
 }
 
@@ -403,10 +394,6 @@ int LandmarkTask::get_variable_domain_size(int var) const {
 
 const string &LandmarkTask::get_fact_name(int var, int value) const {
     return parent->get_fact_name(var, value);
-}
-
-int LandmarkTask::get_operator_cost(int index, bool) const {
-    return op_costs[index];
 }
 
 const string &LandmarkTask::get_operator_name(int index, bool is_axiom) const {
