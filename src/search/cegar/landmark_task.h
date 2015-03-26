@@ -36,11 +36,21 @@ private:
     void dump_name() const;
     void dump_facts() const;
 
-    int translate_fact(int var, int value);
     int get_orig_value(int var, int value) const {
         assert(in_bounds(var, orig_index));
         assert(in_bounds(value, orig_index[var]));
         return orig_index[var][value];
+    }
+    std::pair<int, int> get_orig_fact(Fact fact) const {
+        return std::make_pair(fact.first, get_orig_value(fact.first, fact.second));
+    }
+    int get_task_value(int var, int value) const {
+        assert(in_bounds(var, task_index));
+        assert(in_bounds(value, task_index[var]));
+        return task_index[var][value];
+    }
+    std::pair<int, int> get_task_fact(Fact fact) const {
+        return std::make_pair(fact.first, get_task_value(fact.first, fact.second));
     }
     int get_orig_op_index(int index) const;
 
