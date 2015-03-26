@@ -185,6 +185,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
+        original_task.install();
         // TODO: Use cost adapted task as parent task.
         shared_ptr<AbstractTask> orig_task_impl = get_root_task();
         TaskProxy orig_task = TaskProxy(orig_task_impl.get());
