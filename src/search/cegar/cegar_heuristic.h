@@ -43,7 +43,6 @@ class CegarHeuristic : public Heuristic {
     std::vector<LandmarkTask> tasks;
     std::vector<Abstraction *> abstractions;
     int num_states;
-    std::vector<double> avg_h_values;
     LandmarkGraph landmark_graph;
     int *temp_state_buffer;
 

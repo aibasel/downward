@@ -527,23 +527,6 @@ void Abstraction::update_h_values() const {
     }
 }
 
-double Abstraction::get_avg_h() const {
-    assert(!memory_released);
-    // This function is called after the abstraction has been built, so all
-    // h-values are up-to-date.
-    double avg_h = 0.;
-    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
-        const int h = state->get_h();
-        assert(h >= 0);
-        if (h != INF) {
-            avg_h += h * state->get_rel_conc_states();
-        }
-    }
-    assert(avg_h >= 0.);
-    return avg_h;
-}
-
 int Abstraction::get_init_h() const {
     assert(!memory_released);
     return init->get_h();
@@ -652,7 +635,6 @@ void Abstraction::print_statistics() {
     cout << "States: " << num_states << endl;
     cout << "Dead-ends: " << dead_ends << endl;
     cout << "Init-h: " << init->get_h() << endl;
-    cout << "Avg-h:  " << get_avg_h() << endl;
 
     cout << "Transitions: " << nexts << endl;
     cout << "Self-loops: " << total_loops << endl;
