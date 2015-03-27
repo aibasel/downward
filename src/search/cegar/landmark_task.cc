@@ -128,23 +128,6 @@ void LandmarkTask::adapt_operator_costs(const vector<int> &remaining_costs) {
     }
 }
 
-void LandmarkTask::adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) const {
-    if (DEBUG)
-        cout << "Remaining: " << to_string(remaining_costs) << endl;
-    if (DEBUG)
-        cout << "Needed:    " << to_string(needed_costs) << endl;
-    for (size_t i = 0; i < operators.size(); ++i) {
-        int op_number = i;
-        assert(in_bounds(op_number, remaining_costs));
-        assert(remaining_costs[op_number] >= 0);
-        assert(needed_costs[i] <= remaining_costs[op_number]);
-        remaining_costs[op_number] -= needed_costs[i];
-        assert(remaining_costs[op_number] >= 0);
-    }
-    if (DEBUG)
-        cout << "Remaining: " << to_string(remaining_costs) << endl;
-}
-
 void LandmarkTask::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;

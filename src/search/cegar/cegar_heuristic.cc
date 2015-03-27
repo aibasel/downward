@@ -165,6 +165,23 @@ void CegarHeuristic::install_task(LandmarkTask &task) const {
     task.install();
 }
 
+void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) {
+    assert(remaining_costs.size() == needed_costs.size());
+    if (DEBUG)
+        cout << "Remaining: " << to_string(remaining_costs) << endl;
+    if (DEBUG)
+        cout << "Needed:    " << to_string(needed_costs) << endl;
+    for (size_t op_index = 0; op_index < remaining_costs.size(); ++op_index) {
+        assert(in_bounds(op_index, remaining_costs));
+        assert(remaining_costs[op_index] >= 0);
+        assert(needed_costs[op_index] <= remaining_costs[op_index]);
+        remaining_costs[op_index] -= needed_costs[op_index];
+        assert(remaining_costs[op_index] >= 0);
+    }
+    if (DEBUG)
+        cout << "Remaining: " << to_string(remaining_costs) << endl;
+}
+
 void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     vector<Fact> facts;
     int num_abstractions = 1;
@@ -220,7 +237,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             abstraction->print_histograms();
         vector<int> needed_costs;
         abstraction->get_needed_costs(&needed_costs);
-        task.adapt_remaining_costs(remaining_costs, needed_costs);
+        adapt_remaining_costs(remaining_costs, needed_costs);
         int init_h = abstraction->get_init_h();
         abstraction->release_memory();
         task.release_memory();
