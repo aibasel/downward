@@ -587,7 +587,7 @@ int Abstraction::get_op_index(const GlobalOperator *op) const {
 
 void Abstraction::get_needed_costs(vector<int> *needed_costs) {
     assert(needed_costs->empty());
-    needed_costs->resize(task->get_operators().size(), -MAX_COST_VALUE);
+    needed_costs->resize(task_proxy.get_operators().size(), -MAX_COST_VALUE);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     open->clear();

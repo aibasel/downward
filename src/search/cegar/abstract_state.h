@@ -23,6 +23,7 @@ private:
     AbstractState &operator=(const AbstractState &);
 
     const LandmarkTask *task;
+    const TaskProxy task_proxy;
 
     // Abstract domains for each variable.
     Values *values;
@@ -53,7 +54,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var);
 
 public:
-    explicit AbstractState(const LandmarkTask *task_);
+    explicit AbstractState(const LandmarkTask *task);
     ~AbstractState();
 
     // Let "result" be the set of states in which applying "op" leads to this state.
