@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <limits>
-#include <sys/times.h>
 
 
 using namespace std;
