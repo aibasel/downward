@@ -58,6 +58,23 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
     return pb_facts;
 }
 
+unordered_set<FactProxy> get_other_facts(
+    VariablesProxy variables,
+    const unordered_set<FactProxy> &facts) {
+    unordered_set<FactProxy> other_facts;
+    for (FactProxy fact : variables.get_facts()) {
+        if (facts.count(fact) == 0)
+            other_facts.insert(fact);
+    }
+    return other_facts;
+}
+
+unordered_set<FactProxy> compute_unreachable_facts(TaskProxy task, FactProxy landmark) {
+    unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(task, landmark);
+    reachable_facts.insert(landmark);
+    return get_other_facts(task.get_variables(), reachable_facts);
+}
+
 LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
                            FactProxy landmark,
                            const VariableToValues &fact_groups)
@@ -83,9 +100,6 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
             task_index[var][value] = value;
         }
     }
-    unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(orig_task, landmark);
-    reachable_facts.insert(landmark);
-    save_unreachable_facts(orig_task.get_variables(), reachable_facts);
     for (const auto &group : fact_groups) {
         if (group.second.size() >= 2)
             combine_facts(group.first, group.second);
@@ -221,27 +235,6 @@ void LandmarkTask::find_and_apply_new_fact_ordering(int var, set<int> &unordered
     }
     assert(unordered_values.empty());
     update_facts(var, num_values, new_task_index);
-}
-
-void LandmarkTask::save_unreachable_facts(VariablesProxy variables, const unordered_set<FactProxy> &reachable_facts) {
-    assert(!reachable_facts.empty());
-    for (VariableProxy var : variables) {
-        int var_id = var.get_id();
-        int num_values = var.get_domain_size();
-        assert(static_cast<int>(task_index[var_id].size()) == num_values);
-        assert(unreachable_facts[var_id].empty());
-        set<int> unordered_values;
-        for (int value = 0; value < num_values; ++value) {
-            if (reachable_facts.count(var.get_fact(value)) == 1) {
-                unordered_values.insert(value);
-            } else {
-                if (DEBUG)
-                    cout << "Remove fact " << Fact(var_id, value) << endl;
-                unreachable_facts[var_id].insert(value);
-            }
-        }
-        //find_and_apply_new_fact_ordering(var, unordered_values, UNDEFINED);
-    }
 }
 
 void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {

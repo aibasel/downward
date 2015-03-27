@@ -14,6 +14,8 @@
 namespace cegar {
 typedef std::unordered_set<Fact, hash_fact> FactSet;
 
+std::unordered_set<FactProxy> compute_unreachable_facts(TaskProxy task, FactProxy landmark);
+
 class LandmarkTask : public DelegatingTask {
 private:
     std::vector<int> initial_state_data;
@@ -65,7 +67,6 @@ public:
     const std::vector<Fact> &get_goal() const {return goals; }
     const std::vector<GlobalOperator> &get_operators() const {return operators; }
 
-    void save_unreachable_facts(VariablesProxy variables, const std::unordered_set<FactProxy> &reachable_facts);
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
     void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
     bool translate_state(const GlobalState &state, int *translated) const;
