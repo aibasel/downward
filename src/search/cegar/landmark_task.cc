@@ -276,8 +276,10 @@ void LandmarkTask::setup_hadd() {
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     dump_name();
     Options opts;
+    //opts.set<AbstractTask *>("transform", this);
     opts.set<int>("cost_type", 0);
     additive_heuristic = new AdditiveHeuristic(opts);
+    // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?
     g_initial_state_data = initial_state_data;
     StateRegistry *registry = new StateRegistry();
     const GlobalState &initial_state = registry->get_initial_state();
@@ -286,16 +288,6 @@ void LandmarkTask::setup_hadd() {
         assert(initial_state[var] == initial_state_data[var]);
     }
     additive_heuristic->evaluate(initial_state);
-    if (false) {
-        cout << "h^add values for all facts:" << endl;
-        for (int var = 0; var < num_vars; ++var) {
-            for (int value = 0; value < variable_domain[var]; ++value) {
-                cout << "  " << var << "=" << value << " " << fact_names[var][value]
-                     << " cost:" << additive_heuristic->get_cost(var, value) << endl;
-            }
-        }
-        cout << endl;
-    }
     cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
     delete registry;
 }
