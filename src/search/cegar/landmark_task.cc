@@ -58,21 +58,10 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
     return pb_facts;
 }
 
-unordered_set<FactProxy> get_other_facts(
-    VariablesProxy variables,
-    const unordered_set<FactProxy> &facts) {
-    unordered_set<FactProxy> other_facts;
-    for (FactProxy fact : variables.get_facts()) {
-        if (facts.count(fact) == 0)
-            other_facts.insert(fact);
-    }
-    return other_facts;
-}
-
-unordered_set<FactProxy> compute_unreachable_facts(TaskProxy task, FactProxy landmark) {
+unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark) {
     unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(task, landmark);
     reachable_facts.insert(landmark);
-    return get_other_facts(task.get_variables(), reachable_facts);
+    return reachable_facts;
 }
 
 LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,

@@ -195,10 +195,10 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             groups = get_prev_landmarks(landmark);
         }
         LandmarkTask task = LandmarkTask(orig_task_impl, landmark, groups);
-        unordered_set<FactProxy> unreachable_facts;
+        unordered_set<FactProxy> reachable_facts;
         if (decomposition != NONE)
             // TODO: Really use for GOALS decomposition?
-            unreachable_facts = compute_unreachable_facts(orig_task, landmark);
+            reachable_facts = compute_reachable_facts(orig_task, landmark);
         install_task(task);
         if (decomposition != NONE) {
             int fact_index = task.get_projected_index(facts[i].first, facts[i].second);
@@ -223,7 +223,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
-        abstraction->separate_unreachable_facts(unreachable_facts);
+        abstraction->separate_unreachable_facts(reachable_facts);
         abstraction->build();
         avg_h_values.push_back(abstraction->get_avg_h() * task.get_state_space_fraction(original_task));
         num_states += abstraction->get_num_states();
