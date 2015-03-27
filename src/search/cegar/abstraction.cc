@@ -66,8 +66,10 @@ Abstraction::Abstraction(const LandmarkTask *task)
     goals.insert(init);
 
     split_tree.set_root(single);
-    for (size_t i = 0; i < task->get_operators().size(); ++i) {
-            single->add_loop(&task->get_operators()[i]);
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        const GlobalOperator *global_op = op.get_global_operator();
+        single->add_loop(global_op);
+        op_to_index[global_op] = op.get_id();
     }
     states.insert(init);
 }
@@ -584,9 +586,7 @@ void Abstraction::write_dot_file(int num) {
 }
 
 int Abstraction::get_op_index(const GlobalOperator *op) const {
-    int op_index = op - &*task->get_operators().begin();
-    assert(in_bounds(op_index, task->get_operators()));
-    return op_index;
+    return (*op_to_index.find(op)).second;
 }
 
 void Abstraction::get_needed_costs(vector<int> *needed_costs) {
