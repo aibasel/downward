@@ -46,6 +46,7 @@ private:
     Abstraction &operator=(const Abstraction &);
 
     const LandmarkTask *task;
+    const TaskProxy task_proxy;
     StateRegistry *registry;
 
     // Set of all valid states, i.e. states that have not been split.
@@ -118,7 +119,7 @@ private:
     void find_solution() const;
 
 public:
-    explicit Abstraction(const LandmarkTask *t);
+    explicit Abstraction(const LandmarkTask *task);
     ~Abstraction();
 
     void separate_unreachable_facts();
