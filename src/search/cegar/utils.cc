@@ -81,15 +81,15 @@ void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state,
     assert(splits->empty() == op.is_applicable(state));
 }
 
-void get_unmet_goals(const vector<Fact> &goals, const GlobalState &state, Splits *splits) {
+void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits) {
     assert(splits->empty());
-    for (size_t i = 0; i < goals.size(); i++) {
-        int var = goals[i].first;
-        int value = goals[i].second;
-        if (state[var] != value) {
+    for (FactProxy goal : goals) {
+        int var_id = goal.get_variable().get_id();
+        int value = goal.get_value();
+        if (state[var_id] != value) {
             vector<int> wanted;
             wanted.push_back(value);
-            splits->push_back(make_pair(var, wanted));
+            splits->push_back(make_pair(var_id, wanted));
         }
     }
 }

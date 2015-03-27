@@ -42,7 +42,7 @@ int get_post(const GlobalOperator &op, int var);
 
 void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state, Splits *splits);
 
-void get_unmet_goals(const std::vector<Fact> &goals, const GlobalState &state, Splits *splits);
+void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits);
 
 struct hash_state_id {
     size_t operator()(const StateID &id) const {
