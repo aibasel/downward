@@ -68,7 +68,6 @@ public:
     const std::vector<GlobalOperator> &get_operators() const {return operators; }
 
     void adapt_operator_costs(const std::vector<int> &remaining_costs);
-    void adapt_remaining_costs(std::vector<int> &remaining_costs, const std::vector<int> &needed_costs) const;
     bool translate_state(const GlobalState &state, int *translated) const;
 
     void combine_facts(int var, const std::unordered_set<int> &values);
