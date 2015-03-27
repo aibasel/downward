@@ -32,9 +32,19 @@ using namespace std;
 namespace cegar {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
+static StateRegistry *get_state_registry(const vector<int> &initial_state_data) {
+    vector<int> original_initial_state_data;
+    original_initial_state_data.swap(g_initial_state_data);
+    g_initial_state_data = initial_state_data;
+    StateRegistry *registry = new StateRegistry();
+    original_initial_state_data.swap(g_initial_state_data);
+    return registry;
+}
+
 Abstraction::Abstraction(const LandmarkTask *task)
     : task(task),
       task_proxy(TaskProxy(task)),
+      registry(get_state_registry(task->get_initial_state_data())),
       single(new AbstractState(task_proxy)),
       init(single),
       open(new AdaptiveQueue<AbstractState *>()),
@@ -54,12 +64,6 @@ Abstraction::Abstraction(const LandmarkTask *task)
     reserve_memory_padding();
 
     goals.insert(init);
-
-    vector<int> original_initial_state_data;
-    original_initial_state_data.swap(g_initial_state_data);
-    g_initial_state_data = task->get_initial_state_data();
-    registry = new StateRegistry();
-    original_initial_state_data.swap(g_initial_state_data);
 
     split_tree.set_root(single);
     for (size_t i = 0; i < task->get_operators().size(); ++i) {
