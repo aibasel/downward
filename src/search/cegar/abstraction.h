@@ -47,6 +47,7 @@ private:
 
     const LandmarkTask *task;
     const TaskProxy task_proxy;
+    std::unordered_map<const GlobalOperator *, int> op_to_index;
     StateRegistry *registry;
 
     // Set of all valid states, i.e. states that have not been split.
