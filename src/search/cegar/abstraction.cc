@@ -97,13 +97,16 @@ bool Abstraction::is_goal(AbstractState *state) const {
     return goals.find(state) != goals.end();
 }
 
-void Abstraction::separate_unreachable_facts() {
+void Abstraction::separate_unreachable_facts(const unordered_set<FactProxy> &unreachable_facts) {
     assert(init == single);
     for (VariableProxy var : task_proxy.get_variables()) {
         int var_id  = var.get_id();
-        const unordered_set<int> &unreachable_facts = task->get_unreachable_facts()[var_id];
-        // TODO: Use vector<int> directly?
-        vector<int> wanted(unreachable_facts.begin(), unreachable_facts.end());
+        vector<int> wanted;
+        for (int value = 0; value < var.get_domain_size(); ++value) {
+            FactProxy fact = var.get_fact(value);
+            if (unreachable_facts.count(fact) == 1)
+                wanted.push_back(value);
+        }
         if (!wanted.empty())
             refine(init, var_id, wanted);
     }
