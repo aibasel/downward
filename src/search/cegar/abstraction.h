@@ -146,7 +146,6 @@ public:
     // Statistics.
     void print_statistics();
     void print_histograms() const;
-    double get_avg_h() const;
     int get_init_h() const;
 
     // Settings.
