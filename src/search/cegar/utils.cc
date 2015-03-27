@@ -148,7 +148,7 @@ string get_variable_name(int var) {
     return "\"" + name + "\"";
 }
 
-bool is_goal_var(int var) {
+static bool is_goal_var(int var) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
         if (g_goal[i].first == var)
             return true;
