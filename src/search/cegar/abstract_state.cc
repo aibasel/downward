@@ -232,8 +232,8 @@ void AbstractState::remove_prev_arc(const GlobalOperator *op, AbstractState *oth
 
 bool AbstractState::is_abstraction_of(const GlobalState &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
-    for (int var = 0; var < task->get_num_vars(); ++var) {
-        if (!values->test(var, conc_state[var]))
+    for (VariableProxy var : task_proxy.get_variables()) {
+        if (!values->test(var.get_id(), conc_state[var.get_id()]))
             return false;
     }
     return true;
@@ -244,10 +244,10 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 }
 
 bool AbstractState::is_abstraction_of_goal() const {
-    const vector<Fact> &goals = task->get_goals();
+    GoalsProxy goals = task_proxy.get_goals();
     assert(!goals.empty());
-    for (size_t i = 0; i < goals.size(); ++i) {
-        if (!values->test(goals[i].first, goals[i].second))
+    for (FactProxy goal : goals) {
+        if (!values->test(goal.get_variable().get_id(), goal.get_value()))
             return false;
     }
     return true;
@@ -255,10 +255,10 @@ bool AbstractState::is_abstraction_of_goal() const {
 
 double AbstractState::get_rel_conc_states() const {
     double fraction = 1.0;
-    for (int var = 0; var < task->get_num_vars(); ++var) {
-        const double domain_size = values->count(var);
+    for (VariableProxy var : task_proxy.get_variables()) {
+        const double domain_size = values->count(var.get_id());
         assert(domain_size >= 1);
-        fraction *= domain_size / task->get_num_values(var);
+        fraction *= domain_size / var.get_domain_size();
     }
     assert(fraction <= 1.0);
     assert(fraction > 0.0);
