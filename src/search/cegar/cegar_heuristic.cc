@@ -33,7 +33,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       original_task(LandmarkTask::get_original_task()),
       num_states(0),
       landmark_graph(get_landmark_graph()),
-      temp_state_buffer(new int[g_variable_domain.size()]) {
+      temp_state_buffer(new int[task->get_variables().size()]) {
     DEBUG = opts.get<bool>("debug");
     assert(max_time >= 0);
 
@@ -46,8 +46,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
         write_causal_graph();
     }
 
-    for (size_t i = 0; i < g_operators.size(); ++i)
-        remaining_costs.push_back(g_operators[i].get_cost());
+    for (OperatorProxy op : task->get_operators())
+        remaining_costs.push_back(op.get_cost());
 }
 
 CegarHeuristic::~CegarHeuristic() {
@@ -139,10 +139,6 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
     }
 }
 
-bool is_true_in_initial_state(Fact fact) {
-    return g_initial_state()[fact.first] == fact.second;
-}
-
 void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition) const {
     assert(decomposition != NONE);
     if (decomposition == LANDMARKS) {
@@ -154,7 +150,12 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
         exit_with(EXIT_INPUT_ERROR);
     }
     // Filter facts that are true in initial state.
-    facts.erase(remove_if(facts.begin(), facts.end(), is_true_in_initial_state), facts.end());
+    facts.erase(remove_if(
+            facts.begin(),
+            facts.end(),
+            [&](const Fact &fact){
+                return task->get_initial_state()[fact.first].get_value() == fact.second;}),
+        facts.end());
     order_facts(facts);
 }
 
