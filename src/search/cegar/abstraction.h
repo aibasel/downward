@@ -123,7 +123,7 @@ public:
     explicit Abstraction(const LandmarkTask *task);
     ~Abstraction();
 
-    void separate_unreachable_facts(const std::unordered_set<FactProxy> &unreachable_facts);
+    void separate_unreachable_facts(const std::unordered_set<FactProxy> &reachable_facts);
 
     // Build abstraction.
     void build();

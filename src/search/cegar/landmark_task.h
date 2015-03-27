@@ -14,7 +14,7 @@
 namespace cegar {
 typedef std::unordered_set<Fact, hash_fact> FactSet;
 
-std::unordered_set<FactProxy> compute_unreachable_facts(TaskProxy task, FactProxy landmark);
+std::unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark);
 
 class LandmarkTask : public DelegatingTask {
 private:
