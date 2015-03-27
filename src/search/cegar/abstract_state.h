@@ -54,7 +54,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var);
 
 public:
-    explicit AbstractState(const LandmarkTask *task);
+    explicit AbstractState(TaskProxy task_proxy);
     ~AbstractState();
 
     // Let "result" be the set of states in which applying "op" leads to this state.

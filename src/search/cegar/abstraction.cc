@@ -35,7 +35,7 @@ typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 Abstraction::Abstraction(const LandmarkTask *task)
     : task(task),
       task_proxy(TaskProxy(task)),
-      single(new AbstractState(task)),
+      single(new AbstractState(task_proxy)),
       init(single),
       open(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
@@ -157,8 +157,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (DEBUG)
         cout << "Refine " << state->str() << " for "
              << var << "=" << to_string(wanted) << endl;
-    AbstractState *v1 = new AbstractState(task);
-    AbstractState *v2 = new AbstractState(task);
+    AbstractState *v1 = new AbstractState(task_proxy);
+    AbstractState *v2 = new AbstractState(task_proxy);
     state->split(var, wanted, v1, v2);
 
     states.erase(state);
@@ -356,7 +356,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
                     if (DEBUG)
                         cout << "      Paths deviate." << endl;
                     ++deviations;
-                    AbstractState desired_abs_state(task);
+                    AbstractState desired_abs_state(task_proxy);
                     next_abs->regress(*op, &desired_abs_state);
                     abs_state->get_possible_splits(desired_abs_state, conc_state,
                                                    &splits);
