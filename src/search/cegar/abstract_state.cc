@@ -17,9 +17,8 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(const LandmarkTask *task)
-    : task(task),
-      task_proxy(TaskProxy(task)),
+AbstractState::AbstractState(TaskProxy task_proxy)
+    : task_proxy(task_proxy),
       values(new Values()),
       distance(UNDEFINED),
       prev_solution_op(0),
