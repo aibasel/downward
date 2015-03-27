@@ -50,7 +50,7 @@ Abstraction::Abstraction(const LandmarkTask *task)
       use_general_costs(false),
       dump_graphs(false),
       memory_released(false) {
-    assert(!task->get_goal().empty());
+    assert(!task_proxy.get_goals().empty());
     reserve_memory_padding();
 
     goals.insert(init);
@@ -63,7 +63,7 @@ Abstraction::Abstraction(const LandmarkTask *task)
 
     split_tree.set_root(single);
     for (size_t i = 0; i < task->get_operators().size(); ++i) {
-        single->add_loop(&task->get_operators()[i]);
+            single->add_loop(&task->get_operators()[i]);
     }
     states.insert(init);
 }
@@ -93,12 +93,13 @@ bool Abstraction::is_goal(AbstractState *state) const {
 
 void Abstraction::separate_unreachable_facts() {
     assert(init == single);
-    for (int var = 0; var < task->get_num_vars(); ++var) {
-        const unordered_set<int> &unreachable_facts = task->get_unreachable_facts()[var];
+    for (VariableProxy var : task_proxy.get_variables()) {
+        int var_id  = var.get_id();
+        const unordered_set<int> &unreachable_facts = task->get_unreachable_facts()[var_id];
         // TODO: Use vector<int> directly?
         vector<int> wanted(unreachable_facts.begin(), unreachable_facts.end());
         if (!wanted.empty())
-            refine(init, var, wanted);
+            refine(init, var_id, wanted);
     }
     goals.insert(states.begin(), states.end());
 }
@@ -231,7 +232,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
         if (needed_costs) {
             assert(forward);
             assert(!use_h);
-            assert(needed_costs->size() == task->get_operators().size());
+            assert(needed_costs->size() == task_proxy.get_operators().size());
             for (size_t i = 0; i < state->get_loops().size(); ++i) {
                 const GlobalOperator *op = state->get_loops()[i];
                 const int op_index = get_op_index(op);
@@ -247,7 +248,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             if (needed_costs) {
                 assert(forward);
                 assert(!use_h);
-                assert(needed_costs->size() == task->get_operators().size());
+                assert(needed_costs->size() == task_proxy.get_operators().size());
                 int needed = state->get_h() - successor->get_h();
                 if (!use_general_costs)
                     needed = max(0, needed);
@@ -389,6 +390,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
 }
 
 int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) const {
+    // TODO: Return reference to split instead if index and rename mathod.
     assert(!splits.empty());
     // Shortcut for condition lists with only one element.
     if (splits.size() == 1) {
@@ -428,9 +430,11 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     } else if (pick == MIN_REFINED || pick == MAX_REFINED) {
         double min_refinement = 0.0;
         double max_refinement = -1.1;
-        for (size_t i = 0; i < splits.size(); ++i) {
-            double all_values = task->get_num_values(splits[i].first);
-            double rest = state.count(splits[i].first);
+        int i = 0;
+        for (auto split : splits) {
+            int var_id = split.first;
+            double all_values = task_proxy.get_variables()[var_id].get_domain_size();
+            double rest = state.count(var_id);
             assert(all_values >= 2);
             assert(rest >= 2);
             assert(rest <= all_values);
@@ -445,6 +449,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
                 cond = i;
                 max_refinement = refinement;
             }
+            ++i;
         }
     } else if (pick == MIN_HADD || pick == MAX_HADD) {
         int min_hadd = INF;
