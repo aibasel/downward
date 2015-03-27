@@ -113,7 +113,7 @@ bool LandmarkGraph::landmark_exists(const pair<int, int> &lm) const {
 bool LandmarkGraph::disj_landmark_exists(const set<pair<int, int> > &lm) const {
     // Test whether ONE of the facts in lm is present in some disj. LM
     for (const auto &prop : lm) {
-        if (disj_lms_to_nodes.count(prop) > 0)
+        if (disj_lms_to_nodes.count(prop) == 1)
             return true;
     }
     return false;
