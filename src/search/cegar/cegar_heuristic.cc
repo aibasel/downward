@@ -200,17 +200,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             // TODO: Really use for GOALS decomposition?
             reachable_facts = compute_reachable_facts(orig_task, landmark);
         install_task(task);
-        if (decomposition != NONE) {
-            int fact_index = task.get_projected_index(facts[i].first, facts[i].second);
-            int goal_fact_hadd = task.get_hadd_value(facts[i].first, fact_index);
-            cout << "h^add(s*): " << goal_fact_hadd << endl;
-            assert(options.get<bool>("general_costs") || goal_fact_hadd >= 0);
-            assert(goal_fact_hadd != -1);
-            // Note that due to its value accumulation semantics h^add
-            // may underestimate the cost to reach a fact.
-            if (goal_fact_hadd < options.get<int>("min_hadd"))
-                continue;
-        }
 
         Abstraction *abstraction = new Abstraction(&task);
 
@@ -368,7 +357,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
-    parser.add_option<int>("min_hadd", "ignore facts with too low h^add values", "0");
     parser.add_option<bool>("general_costs", "allow negative costs in cost-partitioning", "true");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
