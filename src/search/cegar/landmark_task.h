@@ -14,7 +14,7 @@
 namespace cegar {
 typedef std::unordered_set<Fact, hash_fact> FactSet;
 
-class LandmarkTask : DelegatingTask {
+class LandmarkTask : public DelegatingTask {
 private:
     std::vector<int> initial_state_data;
     std::vector<Fact> goals;
