@@ -158,8 +158,8 @@ public:
       Method to identify the transition system in output.
       Print "Atomic transition system #x: " for atomic transition systems,
       where x is the variable. For composite transition systems, print
-      "Transition system (xyz): " for the transition system containing variables
-      x, y and z.
+      "Transition system (x/y): " for the transition system containing x
+      out of y variables.
     */
     std::string tag() const;
     bool is_solvable() const;
