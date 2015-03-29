@@ -310,16 +310,6 @@ void TransitionSystem::compute_goal_distances_general_cost() {
     dijkstra_search(backward_graph, queue, goal_distances);
 }
 
-const vector<Transition> &TransitionSystem::get_const_transitions_for_label(int label_no) const {
-    LabelGroupIter group_it = get<0>(label_to_positions[label_no]);
-    int group_id = group_it->get_id();
-    return transitions_by_group_id[group_id];
-}
-
-vector<Transition> &TransitionSystem::get_transitions_for_group(const LabelGroup &group) {
-    return transitions_by_group_id[group.get_id()];
-}
-
 void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
     sort(transitions.begin(), transitions.end());
     transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
@@ -627,11 +617,11 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
               Remove all existing labels from their list and remove the entry in
               label_to_group.
             */
-            LabelGroupIter canonical_group_it = get<0>(label_to_positions[old_label_nos[0]]);
+            LabelGroupIter canonical_group_it = get_group_it(old_label_nos[0]);
             for (size_t i = 0; i < old_label_nos.size(); ++i) {
                 int label_no = old_label_nos[i];
-                assert(get<0>(label_to_positions[label_no]) == canonical_group_it);
-                LabelIter label_it = get<1>(label_to_positions[label_no]);
+                assert(get_group_it(label_no) == canonical_group_it);
+                LabelIter label_it = get_label_it(label_no);
                 canonical_group_it->erase(label_it);
                 // Note: we cannot invalidate the tupel label_to_positions[label_no]
             }
@@ -661,7 +651,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             set<Transition> collected_transitions;
             for (size_t j = 0; j < old_label_nos.size(); ++j) {
                 int old_label_no = old_label_nos[j];
-                const vector<Transition> &old_transitions = get_const_transitions_for_label(old_label_no);
+                const vector<Transition> &old_transitions = transitions_by_group_id[get_group_it(old_label_no)->get_id()];
                 collected_transitions.insert(old_transitions.begin(), old_transitions.end());
             }
             transitions_by_group_id[new_label_no].assign(collected_transitions.begin(), collected_transitions.end());
@@ -673,9 +663,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             */
             for (size_t i = 0; i < old_label_nos.size(); ++i) {
                 int label_no = old_label_nos[i];
-                LabelGroupIter group_it;
-                LabelIter label_it;
-                tie(group_it, label_it) = label_to_positions[label_no];
+                LabelGroupIter group_it = get_group_it(label_no);
+                LabelIter label_it = get_label_it(label_no);
                 int group_id = group_it->get_id();
                 group_it->erase(label_it);
                 // Note: we cannot invalidate the tupel label_to_positions[label_no]
@@ -750,10 +739,6 @@ void TransitionSystem::release_memory() {
     list<LabelGroup>().swap(grouped_labels);
     vector<vector<Transition> >().swap(transitions_by_group_id);
     vector<tuple<LabelGroupIter, LabelIter> >().swap(label_to_positions);
-}
-
-const vector<Transition> &TransitionSystem::get_const_transitions_for_group(const LabelGroup &group) const {
-    return transitions_by_group_id[group.get_id()];
 }
 
 string TransitionSystem::tag() const {
@@ -1038,7 +1023,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         for (LabelConstIter label_it = group1_it->begin();
              label_it != group1_it->end(); ++label_it) {
             int label_no = *label_it;
-            int group2_id = get<0>(ts2->label_to_positions[label_no])->get_id();
+            int group2_id = ts2->get_group_it(label_no)->get_id();
             buckets[group2_id].push_back(label_no);
         }
         // Now buckets contains all equivalence classes that are
