@@ -49,10 +49,56 @@ struct Transition {
     }
 };
 
-typedef std::list<std::list<int> >::iterator LabelGroupIter;
-typedef std::list<std::list<int> >::const_iterator LabelGroupConstIter;
 typedef std::list<int>::iterator LabelIter;
 typedef std::list<int>::const_iterator LabelConstIter;
+
+class LabelGroup {
+private:
+    int id;
+    std::list<int> labels;
+    int cost;
+public:
+    explicit LabelGroup(int id_)
+        : id(id_), cost(-1) {
+    }
+    void set_cost(int cost_) {
+        cost = cost_;
+    }
+    LabelIter insert(int label) {
+        return labels.insert(labels.end(), label);
+    }
+    void erase(LabelIter pos) {
+        labels.erase(pos);
+    }
+    LabelIter begin() {
+        return labels.begin();
+    }
+    LabelIter end() {
+        return labels.end();
+    }
+    LabelConstIter end() const {
+        return labels.end();
+    }
+    LabelConstIter begin() const {
+        return labels.begin();
+    }
+    bool empty() const {
+        return labels.empty();
+    }
+    const std::list<int> &get_list() const {
+        // TODO: only used by labels. should be changed
+        return labels;
+    }
+    int get_id() const {
+        return id;
+    }
+    int get_cost() const {
+        return cost;
+    }
+};
+
+typedef std::list<LabelGroup>::iterator LabelGroupIter;
+typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
     friend class AtomicTransitionSystem;
@@ -67,9 +113,9 @@ class TransitionSystem {
       have a pointer to this object to ease access to the set of labels.
     */
     const Labels *labels;
-    std::list<std::list<int> > grouped_labels;
-    std::vector<std::vector<Transition> > transitions_by_group_index;
-    std::vector<int> cost_by_group_index;
+    std::list<LabelGroup> grouped_labels;
+    std::vector<std::vector<Transition> > transitions_by_group_id;
+    std::vector<int> cost_by_group_id;
     std::vector<std::tuple<int, LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
@@ -121,8 +167,8 @@ class TransitionSystem {
 
     // Methods related to the representation of transitions and labels
     const std::vector<Transition> &get_const_transitions_for_label(int label_no) const;
-    std::vector<Transition> &get_transitions_for_group(const std::list<int> &group);
-    int get_transitions_index_for_group(const std::list<int> &group) const;
+    std::vector<Transition> &get_transitions_for_group(const LabelGroup &group);
+    int get_transitions_index_for_group(const LabelGroup &group) const;
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     bool is_label_reduced() const;
@@ -149,9 +195,9 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    const std::vector<Transition> &get_const_transitions_for_group(const std::list<int> &group) const;
-    int get_cost_for_label_group(const std::list<int> &group) const;
-    const std::list<std::list<int> > &get_grouped_labels() const {
+    const std::vector<Transition> &get_const_transitions_for_group(const LabelGroup &group) const;
+    int get_cost_for_label_group(const LabelGroup &group) const;
+    const std::list<LabelGroup> &get_grouped_labels() const {
         return grouped_labels;
     }
     /*
