@@ -59,7 +59,7 @@ private:
     int cost;
 public:
     explicit LabelGroup(int id_)
-        : id(id_), cost(-1) {
+        : id(id_), cost(INF) {
     }
     void set_cost(int cost_) {
         cost = cost_;
@@ -115,8 +115,7 @@ class TransitionSystem {
     const Labels *labels;
     std::list<LabelGroup> grouped_labels;
     std::vector<std::vector<Transition> > transitions_by_group_id;
-    std::vector<int> cost_by_group_id;
-    std::vector<std::tuple<int, LabelGroupIter, LabelIter> > label_to_positions;
+    std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
       label reduction. Whenever new labels are generated through label
@@ -168,7 +167,6 @@ class TransitionSystem {
     // Methods related to the representation of transitions and labels
     const std::vector<Transition> &get_const_transitions_for_label(int label_no) const;
     std::vector<Transition> &get_transitions_for_group(const LabelGroup &group);
-    int get_transitions_index_for_group(const LabelGroup &group) const;
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     bool is_label_reduced() const;
@@ -196,7 +194,6 @@ public:
     void release_memory();
 
     const std::vector<Transition> &get_const_transitions_for_group(const LabelGroup &group) const;
-    int get_cost_for_label_group(const LabelGroup &group) const;
     const std::list<LabelGroup> &get_grouped_labels() const {
         return grouped_labels;
     }
