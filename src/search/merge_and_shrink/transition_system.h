@@ -165,8 +165,15 @@ class TransitionSystem {
     void compute_distances_and_prune();
 
     // Methods related to the representation of transitions and labels
-    const std::vector<Transition> &get_const_transitions_for_label(int label_no) const;
-    std::vector<Transition> &get_transitions_for_group(const LabelGroup &group);
+    LabelGroupIter get_group_it(int label_no) {
+        return std::get<0>(label_to_positions[label_no]);
+    }
+    LabelIter get_label_it(int label_no) {
+        return std::get<1>(label_to_positions[label_no]);
+    }
+    std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) {
+        return transitions_by_group_id[group.get_id()];
+    }
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     bool is_label_reduced() const;
@@ -193,7 +200,9 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    const std::vector<Transition> &get_const_transitions_for_group(const LabelGroup &group) const;
+    const std::vector<Transition> &get_const_transitions_for_group(const LabelGroup &group) const {
+        return transitions_by_group_id[group.get_id()];
+    }
     const std::list<LabelGroup> &get_grouped_labels() const {
         return grouped_labels;
     }
