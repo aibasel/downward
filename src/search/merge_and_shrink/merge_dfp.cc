@@ -45,7 +45,7 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     label_ranks.resize(num_labels, -1);
 
-    const std::list<std::list<int> > &grouped_labels = transition_system->get_grouped_labels();
+    const std::list<LabelGroup> &grouped_labels = transition_system->get_grouped_labels();
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
         // Relevant labels with no transitions have a rank of infinity.
