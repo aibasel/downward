@@ -44,7 +44,7 @@ static StateRegistry *get_state_registry(const vector<int> &initial_state_data) 
 Abstraction::Abstraction(const LandmarkTask *task)
     : task(task),
       task_proxy(TaskProxy(task)),
-      registry(get_state_registry(task->get_initial_state_data())),
+      registry(0),
       single(new AbstractState(task_proxy)),
       init(single),
       open(new AdaptiveQueue<AbstractState *>()),
@@ -62,6 +62,12 @@ Abstraction::Abstraction(const LandmarkTask *task)
       memory_released(false) {
     assert(!task_proxy.get_goals().empty());
     reserve_memory_padding();
+
+    vector<int> initial_state_data;
+    initial_state_data.reserve(task_proxy.get_variables().size());
+    for (FactProxy fact : task_proxy.get_initial_state())
+        initial_state_data.push_back(fact.get_value());
+    registry = get_state_registry(initial_state_data);
 
     goals.insert(init);
 
