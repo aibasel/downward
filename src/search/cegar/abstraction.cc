@@ -467,10 +467,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             const vector<int> &values = splits[i].second;
             for (size_t j = 0; j < values.size(); ++j) {
                 int value = values[j];
-                int hadd_value_old = task->get_hadd_value(var, value);
-                int hadd_value_new = additive_heuristic->get_cost(var, value);
-                assert(hadd_value_new == hadd_value_old);
-                int hadd_value = hadd_value_old;
+                int hadd_value = additive_heuristic->get_cost(var, value);
                 if (hadd_value == -1 && pick == MIN_HADD) {
                     // Fact is unreachable --> Choose it last.
                     hadd_value = INF - 1;
