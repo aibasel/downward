@@ -164,6 +164,9 @@ class TransitionSystem {
     void compute_distances_and_prune();
 
     // Methods related to the representation of transitions and labels
+    LabelGroupIter add_label_group(int id) {
+        return grouped_labels.insert(grouped_labels.end(), LabelGroup(id));
+    }
     LabelGroupIter get_group_it(int label_no) {
         return std::get<0>(label_to_positions[label_no]);
     }
