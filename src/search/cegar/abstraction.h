@@ -46,7 +46,6 @@ private:
     Abstraction(const Abstraction &);
     Abstraction &operator=(const Abstraction &);
 
-    const LandmarkTask *task;
     const TaskProxy task_proxy;
     std::unordered_map<const GlobalOperator *, int> op_to_index;
     StateRegistry *registry;
@@ -122,8 +121,8 @@ private:
     void find_solution() const;
 
 public:
-    explicit Abstraction(const LandmarkTask *task,
-                         std::shared_ptr<AdditiveHeuristic> additive_heuristic);
+    Abstraction(TaskProxy task_proxy,
+                std::shared_ptr<AdditiveHeuristic> additive_heuristic);
     ~Abstraction();
 
     void separate_unreachable_facts(const std::unordered_set<FactProxy> &reachable_facts);

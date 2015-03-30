@@ -32,10 +32,9 @@ using namespace std;
 namespace cegar {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
-Abstraction::Abstraction(const LandmarkTask *task,
+Abstraction::Abstraction(TaskProxy task_proxy,
                          shared_ptr<AdditiveHeuristic> additive_heuristic)
-    : task(task),
-      task_proxy(TaskProxy(task)),
+    : task_proxy(task_proxy),
       registry(0),
       additive_heuristic(additive_heuristic),
       single(new AbstractState(task_proxy)),

@@ -230,7 +230,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         install_task(task);
         shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(task);
 
-        Abstraction *abstraction = new Abstraction(&task, additive_heuristic);
+        Abstraction *abstraction = new Abstraction(TaskProxy(&task), additive_heuristic);
 
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states((max_states - num_states) / rem_tasks);
