@@ -479,7 +479,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
                     ts->transitions_by_group_id[label_no].push_back(loop);
                 }
             }
-            get<0>(ts->label_to_positions[label_no])->set_cost(labels->get_label_cost(label_no));
+            ts->get_group_it(label_no)->set_cost(labels->get_label_cost(label_no));
         }
         result[i]->compute_locally_equivalent_labels();
         result[i]->compute_distances_and_prune();
