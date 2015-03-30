@@ -32,19 +32,12 @@ using namespace std;
 namespace cegar {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
-static StateRegistry *get_state_registry(const vector<int> &initial_state_data) {
-    vector<int> original_initial_state_data;
-    original_initial_state_data.swap(g_initial_state_data);
-    g_initial_state_data = initial_state_data;
-    StateRegistry *registry = new StateRegistry();
-    original_initial_state_data.swap(g_initial_state_data);
-    return registry;
-}
-
-Abstraction::Abstraction(const LandmarkTask *task)
+Abstraction::Abstraction(const LandmarkTask *task,
+                         shared_ptr<AdditiveHeuristic> additive_heuristic)
     : task(task),
       task_proxy(TaskProxy(task)),
       registry(0),
+      additive_heuristic(additive_heuristic),
       single(new AbstractState(task_proxy)),
       init(single),
       open(new AdaptiveQueue<AbstractState *>()),
@@ -474,7 +467,10 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             const vector<int> &values = splits[i].second;
             for (size_t j = 0; j < values.size(); ++j) {
                 int value = values[j];
-                int hadd_value = task->get_hadd_value(var, value);
+                int hadd_value_old = task->get_hadd_value(var, value);
+                int hadd_value_new = additive_heuristic->get_cost(var, value);
+                assert(hadd_value_new == hadd_value_old);
+                int hadd_value = hadd_value_old;
                 if (hadd_value == -1 && pick == MIN_HADD) {
                     // Fact is unreachable --> Choose it last.
                     hadd_value = INF - 1;

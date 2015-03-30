@@ -3,6 +3,7 @@
 #include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
+#include "../state_registry.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -31,6 +32,15 @@ static char *cegar_memory_padding = 0;
 
 // Save previous out-of-memory handler.
 static void (*global_out_of_memory_handler)(void) = 0;
+
+StateRegistry *get_state_registry(const vector<int> &initial_state_data) {
+    vector<int> original_initial_state_data;
+    original_initial_state_data.swap(g_initial_state_data);
+    g_initial_state_data = initial_state_data;
+    StateRegistry *registry = new StateRegistry();
+    original_initial_state_data.swap(g_initial_state_data);
+    return registry;
+}
 
 bool is_not_marked(GlobalOperator &op) {
     return !op.is_marked();

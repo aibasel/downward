@@ -9,6 +9,7 @@
 #include "../timer.h"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -49,6 +50,7 @@ private:
     const TaskProxy task_proxy;
     std::unordered_map<const GlobalOperator *, int> op_to_index;
     StateRegistry *registry;
+    std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
     // Set of all valid states, i.e. states that have not been split.
     AbstractStates states;
@@ -120,7 +122,8 @@ private:
     void find_solution() const;
 
 public:
-    explicit Abstraction(const LandmarkTask *task);
+    explicit Abstraction(const LandmarkTask *task,
+                         std::shared_ptr<AdditiveHeuristic> additive_heuristic);
     ~Abstraction();
 
     void separate_unreachable_facts(const std::unordered_set<FactProxy> &reachable_facts);
