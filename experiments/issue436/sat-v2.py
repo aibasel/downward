@@ -25,7 +25,7 @@ exp = common_setup.IssueExperiment(
 
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
-exp.add_scatter_plot_step()
+exp.add_scatter_plot_step(attributes=['total_time', 'memory'])
 
 
 exp()
