@@ -768,12 +768,11 @@ int TransitionSystem::memory_estimate() const {
     result += sizeof(vector<Transition>) * transitions_by_group_id.capacity();
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const list<int> &label_list = group_it->get_list();
-        result += sizeof(list<int>) * label_list.size();
+        result += sizeof(LabelGroup); // size of class LabelGroup
+        result += sizeof(int) * group_it->size(); // size of list<int>
+        result += sizeof(int) * 2; // size of id and cost
         const vector<Transition> &transitions = get_const_transitions_for_group(*group_it);
         result += sizeof(vector<Transition>) * transitions.capacity();
-        result += sizeof(int); // id
-        result += sizeof(int); // cost
     }
     result += sizeof(vector<tuple<LabelGroupIter, LabelIter> >) * label_to_positions.capacity();
     result += sizeof(int) * init_distances.capacity();

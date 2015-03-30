@@ -85,9 +85,8 @@ public:
     bool empty() const {
         return labels.empty();
     }
-    const std::list<int> &get_list() const {
-        // TODO: only used by labels. should be changed
-        return labels;
+    int size() const {
+        return labels.size();
     }
     int get_id() const {
         return id;
