@@ -25,6 +25,22 @@
 using namespace std;
 
 namespace cegar {
+
+shared_ptr<AdditiveHeuristic> get_additive_heuristic(const LandmarkTask &task) {
+    cout << "Start computing h^add values [t=" << g_timer << "] for ";
+    Options opts;
+    //opts.set<AbstractTask *>("transform", this);
+    opts.set<int>("cost_type", 0);
+    shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
+    // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?
+    StateRegistry *registry = get_state_registry(task.get_initial_state_values());
+    const GlobalState &initial_state = registry->get_initial_state();
+    additive_heuristic->evaluate(initial_state);
+    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
+    delete registry;
+    return additive_heuristic;
+}
+
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
@@ -60,10 +76,11 @@ CegarHeuristic::~CegarHeuristic() {
 }
 
 struct SortHaddValuesUp {
-    const LandmarkTask &task;
-    explicit SortHaddValuesUp(const LandmarkTask &task_) : task(task_) {}
+    const shared_ptr<AdditiveHeuristic> hadd;
+    explicit SortHaddValuesUp(const LandmarkTask &task)
+    : hadd(get_additive_heuristic(task)) {}
     bool operator()(Fact a, Fact b) {
-        return task.get_hadd_value(a.first, a.second) < task.get_hadd_value(b.first, b.second);
+        return hadd->get_cost(a.first, a.second) < hadd->get_cost(b.first, b.second);
     }
 };
 
@@ -182,21 +199,6 @@ void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &need
     }
     if (DEBUG)
         cout << "Remaining: " << to_string(remaining_costs) << endl;
-}
-
-shared_ptr<AdditiveHeuristic> get_additive_heuristic(const LandmarkTask &task) {
-    cout << "Start computing h^add values [t=" << g_timer << "] for ";
-    Options opts;
-    //opts.set<AbstractTask *>("transform", this);
-    opts.set<int>("cost_type", 0);
-    shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
-    // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?
-    StateRegistry *registry = get_state_registry(task.get_initial_state_values());
-    const GlobalState &initial_state = registry->get_initial_state();
-    additive_heuristic->evaluate(initial_state);
-    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
-    delete registry;
-    return additive_heuristic;
 }
 
 void CegarHeuristic::build_abstractions(Decomposition decomposition) {
