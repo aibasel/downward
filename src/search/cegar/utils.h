@@ -34,6 +34,8 @@ typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
 typedef std::unordered_map<int, std::unordered_set<int> > VariableToValues;
 
+StateRegistry *get_state_registry(const std::vector<int> &initial_state_data);
+
 bool is_not_marked(GlobalOperator &op);
 
 int get_pre(const GlobalOperator &op, int var);

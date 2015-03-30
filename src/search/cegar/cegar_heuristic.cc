@@ -7,9 +7,11 @@
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../state_registry.h"
+#include "../task_tools.h"
+
 #include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
-#include "../task_tools.h"
 
 #include <ext/hash_map>
 
@@ -182,6 +184,21 @@ void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &need
         cout << "Remaining: " << to_string(remaining_costs) << endl;
 }
 
+shared_ptr<AdditiveHeuristic> get_additive_heuristic(const LandmarkTask &task) {
+    cout << "Start computing h^add values [t=" << g_timer << "] for ";
+    Options opts;
+    //opts.set<AbstractTask *>("transform", this);
+    opts.set<int>("cost_type", 0);
+    shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
+    // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?
+    StateRegistry *registry = get_state_registry(task.get_initial_state_values());
+    const GlobalState &initial_state = registry->get_initial_state();
+    additive_heuristic->evaluate(initial_state);
+    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
+    delete registry;
+    return additive_heuristic;
+}
+
 void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     vector<Fact> facts;
     int num_abstractions = 1;
@@ -192,13 +209,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     } else {
         get_facts(facts, decomposition);
         num_abstractions = min(static_cast<int>(facts.size()), max_abstractions);
-    }
-
-    if (!facts.empty()) {
-        cout << "h^add values: ";
-        for (size_t i = 0; i < facts.size(); ++i) {
-            cout << to_string(facts[i]) << ":" << original_task.get_hadd_value(facts[i].first, facts[i].second) << " ";
-        }
     }
 
     for (int i = 0; i < num_abstractions; ++i) {
@@ -218,8 +228,9 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             // TODO: Really use for GOALS decomposition?
             reachable_facts = compute_reachable_facts(orig_task, landmark);
         install_task(task);
+        shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(task);
 
-        Abstraction *abstraction = new Abstraction(&task);
+        Abstraction *abstraction = new Abstraction(&task, additive_heuristic);
 
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states((max_states - num_states) / rem_tasks);

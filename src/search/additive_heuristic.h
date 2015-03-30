@@ -59,6 +59,8 @@ public:
     ~AdditiveHeuristic();
 
     int get_cost(int var, int value) {
+        //assert(in_bounds(var, variable_domain));
+        //assert(value < variable_domain[var]);
         return propositions[var][value].cost;
     }
 };
