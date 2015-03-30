@@ -152,7 +152,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
         const list<LabelGroup> &grouped_labels = ts->get_grouped_labels();
         for (LabelGroupConstIter group_it = grouped_labels.begin();
              group_it != grouped_labels.end(); ++group_it) {
-            relation->refine(group_it->get_list());
+            relation->refine(group_it->begin(), group_it->end());
         }
     }
     return relation;
