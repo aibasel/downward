@@ -57,7 +57,7 @@ void AbstractState::regress(const GlobalOperator &op, AbstractState *result) con
 }
 
 void AbstractState::get_possible_splits(const AbstractState &desired,
-                                        const GlobalState &prev_conc_state,
+                                        const ConcreteState &prev_conc_state,
                                         Splits *splits)
 const {
     values->get_possible_splits(*desired.values, prev_conc_state, splits);

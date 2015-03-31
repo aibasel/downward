@@ -366,7 +366,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
                     ++deviations;
                     AbstractState desired_abs_state(task_proxy);
                     next_abs->regress(*op, &desired_abs_state);
-                    abs_state->get_possible_splits(desired_abs_state, conc_state,
+                    abs_state->get_possible_splits(desired_abs_state, ConcreteState(conc_state),
                                                    &splits);
                 }
             } else if (splits.empty()) {

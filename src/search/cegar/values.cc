@@ -1,5 +1,7 @@
 #include "values.h"
 
+#include "concrete_state.h"
+
 #include <sstream>
 
 using namespace std;
@@ -92,7 +94,7 @@ bool Values::abstracts(const Values &other) const {
     return other.values.is_subset_of(values);
 }
 
-void Values::get_possible_splits(const Values &flaw, const GlobalState &conc_state,
+void Values::get_possible_splits(const Values &flaw, const ConcreteState &conc_state,
                                  Splits *splits) const {
     assert(splits->empty());
     Bitset intersection(values & flaw.values);
