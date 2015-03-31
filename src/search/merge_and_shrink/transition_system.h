@@ -53,13 +53,19 @@ typedef std::list<int>::iterator LabelIter;
 typedef std::list<int>::const_iterator LabelConstIter;
 
 class LabelGroup {
+    /*
+      A label group contains a set of locally equivalent labels, possibly of
+      different cost, stores the minimum cost of all labels of the group,
+      and has a pointer to the position in TransitionSystem::transitions_of_groups
+      where the transitions associated with this group live.
+    */
 private:
-    int id;
     std::list<int> labels;
+    std::vector<Transition> *transitions;
     int cost;
 public:
-    explicit LabelGroup(int id_)
-        : id(id_), cost(INF) {
+    explicit LabelGroup(std::vector<Transition> *transitions_)
+        : transitions(transitions_), cost(INF) {
     }
     void set_cost(int cost_) {
         cost = cost_;
@@ -76,6 +82,9 @@ public:
     LabelIter end() {
         return labels.end();
     }
+    std::vector<Transition> &get_transitions() const {
+        return *transitions;
+    }
     LabelConstIter end() const {
         return labels.end();
     }
@@ -88,8 +97,8 @@ public:
     int size() const {
         return labels.size();
     }
-    int get_id() const {
-        return id;
+    const std::vector<Transition> &get_const_transitions() const {
+        return *transitions;
     }
     int get_cost() const {
         return cost;
@@ -100,6 +109,8 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
+    // TODO: do we need these friend declarations? can we not make
+    // the required private fields protected?
     friend class AtomicTransitionSystem;
     friend class CompositeTransitionSystem;
 
@@ -113,7 +124,7 @@ class TransitionSystem {
     */
     const Labels *labels;
     std::list<LabelGroup> grouped_labels;
-    std::vector<std::vector<Transition> > transitions_by_group_id;
+    std::vector<std::vector<Transition> > transitions_of_groups;
     std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
@@ -164,17 +175,14 @@ class TransitionSystem {
     void compute_distances_and_prune();
 
     // Methods related to the representation of transitions and labels
-    LabelGroupIter add_label_group(int id) {
-        return grouped_labels.insert(grouped_labels.end(), LabelGroup(id));
+    LabelGroupIter add_label_group(std::vector<Transition> *transitions) {
+        return grouped_labels.insert(grouped_labels.end(), LabelGroup(transitions));
     }
     LabelGroupIter get_group_it(int label_no) {
         return std::get<0>(label_to_positions[label_no]);
     }
     LabelIter get_label_it(int label_no) {
         return std::get<1>(label_to_positions[label_no]);
-    }
-    std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) {
-        return transitions_by_group_id[group.get_id()];
     }
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
@@ -202,9 +210,6 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    const std::vector<Transition> &get_const_transitions_for_group(const LabelGroup &group) const {
-        return transitions_by_group_id[group.get_id()];
-    }
     const std::list<LabelGroup> &get_grouped_labels() const {
         return grouped_labels;
     }
