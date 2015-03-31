@@ -112,7 +112,7 @@ private:
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw
     // from appearing in the next round again.
-    bool check_and_break_solution(GlobalState conc_state, AbstractState *abs_state);
+    bool check_and_break_solution(ConcreteState conc_state, AbstractState *abs_state);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;

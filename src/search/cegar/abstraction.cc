@@ -131,7 +131,7 @@ void Abstraction::build() {
             valid_conc_solution = false;
             break;
         }
-        valid_conc_solution = check_and_break_solution(registry->get_initial_state(), init);
+        valid_conc_solution = check_and_break_solution(ConcreteState(registry->get_initial_state()), init);
         if (valid_conc_solution)
             break;
     }
@@ -300,7 +300,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
     return true;
 }
 
-bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState *abs_state) {
+bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractState *abs_state) {
     assert(abs_state->is_abstraction_of(ConcreteState(conc_state)));
 
     if (DEBUG)
@@ -308,7 +308,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
              << " (is init: " << (abs_state == init) << ")" << endl;
 
     StatesToSplits states_to_splits;
-    queue<pair<AbstractState *, GlobalState> > unseen;
+    queue<pair<AbstractState *, ConcreteState> > unseen;
     unordered_set<StateID> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
@@ -325,7 +325,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
         if (!states_to_splits[abs_state].empty())
             continue;
         if (is_goal(abs_state)) {
-            if (test_goal(conc_state)) {
+            if (is_goal_state(g_goal, conc_state)) {
                 // We found a valid concrete solution.
                 return true;
             } else {
@@ -349,11 +349,11 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
             if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
                 // GlobalOperator is not part of an optimal path.
                 continue;
-            if (op->is_applicable(conc_state)) {
+            if (is_applicable(*op, conc_state)) {
                 if (DEBUG)
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op->get_name() << endl;
-                GlobalState next_conc = registry->get_successor_state(conc_state, *op);
+                ConcreteState next_conc = conc_state.apply(*op);
                 if (next_abs->is_abstraction_of(ConcreteState(next_conc))) {
                     if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
