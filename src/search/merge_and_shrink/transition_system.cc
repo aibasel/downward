@@ -26,7 +26,7 @@
 
 using namespace std;
 
-/* Implementation note: Transitions are grouped by thei label groups,
+/* Implementation note: Transitions are grouped by their label groups,
  not by source state or any such thing. Such a grouping is beneficial
  for fast generation of products because we can iterate label group by
  label group, and it also allows applying transition system mappings very
