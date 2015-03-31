@@ -301,7 +301,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
 }
 
 bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractState *abs_state) {
-    assert(abs_state->is_abstraction_of(ConcreteState(conc_state)));
+    assert(abs_state->is_abstraction_of(conc_state));
 
     if (DEBUG)
         cout << "Check solution." << endl << "Start at       " << abs_state->str()
@@ -333,7 +333,7 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
                 if (DEBUG)
                     cout << "      Goal test failed." << endl;
                 unmet_goals++;
-                get_unmet_goals(task_proxy.get_goals(), ConcreteState(conc_state), &states_to_splits[abs_state]);
+                get_unmet_goals(task_proxy.get_goals(), conc_state, &states_to_splits[abs_state]);
                 continue;
             }
         }
@@ -354,7 +354,7 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op->get_name() << endl;
                 ConcreteState next_conc = conc_state.apply(*op);
-                if (next_abs->is_abstraction_of(ConcreteState(next_conc))) {
+                if (next_abs->is_abstraction_of(next_conc)) {
                     if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
                         seen.insert(next_conc.get_id());
@@ -366,15 +366,15 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
                     ++deviations;
                     AbstractState desired_abs_state(task_proxy);
                     next_abs->regress(*op, &desired_abs_state);
-                    abs_state->get_possible_splits(desired_abs_state, ConcreteState(conc_state),
-                                                   &splits);
+                    abs_state->get_possible_splits(
+                        desired_abs_state, conc_state, &splits);
                 }
             } else if (splits.empty()) {
                 // Only find unmet preconditions if we haven't found any splits already.
                 if (DEBUG)
                     cout << "      GlobalOperator not applicable: " << op->get_name() << endl;
                 ++unmet_preconditions;
-                get_unmet_preconditions(*op, ConcreteState(conc_state), &splits);
+                get_unmet_preconditions(*op, conc_state, &splits);
             }
         }
     }
