@@ -33,8 +33,6 @@ private:
     void update_facts(int var, int num_values, const std::vector<int> &new_task_index);
     void find_and_apply_new_fact_ordering(int var, std::set<int> &unordered_values, int value_for_rest);
 
-    void setup_hadd();
-
     void dump_name() const;
     void dump_facts() const;
 
@@ -77,7 +75,6 @@ public:
 
     static LandmarkTask get_original_task();
 
-    int get_hadd_value(int var, int value) const;
     int get_num_vars() const {return variable_domain.size(); }
     int get_num_values(int var) const {return variable_domain[var]; }
     const std::vector<Fact> &get_goals() const {return goals; }
