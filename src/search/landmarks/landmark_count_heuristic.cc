@@ -5,11 +5,10 @@
 #include "../successor_generator.h"
 
 #include <cmath>
-#include <ext/hash_map>
 #include <limits>
+#include <unordered_map>
 
 using namespace std;
-using namespace __gnu_cxx;
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
@@ -165,12 +164,8 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
                                                          const LandmarkSet &reached) const {
-    const hash_map<LandmarkNode *, edge_type, hash_pointer> &parents =
-        node.parents;
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-         parent_it = parents.begin(); parent_it != parents.end(); ++parent_it) {
-        LandmarkNode &parent = *(parent_it->first);
-        if (reached.find(&parent) == reached.end()) {
+    for (const auto &parent : node.parents) {
+        if (reached.count(parent.first) == 0) {
             return true;
         }
     }

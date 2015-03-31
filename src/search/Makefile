@@ -80,6 +80,7 @@ HEADERS = \
           timer.h \
           tracer.h \
           utilities.h \
+          utilities_hash.h \
           variable_order_finder.h \
           weighted_evaluator.h \
           \
@@ -227,7 +228,7 @@ endif
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Wno-deprecated -Werror
+CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Werror
 
 CXXFLAGS += -Iext
 ifeq ($(DOWNWARD_OS), osx)
