@@ -72,8 +72,7 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
       goals({get_raw_fact(landmark)}),
       unreachable_facts(parent->get_num_variables()),
       orig_index(parent->get_num_variables()),
-      task_index(parent->get_num_variables()),
-      additive_heuristic(0) {
+      task_index(parent->get_num_variables()) {
     TaskProxy orig_task = TaskProxy(parent.get());
     assert(variable_domain.empty());
     for (VariableProxy var : orig_task.get_variables()) {
@@ -105,8 +104,7 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
       fact_names(names),
       operators(ops),
       orig_index(domain.size()),
-      task_index(domain.size()),
-      additive_heuristic(0) {
+      task_index(domain.size()) {
     for (size_t var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
@@ -253,8 +251,6 @@ void LandmarkTask::install() {
 
 void LandmarkTask::release_memory() {
     vector<GlobalOperator>().swap(operators);
-    delete additive_heuristic;
-    additive_heuristic = 0;
 }
 
 bool LandmarkTask::translate_state(const GlobalState &state, int *translated) const {
