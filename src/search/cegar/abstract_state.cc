@@ -1,5 +1,6 @@
 #include "abstract_state.h"
 
+#include "concrete_state.h"
 #include "landmark_task.h"
 #include "values.h"
 
@@ -229,7 +230,7 @@ void AbstractState::remove_prev_arc(const GlobalOperator *op, AbstractState *oth
     remove_arc(arcs_in, op, other);
 }
 
-bool AbstractState::is_abstraction_of(const GlobalState &conc_state) const {
+bool AbstractState::is_abstraction_of(const ConcreteState &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
     for (VariableProxy var : task_proxy.get_variables()) {
         if (!values->test(var.get_id(), conc_state[var.get_id()]))

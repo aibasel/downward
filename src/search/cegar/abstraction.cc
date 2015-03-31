@@ -177,8 +177,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     // Since the search is always started from the abstract
     // initial state, v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        assert(v1->is_abstraction_of(registry->get_initial_state()));
-        assert(!v2->is_abstraction_of(registry->get_initial_state()));
+        assert(v1->is_abstraction_of(ConcreteState(registry->get_initial_state())));
+        assert(!v2->is_abstraction_of(ConcreteState(registry->get_initial_state())));
         init = v1;
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
@@ -301,7 +301,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
 }
 
 bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState *abs_state) {
-    assert(abs_state->is_abstraction_of(conc_state));
+    assert(abs_state->is_abstraction_of(ConcreteState(conc_state)));
 
     if (DEBUG)
         cout << "Check solution." << endl << "Start at       " << abs_state->str()
@@ -354,7 +354,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op->get_name() << endl;
                 GlobalState next_conc = registry->get_successor_state(conc_state, *op);
-                if (next_abs->is_abstraction_of(next_conc)) {
+                if (next_abs->is_abstraction_of(ConcreteState(next_conc))) {
                     if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
                         seen.insert(next_conc.get_id());
