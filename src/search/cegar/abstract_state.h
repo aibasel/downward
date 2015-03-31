@@ -10,6 +10,7 @@
 
 namespace cegar {
 class AbstractState;
+class ConcreteState;
 class LandmarkTask;
 class Values;
 typedef std::pair<const GlobalOperator *, AbstractState *> Arc;
@@ -75,7 +76,7 @@ public:
                              const ConcreteState &prev_conc_state,
                              Splits *conditions) const;
 
-    bool is_abstraction_of(const GlobalState &conc_state) const;
+    bool is_abstraction_of(const ConcreteState &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool is_abstraction_of_goal() const;
 
