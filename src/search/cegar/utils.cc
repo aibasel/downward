@@ -9,8 +9,6 @@
 
 #include "../landmarks/landmark_graph.h"
 
-#include <ext/hash_map>
-
 #include <algorithm>
 #include <cassert>
 #include <fstream>
