@@ -2,6 +2,7 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
+#include "utilities_hash.h"
 
 #include <cassert>
 #include <cstddef>
@@ -563,8 +564,9 @@ namespace std {
 template<>
 struct hash<FactProxy> {
     size_t operator()(const FactProxy &fact) const {
-        // TODO: Reuse hash function.
-        return static_cast<size_t>(fact.get_variable().get_id() * 1337 + fact.get_value());
+        std::pair<int, int> raw_fact = make_pair(fact.get_variable().get_id(), fact.get_value());
+        std::hash<std::pair<int, int> > hasher;
+        return hasher(raw_fact);
     }
 };
 }
