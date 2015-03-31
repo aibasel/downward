@@ -13,8 +13,6 @@
 #include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
 
-#include <ext/hash_map>
-
 #include <algorithm>
 #include <cassert>
 #include <cmath>
