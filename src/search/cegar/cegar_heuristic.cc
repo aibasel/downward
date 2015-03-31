@@ -29,7 +29,7 @@ namespace cegar {
 shared_ptr<AdditiveHeuristic> get_additive_heuristic(const LandmarkTask &task) {
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     Options opts;
-    //opts.set<AbstractTask *>("transform", this);
+    //opts.set<AbstractTask *>("transform", const_cast<LandmarkTask *>(&task));
     opts.set<int>("cost_type", 0);
     shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
     // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?

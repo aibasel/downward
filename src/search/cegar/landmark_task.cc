@@ -237,36 +237,8 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     fact_names[var][projected_value] = name.str();
 }
 
-void LandmarkTask::setup_hadd() {
-    cout << "Start computing h^add values [t=" << g_timer << "] for ";
-    dump_name();
-    Options opts;
-    //opts.set<AbstractTask *>("transform", this);
-    opts.set<int>("cost_type", 0);
-    additive_heuristic = new AdditiveHeuristic(opts);
-    // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?
-    g_initial_state_data = initial_state_data;
-    StateRegistry *registry = new StateRegistry();
-    const GlobalState &initial_state = registry->get_initial_state();
-    int num_vars = variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        assert(initial_state[var] == initial_state_data[var]);
-    }
-    additive_heuristic->evaluate(initial_state);
-    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
-    delete registry;
-}
-
-int LandmarkTask::get_hadd_value(int var, int value) const {
-    assert(additive_heuristic);
-    assert(in_bounds(var, variable_domain));
-    assert(value < variable_domain[var]);
-    return additive_heuristic->get_cost(var, value);
-}
-
 LandmarkTask LandmarkTask::get_original_task() {
     LandmarkTask task(g_variable_domain, g_fact_names, g_operators, g_initial_state_data, g_goal);
-    task.setup_hadd();
     return task;
 }
 
@@ -276,7 +248,7 @@ void LandmarkTask::install() {
     g_fact_names = fact_names;
     g_operators = operators;
     Values::initialize_static_members(variable_domain);
-    setup_hadd();
+    g_initial_state_data = initial_state_data;
 }
 
 void LandmarkTask::release_memory() {
