@@ -161,6 +161,7 @@ HEADERS += landmarks/exploration.h \
 
 HEADERS += cegar/cegar_heuristic.h \
            cegar/abstract_state.h \
+           cegar/concrete_state.h \
            cegar/landmark_task.h \
            cegar/values.h \
            cegar/abstraction.h \
