@@ -46,7 +46,7 @@ int get_post(const GlobalOperator &op, int var);
 
 void get_unmet_preconditions(const GlobalOperator &op, const ConcreteState &state, Splits *splits);
 
-void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits);
+void get_unmet_goals(GoalsProxy goals, const ConcreteState &state, Splits *splits);
 
 Fact get_fact(const LandmarkNode *node);
 
