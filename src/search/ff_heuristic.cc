@@ -6,14 +6,8 @@
 #include "task_tools.h"
 
 #include <cassert>
-#include <vector>
+
 using namespace std;
-
-#include <ext/hash_map>
-using namespace __gnu_cxx;
-
-
-
 
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)

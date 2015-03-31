@@ -15,17 +15,15 @@
 #include "utilities.h"
 
 #include <cstdlib>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <limits>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-using namespace std;
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+using namespace std;
 
 static const int PRE_FILE_VERSION = 3;
 
@@ -374,7 +372,7 @@ const GlobalState &g_initial_state() {
     return g_state_registry->get_initial_state();
 }
 
-const shared_ptr<AbstractTask> get_root_task() {
+const shared_ptr<AbstractTask> g_root_task() {
     static shared_ptr<AbstractTask> root_task = make_shared<RootTask>();
     return root_task;
 }

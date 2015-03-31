@@ -6,7 +6,6 @@
 #include <limits>
 
 using namespace std;
-using namespace __gnu_cxx;
 
 bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int> > &lvl_var) {
     for (size_t i = 0; i < conditions.size(); ++i)
@@ -16,19 +15,17 @@ bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vec
     return true;
 }
 
-
-hash_map<int, int> _intersect(const hash_map<int, int> &a, const hash_map<int, int> &b) {
+unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unordered_map<int, int> &b) {
     if (a.size() > b.size())
         return _intersect(b, a);
-    hash_map<int, int> result;
-    for (hash_map<int, int>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1) {
-        hash_map<int, int>::const_iterator it2 = b.find(it1->first);
-        if (it2 != b.end() && it2->second == it1->second)
-            result.insert(*it1);
+    unordered_map<int, int> result;
+    for (const auto &pair_a : a) {
+        const auto it_b = b.find(pair_a.first);
+        if (it_b != b.end() && it_b->second == pair_a.second)
+            result.insert(pair_a);
     }
     return result;
 }
-
 
 bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int> > &lvl_var, const LandmarkNode *lmp) {
     /* Check whether operator o can possibly make landmark lmp true in a

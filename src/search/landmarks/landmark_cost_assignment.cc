@@ -5,9 +5,9 @@
 #include "../utilities.h"
 
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <limits>
-#include <sys/times.h>
 
 
 using namespace std;

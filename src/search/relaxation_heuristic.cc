@@ -5,14 +5,15 @@
 #include "globals.h"
 #include "task_proxy.h"
 #include "utilities.h"
+#include "utilities_hash.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <unordered_map>
 #include <vector>
-using namespace std;
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+using namespace std;
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
@@ -86,39 +87,16 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op, int op_
     }
 }
 
-class hash_unary_operator {
-public:
-    size_t operator()(const pair<vector<Proposition *>, Proposition *> &key) const {
-        // NOTE: We used to hash the Proposition* values directly, but
-        // this had the disadvantage that the results were not
-        // reproducible. This propagates through to the heuristic
-        // computation: runs on different computers could lead to
-        // different initial h values, for example.
-
-        unsigned long hash_value = key.second->id;
-        const vector<Proposition *> &vec = key.first;
-        for (size_t i = 0; i < vec.size(); ++i)
-            hash_value = 17 * hash_value + vec[i]->id;
-        return size_t(hash_value);
-    }
-};
-
-
-static bool compare_prop_pointer(const Proposition *p1, const Proposition *p2) {
-    return p1->id < p2->id;
-}
-
-
 void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
     /*
-      Algorithm: Put all unary operators into a hash_map
+      Algorithm: Put all unary operators into an unordered_map
       (key: condition and effect; value: index in operator vector.
       This gets rid of operators with identical conditions.
 
-      Then go through the hash_map, checking for each element if
-      none of the possible dominators are part of the hash_map.
+      Then go through the unordered_map, checking for each element if
+      none of the possible dominators are part of the unordered_map.
       Put the element into the new operator vector iff this is the case.
 
       In both loops, be careful to ensure that a higher-cost operator
@@ -129,13 +107,13 @@ void RelaxationHeuristic::simplify() {
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
     typedef pair<vector<Proposition *>, Proposition *> HashKey;
-    typedef hash_map<HashKey, int, hash_unary_operator> HashMap;
+    typedef unordered_map<HashKey, int> HashMap;
     HashMap unary_operator_index;
-    unary_operator_index.resize(unary_operators.size() * 2);
+    unary_operator_index.reserve(unary_operators.size());
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
-        sort(op.precondition.begin(), op.precondition.end(), compare_prop_pointer);
+        sort(op.precondition.begin(), op.precondition.end());
         HashKey key(op.precondition, op.effect);
         pair<HashMap::iterator, bool> inserted = unary_operator_index.insert(
             make_pair(key, i));

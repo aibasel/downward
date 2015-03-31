@@ -69,6 +69,7 @@ class TransitionSystem {
     const Labels *labels;
     std::list<std::list<int> > grouped_labels;
     std::vector<std::vector<Transition> > transitions_by_group_index;
+    std::vector<int> cost_by_group_index;
     std::vector<std::tuple<int, LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
@@ -157,8 +158,8 @@ public:
       Method to identify the transition system in output.
       Print "Atomic transition system #x: " for atomic transition systems,
       where x is the variable. For composite transition systems, print
-      "Transition system (xyz): " for the transition system containing variables
-      x, y and z.
+      "Transition system (x/y): " for the transition system containing x
+      out of y variables.
     */
     std::string tag() const;
     bool is_solvable() const;

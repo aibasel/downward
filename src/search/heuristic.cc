@@ -141,7 +141,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
-    opts.set<AbstractTask *>("transform", get_root_task().get());
+    opts.set<AbstractTask *>("transform", g_root_task().get());
     opts.set<int>("cost_type", 0);
     return opts;
 }
@@ -178,7 +178,7 @@ TaskProxy *get_task_from_options(const Options &opts) {
         task = new TaskProxy(opts.get<AbstractTask *>("transform"));
     } else {
         Options options;
-        options.set<AbstractTask *>("transform", get_root_task().get());
+        options.set<AbstractTask *>("transform", g_root_task().get());
         options.set<int>("cost_type", cost_type);
         task = new TaskProxy(new CostAdaptedTask(options));
     }
