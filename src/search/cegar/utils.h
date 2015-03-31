@@ -46,12 +46,6 @@ void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state,
 
 void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits);
 
-struct hash_fact {
-    size_t operator()(const Fact &fact) const {
-        return fact.first * 10000 + fact.second;
-    }
-};
-
 Fact get_fact(const LandmarkNode *node);
 
 void write_landmark_graph(const LandmarkGraph &graph);
