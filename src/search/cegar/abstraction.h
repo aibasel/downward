@@ -1,6 +1,7 @@
 #ifndef CEGAR_ABSTRACTION_H
 #define CEGAR_ABSTRACTION_H
 
+#include "concrete_state.h"
 #include "split_tree.h"
 
 #include "../global_state.h"
@@ -49,6 +50,7 @@ private:
     const TaskProxy task_proxy;
     std::unordered_map<const GlobalOperator *, int> op_to_index;
     StateRegistry *registry;
+    ConcreteState concrete_initial_state;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
     // Set of all valid states, i.e. states that have not been split.

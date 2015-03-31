@@ -36,7 +36,7 @@ typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 Abstraction::Abstraction(TaskProxy task_proxy,
                          shared_ptr<AdditiveHeuristic> additive_heuristic)
     : task_proxy(task_proxy),
-      registry(0),
+      concrete_initial_state(g_initial_state()), // TODO: Remove.
       additive_heuristic(additive_heuristic),
       single(new AbstractState(task_proxy)),
       init(single),
@@ -61,6 +61,7 @@ Abstraction::Abstraction(TaskProxy task_proxy,
     for (FactProxy fact : task_proxy.get_initial_state())
         initial_state_data.push_back(fact.get_value());
     registry = get_state_registry(initial_state_data);
+    concrete_initial_state = ConcreteState(registry->get_initial_state());
 
     goals.insert(init);
 
@@ -131,7 +132,7 @@ void Abstraction::build() {
             valid_conc_solution = false;
             break;
         }
-        valid_conc_solution = check_and_break_solution(ConcreteState(registry->get_initial_state()), init);
+        valid_conc_solution = check_and_break_solution(concrete_initial_state, init);
         if (valid_conc_solution)
             break;
     }
@@ -177,8 +178,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     // Since the search is always started from the abstract
     // initial state, v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        assert(v1->is_abstraction_of(ConcreteState(registry->get_initial_state())));
-        assert(!v2->is_abstraction_of(ConcreteState(registry->get_initial_state())));
+        assert(v1->is_abstraction_of(concrete_initial_state));
+        assert(!v2->is_abstraction_of(concrete_initial_state));
         init = v1;
         if (DEBUG)
             cout << "Using new init state: " << init->str() << endl;
