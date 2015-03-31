@@ -91,7 +91,7 @@ void get_unmet_preconditions(const GlobalOperator &op, const ConcreteState &stat
     assert(splits->empty() == is_applicable(op, state));
 }
 
-void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits) {
+void get_unmet_goals(GoalsProxy goals, const ConcreteState &state, Splits *splits) {
     assert(splits->empty());
     for (FactProxy goal : goals) {
         int var_id = goal.get_variable().get_id();

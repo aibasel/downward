@@ -12,7 +12,7 @@ namespace cegar {
 class ConcreteState {
     const GlobalState &state;
 public:
-    ConcreteState(const GlobalState &state);
+    explicit ConcreteState(const GlobalState &state);
     ~ConcreteState();
 
     int operator[](std::size_t index) const;
