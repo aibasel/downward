@@ -8,6 +8,7 @@ class GlobalState;
 class GlobalOperator;
 
 
+namespace cegar {
 class ConcreteState {
     const GlobalState &state;
 public:
@@ -19,5 +20,5 @@ public:
 
 bool is_applicable(const GlobalCondition &condition, const ConcreteState &state);
 bool is_applicable(const GlobalOperator &op, const ConcreteState &state);
-
+}
 #endif

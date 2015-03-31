@@ -5,6 +5,8 @@
 
 using namespace std;
 
+namespace cegar {
+
 ConcreteState::ConcreteState(const GlobalState &state)
     : state(state) {
 
@@ -27,5 +29,6 @@ bool is_applicable(const GlobalOperator &op, const ConcreteState &state) {
             return false;
     }
     return true;
+}
 }
 
