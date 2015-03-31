@@ -71,7 +71,8 @@ public:
     void remove_prev_arc(const GlobalOperator *op, AbstractState *other);
     void add_loop(const GlobalOperator *op);
 
-    void get_possible_splits(const AbstractState &desired, const GlobalState &prev_conc_state,
+    void get_possible_splits(const AbstractState &desired,
+                             const ConcreteState &prev_conc_state,
                              Splits *conditions) const;
 
     bool is_abstraction_of(const GlobalState &conc_state) const;

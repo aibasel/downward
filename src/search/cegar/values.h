@@ -44,7 +44,7 @@ private:
     // Return true if all abstract domains are supersets of the
     // other's respective domains.
     bool abstracts(const Values &other) const;
-    void get_possible_splits(const Values &flaw, const GlobalState &conc_state, Splits *splits) const;
+    void get_possible_splits(const Values &flaw, const ConcreteState &conc_state, Splits *splits) const;
 
     std::string str() const;
 
