@@ -87,8 +87,8 @@ void Abstraction::set_pick_strategy(PickStrategy strategy) {
 int Abstraction::get_min_goal_distance() const {
     assert(!memory_released);
     int min_distance = INF;
-    for (AbstractStates::const_iterator it = goals.begin(); it != goals.end(); ++it) {
-        min_distance = min(min_distance, (*it)->get_distance());
+    for (AbstractState *goal : goals) {
+        min_distance = min(min_distance, goal->get_distance());
     }
     return min_distance;
 }
@@ -202,8 +202,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 }
 
 void Abstraction::reset_distances_and_solution() const {
-    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = (*it);
+    for (AbstractState *state: states) {
         state->set_distance(INF);
         state->set_prev_solution_op(0);
         state->set_next_solution_op(0);
@@ -249,9 +248,9 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             }
         }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
-        for (Arcs::iterator it = successors.begin(); it != successors.end(); ++it) {
-            const GlobalOperator *op = it->first;
-            AbstractState *successor = it->second;
+        for (auto &arc : successors) {
+            const GlobalOperator *op = arc.first;
+            AbstractState *successor = arc.second;
 
             // Collect needed operator costs for additive abstractions.
             if (needed_costs) {
@@ -339,9 +338,9 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
             }
         }
         Arcs &arcs_out = abs_state->get_arcs_out();
-        for (Arcs::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-            const GlobalOperator *op = it->first;
-            AbstractState *next_abs = it->second;
+        for (auto &arc : arcs_out) {
+            const GlobalOperator *op = arc.first;
+            AbstractState *next_abs = arc.second;
             assert(!use_astar || (abs_state->get_next_solution_op() &&
                                   abs_state->get_next_solution_state()));
             if (use_astar && (op != abs_state->get_next_solution_op() ||
@@ -380,11 +379,11 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
         }
     }
     int broken_solutions = 0;
-    for (StatesToSplits::iterator it = states_to_splits.begin(); it != states_to_splits.end(); ++it) {
+    for (auto &state_and_splits : states_to_splits) {
         if (!may_keep_refining())
             break;
-        AbstractState *state = it->first;
-        Splits &splits = it->second;
+        AbstractState *state = state_and_splits.first;
+        Splits &splits = state_and_splits.second;
         random_shuffle(splits.begin(), splits.end());
         if (!splits.empty()) {
             break_solution(state, splits);
@@ -516,13 +515,12 @@ void Abstraction::find_solution() const {
 void Abstraction::update_h_values() const {
     reset_distances_and_solution();
     open->clear();
-    for (AbstractStates::const_iterator it = goals.begin(); it != goals.end(); ++it) {
-        (*it)->set_distance(0);
-        open->push(0, *it);
+    for (AbstractState *goal : goals) {
+        goal->set_distance(0);
+        open->push(0, goal);
     }
     astar_search(false, false);
-    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
+    for (AbstractState *state : states) {
         state->set_h(state->get_distance());
     }
 }
@@ -543,20 +541,17 @@ void Abstraction::write_dot_file(int num) {
         exit_with(EXIT_CRITICAL_ERROR);
     }
     dotfile << "digraph abstract {" << endl;
-    AbstractStates::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
-        AbstractState *current_state = *it;
+    for (AbstractState *current_state : states) {
         Arcs &next = current_state->get_arcs_out();
-        for (Arcs::iterator it = next.begin(); it != next.end(); ++it) {
-            const GlobalOperator *op = it->first;
-            AbstractState *next_state = it->second;
+        for (auto &arc : next) {
+            const GlobalOperator *op = arc.first;
+            AbstractState *next_state = arc.second;
             dotfile << current_state->str() << " -> " << next_state->str()
                     << " [label=\"" << op->get_name() << "\"];" << endl;
         }
         if (draw_loops) {
             Loops &loops = current_state->get_loops();
-            for (Loops::iterator it = loops.begin(); it != loops.end(); ++it) {
-                const GlobalOperator *op = *it;
+            for (const GlobalOperator *op : loops) {
                 dotfile << current_state->str() << " -> " << current_state->str()
                         << " [label=\"" << op->get_name() << "\"];" << endl;
             }
@@ -600,9 +595,7 @@ void Abstraction::release_memory() {
     delete open;
     open = 0;
     release_memory_padding();
-    AbstractStates::iterator it;
-    for (it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
+    for (AbstractState *state: states) {
         delete state;
     }
     AbstractStates().swap(states);
@@ -614,8 +607,7 @@ void Abstraction::print_statistics() {
     int nexts = 0, prevs = 0, total_loops = 0;
     int dead_ends = 0;
     int arc_size = 0;
-    for (AbstractStates::iterator it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
+    for (AbstractState *state : states) {
         if (state->get_h() == INF)
             ++dead_ends;
         Arcs &next = state->get_arcs_out();
@@ -648,20 +640,23 @@ void Abstraction::print_statistics() {
 void Abstraction::print_histograms() const {
     map<int, int> h_to_abs_states;
     map<int, double> h_to_rel_conc_states;
-    for (AbstractStates::const_iterator it = states.begin(); it != states.end(); ++it) {
-        AbstractState *state = *it;
+    for (AbstractState *state : states) {
         const int h = state->get_h();
         assert(h >= 0);
         h_to_abs_states[h] += 1;
         h_to_rel_conc_states[h] += state->get_rel_conc_states();
     }
     cout << "Number of abstract states" << endl;
-    for (map<int, int>::iterator it = h_to_abs_states.begin(); it != h_to_abs_states.end(); ++it) {
-        cout << "h=" << left << setw(3) << it->first << ": " << it->second << endl;
+    for (auto &h_and_states : h_to_abs_states) {
+        int h = h_and_states.first;
+        int num_states = h_and_states.second;
+        cout << "h=" << left << setw(3) << h << ": " << num_states << endl;
     }
     cout << "Percentage of concrete states" << endl;
-    for (map<int, double>::iterator it = h_to_rel_conc_states.begin(); it != h_to_rel_conc_states.end(); ++it) {
-        cout << "h=" << left << setw(3) << it->first << ": " << fixed << 100 * it->second << endl;
+    for (auto &h_and_rel_conc_states : h_to_rel_conc_states) {
+        int h = h_and_rel_conc_states.first;
+        double rel_conc_states = h_and_rel_conc_states.second;
+        cout << "h=" << left << setw(3) << h << ": " << fixed << 100 * rel_conc_states << endl;
     }
 }
 }
