@@ -1,6 +1,7 @@
 #include "abstraction.h"
 
 #include "abstract_state.h"
+#include "concrete_state.h"
 #include "landmark_task.h"
 #include "utils.h"
 
@@ -373,7 +374,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
                 if (DEBUG)
                     cout << "      GlobalOperator not applicable: " << op->get_name() << endl;
                 ++unmet_preconditions;
-                get_unmet_preconditions(*op, conc_state, &splits);
+                get_unmet_preconditions(*op, ConcreteState(conc_state), &splits);
             }
         }
     }

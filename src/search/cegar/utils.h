@@ -19,6 +19,8 @@
 #include <vector>
 
 namespace cegar {
+class ConcreteState;
+
 extern bool DEBUG;
 
 const int UNDEFINED = -1;
@@ -42,7 +44,7 @@ int get_pre(const GlobalOperator &op, int var);
 int get_eff(const GlobalOperator &op, int var);
 int get_post(const GlobalOperator &op, int var);
 
-void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state, Splits *splits);
+void get_unmet_preconditions(const GlobalOperator &op, const ConcreteState &state, Splits *splits);
 
 void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits);
 

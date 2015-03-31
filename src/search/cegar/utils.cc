@@ -78,18 +78,17 @@ int get_post(const GlobalOperator &op, int var) {
     return UNDEFINED;
 }
 
-void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state, Splits *splits) {
+void get_unmet_preconditions(const GlobalOperator &op, const ConcreteState &state, Splits *splits) {
     assert(splits->empty());
-    ConcreteState conc_state = ConcreteState(state);
     for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
         const GlobalCondition &precondition = op.get_preconditions()[i];
-        if (conc_state[precondition.var] != precondition.val) {
+        if (state[precondition.var] != precondition.val) {
             vector<int> wanted;
             wanted.push_back(precondition.val);
             splits->push_back(make_pair(precondition.var, wanted));
         }
     }
-    assert(splits->empty() == is_applicable(op, conc_state));
+    assert(splits->empty() == is_applicable(op, state));
 }
 
 void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits) {
