@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#include "concrete_state.h"
+
 #include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
@@ -78,15 +80,16 @@ int get_post(const GlobalOperator &op, int var) {
 
 void get_unmet_preconditions(const GlobalOperator &op, const GlobalState &state, Splits *splits) {
     assert(splits->empty());
+    ConcreteState conc_state = ConcreteState(state);
     for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
         const GlobalCondition &precondition = op.get_preconditions()[i];
-        if (state[precondition.var] != precondition.val) {
+        if (conc_state[precondition.var] != precondition.val) {
             vector<int> wanted;
             wanted.push_back(precondition.val);
             splits->push_back(make_pair(precondition.var, wanted));
         }
     }
-    assert(splits->empty() == op.is_applicable(state));
+    assert(splits->empty() == is_applicable(op, conc_state));
 }
 
 void get_unmet_goals(GoalsProxy goals, const GlobalState &state, Splits *splits) {
