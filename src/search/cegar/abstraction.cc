@@ -308,7 +308,7 @@ bool Abstraction::check_and_break_solution(GlobalState conc_state, AbstractState
 
     StatesToSplits states_to_splits;
     queue<pair<AbstractState *, GlobalState> > unseen;
-    unordered_set<StateID, hash_state_id> seen;
+    unordered_set<StateID> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
 

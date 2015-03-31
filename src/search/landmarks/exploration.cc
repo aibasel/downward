@@ -3,12 +3,13 @@
 #include "../global_state.h"
 #include "../globals.h"
 #include "../utilities.h"
+#include "../utilities_hash.h"
 
+#include <algorithm>
 #include <cassert>
 #include <limits>
 
 using namespace std;
-using namespace __gnu_cxx;
 
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
@@ -93,7 +94,7 @@ void Exploration::write_overflow_warning() {
     }
 }
 
-void Exploration::set_additional_goals(const std::vector<pair<int, int> > &add_goals) {
+void Exploration::set_additional_goals(const vector<pair<int, int> > &add_goals) {
     //Clear previous additional goals.
     for (size_t i = 0; i < termination_propositions.size(); ++i) {
         int var = termination_propositions[i]->var, val = termination_propositions[i]->val;
@@ -153,22 +154,10 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
     }
 }
 
-class hash_unary_operator {
-public:
-    size_t operator()(const pair<vector<ExProposition *>, ExProposition *> &key) const {
-        size_t hash_value = reinterpret_cast<size_t>(key.second);
-        const vector<ExProposition *> &vec = key.first;
-        for (size_t i = 0; i < vec.size(); ++i)
-            hash_value = 17 * hash_value + reinterpret_cast<size_t>(vec[i]);
-        return hash_value;
-    }
-};
-
 // heuristic computation
 void Exploration::setup_exploration_queue(const GlobalState &state,
                                           const vector<pair<int, int> > &excluded_props,
-                                          const hash_set<const GlobalOperator *,
-                                                         ex_hash_operator_ptr> &excluded_ops,
+                                          const unordered_set<const GlobalOperator *> &excluded_ops,
                                           bool use_h_max = false) {
     prop_queue.clear();
 
@@ -336,10 +325,10 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_var,
-                                                     vector<hash_map<pair<int, int>, int, hash_int_pair> > &lvl_op,
+                                                     vector<unordered_map<pair<int, int>, int> > &lvl_op,
                                                      bool level_out,
                                                      const vector<pair<int, int> > &excluded_props,
-                                                     const hash_set<const GlobalOperator *, ex_hash_operator_ptr> &excluded_ops,
+                                                     const unordered_set<const GlobalOperator *> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(g_initial_state(), excluded_props, excluded_ops, true);
@@ -354,7 +343,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_v
         }
     }
     if (compute_lvl_ops) {
-        hash_map< const GlobalOperator *, int, ex_hash_operator_ptr> operator_index;
+        unordered_map< const GlobalOperator *, int> operator_index;
         for (size_t i = 0; i < g_operators.size(); ++i) {
             operator_index.insert(make_pair(&g_operators[i], i));
         }
@@ -432,7 +421,7 @@ void Exploration::collect_ha(ExProposition *goal,
 
 // TODO: this should be in landmark class
 bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
-    // TODO: change landmarks to set or hash_set
+    // TODO: change landmarks to set or unordered_set
     for (size_t i = 0; i < landmarks.size(); ++i)
         if (landmarks[i].first == var && landmarks[i].second == val)
             return true;

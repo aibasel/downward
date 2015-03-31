@@ -96,7 +96,7 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
 
 LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
            vector<int> initial_state_data_, vector<Fact> goal_facts)
-    : DelegatingTask(get_root_task()),
+    : DelegatingTask(g_root_task()),
       initial_state_data(initial_state_data_),
       goals(goal_facts),
       variable_domain(domain),
