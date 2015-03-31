@@ -12,7 +12,7 @@
 #include <vector>
 
 namespace cegar {
-typedef std::unordered_set<Fact, hash_fact> FactSet;
+typedef std::unordered_set<Fact> FactSet;
 
 std::unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark);
 
