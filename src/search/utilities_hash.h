@@ -1,5 +1,5 @@
-#ifndef UTILITIES_HASH
-#define UTILITIES_HASH
+#ifndef UTILITIES_HASH_H
+#define UTILITIES_HASH_H
 
 #include <functional>
 #include <utility>
