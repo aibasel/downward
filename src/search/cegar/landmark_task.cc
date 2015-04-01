@@ -232,9 +232,6 @@ LandmarkTask LandmarkTask::get_original_task() {
 }
 
 void LandmarkTask::install() {
-    g_goal = goals;
-    g_variable_domain = variable_domain;
-    g_fact_names = fact_names;
     Values::initialize_static_members(variable_domain);
     g_initial_state_data = initial_state_data;
 }
