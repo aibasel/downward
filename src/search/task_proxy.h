@@ -359,24 +359,32 @@ public:
 
 
 class OperatorProxy {
-    const AbstractTask &task;
+    const AbstractTask *task;
     int index;
     bool is_an_axiom;
 public:
     OperatorProxy(const AbstractTask &task, int index, bool is_axiom)
-        : task(task), index(index), is_an_axiom(is_axiom) {}
+        : task(&task), index(index), is_an_axiom(is_axiom) {}
     ~OperatorProxy() = default;
 
+    bool operator==(const OperatorProxy &other) const {
+        return index == other.index && is_an_axiom == other.is_an_axiom;
+    }
+
+    bool operator!=(const OperatorProxy &other) const {
+        return !(*this == other);
+    }
+
     PreconditionsProxy get_preconditions() const {
-        return PreconditionsProxy(task, index, is_an_axiom);
+        return PreconditionsProxy(*task, index, is_an_axiom);
     }
 
     EffectsProxy get_effects() const {
-        return EffectsProxy(task, index, is_an_axiom);
+        return EffectsProxy(*task, index, is_an_axiom);
     }
 
     int get_cost() const {
-        return task.get_operator_cost(index, is_an_axiom);
+        return task->get_operator_cost(index, is_an_axiom);
     }
 
     bool is_axiom() const {
@@ -384,7 +392,7 @@ public:
     }
 
     const std::string &get_name() const {
-        return task.get_operator_name(index, is_an_axiom);
+        return task->get_operator_name(index, is_an_axiom);
     }
 
     int get_id() const {
@@ -392,7 +400,7 @@ public:
     }
 
     const GlobalOperator *get_global_operator() const {
-        return task.get_global_operator(index, is_an_axiom);
+        return task->get_global_operator(index, is_an_axiom);
     }
 };
 

@@ -78,7 +78,6 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
     for (VariableProxy var : orig_task.get_variables()) {
         variable_domain.push_back(var.get_domain_size());
     }
-    operators = g_operators;
     fact_names = g_fact_names;
     for (size_t var = 0; var < variable_domain.size(); ++var) {
         orig_index[var].resize(variable_domain[var]);
@@ -94,7 +93,7 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
     }
 }
 
-LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, vector<GlobalOperator> ops,
+LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names,
            vector<int> initial_state_data_, vector<Fact> goal_facts)
     : DelegatingTask(g_root_task()),
       initial_state_data(initial_state_data_),
@@ -102,7 +101,6 @@ LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names, ve
       variable_domain(domain),
       unreachable_facts(domain.size()),
       fact_names(names),
-      operators(ops),
       orig_index(domain.size()),
       task_index(domain.size()) {
     for (size_t var = 0; var < variable_domain.size(); ++var) {
@@ -120,12 +118,6 @@ int LandmarkTask::get_orig_op_index(int index) const {
     return index;
 }
 
-void LandmarkTask::adapt_operator_costs(const vector<int> &remaining_costs) {
-    for (size_t i = 0; i < operators.size(); ++i) {
-        operators[i].set_cost(remaining_costs[i]);
-    }
-}
-
 void LandmarkTask::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
@@ -139,8 +131,6 @@ void LandmarkTask::move_fact(int var, int before, int after) {
         return;
     }
     assert(in_bounds(after, task_index[var]));
-    for (size_t i = 0; i < operators.size(); ++i)
-        operators[i].rename_fact(var, before, after);
     // We never move a fact with more than one original index. If we did, we
     // would have to use a vector here.
     orig_index[var][after] = orig_index[var][before];
@@ -153,6 +143,7 @@ void LandmarkTask::move_fact(int var, int before, int after) {
         if (var == goals[i].first && before == goals[i].second)
             goals[i].second = after;
     }
+    // TODO: Do we still have to do this?
     unordered_set<int>::iterator it = unreachable_facts[var].find(before);
     if (it != unreachable_facts[var].end()) {
         unreachable_facts[var].erase(it);
@@ -236,7 +227,7 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
 }
 
 LandmarkTask LandmarkTask::get_original_task() {
-    LandmarkTask task(g_variable_domain, g_fact_names, g_operators, g_initial_state_data, g_goal);
+    LandmarkTask task(g_variable_domain, g_fact_names, g_initial_state_data, g_goal);
     return task;
 }
 
@@ -244,13 +235,8 @@ void LandmarkTask::install() {
     g_goal = goals;
     g_variable_domain = variable_domain;
     g_fact_names = fact_names;
-    g_operators = operators;
     Values::initialize_static_members(variable_domain);
     g_initial_state_data = initial_state_data;
-}
-
-void LandmarkTask::release_memory() {
-    vector<GlobalOperator>().swap(operators);
 }
 
 bool LandmarkTask::translate_state(const GlobalState &state, int *translated) const {
@@ -303,19 +289,6 @@ void LandmarkTask::dump() const {
     cout << "  Facts: " << num_facts << endl;
     if (DEBUG)
         dump_facts();
-    cout << "  GlobalOperators: " << operators.size() << endl;
-    int total_cost = 0;
-    for (size_t i = 0; i < operators.size(); ++i) {
-        total_cost += operators[i].get_cost();
-    }
-    assert(total_cost >= 0);
-    cout << "  Total cost: " << total_cost << endl;
-    if (DEBUG) {
-        for (size_t i = 0; i < operators.size(); ++i) {
-            cout << "    c=" << operators[i].get_cost() << " ";
-            operators[i].dump();
-        }
-    }
     cout << "  " << "Variable domain sizes: " << to_string(variable_domain) << endl;
     if (DEBUG) {
         cout << "  " << "Fact mapping:" << endl;

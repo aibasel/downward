@@ -41,11 +41,11 @@ std::shared_ptr<StateRegistry> get_state_registry(const std::vector<int> &initia
 
 bool is_not_marked(GlobalOperator &op);
 
-int get_pre(const GlobalOperator &op, int var);
-int get_eff(const GlobalOperator &op, int var);
-int get_post(const GlobalOperator &op, int var);
+int get_pre(OperatorProxy op, int var_id);
+int get_eff(OperatorProxy op, int var_id);
+int get_post(OperatorProxy op, int var_id);
 
-void get_unmet_preconditions(const GlobalOperator &op, const ConcreteState &state, Splits *splits);
+void get_unmet_preconditions(OperatorProxy op, const ConcreteState &state, Splits *splits);
 
 void get_unmet_goals(GoalsProxy goals, const ConcreteState &state, Splits *splits);
 

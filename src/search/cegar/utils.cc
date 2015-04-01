@@ -46,46 +46,38 @@ bool is_not_marked(GlobalOperator &op) {
     return !op.is_marked();
 }
 
-int get_pre(const GlobalOperator &op, int var) {
-    for (size_t i = 0; i < op.get_preconditions().size(); i++) {
-        const GlobalCondition &precondition = op.get_preconditions()[i];
-        if (precondition.var == var)
-            return precondition.val;
+int get_pre(OperatorProxy op, int var_id) {
+    for (FactProxy precondition : op.get_preconditions()) {
+        if (precondition.get_variable().get_id() == var_id)
+            return precondition.get_value();
     }
     return UNDEFINED;
 }
 
-int get_eff(const GlobalOperator &op, int var) {
-    for (size_t i = 0; i < op.get_effects().size(); ++i) {
-        const GlobalEffect &effect = op.get_effects()[i];
-        if (effect.var == var)
-            return effect.val;
+int get_eff(OperatorProxy op, int var_id) {
+    for (EffectProxy effect : op.get_effects()) {
+        if (effect.get_fact().get_variable().get_id() == var_id)
+            return effect.get_fact().get_value();
     }
     return UNDEFINED;
 }
 
-int get_post(const GlobalOperator &op, int var) {
-    for (size_t i = 0; i < op.get_effects().size(); ++i) {
-        const GlobalEffect &effect = op.get_effects()[i];
-        if (effect.var == var)
-            return effect.val;
-    }
-    for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
-        const GlobalCondition &precondition = op.get_preconditions()[i];
-        if (precondition.var == var)
-            return precondition.val;
-    }
-    return UNDEFINED;
+int get_post(OperatorProxy op, int var_id) {
+    int eff = get_eff(op, var_id);
+    if (eff != UNDEFINED)
+        return eff;
+    return get_pre(op, var_id);
 }
 
-void get_unmet_preconditions(const GlobalOperator &op, const ConcreteState &state, Splits *splits) {
+void get_unmet_preconditions(OperatorProxy op, const ConcreteState &state, Splits *splits) {
     assert(splits->empty());
-    for (size_t i = 0; i < op.get_preconditions().size(); ++i) {
-        const GlobalCondition &precondition = op.get_preconditions()[i];
-        if (state[precondition.var] != precondition.val) {
+    for (FactProxy precondition : op.get_preconditions()) {
+        int var_id = precondition.get_variable().get_id();
+        int value = precondition.get_value();
+        if (state[var_id] != value) {
             vector<int> wanted;
-            wanted.push_back(precondition.val);
-            splits->push_back(make_pair(precondition.var, wanted));
+            wanted.push_back(value);
+            splits->push_back(make_pair(var_id, wanted));
         }
     }
     assert(splits->empty() == is_applicable(op, state));

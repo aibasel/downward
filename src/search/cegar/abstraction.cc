@@ -60,10 +60,7 @@ Abstraction::Abstraction(TaskProxy task_proxy,
 
     split_tree.set_root(single);
     for (OperatorProxy op : task_proxy.get_operators()) {
-        const GlobalOperator *global_op = op.get_global_operator();
-        assert(op.get_cost() == global_op->get_cost());
-        single->add_loop(global_op);
-        op_to_index[global_op] = op.get_id();
+        single->add_loop(op);
     }
     states.insert(init);
 }
@@ -198,11 +195,9 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 void Abstraction::reset_distances_and_solution() const {
     for (AbstractState *state: states) {
         state->set_distance(INF);
-        state->set_prev_solution_op(0);
-        state->set_next_solution_op(0);
-        state->set_prev_solution_state(0);
-        state->set_next_solution_state(0);
     }
+    solution_backward.clear();
+    solution_forward.clear();
 }
 
 bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_costs) const {
@@ -236,14 +231,14 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             assert(!use_h);
             assert(needed_costs->size() == task_proxy.get_operators().size());
             for (size_t i = 0; i < state->get_loops().size(); ++i) {
-                const GlobalOperator *op = state->get_loops()[i];
+                OperatorProxy op = state->get_loops()[i];
                 const int op_index = get_op_index(op);
                 (*needed_costs)[op_index] = max((*needed_costs)[op_index], 0);
             }
         }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (auto &arc : successors) {
-            const GlobalOperator *op = arc.first;
+            OperatorProxy op = arc.first;
             AbstractState *successor = arc.second;
 
             // Collect needed operator costs for additive abstractions.
@@ -258,8 +253,8 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                 (*needed_costs)[op_index] = max((*needed_costs)[op_index], needed);
             }
 
-            assert(op->get_cost() >= 0);
-            int succ_g = g + op->get_cost();
+            assert(op.get_cost() >= 0);
+            int succ_g = g + op.get_cost();
             assert(succ_g >= 0);
 
             if (succ_g < successor->get_distance()) {
@@ -281,8 +276,10 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                 }
                 assert(f >= 0);
                 open->push(f, successor);
-                successor->set_prev_solution_op(op);
-                successor->set_prev_solution_state(state);
+                auto it = solution_backward.find(successor);
+                if (it != solution_backward.end())
+                    solution_backward.erase(it);
+                solution_backward.insert(make_pair(successor, Arc(op, state)));
             }
         }
     }
@@ -333,21 +330,19 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
         }
         Arcs &arcs_out = abs_state->get_arcs_out();
         for (auto &arc : arcs_out) {
-            const GlobalOperator *op = arc.first;
+            OperatorProxy op = arc.first;
             AbstractState *next_abs = arc.second;
-            assert(!use_astar || (abs_state->get_next_solution_op() &&
-                                  abs_state->get_next_solution_state()));
-            if (use_astar && (op != abs_state->get_next_solution_op() ||
-                              next_abs != abs_state->get_next_solution_state()))
+            assert(!use_astar || solution_forward.count(abs_state) == 1);
+            if (use_astar && solution_forward.at(abs_state) != arc)
                 continue;
-            if (next_abs->get_h() + op->get_cost() != abs_state->get_h())
-                // GlobalOperator is not part of an optimal path.
+            if (next_abs->get_h() + op.get_cost() != abs_state->get_h())
+                // Operator is not part of an optimal path.
                 continue;
-            if (is_applicable(*op, conc_state)) {
+            if (is_applicable(op, conc_state)) {
                 if (DEBUG)
                     cout << "      Move to: " << next_abs->str()
-                         << " with " << op->get_name() << endl;
-                ConcreteState next_conc = conc_state.apply(*op);
+                         << " with " << op.get_name() << endl;
+                ConcreteState next_conc = conc_state.apply(op);
                 if (next_abs->is_abstraction_of(next_conc)) {
                     if (seen.count(next_conc.get_id()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
@@ -359,16 +354,16 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
                         cout << "      Paths deviate." << endl;
                     ++deviations;
                     AbstractState desired_abs_state(task_proxy);
-                    next_abs->regress(*op, &desired_abs_state);
+                    next_abs->regress(op, &desired_abs_state);
                     abs_state->get_possible_splits(
                         desired_abs_state, conc_state, &splits);
                 }
             } else if (splits.empty()) {
                 // Only find unmet preconditions if we haven't found any splits already.
                 if (DEBUG)
-                    cout << "      GlobalOperator not applicable: " << op->get_name() << endl;
+                    cout << "      Operator not applicable: " << op.get_name() << endl;
                 ++unmet_preconditions;
-                get_unmet_preconditions(*op, conc_state, &splits);
+                get_unmet_preconditions(op, conc_state, &splits);
             }
         }
     }
@@ -487,11 +482,12 @@ void Abstraction::extract_solution(AbstractState *goal) const {
     assert(get_min_goal_distance() != INF);
     AbstractState *current = goal;
     while (current != init) {
-        const GlobalOperator *prev_op = current->get_prev_solution_op();
-        AbstractState *prev_state = current->get_prev_solution_state();
-        prev_state->set_next_solution_op(prev_op);
-        prev_state->set_next_solution_state(current);
-        prev_state->set_h(current->get_h() + prev_op->get_cost());
+        Arc &prev_arc = solution_backward.at(current);
+        OperatorProxy prev_op = prev_arc.first;
+        AbstractState *prev_state = prev_arc.second;
+        assert(solution_forward.count(prev_state) == 0);
+        solution_forward.insert(make_pair(prev_state, Arc(prev_op, current)));
+        prev_state->set_h(current->get_h() + prev_op.get_cost());
         assert(prev_state != current);
         current = prev_state;
     }
@@ -538,16 +534,16 @@ void Abstraction::write_dot_file(int num) {
     for (AbstractState *current_state : states) {
         Arcs &next = current_state->get_arcs_out();
         for (auto &arc : next) {
-            const GlobalOperator *op = arc.first;
+            OperatorProxy op = arc.first;
             AbstractState *next_state = arc.second;
             dotfile << current_state->str() << " -> " << next_state->str()
-                    << " [label=\"" << op->get_name() << "\"];" << endl;
+                    << " [label=\"" << op.get_name() << "\"];" << endl;
         }
         if (draw_loops) {
             Loops &loops = current_state->get_loops();
-            for (const GlobalOperator *op : loops) {
+            for (OperatorProxy op : loops) {
                 dotfile << current_state->str() << " -> " << current_state->str()
-                        << " [label=\"" << op->get_name() << "\"];" << endl;
+                        << " [label=\"" << op.get_name() << "\"];" << endl;
             }
         }
         if (current_state == init) {
@@ -560,8 +556,8 @@ void Abstraction::write_dot_file(int num) {
     dotfile.close();
 }
 
-int Abstraction::get_op_index(const GlobalOperator *op) const {
-    return (*op_to_index.find(op)).second;
+int Abstraction::get_op_index(OperatorProxy op) const {
+    return op.get_id();
 }
 
 void Abstraction::get_needed_costs(vector<int> *needed_costs) {
@@ -611,7 +607,7 @@ void Abstraction::print_statistics() {
         total_loops += loops.size();
         arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
                     sizeof(prev) + sizeof(Arc) * prev.capacity() +
-                    sizeof(loops) + sizeof(GlobalOperator *) * loops.capacity();
+                    sizeof(loops) + sizeof(OperatorProxy) * loops.capacity();
     }
     assert(nexts == prevs);
 

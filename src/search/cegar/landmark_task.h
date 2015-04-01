@@ -23,7 +23,6 @@ private:
     std::vector<int> variable_domain;
     std::vector<std::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
-    std::vector<GlobalOperator> operators;
     std::vector<int> op_costs;
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
@@ -54,23 +53,19 @@ private:
     int get_orig_op_index(int index) const;
 
 public:
-    LandmarkTask(std::vector<int> domain, std::vector<std::vector<std::string> > names,
-         std::vector<GlobalOperator> ops, std::vector<int> initial_state_data_,
+    LandmarkTask(std::vector<int> domain, std::vector<std::vector<std::string> > names, std::vector<int> initial_state_data_,
          std::vector<Fact> goal_facts);
     LandmarkTask(std::shared_ptr<AbstractTask> parent,
                  FactProxy landmark,
                  const VariableToValues &fact_groups);
 
     const std::vector<Fact> &get_goal() const {return goals; }
-    const std::vector<GlobalOperator> &get_operators() const {return operators; }
 
-    void adapt_operator_costs(const std::vector<int> &remaining_costs);
     bool translate_state(const GlobalState &state, int *translated) const;
 
     void combine_facts(int var, const std::unordered_set<int> &values);
 
     void install();
-    void release_memory();
 
     static LandmarkTask get_original_task();
 
