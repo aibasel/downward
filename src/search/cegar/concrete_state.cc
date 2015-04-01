@@ -30,6 +30,10 @@ ConcreteState ConcreteState::apply(const GlobalOperator &op) const {
     return ConcreteState(registry->get_successor_state(state, op), registry);
 }
 
+ConcreteState ConcreteState::apply(OperatorProxy op) const {
+    return ConcreteState(registry->get_successor_state(state, op), registry);
+}
+
 StateID ConcreteState::get_id() const {
     return state.get_id();
 }

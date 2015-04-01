@@ -3,6 +3,7 @@
 #include "axioms.h"
 #include "global_operator.h"
 #include "per_state_information.h"
+#include "task_proxy.h"
 
 using namespace std;
 
@@ -73,6 +74,20 @@ GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, c
         const GlobalEffect &effect = op.get_effects()[i];
         if (effect.does_fire(predecessor))
             g_state_packer->set(buffer, effect.var, effect.val);
+    }
+    g_axiom_evaluator->evaluate(buffer);
+    StateID id = insert_id_or_pop_state();
+    return lookup_state(id);
+}
+
+// TODO: Remove this temporary method.
+GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, OperatorProxy op) {
+    assert(!op.is_axiom());
+    state_data_pool.push_back(predecessor.get_packed_buffer());
+    PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
+    for (EffectProxy effect : op.get_effects()) {
+        assert(effect.get_conditions().empty());
+        g_state_packer->set(buffer, effect.get_fact().get_variable().get_id(), effect.get_fact().get_value());
     }
     g_axiom_evaluator->evaluate(buffer);
     StateID id = insert_id_or_pop_state();
