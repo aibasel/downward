@@ -3,8 +3,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <ext/hash_map>
 #include <list>
+#include <unordered_map>
 #include <vector>
 
 class Block;
@@ -18,7 +18,7 @@ struct DoubleEpsilonEquality {
     bool operator()(const double &d1, const double &d2) {
         // TODO avoid code duplication with landmark count heuristic
         static const double epsilon = 0.01;
-        return abs(d1 - d2) < epsilon;
+        return std::abs(d1 - d2) < epsilon;
     }
 };
 
@@ -53,7 +53,7 @@ class EquivalenceRelation {
       block and points to the element within it.
     */
     typedef std::pair<BlockListIter, ElementListIter> ElementPosition;
-    typedef __gnu_cxx::hash_map<int, ElementPosition> ElementPositionMap;
+    typedef std::unordered_map<int, ElementPosition> ElementPositionMap;
     ElementPositionMap element_positions;
 
     /*

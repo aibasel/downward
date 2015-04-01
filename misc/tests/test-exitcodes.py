@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -9,7 +11,7 @@ REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
 
 TASKS = {
-    "strips": "gripper/prob01.pddl",
+    "strips": "miconic/s1-0.pddl",
     "axioms": "philosophers/p01-phil2.pddl",
     "cond-eff": "miconic-simpleadl/s1-0.pddl",
 }
@@ -65,7 +67,8 @@ TESTS = [
 
 def run_plan_script(task_type, relpath, search):
     problem = os.path.join(REPO_BASE, "benchmarks", relpath)
-    print "\nRun %(search)s on %(task_type)s task:" % locals()
+    print("\nRun %(search)s on %(task_type)s task:" % locals())
+    sys.stdout.flush()
     return subprocess.call(
         [os.path.join(REPO_BASE, "src", "fast-downward.py"), problem, "--search", search])
 
@@ -85,13 +88,13 @@ def main():
     cleanup()
 
     if failures:
-        print "\nFailures:"
+        print("\nFailures:")
         for task_type, search, expected, exitcode in failures:
-            print ("%(search)s on %(task_type)s task: expected %(expected)d, "
+            print("%(search)s on %(task_type)s task: expected %(expected)d, "
                    "got %(exitcode)d" % locals())
         sys.exit(1)
     else:
-        print "\nNo errors detected."
+        print("\nNo errors detected.")
 
 
 main()

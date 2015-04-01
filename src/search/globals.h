@@ -2,9 +2,11 @@
 #define GLOBALS_H
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <vector>
 
+class AbstractTask;
 class Axiom;
 class AxiomEvaluator;
 class CausalGraph;
@@ -79,6 +81,6 @@ extern RandomNumberGenerator g_rng;
 // changed.
 extern StateRegistry *g_state_registry;
 
-
+extern const std::shared_ptr<AbstractTask> g_root_task();
 
 #endif
