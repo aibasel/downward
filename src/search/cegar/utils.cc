@@ -32,10 +32,6 @@ static char *cegar_memory_padding = 0;
 // Save previous out-of-memory handler.
 static void (*global_out_of_memory_handler)(void) = 0;
 
-bool is_not_marked(GlobalOperator &op) {
-    return !op.is_marked();
-}
-
 int get_pre(OperatorProxy op, int var_id) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (precondition.get_variable().get_id() == var_id)

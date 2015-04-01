@@ -35,8 +35,6 @@ typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
 typedef std::unordered_map<int, std::unordered_set<int> > VariableToValues;
 
-bool is_not_marked(GlobalOperator &op);
-
 int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
