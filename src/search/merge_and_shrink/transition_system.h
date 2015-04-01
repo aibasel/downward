@@ -56,15 +56,14 @@ class LabelGroup {
     /*
       A label group contains a set of locally equivalent labels, possibly of
       different cost, stores the minimum cost of all labels of the group,
-      and has a pointer to the position in TransitionSystem::transitions_of_groups
-      where the transitions associated with this group live.
+      and also the transitions.
     */
 private:
     std::list<int> labels;
-    std::vector<Transition> *transitions;
+    std::vector<Transition> transitions;
     int cost;
 public:
-    explicit LabelGroup(std::vector<Transition> *transitions_)
+    explicit LabelGroup(std::vector<Transition> &&transitions_)
         : transitions(transitions_), cost(INF) {
     }
     void set_cost(int cost_) {
@@ -82,8 +81,8 @@ public:
     LabelIter end() {
         return labels.end();
     }
-    std::vector<Transition> &get_transitions() const {
-        return *transitions;
+    std::vector<Transition> &get_transitions() {
+        return transitions;
     }
     LabelConstIter end() const {
         return labels.end();
@@ -98,7 +97,7 @@ public:
         return labels.size();
     }
     const std::vector<Transition> &get_const_transitions() const {
-        return *transitions;
+        return transitions;
     }
     int get_cost() const {
         return cost;
@@ -124,7 +123,6 @@ class TransitionSystem {
     */
     const Labels *labels;
     std::list<LabelGroup> grouped_labels;
-    std::vector<std::vector<Transition> > transitions_of_groups;
     std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
@@ -175,8 +173,8 @@ class TransitionSystem {
     void compute_distances_and_prune();
 
     // Methods related to the representation of transitions and labels
-    LabelGroupIter add_label_group(std::vector<Transition> *transitions) {
-        return grouped_labels.insert(grouped_labels.end(), LabelGroup(transitions));
+    LabelGroupIter add_label_group(std::vector<Transition> &&transitions) {
+        return grouped_labels.insert(grouped_labels.end(), LabelGroup(std::move(transitions)));
     }
     LabelGroupIter get_group_it(int label_no) {
         return std::get<0>(label_to_positions[label_no]);
