@@ -49,7 +49,6 @@ private:
 
     const TaskProxy task_proxy;
     std::unordered_map<const GlobalOperator *, int> op_to_index;
-    StateRegistry *registry;
     ConcreteState concrete_initial_state;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
