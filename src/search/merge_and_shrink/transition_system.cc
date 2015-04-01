@@ -468,12 +468,11 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
 
     for (size_t i = 0; i < result.size(); ++i) {
         // Need to set the correct number of labels *after* generating them
-        result[i]->num_labels = labels->get_size();
-
+        TransitionSystem *ts = result[i];
+        ts->num_labels = labels->get_size();
         /* Make all irrelevant labels explicit and set the cost of every
            singleton label group. */
-        for (int label_no = 0; label_no < result[i]->num_labels; ++label_no) {
-            TransitionSystem *ts = result[i];
+        for (int label_no = 0; label_no < ts->num_labels; ++label_no) {
             if (!relevant_labels[i][label_no]) {
                 for (int state = 0; state < ts->num_states; ++state) {
                     Transition loop(state, state);
@@ -482,9 +481,9 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             }
             ts->get_group_it(label_no)->set_cost(labels->get_label_cost(label_no));
         }
-        result[i]->compute_locally_equivalent_labels();
-        result[i]->compute_distances_and_prune();
-        assert(result[i]->is_valid());
+        ts->compute_locally_equivalent_labels();
+        ts->compute_distances_and_prune();
+        assert(ts->is_valid());
     }
 }
 
@@ -550,7 +549,7 @@ void TransitionSystem::apply_abstraction(
     vector<bool>().swap(goal_states);
 
     // Update all transitions. Locally equivalent labels remain locally equivalent.
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
+    for (LabelGroupIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
         vector<Transition> &transitions = group_it->get_transitions();
         vector<Transition> new_transitions;
@@ -671,7 +670,6 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 // Note: we cannot invalidate the tupel label_to_positions[label_no]
                 if (group.empty()) {
                     vector<Transition>().swap(group.get_transitions());
-                    assert(group.get_transitions().empty());
                     affected_groups.erase(&group);
                     grouped_labels.erase(group_it);
                 } else {
@@ -720,7 +718,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
           For every label group where we removed a label from, recompute
           the cost.
         */
-        for (unordered_set<LabelGroup *, hash_pointer>::iterator affected_groups_it = affected_groups.begin();
+        for (auto affected_groups_it = affected_groups.begin();
              affected_groups_it != affected_groups.end(); ++affected_groups_it) {
             LabelGroup &group = **affected_groups_it;
             group.set_cost(INF);
@@ -766,15 +764,15 @@ int TransitionSystem::get_cost(const GlobalState &state) const {
 
 int TransitionSystem::memory_estimate() const {
     int result = sizeof(TransitionSystem);
-    result += sizeof(list<int>) * grouped_labels.size();
     result += sizeof(vector<Transition>) * transitions_of_groups.capacity();
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
         result += sizeof(LabelGroup); // size of class LabelGroup
         result += sizeof(int) * group_it->size(); // size of list<int>
-        result += sizeof(int) * 2; // size of id and cost
+        result += sizeof(int); // size of cost
+        result += sizeof(vector<Transition> *); // size of transitions pointer
         const vector<Transition> &transitions = group_it->get_const_transitions();
-        result += sizeof(vector<Transition>) * transitions.capacity();
+        result += sizeof(vector<Transition>) * transitions.capacity(); // size of transitions
     }
     result += sizeof(vector<tuple<LabelGroupIter, LabelIter> >) * label_to_positions.capacity();
     result += sizeof(int) * init_distances.capacity();
@@ -1032,8 +1030,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
         // Now create the new groups together with their transitions.
         const vector<Transition> &transitions1 = group1_it->get_const_transitions();
-        for (unordered_map<const LabelGroup *, vector<int>, hash_pointer>::iterator bucket_it = buckets.begin();
-             bucket_it != buckets.end(); ++bucket_it) {
+        for (auto bucket_it = buckets.begin(); bucket_it != buckets.end(); ++bucket_it) {
             const vector<Transition> &transitions2 = bucket_it->first->get_const_transitions();
 
             // Create the new transitions for this bucket

@@ -82,7 +82,7 @@ public:
     LabelIter end() {
         return labels.end();
     }
-    std::vector<Transition> &get_transitions() const {
+    std::vector<Transition> &get_transitions() {
         return *transitions;
     }
     LabelConstIter end() const {
