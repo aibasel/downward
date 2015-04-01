@@ -28,13 +28,10 @@ namespace cegar {
 shared_ptr<AdditiveHeuristic> get_additive_heuristic(const LandmarkTask &task) {
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     Options opts;
-    //opts.set<AbstractTask *>("transform", const_cast<LandmarkTask *>(&task));
+    opts.set<AbstractTask *>("transform", const_cast<LandmarkTask *>(&task));
     opts.set<int>("cost_type", 0);
     shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
-    // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?
-    shared_ptr<StateRegistry> registry = get_state_registry(task.get_initial_state_values());
-    const GlobalState &initial_state = registry->get_initial_state();
-    additive_heuristic->evaluate(initial_state);
+    additive_heuristic->initialize_and_compute_heuristic(TaskProxy(&task).get_initial_state());
     cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
     return additive_heuristic;
 }
@@ -177,7 +174,6 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
 }
 
 void CegarHeuristic::install_task(LandmarkTask &task) const {
-    task.adapt_operator_costs(remaining_costs);
     task.dump();
     task.install();
 }
@@ -254,7 +250,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         adapt_remaining_costs(remaining_costs, needed_costs);
         int init_h = abstraction->get_init_h();
         abstraction->release_memory();
-        task.release_memory();
 
         if (init_h > 0) {
             tasks.push_back(task);

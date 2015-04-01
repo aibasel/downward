@@ -22,10 +22,6 @@ AbstractState::AbstractState(TaskProxy task_proxy)
     : task_proxy(task_proxy),
       values(new Values()),
       distance(UNDEFINED),
-      prev_solution_op(0),
-      next_solution_op(0),
-      prev_solution_state(0),
-      next_solution_state(0),
       node(0) {
 }
 
@@ -41,18 +37,18 @@ string AbstractState::str() const {
     return oss.str();
 }
 
-void AbstractState::regress(const GlobalOperator &op, AbstractState *result) const {
+void AbstractState::regress(OperatorProxy op, AbstractState *result) const {
     *result->values = *values;
     unordered_set<int> precondition_vars;
-    for (size_t i = 0; i < op.get_preconditions().size(); i++) {
-        const GlobalCondition &precondition = op.get_preconditions()[i];
-        result->values->set(precondition.var, precondition.val);
-        precondition_vars.insert(precondition.var);
+    for (FactProxy precondition : op.get_preconditions()) {
+        int var_id = precondition.get_variable().get_id();
+        result->values->set(var_id, precondition.get_value());
+        precondition_vars.insert(var_id);
     }
-    for (size_t i = 0; i < op.get_effects().size(); i++) {
-        const GlobalEffect &effect = op.get_effects()[i];
-        if (precondition_vars.count(effect.var) == 0) {
-            result->values->add_all(effect.var);
+    for (EffectProxy effect : op.get_effects()) {
+        int var_id = effect.get_fact().get_variable().get_id();
+        if (precondition_vars.count(var_id) == 0) {
+            result->values->add_all(var_id);
         }
     }
 }
@@ -73,11 +69,11 @@ size_t AbstractState::count(int var) const {
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (Arcs::iterator it = arcs_in.begin(); it != arcs_in.end(); ++it) {
-        const GlobalOperator *op = it->first;
-        AbstractState *u = it->second;
+    for (auto arc : arcs_in) {
+        OperatorProxy op = arc.first;
+        AbstractState *u = arc.second;
         assert(u != this);
-        int post = get_post(*op, var);
+        int post = get_post(op, var);
         if (post == UNDEFINED) {
             // If the domains of u and v1 don't intersect, we must add the other arc.
             bool u_and_v1_intersect = u->domains_intersect(v1, var);
@@ -98,11 +94,11 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (Arcs::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-        const GlobalOperator *op = it->first;
+        OperatorProxy op = it->first;
         AbstractState *w = it->second;
         assert(w != this);
-        int pre = get_pre(*op, var);
-        int post = get_post(*op, var);
+        int pre = get_pre(op, var);
+        int post = get_post(op, var);
         if (post == UNDEFINED) {
             assert(pre == UNDEFINED);
             // If the domains of v1 and w don't intersect, we must add the other arc.
@@ -127,9 +123,9 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
 
 void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) {
     for (size_t i = 0; i < loops.size(); ++i) {
-        const GlobalOperator *op = loops[i];
-        int pre = get_pre(*op, var);
-        int post = get_post(*op, var);
+        OperatorProxy op = loops[i];
+        int pre = get_pre(op, var);
+        int post = get_post(op, var);
         if (pre == UNDEFINED) {
             if (post == UNDEFINED) {
                 v1->add_loop(op);
@@ -199,7 +195,7 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     v2->set_h(h);
 }
 
-void AbstractState::add_arc(const GlobalOperator *op, AbstractState *other) {
+void AbstractState::add_arc(OperatorProxy op, AbstractState *other) {
     // Experiments showed that keeping the arcs sorted for faster removal
     // increases the overall processing time. Out of 30 domains it made no
     // difference for 10 domains, 17 domains preferred unsorted arcs and in
@@ -210,11 +206,11 @@ void AbstractState::add_arc(const GlobalOperator *op, AbstractState *other) {
     other->arcs_in.push_back(Arc(op, this));
 }
 
-void AbstractState::add_loop(const GlobalOperator *op) {
+void AbstractState::add_loop(OperatorProxy op) {
     loops.push_back(op);
 }
 
-void AbstractState::remove_arc(Arcs &arcs, const GlobalOperator *op, AbstractState *other) {
+void AbstractState::remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other) {
     Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
     assert(pos != arcs.end());
     // For PODs assignment is faster than swapping.
@@ -222,11 +218,11 @@ void AbstractState::remove_arc(Arcs &arcs, const GlobalOperator *op, AbstractSta
     arcs.pop_back();
 }
 
-void AbstractState::remove_next_arc(const GlobalOperator *op, AbstractState *other) {
+void AbstractState::remove_next_arc(OperatorProxy op, AbstractState *other) {
     remove_arc(arcs_out, op, other);
 }
 
-void AbstractState::remove_prev_arc(const GlobalOperator *op, AbstractState *other) {
+void AbstractState::remove_prev_arc(OperatorProxy op, AbstractState *other) {
     remove_arc(arcs_in, op, other);
 }
 
