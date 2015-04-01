@@ -61,6 +61,7 @@ Abstraction::Abstraction(TaskProxy task_proxy,
     split_tree.set_root(single);
     for (OperatorProxy op : task_proxy.get_operators()) {
         const GlobalOperator *global_op = op.get_global_operator();
+        assert(op.get_cost() == global_op->get_cost());
         single->add_loop(global_op);
         op_to_index[global_op] = op.get_id();
     }
