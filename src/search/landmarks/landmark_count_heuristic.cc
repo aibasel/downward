@@ -1,14 +1,14 @@
 #include "landmark_count_heuristic.h"
 
+#include "../lp_solver.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 
 #include <cmath>
-#include <ext/hash_map>
 #include <limits>
+#include <unordered_map>
 
 using namespace std;
-using namespace __gnu_cxx;
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
@@ -35,16 +35,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             exit_with(EXIT_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
-#ifdef USE_LP
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
                 lgraph,
                 OperatorCost(opts.get_enum("cost_type")),
                 LPSolverType(opts.get_enum("lpsolver")));
-#else
-            cerr << "You must build the planner with the USE_LP symbol defined." << endl
-                 << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
-            exit_with(EXIT_INPUT_ERROR);
-#endif
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(
                 lgraph, opts.get<bool>("alm"),
@@ -170,12 +164,8 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
                                                          const LandmarkSet &reached) const {
-    const hash_map<LandmarkNode *, edge_type, hash_pointer> &parents =
-        node.parents;
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-         parent_it = parents.begin(); parent_it != parents.end(); ++parent_it) {
-        LandmarkNode &parent = *(parent_it->first);
-        if (reached.find(&parent) == reached.end()) {
+    for (const auto &parent : node.parents) {
+        if (reached.count(parent.first) == 0) {
             return true;
         }
     }

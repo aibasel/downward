@@ -3,7 +3,7 @@
 
 #include "../operator_cost.h"
 
-#include <ext/slist>
+#include <forward_list>
 #include <iostream>
 #include <list>
 #include <string>
@@ -69,6 +69,7 @@ class TransitionSystem {
     const Labels *labels;
     std::list<std::list<int> > grouped_labels;
     std::vector<std::vector<Transition> > transitions_by_group_index;
+    std::vector<int> cost_by_group_index;
     std::vector<std::tuple<int, LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), with the exception during
@@ -143,7 +144,7 @@ public:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels,
                                                 OperatorCost cost_type);
-    void apply_abstraction(std::vector<__gnu_cxx::slist<AbstractStateRef> > &collapsed_groups);
+    void apply_abstraction(std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
     void release_memory();
@@ -157,8 +158,8 @@ public:
       Method to identify the transition system in output.
       Print "Atomic transition system #x: " for atomic transition systems,
       where x is the variable. For composite transition systems, print
-      "Transition system (xyz): " for the transition system containing variables
-      x, y and z.
+      "Transition system (x/y): " for the transition system containing x
+      out of y variables.
     */
     std::string tag() const;
     bool is_solvable() const;

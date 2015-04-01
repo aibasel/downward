@@ -27,27 +27,26 @@ If NT shall be predefinable:
   should add an explanation to OptionParser::usage().
 */
 
+#include "heuristic.h"
+#include "option_parser_util.h"
 
-
-#include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <limits>
 #include <algorithm>
+#include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
-#include "option_parser_util.h"
-#include "heuristic.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
-class OptionParser;
+class AbstractTask;
 class LandmarkGraph;
+class MergeStrategy;
 template<class Entry>
 class OpenList;
+class OptionParser;
 class SearchEngine;
-class MergeStrategy;
 class ShrinkStrategy;
-class TaskProxy;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.
@@ -133,9 +132,9 @@ public:
 };
 
 template <>
-class TokenParser<TaskProxy *> {
+class TokenParser<AbstractTask *> {
 public:
-    static inline TaskProxy *parse(OptionParser &p);
+    static inline AbstractTask *parse(OptionParser &p);
 };
 
 template <class T>
@@ -419,8 +418,8 @@ Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
     return lookup_in_registry<Synergy>(p);
 }
 
-TaskProxy *TokenParser<TaskProxy *>::parse(OptionParser &p) {
-    return lookup_in_registry<TaskProxy>(p);
+AbstractTask *TokenParser<AbstractTask *>::parse(OptionParser &p) {
+    return lookup_in_registry<AbstractTask>(p);
 }
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {

@@ -41,7 +41,9 @@ HEADERS = \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
+          cost_adapted_task.h \
           countdown_timer.h \
+          delegating_task.h \
           domain_transition_graph.h \
           eager_search.h \
           enforced_hill_climbing_search.h \
@@ -74,8 +76,11 @@ HEADERS = \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
+          task_tools.h \
           timer.h \
+          tracer.h \
           utilities.h \
+          utilities_hash.h \
           variable_order_finder.h \
           weighted_evaluator.h \
           \
@@ -86,7 +91,8 @@ HEADERS = \
           open_lists/tiebreaking_open_list.h \
           open_lists/type_based_open_list.h \
           \
-          lp_solver_interface.h \
+          lp_internals.h \
+          lp_solver.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
@@ -224,7 +230,7 @@ endif
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Wno-deprecated -Werror
+CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Werror
 
 CXXFLAGS += -Iext
 ifeq ($(DOWNWARD_OS), osx)
@@ -279,8 +285,11 @@ endif
 
 ifeq ($(DOWNWARD_USE_LP),1)
 
-$(DOWNWARD_COIN_ROOT):
-	$(error COIN is no longer bundled with Fast Downward. Please install COIN outside of the repository and set up the environment variable DOWNWARD_COIN_ROOT to the new path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
+COIN_ROOT_FOUND := $(shell test -d $(DOWNWARD_COIN_ROOT) && echo 1)
+
+ifneq ($(COIN_ROOT_FOUND),1)
+    $(error COIN not found. Please install COIN and set up the environment variable DOWNWARD_COIN_ROOT to its path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
+endif
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(DOWNWARD_COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(DOWNWARD_COIN_ROOT)
@@ -424,7 +433,7 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 
 ifneq ($(MAKECMDGOALS),clean)
     ifneq ($(MAKECMDGOALS),distclean)
-        -include Makefile.depend
+        include Makefile.depend
     endif
 endif
 
