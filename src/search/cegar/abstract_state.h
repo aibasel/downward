@@ -10,7 +10,6 @@
 
 namespace cegar {
 class AbstractState;
-class ConcreteState;
 class LandmarkTask;
 class Values;
 typedef std::pair<OperatorProxy, AbstractState *> Arc;
@@ -68,10 +67,10 @@ public:
     void add_loop(OperatorProxy op);
 
     void get_possible_splits(const AbstractState &desired,
-                             const ConcreteState &prev_conc_state,
+                             const State &prev_conc_state,
                              Splits *conditions) const;
 
-    bool is_abstraction_of(const ConcreteState &conc_state) const;
+    bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool is_abstraction_of_goal() const;
 

@@ -1,11 +1,10 @@
 #include "utils.h"
 
-#include "concrete_state.h"
-
 #include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../state_registry.h"
+#include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -69,29 +68,27 @@ int get_post(OperatorProxy op, int var_id) {
     return get_pre(op, var_id);
 }
 
-void get_unmet_preconditions(OperatorProxy op, const ConcreteState &state, Splits *splits) {
+void get_unmet_preconditions(OperatorProxy op, const State &state, Splits *splits) {
     assert(splits->empty());
     for (FactProxy precondition : op.get_preconditions()) {
-        int var_id = precondition.get_variable().get_id();
-        int value = precondition.get_value();
-        if (state[var_id] != value) {
+        VariableProxy var = precondition.get_variable();
+        if (state[var] != precondition) {
             vector<int> wanted;
-            wanted.push_back(value);
-            splits->push_back(make_pair(var_id, wanted));
+            wanted.push_back(precondition.get_value());
+            splits->push_back(make_pair(var.get_id(), wanted));
         }
     }
     assert(splits->empty() == is_applicable(op, state));
 }
 
-void get_unmet_goals(GoalsProxy goals, const ConcreteState &state, Splits *splits) {
+void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits) {
     assert(splits->empty());
     for (FactProxy goal : goals) {
-        int var_id = goal.get_variable().get_id();
-        int value = goal.get_value();
-        if (state[var_id] != value) {
+        VariableProxy var = goal.get_variable();
+        if (state[var] != goal) {
             vector<int> wanted;
-            wanted.push_back(value);
-            splits->push_back(make_pair(var_id, wanted));
+            wanted.push_back(goal.get_value());
+            splits->push_back(make_pair(var.get_id(), wanted));
         }
     }
 }

@@ -1,7 +1,6 @@
 #include "abstraction.h"
 
 #include "abstract_state.h"
-#include "concrete_state.h"
 #include "landmark_task.h"
 #include "utils.h"
 
@@ -11,6 +10,7 @@
 #include "../rng.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
+#include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -36,7 +36,7 @@ typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 Abstraction::Abstraction(TaskProxy task_proxy,
                          shared_ptr<AdditiveHeuristic> additive_heuristic)
     : task_proxy(task_proxy),
-      concrete_initial_state(get_initial_state(task_proxy)),
+      concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(additive_heuristic),
       single(new AbstractState(task_proxy)),
       init(single),
@@ -291,7 +291,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
     return true;
 }
 
-bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractState *abs_state) {
+bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
     assert(abs_state->is_abstraction_of(conc_state));
 
     if (DEBUG)
@@ -299,15 +299,15 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
              << " (is init: " << (abs_state == init) << ")" << endl;
 
     StatesToSplits states_to_splits;
-    queue<pair<AbstractState *, ConcreteState> > unseen;
-    unordered_set<StateID> seen;
+    queue<pair<AbstractState *, State> > unseen;
+    unordered_set<size_t> seen;
 
     unseen.push(make_pair(abs_state, conc_state));
 
     // Only search flaws until we hit the memory limit.
     while (!unseen.empty() && memory_padding_is_reserved()) {
         abs_state = unseen.front().first;
-        conc_state = unseen.front().second;
+        conc_state = move(unseen.front().second);
         unseen.pop();
         Splits &splits = states_to_splits[abs_state];
         if (DEBUG)
@@ -342,11 +342,11 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
                 if (DEBUG)
                     cout << "      Move to: " << next_abs->str()
                          << " with " << op.get_name() << endl;
-                ConcreteState next_conc = conc_state.apply(op);
+                State next_conc = move(conc_state.apply(op));
                 if (next_abs->is_abstraction_of(next_conc)) {
-                    if (seen.count(next_conc.get_id()) == 0) {
+                    if (seen.count(next_conc.hash()) == 0) {
                         unseen.push(make_pair(next_abs, next_conc));
-                        seen.insert(next_conc.get_id());
+                        seen.insert(next_conc.hash());
                     }
                 } else if (splits.empty()) {
                     // Only find deviation reasons if we haven't found any splits already.

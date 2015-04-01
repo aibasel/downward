@@ -1,12 +1,12 @@
 #include "abstract_state.h"
 
-#include "concrete_state.h"
 #include "landmark_task.h"
 #include "values.h"
 
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
+#include "../task_proxy.h"
 
 #include <algorithm>
 #include <cassert>
@@ -54,7 +54,7 @@ void AbstractState::regress(OperatorProxy op, AbstractState *result) const {
 }
 
 void AbstractState::get_possible_splits(const AbstractState &desired,
-                                        const ConcreteState &prev_conc_state,
+                                        const State &prev_conc_state,
                                         Splits *splits)
 const {
     values->get_possible_splits(*desired.values, prev_conc_state, splits);
@@ -226,10 +226,10 @@ void AbstractState::remove_prev_arc(OperatorProxy op, AbstractState *other) {
     remove_arc(arcs_in, op, other);
 }
 
-bool AbstractState::is_abstraction_of(const ConcreteState &conc_state) const {
+bool AbstractState::is_abstraction_of(const State &conc_state) const {
     // Return true if every concrete value is contained in the possible values.
     for (VariableProxy var : task_proxy.get_variables()) {
-        if (!values->test(var.get_id(), conc_state[var.get_id()]))
+        if (!values->test(var.get_id(), conc_state[var].get_value()))
             return false;
     }
     return true;

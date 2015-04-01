@@ -20,8 +20,6 @@
 #include <vector>
 
 namespace cegar {
-class ConcreteState;
-
 extern bool DEBUG;
 
 const int UNDEFINED = -1;
@@ -45,9 +43,9 @@ int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
 
-void get_unmet_preconditions(OperatorProxy op, const ConcreteState &state, Splits *splits);
+void get_unmet_preconditions(OperatorProxy op, const State &state, Splits *splits);
 
-void get_unmet_goals(GoalsProxy goals, const ConcreteState &state, Splits *splits);
+void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits);
 
 Fact get_fact(const LandmarkNode *node);
 

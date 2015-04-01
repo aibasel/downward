@@ -1,6 +1,6 @@
 #include "values.h"
 
-#include "concrete_state.h"
+#include "../task_proxy.h"
 
 #include <sstream>
 
@@ -94,12 +94,12 @@ bool Values::abstracts(const Values &other) const {
     return other.values.is_subset_of(values);
 }
 
-void Values::get_possible_splits(const Values &flaw, const ConcreteState &conc_state,
+void Values::get_possible_splits(const Values &flaw, const State &conc_state,
                                  Splits *splits) const {
     assert(splits->empty());
     Bitset intersection(values & flaw.values);
     for (size_t var = 0; var < borders.size(); ++var) {
-        if (!intersection.test(pos(var, conc_state[var]))) {
+        if (!intersection.test(pos(var, conc_state[var].get_value()))) {
             vector<int> wanted;
             for (int pos = borders[var]; pos < borders[var] + variable_domain[var]; ++pos) {
                 if (intersection.test(pos)) {
