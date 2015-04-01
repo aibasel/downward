@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
+#include "modified_costs_task.h"
 #include "utils.h"
 
 #include "../global_state.h"
@@ -213,7 +214,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
         original_task.install();
-        // TODO: Use cost adapted task as parent task.
         shared_ptr<AbstractTask> orig_task_impl = g_root_task();
         TaskProxy orig_task = TaskProxy(orig_task_impl.get());
         FactProxy landmark = orig_task.get_variables()[facts[i].first].get_fact(facts[i].second);
@@ -221,7 +221,11 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         if (options.get<bool>("combine_facts") && decomposition == LANDMARKS) {
             groups = get_prev_landmarks(landmark);
         }
-        LandmarkTask task = LandmarkTask(orig_task_impl, landmark, groups);
+        Options opts;
+        opts.set<shared_ptr<AbstractTask> >("transform", orig_task_impl);
+        opts.set<vector<int> >("operator_costs", remaining_costs);
+        shared_ptr<ModifiedCostsTask> modified_costs_task = make_shared<ModifiedCostsTask>(opts);
+        LandmarkTask task = LandmarkTask(modified_costs_task, landmark, groups);
         unordered_set<FactProxy> reachable_facts;
         if (decomposition != NONE)
             // TODO: Really use for GOALS decomposition?
