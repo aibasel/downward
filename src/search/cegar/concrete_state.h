@@ -31,8 +31,8 @@ public:
     StateID get_id() const;
 };
 
-bool is_applicable(const GlobalCondition &condition, const ConcreteState &state);
 bool is_applicable(const GlobalOperator &op, const ConcreteState &state);
+bool is_applicable(OperatorProxy op, const ConcreteState &state);
 
 bool is_goal_state(TaskProxy task, const ConcreteState &state);
 

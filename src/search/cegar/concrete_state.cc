@@ -34,13 +34,17 @@ StateID ConcreteState::get_id() const {
     return state.get_id();
 }
 
-bool is_applicable(const GlobalCondition &condition, const ConcreteState &state) {
-    return state[condition.var] == condition.val;
-}
-
 bool is_applicable(const GlobalOperator &op, const ConcreteState &state) {
     for (GlobalCondition precondition : op.get_preconditions()) {
-        if (!is_applicable(precondition, state))
+        if (state[precondition.var] != precondition.val)
+            return false;
+    }
+    return true;
+}
+
+bool is_applicable(OperatorProxy op, const ConcreteState &state) {
+    for (FactProxy precondition : op.get_preconditions()) {
+        if (state[precondition.get_variable().get_id()] != precondition.get_value())
             return false;
     }
     return true;
