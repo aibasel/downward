@@ -46,9 +46,9 @@ bool is_applicable(const GlobalOperator &op, const ConcreteState &state) {
     return true;
 }
 
-bool is_goal_state(vector<pair<int, int>> goals, const ConcreteState &state) {
-    for (auto goal : goals) {
-        if (state[goal.first] != goal.second) {
+bool is_goal_state(TaskProxy task, const ConcreteState &state) {
+    for (FactProxy goal : task.get_goals()) {
+        if (state[goal.get_variable().get_id()] != goal.get_value()) {
             return false;
         }
     }

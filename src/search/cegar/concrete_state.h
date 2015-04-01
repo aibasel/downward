@@ -34,8 +34,7 @@ public:
 bool is_applicable(const GlobalCondition &condition, const ConcreteState &state);
 bool is_applicable(const GlobalOperator &op, const ConcreteState &state);
 
-// TODO: Use GoalsProxy.
-bool is_goal_state(std::vector<std::pair<int, int> > goals, const ConcreteState &state);
+bool is_goal_state(TaskProxy task, const ConcreteState &state);
 
 ConcreteState get_initial_state(TaskProxy task_proxy);
 
