@@ -31,11 +31,10 @@ shared_ptr<AdditiveHeuristic> get_additive_heuristic(const LandmarkTask &task) {
     opts.set<int>("cost_type", 0);
     shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
     // TODO: Can we pass a State instead of a GlobalState to AdditiveHeuristic?
-    StateRegistry *registry = get_state_registry(task.get_initial_state_values());
+    shared_ptr<StateRegistry> registry = get_state_registry(task.get_initial_state_values());
     const GlobalState &initial_state = registry->get_initial_state();
     additive_heuristic->evaluate(initial_state);
     cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
-    delete registry;
     return additive_heuristic;
 }
 
