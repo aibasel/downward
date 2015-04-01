@@ -233,7 +233,6 @@ LandmarkTask LandmarkTask::get_original_task() {
 
 void LandmarkTask::install() {
     Values::initialize_static_members(variable_domain);
-    g_initial_state_data = initial_state_data;
 }
 
 bool LandmarkTask::translate_state(const GlobalState &state, int *translated) const {
