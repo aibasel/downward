@@ -474,7 +474,7 @@ bool does_fire(EffectProxy effect, const State &state);
 
 class State {
     const AbstractTask *task;
-    const std::vector<int> values;
+    std::vector<int> values;
 public:
     using ItemType = FactProxy;
     State(const AbstractTask &task, std::vector<int> && values)
@@ -482,6 +482,14 @@ public:
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
+    State(const State &other) = default;
+
+    State& operator=(const State &&other) {
+        if (this != &other) {
+            values = std::move(other.values);
+        }
+        return *this;
+    }
 
     State(State && other)
         : task(other.task), values(std::move(other.values)) {
@@ -512,6 +520,10 @@ public:
             }
         }
         return State(*task, std::move(new_values));
+    }
+
+    std::size_t hash() const {
+        return hash_sequence(values, values.size());
     }
 };
 
@@ -575,6 +587,13 @@ struct hash<FactProxy> {
         std::pair<int, int> raw_fact = make_pair(fact.get_variable().get_id(), fact.get_value());
         std::hash<std::pair<int, int> > hasher;
         return hasher(raw_fact);
+    }
+};
+
+template<>
+struct hash<State> {
+    size_t operator()(const State &state) const {
+        return state.hash();
     }
 };
 }

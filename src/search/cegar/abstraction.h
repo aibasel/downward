@@ -2,12 +2,12 @@
 #define CEGAR_ABSTRACTION_H
 
 #include "abstract_state.h"
-#include "concrete_state.h"
 #include "split_tree.h"
 
 #include "../global_state.h"
 #include "../priority_queue.h"
 #include "../rng.h"
+#include "../task_proxy.h"
 #include "../timer.h"
 
 #include <limits>
@@ -49,7 +49,7 @@ private:
     Abstraction &operator=(const Abstraction &);
 
     const TaskProxy task_proxy;
-    ConcreteState concrete_initial_state;
+    const State concrete_initial_state;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
     // Set of all valid states, i.e. states that have not been split.
@@ -115,7 +115,7 @@ private:
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw
     // from appearing in the next round again.
-    bool check_and_break_solution(ConcreteState conc_state, AbstractState *abs_state);
+    bool check_and_break_solution(State conc_state, AbstractState *abs_state);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values() const;
