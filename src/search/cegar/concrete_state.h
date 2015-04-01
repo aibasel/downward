@@ -27,6 +27,7 @@ public:
     int operator[](std::size_t index) const;
 
     ConcreteState apply(const GlobalOperator &op) const;
+    ConcreteState apply(OperatorProxy op) const;
 
     StateID get_id() const;
 };
