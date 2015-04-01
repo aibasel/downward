@@ -7,6 +7,7 @@
 #include "../option_parser.h"
 #include "../rng.h"
 #include "../utilities.h"
+#include "../utilities_hash.h"
 
 #include <cstddef>
 #include <unordered_map>
@@ -32,8 +33,7 @@ class TypeBasedOpenList : public OpenList<Entry> {
     typedef std::vector<Entry> Bucket;
     std::vector<std::pair<Key, Bucket> > keys_and_buckets;
 
-    typedef typename std::unordered_map<Key, int, hash_int_vector> KeyToBucketIndex;
-    KeyToBucketIndex key_to_bucket_index;
+    std::unordered_map<Key, int> key_to_bucket_index;
 
     int size;
     bool dead_end;
@@ -61,7 +61,7 @@ public:
             key.push_back(evaluator->get_value());
         }
 
-        typename KeyToBucketIndex::iterator it = key_to_bucket_index.find(key);
+        auto it = key_to_bucket_index.find(key);
         if (it == key_to_bucket_index.end()) {
             keys_and_buckets.push_back(make_pair(key, Bucket {entry}
                                                  ));
