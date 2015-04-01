@@ -10,6 +10,7 @@
 #include <boost/dynamic_bitset.hpp>
 
 #include <limits>
+#include <memory>
 #include <ostream>
 #include <set>
 #include <string>
@@ -36,7 +37,7 @@ typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
 typedef std::unordered_map<int, std::unordered_set<int> > VariableToValues;
 
-StateRegistry *get_state_registry(const std::vector<int> &initial_state_data);
+std::shared_ptr<StateRegistry> get_state_registry(const std::vector<int> &initial_state_data);
 
 bool is_not_marked(GlobalOperator &op);
 

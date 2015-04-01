@@ -36,7 +36,7 @@ typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 Abstraction::Abstraction(TaskProxy task_proxy,
                          shared_ptr<AdditiveHeuristic> additive_heuristic)
     : task_proxy(task_proxy),
-      concrete_initial_state(g_initial_state()), // TODO: Remove.
+      concrete_initial_state(get_initial_state(task_proxy)),
       additive_heuristic(additive_heuristic),
       single(new AbstractState(task_proxy)),
       init(single),
@@ -55,13 +55,6 @@ Abstraction::Abstraction(TaskProxy task_proxy,
       memory_released(false) {
     assert(!task_proxy.get_goals().empty());
     reserve_memory_padding();
-
-    vector<int> initial_state_data;
-    initial_state_data.reserve(task_proxy.get_variables().size());
-    for (FactProxy fact : task_proxy.get_initial_state())
-        initial_state_data.push_back(fact.get_value());
-    registry = get_state_registry(initial_state_data);
-    concrete_initial_state = ConcreteState(registry->get_initial_state());
 
     goals.insert(init);
 
@@ -599,7 +592,6 @@ void Abstraction::release_memory() {
         delete state;
     }
     AbstractStates().swap(states);
-    delete registry;
     memory_released = true;
 }
 

@@ -1,6 +1,8 @@
 #ifndef CEGAR_CONCRETE_STATE_H
 #define CEGAR_CONCRETE_STATE_H
 
+#include "utils.h"
+
 #include "../state_id.h"
 
 #include <cstddef>
@@ -14,11 +16,13 @@ class GlobalOperator;
 
 namespace cegar {
 class ConcreteState {
-    const GlobalState *state;
+    GlobalState state;
+    std::shared_ptr<StateRegistry> registry;
 public:
-    explicit ConcreteState(const GlobalState &state);
+    explicit ConcreteState(const GlobalState &state, std::shared_ptr<StateRegistry> registry);
     ~ConcreteState();
     //ConcreteState(const ConcreteState &other) = delete;
+    ConcreteState& operator=(const ConcreteState &other);
 
     int operator[](std::size_t index) const;
 
@@ -32,6 +36,8 @@ bool is_applicable(const GlobalOperator &op, const ConcreteState &state);
 
 // TODO: Use GoalsProxy.
 bool is_goal_state(std::vector<std::pair<int, int> > goals, const ConcreteState &state);
+
+ConcreteState get_initial_state(TaskProxy task_proxy);
 
 }
 #endif
