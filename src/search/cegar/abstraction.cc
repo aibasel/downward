@@ -318,7 +318,7 @@ bool Abstraction::check_and_break_solution(ConcreteState conc_state, AbstractSta
         if (!states_to_splits[abs_state].empty())
             continue;
         if (is_goal(abs_state)) {
-            if (is_goal_state(g_goal, conc_state)) {
+            if (is_goal_state(task_proxy, conc_state)) {
                 // We found a valid concrete solution.
                 return true;
             } else {
