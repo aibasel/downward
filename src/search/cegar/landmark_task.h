@@ -23,7 +23,6 @@ private:
     std::vector<int> variable_domain;
     std::vector<std::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
-    std::vector<int> op_costs;
     std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
 
