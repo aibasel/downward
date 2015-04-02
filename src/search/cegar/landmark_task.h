@@ -18,27 +18,15 @@ private:
     std::vector<int> initial_state_data;
     std::vector<Fact> goals;
     std::vector<int> variable_domain;
-    std::vector<std::unordered_set<int> > unreachable_facts;
     std::vector<std::vector<std::string> > fact_names;
-    std::vector<std::vector<int> > orig_index;
     std::vector<std::vector<int> > task_index;
 
     void move_fact(int var, int before, int after);
-    void update_facts(int var, int num_values, const std::vector<int> &new_task_index);
-    void find_and_apply_new_fact_ordering(int var, std::set<int> &unordered_values, int value_for_rest);
     void combine_facts(int var, const std::unordered_set<int> &values);
 
     void dump_name() const;
     void dump_facts() const;
 
-    int get_orig_value(int var, int value) const {
-        assert(in_bounds(var, orig_index));
-        assert(in_bounds(value, orig_index[var]));
-        return orig_index[var][value];
-    }
-    std::pair<int, int> get_orig_fact(Fact fact) const {
-        return std::make_pair(fact.first, get_orig_value(fact.first, fact.second));
-    }
     int get_task_value(int var, int value) const {
         assert(in_bounds(var, task_index));
         assert(in_bounds(value, task_index[var]));
