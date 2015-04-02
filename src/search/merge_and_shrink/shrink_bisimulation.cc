@@ -192,12 +192,12 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    const list<list<int> > &grouped_labels = ts.get_grouped_labels();
+    const list<LabelGroup> &grouped_labels = ts.get_grouped_labels();
     int label_group_counter = 0;
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const list<int> &labels = *group_it;
-        const vector<Transition> &transitions = ts.get_const_transitions_for_group(labels);
+        const LabelGroup &label_group = *group_it;
+        const vector<Transition> &transitions = label_group.get_const_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
@@ -205,7 +205,7 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = ts.get_goal_distance(trans.src);
                 int target_h = ts.get_goal_distance(trans.target);
-                int cost = ts.get_cost_for_label_group(labels);
+                int cost = label_group.get_cost();
                 assert(target_h + cost >= src_h);
                 skip_transition = (target_h + cost != src_h);
             }
