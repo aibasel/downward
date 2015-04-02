@@ -625,27 +625,4 @@ void Abstraction::print_statistics() {
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
 }
-
-void Abstraction::print_histograms() const {
-    map<int, int> h_to_abs_states;
-    map<int, double> h_to_rel_conc_states;
-    for (AbstractState *state : states) {
-        const int h = state->get_h();
-        assert(h >= 0);
-        h_to_abs_states[h] += 1;
-        h_to_rel_conc_states[h] += state->get_rel_conc_states();
-    }
-    cout << "Number of abstract states" << endl;
-    for (auto &h_and_states : h_to_abs_states) {
-        int h = h_and_states.first;
-        int num_states = h_and_states.second;
-        cout << "h=" << left << setw(3) << h << ": " << num_states << endl;
-    }
-    cout << "Percentage of concrete states" << endl;
-    for (auto &h_and_rel_conc_states : h_to_rel_conc_states) {
-        int h = h_and_rel_conc_states.first;
-        double rel_conc_states = h_and_rel_conc_states.second;
-        cout << "h=" << left << setw(3) << h << ": " << fixed << 100 * rel_conc_states << endl;
-    }
-}
 }

@@ -262,8 +262,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         abstraction->build();
         num_states += abstraction->get_num_states();
-        if (decomposition == Decomposition::NONE && num_abstractions == 1 && !search)
-            abstraction->print_histograms();
         vector<int> needed_costs;
         abstraction->get_needed_costs(&needed_costs);
         adapt_remaining_costs(remaining_costs, needed_costs);
