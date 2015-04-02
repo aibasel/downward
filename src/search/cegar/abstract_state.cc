@@ -211,10 +211,9 @@ void AbstractState::add_loop(OperatorProxy op) {
 }
 
 void AbstractState::remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other) {
-    Arcs::iterator pos = find(arcs.begin(), arcs.end(), Arc(op, other));
+    auto pos = find(arcs.begin(), arcs.end(), Arc(op, other));
     assert(pos != arcs.end());
-    // For PODs assignment is faster than swapping.
-    *pos = arcs.back();
+    swap(*pos, arcs.back());
     arcs.pop_back();
 }
 
@@ -240,24 +239,10 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 }
 
 bool AbstractState::is_abstraction_of_goal() const {
-    GoalsProxy goals = task_proxy.get_goals();
-    assert(!goals.empty());
-    for (FactProxy goal : goals) {
+    for (FactProxy goal : task_proxy.get_goals()) {
         if (!values->test(goal.get_variable().get_id(), goal.get_value()))
             return false;
     }
     return true;
-}
-
-double AbstractState::get_rel_conc_states() const {
-    double fraction = 1.0;
-    for (VariableProxy var : task_proxy.get_variables()) {
-        const double domain_size = values->count(var.get_id());
-        assert(domain_size >= 1);
-        fraction *= domain_size / var.get_domain_size();
-    }
-    assert(fraction <= 1.0);
-    assert(fraction > 0.0);
-    return fraction;
 }
 }

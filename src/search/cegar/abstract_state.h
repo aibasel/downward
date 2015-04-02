@@ -76,9 +76,6 @@ public:
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool is_abstraction_of_goal() const;
 
-    // Return fraction of concrete states this state abstracts.
-    double get_rel_conc_states() const;
-
     // A* search.
     void set_distance(int dist) {distance = dist; }
     int get_distance() {return distance; }
