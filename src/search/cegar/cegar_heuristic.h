@@ -26,7 +26,7 @@ enum GoalOrder {
     HADD_DOWN
 };
 
-enum Decomposition {
+enum class Decomposition {
     NONE,
     LANDMARKS,
     GOALS,

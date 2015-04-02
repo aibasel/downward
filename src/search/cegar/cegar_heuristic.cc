@@ -163,16 +163,16 @@ void CegarHeuristic::order_facts(vector<FactProxy> &facts) const {
 }
 
 vector<FactProxy> CegarHeuristic::get_facts(Decomposition decomposition) const {
-    assert(decomposition != NONE);
+    assert(decomposition != Decomposition::NONE);
     vector<FactProxy> facts;
-    if (decomposition == LANDMARKS) {
+    if (decomposition == Decomposition::LANDMARKS) {
         facts = get_fact_landmarks();
-    } else if (decomposition == GOALS) {
+    } else if (decomposition == Decomposition::GOALS) {
         for (FactProxy goal : task->get_goals()) {
             facts.push_back(goal);
         }
     } else {
-        cerr << "Invalid decomposition: " << decomposition << endl;
+        cerr << "Invalid decomposition: " << static_cast<int>(decomposition) << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
     // Filter facts that are true in initial state.
@@ -207,7 +207,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
     vector<FactProxy> facts;
     int num_abstractions = 1;
     int max_abstractions = options.get<int>("max_abstractions");
-    if (decomposition == NONE) {
+    if (decomposition == Decomposition::NONE) {
         if (max_abstractions != INF)
             num_abstractions = max_abstractions;
     } else {
@@ -226,12 +226,12 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         shared_ptr<AbstractTask> abstracted_task;
         unordered_set<FactProxy> reachable_facts;
-        if (decomposition == NONE) {
+        if (decomposition == Decomposition::NONE) {
             abstracted_task = modified_costs_task;
         } else {
             FactProxy landmark = facts[i];
             VariableToValues groups;
-            if (options.get<bool>("combine_facts") && decomposition == LANDMARKS) {
+            if (options.get<bool>("combine_facts") && decomposition == Decomposition::LANDMARKS) {
                 groups = get_prev_landmarks(landmark);
             }
             abstracted_task = make_shared<LandmarkTask>(modified_costs_task, landmark, groups);
@@ -257,12 +257,12 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
-        if (decomposition != NONE)
+        if (decomposition == Decomposition::LANDMARKS)
             abstraction->separate_unreachable_facts(reachable_facts);
 
         abstraction->build();
         num_states += abstraction->get_num_states();
-        if (decomposition == NONE && num_abstractions == 1 && !search)
+        if (decomposition == Decomposition::NONE && num_abstractions == 1 && !search)
             abstraction->print_histograms();
         vector<int> needed_costs;
         abstraction->get_needed_costs(&needed_costs);
@@ -290,18 +290,18 @@ void CegarHeuristic::initialize() {
          << get_peak_memory_in_kb() << " KB" << endl;
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
     vector<Decomposition> decompositions;
-    if (decomposition == LANDMARKS_AND_GOALS_AND_NONE) {
-        decompositions.push_back(LANDMARKS);
-        decompositions.push_back(GOALS);
-        decompositions.push_back(NONE);
-    } else if (decomposition == LANDMARKS_AND_GOALS) {
-        decompositions.push_back(LANDMARKS);
-        decompositions.push_back(GOALS);
+    if (decomposition == Decomposition::LANDMARKS_AND_GOALS_AND_NONE) {
+        decompositions.push_back(Decomposition::LANDMARKS);
+        decompositions.push_back(Decomposition::GOALS);
+        decompositions.push_back(Decomposition::NONE);
+    } else if (decomposition == Decomposition::LANDMARKS_AND_GOALS) {
+        decompositions.push_back(Decomposition::LANDMARKS);
+        decompositions.push_back(Decomposition::GOALS);
     } else {
         decompositions.push_back(decomposition);
     }
     for (size_t i = 0; i < decompositions.size(); ++i) {
-        cout << endl << "Using decomposition " << decompositions[i] << endl;
+        cout << endl << "Using decomposition " << static_cast<int>(decompositions[i]) << endl;
         build_abstractions(decompositions[i]);
         cout << endl;
         if (num_states >= max_states || g_timer() > max_time ||
