@@ -111,9 +111,6 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     if (DEBUG)
         cout << "Combine " << var << ": mapped " << to_string(values) << endl;
     int group_value = *values.begin();
-    for (int value : values) {
-        move_fact(var, value, group_value);
-    }
 
     // Don't decrease the variable's domain size. The FactProxy class expects
     // all values to be smaller than the domain size (i.e., sequentially numbered).
@@ -126,6 +123,10 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
         sep = " OR ";
     }
     fact_names[var][group_value] = name.str();
+
+    for (int value : values) {
+        move_fact(var, value, group_value);
+    }
 }
 
 int LandmarkTask::get_variable_domain_size(int var) const {
