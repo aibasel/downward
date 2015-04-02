@@ -3,6 +3,8 @@
 
 #include "utils.h"
 
+#include <boost/dynamic_bitset.hpp>
+
 #include <string>
 #include <vector>
 
@@ -11,10 +13,11 @@ class TaskProxy;
 namespace cegar {
 class AbstractState;
 
+typedef boost::dynamic_bitset<> Bitset;
+
 class Values {
     friend class AbstractState;
 
-private:
     // Possible values of each variable in this state.
     // Values are represented from right to left (least- to most-significant).
     // 11 10 001 -> var0 = {0}, var1 = {1}, var2 = {0,1}

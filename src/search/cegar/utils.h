@@ -7,8 +7,6 @@
 #include "../global_state.h"
 #include "../landmarks/landmark_graph.h"
 
-#include <boost/dynamic_bitset.hpp>
-
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -29,7 +27,6 @@ const int INF = std::numeric_limits<int>::max();
 // See additive_heuristic.h.
 const int MAX_COST_VALUE = 100000000;
 
-typedef boost::dynamic_bitset<> Bitset;
 typedef std::pair<int, std::vector<int> > Split;
 typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
