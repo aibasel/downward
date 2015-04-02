@@ -5,6 +5,7 @@
 #include "../utilities.h"
 
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <limits>
 

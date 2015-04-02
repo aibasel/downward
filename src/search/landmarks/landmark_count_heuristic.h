@@ -5,6 +5,7 @@
 #include "landmark_cost_assignment.h"
 #include "landmark_graph.h"
 #include "landmark_status_manager.h"
+
 #include "../global_state.h"
 #include "../heuristic.h"
 
