@@ -230,10 +230,8 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             assert(forward);
             assert(!use_h);
             assert(needed_costs->size() == task_proxy.get_operators().size());
-            for (size_t i = 0; i < state->get_loops().size(); ++i) {
-                OperatorProxy op = state->get_loops()[i];
-                const int op_index = get_op_index(op);
-                (*needed_costs)[op_index] = max((*needed_costs)[op_index], 0);
+            for (OperatorProxy op : state->get_loops()) {
+                (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], 0);
             }
         }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
@@ -249,8 +247,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                 int needed = state->get_h() - successor->get_h();
                 if (!use_general_costs)
                     needed = max(0, needed);
-                const int op_index = get_op_index(op);
-                (*needed_costs)[op_index] = max((*needed_costs)[op_index], needed);
+                (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], needed);
             }
 
             assert(op.get_cost() >= 0);
@@ -556,20 +553,16 @@ void Abstraction::write_dot_file(int num) {
     dotfile.close();
 }
 
-int Abstraction::get_op_index(OperatorProxy op) const {
-    return op.get_id();
-}
-
-void Abstraction::get_needed_costs(vector<int> *needed_costs) {
-    assert(needed_costs->empty());
-    needed_costs->resize(task_proxy.get_operators().size(), -MAX_COST_VALUE);
+vector<int> Abstraction::get_needed_costs() {
+    vector<int> needed_costs(task_proxy.get_operators().size(), -MAX_COST_VALUE);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     open->clear();
     reset_distances_and_solution();
     init->set_distance(0);
     open->push(0, init);
-    astar_search(true, false, needed_costs);
+    astar_search(true, false, &needed_costs);
+    return needed_costs;
 }
 
 bool Abstraction::may_keep_refining() const {
