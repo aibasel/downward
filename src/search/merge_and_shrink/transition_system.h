@@ -124,10 +124,26 @@ class TransitionSystem {
     */
     const Labels *labels;
     std::list<LabelGroup> grouped_labels;
+    /*
+      The transitions of a label group are never moved once they are stored
+      at an index in transitions_of_groups.
+      Initially, every label is in a single label group, and its number is
+      used to index transitions_of_groups. When adding new labels via label
+      reduction, if a new label is not locally equivalent with any existing,
+      we again use its number to index its transitions. When computing a
+      composite, use the smallest label number of a group as index.
+
+      We tested different alternatives to store the transitions, but they all
+      performed worse: storing a vector transitions in the label group increases
+      memory usage and runtime; storing the transitions more compactly and
+      incrementally increasing the size of transitions_of_groups whenever a
+      new label group is added also increases runtime. See also issue492 and
+      issue521.
+    */
     std::vector<std::vector<Transition> > transitions_of_groups;
     std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
-      num_labels is always equal to labels->size(), with the exception during
+      num_labels is always equal to labels->size(), except during
       label reduction. Whenever new labels are generated through label
       reduction, this is updated immediately afterwards.
     */
@@ -191,6 +207,8 @@ class TransitionSystem {
     bool are_transitions_sorted_unique() const;
     bool is_label_reduced() const;
     void compute_locally_equivalent_labels();
+
+    // Statistics and output
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
