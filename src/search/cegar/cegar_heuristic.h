@@ -7,6 +7,7 @@
 #include "../heuristic.h"
 #include "../option_parser.h"
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>

@@ -2,11 +2,8 @@
 
 #include "values.h"
 
-#include "../globals.h"
-#include "../state_registry.h"
 #include "../task_proxy.h"
 #include "../task_tools.h"
-#include "../timer.h"
 #include "../utilities.h"
 
 #include <algorithm>
@@ -91,31 +88,6 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
         if (group.second.size() >= 2)
             combine_facts(group.first, group.second);
     }
-}
-
-LandmarkTask::LandmarkTask(vector<int> domain, vector<vector<string> > names,
-           vector<int> initial_state_data_, vector<Fact> goal_facts)
-    : DelegatingTask(g_root_task()),
-      initial_state_data(initial_state_data_),
-      goals(goal_facts),
-      variable_domain(domain),
-      unreachable_facts(domain.size()),
-      fact_names(names),
-      orig_index(domain.size()),
-      task_index(domain.size()) {
-    for (size_t var = 0; var < variable_domain.size(); ++var) {
-        orig_index[var].resize(variable_domain[var]);
-        task_index[var].resize(variable_domain[var]);
-        for (int value = 0; value < variable_domain[var]; ++value) {
-            orig_index[var][value] = value;
-            task_index[var][value] = value;
-        }
-    }
-}
-
-int LandmarkTask::get_orig_op_index(int index) const {
-    // TODO: Update this if we ever drop operators.
-    return index;
 }
 
 void LandmarkTask::move_fact(int var, int before, int after) {
@@ -224,30 +196,6 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
         sep = " OR ";
     }
     fact_names[var][projected_value] = name.str();
-}
-
-bool LandmarkTask::translate_state(const GlobalState &state, int *translated) const {
-    // TODO: Loop only over changed values.
-    int num_vars = variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        int value = task_index[var][state[var]];
-        // TODO: Remove this case and return void.
-        if (value == UNDEFINED) {
-            return false;
-        } else {
-            translated[var] = value;
-        }
-    }
-    return true;
-}
-
-double LandmarkTask::get_state_space_fraction(const LandmarkTask &global_task) const {
-    double fraction = 1.0;
-    for (size_t var = 0; var < variable_domain.size(); ++var) {
-        assert(variable_domain[var] <= global_task.get_variable_domain()[var]);
-        fraction *= (variable_domain[var] / static_cast<double>(global_task.get_variable_domain()[var]));
-    }
-    return fraction;
 }
 
 void LandmarkTask::dump_facts() const {
