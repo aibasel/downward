@@ -15,17 +15,15 @@
 #include "utilities.h"
 
 #include <cstdlib>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <limits>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-using namespace std;
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+using namespace std;
 
 static const int PRE_FILE_VERSION = 3;
 

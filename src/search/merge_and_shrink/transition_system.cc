@@ -414,7 +414,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             // Determine possible values that var can have when this
             // operator is applicable.
             int pre_value = -1;
-            unordered_map<int, int>::const_iterator pre_val_it = pre_val.find(var);
+            auto pre_val_it = pre_val.find(var);
             if (pre_val_it != pre_val.end())
                 pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;
@@ -987,6 +987,7 @@ int AtomicTransitionSystem::memory_estimate() const {
 }
 
 
+
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
                                                      TransitionSystem *ts1,
                                                      TransitionSystem *ts2)
@@ -1047,9 +1048,10 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         // refinements of group1.
 
         // Now create the new groups together with their transitions.
-        const vector<Transition> &transitions1 = group1_it->get_const_transitions();
-        for (auto bucket_it = buckets.begin(); bucket_it != buckets.end(); ++bucket_it) {
-            const vector<Transition> &transitions2 = bucket_it->first->get_const_transitions();
+        const vector<Transition> &transitions1 = ts1->get_const_transitions_for_group(*group1_it);
+        for (const auto &bucket : buckets) {
+            const vector<Transition> &transitions2 =
+                ts2->transitions_by_group_index[bucket.first];
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
@@ -1070,7 +1072,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
             }
 
             // Create a new group if the transitions are not empty
-            const vector<int> &new_labels = bucket_it->second;
+            const vector<int> &new_labels = bucket.second;
             if (new_transitions.empty()) {
                 dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
             } else {

@@ -78,40 +78,6 @@ ostream &operator<<(ostream &stream, const vector<T> &vec) {
 }
 }
 
-template<class Sequence>
-size_t hash_number_sequence(const Sequence &data, size_t length) {
-    // hash function adapted from Python's hash function for tuples.
-    size_t hash_value = 0x345678;
-    size_t mult = 1000003;
-    for (int i = length - 1; i >= 0; --i) {
-        hash_value = (hash_value ^ data[i]) * mult;
-        mult += 82520 + i + i;
-    }
-    hash_value += 97531;
-    return hash_value;
-}
-
-struct hash_int_pair {
-    size_t operator()(const std::pair<int, int> &key) const {
-        return size_t(key.first * 1337 + key.second);
-    }
-};
-
-struct hash_pointer_pair {
-    size_t operator()(const std::pair<void *, void *> &key) const {
-        return size_t(size_t(key.first) * 1337 + size_t(key.second));
-    }
-};
-
-class hash_pointer {
-public:
-    size_t operator()(const void *p) const {
-        //return size_t(reinterpret_cast<int>(p));
-        std::hash<const void *> my_hash_class;
-        return my_hash_class(p);
-    }
-};
-
 template<class T>
 bool in_bounds(int index, const T &container) {
     return index >= 0 && static_cast<size_t>(index) < container.size();

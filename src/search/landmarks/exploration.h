@@ -6,10 +6,9 @@
 #include "../priority_queue.h"
 #include "landmark_types.h"
 
-#include <vector>
-#include <ext/hash_set>
-#include <ext/hash_map>
 #include <cassert>
+#include <unordered_map>
+#include <vector>
 
 class GlobalOperator;
 class GlobalState;
@@ -78,16 +77,10 @@ struct ExUnaryOperator {
     }
 };
 
-struct ex_hash_operator_ptr {
-    size_t operator()(const GlobalOperator *key) const {
-        return reinterpret_cast<size_t>(key);
-    }
-};
-
 class Exploration : public Heuristic {
     static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
 
-    typedef __gnu_cxx::hash_set<const GlobalOperator *, ex_hash_operator_ptr> RelaxedPlan;
+    typedef std::unordered_set<const GlobalOperator *> RelaxedPlan;
     RelaxedPlan relaxed_plan;
     std::vector<ExUnaryOperator> unary_operators;
     std::vector<std::vector<ExProposition> > propositions;
@@ -104,12 +97,11 @@ class Exploration : public Heuristic {
 
     void setup_exploration_queue(const GlobalState &state,
                                  const std::vector<std::pair<int, int> > &excluded_props,
-                                 const __gnu_cxx::hash_set<const GlobalOperator *,
-                                                           ex_hash_operator_ptr> &excluded_ops,
+                                 const std::unordered_set<const GlobalOperator *> &excluded_ops,
                                  bool use_h_max);
     inline void setup_exploration_queue(const GlobalState &state, bool h_max) {
         std::vector<std::pair<int, int> > excluded_props;
-        __gnu_cxx::hash_set<const GlobalOperator *, ex_hash_operator_ptr> excluded_ops;
+        std::unordered_set<const GlobalOperator *> excluded_ops;
         setup_exploration_queue(state, excluded_props, excluded_ops, h_max);
     }
     void relaxed_exploration(bool use_h_max, bool level_out);
@@ -131,12 +123,10 @@ public:
     void set_additional_goals(const std::vector<std::pair<int, int> > &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int> > &lvl_var,
-                                            std::vector<__gnu_cxx::hash_map<std::pair<int, int>, int,
-                                                                            hash_int_pair> > &lvl_op,
+                                            std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op,
                                             bool level_out,
                                             const std::vector<std::pair<int, int> > &excluded_props,
-                                            const __gnu_cxx::hash_set<const GlobalOperator *,
-                                                                      ex_hash_operator_ptr> &excluded_ops,
+                                            const std::unordered_set<const GlobalOperator *> &excluded_ops,
                                             bool compute_lvl_ops);
     std::vector<const GlobalOperator *> exported_ops; // only needed for landmarks count heuristic ha
 
