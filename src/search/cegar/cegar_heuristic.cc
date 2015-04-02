@@ -215,29 +215,28 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
-        shared_ptr<AbstractTask> orig_task_impl = g_root_task();
 
         Options opts;
-        opts.set<shared_ptr<AbstractTask> >("transform", orig_task_impl);
+        opts.set<shared_ptr<AbstractTask> >("transform", g_root_task());
         opts.set<vector<int> >("operator_costs", remaining_costs);
-        shared_ptr<ModifiedCostsTask> modified_costs_task = make_shared<ModifiedCostsTask>(opts);
 
-        shared_ptr<AbstractTask> abstracted_task;
-        if (decomposition == Decomposition::NONE) {
-            abstracted_task = modified_costs_task;
-        } else {
-            FactProxy landmark = facts[i];
-            VariableToValues groups;
-            if (options.get<bool>("combine_facts") && decomposition == Decomposition::LANDMARKS) {
-                groups = get_prev_landmarks(landmark);
+        shared_ptr<AbstractTask> abstracted_task = make_shared<ModifiedCostsTask>(opts);
+        if (decomposition == Decomposition::GOALS || decomposition == Decomposition::LANDMARKS) {
+            vector<Fact> goals = {get_raw_fact(facts[i])};
+            abstracted_task = make_shared<ModifiedGoalsTask>(abstracted_task, goals);
+
+            if (decomposition == Decomposition::LANDMARKS) {
+                VariableToValues groups;
+                if (options.get<bool>("combine_facts")) {
+                    groups = get_prev_landmarks(facts[i]);
+                }
+                abstracted_task = make_shared<LandmarkTask>(abstracted_task, groups);
             }
-            vector<Fact> goals = {get_raw_fact(landmark)};
-            abstracted_task = make_shared<ModifiedGoalsTask>(modified_costs_task, goals);
-            abstracted_task = make_shared<LandmarkTask>(abstracted_task, groups);
         }
 
         TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
-        dump_task(abstracted_task_proxy);
+        if (DEBUG)
+            dump_task(abstracted_task_proxy);
 
         shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(abstracted_task_proxy);
 
