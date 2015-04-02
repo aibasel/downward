@@ -66,20 +66,19 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
                            const VariableToValues &fact_groups)
     : DelegatingTask(parent),
       initial_state_data(parent->get_initial_state_values()),
-      goals({get_raw_fact(landmark)}),
-      task_index(parent->get_num_variables()) {
-    TaskProxy orig_task = TaskProxy(parent.get());
-    assert(variable_domain.empty());
-    for (VariableProxy var : orig_task.get_variables()) {
-        variable_domain.push_back(var.get_domain_size());
-    }
-    fact_names = g_fact_names;
-    for (size_t var = 0; var < variable_domain.size(); ++var) {
+      goals({get_raw_fact(landmark)}) {
+    int num_vars = parent->get_num_variables();
+    variable_domain.resize(num_vars);
+    task_index.resize(num_vars);
+    for (int var = 0; var < num_vars; ++var) {
+        variable_domain[var] = parent->get_variable_domain_size(var);
         task_index[var].resize(variable_domain[var]);
         for (int value = 0; value < variable_domain[var]; ++value) {
             task_index[var][value] = value;
         }
     }
+    fact_names = g_fact_names;
+
     for (const auto &group : fact_groups) {
         if (group.second.size() >= 2)
             combine_facts(group.first, group.second);
@@ -89,8 +88,7 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
 void LandmarkTask::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
-    assert(in_bounds(before, task_index[var]));
-    assert(in_bounds(after, task_index[var]));
+    // Move each fact at most once.
     assert(task_index[var][before] == before);
     task_index[var][before] = after;
     //fact_names[var][after] = fact_names[var][before];
