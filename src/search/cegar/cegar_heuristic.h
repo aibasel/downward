@@ -46,20 +46,14 @@ class CegarHeuristic : public Heuristic {
     std::vector<std::shared_ptr<AbstractTask>> tasks;
     std::vector<Abstraction *> abstractions;
     int num_states;
-    std::shared_ptr<LandmarkGraph> landmark_graph;
-
-    void add_operators(LandmarkTask &task);
-
-    // Compute the possibly-before-set of facts that can be reached in the
-    // delete-relaxation before last_fact is reached the first time.
-    void get_possibly_before_facts(const Fact last_fact, std::unordered_set<int> *reached) const;
+    const std::shared_ptr<LandmarkGraph> landmark_graph;
 
     void order_facts(std::vector<FactProxy> &facts) const;
     std::vector<FactProxy> get_facts(Decomposition decomposition) const;
     void build_abstractions(Decomposition decomposition);
+    void print_statistics();
 
 protected:
-    virtual void print_statistics();
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
 

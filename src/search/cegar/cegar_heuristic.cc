@@ -9,10 +9,8 @@
 #include "values.h"
 
 #include "../additive_heuristic.h"
-#include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../state_registry.h"
 #include "../task_tools.h"
 
 #include "../landmarks/landmark_graph.h"
@@ -27,7 +25,6 @@
 using namespace std;
 
 namespace cegar {
-
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
