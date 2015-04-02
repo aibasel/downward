@@ -80,54 +80,6 @@ void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits) {
     }
 }
 
-Fact get_fact(const LandmarkNode *node) {
-    assert(node);
-    assert(node->vars.size() == 1);
-    int var = node->vars[0];
-    int value = node->vals[0];
-    return Fact(var, value);
-}
-
-string get_node_name(Fact fact) {
-    stringstream out;
-    out << g_fact_names[fact.first][fact.second] << " (" << fact.first << "=" << fact.second << ")";
-    return out.str();
-}
-
-void write_landmark_graph(const LandmarkGraph &graph) {
-    const set<LandmarkNode *> &nodes = graph.get_nodes();
-    set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
-
-    ofstream dotfile("landmark-graph.dot");
-    if (!dotfile.is_open()) {
-        cerr << "dot file for causal graph could not be opened" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    dotfile << "digraph landmarkgraph {" << endl;
-
-
-    for (const auto *node_p : nodes2) {
-        Fact node_fact = get_fact(node_p);
-        for (const auto &parent_pair : node_p->parents) {
-            const LandmarkNode *parent_p = parent_pair.first;
-            Fact parent_fact = get_fact(parent_p);
-            dotfile << "  \"" << get_node_name(parent_fact) << "\" -> "
-                    << "\"" << get_node_name(node_fact) << "\";" << endl;
-            // Mark initial state facts green.
-            if (g_initial_state()[parent_fact.first] == parent_fact.second)
-                dotfile << "  \"" << get_node_name(parent_fact) << "\" [color=green];" << endl;
-            if (g_initial_state()[node_fact.first] == node_fact.second)
-                dotfile << "  \"" << get_node_name(node_fact) << "\" [color=green];" << endl;
-        }
-    }
-    // Mark goal facts red.
-    for (size_t i = 0; i < g_goal.size(); i++) {
-        dotfile << "  \"" << get_node_name(g_goal[i]) << "\" [color=red];" << endl;
-    }
-    dotfile << "}" << endl;
-    dotfile.close();
-}
-
 string get_variable_name(int var) {
     string name = g_fact_names[var][0];
     name = name.substr(5);

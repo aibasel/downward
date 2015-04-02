@@ -85,7 +85,7 @@ private:
     int max_time;
     bool use_astar;
     bool use_general_costs;
-    bool dump_graphs;
+    bool write_graphs;
 
     // Save whether the states have been destroyed.
     bool memory_released;
@@ -157,7 +157,7 @@ public:
     void set_use_astar(bool astar) {use_astar = astar; }
     void set_use_general_costs(bool negative) {use_general_costs = negative; }
     void set_pick_strategy(PickStrategy strategy);
-    void set_dump_graphs(bool write) {dump_graphs = write; }
+    void set_write_graphs(bool write) {write_graphs = write; }
 
     // Testing.
     void write_dot_file(int num);

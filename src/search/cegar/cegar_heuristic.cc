@@ -5,6 +5,7 @@
 #include "modified_costs_task.h"
 #include "modified_goals_task.h"
 #include "utils.h"
+#include "utils_landmarks.h"
 #include "values.h"
 
 #include "../global_state.h"
@@ -12,9 +13,6 @@
 #include "../plugin.h"
 #include "../state_registry.h"
 #include "../task_tools.h"
-
-#include "../landmarks/h_m_landmarks.h"
-#include "../landmarks/landmark_graph.h"
 
 #include <algorithm>
 #include <cassert>
@@ -53,8 +51,8 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     verify_no_axioms_no_conditional_effects();
 
     if (DEBUG)
-        landmark_graph.dump();
-    if (options.get<bool>("dump_graphs")) {
+        landmark_graph->dump();
+    if (options.get<bool>("write_graphs")) {
         write_landmark_graph(landmark_graph);
         write_causal_graph();
     }
@@ -83,67 +81,6 @@ struct SortHaddValuesUp {
     }
 };
 
-vector<FactProxy> CegarHeuristic::get_fact_landmarks() const {
-    vector<FactProxy> facts;
-    const set<LandmarkNode *> &nodes = landmark_graph.get_nodes();
-    for (LandmarkNode *node : nodes) {
-        Fact raw_fact = get_fact(node);
-        FactProxy fact = task->get_variables()[raw_fact.first].get_fact(raw_fact.second);
-        facts.push_back(fact);
-    }
-    sort(facts.begin(), facts.end());
-    return facts;
-}
-
-LandmarkGraph CegarHeuristic::get_landmark_graph() const {
-    Options opts = Options();
-    opts.set<int>("cost_type", 0);
-    opts.set<int>("memory_padding", 75);
-    opts.set<int>("m", 1);
-    // h^m doesn't produce reasonable orders anyway.
-    opts.set<bool>("reasonable_orders", false);
-    opts.set<bool>("only_causal_landmarks", false);
-    opts.set<bool>("disjunctive_landmarks", false);
-    opts.set<bool>("conjunctive_landmarks", false);
-    opts.set<bool>("no_orders", false);
-    opts.set<int>("lm_cost_type", 0);
-    opts.set<bool>("supports_conditional_effects", false);
-    opts.set<Exploration *>("explor", new Exploration(opts));
-    HMLandmarks lm_graph_factory(opts);
-    return *lm_graph_factory.compute_lm_graph();
-}
-
-/*
-  Do a breadth-first search through the landmark graph ignoring
-  duplicates. Start at the node for the given fact and collect for each
-  variable the facts that have to be made true before the fact is made
-  true for the first time. */
-VariableToValues CegarHeuristic::get_prev_landmarks(FactProxy fact) const {
-    unordered_map<int, unordered_set<int> > groups;
-    LandmarkNode *node = landmark_graph.get_landmark(get_raw_fact(fact));
-    assert(node);
-    vector<const LandmarkNode *> open;
-    unordered_set<const LandmarkNode *> closed;
-    for (const auto &parent_and_edge: node->parents) {
-        const LandmarkNode *parent = parent_and_edge.first;
-        open.push_back(parent);
-    }
-    while (!open.empty()) {
-        const LandmarkNode *ancestor = open.back();
-        open.pop_back();
-        if (closed.count(ancestor))
-            continue;
-        closed.insert(ancestor);
-        Fact ancestor_fact = get_fact(ancestor);
-        groups[ancestor_fact.first].insert(ancestor_fact.second);
-        for (auto it = ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
-            const LandmarkNode *parent = it->first;
-            open.push_back(parent);
-        }
-    }
-    return groups;
-}
-
 void CegarHeuristic::order_facts(vector<FactProxy> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
     if (fact_order == ORIGINAL) {
@@ -164,11 +101,12 @@ vector<FactProxy> CegarHeuristic::get_facts(Decomposition decomposition) const {
     assert(decomposition != Decomposition::NONE);
     vector<FactProxy> facts;
     if (decomposition == Decomposition::LANDMARKS) {
-        facts = get_fact_landmarks();
+        vector<Fact> raw_facts = get_fact_landmarks(landmark_graph);
+        for (Fact raw_fact : raw_facts)
+            facts.push_back(get_fact(*task, raw_fact));
     } else if (decomposition == Decomposition::GOALS) {
-        for (FactProxy goal : task->get_goals()) {
+        for (FactProxy goal : task->get_goals())
             facts.push_back(goal);
-        }
     } else {
         cerr << "Invalid decomposition: " << static_cast<int>(decomposition) << endl;
         exit_with(EXIT_INPUT_ERROR);
@@ -228,7 +166,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             if (decomposition == Decomposition::LANDMARKS) {
                 VariableToValues groups;
                 if (options.get<bool>("combine_facts")) {
-                    groups = get_prev_landmarks(facts[i]);
+                    groups = get_prev_landmarks(landmark_graph, get_raw_fact(facts[i]));
                 }
                 abstracted_task = make_shared<LandmarkTask>(abstracted_task, groups);
             }
@@ -248,7 +186,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states((max_states - num_states) / rem_tasks);
         abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
-        abstraction->set_dump_graphs(options.get<bool>("dump_graphs"));
+        abstraction->set_write_graphs(options.get<bool>("write_graphs"));
         abstraction->set_use_astar(options.get<bool>("use_astar"));
         abstraction->set_use_general_costs(options.get<bool>("general_costs"));
 
@@ -378,7 +316,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("general_costs", "allow negative costs in cost-partitioning", "true");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
-    parser.add_option<bool>("dump_graphs", "write causal and landmark graphs", "false");
+    parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

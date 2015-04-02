@@ -40,9 +40,6 @@ void get_unmet_preconditions(OperatorProxy op, const State &state, Splits *split
 
 void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits);
 
-Fact get_fact(const LandmarkNode *node);
-
-void write_landmark_graph(const LandmarkGraph &graph);
 void write_causal_graph();
 
 void reserve_memory_padding();

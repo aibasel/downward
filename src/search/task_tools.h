@@ -41,4 +41,8 @@ inline std::pair<int, int> get_raw_fact(FactProxy fact) {
     return std::make_pair(fact.get_variable().get_id(), fact.get_value());
 }
 
+inline FactProxy get_fact(TaskProxy task, const std::pair<int, int> &fact) {
+    return task.get_variables()[fact.first].get_fact(fact.second);
+}
+
 #endif
