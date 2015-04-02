@@ -33,6 +33,7 @@ private:
         return std::make_pair(fact.first, get_task_value(fact.first, fact.second));
     }
 
+    std::string get_combined_fact_name(int var, const std::unordered_set<int> &values) const;
 public:
     LandmarkTask(std::shared_ptr<AbstractTask> parent,
                  FactProxy landmark,

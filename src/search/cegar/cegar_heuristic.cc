@@ -259,7 +259,9 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
         if (decomposition == Decomposition::LANDMARKS)
-            abstraction->separate_unreachable_facts(reachable_facts);
+            abstraction->separate_unreachable_facts(compute_reachable_facts(
+                abstracted_task_proxy,
+                abstracted_task_proxy.get_goals()[0]));
 
         abstraction->build();
         num_states += abstraction->get_num_states();
