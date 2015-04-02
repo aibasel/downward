@@ -1,66 +1,16 @@
 #include "landmark_task.h"
 
-#include "values.h"
-
+#include "../global_state.h"
 #include "../task_proxy.h"
 #include "../task_tools.h"
 #include "../utilities.h"
 
 #include <algorithm>
-#include <set>
+#include <sstream>
 
 using namespace std;
 
 namespace cegar {
-
-bool operator_applicable(OperatorProxy op, const unordered_set<FactProxy> &facts) {
-    for (FactProxy precondition : op.get_preconditions()) {
-        if (facts.count(precondition) == 0)
-            return false;
-    }
-    return true;
-}
-
-bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
-    for (EffectProxy effect : op.get_effects()) {
-        if (effect.get_fact() == fact)
-            return true;
-    }
-    return false;
-}
-
-unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy last_fact) {
-    unordered_set<FactProxy> pb_facts;
-
-    // Add facts from initial state.
-    for (FactProxy fact : task.get_initial_state())
-        pb_facts.insert(fact);
-
-    // Until no more facts can be added:
-    size_t last_num_reached = 0;
-    while (last_num_reached != pb_facts.size()) {
-        last_num_reached = pb_facts.size();
-        for (OperatorProxy op : task.get_operators()) {
-            // Ignore operators that achieve last_fact.
-            if (operator_achieves_fact(op, last_fact))
-                continue;
-            // Add all facts that are achieved by an applicable operator.
-            if (operator_applicable(op, pb_facts)) {
-                for (EffectProxy effect : op.get_effects()) {
-                    pb_facts.insert(effect.get_fact());
-                }
-            }
-        }
-    }
-    return pb_facts;
-}
-
-unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark) {
-    unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(task, landmark);
-    reachable_facts.insert(landmark);
-    return reachable_facts;
-}
-
 LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
                            const VariableToValues &fact_groups)
     : DelegatingTask(parent),

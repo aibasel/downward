@@ -1,12 +1,6 @@
 #ifndef CEGAR_UTILS_H
 #define CEGAR_UTILS_H
 
-#include "../additive_heuristic.h"
-#include "../causal_graph.h"
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../landmarks/landmark_graph.h"
-
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -16,6 +10,13 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+class AdditiveHeuristic;
+class FactProxy;
+class GoalsProxy;
+class OperatorProxy;
+class State;
+class TaskProxy;
 
 namespace cegar {
 extern bool DEBUG;
@@ -32,6 +33,10 @@ typedef std::vector<Split> Splits;
 typedef std::pair<int, int> Fact;
 typedef std::unordered_map<int, std::unordered_set<int> > VariableToValues;
 
+std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task);
+
+std::unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark);
+
 int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
@@ -39,8 +44,6 @@ int get_post(OperatorProxy op, int var_id);
 void get_unmet_preconditions(OperatorProxy op, const State &state, Splits *splits);
 
 void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits);
-
-void write_causal_graph();
 
 void reserve_memory_padding();
 void release_memory_padding();

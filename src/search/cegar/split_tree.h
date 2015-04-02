@@ -3,6 +3,7 @@
 
 #include "utils.h"
 
+#include <cassert>
 #include <vector>
 
 namespace cegar {

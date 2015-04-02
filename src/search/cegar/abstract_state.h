@@ -4,6 +4,8 @@
 #include "split_tree.h"
 #include "utils.h"
 
+#include "../task_proxy.h"
+
 #include <string>
 #include <utility>
 #include <vector>

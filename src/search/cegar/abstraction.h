@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-class StateRegistry;
+class AdditiveHeuristic;
 
 namespace cegar {
 class AbstractState;

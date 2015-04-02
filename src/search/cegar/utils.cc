@@ -1,18 +1,13 @@
 #include "utils.h"
 
-#include "../global_state.h"
-#include "../globals.h"
+#include "../additive_heuristic.h"
 #include "../option_parser.h"
-#include "../state_registry.h"
+#include "../task_proxy.h"
 #include "../task_tools.h"
-#include "../timer.h"
 #include "../utilities.h"
-
-#include "../landmarks/landmark_graph.h"
 
 #include <algorithm>
 #include <cassert>
-#include <fstream>
 #include <set>
 #include <sstream>
 #include <unordered_map>
@@ -31,6 +26,63 @@ static char *cegar_memory_padding = 0;
 
 // Save previous out-of-memory handler.
 static void (*global_out_of_memory_handler)(void) = 0;
+
+shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task) {
+    Options opts;
+    opts.set<TaskProxy *>("task_proxy", &task);
+    opts.set<int>("cost_type", 0);
+    shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
+    additive_heuristic->initialize_and_compute_heuristic(task.get_initial_state());
+    return additive_heuristic;
+}
+
+bool operator_applicable(OperatorProxy op, const unordered_set<FactProxy> &facts) {
+    for (FactProxy precondition : op.get_preconditions()) {
+        if (facts.count(precondition) == 0)
+            return false;
+    }
+    return true;
+}
+
+bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
+    for (EffectProxy effect : op.get_effects()) {
+        if (effect.get_fact() == fact)
+            return true;
+    }
+    return false;
+}
+
+unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy last_fact) {
+    unordered_set<FactProxy> pb_facts;
+
+    // Add facts from initial state.
+    for (FactProxy fact : task.get_initial_state())
+        pb_facts.insert(fact);
+
+    // Until no more facts can be added:
+    size_t last_num_reached = 0;
+    while (last_num_reached != pb_facts.size()) {
+        last_num_reached = pb_facts.size();
+        for (OperatorProxy op : task.get_operators()) {
+            // Ignore operators that achieve last_fact.
+            if (operator_achieves_fact(op, last_fact))
+                continue;
+            // Add all facts that are achieved by an applicable operator.
+            if (operator_applicable(op, pb_facts)) {
+                for (EffectProxy effect : op.get_effects()) {
+                    pb_facts.insert(effect.get_fact());
+                }
+            }
+        }
+    }
+    return pb_facts;
+}
+
+unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark) {
+    unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(task, landmark);
+    reachable_facts.insert(landmark);
+    return reachable_facts;
+}
 
 int get_pre(OperatorProxy op, int var_id) {
     for (FactProxy precondition : op.get_preconditions()) {
@@ -78,43 +130,6 @@ void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits) {
             splits->push_back(make_pair(var.get_id(), wanted));
         }
     }
-}
-
-string get_variable_name(int var) {
-    string name = g_fact_names[var][0];
-    name = name.substr(5);
-    return "\"" + name + "\"";
-}
-
-bool is_goal_var(int var) {
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        if (g_goal[i].first == var)
-            return true;
-    }
-    return false;
-}
-
-void write_causal_graph() {
-    ofstream dotfile("causal-graph.dot");
-    if (!dotfile.is_open()) {
-        cerr << "dot file for causal graph could not be opened" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    dotfile << "digraph causalgraph {" << endl;
-    for (size_t var = 0; var < g_variable_domain.size(); ++var) {
-        const vector<int> &successors = g_causal_graph->get_successors(var);
-        for (size_t i = 0; i < successors.size(); ++i) {
-            if (g_initial_state()[successors[i]] == 1 && !is_goal_var(var))
-                dotfile << "  " << get_variable_name(var) << " -> "
-                        << get_variable_name(successors[i]) << ";" << endl;
-        }
-    }
-    for (size_t i = 0; i < g_goal.size(); i++) {
-        int var = g_goal[i].first;
-        dotfile << "  " << get_variable_name(var) << " [color=red];" << endl;
-    }
-    dotfile << "}" << endl;
-    dotfile.close();
 }
 
 void continuing_out_of_memory_handler() {
