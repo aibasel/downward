@@ -3,8 +3,6 @@
 
 #include "utils.h"
 
-#include "../global_state.h"
-
 #include <vector>
 
 namespace cegar {
