@@ -88,8 +88,12 @@ bool Abstraction::is_goal(AbstractState *state) const {
     return goals.find(state) != goals.end();
 }
 
-void Abstraction::separate_unreachable_facts(const unordered_set<FactProxy> &reachable_facts) {
-    assert(init == single);
+void Abstraction::separate_unreachable_facts() {
+    assert(init == single && states.size() == 1);
+    assert(task_proxy.get_goals().size() == 1);
+    FactProxy landmark = task_proxy.get_goals()[0];
+    unordered_set<FactProxy> reachable_facts = compute_reachable_facts(
+        task_proxy, landmark);
     for (VariableProxy var : task_proxy.get_variables()) {
         int var_id  = var.get_id();
         vector<int> unreachable_values;

@@ -128,7 +128,7 @@ public:
                 std::shared_ptr<AdditiveHeuristic> additive_heuristic);
     ~Abstraction();
 
-    void separate_unreachable_facts(const std::unordered_set<FactProxy> &reachable_facts);
+    void separate_unreachable_facts();
 
     // Build abstraction.
     void build();
