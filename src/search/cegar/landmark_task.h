@@ -24,9 +24,6 @@ private:
     void move_fact(int var, int before, int after);
     void combine_facts(int var, const std::unordered_set<int> &values);
 
-    void dump_name() const;
-    void dump_facts() const;
-
     int get_task_value(int var, int value) const {
         assert(in_bounds(var, task_index));
         assert(in_bounds(value, task_index[var]));
@@ -40,8 +37,6 @@ public:
     LandmarkTask(std::shared_ptr<AbstractTask> parent,
                  FactProxy landmark,
                  const VariableToValues &fact_groups);
-
-    void dump() const;
 
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;

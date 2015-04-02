@@ -35,6 +35,8 @@ bool has_axioms(TaskProxy task);
 // Runtime: O(n), where n is the number of operators.
 bool has_conditional_effects(TaskProxy task);
 
+void dump_task(TaskProxy task);
+
 inline std::pair<int, int> get_raw_fact(FactProxy fact) {
     return std::make_pair(fact.get_variable().get_id(), fact.get_value());
 }
