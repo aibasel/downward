@@ -47,7 +47,6 @@ class CegarHeuristic : public Heuristic {
     std::vector<Abstraction *> abstractions;
     int num_states;
     LandmarkGraph landmark_graph;
-    int *temp_state_buffer;
 
     LandmarkGraph get_landmark_graph() const;
     VariableToValues get_prev_landmarks(FactProxy fact) const;

@@ -173,7 +173,6 @@ vector<int> LandmarkTask::get_state_values(const GlobalState &global_state) cons
     vector<int> state_data(num_vars);
     for (int var = 0; var < num_vars; ++var) {
         int value = task_index[var][global_state[var]];
-        assert(value != UNDEFINED);
         state_data[var] = value;
     }
     return state_data;

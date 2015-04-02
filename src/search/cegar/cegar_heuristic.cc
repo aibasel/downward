@@ -46,8 +46,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       max_time(options.get<int>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
       num_states(0),
-      landmark_graph(get_landmark_graph()),
-      temp_state_buffer(new int[task->get_variables().size()]) {
+      landmark_graph(get_landmark_graph()) {
     DEBUG = opts.get<bool>("debug");
     assert(max_time >= 0);
 
@@ -65,8 +64,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 }
 
 CegarHeuristic::~CegarHeuristic() {
-    delete[] temp_state_buffer;
-    temp_state_buffer = 0;
     for (size_t i = 0; i < abstractions.size(); ++i)
         delete abstractions[i];
 }
