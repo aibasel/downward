@@ -67,17 +67,21 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
     : DelegatingTask(parent),
       initial_state_data(parent->get_initial_state_values()),
       goals({get_raw_fact(landmark)}) {
+
     int num_vars = parent->get_num_variables();
     variable_domain.resize(num_vars);
     task_index.resize(num_vars);
+    fact_names.resize(num_vars);
     for (int var = 0; var < num_vars; ++var) {
-        variable_domain[var] = parent->get_variable_domain_size(var);
-        task_index[var].resize(variable_domain[var]);
-        for (int value = 0; value < variable_domain[var]; ++value) {
+        int num_values = parent->get_variable_domain_size(var);
+        variable_domain[var] = num_values;
+        task_index[var].resize(num_values);
+        fact_names[var].resize(num_values);
+        for (int value = 0; value < num_values; ++value) {
             task_index[var][value] = value;
+            fact_names[var][value] = parent->get_fact_name(var, value);
         }
     }
-    fact_names = g_fact_names;
 
     for (const auto &group : fact_groups) {
         if (group.second.size() >= 2)
@@ -88,10 +92,12 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
 void LandmarkTask::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
+    if (before == after)
+        return;
     // Move each fact at most once.
     assert(task_index[var][before] == before);
     task_index[var][before] = after;
-    //fact_names[var][after] = fact_names[var][before];
+    fact_names[var][before] = "projected-away";
     if (initial_state_data[var] == before)
         initial_state_data[var] = after;
     for (Fact &goal : goals) {
