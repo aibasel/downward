@@ -226,15 +226,6 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     fact_names[var][projected_value] = name.str();
 }
 
-LandmarkTask LandmarkTask::get_original_task() {
-    LandmarkTask task(g_variable_domain, g_fact_names, g_initial_state_data, g_goal);
-    return task;
-}
-
-void LandmarkTask::install() {
-    Values::initialize_static_members(variable_domain);
-}
-
 bool LandmarkTask::translate_state(const GlobalState &state, int *translated) const {
     // TODO: Loop only over changed values.
     int num_vars = variable_domain.size();

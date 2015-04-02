@@ -39,7 +39,6 @@ class CegarHeuristic : public Heuristic {
     const int max_time;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
-    LandmarkTask original_task;
     std::vector<LandmarkTask> tasks;
     std::vector<Abstraction *> abstractions;
     int num_states;
@@ -58,7 +57,6 @@ class CegarHeuristic : public Heuristic {
     void order_facts(std::vector<Fact> &facts) const;
     void get_fact_landmarks(std::vector<Fact> *facts) const;
     void get_facts(std::vector<Fact> &facts, Decomposition decomposition) const;
-    void install_task(LandmarkTask &task) const;
     void build_abstractions(Decomposition decomposition);
 
 protected:

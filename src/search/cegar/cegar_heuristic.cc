@@ -4,6 +4,7 @@
 #include "abstract_state.h"
 #include "modified_costs_task.h"
 #include "utils.h"
+#include "values.h"
 
 #include "../global_state.h"
 #include "../option_parser.h"
@@ -25,13 +26,13 @@ using namespace std;
 
 namespace cegar {
 
-shared_ptr<AdditiveHeuristic> get_additive_heuristic(const LandmarkTask &task) {
+shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task) {
     cout << "Start computing h^add values [t=" << g_timer << "] for ";
     Options opts;
-    opts.set<AbstractTask *>("transform", const_cast<LandmarkTask *>(&task));
+    opts.set<TaskProxy *>("task_proxy", &task);
     opts.set<int>("cost_type", 0);
     shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
-    additive_heuristic->initialize_and_compute_heuristic(TaskProxy(&task).get_initial_state());
+    additive_heuristic->initialize_and_compute_heuristic(task.get_initial_state());
     cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
     return additive_heuristic;
 }
@@ -43,7 +44,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       max_states(options.get<int>("max_states")),
       max_time(options.get<int>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
-      original_task(LandmarkTask::get_original_task()),
       num_states(0),
       landmark_graph(get_landmark_graph()),
       temp_state_buffer(new int[task->get_variables().size()]) {
@@ -72,7 +72,7 @@ CegarHeuristic::~CegarHeuristic() {
 
 struct SortHaddValuesUp {
     const shared_ptr<AdditiveHeuristic> hadd;
-    explicit SortHaddValuesUp(const LandmarkTask &task)
+    explicit SortHaddValuesUp(TaskProxy task)
     : hadd(get_additive_heuristic(task)) {}
     bool operator()(Fact a, Fact b) {
         return hadd->get_cost(a.first, a.second) < hadd->get_cost(b.first, b.second);
@@ -144,7 +144,7 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
     } else if (fact_order == MIXED) {
         random_shuffle(facts.begin(), facts.end());
     } else if (fact_order == HADD_UP || fact_order == HADD_DOWN) {
-        sort(facts.begin(), facts.end(), SortHaddValuesUp(original_task));
+        sort(facts.begin(), facts.end(), SortHaddValuesUp(*task));
         if (fact_order == HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {
@@ -154,11 +154,14 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
 }
 
 void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition) const {
+    assert(facts.empty());
     assert(decomposition != NONE);
     if (decomposition == LANDMARKS) {
         get_fact_landmarks(&facts);
     } else if (decomposition == GOALS) {
-        facts = original_task.get_goal();
+        for (FactProxy fact : task->get_goals()) {
+            facts.push_back(get_raw_fact(fact));
+        }
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
         exit_with(EXIT_INPUT_ERROR);
@@ -171,11 +174,6 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
                 return task->get_initial_state()[fact.first].get_value() == fact.second;}),
         facts.end());
     order_facts(facts);
-}
-
-void CegarHeuristic::install_task(LandmarkTask &task) const {
-    task.dump();
-    task.install();
 }
 
 void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) {
@@ -209,27 +207,24 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
     for (int i = 0; i < num_abstractions; ++i) {
         cout << endl;
-        original_task.install();
         shared_ptr<AbstractTask> orig_task_impl = g_root_task();
-        TaskProxy orig_task = TaskProxy(orig_task_impl.get());
-        FactProxy landmark = orig_task.get_variables()[facts[i].first].get_fact(facts[i].second);
-        VariableToValues groups;
-        if (options.get<bool>("combine_facts") && decomposition == LANDMARKS) {
-            groups = get_prev_landmarks(landmark);
-        }
+
         Options opts;
         opts.set<shared_ptr<AbstractTask> >("transform", orig_task_impl);
         opts.set<vector<int> >("operator_costs", remaining_costs);
         shared_ptr<ModifiedCostsTask> modified_costs_task = make_shared<ModifiedCostsTask>(opts);
-        LandmarkTask task = LandmarkTask(modified_costs_task, landmark, groups);
-        unordered_set<FactProxy> reachable_facts;
-        if (decomposition != NONE)
-            // TODO: Really use for GOALS decomposition?
-            reachable_facts = compute_reachable_facts(orig_task, landmark);
-        install_task(task);
-        shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(task);
 
-        Abstraction *abstraction = new Abstraction(TaskProxy(&task), additive_heuristic);
+        FactProxy landmark = task->get_variables()[facts[i].first].get_fact(facts[i].second);
+        VariableToValues groups;
+        if (options.get<bool>("combine_facts") && decomposition == LANDMARKS) {
+            groups = get_prev_landmarks(landmark);
+        }
+        LandmarkTask landmark_task = LandmarkTask(modified_costs_task, landmark, groups);
+
+        shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(TaskProxy(&landmark_task));
+
+        Values::initialize_static_members(landmark_task.get_variable_domain());
+        Abstraction *abstraction = new Abstraction(TaskProxy(&landmark_task), additive_heuristic);
 
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states((max_states - num_states) / rem_tasks);
@@ -240,7 +235,12 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
+        unordered_set<FactProxy> reachable_facts;
+        if (decomposition != NONE)
+            // TODO: Really use for GOALS decomposition?
+            reachable_facts = compute_reachable_facts(*task, landmark);
         abstraction->separate_unreachable_facts(reachable_facts);
+
         abstraction->build();
         num_states += abstraction->get_num_states();
         if (decomposition == NONE && num_abstractions == 1 && !search)
@@ -252,7 +252,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->release_memory();
 
         if (init_h > 0) {
-            tasks.push_back(task);
+            tasks.push_back(landmark_task);
             abstractions.push_back(abstraction);
         }
         if (init_h == INF) {
@@ -269,10 +269,6 @@ void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
     cout << "Peak memory before initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
-    if (DEBUG) {
-        cout << "Original task:" << endl;
-        original_task.dump();
-    }
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
     vector<Decomposition> decompositions;
     if (decomposition == LANDMARKS_AND_GOALS_AND_NONE) {
@@ -289,7 +285,6 @@ void CegarHeuristic::initialize() {
         cout << endl << "Using decomposition " << decompositions[i] << endl;
         build_abstractions(decompositions[i]);
         cout << endl;
-        original_task.install();
         if (num_states >= max_states || g_timer() > max_time ||
             compute_heuristic(g_initial_state()) == DEAD_END)
             break;
