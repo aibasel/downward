@@ -240,6 +240,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         }
 
         TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
+        dump_task(abstracted_task_proxy);
 
         shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(abstracted_task_proxy);
 

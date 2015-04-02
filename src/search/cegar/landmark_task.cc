@@ -128,40 +128,6 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     fact_names[var][group_value] = name.str();
 }
 
-void LandmarkTask::dump_facts() const {
-    for (size_t var = 0; var < variable_domain.size(); ++var) {
-        for (int value = 0; value < variable_domain[var]; ++value)
-            cout << "    " << var << "=" << value << ": " << fact_names[var][value] << endl;
-    }
-}
-
-void LandmarkTask::dump_name() const {
-    cout << "Task ";
-    string sep = "";
-    for (const Fact &goal : goals) {
-        cout << sep << goal.first << "=" << goal.second
-             << ":" << fact_names[goal.first][goal.second];
-        sep = " ";
-    }
-    cout << endl;
-}
-
-void LandmarkTask::dump() const {
-    dump_name();
-    int num_facts = 0;
-    for (size_t var = 0; var < variable_domain.size(); ++var)
-        num_facts += variable_domain[var];
-    cout << "  Facts: " << num_facts << endl;
-    if (DEBUG)
-        dump_facts();
-    cout << "  " << "Variable domain sizes: " << to_string(variable_domain) << endl;
-    if (DEBUG) {
-        cout << "  " << "Fact mapping:" << endl;
-        for (size_t var = 0; var < task_index.size(); ++var)
-            cout << "    " << var << ": " << to_string(task_index[var]) << endl;
-    }
-}
-
 int LandmarkTask::get_variable_domain_size(int var) const {
     return variable_domain[var];
 }
