@@ -72,20 +72,29 @@ CegarHeuristic::~CegarHeuristic() {
 
 struct SortHaddValuesUp {
     const shared_ptr<AdditiveHeuristic> hadd;
+
     explicit SortHaddValuesUp(TaskProxy task)
-    : hadd(get_additive_heuristic(task)) {}
-    bool operator()(Fact a, Fact b) {
-        return hadd->get_cost(a.first, a.second) < hadd->get_cost(b.first, b.second);
+        : hadd(get_additive_heuristic(task)) {}
+
+    int get_cost(FactProxy fact) {
+        return hadd->get_cost(fact.get_variable().get_id(), fact.get_value());
+    }
+
+    bool operator()(FactProxy a, FactProxy b) {
+        return get_cost(a) < get_cost(b);
     }
 };
 
-void CegarHeuristic::get_fact_landmarks(vector<Fact> *facts) const {
+vector<FactProxy> CegarHeuristic::get_fact_landmarks() const {
+    vector<FactProxy> facts;
     const set<LandmarkNode *> &nodes = landmark_graph.get_nodes();
-    for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
-        const LandmarkNode *node_p = *it;
-        facts->push_back(get_fact(node_p));
+    for (LandmarkNode *node : nodes) {
+        Fact raw_fact = get_fact(node);
+        FactProxy fact = task->get_variables()[raw_fact.first].get_fact(raw_fact.second);
+        facts.push_back(fact);
     }
-    sort(facts->begin(), facts->end());
+    sort(facts.begin(), facts.end());
+    return facts;
 }
 
 LandmarkGraph CegarHeuristic::get_landmark_graph() const {
@@ -137,7 +146,7 @@ VariableToValues CegarHeuristic::get_prev_landmarks(FactProxy fact) const {
     return groups;
 }
 
-void CegarHeuristic::order_facts(vector<Fact> &facts) const {
+void CegarHeuristic::order_facts(vector<FactProxy> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
     if (fact_order == ORIGINAL) {
         // Nothing to do.
@@ -153,14 +162,14 @@ void CegarHeuristic::order_facts(vector<Fact> &facts) const {
     }
 }
 
-void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition) const {
-    assert(facts.empty());
+vector<FactProxy> CegarHeuristic::get_facts(Decomposition decomposition) const {
     assert(decomposition != NONE);
+    vector<FactProxy> facts;
     if (decomposition == LANDMARKS) {
-        get_fact_landmarks(&facts);
+        facts = get_fact_landmarks();
     } else if (decomposition == GOALS) {
-        for (FactProxy fact : task->get_goals()) {
-            facts.push_back(get_raw_fact(fact));
+        for (FactProxy goal : task->get_goals()) {
+            facts.push_back(goal);
         }
     } else {
         cerr << "Invalid decomposition: " << decomposition << endl;
@@ -170,10 +179,11 @@ void CegarHeuristic::get_facts(vector<Fact> &facts, Decomposition decomposition)
     facts.erase(remove_if(
             facts.begin(),
             facts.end(),
-            [&](const Fact &fact){
-                return task->get_initial_state()[fact.first].get_value() == fact.second;}),
+            [&](FactProxy fact){
+                return task->get_initial_state()[fact.get_variable()] == fact;}),
         facts.end());
     order_facts(facts);
+    return facts;
 }
 
 void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) {
@@ -194,14 +204,14 @@ void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &need
 }
 
 void CegarHeuristic::build_abstractions(Decomposition decomposition) {
-    vector<Fact> facts;
+    vector<FactProxy> facts;
     int num_abstractions = 1;
     int max_abstractions = options.get<int>("max_abstractions");
     if (decomposition == NONE) {
         if (max_abstractions != INF)
             num_abstractions = max_abstractions;
     } else {
-        get_facts(facts, decomposition);
+        facts = get_facts(decomposition);
         num_abstractions = min(static_cast<int>(facts.size()), max_abstractions);
     }
 
@@ -214,7 +224,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         opts.set<vector<int> >("operator_costs", remaining_costs);
         shared_ptr<ModifiedCostsTask> modified_costs_task = make_shared<ModifiedCostsTask>(opts);
 
-        FactProxy landmark = task->get_variables()[facts[i].first].get_fact(facts[i].second);
+        FactProxy landmark = facts[i];
         VariableToValues groups;
         if (options.get<bool>("combine_facts") && decomposition == LANDMARKS) {
             groups = get_prev_landmarks(landmark);

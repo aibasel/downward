@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
+class FactProxy;
 class GlobalState;
 
 namespace cegar {
@@ -54,9 +55,9 @@ class CegarHeuristic : public Heuristic {
     // delete-relaxation before last_fact is reached the first time.
     void get_possibly_before_facts(const Fact last_fact, std::unordered_set<int> *reached) const;
 
-    void order_facts(std::vector<Fact> &facts) const;
-    void get_fact_landmarks(std::vector<Fact> *facts) const;
-    void get_facts(std::vector<Fact> &facts, Decomposition decomposition) const;
+    void order_facts(std::vector<FactProxy> &facts) const;
+    std::vector<FactProxy> get_fact_landmarks() const;
+    std::vector<FactProxy> get_facts(Decomposition decomposition) const;
     void build_abstractions(Decomposition decomposition);
 
 protected:

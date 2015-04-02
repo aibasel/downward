@@ -119,9 +119,14 @@ inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
 
 
 class FactProxy {
-    const AbstractTask &task;
+    const AbstractTask *task;
     int var_id;
     int value;
+
+    std::pair<int, int> get_pair() const {
+        return std::make_pair(var_id, value);
+    }
+
 public:
     FactProxy(const AbstractTask &task, int var_id, int value);
     ~FactProxy() = default;
@@ -133,15 +138,23 @@ public:
     }
 
     const std::string &get_name() const {
-        return task.get_fact_name(var_id, value);
+        return task->get_fact_name(var_id, value);
     }
 
     bool operator==(FactProxy const &other) const {
-        return var_id == other.var_id && value == other.value;
+        return get_pair() == other.get_pair();
     }
 
     bool operator!=(FactProxy other) const {
         return !(*this == other);
+    }
+
+    bool operator<(FactProxy const &other) const {
+        return get_pair() < other.get_pair();
+    }
+
+    bool operator>(FactProxy const &other) const {
+        return get_pair() > other.get_pair();
     }
 };
 
@@ -562,14 +575,14 @@ public:
 
 
 inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
-    : task(task), var_id(var_id), value(value) {
+    : task(&task), var_id(var_id), value(value) {
     assert(var_id >= 0 && var_id < task.get_num_variables());
     assert(value >= 0 && value < get_variable().get_domain_size());
 }
 
 
 inline VariableProxy FactProxy::get_variable() const {
-    return VariableProxy(task, var_id);
+    return VariableProxy(*task, var_id);
 }
 
 inline bool does_fire(EffectProxy effect, const State &state) {
