@@ -143,10 +143,9 @@ public:
     bool has_released_memory() const {return memory_released; }
 
     // Methods for additive abstractions.
-    int get_op_index(OperatorProxy op) const;
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
-    void get_needed_costs(std::vector<int> *needed_costs);
+    std::vector<int> get_needed_costs();
 
     // Statistics.
     void print_statistics();
