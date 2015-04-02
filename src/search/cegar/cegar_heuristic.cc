@@ -3,6 +3,7 @@
 #include "abstraction.h"
 #include "abstract_state.h"
 #include "modified_costs_task.h"
+#include "modified_goals_task.h"
 #include "utils.h"
 #include "values.h"
 
@@ -225,7 +226,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         shared_ptr<ModifiedCostsTask> modified_costs_task = make_shared<ModifiedCostsTask>(opts);
 
         shared_ptr<AbstractTask> abstracted_task;
-        unordered_set<FactProxy> reachable_facts;
         if (decomposition == Decomposition::NONE) {
             abstracted_task = modified_costs_task;
         } else {
@@ -234,7 +234,9 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             if (options.get<bool>("combine_facts") && decomposition == Decomposition::LANDMARKS) {
                 groups = get_prev_landmarks(landmark);
             }
-            abstracted_task = make_shared<LandmarkTask>(modified_costs_task, landmark, groups);
+            vector<Fact> goals = {get_raw_fact(landmark)};
+            abstracted_task = make_shared<ModifiedGoalsTask>(modified_costs_task, goals);
+            abstracted_task = make_shared<LandmarkTask>(abstracted_task, landmark, groups);
         }
 
         TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
