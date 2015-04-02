@@ -67,8 +67,6 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
     : DelegatingTask(parent),
       initial_state_data(parent->get_initial_state_values()),
       goals({get_raw_fact(landmark)}),
-      unreachable_facts(parent->get_num_variables()),
-      orig_index(parent->get_num_variables()),
       task_index(parent->get_num_variables()) {
     TaskProxy orig_task = TaskProxy(parent.get());
     assert(variable_domain.empty());
@@ -77,10 +75,8 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
     }
     fact_names = g_fact_names;
     for (size_t var = 0; var < variable_domain.size(); ++var) {
-        orig_index[var].resize(variable_domain[var]);
         task_index[var].resize(variable_domain[var]);
         for (int value = 0; value < variable_domain[var]; ++value) {
-            orig_index[var][value] = value;
             task_index[var][value] = value;
         }
     }
@@ -94,108 +90,38 @@ void LandmarkTask::move_fact(int var, int before, int after) {
     if (DEBUG)
         cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     assert(in_bounds(before, task_index[var]));
-    if (after == UNDEFINED) {
-        assert(initial_state_data[var] != before);
-        for (size_t i = 0; i < goals.size(); ++i) {
-            assert(goals[i].first != var || goals[i].second != before);
-        }
-        task_index[var][orig_index[var][before]] = UNDEFINED;
-        return;
-    }
     assert(in_bounds(after, task_index[var]));
-    // We never move a fact with more than one original index. If we did, we
-    // would have to use a vector here.
-    orig_index[var][after] = orig_index[var][before];
-    assert(orig_index[var][before] == before);
-    task_index[var][orig_index[var][before]] = after;
-    fact_names[var][after] = fact_names[var][before];
+    assert(task_index[var][before] == before);
+    task_index[var][before] = after;
+    //fact_names[var][after] = fact_names[var][before];
     if (initial_state_data[var] == before)
         initial_state_data[var] = after;
-    for (size_t i = 0; i < goals.size(); ++i) {
-        if (var == goals[i].first && before == goals[i].second)
-            goals[i].second = after;
+    for (Fact &goal : goals) {
+        if (var == goal.first && before == goal.second)
+            goal.second = after;
     }
-    // TODO: Do we still have to do this?
-    unordered_set<int>::iterator it = unreachable_facts[var].find(before);
-    if (it != unreachable_facts[var].end()) {
-        unreachable_facts[var].erase(it);
-        unreachable_facts[var].insert(after);
-    }
-}
-
-void LandmarkTask::update_facts(int var, int num_values, const vector<int> &new_task_index) {
-    assert(num_values >= 1);
-    int num_indices = new_task_index.size();
-    assert(num_indices == variable_domain[var]);
-    for (int before = 0; before < num_indices; ++before) {
-        int after = new_task_index[before];
-        assert(before >= after);
-        assert(after != -2);
-        if (before != after) {
-            move_fact(var, before, after);
-        }
-    }
-    orig_index[var].erase(orig_index[var].begin() + num_values, orig_index[var].end());
-    fact_names[var].erase(fact_names[var].begin() + num_values, fact_names[var].end());
-    if (DEBUG && num_values < variable_domain[var]) {
-        cout << "Task index " << var << ": " << to_string(task_index[var]) << endl;
-        cout << "Orig index " << var << ": " << to_string(orig_index[var]) << endl;
-    }
-    variable_domain[var] = num_values;
-    assert(static_cast<int>(orig_index[var].size()) == num_values);
-    assert(static_cast<int>(fact_names[var].size()) == num_values);
-}
-
-void LandmarkTask::find_and_apply_new_fact_ordering(int var, set<int> &unordered_values, int value_for_rest) {
-    // Save renamings by filling the free indices with facts from the back.
-    assert(!unordered_values.empty());
-    int num_values = unordered_values.size();
-    vector<int> new_task_index(variable_domain[var], -2);
-    for (int value = 0; value < variable_domain[var]; ++value) {
-        if (new_task_index[value] != -2) {
-            // We already found a position for value.
-        } else if (unordered_values.count(value) == 1) {
-            new_task_index[value] = value;
-            unordered_values.erase(unordered_values.find(value));
-        } else {
-            new_task_index[value] = value_for_rest;
-            if (!unordered_values.empty()) {
-                int highest_value = *unordered_values.rbegin();
-                new_task_index[highest_value] = value;
-                unordered_values.erase(highest_value);
-            }
-        }
-    }
-    assert(unordered_values.empty());
-    update_facts(var, num_values, new_task_index);
 }
 
 void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     assert(values.size() >= 2);
-    set<int> mapped_values;
-    for (int value : values) {
-        assert(task_index[var][value] != UNDEFINED);
-        mapped_values.insert(get_task_value(var, value));
-    }
     if (DEBUG)
-        cout << "Combine " << var << ": mapped " << to_string(mapped_values) << endl;
-    int projected_value = *mapped_values.begin();
-    set<int> kept_values;
-    for (int value = 0; value < variable_domain[var]; ++value) {
-        if (mapped_values.count(value) == 0)
-            kept_values.insert(value);
+        cout << "Combine " << var << ": mapped " << to_string(values) << endl;
+    int group_value = *values.begin();
+    for (int value : values) {
+        move_fact(var, value, group_value);
     }
-    kept_values.insert(projected_value);
-    find_and_apply_new_fact_ordering(var, kept_values, projected_value);
 
-    // Set combined fact_name.
+    // Don't decrease the variable's domain size. The FactProxy class expects
+    // all values to be smaller than the domain size (i.e., sequentially numbered).
+
+    // Set combined fact name.
     stringstream name;
     string sep = "";
-    for (int value : mapped_values) {
+    for (int value : values) {
         name << sep << fact_names[var][value];
         sep = " OR ";
     }
-    fact_names[var][projected_value] = name.str();
+    fact_names[var][group_value] = name.str();
 }
 
 void LandmarkTask::dump_facts() const {
@@ -208,9 +134,9 @@ void LandmarkTask::dump_facts() const {
 void LandmarkTask::dump_name() const {
     cout << "Task ";
     string sep = "";
-    for (size_t i = 0; i < goals.size(); ++i) {
-        cout << sep << goals[i].first << "=" << orig_index[goals[i].first][goals[i].second]
-             << ":" << fact_names[goals[i].first][goals[i].second];
+    for (const Fact &goal : goals) {
+        cout << sep << goal.first << "=" << goal.second
+             << ":" << fact_names[goal.first][goal.second];
         sep = " ";
     }
     cout << endl;
@@ -237,7 +163,7 @@ int LandmarkTask::get_variable_domain_size(int var) const {
 }
 
 const string &LandmarkTask::get_fact_name(int var, int value) const {
-    return parent->get_fact_name(var, get_orig_value(var, value));
+    return fact_names[var][value];
 }
 
 pair<int, int> LandmarkTask::get_operator_precondition(
