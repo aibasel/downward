@@ -235,8 +235,8 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
                 groups = get_prev_landmarks(landmark);
             }
             abstracted_task = make_shared<LandmarkTask>(modified_costs_task, landmark, groups);
-            // TODO: Really use for GOALS decomposition?
-            reachable_facts = compute_reachable_facts(*task, landmark);
+            if (decomposition == Decomposition::LANDMARKS)
+                reachable_facts = compute_reachable_facts(*task, landmark);
         }
 
         TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
