@@ -612,7 +612,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     assert(are_transitions_sorted_unique());
 
     // Go over the mapping of reduced labels to new label one by one.
-    unordered_set<LabelGroup *, hash_pointer> affected_groups;
+    unordered_set<LabelGroup *> affected_groups;
     for (size_t i = 0; i < label_mapping.size(); ++i) {
         const vector<int> &old_label_nos = label_mapping[i].second;
         assert(old_label_nos.size() >= 2);
@@ -1037,7 +1037,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
          group1_it != ts1->grouped_labels.end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
-        unordered_map<const LabelGroup *, vector<int>, hash_pointer> buckets;
+        unordered_map<const LabelGroup *, vector<int> > buckets;
         for (LabelConstIter label_it = group1_it->begin();
              label_it != group1_it->end(); ++label_it) {
             int label_no = *label_it;
@@ -1048,10 +1048,9 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
         // refinements of group1.
 
         // Now create the new groups together with their transitions.
-        const vector<Transition> &transitions1 = ts1->get_const_transitions_for_group(*group1_it);
+        const vector<Transition> &transitions1 = group1_it->get_const_transitions();
         for (const auto &bucket : buckets) {
-            const vector<Transition> &transitions2 =
-                ts2->transitions_by_group_index[bucket.first];
+            const vector<Transition> &transitions2 = bucket.first->get_const_transitions();
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
