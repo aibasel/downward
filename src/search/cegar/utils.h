@@ -35,7 +35,12 @@ typedef std::unordered_map<int, std::unordered_set<int> > VariableToValues;
 
 std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task);
 
-std::unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark);
+/*
+  The set of relaxed-reachable facts is the possibly-before set of facts that
+  can be reached in the delete-relaxation before 'fact' is reached the first
+  time plus 'fact' itself.
+*/
+std::unordered_set<FactProxy> get_relaxed_reachable_facts(TaskProxy task, FactProxy fact);
 
 int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);

@@ -78,9 +78,9 @@ unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy
     return pb_facts;
 }
 
-unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark) {
-    unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(task, landmark);
-    reachable_facts.insert(landmark);
+unordered_set<FactProxy> get_relaxed_reachable_facts(TaskProxy task, FactProxy fact) {
+    unordered_set<FactProxy> reachable_facts = compute_possibly_before_facts(task, fact);
+    reachable_facts.insert(fact);
     return reachable_facts;
 }
 

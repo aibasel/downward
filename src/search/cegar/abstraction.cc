@@ -92,7 +92,7 @@ void Abstraction::separate_unreachable_facts() {
     assert(init == single && states.size() == 1);
     assert(task_proxy.get_goals().size() == 1);
     FactProxy landmark = task_proxy.get_goals()[0];
-    unordered_set<FactProxy> reachable_facts = compute_reachable_facts(
+    unordered_set<FactProxy> reachable_facts = get_relaxed_reachable_facts(
         task_proxy, landmark);
     for (VariableProxy var : task_proxy.get_variables()) {
         int var_id  = var.get_id();
