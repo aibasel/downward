@@ -4,15 +4,14 @@
 #include "utils.h"
 
 #include "../delegating_task.h"
+#include "../utilities.h"
 
+#include <cassert>
 #include <set>
 #include <string>
 #include <vector>
 
 namespace cegar {
-
-std::unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark);
-
 class LandmarkTask : public DelegatingTask {
 private:
     std::vector<int> initial_state_data;

@@ -8,11 +8,14 @@
 #include "utils_landmarks.h"
 #include "values.h"
 
+#include "../additive_heuristic.h"
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../state_registry.h"
 #include "../task_tools.h"
+
+#include "../landmarks/landmark_graph.h"
 
 #include <algorithm>
 #include <cassert>
@@ -24,17 +27,6 @@
 using namespace std;
 
 namespace cegar {
-
-shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task) {
-    cout << "Start computing h^add values [t=" << g_timer << "] for ";
-    Options opts;
-    opts.set<TaskProxy *>("task_proxy", &task);
-    opts.set<int>("cost_type", 0);
-    shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
-    additive_heuristic->initialize_and_compute_heuristic(task.get_initial_state());
-    cout << "Done computing h^add values [t=" << g_timer << "]" << endl;
-    return additive_heuristic;
-}
 
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
@@ -54,7 +46,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
         landmark_graph->dump();
     if (options.get<bool>("write_graphs")) {
         write_landmark_graph(landmark_graph);
-        write_causal_graph();
     }
 
     for (OperatorProxy op : task->get_operators())
