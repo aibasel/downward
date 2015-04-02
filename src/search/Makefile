@@ -168,6 +168,7 @@ HEADERS += cegar/cegar_heuristic.h \
            cegar/abstraction.h \
            cegar/split_tree.h \
            cegar/utils.h \
+           cegar/utils_landmarks.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward

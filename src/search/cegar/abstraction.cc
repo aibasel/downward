@@ -51,7 +51,7 @@ Abstraction::Abstraction(TaskProxy task_proxy,
       max_time(INF),
       use_astar(true),
       use_general_costs(false),
-      dump_graphs(false),
+      write_graphs(false),
       memory_released(false) {
     assert(!task_proxy.get_goals().empty());
     reserve_memory_padding();
@@ -109,7 +109,7 @@ void Abstraction::separate_unreachable_facts() {
 }
 
 void Abstraction::build() {
-    if (dump_graphs) {
+    if (write_graphs) {
         assert(get_num_states() == 1);
         write_dot_file(get_num_states());
     }
@@ -190,7 +190,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/"
              << max_states << endl;
-    if (dump_graphs)
+    if (write_graphs)
         write_dot_file(num_states);
 
     delete state;
