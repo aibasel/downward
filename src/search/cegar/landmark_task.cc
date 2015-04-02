@@ -62,11 +62,9 @@ unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landm
 }
 
 LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
-                           FactProxy landmark,
                            const VariableToValues &fact_groups)
     : DelegatingTask(parent),
-      initial_state_data(parent->get_initial_state_values()),
-      goals({get_raw_fact(landmark)}) {
+      initial_state_data(parent->get_initial_state_values()) {
 
     int num_vars = parent->get_num_variables();
     variable_domain.resize(num_vars);
@@ -162,12 +160,8 @@ pair<int, int> LandmarkTask::get_operator_effect(
     return get_task_fact(parent->get_operator_effect(op_index, eff_index, is_axiom));
 }
 
-int LandmarkTask::get_num_goals() const {
-    return goals.size();
-}
-
 pair<int, int> LandmarkTask::get_goal_fact(int index) const {
-    return goals[index];
+    return get_task_fact(parent->get_goal_fact(index));
 }
 
 std::vector<int> LandmarkTask::get_initial_state_values() const {
