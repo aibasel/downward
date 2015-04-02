@@ -235,8 +235,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
                 groups = get_prev_landmarks(landmark);
             }
             abstracted_task = make_shared<LandmarkTask>(modified_costs_task, landmark, groups);
-            if (decomposition == Decomposition::LANDMARKS)
-                reachable_facts = compute_reachable_facts(*task, landmark);
         }
 
         TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
@@ -259,9 +257,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
         if (decomposition == Decomposition::LANDMARKS)
-            abstraction->separate_unreachable_facts(compute_reachable_facts(
-                abstracted_task_proxy,
-                abstracted_task_proxy.get_goals()[0]));
+            abstraction->separate_unreachable_facts();
 
         abstraction->build();
         num_states += abstraction->get_num_states();
