@@ -36,7 +36,6 @@ private:
     std::string get_combined_fact_name(int var, const std::unordered_set<int> &values) const;
 public:
     LandmarkTask(std::shared_ptr<AbstractTask> parent,
-                 FactProxy landmark,
                  const VariableToValues &fact_groups);
 
     virtual int get_variable_domain_size(int var) const override;
@@ -47,7 +46,6 @@ public:
     virtual std::pair<int, int> get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
 
-    virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
 
     virtual std::vector<int> get_initial_state_values() const override;

@@ -236,7 +236,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             }
             vector<Fact> goals = {get_raw_fact(landmark)};
             abstracted_task = make_shared<ModifiedGoalsTask>(modified_costs_task, goals);
-            abstracted_task = make_shared<LandmarkTask>(abstracted_task, landmark, groups);
+            abstracted_task = make_shared<LandmarkTask>(abstracted_task, groups);
         }
 
         TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
