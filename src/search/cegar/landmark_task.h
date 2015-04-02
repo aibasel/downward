@@ -4,15 +4,12 @@
 #include "utils.h"
 
 #include "../delegating_task.h"
-#include "../global_operator.h"
-#include "../global_state.h"
 
 #include <set>
 #include <string>
 #include <vector>
 
 namespace cegar {
-typedef std::unordered_set<Fact> FactSet;
 
 std::unordered_set<FactProxy> compute_reachable_facts(TaskProxy task, FactProxy landmark);
 
@@ -29,6 +26,7 @@ private:
     void move_fact(int var, int before, int after);
     void update_facts(int var, int num_values, const std::vector<int> &new_task_index);
     void find_and_apply_new_fact_ordering(int var, std::set<int> &unordered_values, int value_for_rest);
+    void combine_facts(int var, const std::unordered_set<int> &values);
 
     void dump_name() const;
     void dump_facts() const;
@@ -49,34 +47,13 @@ private:
     std::pair<int, int> get_task_fact(Fact fact) const {
         return std::make_pair(fact.first, get_task_value(fact.first, fact.second));
     }
-    int get_orig_op_index(int index) const;
 
 public:
-    LandmarkTask(std::vector<int> domain, std::vector<std::vector<std::string> > names, std::vector<int> initial_state_data_,
-         std::vector<Fact> goal_facts);
     LandmarkTask(std::shared_ptr<AbstractTask> parent,
                  FactProxy landmark,
                  const VariableToValues &fact_groups);
 
-    const std::vector<Fact> &get_goal() const {return goals; }
-
-    bool translate_state(const GlobalState &state, int *translated) const;
-
-    void combine_facts(int var, const std::unordered_set<int> &values);
-
-    int get_num_vars() const {return variable_domain.size(); }
-    int get_num_values(int var) const {return variable_domain[var]; }
-    const std::vector<Fact> &get_goals() const {return goals; }
-    const std::vector<int> &get_initial_state_data() const {return initial_state_data; }
-    const std::vector<int> &get_variable_domain() const {return variable_domain; }
-    const std::vector<std::unordered_set<int> > &get_unreachable_facts() const {return unreachable_facts; }
-
-    int get_projected_index(int var, int value) const {return task_index[var][value]; }
-
-    double get_state_space_fraction(const LandmarkTask &global_task) const;
-
     void dump() const;
-
 
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;
