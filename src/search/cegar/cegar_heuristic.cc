@@ -224,17 +224,29 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         opts.set<vector<int> >("operator_costs", remaining_costs);
         shared_ptr<ModifiedCostsTask> modified_costs_task = make_shared<ModifiedCostsTask>(opts);
 
-        FactProxy landmark = facts[i];
-        VariableToValues groups;
-        if (options.get<bool>("combine_facts") && decomposition == LANDMARKS) {
-            groups = get_prev_landmarks(landmark);
+        shared_ptr<AbstractTask> abstracted_task;
+        unordered_set<FactProxy> reachable_facts;
+        if (decomposition == NONE) {
+            abstracted_task = modified_costs_task;
+        } else {
+            FactProxy landmark = facts[i];
+            VariableToValues groups;
+            if (options.get<bool>("combine_facts") && decomposition == LANDMARKS) {
+                groups = get_prev_landmarks(landmark);
+            }
+            abstracted_task = make_shared<LandmarkTask>(modified_costs_task, landmark, groups);
+            // TODO: Really use for GOALS decomposition?
+            reachable_facts = compute_reachable_facts(*task, landmark);
         }
-        LandmarkTask landmark_task = LandmarkTask(modified_costs_task, landmark, groups);
 
-        shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(TaskProxy(&landmark_task));
+        TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
 
-        Values::initialize_static_members(landmark_task.get_variable_domain());
-        Abstraction *abstraction = new Abstraction(TaskProxy(&landmark_task), additive_heuristic);
+        shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(abstracted_task_proxy);
+
+        // TODO: Fix this hack.
+        Values::initialize_static_members(abstracted_task_proxy);
+
+        Abstraction *abstraction = new Abstraction(abstracted_task_proxy, additive_heuristic);
 
         int rem_tasks = num_abstractions - i;
         abstraction->set_max_states((max_states - num_states) / rem_tasks);
@@ -245,11 +257,8 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
-        unordered_set<FactProxy> reachable_facts;
         if (decomposition != NONE)
-            // TODO: Really use for GOALS decomposition?
-            reachable_facts = compute_reachable_facts(*task, landmark);
-        abstraction->separate_unreachable_facts(reachable_facts);
+            abstraction->separate_unreachable_facts(reachable_facts);
 
         abstraction->build();
         num_states += abstraction->get_num_states();
@@ -262,7 +271,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         abstraction->release_memory();
 
         if (init_h > 0) {
-            tasks.push_back(landmark_task);
+            tasks.push_back(abstracted_task);
             abstractions.push_back(abstraction);
         }
         if (init_h == INF) {
@@ -318,26 +327,14 @@ void CegarHeuristic::print_statistics() {
     cout << endl;
 }
 
-int CegarHeuristic::compute_heuristic(const GlobalState &state) {
+int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
     assert(abstractions.size() == tasks.size());
     int sum_h = 0;
     for (size_t i = 0; i < abstractions.size(); ++i) {
-        LandmarkTask &task = tasks[i];
+        shared_ptr<AbstractTask> task = tasks[i];
+        State state = TaskProxy(task.get()).convert_global_state(global_state);
 
-        const int *buffer = 0;
-        // TODO: Use the state's buffer directly.
-        if (false && (Decomposition(options.get_enum("decomposition")) == NONE ||
-                      (Decomposition(options.get_enum("decomposition")) == GOALS))) {
-            ABORT("Not implemented");
-        } else {
-            // If any fact in state is not reachable in this task, h(state) = 0.
-            bool reachable = task.translate_state(state, temp_state_buffer);
-            if (!reachable)
-                continue;
-            buffer = temp_state_buffer;
-        }
-
-        int h = abstractions[i]->get_h(buffer);
+        int h = abstractions[i]->get_h(state);
         assert(h >= 0);
         if (h == INF)
             return DEAD_END;
