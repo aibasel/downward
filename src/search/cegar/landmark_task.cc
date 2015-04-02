@@ -90,14 +90,13 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
 }
 
 void LandmarkTask::move_fact(int var, int before, int after) {
-    if (DEBUG)
-        cout << "Move fact " << var << ": " << before << " -> " << after << endl;
+    cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     if (before == after)
         return;
     // Move each fact at most once.
     assert(task_index[var][before] == before);
     task_index[var][before] = after;
-    fact_names[var][before] = "projected-away";
+    fact_names[var][after] = fact_names[var][before];
     if (initial_state_data[var] == before)
         initial_state_data[var] = after;
     for (Fact &goal : goals) {
@@ -106,27 +105,43 @@ void LandmarkTask::move_fact(int var, int before, int after) {
     }
 }
 
-void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
-    assert(values.size() >= 2);
-    if (DEBUG)
-        cout << "Combine " << var << ": mapped " << to_string(values) << endl;
-    int group_value = *values.begin();
-
-    // Don't decrease the variable's domain size. The FactProxy class expects
-    // all values to be smaller than the domain size (i.e., sequentially numbered).
-
-    // Set combined fact name.
+string LandmarkTask::get_combined_fact_name(int var, const unordered_set<int> &values) const {
     stringstream name;
     string sep = "";
     for (int value : values) {
         name << sep << fact_names[var][value];
         sep = " OR ";
     }
-    fact_names[var][group_value] = name.str();
+    return name.str();
+}
 
-    for (int value : values) {
-        move_fact(var, value, group_value);
+void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
+    assert(values.size() >= 2);
+    cout << "Combine " << var << ": " << to_string(values) << endl;
+    string combined_fact_name = get_combined_fact_name(var, values);
+
+    int after = 0;
+    // Add all values that we want to keep.
+    for (int before = 0; before < variable_domain[var]; ++before) {
+        if (values.count(before) == 0) {
+            move_fact(var, before, after);
+            ++after;
+        }
     }
+    // Project all selected values onto single value.
+    for (int before : values) {
+        move_fact(var, before, after);
+    }
+    assert(after + static_cast<int>(values.size()) == variable_domain[var]);
+    int num_values = after + 1;
+    variable_domain[var] = num_values;
+
+    // Remove names of deleted facts.
+    fact_names[var].erase(fact_names[var].begin() + num_values, fact_names[var].end());
+    assert(static_cast<int>(fact_names[var].size()) == variable_domain[var]);
+
+    // Set combined fact name.
+    fact_names[var][after] = combined_fact_name;
 }
 
 int LandmarkTask::get_variable_domain_size(int var) const {
