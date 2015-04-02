@@ -40,7 +40,9 @@ class CegarHeuristic : public Heuristic {
     const int max_time;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
-    std::vector<LandmarkTask> tasks;
+    // TODO: Save TaskProxys directly? Then we would have to store AbstractTasks
+    //       as smart pointers in proxy classes.
+    std::vector<std::shared_ptr<AbstractTask>> tasks;
     std::vector<Abstraction *> abstractions;
     int num_states;
     LandmarkGraph landmark_graph;
@@ -63,7 +65,7 @@ class CegarHeuristic : public Heuristic {
 protected:
     virtual void print_statistics();
     virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 
 public:
     explicit CegarHeuristic(const Options &options);

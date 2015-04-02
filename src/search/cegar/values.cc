@@ -20,8 +20,12 @@ Values::Values() {
     values.set();
 }
 
-void Values::initialize_static_members(const vector<int> &variable_domain_) {
-    variable_domain = variable_domain_;
+void Values::initialize_static_members(TaskProxy task) {
+    variable_domain.clear();
+    variable_domain.reserve(task.get_variables().size());
+    for (VariableProxy var : task.get_variables())
+        variable_domain.push_back(var.get_domain_size());
+
     masks.clear();
     inverse_masks.clear();
     borders.clear();

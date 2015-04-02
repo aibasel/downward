@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class TaskProxy;
+
 namespace cegar {
 class AbstractState;
 
@@ -49,7 +51,7 @@ private:
     std::string str() const;
 
 public:
-    static void initialize_static_members(const std::vector<int> &variable_domain_);
+    static void initialize_static_members(TaskProxy task);
 };
 }
 
