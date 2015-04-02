@@ -65,10 +65,6 @@ public:
 
     void combine_facts(int var, const std::unordered_set<int> &values);
 
-    void install();
-
-    static LandmarkTask get_original_task();
-
     int get_num_vars() const {return variable_domain.size(); }
     int get_num_values(int var) const {return variable_domain[var]; }
     const std::vector<Fact> &get_goals() const {return goals; }
