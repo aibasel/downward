@@ -13,15 +13,20 @@ Node::Node()
       h(0) {
 }
 
+void Node::split(int var, int value, Node *left_child, Node *right_child) {
+    this->var = var;
+    this->value = value;
+    this->left_child = left_child;
+    this->right_child = right_child;
+    assert(is_split());
+}
+
 pair<Node *, Node *> Node::split(int var, const vector<int> &values) {
     Node *helper = this;
     right_child = new Node();
     for (int value : values) {
-        helper->var = var;
-        helper->value = value;
-        helper->right_child = right_child;
         Node *new_helper = new Node();
-        helper->left_child = new_helper;
+        helper->split(var, value, new_helper, right_child);
         helper = new_helper;
     }
     assert(!helper->is_split());

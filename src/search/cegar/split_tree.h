@@ -23,6 +23,8 @@ class Node {
     // Estimated cost to goal node.
     int h;
 
+    void split(int var, int value, Node *left_child, Node *right_child);
+
 public:
     Node();
     ~Node() = default;
