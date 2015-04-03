@@ -5,6 +5,8 @@
 
 #include "split_tree.h"
 
+#include <memory>
+
 class GlobalState;
 class Options;
 
