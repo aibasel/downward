@@ -3,6 +3,7 @@
 
 #include "split_tree.h"
 #include "utils.h"
+#include "values.h"
 
 #include "../task_proxy.h"
 
@@ -12,7 +13,6 @@
 
 namespace cegar {
 class AbstractState;
-class LandmarkTask;
 class Values;
 typedef std::pair<OperatorProxy, AbstractState *> Arc;
 typedef std::vector<Arc> Arcs;
@@ -24,11 +24,10 @@ private:
     AbstractState(const AbstractState &);
     AbstractState &operator=(const AbstractState &);
 
-    const LandmarkTask *task;
     const TaskProxy task_proxy;
 
     // Abstract domains for each variable.
-    Values *values;
+    Values values;
 
     // Incoming and outgoing transitions grouped by the abstract state they come
     // from or go to.
