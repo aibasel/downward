@@ -1,5 +1,7 @@
 #include "cartesian_heuristic.h"
 
+#include "utils.h"
+
 #include "../option_parser.h"
 
 #include <cassert>

@@ -6,10 +6,10 @@ using namespace std;
 
 namespace cegar {
 Node::Node()
-    : left_child(0),
-      right_child(0),
-      var(UNDEFINED),
-      value(UNDEFINED),
+    : left_child(nullptr),
+      right_child(nullptr),
+      var(-1),
+      value(-1),
       h(0) {
 }
 
@@ -32,14 +32,6 @@ Node *Node::get_child(int value) const {
     if (value == this->value)
         return right_child;
     return left_child;
-}
-
-Node *Node::get_left_child() const {
-    return left_child;
-}
-
-Node *Node::get_right_child() const {
-    return right_child;
 }
 
 
