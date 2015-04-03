@@ -4,17 +4,15 @@
 #include "utils.h"
 
 #include <cassert>
+#include <utility>
 #include <vector>
 
 namespace cegar {
-class AbstractState;
-
 class Node {
     // Forbid copy constructor and copy assignment operator.
     Node(const Node &);
     Node &operator=(const Node &);
 
-    AbstractState *abs_state;
     // While right_child always corresponds to a (possibly split) abstract
     // state, left_child may correspond to a helper node. Helper nodes
     // are added to the hierarchy to allow for efficient lookup in case
@@ -29,25 +27,34 @@ class Node {
     int h;
 
 public:
-    explicit Node(AbstractState *state = 0);
-    // Update the split tree for the new split of "abs_state" into "left" and
-    // "right".
+    explicit Node();
+    // Update the split tree for the new split.
     // Additionally to the two normal child nodes Node(left) and Node(right)
     // add |values|-1 OR-nodes that all have Node(right) as their right child
     // and the next OR-node as their left child.
-    void split(int var, const std::vector<int> &values, AbstractState *left, AbstractState *right);
+    std::pair<Node *, Node *> split(int var, const std::vector<int> &values);
 
-    bool is_split() const {return var != UNDEFINED; }
-    int get_var() const {return var; }
-    int get_value() const {return value; }
+    bool is_split() const {
+        assert((left_child == 0 && right_child == 0 &&
+                var == UNDEFINED && value == UNDEFINED) ||
+               (left_child != 0 && right_child != 0 &&
+                var != UNDEFINED && value != UNDEFINED));
+        return var != UNDEFINED;
+    }
+
+    int get_var() const {
+        assert(is_split());
+        return var;
+    }
+
+    //int get_value() const {return value; }
     Node *get_child(int value) const;
     Node *get_left_child() const;
     Node *get_right_child() const;
-    AbstractState *get_abs_state() const {return abs_state; }
-    void set_h(int h) {
-        assert(abs_state);
-        assert(h >= this->h);
-        this->h = h;
+
+    void set_h(int new_h) {
+        assert(new_h >= h);
+        h = new_h;
     }
     int get_h() const {return h; }
 };
@@ -57,9 +64,8 @@ class SplitTree {
 
 public:
     SplitTree();
-    void set_root(AbstractState *single);
     Node *get_node(const State &state) const;
-    const Node *get_root() const {return root; }
+    Node *get_root() const {return root; }
 };
 }
 

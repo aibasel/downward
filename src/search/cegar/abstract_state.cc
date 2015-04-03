@@ -177,7 +177,9 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     update_loops(var, v1, v2);
 
     // Update split tree.
-    node->split(var, wanted, v1, v2);
+    pair<Node *, Node *> children = node->split(var, wanted);
+    v1->set_node(children.first);
+    v2->set_node(children.second);
 
     // Since h-values only increase we can assign the h-value to the children.
     int h = node->get_h();
