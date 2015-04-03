@@ -159,16 +159,17 @@ HEADERS += landmarks/exploration.h \
 #           pdbs/util.h \
 #           pdbs/zero_one_pdbs_heuristic.h \
 
-HEADERS += cegar/cegar_heuristic.h \
-           cegar/abstract_state.h \
+HEADERS += cegar/abstract_state.h \
+           cegar/abstraction.h \
+           cegar/cartesian_heuristic.h \
+           cegar/cegar_heuristic.h \
            cegar/landmark_task.h \
            cegar/modified_costs_task.h \
            cegar/modified_goals_task.h \
-           cegar/values.h \
-           cegar/abstraction.h \
            cegar/split_tree.h \
            cegar/utils.h \
            cegar/utils_landmarks.h \
+           cegar/values.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward

@@ -10,7 +10,6 @@ namespace cegar {
 class AbstractState;
 
 class Node {
-private:
     // Forbid copy constructor and copy assignment operator.
     Node(const Node &);
     Node &operator=(const Node &);
@@ -54,11 +53,6 @@ public:
 };
 
 class SplitTree {
-private:
-    // Forbid copy constructor and copy assignment operator.
-    SplitTree(const SplitTree &);
-    SplitTree &operator=(const SplitTree &);
-
     Node *root;
 
 public:
