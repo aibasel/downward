@@ -42,7 +42,8 @@ shared_ptr<LandmarkGraph> get_landmark_graph() {
     opts.set<bool>("no_orders", false);
     opts.set<int>("lm_cost_type", 0);
     opts.set<bool>("supports_conditional_effects", false);
-    opts.set<Exploration *>("explor", new Exploration(opts));
+    Exploration exploration(opts);
+    opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
     return shared_ptr<LandmarkGraph>(lm_graph_factory.compute_lm_graph());
 }
