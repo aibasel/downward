@@ -40,7 +40,6 @@ Abstraction::Abstraction(TaskProxy task_proxy,
       additive_heuristic(additive_heuristic),
       single(new AbstractState(task_proxy)),
       init(single),
-      open(new AdaptiveQueue<AbstractState *>()),
       pick(RANDOM),
       rng(2012),
       num_states(1),
@@ -206,8 +205,8 @@ void Abstraction::reset_distances_and_solution() const {
 
 bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_costs) const {
     bool debug = true && DEBUG;
-    while (!open->empty()) {
-        pair<int, AbstractState *> top_pair = open->pop();
+    while (!open_queue.empty()) {
+        pair<int, AbstractState *> top_pair = open_queue.pop();
         int &old_f = top_pair.first;
         AbstractState *state = top_pair.second;
 
@@ -276,7 +275,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
                     f += h;
                 }
                 assert(f >= 0);
-                open->push(f, successor);
+                open_queue.push(f, successor);
                 auto it = solution_backward.find(successor);
                 if (it != solution_backward.end())
                     solution_backward.erase(it);
@@ -497,18 +496,18 @@ void Abstraction::extract_solution(AbstractState *goal) const {
 
 void Abstraction::find_solution() const {
     reset_distances_and_solution();
-    open->clear();
+    open_queue.clear();
     init->set_distance(0);
-    open->push(init->get_h(), init);
+    open_queue.push(init->get_h(), init);
     astar_search(true, true);
 }
 
 void Abstraction::update_h_values() const {
     reset_distances_and_solution();
-    open->clear();
+    open_queue.clear();
     for (AbstractState *goal : goals) {
         goal->set_distance(0);
-        open->push(0, goal);
+        open_queue.push(0, goal);
     }
     astar_search(false, false);
     for (AbstractState *state : states) {
@@ -561,10 +560,10 @@ vector<int> Abstraction::get_needed_costs() {
     vector<int> needed_costs(task_proxy.get_operators().size(), -MAX_COST_VALUE);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
-    open->clear();
+    open_queue.clear();
     reset_distances_and_solution();
     init->set_distance(0);
-    open->push(0, init);
+    open_queue.push(0, init);
     astar_search(true, false, &needed_costs);
     return needed_costs;
 }
@@ -579,8 +578,6 @@ void Abstraction::release_memory() {
     if (DEBUG)
         cout << "Release memory" << endl;
     assert(!memory_released);
-    delete open;
-    open = 0;
     release_memory_padding();
     for (AbstractState *state: states) {
         delete state;

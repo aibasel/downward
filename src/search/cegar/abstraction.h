@@ -63,7 +63,7 @@ private:
     AbstractStates goals;
 
     // Queue for A* search.
-    mutable AdaptiveQueue<AbstractState *> *open;
+    mutable AdaptiveQueue<AbstractState *> open_queue;
     mutable std::unordered_map<AbstractState *, Arc> solution_backward;
     mutable std::unordered_map<AbstractState *, Arc> solution_forward;
 
