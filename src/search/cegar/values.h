@@ -8,16 +8,13 @@
 #include <string>
 #include <vector>
 
+class State;
 class TaskProxy;
 
 namespace cegar {
-class AbstractState;
-
 typedef boost::dynamic_bitset<> Bitset;
 
 class Values {
-    friend class AbstractState;
-
     // Possible values of each variable in this state.
     // Values are represented from right to left (least- to most-significant).
     // 11 10 001 -> var0 = {0}, var1 = {1}, var2 = {0,1}
@@ -34,9 +31,11 @@ class Values {
     // Temporary bitset for calculations in domains_intersect().
     static Bitset temp_values;
 
-    Values();
-
     int pos(int var, int value) const {return borders[var] + value; }
+
+public:
+    Values();
+    ~Values() = default;
 
     void add(int var, int value);
     void set(int var, int value);
@@ -53,7 +52,6 @@ class Values {
 
     std::string str() const;
 
-public:
     static void initialize_static_members(TaskProxy task);
 };
 }
