@@ -21,9 +21,6 @@ AbstractState::AbstractState(TaskProxy task_proxy)
       node(0) {
 }
 
-AbstractState::~AbstractState() {
-}
-
 string AbstractState::str() const {
     ostringstream oss;
     oss << "<" << values.str() << ">";

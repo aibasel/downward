@@ -13,17 +13,13 @@
 
 namespace cegar {
 class AbstractState;
-class Values;
-typedef std::pair<OperatorProxy, AbstractState *> Arc;
-typedef std::vector<Arc> Arcs;
-typedef std::vector<OperatorProxy> Loops;
+
+using Arc = std::pair<OperatorProxy, AbstractState *>;
+using Arcs = std::vector<Arc>;
+using Loops = std::vector<OperatorProxy>;
 
 class AbstractState {
 private:
-    // Forbid copy constructor and copy assignment operator.
-    AbstractState(const AbstractState &);
-    AbstractState &operator=(const AbstractState &);
-
     const TaskProxy task_proxy;
 
     // Abstract domains for each variable.
@@ -51,7 +47,10 @@ private:
 
 public:
     explicit AbstractState(TaskProxy task_proxy);
-    ~AbstractState();
+    ~AbstractState() = default;
+
+    AbstractState(const AbstractState &) = delete;
+    AbstractState &operator=(const AbstractState &) = delete;
 
     // Let "result" be the set of states in which applying "op" leads to this state.
     void regress(OperatorProxy op, AbstractState *result) const;
