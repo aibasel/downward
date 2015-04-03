@@ -7,8 +7,10 @@
 using namespace std;
 
 namespace cegar {
-CartesianHeuristic::CartesianHeuristic(const Options &opts)
+CartesianHeuristic::CartesianHeuristic(std::shared_ptr<AbstractTask> abstract_task,
+                                       const Options &opts)
     : Heuristic(opts),
+      abstract_task(abstract_task),
       split_tree(opts.get<SplitTree>("split_tree")) {
 }
 
@@ -19,7 +21,8 @@ void CartesianHeuristic::initialize() {
 }
 
 int CartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = task->convert_global_state(global_state);
+    TaskProxy task_proxy(abstract_task.get());
+    State state = task_proxy.convert_global_state(global_state);
     int h = split_tree.get_node(state)->get_h();
     assert(h >= 0);
     if (h == INF)
