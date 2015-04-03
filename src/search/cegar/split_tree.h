@@ -65,6 +65,7 @@ class SplitTree {
 
 public:
     SplitTree();
+    // TODO: Add destructor that deletes all nodes.
     Node *get_node(const State &state) const;
     Node *get_root() const {return root; }
 };
