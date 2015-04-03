@@ -2,6 +2,7 @@
 
 #include "abstraction.h"
 #include "abstract_state.h"
+#include "cartesian_heuristic.h"
 #include "modified_costs_task.h"
 #include "modified_goals_task.h"
 #include "utils.h"
@@ -50,8 +51,6 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 }
 
 CegarHeuristic::~CegarHeuristic() {
-    for (size_t i = 0; i < abstractions.size(); ++i)
-        delete abstractions[i];
 }
 
 struct SortHaddValuesUp {
@@ -169,30 +168,33 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         // TODO: Fix this hack.
         Values::initialize_static_members(abstracted_task_proxy);
 
-        Abstraction *abstraction = new Abstraction(abstracted_task_proxy, additive_heuristic);
+        Abstraction abstraction(abstracted_task_proxy, additive_heuristic);
 
         int rem_tasks = num_abstractions - i;
-        abstraction->set_max_states((max_states - num_states) / rem_tasks);
-        abstraction->set_max_time(ceil((max_time - g_timer()) / rem_tasks));
-        abstraction->set_write_graphs(options.get<bool>("write_graphs"));
-        abstraction->set_use_astar(options.get<bool>("use_astar"));
-        abstraction->set_use_general_costs(options.get<bool>("general_costs"));
+        abstraction.set_max_states((max_states - num_states) / rem_tasks);
+        abstraction.set_max_time(ceil((max_time - g_timer()) / rem_tasks));
+        abstraction.set_write_graphs(options.get<bool>("write_graphs"));
+        abstraction.set_use_astar(options.get<bool>("use_astar"));
+        abstraction.set_use_general_costs(options.get<bool>("general_costs"));
 
-        abstraction->set_pick_strategy(PickStrategy(options.get_enum("pick")));
+        abstraction.set_pick_strategy(PickStrategy(options.get_enum("pick")));
 
         if (decomposition == Decomposition::LANDMARKS)
-            abstraction->separate_unreachable_facts();
+            abstraction.separate_unreachable_facts();
 
-        abstraction->build();
-        num_states += abstraction->get_num_states();
-        vector<int> needed_costs = abstraction->get_needed_costs();
+        abstraction.build();
+        num_states += abstraction.get_num_states();
+        vector<int> needed_costs = abstraction.get_needed_costs();
         adapt_remaining_costs(remaining_costs, needed_costs);
-        int init_h = abstraction->get_init_h();
-        abstraction->release_memory();
+        int init_h = abstraction.get_init_h();
+        abstraction.release_memory();
 
         if (init_h > 0) {
-            tasks.push_back(abstracted_task);
-            abstractions.push_back(abstraction);
+            Options opts;
+            opts.set<int>("cost_type", 0);
+            opts.set<TaskProxy *>("task_proxy", &abstracted_task_proxy);
+            opts.set<SplitTree>("split_tree", abstraction.get_split_tree());
+            heuristics.emplace_back(abstracted_task, opts);
         }
         if (init_h == INF) {
             cout << "Abstraction is unsolvable" << endl;
@@ -241,20 +243,17 @@ void CegarHeuristic::print_statistics() {
     cout << "Done building abstractions [t=" << g_timer << "]" << endl;
     cout << "Peak memory after initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
-    cout << "CEGAR abstractions: " << abstractions.size() << endl;
+    cout << "CEGAR abstractions: " << heuristics.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
     cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
     cout << endl;
 }
 
 int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
-    assert(abstractions.size() == tasks.size());
     int sum_h = 0;
-    for (size_t i = 0; i < abstractions.size(); ++i) {
-        shared_ptr<AbstractTask> task = tasks[i];
-        State state = TaskProxy(task.get()).convert_global_state(global_state);
-
-        int h = abstractions[i]->get_h(state);
+    for (CartesianHeuristic heuristic : heuristics) {
+        heuristic.evaluate(global_state);
+        int h = heuristic.get_heuristic();
         assert(h >= 0);
         if (h == INF)
             return DEAD_END;

@@ -17,6 +17,7 @@ class GlobalState;
 
 namespace cegar {
 class Abstraction;
+class CartesianHeuristic;
 class LandmarkTask;
 
 enum GoalOrder {
@@ -41,10 +42,7 @@ class CegarHeuristic : public Heuristic {
     const int max_time;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
-    // TODO: Save TaskProxys directly? Then we would have to store AbstractTasks
-    //       as smart pointers in proxy classes.
-    std::vector<std::shared_ptr<AbstractTask>> tasks;
-    std::vector<Abstraction *> abstractions;
+    std::vector<CartesianHeuristic> heuristics;
     int num_states;
     const std::shared_ptr<LandmarkGraph> landmark_graph;
 
