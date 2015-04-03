@@ -57,7 +57,7 @@ Abstraction::Abstraction(TaskProxy task_proxy,
 
     goals.insert(init);
 
-    split_tree.set_root(single);
+    single->set_node(split_tree.get_root());
     for (OperatorProxy op : task_proxy.get_operators()) {
         single->add_loop(op);
     }

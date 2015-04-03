@@ -5,31 +5,27 @@
 using namespace std;
 
 namespace cegar {
-Node::Node(AbstractState *state)
-    : abs_state(state),
-      left_child(0),
+Node::Node()
+    : left_child(0),
       right_child(0),
       var(UNDEFINED),
       value(UNDEFINED),
       h(0) {
-    if (state)
-        state->set_node(this);
 }
 
-void Node::split(int var, const vector<int> &values, AbstractState *left, AbstractState *right) {
+pair<Node *, Node *> Node::split(int var, const vector<int> &values) {
     Node *helper = this;
-    right_child = new Node(right);
-    for (size_t i = 0; i < values.size(); ++i) {
+    right_child = new Node();
+    for (int value : values) {
         helper->var = var;
-        helper->value = values[i];
+        helper->value = value;
         helper->right_child = right_child;
         Node *new_helper = new Node();
         helper->left_child = new_helper;
         helper = new_helper;
     }
-    assert(helper->var == UNDEFINED);
-    helper->abs_state = left;
-    left->set_node(helper);
+    assert(!helper->is_split());
+    return make_pair(helper, right_child);
 }
 
 Node *Node::get_child(int value) const {
@@ -48,11 +44,7 @@ Node *Node::get_right_child() const {
 
 
 SplitTree::SplitTree()
-    : root(0) {
-}
-
-void SplitTree::set_root(AbstractState *single) {
-    root = new Node(single);
+    : root(new Node()) {
 }
 
 Node *SplitTree::get_node(const State &state) const {
@@ -62,7 +54,6 @@ Node *SplitTree::get_node(const State &state) const {
         current = current->get_child(state[current->get_var()].get_value());
     }
     assert(!current->is_split());
-    assert(current->get_abs_state());
     return current;
 }
 }
