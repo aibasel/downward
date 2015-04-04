@@ -84,7 +84,7 @@ int Abstraction::get_min_goal_distance() const {
 }
 
 bool Abstraction::is_goal(AbstractState *state) const {
-    return goals.find(state) != goals.end();
+    return goals.count(state) == 1;
 }
 
 void Abstraction::separate_unreachable_facts() {
