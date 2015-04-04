@@ -11,8 +11,9 @@
 using namespace std;
 
 namespace cegar {
-LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
-                           const VariableToValues &fact_groups)
+DomainAbstractedTask::DomainAbstractedTask(
+    shared_ptr<AbstractTask> parent,
+    const VariableToValues &fact_groups)
     : DelegatingTask(parent),
       initial_state_data(parent->get_initial_state_values()) {
 
@@ -37,7 +38,7 @@ LandmarkTask::LandmarkTask(shared_ptr<AbstractTask> parent,
     }
 }
 
-void LandmarkTask::move_fact(int var, int before, int after) {
+void DomainAbstractedTask::move_fact(int var, int before, int after) {
     cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     if (before == after)
         return;
@@ -53,7 +54,7 @@ void LandmarkTask::move_fact(int var, int before, int after) {
     }
 }
 
-string LandmarkTask::get_combined_fact_name(int var, const unordered_set<int> &values) const {
+string DomainAbstractedTask::get_combined_fact_name(int var, const unordered_set<int> &values) const {
     stringstream name;
     string sep = "";
     for (int value : values) {
@@ -63,7 +64,7 @@ string LandmarkTask::get_combined_fact_name(int var, const unordered_set<int> &v
     return name.str();
 }
 
-void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
+void DomainAbstractedTask::combine_facts(int var, const unordered_set<int> &values) {
     assert(values.size() >= 2);
     cout << "Combine " << var << ": " << to_string(values) << endl;
     string combined_fact_name = get_combined_fact_name(var, values);
@@ -92,33 +93,33 @@ void LandmarkTask::combine_facts(int var, const unordered_set<int> &values) {
     fact_names[var][after] = combined_fact_name;
 }
 
-int LandmarkTask::get_variable_domain_size(int var) const {
+int DomainAbstractedTask::get_variable_domain_size(int var) const {
     return variable_domain[var];
 }
 
-const string &LandmarkTask::get_fact_name(int var, int value) const {
+const string &DomainAbstractedTask::get_fact_name(int var, int value) const {
     return fact_names[var][value];
 }
 
-pair<int, int> LandmarkTask::get_operator_precondition(
+pair<int, int> DomainAbstractedTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
     return get_task_fact(parent->get_operator_precondition(op_index, fact_index, is_axiom));
 }
 
-pair<int, int> LandmarkTask::get_operator_effect(
+pair<int, int> DomainAbstractedTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     return get_task_fact(parent->get_operator_effect(op_index, eff_index, is_axiom));
 }
 
-pair<int, int> LandmarkTask::get_goal_fact(int index) const {
+pair<int, int> DomainAbstractedTask::get_goal_fact(int index) const {
     return get_task_fact(parent->get_goal_fact(index));
 }
 
-std::vector<int> LandmarkTask::get_initial_state_values() const {
+std::vector<int> DomainAbstractedTask::get_initial_state_values() const {
     return initial_state_data;
 }
 
-vector<int> LandmarkTask::get_state_values(const GlobalState &global_state) const {
+vector<int> DomainAbstractedTask::get_state_values(const GlobalState &global_state) const {
     int num_vars = variable_domain.size();
     vector<int> state_data(num_vars);
     for (int var = 0; var < num_vars; ++var) {

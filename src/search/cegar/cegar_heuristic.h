@@ -18,7 +18,7 @@ class GlobalState;
 namespace cegar {
 class Abstraction;
 class CartesianHeuristic;
-class LandmarkTask;
+class DomainAbstractedTask;
 
 enum GoalOrder {
     ORIGINAL,
