@@ -28,10 +28,10 @@ const int INF = std::numeric_limits<int>::max();
 // See additive_heuristic.h.
 const int MAX_COST_VALUE = 100000000;
 
-typedef std::pair<int, std::vector<int> > Split;
-typedef std::vector<Split> Splits;
-typedef std::pair<int, int> Fact;
-typedef std::unordered_map<int, std::unordered_set<int> > VariableToValues;
+using Split = std::pair<int, std::vector<int> >;
+using Splits =std::vector<Split>;
+using Fact = std::pair<int, int>;
+using VariableToValues = std::unordered_map<int, std::unordered_set<int> >;
 
 std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task);
 
