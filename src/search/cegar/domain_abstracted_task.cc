@@ -66,20 +66,19 @@ void DomainAbstractedTask::combine_facts(int var, const unordered_set<int> &valu
     cout << "Combine " << var << ": " << values << endl;
     string combined_fact_name = get_combined_fact_name(var, values);
 
-    int after = 0;
+    int next_free_pos = 0;
     // Add all values that we want to keep.
     for (int before = 0; before < variable_domain[var]; ++before) {
         if (values.count(before) == 0) {
-            move_fact(var, before, after);
-            ++after;
+            move_fact(var, before, next_free_pos++);
         }
     }
     // Project all selected values onto single value.
     for (int before : values) {
-        move_fact(var, before, after);
+        move_fact(var, before, next_free_pos);
     }
-    assert(after + static_cast<int>(values.size()) == variable_domain[var]);
-    int num_values = after + 1;
+    assert(next_free_pos + static_cast<int>(values.size()) == variable_domain[var]);
+    int num_values = next_free_pos + 1;
     variable_domain[var] = num_values;
 
     // Remove names of deleted facts.
@@ -87,7 +86,7 @@ void DomainAbstractedTask::combine_facts(int var, const unordered_set<int> &valu
     assert(static_cast<int>(fact_names[var].size()) == variable_domain[var]);
 
     // Set combined fact name.
-    fact_names[var][after] = combined_fact_name;
+    fact_names[var][next_free_pos] = combined_fact_name;
 }
 
 int DomainAbstractedTask::get_variable_domain_size(int var) const {
