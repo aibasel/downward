@@ -1,7 +1,7 @@
 #include "abstraction.h"
 
 #include "abstract_state.h"
-#include "landmark_task.h"
+#include "domain_abstracted_task.h"
 #include "utils.h"
 
 #include "../additive_heuristic.h"

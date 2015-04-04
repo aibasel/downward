@@ -1,7 +1,7 @@
 #ifndef CEGAR_CEGAR_HEURISTIC_H
 #define CEGAR_CEGAR_HEURISTIC_H
 
-#include "landmark_task.h"
+#include "domain_abstracted_task.h"
 #include "utils.h"
 
 #include "../heuristic.h"
