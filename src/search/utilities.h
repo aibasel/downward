@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 #include <functional>
@@ -68,12 +69,24 @@ namespace std {
 template<class T>
 ostream &operator<<(ostream &stream, const vector<T> &vec) {
     stream << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (i != 0)
-            stream << ", ";
-        stream << vec[i];
+    string sep = "";
+    for (auto &item : vec) {
+        stream << sep << item;
+        sep = ", ";
     }
     stream << "]";
+    return stream;
+}
+
+template<class T>
+ostream &operator<<(ostream &stream, const unordered_set<T> &set) {
+    stream << "{";
+    string sep = "";
+    for (auto &item : set) {
+        stream << sep << item;
+        sep = ", ";
+    }
+    stream << "}";
     return stream;
 }
 }

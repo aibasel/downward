@@ -1,17 +1,19 @@
 #ifndef CEGAR_DOMAIN_ABSTRACTED_TASK_H
 #define CEGAR_DOMAIN_ABSTRACTED_TASK_H
 
-#include "utils.h"
-
 #include "../delegating_task.h"
 #include "../utilities.h"
 
 #include <cassert>
-#include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace cegar {
+using Fact = std::pair<int, int>;
+using VariableToValues = std::unordered_map<int, std::unordered_set<int> >;
+
 class DomainAbstractedTask : public DelegatingTask {
 private:
     std::vector<int> initial_state_data;
@@ -28,11 +30,13 @@ private:
         assert(in_bounds(value, task_index[var]));
         return task_index[var][value];
     }
+
     std::pair<int, int> get_task_fact(Fact fact) const {
         return std::make_pair(fact.first, get_task_value(fact.first, fact.second));
     }
 
     std::string get_combined_fact_name(int var, const std::unordered_set<int> &values) const;
+
 public:
     DomainAbstractedTask(
         std::shared_ptr<AbstractTask> parent,

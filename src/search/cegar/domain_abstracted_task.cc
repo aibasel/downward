@@ -1,9 +1,6 @@
 #include "domain_abstracted_task.h"
 
 #include "../global_state.h"
-#include "../task_proxy.h"
-#include "../task_tools.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <sstream>
@@ -66,7 +63,7 @@ string DomainAbstractedTask::get_combined_fact_name(int var, const unordered_set
 
 void DomainAbstractedTask::combine_facts(int var, const unordered_set<int> &values) {
     assert(values.size() >= 2);
-    cout << "Combine " << var << ": " << to_string(values) << endl;
+    cout << "Combine " << var << ": " << values << endl;
     string combined_fact_name = get_combined_fact_name(var, values);
 
     int after = 0;
