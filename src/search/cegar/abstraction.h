@@ -21,7 +21,7 @@ class AdditiveHeuristic;
 
 namespace cegar {
 class AbstractState;
-class LandmarkTask;
+class DomainAbstractedTask;
 
 typedef std::unordered_set<AbstractState *> AbstractStates;
 

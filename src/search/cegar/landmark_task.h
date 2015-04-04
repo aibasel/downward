@@ -12,7 +12,7 @@
 #include <vector>
 
 namespace cegar {
-class LandmarkTask : public DelegatingTask {
+class DomainAbstractedTask : public DelegatingTask {
 private:
     std::vector<int> initial_state_data;
     std::vector<Fact> goals;
@@ -34,8 +34,9 @@ private:
 
     std::string get_combined_fact_name(int var, const std::unordered_set<int> &values) const;
 public:
-    LandmarkTask(std::shared_ptr<AbstractTask> parent,
-                 const VariableToValues &fact_groups);
+    DomainAbstractedTask(
+        std::shared_ptr<AbstractTask> parent,
+        const VariableToValues &fact_groups);
 
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;
