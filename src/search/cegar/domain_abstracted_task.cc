@@ -1,4 +1,4 @@
-#include "landmark_task.h"
+#include "domain_abstracted_task.h"
 
 #include "../global_state.h"
 #include "../task_proxy.h"

@@ -163,7 +163,7 @@ HEADERS += cegar/abstract_state.h \
            cegar/abstraction.h \
            cegar/cartesian_heuristic.h \
            cegar/cegar_heuristic.h \
-           cegar/landmark_task.h \
+           cegar/domain_abstracted_task.h \
            cegar/modified_costs_task.h \
            cegar/modified_goals_task.h \
            cegar/split_tree.h \
