@@ -187,7 +187,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         vector<int> needed_costs = abstraction.get_needed_costs();
         adapt_remaining_costs(remaining_costs, needed_costs);
         int init_h = abstraction.get_init_h();
-        abstraction.release_memory();
 
         if (init_h > 0) {
             Options opts;
