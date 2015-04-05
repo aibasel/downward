@@ -18,19 +18,19 @@ using VarToGroups = std::unordered_map<int, ValueGroups>;
 
 class DomainAbstractedTask : public DelegatingTask {
 private:
-    std::vector<int> initial_state_data;
+    std::vector<int> initial_state_values;
     std::vector<Fact> goals;
-    std::vector<int> variable_domain;
+    std::vector<int> domain_size;
     std::vector<std::vector<std::string> > fact_names;
-    std::vector<std::vector<int> > task_index;
+    std::vector<std::vector<int> > value_map;
 
     void move_fact(int var, int before, int after);
     void combine_values(int var, const ValueGroups &groups);
 
     int get_task_value(int var, int value) const {
-        assert(in_bounds(var, task_index));
-        assert(in_bounds(value, task_index[var]));
-        return task_index[var][value];
+        assert(in_bounds(var, value_map));
+        assert(in_bounds(value, value_map[var]));
+        return value_map[var][value];
     }
 
     std::pair<int, int> get_task_fact(Fact fact) const {
