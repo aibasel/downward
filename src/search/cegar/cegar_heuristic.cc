@@ -151,9 +151,15 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             abstracted_task = make_shared<ModifiedGoalsTask>(abstracted_task, goals);
 
             if (decomposition == Decomposition::LANDMARKS) {
-                VariableToValues groups;
+                VarToGroups groups;
                 if (options.get<bool>("combine_facts")) {
-                    groups = get_prev_landmarks(landmark_graph, get_raw_fact(facts[i]));
+                    VarToValues landmark_groups = get_prev_landmarks(landmark_graph, get_raw_fact(facts[i]));
+                    for (auto &pair : landmark_groups) {
+                        int var = pair.first;
+                        vector<int> &group = pair.second;
+                        if (group.size() >= 2)
+                            groups[var].push_back(group);
+                    }
                 }
                 abstracted_task = make_shared<DomainAbstractedTask>(abstracted_task, groups);
             }

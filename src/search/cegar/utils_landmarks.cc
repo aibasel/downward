@@ -54,8 +54,8 @@ shared_ptr<LandmarkGraph> get_landmark_graph() {
   variable the facts that have to be made true before the fact is made
   true for the first time.
 */
-VariableToValues get_prev_landmarks(shared_ptr<LandmarkGraph> landmark_graph, Fact fact) {
-    unordered_map<int, unordered_set<int> > groups;
+VarToValues get_prev_landmarks(shared_ptr<LandmarkGraph> landmark_graph, Fact fact) {
+    VarToValues groups;
     LandmarkNode *node = landmark_graph->get_landmark(fact);
     assert(node);
     vector<const LandmarkNode *> open;
@@ -67,13 +67,13 @@ VariableToValues get_prev_landmarks(shared_ptr<LandmarkGraph> landmark_graph, Fa
     while (!open.empty()) {
         const LandmarkNode *ancestor = open.back();
         open.pop_back();
-        if (closed.count(ancestor))
+        if (closed.count(ancestor) == 1)
             continue;
         closed.insert(ancestor);
         Fact ancestor_fact = get_fact(ancestor);
-        groups[ancestor_fact.first].insert(ancestor_fact.second);
-        for (auto it = ancestor->parents.begin(); it != ancestor->parents.end(); ++it) {
-            const LandmarkNode *parent = it->first;
+        groups[ancestor_fact.first].push_back(ancestor_fact.second);
+        for (const auto &parent_and_edge : ancestor->parents) {
+            const LandmarkNode *parent = parent_and_edge.first;
             open.push_back(parent);
         }
     }

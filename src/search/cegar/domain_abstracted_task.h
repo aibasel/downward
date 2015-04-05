@@ -12,7 +12,9 @@
 
 namespace cegar {
 using Fact = std::pair<int, int>;
-using VariableToValues = std::unordered_map<int, std::unordered_set<int> >;
+using ValueGroup = std::vector<int>;
+using ValueGroups = std::vector<ValueGroup>;
+using VarToGroups = std::unordered_map<int, ValueGroups>;
 
 class DomainAbstractedTask : public DelegatingTask {
 private:
@@ -23,7 +25,7 @@ private:
     std::vector<std::vector<int> > task_index;
 
     void move_fact(int var, int before, int after);
-    void combine_facts(int var, const std::unordered_set<int> &values);
+    void combine_values(int var, const ValueGroups &groups);
 
     int get_task_value(int var, int value) const {
         assert(in_bounds(var, task_index));
@@ -35,12 +37,12 @@ private:
         return std::make_pair(fact.first, get_task_value(fact.first, fact.second));
     }
 
-    std::string get_combined_fact_name(int var, const std::unordered_set<int> &values) const;
+    std::string get_combined_fact_name(int var, const ValueGroup &values) const;
 
 public:
     DomainAbstractedTask(
         std::shared_ptr<AbstractTask> parent,
-        const VariableToValues &fact_groups);
+        const VarToGroups &value_groups);
 
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;

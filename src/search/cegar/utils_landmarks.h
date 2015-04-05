@@ -11,7 +11,7 @@ class LandmarkGraph;
 namespace cegar {
 std::shared_ptr<LandmarkGraph> get_landmark_graph();
 std::vector<Fact> get_fact_landmarks(std::shared_ptr<LandmarkGraph> landmark_graph);
-VariableToValues get_prev_landmarks(std::shared_ptr<LandmarkGraph>, Fact fact);
+VarToValues get_prev_landmarks(std::shared_ptr<LandmarkGraph>, Fact fact);
 
 void write_landmark_graph(std::shared_ptr<LandmarkGraph> graph);
 }
