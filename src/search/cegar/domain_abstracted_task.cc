@@ -12,19 +12,19 @@ DomainAbstractedTask::DomainAbstractedTask(
     shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups)
     : DelegatingTask(parent),
-      initial_state_data(parent->get_initial_state_values()) {
+      initial_state_values(parent->get_initial_state_values()) {
 
     int num_vars = parent->get_num_variables();
-    variable_domain.resize(num_vars);
-    task_index.resize(num_vars);
+    domain_size.resize(num_vars);
+    value_map.resize(num_vars);
     fact_names.resize(num_vars);
     for (int var = 0; var < num_vars; ++var) {
         int num_values = parent->get_variable_domain_size(var);
-        variable_domain[var] = num_values;
-        task_index[var].resize(num_values);
+        domain_size[var] = num_values;
+        value_map[var].resize(num_values);
         fact_names[var].resize(num_values);
         for (int value = 0; value < num_values; ++value) {
-            task_index[var][value] = value;
+            value_map[var][value] = value;
             fact_names[var][value] = parent->get_fact_name(var, value);
         }
     }
@@ -38,21 +38,20 @@ DomainAbstractedTask::DomainAbstractedTask(
 
 void DomainAbstractedTask::move_fact(int var, int before, int after) {
     cout << "Move fact " << var << ": " << before << " -> " << after << endl;
-    assert(in_bounds(var, variable_domain));
-    assert(in_bounds(before, task_index[var]));
-    assert(in_bounds(after, task_index[var]));
+    assert(in_bounds(var, domain_size));
+    assert(0 <= before && before < domain_size[var]);
+    assert(0 <= after && after < domain_size[var]);
 
     if (before == after)
         return;
 
     // Move each fact at most once.
-    assert(task_index[var][before] == before);
+    assert(value_map[var][before] == before);
 
-    task_index[var][before] = after;
-    // TODO: Use swap.
-    fact_names[var][after] = fact_names[var][before];
-    if (initial_state_data[var] == before)
-        initial_state_data[var] = after;
+    value_map[var][before] = after;
+    fact_names[var][after] = move(fact_names[var][before]);
+    if (initial_state_values[var] == before)
+        initial_state_values[var] = after;
     for (Fact &goal : goals) {
         if (var == goal.first && before == goal.second)
             goal.second = after;
@@ -88,16 +87,13 @@ void DomainAbstractedTask::combine_values(int var, const ValueGroups &groups) {
     int next_free_pos = 0;
 
     // Move all facts that are not part of groups to the front.
-    for (int before = 0; before < variable_domain[var]; ++before) {
+    for (int before = 0; before < domain_size[var]; ++before) {
         if (group_union.count(before) == 0) {
             move_fact(var, before, next_free_pos++);
         }
     }
     int num_single_values = next_free_pos;
-    assert(num_single_values + num_merged_values == variable_domain[var]);
-
-    int new_domain_size= num_single_values + static_cast<int>(groups.size());
-    fact_names[var].resize(new_domain_size);
+    assert(num_single_values + num_merged_values == domain_size[var]);
 
     // Add new facts for merged groups.
     for (size_t group_id = 0; group_id < groups.size(); ++group_id) {
@@ -105,17 +101,20 @@ void DomainAbstractedTask::combine_values(int var, const ValueGroups &groups) {
         for (int before : group) {
             move_fact(var, before, next_free_pos);
         }
-        fact_names[var][next_free_pos] = combined_fact_names[group_id];
+        assert(in_bounds(next_free_pos, fact_names[var]));
+        fact_names[var][next_free_pos] = move(combined_fact_names[group_id]);
         ++next_free_pos;
     }
+    int new_domain_size = num_single_values + static_cast<int>(groups.size());
     assert(next_free_pos = new_domain_size);
 
     // Update domain size.
-    variable_domain[var] = new_domain_size;
+    fact_names[var].resize(new_domain_size);
+    domain_size[var] = new_domain_size;
 }
 
 int DomainAbstractedTask::get_variable_domain_size(int var) const {
-    return variable_domain[var];
+    return domain_size[var];
 }
 
 const string &DomainAbstractedTask::get_fact_name(int var, int value) const {
@@ -137,14 +136,14 @@ pair<int, int> DomainAbstractedTask::get_goal_fact(int index) const {
 }
 
 std::vector<int> DomainAbstractedTask::get_initial_state_values() const {
-    return initial_state_data;
+    return initial_state_values;
 }
 
 vector<int> DomainAbstractedTask::get_state_values(const GlobalState &global_state) const {
-    int num_vars = variable_domain.size();
+    int num_vars = domain_size.size();
     vector<int> state_data(num_vars);
     for (int var = 0; var < num_vars; ++var) {
-        int value = task_index[var][global_state[var]];
+        int value = value_map[var][global_state[var]];
         state_data[var] = value;
     }
     return state_data;
