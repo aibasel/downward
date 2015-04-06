@@ -80,9 +80,6 @@ private:
     mutable int unmet_preconditions;
     mutable int unmet_goals;
 
-    // Save whether the states have been destroyed.
-    bool memory_released;
-
     // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
 
@@ -113,6 +110,9 @@ private:
     void extract_solution(AbstractState *goal) const;
     void find_solution() const;
 
+    // Testing.
+    void write_dot_file(int num);
+
 public:
     explicit Abstraction(const Options &opts);
     ~Abstraction();
@@ -130,10 +130,6 @@ public:
     int get_num_states() const {return num_states; }
     bool may_keep_refining() const;
 
-    // Destroy all states when termination criterion is met.
-    void release_memory();
-    bool has_released_memory() const {return memory_released; }
-
     // Methods for additive abstractions.
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
@@ -142,9 +138,6 @@ public:
     // Statistics.
     void print_statistics();
     int get_init_h() const;
-
-    // Testing.
-    void write_dot_file(int num);
 };
 }
 

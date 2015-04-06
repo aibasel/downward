@@ -49,8 +49,7 @@ Abstraction::Abstraction(const Options &opts)
       num_states(1),
       deviations(0),
       unmet_preconditions(0),
-      unmet_goals(0),
-      memory_released(false) {
+      unmet_goals(0) {
     reserve_memory_padding();
 
     cout << "Use flaw-selection strategy " << pick << endl;
@@ -65,12 +64,12 @@ Abstraction::Abstraction(const Options &opts)
 }
 
 Abstraction::~Abstraction() {
-    if (!memory_released)
-        release_memory();
+    release_memory_padding();
+    for (AbstractState *state: states)
+        delete state;
 }
 
 int Abstraction::get_min_goal_distance() const {
-    assert(!memory_released);
     int min_distance = INF;
     for (AbstractState *goal : goals) {
         min_distance = min(min_distance, goal->get_distance());
@@ -504,7 +503,6 @@ void Abstraction::update_h_values() const {
 }
 
 int Abstraction::get_init_h() const {
-    assert(!memory_released);
     return init->get_h();
 }
 
@@ -560,18 +558,6 @@ bool Abstraction::may_keep_refining() const {
     return memory_padding_is_reserved() &&
            get_num_states() < max_states &&
            !timer.is_expired();
-}
-
-void Abstraction::release_memory() {
-    if (DEBUG)
-        cout << "Release memory" << endl;
-    assert(!memory_released);
-    release_memory_padding();
-    for (AbstractState *state: states) {
-        delete state;
-    }
-    AbstractStates().swap(states);
-    memory_released = true;
 }
 
 void Abstraction::print_statistics() {
