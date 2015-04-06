@@ -53,15 +53,6 @@ void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits);
 void reserve_memory_padding();
 void release_memory_padding();
 bool memory_padding_is_reserved();
-
-// Debugging.
-std::string to_string(int i);
-std::string to_string(Fact fact);
-std::string to_string(const std::vector<int> &v);
-std::string to_string(const std::set<int> &s);
-std::string to_string(const std::unordered_set<int> &s);
-
-std::ostream &operator<<(std::ostream &os, const Fact &fact);
 }
 
 #endif

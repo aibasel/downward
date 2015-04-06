@@ -139,7 +139,7 @@ void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
     if (DEBUG) {
         cout << "Unmet conditions: ";
         for (size_t i = 0; i < splits.size(); ++i) {
-            cout << splits[i].first << "=" << to_string(splits[i].second) << " ";
+            cout << splits[i].first << "=" << splits[i].second << " ";
         }
         cout << endl;
     }
@@ -154,7 +154,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     assert(may_keep_refining());
     if (DEBUG)
         cout << "Refine " << state->str() << " for "
-             << var << "=" << to_string(wanted) << endl;
+             << var << "=" << wanted << endl;
     AbstractState *v1 = new AbstractState(task_proxy);
     AbstractState *v2 = new AbstractState(task_proxy);
     state->split(var, wanted, v1, v2);
@@ -388,7 +388,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
             int var = split.first;
             const vector<int> &wanted = split.second;
             if (DEBUG)
-                cout << var << "=" << to_string(wanted) << " ";
+                cout << var << "=" << wanted << " ";
         }
     }
     if (DEBUG)
