@@ -125,7 +125,7 @@ private:
     void find_solution() const;
 
 public:
-    Abstraction(TaskProxy task_proxy, const Options &opts);
+    explicit Abstraction(const Options &opts);
     ~Abstraction();
 
     void separate_unreachable_facts();
