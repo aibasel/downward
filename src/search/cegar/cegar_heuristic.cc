@@ -169,12 +169,10 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         if (DEBUG)
             dump_task(abstracted_task_proxy);
 
-        shared_ptr<AdditiveHeuristic> additive_heuristic = get_additive_heuristic(abstracted_task_proxy);
-
         // TODO: Fix this hack.
         Values::initialize_static_members(abstracted_task_proxy);
 
-        Abstraction abstraction(abstracted_task_proxy, additive_heuristic);
+        Abstraction abstraction(abstracted_task_proxy);
 
         int rem_tasks = num_abstractions - i;
         abstraction.set_max_states((max_states - num_states) / rem_tasks);

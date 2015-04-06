@@ -124,8 +124,7 @@ private:
     void find_solution() const;
 
 public:
-    Abstraction(TaskProxy task_proxy,
-                std::shared_ptr<AdditiveHeuristic> additive_heuristic);
+    Abstraction(TaskProxy task_proxy);
     ~Abstraction();
 
     void separate_unreachable_facts();
