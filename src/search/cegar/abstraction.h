@@ -18,6 +18,7 @@
 #include <vector>
 
 class AdditiveHeuristic;
+class Options;
 
 namespace cegar {
 class AbstractState;
@@ -82,7 +83,7 @@ private:
     // Settings.
     int max_states;
     // Maximum time for building the abstraction.
-    int max_time;
+    double max_time;
     bool use_astar;
     bool use_general_costs;
     bool write_graphs;
@@ -124,7 +125,7 @@ private:
     void find_solution() const;
 
 public:
-    Abstraction(TaskProxy task_proxy);
+    Abstraction(TaskProxy task_proxy, const Options &opts);
     ~Abstraction();
 
     void separate_unreachable_facts();
@@ -151,14 +152,6 @@ public:
     // Statistics.
     void print_statistics();
     int get_init_h() const;
-
-    // Settings.
-    void set_max_states(int states) {max_states = states; }
-    void set_max_time(int time) {max_time = time; }
-    void set_use_astar(bool astar) {use_astar = astar; }
-    void set_use_general_costs(bool negative) {use_general_costs = negative; }
-    void set_pick_strategy(PickStrategy strategy);
-    void set_write_graphs(bool write) {write_graphs = write; }
 
     // Testing.
     void write_dot_file(int num);

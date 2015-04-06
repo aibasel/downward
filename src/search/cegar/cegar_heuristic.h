@@ -39,7 +39,7 @@ class CegarHeuristic : public Heuristic {
     const Options options;
     const bool search;
     int max_states;
-    const int max_time;
+    const double max_time;
     const GoalOrder fact_order;
     std::vector<int> remaining_costs;
     std::vector<CartesianHeuristic> heuristics;

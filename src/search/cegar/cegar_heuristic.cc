@@ -31,7 +31,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       options(opts),
       search(opts.get<bool>("search")),
       max_states(options.get<int>("max_states")),
-      max_time(options.get<int>("max_time")),
+      max_time(options.get<double>("max_time")),
       fact_order(GoalOrder(options.get_enum("fact_order"))),
       num_states(0),
       landmark_graph(get_landmark_graph()) {
@@ -172,16 +172,11 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         // TODO: Fix this hack.
         Values::initialize_static_members(abstracted_task_proxy);
 
-        Abstraction abstraction(abstracted_task_proxy);
-
         int rem_tasks = num_abstractions - i;
-        abstraction.set_max_states((max_states - num_states) / rem_tasks);
-        abstraction.set_max_time(ceil((max_time - g_timer()) / rem_tasks));
-        abstraction.set_write_graphs(options.get<bool>("write_graphs"));
-        abstraction.set_use_astar(options.get<bool>("use_astar"));
-        abstraction.set_use_general_costs(options.get<bool>("general_costs"));
-
-        abstraction.set_pick_strategy(PickStrategy(options.get_enum("pick")));
+        Options abs_opts(options);
+        abs_opts.set<int>("max_states", (max_states - num_states) / rem_tasks);
+        abs_opts.set<double>("max_time", ceil((max_time - g_timer()) / rem_tasks));
+        Abstraction abstraction(abstracted_task_proxy, abs_opts);
 
         if (decomposition == Decomposition::LANDMARKS)
             abstraction.separate_unreachable_facts();
@@ -268,7 +263,7 @@ int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
-    parser.add_option<int>("max_time", "maximum time in seconds for building the abstraction", "900");
+    parser.add_option<double>("max_time", "maximum time in seconds for building the abstraction", "900");
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_CONSTRAINED");
@@ -303,7 +298,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
-    parser.add_option<bool>("general_costs", "allow negative costs in cost-partitioning", "true");
+    parser.add_option<bool>("use_general_costs", "allow negative costs in cost-partitioning", "true");
     parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
     parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
