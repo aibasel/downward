@@ -66,7 +66,7 @@ void CegarHeuristic::order_facts(vector<FactProxy> &facts) const {
     if (task_order == TaskOrder::ORIGINAL) {
         // Nothing to do.
     } else if (task_order == TaskOrder::MIXED) {
-        random_shuffle(facts.begin(), facts.end());
+        g_rng.shuffle(facts);
     } else if (task_order == TaskOrder::HADD_UP || task_order == TaskOrder::HADD_DOWN) {
         sort(facts.begin(), facts.end(), SortHaddValuesUp(*task));
         if (task_order == TaskOrder::HADD_DOWN)
