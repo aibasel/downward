@@ -44,8 +44,7 @@ Abstraction::Abstraction(const Options &opts)
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(get_additive_heuristic(task_proxy)),
-      single(new AbstractState(task_proxy)),
-      init(single),
+      init(new AbstractState(task_proxy)),
       num_states(1),
       deviations(0),
       unmet_preconditions(0),
@@ -56,9 +55,9 @@ Abstraction::Abstraction(const Options &opts)
 
     goals.insert(init);
 
-    single->set_node(split_tree.get_root());
+    init->set_node(split_tree.get_root());
     for (OperatorProxy op : task_proxy.get_operators()) {
-        single->add_loop(op);
+        init->add_loop(op);
     }
     states.insert(init);
 }
@@ -82,7 +81,7 @@ bool Abstraction::is_goal(AbstractState *state) const {
 }
 
 void Abstraction::separate_unreachable_facts() {
-    assert(init == single && states.size() == 1);
+    assert(states.size() == 1);
     assert(task_proxy.get_goals().size() == 1);
     FactProxy landmark = task_proxy.get_goals()[0];
     unordered_set<FactProxy> reachable_facts = get_relaxed_reachable_facts(

@@ -62,9 +62,6 @@ private:
     // Set of all valid states, i.e. states that have not been split.
     AbstractStates states;
 
-    // Root of the refinement hierarchy.
-    AbstractState *single;
-
     // Abstract init and goal states.
     AbstractState *init;
     AbstractStates goals;
