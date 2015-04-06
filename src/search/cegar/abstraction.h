@@ -6,7 +6,6 @@
 
 #include "../countdown_timer.h"
 #include "../priority_queue.h"
-#include "../rng.h"
 #include "../task_proxy.h"
 
 #include <limits>
@@ -74,10 +73,6 @@ private:
     mutable AdaptiveQueue<AbstractState *> open_queue;
     mutable std::unordered_map<AbstractState *, Arc> solution_backward;
     mutable std::unordered_map<AbstractState *, Arc> solution_forward;
-
-    mutable RandomNumberGenerator rng;
-
-    std::vector<int> fact_positions_in_lm_graph_ordering;
 
     // Statistics.
     mutable int num_states;

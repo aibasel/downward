@@ -46,7 +46,6 @@ Abstraction::Abstraction(const Options &opts)
       additive_heuristic(get_additive_heuristic(task_proxy)),
       single(new AbstractState(task_proxy)),
       init(single),
-      rng(2012),
       num_states(1),
       deviations(0),
       unmet_preconditions(0),
@@ -363,7 +362,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             break;
         AbstractState *state = state_and_splits.first;
         Splits &splits = state_and_splits.second;
-        random_shuffle(splits.begin(), splits.end());
         if (!splits.empty()) {
             break_solution(state, splits);
             ++broken_solutions;
@@ -396,7 +394,7 @@ int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) co
     if (DEBUG)
         cout << endl;
     int cond = -1;
-    int random_cond = rng(splits.size());
+    int random_cond = g_rng(splits.size());
     if (pick == RANDOM) {
         cond = random_cond;
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
