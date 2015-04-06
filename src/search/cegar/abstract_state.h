@@ -5,8 +5,6 @@
 #include "utils.h"
 #include "values.h"
 
-#include "../task_proxy.h"
-
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,8 +18,6 @@ using Loops = std::vector<OperatorProxy>;
 
 class AbstractState {
 private:
-    const TaskProxy task_proxy;
-
     // Abstract domains for each variable.
     Values values;
 
@@ -46,7 +42,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var);
 
 public:
-    explicit AbstractState(TaskProxy task_proxy);
+    AbstractState();
     ~AbstractState() = default;
 
     AbstractState(const AbstractState &) = delete;
@@ -72,6 +68,7 @@ public:
 
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
+    bool is_abstraction_of_goal() const;
 
     // A* search.
     void set_distance(int dist) {distance = dist; }

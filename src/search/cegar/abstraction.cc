@@ -44,7 +44,7 @@ Abstraction::Abstraction(const Options &opts)
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(get_additive_heuristic(task_proxy)),
-      init(new AbstractState(task_proxy)),
+      init(new AbstractState()),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
@@ -149,8 +149,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (DEBUG)
         cout << "Refine " << state->str() << " for "
              << var << "=" << wanted << endl;
-    AbstractState *v1 = new AbstractState(task_proxy);
-    AbstractState *v2 = new AbstractState(task_proxy);
+    AbstractState *v1 = new AbstractState();
+    AbstractState *v2 = new AbstractState();
     state->split(var, wanted, v1, v2);
 
     states.erase(state);
@@ -335,7 +335,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     if (DEBUG)
                         cout << "      Paths deviate." << endl;
                     ++deviations;
-                    AbstractState desired_abs_state(task_proxy);
+                    AbstractState desired_abs_state;
                     next_abs->regress(op, &desired_abs_state);
                     abs_state->get_possible_splits(
                         desired_abs_state, conc_state, &splits);
