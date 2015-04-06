@@ -15,10 +15,9 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(TaskProxy task_proxy)
-    : task_proxy(task_proxy),
-      distance(UNDEFINED),
-      node(0) {
+AbstractState::AbstractState()
+    : distance(UNDEFINED),
+      node(nullptr) {
 }
 
 string AbstractState::str() const {
@@ -218,8 +217,8 @@ void AbstractState::remove_prev_arc(OperatorProxy op, AbstractState *other) {
 }
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
-    for (VariableProxy var : task_proxy.get_variables()) {
-        if (!values.test(var.get_id(), conc_state[var].get_value()))
+    for (FactProxy fact : conc_state) {
+        if (!values.test(fact.get_variable().get_id(), fact.get_value()))
             return false;
     }
     return true;
