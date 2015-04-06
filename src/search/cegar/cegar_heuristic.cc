@@ -105,9 +105,9 @@ vector<FactProxy> CegarHeuristic::get_facts(Decomposition decomposition) const {
 void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) {
     assert(remaining_costs.size() == needed_costs.size());
     if (DEBUG)
-        cout << "Remaining: " << to_string(remaining_costs) << endl;
+        cout << "Remaining: " << remaining_costs << endl;
     if (DEBUG)
-        cout << "Needed:    " << to_string(needed_costs) << endl;
+        cout << "Needed:    " << needed_costs << endl;
     for (size_t op_index = 0; op_index < remaining_costs.size(); ++op_index) {
         assert(in_bounds(op_index, remaining_costs));
         assert(remaining_costs[op_index] >= 0);
@@ -116,7 +116,7 @@ void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &need
         assert(remaining_costs[op_index] >= 0);
     }
     if (DEBUG)
-        cout << "Remaining: " << to_string(remaining_costs) << endl;
+        cout << "Remaining: " << remaining_costs << endl;
 }
 
 void CegarHeuristic::build_abstractions(Decomposition decomposition) {
