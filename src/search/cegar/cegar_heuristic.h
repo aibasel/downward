@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <vector>
 
+class CountdownTimer;
 class FactProxy;
 class GlobalState;
 
@@ -36,7 +37,7 @@ enum class Decomposition {
 class CegarHeuristic : public Heuristic {
     const Options options;
     int max_states;
-    const double max_time;
+    std::unique_ptr<CountdownTimer> timer;
     const TaskOrder task_order;
     std::vector<int> remaining_costs;
     std::vector<CartesianHeuristic> heuristics;

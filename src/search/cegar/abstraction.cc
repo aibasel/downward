@@ -38,10 +38,10 @@ Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
       pick(PickStrategy(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
-      max_time(opts.get<double>("max_time")),
       use_astar(opts.get<bool>("use_astar")),
       use_general_costs(opts.get<bool>("use_general_costs")),
       write_graphs(opts.get<bool>("write_graphs")),
+      timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(get_additive_heuristic(task_proxy)),
       single(new AbstractState(task_proxy)),
@@ -566,8 +566,8 @@ vector<int> Abstraction::get_needed_costs() {
 
 bool Abstraction::may_keep_refining() const {
     return memory_padding_is_reserved() &&
-           (get_num_states() < max_states) &&
-           (max_time == INF || timer() < max_time);
+           get_num_states() < max_states &&
+           !timer.is_expired();
 }
 
 void Abstraction::release_memory() {

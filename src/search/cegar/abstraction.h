@@ -4,11 +4,10 @@
 #include "abstract_state.h"
 #include "split_tree.h"
 
-#include "../global_state.h"
+#include "../countdown_timer.h"
 #include "../priority_queue.h"
 #include "../rng.h"
 #include "../task_proxy.h"
-#include "../timer.h"
 
 #include <limits>
 #include <memory>
@@ -51,11 +50,12 @@ private:
     PickStrategy pick;
 
     int max_states;
-    // Maximum time for building the abstraction.
-    double max_time;
     bool use_astar;
     bool use_general_costs;
     bool write_graphs;
+
+    // Limit the time for building the abstraction.
+    CountdownTimer timer;
 
     const State concrete_initial_state;
     const std::shared_ptr<AdditiveHeuristic> additive_heuristic;
@@ -87,9 +87,6 @@ private:
 
     // Save whether the states have been destroyed.
     bool memory_released;
-
-    // The timer is started when we begin building the abstraction.
-    Timer timer;
 
     // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
