@@ -20,7 +20,7 @@ class Abstraction;
 class CartesianHeuristic;
 class DomainAbstractedTask;
 
-enum GoalOrder {
+enum class TaskOrder {
     ORIGINAL,
     MIXED,
     HADD_UP,
@@ -40,7 +40,7 @@ class CegarHeuristic : public Heuristic {
     const bool search;
     int max_states;
     const double max_time;
-    const GoalOrder fact_order;
+    const TaskOrder task_order;
     std::vector<int> remaining_costs;
     std::vector<CartesianHeuristic> heuristics;
     int num_states;

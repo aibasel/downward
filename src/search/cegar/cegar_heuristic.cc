@@ -32,7 +32,7 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
       search(opts.get<bool>("search")),
       max_states(options.get<int>("max_states")),
       max_time(options.get<double>("max_time")),
-      fact_order(GoalOrder(options.get_enum("fact_order"))),
+      task_order(TaskOrder(options.get_enum("task_order"))),
       num_states(0),
       landmark_graph(get_landmark_graph()) {
     DEBUG = opts.get<bool>("debug");
@@ -70,16 +70,16 @@ struct SortHaddValuesUp {
 
 void CegarHeuristic::order_facts(vector<FactProxy> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
-    if (fact_order == ORIGINAL) {
+    if (task_order == TaskOrder::ORIGINAL) {
         // Nothing to do.
-    } else if (fact_order == MIXED) {
+    } else if (task_order == TaskOrder::MIXED) {
         random_shuffle(facts.begin(), facts.end());
-    } else if (fact_order == HADD_UP || fact_order == HADD_DOWN) {
+    } else if (task_order == TaskOrder::HADD_UP || task_order == TaskOrder::HADD_DOWN) {
         sort(facts.begin(), facts.end(), SortHaddValuesUp(*task));
-        if (fact_order == HADD_DOWN)
+        if (task_order == TaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {
-        cerr << "Not a valid fact ordering strategy: " << fact_order << endl;
+        cerr << "Invalid task ordering: " << static_cast<int>(task_order) << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
 }
@@ -276,13 +276,13 @@ static Heuristic *_parse(OptionParser &parser) {
                            pick_strategies,
                            "how to pick the next unsatisfied condition",
                            "MAX_REFINED");
-    vector<string> fact_order_strategies;
-    fact_order_strategies.push_back("ORIGINAL");
-    fact_order_strategies.push_back("MIXED");
-    fact_order_strategies.push_back("HADD_UP");
-    fact_order_strategies.push_back("HADD_DOWN");
-    parser.add_enum_option("fact_order",
-                           fact_order_strategies,
+    vector<string> task_order_strategies;
+    task_order_strategies.push_back("ORIGINAL");
+    task_order_strategies.push_back("MIXED");
+    task_order_strategies.push_back("HADD_UP");
+    task_order_strategies.push_back("HADD_DOWN");
+    parser.add_enum_option("task_order",
+                           task_order_strategies,
                            "order in which the goals are refined for",
                            "HADD_DOWN");
     vector<string> decompositions;
