@@ -7,6 +7,7 @@
 #include "../additive_heuristic.h"
 #include "../global_operator.h"
 #include "../globals.h"
+#include "../option_parser.h"
 #include "../rng.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
@@ -33,26 +34,28 @@ using namespace std;
 namespace cegar {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
-Abstraction::Abstraction(TaskProxy task_proxy)
+Abstraction::Abstraction(TaskProxy task_proxy, const Options &opts)
     : task_proxy(task_proxy),
       concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(get_additive_heuristic(task_proxy)),
       single(new AbstractState(task_proxy)),
       init(single),
-      pick(RANDOM),
+      pick(PickStrategy(opts.get<int>("pick"))),
       rng(2012),
       num_states(1),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
-      max_states(1),
-      max_time(INF),
-      use_astar(true),
-      use_general_costs(false),
-      write_graphs(false),
+      max_states(opts.get<int>("max_states")),
+      max_time(opts.get<double>("max_time")),
+      use_astar(opts.get<bool>("use_astar")),
+      use_general_costs(opts.get<bool>("use_general_costs")),
+      write_graphs(opts.get<bool>("write_graphs")),
       memory_released(false) {
     assert(!task_proxy.get_goals().empty());
     reserve_memory_padding();
+
+    cout << "Use flaw-selection strategy " << pick << endl;
 
     goals.insert(init);
 
@@ -66,11 +69,6 @@ Abstraction::Abstraction(TaskProxy task_proxy)
 Abstraction::~Abstraction() {
     if (!memory_released)
         release_memory();
-}
-
-void Abstraction::set_pick_strategy(PickStrategy strategy) {
-    pick = strategy;
-    cout << "Use flaw-selection strategy " << pick << endl;
 }
 
 int Abstraction::get_min_goal_distance() const {
