@@ -72,7 +72,6 @@ private:
     mutable std::unordered_map<AbstractState *, Arc> solution_forward;
 
     // Statistics.
-    mutable int num_states;
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
@@ -124,7 +123,7 @@ public:
 
     SplitTree get_split_tree() {return split_tree; }
 
-    int get_num_states() const {return num_states; }
+    int get_num_states() const {return states.size(); }
     bool may_keep_refining() const;
 
     // Methods for additive abstractions.

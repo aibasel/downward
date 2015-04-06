@@ -45,7 +45,6 @@ Abstraction::Abstraction(const Options &opts)
       concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(get_additive_heuristic(task_proxy)),
       init(new AbstractState(task_proxy)),
-      num_states(1),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
@@ -127,9 +126,6 @@ void Abstraction::build() {
     // Even if we found a valid concrete solution, we might have refined in the
     // last iteration, so we must update the h-values.
     update_h_values();
-    // Remember number of states before we release the memory.
-    num_states = get_num_states();
-    assert(num_states == static_cast<int>(states.size()));
     print_statistics();
 }
 
@@ -160,7 +156,6 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.erase(state);
     states.insert(v1);
     states.insert(v2);
-    ++num_states;
 
     // Since the search is always started from the abstract
     // initial state, v2 is never "init" and v1 is never "goal".
@@ -580,7 +575,7 @@ void Abstraction::print_statistics() {
 
     cout << "Time: " << timer << endl;
     cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
-    cout << "States: " << num_states << endl;
+    cout << "States: " << get_num_states() << endl;
     cout << "Dead-ends: " << dead_ends << endl;
     cout << "Init-h: " << init->get_h() << endl;
 
