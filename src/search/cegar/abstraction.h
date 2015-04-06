@@ -102,7 +102,7 @@ private:
 
     // A* search.
     void reset_distances_and_solution() const;
-    bool astar_search(bool forward, bool use_h, std::vector<int> *needed_costs = 0) const;
+    void astar_search(bool forward, bool use_h, std::vector<int> *needed_costs = 0) const;
 
     // Refine states between state and init until the solution is broken.
     void break_solution(AbstractState *state, const Splits &splits);

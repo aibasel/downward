@@ -199,7 +199,7 @@ void Abstraction::reset_distances_and_solution() const {
     solution_forward.clear();
 }
 
-bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_costs) const {
+void Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_costs) const {
     bool debug = true && DEBUG;
     while (!open_queue.empty()) {
         pair<int, AbstractState *> top_pair = open_queue.pop();
@@ -222,7 +222,7 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             if (debug)
                 cout << "GOAL REACHED" << endl;
             extract_solution(state);
-            return true;
+            return;
         }
         // All operators that induce self-loops need at least 0 costs.
         if (needed_costs) {
@@ -279,12 +279,6 @@ bool Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             }
         }
     }
-    // TODO: Remove this and the return value.
-    if ((forward && get_min_goal_distance() == INF) ||
-        (!forward && init->get_distance() == INF)) {
-        return false;
-    }
-    return true;
 }
 
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
