@@ -18,7 +18,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -30,12 +29,11 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       max_states(options.get<int>("max_states")),
-      max_time(options.get<double>("max_time")),
+      timer(new CountdownTimer(options.get<double>("max_time"))),
       task_order(TaskOrder(options.get_enum("task_order"))),
       num_states(0),
       landmark_graph(get_landmark_graph()) {
     DEBUG = opts.get<bool>("debug");
-    assert(max_time >= 0);
 
     verify_no_axioms_no_conditional_effects();
 
@@ -172,10 +170,11 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         Values::initialize_static_members(abstracted_task_proxy);
 
         int rem_tasks = num_abstractions - i;
+        double rem_time = options.get<double>("max_time") - timer->get_elapsed_time();
         Options abs_opts(options);
         abs_opts.set<TaskProxy *>("task_proxy", &abstracted_task_proxy);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_tasks);
-        abs_opts.set<double>("max_time", ceil((max_time - g_timer()) / rem_tasks));
+        abs_opts.set<double>("max_time", rem_time / rem_tasks);
         Abstraction abstraction(abs_opts);
 
         if (decomposition == Decomposition::LANDMARKS)
@@ -199,13 +198,14 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             break;
         }
 
-        if (num_states >= max_states || g_timer() > max_time)
+        if (num_states >= max_states || timer->is_expired())
             break;
     }
 }
 
 void CegarHeuristic::initialize() {
     cout << "Initializing cegar heuristic..." << endl;
+    // TODO: Introduce general logging function that also prints time and memory.
     cout << "Peak memory before initialization: "
          << get_peak_memory_in_kb() << " KB" << endl;
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
@@ -224,7 +224,7 @@ void CegarHeuristic::initialize() {
         cout << endl << "Using decomposition " << static_cast<int>(decompositions[i]) << endl;
         build_abstractions(decompositions[i]);
         cout << endl;
-        if (num_states >= max_states || g_timer() > max_time ||
+        if (num_states >= max_states || timer->is_expired()||
             compute_heuristic(g_initial_state()) == DEAD_END)
             break;
     }
@@ -258,7 +258,7 @@ int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
-    parser.add_option<double>("max_time", "maximum time in seconds for building the abstraction", "900");
+    parser.add_option<double>("max_time", "maximum time in seconds for building abstractions", "900");
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_CONSTRAINED");
