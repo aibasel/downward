@@ -218,7 +218,6 @@ void AbstractState::remove_prev_arc(OperatorProxy op, AbstractState *other) {
 }
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
-    // Return true if every concrete value is contained in the possible values.
     for (VariableProxy var : task_proxy.get_variables()) {
         if (!values.test(var.get_id(), conc_state[var].get_value()))
             return false;
@@ -228,13 +227,5 @@ bool AbstractState::is_abstraction_of(const State &conc_state) const {
 
 bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     return values.abstracts(other.values);
-}
-
-bool AbstractState::is_abstraction_of_goal() const {
-    for (FactProxy goal : task_proxy.get_goals()) {
-        if (!values.test(goal.get_variable().get_id(), goal.get_value()))
-            return false;
-    }
-    return true;
 }
 }
