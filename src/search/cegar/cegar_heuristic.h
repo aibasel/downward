@@ -55,7 +55,7 @@ protected:
 
 public:
     explicit CegarHeuristic(const Options &options);
-    ~CegarHeuristic();
+    ~CegarHeuristic() = default;
 };
 }
 
