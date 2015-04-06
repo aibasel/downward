@@ -16,9 +16,7 @@ class FactProxy;
 class GlobalState;
 
 namespace cegar {
-class Abstraction;
 class CartesianHeuristic;
-class DomainAbstractedTask;
 
 enum class TaskOrder {
     ORIGINAL,
@@ -37,7 +35,6 @@ enum class Decomposition {
 
 class CegarHeuristic : public Heuristic {
     const Options options;
-    const bool search;
     int max_states;
     const double max_time;
     const TaskOrder task_order;
