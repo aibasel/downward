@@ -44,7 +44,7 @@ public:
     void remove_all(int var);
     bool test(int var, int value) const;
     size_t count(int var) const;
-    bool domains_intersect(const Values &other, int var);
+    bool domains_intersect(const Values &other, int var) const;
     // Return true if all abstract domains are supersets of the
     // other's respective domains.
     bool abstracts(const Values &other) const;

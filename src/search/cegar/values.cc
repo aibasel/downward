@@ -81,7 +81,7 @@ size_t Values::count(int var) const {
     return num_values;
 }
 
-bool Values::domains_intersect(const Values &other, int var) {
+bool Values::domains_intersect(const Values &other, int var) const {
     // Using test() directly doesn't make execution much faster even for
     // problems with many boolean vars. We use temp_values to reduce
     // memory allocations. This substantially reduces the relative time

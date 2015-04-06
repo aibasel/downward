@@ -19,7 +19,7 @@ using Loops = std::vector<OperatorProxy>;
 class AbstractState {
 private:
     // Abstract domains for each variable.
-    Values values;
+    const Values values;
 
     // Incoming and outgoing transitions grouped by the abstract state they come
     // from or go to.
@@ -39,23 +39,23 @@ private:
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_loops(int var, AbstractState *v1, AbstractState *v2);
 
-    bool domains_intersect(const AbstractState *other, int var);
+    bool domains_intersect(const AbstractState *other, int var) const;
 
 public:
-    AbstractState();
+    explicit AbstractState(const Values &values);
     ~AbstractState() = default;
 
     AbstractState(const AbstractState &) = delete;
     AbstractState &operator=(const AbstractState &) = delete;
 
-    // Let "result" be the set of states in which applying "op" leads to this state.
-    void regress(OperatorProxy op, AbstractState *result) const;
-
     // Return the size of var's abstract domain for this state.
     size_t count(int var) const;
 
+    // Return the set of states in which applying "op" leads to this state.
+    Values regress(OperatorProxy op) const;
+
     // Separate the values in "wanted" from the other values in the abstract domain.
-    void split(int var, std::vector<int> wanted, AbstractState *v1, AbstractState *v2);
+    std::pair<AbstractState *, AbstractState *> split(int var, std::vector<int> wanted);
 
     void add_arc(OperatorProxy op, AbstractState *other);
     void remove_next_arc(OperatorProxy op, AbstractState *other);
