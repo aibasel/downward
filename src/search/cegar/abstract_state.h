@@ -72,7 +72,6 @@ public:
 
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
-    bool is_abstraction_of_goal() const;
 
     // A* search.
     void set_distance(int dist) {distance = dist; }
