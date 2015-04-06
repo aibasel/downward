@@ -37,7 +37,6 @@ DomainAbstractedTask::DomainAbstractedTask(
 }
 
 void DomainAbstractedTask::move_fact(int var, int before, int after) {
-    cout << "Move fact " << var << ": " << before << " -> " << after << endl;
     assert(in_bounds(var, domain_size));
     assert(0 <= before && before < domain_size[var]);
     assert(0 <= after && after < domain_size[var]);
@@ -69,11 +68,6 @@ string DomainAbstractedTask::get_combined_fact_name(int var, const ValueGroup &v
 }
 
 void DomainAbstractedTask::combine_values(int var, const ValueGroups &groups) {
-    cout << "Combine " << var << ": ";
-    for (const ValueGroup &group : groups)
-        cout << group << " ";
-    cout << endl;
-
     vector<string> combined_fact_names;
     unordered_set<int> group_union;
     int num_merged_values = 0;
