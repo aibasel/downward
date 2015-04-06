@@ -39,15 +39,11 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
 
     if (DEBUG)
         landmark_graph->dump();
-    if (options.get<bool>("write_graphs")) {
+    if (options.get<bool>("write_graphs"))
         write_landmark_graph(landmark_graph);
-    }
 
     for (OperatorProxy op : task->get_operators())
         remaining_costs.push_back(op.get_cost());
-}
-
-CegarHeuristic::~CegarHeuristic() {
 }
 
 struct SortHaddValuesUp {
