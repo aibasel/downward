@@ -15,8 +15,9 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState()
-    : distance(UNDEFINED),
+AbstractState::AbstractState(const Values &values)
+    : values(values),
+      distance(UNDEFINED),
       node(nullptr) {
 }
 
@@ -26,20 +27,25 @@ string AbstractState::str() const {
     return oss.str();
 }
 
-void AbstractState::regress(OperatorProxy op, AbstractState *result) const {
-    result->values = values;
+size_t AbstractState::count(int var) const {
+    return values.count(var);
+}
+
+Values AbstractState::regress(OperatorProxy op) const {
+    Values regressed_values = values;
     unordered_set<int> precondition_vars;
     for (FactProxy precondition : op.get_preconditions()) {
         int var_id = precondition.get_variable().get_id();
-        result->values.set(var_id, precondition.get_value());
+        regressed_values.set(var_id, precondition.get_value());
         precondition_vars.insert(var_id);
     }
     for (EffectProxy effect : op.get_effects()) {
         int var_id = effect.get_fact().get_variable().get_id();
         if (precondition_vars.count(var_id) == 0) {
-            result->values.add_all(var_id);
+            regressed_values.add_all(var_id);
         }
     }
+    return regressed_values;
 }
 
 void AbstractState::get_possible_splits(const AbstractState &desired,
@@ -49,12 +55,8 @@ const {
     values.get_possible_splits(desired.values, prev_conc_state, splits);
 }
 
-bool AbstractState::domains_intersect(const AbstractState *other, int var) {
+bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
     return values.domains_intersect(other->values, var);
-}
-
-size_t AbstractState::count(int var) const {
-    return values.count(var);
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
@@ -144,7 +146,7 @@ void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) 
     }
 }
 
-void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, AbstractState *v2) {
+pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int> wanted) {
     // We can only refine for vars that can have at least two values.
     // The desired value has to be in the set of possible values.
     assert(wanted.size() >= 1);
@@ -152,19 +154,22 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     for (size_t i = 0; i < wanted.size(); ++i)
         assert(values.test(var, wanted[i]));
 
-    v1->values = values;
-    v2->values = values;
+    Values v1_values(values);
+    Values v2_values(values);
 
-    v2->values.remove_all(var);
+    v2_values.remove_all(var);
     for (size_t i = 0; i < wanted.size(); ++i) {
         // In v1 var can have all of the previous values except the wanted ones.
-        v1->values.remove(var, wanted[i]);
+        v1_values.remove(var, wanted[i]);
 
         // In v2 var can only have the wanted values.
-        v2->values.add(var, wanted[i]);
+        v2_values.add(var, wanted[i]);
     }
-    assert(v1->count(var) == count(var) - wanted.size());
-    assert(v2->count(var) == wanted.size());
+    assert(v1_values.count(var) == values.count(var) - wanted.size());
+    assert(v2_values.count(var) == wanted.size());
+
+    AbstractState *v1 = new AbstractState(v1_values);
+    AbstractState *v2 = new AbstractState(v2_values);
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
@@ -184,6 +189,8 @@ void AbstractState::split(int var, vector<int> wanted, AbstractState *v1, Abstra
     int h = node->get_h();
     v1->set_h(h);
     v2->set_h(h);
+
+    return make_pair(v1, v2);
 }
 
 void AbstractState::add_arc(OperatorProxy op, AbstractState *other) {
