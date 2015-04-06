@@ -29,7 +29,6 @@ namespace cegar {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
-      search(opts.get<bool>("search")),
       max_states(options.get<int>("max_states")),
       max_time(options.get<double>("max_time")),
       task_order(TaskOrder(options.get_enum("task_order"))),
@@ -230,11 +229,6 @@ void CegarHeuristic::initialize() {
     }
     cout << endl;
     print_statistics();
-
-    if (!search) {
-        cout << "search=false --> stop" << endl;
-        exit_with(EXIT_UNSOLVED_INCOMPLETE);
-    }
 }
 
 void CegarHeuristic::print_statistics() {
@@ -299,7 +293,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<bool>("use_general_costs", "allow negative costs in cost-partitioning", "true");
-    parser.add_option<bool>("search", "if set to false, abort after refining", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
     parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
     Heuristic::add_options_to_parser(parser);
