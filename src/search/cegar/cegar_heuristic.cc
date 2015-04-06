@@ -173,9 +173,10 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         int rem_tasks = num_abstractions - i;
         Options abs_opts(options);
+        abs_opts.set<TaskProxy *>("task_proxy", &abstracted_task_proxy);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_tasks);
         abs_opts.set<double>("max_time", ceil((max_time - g_timer()) / rem_tasks));
-        Abstraction abstraction(abstracted_task_proxy, abs_opts);
+        Abstraction abstraction(abs_opts);
 
         if (decomposition == Decomposition::LANDMARKS)
             abstraction.separate_unreachable_facts();

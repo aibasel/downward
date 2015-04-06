@@ -34,8 +34,8 @@ using namespace std;
 namespace cegar {
 typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
-Abstraction::Abstraction(TaskProxy task_proxy, const Options &opts)
-    : task_proxy(task_proxy),
+Abstraction::Abstraction(const Options &opts)
+    : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
       concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(get_additive_heuristic(task_proxy)),
       single(new AbstractState(task_proxy)),
