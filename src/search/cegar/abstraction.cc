@@ -36,23 +36,22 @@ typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
-      concrete_initial_state(task_proxy.get_initial_state()),
-      additive_heuristic(get_additive_heuristic(task_proxy)),
-      single(new AbstractState(task_proxy)),
-      init(single),
       pick(PickStrategy(opts.get<int>("pick"))),
-      rng(2012),
-      num_states(1),
-      deviations(0),
-      unmet_preconditions(0),
-      unmet_goals(0),
       max_states(opts.get<int>("max_states")),
       max_time(opts.get<double>("max_time")),
       use_astar(opts.get<bool>("use_astar")),
       use_general_costs(opts.get<bool>("use_general_costs")),
       write_graphs(opts.get<bool>("write_graphs")),
+      concrete_initial_state(task_proxy.get_initial_state()),
+      additive_heuristic(get_additive_heuristic(task_proxy)),
+      single(new AbstractState(task_proxy)),
+      init(single),
+      rng(2012),
+      num_states(1),
+      deviations(0),
+      unmet_preconditions(0),
+      unmet_goals(0),
       memory_released(false) {
-    assert(!task_proxy.get_goals().empty());
     reserve_memory_padding();
 
     cout << "Use flaw-selection strategy " << pick << endl;

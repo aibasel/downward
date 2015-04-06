@@ -45,13 +45,20 @@ enum PickStrategy {
 
 class Abstraction {
 private:
-    // Forbid copy constructor and copy assignment operator.
-    Abstraction(const Abstraction &);
-    Abstraction &operator=(const Abstraction &);
-
     const TaskProxy task_proxy;
+
+    // How to pick the next split in case of multiple possibilities.
+    PickStrategy pick;
+
+    int max_states;
+    // Maximum time for building the abstraction.
+    double max_time;
+    bool use_astar;
+    bool use_general_costs;
+    bool write_graphs;
+
     const State concrete_initial_state;
-    std::shared_ptr<AdditiveHeuristic> additive_heuristic;
+    const std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
     // Set of all valid states, i.e. states that have not been split.
     AbstractStates states;
@@ -68,8 +75,6 @@ private:
     mutable std::unordered_map<AbstractState *, Arc> solution_backward;
     mutable std::unordered_map<AbstractState *, Arc> solution_forward;
 
-    // How to pick the next split in case of multiple possibilities.
-    PickStrategy pick;
     mutable RandomNumberGenerator rng;
 
     std::vector<int> fact_positions_in_lm_graph_ordering;
@@ -79,14 +84,6 @@ private:
     mutable int deviations;
     mutable int unmet_preconditions;
     mutable int unmet_goals;
-
-    // Settings.
-    int max_states;
-    // Maximum time for building the abstraction.
-    double max_time;
-    bool use_astar;
-    bool use_general_costs;
-    bool write_graphs;
 
     // Save whether the states have been destroyed.
     bool memory_released;
@@ -128,12 +125,13 @@ public:
     explicit Abstraction(const Options &opts);
     ~Abstraction();
 
+    Abstraction(const Abstraction &) = delete;
+    Abstraction &operator=(const Abstraction &) = delete;
+
     void separate_unreachable_facts();
 
     // Build abstraction.
     void build();
-
-    int get_h(const State &state) const {return split_tree.get_node(state)->get_h(); }
 
     SplitTree get_split_tree() {return split_tree; }
 
