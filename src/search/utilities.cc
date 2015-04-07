@@ -169,6 +169,6 @@ bool is_product_within_limit(int factor1, int factor2, int limit) {
 
 Log::~Log() {
     cout << os.str()
-         << " [t=" << g_timer() << "s, " << get_peak_memory_in_kb() << " KB]"
+         << " [t=" << g_timer << ", " << get_peak_memory_in_kb() << " KB]"
          << std::endl;
 }
