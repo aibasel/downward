@@ -13,7 +13,6 @@ DomainAbstractedTask::DomainAbstractedTask(
     const VarToGroups &value_groups)
     : DelegatingTask(parent),
       initial_state_values(parent->get_initial_state_values()) {
-
     int num_vars = parent->get_num_variables();
     domain_size.resize(num_vars);
     value_map.resize(num_vars);

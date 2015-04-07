@@ -29,7 +29,7 @@ const int INF = std::numeric_limits<int>::max();
 const int MAX_COST_VALUE = 100000000;
 
 using Split = std::pair<int, std::vector<int> >;
-using Splits =std::vector<Split>;
+using Splits = std::vector<Split>;
 using Fact = std::pair<int, int>;
 using VarToValues = std::unordered_map<int, std::vector<int> >;
 

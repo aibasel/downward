@@ -60,7 +60,7 @@ Abstraction::Abstraction(const Options &opts)
 
 Abstraction::~Abstraction() {
     release_memory_padding();
-    for (AbstractState *state: states)
+    for (AbstractState *state : states)
         delete state;
 }
 
@@ -83,7 +83,7 @@ void Abstraction::separate_unreachable_facts() {
     unordered_set<FactProxy> reachable_facts = get_relaxed_reachable_facts(
         task_proxy, landmark);
     for (VariableProxy var : task_proxy.get_variables()) {
-        int var_id  = var.get_id();
+        int var_id = var.get_id();
         vector<int> unreachable_values;
         for (int value = 0; value < var.get_domain_size(); ++value) {
             FactProxy fact = var.get_fact(value);
@@ -181,7 +181,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 }
 
 void Abstraction::reset_distances_and_solution() const {
-    for (AbstractState *state: states) {
+    for (AbstractState *state : states) {
         state->set_distance(INF);
     }
     solution_backward.clear();
@@ -364,7 +364,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
 }
 
 int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) const {
-    // TODO: Return reference to split instead if index and rename mathod.
+    // TODO: Return reference to split instead of index and rename method.
     assert(!splits.empty());
     // Shortcut for condition lists with only one element.
     if (splits.size() == 1) {
