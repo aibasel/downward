@@ -81,14 +81,9 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
 
-        // Note: we do not reduce labels several times for the same transition system
-        bool reduced_labels = false;
-        if (shrink_strategy->reduce_labels_before_shrinking()) {
-            labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-            reduced_labels = true;
-            transition_system->statistics(use_expensive_statistics);
-            other_transition_system->statistics(use_expensive_statistics);
-        }
+        labels->reduce(make_pair(system_one, system_two), all_transition_systems);
+        transition_system->statistics(use_expensive_statistics);
+        other_transition_system->statistics(use_expensive_statistics);
 
         if (!transition_system->is_solvable())
             return transition_system;
@@ -106,15 +101,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         // statistics always now, whether or not we shrunk.)
         transition_system->statistics(use_expensive_statistics);
         other_transition_system->statistics(use_expensive_statistics);
-
-        if (!reduced_labels) {
-            labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-        }
-        if (!reduced_labels) {
-            // only print statistics if we just possibly reduced labels
-            other_transition_system->statistics(use_expensive_statistics);
-            transition_system->statistics(use_expensive_statistics);
-        }
 
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
             labels, transition_system, other_transition_system);
