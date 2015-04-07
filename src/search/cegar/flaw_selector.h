@@ -35,6 +35,7 @@ private:
     // How to pick the next flaw in case of multiple possibilities.
     PickStrategy pick;
 
+    double get_constrainedness(const AbstractState &state, const Flaw &flaw) const;
     double get_refinedness(const AbstractState &state, const Flaw &flaw) const;
 public:
     FlawSelector(TaskProxy task_proxy, PickStrategy pick);

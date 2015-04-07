@@ -24,6 +24,13 @@ FlawSelector::FlawSelector(TaskProxy task_proxy, PickStrategy pick)
         additive_heuristic = get_additive_heuristic(task_proxy);
 }
 
+double FlawSelector::get_constrainedness(const AbstractState &state, const Flaw &flaw) const {
+    int var_id = flaw.first;
+    int num_remaining_values = state.count(var_id);
+    assert(num_remaining_values >= 2);
+    return num_remaining_values;
+}
+
 double FlawSelector::get_refinedness(const AbstractState &state, const Flaw &flaw) const {
     int var_id = flaw.first;
     double all_values = task_proxy.get_variables()[var_id].get_domain_size();
@@ -46,8 +53,7 @@ int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws
     }
     if (DEBUG) {
         cout << "Flaw: " << state.str() << endl;
-        for (size_t i = 0; i < flaws.size(); ++i) {
-            const Flaw &flaw = flaws[i];
+        for (const Flaw &flaw : flaws) {
             int var = flaw.first;
             const vector<int> &wanted = flaw.second;
             if (DEBUG)
@@ -63,17 +69,18 @@ int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
         int max_rest = -1;
         int min_rest = INF;
-        for (size_t i = 0; i < flaws.size(); ++i) {
-            int rest = state.count(flaws[i].first);
-            assert(rest >= 2);
-            if (rest > max_rest && pick == MIN_CONSTRAINED) {
+        int i = 0;
+        for (const Flaw &flaw : flaws) {
+            int value = get_constrainedness(state, flaw);
+            if (value > max_rest && pick == MIN_CONSTRAINED) {
                 cond = i;
-                max_rest = rest;
+                max_rest = value;
             }
-            if (rest < min_rest && pick == MAX_CONSTRAINED) {
+            if (value < min_rest && pick == MAX_CONSTRAINED) {
                 cond = i;
-                min_rest = rest;
+                min_rest = value;
             }
+            ++i;
         }
     } else if (pick == MIN_REFINED || pick == MAX_REFINED) {
         double min_refinement = 0.0;
