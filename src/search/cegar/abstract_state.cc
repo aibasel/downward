@@ -48,11 +48,11 @@ Values AbstractState::regress(OperatorProxy op) const {
     return regressed_values;
 }
 
-void AbstractState::get_possible_splits(const AbstractState &desired,
+void AbstractState::get_possible_flaws(const AbstractState &desired,
                                         const State &prev_conc_state,
-                                        Splits *splits)
+                                        Flaws *flaws)
 const {
-    values.get_possible_splits(desired.values, prev_conc_state, splits);
+    values.get_possible_flaws(desired.values, prev_conc_state, flaws);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {

@@ -26,8 +26,8 @@ const int INF = std::numeric_limits<int>::max();
 // See additive_heuristic.h.
 const int MAX_COST_VALUE = 100000000;
 
-using Split = std::pair<int, std::vector<int> >;
-using Splits = std::vector<Split>;
+using Flaw = std::pair<int, std::vector<int> >;
+using Flaws = std::vector<Flaw>;
 using Fact = std::pair<int, int>;
 using VarToValues = std::unordered_map<int, std::vector<int> >;
 
@@ -44,9 +44,9 @@ int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
 
-void get_unmet_preconditions(OperatorProxy op, const State &state, Splits *splits);
+void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws *flaws);
 
-void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits);
+void get_unmet_goals(GoalsProxy goals, const State &state, Flaws *flaws);
 
 void reserve_memory_padding();
 void release_memory_padding();

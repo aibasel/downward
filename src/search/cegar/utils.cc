@@ -105,27 +105,27 @@ int get_post(OperatorProxy op, int var_id) {
     return get_pre(op, var_id);
 }
 
-void get_unmet_preconditions(OperatorProxy op, const State &state, Splits *splits) {
-    assert(splits->empty());
+void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws *flaws) {
+    assert(flaws->empty());
     for (FactProxy precondition : op.get_preconditions()) {
         VariableProxy var = precondition.get_variable();
         if (state[var] != precondition) {
             vector<int> wanted;
             wanted.push_back(precondition.get_value());
-            splits->push_back(make_pair(var.get_id(), wanted));
+            flaws->push_back(make_pair(var.get_id(), wanted));
         }
     }
-    assert(splits->empty() == is_applicable(op, state));
+    assert(flaws->empty() == is_applicable(op, state));
 }
 
-void get_unmet_goals(GoalsProxy goals, const State &state, Splits *splits) {
-    assert(splits->empty());
+void get_unmet_goals(GoalsProxy goals, const State &state, Flaws *flaws) {
+    assert(flaws->empty());
     for (FactProxy goal : goals) {
         VariableProxy var = goal.get_variable();
         if (state[var] != goal) {
             vector<int> wanted;
             wanted.push_back(goal.get_value());
-            splits->push_back(make_pair(var.get_id(), wanted));
+            flaws->push_back(make_pair(var.get_id(), wanted));
         }
     }
 }

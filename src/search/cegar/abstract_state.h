@@ -62,9 +62,9 @@ public:
     void remove_prev_arc(OperatorProxy op, AbstractState *other);
     void add_loop(OperatorProxy op);
 
-    void get_possible_splits(const AbstractState &desired,
+    void get_possible_flaws(const AbstractState &desired,
                              const State &prev_conc_state,
-                             Splits *conditions) const;
+                             Flaws *conditions) const;
 
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;

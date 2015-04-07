@@ -75,7 +75,7 @@ private:
     void astar_search(bool forward, bool use_h, std::vector<int> *needed_costs = 0) const;
 
     // Refine states between state and init until the solution is broken.
-    void break_solution(AbstractState *state, const Splits &splits);
+    void break_solution(AbstractState *state, const Flaws &flaws);
 
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw

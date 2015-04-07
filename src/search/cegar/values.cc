@@ -98,9 +98,9 @@ bool Values::abstracts(const Values &other) const {
     return other.values.is_subset_of(values);
 }
 
-void Values::get_possible_splits(const Values &flaw, const State &conc_state,
-                                 Splits *splits) const {
-    assert(splits->empty());
+void Values::get_possible_flaws(const Values &flaw, const State &conc_state,
+                                 Flaws *flaws) const {
+    assert(flaws->empty());
     Bitset intersection(values & flaw.values);
     for (size_t var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var].get_value()))) {
@@ -110,10 +110,10 @@ void Values::get_possible_splits(const Values &flaw, const State &conc_state,
                     wanted.push_back(pos - borders[var]);
                 }
             }
-            splits->push_back(make_pair(var, wanted));
+            flaws->push_back(make_pair(var, wanted));
         }
     }
-    assert(!splits->empty());
+    assert(!flaws->empty());
 }
 
 string Values::str() const {
