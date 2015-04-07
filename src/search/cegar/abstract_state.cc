@@ -15,10 +15,10 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(const Values &values)
+AbstractState::AbstractState(const Values &values, Node *node)
     : values(values),
-      distance(UNDEFINED),
-      node(nullptr) {
+      node(node),
+      distance(UNDEFINED) {
 }
 
 string AbstractState::str() const {
@@ -113,8 +113,7 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
 }
 
 void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) {
-    for (size_t i = 0; i < loops.size(); ++i) {
-        OperatorProxy op = loops[i];
+    for (OperatorProxy op : loops) {
         int pre = get_pre(op, var);
         int post = get_post(op, var);
         if (pre == UNDEFINED) {
@@ -147,6 +146,7 @@ void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) 
 }
 
 pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int> wanted) {
+    assert(node);
     // We can only refine for vars that can have at least two values.
     // The desired value has to be in the set of possible values.
     assert(wanted.size() >= 1);
@@ -168,8 +168,11 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     assert(v1_values.count(var) == values.count(var) - wanted.size());
     assert(v2_values.count(var) == wanted.size());
 
-    AbstractState *v1 = new AbstractState(v1_values);
-    AbstractState *v2 = new AbstractState(v2_values);
+    // Update split tree.
+    pair<Node *, Node *> new_nodes = node->split(var, wanted);
+
+    AbstractState *v1 = new AbstractState(v1_values, new_nodes.first);
+    AbstractState *v2 = new AbstractState(v2_values, new_nodes.second);
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
@@ -179,11 +182,6 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     update_incoming_arcs(var, v1, v2);
     update_outgoing_arcs(var, v1, v2);
     update_loops(var, v1, v2);
-
-    // Update split tree.
-    pair<Node *, Node *> children = node->split(var, wanted);
-    v1->set_node(children.first);
-    v2->set_node(children.second);
 
     // Since h-values only increase we can assign the h-value to the children.
     int h = node->get_h();
