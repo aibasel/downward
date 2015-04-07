@@ -5,12 +5,7 @@
 #include "utils.h"
 
 #include "../additive_heuristic.h"
-#include "../global_operator.h"
-#include "../globals.h"
 #include "../option_parser.h"
-#include "../rng.h"
-#include "../state_registry.h"
-#include "../successor_generator.h"
 #include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
@@ -36,19 +31,17 @@ typedef unordered_map<AbstractState *, Splits> StatesToSplits;
 
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
-      pick(PickStrategy(opts.get<int>("pick"))),
+      flaw_selector(task_proxy, PickStrategy(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
       use_astar(opts.get<bool>("use_astar")),
       use_general_costs(opts.get<bool>("use_general_costs")),
       write_graphs(opts.get<bool>("write_graphs")),
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
-      additive_heuristic(get_additive_heuristic(task_proxy)),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
     reserve_memory_padding();
-    cout << "Use flaw-selection strategy " << pick << endl;
 
     init = new AbstractState(Values(), split_tree.get_root());
     goals.insert(init);
@@ -134,7 +127,7 @@ void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
         }
         cout << endl;
     }
-    int i = pick_split_index(*state, splits);
+    int i = flaw_selector.pick_split_index(*state, splits);
     assert(in_bounds(i, splits));
     int var = splits[i].first;
     const vector<int> &wanted = splits[i].second;
@@ -361,99 +354,6 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     assert(broken_solutions > 0 || !may_keep_refining());
     assert(!use_astar || broken_solutions == 1 || !may_keep_refining());
     return false;
-}
-
-// TODO: Turn into classes.
-int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) const {
-    // TODO: Return reference to split instead of index and rename method.
-    assert(!splits.empty());
-    // Shortcut for condition lists with only one element.
-    if (splits.size() == 1) {
-        return 0;
-    }
-    if (DEBUG) {
-        cout << "Split: " << state.str() << endl;
-        for (size_t i = 0; i < splits.size(); ++i) {
-            const Split &split = splits[i];
-            int var = split.first;
-            const vector<int> &wanted = split.second;
-            if (DEBUG)
-                cout << var << "=" << wanted << " ";
-        }
-    }
-    if (DEBUG)
-        cout << endl;
-    int cond = -1;
-    int random_cond = g_rng(splits.size());
-    if (pick == RANDOM) {
-        cond = random_cond;
-    } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
-        int max_rest = -1;
-        int min_rest = INF;
-        for (size_t i = 0; i < splits.size(); ++i) {
-            int rest = state.count(splits[i].first);
-            assert(rest >= 2);
-            if (rest > max_rest && pick == MIN_CONSTRAINED) {
-                cond = i;
-                max_rest = rest;
-            }
-            if (rest < min_rest && pick == MAX_CONSTRAINED) {
-                cond = i;
-                min_rest = rest;
-            }
-        }
-    } else if (pick == MIN_REFINED || pick == MAX_REFINED) {
-        double min_refinement = 0.0;
-        double max_refinement = -1.1;
-        int i = 0;
-        for (auto split : splits) {
-            int var_id = split.first;
-            double all_values = task_proxy.get_variables()[var_id].get_domain_size();
-            double rest = state.count(var_id);
-            assert(all_values >= 2);
-            assert(rest >= 2);
-            assert(rest <= all_values);
-            double refinement = -(rest / all_values);
-            assert(refinement >= -1.0);
-            assert(refinement < 0.0);
-            if (refinement < min_refinement && pick == MIN_REFINED) {
-                cond = i;
-                min_refinement = refinement;
-            }
-            if (refinement > max_refinement && pick == MAX_REFINED) {
-                cond = i;
-                max_refinement = refinement;
-            }
-            ++i;
-        }
-    } else if (pick == MIN_HADD || pick == MAX_HADD) {
-        int min_hadd = INF;
-        int max_hadd = -2;
-        for (size_t i = 0; i < splits.size(); ++i) {
-            int var = splits[i].first;
-            const vector<int> &values = splits[i].second;
-            for (size_t j = 0; j < values.size(); ++j) {
-                int value = values[j];
-                int hadd_value = additive_heuristic->get_cost(var, value);
-                if (hadd_value == -1 && pick == MIN_HADD) {
-                    // Fact is unreachable --> Choose it last.
-                    hadd_value = INF - 1;
-                }
-                if (pick == MIN_HADD && hadd_value < min_hadd) {
-                    cond = i;
-                    min_hadd = hadd_value;
-                } else if (pick == MAX_HADD && hadd_value > max_hadd) {
-                    cond = i;
-                    max_hadd = hadd_value;
-                }
-            }
-        }
-    } else {
-        cout << "Invalid pick strategy: " << pick << endl;
-        exit_with(EXIT_INPUT_ERROR);
-    }
-    assert(in_bounds(cond, splits));
-    return cond;
 }
 
 void Abstraction::extract_solution(AbstractState *goal) const {

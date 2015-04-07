@@ -2,6 +2,7 @@
 #define CEGAR_ABSTRACTION_H
 
 #include "abstract_state.h"
+#include "flaw_selector.h"
 #include "split_tree.h"
 
 #include "../countdown_timer.h"
@@ -26,27 +27,12 @@ typedef std::unordered_set<AbstractState *> AbstractStates;
 
 const int STATES_LOG_STEP = 1000;
 
-// In case there are multiple unment conditions, how do we choose the next one?
-enum PickStrategy {
-    RANDOM,
-    // Number of remaining values for each variable.
-    // "Constrainment" is bigger if there are less remaining possible values.
-    MIN_CONSTRAINED,
-    MAX_CONSTRAINED,
-    // Refinement: - (remaining_values / original_domain_size)
-    MIN_REFINED,
-    MAX_REFINED,
-    // Compare the h^add(s_0) values of the facts.
-    MIN_HADD,
-    MAX_HADD
-};
-
 class Abstraction {
 private:
     const TaskProxy task_proxy;
 
-    // How to pick the next split in case of multiple possibilities.
-    PickStrategy pick;
+    // Strategy for picking the next flaw in case of multiple possibilities.
+    FlawSelector flaw_selector;
 
     int max_states;
     bool use_astar;
@@ -57,7 +43,6 @@ private:
     CountdownTimer timer;
 
     const State concrete_initial_state;
-    const std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
     // Set of all valid states, i.e. states that have not been split.
     AbstractStates states;
@@ -84,9 +69,6 @@ private:
 
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
-
-    // Pick a possible split in case of multiple possibilities.
-    int pick_split_index(AbstractState &state, const Splits &conditions) const;
 
     // A* search.
     void reset_distances_and_solution() const;
