@@ -363,6 +363,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     return false;
 }
 
+// TODO: Turn into classes.
 int Abstraction::pick_split_index(AbstractState &state, const Splits &splits) const {
     // TODO: Return reference to split instead of index and rename method.
     assert(!splits.empty());
