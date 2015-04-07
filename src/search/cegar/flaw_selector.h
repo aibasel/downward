@@ -37,6 +37,7 @@ private:
 
     double get_constrainedness(const AbstractState &state, const Flaw &flaw) const;
     double get_refinedness(const AbstractState &state, const Flaw &flaw) const;
+    double get_hadd_value(int var_id, int value) const;
 public:
     FlawSelector(TaskProxy task_proxy, PickStrategy pick);
     ~FlawSelector() = default;

@@ -44,6 +44,16 @@ double FlawSelector::get_refinedness(const AbstractState &state, const Flaw &fla
     return refinedness;
 }
 
+double FlawSelector::get_hadd_value(int var_id, int value) const {
+    assert(additive_heuristic);
+    int hadd = additive_heuristic->get_cost(var_id, value);
+    // TODO: Can this still happen?
+    if (hadd == -1)
+        // Fact is unreachable.
+        return INF - 1;
+    return hadd;
+}
+
 int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws) const {
     // TODO: Return reference to flaw instead of index and rename method.
     assert(!flaws.empty());
@@ -101,24 +111,21 @@ int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws
     } else if (pick == MIN_HADD || pick == MAX_HADD) {
         int min_hadd = INF;
         int max_hadd = -2;
-        for (size_t i = 0; i < flaws.size(); ++i) {
-            int var = flaws[i].first;
-            const vector<int> &values = flaws[i].second;
-            for (size_t j = 0; j < values.size(); ++j) {
-                int value = values[j];
-                int hadd_value = additive_heuristic->get_cost(var, value);
-                if (hadd_value == -1 && pick == MIN_HADD) {
-                    // Fact is unreachable --> Choose it last.
-                    hadd_value = INF - 1;
-                }
-                if (pick == MIN_HADD && hadd_value < min_hadd) {
+        int i = 0;
+        for (const Flaw &flaw : flaws) {
+            int var_id = flaw.first;
+            const vector<int> &values = flaw.second;
+            for (int value : values) {
+                int result = get_hadd_value(var_id, value);
+                if (pick == MIN_HADD && result < min_hadd) {
                     cond = i;
-                    min_hadd = hadd_value;
-                } else if (pick == MAX_HADD && hadd_value > max_hadd) {
+                    min_hadd = result;
+                } else if (pick == MAX_HADD && result > max_hadd) {
                     cond = i;
-                    max_hadd = hadd_value;
+                    max_hadd = result;
                 }
             }
+            ++i;
         }
     } else {
         cout << "Invalid pick strategy: " << pick << endl;
