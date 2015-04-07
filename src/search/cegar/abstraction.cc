@@ -20,7 +20,7 @@
 using namespace std;
 
 namespace cegar {
-typedef unordered_map<AbstractState *, Splits> StatesToSplits;
+typedef unordered_map<AbstractState *, Flaws> StatesToFlaws;
 
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
@@ -112,18 +112,18 @@ void Abstraction::build() {
     print_statistics();
 }
 
-void Abstraction::break_solution(AbstractState *state, const Splits &splits) {
+void Abstraction::break_solution(AbstractState *state, const Flaws &flaws) {
     if (DEBUG) {
         cout << "Unmet conditions: ";
-        for (size_t i = 0; i < splits.size(); ++i) {
-            cout << splits[i].first << "=" << splits[i].second << " ";
+        for (size_t i = 0; i < flaws.size(); ++i) {
+            cout << flaws[i].first << "=" << flaws[i].second << " ";
         }
         cout << endl;
     }
-    int i = flaw_selector.pick_split_index(*state, splits);
-    assert(in_bounds(i, splits));
-    int var = splits[i].first;
-    const vector<int> &wanted = splits[i].second;
+    int i = flaw_selector.pick_flaw_index(*state, flaws);
+    assert(in_bounds(i, flaws));
+    int var = flaws[i].first;
+    const vector<int> &wanted = flaws[i].second;
     refine(state, var, wanted);
 }
 
@@ -263,7 +263,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         cout << "Check solution." << endl << "Start at       " << abs_state->str()
              << " (is init: " << (abs_state == init) << ")" << endl;
 
-    StatesToSplits states_to_splits;
+    StatesToFlaws states_to_flaws;
     queue<pair<AbstractState *, State> > unseen;
     unordered_set<size_t> seen;
 
@@ -274,11 +274,11 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         abs_state = unseen.front().first;
         conc_state = move(unseen.front().second);
         unseen.pop();
-        Splits &splits = states_to_splits[abs_state];
+        Flaws &flaws = states_to_flaws[abs_state];
         if (DEBUG)
             cout << "Current state: " << abs_state->str() << endl;
         // Start check from each state only once.
-        if (!states_to_splits[abs_state].empty())
+        if (!states_to_flaws[abs_state].empty())
             continue;
         if (is_goal(abs_state)) {
             if (is_goal_state(task_proxy, conc_state)) {
@@ -289,7 +289,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 if (DEBUG)
                     cout << "      Goal test failed." << endl;
                 unmet_goals++;
-                get_unmet_goals(task_proxy.get_goals(), conc_state, &states_to_splits[abs_state]);
+                get_unmet_goals(task_proxy.get_goals(), conc_state, &states_to_flaws[abs_state]);
                 continue;
             }
         }
@@ -313,32 +313,32 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                         unseen.push(make_pair(next_abs, next_conc));
                         seen.insert(next_conc.hash());
                     }
-                } else if (splits.empty()) {
-                    // Only find deviation reasons if we haven't found any splits already.
+                } else if (flaws.empty()) {
+                    // Only find deviation reasons if we haven't found any flaws already.
                     if (DEBUG)
                         cout << "      Paths deviate." << endl;
                     ++deviations;
                     AbstractState desired_abs_state(next_abs->regress(op), nullptr);
-                    abs_state->get_possible_splits(
-                        desired_abs_state, conc_state, &splits);
+                    abs_state->get_possible_flaws(
+                        desired_abs_state, conc_state, &flaws);
                 }
-            } else if (splits.empty()) {
-                // Only find unmet preconditions if we haven't found any splits already.
+            } else if (flaws.empty()) {
+                // Only find unmet preconditions if we haven't found any flaws already.
                 if (DEBUG)
                     cout << "      Operator not applicable: " << op.get_name() << endl;
                 ++unmet_preconditions;
-                get_unmet_preconditions(op, conc_state, &splits);
+                get_unmet_preconditions(op, conc_state, &flaws);
             }
         }
     }
     int broken_solutions = 0;
-    for (auto &state_and_splits : states_to_splits) {
+    for (auto &state_and_flaws : states_to_flaws) {
         if (!may_keep_refining())
             break;
-        AbstractState *state = state_and_splits.first;
-        Splits &splits = state_and_splits.second;
-        if (!splits.empty()) {
-            break_solution(state, splits);
+        AbstractState *state = state_and_flaws.first;
+        Flaws &flaws = state_and_flaws.second;
+        if (!flaws.empty()) {
+            break_solution(state, flaws);
             ++broken_solutions;
         }
     }

@@ -32,7 +32,7 @@ private:
     const TaskProxy task_proxy;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
-    // How to pick the next split in case of multiple possibilities.
+    // How to pick the next flaw in case of multiple possibilities.
     PickStrategy pick;
 
 public:
@@ -42,8 +42,8 @@ public:
     FlawSelector(const FlawSelector &) = delete;
     FlawSelector &operator=(const FlawSelector &) = delete;
 
-    // Pick a possible split in case of multiple possibilities.
-    int pick_split_index(const AbstractState &state, const Splits &conditions) const;
+    // Pick a possible flaw in case of multiple possibilities.
+    int pick_flaw_index(const AbstractState &state, const Flaws &conditions) const;
 };
 }
 

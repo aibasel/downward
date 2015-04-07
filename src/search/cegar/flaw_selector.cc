@@ -25,19 +25,19 @@ FlawSelector::FlawSelector(TaskProxy task_proxy, PickStrategy pick)
 }
 
 // TODO: Turn into classes.
-int FlawSelector::pick_split_index(const AbstractState &state, const Splits &splits) const {
-    // TODO: Return reference to split instead of index and rename method.
-    assert(!splits.empty());
+int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws) const {
+    // TODO: Return reference to flaw instead of index and rename method.
+    assert(!flaws.empty());
     // Shortcut for condition lists with only one element.
-    if (splits.size() == 1) {
+    if (flaws.size() == 1) {
         return 0;
     }
     if (DEBUG) {
-        cout << "Split: " << state.str() << endl;
-        for (size_t i = 0; i < splits.size(); ++i) {
-            const Split &split = splits[i];
-            int var = split.first;
-            const vector<int> &wanted = split.second;
+        cout << "Flaw: " << state.str() << endl;
+        for (size_t i = 0; i < flaws.size(); ++i) {
+            const Flaw &flaw = flaws[i];
+            int var = flaw.first;
+            const vector<int> &wanted = flaw.second;
             if (DEBUG)
                 cout << var << "=" << wanted << " ";
         }
@@ -45,14 +45,14 @@ int FlawSelector::pick_split_index(const AbstractState &state, const Splits &spl
     if (DEBUG)
         cout << endl;
     int cond = -1;
-    int random_cond = g_rng(splits.size());
+    int random_cond = g_rng(flaws.size());
     if (pick == RANDOM) {
         cond = random_cond;
     } else if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
         int max_rest = -1;
         int min_rest = INF;
-        for (size_t i = 0; i < splits.size(); ++i) {
-            int rest = state.count(splits[i].first);
+        for (size_t i = 0; i < flaws.size(); ++i) {
+            int rest = state.count(flaws[i].first);
             assert(rest >= 2);
             if (rest > max_rest && pick == MIN_CONSTRAINED) {
                 cond = i;
@@ -67,8 +67,8 @@ int FlawSelector::pick_split_index(const AbstractState &state, const Splits &spl
         double min_refinement = 0.0;
         double max_refinement = -1.1;
         int i = 0;
-        for (auto split : splits) {
-            int var_id = split.first;
+        for (auto flaw : flaws) {
+            int var_id = flaw.first;
             double all_values = task_proxy.get_variables()[var_id].get_domain_size();
             double rest = state.count(var_id);
             assert(all_values >= 2);
@@ -90,9 +90,9 @@ int FlawSelector::pick_split_index(const AbstractState &state, const Splits &spl
     } else if (pick == MIN_HADD || pick == MAX_HADD) {
         int min_hadd = INF;
         int max_hadd = -2;
-        for (size_t i = 0; i < splits.size(); ++i) {
-            int var = splits[i].first;
-            const vector<int> &values = splits[i].second;
+        for (size_t i = 0; i < flaws.size(); ++i) {
+            int var = flaws[i].first;
+            const vector<int> &values = flaws[i].second;
             for (size_t j = 0; j < values.size(); ++j) {
                 int value = values[j];
                 int hadd_value = additive_heuristic->get_cost(var, value);
@@ -113,7 +113,7 @@ int FlawSelector::pick_split_index(const AbstractState &state, const Splits &spl
         cout << "Invalid pick strategy: " << pick << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    assert(in_bounds(cond, splits));
+    assert(in_bounds(cond, flaws));
     return cond;
 }
 }
