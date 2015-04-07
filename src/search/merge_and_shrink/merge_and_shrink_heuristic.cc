@@ -19,6 +19,8 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
+      reduce_labels_before_shrinking(opts.get<bool>("reduce_labels_before_shrinking")),
+      reduce_labels_before_merging(opts.get<bool>("reduce_labels_before_merging")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")),
       terminate(opts.get<bool>("terminate")) {
     labels = new Labels(opts);
@@ -81,9 +83,11 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
 
-        labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-        transition_system->statistics(use_expensive_statistics);
-        other_transition_system->statistics(use_expensive_statistics);
+        if (reduce_labels_before_shrinking) {
+            labels->reduce(make_pair(system_one, system_two), all_transition_systems);
+            transition_system->statistics(use_expensive_statistics);
+            other_transition_system->statistics(use_expensive_statistics);
+        }
 
         if (!transition_system->is_solvable())
             return transition_system;
@@ -101,6 +105,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         // statistics always now, whether or not we shrunk.)
         transition_system->statistics(use_expensive_statistics);
         other_transition_system->statistics(use_expensive_statistics);
+
+        if (reduce_labels_before_merging) {
+            labels->reduce(make_pair(system_one, system_two), all_transition_systems);
+            transition_system->statistics(use_expensive_statistics);
+            other_transition_system->statistics(use_expensive_statistics);
+        }
 
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
             labels, transition_system, other_transition_system);
@@ -282,6 +292,12 @@ static Heuristic *_parse(OptionParser &parser) {
                            "label_reduction_method.",
                            "RANDOM",
                            label_reduction_system_order_doc);
+    parser.add_option<bool>("reduce_labels_before_shrinking",
+                            "apply label reduction before shrinking",
+                            "false");
+    parser.add_option<bool>("reduce_labels_before_merging",
+                            "apply label reduction before merging",
+                            "false");
 
     parser.add_option<bool>(
         "expensive_statistics",
