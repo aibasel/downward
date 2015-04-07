@@ -60,7 +60,7 @@ VarToValues get_prev_landmarks(shared_ptr<LandmarkGraph> landmark_graph, Fact fa
     assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
-    for (const auto &parent_and_edge: node->parents) {
+    for (const auto &parent_and_edge : node->parents) {
         const LandmarkNode *parent = parent_and_edge.first;
         open.push_back(parent);
     }

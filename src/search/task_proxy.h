@@ -501,7 +501,7 @@ public:
     ~State() = default;
     State(const State &other) = default;
 
-    State& operator=(const State &&other) {
+    State &operator=(const State && other) {
         if (this != &other) {
             values = std::move(other.values);
         }

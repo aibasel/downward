@@ -93,11 +93,13 @@ vector<FactProxy> CegarHeuristic::get_facts(Decomposition decomposition) const {
     }
     // Filter facts that are true in initial state.
     facts.erase(remove_if(
-            facts.begin(),
-            facts.end(),
-            [&](FactProxy fact){
-                return task->get_initial_state()[fact.get_variable()] == fact;}),
-        facts.end());
+                    facts.begin(),
+                    facts.end(),
+                    [&](FactProxy fact) {
+                        return task->get_initial_state()[fact.get_variable()] == fact;
+                    }
+                    ),
+                facts.end());
     order_facts(facts);
     return facts;
 }
@@ -140,7 +142,9 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 
         shared_ptr<AbstractTask> abstracted_task = make_shared<ModifiedCostsTask>(opts);
         if (decomposition == Decomposition::GOALS || decomposition == Decomposition::LANDMARKS) {
-            vector<Fact> goals = {get_raw_fact(facts[i])};
+            vector<Fact> goals = {
+                get_raw_fact(facts[i])
+            };
             abstracted_task = make_shared<ModifiedGoalsTask>(abstracted_task, goals);
 
             if (decomposition == Decomposition::LANDMARKS) {
@@ -220,7 +224,7 @@ void CegarHeuristic::initialize() {
         cout << endl << "Using decomposition " << static_cast<int>(decompositions[i]) << endl;
         build_abstractions(decompositions[i]);
         cout << endl;
-        if (num_states >= max_states || timer->is_expired()||
+        if (num_states >= max_states || timer->is_expired() ||
             compute_heuristic(g_initial_state()) == DEAD_END)
             break;
     }
