@@ -24,7 +24,19 @@ FlawSelector::FlawSelector(TaskProxy task_proxy, PickStrategy pick)
         additive_heuristic = get_additive_heuristic(task_proxy);
 }
 
-// TODO: Turn into classes.
+double FlawSelector::get_refinedness(const AbstractState &state, const Flaw &flaw) const {
+    int var_id = flaw.first;
+    double all_values = task_proxy.get_variables()[var_id].get_domain_size();
+    double rest = state.count(var_id);
+    assert(all_values >= 2);
+    assert(rest >= 2);
+    assert(rest <= all_values);
+    double refinedness = -(rest / all_values);
+    assert(refinedness >= -1.0);
+    assert(refinedness < 0.0);
+    return refinedness;
+}
+
 int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws) const {
     // TODO: Return reference to flaw instead of index and rename method.
     assert(!flaws.empty());
@@ -68,22 +80,14 @@ int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws
         double max_refinement = -1.1;
         int i = 0;
         for (auto flaw : flaws) {
-            int var_id = flaw.first;
-            double all_values = task_proxy.get_variables()[var_id].get_domain_size();
-            double rest = state.count(var_id);
-            assert(all_values >= 2);
-            assert(rest >= 2);
-            assert(rest <= all_values);
-            double refinement = -(rest / all_values);
-            assert(refinement >= -1.0);
-            assert(refinement < 0.0);
-            if (refinement < min_refinement && pick == MIN_REFINED) {
+            double refinedness = get_refinedness(state, flaw);
+            if (refinedness < min_refinement && pick == MIN_REFINED) {
                 cond = i;
-                min_refinement = refinement;
+                min_refinement = refinedness;
             }
-            if (refinement > max_refinement && pick == MAX_REFINED) {
+            if (refinedness > max_refinement && pick == MAX_REFINED) {
                 cond = i;
-                max_refinement = refinement;
+                max_refinement = refinedness;
             }
             ++i;
         }
