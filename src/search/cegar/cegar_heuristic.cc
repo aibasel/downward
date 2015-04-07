@@ -231,9 +231,7 @@ void CegarHeuristic::initialize() {
 }
 
 void CegarHeuristic::print_statistics() {
-    cout << "Done building abstractions [t=" << g_timer << "]" << endl;
-    cout << "Peak memory after initialization: "
-         << get_peak_memory_in_kb() << " KB" << endl;
+    Log() << "Done initializing CEGAR heuristic";
     cout << "CEGAR abstractions: " << heuristics.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
     cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
