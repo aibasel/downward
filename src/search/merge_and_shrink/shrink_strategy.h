@@ -25,15 +25,8 @@ protected:
     typedef int AbstractStateRef;
     typedef std::forward_list<AbstractStateRef> StateEquivalenceClass;
     typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
-public:
-    // HACK/TODO: The following method would usually be protected, but
-    // the option parser requires it to be public for the
-    // DefaultValueNamer. We need to reconsider the use of the
-    // DefaultValueNamer here anyway, along with the way the default
-    // strategy is specified. Maybe add a capability to have the default
-    // value be a factory function with a string description?
+
     virtual std::string name() const = 0;
-protected:
     virtual void dump_strategy_specific_options() const;
 
     std::pair<std::size_t, std::size_t> compute_shrink_sizes(
@@ -45,18 +38,6 @@ protected:
 public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
-
-    /* Set this to true to apply label reduction before shrinking, in
-       addition to the times when it is usually applied. Some shrink
-       strategies may require labels to be reduced (e.g. ones based on
-       bisimulations), and others might prefer reduced labels because
-       it makes their computation more efficient.
-
-       Set this to false if the shrink strategy does not benefit (or
-       not much) from label reduction. Label reduction costs quite a
-       bit of time and should not be performed without need.
-    */
-    virtual bool reduce_labels_before_shrinking() const = 0;
 
     void dump_options() const;
 

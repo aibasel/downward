@@ -44,8 +44,6 @@ public:
     ShrinkBucketBased(const Options &opts);
     virtual ~ShrinkBucketBased();
 
-    virtual bool reduce_labels_before_shrinking() const;
-
     virtual void shrink(TransitionSystem &ts, int threshold);
 };
 

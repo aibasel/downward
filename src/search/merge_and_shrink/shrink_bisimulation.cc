@@ -108,10 +108,6 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << endl;
 }
 
-bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
-    return true;
-}
-
 void ShrinkBisimulation::shrink(
     TransitionSystem &ts, int target) {
     // TODO: Explain this min(target, threshold) stuff. Also, make the

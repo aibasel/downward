@@ -39,8 +39,6 @@ public:
     virtual std::string name() const;
     virtual void dump_strategy_specific_options() const;
 
-    virtual bool reduce_labels_before_shrinking() const;
-
     virtual void shrink(TransitionSystem &ts, int target);
     virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 };
