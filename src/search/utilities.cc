@@ -1,5 +1,8 @@
 #include "utilities.h"
 
+#include "globals.h"
+#include "timer.h"
+
 #include <cassert>
 #include <csignal>
 #include <fstream>
@@ -162,4 +165,10 @@ bool is_product_within_limit(int factor1, int factor2, int limit) {
     assert(factor1 >= 0 && factor1 <= limit);
     assert(factor2 >= 0 && factor2 <= limit);
     return factor2 == 0 || factor1 <= limit / factor2;
+}
+
+Log::~Log() {
+    cout << os.str()
+         << " [t=" << g_timer() << "s, " << get_peak_memory_in_kb() << " KB]"
+         << std::endl;
 }

@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -104,5 +105,23 @@ bool in_bounds(size_t index, const T &container) {
 template<typename T>
 void unused_parameter(const T &) {
 }
+
+/*
+  Simple logger that includes the time and peak memory usage in logged lines.
+  Line breaks are automatically added. Passing std::endl is not supported.
+
+  Usage: Log() << "Variables: " << 10;
+*/
+class Log {
+    std::ostringstream os;
+public:
+    template <typename T>
+    Log & operator<<(T const & value) {
+        os << value;
+        return *this;
+    }
+
+    ~Log();
+};
 
 #endif

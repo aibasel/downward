@@ -204,10 +204,8 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
 }
 
 void CegarHeuristic::initialize() {
-    cout << "Initializing cegar heuristic..." << endl;
-    // TODO: Introduce general logging function that also prints time and memory.
-    cout << "Peak memory before initialization: "
-         << get_peak_memory_in_kb() << " KB" << endl;
+    Log() << "Initializing CEGAR heuristic...";
+
     Decomposition decomposition(Decomposition(options.get_enum("decomposition")));
     vector<Decomposition> decompositions;
     if (decomposition == Decomposition::LANDMARKS_AND_GOALS_AND_NONE) {
