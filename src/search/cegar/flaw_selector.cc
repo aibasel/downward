@@ -22,8 +22,6 @@ FlawSelector::FlawSelector(TaskProxy task_proxy, PickStrategy pick)
     cout << "Use flaw-selection strategy " << pick << endl;
     if (pick == MIN_HADD || pick == MAX_HADD)
         additive_heuristic = get_additive_heuristic(task_proxy);
-    else
-        assert(!additive_heuristic);
 }
 
 // TODO: Turn into classes.
