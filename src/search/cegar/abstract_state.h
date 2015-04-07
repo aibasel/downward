@@ -21,6 +21,9 @@ private:
     // Abstract domains for each variable.
     const Values values;
 
+    // This state's node in the refinement hierarchy.
+    Node *node;
+
     // Incoming and outgoing transitions grouped by the abstract state they come
     // from or go to.
     Arcs arcs_out, arcs_in;
@@ -31,9 +34,6 @@ private:
     // Incumbent distance to first expanded node in backwards and forward search.
     int distance;
 
-    // This state's node in the refinement hierarchy.
-    Node *node;
-
     void remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other);
     void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
@@ -42,7 +42,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var) const;
 
 public:
-    explicit AbstractState(const Values &values);
+    AbstractState(const Values &values, Node *node);
     ~AbstractState() = default;
 
     AbstractState(const AbstractState &) = delete;
@@ -72,19 +72,19 @@ public:
 
     // A* search.
     void set_distance(int dist) {distance = dist; }
-    int get_distance() {return distance; }
-    void set_h(int dist) {node->set_h(dist); }
-    int get_h() {return node->get_h(); }
+    int get_distance() const {return distance; }
+    void set_h(int dist) {
+        assert(node);
+        node->set_h(dist);
+    }
+    int get_h() const {
+        assert(node);
+        return node->get_h();
+    }
 
     Arcs &get_arcs_out() {return arcs_out; }
     Arcs &get_arcs_in() {return arcs_in; }
     Loops &get_loops() {return loops; }
-
-    Node *get_node() const {return node; }
-    void set_node(Node *node) {
-        assert(!this->node);
-        this->node = node;
-    }
 
     // Testing.
     std::string str() const;

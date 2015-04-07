@@ -44,17 +44,14 @@ Abstraction::Abstraction(const Options &opts)
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
       additive_heuristic(get_additive_heuristic(task_proxy)),
-      init(new AbstractState(Values())),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
     reserve_memory_padding();
-
     cout << "Use flaw-selection strategy " << pick << endl;
 
+    init = new AbstractState(Values(), split_tree.get_root());
     goals.insert(init);
-
-    init->set_node(split_tree.get_root());
     for (OperatorProxy op : task_proxy.get_operators()) {
         init->add_loop(op);
     }
@@ -335,7 +332,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                     if (DEBUG)
                         cout << "      Paths deviate." << endl;
                     ++deviations;
-                    AbstractState desired_abs_state(next_abs->regress(op));
+                    AbstractState desired_abs_state(next_abs->regress(op), nullptr);
                     abs_state->get_possible_splits(
                         desired_abs_state, conc_state, &splits);
                 }
