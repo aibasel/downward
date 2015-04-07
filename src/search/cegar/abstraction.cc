@@ -1,10 +1,8 @@
 #include "abstraction.h"
 
 #include "abstract_state.h"
-#include "domain_abstracted_task.h"
 #include "utils.h"
 
-#include "../additive_heuristic.h"
 #include "../option_parser.h"
 #include "../task_tools.h"
 #include "../timer.h"
@@ -15,11 +13,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <map>
-#include <new>
-#include <queue>
-#include <set>
-#include <sstream>
 #include <unordered_map>
 #include <utility>
 #include <vector>
