@@ -113,7 +113,11 @@ void RelaxationHeuristic::simplify() {
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
-        sort(op.precondition.begin(), op.precondition.end());
+        sort(op.precondition.begin(), op.precondition.end(),
+             [] (const Proposition * p1, const Proposition * p2) {
+                 return p1->id < p2->id;
+             }
+             );
         HashKey key(op.precondition, op.effect);
         pair<HashMap::iterator, bool> inserted = unary_operator_index.insert(
             make_pair(key, i));
