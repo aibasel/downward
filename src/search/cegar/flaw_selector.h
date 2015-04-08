@@ -6,6 +6,7 @@
 #include "../task_proxy.h"
 
 #include <memory>
+#include <vector>
 
 class AdditiveHeuristic;
 
@@ -39,6 +40,8 @@ private:
     double get_refinedness(const AbstractState &state, const Flaw &flaw) const;
     int get_hadd_value(int var_id, int value) const;
     int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
+
+    double rate_flaw(const AbstractState &state, const Flaw &flaw) const;
 public:
     FlawSelector(TaskProxy task_proxy, PickStrategy pick);
     ~FlawSelector() = default;
