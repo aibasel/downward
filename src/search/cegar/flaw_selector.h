@@ -13,8 +13,8 @@ class AdditiveHeuristic;
 namespace cegar {
 class AbstractState;
 
-// In case there are multiple unment conditions, how do we choose the next one?
-enum PickStrategy {
+// Strategies for selecting a flaw in case there are multiple possibilities.
+enum class PickFlaw {
     RANDOM,
     // Number of remaining values for each variable.
     // "Constrainment" is bigger if there are less remaining possible values.
@@ -29,12 +29,10 @@ enum PickStrategy {
 };
 
 class FlawSelector {
-private:
     const TaskProxy task_proxy;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
-    // How to pick the next flaw in case of multiple possibilities.
-    PickStrategy pick;
+    PickFlaw pick;
 
     int get_constrainedness(const AbstractState &state, const Flaw &flaw) const;
     double get_refinedness(const AbstractState &state, const Flaw &flaw) const;
@@ -42,14 +40,14 @@ private:
     int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
 
     double rate_flaw(const AbstractState &state, const Flaw &flaw) const;
+
 public:
-    FlawSelector(TaskProxy task_proxy, PickStrategy pick);
+    FlawSelector(TaskProxy task_proxy, PickFlaw pick);
     ~FlawSelector() = default;
 
     FlawSelector(const FlawSelector &) = delete;
     FlawSelector &operator=(const FlawSelector &) = delete;
 
-    // Pick a possible flaw in case of multiple possibilities.
     const Flaw &pick_flaw(const AbstractState &state, const Flaws &conditions) const;
 };
 }
