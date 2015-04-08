@@ -35,9 +35,10 @@ private:
     // How to pick the next flaw in case of multiple possibilities.
     PickStrategy pick;
 
-    double get_constrainedness(const AbstractState &state, const Flaw &flaw) const;
+    int get_constrainedness(const AbstractState &state, const Flaw &flaw) const;
     double get_refinedness(const AbstractState &state, const Flaw &flaw) const;
-    double get_hadd_value(int var_id, int value) const;
+    int get_hadd_value(int var_id, int value) const;
+    int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
 public:
     FlawSelector(TaskProxy task_proxy, PickStrategy pick);
     ~FlawSelector() = default;

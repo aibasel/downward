@@ -24,7 +24,7 @@ FlawSelector::FlawSelector(TaskProxy task_proxy, PickStrategy pick)
         additive_heuristic = get_additive_heuristic(task_proxy);
 }
 
-double FlawSelector::get_constrainedness(const AbstractState &state, const Flaw &flaw) const {
+int FlawSelector::get_constrainedness(const AbstractState &state, const Flaw &flaw) const {
     int var_id = flaw.first;
     int num_remaining_values = state.count(var_id);
     assert(num_remaining_values >= 2);
@@ -44,7 +44,7 @@ double FlawSelector::get_refinedness(const AbstractState &state, const Flaw &fla
     return refinedness;
 }
 
-double FlawSelector::get_hadd_value(int var_id, int value) const {
+int FlawSelector::get_hadd_value(int var_id, int value) const {
     assert(additive_heuristic);
     int hadd = additive_heuristic->get_cost(var_id, value);
     // TODO: Can this still happen?
@@ -52,6 +52,24 @@ double FlawSelector::get_hadd_value(int var_id, int value) const {
         // Fact is unreachable.
         return INF - 1;
     return hadd;
+}
+
+int FlawSelector::get_extreme_hadd_value(int var_id, const vector<int> &values) const {
+    assert(pick == MIN_HADD || pick == MAX_HADD);
+    int min_hadd = INF;
+    int max_hadd = -2;
+    for (int value : values) {
+        int hadd = get_hadd_value(var_id, value);
+        if (pick == MIN_HADD && hadd < min_hadd) {
+            min_hadd = hadd;
+        } else if (pick == MAX_HADD && hadd > max_hadd) {
+            max_hadd = hadd;
+        }
+    }
+    if (pick == MIN_HADD)
+        return min_hadd;
+    else
+        return max_hadd;
 }
 
 int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws) const {
