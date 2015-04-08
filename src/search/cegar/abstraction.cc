@@ -24,7 +24,7 @@ typedef unordered_map<AbstractState *, Flaws> StatesToFlaws;
 
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
-      flaw_selector(task_proxy, PickStrategy(opts.get<int>("pick"))),
+      flaw_selector(task_proxy, PickFlaw(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
       use_astar(opts.get<bool>("use_astar")),
       use_general_costs(opts.get<bool>("use_general_costs")),

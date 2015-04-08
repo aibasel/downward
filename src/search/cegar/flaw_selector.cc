@@ -15,11 +15,10 @@
 using namespace std;
 
 namespace cegar {
-FlawSelector::FlawSelector(TaskProxy task_proxy, PickStrategy pick)
+FlawSelector::FlawSelector(TaskProxy task_proxy, PickFlaw pick)
     : task_proxy(task_proxy),
       pick(pick) {
-    cout << "Use flaw-selection strategy " << pick << endl;
-    if (pick == MIN_HADD || pick == MAX_HADD)
+    if (pick == PickFlaw::MIN_HADD || pick == PickFlaw::MAX_HADD)
         additive_heuristic = get_additive_heuristic(task_proxy);
 }
 
@@ -54,7 +53,7 @@ int FlawSelector::get_hadd_value(int var_id, int value) const {
 }
 
 int FlawSelector::get_extreme_hadd_value(int var_id, const vector<int> &values) const {
-    assert(pick == MIN_HADD || pick == MAX_HADD);
+    assert(pick == PickFlaw::MIN_HADD || pick == PickFlaw::MAX_HADD);
     int min_hadd = numeric_limits<int>::max();
     int max_hadd = -1;
     for (int value : values) {
@@ -66,7 +65,7 @@ int FlawSelector::get_extreme_hadd_value(int var_id, const vector<int> &values) 
             max_hadd = hadd;
         }
     }
-    if (pick == MIN_HADD) {
+    if (pick == PickFlaw::MIN_HADD) {
         return min_hadd;
     } else {
         return max_hadd;
@@ -75,17 +74,18 @@ int FlawSelector::get_extreme_hadd_value(int var_id, const vector<int> &values) 
 
 double FlawSelector::rate_flaw(const AbstractState &state, const Flaw &flaw) const {
     double rating;
-    if (pick == MIN_CONSTRAINED || pick == MAX_CONSTRAINED) {
+    if (pick == PickFlaw::MIN_CONSTRAINED || pick == PickFlaw::MAX_CONSTRAINED) {
         rating = get_constrainedness(state, flaw);
-    } else if (pick == MIN_REFINED || pick == MAX_REFINED) {
+    } else if (pick == PickFlaw::MIN_REFINED || pick == PickFlaw::MAX_REFINED) {
         rating = get_refinedness(state, flaw);
-    } else if (pick == MIN_HADD || MAX_HADD) {
+    } else if (pick == PickFlaw::MIN_HADD || pick == PickFlaw::MAX_HADD) {
         rating  = get_extreme_hadd_value(flaw.first, flaw.second);
     } else {
-        cout << "Invalid pick strategy: " << pick << endl;
+        cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    if (pick == MIN_CONSTRAINED || pick == MIN_REFINED || pick == MIN_HADD) {
+    if (pick == PickFlaw::MIN_CONSTRAINED || pick == PickFlaw::MIN_REFINED ||
+        pick == PickFlaw::MIN_HADD) {
         rating = -rating;
     }
     return rating;
@@ -106,7 +106,7 @@ const Flaw &FlawSelector::pick_flaw(const AbstractState &state, const Flaws &fla
         cout << endl;
     }
 
-    if (pick == RANDOM) {
+    if (pick == PickFlaw::RANDOM) {
         return *g_rng.choose(flaws);
     }
 
