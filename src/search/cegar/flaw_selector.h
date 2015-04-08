@@ -34,8 +34,8 @@ class FlawSelector {
 
     PickFlaw pick;
 
-    int get_constrainedness(const AbstractState &state, const Flaw &flaw) const;
-    double get_refinedness(const AbstractState &state, const Flaw &flaw) const;
+    int get_constrainedness(const AbstractState &state, int var_id) const;
+    double get_refinedness(const AbstractState &state, int var_id) const;
     int get_hadd_value(int var_id, int value) const;
     int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
 
