@@ -190,12 +190,7 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
             opts.set<SplitTree>("split_tree", abstraction.get_split_tree());
             heuristics.emplace_back(abstracted_task, opts);
         }
-        if (init_h == INF) {
-            cout << "Abstraction is unsolvable" << endl;
-            break;
-        }
-
-        if (num_states >= max_states || timer->is_expired())
+        if (init_h == INF || num_states >= max_states || timer->is_expired())
             break;
     }
 }
