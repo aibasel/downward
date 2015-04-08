@@ -72,12 +72,12 @@ int FlawSelector::get_extreme_hadd_value(int var_id, const vector<int> &values) 
         return max_hadd;
 }
 
-int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws) const {
+const Flaw &FlawSelector::pick_flaw(const AbstractState &state, const Flaws &flaws) const {
     // TODO: Return reference to flaw instead of index and rename method.
     assert(!flaws.empty());
     // Shortcut for condition lists with only one element.
     if (flaws.size() == 1) {
-        return 0;
+        return flaws[0];
     }
     if (DEBUG) {
         cout << "Flaw: " << state.str() << endl;
@@ -150,6 +150,6 @@ int FlawSelector::pick_flaw_index(const AbstractState &state, const Flaws &flaws
         exit_with(EXIT_INPUT_ERROR);
     }
     assert(in_bounds(cond, flaws));
-    return cond;
+    return flaws[cond];
 }
 }

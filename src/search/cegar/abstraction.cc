@@ -120,11 +120,8 @@ void Abstraction::break_solution(AbstractState *state, const Flaws &flaws) {
         }
         cout << endl;
     }
-    int i = flaw_selector.pick_flaw_index(*state, flaws);
-    assert(in_bounds(i, flaws));
-    int var = flaws[i].first;
-    const vector<int> &wanted = flaws[i].second;
-    refine(state, var, wanted);
+    const Flaw &flaw = flaw_selector.pick_flaw(*state, flaws);
+    refine(state, flaw.first, flaw.second);
 }
 
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {

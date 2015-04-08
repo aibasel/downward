@@ -47,7 +47,7 @@ public:
     FlawSelector &operator=(const FlawSelector &) = delete;
 
     // Pick a possible flaw in case of multiple possibilities.
-    int pick_flaw_index(const AbstractState &state, const Flaws &conditions) const;
+    const Flaw &pick_flaw(const AbstractState &state, const Flaws &conditions) const;
 };
 }
 
