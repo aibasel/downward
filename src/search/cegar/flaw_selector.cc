@@ -22,23 +22,19 @@ FlawSelector::FlawSelector(TaskProxy task_proxy, PickFlaw pick)
         additive_heuristic = get_additive_heuristic(task_proxy);
 }
 
-int FlawSelector::get_constrainedness(const AbstractState &state, const Flaw &flaw) const {
-    int var_id = flaw.first;
-    int num_remaining_values = state.count(var_id);
-    assert(num_remaining_values >= 2);
-    return num_remaining_values;
+int FlawSelector::get_constrainedness(const AbstractState &state, int var_id) const {
+    int rem_values = state.count(var_id);
+    assert(rem_values >= 2);
+    return rem_values;
 }
 
-double FlawSelector::get_refinedness(const AbstractState &state, const Flaw &flaw) const {
-    int var_id = flaw.first;
+double FlawSelector::get_refinedness(const AbstractState &state, int var_id) const {
     double all_values = task_proxy.get_variables()[var_id].get_domain_size();
-    double rest = state.count(var_id);
     assert(all_values >= 2);
-    assert(rest >= 2);
-    assert(rest <= all_values);
-    double refinedness = -(rest / all_values);
-    assert(refinedness >= -1.0);
-    assert(refinedness < 0.0);
+    double rem_values = state.count(var_id);
+    assert(2 <= rem_values && rem_values <= all_values);
+    double refinedness = -(rem_values / all_values);
+    assert(-1.0 <= refinedness && refinedness < 0.0);
     return refinedness;
 }
 
@@ -73,13 +69,15 @@ int FlawSelector::get_extreme_hadd_value(int var_id, const vector<int> &values) 
 }
 
 double FlawSelector::rate_flaw(const AbstractState &state, const Flaw &flaw) const {
+    int var_id = flaw.first;
+    const vector<int> &values = flaw.second;
     double rating;
     if (pick == PickFlaw::MIN_CONSTRAINED || pick == PickFlaw::MAX_CONSTRAINED) {
-        rating = get_constrainedness(state, flaw);
+        rating = get_constrainedness(state, var_id);
     } else if (pick == PickFlaw::MIN_REFINED || pick == PickFlaw::MAX_REFINED) {
-        rating = get_refinedness(state, flaw);
+        rating = get_refinedness(state, var_id);
     } else if (pick == PickFlaw::MIN_HADD || pick == PickFlaw::MAX_HADD) {
-        rating  = get_extreme_hadd_value(flaw.first, flaw.second);
+        rating  = get_extreme_hadd_value(var_id, values);
     } else {
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
         exit_with(EXIT_INPUT_ERROR);
