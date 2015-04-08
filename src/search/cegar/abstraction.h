@@ -30,6 +30,7 @@ const int STATES_LOG_STEP = 1000;
 class Abstraction {
 private:
     const TaskProxy task_proxy;
+    const bool do_separate_unreachable_facts;
 
     // Strategy for picking the next flaw in case of multiple possibilities.
     FlawSelector flaw_selector;
@@ -64,6 +65,13 @@ private:
     // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
 
+    void create_initial_abstraction();
+    void separate_unreachable_facts();
+    bool may_keep_refining() const;
+
+    // Build abstraction.
+    void build();
+
     int get_min_goal_distance() const;
     bool is_goal(AbstractState *state) const;
 
@@ -88,6 +96,8 @@ private:
     void extract_solution(AbstractState *goal) const;
     void find_solution() const;
 
+    void print_statistics();
+
     // Testing.
     void write_dot_file(int num);
 
@@ -98,23 +108,15 @@ public:
     Abstraction(const Abstraction &) = delete;
     Abstraction &operator=(const Abstraction &) = delete;
 
-    void separate_unreachable_facts();
-
-    // Build abstraction.
-    void build();
-
     SplitTree get_split_tree() {return split_tree; }
 
     int get_num_states() const {return states.size(); }
-    bool may_keep_refining() const;
 
     // Methods for additive abstractions.
     // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
     // This makes the next abstraction additive to all previous ones.
     std::vector<int> get_needed_costs();
 
-    // Statistics.
-    void print_statistics();
     int get_init_h() const;
 };
 }

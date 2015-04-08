@@ -24,6 +24,7 @@ typedef unordered_map<AbstractState *, Flaws> StatesToFlaws;
 
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
+      do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
       flaw_selector(task_proxy, PickFlaw(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
       use_astar(opts.get<bool>("use_astar")),
@@ -31,17 +32,19 @@ Abstraction::Abstraction(const Options &opts)
       write_graphs(opts.get<bool>("write_graphs")),
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
+      init(nullptr),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
     reserve_memory_padding();
 
-    init = new AbstractState(Values(), split_tree.get_root());
-    goals.insert(init);
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        init->add_loop(op);
-    }
-    states.insert(init);
+    build();
+
+    // Even if we found a concrete solution, we might have refined in the
+    // last iteration, so we must update the h values.
+    update_h_values();
+
+    print_statistics();
 }
 
 Abstraction::~Abstraction() {
@@ -82,13 +85,30 @@ void Abstraction::separate_unreachable_facts() {
     goals.insert(states.begin(), states.end());
 }
 
+void Abstraction::create_initial_abstraction() {
+    init = new AbstractState(Values(), split_tree.get_root());
+    goals.insert(init);
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        init->add_loop(op);
+    }
+    states.insert(init);
+    if (do_separate_unreachable_facts)
+        separate_unreachable_facts();
+}
+
+bool Abstraction::may_keep_refining() const {
+    return memory_padding_is_reserved() &&
+           get_num_states() < max_states &&
+           !timer.is_expired();
+}
+
 void Abstraction::build() {
+    create_initial_abstraction();
     if (write_graphs) {
         assert(get_num_states() == 1);
         write_dot_file(get_num_states());
     }
-    // Define here to use it outside the loop later.
-    bool valid_conc_solution = false;
+    bool found_conc_solution = false;
     while (may_keep_refining()) {
         if (use_astar) {
             find_solution();
@@ -98,28 +118,17 @@ void Abstraction::build() {
         if ((use_astar && get_min_goal_distance() == INF) ||
             (!use_astar && init->get_h() == INF)) {
             cout << "Abstract problem is unsolvable!" << endl;
-            valid_conc_solution = false;
+            found_conc_solution = false;
             break;
         }
-        valid_conc_solution = check_and_break_solution(concrete_initial_state, init);
-        if (valid_conc_solution)
+        found_conc_solution = check_and_break_solution(concrete_initial_state, init);
+        if (found_conc_solution)
             break;
     }
-    cout << "Solution found while refining: " << valid_conc_solution << endl;
-    // Even if we found a valid concrete solution, we might have refined in the
-    // last iteration, so we must update the h-values.
-    update_h_values();
-    print_statistics();
+    cout << "Solution found while refining: " << found_conc_solution << endl;
 }
 
 void Abstraction::break_solution(AbstractState *state, const Flaws &flaws) {
-    if (DEBUG) {
-        cout << "Unmet conditions: ";
-        for (size_t i = 0; i < flaws.size(); ++i) {
-            cout << flaws[i].first << "=" << flaws[i].second << " ";
-        }
-        cout << endl;
-    }
     const Flaw &flaw = flaw_selector.pick_flaw(*state, flaws);
     refine(state, flaw.first, flaw.second);
 }
@@ -433,12 +442,6 @@ vector<int> Abstraction::get_needed_costs() {
     open_queue.push(0, init);
     astar_search(true, false, &needed_costs);
     return needed_costs;
-}
-
-bool Abstraction::may_keep_refining() const {
-    return memory_padding_is_reserved() &&
-           get_num_states() < max_states &&
-           !timer.is_expired();
 }
 
 void Abstraction::print_statistics() {
