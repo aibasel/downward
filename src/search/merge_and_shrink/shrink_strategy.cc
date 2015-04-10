@@ -30,6 +30,10 @@ void ShrinkStrategy::dump_options() const {
     dump_strategy_specific_options();
 }
 
+string ShrinkStrategy::get_name() const {
+    return name();
+}
+
 void ShrinkStrategy::dump_strategy_specific_options() const {
     // Default implementation does nothing.
 }
