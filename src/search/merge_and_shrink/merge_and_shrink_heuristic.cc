@@ -35,24 +35,60 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
+    cout << "Reduce labels before merging: "
+         << (reduce_labels_before_merging ? "enabled" : "disabled") << endl;
+    cout << "Reduce labels before shrinking: "
+         << (reduce_labels_before_shrinking ? "enabled" : "disabled") << endl;
     labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
+    string dashes(79, '=');
     if (use_expensive_statistics) {
-        string dashes(79, '=');
         cerr << dashes << endl
-             << ("WARNING! You have enabled extra statistics for "
+             << "WARNING! You have enabled extra statistics for "
             "merge-and-shrink heuristics.\n"
             "These statistics require a lot of time and memory.\n"
             "When last tested (around revision 3011), enabling the "
             "extra statistics\nincreased heuristic generation time by "
             "76%. This figure may be significantly\nworse with more "
             "recent code or for particular domains and instances.\n"
-            "You have been warned. Don't use this for benchmarking!")
+            "You have been warned. Don't use this for benchmarking!"
         << endl << dashes << endl;
+    }
+    cout << reduce_labels_before_merging << " " << reduce_labels_before_shrinking << endl;
+    if (!reduce_labels_before_merging && !reduce_labels_before_shrinking) {
+        cerr << dashes << endl
+             << "WARNING! You did not enable label reduction. This may\n"
+                 "drastically reduce the performance of merge-and-shrink!"
+             << endl << dashes << endl;
+    } else if (reduce_labels_before_merging && reduce_labels_before_shrinking) {
+        cerr << dashes << endl
+             << "WARNING! You set label reduction to be applied twice in\n"
+                 "each merge-and-shrink iteration, both before shrinking and\n"
+                 "merging. This double computation effort does not pay off\n"
+                 "for most configurations !"
+             << endl << dashes << endl;
+    } else {
+        if (reduce_labels_before_shrinking &&
+                (shrink_strategy->get_name() == "f-preserving"
+                 || shrink_strategy->get_name() == "random")) {
+            cerr << dashes << endl
+                 << "WARNING! Bucket-based shrink strategies such as\n"
+                    "f-preserving random perform best if used with label\n"
+                    "reduction before merging, not before shrinking!"
+                 << endl << dashes << endl;
+        }
+        if (reduce_labels_before_merging &&
+                shrink_strategy->get_name() == "bisimulation") {
+            cerr << dashes << endl
+                 << "WARNING! Shrinking based on bisimulation performs best\n"
+                    "if used with label reduction before shrinking, not\n"
+                    "before merging!"
+                 << endl << dashes << endl;
+        }
     }
 }
 
@@ -202,16 +238,18 @@ static Heuristic *_parse(OptionParser &parser) {
         "which can lead to poor heuristics even when no shrinking is "
         "performed.");
 
+    // Merge strategy option.
     parser.add_option<MergeStrategy *>(
         "merge_strategy",
         "merge strategy; choose between merge_linear and merge_dfp",
         "merge_linear");
 
+    // Shrink strategy option.
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
         "shrink strategy; "
         "try one of the following:",
-        "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)");
+        "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, threshold=1, greedy=false, group_by_h=true)");
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
         make_pair("shrink_fh(max_states=N)",
@@ -223,7 +261,11 @@ static Heuristic *_parse(OptionParser &parser) {
                   "include 1000, 10000, 50000, 100000 and 200000. "
                   "Combine this with the default linear merge strategy "
                   "CG_GOAL_LEVEL to match the heuristic "
-                  "in the paper."));
+                  "in the paper. "
+                  "This strategy performs best when used with label reduction "
+                  "before merging, it is hence recommended to set "
+                  "reduce_labels_before_shrinking=false and "
+                  "reduce_labels_before_merging=true."));
     shrink_value_explanations.push_back(
         make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, group_by_h=false)",
                   "Greedy bisimulation without size bound "
@@ -231,7 +273,11 @@ static Heuristic *_parse(OptionParser &parser) {
                   "Hoffmann and Helmert). "
                   "Combine this with the linear merge strategy "
                   "REVERSE_LEVEL to match "
-                  "the heuristic in the paper. "));
+                  "the heuristic in the paper. "
+                  "This strategy performs best when used with label reduction "
+                  "before shrinking, it is hence recommended to set "
+                  "reduce_labels_before_merging=false and "
+                  "reduce_labels_before_shrinking=true."));
     shrink_value_explanations.push_back(
         make_pair("shrink_bisimulation(max_states=N, greedy=false, group_by_h=true)",
                   "Exact bisimulation with a size limit "
@@ -241,9 +287,18 @@ static Heuristic *_parse(OptionParser &parser) {
                   "include 1000, 10000, 50000, 100000 and 200000. "
                   "Combine this with the linear merge strategy "
                   "REVERSE_LEVEL to match "
-                  "the heuristic in the paper."));
+                  "the heuristic in the paper. "
+                  "This strategy performs best when used with label reduction "
+                  "before shrinking, it is hence recommended to set "
+                  "reduce_labels_before_merging=false and "
+                  "reduce_labels_before_shrinking=true."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
+    // Options related to label reduction.
+    parser.add_option<bool>("reduce_labels_before_shrinking",
+                            "apply label reduction before shrinking");
+    parser.add_option<bool>("reduce_labels_before_merging",
+                            "apply label reduction before merging");
     vector<string> label_reduction_method;
     vector<string> label_reduction_method_doc;
     label_reduction_method.push_back("NONE");
@@ -265,7 +320,11 @@ static Heuristic *_parse(OptionParser &parser) {
                            label_reduction_method,
                            "Label reduction method. See the AAAI14 by Sievers "
                            "et al. for explanation of the default label "
-                           "reduction method and the 'combinable relation'.",
+                           "reduction method and the 'combinable relation' ."
+                           "Also note that you must set at least one of the "
+                           "options reduce_labels_before_shrinking or "
+                           "reduce_labels_before_merging in order to use "
+                           "the chosen label reduction configuration.",
                            "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
                            label_reduction_method_doc);
 
@@ -292,13 +351,8 @@ static Heuristic *_parse(OptionParser &parser) {
                            "label_reduction_method.",
                            "RANDOM",
                            label_reduction_system_order_doc);
-    parser.add_option<bool>("reduce_labels_before_shrinking",
-                            "apply label reduction before shrinking",
-                            "false");
-    parser.add_option<bool>("reduce_labels_before_merging",
-                            "apply label reduction before merging",
-                            "false");
 
+    // General merge-and-shrink options.
     parser.add_option<bool>(
         "expensive_statistics",
         "show statistics on \"unique unlabeled edges\" (WARNING: "
@@ -318,11 +372,6 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        if (opts.get_enum("label_reduction_method") == 1
-            && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
-            parser.error("old label reduction is only correct when used with a "
-                         "linear merge strategy!");
-        }
         MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(opts);
         return result;
     }

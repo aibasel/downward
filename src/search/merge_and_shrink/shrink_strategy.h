@@ -40,6 +40,7 @@ public:
     virtual ~ShrinkStrategy();
 
     void dump_options() const;
+    std::string get_name() const;
 
     /* TODO: Make sure that *all* shrink strategies prune irrelevant
        and unreachable states, then update documentation below
