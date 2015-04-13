@@ -82,9 +82,6 @@ public:
     }
 
     int get_cost() const {return cost; }
-    void set_cost(int new_cost);
-
-    void rename_fact(int variable, int before, int after);
 };
 
 #endif
