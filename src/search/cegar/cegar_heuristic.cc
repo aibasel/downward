@@ -135,7 +135,7 @@ int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.add_list_option<Decomposition *>("decompositions", "Task decompositions", "[landmarks]");
+    parser.add_list_option<Decomposition *>("decompositions", "Task decompositions", "[landmarks,goals]");
     parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
     parser.add_option<double>("max_time", "maximum time in seconds for building abstractions", "900");
     vector<string> pick_strategies;
