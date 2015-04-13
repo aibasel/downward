@@ -44,7 +44,7 @@ Subtasks NoDecomposition::get_subtasks() const {
 
 FactDecomposition::FactDecomposition(const Options &opts)
     : Decomposition(opts),
-      subtask_order(SubtaskOrder(opts.get_enum("subtask_order"))) {
+      subtask_order(SubtaskOrder(opts.get_enum("order"))) {
 }
 
 void FactDecomposition::remove_intial_state_facts(Facts &facts) const {
@@ -160,7 +160,7 @@ static void add_common_fact_decomposition_options(OptionParser &parser) {
     subtask_orders.push_back("MIXED");
     subtask_orders.push_back("HADD_UP");
     subtask_orders.push_back("HADD_DOWN");
-    parser.add_enum_option("subtask_order",
+    parser.add_enum_option("order",
                            subtask_orders,
                            "order in which the subtasks are considered",
                            "HADD_DOWN");
