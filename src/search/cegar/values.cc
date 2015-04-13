@@ -14,16 +14,16 @@ vector<Bitset> Values::masks;
 vector<Bitset> Values::inverse_masks;
 Bitset Values::temp_values;
 
-Values::Values() {
-    assert(facts >= 0 && "Static members have not been initialized.");
+Values::Values(TaskProxy task_proxy) {
+    initialize_static_members(task_proxy);
     values = Bitset(facts);
     values.set();
 }
 
-void Values::initialize_static_members(TaskProxy task) {
+void Values::initialize_static_members(TaskProxy task_proxy) {
     variable_domain.clear();
-    variable_domain.reserve(task.get_variables().size());
-    for (VariableProxy var : task.get_variables())
+    variable_domain.reserve(task_proxy.get_variables().size());
+    for (VariableProxy var : task_proxy.get_variables())
         variable_domain.push_back(var.get_domain_size());
 
     masks.clear();
