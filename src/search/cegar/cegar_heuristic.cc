@@ -19,7 +19,6 @@
 using namespace std;
 
 namespace cegar {
-
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
@@ -35,21 +34,13 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
         remaining_costs.push_back(op.get_cost());
 }
 
-void adapt_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) {
+void reduce_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) {
     assert(remaining_costs.size() == needed_costs.size());
-    if (DEBUG)
-        cout << "Remaining: " << remaining_costs << endl;
-    if (DEBUG)
-        cout << "Needed:    " << needed_costs << endl;
-    for (size_t op_index = 0; op_index < remaining_costs.size(); ++op_index) {
-        assert(in_bounds(op_index, remaining_costs));
-        assert(remaining_costs[op_index] >= 0);
-        assert(needed_costs[op_index] <= remaining_costs[op_index]);
-        remaining_costs[op_index] -= needed_costs[op_index];
-        assert(remaining_costs[op_index] >= 0);
+    for (size_t i = 0; i < remaining_costs.size(); ++i) {
+        assert(needed_costs[i] <= remaining_costs[i]);
+        remaining_costs[i] -= needed_costs[i];
+        assert(remaining_costs[i] >= 0);
     }
-    if (DEBUG)
-        cout << "Remaining: " << remaining_costs << endl;
 }
 
 shared_ptr<AbstractTask> CegarHeuristic::get_remaining_costs_task(shared_ptr<AbstractTask> parent) const {
@@ -83,7 +74,7 @@ void CegarHeuristic::build_abstractions(const Decomposition &decomposition) {
 
         num_states += abstraction.get_num_states();
         vector<int> needed_costs = abstraction.get_needed_costs();
-        adapt_remaining_costs(remaining_costs, needed_costs);
+        reduce_remaining_costs(remaining_costs, needed_costs);
         int init_h = abstraction.get_init_h();
 
         if (init_h > 0) {
@@ -95,6 +86,7 @@ void CegarHeuristic::build_abstractions(const Decomposition &decomposition) {
         }
         if (init_h == INF || num_states >= max_states || timer->is_expired())
             break;
+
         --rem_subtasks;
     }
 }
