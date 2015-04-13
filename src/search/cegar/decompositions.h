@@ -26,18 +26,18 @@ enum class TaskOrder {
 
 
 class Decomposition {
-    std::vector<int> remaining_costs;
-
 protected:
     TaskProxy task_proxy;
 
-    Subtask get_remaining_costs_task() const;
+    Subtask get_original_task() const;
 
 public:
     explicit Decomposition(const Options &options);
     virtual ~Decomposition() = default;
 
     virtual Subtasks get_subtasks() const = 0;
+    Subtask get_next_subtask() const;
+    bool has_next_subtask() const;
 };
 
 
