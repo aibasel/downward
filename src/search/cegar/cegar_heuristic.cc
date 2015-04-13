@@ -7,7 +7,6 @@
 #include "modified_goals_task.h"
 #include "utils.h"
 #include "utils_landmarks.h"
-#include "values.h"
 
 #include "../additive_heuristic.h"
 #include "../option_parser.h"
@@ -164,9 +163,6 @@ void CegarHeuristic::build_abstractions(Decomposition decomposition) {
         TaskProxy abstracted_task_proxy = TaskProxy(abstracted_task.get());
         if (DEBUG)
             dump_task(abstracted_task_proxy);
-
-        // TODO: Fix this hack.
-        Values::initialize_static_members(abstracted_task_proxy);
 
         int rem_tasks = num_abstractions - i;
         double rem_time = options.get<double>("max_time") - timer->get_elapsed_time();

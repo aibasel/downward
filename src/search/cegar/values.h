@@ -31,10 +31,12 @@ class Values {
     // Temporary bitset for calculations in domains_intersect().
     static Bitset temp_values;
 
+    static void initialize_static_members(TaskProxy task_proxy);
+
     int pos(int var, int value) const {return borders[var] + value; }
 
 public:
-    Values();
+    explicit Values(TaskProxy task_proxy);
     ~Values() = default;
 
     void add(int var, int value);
@@ -51,8 +53,6 @@ public:
     void get_possible_flaws(const Values &flaw, const State &conc_state, Flaws *flaws) const;
 
     std::string str() const;
-
-    static void initialize_static_members(TaskProxy task);
 };
 }
 
