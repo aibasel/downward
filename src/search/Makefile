@@ -163,6 +163,7 @@ HEADERS += cegar/abstract_state.h \
            cegar/abstraction.h \
            cegar/cartesian_heuristic.h \
            cegar/cegar_heuristic.h \
+           cegar/decompositions.h \
            cegar/domain_abstracted_task.h \
            cegar/domains.h \
            cegar/flaw_selector.h \
