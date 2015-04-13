@@ -4,6 +4,7 @@
 #include "modified_goals_task.h"
 #include "utils_landmarks.h"
 
+#include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
@@ -19,7 +20,7 @@ using namespace std;
 
 namespace cegar {
 Decomposition::Decomposition(const Options &opts)
-    : task_proxy(*opts.get<TaskProxy *>("task_proxy")) {
+    : task_proxy(*get_task_from_options(opts)) {
 }
 
 Subtask Decomposition::get_original_task() const {
@@ -143,6 +144,20 @@ Subtasks LandmarkDecomposition::get_subtasks() const {
 }
 
 static Decomposition *_parse(OptionParser &parser) {
+    parser.add_option<AbstractTask *>(
+        "transform",
+        "Optional task transformation.",
+        "",
+        OptionFlags(false));
+    vector<string> subtask_orders;
+    subtask_orders.push_back("ORIGINAL");
+    subtask_orders.push_back("MIXED");
+    subtask_orders.push_back("HADD_UP");
+    subtask_orders.push_back("HADD_DOWN");
+    parser.add_enum_option("task_order",
+                           subtask_orders,
+                           "order in which the subtasks are considered",
+                           "HADD_DOWN");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
     Heuristic::add_options_to_parser(parser);

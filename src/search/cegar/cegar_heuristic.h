@@ -24,6 +24,7 @@ enum class DecompositionStrategy {
 
 class CegarHeuristic : public Heuristic {
     const Options options;
+    std::vector<Decomposition *> decompositions;
     int max_states;
     std::unique_ptr<CountdownTimer> timer;
     std::vector<int> remaining_costs;
