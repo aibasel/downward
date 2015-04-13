@@ -4,6 +4,7 @@
 #include "utils.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 class LandmarkGraph;
