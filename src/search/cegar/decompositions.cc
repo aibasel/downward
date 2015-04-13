@@ -1,7 +1,6 @@
 #include "decompositions.h"
 
 #include "domain_abstracted_task.h"
-#include "modified_costs_task.h"
 #include "modified_goals_task.h"
 #include "utils_landmarks.h"
 
@@ -20,27 +19,23 @@ using namespace std;
 
 namespace cegar {
 Decomposition::Decomposition(const Options &opts)
-    : remaining_costs(opts.get<vector<int> >("remaining_costs")),
-      task_proxy(opts.get<TaskProxy>("task_proxy")) {
+    : task_proxy(*opts.get<TaskProxy *>("task_proxy")) {
 }
 
-Subtask Decomposition::get_remaining_costs_task() const {
-    Options opts;
-    opts.set<shared_ptr<AbstractTask> >("transform", g_root_task());
-    opts.set<vector<int> >("operator_costs", remaining_costs);
-    return make_shared<ModifiedCostsTask>(opts);
+Subtask Decomposition::get_original_task() const {
+    return g_root_task();
 }
 
 
 NoDecomposition::NoDecomposition(const Options &opts)
     : Decomposition(opts),
-      max_abstractions(opts.get<int>("max_abstrations")) {
+      max_abstractions(opts.get<int>("max_abstractions")) {
 }
 
 Subtasks NoDecomposition::get_subtasks() const {
     Subtasks tasks;
     for (int i = 0; i < max_abstractions; ++i) {
-        tasks.push_back(get_remaining_costs_task());
+        tasks.push_back(get_original_task());
     }
     return tasks;
 }
@@ -97,7 +92,7 @@ Facts GoalDecomposition::get_facts() const {
 Subtasks GoalDecomposition::get_subtasks() const {
     Subtasks tasks;
     for (Fact goal : get_filtered_and_ordered_facts()) {
-        Subtask abstracted_task = get_remaining_costs_task();
+        Subtask abstracted_task = get_original_task();
         Facts goals {goal};
         abstracted_task = make_shared<ModifiedGoalsTask>(abstracted_task, goals);
         tasks.push_back(abstracted_task);
@@ -136,7 +131,7 @@ Facts LandmarkDecomposition::get_facts() const {
 Subtasks LandmarkDecomposition::get_subtasks() const {
     Subtasks subtasks;
     for (Fact landmark : get_filtered_and_ordered_facts()) {
-        Subtask subtask = get_remaining_costs_task();
+        Subtask subtask = get_original_task();
         Facts goals {landmark};
         subtask = make_shared<ModifiedGoalsTask>(subtask, goals);
         if (combine_facts) {
