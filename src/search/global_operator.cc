@@ -96,36 +96,6 @@ GlobalOperator::GlobalOperator(istream &in, bool axiom) {
     }
 }
 
-void GlobalOperator::set_cost(int new_cost) {
-    assert(new_cost >= 0);
-    cost = new_cost;
-}
-
-void rename_fact_in_conditions(int variable, int before, int after, vector<GlobalCondition> &conditions) {
-    // TODO: Break out of loop when var > variable once conditions are sorted.
-    for (size_t j = 0; j < conditions.size(); ++j) {
-        GlobalCondition &cond = conditions[j];
-        if (cond.var == variable && cond.val == before) {
-            cond.val = after;
-            // Each variable appears in at most one effect condition.
-            break;
-        }
-    }
-}
-
-void GlobalOperator::rename_fact(int variable, int before, int after) {
-    // TODO: Break out of loop when var > variable once conditions are sorted.
-    rename_fact_in_conditions(variable, before, after, preconditions);
-    for (size_t i = 0; i < effects.size(); ++i) {
-        GlobalEffect &effect = effects[i];
-        if (effect.var == variable) {
-            if (effect.val == before)
-                effect.val = after;
-        }
-        rename_fact_in_conditions(variable, before, after, effect.conditions);
-    }
-}
-
 void GlobalCondition::dump() const {
     cout << g_variable_name[var] << ": " << val;
 }
