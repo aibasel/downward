@@ -60,8 +60,10 @@ void CegarHeuristic::build_abstractions(const Decomposition &decomposition) {
         subtask = get_remaining_costs_task(subtask);
 
         TaskProxy subtask_proxy = TaskProxy(subtask.get());
-        if (DEBUG)
+        if (DEBUG) {
+            cout << "Next subtask:" << endl;
             dump_task(subtask_proxy);
+        }
 
         double rem_time = options.get<double>("max_time") - timer->get_elapsed_time();
         Options abs_opts(options);
@@ -100,16 +102,15 @@ void CegarHeuristic::initialize() {
             compute_heuristic(g_initial_state()) == DEAD_END)
             break;
     }
-    cout << endl;
     print_statistics();
+    cout << endl;
 }
 
 void CegarHeuristic::print_statistics() {
     Log() << "Done initializing CEGAR heuristic";
-    cout << "CEGAR abstractions: " << heuristics.size() << endl;
+    cout << "Cartesian abstractions: " << heuristics.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
-    cout << "Init h: " << compute_heuristic(g_initial_state()) << endl;
-    cout << endl;
+    cout << "Initial h value: " << compute_heuristic(g_initial_state()) << endl;
 }
 
 int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -138,16 +139,12 @@ static Heuristic *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_HADD");
     pick_strategies.push_back("MAX_HADD");
-    parser.add_enum_option("pick",
-                           pick_strategies,
-                           "how to pick the next unsatisfied condition",
-                           "MAX_REFINED");
-    parser.add_option<int>("copies", "max number of abstractions to build", "infinity");
-    parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
-    parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
-    parser.add_option<bool>("use_general_costs", "allow negative costs in cost-partitioning", "true");
+    parser.add_enum_option(
+        "pick", pick_strategies, "how to pick the next flaw", "MAX_REFINED");
+    parser.add_option<bool>("use_astar", "use A* to find the *single* next solution", "true");
+    parser.add_option<bool>("use_general_costs", "allow negative costs in cost partitioning", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
-    parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
+    parser.add_option<bool>("write_graphs", "write dot file for each intermediate abstraction", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
