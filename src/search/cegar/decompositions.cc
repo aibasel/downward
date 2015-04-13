@@ -30,12 +30,12 @@ Subtask Decomposition::get_original_task() const {
 
 NoDecomposition::NoDecomposition(const Options &opts)
     : Decomposition(opts),
-      max_abstractions(opts.get<int>("max_abstractions")) {
+      copies(opts.get<int>("copies")) {
 }
 
 Subtasks NoDecomposition::get_subtasks() const {
     Subtasks tasks;
-    for (int i = 0; i < max_abstractions; ++i) {
+    for (int i = 0; i < copies; ++i) {
         tasks.push_back(get_original_task());
     }
     return tasks;
@@ -143,12 +143,17 @@ Subtasks LandmarkDecomposition::get_subtasks() const {
     return subtasks;
 }
 
+static Decomposition *_parse_original(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    parser.add_option<int>("copies", "number of task copies", "1");
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return 0;
+    else
+        return new NoDecomposition(opts);
+}
+
 static Decomposition *_parse_goals(OptionParser &parser) {
-    parser.add_option<AbstractTask *>(
-        "transform",
-        "Optional task transformation.",
-        "",
-        OptionFlags(false));
     vector<string> subtask_orders;
     subtask_orders.push_back("ORIGINAL");
     subtask_orders.push_back("MIXED");
@@ -167,11 +172,6 @@ static Decomposition *_parse_goals(OptionParser &parser) {
 }
 
 static Decomposition *_parse_landmarks(OptionParser &parser) {
-    parser.add_option<AbstractTask *>(
-        "transform",
-        "Optional task transformation.",
-        "",
-        OptionFlags(false));
     vector<string> subtask_orders;
     subtask_orders.push_back("ORIGINAL");
     subtask_orders.push_back("MIXED");
@@ -191,6 +191,7 @@ static Decomposition *_parse_landmarks(OptionParser &parser) {
         return new LandmarkDecomposition(opts);
 }
 
+static Plugin<Decomposition> _plugin_original("original", _parse_original);
 static Plugin<Decomposition> _plugin_goals("goals", _parse_goals);
 static Plugin<Decomposition> _plugin_landmarks("landmarks", _parse_landmarks);
 }
