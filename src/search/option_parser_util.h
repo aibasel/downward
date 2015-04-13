@@ -27,6 +27,10 @@ template<class Entry>
 class OpenList;
 class AbstractTask;
 
+namespace cegar {
+    class Decomposition;
+}
+
 
 struct ParseNode {
     ParseNode()
@@ -268,6 +272,13 @@ template <>
 struct TypeNamer<AbstractTask *> {
     static std::string name() {
         return "AbstractTask";
+    }
+};
+
+template <>
+struct TypeNamer<cegar::Decomposition *> {
+    static std::string name() {
+        return "Decomposition";
     }
 };
 

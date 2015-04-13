@@ -141,4 +141,17 @@ Subtasks LandmarkDecomposition::get_subtasks() const {
     }
     return subtasks;
 }
+
+static Decomposition *_parse(OptionParser &parser) {
+    parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
+    parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return 0;
+    else
+        return new LandmarkDecomposition(opts);
+}
+
+static Plugin<Decomposition> _plugin("landmarks", _parse);
 }
