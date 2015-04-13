@@ -153,7 +153,8 @@ static Decomposition *_parse_original(OptionParser &parser) {
         return new NoDecomposition(opts);
 }
 
-static Decomposition *_parse_goals(OptionParser &parser) {
+static void add_common_fact_decomposition_options(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
     vector<string> subtask_orders;
     subtask_orders.push_back("ORIGINAL");
     subtask_orders.push_back("MIXED");
@@ -163,7 +164,10 @@ static Decomposition *_parse_goals(OptionParser &parser) {
                            subtask_orders,
                            "order in which the subtasks are considered",
                            "HADD_DOWN");
-    Heuristic::add_options_to_parser(parser);
+}
+
+static Decomposition *_parse_goals(OptionParser &parser) {
+    add_common_fact_decomposition_options(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
@@ -172,18 +176,9 @@ static Decomposition *_parse_goals(OptionParser &parser) {
 }
 
 static Decomposition *_parse_landmarks(OptionParser &parser) {
-    vector<string> subtask_orders;
-    subtask_orders.push_back("ORIGINAL");
-    subtask_orders.push_back("MIXED");
-    subtask_orders.push_back("HADD_UP");
-    subtask_orders.push_back("HADD_DOWN");
-    parser.add_enum_option("task_order",
-                           subtask_orders,
-                           "order in which the subtasks are considered",
-                           "HADD_DOWN");
+    add_common_fact_decomposition_options(parser);
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
-    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
