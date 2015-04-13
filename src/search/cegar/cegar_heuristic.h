@@ -8,19 +8,11 @@
 #include <vector>
 
 class CountdownTimer;
-class FactProxy;
+class Decomposition;
 class GlobalState;
 
 namespace cegar {
 class CartesianHeuristic;
-
-enum class DecompositionStrategy {
-    NONE,
-    LANDMARKS,
-    GOALS,
-    LANDMARKS_AND_GOALS,
-    LANDMARKS_AND_GOALS_AND_NONE
-};
 
 class CegarHeuristic : public Heuristic {
     const Options options;
@@ -32,7 +24,7 @@ class CegarHeuristic : public Heuristic {
     int num_states;
 
     std::shared_ptr<AbstractTask> get_remaining_costs_task(std::shared_ptr<AbstractTask> parent) const;
-    void build_abstractions(DecompositionStrategy decomposition);
+    void build_abstractions(const Decomposition &decomposition);
     void print_statistics();
 
 protected:

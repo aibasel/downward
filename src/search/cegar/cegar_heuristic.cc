@@ -59,18 +59,8 @@ shared_ptr<AbstractTask> CegarHeuristic::get_remaining_costs_task(shared_ptr<Abs
     return make_shared<ModifiedCostsTask>(opts);
 }
 
-void CegarHeuristic::build_abstractions(DecompositionStrategy decomposition) {
-    Options decomposition_opts(options);
-    decomposition_opts.set<TaskProxy *>("task_proxy", task);
-    decomposition_opts.set<int>("task_order", static_cast<int>(TaskOrder::HADD_DOWN));
-    Subtasks subtasks;
-    if (decomposition == DecompositionStrategy::LANDMARKS) {
-        subtasks = LandmarkDecomposition(decomposition_opts).get_subtasks();
-    } else if (decomposition == DecompositionStrategy::GOALS) {
-        subtasks = GoalDecomposition(decomposition_opts).get_subtasks();
-    } else {
-        subtasks = NoDecomposition(decomposition_opts).get_subtasks();
-    }
+void CegarHeuristic::build_abstractions(const Decomposition &decomposition) {
+    Subtasks subtasks = decomposition.get_subtasks();
 
     int rem_subtasks = subtasks.size();
     for (Subtask subtask : subtasks) {
@@ -87,7 +77,8 @@ void CegarHeuristic::build_abstractions(DecompositionStrategy decomposition) {
         abs_opts.set<TaskProxy *>("task_proxy", &subtask_proxy);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
         abs_opts.set<double>("max_time", rem_time / rem_subtasks);
-        abs_opts.set<bool>("separate_unreachable_facts", decomposition == DecompositionStrategy::LANDMARKS);
+        // TODO: Can we only do this for LandmarkDecompositions?
+        abs_opts.set<bool>("separate_unreachable_facts", true);
         Abstraction abstraction(abs_opts);
 
         num_states += abstraction.get_num_states();
@@ -110,22 +101,8 @@ void CegarHeuristic::build_abstractions(DecompositionStrategy decomposition) {
 
 void CegarHeuristic::initialize() {
     Log() << "Initializing CEGAR heuristic...";
-
-    DecompositionStrategy decomposition(DecompositionStrategy(options.get_enum("decomposition")));
-    vector<DecompositionStrategy> decompositions;
-    if (decomposition == DecompositionStrategy::LANDMARKS_AND_GOALS_AND_NONE) {
-        decompositions.push_back(DecompositionStrategy::LANDMARKS);
-        decompositions.push_back(DecompositionStrategy::GOALS);
-        decompositions.push_back(DecompositionStrategy::NONE);
-    } else if (decomposition == DecompositionStrategy::LANDMARKS_AND_GOALS) {
-        decompositions.push_back(DecompositionStrategy::LANDMARKS);
-        decompositions.push_back(DecompositionStrategy::GOALS);
-    } else {
-        decompositions.push_back(decomposition);
-    }
-    for (size_t i = 0; i < decompositions.size(); ++i) {
-        cout << endl << "Using decomposition " << static_cast<int>(decompositions[i]) << endl;
-        build_abstractions(decompositions[i]);
+    for (Decomposition *decomposition : decompositions) {
+        build_abstractions(*decomposition);
         cout << endl;
         if (num_states >= max_states || timer->is_expired() ||
             compute_heuristic(g_initial_state()) == DEAD_END)
@@ -173,16 +150,6 @@ static Heuristic *_parse(OptionParser &parser) {
                            pick_strategies,
                            "how to pick the next unsatisfied condition",
                            "MAX_REFINED");
-    vector<string> decompositions;
-    decompositions.push_back("NONE");
-    decompositions.push_back("LANDMARKS");
-    decompositions.push_back("GOALS");
-    decompositions.push_back("LANDMARKS_AND_GOALS");
-    decompositions.push_back("LANDMARKS_AND_GOALS_AND_NONE");
-    parser.add_enum_option("decomposition",
-                           decompositions,
-                           "build abstractions for each of these facts",
-                           "LANDMARKS_AND_GOALS");
     parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
