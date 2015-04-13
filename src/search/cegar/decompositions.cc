@@ -44,7 +44,7 @@ Subtasks NoDecomposition::get_subtasks() const {
 
 FactDecomposition::FactDecomposition(const Options &opts)
     : Decomposition(opts),
-      task_order(TaskOrder(opts.get_enum("task_order"))) {
+      subtask_order(SubtaskOrder(opts.get_enum("subtask_order"))) {
 }
 
 void FactDecomposition::remove_intial_state_facts(Facts &facts) const {
@@ -63,16 +63,16 @@ Facts FactDecomposition::get_filtered_and_ordered_facts() const {
 }
 
 void FactDecomposition::order_facts(vector<Fact> &facts) const {
-    assert(task_order != TaskOrder::ORIGINAL);
+    assert(subtask_order != SubtaskOrder::ORIGINAL);
     cout << "Sort " << facts.size() << " facts" << endl;
-    if (task_order == TaskOrder::MIXED) {
+    if (subtask_order == SubtaskOrder::MIXED) {
         g_rng.shuffle(facts);
-    } else if (task_order == TaskOrder::HADD_UP || task_order == TaskOrder::HADD_DOWN) {
+    } else if (subtask_order == SubtaskOrder::HADD_UP || subtask_order == SubtaskOrder::HADD_DOWN) {
         sort(facts.begin(), facts.end(), SortHaddValuesUp(task_proxy));
-        if (task_order == TaskOrder::HADD_DOWN)
+        if (subtask_order == SubtaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {
-        cerr << "Invalid task ordering: " << static_cast<int>(task_order) << endl;
+        cerr << "Invalid task ordering: " << static_cast<int>(subtask_order) << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
 }
@@ -160,7 +160,7 @@ static void add_common_fact_decomposition_options(OptionParser &parser) {
     subtask_orders.push_back("MIXED");
     subtask_orders.push_back("HADD_UP");
     subtask_orders.push_back("HADD_DOWN");
-    parser.add_enum_option("task_order",
+    parser.add_enum_option("subtask_order",
                            subtask_orders,
                            "order in which the subtasks are considered",
                            "HADD_DOWN");
@@ -178,7 +178,7 @@ static Decomposition *_parse_goals(OptionParser &parser) {
 static Decomposition *_parse_landmarks(OptionParser &parser) {
     add_common_fact_decomposition_options(parser);
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
-    parser.add_option<bool>("write_graphs", "write causal and landmark graphs", "false");
+    parser.add_option<bool>("write_graphs", "write landmark graph dot file", "false");
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;

@@ -17,7 +17,7 @@ using Facts = std::vector<Fact>;
 using Subtask = std::shared_ptr<AbstractTask>;
 using Subtasks = std::vector<Subtask>;
 
-enum class TaskOrder {
+enum class SubtaskOrder {
     ORIGINAL,
     MIXED,
     HADD_UP,
@@ -53,7 +53,7 @@ public:
 
 
 class FactDecomposition : public Decomposition {
-    TaskOrder task_order;
+    SubtaskOrder subtask_order;
 
     struct SortHaddValuesUp {
         const std::shared_ptr<AdditiveHeuristic> hadd;
