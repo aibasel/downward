@@ -1,8 +1,6 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include "split_tree.h"
-#include "utils.h"
 #include "values.h"
 
 #include <string>
@@ -11,6 +9,7 @@
 
 namespace cegar {
 class AbstractState;
+class Node;
 
 using Arc = std::pair<OperatorProxy, AbstractState *>;
 using Arcs = std::vector<Arc>;
@@ -73,14 +72,8 @@ public:
     // A* search.
     void set_distance(int dist) {distance = dist; }
     int get_distance() const {return distance; }
-    void set_h(int dist) {
-        assert(node);
-        node->set_h(dist);
-    }
-    int get_h() const {
-        assert(node);
-        return node->get_h();
-    }
+    void set_h(int dist);
+    int get_h() const;
 
     Arcs &get_arcs_out() {return arcs_out; }
     Arcs &get_arcs_in() {return arcs_in; }
