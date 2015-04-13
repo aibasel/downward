@@ -18,7 +18,7 @@ using Loops = std::vector<OperatorProxy>;
 class AbstractState {
 private:
     // Abstract domains for each variable.
-    const Values values;
+    const Domains domains;
 
     // This state's node in the refinement hierarchy.
     Node *node;
@@ -41,7 +41,7 @@ private:
     bool domains_intersect(const AbstractState *other, int var) const;
 
 public:
-    AbstractState(const Values &values, Node *node);
+    AbstractState(const Domains &domains, Node *node);
     ~AbstractState() = default;
 
     AbstractState(const AbstractState &) = delete;
@@ -51,7 +51,7 @@ public:
     size_t count(int var) const;
 
     // Return the set of states in which applying "op" leads to this state.
-    Values regress(OperatorProxy op) const;
+    Domains regress(OperatorProxy op) const;
 
     // Separate the values in "wanted" from the other values in the abstract domain.
     std::pair<AbstractState *, AbstractState *> split(int var, std::vector<int> wanted);

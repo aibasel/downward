@@ -7,105 +7,105 @@
 using namespace std;
 
 namespace cegar {
-vector<int> Values::variable_domain;
-int Values::facts = -1;
-vector<int> Values::borders;
-vector<Bitset> Values::masks;
-vector<Bitset> Values::inverse_masks;
-Bitset Values::temp_values;
+vector<int> Domains::original_domain_sizes;
+int Domains::num_facts = -1;
+vector<int> Domains::borders;
+vector<Bitset> Domains::masks;
+vector<Bitset> Domains::inverse_masks;
+Bitset Domains::temp_values;
 
-Values::Values(TaskProxy task_proxy) {
+Domains::Domains(TaskProxy task_proxy) {
     initialize_static_members(task_proxy);
-    values = Bitset(facts);
-    values.set();
+    domains = Bitset(num_facts);
+    domains.set();
 }
 
-void Values::initialize_static_members(TaskProxy task_proxy) {
-    variable_domain.clear();
-    variable_domain.reserve(task_proxy.get_variables().size());
+void Domains::initialize_static_members(TaskProxy task_proxy) {
+    original_domain_sizes.clear();
+    original_domain_sizes.reserve(task_proxy.get_variables().size());
     for (VariableProxy var : task_proxy.get_variables())
-        variable_domain.push_back(var.get_domain_size());
+        original_domain_sizes.push_back(var.get_domain_size());
 
     masks.clear();
     inverse_masks.clear();
     borders.clear();
-    facts = 0;
-    int num_vars = variable_domain.size();
+    num_facts = 0;
+    int num_vars = original_domain_sizes.size();
     for (int var = 0; var < num_vars; ++var) {
-        borders.push_back(facts);
-        facts += variable_domain[var];
+        borders.push_back(num_facts);
+        num_facts += original_domain_sizes[var];
     }
     for (int var = 0; var < num_vars; ++var) {
         // -----0000 -> --1110000 --> 001110000
         Bitset mask(borders[var]);
-        mask.resize(borders[var] + variable_domain[var], true);
-        mask.resize(facts, false);
+        mask.resize(borders[var] + original_domain_sizes[var], true);
+        mask.resize(num_facts, false);
         masks.push_back(mask);
         inverse_masks.push_back(~mask);
     }
-    temp_values.resize(facts);
+    temp_values.resize(num_facts);
 }
 
-void Values::add(int var, int value) {
-    values.set(pos(var, value));
+void Domains::add(int var, int value) {
+    domains.set(pos(var, value));
 }
 
-void Values::remove(int var, int value) {
-    values.reset(pos(var, value));
+void Domains::remove(int var, int value) {
+    domains.reset(pos(var, value));
 }
 
-void Values::set(int var, int value) {
+void Domains::set(int var, int value) {
     remove_all(var);
     add(var, value);
 }
 
-void Values::add_all(int var) {
-    values |= masks[var];
+void Domains::add_all(int var) {
+    domains |= masks[var];
 }
 
-void Values::remove_all(int var) {
-    values &= inverse_masks[var];
+void Domains::remove_all(int var) {
+    domains &= inverse_masks[var];
 }
 
-bool Values::test(int var, int value) const {
-    return values.test(pos(var, value));
+bool Domains::test(int var, int value) const {
+    return domains.test(pos(var, value));
 }
 
-size_t Values::count(int var) const {
+size_t Domains::count(int var) const {
     // Profiling showed that an explicit loop is faster than doing:
     // (values & masks[var]).count(); (even if using a temp bitset).
     int num_values = 0;
-    for (int pos = borders[var]; pos < borders[var] + variable_domain[var]; ++pos) {
-        num_values += values.test(pos);
+    for (int pos = borders[var]; pos < borders[var] + original_domain_sizes[var]; ++pos) {
+        num_values += domains.test(pos);
     }
     return num_values;
 }
 
-bool Values::domains_intersect(const Values &other, int var) const {
+bool Domains::intersects(const Domains &other, int var) const {
     // Using test() directly doesn't make execution much faster even for
     // problems with many boolean vars. We use temp_values to reduce
     // memory allocations. This substantially reduces the relative time
     // spent in this method.
     temp_values.set();
-    temp_values &= values;
-    temp_values &= other.values;
+    temp_values &= domains;
+    temp_values &= other.domains;
     temp_values &= masks[var];
-    assert(temp_values.any() == (values & other.values & masks[var]).any());
+    assert(temp_values.any() == (domains & other.domains & masks[var]).any());
     return temp_values.any();
 }
 
-bool Values::abstracts(const Values &other) const {
-    return other.values.is_subset_of(values);
+bool Domains::abstracts(const Domains &other) const {
+    return other.domains.is_subset_of(domains);
 }
 
-void Values::get_possible_flaws(const Values &flaw, const State &conc_state,
+void Domains::get_possible_flaws(const Domains &flaw, const State &conc_state,
                                  Flaws *flaws) const {
     assert(flaws->empty());
-    Bitset intersection(values & flaw.values);
+    Bitset intersection(domains & flaw.domains);
     for (size_t var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var].get_value()))) {
             vector<int> wanted;
-            for (int pos = borders[var]; pos < borders[var] + variable_domain[var]; ++pos) {
+            for (int pos = borders[var]; pos < borders[var] + original_domain_sizes[var]; ++pos) {
                 if (intersection.test(pos)) {
                     wanted.push_back(pos - borders[var]);
                 }
@@ -116,19 +116,19 @@ void Values::get_possible_flaws(const Values &flaw, const State &conc_state,
     assert(!flaws->empty());
 }
 
-string Values::str() const {
+string Domains::str() const {
     ostringstream oss;
     string sep = "";
     for (size_t var = 0; var < borders.size(); ++var) {
-        size_t next_border = borders[var] + variable_domain[var];
+        size_t next_border = borders[var] + original_domain_sizes[var];
         vector<int> facts;
-        size_t pos = (var == 0) ? values.find_first() : values.find_next(borders[var] - 1);
+        size_t pos = (var == 0) ? domains.find_first() : domains.find_next(borders[var] - 1);
         while (pos != Bitset::npos && pos < next_border) {
             facts.push_back(pos - borders[var]);
-            pos = values.find_next(pos);
+            pos = domains.find_next(pos);
         }
         assert(!facts.empty());
-        if (facts.size() < static_cast<size_t>(variable_domain[var])) {
+        if (facts.size() < static_cast<size_t>(original_domain_sizes[var])) {
             oss << sep << var << "={";
             sep = ",";
             string value_sep = "";

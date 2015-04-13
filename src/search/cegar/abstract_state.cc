@@ -13,48 +13,48 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(const Values &values, Node *node)
-    : values(values),
+AbstractState::AbstractState(const Domains &domains, Node *node)
+    : domains(domains),
       node(node),
       distance(UNDEFINED) {
 }
 
 string AbstractState::str() const {
     ostringstream oss;
-    oss << "<" << values.str() << ">";
+    oss << "<" << domains.str() << ">";
     return oss.str();
 }
 
 size_t AbstractState::count(int var) const {
-    return values.count(var);
+    return domains.count(var);
 }
 
-Values AbstractState::regress(OperatorProxy op) const {
-    Values regressed_values = values;
+Domains AbstractState::regress(OperatorProxy op) const {
+    Domains regressed_domains = domains;
     unordered_set<int> precondition_vars;
     for (FactProxy precondition : op.get_preconditions()) {
         int var_id = precondition.get_variable().get_id();
-        regressed_values.set(var_id, precondition.get_value());
+        regressed_domains.set(var_id, precondition.get_value());
         precondition_vars.insert(var_id);
     }
     for (EffectProxy effect : op.get_effects()) {
         int var_id = effect.get_fact().get_variable().get_id();
         if (precondition_vars.count(var_id) == 0) {
-            regressed_values.add_all(var_id);
+            regressed_domains.add_all(var_id);
         }
     }
-    return regressed_values;
+    return regressed_domains;
 }
 
 void AbstractState::get_possible_flaws(const AbstractState &desired,
                                         const State &prev_conc_state,
                                         Flaws *flaws)
 const {
-    values.get_possible_flaws(desired.values, prev_conc_state, flaws);
+    domains.get_possible_flaws(desired.domains, prev_conc_state, flaws);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
-    return values.domains_intersect(other->values, var);
+    return domains.intersects(other->domains, var);
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
@@ -72,7 +72,7 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
             if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
                 u->add_arc(op, v2);
             }
-        } else if (v2->values.test(var, post)) {
+        } else if (v2->domains.test(var, post)) {
             u->add_arc(op, v2);
         } else {
             u->add_arc(op, v1);
@@ -101,7 +101,7 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
         } else if (pre == UNDEFINED) {
             v1->add_arc(op, w);
             v2->add_arc(op, w);
-        } else if (v2->values.test(var, pre)) {
+        } else if (v2->domains.test(var, pre)) {
             v2->add_arc(op, w);
         } else {
             v1->add_arc(op, w);
@@ -118,26 +118,26 @@ void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) 
             if (post == UNDEFINED) {
                 v1->add_loop(op);
                 v2->add_loop(op);
-            } else if (v2->values.test(var, post)) {
+            } else if (v2->domains.test(var, post)) {
                 v1->add_arc(op, v2);
                 v2->add_loop(op);
             } else {
-                assert(v1->values.test(var, post));
+                assert(v1->domains.test(var, post));
                 v1->add_loop(op);
                 v2->add_arc(op, v1);
             }
-        } else if (v2->values.test(var, pre)) {
+        } else if (v2->domains.test(var, pre)) {
             assert(post != UNDEFINED);
-            if (v2->values.test(var, post)) {
+            if (v2->domains.test(var, post)) {
                 v2->add_loop(op);
             } else {
-                assert(v1->values.test(var, post));
+                assert(v1->domains.test(var, post));
                 v2->add_arc(op, v1);
             }
-        } else if (v2->values.test(var, post)) {
+        } else if (v2->domains.test(var, post)) {
             v1->add_arc(op, v2);
         } else {
-            assert(v1->values.test(var, post));
+            assert(v1->domains.test(var, post));
             v1->add_loop(op);
         }
     }
@@ -148,29 +148,29 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     // We can only refine for vars that can have at least two values.
     // The desired value has to be in the set of possible values.
     assert(wanted.size() >= 1);
-    assert(values.count(var) > wanted.size());
+    assert(domains.count(var) > wanted.size());
     for (size_t i = 0; i < wanted.size(); ++i)
-        assert(values.test(var, wanted[i]));
+        assert(domains.test(var, wanted[i]));
 
-    Values v1_values(values);
-    Values v2_values(values);
+    Domains v1_domains(domains);
+    Domains v2_domains(domains);
 
-    v2_values.remove_all(var);
+    v2_domains.remove_all(var);
     for (size_t i = 0; i < wanted.size(); ++i) {
         // In v1 var can have all of the previous values except the wanted ones.
-        v1_values.remove(var, wanted[i]);
+        v1_domains.remove(var, wanted[i]);
 
         // In v2 var can only have the wanted values.
-        v2_values.add(var, wanted[i]);
+        v2_domains.add(var, wanted[i]);
     }
-    assert(v1_values.count(var) == values.count(var) - wanted.size());
-    assert(v2_values.count(var) == wanted.size());
+    assert(v1_domains.count(var) == domains.count(var) - wanted.size());
+    assert(v2_domains.count(var) == wanted.size());
 
     // Update split tree.
     pair<Node *, Node *> new_nodes = node->split(var, wanted);
 
-    AbstractState *v1 = new AbstractState(v1_values, new_nodes.first);
-    AbstractState *v2 = new AbstractState(v2_values, new_nodes.second);
+    AbstractState *v1 = new AbstractState(v1_domains, new_nodes.first);
+    AbstractState *v2 = new AbstractState(v2_domains, new_nodes.second);
 
     // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
@@ -221,14 +221,14 @@ void AbstractState::remove_prev_arc(OperatorProxy op, AbstractState *other) {
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {
     for (FactProxy fact : conc_state) {
-        if (!values.test(fact.get_variable().get_id(), fact.get_value()))
+        if (!domains.test(fact.get_variable().get_id(), fact.get_value()))
             return false;
     }
     return true;
 }
 
 bool AbstractState::is_abstraction_of(const AbstractState &other) const {
-    return values.abstracts(other.values);
+    return domains.abstracts(other.domains);
 }
 
 void AbstractState::set_h(int dist) {
