@@ -1,5 +1,5 @@
-#ifndef CEGAR_VALUES_H
-#define CEGAR_VALUES_H
+#ifndef CEGAR_DOMAINS_H
+#define CEGAR_DOMAINS_H
 
 #include "utils.h"
 

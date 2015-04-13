@@ -1,7 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include "values.h"
+#include "domains.h"
 
 #include <string>
 #include <utility>
