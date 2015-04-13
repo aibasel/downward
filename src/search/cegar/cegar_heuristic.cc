@@ -1,8 +1,8 @@
 #include "cegar_heuristic.h"
 
 #include "abstraction.h"
-#include "abstract_state.h"
 #include "cartesian_heuristic.h"
+#include "domain_abstracted_task.h"
 #include "modified_costs_task.h"
 #include "modified_goals_task.h"
 #include "utils.h"
@@ -14,8 +14,6 @@
 #include "../plugin.h"
 #include "../task_tools.h"
 
-#include "../landmarks/landmark_graph.h"
-
 #include <algorithm>
 #include <cassert>
 #include <string>
@@ -25,6 +23,7 @@
 using namespace std;
 
 namespace cegar {
+
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
@@ -38,9 +37,9 @@ CegarHeuristic::CegarHeuristic(const Options &opts)
     verify_no_axioms_no_conditional_effects();
 
     if (DEBUG)
-        landmark_graph->dump();
+        dump_landmark_graph(landmark_graph);
     if (options.get<bool>("write_graphs"))
-        write_landmark_graph(landmark_graph);
+        write_landmark_graph_dot_file(landmark_graph);
 
     for (OperatorProxy op : task->get_operators())
         remaining_costs.push_back(op.get_cost());
