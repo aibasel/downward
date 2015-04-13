@@ -86,7 +86,11 @@ string get_node_name(Fact fact) {
     return out.str();
 }
 
-void write_landmark_graph(shared_ptr<LandmarkGraph> graph) {
+void dump_landmark_graph(shared_ptr<LandmarkGraph> graph) {
+    graph->dump();
+}
+
+void write_landmark_graph_dot_file(shared_ptr<LandmarkGraph> graph) {
     const set<LandmarkNode *> &nodes = graph->get_nodes();
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 

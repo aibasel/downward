@@ -1,15 +1,10 @@
 #ifndef CEGAR_CEGAR_HEURISTIC_H
 #define CEGAR_CEGAR_HEURISTIC_H
 
-#include "domain_abstracted_task.h"
-#include "utils.h"
-
 #include "../heuristic.h"
 #include "../option_parser.h"
 
 #include <memory>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 class CountdownTimer;
