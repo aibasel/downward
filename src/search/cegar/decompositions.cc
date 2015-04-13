@@ -143,7 +143,30 @@ Subtasks LandmarkDecomposition::get_subtasks() const {
     return subtasks;
 }
 
-static Decomposition *_parse(OptionParser &parser) {
+static Decomposition *_parse_goals(OptionParser &parser) {
+    parser.add_option<AbstractTask *>(
+        "transform",
+        "Optional task transformation.",
+        "",
+        OptionFlags(false));
+    vector<string> subtask_orders;
+    subtask_orders.push_back("ORIGINAL");
+    subtask_orders.push_back("MIXED");
+    subtask_orders.push_back("HADD_UP");
+    subtask_orders.push_back("HADD_DOWN");
+    parser.add_enum_option("task_order",
+                           subtask_orders,
+                           "order in which the subtasks are considered",
+                           "HADD_DOWN");
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return 0;
+    else
+        return new GoalDecomposition(opts);
+}
+
+static Decomposition *_parse_landmarks(OptionParser &parser) {
     parser.add_option<AbstractTask *>(
         "transform",
         "Optional task transformation.",
@@ -168,5 +191,6 @@ static Decomposition *_parse(OptionParser &parser) {
         return new LandmarkDecomposition(opts);
 }
 
-static Plugin<Decomposition> _plugin("landmarks", _parse);
+static Plugin<Decomposition> _plugin_goals("goals", _parse_goals);
+static Plugin<Decomposition> _plugin_landmarks("landmarks", _parse_landmarks);
 }
