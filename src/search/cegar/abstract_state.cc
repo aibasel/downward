@@ -1,16 +1,14 @@
 #include "abstract_state.h"
 
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../globals.h"
+#include "split_tree.h"
+#include "utils.h"
+
 #include "../task_proxy.h"
 
 #include <algorithm>
 #include <cassert>
 #include <sstream>
 #include <unordered_set>
-#include <utility>
-#include <vector>
 
 using namespace std;
 
@@ -231,5 +229,15 @@ bool AbstractState::is_abstraction_of(const State &conc_state) const {
 
 bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     return values.abstracts(other.values);
+}
+
+void AbstractState::set_h(int dist) {
+    assert(node);
+    node->set_h(dist);
+}
+
+int AbstractState::get_h() const {
+    assert(node);
+    return node->get_h();
 }
 }
