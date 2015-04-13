@@ -150,7 +150,7 @@ static Heuristic *_parse(OptionParser &parser) {
                            pick_strategies,
                            "how to pick the next unsatisfied condition",
                            "MAX_REFINED");
-    parser.add_option<int>("max_abstractions", "max number of abstractions to build", "infinity");
+    parser.add_option<int>("copies", "max number of abstractions to build", "infinity");
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("use_astar", "use A* for finding the *single* next solution", "true");
     parser.add_option<bool>("use_general_costs", "allow negative costs in cost-partitioning", "true");

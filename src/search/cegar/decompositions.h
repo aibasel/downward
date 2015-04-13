@@ -42,7 +42,7 @@ public:
 
 
 class NoDecomposition : public Decomposition {
-    int max_abstractions;
+    int copies;
 
 public:
     explicit NoDecomposition(const Options &options);
