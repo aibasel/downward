@@ -23,6 +23,7 @@ namespace cegar {
 CegarHeuristic::CegarHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
+      decompositions(opts.get_list<Decomposition *>("decompositions")),
       max_states(options.get<int>("max_states")),
       timer(new CountdownTimer(options.get<double>("max_time"))),
       num_states(0) {
@@ -61,6 +62,7 @@ shared_ptr<AbstractTask> CegarHeuristic::get_remaining_costs_task(shared_ptr<Abs
 void CegarHeuristic::build_abstractions(DecompositionStrategy decomposition) {
     Options decomposition_opts(options);
     decomposition_opts.set<TaskProxy *>("task_proxy", task);
+    decomposition_opts.set<int>("task_order", static_cast<int>(TaskOrder::HADD_DOWN));
     Subtasks subtasks;
     if (decomposition == DecompositionStrategy::LANDMARKS) {
         subtasks = LandmarkDecomposition(decomposition_opts).get_subtasks();
@@ -156,6 +158,7 @@ int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.add_list_option<Decomposition *>("decompositions", "Task decompositions", "[landmarks]");
     parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
     parser.add_option<double>("max_time", "maximum time in seconds for building abstractions", "900");
     vector<string> pick_strategies;
@@ -170,15 +173,6 @@ static Heuristic *_parse(OptionParser &parser) {
                            pick_strategies,
                            "how to pick the next unsatisfied condition",
                            "MAX_REFINED");
-    vector<string> task_order_strategies;
-    task_order_strategies.push_back("ORIGINAL");
-    task_order_strategies.push_back("MIXED");
-    task_order_strategies.push_back("HADD_UP");
-    task_order_strategies.push_back("HADD_DOWN");
-    parser.add_enum_option("task_order",
-                           task_order_strategies,
-                           "order in which the goals are refined for",
-                           "HADD_DOWN");
     vector<string> decompositions;
     decompositions.push_back("NONE");
     decompositions.push_back("LANDMARKS");
