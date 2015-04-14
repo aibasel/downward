@@ -34,7 +34,7 @@ shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task) {
     return additive_heuristic;
 }
 
-bool operator_applicable(OperatorProxy op, const unordered_set<FactProxy> &facts) {
+static bool operator_applicable(OperatorProxy op, const unordered_set<FactProxy> &facts) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (facts.count(precondition) == 0)
             return false;
@@ -42,7 +42,7 @@ bool operator_applicable(OperatorProxy op, const unordered_set<FactProxy> &facts
     return true;
 }
 
-bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
+static bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
     for (EffectProxy effect : op.get_effects()) {
         if (effect.get_fact() == fact)
             return true;
@@ -50,7 +50,7 @@ bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
     return false;
 }
 
-unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy last_fact) {
+static unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy last_fact) {
     unordered_set<FactProxy> pb_facts;
 
     // Add facts from initial state.
@@ -105,28 +105,22 @@ int get_post(OperatorProxy op, int var_id) {
     return get_pre(op, var_id);
 }
 
-void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws *flaws) {
-    assert(flaws->empty());
+void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws &flaws) {
+    assert(flaws.empty());
     for (FactProxy precondition : op.get_preconditions()) {
         VariableProxy var = precondition.get_variable();
-        if (state[var] != precondition) {
-            vector<int> wanted;
-            wanted.push_back(precondition.get_value());
-            flaws->push_back(make_pair(var.get_id(), wanted));
-        }
+        if (state[var] != precondition)
+            flaws.emplace_back(var.get_id(), vector<int> {precondition.get_value()});
     }
-    assert(flaws->empty() == is_applicable(op, state));
+    assert(flaws.empty() == is_applicable(op, state));
 }
 
-void get_unmet_goals(GoalsProxy goals, const State &state, Flaws *flaws) {
-    assert(flaws->empty());
+void get_unmet_goals(GoalsProxy goals, const State &state, Flaws &flaws) {
+    assert(flaws.empty());
     for (FactProxy goal : goals) {
         VariableProxy var = goal.get_variable();
-        if (state[var] != goal) {
-            vector<int> wanted;
-            wanted.push_back(goal.get_value());
-            flaws->push_back(make_pair(var.get_id(), wanted));
-        }
+        if (state[var] != goal)
+            flaws.emplace_back(var.get_id(), vector<int> {goal.get_value()});
     }
 }
 

@@ -261,26 +261,26 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             continue;
         if (is_goal(abs_state)) {
             if (is_goal_state(task_proxy, conc_state)) {
-                // We found a valid concrete solution.
+                // We found a concrete solution.
                 return true;
             } else {
                 // Get unmet goals and refine the last state.
                 if (DEBUG)
                     cout << "      Goal test failed." << endl;
-                unmet_goals++;
-                get_unmet_goals(task_proxy.get_goals(), conc_state, &states_to_flaws[abs_state]);
+                ++unmet_goals;
+                get_unmet_goals(task_proxy.get_goals(), conc_state, flaws);
                 continue;
             }
         }
-        Arcs &arcs_out = abs_state->get_arcs_out();
-        for (auto &arc : arcs_out) {
+        for (auto &arc : abs_state->get_arcs_out()) {
             OperatorProxy op = arc.first;
             AbstractState *next_abs = arc.second;
             assert(!use_astar || solution_forward.count(abs_state) == 1);
             if (use_astar && solution_forward.at(abs_state) != arc)
+                // Arc is not part of the path we found.
                 continue;
             if (next_abs->get_h() + op.get_cost() != abs_state->get_h())
-                // Operator is not part of an optimal path.
+                // Arc is not part of an optimal path.
                 continue;
             if (is_applicable(op, conc_state)) {
                 if (DEBUG)
@@ -306,7 +306,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 if (DEBUG)
                     cout << "      Operator not applicable: " << op.get_name() << endl;
                 ++unmet_preconditions;
-                get_unmet_preconditions(op, conc_state, &flaws);
+                get_unmet_preconditions(op, conc_state, flaws);
             }
         }
     }
@@ -315,7 +315,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         if (!may_keep_refining())
             break;
         AbstractState *state = state_and_flaws.first;
-        Flaws &flaws = state_and_flaws.second;
+        const Flaws &flaws = state_and_flaws.second;
         if (!flaws.empty()) {
             break_solution(state, flaws);
             ++broken_solutions;
