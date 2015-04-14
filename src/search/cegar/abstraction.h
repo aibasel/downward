@@ -1,7 +1,7 @@
 #ifndef CEGAR_ABSTRACTION_H
 #define CEGAR_ABSTRACTION_H
 
-#include "abstract_state.h"
+#include "abstract_state.h" // TODO: Remove.
 #include "flaw_selector.h"
 #include "split_tree.h"
 
@@ -28,16 +28,15 @@ using AbstractStates = std::unordered_set<AbstractState *>;
 const int STATES_LOG_STEP = 1000;
 
 class Abstraction {
-private:
     const TaskProxy task_proxy;
     const bool do_separate_unreachable_facts;
 
     // Strategy for picking the next flaw in case of multiple possibilities.
     FlawSelector flaw_selector;
 
-    int max_states;
-    bool use_astar;
-    bool use_general_costs;
+    const int max_states;
+    const bool use_astar;
+    const bool use_general_costs;
 
     // Limit the time for building the abstraction.
     CountdownTimer timer;
