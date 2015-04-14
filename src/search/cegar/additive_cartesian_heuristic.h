@@ -14,7 +14,7 @@ class GlobalState;
 namespace cegar {
 class CartesianHeuristic;
 
-class CegarHeuristic : public Heuristic {
+class AdditiveCartesianHeuristic : public Heuristic {
     const Options options;
     std::vector<Decomposition *> decompositions;
     int max_states;
@@ -32,8 +32,8 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state);
 
 public:
-    explicit CegarHeuristic(const Options &options);
-    ~CegarHeuristic() = default;
+    explicit AdditiveCartesianHeuristic(const Options &options);
+    ~AdditiveCartesianHeuristic() = default;
 };
 }
 
