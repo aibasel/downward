@@ -59,7 +59,7 @@ static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return shared_ptr<AbstractTask>(new CostAdaptedTask(opts));
+        return make_shared<CostAdaptedTask>(opts);
 }
 
 static PluginShared<AbstractTask> _plugin("adapt_costs", _parse);
