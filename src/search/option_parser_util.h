@@ -265,7 +265,7 @@ struct TypeNamer<ShrinkStrategy *> {
 };
 
 template <>
-struct TypeNamer<AbstractTask *> {
+struct TypeNamer<std::shared_ptr<AbstractTask>> {
     static std::string name() {
         return "AbstractTask";
     }

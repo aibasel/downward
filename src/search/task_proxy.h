@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -118,11 +119,11 @@ inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
 
 
 class FactProxy {
-    const AbstractTask &task;
+    std::shared_ptr<AbstractTask> task;
     int var_id;
     int value;
 public:
-    FactProxy(const AbstractTask &task, int var_id, int value);
+    FactProxy(std::shared_ptr<AbstractTask> task, int var_id, int value);
     ~FactProxy() = default;
 
     VariableProxy get_variable() const;
@@ -132,7 +133,7 @@ public:
     }
 
     const std::string &get_name() const {
-        return task.get_fact_name(var_id, value);
+        return task->get_fact_name(var_id, value);
     }
 
     bool operator==(FactProxy const &other) const {
@@ -146,11 +147,11 @@ public:
 
 
 class FactsProxyIterator {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
     int var_id;
     int value;
 public:
-    FactsProxyIterator(const AbstractTask &task, int var_id, int value)
+    FactsProxyIterator(const std::shared_ptr<AbstractTask> task, int var_id, int value)
         : task(task), var_id(var_id), value(value) {}
     ~FactsProxyIterator() = default;
 
@@ -159,8 +160,8 @@ public:
     }
 
     FactsProxyIterator &operator++() {
-        assert(var_id < task.get_num_variables());
-        int num_facts = task.get_variable_domain_size(var_id);
+        assert(var_id < task->get_num_variables());
+        int num_facts = task->get_variable_domain_size(var_id);
         assert(value < num_facts);
         ++value;
         if (value == num_facts) {
@@ -181,14 +182,14 @@ public:
 
 
 /*
-  Proxy class for the collection of all facts of a task.
+  Proxy class for the collection of all facts of a task->
 
   We don't implement size() because it would not be constant-time.
 */
 class FactsProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
 public:
-    explicit FactsProxy(const AbstractTask &task)
+    explicit FactsProxy(const std::shared_ptr<AbstractTask> task)
         : task(task) {}
     ~FactsProxy() = default;
 
@@ -197,17 +198,17 @@ public:
     }
 
     FactsProxyIterator end() const {
-        return FactsProxyIterator(task, task.get_num_variables(), 0);
+        return FactsProxyIterator(task, task->get_num_variables(), 0);
     }
 };
 
 
 class ConditionsProxy {
 protected:
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
 public:
     using ItemType = FactProxy;
-    explicit ConditionsProxy(const AbstractTask &task)
+    explicit ConditionsProxy(const std::shared_ptr<AbstractTask> task)
         : task(task) {}
     virtual ~ConditionsProxy() = default;
 
@@ -221,10 +222,10 @@ public:
 
 
 class VariableProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
     int id;
 public:
-    VariableProxy(const AbstractTask &task, int id)
+    VariableProxy(const std::shared_ptr<AbstractTask> task, int id)
         : task(task), id(id) {}
     ~VariableProxy() = default;
 
@@ -233,11 +234,11 @@ public:
     }
 
     const std::string &get_name() const {
-        return task.get_variable_name(id);
+        return task->get_variable_name(id);
     }
 
     int get_domain_size() const {
-        return task.get_variable_domain_size(id);
+        return task->get_variable_domain_size(id);
     }
 
     FactProxy get_fact(int index) const {
@@ -248,15 +249,15 @@ public:
 
 
 class VariablesProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
 public:
     using ItemType = VariableProxy;
-    explicit VariablesProxy(const AbstractTask &task)
+    explicit VariablesProxy(const std::shared_ptr<AbstractTask> task)
         : task(task) {}
     ~VariablesProxy() = default;
 
     std::size_t size() const {
-        return task.get_num_variables();
+        return task->get_num_variables();
     }
 
     VariableProxy operator[](std::size_t index) const {
@@ -274,18 +275,18 @@ class PreconditionsProxy : public ConditionsProxy {
     int op_index;
     bool is_axiom;
 public:
-    PreconditionsProxy(const AbstractTask &task, int op_index, bool is_axiom)
+    PreconditionsProxy(const std::shared_ptr<AbstractTask> task, int op_index, bool is_axiom)
         : ConditionsProxy(task), op_index(op_index), is_axiom(is_axiom) {}
     ~PreconditionsProxy() = default;
 
     std::size_t size() const override {
-        return task.get_num_operator_preconditions(op_index, is_axiom);
+        return task->get_num_operator_preconditions(op_index, is_axiom);
     }
 
     FactProxy operator[](std::size_t fact_index) const override {
         assert(fact_index < size());
         std::pair<int, int> fact =
-            task.get_operator_precondition(op_index, fact_index, is_axiom);
+            task->get_operator_precondition(op_index, fact_index, is_axiom);
         return FactProxy(task, fact.first, fact.second);
     }
 };
@@ -297,30 +298,30 @@ class EffectConditionsProxy : public ConditionsProxy {
     bool is_axiom;
 public:
     EffectConditionsProxy(
-        const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
+        const std::shared_ptr<AbstractTask> task, int op_index, int eff_index, bool is_axiom)
         : ConditionsProxy(task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
     ~EffectConditionsProxy() = default;
 
     std::size_t size() const override {
-        return task.get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
+        return task->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
 
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
         std::pair<int, int> fact =
-            task.get_operator_effect_condition(op_index, eff_index, index, is_axiom);
+            task->get_operator_effect_condition(op_index, eff_index, index, is_axiom);
         return FactProxy(task, fact.first, fact.second);
     }
 };
 
 
 class EffectProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
     int op_index;
     int eff_index;
     bool is_axiom;
 public:
-    EffectProxy(const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
+    EffectProxy(const std::shared_ptr<AbstractTask> task, int op_index, int eff_index, bool is_axiom)
         : task(task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
     ~EffectProxy() = default;
 
@@ -330,24 +331,24 @@ public:
 
     FactProxy get_fact() const {
         std::pair<int, int> fact =
-            task.get_operator_effect(op_index, eff_index, is_axiom);
+            task->get_operator_effect(op_index, eff_index, is_axiom);
         return FactProxy(task, fact.first, fact.second);
     }
 };
 
 
 class EffectsProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
     int op_index;
     bool is_axiom;
 public:
     using ItemType = EffectProxy;
-    EffectsProxy(const AbstractTask &task, int op_index, bool is_axiom)
+    EffectsProxy(const std::shared_ptr<AbstractTask> task, int op_index, bool is_axiom)
         : task(task), op_index(op_index), is_axiom(is_axiom) {}
     ~EffectsProxy() = default;
 
     std::size_t size() const {
-        return task.get_num_operator_effects(op_index, is_axiom);
+        return task->get_num_operator_effects(op_index, is_axiom);
     }
 
     EffectProxy operator[](std::size_t eff_index) const {
@@ -358,11 +359,11 @@ public:
 
 
 class OperatorProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
     int index;
     bool is_an_axiom;
 public:
-    OperatorProxy(const AbstractTask &task, int index, bool is_axiom)
+    OperatorProxy(const std::shared_ptr<AbstractTask> task, int index, bool is_axiom)
         : task(task), index(index), is_an_axiom(is_axiom) {}
     ~OperatorProxy() = default;
 
@@ -375,7 +376,7 @@ public:
     }
 
     int get_cost() const {
-        return task.get_operator_cost(index, is_an_axiom);
+        return task->get_operator_cost(index, is_an_axiom);
     }
 
     bool is_axiom() const {
@@ -383,7 +384,7 @@ public:
     }
 
     const std::string &get_name() const {
-        return task.get_operator_name(index, is_an_axiom);
+        return task->get_operator_name(index, is_an_axiom);
     }
 
     int get_id() const {
@@ -391,21 +392,21 @@ public:
     }
 
     const GlobalOperator *get_global_operator() const {
-        return task.get_global_operator(index, is_an_axiom);
+        return task->get_global_operator(index, is_an_axiom);
     }
 };
 
 
 class OperatorsProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
 public:
     using ItemType = OperatorProxy;
-    explicit OperatorsProxy(const AbstractTask &task)
+    explicit OperatorsProxy(const std::shared_ptr<AbstractTask> task)
         : task(task) {}
     ~OperatorsProxy() = default;
 
     std::size_t size() const {
-        return task.get_num_operators();
+        return task->get_num_operators();
     }
 
     bool empty() const {
@@ -420,15 +421,15 @@ public:
 
 
 class AxiomsProxy {
-    const AbstractTask &task;
+    const std::shared_ptr<AbstractTask> task;
 public:
     using ItemType = OperatorProxy;
-    explicit AxiomsProxy(const AbstractTask &task)
+    explicit AxiomsProxy(const std::shared_ptr<AbstractTask> task)
         : task(task) {}
     ~AxiomsProxy() = default;
 
     std::size_t size() const {
-        return task.get_num_axioms();
+        return task->get_num_axioms();
     }
 
     bool empty() const {
@@ -444,36 +445,36 @@ public:
 
 class GoalsProxy : public ConditionsProxy {
 public:
-    explicit GoalsProxy(const AbstractTask &task)
+    explicit GoalsProxy(const std::shared_ptr<AbstractTask> task)
         : ConditionsProxy(task) {}
     ~GoalsProxy() = default;
 
     std::size_t size() const override {
-        return task.get_num_goals();
+        return task->get_num_goals();
     }
 
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
-        std::pair<int, int> fact = task.get_goal_fact(index);
+        std::pair<int, int> fact = task->get_goal_fact(index);
         return FactProxy(task, fact.first, fact.second);
     }
 };
 
 
 class State {
-    const AbstractTask *task;
+    const std::shared_ptr<AbstractTask> task;
     const std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    State(const AbstractTask &task, std::vector<int> && values)
-        : task(&task), values(values) {
+    State(std::shared_ptr<AbstractTask> task, std::vector<int> && values)
+        : task(task), values(values) {
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
 
+    //TODO: can this now be removed as we dont have to set a pointer to 0.
     State(State && other)
-        : task(other.task), values(std::move(other.values)) {
-        other.task = 0;
+        : task(std::move(other.task)), values(std::move(other.values)) {
     }
 
     std::size_t size() const {
@@ -482,7 +483,7 @@ public:
 
     FactProxy operator[](std::size_t var_id) const {
         assert(var_id < size());
-        return FactProxy(*task, var_id, values[var_id]);
+        return FactProxy(task, var_id, values[var_id]);
     }
 
     FactProxy operator[](VariableProxy var) const {
@@ -492,41 +493,41 @@ public:
 
 
 class TaskProxy {
-    const AbstractTask *task;
+    const std::shared_ptr<AbstractTask> task;
 public:
-    explicit TaskProxy(const AbstractTask *task)
+    explicit TaskProxy(const std::shared_ptr<AbstractTask> task)
         : task(task) {}
     ~TaskProxy() = default;
 
     VariablesProxy get_variables() const {
-        return VariablesProxy(*task);
+        return VariablesProxy(task);
     }
 
     OperatorsProxy get_operators() const {
-        return OperatorsProxy(*task);
+        return OperatorsProxy(task);
     }
 
     AxiomsProxy get_axioms() const {
-        return AxiomsProxy(*task);
+        return AxiomsProxy(task);
     }
 
     GoalsProxy get_goals() const {
-        return GoalsProxy(*task);
+        return GoalsProxy(task);
     }
 
     State get_initial_state() const {
-        return State(*task, task->get_initial_state_values());
+        return State(task, task->get_initial_state_values());
     }
 
     State convert_global_state(const GlobalState &global_state) const {
-        return State(*task, task->get_state_values(global_state));
+        return State(task, task->get_state_values(global_state));
     }
 };
 
 
-inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
+inline FactProxy::FactProxy(std::shared_ptr<AbstractTask> task, int var_id, int value)
     : task(task), var_id(var_id), value(value) {
-    assert(var_id >= 0 && var_id < task.get_num_variables());
+    assert(var_id >= 0 && var_id < task->get_num_variables());
     assert(value >= 0 && value < get_variable().get_domain_size());
 }
 
