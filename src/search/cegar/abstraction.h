@@ -38,7 +38,6 @@ private:
     int max_states;
     bool use_astar;
     bool use_general_costs;
-    bool write_graphs;
 
     // Limit the time for building the abstraction.
     CountdownTimer timer;
@@ -97,9 +96,6 @@ private:
     void find_solution() const;
 
     void print_statistics();
-
-    // Testing.
-    void write_dot_file(int num);
 
 public:
     explicit Abstraction(const Options &opts);

@@ -108,7 +108,7 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
 
     if (DEBUG)
         dump_landmark_graph(landmark_graph);
-    if (opts.get<bool>("write_graphs"))
+    if (opts.get<bool>("write_graph"))
         write_landmark_graph_dot_file(landmark_graph);
 }
 
@@ -178,7 +178,7 @@ static Decomposition *_parse_goals(OptionParser &parser) {
 static Decomposition *_parse_landmarks(OptionParser &parser) {
     add_common_fact_decomposition_options(parser);
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
-    parser.add_option<bool>("write_graphs", "write landmark graph dot file", "false");
+    parser.add_option<bool>("write_graph", "write landmark graph dot file", "false");
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;

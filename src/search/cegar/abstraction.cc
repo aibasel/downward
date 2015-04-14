@@ -27,7 +27,6 @@ Abstraction::Abstraction(const Options &opts)
       max_states(opts.get<int>("max_states")),
       use_astar(opts.get<bool>("use_astar")),
       use_general_costs(opts.get<bool>("use_general_costs")),
-      write_graphs(opts.get<bool>("write_graphs")),
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
       init(nullptr),
@@ -102,10 +101,6 @@ bool Abstraction::may_keep_refining() const {
 
 void Abstraction::build() {
     create_initial_abstraction();
-    if (write_graphs) {
-        assert(get_num_states() == 1);
-        write_dot_file(get_num_states());
-    }
     bool found_conc_solution = false;
     while (may_keep_refining()) {
         if (use_astar) {
@@ -164,8 +159,6 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     if (num_states % STATES_LOG_STEP == 0)
         cout << "Abstract states: " << num_states << "/"
              << max_states << endl;
-    if (write_graphs)
-        write_dot_file(num_states);
 
     delete state;
 }
@@ -392,42 +385,6 @@ void Abstraction::update_h_values() const {
 
 int Abstraction::get_init_h() const {
     return init->get_h();
-}
-
-void Abstraction::write_dot_file(int num) {
-    bool draw_loops = false;
-    ostringstream oss;
-    oss << "graph-" << setw(3) << setfill('0') << num << ".dot";
-    string filename = oss.str();
-    ofstream dotfile(filename.c_str());
-    if (!dotfile.is_open()) {
-        cout << "File " << filename << " could not be opened" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    dotfile << "digraph abstract {" << endl;
-    for (AbstractState *current_state : states) {
-        Arcs &next = current_state->get_arcs_out();
-        for (auto &arc : next) {
-            OperatorProxy op = arc.first;
-            AbstractState *next_state = arc.second;
-            dotfile << current_state->str() << " -> " << next_state->str()
-                    << " [label=\"" << op.get_name() << "\"];" << endl;
-        }
-        if (draw_loops) {
-            Loops &loops = current_state->get_loops();
-            for (OperatorProxy op : loops) {
-                dotfile << current_state->str() << " -> " << current_state->str()
-                        << " [label=\"" << op.get_name() << "\"];" << endl;
-            }
-        }
-        if (current_state == init) {
-            dotfile << current_state->str() << " [color=green];" << endl;
-        } else if (is_goal(current_state)) {
-            dotfile << current_state->str() << " [color=red];" << endl;
-        }
-    }
-    dotfile << "}" << endl;
-    dotfile.close();
 }
 
 vector<int> Abstraction::get_needed_costs() {
