@@ -1,12 +1,12 @@
 #ifndef CEGAR_ABSTRACTION_H
 #define CEGAR_ABSTRACTION_H
 
+#include "abstract_search.h"
 #include "abstract_state.h" // TODO: Remove.
 #include "flaw_selector.h"
 #include "split_tree.h"
 
 #include "../countdown_timer.h"
-#include "../priority_queue.h"
 #include "../task_proxy.h"
 
 #include <limits>
@@ -23,20 +23,19 @@ namespace cegar {
 class AbstractState;
 class DomainAbstractedTask;
 
-using AbstractStates = std::unordered_set<AbstractState *>;
-
 const int STATES_LOG_STEP = 1000;
 
 class Abstraction {
     const TaskProxy task_proxy;
     const bool do_separate_unreachable_facts;
 
+    AbstractSearch abstract_search;
+
     // Strategy for picking the next flaw in case of multiple possibilities.
     FlawSelector flaw_selector;
 
     const int max_states;
     const bool use_astar;
-    const bool use_general_costs;
 
     // Limit the time for building the abstraction.
     CountdownTimer timer;
@@ -49,11 +48,6 @@ class Abstraction {
     // Abstract init and goal states.
     AbstractState *init;
     AbstractStates goals;
-
-    // Queue for A* search.
-    mutable AdaptiveQueue<AbstractState *> open_queue;
-    mutable std::unordered_map<AbstractState *, Arc> solution_backward;
-    mutable std::unordered_map<AbstractState *, Arc> solution_forward;
 
     // Statistics.
     mutable int deviations;
@@ -70,15 +64,10 @@ class Abstraction {
     // Build abstraction.
     void build();
 
-    int get_min_goal_distance() const;
     bool is_goal(AbstractState *state) const;
 
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
-
-    // A* search.
-    void reset_distances_and_solution() const;
-    void astar_search(bool forward, bool use_h, std::vector<int> *needed_costs = 0) const;
 
     // Refine states between state and init until the solution is broken.
     void break_solution(AbstractState *state, const Flaws &flaws);
@@ -89,10 +78,7 @@ class Abstraction {
     bool check_and_break_solution(State conc_state, AbstractState *abs_state);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
-    void update_h_values() const;
-
-    void extract_solution(AbstractState *goal) const;
-    void find_solution() const;
+    void update_h_values();
 
     void print_statistics();
 

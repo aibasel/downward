@@ -15,8 +15,7 @@ using namespace std;
 namespace cegar {
 AbstractState::AbstractState(const Domains &domains, Node *node)
     : domains(domains),
-      node(node),
-      distance(UNDEFINED) {
+      node(node) {
 }
 
 string AbstractState::str() const {
@@ -231,9 +230,9 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     return domains.abstracts(other.domains);
 }
 
-void AbstractState::set_h(int dist) {
+void AbstractState::set_h(int new_h) {
     assert(node);
-    node->set_h(dist);
+    node->set_h(new_h);
 }
 
 int AbstractState::get_h() const {

@@ -14,7 +14,9 @@ class Options;
 namespace cegar {
 class AbstractState;
 
+using AbstractStates = std::unordered_set<AbstractState *>;
 using Arc = std::pair<OperatorProxy, AbstractState *>;
+using Solution = std::unordered_map<AbstractState *, Arc>;
 
 class AbstractSearch {
     const TaskProxy task_proxy; // TODO: Remove and pass to get_needed_costs.
@@ -22,8 +24,8 @@ class AbstractSearch {
     bool has_found_solution;
 
     AdaptiveQueue<AbstractState *> open_queue;
-    std::unordered_map<AbstractState *, Arc> solution_backward;
-    std::unordered_map<AbstractState *, Arc> solution_forward;
+    Solution solution_backward;
+    Solution solution_forward;
 
     std::unordered_map<AbstractState *, int> g_values;
 
@@ -31,15 +33,19 @@ class AbstractSearch {
 
     void extract_solution(AbstractState *init, AbstractState *goal);
 
-    AbstractState *astar_search(bool forward, bool use_h, std::unordered_set<AbstractState *> *goals = nullptr, std::vector<int> *needed_costs = nullptr);
+    AbstractState *astar_search(
+        bool forward,
+        bool use_h,
+        AbstractStates *goals = nullptr,
+        std::vector<int> *needed_costs = nullptr);
 
 public:
     explicit AbstractSearch(const Options &opts);
     ~AbstractSearch() = default;
 
-    bool find_solution(AbstractState *init, std::unordered_set<AbstractState *> &goals);
+    bool find_solution(AbstractState *init, AbstractStates &goals);
 
-    void backwards_dijkstra(std::unordered_set<AbstractState *> goals);
+    void backwards_dijkstra(const AbstractStates goals);
 
     std::vector<int> get_needed_costs(AbstractState *init);
 
@@ -55,8 +61,11 @@ public:
         assert(found_solution());
         return solution_forward.at(state);
     }
+    Solution &get_solution() {
+        return solution_forward;
+    }
 
-    int get_g(AbstractState *state);
+    int get_g(AbstractState *state) const;
 };
 }
 
