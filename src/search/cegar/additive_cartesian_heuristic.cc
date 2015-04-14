@@ -1,4 +1,4 @@
-#include "cegar_heuristic.h"
+#include "additive_cartesian_heuristic.h"
 
 #include "abstraction.h"
 #include "cartesian_heuristic.h"
@@ -19,7 +19,7 @@
 using namespace std;
 
 namespace cegar {
-CegarHeuristic::CegarHeuristic(const Options &opts)
+AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
       decompositions(opts.get_list<Decomposition *>("decompositions")),
@@ -43,14 +43,14 @@ void reduce_remaining_costs(vector<int> &remaining_costs, const vector<int> &nee
     }
 }
 
-shared_ptr<AbstractTask> CegarHeuristic::get_remaining_costs_task(shared_ptr<AbstractTask> parent) const {
+shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(shared_ptr<AbstractTask> parent) const {
     Options opts;
     opts.set<Subtask>("transform", parent);
     opts.set<vector<int> >("operator_costs", remaining_costs);
     return make_shared<ModifiedCostsTask>(opts);
 }
 
-void CegarHeuristic::build_abstractions(const Decomposition &decomposition) {
+void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decomposition) {
     Subtasks subtasks = decomposition.get_subtasks();
 
     int rem_subtasks = subtasks.size();
@@ -93,7 +93,7 @@ void CegarHeuristic::build_abstractions(const Decomposition &decomposition) {
     }
 }
 
-void CegarHeuristic::initialize() {
+void AdditiveCartesianHeuristic::initialize() {
     Log() << "Initializing CEGAR heuristic...";
     for (Decomposition *decomposition : decompositions) {
         build_abstractions(*decomposition);
@@ -106,14 +106,14 @@ void CegarHeuristic::initialize() {
     cout << endl;
 }
 
-void CegarHeuristic::print_statistics() {
+void AdditiveCartesianHeuristic::print_statistics() {
     Log() << "Done initializing CEGAR heuristic";
     cout << "Cartesian abstractions: " << heuristics.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
     cout << "Initial h value: " << compute_heuristic(g_initial_state()) << endl;
 }
 
-int CegarHeuristic::compute_heuristic(const GlobalState &global_state) {
+int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
     int sum_h = 0;
     for (CartesianHeuristic heuristic : heuristics) {
         heuristic.evaluate(global_state);
@@ -150,7 +150,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
     else
-        return new CegarHeuristic(opts);
+        return new AdditiveCartesianHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("cegar", _parse);

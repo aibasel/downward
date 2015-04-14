@@ -161,8 +161,8 @@ HEADERS += landmarks/exploration.h \
 
 HEADERS += cegar/abstract_state.h \
            cegar/abstraction.h \
+           cegar/additive_cartesian_heuristic.h \
            cegar/cartesian_heuristic.h \
-           cegar/cegar_heuristic.h \
            cegar/decompositions.h \
            cegar/domain_abstracted_task.h \
            cegar/domains.h \
