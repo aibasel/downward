@@ -172,10 +172,13 @@ void Abstraction::reset_distances_and_solution() const {
 }
 
 void Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_costs) const {
-    bool debug = true && DEBUG;
+    if (needed_costs) {
+        assert(forward && !use_h);
+        assert(needed_costs->size() == task_proxy.get_operators().size());
+    }
     while (!open_queue.empty()) {
         pair<int, AbstractState *> top_pair = open_queue.pop();
-        int &old_f = top_pair.first;
+        int old_f = top_pair.first;
         AbstractState *state = top_pair.second;
 
         const int g = state->get_distance();
@@ -184,26 +187,16 @@ void Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
         if (use_h)
             new_f += state->get_h();
         assert(new_f <= old_f);
-        if (new_f < old_f) {
+        if (new_f < old_f)
             continue;
-        }
-        if (debug)
-            cout << endl << "Expand: " << state->str() << " g:" << g
-                 << " h:" << state->get_h() << " f:" << new_f << endl;
         if (forward && use_h && is_goal(state)) {
-            if (debug)
-                cout << "GOAL REACHED" << endl;
             extract_solution(state);
             return;
         }
         // All operators that induce self-loops need at least 0 costs.
         if (needed_costs) {
-            assert(forward);
-            assert(!use_h);
-            assert(needed_costs->size() == task_proxy.get_operators().size());
-            for (OperatorProxy op : state->get_loops()) {
+            for (OperatorProxy op : state->get_loops())
                 (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], 0);
-            }
         }
         Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
         for (auto &arc : successors) {
@@ -212,9 +205,6 @@ void Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
 
             // Collect needed operator costs for additive abstractions.
             if (needed_costs) {
-                assert(forward);
-                assert(!use_h);
-                assert(needed_costs->size() == task_proxy.get_operators().size());
                 int needed = state->get_h() - successor->get_h();
                 if (!use_general_costs)
                     needed = max(0, needed);
@@ -226,18 +216,10 @@ void Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_cos
             assert(succ_g >= 0);
 
             if (succ_g < successor->get_distance()) {
-                if (debug)
-                    cout << "  Succ: " << successor->str()
-                         << " f:" << succ_g + successor->get_h()
-                         << " g:" << succ_g
-                         << " dist:" << successor->get_distance()
-                         << " h:" << successor->get_h() << endl;
-
                 successor->set_distance(succ_g);
                 int f = succ_g;
                 if (use_h) {
                     int h = successor->get_h();
-                    // Ignore dead-end states.
                     if (h == INF)
                         continue;
                     f += h;
