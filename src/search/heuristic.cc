@@ -180,7 +180,7 @@ TaskProxy *get_task_from_options(const Options &opts) {
         Options options;
         options.set<shared_ptr<AbstractTask>>("transform", g_root_task());
         options.set<int>("cost_type", cost_type);
-        task = new TaskProxy(shared_ptr<AbstractTask>(new CostAdaptedTask(options)));
+        task = new TaskProxy(make_shared<CostAdaptedTask>(options));
     }
     return task;
 }
