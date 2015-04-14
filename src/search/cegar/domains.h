@@ -12,7 +12,7 @@ class State;
 class TaskProxy;
 
 namespace cegar {
-typedef boost::dynamic_bitset<> Bitset;
+using Bitset = boost::dynamic_bitset<>;
 
 class Domains {
     // Possible values of each variable in this state.
