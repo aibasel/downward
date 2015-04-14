@@ -24,7 +24,7 @@ void AbstractSearch::reset() {
     solution_forward.clear();
 }
 
-bool AbstractSearch::find_solution(AbstractState *init, unordered_set<AbstractState *> &goals) {
+bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
     reset();
     g_values[init] = 0;
     open_queue.push(init->get_h(), init);
@@ -36,7 +36,7 @@ bool AbstractSearch::find_solution(AbstractState *init, unordered_set<AbstractSt
     return has_found_solution;
 }
 
-void AbstractSearch::backwards_dijkstra(std::unordered_set<AbstractState *> goals) {
+void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
     reset();
     for (AbstractState *goal : goals) {
         g_values[goal] = 0;
@@ -56,13 +56,14 @@ vector<int> AbstractSearch::get_needed_costs(AbstractState *init) {
     return needed_costs;
 }
 
-int AbstractSearch::get_g(AbstractState *state) {
+int AbstractSearch::get_g(AbstractState *state) const {
     if (g_values.count(state) == 0)
         return INF;
     return g_values.at(state);
 }
 
-AbstractState *AbstractSearch::astar_search(bool forward, bool use_h, unordered_set<AbstractState *> *goals, vector<int> *needed_costs) {
+AbstractState *AbstractSearch::astar_search(
+    bool forward, bool use_h, AbstractStates *goals, vector<int> *needed_costs) {
     if (forward && use_h) {
         assert(goals);
     }
@@ -75,7 +76,7 @@ AbstractState *AbstractSearch::astar_search(bool forward, bool use_h, unordered_
         int old_f = top_pair.first;
         AbstractState *state = top_pair.second;
 
-        const int g = state->get_distance();
+        const int g = get_g(state);
         assert(0 <= g && g < INF);
         int new_f = g;
         if (use_h)
@@ -108,8 +109,8 @@ AbstractState *AbstractSearch::astar_search(bool forward, bool use_h, unordered_
             int succ_g = g + op.get_cost();
             assert(succ_g >= 0);
 
-            if (succ_g < successor->get_distance()) {
-                successor->set_distance(succ_g);
+            if (succ_g < get_g(successor)) {
+                g_values[successor] = succ_g;
                 int f = succ_g;
                 if (use_h) {
                     int h = successor->get_h();
@@ -119,6 +120,7 @@ AbstractState *AbstractSearch::astar_search(bool forward, bool use_h, unordered_
                 }
                 assert(f >= 0);
                 open_queue.push(f, successor);
+                // Work around the fact that OperatorProxy has no default constructor.
                 auto it = solution_backward.find(successor);
                 if (it != solution_backward.end())
                     solution_backward.erase(it);

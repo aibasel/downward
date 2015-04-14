@@ -23,10 +23,10 @@ using StatesToFlaws = unordered_map<AbstractState *, Flaws>;
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
       do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
+      abstract_search(opts),
       flaw_selector(task_proxy, PickFlaw(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
       use_astar(opts.get<bool>("use_astar")),
-      use_general_costs(opts.get<bool>("use_general_costs")),
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
       init(nullptr),
@@ -48,14 +48,6 @@ Abstraction::~Abstraction() {
     release_memory_padding();
     for (AbstractState *state : states)
         delete state;
-}
-
-int Abstraction::get_min_goal_distance() const {
-    int min_distance = INF;
-    for (AbstractState *goal : goals) {
-        min_distance = min(min_distance, goal->get_distance());
-    }
-    return min_distance;
 }
 
 bool Abstraction::is_goal(AbstractState *state) const {
@@ -101,17 +93,17 @@ bool Abstraction::may_keep_refining() const {
 
 void Abstraction::build() {
     create_initial_abstraction();
+    bool found_abs_solution = false;
     bool found_conc_solution = false;
     while (may_keep_refining()) {
         if (use_astar) {
-            find_solution();
+            found_abs_solution = abstract_search.find_solution(init, goals);
         } else {
             update_h_values();
+            found_abs_solution = init->get_h() != INF;
         }
-        if ((use_astar && get_min_goal_distance() == INF) ||
-            (!use_astar && init->get_h() == INF)) {
+        if (!found_abs_solution) {
             cout << "Abstract problem is unsolvable!" << endl;
-            found_conc_solution = false;
             break;
         }
         found_conc_solution = check_and_break_solution(concrete_initial_state, init);
@@ -163,80 +155,9 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     delete state;
 }
 
-void Abstraction::reset_distances_and_solution() const {
-    for (AbstractState *state : states) {
-        state->set_distance(INF);
-    }
-    solution_backward.clear();
-    solution_forward.clear();
-}
-
-void Abstraction::astar_search(bool forward, bool use_h, vector<int> *needed_costs) const {
-    if (needed_costs) {
-        assert(forward && !use_h);
-        assert(needed_costs->size() == task_proxy.get_operators().size());
-    }
-    while (!open_queue.empty()) {
-        pair<int, AbstractState *> top_pair = open_queue.pop();
-        int old_f = top_pair.first;
-        AbstractState *state = top_pair.second;
-
-        const int g = state->get_distance();
-        assert(0 <= g && g < INF);
-        int new_f = g;
-        if (use_h)
-            new_f += state->get_h();
-        assert(new_f <= old_f);
-        if (new_f < old_f)
-            continue;
-        if (forward && use_h && is_goal(state)) {
-            extract_solution(state);
-            return;
-        }
-        // All operators that induce self-loops need at least 0 costs.
-        if (needed_costs) {
-            for (OperatorProxy op : state->get_loops())
-                (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], 0);
-        }
-        Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
-        for (auto &arc : successors) {
-            OperatorProxy op = arc.first;
-            AbstractState *successor = arc.second;
-
-            // Collect needed operator costs for additive abstractions.
-            if (needed_costs) {
-                int needed = state->get_h() - successor->get_h();
-                if (!use_general_costs)
-                    needed = max(0, needed);
-                (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], needed);
-            }
-
-            assert(op.get_cost() >= 0);
-            int succ_g = g + op.get_cost();
-            assert(succ_g >= 0);
-
-            if (succ_g < successor->get_distance()) {
-                successor->set_distance(succ_g);
-                int f = succ_g;
-                if (use_h) {
-                    int h = successor->get_h();
-                    if (h == INF)
-                        continue;
-                    f += h;
-                }
-                assert(f >= 0);
-                open_queue.push(f, successor);
-                auto it = solution_backward.find(successor);
-                if (it != solution_backward.end())
-                    solution_backward.erase(it);
-                solution_backward.insert(make_pair(successor, Arc(op, state)));
-            }
-        }
-    }
-}
-
 bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
     assert(abs_state->is_abstraction_of(conc_state));
+    const Solution &solution = abstract_search.get_solution();
 
     if (DEBUG)
         cout << "Check solution." << endl << "Start at       " << abs_state->str()
@@ -275,8 +196,8 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         for (auto &arc : abs_state->get_arcs_out()) {
             OperatorProxy op = arc.first;
             AbstractState *next_abs = arc.second;
-            assert(!use_astar || solution_forward.count(abs_state) == 1);
-            if (use_astar && solution_forward.at(abs_state) != arc)
+            assert(!use_astar || solution.count(abs_state) == 1);
+            if (use_astar && solution.at(abs_state) != arc)
                 // Arc is not part of the path we found.
                 continue;
             if (next_abs->get_h() + op.get_cost() != abs_state->get_h())
@@ -328,40 +249,10 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     return false;
 }
 
-void Abstraction::extract_solution(AbstractState *goal) const {
-    assert(get_min_goal_distance() != INF);
-    AbstractState *current = goal;
-    while (current != init) {
-        Arc &prev_arc = solution_backward.at(current);
-        OperatorProxy prev_op = prev_arc.first;
-        AbstractState *prev_state = prev_arc.second;
-        assert(solution_forward.count(prev_state) == 0);
-        solution_forward.insert(make_pair(prev_state, Arc(prev_op, current)));
-        prev_state->set_h(current->get_h() + prev_op.get_cost());
-        assert(prev_state != current);
-        current = prev_state;
-    }
-    assert(init->get_h() == get_min_goal_distance());
-}
-
-void Abstraction::find_solution() const {
-    reset_distances_and_solution();
-    open_queue.clear();
-    init->set_distance(0);
-    open_queue.push(init->get_h(), init);
-    astar_search(true, true);
-}
-
-void Abstraction::update_h_values() const {
-    reset_distances_and_solution();
-    open_queue.clear();
-    for (AbstractState *goal : goals) {
-        goal->set_distance(0);
-        open_queue.push(0, goal);
-    }
-    astar_search(false, false);
+void Abstraction::update_h_values() {
+    abstract_search.backwards_dijkstra(goals);
     for (AbstractState *state : states) {
-        state->set_h(state->get_distance());
+        state->set_h(abstract_search.get_g(state));
     }
 }
 
@@ -370,15 +261,7 @@ int Abstraction::get_init_h() const {
 }
 
 vector<int> Abstraction::get_needed_costs() {
-    vector<int> needed_costs(task_proxy.get_operators().size(), -MAX_COST_VALUE);
-    // Traverse abstraction and remember the minimum cost we need to keep for
-    // each operator in order not to decrease any heuristic values.
-    open_queue.clear();
-    reset_distances_and_solution();
-    init->set_distance(0);
-    open_queue.push(0, init);
-    astar_search(true, false, &needed_costs);
-    return needed_costs;
+    return abstract_search.get_needed_costs(init);
 }
 
 void Abstraction::print_statistics() {

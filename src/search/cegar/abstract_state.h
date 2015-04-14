@@ -30,9 +30,6 @@ private:
     // Self-loops.
     Loops loops;
 
-    // Incumbent distance to first expanded node in backwards and forward search.
-    int distance;
-
     void remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other);
     void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
@@ -69,10 +66,7 @@ public:
     bool is_abstraction_of(const AbstractState &abs_state) const;
     bool is_abstraction_of_goal() const;
 
-    // A* search.
-    void set_distance(int dist) {distance = dist; }
-    int get_distance() const {return distance; }
-    void set_h(int dist);
+    void set_h(int new_h);
     int get_h() const;
 
     Arcs &get_arcs_out() {return arcs_out; }
