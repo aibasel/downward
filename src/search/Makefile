@@ -159,7 +159,8 @@ HEADERS += landmarks/exploration.h \
 #           pdbs/util.h \
 #           pdbs/zero_one_pdbs_heuristic.h \
 
-HEADERS += cegar/abstract_state.h \
+HEADERS += cegar/abstract_search.h \
+           cegar/abstract_state.h \
            cegar/abstraction.h \
            cegar/additive_cartesian_heuristic.h \
            cegar/cartesian_heuristic.h \
