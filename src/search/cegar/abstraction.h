@@ -23,7 +23,7 @@ namespace cegar {
 class AbstractState;
 class DomainAbstractedTask;
 
-typedef std::unordered_set<AbstractState *> AbstractStates;
+using AbstractStates = std::unordered_set<AbstractState *>;
 
 const int STATES_LOG_STEP = 1000;
 

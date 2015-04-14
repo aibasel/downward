@@ -18,7 +18,7 @@
 using namespace std;
 
 namespace cegar {
-typedef unordered_map<AbstractState *, Flaws> StatesToFlaws;
+using StatesToFlaws = unordered_map<AbstractState *, Flaws>;
 
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
