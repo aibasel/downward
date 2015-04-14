@@ -43,9 +43,9 @@ int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
 
-void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws *flaws);
+void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws &flaws);
 
-void get_unmet_goals(GoalsProxy goals, const State &state, Flaws *flaws);
+void get_unmet_goals(GoalsProxy goals, const State &state, Flaws &flaws);
 
 void reserve_memory_padding();
 void release_memory_padding();
