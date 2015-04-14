@@ -15,25 +15,25 @@
 
 template <class T>
 class Plugin {
-    Plugin(const Plugin<T> &copy);
 public:
     Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
         Registry<T *>::
         instance()->register_object(key, factory);
     }
-    ~Plugin() {}
+    ~Plugin() = default;
+    Plugin(const Plugin<T> &other) = delete;
 };
 
 
 template <class T>
 class PluginShared {
-    PluginShared(const PluginShared<T> &copy);
 public:
     PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
         Registry<std::shared_ptr<T>>::
         instance()->register_object(key, factory);
     }
-    ~PluginShared() {}
+    ~PluginShared() = default;
+    PluginShared(const PluginShared<T> &other) = delete;
 };
 
 template <class Entry>
