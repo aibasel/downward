@@ -140,7 +140,7 @@ public:
         return instance_;
     }
 
-    void predefine(std::string k, T obj) {
+    void predefine(std::string k, std::shared_ptr<T> obj) {
         transform(k.begin(), k.end(), k.begin(), ::tolower);
         predefined[k] = obj;
     }
@@ -149,7 +149,7 @@ public:
         return predefined.find(k) != predefined.end();
     }
 
-    T get(std::string k) {
+    std::shared_ptr<T> get(std::string k) {
         return predefined[k];
     }
 
@@ -157,7 +157,7 @@ private:
     Predefinitions<T>() {
     }
     static Predefinitions<T> *instance_;
-    std::map<std::string, T> predefined;
+    std::map<std::string, std::shared_ptr<T>> predefined;
 };
 
 template <class T>
