@@ -11,6 +11,7 @@
 #include <sstream>
 #include <tree.hh>
 #include <tree_util.hh>
+#include <type_traits>
 #include <utility>
 #include <boost/any.hpp>
 
@@ -124,6 +125,7 @@ template <class T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
+        static_assert(!std::is_pointer<T>::value,"Predefinitions does not support pointer.");
         static Predefinitions<T> instance_;
         return &instance_;
     }
