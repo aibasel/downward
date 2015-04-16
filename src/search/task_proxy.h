@@ -471,9 +471,9 @@ public:
     }
     ~State() = default;
 
-    //TODO: can this now be removed as we dont have to set a pointer to 0.
     State(State && other)
-        : task(std::move(other.task)), values(std::move(other.values)) {
+        : task(other.task), values(std::move(other.values)) {
+        other.task = nullptr;
     }
 
     std::size_t size() const {
