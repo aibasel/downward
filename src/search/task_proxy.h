@@ -5,7 +5,6 @@
 
 #include <cassert>
 #include <cstddef>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -493,10 +492,10 @@ public:
 
 
 class TaskProxy {
-    const std::shared_ptr<AbstractTask> task;
+    const AbstractTask *task;
 public:
-    explicit TaskProxy(const std::shared_ptr<AbstractTask> task)
-        : task(task) {}
+    explicit TaskProxy(const AbstractTask &task)
+        : task(&task) {}
     ~TaskProxy() = default;
 
     VariablesProxy get_variables() const {
