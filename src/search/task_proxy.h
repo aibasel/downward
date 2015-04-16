@@ -523,13 +523,11 @@ public:
     }
 };
 
-
 inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
     : task(&task), var_id(var_id), value(value) {
-    assert(var_id >= 0 && var_id < task->get_num_variables());
+    assert(var_id >= 0 && var_id < task.get_num_variables());
     assert(value >= 0 && value < get_variable().get_domain_size());
 }
-
 
 inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, var_id);
