@@ -409,7 +409,7 @@ LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
 //TODO find a general way to handle parsing of superclasses (see also issue28)
 ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
+    if (Predefinitions<Heuristic>::instance()->contains(pt->value)) {
         return (ScalarEvaluator *)
                Predefinitions<Heuristic>::instance()->get(pt->value).get();
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
