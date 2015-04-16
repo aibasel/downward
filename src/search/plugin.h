@@ -24,6 +24,7 @@ public:
 };
 
 
+// TODO: This class will replace Plugin once we no longer need to support raw pointers.
 template <class T>
 class PluginShared {
 public:

@@ -350,6 +350,7 @@ static T *lookup_in_registry(OptionParser &p) {
     return 0;
 }
 
+// TODO: This function will replace lookup_in_registry() once we no longer need to support raw pointers.
 template <class T>
 static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();

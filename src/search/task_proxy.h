@@ -182,7 +182,7 @@ public:
 
 
 /*
-  Proxy class for the collection of all facts of a task
+  Proxy class for the collection of all facts of a task.
 
   We don't implement size() because it would not be constant-time.
 */
