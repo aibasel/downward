@@ -105,10 +105,8 @@ public:
 
     std::vector<std::string> get_keys() {
         std::vector<std::string> keys;
-        for (typename std::map<std::string, Factory>::iterator it =
-                 registered.begin();
-             it != registered.end(); ++it) {
-            keys.push_back(it->first);
+        for (auto it : registered) {
+            keys.push_back(it.first);
         }
         return keys;
     }
