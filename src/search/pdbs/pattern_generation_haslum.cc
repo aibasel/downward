@@ -87,7 +87,7 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &
     for (size_t i = 0; i < new_candidates.size(); ++i) {
         if (generated_patterns.count(new_candidates[i]) == 0) {
             Options opts;
-            opts.set<shared_ptr<TaskProxy> >("task_proxy", task);
+            opts.set<shared_ptr<AbstractTask> >("transform", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<int> >("pattern", new_candidates[i]);
             candidate_pdbs.push_back(new PDBHeuristic(opts, false));
@@ -345,7 +345,7 @@ void PatternGenerationHaslum::initialize() {
         initial_pattern_collection.push_back(vector<int>(1, g_goal[i].first));
     }
     Options opts;
-    opts.set<shared_ptr<TaskProxy> >("task_proxy", task);
+    opts.set<shared_ptr<AbstractTask> >("transform", task);
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);

@@ -16,6 +16,7 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : task(get_task_from_options(opts)),
+      task_proxy(dynamic_cast<TaskProxy *>(task.get())),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 }
@@ -123,7 +124,7 @@ int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    return task->convert_global_state(global_state);
+    return task_proxy->convert_global_state(global_state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
@@ -146,13 +147,8 @@ Options Heuristic::default_options() {
     return opts;
 }
 
-std::shared_ptr<TaskProxy> get_task_from_options(const Options &opts) {
-    /*
-      If the options are created by the parser, they must contain an
-      AbstractTask. If they are created internally, they must contain a
-      TaskProxy. It is an error if both are present.
-    */
-    assert(!(opts.contains("transform") && opts.contains("task_proxy")));
+std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
+    assert(!opts.contains("transform"));
     /*
       TODO: This code is only intended for the transitional period while we
       still support the "old style" of adjusting costs for the heuristics (via
@@ -171,16 +167,14 @@ std::shared_ptr<TaskProxy> get_task_from_options(const Options &opts) {
              << "but not both." << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    shared_ptr<TaskProxy> task;
-    if (opts.contains("task_proxy")) {
-        task = opts.get<shared_ptr<TaskProxy> >("task_proxy");
-    } else if (opts.contains("transform")) {
-        task = make_shared<TaskProxy>(opts.get<shared_ptr<AbstractTask> >("transform"));
+    shared_ptr<AbstractTask> task;
+    if (opts.contains("transform")) {
+        task = opts.get<shared_ptr<AbstractTask> >("transform");
     } else {
         Options options;
         options.set<shared_ptr<AbstractTask> >("transform", g_root_task());
         options.set<int>("cost_type", cost_type);
-        task = make_shared<TaskProxy>(make_shared<CostAdaptedTask>(options));
+        task = make_shared<CostAdaptedTask>(options);
     }
     return task;
 }

@@ -5,6 +5,7 @@
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
 
+#include <memory>
 #include <vector>
 
 class GlobalOperator;
@@ -22,7 +23,8 @@ class Heuristic : public ScalarEvaluator {
 
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
-    std::shared_ptr<TaskProxy> task;
+    std::shared_ptr<AbstractTask> task;
+    TaskProxy *task_proxy;
     OperatorCost cost_type;
     enum {DEAD_END = -1};
     virtual void initialize() {}
@@ -64,6 +66,6 @@ public:
     static Options default_options();
 };
 
-std::shared_ptr<TaskProxy> get_task_from_options(const Options &opts);
+std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts);
 
 #endif
