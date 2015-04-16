@@ -30,9 +30,6 @@ If NT shall be predefinable:
 #include "heuristic.h"
 #include "option_parser_util.h"
 
-//TODO: incomplete type, I might be able to remove the include after we use shared ptr
-#include "landmarks/landmark_graph.h"
-
 #include <algorithm>
 #include <iostream>
 #include <limits>
