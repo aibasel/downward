@@ -87,11 +87,8 @@ class Registry {
 public:
     typedef T (*Factory)(OptionParser &);
     static Registry<T> *instance() {
-        static Registry<T> *instance_ = nullptr;
-        if (!instance_) {
-            instance_ = new Registry<T>();
-        }
-        return instance_;
+        static Registry<T> instance_;
+        return &instance_;
     }
 
     void register_object(std::string k, Factory f) {
@@ -130,11 +127,8 @@ template <class T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
-        static Predefinitions<T> *instance_ = nullptr;
-        if (!instance_) {
-            instance_ = new Predefinitions<T>();
-        }
-        return instance_;
+        static Predefinitions<T> instance_;
+        return &instance_;
     }
 
     void predefine(std::string k, std::shared_ptr<T> obj) {
@@ -505,11 +499,8 @@ struct DocStruct {
 class DocStore {
 public:
     static DocStore *instance() {
-        static DocStore *instance_ = nullptr;
-        if (!instance_) {
-            instance_ = new DocStore();
-        }
-        return instance_;
+        static DocStore instance_;
+        return &instance_;
     }
 
     void register_object(std::string k, std::string type);
