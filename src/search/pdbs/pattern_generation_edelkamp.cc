@@ -183,7 +183,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
         } else {
             // generate the pattern collection heuristic and get its fitness value.
             Options opts;
-            opts.set<TaskProxy *>("task_proxy", task);
+            opts.set<shared_ptr<TaskProxy> >("task_proxy", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
             ZeroOnePDBsHeuristic *zoppch =
