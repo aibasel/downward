@@ -6,7 +6,7 @@ from downward import suites
 import common_setup
 
 
-REVS = ["issue556-base", "issue456-v1"]
+REVS = ["issue456-base", "issue456-v1"]
 LIMITS = {"search_time": 1800}
 SUITE = suites.suite_optimal_with_ipc11()
 CONFIGS = {
