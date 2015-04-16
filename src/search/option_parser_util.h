@@ -91,16 +91,15 @@ public:
         return &instance_;
     }
 
-    void register_object(std::string k, Factory f) {
-        transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
+    void register_object(const std::string &k, Factory f) {
         registered[k] = f;
     }
 
-    bool contains(std::string k) {
+    bool contains(const std::string &k) {
         return registered.find(k) != registered.end();
     }
 
-    Factory get(std::string k) {
+    Factory get(const std::string &k) {
         return registered[k];
     }
 
@@ -131,16 +130,15 @@ public:
         return &instance_;
     }
 
-    void predefine(std::string k, std::shared_ptr<T> obj) {
-        transform(k.begin(), k.end(), k.begin(), ::tolower);
+    void predefine(const std::string &k, std::shared_ptr<T> obj) {
         predefined[k] = obj;
     }
 
-    bool contains(std::string k) {
+    bool contains(const std::string &k) {
         return predefined.find(k) != predefined.end();
     }
 
-    std::shared_ptr<T> get(std::string k) {
+    std::shared_ptr<T> get(const std::string &k) {
         return predefined[k];
     }
 
