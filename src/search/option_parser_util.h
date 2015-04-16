@@ -118,7 +118,7 @@ public:
     }
 
 private:
-    Registry() {}
+    Registry() = default;
     std::map<std::string, Factory> registered;
 };
 
@@ -151,8 +151,7 @@ public:
     }
 
 private:
-    Predefinitions<T>() {
-    }
+    Predefinitions<T>() = default;
     std::map<std::string, std::shared_ptr<T> > predefined;
 };
 
