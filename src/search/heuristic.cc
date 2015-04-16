@@ -146,7 +146,7 @@ Options Heuristic::default_options() {
     return opts;
 }
 
-TaskProxy *get_task_from_options(const Options &opts) {
+std::shared_ptr<TaskProxy> get_task_from_options(const Options &opts) {
     /*
       If the options are created by the parser, they must contain an
       AbstractTask. If they are created internally, they must contain a
@@ -171,16 +171,16 @@ TaskProxy *get_task_from_options(const Options &opts) {
              << "but not both." << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    TaskProxy *task = nullptr;
+    shared_ptr<TaskProxy> task;
     if (opts.contains("task_proxy")) {
-        task = opts.get<TaskProxy *>("task_proxy");
+        task = opts.get<shared_ptr<TaskProxy> >("task_proxy");
     } else if (opts.contains("transform")) {
-        task = new TaskProxy(opts.get<shared_ptr<AbstractTask> >("transform"));
+        task = make_shared<TaskProxy>(opts.get<shared_ptr<AbstractTask> >("transform"));
     } else {
         Options options;
         options.set<shared_ptr<AbstractTask> >("transform", g_root_task());
         options.set<int>("cost_type", cost_type);
-        task = new TaskProxy(make_shared<CostAdaptedTask>(options));
+        task = make_shared<TaskProxy>(make_shared<CostAdaptedTask>(options));
     }
     return task;
 }
