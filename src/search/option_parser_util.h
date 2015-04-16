@@ -87,6 +87,7 @@ class Registry {
 public:
     typedef T (*Factory)(OptionParser &);
     static Registry<T> *instance() {
+        static Registry<T> *instance_ = nullptr;
         if (!instance_) {
             instance_ = new Registry<T>();
         }
@@ -118,13 +119,8 @@ public:
 
 private:
     Registry() {}
-    static Registry<T> *instance_;
     std::map<std::string, Factory> registered;
 };
-
-template <class T>
-Registry<T> *Registry<T>::instance_ = 0;
-
 
 
 
@@ -134,6 +130,7 @@ template <class T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
+        static Predefinitions<T> *instance_ = nullptr;
         if (!instance_) {
             instance_ = new Predefinitions<T>();
         }
@@ -156,13 +153,8 @@ public:
 private:
     Predefinitions<T>() {
     }
-    static Predefinitions<T> *instance_;
-    std::map<std::string, std::shared_ptr<T>> predefined;
+    std::map<std::string, std::shared_ptr<T> > predefined;
 };
-
-template <class T>
-Predefinitions<T> *Predefinitions<T>::instance_ = 0;
-
 
 
 class Synergy {
@@ -265,7 +257,7 @@ struct TypeNamer<ShrinkStrategy *> {
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<AbstractTask>> {
+struct TypeNamer<std::shared_ptr<AbstractTask> > {
     static std::string name() {
         return "AbstractTask";
     }
@@ -514,6 +506,7 @@ struct DocStruct {
 class DocStore {
 public:
     static DocStore *instance() {
+        static DocStore *instance_ = nullptr;
         if (!instance_) {
             instance_ = new DocStore();
         }
@@ -548,8 +541,7 @@ public:
     std::vector<std::string> get_types();
 
 private:
-    DocStore() {}
-    static DocStore *instance_;
+    DocStore() = default;
     std::map<std::string, DocStruct> registered;
 };
 

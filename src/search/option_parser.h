@@ -135,7 +135,7 @@ public:
 };
 
 template <>
-class TokenParser<std::shared_ptr<AbstractTask>> {
+class TokenParser<std::shared_ptr<AbstractTask> > {
 public:
     static inline std::shared_ptr<AbstractTask> parse(OptionParser &p);
 };
@@ -357,10 +357,10 @@ static T *lookup_in_registry(OptionParser &p) {
 template <class T>
 static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<std::shared_ptr<T>>::instance()->contains(pt->value)) {
-        return Registry<std::shared_ptr<T>>::instance()->get(pt->value) (p);
+    if (Registry<std::shared_ptr<T> >::instance()->contains(pt->value)) {
+        return Registry<std::shared_ptr<T> >::instance()->get(pt->value) (p);
     }
-    p.error(TypeNamer<std::shared_ptr<T>>::name() + " " + pt->value + " not found");
+    p.error(TypeNamer<std::shared_ptr<T> >::name() + " " + pt->value + " not found");
     return 0;
 }
 
@@ -443,7 +443,7 @@ Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
     return lookup_in_registry<Synergy>(p);
 }
 
-std::shared_ptr<AbstractTask> TokenParser<std::shared_ptr<AbstractTask>>::parse(OptionParser &p) {
+std::shared_ptr<AbstractTask> TokenParser<std::shared_ptr<AbstractTask> >::parse(OptionParser &p) {
     return lookup_in_registry_shared<AbstractTask>(p);
 }
 

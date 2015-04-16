@@ -40,8 +40,6 @@ void OptionParser::warning(string msg) {
 Functions for printing help:
 */
 
-DocStore *DocStore::instance_ = 0;
-
 void OptionParser::set_help_mode(bool m) {
     dry_run_ = dry_run_ && m;
     help_mode_ = m;
@@ -62,7 +60,7 @@ static void get_help(string k) {
     pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
     get_help_templ<Heuristic *>(pt);
-    get_help_templ<shared_ptr<AbstractTask>>(pt);
+    get_help_templ<shared_ptr<AbstractTask> >(pt);
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
@@ -87,7 +85,7 @@ static void get_full_help_templ() {
 static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
     get_full_help_templ<Heuristic *>();
-    get_full_help_templ<shared_ptr<AbstractTask>>();
+    get_full_help_templ<shared_ptr<AbstractTask> >();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
@@ -134,11 +132,11 @@ static void predefine_heuristic(std::string s, bool dry_run) {
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) { //normal predefinition
         Predefinitions<Heuristic>::instance()->predefine(
-            definees[0], std::shared_ptr<Heuristic>(op.start_parsing<Heuristic*>()));
+            definees[0], std::shared_ptr<Heuristic>(op.start_parsing<Heuristic *>()));
     } else if (definees.size() > 1) { //synergy
         if (!dry_run) {
             //TODO: make shared ptr
-            std::vector<Heuristic*> heur =
+            std::vector<Heuristic *> heur =
                 op.start_parsing<Synergy *>()->heuristics;
             for (size_t i = 0; i < definees.size(); ++i) {
                 Predefinitions<Heuristic>::instance()->predefine(
@@ -166,7 +164,7 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
         Predefinitions<LandmarkGraph>::instance()->predefine(
-            definees[0], std::shared_ptr<LandmarkGraph>(op.start_parsing<LandmarkGraph*>()));
+            definees[0], std::shared_ptr<LandmarkGraph>(op.start_parsing<LandmarkGraph *>()));
     } else {
         op.error("predefinition has invalid left side");
     }

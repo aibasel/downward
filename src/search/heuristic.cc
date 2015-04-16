@@ -130,7 +130,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     // TODO: When the cost_type option is gone, use "no_transform" as default here
     //       and remove the OptionFlags argument.
-    parser.add_option<shared_ptr<AbstractTask>>(
+    parser.add_option<shared_ptr<AbstractTask> >(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
@@ -141,7 +141,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
-    opts.set<shared_ptr<AbstractTask>>("transform", g_root_task());
+    opts.set<shared_ptr<AbstractTask> >("transform", g_root_task());
     opts.set<int>("cost_type", 0);
     return opts;
 }
@@ -175,10 +175,10 @@ TaskProxy *get_task_from_options(const Options &opts) {
     if (opts.contains("task_proxy")) {
         task = opts.get<TaskProxy *>("task_proxy");
     } else if (opts.contains("transform")) {
-        task = new TaskProxy(opts.get<shared_ptr<AbstractTask>>("transform"));
+        task = new TaskProxy(opts.get<shared_ptr<AbstractTask> >("transform"));
     } else {
         Options options;
-        options.set<shared_ptr<AbstractTask>>("transform", g_root_task());
+        options.set<shared_ptr<AbstractTask> >("transform", g_root_task());
         options.set<int>("cost_type", cost_type);
         task = new TaskProxy(make_shared<CostAdaptedTask>(options));
     }
