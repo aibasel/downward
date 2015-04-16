@@ -125,7 +125,7 @@ template <class T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
-        static_assert(!std::is_pointer<T>::value,"Predefinitions does not support pointer.");
+        static_assert(!std::is_pointer<T>::value, "Predefinitions does not support pointer.");
         static Predefinitions<T> instance_;
         return &instance_;
     }

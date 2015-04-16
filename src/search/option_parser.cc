@@ -147,9 +147,9 @@ static void predefine_heuristic(std::string s, bool dry_run) {
                     definees[i], std::shared_ptr<Heuristic>(heur[i]));
             }
         } else {
-            for (const std::string &define : definees) {
+            for (const string &definee : definees) {
                 Predefinitions<Heuristic>::instance()->predefine(
-                    define, nullptr);
+                    definee, nullptr);
             }
         }
     } else {
