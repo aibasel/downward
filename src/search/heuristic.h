@@ -24,7 +24,7 @@ class Heuristic : public ScalarEvaluator {
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
     std::shared_ptr<AbstractTask> task;
-    TaskProxy *task_proxy;
+    TaskProxy task_proxy;
     OperatorCost cost_type;
     enum {DEAD_END = -1};
     virtual void initialize() {}

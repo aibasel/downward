@@ -16,7 +16,7 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : task(get_task_from_options(opts)),
-      task_proxy(new TaskProxy(*task)),
+      task_proxy(TaskProxy(*task)),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 }
@@ -124,7 +124,7 @@ int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    return task_proxy->convert_global_state(global_state);
+    return task_proxy.convert_global_state(global_state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
@@ -148,7 +148,6 @@ Options Heuristic::default_options() {
 }
 
 std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
-    assert(!opts.contains("transform"));
     /*
       TODO: This code is only intended for the transitional period while we
       still support the "old style" of adjusting costs for the heuristics (via

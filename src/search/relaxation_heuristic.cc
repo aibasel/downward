@@ -31,14 +31,14 @@ bool RelaxationHeuristic::dead_ends_are_reliable() const {
 void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
-    VariablesProxy variables = task_proxy->get_variables();
+    VariablesProxy variables = task_proxy.get_variables();
     propositions.resize(variables.size());
     for (FactProxy fact : variables.get_facts()) {
         propositions[fact.get_variable().get_id()].push_back(Proposition(prop_id++));
     }
 
     // Build goal propositions.
-    for (FactProxy goal : task_proxy->get_goals()) {
+    for (FactProxy goal : task_proxy.get_goals()) {
         Proposition *prop = get_proposition(goal);
         prop->is_goal = true;
         goal_propositions.push_back(prop);
@@ -46,9 +46,9 @@ void RelaxationHeuristic::initialize() {
 
     // Build unary operators for operators and axioms.
     int op_no = 0;
-    for (OperatorProxy op : task_proxy->get_operators())
+    for (OperatorProxy op : task_proxy.get_operators())
         build_unary_operators(op, op_no++);
-    for (OperatorProxy axiom : task_proxy->get_axioms())
+    for (OperatorProxy axiom : task_proxy.get_axioms())
         build_unary_operators(axiom, -1);
 
     // Simplify unary operators.
