@@ -6,8 +6,8 @@
 #include <memory>
 #include <vector>
 
-class Options;
 class AbstractTask;
+class Options;
 class ZeroOnePDBsHeuristic;
 
 /* Implementation of the pattern generation algorithm by Edelkamp. See:
