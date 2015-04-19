@@ -125,12 +125,11 @@ template <class T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
-        static_assert(!std::is_pointer<T>::value, "Predefinitions does not support pointer.");
         static Predefinitions<T> instance_;
         return &instance_;
     }
 
-    void predefine(const std::string &k, std::shared_ptr<T> obj) {
+    void predefine(const std::string &k, T obj) {
         predefined[k] = obj;
     }
 
@@ -138,13 +137,13 @@ public:
         return predefined.find(k) != predefined.end();
     }
 
-    std::shared_ptr<T> get(const std::string &k) {
+    T get(const std::string &k) {
         return predefined[k];
     }
 
 private:
     Predefinitions<T>() = default;
-    std::map<std::string, std::shared_ptr<T> > predefined;
+    std::map<std::string, T> predefined;
 };
 
 
