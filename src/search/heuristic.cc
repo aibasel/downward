@@ -16,7 +16,7 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : task(get_task_from_options(opts)),
-      task_proxy(TaskProxy(*task)),
+      task_proxy(*task),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 }
