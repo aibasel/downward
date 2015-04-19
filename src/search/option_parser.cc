@@ -135,20 +135,20 @@ static void predefine_heuristic(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) { //normal predefinition
-        Predefinitions<Heuristic>::instance()->predefine(
-            definees[0], std::shared_ptr<Heuristic>(op.start_parsing<Heuristic *>()));
+        Predefinitions<Heuristic *>::instance()->predefine(
+            definees[0], op.start_parsing<Heuristic *>());
     } else if (definees.size() > 1) { //synergy
         if (!dry_run) {
             // TODO: Create shared pointers directly.
             std::vector<Heuristic *> heur =
                 op.start_parsing<Synergy *>()->heuristics;
             for (size_t i = 0; i < definees.size(); ++i) {
-                Predefinitions<Heuristic>::instance()->predefine(
-                    definees[i], std::shared_ptr<Heuristic>(heur[i]));
+                Predefinitions<Heuristic *>::instance()->predefine(
+                    definees[i], heur[i]);
             }
         } else {
             for (const string &definee : definees) {
-                Predefinitions<Heuristic>::instance()->predefine(
+                Predefinitions<Heuristic *>::instance()->predefine(
                     definee, nullptr);
             }
         }
@@ -167,8 +167,8 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<LandmarkGraph>::instance()->predefine(
-            definees[0], std::shared_ptr<LandmarkGraph>(op.start_parsing<LandmarkGraph *>()));
+        Predefinitions<LandmarkGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<LandmarkGraph *>());
     } else {
         op.error("predefinition has invalid left side");
     }

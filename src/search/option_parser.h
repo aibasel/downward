@@ -364,21 +364,9 @@ static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &p) {
 template <class T>
 static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<T>::instance()->contains(pt->value)) {
+    if (Predefinitions<T *>::instance()->contains(pt->value)) {
         found = true;
-        return Predefinitions<T>::instance()->get(pt->value).get();
-    }
-    found = false;
-    return 0;
-}
-
-// TODO: This function will replace lookup_in_predefinitions() once we no longer need to support raw pointers.
-template <class T>
-static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &p, bool &found) {
-    ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<T>::instance()->contains(pt->value)) {
-        found = true;
-        return Predefinitions<T>::instance()->get(pt->value);
+        return Predefinitions<T *>::instance()->get(pt->value);
     }
     found = false;
     return 0;
@@ -409,9 +397,9 @@ LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
 //TODO find a general way to handle parsing of superclasses (see also issue28)
 ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<Heuristic>::instance()->contains(pt->value)) {
+    if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
         return (ScalarEvaluator *)
-               Predefinitions<Heuristic>::instance()->get(pt->value).get();
+               Predefinitions<Heuristic *>::instance()->get(pt->value);
     } else if (Registry<ScalarEvaluator *>::instance()->contains(pt->value)) {
         return Registry<ScalarEvaluator *>::instance()->get(pt->value) (p);
     } else if (Registry<Heuristic *>::instance()->contains(pt->value)) {
