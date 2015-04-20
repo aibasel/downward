@@ -11,7 +11,6 @@
 #include <sstream>
 #include <tree.hh>
 #include <tree_util.hh>
-#include <type_traits>
 #include <utility>
 #include <boost/any.hpp>
 
