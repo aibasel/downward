@@ -261,7 +261,7 @@ int Abstraction::get_init_h() const {
 }
 
 vector<int> Abstraction::get_needed_costs() {
-    return abstract_search.get_needed_costs(init);
+    return abstract_search.get_needed_costs(init, task_proxy.get_operators().size());
 }
 
 void Abstraction::print_statistics() {
