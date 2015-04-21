@@ -8,51 +8,51 @@
 using namespace std;
 
 namespace cegar {
-vector<int> Domains::original_domain_sizes;
+vector<int> Domains::orig_domain_sizes;
 int Domains::num_facts = -1;
 vector<int> Domains::borders;
 vector<Bitset> Domains::masks;
 vector<Bitset> Domains::inverse_masks;
-Bitset Domains::temp_values;
+Bitset Domains::temp_bits;
 
 Domains::Domains(TaskProxy task_proxy) {
     initialize_static_members(task_proxy);
-    domains = Bitset(num_facts);
-    domains.set();
+    bits = Bitset(num_facts);
+    bits.set();
 }
 
 void Domains::initialize_static_members(TaskProxy task_proxy) {
-    original_domain_sizes.clear();
-    original_domain_sizes.reserve(task_proxy.get_variables().size());
+    orig_domain_sizes.clear();
+    orig_domain_sizes.reserve(task_proxy.get_variables().size());
     for (VariableProxy var : task_proxy.get_variables())
-        original_domain_sizes.push_back(var.get_domain_size());
+        orig_domain_sizes.push_back(var.get_domain_size());
 
     masks.clear();
     inverse_masks.clear();
     borders.clear();
     num_facts = 0;
-    int num_vars = original_domain_sizes.size();
+    int num_vars = orig_domain_sizes.size();
     for (int var = 0; var < num_vars; ++var) {
         borders.push_back(num_facts);
-        num_facts += original_domain_sizes[var];
+        num_facts += orig_domain_sizes[var];
     }
     for (int var = 0; var < num_vars; ++var) {
         // -----0000 -> --1110000 --> 001110000
         Bitset mask(borders[var]);
-        mask.resize(borders[var] + original_domain_sizes[var], true);
+        mask.resize(borders[var] + orig_domain_sizes[var], true);
         mask.resize(num_facts, false);
         masks.push_back(mask);
         inverse_masks.push_back(~mask);
     }
-    temp_values.resize(num_facts);
+    temp_bits.resize(num_facts);
 }
 
 void Domains::add(int var, int value) {
-    domains.set(pos(var, value));
+    bits.set(pos(var, value));
 }
 
 void Domains::remove(int var, int value) {
-    domains.reset(pos(var, value));
+    bits.reset(pos(var, value));
 }
 
 void Domains::set(int var, int value) {
@@ -61,23 +61,23 @@ void Domains::set(int var, int value) {
 }
 
 void Domains::add_all(int var) {
-    domains |= masks[var];
+    bits |= masks[var];
 }
 
 void Domains::remove_all(int var) {
-    domains &= inverse_masks[var];
+    bits &= inverse_masks[var];
 }
 
 bool Domains::test(int var, int value) const {
-    return domains.test(pos(var, value));
+    return bits.test(pos(var, value));
 }
 
 size_t Domains::count(int var) const {
     // Profiling showed that an explicit loop is faster than doing:
     // (values & masks[var]).count(); (even if using a temp bitset).
     int num_values = 0;
-    for (int pos = borders[var]; pos < borders[var] + original_domain_sizes[var]; ++pos) {
-        num_values += domains.test(pos);
+    for (int pos = borders[var]; pos < borders[var] + orig_domain_sizes[var]; ++pos) {
+        num_values += bits.test(pos);
     }
     return num_values;
 }
@@ -87,27 +87,27 @@ bool Domains::intersects(const Domains &other, int var) const {
     // problems with many boolean vars. We use temp_values to reduce
     // memory allocations. This substantially reduces the relative time
     // spent in this method.
-    temp_values.set();
-    temp_values &= domains;
-    temp_values &= other.domains;
-    temp_values &= masks[var];
-    assert(temp_values.any() == (domains & other.domains & masks[var]).any());
-    return temp_values.any();
+    temp_bits.set();
+    temp_bits &= bits;
+    temp_bits &= other.bits;
+    temp_bits &= masks[var];
+    assert(temp_bits.any() == (bits & other.bits & masks[var]).any());
+    return temp_bits.any();
 }
 
 bool Domains::abstracts(const Domains &other) const {
-    return other.domains.is_subset_of(domains);
+    return other.bits.is_subset_of(bits);
 }
 
 void Domains::get_possible_flaws(const Domains &flaw,
                                  const State &conc_state,
                                  Flaws *flaws) const {
     assert(flaws->empty());
-    Bitset intersection(domains & flaw.domains);
+    Bitset intersection(bits & flaw.bits);
     for (size_t var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var].get_value()))) {
             vector<int> wanted;
-            for (int pos = borders[var]; pos < borders[var] + original_domain_sizes[var]; ++pos) {
+            for (int pos = borders[var]; pos < borders[var] + orig_domain_sizes[var]; ++pos) {
                 if (intersection.test(pos)) {
                     wanted.push_back(pos - borders[var]);
                 }
@@ -118,31 +118,31 @@ void Domains::get_possible_flaws(const Domains &flaw,
     assert(!flaws->empty());
 }
 
-string Domains::str() const {
-    ostringstream oss;
+ostream &operator<<(ostream &os, const Domains &domains) {
     string var_sep = "";
-    oss << "<";
-    for (size_t var = 0; var < borders.size(); ++var) {
-        size_t next_border = borders[var] + original_domain_sizes[var];
+    os << "<";
+    for (size_t var = 0; var < domains.borders.size(); ++var) {
+        size_t next_border = domains.borders[var] + domains.orig_domain_sizes[var];
         vector<int> values;
-        size_t pos = (var == 0) ? domains.find_first() : domains.find_next(borders[var] - 1);
+        size_t pos = (var == 0) ?
+                     domains.bits.find_first() :
+                     domains.bits.find_next(domains.borders[var] - 1);
         while (pos != Bitset::npos && pos < next_border) {
-            values.push_back(pos - borders[var]);
-            pos = domains.find_next(pos);
+            values.push_back(pos - domains.borders[var]);
+            pos = domains.bits.find_next(pos);
         }
         assert(!values.empty());
-        if (static_cast<int>(values.size()) < original_domain_sizes[var]) {
-            oss << var_sep << var << "={";
+        if (static_cast<int>(values.size()) < domains.orig_domain_sizes[var]) {
+            os << var_sep << var << "={";
             string value_sep = "";
             for (int value : values) {
-                oss << value_sep << value;
+                os << value_sep << value;
                 value_sep = ",";
             }
-            oss << "}";
+            os << "}";
             var_sep = ",";
         }
     }
-    oss << ">";
-    return oss.str();
+    return os << ">";
 }
 }

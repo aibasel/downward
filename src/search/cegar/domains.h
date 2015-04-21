@@ -18,10 +18,10 @@ class Domains {
     // Possible values of each variable in this state.
     // Values are represented from right to left (least- to most-significant).
     // 11 10 001 -> var0 = {0}, var1 = {1}, var2 = {0,1}
-    Bitset domains;
+    Bitset bits;
 
-    static std::vector<int> original_domain_sizes;
-    // Total number of facts and size of the values bitset.
+    static std::vector<int> orig_domain_sizes;
+    // Total number of facts and size of the bitset.
     static int num_facts;
     // The first bit for var is at borders[var].
     static std::vector<int> borders;
@@ -29,7 +29,7 @@ class Domains {
     static std::vector<Bitset> masks;
     static std::vector<Bitset> inverse_masks;
     // Temporary bitset for speeding up calculations.
-    static Bitset temp_values;
+    static Bitset temp_bits;
 
     static void initialize_static_members(TaskProxy task_proxy);
 
@@ -52,8 +52,10 @@ public:
     bool abstracts(const Domains &other) const;
     void get_possible_flaws(const Domains &flaw, const State &conc_state, Flaws *flaws) const;
 
-    std::string str() const;
+    friend std::ostream &operator<<(std::ostream &os, const Domains &bits);
 };
+
+std::ostream &operator<<(std::ostream &os, const Domains &domains);
 }
 
 #endif
