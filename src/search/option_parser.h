@@ -325,6 +325,7 @@ int TokenParser<int>::parse(OptionParser &p) {
     }
 }
 
+
 double TokenParser<double>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (pt->value.compare("infinity") == 0) {

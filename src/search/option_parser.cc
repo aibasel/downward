@@ -4,9 +4,6 @@
 #include "plugin.h"
 #include "rng.h"
 
-//TODO: incomplete type, I might be able to remove the include after we use shared ptr
-#include "landmarks/landmark_graph.h"
-
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -139,7 +136,6 @@ static void predefine_heuristic(std::string s, bool dry_run) {
             definees[0], op.start_parsing<Heuristic *>());
     } else if (definees.size() > 1) { //synergy
         if (!dry_run) {
-            // TODO: Create shared pointers directly.
             std::vector<Heuristic *> heur =
                 op.start_parsing<Synergy *>()->heuristics;
             for (size_t i = 0; i < definees.size(); ++i) {
