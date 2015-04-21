@@ -48,18 +48,6 @@ public:
 
     std::vector<int> get_needed_costs(AbstractState *init, int num_ops);
 
-    bool found_solution() const {
-        return has_found_solution;
-    }
-
-    bool is_part_of_solution(AbstractState *state) const {
-        assert(found_solution());
-        return solution_forward.count(state) == 1;
-    }
-    Arc get_next_solution_arc(AbstractState *state) {
-        assert(found_solution());
-        return solution_forward.at(state);
-    }
     Solution &get_solution() {
         return solution_forward;
     }
