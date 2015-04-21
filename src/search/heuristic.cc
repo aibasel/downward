@@ -153,10 +153,9 @@ std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
       the cost_type parameter) in parallel with the "new style" (via task
       transformations). Once all heuristics are adapted to support task
       transformations and we can remove the "cost_type" attribute, the options
-      should always contain a task (either an AbstractTask or a TaskProxy). When
-      that is the case, get_task_from_options() should be integrated into the
-      Heuristic constructor and the PDB heuristic generators (ipdb, gapdb)
-      should directly call opts.get<TaskProxy *>("transform").
+      should always contain an AbstractTask object. Then we can directly
+      call opts.get<shared_ptr<AbstractTask>>("transform") where needed
+      and this function can be removed.
     */
     OperatorCost cost_type = OperatorCost(opts.get_enum("cost_type"));
     if (opts.contains("transform") && cost_type != NORMAL) {
