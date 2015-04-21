@@ -16,6 +16,7 @@
 #include <deque>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <fstream>
 #include <limits>
 #include <set>
