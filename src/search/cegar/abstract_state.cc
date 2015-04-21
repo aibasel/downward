@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <sstream>
 #include <unordered_set>
 
 using namespace std;
@@ -19,9 +18,7 @@ AbstractState::AbstractState(const Domains &domains, Node *node)
 }
 
 string AbstractState::str() const {
-    ostringstream oss;
-    oss << "<" << domains.str() << ">";
-    return oss.str();
+    return domains.str();
 }
 
 size_t AbstractState::count(int var) const {

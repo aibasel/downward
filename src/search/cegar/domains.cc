@@ -1,6 +1,7 @@
 #include "domains.h"
 
 #include "../task_proxy.h"
+#include "../utilities.h"
 
 #include <sstream>
 
@@ -119,27 +120,29 @@ void Domains::get_possible_flaws(const Domains &flaw,
 
 string Domains::str() const {
     ostringstream oss;
-    string sep = "";
+    string var_sep = "";
+    oss << "<";
     for (size_t var = 0; var < borders.size(); ++var) {
         size_t next_border = borders[var] + original_domain_sizes[var];
-        vector<int> facts;
+        vector<int> values;
         size_t pos = (var == 0) ? domains.find_first() : domains.find_next(borders[var] - 1);
         while (pos != Bitset::npos && pos < next_border) {
-            facts.push_back(pos - borders[var]);
+            values.push_back(pos - borders[var]);
             pos = domains.find_next(pos);
         }
-        assert(!facts.empty());
-        if (static_cast<int>(facts.size()) < original_domain_sizes[var]) {
-            oss << sep << var << "={";
-            sep = ",";
+        assert(!values.empty());
+        if (static_cast<int>(values.size()) < original_domain_sizes[var]) {
+            oss << var_sep << var << "={";
             string value_sep = "";
-            for (size_t i = 0; i < facts.size(); ++i) {
-                oss << value_sep << facts[i];
+            for (int value : values) {
+                oss << value_sep << value;
                 value_sep = ",";
             }
             oss << "}";
+            var_sep = ",";
         }
     }
+    oss << ">";
     return oss.str();
 }
 }
