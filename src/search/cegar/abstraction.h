@@ -74,7 +74,7 @@ class Abstraction {
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw
     // from appearing in the next round again.
-    bool check_and_break_solution(State conc_state, AbstractState *abs_state);
+    bool check_and_break_solution(const Solution &solution);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values();

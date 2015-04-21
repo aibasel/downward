@@ -106,7 +106,7 @@ void Abstraction::build() {
             cout << "Abstract problem is unsolvable!" << endl;
             break;
         }
-        found_conc_solution = check_and_break_solution(concrete_initial_state, init);
+        found_conc_solution = check_and_break_solution(abstract_search.get_solution());
         if (found_conc_solution)
             break;
     }
@@ -153,25 +153,25 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     delete state;
 }
 
-bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_state) {
-    assert(abs_state->is_abstraction_of(conc_state));
-    const Solution &solution = abstract_search.get_solution();
-
+bool Abstraction::check_and_break_solution(const Solution &solution) {
     if (DEBUG)
-        cout << "Check solution." << endl << "Start at       " << *abs_state
-             << " (is init: " << (abs_state == init) << ")" << endl;
+        cout << "Check solution." << endl;
+
+    AbstractState *abs_state = init;
+    State conc_state = concrete_initial_state;
+    assert(abs_state->is_abstraction_of(conc_state));
 
     StatesToFlaws states_to_flaws;
-    queue<pair<AbstractState *, State> > unseen;
-    unordered_set<size_t> seen;
+    queue<pair<AbstractState *, State> > unseen_states;
+    unordered_set<size_t> seen_states;
 
-    unseen.push(make_pair(abs_state, conc_state));
+    unseen_states.push(make_pair(abs_state, conc_state));
 
     // Only search flaws until we hit the memory limit.
-    while (!unseen.empty() && memory_padding_is_reserved()) {
-        abs_state = unseen.front().first;
-        conc_state = move(unseen.front().second);
-        unseen.pop();
+    while (!unseen_states.empty() && memory_padding_is_reserved()) {
+        abs_state = unseen_states.front().first;
+        conc_state = move(unseen_states.front().second);
+        unseen_states.pop();
         Flaws &flaws = states_to_flaws[abs_state];
         if (DEBUG)
             cout << "Current state: " << *abs_state << endl;
@@ -196,20 +196,20 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
             AbstractState *next_abs = arc.second;
             assert(!use_astar || solution.count(abs_state) == 1);
             if (use_astar && solution.at(abs_state) != arc)
-                // Arc is not part of the path we found.
+                // Arc is not part of the path that A* found.
                 continue;
             if (next_abs->get_h() + op.get_cost() != abs_state->get_h())
                 // Arc is not part of an optimal path.
                 continue;
             if (is_applicable(op, conc_state)) {
                 if (DEBUG)
-                    cout << "      Move to: " << *next_abs
-                         << " with " << op.get_name() << endl;
+                    cout << "      Move to: " << *next_abs << " with "
+                         << op.get_name() << endl;
                 State next_conc = move(conc_state.apply(op));
                 if (next_abs->is_abstraction_of(next_conc)) {
-                    if (seen.count(next_conc.hash()) == 0) {
-                        unseen.push(make_pair(next_abs, next_conc));
-                        seen.insert(next_conc.hash());
+                    if (seen_states.count(next_conc.hash()) == 0) {
+                        unseen_states.emplace(next_abs, next_conc);
+                        seen_states.insert(next_conc.hash());
                     }
                 } else if (flaws.empty()) {
                     // Only find deviation reasons if we haven't found any flaws already.
