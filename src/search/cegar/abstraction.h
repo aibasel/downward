@@ -2,7 +2,6 @@
 #define CEGAR_ABSTRACTION_H
 
 #include "abstract_search.h"
-#include "abstract_state.h" // TODO: Remove.
 #include "flaw_selector.h"
 #include "split_tree.h"
 
