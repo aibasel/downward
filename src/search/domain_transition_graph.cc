@@ -162,7 +162,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                 }
             }
 
-#define TRACK_SIDE_EFFECTS true
+#define TRACK_SIDE_EFFECTS 1
 #if !TRACK_SIDE_EFFECTS
             cea_effect.clear();
 #endif

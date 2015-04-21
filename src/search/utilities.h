@@ -14,12 +14,20 @@
 
 #if defined(__CYGWIN32__)
 #define OPERATING_SYSTEM CYGWIN
-#elif defined(__WINNT__)
+#elif defined(_WIN32)
 #define OPERATING_SYSTEM WINDOWS
 #elif defined(__APPLE__)
 #define OPERATING_SYSTEM OSX
 #else
 #define OPERATING_SYSTEM LINUX
+#endif
+
+//TODO: add compiler checks
+//if gcc needs the __attribute__ behind the function we need to use a macro
+#if OPERATING_SYSTEM != WINDOWS
+#define FD_NO_RETURN __attribute__((noreturn))
+#else
+#define FD_NO_RETURN __declspec(noreturn)
 #endif
 
 #define ABORT(msg) \
@@ -43,7 +51,7 @@ enum ExitCode {
     EXIT_OUT_OF_MEMORY = 6
 };
 
-extern void exit_with(ExitCode returncode) __attribute__((noreturn));
+FD_NO_RETURN extern void exit_with(ExitCode returncode);
 
 extern void register_event_handlers();
 
