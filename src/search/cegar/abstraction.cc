@@ -193,7 +193,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 continue;
             }
         }
-        for (auto &arc : abs_state->get_arcs_out()) {
+        for (auto &arc : abs_state->get_outgoing_arcs()) {
             OperatorProxy op = arc.first;
             AbstractState *next_abs = arc.second;
             assert(!use_astar || solution.count(abs_state) == 1);
@@ -265,31 +265,33 @@ vector<int> Abstraction::get_needed_costs() {
 }
 
 void Abstraction::print_statistics() {
-    int nexts = 0, prevs = 0, total_loops = 0;
+    int total_incoming_arcs = 0;
+    int total_outgoing_arcs = 0;
+    int total_loops = 0;
     int dead_ends = 0;
     int arc_size = 0;
     for (AbstractState *state : states) {
         if (state->get_h() == INF)
             ++dead_ends;
-        Arcs &next = state->get_arcs_out();
-        Arcs &prev = state->get_arcs_in();
-        Loops &loops = state->get_loops();
-        nexts += next.size();
-        prevs += prev.size();
+        const Arcs &incoming_arcs = state->get_incoming_arcs();
+        const Arcs &outgoing_arcs = state->get_outgoing_arcs();
+        const Loops &loops = state->get_loops();
+        total_incoming_arcs += incoming_arcs.size();
+        total_outgoing_arcs += outgoing_arcs.size();
         total_loops += loops.size();
-        arc_size += sizeof(next) + sizeof(Arc) * next.capacity() +
-                    sizeof(prev) + sizeof(Arc) * prev.capacity() +
+        arc_size += sizeof(incoming_arcs) + sizeof(Arc) * incoming_arcs.capacity() +
+                    sizeof(outgoing_arcs) + sizeof(Arc) * outgoing_arcs.capacity() +
                     sizeof(loops) + sizeof(OperatorProxy) * loops.capacity();
     }
-    assert(nexts == prevs);
+    assert(total_outgoing_arcs == total_incoming_arcs);
 
     cout << "Time: " << timer << endl;
     cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "States: " << get_num_states() << endl;
-    cout << "Dead-ends: " << dead_ends << endl;
+    cout << "Dead ends: " << dead_ends << endl;
     cout << "Init-h: " << init->get_h() << endl;
 
-    cout << "Transitions: " << nexts << endl;
+    cout << "Transitions: " << total_incoming_arcs << endl;
     cout << "Self-loops: " << total_loops << endl;
     cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
 

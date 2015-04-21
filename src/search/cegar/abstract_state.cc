@@ -28,36 +28,38 @@ size_t AbstractState::count(int var) const {
     return domains.count(var);
 }
 
-Domains AbstractState::regress(OperatorProxy op) const {
-    Domains regressed_domains = domains;
-    unordered_set<int> precondition_vars;
-    for (FactProxy precondition : op.get_preconditions()) {
-        int var_id = precondition.get_variable().get_id();
-        regressed_domains.set(var_id, precondition.get_value());
-        precondition_vars.insert(var_id);
-    }
-    for (EffectProxy effect : op.get_effects()) {
-        int var_id = effect.get_fact().get_variable().get_id();
-        if (precondition_vars.count(var_id) == 0) {
-            regressed_domains.add_all(var_id);
-        }
-    }
-    return regressed_domains;
+void AbstractState::add_arc(OperatorProxy op, AbstractState *other) {
+    // Experiments showed that keeping the arcs sorted for faster removal
+    // increases the overall processing time. Out of 30 domains it made no
+    // difference for 10 domains, 17 domains preferred unsorted arcs and in
+    // 3 domains performance was better with sorted arcs.
+    // Inlining this method has no effect.
+    assert(other != this);
+    outgoing_arcs.push_back(Arc(op, other));
+    other->incoming_arcs.push_back(Arc(op, this));
 }
 
-void AbstractState::get_possible_flaws(const AbstractState &desired,
-                                        const State &prev_conc_state,
-                                        Flaws *flaws)
-const {
-    domains.get_possible_flaws(desired.domains, prev_conc_state, flaws);
+void AbstractState::add_loop(OperatorProxy op) {
+    loops.push_back(op);
 }
 
-bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
-    return domains.intersects(other->domains, var);
+void AbstractState::remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other) {
+    auto pos = find(arcs.begin(), arcs.end(), Arc(op, other));
+    assert(pos != arcs.end());
+    swap(*pos, arcs.back());
+    arcs.pop_back();
+}
+
+void AbstractState::remove_incoming_arc(OperatorProxy op, AbstractState *other) {
+    remove_arc(incoming_arcs, op, other);
+}
+
+void AbstractState::remove_outgoing_arc(OperatorProxy op, AbstractState *other) {
+    remove_arc(outgoing_arcs, op, other);
 }
 
 void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (auto arc : arcs_in) {
+    for (auto arc : incoming_arcs) {
         OperatorProxy op = arc.first;
         AbstractState *u = arc.second;
         assert(u != this);
@@ -76,14 +78,14 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
         } else {
             u->add_arc(op, v1);
         }
-        u->remove_next_arc(op, this);
+        u->remove_outgoing_arc(op, this);
     }
 }
 
 void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    for (Arcs::iterator it = arcs_out.begin(); it != arcs_out.end(); ++it) {
-        OperatorProxy op = it->first;
-        AbstractState *w = it->second;
+    for (auto arc : outgoing_arcs) {
+        OperatorProxy op = arc.first;
+        AbstractState *w = arc.second;
         assert(w != this);
         int pre = get_pre(op, var);
         int post = get_post(op, var);
@@ -105,7 +107,7 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
         } else {
             v1->add_arc(op, w);
         }
-        w->remove_prev_arc(op, this);
+        w->remove_incoming_arc(op, this);
     }
 }
 
@@ -188,34 +190,32 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     return make_pair(v1, v2);
 }
 
-void AbstractState::add_arc(OperatorProxy op, AbstractState *other) {
-    // Experiments showed that keeping the arcs sorted for faster removal
-    // increases the overall processing time. Out of 30 domains it made no
-    // difference for 10 domains, 17 domains preferred unsorted arcs and in
-    // 3 domains performance was better with sorted arcs.
-    // Inlining this method has no effect.
-    assert(other != this);
-    arcs_out.push_back(Arc(op, other));
-    other->arcs_in.push_back(Arc(op, this));
+Domains AbstractState::regress(OperatorProxy op) const {
+    Domains regressed_domains = domains;
+    unordered_set<int> precondition_vars;
+    for (FactProxy precondition : op.get_preconditions()) {
+        int var_id = precondition.get_variable().get_id();
+        regressed_domains.set(var_id, precondition.get_value());
+        precondition_vars.insert(var_id);
+    }
+    for (EffectProxy effect : op.get_effects()) {
+        int var_id = effect.get_fact().get_variable().get_id();
+        if (precondition_vars.count(var_id) == 0) {
+            regressed_domains.add_all(var_id);
+        }
+    }
+    return regressed_domains;
 }
 
-void AbstractState::add_loop(OperatorProxy op) {
-    loops.push_back(op);
+void AbstractState::get_possible_flaws(const AbstractState &desired,
+                                       const State &prev_conc_state,
+                                       Flaws *flaws)
+const {
+    domains.get_possible_flaws(desired.domains, prev_conc_state, flaws);
 }
 
-void AbstractState::remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other) {
-    auto pos = find(arcs.begin(), arcs.end(), Arc(op, other));
-    assert(pos != arcs.end());
-    swap(*pos, arcs.back());
-    arcs.pop_back();
-}
-
-void AbstractState::remove_next_arc(OperatorProxy op, AbstractState *other) {
-    remove_arc(arcs_out, op, other);
-}
-
-void AbstractState::remove_prev_arc(OperatorProxy op, AbstractState *other) {
-    remove_arc(arcs_in, op, other);
+bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
+    return domains.intersects(other->domains, var);
 }
 
 bool AbstractState::is_abstraction_of(const State &conc_state) const {

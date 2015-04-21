@@ -98,7 +98,8 @@ bool Domains::abstracts(const Domains &other) const {
     return other.domains.is_subset_of(domains);
 }
 
-void Domains::get_possible_flaws(const Domains &flaw, const State &conc_state,
+void Domains::get_possible_flaws(const Domains &flaw,
+                                 const State &conc_state,
                                  Flaws *flaws) const {
     assert(flaws->empty());
     Bitset intersection(domains & flaw.domains);
@@ -128,7 +129,7 @@ string Domains::str() const {
             pos = domains.find_next(pos);
         }
         assert(!facts.empty());
-        if (facts.size() < static_cast<size_t>(original_domain_sizes[var])) {
+        if (static_cast<int>(facts.size()) < original_domain_sizes[var]) {
             oss << sep << var << "={";
             sep = ",";
             string value_sep = "";
