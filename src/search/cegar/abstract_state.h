@@ -42,8 +42,6 @@ private:
 
     bool domains_intersect(const AbstractState *other, int var) const;
 
-    std::string str() const;
-
 public:
     AbstractState(const Domains &domains, Node *node);
     ~AbstractState() = default;
@@ -77,7 +75,7 @@ public:
     const Loops &get_loops() const {return loops; }
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
-        return os << state.str();
+        return os << state.domains;
     }
 };
 }

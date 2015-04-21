@@ -17,10 +17,6 @@ AbstractState::AbstractState(const Domains &domains, Node *node)
       node(node) {
 }
 
-string AbstractState::str() const {
-    return domains.str();
-}
-
 size_t AbstractState::count(int var) const {
     return domains.count(var);
 }
