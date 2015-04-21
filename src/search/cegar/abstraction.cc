@@ -121,8 +121,7 @@ void Abstraction::break_solution(AbstractState *state, const Flaws &flaws) {
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
     assert(may_keep_refining());
     if (DEBUG)
-        cout << "Refine " << state->str() << " for "
-             << var << "=" << wanted << endl;
+        cout << "Refine " << *state << " for " << var << "=" << wanted << endl;
     pair<AbstractState *, AbstractState *> new_states = state->split(var, wanted);
     AbstractState *v1 = new_states.first;
     AbstractState *v2 = new_states.second;
@@ -138,13 +137,13 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
         assert(!v2->is_abstraction_of(concrete_initial_state));
         init = v1;
         if (DEBUG)
-            cout << "Using new init state: " << init->str() << endl;
+            cout << "Using new init state: " << *init << endl;
     }
     if (is_goal(state)) {
         goals.erase(state);
         goals.insert(v2);
         if (DEBUG)
-            cout << "Using new/additional goal state: " << v2->str() << endl;
+            cout << "Using new/additional goal state: " << *v2 << endl;
     }
 
     int num_states = get_num_states();
@@ -159,7 +158,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
     const Solution &solution = abstract_search.get_solution();
 
     if (DEBUG)
-        cout << "Check solution." << endl << "Start at       " << abs_state->str()
+        cout << "Check solution." << endl << "Start at       " << *abs_state
              << " (is init: " << (abs_state == init) << ")" << endl;
 
     StatesToFlaws states_to_flaws;
@@ -175,7 +174,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
         unseen.pop();
         Flaws &flaws = states_to_flaws[abs_state];
         if (DEBUG)
-            cout << "Current state: " << abs_state->str() << endl;
+            cout << "Current state: " << *abs_state << endl;
         // Start check from each state only once.
         if (!states_to_flaws[abs_state].empty())
             continue;
@@ -204,7 +203,7 @@ bool Abstraction::check_and_break_solution(State conc_state, AbstractState *abs_
                 continue;
             if (is_applicable(op, conc_state)) {
                 if (DEBUG)
-                    cout << "      Move to: " << next_abs->str()
+                    cout << "      Move to: " << *next_abs
                          << " with " << op.get_name() << endl;
                 State next_conc = move(conc_state.apply(op));
                 if (next_abs->is_abstraction_of(next_conc)) {
