@@ -90,7 +90,7 @@ AbstractState *AbstractSearch::astar_search(
             for (OperatorProxy op : state->get_loops())
                 (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], 0);
         }
-        Arcs &successors = (forward) ? state->get_arcs_out() : state->get_arcs_in();
+        const Arcs &successors = (forward) ? state->get_outgoing_arcs() : state->get_incoming_arcs();
         for (auto &arc : successors) {
             OperatorProxy op = arc.first;
             AbstractState *successor = arc.second;
