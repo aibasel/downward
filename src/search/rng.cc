@@ -1,7 +1,14 @@
 #include "rng.h"
+#include "utilities.h"
 
 #include <chrono>
+
+#if OPERATING_SYSTEM != WINDOWS
 #include <unistd.h>
+#else
+#include <process.h>
+#define getpid _getpid
+#endif
 
 using namespace std;
 
