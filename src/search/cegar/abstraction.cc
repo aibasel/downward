@@ -149,8 +149,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 
     int num_states = get_num_states();
     if (num_states % STATES_LOG_STEP == 0)
-        cout << "Abstract states: " << num_states << "/"
-             << max_states << endl;
+        cout << "Abstract states: " << num_states << "/" << max_states << endl;
 
     delete state;
 }
