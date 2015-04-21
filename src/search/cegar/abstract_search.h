@@ -19,7 +19,6 @@ using Arc = std::pair<OperatorProxy, AbstractState *>;
 using Solution = std::unordered_map<AbstractState *, Arc>;
 
 class AbstractSearch {
-    const TaskProxy task_proxy; // TODO: Remove and pass to get_needed_costs.
     const bool use_general_costs;
     bool has_found_solution;
 
@@ -47,7 +46,7 @@ public:
 
     void backwards_dijkstra(const AbstractStates goals);
 
-    std::vector<int> get_needed_costs(AbstractState *init);
+    std::vector<int> get_needed_costs(AbstractState *init, int num_ops);
 
     bool found_solution() const {
         return has_found_solution;

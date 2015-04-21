@@ -11,8 +11,7 @@ using namespace std;
 
 namespace cegar {
 AbstractSearch::AbstractSearch(const Options &opts)
-    : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
-      use_general_costs(opts.get<bool>("use_general_costs")),
+    : use_general_costs(opts.get<bool>("use_general_costs")),
       has_found_solution(false) {
 }
 
@@ -45,9 +44,9 @@ void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
     astar_search(false, false);
 }
 
-vector<int> AbstractSearch::get_needed_costs(AbstractState *init) {
+vector<int> AbstractSearch::get_needed_costs(AbstractState *init, int num_ops) {
     reset();
-    vector<int> needed_costs(task_proxy.get_operators().size(), -MAX_COST_VALUE);
+    vector<int> needed_costs(num_ops, -MAX_COST_VALUE);
     // Traverse abstraction and remember the minimum cost we need to keep for
     // each operator in order not to decrease any heuristic values.
     g_values[init] = 0;
@@ -69,7 +68,6 @@ AbstractState *AbstractSearch::astar_search(
     }
     if (needed_costs) {
         assert(forward && !use_h);
-        assert(needed_costs->size() == task_proxy.get_operators().size());
     }
     while (!open_queue.empty()) {
         pair<int, AbstractState *> top_pair = open_queue.pop();
