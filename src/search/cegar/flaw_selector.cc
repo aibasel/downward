@@ -97,7 +97,7 @@ const Flaw &FlawSelector::pick_flaw(const AbstractState &state, const Flaws &fla
     }
 
     if (DEBUG) {
-        cout << "Flaws: " << state.str() << endl;
+        cout << "Flaws in state " << state << ": " << endl;
         for (const Flaw &flaw : flaws)
             cout << flaw.first << "=" << flaw.second << " ";
         cout << endl;
