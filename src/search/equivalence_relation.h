@@ -91,7 +91,7 @@ public:
     void refine(const EquivalenceRelation &other);
 
     // See refine(const Block &block)
-    void refine(const std::list<int> &block_X);
+    void refine(ElementListConstIter block_X_begin, ElementListConstIter block_X_end);
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.

@@ -25,12 +25,13 @@ static char *cegar_memory_padding = 0;
 // Save previous out-of-memory handler.
 static void (*global_out_of_memory_handler)(void) = 0;
 
-shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task) {
+shared_ptr<AdditiveHeuristic> get_additive_heuristic(shared_ptr<AbstractTask> task) {
     Options opts;
-    opts.set<TaskProxy *>("task_proxy", &task);
+    opts.set<shared_ptr<AbstractTask> >("transform", task);
     opts.set<int>("cost_type", 0);
     shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
-    additive_heuristic->initialize_and_compute_heuristic(task.get_initial_state());
+    TaskProxy task_proxy(*task);
+    additive_heuristic->initialize_and_compute_heuristic(task_proxy.get_initial_state());
     return additive_heuristic;
 }
 

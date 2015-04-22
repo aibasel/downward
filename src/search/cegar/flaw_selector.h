@@ -29,6 +29,7 @@ enum class PickFlaw {
 };
 
 class FlawSelector {
+    const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
@@ -42,7 +43,7 @@ class FlawSelector {
     double rate_flaw(const AbstractState &state, const Flaw &flaw) const;
 
 public:
-    FlawSelector(TaskProxy task_proxy, PickFlaw pick);
+    FlawSelector(std::shared_ptr<AbstractTask> task, PickFlaw pick);
     ~FlawSelector() = default;
 
     FlawSelector(const FlawSelector &) = delete;

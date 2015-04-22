@@ -23,7 +23,7 @@ void CartesianHeuristic::initialize() {
 }
 
 int CartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
-    TaskProxy task_proxy(abstract_task.get());
+    TaskProxy task_proxy(*abstract_task);
     State state = task_proxy.convert_global_state(global_state);
     int h = split_tree.get_node(state)->get_h();
     assert(h >= 0);
