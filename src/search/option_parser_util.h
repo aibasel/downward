@@ -259,7 +259,7 @@ struct TypeNamer<std::shared_ptr<AbstractTask> > {
 };
 
 template <>
-struct TypeNamer<cegar::Decomposition *> {
+struct TypeNamer<std::shared_ptr<cegar::Decomposition> > {
     static std::string name() {
         return "Decomposition";
     }

@@ -144,14 +144,14 @@ Subtasks LandmarkDecomposition::get_subtasks() const {
     return subtasks;
 }
 
-static Decomposition *_parse_original(OptionParser &parser) {
+static shared_ptr<Decomposition> _parse_original(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     parser.add_option<int>("copies", "number of task copies", "1");
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
-        return new NoDecomposition(opts);
+        return make_shared<NoDecomposition>(opts);
 }
 
 static void add_common_fact_decomposition_options(OptionParser &parser) {
@@ -167,16 +167,16 @@ static void add_common_fact_decomposition_options(OptionParser &parser) {
                            "HADD_DOWN");
 }
 
-static Decomposition *_parse_goals(OptionParser &parser) {
+static shared_ptr<Decomposition> _parse_goals(OptionParser &parser) {
     add_common_fact_decomposition_options(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
-        return new GoalDecomposition(opts);
+        return make_shared<GoalDecomposition>(opts);
 }
 
-static Decomposition *_parse_landmarks(OptionParser &parser) {
+static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
     add_common_fact_decomposition_options(parser);
     parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
     parser.add_option<bool>("write_graph", "write landmark graph dot file", "false");
@@ -184,10 +184,10 @@ static Decomposition *_parse_landmarks(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new LandmarkDecomposition(opts);
+        return make_shared<LandmarkDecomposition>(opts);
 }
 
-static Plugin<Decomposition> _plugin_original("original", _parse_original);
-static Plugin<Decomposition> _plugin_goals("goals", _parse_goals);
-static Plugin<Decomposition> _plugin_landmarks("landmarks", _parse_landmarks);
+static PluginShared<Decomposition> _plugin_original("original", _parse_original);
+static PluginShared<Decomposition> _plugin_goals("goals", _parse_goals);
+static PluginShared<Decomposition> _plugin_landmarks("landmarks", _parse_landmarks);
 }
