@@ -149,7 +149,7 @@ static Decomposition *_parse_original(OptionParser &parser) {
     parser.add_option<int>("copies", "number of task copies", "1");
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return new NoDecomposition(opts);
 }
@@ -171,7 +171,7 @@ static Decomposition *_parse_goals(OptionParser &parser) {
     add_common_fact_decomposition_options(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return new GoalDecomposition(opts);
 }
@@ -182,7 +182,7 @@ static Decomposition *_parse_landmarks(OptionParser &parser) {
     parser.add_option<bool>("write_graph", "write landmark graph dot file", "false");
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return new LandmarkDecomposition(opts);
 }
