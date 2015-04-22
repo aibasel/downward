@@ -4,8 +4,8 @@ using namespace std;
 
 namespace cegar {
 ModifiedGoalsTask::ModifiedGoalsTask(
-    shared_ptr<AbstractTask> parent,
-    vector<pair<int, int> > &goals)
+    const std::shared_ptr<AbstractTask> parent,
+    const std::vector<std::pair<int, int> > &goals)
     : DelegatingTask(parent),
       goals(goals) {
 }

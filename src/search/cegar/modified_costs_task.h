@@ -8,7 +8,7 @@
 class Options;
 
 class ModifiedCostsTask : public DelegatingTask {
-    std::vector<int> operator_costs;
+    const std::vector<int> operator_costs;
 public:
     explicit ModifiedCostsTask(const Options &opts);
     virtual ~ModifiedCostsTask() override = default;

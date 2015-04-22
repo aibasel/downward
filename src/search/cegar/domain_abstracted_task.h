@@ -41,7 +41,7 @@ private:
 
 public:
     DomainAbstractedTask(
-        std::shared_ptr<AbstractTask> parent,
+        const std::shared_ptr<AbstractTask> parent,
         const VarToGroups &value_groups);
 
     virtual int get_variable_domain_size(int var) const override;
