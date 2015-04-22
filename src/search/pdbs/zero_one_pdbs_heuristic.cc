@@ -33,7 +33,7 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     pattern_databases.reserve(pattern_collection.size());
     for (size_t i = 0; i < pattern_collection.size(); ++i) {
         Options opts;
-        opts.set<TaskProxy *>("task_proxy", task);
+        opts.set<shared_ptr<AbstractTask> >("transform", task);
         opts.set<int>("cost_type", cost_type);
         opts.set<vector<int> >("pattern", pattern_collection[i]);
         PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, operator_costs);

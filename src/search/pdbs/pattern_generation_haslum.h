@@ -5,6 +5,7 @@
 #include "../state_registry.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -13,11 +14,10 @@ class CountdownTimer;
 class GlobalState;
 class Options;
 class PDBHeuristic;
-class TaskProxy;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
-    TaskProxy *task;
+    std::shared_ptr<AbstractTask> task;
     const int pdb_max_size; // maximum number of states for each pdb
     const int collection_max_size; // maximum added size of all pdbs
     const int num_samples;
