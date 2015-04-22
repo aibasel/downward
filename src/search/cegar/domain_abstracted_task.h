@@ -18,6 +18,7 @@ using VarToGroups = std::unordered_map<int, ValueGroups>;
 
 class DomainAbstractedTask : public DelegatingTask {
 private:
+    // TODO: Make members const.
     std::vector<int> initial_state_values;
     std::vector<Fact> goals;
     std::vector<int> domain_size;

@@ -17,7 +17,7 @@ class CartesianHeuristic;
 class AdditiveCartesianHeuristic : public Heuristic {
     const Options options;
     std::vector<std::shared_ptr<Decomposition> > decompositions;
-    int max_states;
+    const int max_states;
     std::unique_ptr<CountdownTimer> timer;
     std::vector<int> remaining_costs;
     std::vector<CartesianHeuristic> heuristics;

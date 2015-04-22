@@ -33,7 +33,7 @@ class FlawSelector {
     const TaskProxy task_proxy;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
-    PickFlaw pick;
+    const PickFlaw pick;
 
     int get_constrainedness(const AbstractState &state, int var_id) const;
     double get_refinedness(const AbstractState &state, int var_id) const;

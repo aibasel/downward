@@ -26,10 +26,10 @@ enum class SubtaskOrder {
 
 
 class Decomposition {
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
 
 protected:
-    TaskProxy task_proxy;
+    const TaskProxy task_proxy;
 
     Subtask get_original_task() const;
 

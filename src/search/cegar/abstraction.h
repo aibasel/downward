@@ -49,9 +49,9 @@ class Abstraction {
     AbstractStates goals;
 
     // Statistics.
-    mutable int deviations;
-    mutable int unmet_preconditions;
-    mutable int unmet_goals;
+    int deviations;
+    int unmet_preconditions;
+    int unmet_goals;
 
     // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
