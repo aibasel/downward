@@ -142,9 +142,9 @@ public:
 };
 
 template <>
-class TokenParser<cegar::Decomposition *> {
+class TokenParser<std::shared_ptr<cegar::Decomposition> > {
 public:
-    static inline cegar::Decomposition *parse(OptionParser &p);
+    static inline std::shared_ptr<cegar::Decomposition> parse(OptionParser &p);
 };
 
 template <class T>
@@ -442,8 +442,8 @@ std::shared_ptr<AbstractTask> TokenParser<std::shared_ptr<AbstractTask> >::parse
     return lookup_in_registry_shared<AbstractTask>(p);
 }
 
-cegar::Decomposition *TokenParser<cegar::Decomposition *>::parse(OptionParser &p) {
-    return lookup_in_registry<cegar::Decomposition>(p);
+std::shared_ptr<cegar::Decomposition> TokenParser<std::shared_ptr<cegar::Decomposition> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<cegar::Decomposition>(p);
 }
 
 ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {

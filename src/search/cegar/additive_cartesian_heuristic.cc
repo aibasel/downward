@@ -22,7 +22,7 @@ namespace cegar {
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
-      decompositions(opts.get_list<Decomposition *>("decompositions")),
+      decompositions(opts.get_list<shared_ptr<Decomposition> >("decompositions")),
       max_states(options.get<int>("max_states")),
       timer(new CountdownTimer(options.get<double>("max_time"))),
       num_states(0) {
@@ -94,7 +94,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
 
 void AdditiveCartesianHeuristic::initialize() {
     Log() << "Initializing CEGAR heuristic...";
-    for (Decomposition *decomposition : decompositions) {
+    for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
         cout << endl;
         if (num_states >= max_states || timer->is_expired() ||
@@ -127,7 +127,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.add_list_option<Decomposition *>("decompositions", "Task decompositions", "[landmarks,goals]");
+    parser.add_list_option<shared_ptr<Decomposition> >("decompositions", "Task decompositions", "[landmarks,goals]");
     parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
     parser.add_option<double>("max_time", "maximum time in seconds for building abstractions", "900");
     vector<string> pick_strategies;
