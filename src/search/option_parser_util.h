@@ -91,7 +91,8 @@ public:
         return &instance_;
     }
 
-    void register_object(const std::string &k, Factory f) {
+    void register_object(std::string k, Factory f) {
+        transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
         registered[k] = f;
     }
 
@@ -128,7 +129,8 @@ public:
         return &instance_;
     }
 
-    void predefine(const std::string &k, T obj) {
+    void predefine(std::string k, T obj) {
+        transform(k.begin(), k.end(), k.begin(), ::tolower);
         predefined[k] = obj;
     }
 
