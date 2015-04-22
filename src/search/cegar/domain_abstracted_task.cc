@@ -8,8 +8,7 @@
 using namespace std;
 
 namespace cegar {
-DomainAbstractedTask::DomainAbstractedTask(
-    shared_ptr<AbstractTask> parent,
+DomainAbstractedTask::DomainAbstractedTask(const std::shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups)
     : DelegatingTask(parent),
       initial_state_values(parent->get_initial_state_values()) {
