@@ -14,11 +14,12 @@
 using namespace std;
 
 namespace cegar {
-FlawSelector::FlawSelector(TaskProxy task_proxy, PickFlaw pick)
-    : task_proxy(task_proxy),
+FlawSelector::FlawSelector(std::shared_ptr<AbstractTask> task, PickFlaw pick)
+    : task(task),
+      task_proxy(*task),
       pick(pick) {
     if (pick == PickFlaw::MIN_HADD || pick == PickFlaw::MAX_HADD)
-        additive_heuristic = get_additive_heuristic(task_proxy);
+        additive_heuristic = get_additive_heuristic(task);
 }
 
 int FlawSelector::get_constrainedness(const AbstractState &state, int var_id) const {

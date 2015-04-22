@@ -21,10 +21,10 @@ namespace cegar {
 using StatesToFlaws = unordered_map<AbstractState *, Flaws>;
 
 Abstraction::Abstraction(const Options &opts)
-    : task_proxy(*opts.get<TaskProxy *>("task_proxy")),
+    : task_proxy(*opts.get<shared_ptr<AbstractTask> >("transform")),
       do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
       abstract_search(opts),
-      flaw_selector(task_proxy, PickFlaw(opts.get<int>("pick"))),
+      flaw_selector(opts.get<shared_ptr<AbstractTask> >("transform"), PickFlaw(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
       use_astar(opts.get<bool>("use_astar")),
       timer(opts.get<double>("max_time")),

@@ -30,7 +30,7 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
 
     verify_no_axioms_no_conditional_effects();
 
-    for (OperatorProxy op : task->get_operators())
+    for (OperatorProxy op : task_proxy.get_operators())
         remaining_costs.push_back(op.get_cost());
 }
 
@@ -59,15 +59,14 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
 
         subtask = get_remaining_costs_task(subtask);
 
-        TaskProxy subtask_proxy = TaskProxy(subtask.get());
         if (DEBUG) {
             cout << "Next subtask:" << endl;
-            dump_task(subtask_proxy);
+            dump_task(TaskProxy(*subtask));
         }
 
         double rem_time = options.get<double>("max_time") - timer->get_elapsed_time();
         Options abs_opts(options);
-        abs_opts.set<TaskProxy *>("task_proxy", &subtask_proxy);
+        abs_opts.set<shared_ptr<AbstractTask> >("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
         abs_opts.set<double>("max_time", rem_time / rem_subtasks);
         // TODO: Can we only do this for LandmarkDecompositions?
@@ -82,7 +81,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
         if (init_h > 0) {
             Options opts;
             opts.set<int>("cost_type", 0);
-            opts.set<TaskProxy *>("task_proxy", &subtask_proxy);
+            opts.set<shared_ptr<AbstractTask> >("transform", subtask);
             opts.set<SplitTree>("split_tree", abstraction.get_split_tree());
             heuristics.emplace_back(subtask, opts);
         }

@@ -5,7 +5,6 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "operator_cost.h"
-#include "task_proxy.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -16,6 +15,7 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : task(get_task_from_options(opts)),
+      task_proxy(*task),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
     heuristic = NOT_INITIALIZED;
 }
@@ -123,14 +123,14 @@ int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    return task->convert_global_state(global_state);
+    return task_proxy.convert_global_state(global_state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     // TODO: When the cost_type option is gone, use "no_transform" as default here
     //       and remove the OptionFlags argument.
-    parser.add_option<AbstractTask *>(
+    parser.add_option<shared_ptr<AbstractTask> >(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
@@ -141,28 +141,21 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
-    opts.set<AbstractTask *>("transform", g_root_task().get());
+    opts.set<shared_ptr<AbstractTask> >("transform", g_root_task());
     opts.set<int>("cost_type", 0);
     return opts;
 }
 
-TaskProxy *get_task_from_options(const Options &opts) {
-    /*
-      If the options are created by the parser, they must contain an
-      AbstractTask. If they are created internally, they must contain a
-      TaskProxy. It is an error if both are present.
-    */
-    assert(!(opts.contains("transform") && opts.contains("task_proxy")));
+std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
     /*
       TODO: This code is only intended for the transitional period while we
       still support the "old style" of adjusting costs for the heuristics (via
       the cost_type parameter) in parallel with the "new style" (via task
       transformations). Once all heuristics are adapted to support task
       transformations and we can remove the "cost_type" attribute, the options
-      should always contain a task (either an AbstractTask or a TaskProxy). When
-      that is the case, get_task_from_options() should be integrated into the
-      Heuristic constructor and the PDB heuristic generators (ipdb, gapdb)
-      should directly call opts.get<TaskProxy *>("transform").
+      should always contain an AbstractTask object. Then we can directly
+      call opts.get<shared_ptr<AbstractTask>>("transform") where needed
+      and this function can be removed.
     */
     OperatorCost cost_type = OperatorCost(opts.get_enum("cost_type"));
     if (opts.contains("transform") && cost_type != NORMAL) {
@@ -171,16 +164,14 @@ TaskProxy *get_task_from_options(const Options &opts) {
              << "but not both." << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    TaskProxy *task = nullptr;
-    if (opts.contains("task_proxy")) {
-        task = opts.get<TaskProxy *>("task_proxy");
-    } else if (opts.contains("transform")) {
-        task = new TaskProxy(opts.get<AbstractTask *>("transform"));
+    shared_ptr<AbstractTask> task;
+    if (opts.contains("transform")) {
+        task = opts.get<shared_ptr<AbstractTask> >("transform");
     } else {
         Options options;
-        options.set<AbstractTask *>("transform", g_root_task().get());
+        options.set<shared_ptr<AbstractTask> >("transform", g_root_task());
         options.set<int>("cost_type", cost_type);
-        task = new TaskProxy(new CostAdaptedTask(options));
+        task = make_shared<CostAdaptedTask>(options);
     }
     return task;
 }

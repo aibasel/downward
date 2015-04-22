@@ -1,7 +1,7 @@
 #ifndef CEGAR_DECOMPOSITIONS_H
 #define CEGAR_DECOMPOSITIONS_H
 
-#include "utils.h"
+#include "utils.h" // TODO: Remove?
 
 #include "../additive_heuristic.h"
 #include "../option_parser.h"
@@ -26,6 +26,8 @@ enum class SubtaskOrder {
 
 
 class Decomposition {
+    std::shared_ptr<AbstractTask> task;
+
 protected:
     TaskProxy task_proxy;
 
@@ -36,8 +38,6 @@ public:
     virtual ~Decomposition() = default;
 
     virtual Subtasks get_subtasks() const = 0;
-    Subtask get_next_subtask() const;
-    bool has_next_subtask() const;
 };
 
 
@@ -46,7 +46,7 @@ class NoDecomposition : public Decomposition {
 
 public:
     explicit NoDecomposition(const Options &options);
-    ~NoDecomposition() = default;
+    virtual ~NoDecomposition() = default;
 
     virtual Subtasks get_subtasks() const override;
 };
@@ -58,8 +58,8 @@ class FactDecomposition : public Decomposition {
     struct SortHaddValuesUp {
         const std::shared_ptr<AdditiveHeuristic> hadd;
 
-        explicit SortHaddValuesUp(TaskProxy task_proxy)
-            : hadd(get_additive_heuristic(task_proxy)) {
+        explicit SortHaddValuesUp(std::shared_ptr<AdditiveHeuristic> hadd)
+            : hadd(hadd) {
         }
 
         int get_cost(Fact fact) {
@@ -71,7 +71,7 @@ class FactDecomposition : public Decomposition {
         }
     };
 
-    void remove_intial_state_facts(Facts &facts) const;
+    void remove_initial_state_facts(Facts &facts) const;
     void order_facts(Facts &facts) const;
 
 protected:
@@ -91,7 +91,7 @@ protected:
 
 public:
     explicit GoalDecomposition(const Options &options);
-    ~GoalDecomposition() = default;
+    virtual ~GoalDecomposition() = default;
 
     virtual Subtasks get_subtasks() const override;
 };
@@ -108,7 +108,7 @@ protected:
 
 public:
     explicit LandmarkDecomposition(const Options &opts);
-    ~LandmarkDecomposition() = default;
+    virtual ~LandmarkDecomposition() = default;
 
     virtual Subtasks get_subtasks() const override;
 };

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+class AbstractTask;
 class AdditiveHeuristic;
 class FactProxy;
 class GoalsProxy;
@@ -30,7 +31,7 @@ using Flaws = std::vector<Flaw>;
 using Fact = std::pair<int, int>;
 using VarToValues = std::unordered_map<int, std::vector<int> >;
 
-std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(TaskProxy task);
+std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(std::shared_ptr<AbstractTask> task);
 
 /*
   The set of relaxed-reachable facts is the possibly-before set of facts that

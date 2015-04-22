@@ -20,11 +20,12 @@ using namespace std;
 
 namespace cegar {
 Decomposition::Decomposition(const Options &opts)
-    : task_proxy(*get_task_from_options(opts)) {
+    : task(get_task_from_options(opts)),
+      task_proxy(*task) {
 }
 
 Subtask Decomposition::get_original_task() const {
-    return g_root_task();
+    return task;
 }
 
 
@@ -47,7 +48,7 @@ FactDecomposition::FactDecomposition(const Options &opts)
       subtask_order(SubtaskOrder(opts.get_enum("order"))) {
 }
 
-void FactDecomposition::remove_intial_state_facts(Facts &facts) const {
+void FactDecomposition::remove_initial_state_facts(Facts &facts) const {
     facts.erase(remove_if(facts.begin(), facts.end(),
         [&](Fact fact) {
             return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
@@ -57,7 +58,7 @@ void FactDecomposition::remove_intial_state_facts(Facts &facts) const {
 
 Facts FactDecomposition::get_filtered_and_ordered_facts() const {
     Facts facts = get_facts();
-    remove_intial_state_facts(facts);
+    remove_initial_state_facts(facts);
     order_facts(facts);
     return facts;
 }
@@ -68,7 +69,7 @@ void FactDecomposition::order_facts(vector<Fact> &facts) const {
     if (subtask_order == SubtaskOrder::MIXED) {
         g_rng.shuffle(facts);
     } else if (subtask_order == SubtaskOrder::HADD_UP || subtask_order == SubtaskOrder::HADD_DOWN) {
-        sort(facts.begin(), facts.end(), SortHaddValuesUp(task_proxy));
+        sort(facts.begin(), facts.end(), SortHaddValuesUp(get_additive_heuristic(get_original_task())));
         if (subtask_order == SubtaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {

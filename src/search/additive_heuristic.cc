@@ -111,7 +111,7 @@ void AdditiveHeuristic::mark_preferred_operators(
                 // more expensive applicability test.
                 // If we had no 0-cost operators and axioms to worry
                 // about, this would also be a sufficient condition.
-                OperatorProxy op = task->get_operators()[operator_no];
+                OperatorProxy op = task_proxy.get_operators()[operator_no];
                 if (is_applicable(op, state))
                     set_preferred(op);
             }
