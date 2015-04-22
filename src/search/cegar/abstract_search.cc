@@ -11,12 +11,10 @@ using namespace std;
 
 namespace cegar {
 AbstractSearch::AbstractSearch(const Options &opts)
-    : use_general_costs(opts.get<bool>("use_general_costs")),
-      has_found_solution(false) {
+    : use_general_costs(opts.get<bool>("use_general_costs")) {
 }
 
 void AbstractSearch::reset() {
-    has_found_solution = false;
     g_values.clear();
     open_queue.clear();
     solution_backward.clear();
@@ -28,7 +26,7 @@ bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
     g_values[init] = 0;
     open_queue.push(init->get_h(), init);
     AbstractState *goal = astar_search(true, true, &goals);
-    has_found_solution = bool(goal);
+    bool has_found_solution = static_cast<bool>(goal);
     if (has_found_solution) {
         extract_solution(init, goal);
     }
