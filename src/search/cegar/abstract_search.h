@@ -20,12 +20,10 @@ using Solution = std::unordered_map<AbstractState *, Arc>;
 
 class AbstractSearch {
     const bool use_general_costs;
-    bool has_found_solution;
 
     AdaptiveQueue<AbstractState *> open_queue;
     Solution solution_backward;
     Solution solution_forward;
-
     std::unordered_map<AbstractState *, int> g_values;
 
     void reset();
