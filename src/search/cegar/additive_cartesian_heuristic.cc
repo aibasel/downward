@@ -66,7 +66,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
 
         double rem_time = options.get<double>("max_time") - timer->get_elapsed_time();
         Options abs_opts(options);
-        abs_opts.set<shared_ptr<AbstractTask> >("transform", subtask);
+        abs_opts.set<Subtask>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
         abs_opts.set<double>("max_time", rem_time / rem_subtasks);
         // TODO: Can we only do this for LandmarkDecompositions?
@@ -81,7 +81,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
         if (init_h > 0) {
             Options opts;
             opts.set<int>("cost_type", 0);
-            opts.set<shared_ptr<AbstractTask> >("transform", subtask);
+            opts.set<Subtask>("transform", subtask);
             opts.set<SplitTree>("split_tree", abstraction.get_split_tree());
             heuristics.emplace_back(opts);
         }
@@ -97,7 +97,8 @@ void AdditiveCartesianHeuristic::initialize() {
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
         cout << endl;
-        if (num_states >= max_states || timer->is_expired() ||
+        if (num_states >= max_states ||
+            timer->is_expired() ||
             compute_heuristic(g_initial_state()) == DEAD_END)
             break;
     }
