@@ -110,12 +110,11 @@ vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     return values;
 }
 
-static AbstractTask *_parse(OptionParser &parser) {
+static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        // TODO (issue456): Return shared pointer.
-        return g_root_task().get();
+        return g_root_task();
 }
 
-static Plugin<AbstractTask> _plugin("no_transform", _parse);
+static PluginShared<AbstractTask> _plugin("no_transform", _parse);
