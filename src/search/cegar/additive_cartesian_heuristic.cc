@@ -83,7 +83,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
             opts.set<int>("cost_type", 0);
             opts.set<shared_ptr<AbstractTask> >("transform", subtask);
             opts.set<SplitTree>("split_tree", abstraction.get_split_tree());
-            heuristics.emplace_back(subtask, opts);
+            heuristics.emplace_back(opts);
         }
         if (init_h == INF || num_states >= max_states || timer->is_expired())
             break;
