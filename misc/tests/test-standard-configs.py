@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from downward import configs
+import configs
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
