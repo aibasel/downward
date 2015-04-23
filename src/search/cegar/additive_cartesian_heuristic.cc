@@ -95,7 +95,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
 }
 
 void AdditiveCartesianHeuristic::initialize() {
-    Log() << "Initializing CEGAR heuristic...";
+    Log() << "Initializing additive Cartesian heuristic...";
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
         cout << endl;
@@ -109,11 +109,10 @@ void AdditiveCartesianHeuristic::initialize() {
 }
 
 void AdditiveCartesianHeuristic::print_statistics() {
-    Log() << "Done initializing CEGAR heuristic";
+    Log() << "Done initializing additive Cartesian heuristic";
     cout << "Cartesian abstractions: " << num_abstractions << endl;
     cout << "Cartesian heuristics: " << heuristics.size() << endl;
-    cout << "Total abstract states: " << num_states << endl;
-    cout << "Initial h value: " << compute_heuristic(g_initial_state()) << endl;
+    cout << "Cartesian states: " << num_states << endl;
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
