@@ -491,7 +491,7 @@ bool does_fire(EffectProxy effect, const State &state);
 
 class State {
     const AbstractTask *task;
-    std::vector<int> values;
+    const std::vector<int> values;
 public:
     using ItemType = FactProxy;
     State(const AbstractTask &task, std::vector<int> && values)
@@ -500,13 +500,6 @@ public:
     }
     ~State() = default;
     State(const State &other) = default;
-
-    State &operator=(const State && other) {
-        if (this != &other) {
-            values = std::move(other.values);
-        }
-        return *this;
-    }
 
     State(State && other)
         : task(other.task), values(std::move(other.values)) {
