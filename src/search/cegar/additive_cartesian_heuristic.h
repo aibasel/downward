@@ -21,6 +21,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     std::unique_ptr<CountdownTimer> timer;
     std::vector<int> remaining_costs;
     std::vector<CartesianHeuristic> heuristics;
+    int num_abstractions;
     int num_states;
 
     std::shared_ptr<AbstractTask> get_remaining_costs_task(std::shared_ptr<AbstractTask> parent) const;
