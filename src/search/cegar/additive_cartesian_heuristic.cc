@@ -25,6 +25,7 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
       decompositions(opts.get_list<shared_ptr<Decomposition> >("decompositions")),
       max_states(options.get<int>("max_states")),
       timer(new CountdownTimer(options.get<double>("max_time"))),
+      num_abstractions(0),
       num_states(0) {
     DEBUG = opts.get<bool>("debug");
 
@@ -73,6 +74,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
         abs_opts.set<bool>("separate_unreachable_facts", true);
         Abstraction abstraction(abs_opts);
 
+        ++num_abstractions;
         num_states += abstraction.get_num_states();
         vector<int> needed_costs = abstraction.get_needed_costs();
         reduce_remaining_costs(remaining_costs, needed_costs);
@@ -108,7 +110,8 @@ void AdditiveCartesianHeuristic::initialize() {
 
 void AdditiveCartesianHeuristic::print_statistics() {
     Log() << "Done initializing CEGAR heuristic";
-    cout << "Cartesian abstractions: " << heuristics.size() << endl;
+    cout << "Cartesian abstractions: " << num_abstractions << endl;
+    cout << "Cartesian heuristics: " << heuristics.size() << endl;
     cout << "Total abstract states: " << num_states << endl;
     cout << "Initial h value: " << compute_heuristic(g_initial_state()) << endl;
 }
