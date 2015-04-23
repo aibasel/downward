@@ -35,7 +35,9 @@ Abstraction::Abstraction(const Options &opts)
       unmet_goals(0) {
     reserve_memory_padding();
 
+    Log() << "Start building abstraction.";
     build();
+    Log() << "Done building abstraction.";
 
     // Even if we found a concrete solution, we might have refined in the
     // last iteration, so we must update the h values.
@@ -280,14 +282,13 @@ void Abstraction::print_statistics() {
     assert(total_outgoing_arcs == total_incoming_arcs);
 
     cout << "Time: " << timer << endl;
-    cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
     cout << "States: " << get_num_states() << endl;
     cout << "Dead ends: " << dead_ends << endl;
     cout << "Init-h: " << init->get_h() << endl;
 
     cout << "Transitions: " << total_incoming_arcs << endl;
     cout << "Self-loops: " << total_loops << endl;
-    cout << "Arc size: " << arc_size / 1024 << " KB" << endl;
+    cout << "Transitions and self-loops size: " << arc_size / 1024 << " KB" << endl;
 
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
