@@ -28,7 +28,7 @@ class OpenList;
 class AbstractTask;
 
 namespace cegar {
-    class Decomposition;
+class Decomposition;
 }
 
 

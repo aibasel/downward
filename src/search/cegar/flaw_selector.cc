@@ -77,7 +77,7 @@ double FlawSelector::rate_flaw(const AbstractState &state, const Flaw &flaw) con
     } else if (pick == PickFlaw::MIN_REFINED || pick == PickFlaw::MAX_REFINED) {
         rating = get_refinedness(state, var_id);
     } else if (pick == PickFlaw::MIN_HADD || pick == PickFlaw::MAX_HADD) {
-        rating  = get_extreme_hadd_value(var_id, values);
+        rating = get_extreme_hadd_value(var_id, values);
     } else {
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
         exit_with(EXIT_INPUT_ERROR);

@@ -7,11 +7,11 @@ using namespace std;
 namespace cegar {
 DomainAbstractedTask::DomainAbstractedTask(
     const shared_ptr<AbstractTask> parent,
-    vector<int> &&domain_size,
-    vector<int> &&initial_state_values,
-    vector<Fact> &&goals,
-    vector<vector<string> > &&fact_names,
-    vector<vector<int> > &&value_map)
+    vector<int> && domain_size,
+    vector<int> && initial_state_values,
+    vector<Fact> && goals,
+    vector<vector<string> > && fact_names,
+    vector<vector<int> > && value_map)
     : DelegatingTask(parent),
       domain_size(domain_size),
       initial_state_values(initial_state_values),

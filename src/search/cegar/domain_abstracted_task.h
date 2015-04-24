@@ -37,11 +37,11 @@ private:
 public:
     DomainAbstractedTask(
         const std::shared_ptr<AbstractTask> parent,
-        std::vector<int> &&domain_size,
-        std::vector<int> &&initial_state_values,
-        std::vector<Fact> &&goals,
-        std::vector<std::vector<std::string> > &&fact_names,
-        std::vector<std::vector<int> > &&value_map);
+        std::vector<int> && domain_size,
+        std::vector<int> && initial_state_values,
+        std::vector<Fact> && goals,
+        std::vector<std::vector<std::string> > && fact_names,
+        std::vector<std::vector<int> > && value_map);
 
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;
