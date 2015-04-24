@@ -1,8 +1,6 @@
 #ifndef CEGAR_DECOMPOSITIONS_H
 #define CEGAR_DECOMPOSITIONS_H
 
-#include "utils.h" // TODO: Remove?
-
 #include "../additive_heuristic.h"
 #include "../option_parser.h"
 #include "../task_proxy.h"

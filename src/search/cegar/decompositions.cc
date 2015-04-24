@@ -4,7 +4,6 @@
 #include "modified_goals_task.h"
 #include "utils_landmarks.h"
 
-#include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
