@@ -30,12 +30,12 @@ Subtask Decomposition::get_original_task() const {
 
 NoDecomposition::NoDecomposition(const Options &opts)
     : Decomposition(opts),
-      copies(opts.get<int>("copies")) {
+      num_copies(opts.get<int>("copies")) {
 }
 
 Subtasks NoDecomposition::get_subtasks() const {
     Subtasks tasks;
-    for (int i = 0; i < copies; ++i) {
+    for (int i = 0; i < num_copies; ++i) {
         tasks.push_back(get_original_task());
     }
     return tasks;
