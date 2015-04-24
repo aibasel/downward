@@ -49,7 +49,7 @@ class SearchEngine;
 class ShrinkStrategy;
 
 namespace cegar {
-    class Decomposition;
+class Decomposition;
 }
 
 /*

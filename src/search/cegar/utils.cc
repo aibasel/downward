@@ -111,7 +111,8 @@ void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws &flaws)
     for (FactProxy precondition : op.get_preconditions()) {
         VariableProxy var = precondition.get_variable();
         if (state[var] != precondition)
-            flaws.emplace_back(var.get_id(), vector<int> {precondition.get_value()});
+            flaws.emplace_back(var.get_id(), vector<int> {precondition.get_value()}
+                               );
     }
     assert(flaws.empty() == is_applicable(op, state));
 }
@@ -121,7 +122,8 @@ void get_unmet_goals(GoalsProxy goals, const State &state, Flaws &flaws) {
     for (FactProxy goal : goals) {
         VariableProxy var = goal.get_variable();
         if (state[var] != goal)
-            flaws.emplace_back(var.get_id(), vector<int> {goal.get_value()});
+            flaws.emplace_back(var.get_id(), vector<int> {goal.get_value()}
+                               );
     }
 }
 

@@ -49,10 +49,11 @@ FactDecomposition::FactDecomposition(const Options &opts)
 
 void FactDecomposition::remove_initial_state_facts(Facts &facts) const {
     facts.erase(remove_if(facts.begin(), facts.end(),
-        [&](Fact fact) {
-            return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
-        }),
-        facts.end());
+                          [&](Fact fact) {
+                              return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
+                          }
+                          ),
+                facts.end());
 }
 
 Facts FactDecomposition::get_filtered_and_ordered_facts() const {
@@ -94,7 +95,9 @@ Subtasks GoalDecomposition::get_subtasks() const {
     Subtasks tasks;
     for (Fact goal : get_filtered_and_ordered_facts()) {
         Subtask abstracted_task = get_original_task();
-        Facts goals {goal};
+        Facts goals {
+            goal
+        };
         abstracted_task = make_shared<ModifiedGoalsTask>(abstracted_task, goals);
         tasks.push_back(abstracted_task);
     }
@@ -105,7 +108,6 @@ Subtasks GoalDecomposition::get_subtasks() const {
 LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
     : FactDecomposition(opts),
       landmark_graph(get_landmark_graph()) {
-
     if (DEBUG)
         dump_landmark_graph(landmark_graph);
     if (opts.get<bool>("write_graph"))
@@ -133,7 +135,9 @@ Subtasks LandmarkDecomposition::get_subtasks() const {
     Subtasks subtasks;
     for (Fact landmark : get_filtered_and_ordered_facts()) {
         Subtask subtask = get_original_task();
-        Facts goals {landmark};
+        Facts goals {
+            landmark
+        };
         subtask = make_shared<ModifiedGoalsTask>(subtask, goals);
         if (combine_facts) {
             subtask = get_domain_abstracted_task(subtask, landmark);

@@ -95,8 +95,8 @@ void DomainAbstractedTaskBuilder::combine_values(int var, const ValueGroups &gro
 }
 
 shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task(
-        const shared_ptr<AbstractTask> parent,
-        const VarToGroups &value_groups) {
+    const shared_ptr<AbstractTask> parent,
+    const VarToGroups &value_groups) {
     initialize(parent);
     for (const auto &pair : value_groups) {
         int var = pair.first;
@@ -104,8 +104,7 @@ shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task(
         combine_values(var, groups);
     }
     return make_shared<DomainAbstractedTask>(
-        parent, move(domain_size), move(initial_state_values), move(goals),
-        move(fact_names), move(value_map));
+               parent, move(domain_size), move(initial_state_values), move(goals),
+               move(fact_names), move(value_map));
 }
-
 }

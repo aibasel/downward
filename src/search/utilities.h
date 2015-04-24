@@ -116,7 +116,7 @@ class Log {
     std::ostringstream os;
 public:
     template <typename T>
-    Log & operator<<(T const & value) {
+    Log &operator<<(T const &value) {
         os << value;
         return *this;
     }
