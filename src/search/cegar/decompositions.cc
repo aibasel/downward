@@ -122,7 +122,7 @@ Subtask LandmarkDecomposition::get_domain_abstracted_task(Subtask parent, Fact f
         if (group.size() >= 2)
             groups[var].push_back(group);
     }
-    return DomainAbstractedTaskBuilder(parent, groups).get_task();
+    return DomainAbstractedTaskBuilder().get_task(parent, groups);
 }
 
 Facts LandmarkDecomposition::get_facts() const {

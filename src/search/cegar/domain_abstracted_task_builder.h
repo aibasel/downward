@@ -19,17 +19,15 @@ private:
     std::vector<std::vector<std::string> > fact_names;
     std::vector<std::vector<int> > value_map;
 
+    void initialize(const std::shared_ptr<AbstractTask> parent);
     void move_fact(int var, int before, int after);
     void combine_values(int var, const ValueGroups &groups);
-
     std::string get_combined_fact_name(int var, const ValueGroup &values) const;
 
 public:
-    DomainAbstractedTaskBuilder(
+    std::shared_ptr<AbstractTask> get_task(
         const std::shared_ptr<AbstractTask> parent,
         const VarToGroups &value_groups);
-
-    std::shared_ptr<AbstractTask> get_task() const;
 };
 }
 
