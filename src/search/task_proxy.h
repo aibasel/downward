@@ -499,7 +499,7 @@ public:
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
-    State(const State &other) = default;
+    State(const State &) = default;
 
     State(State && other)
         : task(other.task), values(std::move(other.values)) {
