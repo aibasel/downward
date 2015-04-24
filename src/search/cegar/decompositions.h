@@ -40,7 +40,7 @@ public:
 
 
 class NoDecomposition : public Decomposition {
-    int copies;
+    int num_copies;
 
 public:
     explicit NoDecomposition(const Options &options);
