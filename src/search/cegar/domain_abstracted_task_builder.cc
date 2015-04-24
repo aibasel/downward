@@ -104,7 +104,8 @@ shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task(
         combine_values(var, groups);
     }
     return make_shared<DomainAbstractedTask>(
-        parent, domain_size, initial_state_values, goals, fact_names, value_map);
+        parent, move(domain_size), move(initial_state_values), move(goals),
+        move(fact_names), move(value_map));
 }
 
 }
