@@ -112,7 +112,7 @@ void Abstraction::build() {
         if (found_conc_solution)
             break;
     }
-    cout << "Solution found while refining: " << found_conc_solution << endl;
+    cout << "Concrete solution found: " << found_conc_solution << endl;
 }
 
 void Abstraction::break_solution(AbstractState *state, const Flaws &flaws) {
@@ -281,7 +281,12 @@ void Abstraction::print_statistics() {
     }
     assert(total_outgoing_arcs == total_incoming_arcs);
 
+    int total_cost = 0;
+    for (OperatorProxy op : task_proxy.get_operators())
+        total_cost += op.get_cost();
+
     cout << "Time: " << timer << endl;
+    cout << "Total operator cost: " << total_cost << endl;
     cout << "States: " << get_num_states() << endl;
     cout << "Dead ends: " << dead_ends << endl;
     cout << "Init-h: " << init->get_h() << endl;
