@@ -1,6 +1,6 @@
 #include "decompositions.h"
 
-#include "domain_abstracted_task.h"
+#include "domain_abstracted_task_builder.h"
 #include "modified_goals_task.h"
 #include "utils_landmarks.h"
 
@@ -122,7 +122,7 @@ Subtask LandmarkDecomposition::get_domain_abstracted_task(Subtask parent, Fact f
         if (group.size() >= 2)
             groups[var].push_back(group);
     }
-    return make_shared<DomainAbstractedTask>(parent, groups);
+    return DomainAbstractedTaskBuilder(parent, groups).get_task();
 }
 
 Facts LandmarkDecomposition::get_facts() const {
