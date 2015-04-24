@@ -5,13 +5,10 @@
 using namespace std;
 
 namespace cegar {
-DomainAbstractedTaskBuilder::DomainAbstractedTaskBuilder(
-        const std::shared_ptr<AbstractTask> parent,
-        const VarToGroups &value_groups)
-    : parent(parent),
-      initial_state_values(parent->get_initial_state_values()) {
+void DomainAbstractedTaskBuilder::initialize(const shared_ptr<AbstractTask> parent) {
     int num_vars = parent->get_num_variables();
     domain_size.resize(num_vars);
+    initial_state_values = parent->get_initial_state_values();
     value_map.resize(num_vars);
     fact_names.resize(num_vars);
     for (int var = 0; var < num_vars; ++var) {
@@ -23,12 +20,6 @@ DomainAbstractedTaskBuilder::DomainAbstractedTaskBuilder(
             value_map[var][value] = value;
             fact_names[var][value] = parent->get_fact_name(var, value);
         }
-    }
-
-    for (const auto &pair : value_groups) {
-        int var = pair.first;
-        const ValueGroups &groups = pair.second;
-        combine_values(var, groups);
     }
 }
 
@@ -103,7 +94,15 @@ void DomainAbstractedTaskBuilder::combine_values(int var, const ValueGroups &gro
     domain_size[var] = new_domain_size;
 }
 
-shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task() const {
+shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task(
+        const shared_ptr<AbstractTask> parent,
+        const VarToGroups &value_groups) {
+    initialize(parent);
+    for (const auto &pair : value_groups) {
+        int var = pair.first;
+        const ValueGroups &groups = pair.second;
+        combine_values(var, groups);
+    }
     return make_shared<DomainAbstractedTask>(
         parent, domain_size, initial_state_values, goals, fact_names, value_map);
 }
