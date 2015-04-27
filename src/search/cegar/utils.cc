@@ -128,13 +128,9 @@ void get_unmet_goals(GoalsProxy goals, const State &state, Flaws &flaws) {
 }
 
 void continuing_out_of_memory_handler() {
-    assert(cegar_memory_padding);
-    delete[] cegar_memory_padding;
-    cegar_memory_padding = 0;
+    release_memory_padding();
     cout << "Failed to allocate memory for CEGAR abstraction. "
          << "Released memory padding and will stop refinement now." << endl;
-    assert(global_out_of_memory_handler);
-    set_new_handler(global_out_of_memory_handler);
 }
 
 void reserve_memory_padding() {
@@ -146,15 +142,14 @@ void reserve_memory_padding() {
 }
 
 void release_memory_padding() {
-    if (cegar_memory_padding) {
-        delete[] cegar_memory_padding;
-        cegar_memory_padding = 0;
-    }
+    assert(cegar_memory_padding);
+    delete[] cegar_memory_padding;
+    cegar_memory_padding = nullptr;
     assert(global_out_of_memory_handler);
     set_new_handler(global_out_of_memory_handler);
 }
 
 bool memory_padding_is_reserved() {
-    return cegar_memory_padding != 0;
+    return cegar_memory_padding;
 }
 }
