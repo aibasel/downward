@@ -54,6 +54,7 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(sh
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
            !timer->is_expired() &&
+           memory_padding_is_reserved() &&
            compute_heuristic(g_initial_state()) != DEAD_END;
 }
 
@@ -102,12 +103,15 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
 
 void AdditiveCartesianHeuristic::initialize() {
     Log() << "Initializing additive Cartesian heuristic...";
+    reserve_memory_padding();
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
         cout << endl;
         if (!may_build_another_abstraction())
             break;
     }
+    if (memory_padding_is_reserved())
+        release_memory_padding();
     print_statistics();
     cout << endl;
 }

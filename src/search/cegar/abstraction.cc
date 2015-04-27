@@ -33,8 +33,6 @@ Abstraction::Abstraction(const Options &opts)
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
-    reserve_memory_padding();
-
     Log() << "Start building abstraction.";
     build();
     Log() << "Done building abstraction.";
@@ -47,7 +45,6 @@ Abstraction::Abstraction(const Options &opts)
 }
 
 Abstraction::~Abstraction() {
-    release_memory_padding();
     for (AbstractState *state : states)
         delete state;
 }
