@@ -25,8 +25,9 @@ class AdditiveCartesianHeuristic : public Heuristic {
     int num_states;
 
     std::shared_ptr<AbstractTask> get_remaining_costs_task(std::shared_ptr<AbstractTask> parent) const;
+    bool may_build_another_abstraction();
     void build_abstractions(const Decomposition &decomposition);
-    void print_statistics();
+    void print_statistics() const;
 
 protected:
     virtual void initialize();

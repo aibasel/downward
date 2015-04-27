@@ -51,6 +51,12 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(sh
     return make_shared<ModifiedCostsTask>(opts);
 }
 
+bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
+    return num_states < max_states &&
+           !timer->is_expired() &&
+           compute_heuristic(g_initial_state()) != DEAD_END;
+}
+
 void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decomposition) {
     Subtasks subtasks = decomposition.get_subtasks();
 
@@ -87,7 +93,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
             opts.set<SplitTree>("split_tree", abstraction.get_split_tree());
             heuristics.emplace_back(opts);
         }
-        if (init_h == INF || num_states >= max_states || timer->is_expired())
+        if (!may_build_another_abstraction())
             break;
 
         --rem_subtasks;
@@ -99,16 +105,14 @@ void AdditiveCartesianHeuristic::initialize() {
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
         cout << endl;
-        if (num_states >= max_states ||
-            timer->is_expired() ||
-            compute_heuristic(g_initial_state()) == DEAD_END)
+        if (!may_build_another_abstraction())
             break;
     }
     print_statistics();
     cout << endl;
 }
 
-void AdditiveCartesianHeuristic::print_statistics() {
+void AdditiveCartesianHeuristic::print_statistics() const {
     Log() << "Done initializing additive Cartesian heuristic";
     cout << "Cartesian abstractions: " << num_abstractions << endl;
     cout << "Cartesian heuristics: " << heuristics.size() << endl;
