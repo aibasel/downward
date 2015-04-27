@@ -26,7 +26,6 @@ Abstraction::Abstraction(const Options &opts)
       abstract_search(opts),
       flaw_selector(opts.get<shared_ptr<AbstractTask> >("transform"), PickFlaw(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
-      use_astar(opts.get<bool>("use_astar")),
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
       init(nullptr),
@@ -92,15 +91,9 @@ bool Abstraction::may_keep_refining() const {
 
 void Abstraction::build() {
     create_initial_abstraction();
-    bool found_abs_solution = false;
     bool found_conc_solution = false;
     while (may_keep_refining()) {
-        if (use_astar) {
-            found_abs_solution = abstract_search.find_solution(init, goals);
-        } else {
-            update_h_values();
-            found_abs_solution = init->get_h() != INF;
-        }
+        bool found_abs_solution = abstract_search.find_solution(init, goals);
         if (!found_abs_solution) {
             cout << "Abstract problem is unsolvable!" << endl;
             break;
@@ -189,8 +182,8 @@ bool Abstraction::check_and_break_solution(const Solution &solution) {
         for (auto &arc : abs_state->get_outgoing_arcs()) {
             OperatorProxy op = arc.first;
             AbstractState *next_abs = arc.second;
-            assert(!use_astar || solution.count(abs_state) == 1);
-            if (use_astar && solution.at(abs_state) != arc)
+            assert(solution.count(abs_state) == 1);
+            if (solution.at(abs_state) != arc)
                 // Arc is not part of the path that A* found.
                 continue;
             if (next_abs->get_h() + op.get_cost() != abs_state->get_h())
@@ -237,8 +230,7 @@ bool Abstraction::check_and_break_solution(const Solution &solution) {
     }
     if (DEBUG)
         cout << "Broke " << broken_solutions << " solutions" << endl;
-    assert(broken_solutions > 0 || !may_keep_refining());
-    assert(!use_astar || broken_solutions == 1 || !may_keep_refining());
+    assert(broken_solutions >= 1 || !may_keep_refining());
     return false;
 }
 

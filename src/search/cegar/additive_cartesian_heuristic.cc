@@ -151,7 +151,6 @@ static Heuristic *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_HADD");
     parser.add_enum_option(
         "pick", pick_strategies, "how to pick the next flaw", "MAX_REFINED");
-    parser.add_option<bool>("use_astar", "use A* to find the *single* next solution", "true");
     parser.add_option<bool>("use_general_costs", "allow negative costs in cost partitioning", "true");
     parser.add_option<bool>("debug", "print debugging output", "false");
     Heuristic::add_options_to_parser(parser);
