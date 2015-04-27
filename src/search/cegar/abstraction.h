@@ -34,7 +34,6 @@ class Abstraction {
     FlawSelector flaw_selector;
 
     const int max_states;
-    const bool use_astar;
 
     // Limit the time for building the abstraction.
     CountdownTimer timer;
