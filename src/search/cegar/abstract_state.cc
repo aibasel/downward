@@ -200,11 +200,10 @@ Domains AbstractState::regress(OperatorProxy op) const {
     return regressed_domains;
 }
 
-void AbstractState::get_possible_flaws(const AbstractState &desired,
-                                       const State &prev_conc_state,
-                                       Flaws *flaws)
+Flaws AbstractState::get_possible_flaws(const AbstractState &desired,
+                                        const State &prev_conc_state)
 const {
-    domains.get_possible_flaws(desired.domains, prev_conc_state, flaws);
+    return domains.get_possible_flaws(desired.domains, prev_conc_state);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {

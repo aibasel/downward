@@ -99,10 +99,9 @@ bool Domains::abstracts(const Domains &other) const {
     return other.bits.is_subset_of(bits);
 }
 
-void Domains::get_possible_flaws(const Domains &flaw,
-                                 const State &conc_state,
-                                 Flaws *flaws) const {
-    assert(flaws->empty());
+Flaws Domains::get_possible_flaws(const Domains &flaw,
+                                  const State &conc_state) const {
+    Flaws flaws;
     Bitset intersection(bits & flaw.bits);
     for (size_t var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var].get_value()))) {
@@ -112,10 +111,11 @@ void Domains::get_possible_flaws(const Domains &flaw,
                     wanted.push_back(pos - borders[var]);
                 }
             }
-            flaws->push_back(make_pair(var, wanted));
+            flaws.push_back(make_pair(var, wanted));
         }
     }
-    assert(!flaws->empty());
+    assert(!flaws.empty());
+    return flaws;
 }
 
 ostream &operator<<(ostream &os, const Domains &domains) {

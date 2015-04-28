@@ -60,9 +60,8 @@ public:
 
     void add_loop(OperatorProxy op);
 
-    void get_possible_flaws(const AbstractState &desired,
-                            const State &prev_conc_state,
-                            Flaws *flaws) const;
+    Flaws get_possible_flaws(const AbstractState &desired,
+                             const State &prev_conc_state) const;
 
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;

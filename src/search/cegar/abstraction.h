@@ -67,13 +67,10 @@ class Abstraction {
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
 
-    // Refine states between state and init until the solution is broken.
-    void break_solution(AbstractState *state, const Flaws &flaws);
-
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw
     // from appearing in the next round again.
-    bool check_and_break_solution(const Solution &solution);
+    StateFlaws find_flaws(const Solution &solution);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values();

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+class AbstractState;
 class AbstractTask;
 class AdditiveHeuristic;
 class FactProxy;
@@ -28,6 +29,7 @@ const int MAX_COST_VALUE = 100000000;
 
 using Flaw = std::pair<int, std::vector<int> >;
 using Flaws = std::vector<Flaw>;
+using StateFlaws = std::pair<AbstractState *, Flaws>;
 using Fact = std::pair<int, int>;
 using VarToValues = std::unordered_map<int, std::vector<int> >;
 
@@ -44,9 +46,9 @@ int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
 
-void get_unmet_preconditions(OperatorProxy op, const State &state, Flaws &flaws);
+Flaws get_unmet_preconditions(OperatorProxy op, const State &state);
 
-void get_unmet_goals(GoalsProxy goals, const State &state, Flaws &flaws);
+Flaws get_unmet_goals(GoalsProxy goals, const State &state);
 
 void reserve_memory_padding();
 void release_memory_padding();

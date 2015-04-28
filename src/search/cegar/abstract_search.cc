@@ -17,8 +17,8 @@ AbstractSearch::AbstractSearch(const Options &opts)
 void AbstractSearch::reset() {
     g_values.clear();
     open_queue.clear();
-    solution_backward.clear();
-    solution_forward.clear();
+    prev_arc.clear();
+    solution.clear();
 }
 
 bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
@@ -117,10 +117,10 @@ AbstractState *AbstractSearch::astar_search(
                 assert(f >= 0);
                 open_queue.push(f, successor);
                 // Work around the fact that OperatorProxy has no default constructor.
-                auto it = solution_backward.find(successor);
-                if (it != solution_backward.end())
-                    solution_backward.erase(it);
-                solution_backward.insert(make_pair(successor, Arc(op, state)));
+                auto it = prev_arc.find(successor);
+                if (it != prev_arc.end())
+                    prev_arc.erase(it);
+                prev_arc.insert(make_pair(successor, Arc(op, state)));
             }
         }
     }
@@ -130,11 +130,10 @@ AbstractState *AbstractSearch::astar_search(
 void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) {
     AbstractState *current = goal;
     while (current != init) {
-        Arc &prev_arc = solution_backward.at(current);
-        OperatorProxy prev_op = prev_arc.first;
-        AbstractState *prev_state = prev_arc.second;
-        assert(solution_forward.count(prev_state) == 0);
-        solution_forward.insert(make_pair(prev_state, Arc(prev_op, current)));
+        Arc &prev = prev_arc.at(current);
+        OperatorProxy prev_op = prev.first;
+        AbstractState *prev_state = prev.second;
+        solution.push_front(Arc(prev_op, current));
         prev_state->set_h(current->get_h() + prev_op.get_cost());
         assert(prev_state != current);
         current = prev_state;
