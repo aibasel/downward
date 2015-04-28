@@ -170,7 +170,9 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         cout << "Check solution:" << endl;
 
     AbstractState *abs_state = init;
+    AbstractState *prev_abs_state = nullptr;
     State conc_state = concrete_initial_state;
+    State prev_conc_state = concrete_initial_state;  // Arbitrary state.
 
     if (DEBUG)
         cout << "  Initial abstract state: " << *abs_state << endl;
@@ -182,11 +184,12 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         AbstractState *next_abs_state = solution[step].second;
         if (!abs_state->is_abstraction_of(conc_state)) {
             assert(step >= 1);
+            assert(prev_abs_state);
             if (DEBUG)
                 cout << "  Paths deviate." << endl;
             ++deviations;
             OperatorProxy prev_op = solution[step - 1].first;
-            return make_shared<Flaw>(move(conc_state), abs_state, AbstractState(abs_state->regress(prev_op), nullptr));
+            return make_shared<Flaw>(move(prev_conc_state), prev_abs_state, AbstractState(abs_state->regress(prev_op), nullptr));
         } else if (!is_applicable(next_op, conc_state)) {
             if (DEBUG)
                 cout << "  Operator not applicable: " << next_op.get_name() << endl;
@@ -196,8 +199,11 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
                      << next_op.get_name() << endl;
+            prev_abs_state = abs_state;
             abs_state = next_abs_state;
-            conc_state = move(conc_state.apply(next_op));
+            State next_conc_state = move(conc_state.apply(next_op));
+            prev_conc_state = move(conc_state);
+            conc_state = move(next_conc_state);
         }
     }
     assert(is_goal(abs_state));
