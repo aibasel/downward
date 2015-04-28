@@ -47,7 +47,7 @@ public:
 
     std::vector<int> get_needed_costs(AbstractState *init, int num_ops);
 
-    Solution &get_solution() {
+    const Solution &get_solution() {
         return solution;
     }
 
