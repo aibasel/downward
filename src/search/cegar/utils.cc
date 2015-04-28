@@ -106,29 +106,6 @@ int get_post(OperatorProxy op, int var_id) {
     return get_pre(op, var_id);
 }
 
-Flaws get_unmet_preconditions(OperatorProxy op, const State &state) {
-    Flaws flaws;
-    for (FactProxy precondition : op.get_preconditions()) {
-        VariableProxy var = precondition.get_variable();
-        if (state[var] != precondition)
-            flaws.emplace_back(var.get_id(), vector<int> {precondition.get_value()}
-                               );
-    }
-    assert(flaws.empty() == is_applicable(op, state));
-    return flaws;
-}
-
-Flaws get_unmet_goals(GoalsProxy goals, const State &state) {
-    Flaws flaws;
-    for (FactProxy goal : goals) {
-        VariableProxy var = goal.get_variable();
-        if (state[var] != goal)
-            flaws.emplace_back(var.get_id(), vector<int> {goal.get_value()}
-                               );
-    }
-    return flaws;
-}
-
 void continuing_out_of_memory_handler() {
     release_memory_padding();
     cout << "Failed to allocate memory for CEGAR abstraction. "
