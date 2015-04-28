@@ -18,8 +18,6 @@
 using namespace std;
 
 namespace cegar {
-using StatesToFlaws = unordered_map<AbstractState *, Flaws>;
-
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<shared_ptr<AbstractTask> >("transform")),
       do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
@@ -98,16 +96,16 @@ void Abstraction::build() {
             cout << "Abstract problem is unsolvable!" << endl;
             break;
         }
-        found_conc_solution = check_and_break_solution(abstract_search.get_solution());
-        if (found_conc_solution)
+        const StateFlaws flaws = find_flaws(abstract_search.get_solution());
+        if (flaws.second.empty()) {
+            found_conc_solution = true;
             break;
+        }
+        AbstractState *state = flaws.first;
+        const Flaw &flaw = flaw_selector.pick_flaw(*state, flaws.second);
+        refine(state, flaw.first, flaw.second);
     }
     cout << "Concrete solution found: " << found_conc_solution << endl;
-}
-
-void Abstraction::break_solution(AbstractState *state, const Flaws &flaws) {
-    const Flaw &flaw = flaw_selector.pick_flaw(*state, flaws);
-    refine(state, flaw.first, flaw.second);
 }
 
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
@@ -145,93 +143,54 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     delete state;
 }
 
-bool Abstraction::check_and_break_solution(const Solution &solution) {
+StateFlaws Abstraction::find_flaws(const Solution &solution) {
     if (DEBUG)
-        cout << "Check solution." << endl;
+        cout << "Check solution:" << endl;
 
-    StatesToFlaws states_to_flaws;
-    queue<pair<AbstractState *, State> > unseen_states;
-    unordered_set<size_t> seen_states;
+    AbstractState *abs_state = init;
+    State conc_state = concrete_initial_state;
 
-    unseen_states.push(make_pair(init, concrete_initial_state));
+    if (DEBUG)
+        cout << "  Initial abstract state: " << *abs_state << endl;
 
-    // Only search flaws until we hit the memory limit.
-    while (!unseen_states.empty() && memory_padding_is_reserved()) {
-        AbstractState *abs_state = unseen_states.front().first;
-        State conc_state = move(unseen_states.front().second);
-        unseen_states.pop();
-        Flaws &flaws = states_to_flaws[abs_state];
-        if (DEBUG)
-            cout << "Current state: " << *abs_state << endl;
-        // Start check from each state only once.
-        if (!states_to_flaws[abs_state].empty())
-            continue;
-        if (is_goal(abs_state)) {
-            if (is_goal_state(task_proxy, conc_state)) {
-                // We found a concrete solution.
-                return true;
-            } else {
-                // Get unmet goals and refine the last state.
-                if (DEBUG)
-                    cout << "      Goal test failed." << endl;
-                ++unmet_goals;
-                get_unmet_goals(task_proxy.get_goals(), conc_state, flaws);
-                continue;
-            }
-        }
-        for (auto &arc : abs_state->get_outgoing_arcs()) {
-            OperatorProxy op = arc.first;
-            AbstractState *next_abs = arc.second;
-            assert(solution.count(abs_state) == 1);
-            if (solution.at(abs_state) != arc)
-                // Arc is not part of the path that A* found.
-                continue;
-            if (next_abs->get_h() + op.get_cost() != abs_state->get_h())
-                // Arc is not part of an optimal path.
-                continue;
-            if (is_applicable(op, conc_state)) {
-                if (DEBUG)
-                    cout << "      Move to: " << *next_abs << " with "
-                         << op.get_name() << endl;
-                State next_conc(move(conc_state.apply(op)));
-                if (next_abs->is_abstraction_of(next_conc)) {
-                    if (seen_states.count(next_conc.hash()) == 0) {
-                        unseen_states.emplace(next_abs, next_conc);
-                        seen_states.insert(next_conc.hash());
-                    }
-                } else if (flaws.empty()) {
-                    // Only find deviation reasons if we haven't found any flaws already.
-                    if (DEBUG)
-                        cout << "      Paths deviate." << endl;
-                    ++deviations;
-                    AbstractState desired_abs_state(next_abs->regress(op), nullptr);
-                    abs_state->get_possible_flaws(
-                        desired_abs_state, conc_state, &flaws);
-                }
-            } else if (flaws.empty()) {
-                // Only find unmet preconditions if we haven't found any flaws already.
-                if (DEBUG)
-                    cout << "      Operator not applicable: " << op.get_name() << endl;
-                ++unmet_preconditions;
-                get_unmet_preconditions(op, conc_state, flaws);
-            }
-        }
-    }
-    int broken_solutions = 0;
-    for (auto &state_and_flaws : states_to_flaws) {
-        if (!may_keep_refining())
+    for (size_t step = 0; step < solution.size(); ++step) {
+        if (!memory_padding_is_reserved())
             break;
-        AbstractState *state = state_and_flaws.first;
-        const Flaws &flaws = state_and_flaws.second;
-        if (!flaws.empty()) {
-            break_solution(state, flaws);
-            ++broken_solutions;
+        const OperatorProxy next_op = solution[step].first;
+        AbstractState *next_abs_state = solution[step].second;
+        if (!abs_state->is_abstraction_of(conc_state)) {
+            assert(step >= 1);
+            if (DEBUG)
+                cout << "  Paths deviate." << endl;
+            ++deviations;
+            OperatorProxy prev_op = solution[step - 1].first;
+            AbstractState desired_abs_state(abs_state->regress(prev_op), nullptr);
+            return {abs_state, abs_state->get_possible_flaws(desired_abs_state, conc_state)};
+        } else if (!is_applicable(next_op, conc_state)) {
+            // Only find unmet preconditions if we haven't found any flaws already.
+            if (DEBUG)
+                cout << "  Operator not applicable: " << next_op.get_name() << endl;
+            ++unmet_preconditions;
+            return {abs_state, get_unmet_preconditions(next_op, conc_state)};
+        } else {
+            if (DEBUG)
+                cout << "  Move to " << *next_abs_state << " with "
+                     << next_op.get_name() << endl;
+            abs_state = next_abs_state;
+            conc_state = move(conc_state.apply(next_op));
         }
     }
-    if (DEBUG)
-        cout << "Broke " << broken_solutions << " solutions" << endl;
-    assert(broken_solutions >= 1 || !may_keep_refining());
-    return false;
+    assert(is_goal(abs_state));
+    if (is_goal_state(task_proxy, conc_state)) {
+        // We found a concrete solution.
+        return {};
+    } else {
+        // Get unmet goals and refine the last state.
+        if (DEBUG)
+            cout << "  Goal test failed." << endl;
+        ++unmet_goals;
+        return {abs_state, get_unmet_goals(task_proxy.get_goals(), conc_state)};
+    }
 }
 
 void Abstraction::update_h_values() {

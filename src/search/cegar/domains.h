@@ -50,7 +50,7 @@ public:
     // Return true if all abstract domains are supersets of the
     // other's respective domains.
     bool abstracts(const Domains &other) const;
-    void get_possible_flaws(const Domains &flaw, const State &conc_state, Flaws *flaws) const;
+    Flaws get_possible_flaws(const Domains &flaw, const State &conc_state) const;
 
     friend std::ostream &operator<<(std::ostream &os, const Domains &bits);
 };
