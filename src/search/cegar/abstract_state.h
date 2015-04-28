@@ -55,7 +55,7 @@ public:
     size_t count(int var) const;
 
     // Return the set of states in which applying "op" leads to this state.
-    Domains regress(OperatorProxy op) const;
+    AbstractState regress(OperatorProxy op) const;
 
     // Separate the values in "wanted" from the other values in the abstract domain.
     std::pair<AbstractState *, AbstractState *> split(int var, std::vector<int> wanted);

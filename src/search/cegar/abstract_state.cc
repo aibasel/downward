@@ -183,7 +183,7 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     return make_pair(v1, v2);
 }
 
-Domains AbstractState::regress(OperatorProxy op) const {
+AbstractState AbstractState::regress(OperatorProxy op) const {
     Domains regressed_domains = domains;
     unordered_set<int> precondition_vars;
     for (FactProxy precondition : op.get_preconditions()) {
@@ -197,7 +197,7 @@ Domains AbstractState::regress(OperatorProxy op) const {
             regressed_domains.add_all(var_id);
         }
     }
-    return regressed_domains;
+    return AbstractState(regressed_domains, nullptr);
 }
 
 Splits AbstractState::get_possible_splits(const AbstractState &desired,
