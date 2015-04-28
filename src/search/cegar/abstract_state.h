@@ -49,6 +49,8 @@ public:
     AbstractState(const AbstractState &) = delete;
     AbstractState &operator=(const AbstractState &) = delete;
 
+    AbstractState(AbstractState &&) = default;
+
     // Return the size of var's abstract domain for this state.
     size_t count(int var) const;
 
@@ -60,8 +62,8 @@ public:
 
     void add_loop(OperatorProxy op);
 
-    Flaws get_possible_flaws(const AbstractState &desired,
-                             const State &prev_conc_state) const;
+    Splits get_possible_splits(const AbstractState &desired,
+                               const State &conc_state) const;
 
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;

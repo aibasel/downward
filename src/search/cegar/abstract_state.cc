@@ -200,10 +200,9 @@ Domains AbstractState::regress(OperatorProxy op) const {
     return regressed_domains;
 }
 
-Flaws AbstractState::get_possible_flaws(const AbstractState &desired,
-                                        const State &prev_conc_state)
-const {
-    return domains.get_possible_flaws(desired.domains, prev_conc_state);
+Splits AbstractState::get_possible_splits(const AbstractState &desired,
+                                          const State &conc_state) const {
+    return domains.get_possible_splits(desired.domains, conc_state);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
@@ -219,7 +218,7 @@ bool AbstractState::is_abstraction_of(const State &conc_state) const {
 }
 
 bool AbstractState::is_abstraction_of(const AbstractState &other) const {
-    return domains.abstracts(other.domains);
+    return domains.is_superset_of(other.domains);
 }
 
 void AbstractState::set_h(int new_h) {

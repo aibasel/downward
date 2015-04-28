@@ -20,7 +20,7 @@ class Options;
 
 namespace cegar {
 class AbstractState;
-class DomainAbstractedTask;
+struct Flaw;
 
 const int STATES_LOG_STEP = 1000;
 
@@ -31,7 +31,7 @@ class Abstraction {
     AbstractSearch abstract_search;
 
     // Strategy for picking the next flaw in case of multiple possibilities.
-    FlawSelector flaw_selector;
+    SplitSelector split_selector;
 
     const int max_states;
 
@@ -67,10 +67,12 @@ class Abstraction {
     // Split state into two child states.
     void refine(AbstractState *state, int var, const std::vector<int> &wanted);
 
+    AbstractState get_cartesian_set(const ConditionsProxy &conditions) const;
+
     // Try to convert the abstract solution into a concrete trace. If a flaw
     // is encountered, refine the abstraction in a way that prevents the flaw
     // from appearing in the next round again.
-    StateFlaws find_flaws(const Solution &solution);
+    std::shared_ptr<Flaw> find_flaw(const Solution &solution);
 
     // Make Dijkstra search to calculate all goal distances and update h-values.
     void update_h_values();

@@ -95,14 +95,14 @@ bool Domains::intersects(const Domains &other, int var) const {
     return temp_bits.any();
 }
 
-bool Domains::abstracts(const Domains &other) const {
+bool Domains::is_superset_of(const Domains &other) const {
     return other.bits.is_subset_of(bits);
 }
 
-Flaws Domains::get_possible_flaws(const Domains &flaw,
-                                  const State &conc_state) const {
-    Flaws flaws;
-    Bitset intersection(bits & flaw.bits);
+Splits Domains::get_possible_splits(const Domains &other,
+                                    const State &conc_state) const {
+    Splits splits;
+    Bitset intersection(bits & other.bits);
     for (size_t var = 0; var < borders.size(); ++var) {
         if (!intersection.test(pos(var, conc_state[var].get_value()))) {
             vector<int> wanted;
@@ -111,11 +111,11 @@ Flaws Domains::get_possible_flaws(const Domains &flaw,
                     wanted.push_back(pos - borders[var]);
                 }
             }
-            flaws.push_back(make_pair(var, wanted));
+            splits.emplace_back(var, move(wanted));
         }
     }
-    assert(!flaws.empty());
-    return flaws;
+    assert(!splits.empty());
+    return splits;
 }
 
 ostream &operator<<(ostream &os, const Domains &domains) {

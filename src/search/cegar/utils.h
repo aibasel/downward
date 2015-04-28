@@ -27,11 +27,19 @@ const int INF = std::numeric_limits<int>::max();
 // See additive_heuristic.h.
 const int MAX_COST_VALUE = 100000000;
 
-using Flaw = std::pair<int, std::vector<int> >;
-using Flaws = std::vector<Flaw>;
-using StateFlaws = std::pair<AbstractState *, Flaws>;
 using Fact = std::pair<int, int>;
 using VarToValues = std::unordered_map<int, std::vector<int> >;
+
+struct Split {
+    const int var_id;
+    const std::vector<int> values;
+
+    Split(int var_id, std::vector<int> &&values)
+        : var_id(var_id), values(values) {
+    }
+};
+
+using Splits = std::vector<Split>;
 
 std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(std::shared_ptr<AbstractTask> task);
 
@@ -45,10 +53,6 @@ std::unordered_set<FactProxy> get_relaxed_reachable_facts(TaskProxy task, FactPr
 int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
-
-Flaws get_unmet_preconditions(OperatorProxy op, const State &state);
-
-Flaws get_unmet_goals(GoalsProxy goals, const State &state);
 
 void reserve_memory_padding();
 void release_memory_padding();

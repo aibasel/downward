@@ -18,11 +18,24 @@
 using namespace std;
 
 namespace cegar {
+struct Flaw {
+    const State conc_state;
+    AbstractState *abs_state;
+    const AbstractState desired_abs_state;
+
+    Flaw(State &&conc_state, AbstractState *abs_state, AbstractState &&desired_abs_state)
+        : conc_state(conc_state), abs_state(abs_state), desired_abs_state(std::move(desired_abs_state)) {
+    }
+    Splits get_possible_splits() const {
+        return abs_state->get_possible_splits(desired_abs_state, conc_state);
+    }
+};
+
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<shared_ptr<AbstractTask> >("transform")),
       do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
       abstract_search(opts),
-      flaw_selector(opts.get<shared_ptr<AbstractTask> >("transform"), PickFlaw(opts.get<int>("pick"))),
+      split_selector(opts.get<shared_ptr<AbstractTask> >("transform"), PickSplit(opts.get<int>("pick"))),
       max_states(opts.get<int>("max_states")),
       timer(opts.get<double>("max_time")),
       concrete_initial_state(task_proxy.get_initial_state()),
@@ -96,14 +109,15 @@ void Abstraction::build() {
             cout << "Abstract problem is unsolvable!" << endl;
             break;
         }
-        const StateFlaws flaws = find_flaws(abstract_search.get_solution());
-        if (flaws.second.empty()) {
+        const shared_ptr<Flaw> flaw = find_flaw(abstract_search.get_solution());
+        if (!flaw) {
             found_conc_solution = true;
             break;
         }
-        AbstractState *state = flaws.first;
-        const Flaw &flaw = flaw_selector.pick_flaw(*state, flaws.second);
-        refine(state, flaw.first, flaw.second);
+        AbstractState *abs_state = flaw->abs_state;
+        Splits splits = flaw->get_possible_splits();
+        const Split &split = split_selector.pick_split(*abs_state, splits);
+        refine(abs_state, split.var_id, split.values);
     }
     cout << "Concrete solution found: " << found_conc_solution << endl;
 }
@@ -143,7 +157,15 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     delete state;
 }
 
-StateFlaws Abstraction::find_flaws(const Solution &solution) {
+AbstractState Abstraction::get_cartesian_set(const ConditionsProxy &conditions) const {
+    Domains domains(task_proxy);
+    for (FactProxy condition : conditions) {
+        domains.set(condition.get_variable().get_id(), condition.get_value());
+    }
+    return AbstractState(domains, nullptr);
+}
+
+shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     if (DEBUG)
         cout << "Check solution:" << endl;
 
@@ -164,14 +186,12 @@ StateFlaws Abstraction::find_flaws(const Solution &solution) {
                 cout << "  Paths deviate." << endl;
             ++deviations;
             OperatorProxy prev_op = solution[step - 1].first;
-            AbstractState desired_abs_state(abs_state->regress(prev_op), nullptr);
-            return {abs_state, abs_state->get_possible_flaws(desired_abs_state, conc_state)};
+            return make_shared<Flaw>(move(conc_state), abs_state, AbstractState(abs_state->regress(prev_op), nullptr));
         } else if (!is_applicable(next_op, conc_state)) {
-            // Only find unmet preconditions if we haven't found any flaws already.
             if (DEBUG)
                 cout << "  Operator not applicable: " << next_op.get_name() << endl;
             ++unmet_preconditions;
-            return {abs_state, get_unmet_preconditions(next_op, conc_state)};
+            return make_shared<Flaw>(move(conc_state), abs_state, get_cartesian_set(next_op.get_preconditions()));
         } else {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
@@ -183,13 +203,13 @@ StateFlaws Abstraction::find_flaws(const Solution &solution) {
     assert(is_goal(abs_state));
     if (is_goal_state(task_proxy, conc_state)) {
         // We found a concrete solution.
-        return {};
+        return nullptr;
     } else {
         // Get unmet goals and refine the last state.
         if (DEBUG)
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
-        return {abs_state, get_unmet_goals(task_proxy.get_goals(), conc_state)};
+        return make_shared<Flaw>(move(conc_state), abs_state, get_cartesian_set(task_proxy.get_goals()));
     }
 }
 

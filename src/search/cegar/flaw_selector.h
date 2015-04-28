@@ -14,7 +14,7 @@ namespace cegar {
 class AbstractState;
 
 // Strategies for selecting a flaw in case there are multiple possibilities.
-enum class PickFlaw {
+enum class PickSplit {
     RANDOM,
     // Number of remaining values for each variable.
     // "Constrainment" is bigger if there are less remaining possible values.
@@ -28,28 +28,28 @@ enum class PickFlaw {
     MAX_HADD
 };
 
-class FlawSelector {
+class SplitSelector {
     const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
     std::shared_ptr<AdditiveHeuristic> additive_heuristic;
 
-    const PickFlaw pick;
+    const PickSplit pick;
 
     int get_constrainedness(const AbstractState &state, int var_id) const;
     double get_refinedness(const AbstractState &state, int var_id) const;
     int get_hadd_value(int var_id, int value) const;
     int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
 
-    double rate_flaw(const AbstractState &state, const Flaw &flaw) const;
+    double rate_split(const AbstractState &state, const Split &split) const;
 
 public:
-    FlawSelector(std::shared_ptr<AbstractTask> task, PickFlaw pick);
-    ~FlawSelector() = default;
+    SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick);
+    ~SplitSelector() = default;
 
-    FlawSelector(const FlawSelector &) = delete;
-    FlawSelector &operator=(const FlawSelector &) = delete;
+    SplitSelector(const SplitSelector &) = delete;
+    SplitSelector &operator=(const SplitSelector &) = delete;
 
-    const Flaw &pick_flaw(const AbstractState &state, const Flaws &conditions) const;
+    const Split &pick_split(const AbstractState &state, const Splits &splits) const;
 };
 }
 
