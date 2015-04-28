@@ -194,7 +194,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             OperatorProxy prev_op = solution[step - 1].first;
             return make_shared<Flaw>(move(prev_conc_state),
                                      prev_abs_state,
-                                     AbstractState(abs_state->regress(prev_op), nullptr));
+                                     abs_state->regress(prev_op));
         } else if (!is_applicable(next_op, conc_state)) {
             if (DEBUG)
                 cout << "  Operator not applicable: " << next_op.get_name() << endl;
