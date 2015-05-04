@@ -232,6 +232,10 @@ int AbstractState::get_h() const {
 }
 
 
+AbstractState *get_unrefined_abstract_state(TaskProxy task_proxy, Node *root_node) {
+    return new AbstractState(Domains(task_proxy), root_node);
+}
+
 AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions) {
     Domains domains(task_proxy);
     for (FactProxy condition : conditions) {
@@ -239,4 +243,6 @@ AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &co
     }
     return AbstractState(domains, nullptr);
 }
+
+
 }
