@@ -231,18 +231,15 @@ int AbstractState::get_h() const {
     return node->get_h();
 }
 
-
-AbstractState *get_unrefined_abstract_state(TaskProxy task_proxy, Node *root_node) {
+AbstractState *AbstractState::get_unrefined_abstract_state(TaskProxy task_proxy, Node *root_node) {
     return new AbstractState(Domains(task_proxy), root_node);
 }
 
-AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions) {
+AbstractState AbstractState::get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions) {
     Domains domains(task_proxy);
     for (FactProxy condition : conditions) {
         domains.set(condition.get_variable().get_id(), condition.get_value());
     }
     return AbstractState(domains, nullptr);
 }
-
-
 }
