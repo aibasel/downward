@@ -160,14 +160,6 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     delete state;
 }
 
-AbstractState Abstraction::get_cartesian_set(const ConditionsProxy &conditions) const {
-    Domains domains(task_proxy);
-    for (FactProxy condition : conditions) {
-        domains.set(condition.get_variable().get_id(), condition.get_value());
-    }
-    return AbstractState(domains, nullptr);
-}
-
 shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     if (DEBUG)
         cout << "Check solution:" << endl;
@@ -201,7 +193,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             ++unmet_preconditions;
             return make_shared<Flaw>(move(conc_state),
                                      abs_state,
-                                     get_cartesian_set(next_op.get_preconditions()));
+                                     get_abstract_state(task_proxy, next_op.get_preconditions()));
         } else {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
@@ -224,7 +216,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         ++unmet_goals;
         return make_shared<Flaw>(move(conc_state),
                                  abs_state,
-                                 get_cartesian_set(task_proxy.get_goals()));
+                                 get_abstract_state(task_proxy, task_proxy.get_goals()));
     }
 }
 

@@ -230,4 +230,13 @@ int AbstractState::get_h() const {
     assert(node);
     return node->get_h();
 }
+
+
+AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions) {
+    Domains domains(task_proxy);
+    for (FactProxy condition : conditions) {
+        domains.set(condition.get_variable().get_id(), condition.get_value());
+    }
+    return AbstractState(domains, nullptr);
+}
 }
