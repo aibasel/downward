@@ -83,6 +83,7 @@ public:
     }
 };
 
+AbstractState *get_unrefined_abstract_state(TaskProxy task_proxy, Node *root_node);
 AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions);
 }
 
