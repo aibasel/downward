@@ -537,14 +537,6 @@ public:
         : task(&task) {}
     ~TaskProxy() = default;
 
-    bool operator==(const TaskProxy &other) const {
-        return task == other.task;
-    }
-
-    bool operator!=(const TaskProxy &other) const {
-        return !(*this == other);
-    }
-
     VariablesProxy get_variables() const {
         return VariablesProxy(*task);
     }
