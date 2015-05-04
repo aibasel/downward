@@ -7,6 +7,9 @@
 #include <utility>
 #include <vector>
 
+class ConditionsProxy;
+class TaskProxy;
+
 namespace cegar {
 class AbstractState;
 class Node;
@@ -79,6 +82,8 @@ public:
         return os << state.domains;
     }
 };
+
+AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions);
 }
 
 #endif
