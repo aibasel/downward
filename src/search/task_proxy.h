@@ -122,11 +122,6 @@ class FactProxy {
     const AbstractTask *task;
     int var_id;
     int value;
-
-    std::pair<int, int> get_pair() const {
-        return std::make_pair(var_id, value);
-    }
-
 public:
     FactProxy(const AbstractTask &task, int var_id, int value);
     ~FactProxy() = default;
@@ -143,22 +138,11 @@ public:
 
     bool operator==(FactProxy const &other) const {
         assert(task == other.task);
-        return get_pair() == other.get_pair();
+        return var_id == other.var_id && value == other.value;
     }
 
     bool operator!=(FactProxy other) const {
-        assert(task == other.task);
         return !(*this == other);
-    }
-
-    bool operator<(FactProxy const &other) const {
-        assert(task == other.task);
-        return get_pair() < other.get_pair();
-    }
-
-    bool operator>(FactProxy const &other) const {
-        assert(task == other.task);
-        return get_pair() > other.get_pair();
     }
 };
 
