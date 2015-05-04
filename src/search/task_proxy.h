@@ -369,6 +369,7 @@ public:
     ~OperatorProxy() = default;
 
     bool operator==(const OperatorProxy &other) const {
+        assert(task == other.task);
         return index == other.index && is_an_axiom == other.is_an_axiom;
     }
 
