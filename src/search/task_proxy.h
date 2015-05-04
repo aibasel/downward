@@ -102,8 +102,12 @@ public:
         return *this;
     }
 
-    bool operator!=(const ProxyIterator &it) const {
-        return pos != it.pos;
+    bool operator==(const ProxyIterator &other) const {
+        return pos == other.pos;
+    }
+
+    bool operator!=(const ProxyIterator &other) const {
+        return !(*this == other);
     }
 };
 
@@ -173,6 +177,7 @@ public:
     }
 
     bool operator==(const FactsProxyIterator &other) const {
+        assert(task == other.task);
         return var_id == other.var_id && value == other.value;
     }
 
