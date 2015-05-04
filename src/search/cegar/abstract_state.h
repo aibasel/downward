@@ -33,6 +33,8 @@ private:
     // Self-loops.
     Loops loops;
 
+    AbstractState(const Domains &domains, Node *node);
+
     void add_arc(OperatorProxy op, AbstractState *other);
 
     void remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other);
@@ -46,7 +48,6 @@ private:
     bool domains_intersect(const AbstractState *other, int var) const;
 
 public:
-    AbstractState(const Domains &domains, Node *node);
     ~AbstractState() = default;
 
     AbstractState(const AbstractState &) = delete;
@@ -81,10 +82,13 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
         return os << state.domains;
     }
-};
 
-AbstractState *get_unrefined_abstract_state(TaskProxy task_proxy, Node *root_node);
-AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions);
+    // Create the initial unrefined abstract state on the heap. Must be deleted by the caller.
+    static AbstractState *get_unrefined_abstract_state(TaskProxy task_proxy, Node *root_node);
+
+    // Create the Cartesian set that corresponds to the given fact conditions.
+    static AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions);
+};
 }
 
 #endif

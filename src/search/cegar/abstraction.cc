@@ -87,7 +87,7 @@ void Abstraction::separate_unreachable_facts() {
 }
 
 void Abstraction::create_initial_abstraction() {
-    init = get_unrefined_abstract_state(task_proxy, split_tree.get_root());
+    init = AbstractState::get_unrefined_abstract_state(task_proxy, split_tree.get_root());
     goals.insert(init);
     for (OperatorProxy op : task_proxy.get_operators()) {
         init->add_loop(op);
@@ -191,9 +191,10 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             if (DEBUG)
                 cout << "  Operator not applicable: " << next_op.get_name() << endl;
             ++unmet_preconditions;
-            return make_shared<Flaw>(move(conc_state),
-                                     abs_state,
-                                     get_abstract_state(task_proxy, next_op.get_preconditions()));
+            return make_shared<Flaw>(
+                move(conc_state),
+                abs_state,
+                AbstractState::get_abstract_state(task_proxy, next_op.get_preconditions()));
         } else {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
@@ -214,9 +215,10 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         if (DEBUG)
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
-        return make_shared<Flaw>(move(conc_state),
-                                 abs_state,
-                                 get_abstract_state(task_proxy, task_proxy.get_goals()));
+        return make_shared<Flaw>(
+            move(conc_state),
+            abs_state,
+            AbstractState::get_abstract_state(task_proxy, task_proxy.get_goals()));
     }
 }
 
