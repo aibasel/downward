@@ -169,7 +169,8 @@ SearchStatus LazySearch::step() {
                 statistics.inc_reopened();
             } else if (current_predecessor_id == StateID::no_state) {
                 node.open_initial(h);
-                search_progress.check_progress(current_eval_context);
+                if (search_progress.check_progress(current_eval_context))
+                    print_checkpoint_line(current_g);
             } else {
                 node.open(h, parent_node, current_operator);
             }
@@ -177,6 +178,7 @@ SearchStatus LazySearch::step() {
             if (check_goal_and_set_plan(current_state))
                 return SOLVED;
             if (search_progress.check_progress(current_eval_context)) {
+                print_checkpoint_line(current_g);
                 reward_progress();
             }
             generate_successors();
@@ -191,6 +193,12 @@ SearchStatus LazySearch::step() {
 
 void LazySearch::reward_progress() {
     open_list->boost_preferred();
+}
+
+void LazySearch::print_checkpoint_line(int g) const {
+    cout << "[g=" << g << ", ";
+    statistics.print_basic_statistics();
+    cout << "]" << endl;
 }
 
 void LazySearch::print_statistics() const {

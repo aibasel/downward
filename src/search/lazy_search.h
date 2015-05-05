@@ -48,6 +48,9 @@ protected:
 
     void get_successor_operators(std::vector<const GlobalOperator *> &ops);
 
+    // TODO: Move into SearchEngine?
+    void print_checkpoint_line(int g) const;
+
 public:
     explicit LazySearch(const Options &opts);
     virtual ~LazySearch() = default;
