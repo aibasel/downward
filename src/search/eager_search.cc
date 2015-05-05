@@ -189,8 +189,8 @@ SearchStatus EagerSearch::step() {
                 /*
                   Note: our old code used to retrieve the h value from
                   the search node here. Our new code recomputes it as
-                  necessary, thus avoiding the incredibly ugliness of
-                  the old "set_evaluator_value" approch, which also
+                  necessary, thus avoiding the incredible ugliness of
+                  the old "set_evaluator_value" approach, which also
                   did not generalize properly to settings with more
                   than one heuristic.
 
@@ -205,9 +205,9 @@ SearchStatus EagerSearch::step() {
                 */
                 open_list->insert(eval_context, succ_state.get_id());
             } else {
-                // if we do not reopen closed nodes, we just update the parent pointers
+                // If we do not reopen closed nodes, we just update the parent pointers.
                 // Note that this could cause an incompatibility between
-                // the g-value and the actual path that is traced back
+                // the g-value and the actual path that is traced back.
                 succ_node.update_parent(node, op);
             }
         }
