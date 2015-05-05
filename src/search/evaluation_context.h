@@ -55,7 +55,7 @@ class EvaluationContext {
 
     const EvaluationResult &get_result(ScalarEvaluator *heur);
 public:
-    // Use "statistics = nullptr" if no statististics are desired.
+    // Use "statistics = nullptr" if no statistics are desired.
     EvaluationContext(const GlobalState &state, int g_value,
                       bool is_preferred, SearchStatistics *statistics);
 

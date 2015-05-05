@@ -30,7 +30,7 @@ void EagerSearch::initialize() {
          << endl;
     if (use_multi_path_dependence)
         cout << "Using multi-path dependence (LM-A*)" << endl;
-    assert(open_list != nullptr);
+    assert(open_list);
 
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
