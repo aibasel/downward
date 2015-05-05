@@ -107,7 +107,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 #endif
 
     result.set_h_value(heuristic);
-    result.set_preferred_operators(preferred_operators);
+    result.set_preferred_operators(move(preferred_operators));
     preferred_operators.clear();
     return result;
 }
