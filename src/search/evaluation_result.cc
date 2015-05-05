@@ -29,10 +29,6 @@ void EvaluationResult::set_h_value(int value) {
 }
 
 void EvaluationResult::set_preferred_operators(
-    const std::vector<const GlobalOperator *> & preferred_ops) {
-    /*
-      TODO: Make this more efficient, for example by enabling
-      movement?
-    */
+    const std::vector<const GlobalOperator *> && preferred_ops) {
     preferred_operators = preferred_ops;
 }
