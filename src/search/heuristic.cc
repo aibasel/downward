@@ -83,8 +83,8 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     const GlobalState &state = eval_context.get_state();
     int heuristic = compute_heuristic(state);
-    for (size_t i = 0; i < preferred_operators.size(); ++i)
-        preferred_operators[i]->unmark();
+    for (const GlobalOperator *preferred_operator : preferred_operators)
+        preferred_operator->unmark();
     assert(heuristic == DEAD_END || heuristic >= 0);
 
     if (heuristic == DEAD_END) {
