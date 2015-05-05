@@ -1,5 +1,6 @@
 #include "lazy_search.h"
 
+#include "evaluation_context.h"
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
@@ -24,7 +25,8 @@ LazySearch::LazySearch(const Options &opts)
       current_predecessor_id(StateID::no_state),
       current_operator(nullptr),
       current_g(0),
-      current_real_g(0) {
+      current_real_g(0),
+      current_eval_context(current_state, current_g, true, &statistics) {
 }
 
 void LazySearch::set_pref_operator_heuristics(
@@ -33,39 +35,37 @@ void LazySearch::set_pref_operator_heuristics(
 }
 
 void LazySearch::initialize() {
-    //TODO children classes should output which kind of search
     cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
     assert(open_list);
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
-        estimate_heuristics.push_back(*it);
-        search_progress.add_heuristic(*it);
-    }
-
-    // add heuristics that are used for preferred operators (in case they are
-    // not also used in the open list)
+    // Add heuristics that are used for preferred operators (in case they are
+    // not also used in the open list).
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    heuristics.assign(hset.begin(), hset.end())
+    heuristics.assign(hset.begin(), hset.end());
     assert(!heuristics.empty());
 }
 
 void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     assert(ops.empty());
-    vector<const GlobalOperator *> all_operators;
-    vector<const GlobalOperator *> preferred_operators;
 
+    vector<const GlobalOperator *> all_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
 
+    set<const GlobalOperator *> pref_ops;
     for (Heuristic *heur : preferred_operator_heuristics) {
-        if (!heur->is_dead_end())
-            heur->get_preferred_operators(preferred_operators);
+        if (!current_eval_context.is_heuristic_infinite(heur)) {
+            vector<const GlobalOperator *> preferred =
+                current_eval_context.get_preferred_operators(heur);
+            pref_ops.insert(preferred.begin(), preferred.end());
+        }
     }
+    vector<const GlobalOperator *> preferred_operators(pref_ops.begin(), pref_ops.end());
 
     if (randomize_successors) {
         g_rng.shuffle(all_operators);
@@ -97,18 +97,15 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
 void LazySearch::generate_successors() {
     vector<const GlobalOperator *> operators;
     get_successor_operators(operators);
-    search_progress.inc_generated(operators.size());
+    statistics.inc_generated(operators.size());
 
     for (const GlobalOperator *op : operators) {
-        int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
         bool is_preferred = op->is_marked();
         if (is_preferred)
             op->unmark();
         if (new_real_g < bound) {
-            open_list->evaluate(new_g, is_preferred);
-            open_list->insert(
-                make_pair(current_state.get_id(), op));
+            open_list->insert(current_eval_context, make_pair(current_state.get_id(), op));
         }
     }
 }
@@ -130,6 +127,9 @@ SearchStatus LazySearch::fetch_next_state() {
     SearchNode pred_node = search_space.get_node(current_predecessor);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
+
+    // TODO: set is_preferred.
+    current_eval_context = EvaluationContext(current_state, current_g, false, &statistics);
 
     return IN_PROGRESS;
 }
@@ -159,47 +159,42 @@ SearchStatus LazySearch::step() {
             if (current_operator) {
                 heuristic->reach_state(parent_state, *current_operator, current_state);
             }
-            heuristic->evaluate(current_state);
         }
-        search_progress.inc_evaluated_states();
-        search_progress.inc_evaluations(heuristics.size());
-        open_list->evaluate(current_g, false);
-        if (!open_list->is_dead_end()) {
-            // We use the value of the first heuristic, because SearchSpace only
-            // supported storing one heuristic value
-            int h = heuristics[0]->get_value();
+        if (!open_list->is_dead_end(current_eval_context)) {
+            int h = current_eval_context.get_heuristic_value(heuristics[0]);
             if (reopen) {
                 node.reopen(parent_node, current_operator);
-                search_progress.inc_reopened();
+                statistics.inc_reopened();
             } else if (current_predecessor_id == StateID::no_state) {
                 node.open_initial(h);
-                search_progress.get_initial_h_values();
+                search_progress.check_progress(current_eval_context);
             } else {
                 node.open(h, parent_node, current_operator);
             }
             node.close();
             if (check_goal_and_set_plan(current_state))
                 return SOLVED;
-            if (search_progress.check_h_progress(current_g)) {
+            if (search_progress.check_progress(current_eval_context)) {
                 reward_progress();
             }
             generate_successors();
-            search_progress.inc_expanded();
+            statistics.inc_expanded();
         } else {
             node.mark_as_dead_end();
-            search_progress.inc_dead_ends();
+            statistics.inc_dead_ends();
         }
     }
     return fetch_next_state();
 }
 
 void LazySearch::reward_progress() {
-    // Boost the "preferred operator" open lists somewhat whenever
     open_list->boost_preferred();
 }
 
 void LazySearch::print_statistics() const {
-    search_progress.print_statistics();
+    search_progress.print_initial_h_values();
+    statistics.print_detailed_statistics();
+    search_space.print_statistics();
 }
 
 
