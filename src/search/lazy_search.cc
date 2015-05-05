@@ -22,12 +22,9 @@ LazySearch::LazySearch(const Options &opts)
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
       current_state(g_initial_state()),
       current_predecessor_id(StateID::no_state),
-      current_operator(NULL),
+      current_operator(nullptr),
       current_g(0),
       current_real_g(0) {
-}
-
-LazySearch::~LazySearch() {
 }
 
 void LazySearch::set_pref_operator_heuristics(
@@ -39,7 +36,7 @@ void LazySearch::initialize() {
     //TODO children classes should output which kind of search
     cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
-    assert(open_list != NULL);
+    assert(open_list);
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
@@ -53,9 +50,7 @@ void LazySearch::initialize() {
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
-        heuristics.push_back(*it);
-    }
+    heuristics.assign(hset.begin(), hset.end())
     assert(!heuristics.empty());
 }
 
@@ -67,8 +62,7 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
 
-    for (size_t i = 0; i < preferred_operator_heuristics.size(); ++i) {
-        Heuristic *heur = preferred_operator_heuristics[i];
+    for (Heuristic *heur : preferred_operator_heuristics) {
         if (!heur->is_dead_end())
             heur->get_preferred_operators(preferred_operators);
     }
@@ -82,20 +76,20 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     }
 
     if (preferred_successors_first) {
-        for (size_t i = 0; i < preferred_operators.size(); ++i) {
-            if (!preferred_operators[i]->is_marked()) {
-                ops.push_back(preferred_operators[i]);
-                preferred_operators[i]->mark();
+        for (const GlobalOperator *op : preferred_operators) {
+            if (!op->is_marked()) {
+                ops.push_back(op);
+                op->mark();
             }
         }
 
-        for (size_t i = 0; i < all_operators.size(); ++i)
-            if (!all_operators[i]->is_marked())
-                ops.push_back(all_operators[i]);
+        for (const GlobalOperator *op : all_operators)
+            if (!op->is_marked())
+                ops.push_back(op);
     } else {
-        for (size_t i = 0; i < preferred_operators.size(); ++i)
-            if (!preferred_operators[i]->is_marked())
-                preferred_operators[i]->mark();
+        for (const GlobalOperator *op : preferred_operators)
+            if (!op->is_marked())
+                op->mark();
         ops.swap(all_operators);
     }
 }
@@ -105,16 +99,16 @@ void LazySearch::generate_successors() {
     get_successor_operators(operators);
     search_progress.inc_generated(operators.size());
 
-    for (size_t i = 0; i < operators.size(); ++i) {
-        int new_g = current_g + get_adjusted_cost(*operators[i]);
-        int new_real_g = current_real_g + operators[i]->get_cost();
-        bool is_preferred = operators[i]->is_marked();
+    for (const GlobalOperator *op : operators) {
+        int new_g = current_g + get_adjusted_cost(*op);
+        int new_real_g = current_real_g + op->get_cost();
+        bool is_preferred = op->is_marked();
         if (is_preferred)
-            operators[i]->unmark();
+            op->unmark();
         if (new_real_g < bound) {
             open_list->evaluate(new_g, is_preferred);
             open_list->insert(
-                make_pair(current_state.get_id(), operators[i]));
+                make_pair(current_state.get_id(), op));
         }
     }
 }
@@ -161,11 +155,11 @@ SearchStatus LazySearch::step() {
         GlobalState parent_state = g_state_registry->lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        for (size_t i = 0; i < heuristics.size(); ++i) {
-            if (current_operator != NULL) {
-                heuristics[i]->reach_state(parent_state, *current_operator, current_state);
+        for (Heuristic *heuristic : heuristics) {
+            if (current_operator) {
+                heuristic->reach_state(parent_state, *current_operator, current_state);
             }
-            heuristics[i]->evaluate(current_state);
+            heuristic->evaluate(current_state);
         }
         search_progress.inc_evaluated_states();
         search_progress.inc_evaluations(heuristics.size());
@@ -239,7 +233,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    LazySearch *engine = 0;
+    LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
         engine = new LazySearch(opts);
         vector<Heuristic *> preferred_list =
@@ -315,14 +309,12 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
                                                                  false);
         } else {
             vector<OpenList<OpenListEntryLazy> *> inner_lists;
-            for (size_t i = 0; i < evals.size(); ++i) {
+            for (ScalarEvaluator *eval : evals) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(evals[i],
-                                                                  false));
+                    new StandardScalarOpenList<OpenListEntryLazy>(eval, false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<OpenListEntryLazy>(evals[i],
-                                                                      true));
+                        new StandardScalarOpenList<OpenListEntryLazy>(eval, true));
                 }
             }
             open = new AlternationOpenList<OpenListEntryLazy>(
