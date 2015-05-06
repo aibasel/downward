@@ -106,7 +106,7 @@ void LazySearch::generate_successors() {
         if (is_preferred)
             op->unmark();
         if (new_real_g < bound) {
-            EvaluationContext new_eval_context(current_state, new_g, is_preferred, &statistics);
+            EagerEvaluationContext new_eval_context(current_state, new_g, is_preferred, &statistics);
             open_list->insert(new_eval_context, make_pair(current_state.get_id(), op));
         }
     }
@@ -131,7 +131,7 @@ SearchStatus LazySearch::fetch_next_state() {
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
     // TODO: set is_preferred.
-    current_eval_context = EvaluationContext(current_state, current_g, false, &statistics);
+    current_eval_context = EagerEvaluationContext(current_state, current_g, false, &statistics);
     statistics.inc_evaluated_states();
 
     return IN_PROGRESS;

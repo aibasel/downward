@@ -5,7 +5,7 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
-#include "../evaluation_context.h"
+#include "../eager_evaluation_context.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
@@ -153,7 +153,7 @@ int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &state) {
       objects is the best implementation choice.
     */
 
-    EvaluationContext eval_context(state);
+    EagerEvaluationContext eval_context(state);
 
     for (PDBHeuristic *pdb : pattern_databases)
         if (eval_context.is_heuristic_infinite(pdb))
@@ -249,7 +249,7 @@ bool CanonicalPDBsHeuristic::is_dead_end(const GlobalState &state) const {
       use the same PDB value once, so the caching feature of
       evaluation contexts is not needed here.
     */
-    EvaluationContext eval_context(state);
+    EagerEvaluationContext eval_context(state);
     for (PDBHeuristic *pdb : pattern_databases)
         if (eval_context.is_heuristic_infinite(pdb))
             return true;
