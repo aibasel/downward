@@ -1,9 +1,9 @@
 #include "lazy_search.h"
 
-#include "evaluation_context.h"
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
+#include "lazy_evaluation_context.h"
 #include "plugin.h"
 #include "rng.h"
 #include "successor_generator.h"
@@ -100,13 +100,12 @@ void LazySearch::generate_successors() {
     statistics.inc_generated(operators.size());
 
     for (const GlobalOperator *op : operators) {
-        int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
         bool is_preferred = op->is_marked();
         if (is_preferred)
             op->unmark();
         if (new_real_g < bound) {
-            EagerEvaluationContext new_eval_context(current_state, new_g, is_preferred, &statistics);
+            LazyEvaluationContext new_eval_context(current_eval_context);
             open_list->insert(new_eval_context, make_pair(current_state.get_id(), op));
         }
     }
