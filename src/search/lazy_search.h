@@ -1,7 +1,7 @@
 #ifndef LAZY_SEARCH_H
 #define LAZY_SEARCH_H
 
-#include "evaluation_context.h"
+#include "eager_evaluation_context.h"
 #include "global_state.h"
 #include "scalar_evaluator.h"
 #include "search_engine.h"
@@ -36,7 +36,7 @@ protected:
     const GlobalOperator *current_operator;
     int current_g;
     int current_real_g;
-    EvaluationContext current_eval_context;
+    EagerEvaluationContext current_eval_context;
 
     virtual void initialize();
     virtual SearchStatus step();

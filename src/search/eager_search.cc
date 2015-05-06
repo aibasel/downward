@@ -1,6 +1,6 @@
 #include "eager_search.h"
 
-#include "evaluation_context.h"
+#include "eager_evaluation_context.h"
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
@@ -53,7 +53,7 @@ void EagerSearch::initialize() {
     const GlobalState &initial_state = g_initial_state();
     // Note: we consider the initial state as reached by a preferred
     // operator.
-    EvaluationContext eval_context(initial_state, 0, true, &statistics);
+    EagerEvaluationContext eval_context(initial_state, 0, true, &statistics);
 
     statistics.inc_evaluated_states();
 
@@ -98,7 +98,7 @@ SearchStatus EagerSearch::step() {
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
-    EvaluationContext eval_context(s, node.get_g(), false, &statistics);
+    EagerEvaluationContext eval_context(s, node.get_g(), false, &statistics);
     for (Heuristic *heur : preferred_operator_heuristics) {
         /* In an alternation search with unreliable heuristics, it is
            possible that this heuristic considers the state a dead
@@ -149,7 +149,7 @@ SearchStatus EagerSearch::step() {
             // TODO: Make this less fragile.
             int succ_g = node.get_g() + get_adjusted_cost(*op);
 
-            EvaluationContext eval_context(
+            EagerEvaluationContext eval_context(
                 succ_state, succ_g, is_preferred, &statistics);
             statistics.inc_evaluated_states();
             succ_node.clear_h_dirty();
@@ -183,7 +183,7 @@ SearchStatus EagerSearch::step() {
                 }
                 succ_node.reopen(node, op);
 
-                EvaluationContext eval_context(
+                EagerEvaluationContext eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
 
                 /*
@@ -257,7 +257,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             }
             assert(node.get_h() == pushed_h);
             if (!node.is_closed() && node.is_h_dirty()) {
-                EvaluationContext eval_context(
+                EagerEvaluationContext eval_context(
                     node.get_state(), node.get_g(), false, &statistics);
                 node.clear_h_dirty();
 

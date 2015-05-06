@@ -2,14 +2,12 @@
 #define EVALUATION_CONTEXT_H
 
 #include "evaluation_result.h"
-#include "global_state.h"
 
-#include <limits>
 #include <unordered_map>
 
 class GlobalOperator;
+class GlobalState;
 class ScalarEvaluator;
-class SearchStatistics;
 
 /*
   TODO: Now that we have an explicit EvaluationResult class, it's
@@ -47,30 +45,19 @@ class SearchStatistics;
 */
 
 class EvaluationContext {
-    GlobalState state;
-    int g_value;
-    bool preferred;
-    SearchStatistics *statistics;
+protected:
     std::unordered_map<ScalarEvaluator *, EvaluationResult> eval_results;
 
-    const EvaluationResult &get_result(ScalarEvaluator *heur);
-public:
-    // Use "statistics = nullptr" if no statistics are desired.
-    EvaluationContext(const GlobalState &state, int g_value,
-                      bool is_preferred, SearchStatistics *statistics);
+    virtual const EvaluationResult &get_result(ScalarEvaluator *heur) = 0;
 
-    /*
-      Use the following constructor when you don't care about g
-      values, preferredness or statistics, e.g. when sampling states
-      for heuristics.
-    */
-    explicit EvaluationContext(const GlobalState &state);
+public:
+    EvaluationContext() = default;
     ~EvaluationContext() = default;
 
-    const GlobalState &get_state() const;
+    virtual const GlobalState &get_state() const = 0;
 
-    int get_g_value() const;
-    bool is_preferred() const;
+    virtual int get_g_value() const = 0;
+    virtual bool is_preferred() const = 0;
 
     /*
       Use get_heuristic_value() to query finite heuristic values. It
