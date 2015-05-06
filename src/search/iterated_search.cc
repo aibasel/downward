@@ -80,18 +80,18 @@ SearchStatus IteratedSearch::step() {
         }
     }
     current_search->print_statistics();
-    search_progress.inc_expanded(
-        current_search->get_search_progress().get_expanded());
-    search_progress.inc_evaluated_states(
-        current_search->get_search_progress().get_evaluated_states());
-    search_progress.inc_evaluations(
-        current_search->get_search_progress().get_evaluations());
-    search_progress.inc_generated(
-        current_search->get_search_progress().get_generated());
-    search_progress.inc_generated_ops(
-        current_search->get_search_progress().get_generated_ops());
-    search_progress.inc_reopened(
-        current_search->get_search_progress().get_reopened());
+    statistics.inc_expanded(
+        current_search->get_statistics().get_expanded());
+    statistics.inc_evaluated_states(
+        current_search->get_statistics().get_evaluated_states());
+    statistics.inc_evaluations(
+        current_search->get_statistics().get_evaluations());
+    statistics.inc_generated(
+        current_search->get_statistics().get_generated());
+    statistics.inc_generated_ops(
+        current_search->get_statistics().get_generated_ops());
+    statistics.inc_reopened(
+        current_search->get_statistics().get_reopened());
 
     return step_return_value();
 }
@@ -121,7 +121,7 @@ SearchStatus IteratedSearch::step_return_value() {
 
 void IteratedSearch::print_statistics() const {
     cout << "Cumulative statistics:" << endl;
-    search_progress.print_statistics();
+    statistics.print_detailed_statistics();
 }
 
 void IteratedSearch::save_plan_if_necessary() const {
