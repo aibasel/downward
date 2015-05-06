@@ -57,13 +57,13 @@ void EnforcedHillClimbingSearch::evaluate(const GlobalState &parent, const Globa
 void EnforcedHillClimbingSearch::initialize() {
     assert(heuristic);
     current_g = 0;
-    cout << "Conducting Enforced Hill Climbing Search" << endl;
+    cout << "Conducting enforced hill-climbing search, (real) bound = "
+         << bound << endl;
     if (use_preferred) {
         cout << "Using preferred operators for "
              << (preferred_usage == RANK_PREFERRED_FIRST ? "ranking successors"
             : "pruning") << endl;
     }
-    cout << "(real) g-bound = " << bound << endl;
 
     SearchNode node = search_space.get_node(current_state);
     evaluate(current_state, nullptr, current_state);
@@ -217,12 +217,20 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     search_progress.print_statistics();
 
     cout << "EHC Phases: " << num_ehc_phases << endl;
-    cout << "Average expansions per EHC Phase: " << (double)search_progress.get_expanded() / (double)num_ehc_phases << endl;
+    assert(num_ehc_phases != 0);
+    cout << "Average expansions per EHC Phase: "
+         << static_cast<double>(search_progress.get_expanded()) / num_ehc_phases
+         << endl;
 
-    map<int, pair<int, int> >::const_iterator it;
-    for (it = d_counts.begin(); it != d_counts.end(); ++it) {
+    for (auto count : d_counts) {
         pair<int, pair<int, int> > p = *it;
-        cout << "EHC phases of depth " << p.first << " : " << p.second.first << " - Avg. Expansions: " << (double)p.second.second / (double)p.second.first << endl;
+        int depth = count.first;
+        int phases = count.second.first;
+        assert(phases != 0);
+        int total_expansions = count.second.second;
+        cout << "EHC phases of depth " << depth << ": " << phases
+             << " - Avg. Expansions: " << static_cast<double>(total_expansions) /
+                                          phases << endl;
     }
 }
 
@@ -244,11 +252,10 @@ static SearchEngine *_parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    EnforcedHillClimbingSearch *engine = 0;
+    EnforcedHillClimbingSearch *engine = nullptr;
     if (!parser.dry_run()) {
         engine = new EnforcedHillClimbingSearch(opts);
     }
-
     return engine;
 }
 
