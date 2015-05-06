@@ -48,11 +48,11 @@ class EvaluationContext {
 protected:
     std::unordered_map<ScalarEvaluator *, EvaluationResult> eval_results;
 
-    virtual const EvaluationResult &get_result(ScalarEvaluator *heur) = 0;
-
 public:
     EvaluationContext() = default;
     ~EvaluationContext() = default;
+
+    virtual const EvaluationResult &get_result(ScalarEvaluator *heur) = 0;
 
     virtual const GlobalState &get_state() const = 0;
 

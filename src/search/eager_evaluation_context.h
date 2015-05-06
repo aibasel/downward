@@ -12,9 +12,6 @@ class EagerEvaluationContext : public EvaluationContext {
     bool preferred;
     SearchStatistics *statistics;
 
-protected:
-    virtual const EvaluationResult &get_result(ScalarEvaluator *heur) override;
-
 public:
     // Use "statistics = nullptr" if no statistics are desired.
     EagerEvaluationContext(
@@ -28,6 +25,8 @@ public:
     */
     explicit EagerEvaluationContext(const GlobalState &state);
     ~EagerEvaluationContext() = default;
+
+    virtual const EvaluationResult &get_result(ScalarEvaluator *heur) override;
 
     virtual const GlobalState &get_state() const override;
 
