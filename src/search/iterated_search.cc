@@ -47,7 +47,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
         if (repeat_last_phase && last_phase_found_solution) {
             return get_search_engine(engine_configs.size() - 1);
         } else {
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -56,7 +56,7 @@ SearchEngine *IteratedSearch::create_phase(int p) {
 
 SearchStatus IteratedSearch::step() {
     current_search = create_phase(phase);
-    if (current_search == NULL) {
+    if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
     if (pass_bound) {
@@ -125,7 +125,7 @@ void IteratedSearch::print_statistics() const {
 }
 
 void IteratedSearch::save_plan_if_necessary() const {
-    // Don't need to save here, as we automatically save after
+    // We don't need to save here, as we automatically save after
     // each successful search iteration.
 }
 
@@ -179,19 +179,16 @@ static SearchEngine *_parse(OptionParser &parser) {
     opts.verify_list_non_empty<ParseTree>("engine_configs");
 
     if (parser.help_mode()) {
-        return 0;
+        return nullptr;
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
-        vector<ParseTree> configs = opts.get_list<ParseTree>("engine_configs");
-        for (size_t i = 0; i < configs.size(); ++i) {
-            OptionParser test_parser(configs[i], true);
+        for (ParseTree config : opts.get_list<ParseTree>("engine_configs")) {
+            OptionParser test_parser(config, true);
             test_parser.start_parsing<SearchEngine *>();
         }
-        return 0;
+        return nullptr;
     } else {
-        IteratedSearch *engine = new IteratedSearch(opts);
-
-        return engine;
+        return new IteratedSearch(opts);
     }
 }
 
