@@ -63,7 +63,7 @@ public:
 
       TODO: This method might eventually go away, instead using a
       mechanism for generating new open lists at a higher level.
-      This is currently only used be enforced hill-climbing.
+      This is currently only used by enforced hill-climbing.
     */
     virtual void clear() = 0;
 
