@@ -80,18 +80,14 @@ SearchStatus IteratedSearch::step() {
         }
     }
     current_search->print_statistics();
-    statistics.inc_expanded(
-        current_search->get_statistics().get_expanded());
-    statistics.inc_evaluated_states(
-        current_search->get_statistics().get_evaluated_states());
-    statistics.inc_evaluations(
-        current_search->get_statistics().get_evaluations());
-    statistics.inc_generated(
-        current_search->get_statistics().get_generated());
-    statistics.inc_generated_ops(
-        current_search->get_statistics().get_generated_ops());
-    statistics.inc_reopened(
-        current_search->get_statistics().get_reopened());
+
+    const SearchStatistics current_stats = current_search->get_statistics();
+    statistics.inc_expanded(current_stats.get_expanded());
+    statistics.inc_evaluated_states(current_stats.get_evaluated_states());
+    statistics.inc_evaluations(current_stats.get_evaluations());
+    statistics.inc_generated(current_stats.get_generated());
+    statistics.inc_generated_ops(current_stats.get_generated_ops());
+    statistics.inc_reopened(current_stats.get_reopened());
 
     return step_return_value();
 }
