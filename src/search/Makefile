@@ -61,6 +61,7 @@ HEADERS = \
           globals.h \
           heuristic.h \
           int_packer.h \
+          iterated_search.h \
           lazy_search.h \
           max_evaluator.h \
           operator_cost.h \
