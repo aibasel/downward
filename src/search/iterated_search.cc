@@ -1,6 +1,9 @@
 #include "iterated_search.h"
+
 #include "plugin.h"
+
 #include "ext/tree_util.hh"
+
 #include <limits>
 
 IteratedSearch::IteratedSearch(const Options &opts)
