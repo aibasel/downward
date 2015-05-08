@@ -1,9 +1,7 @@
 #ifndef EAGER_SEARCH_H
 #define EAGER_SEARCH_H
 
-#include "global_state.h"
 #include "search_engine.h"
-#include "search_space.h"
 
 #include "open_lists/open_list.h"
 
