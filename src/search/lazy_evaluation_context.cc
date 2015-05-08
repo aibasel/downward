@@ -6,8 +6,10 @@ using namespace std;
 
 
 LazyEvaluationContext::LazyEvaluationContext(
-    const EagerEvaluationContext &eval_context)
-    : eval_context(eval_context) {
+    const EagerEvaluationContext &eval_context, int g_value, bool is_preferred)
+    : eval_context(eval_context),
+      g_value(g_value),
+      preferred(is_preferred) {
 }
 
 const EvaluationResult &LazyEvaluationContext::get_result(ScalarEvaluator *heur) {
@@ -19,9 +21,9 @@ const GlobalState &LazyEvaluationContext::get_state() const {
 }
 
 int LazyEvaluationContext::get_g_value() const {
-    return eval_context.get_g_value();
+    return g_value;
 }
 
 bool LazyEvaluationContext::is_preferred() const {
-    return eval_context.is_preferred();
+    return preferred;
 }
