@@ -1,5 +1,7 @@
 #include "ipc_max_heuristic.h"
 
+#include "eager_evaluation_context.h"
+#include "evaluation_result.h"
 #include "option_parser.h"
 #include "plugin.h"
 
@@ -11,39 +13,30 @@ using namespace std;
 
 
 IPCMaxHeuristic::IPCMaxHeuristic(const Options &opts)
-    : Heuristic(opts), evaluators(opts.get_list<Heuristic *>("heuristics")) {
+    : Heuristic(opts),
+      heuristics(opts.get_list<Heuristic *>("heuristics")) {
 }
 
 IPCMaxHeuristic::~IPCMaxHeuristic() {
 }
 
 int IPCMaxHeuristic::compute_heuristic(const GlobalState &state) {
-    dead_end = false;
-    dead_end_reliable = false;
-    value = 0;
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        evaluators[i]->evaluate(state);
-
-        if (evaluators[i]->is_dead_end()) {
-            value = numeric_limits<int>::max();
-            dead_end = true;
-            if (evaluators[i]->dead_ends_are_reliable()) {
-                dead_end_reliable = true;
-                value = -1;
-                break;
-            }
-        } else {
-            value = max(value, evaluators[i]->get_value());
-        }
+    int value = 0;
+    for (Heuristic *heuristic : heuristics) {
+        // Pass arbitrary values for g and is_preferred (ignored by heuristics).
+        EagerEvaluationContext eval_context(state, -1, true, nullptr);
+        EvaluationResult result = heuristic->compute_result(eval_context);
+        value = max(value, result.get_h_value());
     }
     return value;
 }
 
-bool IPCMaxHeuristic::reach_state(const GlobalState &parent_state, const GlobalOperator &op,
+bool IPCMaxHeuristic::reach_state(const GlobalState &parent_state,
+                                  const GlobalOperator &op,
                                   const GlobalState &state) {
     bool result = false;
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        if (evaluators[i]->reach_state(parent_state, op, state)) {
+    for (Heuristic *heuristic : heuristics) {
+        if (heuristic->reach_state(parent_state, op, state)) {
             result = true;
             // Don't break: we must call reached_state everywhere.
         }

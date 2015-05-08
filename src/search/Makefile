@@ -36,12 +36,6 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 ## as a bug.
 DOWNWARD_OS ?= auto
 
-
-# TODO: Add removed search algorithms back in.
-
-# TODO: Add ipc_max_heuristic.cc back in (or make the functionality
-#       work some other way.)
-
 HEADERS = \
           axioms.h \
           causal_graph.h \
@@ -63,6 +57,7 @@ HEADERS = \
           globals.h \
           heuristic.h \
           int_packer.h \
+          ipc_max_heuristic.cc \
           iterated_search.h \
           lazy_evaluation_context.h \
           lazy_search.h \
