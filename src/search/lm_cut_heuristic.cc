@@ -1,10 +1,10 @@
 #include "lm_cut_heuristic.h"
 
-#include "global_operator.h"
 #include "global_state.h"
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "task_proxy.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -32,16 +32,16 @@ void LandmarkCutHeuristic::initialize() {
 
     // Build propositions.
     assert(num_propositions == 2);
-    propositions.resize(g_variable_domain.size());
-    for (size_t var = 0; var < g_variable_domain.size(); ++var) {
-        for (int value = 0; value < g_variable_domain[var]; ++value)
-            propositions[var].push_back(RelaxedProposition());
-        num_propositions += g_variable_domain[var];
+    VariablesProxy variables = task_proxy.get_variables();
+    propositions.resize(variables.size());
+    for (FactProxy fact : variables.get_facts()) {
+        propositions[fact.get_variable().get_id()].push_back(RelaxedProposition());
+        ++num_propositions;
     }
 
     // Build relaxed operators for operators and axioms.
-    for (size_t i = 0; i < g_operators.size(); ++i)
-        build_relaxed_operator(g_operators[i]);
+    for (OperatorProxy op : task_proxy.get_operators())
+        build_relaxed_operator(op);
 
     // Simplify relaxed operators.
     // simplify();
@@ -51,13 +51,14 @@ void LandmarkCutHeuristic::initialize() {
 
     // Build artificial goal proposition and operator.
     vector<RelaxedProposition *> goal_op_pre, goal_op_eff;
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int var = g_goal[i].first, val = g_goal[i].second;
+    for (FactProxy goal : task_proxy.get_goals()) {
+        int var = goal.get_variable().get_id();
+        int val = goal.get_value();
         RelaxedProposition *goal_prop = &propositions[var][val];
         goal_op_pre.push_back(goal_prop);
     }
     goal_op_eff.push_back(&artificial_goal);
-    add_relaxed_operator(goal_op_pre, goal_op_eff, 0, 0);
+    add_relaxed_operator(goal_op_pre, goal_op_eff, -1, 0);
 
     // Cross-reference relaxed operators.
     for (size_t i = 0; i < relaxed_operators.size(); ++i) {
@@ -69,23 +70,27 @@ void LandmarkCutHeuristic::initialize() {
     }
 }
 
-void LandmarkCutHeuristic::build_relaxed_operator(const GlobalOperator &op) {
-    const vector<GlobalCondition> &op_preconds = op.get_preconditions();
-    const vector<GlobalEffect> &op_effects = op.get_effects();
+void LandmarkCutHeuristic::build_relaxed_operator(const OperatorProxy &op) {
     vector<RelaxedProposition *> precondition;
     vector<RelaxedProposition *> effects;
-    for (size_t i = 0; i < op_preconds.size(); ++i)
-        precondition.push_back(&propositions[op_preconds[i].var][op_preconds[i].val]);
-    for (size_t i = 0; i < op_effects.size(); ++i)
-        effects.push_back(&propositions[op_effects[i].var][op_effects[i].val]);
-    add_relaxed_operator(precondition, effects, &op, get_adjusted_cost(op));
+    for (FactProxy pre : op.get_preconditions()) {
+        int var = pre.get_variable().get_id();
+        int val = pre.get_value();
+        precondition.push_back(&propositions[var][val]);
+    }
+    for (EffectProxy eff : op.get_effects()) {
+        int var = eff.get_fact().get_variable().get_id();
+        int val = eff.get_fact().get_value();
+        effects.push_back(&propositions[var][val]);
+    }
+    add_relaxed_operator(precondition, effects, op.get_id(), op.get_cost());
 }
 
 void LandmarkCutHeuristic::add_relaxed_operator(
     const vector<RelaxedProposition *> &precondition,
     const vector<RelaxedProposition *> &effects,
-    const GlobalOperator *op, int base_cost) {
-    RelaxedOperator relaxed_op(precondition, effects, op, base_cost);
+    int op_id, int base_cost) {
+    RelaxedOperator relaxed_op(precondition, effects, op_id, base_cost);
     if (relaxed_op.precondition.empty())
         relaxed_op.precondition.push_back(&artificial_precondition);
     relaxed_operators.push_back(relaxed_op);
@@ -113,15 +118,17 @@ void LandmarkCutHeuristic::setup_exploration_queue() {
     }
 }
 
-void LandmarkCutHeuristic::setup_exploration_queue_state(const GlobalState &state) {
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        RelaxedProposition *init_prop = &propositions[var][state[var]];
+void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
+    for (FactProxy init_fact : state) {
+        int var = init_fact.get_variable().get_id();
+        int val = init_fact.get_value();
+        RelaxedProposition *init_prop = &propositions[var][val];
         enqueue_if_necessary(init_prop, 0);
     }
     enqueue_if_necessary(&artificial_precondition, 0);
 }
 
-void LandmarkCutHeuristic::first_exploration(const GlobalState &state) {
+void LandmarkCutHeuristic::first_exploration(const State &state) {
     assert(priority_queue.empty());
     setup_exploration_queue();
     setup_exploration_queue_state(state);
@@ -202,15 +209,17 @@ void LandmarkCutHeuristic::first_exploration_incremental(
 }
 
 void LandmarkCutHeuristic::second_exploration(
-    const GlobalState &state, vector<RelaxedProposition *> &second_exploration_queue, vector<RelaxedOperator *> &cut) {
+    const State &state, vector<RelaxedProposition *> &second_exploration_queue, vector<RelaxedOperator *> &cut) {
     assert(second_exploration_queue.empty());
     assert(cut.empty());
 
     artificial_precondition.status = BEFORE_GOAL_ZONE;
     second_exploration_queue.push_back(&artificial_precondition);
 
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        RelaxedProposition *init_prop = &propositions[var][state[var]];
+    for (FactProxy init_fact : state) {
+        int var = init_fact.get_variable().get_id();
+        int val = init_fact.get_value();
+        RelaxedProposition *init_prop = &propositions[var][val];
         init_prop->status = BEFORE_GOAL_ZONE;
         second_exploration_queue.push_back(init_prop);
     }
@@ -293,7 +302,8 @@ void LandmarkCutHeuristic::validate_h_max() const {
 #endif
 }
 
-int LandmarkCutHeuristic::compute_heuristic(const GlobalState &state) {
+int LandmarkCutHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
     // TODO: Possibly put back in some kind of preferred operator mechanism.
     for (size_t i = 0; i < relaxed_operators.size(); ++i) {
         RelaxedOperator &op = relaxed_operators[i];
