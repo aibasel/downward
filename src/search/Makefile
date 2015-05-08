@@ -52,6 +52,7 @@ HEADERS = \
           domain_transition_graph.h \
           eager_evaluation_context.h \
           eager_search.h \
+          enforced_hill_climbing_search.h \
           equivalence_relation.h \
           evaluation_context.h \
           evaluation_result.h \
