@@ -3,8 +3,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <ext/hash_map>
 #include <list>
+#include <unordered_map>
 #include <vector>
 
 class Block;
@@ -53,7 +53,7 @@ class EquivalenceRelation {
       block and points to the element within it.
     */
     typedef std::pair<BlockListIter, ElementListIter> ElementPosition;
-    typedef __gnu_cxx::hash_map<int, ElementPosition> ElementPositionMap;
+    typedef std::unordered_map<int, ElementPosition> ElementPositionMap;
     ElementPositionMap element_positions;
 
     /*
@@ -91,7 +91,7 @@ public:
     void refine(const EquivalenceRelation &other);
 
     // See refine(const Block &block)
-    void refine(const std::list<int> &block_X);
+    void refine(ElementListConstIter block_X_begin, ElementListConstIter block_X_end);
 
     /*
       Creates an equivalence relation over the numbers 0 to n -1.

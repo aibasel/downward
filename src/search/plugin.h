@@ -9,18 +9,30 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 template <class T>
 class Plugin {
-    Plugin(const Plugin<T> &copy);
 public:
     Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
-        Registry<T *>::
-        instance()->register_object(key, factory);
+        Registry<T *>::instance()->register_object(key, factory);
     }
-    ~Plugin() {}
+    ~Plugin() = default;
+    Plugin(const Plugin<T> &other) = delete;
+};
+
+
+// TODO: This class will replace Plugin once we no longer need to support raw pointers.
+template <class T>
+class PluginShared {
+public:
+    PluginShared(const std::string &key, typename Registry<std::shared_ptr<T> >::Factory factory) {
+        Registry<std::shared_ptr<T> >::instance()->register_object(key, factory);
+    }
+    ~PluginShared() = default;
+    PluginShared(const PluginShared<T> &other) = delete;
 };
 
 template <class Entry>

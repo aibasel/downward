@@ -7,11 +7,10 @@
 #include "../plugin.h"
 
 #include <iostream>
-#include <vector>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
-#include <ext/hash_map>
-
-using namespace __gnu_cxx;
+#include <vector>
 
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
@@ -86,7 +85,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     assert(!triggers.empty());
 
     proposition_layer current_prop_layer;
-    hash_set<int> triggered(g_operators.size() + g_axioms.size());
+    unordered_set<int> triggered(g_operators.size() + g_axioms.size());
 
     // set initial layer
     const GlobalState &initial_state = g_initial_state();
@@ -109,11 +108,10 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     bool changes = true;
     while (changes) {
         proposition_layer next_prop_layer(current_prop_layer);
-        hash_set<int> next_triggered;
+        unordered_set<int> next_triggered;
         changes = false;
-        for (hash_set<int>::const_iterator it = triggered.begin(); it
-             != triggered.end(); ++it) {
-            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(*it);
+        for (int op_index : triggered) {
+            const GlobalOperator &op = lm_graph->get_operator_for_lookup_index(op_index);
             if (operator_applicable(op, current_prop_layer)) {
                 lm_set changed = apply_operator_and_propagate_labels(op,
                                                                      current_prop_layer, next_prop_layer);

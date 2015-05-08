@@ -3,10 +3,11 @@
 
 #include "../operator_cost.h"
 
+#include <memory>
 #include <vector>
 
+class AbstractTask;
 class Options;
-class TaskProxy;
 class ZeroOnePDBsHeuristic;
 
 /* Implementation of the pattern generation algorithm by Edelkamp. See:
@@ -15,7 +16,7 @@ class ZeroOnePDBsHeuristic;
    Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007. */
 
 class PatternGenerationEdelkamp {
-    TaskProxy *task;
+    std::shared_ptr<AbstractTask> task;
     const int pdb_max_size; // maximum number of states for each pdb
     const int num_collections;
     const int num_episodes;

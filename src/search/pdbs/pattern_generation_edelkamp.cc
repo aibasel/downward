@@ -14,10 +14,9 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <unordered_set>
 #include <vector>
-#include <ext/hash_set>
 
-using namespace __gnu_cxx;
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
@@ -89,8 +88,8 @@ void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bo
 
 void PatternGenerationEdelkamp::remove_irrelevant_variables(
     vector<int> &pattern) const {
-    hash_set<int> in_original_pattern(pattern.begin(), pattern.end());
-    hash_set<int> in_pruned_pattern;
+    unordered_set<int> in_original_pattern(pattern.begin(), pattern.end());
+    unordered_set<int> in_pruned_pattern;
 
     vector<int> vars_to_check;
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -184,7 +183,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
         } else {
             // generate the pattern collection heuristic and get its fitness value.
             Options opts;
-            opts.set<TaskProxy *>("task_proxy", task);
+            opts.set<shared_ptr<AbstractTask> >("transform", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
             ZeroOnePDBsHeuristic *zoppch =
