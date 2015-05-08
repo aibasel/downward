@@ -5,9 +5,12 @@
 
 class LazyEvaluationContext : public EvaluationContext {
     EagerEvaluationContext eval_context;
+    int g_value;
+    bool preferred;
 
 public:
-    LazyEvaluationContext(const EagerEvaluationContext &eval_context);
+    LazyEvaluationContext(
+        const EagerEvaluationContext &eval_context, int g_value, bool is_preferred);
     ~LazyEvaluationContext() = default;
 
     virtual const EvaluationResult &get_result(ScalarEvaluator *heur) override;

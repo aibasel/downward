@@ -100,12 +100,14 @@ void LazySearch::generate_successors() {
     statistics.inc_generated(operators.size());
 
     for (const GlobalOperator *op : operators) {
+        int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
         bool is_preferred = op->is_marked();
         if (is_preferred)
             op->unmark();
         if (new_real_g < bound) {
-            LazyEvaluationContext new_eval_context(current_eval_context);
+            LazyEvaluationContext new_eval_context(
+                current_eval_context, new_g, is_preferred);
             open_list->insert(new_eval_context, make_pair(current_state.get_id(), op));
         }
     }
