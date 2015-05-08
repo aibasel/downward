@@ -10,8 +10,8 @@
 
 // TODO: Fix duplication with the other relaxation heuristics.
 
-class GlobalOperator;
 class GlobalState;
+class OperatorProxy;
 struct RelaxedProposition;
 struct RelaxedOperator;
 
@@ -57,7 +57,7 @@ const int COST_MULTIPLIER = 1;
  */
 
 struct RelaxedOperator {
-    const GlobalOperator *op;
+    int original_op_id;
     std::vector<RelaxedProposition *> precondition;
     std::vector<RelaxedProposition *> effects;
     int base_cost; // 0 for axioms, 1 for regular operators
@@ -68,8 +68,8 @@ struct RelaxedOperator {
     RelaxedProposition *h_max_supporter;
     RelaxedOperator(const std::vector<RelaxedProposition *> &pre,
                     const std::vector<RelaxedProposition *> &eff,
-                    const GlobalOperator *the_op, int base)
-        : op(the_op), precondition(pre), effects(eff), base_cost(base) {
+                    int op_id, int base)
+        : original_op_id(op_id), precondition(pre), effects(eff), base_cost(base) {
     }
 
     inline void update_h_max_supporter();
@@ -113,15 +113,15 @@ class LandmarkCutHeuristic : public Heuristic {
 
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
-    void build_relaxed_operator(const GlobalOperator &op);
+    void build_relaxed_operator(const OperatorProxy &op);
     void add_relaxed_operator(const std::vector<RelaxedProposition *> &precondition,
                               const std::vector<RelaxedProposition *> &effects,
-                              const GlobalOperator *op, int base_cost);
+                              int op_id, int base_cost);
     void setup_exploration_queue();
-    void setup_exploration_queue_state(const GlobalState &state);
-    void first_exploration(const GlobalState &state);
+    void setup_exploration_queue_state(const State &state);
+    void first_exploration(const State &state);
     void first_exploration_incremental(std::vector<RelaxedOperator *> &cut);
-    void second_exploration(const GlobalState &state, std::vector<RelaxedProposition *> &queue,
+    void second_exploration(const State &state, std::vector<RelaxedProposition *> &queue,
                             std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
