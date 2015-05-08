@@ -26,7 +26,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     heuristics.insert(heuristic);
     use_preferred = find(preferred_operator_heuristics.begin(),
                          preferred_operator_heuristics.end(), heuristic) !=
-        preferred_operator_heuristics.end();
+                    preferred_operator_heuristics.end();
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
@@ -47,7 +47,7 @@ void EnforcedHillClimbingSearch::initialize() {
     if (use_preferred) {
         cout << "Using preferred operators for "
              << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
-                 "ranking successors" : "pruning") << endl;
+            "ranking successors" : "pruning") << endl;
     }
 
     if (current_eval_context.is_heuristic_infinite(heuristic)) {
@@ -95,7 +95,7 @@ vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
     } else {
         for (Heuristic *pref_heuristic : preferred_operator_heuristics) {
             const vector<const GlobalOperator *> &pref_ops =
-                    eval_context.get_preferred_operators(pref_heuristic);
+                eval_context.get_preferred_operators(pref_heuristic);
             for (const GlobalOperator *op : pref_ops) {
                 if (!op->is_marked()) {
                     op->mark();

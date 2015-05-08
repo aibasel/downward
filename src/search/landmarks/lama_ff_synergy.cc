@@ -38,7 +38,7 @@ class LamaMasterHeuristic : public Heuristic {
     LamaFFSynergy *synergy;
 
 protected:
-    virtual int compute_heuristic(const GlobalState &/*state*/) {
+    virtual int compute_heuristic(const GlobalState & /*state*/) {
         ABORT("This method should never be called.");
     }
 
@@ -68,7 +68,7 @@ class FFSlaveHeuristic : public Heuristic {
     LamaMasterHeuristic *master;
 
 protected:
-    virtual int compute_heuristic(const GlobalState &/*state*/) {
+    virtual int compute_heuristic(const GlobalState & /*state*/) {
         ABORT("This method should never be called.");
     }
 
