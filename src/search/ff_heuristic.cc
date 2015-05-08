@@ -6,14 +6,8 @@
 #include "task_tools.h"
 
 #include <cassert>
-#include <vector>
+
 using namespace std;
-
-#include <ext/hash_map>
-using namespace __gnu_cxx;
-
-
-
 
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)
@@ -27,7 +21,7 @@ FFHeuristic::~FFHeuristic() {
 void FFHeuristic::initialize() {
     cout << "Initializing FF heuristic..." << endl;
     AdditiveHeuristic::initialize();
-    relaxed_plan.resize(task->get_operators().size(), false);
+    relaxed_plan.resize(task_proxy.get_operators().size(), false);
 }
 
 void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
@@ -49,7 +43,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
                     // so we perform it to save work.
                     // If we had no 0-cost operators and axioms to worry
                     // about, it would also imply applicability.
-                    OperatorProxy op = task->get_operators()[operator_no];
+                    OperatorProxy op = task_proxy.get_operators()[operator_no];
                     if (is_applicable(op, state))
                         set_preferred(op);
                 }
@@ -72,7 +66,7 @@ int FFHeuristic::compute_heuristic(const GlobalState &global_state) {
     for (size_t op_no = 0; op_no < relaxed_plan.size(); ++op_no) {
         if (relaxed_plan[op_no]) {
             relaxed_plan[op_no] = false; // Clean up for next computation.
-            h_ff += task->get_operators()[op_no].get_cost();
+            h_ff += task_proxy.get_operators()[op_no].get_cost();
         }
     }
     return h_ff;

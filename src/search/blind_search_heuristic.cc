@@ -13,7 +13,7 @@ using namespace std;
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
-    for (OperatorProxy op : task->get_operators())
+    for (OperatorProxy op : task_proxy.get_operators())
         min_operator_cost = min(min_operator_cost, op.get_cost());
 }
 
@@ -26,7 +26,7 @@ void BlindSearchHeuristic::initialize() {
 
 int BlindSearchHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
-    if (is_goal_state(*task, state))
+    if (is_goal_state(task_proxy, state))
         return 0;
     else
         return min_operator_cost;

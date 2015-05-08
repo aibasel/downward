@@ -1,7 +1,7 @@
 #ifndef STATE_ID_H
 #define STATE_ID_H
 
-#include <ext/hash_set>
+#include <iostream>
 
 // For documentation on classes relevant to storing and working with registered
 // states see the file state_registry.h.
@@ -40,7 +40,7 @@ public:
 
 std::ostream &operator<<(std::ostream &os, StateID id);
 
-namespace __gnu_cxx {
+namespace std {
 template<>
 struct hash<StateID> {
     size_t operator()(StateID id) const {

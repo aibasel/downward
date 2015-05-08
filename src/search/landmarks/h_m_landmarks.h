@@ -75,7 +75,7 @@ public:
     bool interesting(int var1, int val1, int var2, int val2);
 private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
-    typedef __gnu_cxx::hash_map<int, std::set<int> > TriggerSet;
+    typedef std::unordered_map<int, std::set<int> > TriggerSet;
 
     virtual void generate_landmarks();
 

@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from downward import configs
+import configs
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
@@ -19,6 +19,7 @@ TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
 CONFIGS = {}
 CONFIGS.update(configs.default_configs_optimal(core=True, ipc=False, extended=True))
 CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=False, extended=True))
+CONFIGS.update(configs.task_transformation_test_configs())
 
 if "astar_selmax_lmcut_lmcount" in CONFIGS:
     del CONFIGS["astar_selmax_lmcut_lmcount"]
