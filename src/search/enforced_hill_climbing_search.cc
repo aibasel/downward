@@ -27,10 +27,18 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     use_preferred = find(preferred_operator_heuristics.begin(),
                          preferred_operator_heuristics.end(), heuristic) !=
                     preferred_operator_heuristics.end();
+
+    if (!use_preferred || preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
+        open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
+    } else {
+        vector<ScalarEvaluator *> evals {g_evaluator, new PrefEvaluator};
+        open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
+    }
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
     delete g_evaluator;
+    delete open_list;
 }
 
 void EnforcedHillClimbingSearch::reach_state(
@@ -61,15 +69,6 @@ void EnforcedHillClimbingSearch::initialize() {
     int current_h = current_eval_context.get_heuristic_value(heuristic);
     SearchNode node = search_space.get_node(current_eval_context.get_state());
     node.open_initial(current_h);
-
-    if (!use_preferred || preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
-        open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
-    } else {
-        vector<ScalarEvaluator *> evals;
-        evals.push_back(g_evaluator);
-        evals.push_back(new PrefEvaluator);
-        open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
-    }
 }
 
 vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
@@ -224,7 +223,8 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     parser.add_list_option<Heuristic *>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these heuristics",
+        "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
