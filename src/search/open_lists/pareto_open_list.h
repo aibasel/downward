@@ -36,7 +36,7 @@ class ParetoOpenList : public OpenList<Entry> {
     typedef std::vector<int> KeyType;
     typedef typename __gnu_cxx::hash_map<
         const KeyType, Bucket,
-        __gnu_cxx::hash<const std::vector<int>>> BucketMap;
+        __gnu_cxx::hash<const std::vector<int> > > BucketMap;
     typedef std::set<KeyType> KeySet;
 
     BucketMap buckets;

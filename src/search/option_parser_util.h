@@ -412,7 +412,7 @@ public:
     }
 
     template <class T>
-    T get(std::string key, const T& default_value) const {
+    T get(std::string key, const T &default_value) const {
         if (storage.count(key))
             return get<T>(key);
         else

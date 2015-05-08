@@ -42,7 +42,7 @@ void SearchProgress::output_line(const string &description,
 bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
     bool result = false;
     eval_context.for_each_evaluator_value(
-        [this, &result](const ScalarEvaluator *evaluator, int h) {
+        [this, &result](const ScalarEvaluator * evaluator, int h) {
             const Heuristic *heur = dynamic_cast<const Heuristic *>(evaluator);
             if (heur) {
                 if (process_heuristic_value(heur, h)) {
@@ -50,7 +50,8 @@ bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
                     result = true;
                 }
             }
-        });
+        }
+        );
     return result;
 }
 
