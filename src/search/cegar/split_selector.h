@@ -1,5 +1,5 @@
-#ifndef CEGAR_FLAW_SELECTOR_H
-#define CEGAR_FLAW_SELECTOR_H
+#ifndef CEGAR_SPLIT_SELECTOR_H
+#define CEGAR_SPLIT_SELECTOR_H
 
 #include "utils.h"
 
