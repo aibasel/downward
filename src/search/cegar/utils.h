@@ -30,17 +30,6 @@ const int MAX_COST_VALUE = 100000000;
 using Fact = std::pair<int, int>;
 using VarToValues = std::unordered_map<int, std::vector<int> >;
 
-struct Split {
-    const int var_id;
-    const std::vector<int> values;
-
-    Split(int var_id, std::vector<int> &&values)
-        : var_id(var_id), values(values) {
-    }
-};
-
-using Splits = std::vector<Split>;
-
 std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(std::shared_ptr<AbstractTask> task);
 
 /*
