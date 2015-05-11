@@ -19,11 +19,9 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      reduce_labels_before_shrinking(opts.get<bool>("reduce_labels_before_shrinking")),
-      reduce_labels_before_merging(opts.get<bool>("reduce_labels_before_merging")),
+      labels(opts.get<Labels *>("label_reduction")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")),
       terminate(opts.get<bool>("terminate")) {
-    labels = new Labels(opts);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -35,10 +33,6 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    cout << "Reduce labels before merging: "
-         << (reduce_labels_before_merging ? "enabled" : "disabled") << endl;
-    cout << "Reduce labels before shrinking: "
-         << (reduce_labels_before_shrinking ? "enabled" : "disabled") << endl;
     labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
@@ -58,13 +52,12 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
             "You have been warned. Don't use this for benchmarking!"
         << endl << dashes << endl;
     }
-    cout << reduce_labels_before_merging << " " << reduce_labels_before_shrinking << endl;
-    if (!reduce_labels_before_merging && !reduce_labels_before_shrinking) {
+    if (!labels->reduce_before_merging() && !labels->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You did not enable label reduction. This may\n"
                  "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
-    } else if (reduce_labels_before_merging && reduce_labels_before_shrinking) {
+    } else if (labels->reduce_before_merging() && labels->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You set label reduction to be applied twice in\n"
                  "each merge-and-shrink iteration, both before shrinking and\n"
@@ -72,7 +65,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
                  "for most configurations !"
              << endl << dashes << endl;
     } else {
-        if (reduce_labels_before_shrinking &&
+        if (labels->reduce_before_shrinking() &&
                 (shrink_strategy->get_name() == "f-preserving"
                  || shrink_strategy->get_name() == "random")) {
             cerr << dashes << endl
@@ -81,7 +74,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
                     "reduction before merging, not before shrinking!"
                  << endl << dashes << endl;
         }
-        if (reduce_labels_before_merging &&
+        if (labels->reduce_before_merging() &&
                 shrink_strategy->get_name() == "bisimulation") {
             cerr << dashes << endl
                  << "WARNING! Shrinking based on bisimulation performs best\n"
@@ -119,7 +112,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
 
-        if (reduce_labels_before_shrinking) {
+        if (labels->reduce_before_shrinking()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
@@ -142,7 +135,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         transition_system->statistics(use_expensive_statistics);
         other_transition_system->statistics(use_expensive_statistics);
 
-        if (reduce_labels_before_merging) {
+        if (labels->reduce_before_merging()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
@@ -241,15 +234,16 @@ static Heuristic *_parse(OptionParser &parser) {
     // Merge strategy option.
     parser.add_option<MergeStrategy *>(
         "merge_strategy",
-        "merge strategy; choose between merge_linear and merge_dfp",
-        "merge_linear");
+        "merge strategy; choose between merge_linear with various variable "
+        "orderings and merge_dfp.");
 
     // Shrink strategy option.
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
-        "shrink strategy; "
-        "try one of the following:",
-        "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, threshold=1, greedy=false, group_by_h=true)");
+        "shrink strategy; choose between shrink_fh and shrink_bisimulation. "
+        "A good configuration of bisimulation based shrinking is: "
+        "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, "
+        "threshold=1, greedy=false, group_by_h=true)");
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
         make_pair("shrink_fh(max_states=N)",
@@ -294,63 +288,9 @@ static Heuristic *_parse(OptionParser &parser) {
                   "reduce_labels_before_shrinking=true."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
-    // Options related to label reduction.
-    parser.add_option<bool>("reduce_labels_before_shrinking",
-                            "apply label reduction before shrinking");
-    parser.add_option<bool>("reduce_labels_before_merging",
-                            "apply label reduction before merging");
-    vector<string> label_reduction_method;
-    vector<string> label_reduction_method_doc;
-    label_reduction_method.push_back("NONE");
-    label_reduction_method_doc.push_back(
-        "no label reduction will be performed");
-    label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
-    label_reduction_method_doc.push_back(
-        "compute the 'combinable relation' only for the two transition "
-        "systems being merged next");
-    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
-    label_reduction_method_doc.push_back(
-        "compute the 'combinable relation' for labels once for every "
-        "transition  system and reduce labels");
-    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
-    label_reduction_method_doc.push_back(
-        "keep computing the 'combinable relation' for labels iteratively "
-        "for all transition systems until no more labels can be reduced");
-    parser.add_enum_option("label_reduction_method",
-                           label_reduction_method,
-                           "Label reduction method. See the AAAI14 by Sievers "
-                           "et al. for explanation of the default label "
-                           "reduction method and the 'combinable relation' ."
-                           "Also note that you must set at least one of the "
-                           "options reduce_labels_before_shrinking or "
-                           "reduce_labels_before_merging in order to use "
-                           "the chosen label reduction configuration.",
-                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
-                           label_reduction_method_doc);
-
-    vector<string> label_reduction_system_order;
-    vector<string> label_reduction_system_order_doc;
-    label_reduction_system_order.push_back("REGULAR");
-    label_reduction_system_order_doc.push_back(
-        "transition systems are considered in the FD given order for "
-        "atomic transition systems and in the order of their creation "
-        "for composite transition system.");
-    label_reduction_system_order.push_back("REVERSE");
-    label_reduction_system_order_doc.push_back(
-        "inverse of REGULAR");
-    label_reduction_system_order.push_back("RANDOM");
-    label_reduction_system_order_doc.push_back(
-        "random order");
-    parser.add_enum_option("label_reduction_system_order",
-                           label_reduction_system_order,
-                           "Order of transition systems for the label reduction "
-                           "methods that iterate over the set of all transition "
-                           "systems. Only useful for the choices "
-                           "all_transition_systems and "
-                           "all_transition_systems_with_fixpoint for the option "
-                           "label_reduction_method.",
-                           "RANDOM",
-                           label_reduction_system_order_doc);
+    // Label(s) (reduction) option.
+    parser.add_option<Labels *>("label_reduction",
+                                "Choose relevant options for label reduction.");
 
     // General merge-and-shrink options.
     parser.add_option<bool>(
