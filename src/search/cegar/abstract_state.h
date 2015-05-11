@@ -58,6 +58,8 @@ public:
     // Return the size of var's abstract domain for this state.
     size_t count(int var) const;
 
+    bool contains(FactProxy fact) const;
+
     // Return the set of states in which applying "op" leads to this state.
     AbstractState regress(OperatorProxy op) const;
 
