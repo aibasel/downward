@@ -102,13 +102,13 @@ bool Domains::is_superset_of(const Domains &other) const {
 Splits Domains::get_possible_splits(const Domains &other,
                                     const State &conc_state) const {
     Splits splits;
-    Bitset intersection(bits & other.bits);
-    for (size_t var = 0; var < borders.size(); ++var) {
-        if (!intersection.test(pos(var, conc_state[var].get_value()))) {
+    for (int var = 0; var < static_cast<int>(orig_domain_sizes.size()); ++var) {
+        int wanted_value = conc_state[var].get_value();
+        if (!test(var, wanted_value) || !other.test(var, wanted_value)) {
             vector<int> wanted;
-            for (int pos = borders[var]; pos < borders[var] + orig_domain_sizes[var]; ++pos) {
-                if (intersection.test(pos)) {
-                    wanted.push_back(pos - borders[var]);
+            for (int value = 0; value < orig_domain_sizes[var]; ++value) {
+                if (test(var, value) && other.test(var, value)) {
+                    wanted.push_back(value);
                 }
             }
             splits.emplace_back(var, move(wanted));
