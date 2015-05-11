@@ -28,8 +28,8 @@ struct Flaw {
           abs_state(abs_state),
           desired_abs_state(std::move(desired_abs_state)) {
     }
-    Splits get_possible_splits() const {
-        Splits splits;
+    vector<Split> get_possible_splits() const {
+        vector<Split> splits;
         for (FactProxy wanted_fact : conc_state) {
             if (!abs_state->contains(wanted_fact) ||
                 !desired_abs_state.contains(wanted_fact)) {
@@ -133,7 +133,7 @@ void Abstraction::build() {
             break;
         }
         AbstractState *abs_state = flaw->abs_state;
-        Splits splits = flaw->get_possible_splits();
+        vector<Split> splits = flaw->get_possible_splits();
         const Split &split = split_selector.pick_split(*abs_state, splits);
         refine(abs_state, split.var_id, split.values);
     }
