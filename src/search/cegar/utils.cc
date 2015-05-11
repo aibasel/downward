@@ -20,10 +20,10 @@ bool DEBUG = false;
 // Reserving 75 MB avoids this.
 static const int MEMORY_PADDING_MB = 75;
 
-static char *cegar_memory_padding = 0;
+static char *cegar_memory_padding = nullptr;
 
 // Save previous out-of-memory handler.
-static void (*global_out_of_memory_handler)(void) = 0;
+static void (*global_out_of_memory_handler)(void) = nullptr;
 
 shared_ptr<AdditiveHeuristic> get_additive_heuristic(shared_ptr<AbstractTask> task) {
     Options opts;

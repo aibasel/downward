@@ -32,7 +32,6 @@ vector<Fact> get_fact_landmarks(shared_ptr<LandmarkGraph> landmark_graph) {
 shared_ptr<LandmarkGraph> get_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
-    opts.set<int>("memory_padding", 75);
     opts.set<int>("m", 1);
     // h^m doesn't produce reasonable orders anyway.
     opts.set<bool>("reasonable_orders", false);
@@ -117,8 +116,8 @@ void write_landmark_graph_dot_file(shared_ptr<LandmarkGraph> graph) {
         }
     }
     // Mark goal facts red.
-    for (size_t i = 0; i < g_goal.size(); i++) {
-        dotfile << "  \"" << get_node_name(g_goal[i]) << "\" [color=red];" << endl;
+    for (Fact goal : g_goal) {
+        dotfile << "  \"" << get_node_name(goal) << "\" [color=red];" << endl;
     }
     dotfile << "}" << endl;
     dotfile.close();
