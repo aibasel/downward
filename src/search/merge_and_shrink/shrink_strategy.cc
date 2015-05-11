@@ -23,10 +23,11 @@ ShrinkStrategy::~ShrinkStrategy() {
 }
 
 void ShrinkStrategy::dump_options() const {
-    cout << "Shrink strategy: " << name() << endl;
+    cout << "Shrink strategy options: " << endl;
     cout << "Transition system size limit: " << max_states << endl
          << "Transition system size limit right before merge: "
          << max_states_before_merge << endl;
+    cout << "Type: " << name() << endl;
     dump_strategy_specific_options();
 }
 
