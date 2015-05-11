@@ -31,15 +31,17 @@ struct Flaw {
     Splits get_possible_splits() const {
         Splits splits;
         for (FactProxy wanted_fact : conc_state) {
-            if (!abs_state->contains(wanted_fact) || !desired_abs_state.contains(wanted_fact)) {
+            if (!abs_state->contains(wanted_fact) ||
+                !desired_abs_state.contains(wanted_fact)) {
+                VariableProxy var = wanted_fact.get_variable();
                 vector<int> wanted;
-                for (int value = 0; value < wanted_fact.get_variable().get_domain_size(); ++value) {
-                    FactProxy fact = wanted_fact.get_variable().get_fact(value);
+                for (int value = 0; value < var.get_domain_size(); ++value) {
+                    FactProxy fact = var.get_fact(value);
                     if (abs_state->contains(fact) && desired_abs_state.contains(fact)) {
                         wanted.push_back(value);
                     }
                 }
-                splits.emplace_back(wanted_fact.get_variable().get_id(), move(wanted));
+                splits.emplace_back(var.get_id(), move(wanted));
             }
         }
         assert(!splits.empty());
