@@ -8,6 +8,9 @@
 #include <vector>
 
 class ConditionsProxy;
+class FactProxy;
+class OperatorProxy;
+class State;
 class TaskProxy;
 
 namespace cegar {
@@ -67,9 +70,6 @@ public:
     std::pair<AbstractState *, AbstractState *> split(int var, std::vector<int> wanted);
 
     void add_loop(OperatorProxy op);
-
-    Splits get_possible_splits(const AbstractState &desired,
-                               const State &conc_state) const;
 
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
