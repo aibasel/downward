@@ -68,7 +68,6 @@ bool Abstraction::is_goal(AbstractState *state) const {
 
 void Abstraction::separate_unreachable_facts() {
     assert(states.size() == 1);
-    assert(task_proxy.get_goals().size() == 1);
     FactProxy landmark = task_proxy.get_goals()[0];
     unordered_set<FactProxy> reachable_facts = get_relaxed_reachable_facts(
         task_proxy, landmark);
@@ -126,7 +125,6 @@ void Abstraction::build() {
 }
 
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
-    assert(may_keep_refining());
     if (DEBUG)
         cout << "Refine " << *state << " for " << var << "=" << wanted << endl;
     pair<AbstractState *, AbstractState *> new_states = state->split(var, wanted);
