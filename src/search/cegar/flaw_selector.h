@@ -46,9 +46,6 @@ public:
     SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick);
     ~SplitSelector() = default;
 
-    SplitSelector(const SplitSelector &) = delete;
-    SplitSelector &operator=(const SplitSelector &) = delete;
-
     const Split &pick_split(const AbstractState &state, const Splits &splits) const;
 };
 }
