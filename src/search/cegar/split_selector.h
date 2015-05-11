@@ -28,6 +28,17 @@ enum class PickSplit {
     MAX_HADD
 };
 
+struct Split {
+    const int var_id;
+    const std::vector<int> values;
+
+    Split(int var_id, std::vector<int> &&values)
+        : var_id(var_id), values(values) {
+    }
+};
+
+using Splits = std::vector<Split>;
+
 class SplitSelector {
     const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
