@@ -143,19 +143,19 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     // The desired value has to be in the set of possible values.
     assert(wanted.size() >= 1);
     assert(domains.count(var) > wanted.size());
-    for (size_t i = 0; i < wanted.size(); ++i)
-        assert(domains.test(var, wanted[i]));
 
     Domains v1_domains(domains);
     Domains v2_domains(domains);
 
     v2_domains.remove_all(var);
-    for (size_t i = 0; i < wanted.size(); ++i) {
+    for (int value : wanted) {
+        assert(domains.test(var, value));
+
         // In v1 var can have all of the previous values except the wanted ones.
-        v1_domains.remove(var, wanted[i]);
+        v1_domains.remove(var, value);
 
         // In v2 var can only have the wanted values.
-        v2_domains.add(var, wanted[i]);
+        v2_domains.add(var, value);
     }
     assert(v1_domains.count(var) == domains.count(var) - wanted.size());
     assert(v2_domains.count(var) == wanted.size());

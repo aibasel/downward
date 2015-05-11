@@ -9,6 +9,7 @@ class State;
 
 namespace cegar {
 class Node {
+    static const int UNDEFINED = -2;
     /*
       While right_child always corresponds to a (possibly split) abstract
       state, left_child may correspond to a helper node. Helper nodes
@@ -40,8 +41,10 @@ public:
     std::pair<Node *, Node *> split(int var, const std::vector<int> &values);
 
     bool is_split() const {
-        assert((!left_child && !right_child && var == -1 && value == -1) ||
-               (left_child && right_child && var != -1 && value != -1));
+        assert((!left_child && !right_child &&
+                var == UNDEFINED && value == UNDEFINED) ||
+               (left_child && right_child &&
+                var != UNDEFINED && value != UNDEFINED));
         return left_child;
     }
 

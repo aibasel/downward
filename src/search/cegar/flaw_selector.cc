@@ -41,10 +41,7 @@ double SplitSelector::get_refinedness(const AbstractState &state, int var_id) co
 int SplitSelector::get_hadd_value(int var_id, int value) const {
     assert(additive_heuristic);
     int hadd = additive_heuristic->get_cost(var_id, value);
-    // TODO: Can this still happen?
-    if (hadd == -1)
-        // Fact is unreachable.
-        return INF - 1;
+    assert(hadd != -1);
     return hadd;
 }
 
@@ -92,7 +89,6 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
 const Split &SplitSelector::pick_split(const AbstractState &state, const Splits &splits) const {
     assert(!splits.empty());
 
-    // Use shortcut if there is only one flaw.
     if (splits.size() == 1) {
         return splits[0];
     }

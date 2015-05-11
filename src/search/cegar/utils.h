@@ -21,7 +21,7 @@ namespace cegar {
 extern bool DEBUG;
 
 const int UNDEFINED = -1;
-// The name INFINITY is reserved in C++11.
+// Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
 const int INF = std::numeric_limits<int>::max();
 
 // See additive_heuristic.h.

@@ -8,8 +8,8 @@ namespace cegar {
 Node::Node()
     : left_child(nullptr),
       right_child(nullptr),
-      var(-1),
-      value(-1),
+      var(UNDEFINED),
+      value(UNDEFINED),
       h(0) {
 }
 
