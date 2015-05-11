@@ -29,7 +29,21 @@ struct Flaw {
           desired_abs_state(std::move(desired_abs_state)) {
     }
     Splits get_possible_splits() const {
-        return abs_state->get_possible_splits(desired_abs_state, conc_state);
+        Splits splits;
+        for (FactProxy wanted_fact : conc_state) {
+            if (!abs_state->contains(wanted_fact) || !desired_abs_state.contains(wanted_fact)) {
+                vector<int> wanted;
+                for (int value = 0; value < wanted_fact.get_variable().get_domain_size(); ++value) {
+                    FactProxy fact = wanted_fact.get_variable().get_fact(value);
+                    if (abs_state->contains(fact) && desired_abs_state.contains(fact)) {
+                        wanted.push_back(value);
+                    }
+                }
+                splits.emplace_back(wanted_fact.get_variable().get_id(), move(wanted));
+            }
+        }
+        assert(!splits.empty());
+        return splits;
     }
 };
 

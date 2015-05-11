@@ -21,6 +21,10 @@ size_t AbstractState::count(int var) const {
     return domains.count(var);
 }
 
+bool AbstractState::contains(FactProxy fact) const {
+    return domains.test(fact.get_variable().get_id(), fact.get_value());
+}
+
 void AbstractState::add_arc(OperatorProxy op, AbstractState *other) {
     // Experiments showed that keeping the arcs sorted for faster removal
     // increases the overall processing time. Out of 30 domains it made no
