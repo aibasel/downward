@@ -37,8 +37,6 @@ struct Split {
     }
 };
 
-using Splits = std::vector<Split>;
-
 class SplitSelector {
     const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
@@ -57,7 +55,8 @@ public:
     SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick);
     ~SplitSelector() = default;
 
-    const Split &pick_split(const AbstractState &state, const Splits &splits) const;
+    const Split &pick_split(const AbstractState &state,
+                            const std::vector<Split> &splits) const;
 };
 }
 

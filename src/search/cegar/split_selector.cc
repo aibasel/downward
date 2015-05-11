@@ -86,7 +86,8 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
     return rating;
 }
 
-const Split &SplitSelector::pick_split(const AbstractState &state, const Splits &splits) const {
+const Split &SplitSelector::pick_split(const AbstractState &state,
+                                       const vector<Split> &splits) const {
     assert(!splits.empty());
 
     if (splits.size() == 1) {
@@ -94,7 +95,7 @@ const Split &SplitSelector::pick_split(const AbstractState &state, const Splits 
     }
 
     if (DEBUG) {
-        cout << "Splits for state " << state << ": " << endl;
+        cout << "Vector<split> for state " << state << ": " << endl;
         for (const Split &split : splits)
             cout << split.var_id << "=" << split.values << " ";
         cout << endl;
