@@ -168,9 +168,9 @@ HEADERS += cegar/abstract_search.h \
            cegar/domain_abstracted_task.h \
            cegar/domain_abstracted_task_builder.h \
            cegar/domains.h \
-           cegar/flaw_selector.h \
            cegar/modified_costs_task.h \
            cegar/modified_goals_task.h \
+           cegar/split_selector.h \
            cegar/split_tree.h \
            cegar/utils.h \
            cegar/utils_landmarks.h \

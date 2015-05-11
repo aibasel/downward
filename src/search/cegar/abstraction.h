@@ -2,7 +2,7 @@
 #define CEGAR_ABSTRACTION_H
 
 #include "abstract_search.h"
-#include "flaw_selector.h"
+#include "split_selector.h"
 #include "split_tree.h"
 
 #include "../countdown_timer.h"
