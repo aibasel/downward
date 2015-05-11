@@ -1,14 +1,10 @@
 #ifndef CEGAR_DOMAINS_H
 #define CEGAR_DOMAINS_H
 
-#include "utils.h"
-
 #include <boost/dynamic_bitset.hpp>
 
-#include <string>
 #include <vector>
 
-class State;
 class TaskProxy;
 
 namespace cegar {
@@ -50,7 +46,6 @@ public:
     // Return true if all abstract domains are supersets of the
     // other's respective domains.
     bool is_superset_of(const Domains &other) const;
-    Splits get_possible_splits(const Domains &other, const State &conc_state) const;
 
     friend std::ostream &operator<<(std::ostream &os, const Domains &bits);
 };

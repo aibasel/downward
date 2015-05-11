@@ -1,7 +1,6 @@
 #include "domains.h"
 
 #include "../task_proxy.h"
-#include "../utilities.h"
 
 #include <sstream>
 
@@ -97,25 +96,6 @@ bool Domains::intersects(const Domains &other, int var) const {
 
 bool Domains::is_superset_of(const Domains &other) const {
     return other.bits.is_subset_of(bits);
-}
-
-Splits Domains::get_possible_splits(const Domains &other,
-                                    const State &conc_state) const {
-    Splits splits;
-    for (int var = 0; var < static_cast<int>(orig_domain_sizes.size()); ++var) {
-        int wanted_value = conc_state[var].get_value();
-        if (!test(var, wanted_value) || !other.test(var, wanted_value)) {
-            vector<int> wanted;
-            for (int value = 0; value < orig_domain_sizes[var]; ++value) {
-                if (test(var, value) && other.test(var, value)) {
-                    wanted.push_back(value);
-                }
-            }
-            splits.emplace_back(var, move(wanted));
-        }
-    }
-    assert(!splits.empty());
-    return splits;
 }
 
 ostream &operator<<(ostream &os, const Domains &domains) {

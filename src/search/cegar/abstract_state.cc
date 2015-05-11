@@ -204,11 +204,6 @@ AbstractState AbstractState::regress(OperatorProxy op) const {
     return AbstractState(regressed_domains, nullptr);
 }
 
-Splits AbstractState::get_possible_splits(const AbstractState &desired,
-                                          const State &conc_state) const {
-    return domains.get_possible_splits(desired.domains, conc_state);
-}
-
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
     return domains.intersects(other->domains, var);
 }
