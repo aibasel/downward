@@ -226,7 +226,7 @@ public:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels,
                                                 OperatorCost cost_type);
-    void apply_abstraction(std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
+    void apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
     void release_memory();

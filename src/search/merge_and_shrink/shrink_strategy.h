@@ -10,8 +10,6 @@ class OptionParser;
 class Options;
 
 class ShrinkStrategy {
-    const int max_states;
-    const int max_states_before_merge;
 protected:
     /* An equivalence class is a set of abstract states that shall be
        mapped (shrunk) to the same abstract state.
@@ -25,22 +23,31 @@ protected:
     typedef int AbstractStateRef;
     typedef std::forward_list<AbstractStateRef> StateEquivalenceClass;
     typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
-
-    virtual std::string name() const = 0;
-    virtual void dump_strategy_specific_options() const;
+private:
+    const int max_states;
+    const int max_states_before_merge;
+    /*
+      threshold: Shrink the transition system iff it is larger than this
+      size. Note that this is set independently from max_states, which
+      is the number of states to which the transition system is shrunk.
+    */
+    const int shrink_threshold_before_merge;
 
     std::pair<std::size_t, std::size_t> compute_shrink_sizes(
         std::size_t size1, std::size_t size2) const;
     bool must_shrink(const TransitionSystem &ts, int threshold) const;
     void apply(TransitionSystem &ts,
-               StateEquivalenceRelation &equivalence_relation,
-               int threshold) const;
+               const StateEquivalenceRelation &equivalence_relation,
+               int target) const;
+protected:
+    virtual void shrink(const TransitionSystem &ts,
+                        int target,
+                        StateEquivalenceRelation &equivalence_relation) = 0;
+    virtual std::string name() const = 0;
+    virtual void dump_strategy_specific_options() const = 0;
 public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
-
-    void dump_options() const;
-    std::string get_name() const;
 
     /* TODO: Make sure that *all* shrink strategies prune irrelevant
        and unreachable states, then update documentation below
@@ -62,8 +69,10 @@ public:
     // TODO: Should all three of these be public?
     //       If not, also modify in derived clases.
 
-    virtual void shrink(TransitionSystem &ts, int threshold) = 0;
-    virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
+    void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
+
+    void dump_options() const;
+    std::string get_name() const;
 
     static void add_options_to_parser(OptionParser &parser);
     static void handle_option_defaults(Options &opts);
