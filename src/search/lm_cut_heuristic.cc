@@ -1,13 +1,11 @@
 #include "lm_cut_heuristic.h"
 
-#include "global_state.h"
-#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "task_proxy.h"
+#include "task_tools.h"
 
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <vector>
@@ -28,7 +26,8 @@ LandmarkCutHeuristic::~LandmarkCutHeuristic() {
 void LandmarkCutHeuristic::initialize() {
     cout << "Initializing landmark cut heuristic..." << endl;
 
-    ::verify_no_axioms_no_conditional_effects();
+    verify_no_axioms(task_proxy);
+    verify_no_conditional_effects(task_proxy);
 
     // Build propositions.
     assert(num_propositions == 2);
@@ -52,17 +51,16 @@ void LandmarkCutHeuristic::initialize() {
     // Build artificial goal proposition and operator.
     vector<RelaxedProposition *> goal_op_pre, goal_op_eff;
     for (FactProxy goal : task_proxy.get_goals()) {
-        int var = goal.get_variable().get_id();
-        int val = goal.get_value();
-        RelaxedProposition *goal_prop = &propositions[var][val];
-        goal_op_pre.push_back(goal_prop);
+        goal_op_pre.push_back(get_proposition(goal));
     }
     goal_op_eff.push_back(&artificial_goal);
-    add_relaxed_operator(goal_op_pre, goal_op_eff, -1, 0);
+    /* Use the invalid operator id -1 so accessing
+       the artificial operator will generate an error. */
+    add_relaxed_operator(move(goal_op_pre), move(goal_op_eff), -1, 0);
 
     // Cross-reference relaxed operators.
     for (RelaxedOperator &op : relaxed_operators) {
-        for (RelaxedProposition *pre : op.precondition)
+        for (RelaxedProposition *pre : op.preconditions)
             pre->precondition_of.push_back(&op);
         for (RelaxedProposition *eff : op.effects)
             eff->effect_of.push_back(&op);
@@ -73,26 +71,30 @@ void LandmarkCutHeuristic::build_relaxed_operator(const OperatorProxy &op) {
     vector<RelaxedProposition *> precondition;
     vector<RelaxedProposition *> effects;
     for (FactProxy pre : op.get_preconditions()) {
-        int var = pre.get_variable().get_id();
-        int val = pre.get_value();
-        precondition.push_back(&propositions[var][val]);
+        precondition.push_back(get_proposition(pre));
     }
     for (EffectProxy eff : op.get_effects()) {
-        int var = eff.get_fact().get_variable().get_id();
-        int val = eff.get_fact().get_value();
-        effects.push_back(&propositions[var][val]);
+        effects.push_back(get_proposition(eff.get_fact()));
     }
-    add_relaxed_operator(precondition, effects, op.get_id(), op.get_cost());
+    add_relaxed_operator(
+        move(precondition), move(effects), op.get_id(), op.get_cost());
 }
 
 void LandmarkCutHeuristic::add_relaxed_operator(
-    const vector<RelaxedProposition *> &precondition,
-    const vector<RelaxedProposition *> &effects,
+    vector<RelaxedProposition *> && precondition,
+    vector<RelaxedProposition *> && effects,
     int op_id, int base_cost) {
-    RelaxedOperator relaxed_op(precondition, effects, op_id, base_cost);
-    if (relaxed_op.precondition.empty())
-        relaxed_op.precondition.push_back(&artificial_precondition);
+    RelaxedOperator relaxed_op(
+        move(precondition), move(effects), op_id, base_cost);
+    if (relaxed_op.preconditions.empty())
+        relaxed_op.preconditions.push_back(&artificial_precondition);
     relaxed_operators.push_back(relaxed_op);
+}
+
+RelaxedProposition *LandmarkCutHeuristic::get_proposition(const FactProxy &fact) {
+    int var_id = fact.get_variable().get_id();
+    int val = fact.get_value();
+    return &propositions[var_id][val];
 }
 
 // heuristic computation
@@ -109,7 +111,7 @@ void LandmarkCutHeuristic::setup_exploration_queue() {
     artificial_precondition.status = UNREACHED;
 
     for (RelaxedOperator &op : relaxed_operators) {
-        op.unsatisfied_preconditions = op.precondition.size();
+        op.unsatisfied_preconditions = op.preconditions.size();
         op.h_max_supporter = 0;
         op.h_max_supporter_cost = numeric_limits<int>::max();
     }
@@ -117,10 +119,7 @@ void LandmarkCutHeuristic::setup_exploration_queue() {
 
 void LandmarkCutHeuristic::setup_exploration_queue_state(const State &state) {
     for (FactProxy init_fact : state) {
-        int var = init_fact.get_variable().get_id();
-        int val = init_fact.get_value();
-        RelaxedProposition *init_prop = &propositions[var][val];
-        enqueue_if_necessary(init_prop, 0);
+        enqueue_if_necessary(get_proposition(init_fact), 0);
     }
     enqueue_if_necessary(&artificial_precondition, 0);
 }
@@ -206,9 +205,7 @@ void LandmarkCutHeuristic::second_exploration(
     second_exploration_queue.push_back(&artificial_precondition);
 
     for (FactProxy init_fact : state) {
-        int var = init_fact.get_variable().get_id();
-        int val = init_fact.get_value();
-        RelaxedProposition *init_prop = &propositions[var][val];
+        RelaxedProposition *init_prop = get_proposition(init_fact);
         init_prop->status = BEFORE_GOAL_ZONE;
         second_exploration_queue.push_back(init_prop);
     }
@@ -262,10 +259,9 @@ void LandmarkCutHeuristic::validate_h_max() const {
     // variables when using NDEBUG. This whole code does nothing useful
     // when assertions are switched off anyway.
     for (const RelaxedOperator *op : &relaxed_operators) {
-        const vector<RelaxedProposition *> &prec = op->precondition;
         if (op->unsatisfied_preconditions) {
             bool reachable = true;
-            for (RelaxedProposition *pre : prec) {
+            for (RelaxedProposition *pre : op->preconditions) {
                 if (pre->status == UNREACHED) {
                     reachable = false;
                     break;
@@ -277,7 +273,7 @@ void LandmarkCutHeuristic::validate_h_max() const {
             assert(op->h_max_supporter);
             int h_max_cost = op->h_max_supporter_cost;
             assert(h_max_cost == op->h_max_supporter->h_max_cost);
-            for (RelaxedProposition *pre : prec) {
+            for (RelaxedProposition *pre : op->preconditions) {
                 assert(pre->status != UNREACHED);
                 assert(pre->h_max_cost <= h_max_cost);
             }
