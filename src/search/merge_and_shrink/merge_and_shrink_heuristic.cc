@@ -36,6 +36,8 @@ void MergeAndShrinkHeuristic::dump_options() const {
     labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
+    cout << "Only compute the abstraction and terminate afterwards: "
+         << (terminate ? "yes" : "no") << endl;
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
@@ -118,6 +120,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
             other_transition_system->statistics(use_expensive_statistics);
         }
 
+        // TODO: check for all ts if they are solvable? or only for the new one below?
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
