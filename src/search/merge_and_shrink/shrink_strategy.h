@@ -24,12 +24,15 @@ protected:
     typedef std::forward_list<AbstractStateRef> StateEquivalenceClass;
     typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
 private:
+    // The maximum size of a transition system at any point.
     const int max_states;
+    // The maximum size of a transition system before being merged.
     const int max_states_before_merge;
     /*
-      threshold: Shrink the transition system iff it is larger than this
-      size. Note that this is set independently from max_states, which
-      is the number of states to which the transition system is shrunk.
+      shrink_threshold_before_merge: Shrink the transition system iff it is
+      larger than this size. Note that this is set independently from
+      max_states, which is the number of states to which the transition
+      system must be shrunk to respect the given limit.
     */
     const int shrink_threshold_before_merge;
 
@@ -40,6 +43,11 @@ private:
                const StateEquivalenceRelation &equivalence_relation,
                int target) const;
 protected:
+    /*
+      Shrink the transition system to a size at most target. This can be
+      called even if the current size respects the target size already
+      (if threshold is lower).
+    */
     virtual void shrink(const TransitionSystem &ts,
                         int target,
                         StateEquivalenceRelation &equivalence_relation) = 0;
@@ -48,26 +56,6 @@ protected:
 public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
-
-    /* TODO: Make sure that *all* shrink strategies prune irrelevant
-       and unreachable states, then update documentation below
-       accordingly? Currently the only exception is ShrinkRandom, I
-       think. */
-
-    /* Shrink the transition system to size threshold.
-
-       In most shrink stategies, this also prunes all irrelevant and
-       unreachable states, which may cause the resulting size to be
-       lower than threshold.
-
-       Does nothing if threshold >= ts.size() unless force is true
-       (in which case it only prunes irrelevant and unreachable
-       states).
-    */
-
-    // TODO: Should all three of these be virtual?
-    // TODO: Should all three of these be public?
-    //       If not, also modify in derived clases.
 
     void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 

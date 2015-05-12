@@ -31,7 +31,6 @@ ShrinkStrategy::~ShrinkStrategy() {
   ("collapsed_groups") and not modify the transition system, which would be
   passed as const.
  */
-
 void ShrinkStrategy::apply(TransitionSystem &ts,
     const StateEquivalenceRelation &equivalence_relation,
     int target) const {
@@ -98,12 +97,13 @@ void ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1, TransitionSystem
     int new_size1 = new_sizes.first;
     int new_size2 = new_sizes.second;
 
-    // TODO: Explain this min(target, threshold) stuff. Also, make the
-    //       output clearer, which right now is rubbish, calling the
-    //       min(...) "threshold". The reasoning behind this is that
-    //       we need to shrink if we're above the threshold or if
-    //       *after* composition we'd be above the size limit, so
-    //       target can either be less or larger than threshold.
+    /*
+      Shrink one or both transition systems if their size is larger than
+      the size limit imposed by max_states and max_states_before_merge,
+      or if their size is larger than threshold. In the former case, the
+      transition system is forced to be shrunk down to the size limit, in
+      the latter case, shrinking does not necessarily take place.
+    */
 
     if (must_shrink(ts2, min(new_size2, shrink_threshold_before_merge))) {
         StateEquivalenceRelation equivalence_relation;
@@ -133,18 +133,20 @@ string ShrinkStrategy::get_name() const {
 }
 
 void ShrinkStrategy::add_options_to_parser(OptionParser &parser) {
-    // TODO: better documentation what each parameter does
     parser.add_option<int>(
         "max_states",
-        "maximum transition system size",
+        "maximum transition system size allowed at any time point.",
         "-1");
     parser.add_option<int>(
         "max_states_before_merge",
-        "maximum transition system size for factors of synchronized product",
+        "maximum transition system size allowed for two transition systems "
+        "before being merged to form the synchronized product.",
         "-1");
     parser.add_option<int>(
         "threshold",
-        "TODO: document",
+        "If a transition system, before being merged, surpasses this soft "
+        "transition system size limit, the shrink strategy is called to "
+        "possibly shrink the transition system.",
         "-1");
 }
 
