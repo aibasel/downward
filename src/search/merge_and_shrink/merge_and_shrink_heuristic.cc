@@ -244,7 +244,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
         "shrink strategy; choose between shrink_fh and shrink_bisimulation. "
-        "A good configuration of bisimulation based shrinking is: "
+        "A good configuration for bisimulation based shrinking is: "
         "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, "
         "threshold=1, greedy=false, group_by_h=true)");
     ValueExplanations shrink_value_explanations;
@@ -273,8 +273,8 @@ static Heuristic *_parse(OptionParser &parser) {
                   "the heuristic in the paper. "
                   "This strategy performs best when used with label reduction "
                   "before shrinking, it is hence recommended to set "
-                  "reduce_labels_before_merging=false and "
-                  "reduce_labels_before_shrinking=true."));
+                  "reduce_labels_before_shrinking=true and "
+                  "reduce_labels_before_merging=false."));
     shrink_value_explanations.push_back(
         make_pair("shrink_bisimulation(max_states=N, greedy=false, group_by_h=true)",
                   "Exact bisimulation with a size limit "
@@ -287,13 +287,14 @@ static Heuristic *_parse(OptionParser &parser) {
                   "the heuristic in the paper. "
                   "This strategy performs best when used with label reduction "
                   "before shrinking, it is hence recommended to set "
-                  "reduce_labels_before_merging=false and "
-                  "reduce_labels_before_shrinking=true."));
+                  "reduce_labels_before_shrinking=true and "
+                  "reduce_labels_before_merging=false."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
-    // Label(s) (reduction) option.
+    // Label reduction option.
     parser.add_option<Labels *>("label_reduction",
-                                "Choose relevant options for label reduction.");
+                                "Choose relevant options for label reduction. "
+                                "Also note the interaction with shrink strategies.");
 
     // General merge-and-shrink options.
     parser.add_option<bool>(
