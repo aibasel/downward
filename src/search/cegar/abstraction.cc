@@ -256,7 +256,6 @@ void Abstraction::print_statistics() {
     int total_outgoing_arcs = 0;
     int total_loops = 0;
     int dead_ends = 0;
-    int arc_size = 0;
     for (AbstractState *state : states) {
         if (state->get_h_value() == INF)
             ++dead_ends;
@@ -266,9 +265,6 @@ void Abstraction::print_statistics() {
         total_incoming_arcs += incoming_arcs.size();
         total_outgoing_arcs += outgoing_arcs.size();
         total_loops += loops.size();
-        arc_size += sizeof(incoming_arcs) + sizeof(Arc) * incoming_arcs.capacity() +
-                    sizeof(outgoing_arcs) + sizeof(Arc) * outgoing_arcs.capacity() +
-                    sizeof(loops) + sizeof(OperatorProxy) * loops.capacity();
     }
     assert(total_outgoing_arcs == total_incoming_arcs);
 
@@ -276,15 +272,14 @@ void Abstraction::print_statistics() {
     for (OperatorProxy op : task_proxy.get_operators())
         total_cost += op.get_cost();
 
-    cout << "Time: " << timer << endl;
+    cout << "Time for building abstraction: " << timer << endl;
     cout << "Total operator cost: " << total_cost << endl;
     cout << "States: " << get_num_states() << endl;
     cout << "Dead ends: " << dead_ends << endl;
-    cout << "Init-h: " << init->get_h_value() << endl;
+    cout << "Init h: " << get_h_value_of_initial_state() << endl;
 
     cout << "Transitions: " << total_incoming_arcs << endl;
     cout << "Self-loops: " << total_loops << endl;
-    cout << "Transitions and self-loops size: " << arc_size / 1024 << " KB" << endl;
 
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
