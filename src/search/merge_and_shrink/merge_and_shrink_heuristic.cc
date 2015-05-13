@@ -151,6 +151,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         other_transition_system->release_memory();
 
         new_transition_system->statistics(use_expensive_statistics);
+        cout << "Current peak memory of merge-and-shrink computation: "
+             << get_peak_memory_in_kb() - starting_peak_memory << " KB" << endl;
 
         all_transition_systems[system_one] = 0;
         all_transition_systems[system_two] = 0;
@@ -189,6 +191,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
 void MergeAndShrinkHeuristic::initialize() {
     Timer timer;
     cout << "Initializing merge-and-shrink heuristic..." << endl;
+    starting_peak_memory = get_peak_memory_in_kb();
     dump_options();
     warn_on_unusual_options();
 
@@ -203,7 +206,8 @@ void MergeAndShrinkHeuristic::initialize() {
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
-    cout << "Estimated peak memory for transition system: " << final_transition_system->get_peak_memory_estimate() << " bytes" << endl;
+    cout << "Final peak memory of merge-and-shrink computation: "
+         << get_peak_memory_in_kb() - starting_peak_memory << " KB" << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
