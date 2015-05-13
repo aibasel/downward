@@ -131,8 +131,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
     for (CartesianHeuristic heuristic : heuristics) {
         heuristic.evaluate(global_state);
         int h = heuristic.get_heuristic();
-        assert(h >= 0);
-        if (h == INF)
+        if(h == DEAD_END)
             return DEAD_END;
         sum_h += h;
     }
