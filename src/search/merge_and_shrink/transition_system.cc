@@ -51,8 +51,7 @@ TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_),
       transitions_of_groups(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
       label_to_positions(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
-      num_labels(labels->get_size()),
-      peak_memory(0) {
+      num_labels(labels->get_size()) {
     clear_distances();
 }
 
@@ -780,25 +779,6 @@ int TransitionSystem::get_cost(const GlobalState &state) const {
     return cost;
 }
 
-int TransitionSystem::memory_estimate() const {
-    int result = sizeof(TransitionSystem);
-    result += sizeof(vector<Transition>) * transitions_of_groups.capacity();
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        result += sizeof(LabelGroup); // size of class LabelGroup
-        result += sizeof(int) * group_it->size(); // size of list<int>
-        result += sizeof(int); // size of cost
-        result += sizeof(vector<Transition> *); // size of transitions pointer
-        const vector<Transition> &transitions = group_it->get_const_transitions();
-        result += sizeof(vector<Transition>) * transitions.capacity(); // size of transitions
-    }
-    result += sizeof(vector<tuple<LabelGroupIter, LabelIter> >) * label_to_positions.capacity();
-    result += sizeof(int) * init_distances.capacity();
-    result += sizeof(int) * goal_distances.capacity();
-    result += sizeof(bool) * goal_states.capacity();
-    return result;
-}
-
 int TransitionSystem::total_transitions() const {
     int total = 0;
     for (LabelGroupConstIter group_it = grouped_labels.begin();
@@ -822,15 +802,12 @@ int TransitionSystem::unique_unlabeled_transitions() const {
 }
 
 void TransitionSystem::statistics(bool include_expensive_statistics) const {
-    int memory = memory_estimate();
-    peak_memory = max(peak_memory, memory);
     cout << tag() << get_size() << " states, ";
     if (include_expensive_statistics)
         cout << unique_unlabeled_transitions();
     else
         cout << "???";
-    cout << "/" << total_transitions() << " arcs, " << memory << " bytes"
-         << endl;
+    cout << "/" << total_transitions() << " arcs, " << endl;
     cout << tag();
     if (!are_distances_computed()) {
         cout << "distances not computed";
@@ -841,10 +818,6 @@ void TransitionSystem::statistics(bool include_expensive_statistics) const {
         cout << "transition system is unsolvable";
     }
     cout << " [t=" << g_timer << "]" << endl;
-}
-
-int TransitionSystem::get_peak_memory_estimate() const {
-    return peak_memory;
 }
 
 void TransitionSystem::dump_dot_graph() const {
@@ -977,13 +950,6 @@ string AtomicTransitionSystem::description() const {
 AbstractStateRef AtomicTransitionSystem::get_abstract_state(const GlobalState &state) const {
     int value = state[variable];
     return lookup_table[value];
-}
-
-int AtomicTransitionSystem::memory_estimate() const {
-    int result = TransitionSystem::memory_estimate();
-    result += sizeof(AtomicTransitionSystem) - sizeof(TransitionSystem);
-    result += sizeof(AbstractStateRef) * lookup_table.capacity();
-    return result;
 }
 
 
@@ -1127,13 +1093,4 @@ AbstractStateRef CompositeTransitionSystem::get_abstract_state(const GlobalState
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
         return PRUNED_STATE;
     return lookup_table[state1][state2];
-}
-
-int CompositeTransitionSystem::memory_estimate() const {
-    int result = TransitionSystem::memory_estimate();
-    result += sizeof(CompositeTransitionSystem) - sizeof(TransitionSystem);
-    result += sizeof(vector<AbstractStateRef> ) * lookup_table.capacity();
-    for (size_t i = 0; i < lookup_table.size(); ++i)
-        result += sizeof(AbstractStateRef) * lookup_table[i].capacity();
-    return result;
 }
