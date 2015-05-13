@@ -29,13 +29,15 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
       num_states(0) {
     DEBUG = opts.get<bool>("debug");
 
-    verify_no_axioms_no_conditional_effects();
+    verify_no_axioms(task_proxy);
+    verify_no_conditional_effects(task_proxy);
 
     for (OperatorProxy op : task_proxy.get_operators())
         remaining_costs.push_back(op.get_cost());
 }
 
-void reduce_remaining_costs(vector<int> &remaining_costs, const vector<int> &needed_costs) {
+void reduce_remaining_costs(vector<int> &remaining_costs,
+                            const vector<int> &needed_costs) {
     assert(remaining_costs.size() == needed_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
         assert(needed_costs[i] <= remaining_costs[i]);
@@ -44,7 +46,8 @@ void reduce_remaining_costs(vector<int> &remaining_costs, const vector<int> &nee
     }
 }
 
-shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(shared_ptr<AbstractTask> parent) const {
+shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
+        shared_ptr<AbstractTask> parent) const {
     Options opts;
     opts.set<Subtask>("transform", parent);
     opts.set<vector<int> >("operator_costs", remaining_costs);
@@ -58,7 +61,8 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
            compute_heuristic(g_initial_state()) != DEAD_END;
 }
 
-void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decomposition) {
+void AdditiveCartesianHeuristic::build_abstractions(
+        const Decomposition &decomposition) {
     Subtasks subtasks = decomposition.get_subtasks();
 
     int rem_subtasks = subtasks.size();
@@ -72,7 +76,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
             dump_task(TaskProxy(*subtask));
         }
 
-        double rem_time = options.get<double>("max_time") - timer->get_elapsed_time();
+        double rem_time = timer->get_remaining_time();
         Options abs_opts(options);
         abs_opts.set<Subtask>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
