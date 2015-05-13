@@ -32,6 +32,7 @@ int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 void read_everything(std::istream &in);
 void dump_everything();
 
+// The following six functions are deprecated. Use task_tools.h instead.
 bool is_unit_cost();
 bool has_axioms();
 void verify_no_axioms();

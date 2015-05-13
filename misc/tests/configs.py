@@ -19,28 +19,44 @@ def configs_optimal_core():
         "astar_hmax": [
             "--search",
             "astar(hmax)"],
-        "astar_merge_and_shrink_bisim": [
+        "astar_merge_and_shrink_rl_fh": [
             "--search",
             "astar(merge_and_shrink("
             "merge_strategy=merge_linear(variable_order=reverse_level),"
-            "shrink_strategy=shrink_bisimulation(max_states=200000,greedy=false,"
-            "group_by_h=true)))"],
-        "astar_merge_and_shrink_greedy_bisim": [
-            "--search",
-            "astar(merge_and_shrink("
-            "merge_strategy=merge_linear(variable_order=reverse_level),"
-            "shrink_strategy=shrink_bisimulation(max_states=infinity,threshold=1,"
-            "greedy=true,group_by_h=false)))"],
+            "shrink_strategy=shrink_fh(max_states=50000),"
+            "label_reduction=label_reduction(before_shrinking=false,"
+            "before_merging=true)))"],
         "astar_merge_and_shrink_dfp_bisim": [
             "--search",
             "astar(merge_and_shrink(merge_strategy=merge_dfp,"
             "shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,"
-            "greedy=false,group_by_h=true)))"],
+            "greedy=false,group_by_h=true),"
+            "label_reduction=label_reduction(before_shrinking=true,"
+            "before_merging=false)))"],
+        "astar_merge_and_shrink_dfp_greedy_bisim": [
+            "--search",
+            "astar(merge_and_shrink(merge_strategy=merge_dfp,"
+            "shrink_strategy=shrink_bisimulation(max_states=infinity,threshold=1,"
+            "greedy=true,group_by_h=false),"
+            "label_reduction=label_reduction(before_shrinking=true,"
+            "before_merging=false)))"],
         "astar_selmax_lmcut_lmcount": [
             "--search",
             "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),"
             "admissible=true)],training_set=1000),mpd=true)"],
     }
+
+MERGE_AND_SHRINK = ('astar(merge_and_shrink('
+    'merge_strategy=merge_dfp,'
+        'shrink_strategy=shrink_bisimulation('
+         'max_states=50000,'
+        'threshold=1,'
+        'greedy=false,'
+        'group_by_h=true),'
+    'label_reduction=label_reduction('
+        'before_shrinking=true,'
+        'before_merging=false)'
+'))')
 
 
 def configs_satisficing_core():

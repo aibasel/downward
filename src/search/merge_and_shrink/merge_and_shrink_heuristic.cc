@@ -19,9 +19,9 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
+      labels(opts.get<Labels *>("label_reduction")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")),
       terminate(opts.get<bool>("terminate")) {
-    labels = new Labels(opts);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -30,27 +30,69 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
     delete labels;
 }
 
+void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
+    if (final)
+        cout << "Final";
+    else
+        cout << "Current";
+    cout << " peak memory of merge-and-shrink computation: "
+         << get_peak_memory_in_kb() - starting_peak_memory << " KB" << endl;
+}
+
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
     labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
+    cout << "Only compute the abstraction and terminate afterwards: "
+         << (terminate ? "yes" : "no") << endl;
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
+    string dashes(79, '=');
     if (use_expensive_statistics) {
-        string dashes(79, '=');
         cerr << dashes << endl
-             << ("WARNING! You have enabled extra statistics for "
-            "merge-and-shrink heuristics.\n"
-            "These statistics require a lot of time and memory.\n"
-            "When last tested (around revision 3011), enabling the "
-            "extra statistics\nincreased heuristic generation time by "
-            "76%. This figure may be significantly\nworse with more "
-            "recent code or for particular domains and instances.\n"
-            "You have been warned. Don't use this for benchmarking!")
+             << "WARNING! You have enabled extra statistics for "
+        "merge-and-shrink heuristics.\n"
+        "These statistics require a lot of time and memory.\n"
+        "When last tested (around revision 3011), enabling the "
+        "extra statistics\nincreased heuristic generation time by "
+        "76%. This figure may be significantly\nworse with more "
+        "recent code or for particular domains and instances.\n"
+        "You have been warned. Don't use this for benchmarking!"
         << endl << dashes << endl;
+    }
+    if (!labels->reduce_before_merging() && !labels->reduce_before_shrinking()) {
+        cerr << dashes << endl
+             << "WARNING! You did not enable label reduction. This may\n"
+        "drastically reduce the performance of merge-and-shrink!"
+             << endl << dashes << endl;
+    } else if (labels->reduce_before_merging() && labels->reduce_before_shrinking()) {
+        cerr << dashes << endl
+             << "WARNING! You set label reduction to be applied twice in\n"
+        "each merge-and-shrink iteration, both before shrinking and\n"
+        "merging. This double computation effort does not pay off\n"
+        "for most configurations !"
+        << endl << dashes << endl;
+    } else {
+        if (labels->reduce_before_shrinking() &&
+            (shrink_strategy->get_name() == "f-preserving"
+             || shrink_strategy->get_name() == "random")) {
+            cerr << dashes << endl
+                 << "WARNING! Bucket-based shrink strategies such as\n"
+            "f-preserving random perform best if used with label\n"
+            "reduction before merging, not before shrinking!"
+            << endl << dashes << endl;
+        }
+        if (labels->reduce_before_merging() &&
+            shrink_strategy->get_name() == "bisimulation") {
+            cerr << dashes << endl
+                 << "WARNING! Shrinking based on bisimulation performs best\n"
+            "if used with label reduction before shrinking, not\n"
+            "before merging!"
+            << endl << dashes << endl;
+        }
     }
 }
 
@@ -81,15 +123,13 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
 
-        // Note: we do not reduce labels several times for the same transition system
-        bool reduced_labels = false;
-        if (shrink_strategy->reduce_labels_before_shrinking()) {
+        if (labels->reduce_before_shrinking()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-            reduced_labels = true;
             transition_system->statistics(use_expensive_statistics);
             other_transition_system->statistics(use_expensive_statistics);
         }
 
+        // TODO: check for all ts if they are solvable? or only for the new one below?
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
@@ -107,13 +147,10 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         transition_system->statistics(use_expensive_statistics);
         other_transition_system->statistics(use_expensive_statistics);
 
-        if (!reduced_labels) {
+        if (labels->reduce_before_merging()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-        }
-        if (!reduced_labels) {
-            // only print statistics if we just possibly reduced labels
-            other_transition_system->statistics(use_expensive_statistics);
             transition_system->statistics(use_expensive_statistics);
+            other_transition_system->statistics(use_expensive_statistics);
         }
 
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
@@ -123,6 +160,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         other_transition_system->release_memory();
 
         new_transition_system->statistics(use_expensive_statistics);
+        report_peak_memory_delta();
 
         all_transition_systems[system_one] = 0;
         all_transition_systems[system_two] = 0;
@@ -161,6 +199,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
 void MergeAndShrinkHeuristic::initialize() {
     Timer timer;
     cout << "Initializing merge-and-shrink heuristic..." << endl;
+    starting_peak_memory = get_peak_memory_in_kb();
     dump_options();
     warn_on_unusual_options();
 
@@ -175,7 +214,7 @@ void MergeAndShrinkHeuristic::initialize() {
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
-    cout << "Estimated peak memory for transition system: " << final_transition_system->get_peak_memory_estimate() << " bytes" << endl;
+    report_peak_memory_delta(true);
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
@@ -206,16 +245,19 @@ static Heuristic *_parse(OptionParser &parser) {
         "which can lead to poor heuristics even when no shrinking is "
         "performed.");
 
+    // Merge strategy option.
     parser.add_option<MergeStrategy *>(
         "merge_strategy",
-        "merge strategy; choose between merge_linear and merge_dfp",
-        "merge_linear");
+        "merge strategy; choose between merge_linear with various variable "
+        "orderings and merge_dfp.");
 
+    // Shrink strategy option.
     parser.add_option<ShrinkStrategy *>(
         "shrink_strategy",
-        "shrink strategy; "
-        "try one of the following:",
-        "shrink_fh(max_states=50000, max_states_before_merge=50000, shrink_f=high, shrink_h=low)");
+        "shrink strategy; choose between shrink_fh and shrink_bisimulation. "
+        "A good configuration for bisimulation based shrinking is: "
+        "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, "
+        "threshold=1, greedy=false, group_by_h=true)");
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
         make_pair("shrink_fh(max_states=N)",
@@ -227,7 +269,11 @@ static Heuristic *_parse(OptionParser &parser) {
                   "include 1000, 10000, 50000, 100000 and 200000. "
                   "Combine this with the default linear merge strategy "
                   "CG_GOAL_LEVEL to match the heuristic "
-                  "in the paper."));
+                  "in the paper. "
+                  "This strategy performs best when used with label reduction "
+                  "before merging, it is hence recommended to set "
+                  "reduce_labels_before_shrinking=false and "
+                  "reduce_labels_before_merging=true."));
     shrink_value_explanations.push_back(
         make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, group_by_h=false)",
                   "Greedy bisimulation without size bound "
@@ -235,7 +281,11 @@ static Heuristic *_parse(OptionParser &parser) {
                   "Hoffmann and Helmert). "
                   "Combine this with the linear merge strategy "
                   "REVERSE_LEVEL to match "
-                  "the heuristic in the paper. "));
+                  "the heuristic in the paper. "
+                  "This strategy performs best when used with label reduction "
+                  "before shrinking, it is hence recommended to set "
+                  "reduce_labels_before_shrinking=true and "
+                  "reduce_labels_before_merging=false."));
     shrink_value_explanations.push_back(
         make_pair("shrink_bisimulation(max_states=N, greedy=false, group_by_h=true)",
                   "Exact bisimulation with a size limit "
@@ -245,58 +295,19 @@ static Heuristic *_parse(OptionParser &parser) {
                   "include 1000, 10000, 50000, 100000 and 200000. "
                   "Combine this with the linear merge strategy "
                   "REVERSE_LEVEL to match "
-                  "the heuristic in the paper."));
+                  "the heuristic in the paper. "
+                  "This strategy performs best when used with label reduction "
+                  "before shrinking, it is hence recommended to set "
+                  "reduce_labels_before_shrinking=true and "
+                  "reduce_labels_before_merging=false."));
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
-    vector<string> label_reduction_method;
-    vector<string> label_reduction_method_doc;
-    label_reduction_method.push_back("NONE");
-    label_reduction_method_doc.push_back(
-        "no label reduction will be performed");
-    label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
-    label_reduction_method_doc.push_back(
-        "compute the 'combinable relation' only for the two transition "
-        "systems being merged next");
-    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
-    label_reduction_method_doc.push_back(
-        "compute the 'combinable relation' for labels once for every "
-        "transition  system and reduce labels");
-    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
-    label_reduction_method_doc.push_back(
-        "keep computing the 'combinable relation' for labels iteratively "
-        "for all transition systems until no more labels can be reduced");
-    parser.add_enum_option("label_reduction_method",
-                           label_reduction_method,
-                           "Label reduction method. See the AAAI14 by Sievers "
-                           "et al. for explanation of the default label "
-                           "reduction method and the 'combinable relation'.",
-                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
-                           label_reduction_method_doc);
+    // Label reduction option.
+    parser.add_option<Labels *>("label_reduction",
+                                "Choose relevant options for label reduction. "
+                                "Also note the interaction with shrink strategies.");
 
-    vector<string> label_reduction_system_order;
-    vector<string> label_reduction_system_order_doc;
-    label_reduction_system_order.push_back("REGULAR");
-    label_reduction_system_order_doc.push_back(
-        "transition systems are considered in the FD given order for "
-        "atomic transition systems and in the order of their creation "
-        "for composite transition system.");
-    label_reduction_system_order.push_back("REVERSE");
-    label_reduction_system_order_doc.push_back(
-        "inverse of REGULAR");
-    label_reduction_system_order.push_back("RANDOM");
-    label_reduction_system_order_doc.push_back(
-        "random order");
-    parser.add_enum_option("label_reduction_system_order",
-                           label_reduction_system_order,
-                           "Order of transition systems for the label reduction "
-                           "methods that iterate over the set of all transition "
-                           "systems. Only useful for the choices "
-                           "all_transition_systems and "
-                           "all_transition_systems_with_fixpoint for the option "
-                           "label_reduction_method.",
-                           "RANDOM",
-                           label_reduction_system_order_doc);
-
+    // General merge-and-shrink options.
     parser.add_option<bool>(
         "expensive_statistics",
         "show statistics on \"unique unlabeled edges\" (WARNING: "
@@ -316,11 +327,6 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        if (opts.get_enum("label_reduction_method") == 1
-            && opts.get<MergeStrategy *>("merge_strategy")->name() != "linear") {
-            parser.error("old label reduction is only correct when used with a "
-                         "linear merge strategy!");
-        }
         MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(opts);
         return result;
     }
