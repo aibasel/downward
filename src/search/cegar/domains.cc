@@ -75,8 +75,8 @@ size_t Domains::count(int var) const {
     // Profiling showed that an explicit loop is faster than doing:
     // (values & masks[var]).count(); (even if using a temp bitset).
     int num_values = 0;
-    for (int pos = borders[var]; pos < borders[var] + orig_domain_sizes[var]; ++pos) {
-        num_values += bits.test(pos);
+    for (int value = 0; value < orig_domain_sizes[var]; ++value) {
+        num_values += test(var, value);
     }
     return num_values;
 }
