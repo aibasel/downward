@@ -30,6 +30,15 @@ MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
     delete labels;
 }
 
+void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
+    if (final)
+        cout << "Final";
+    else
+        cout << "Current";
+    cout << " peak memory of merge-and-shrink computation: "
+         << get_peak_memory_in_kb() - starting_peak_memory << " KB" << endl;
+}
+
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
@@ -151,8 +160,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         other_transition_system->release_memory();
 
         new_transition_system->statistics(use_expensive_statistics);
-        cout << "Current peak memory of merge-and-shrink computation: "
-             << get_peak_memory_in_kb() - starting_peak_memory << " KB" << endl;
+        report_peak_memory_delta();
 
         all_transition_systems[system_one] = 0;
         all_transition_systems[system_two] = 0;
@@ -206,8 +214,7 @@ void MergeAndShrinkHeuristic::initialize() {
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
-    cout << "Final peak memory of merge-and-shrink computation: "
-         << get_peak_memory_in_kb() - starting_peak_memory << " KB" << endl;
+    report_peak_memory_delta(true);
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
