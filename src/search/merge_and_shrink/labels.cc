@@ -6,6 +6,7 @@
 #include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
+#include "../plugin.h"
 #include "../rng.h"
 
 #include <algorithm>
@@ -31,10 +32,10 @@ public:
 };
 
 Labels::Labels(const Options &options)
-    : label_reduction_method(
-          LabelReductionMethod(options.get_enum("label_reduction_method"))),
-      label_reduction_system_order(
-          LabelReductionSystemOrder(options.get_enum("label_reduction_system_order"))) {
+    : lr_before_shrinking(options.get<bool>("before_shrinking")),
+      lr_before_merging(options.get<bool>("before_merging")),
+      lr_method(LabelReductionMethod(options.get_enum("method"))),
+      lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
     // Reserve memory for labels
     if (!g_operators.empty()) {
         labels.reserve(g_operators.size() * 2 - 1);
@@ -43,15 +44,15 @@ Labels::Labels(const Options &options)
     // Compute the transition system order
     size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
     transition_system_order.reserve(max_transition_system_count);
-    if (label_reduction_system_order == REGULAR
-        || label_reduction_system_order == RANDOM) {
+    if (lr_system_order == REGULAR
+        || lr_system_order == RANDOM) {
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
-        if (label_reduction_system_order == RANDOM) {
+        if (lr_system_order == RANDOM) {
             g_rng.shuffle(transition_system_order);
         }
     } else {
-        assert(label_reduction_system_order == REVERSE);
+        assert(lr_system_order == REVERSE);
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(max_transition_system_count - 1 - i);
     }
@@ -160,13 +161,10 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
 
 void Labels::reduce(pair<int, int> next_merge,
                     const vector<TransitionSystem *> &all_transition_systems) {
+    assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = all_transition_systems.size();
 
-    if (label_reduction_method == NONE) {
-        return;
-    }
-
-    if (label_reduction_method == TWO_TRANSITION_SYSTEMS) {
+    if (lr_method == TWO_TRANSITION_SYSTEMS) {
         /* Note:
            We compute the combinable relation for labels for the two transition systems
            in the order given by the merge strategy. We conducted experiments
@@ -214,9 +212,9 @@ void Labels::reduce(pair<int, int> next_merge,
     }
 
     int max_iterations;
-    if (label_reduction_method == ALL_TRANSITION_SYSTEMS) {
+    if (lr_method == ALL_TRANSITION_SYSTEMS) {
         max_iterations = num_transition_systems;
-    } else if (label_reduction_method == ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
+    } else if (lr_method == ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
         max_iterations = numeric_limits<int>::max();
     } else {
         ABORT("unknown label reduction method");
@@ -284,11 +282,13 @@ void Labels::dump_labels() const {
 }
 
 void Labels::dump_label_reduction_options() const {
-    cout << "Label reduction: ";
-    switch (label_reduction_method) {
-    case NONE:
-        cout << "disabled";
-        break;
+    cout << "Label reduction options:" << endl;
+    cout << "Before merging: "
+         << (lr_before_merging ? "enabled" : "disabled") << endl;
+    cout << "Before shrinking: "
+         << (lr_before_shrinking ? "enabled" : "disabled") << endl;
+    cout << "Method: ";
+    switch (lr_method) {
     case TWO_TRANSITION_SYSTEMS:
         cout << "two transition systems (which will be merged next)";
         break;
@@ -300,10 +300,10 @@ void Labels::dump_label_reduction_options() const {
         break;
     }
     cout << endl;
-    if (label_reduction_method == ALL_TRANSITION_SYSTEMS ||
-        label_reduction_method == ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
+    if (lr_method == ALL_TRANSITION_SYSTEMS ||
+        lr_method == ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
         cout << "System order: ";
-        switch (label_reduction_system_order) {
+        switch (lr_system_order) {
         case REGULAR:
             cout << "regular";
             break;
@@ -317,3 +317,71 @@ void Labels::dump_label_reduction_options() const {
         cout << endl;
     }
 }
+
+static Labels *_parse(OptionParser &parser) {
+    parser.add_option<bool>("before_shrinking",
+                            "apply label reduction before shrinking");
+    parser.add_option<bool>("before_merging",
+                            "apply label reduction before merging");
+
+    vector<string> label_reduction_method;
+    vector<string> label_reduction_method_doc;
+    label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
+    label_reduction_method_doc.push_back(
+        "compute the 'combinable relation' only for the two transition "
+        "systems being merged next");
+    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
+    label_reduction_method_doc.push_back(
+        "compute the 'combinable relation' for labels once for every "
+        "transition  system and reduce labels");
+    label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
+    label_reduction_method_doc.push_back(
+        "keep computing the 'combinable relation' for labels iteratively "
+        "for all transition systems until no more labels can be reduced");
+    parser.add_enum_option("method",
+                           label_reduction_method,
+                           "Label reduction method. See the AAAI14 paper by "
+                           "Sievers et al. for explanation of the default label "
+                           "reduction method and the 'combinable relation' ."
+                           "Also note that you must set at least one of the "
+                           "options reduce_labels_before_shrinking or "
+                           "reduce_labels_before_merging in order to use "
+                           "the chosen label reduction configuration.",
+                           "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
+                           label_reduction_method_doc);
+
+    vector<string> label_reduction_system_order;
+    vector<string> label_reduction_system_order_doc;
+    label_reduction_system_order.push_back("REGULAR");
+    label_reduction_system_order_doc.push_back(
+        "transition systems are considered in the FD given order for "
+        "atomic transition systems and in the order of their creation "
+        "for composite transition system.");
+    label_reduction_system_order.push_back("REVERSE");
+    label_reduction_system_order_doc.push_back(
+        "inverse of REGULAR");
+    label_reduction_system_order.push_back("RANDOM");
+    label_reduction_system_order_doc.push_back(
+        "random order");
+    parser.add_enum_option("system_order",
+                           label_reduction_system_order,
+                           "Order of transition systems for the label reduction "
+                           "methods that iterate over the set of all transition "
+                           "systems. Only useful for the choices "
+                           "all_transition_systems and "
+                           "all_transition_systems_with_fixpoint for the option "
+                           "label_reduction_method.",
+                           "RANDOM",
+                           label_reduction_system_order_doc);
+
+    Options opts = parser.parse();
+
+    if (parser.dry_run()) {
+        return 0;
+    } else {
+        Labels *result = new Labels(opts);
+        return result;
+    }
+}
+
+static Plugin<Labels> _plugin("label_reduction", _parse);
