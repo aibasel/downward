@@ -18,21 +18,6 @@ ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
 ShrinkBucketBased::~ShrinkBucketBased() {
 }
 
-bool ShrinkBucketBased::reduce_labels_before_shrinking() const {
-    return false;
-}
-
-void ShrinkBucketBased::shrink(TransitionSystem &ts, int threshold) {
-    if (must_shrink(ts, threshold)) {
-        vector<Bucket> buckets;
-        partition_into_buckets(ts, buckets);
-
-        StateEquivalenceRelation equiv_relation;
-        compute_abstraction(buckets, threshold, equiv_relation);
-        apply(ts, equiv_relation, threshold);
-    }
-}
-
 void ShrinkBucketBased::compute_abstraction(
     const vector<Bucket> &buckets, int target_size,
     StateEquivalenceRelation &equiv_relation) const {
@@ -104,4 +89,12 @@ void ShrinkBucketBased::compute_abstraction(
             }
         }
     }
+}
+
+void ShrinkBucketBased::shrink(const TransitionSystem &ts,
+                               int target,
+                               StateEquivalenceRelation &equiv_relation) {
+    vector<Bucket> buckets;
+    partition_into_buckets(ts, buckets);
+    compute_abstraction(buckets, target, equiv_relation);
 }

@@ -14,7 +14,11 @@ class TransitionSystem;
 */
 class Labels {
     std::vector<Label *> labels;
+    std::vector<int> transition_system_order;
 
+    // Options for label reduction
+    bool lr_before_shrinking;
+    bool lr_before_merging;
     /*
       none: no label reduction will be performed
 
@@ -31,12 +35,10 @@ class Labels {
       transition systems until no more labels can be reduced.
     */
     enum LabelReductionMethod {
-        NONE,
         TWO_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT
     };
-
     /*
       Order in which iterations of label reduction considers the set of all
       transition systems. Regular is the fast downward order plus appending
@@ -49,10 +51,8 @@ class Labels {
         REVERSE,
         RANDOM
     };
-
-    LabelReductionMethod label_reduction_method;
-    LabelReductionSystemOrder label_reduction_system_order;
-    std::vector<int> transition_system_order;
+    LabelReductionMethod lr_method;
+    LabelReductionSystemOrder lr_system_order;
 
     // Apply the label mapping to all transition systems.
     void notify_transition_systems(int ts_index,
@@ -75,6 +75,13 @@ public:
     int get_label_cost(int label_no) const;
     void dump_labels() const;
     void dump_label_reduction_options() const;
+
+    bool reduce_before_shrinking() const {
+        return lr_before_shrinking;
+    }
+    bool reduce_before_merging() const {
+        return lr_before_merging;
+    }
 
     int get_size() const {
         return labels.size();

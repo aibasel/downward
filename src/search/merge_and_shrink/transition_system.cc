@@ -506,7 +506,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
 }
 
 void TransitionSystem::apply_abstraction(
-    vector<forward_list<AbstractStateRef> > &collapsed_groups) {
+    const vector<forward_list<AbstractStateRef> > &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
@@ -522,8 +522,8 @@ void TransitionSystem::apply_abstraction(
     vector<int> abstraction_mapping(num_states, PRUNED_STATE);
 
     for (size_t group_no = 0; group_no < collapsed_groups.size(); ++group_no) {
-        Group &group = collapsed_groups[group_no];
-        for (Group::iterator pos = group.begin(); pos != group.end(); ++pos) {
+        const Group &group = collapsed_groups[group_no];
+        for (Group::const_iterator pos = group.begin(); pos != group.end(); ++pos) {
             AbstractStateRef state = *pos;
             assert(abstraction_mapping[state] == PRUNED_STATE);
             abstraction_mapping[state] = group_no;
@@ -537,10 +537,10 @@ void TransitionSystem::apply_abstraction(
 
     bool must_clear_distances = false;
     for (AbstractStateRef new_state = 0; new_state < new_num_states; ++new_state) {
-        Group &group = collapsed_groups[new_state];
+        const Group &group = collapsed_groups[new_state];
         assert(!group.empty());
 
-        Group::iterator pos = group.begin();
+        Group::const_iterator pos = group.begin();
         int &new_init_dist = new_init_distances[new_state];
         int &new_goal_dist = new_goal_distances[new_state];
 
