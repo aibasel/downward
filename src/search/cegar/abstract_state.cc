@@ -26,11 +26,13 @@ bool AbstractState::contains(FactProxy fact) const {
 }
 
 void AbstractState::add_arc(OperatorProxy op, AbstractState *other) {
-    // Experiments showed that keeping the arcs sorted for faster removal
-    // increases the overall processing time. Out of 30 domains it made no
-    // difference for 10 domains, 17 domains preferred unsorted arcs and in
-    // 3 domains performance was better with sorted arcs.
-    // Inlining this method has no effect.
+    /*
+      Experiments showed that keeping the arcs sorted for faster removal
+      increases the overall processing time. Out of 30 domains it made no
+      difference for 10 domains, 17 domains preferred unsorted arcs and in
+      3 domains performance was better with sorted arcs.
+      Inlining this method has no effect.
+    */
     assert(other != this);
     outgoing_arcs.push_back(Arc(op, other));
     other->incoming_arcs.push_back(Arc(op, this));
@@ -142,9 +144,9 @@ void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) 
 }
 
 pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int> wanted) {
+    // We can only split states in the refinement hierarchy (not artificial states).
     assert(node);
-    // We can only refine for vars that can have at least two values.
-    // The desired value has to be in the set of possible values.
+    // We can only refine for variables with at least two values.
     assert(wanted.size() >= 1);
     assert(domains.count(var) > wanted.size());
 
@@ -153,6 +155,7 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
 
     v2_domains.remove_all(var);
     for (int value : wanted) {
+        // The wanted value has to be in the set of possible values.
         assert(domains.test(var, value));
 
         // In v1 var can have all of the previous values except the wanted ones.
@@ -164,13 +167,12 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     assert(v1_domains.count(var) == domains.count(var) - wanted.size());
     assert(v2_domains.count(var) == wanted.size());
 
-    // Update split tree.
+    // Update refinement hierarchy.
     pair<Node *, Node *> new_nodes = node->split(var, wanted);
 
     AbstractState *v1 = new AbstractState(v1_domains, new_nodes.first);
     AbstractState *v2 = new AbstractState(v2_domains, new_nodes.second);
 
-    // Check that the sets of possible values are now smaller.
     assert(this->is_abstraction_of(*v1));
     assert(this->is_abstraction_of(*v2));
 
@@ -180,9 +182,9 @@ pair<AbstractState *, AbstractState *> AbstractState::split(int var, vector<int>
     update_loops(var, v1, v2);
 
     // Since h-values only increase we can assign the h-value to the children.
-    int h = node->get_h();
-    v1->set_h(h);
-    v2->set_h(h);
+    int h = node->get_h_value();
+    v1->set_h_value(h);
+    v2->set_h_value(h);
 
     return make_pair(v1, v2);
 }
@@ -220,14 +222,14 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
     return domains.is_superset_of(other.domains);
 }
 
-void AbstractState::set_h(int new_h) {
+void AbstractState::set_h_value(int new_h) {
     assert(node);
-    node->set_h(new_h);
+    node->set_h_value(new_h);
 }
 
-int AbstractState::get_h() const {
+int AbstractState::get_h_value() const {
     assert(node);
-    return node->get_h();
+    return node->get_h_value();
 }
 
 AbstractState *AbstractState::get_trivial_abstract_state(

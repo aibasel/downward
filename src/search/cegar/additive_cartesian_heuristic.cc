@@ -85,7 +85,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
         num_states += abstraction.get_num_states();
         vector<int> needed_costs = abstraction.get_needed_costs();
         reduce_remaining_costs(remaining_costs, needed_costs);
-        int init_h = abstraction.get_init_h();
+        int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
             Options opts;
