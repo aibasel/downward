@@ -40,7 +40,11 @@ public:
     void remove(int var, int value);
     void add_all(int var);
     void remove_all(int var);
-    bool test(int var, int value) const;
+
+    bool test(int var, int value) const {
+        return bits.test(pos(var, value));
+    }
+
     size_t count(int var) const;
     bool intersects(const Domains &other, int var) const;
     // Return true if all abstract domains are supersets of the

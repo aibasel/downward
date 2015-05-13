@@ -67,10 +67,6 @@ void Domains::remove_all(int var) {
     bits &= inverse_masks[var];
 }
 
-bool Domains::test(int var, int value) const {
-    return bits.test(pos(var, value));
-}
-
 size_t Domains::count(int var) const {
     /* Profiling showed that an explicit loop is faster than intersecting with
        a mask and calling dynamic_bitset::count(). */
