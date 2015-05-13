@@ -48,12 +48,13 @@ FactDecomposition::FactDecomposition(const Options &opts)
 }
 
 void FactDecomposition::remove_initial_state_facts(Facts &facts) const {
-    facts.erase(remove_if(facts.begin(), facts.end(),
-                          [&](Fact fact) {
-                              return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
-                          }
-                          ),
-                facts.end());
+    facts.erase(remove_if(
+            facts.begin(), facts.end(),
+            [&](Fact fact) {
+                return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
+            }
+            ),
+        facts.end());
 }
 
 Facts FactDecomposition::get_filtered_and_ordered_facts() const {
@@ -68,12 +69,14 @@ void FactDecomposition::order_facts(vector<Fact> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
     if (subtask_order == SubtaskOrder::MIXED) {
         g_rng.shuffle(facts);
-    } else if (subtask_order == SubtaskOrder::HADD_UP || subtask_order == SubtaskOrder::HADD_DOWN) {
-        sort(facts.begin(), facts.end(), SortHaddValuesUp(get_additive_heuristic(get_original_task())));
+    } else if (subtask_order == SubtaskOrder::HADD_UP ||
+               subtask_order == SubtaskOrder::HADD_DOWN) {
+        sort(facts.begin(), facts.end(),
+             SortHaddValuesUp(get_additive_heuristic(get_original_task())));
         if (subtask_order == SubtaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {
-        cerr << "Invalid task ordering: " << static_cast<int>(subtask_order) << endl;
+        cerr << "Invalid task order: " << static_cast<int>(subtask_order) << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
 }
@@ -107,14 +110,16 @@ Subtasks GoalDecomposition::get_subtasks() const {
 
 LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
     : FactDecomposition(opts),
-      landmark_graph(get_landmark_graph()) {
+      landmark_graph(get_landmark_graph()),
+      combine_facts(opts.get<bool>("combine_facts")) {
     if (DEBUG)
         dump_landmark_graph(landmark_graph);
     if (opts.get<bool>("write_graph"))
         write_landmark_graph_dot_file(landmark_graph);
 }
 
-Subtask LandmarkDecomposition::get_domain_abstracted_task(Subtask parent, Fact fact) const {
+Subtask LandmarkDecomposition::get_domain_abstracted_task(
+        Subtask parent, Fact fact) const {
     assert(combine_facts);
     VarToGroups value_groups;
     for (auto &pair : get_prev_landmarks(landmark_graph, fact)) {
@@ -163,10 +168,8 @@ static void add_common_fact_decomposition_options(OptionParser &parser) {
     subtask_orders.push_back("MIXED");
     subtask_orders.push_back("HADD_UP");
     subtask_orders.push_back("HADD_DOWN");
-    parser.add_enum_option("order",
-                           subtask_orders,
-                           "order in which the subtasks are considered",
-                           "HADD_DOWN");
+    parser.add_enum_option(
+        "order", subtask_orders, "subtask order", "HADD_DOWN");
 }
 
 static shared_ptr<Decomposition> _parse_goals(OptionParser &parser) {
