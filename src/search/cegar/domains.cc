@@ -101,15 +101,11 @@ bool Domains::is_superset_of(const Domains &other) const {
 ostream &operator<<(ostream &os, const Domains &domains) {
     string var_sep = "";
     os << "<";
-    for (size_t var = 0; var < domains.borders.size(); ++var) {
-        size_t next_border = domains.borders[var] + domains.orig_domain_sizes[var];
+    for (size_t var = 0; var < domains.orig_domain_sizes.size(); ++var) {
         vector<int> values;
-        size_t pos = (var == 0) ?
-                     domains.bits.find_first() :
-                     domains.bits.find_next(domains.borders[var] - 1);
-        while (pos != Bitset::npos && pos < next_border) {
-            values.push_back(pos - domains.borders[var]);
-            pos = domains.bits.find_next(pos);
+        for (int value = 0; value < domains.orig_domain_sizes[var]; ++value) {
+            if (domains.test(var, value))
+                values.push_back(value);
         }
         assert(!values.empty());
         if (static_cast<int>(values.size()) < domains.orig_domain_sizes[var]) {
