@@ -17,6 +17,7 @@
 
 class MergeStrategy;
 class ShrinkStrategy;
+class Labels;
 class LandmarkGraph;
 class Heuristic;
 class ScalarEvaluator;
@@ -248,6 +249,13 @@ template <>
 struct TypeNamer<ShrinkStrategy *> {
     static std::string name() {
         return "ShrinkStrategy";
+    }
+};
+
+template <>
+struct TypeNamer<Labels *> {
+    static std::string name() {
+        return "Labels";
     }
 };
 

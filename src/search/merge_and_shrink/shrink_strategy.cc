@@ -14,24 +14,32 @@ using namespace std;
 
 ShrinkStrategy::ShrinkStrategy(const Options &opts)
     : max_states(opts.get<int>("max_states")),
-      max_states_before_merge(opts.get<int>("max_states_before_merge")) {
+      max_states_before_merge(opts.get<int>("max_states_before_merge")),
+      shrink_threshold_before_merge(opts.get<int>("threshold")) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
+    assert(shrink_threshold_before_merge <= max_states_before_merge);
 }
 
 ShrinkStrategy::~ShrinkStrategy() {
 }
 
-void ShrinkStrategy::dump_options() const {
-    cout << "Shrink strategy: " << name() << endl;
-    cout << "Transition system size limit: " << max_states << endl
-         << "Transition system size limit right before merge: "
-         << max_states_before_merge << endl;
-    dump_strategy_specific_options();
-}
-
-void ShrinkStrategy::dump_strategy_specific_options() const {
-    // Default implementation does nothing.
+/*
+  TODO: I think we could get a nicer division of responsibilities if
+  this method were part of the transition system class. The shrink
+  strategies would then return generate an equivalence class
+  ("collapsed_groups") and not modify the transition system, which would be
+  passed as const.
+ */
+void ShrinkStrategy::apply(TransitionSystem &ts,
+                           const StateEquivalenceRelation &equivalence_relation,
+                           int target) const {
+    // TODO: We currently violate this; see issue250
+    //assert(equivalence_relation.size() <= target);
+    ts.apply_abstraction(equivalence_relation);
+    cout << ts.tag() << "size after shrink " << ts.get_size()
+         << ", target " << target << endl;
+    //assert(ts.size() <= target);
 }
 
 bool ShrinkStrategy::must_shrink(
@@ -89,50 +97,71 @@ void ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1, TransitionSystem
     int new_size1 = new_sizes.first;
     int new_size2 = new_sizes.second;
 
-    if (new_size2 != ts2.get_size()) {
-        shrink(ts2, new_size2);
+    /*
+      Shrink one or both transition systems if their size is larger than
+      the size limit imposed by max_states and max_states_before_merge,
+      or if their size is larger than threshold. In the former case, the
+      transition system is forced to be shrunk down to the size limit, in
+      the latter case, the shrink strategy is still called with the new
+      size limit, which means that it does not have to shrink the size of the
+      transition system, but it *may* do so. This is useful e.g. for the
+      bisimulation shrink strategy, which searches for a perfect bisimulation
+      (which is information-preserving) as long as the size limit is not
+      exceeded.
+    */
+
+    if (must_shrink(ts2, min(new_size2, shrink_threshold_before_merge))) {
+        StateEquivalenceRelation equivalence_relation;
+        shrink(ts2, new_size2, equivalence_relation);
+        apply(ts2, equivalence_relation, new_size2);
     }
 
-    if (new_size1 != ts1.get_size()) {
-        shrink(ts1, new_size1);
+    if (must_shrink(ts1, min(new_size1, shrink_threshold_before_merge))) {
+        StateEquivalenceRelation equivalence_relation;
+        shrink(ts1, new_size1, equivalence_relation);
+        apply(ts1, equivalence_relation, new_size1);
     }
 }
 
-/*
-  TODO: I think we could get a nicer division of responsibilities if
-  this method were part of the transition system class. The shrink
-  strategies would then return generate an equivalence class
-  ("collapsed_groups") and not modify the transition system, which would be
-  passed as const.
- */
+void ShrinkStrategy::dump_options() const {
+    cout << "Shrink strategy options: " << endl;
+    cout << "Transition system size limit: " << max_states << endl
+         << "Transition system size limit right before merge: "
+         << max_states_before_merge << endl;
+    cout << "Threshold: " << shrink_threshold_before_merge << endl;
+    cout << "Type: " << name() << endl;
+    dump_strategy_specific_options();
+}
 
-void ShrinkStrategy::apply(
-    TransitionSystem &ts,
-    StateEquivalenceRelation &equivalence_relation,
-    int target) const {
-    // TODO: We currently violate this; see issue250
-    //assert(equivalence_relation.size() <= target);
-    ts.apply_abstraction(equivalence_relation);
-    cout << ts.tag() << "size after shrink " << ts.get_size()
-         << ", target " << target << endl;
-    //assert(ts.size() <= target);
+string ShrinkStrategy::get_name() const {
+    return name();
 }
 
 void ShrinkStrategy::add_options_to_parser(OptionParser &parser) {
-    // TODO: better documentation what each parameter does
     parser.add_option<int>(
         "max_states",
-        "maximum transition system size", "-1");
+        "maximum transition system size allowed at any time point.",
+        "-1");
     parser.add_option<int>(
         "max_states_before_merge",
-        "maximum transition system size for factors of synchronized product", "-1");
+        "maximum transition system size allowed for two transition systems "
+        "before being merged to form the synchronized product.",
+        "-1");
+    parser.add_option<int>(
+        "threshold",
+        "If a transition system, before being merged, surpasses this soft "
+        "transition system size limit, the shrink strategy is called to "
+        "possibly shrink the transition system.",
+        "-1");
 }
 
 void ShrinkStrategy::handle_option_defaults(Options &opts) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
+    int threshold = opts.get<int>("threshold");
+
+    // If none of the two state limits has been set: set default limit.
     if (max_states == -1 && max_states_before_merge == -1) {
-        // None of the two options specified: set default limit.
         max_states = 50000;
     }
 
@@ -166,6 +195,19 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
         exit_with(EXIT_INPUT_ERROR);
     }
 
+    if (threshold == -1) {
+        threshold = max_states;
+    }
+    if (threshold < 1) {
+        cerr << "error: threshold must be at least 1" << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
+    if (threshold > max_states) {
+        cerr << "warning: threshold exceeds max_states, correcting" << endl;
+        threshold = max_states;
+    }
+
     opts.set<int>("max_states", max_states);
     opts.set<int>("max_states_before_merge", max_states_before_merge);
+    opts.set<int>("threshold", threshold);
 }
