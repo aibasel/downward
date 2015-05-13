@@ -86,7 +86,7 @@ public:
     }
 
     // Create the initial unrefined abstract state on the heap. Must be deleted by the caller.
-    static AbstractState *get_unrefined_abstract_state(TaskProxy task_proxy, Node *root_node);
+    static AbstractState *get_trivial_abstract_state(TaskProxy task_proxy, Node *root_node);
 
     // Create the Cartesian set that corresponds to the given fact conditions.
     static AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions);

@@ -1,7 +1,5 @@
 #include "domains.h"
 
-#include "../task_proxy.h"
-
 #include <sstream>
 
 using namespace std;
@@ -14,17 +12,14 @@ vector<Bitset> Domains::masks;
 vector<Bitset> Domains::inverse_masks;
 Bitset Domains::temp_bits;
 
-Domains::Domains(TaskProxy task_proxy) {
-    initialize_static_members(task_proxy);
+Domains::Domains(vector<int> &&domain_sizes) {
+    initialize_static_members(move(domain_sizes));
     bits = Bitset(num_facts);
     bits.set();
 }
 
-void Domains::initialize_static_members(TaskProxy task_proxy) {
-    orig_domain_sizes.clear();
-    orig_domain_sizes.reserve(task_proxy.get_variables().size());
-    for (VariableProxy var : task_proxy.get_variables())
-        orig_domain_sizes.push_back(var.get_domain_size());
+void Domains::initialize_static_members(vector<int> &&domain_sizes) {
+    orig_domain_sizes = domain_sizes;
 
     masks.clear();
     inverse_masks.clear();

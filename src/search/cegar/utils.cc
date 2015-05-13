@@ -83,6 +83,13 @@ unordered_set<FactProxy> get_relaxed_reachable_facts(TaskProxy task, FactProxy f
     return reachable_facts;
 }
 
+vector<int> get_domain_sizes(TaskProxy task) {
+    vector<int> domain_sizes;
+    for (VariableProxy var : task.get_variables())
+        domain_sizes.push_back(var.get_domain_size());
+    return domain_sizes;
+}
+
 int get_pre(OperatorProxy op, int var_id) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (precondition.get_variable().get_id() == var_id)
@@ -131,4 +138,5 @@ void release_memory_padding() {
 bool memory_padding_is_reserved() {
     return cegar_memory_padding;
 }
+
 }
