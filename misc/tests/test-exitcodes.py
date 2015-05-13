@@ -23,8 +23,7 @@ EXIT_UNSUPPORTED = 3
 EXIT_UNSOLVABLE = 4
 EXIT_UNSOLVED_INCOMPLETE = 5
 
-MERGE_AND_SHRINK =
-'astar(merge_and_shrink('
+MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'merge_strategy=merge_dfp,'
         'shrink_strategy=shrink_bisimulation('
          'max_states=50000,'
@@ -34,7 +33,7 @@ MERGE_AND_SHRINK =
     'label_reduction=label_reduction('
         'before_shrinking=true,'
         'before_merging=false)'
-'))'
+'))')
 
 TESTS = [
     ("strips", "astar(add())", EXIT_PLAN_FOUND),
