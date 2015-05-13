@@ -39,6 +39,8 @@ std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(std::shared_ptr<Abstra
 */
 std::unordered_set<FactProxy> get_relaxed_reachable_facts(TaskProxy task, FactProxy fact);
 
+std::vector<int> get_domain_sizes(TaskProxy task);
+
 int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);

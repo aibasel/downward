@@ -5,8 +5,6 @@
 
 #include <vector>
 
-class TaskProxy;
-
 namespace cegar {
 using Bitset = boost::dynamic_bitset<>;
 
@@ -27,12 +25,12 @@ class Domains {
     // Temporary bitset for speeding up calculations.
     static Bitset temp_bits;
 
-    static void initialize_static_members(TaskProxy task_proxy);
+    static void initialize_static_members(std::vector<int> &&domain_sizes);
 
     int pos(int var, int value) const {return borders[var] + value; }
 
 public:
-    explicit Domains(TaskProxy task_proxy);
+    explicit Domains(std::vector<int> &&domain_sizes);
     ~Domains() = default;
 
     void add(int var, int value);
