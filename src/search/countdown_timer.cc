@@ -24,6 +24,10 @@ double CountdownTimer::get_elapsed_time() const {
     return timer();
 }
 
+double CountdownTimer::get_remaining_time() const {
+    return max_time - get_elapsed_time();
+}
+
 ostream &operator<<(ostream &os, const CountdownTimer &cd_timer) {
     os << cd_timer.timer;
     return os;
