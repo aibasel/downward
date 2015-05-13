@@ -36,8 +36,8 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
         remaining_costs.push_back(op.get_cost());
 }
 
-void reduce_remaining_costs(vector<int> &remaining_costs,
-                            const vector<int> &needed_costs) {
+void AdditiveCartesianHeuristic::reduce_remaining_costs(
+        const vector<int> &needed_costs) {
     assert(remaining_costs.size() == needed_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
         assert(needed_costs[i] <= remaining_costs[i]);
@@ -76,11 +76,10 @@ void AdditiveCartesianHeuristic::build_abstractions(
             dump_task(TaskProxy(*subtask));
         }
 
-        double rem_time = timer->get_remaining_time();
         Options abs_opts(options);
         abs_opts.set<Subtask>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
-        abs_opts.set<double>("max_time", rem_time / rem_subtasks);
+        abs_opts.set<double>("max_time", timer->get_remaining_time() / rem_subtasks);
         // TODO: Should we only do this for LandmarkDecompositions?
         abs_opts.set<bool>("separate_unreachable_facts", true);
         Abstraction abstraction(abs_opts);
@@ -88,7 +87,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
         ++num_abstractions;
         num_states += abstraction.get_num_states();
         vector<int> needed_costs = abstraction.get_needed_costs();
-        reduce_remaining_costs(remaining_costs, needed_costs);
+        reduce_remaining_costs(needed_costs);
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
@@ -122,8 +121,8 @@ void AdditiveCartesianHeuristic::initialize() {
 
 void AdditiveCartesianHeuristic::print_statistics() const {
     Log() << "Done initializing additive Cartesian heuristic";
-    cout << "Cartesian abstractions: " << num_abstractions << endl;
-    cout << "Cartesian heuristics: " << heuristics.size() << endl;
+    cout << "Cartesian abstractions built: " << num_abstractions << endl;
+    cout << "Cartesian heuristics stored: " << heuristics.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
 }
 
@@ -142,9 +141,12 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.add_list_option<shared_ptr<Decomposition> >("decompositions", "Task decompositions", "[landmarks,goals]");
-    parser.add_option<int>("max_states", "maximum number of abstract states", "infinity");
-    parser.add_option<double>("max_time", "maximum time in seconds for building abstractions", "900");
+    parser.add_list_option<shared_ptr<Decomposition> >(
+        "decompositions", "task decompositions", "[landmarks,goals]");
+    parser.add_option<int>(
+        "max_states", "maximum number of abstract states", "infinity");
+    parser.add_option<double>(
+        "max_time", "maximum time in seconds for building abstractions", "900");
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_CONSTRAINED");
@@ -155,8 +157,10 @@ static Heuristic *_parse(OptionParser &parser) {
     pick_strategies.push_back("MAX_HADD");
     parser.add_enum_option(
         "pick", pick_strategies, "how to pick the next flaw", "MAX_REFINED");
-    parser.add_option<bool>("use_general_costs", "allow negative costs in cost partitioning", "true");
-    parser.add_option<bool>("debug", "print debugging output", "false");
+    parser.add_option<bool>(
+        "use_general_costs", "allow negative costs in cost partitioning", "true");
+    parser.add_option<bool>(
+        "debug", "print debugging output", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
