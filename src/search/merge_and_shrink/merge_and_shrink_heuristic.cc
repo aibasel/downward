@@ -45,44 +45,44 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     if (use_expensive_statistics) {
         cerr << dashes << endl
              << "WARNING! You have enabled extra statistics for "
-            "merge-and-shrink heuristics.\n"
-            "These statistics require a lot of time and memory.\n"
-            "When last tested (around revision 3011), enabling the "
-            "extra statistics\nincreased heuristic generation time by "
-            "76%. This figure may be significantly\nworse with more "
-            "recent code or for particular domains and instances.\n"
-            "You have been warned. Don't use this for benchmarking!"
+        "merge-and-shrink heuristics.\n"
+        "These statistics require a lot of time and memory.\n"
+        "When last tested (around revision 3011), enabling the "
+        "extra statistics\nincreased heuristic generation time by "
+        "76%. This figure may be significantly\nworse with more "
+        "recent code or for particular domains and instances.\n"
+        "You have been warned. Don't use this for benchmarking!"
         << endl << dashes << endl;
     }
     if (!labels->reduce_before_merging() && !labels->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You did not enable label reduction. This may\n"
-                 "drastically reduce the performance of merge-and-shrink!"
+        "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
     } else if (labels->reduce_before_merging() && labels->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You set label reduction to be applied twice in\n"
-                 "each merge-and-shrink iteration, both before shrinking and\n"
-                 "merging. This double computation effort does not pay off\n"
-                 "for most configurations !"
-             << endl << dashes << endl;
+        "each merge-and-shrink iteration, both before shrinking and\n"
+        "merging. This double computation effort does not pay off\n"
+        "for most configurations !"
+        << endl << dashes << endl;
     } else {
         if (labels->reduce_before_shrinking() &&
-                (shrink_strategy->get_name() == "f-preserving"
-                 || shrink_strategy->get_name() == "random")) {
+            (shrink_strategy->get_name() == "f-preserving"
+             || shrink_strategy->get_name() == "random")) {
             cerr << dashes << endl
                  << "WARNING! Bucket-based shrink strategies such as\n"
-                    "f-preserving random perform best if used with label\n"
-                    "reduction before merging, not before shrinking!"
-                 << endl << dashes << endl;
+            "f-preserving random perform best if used with label\n"
+            "reduction before merging, not before shrinking!"
+            << endl << dashes << endl;
         }
         if (labels->reduce_before_merging() &&
-                shrink_strategy->get_name() == "bisimulation") {
+            shrink_strategy->get_name() == "bisimulation") {
             cerr << dashes << endl
                  << "WARNING! Shrinking based on bisimulation performs best\n"
-                    "if used with label reduction before shrinking, not\n"
-                    "before merging!"
-                 << endl << dashes << endl;
+            "if used with label reduction before shrinking, not\n"
+            "before merging!"
+            << endl << dashes << endl;
         }
     }
 }
