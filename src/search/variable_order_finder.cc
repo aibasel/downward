@@ -12,9 +12,8 @@
 using namespace std;
 
 
-VariableOrderFinder::VariableOrderFinder(
-    VariableOrderType variable_order_type_)
-    : variable_order_type(variable_order_type_) {
+VariableOrderFinder::VariableOrderFinder(VariableOrderType variable_order_type)
+    : variable_order_type(variable_order_type) {
     int var_count = g_variable_domain.size();
     if (variable_order_type == REVERSE_LEVEL) {
         for (int i = 0; i < var_count; ++i)
@@ -30,11 +29,8 @@ VariableOrderFinder::VariableOrderFinder(
 
     is_causal_predecessor.resize(var_count, false);
     is_goal_variable.resize(var_count, false);
-    for (size_t i = 0; i < g_goal.size(); ++i)
-        is_goal_variable[g_goal[i].first] = true;
-}
-
-VariableOrderFinder::~VariableOrderFinder() {
+    for (pair<int, int> goal : g_goal)
+        is_goal_variable[goal.first] = true;
 }
 
 void VariableOrderFinder::select_next(int position, int var_no) {
@@ -42,8 +38,8 @@ void VariableOrderFinder::select_next(int position, int var_no) {
     remaining_vars.erase(remaining_vars.begin() + position);
     selected_vars.push_back(var_no);
     const vector<int> &new_vars = g_causal_graph->get_eff_to_pre(var_no);
-    for (size_t i = 0; i < new_vars.size(); ++i)
-        is_causal_predecessor[new_vars[i]] = true;
+    for (int new_var : new_vars)
+        is_causal_predecessor[new_var] = true;
 }
 
 bool VariableOrderFinder::done() const {
