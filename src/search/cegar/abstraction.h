@@ -55,7 +55,7 @@ class Abstraction {
     // Refinement hierarchy containing two child states for each split state.
     SplitTree split_tree;
 
-    void create_initial_abstraction();
+    void create_trivial_abstraction();
     void separate_unreachable_facts();
     bool may_keep_refining() const;
 

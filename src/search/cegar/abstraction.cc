@@ -101,7 +101,7 @@ void Abstraction::separate_unreachable_facts() {
     goals.insert(states.begin(), states.end());
 }
 
-void Abstraction::create_initial_abstraction() {
+void Abstraction::create_trivial_abstraction() {
     init = AbstractState::get_unrefined_abstract_state(task_proxy, split_tree.get_root());
     goals.insert(init);
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -119,7 +119,7 @@ bool Abstraction::may_keep_refining() const {
 }
 
 void Abstraction::build() {
-    create_initial_abstraction();
+    create_trivial_abstraction();
     bool found_conc_solution = false;
     while (may_keep_refining()) {
         bool found_abs_solution = abstract_search.find_solution(init, goals);
