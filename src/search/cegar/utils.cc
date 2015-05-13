@@ -138,5 +138,4 @@ void release_memory_padding() {
 bool memory_padding_is_reserved() {
     return cegar_memory_padding;
 }
-
 }

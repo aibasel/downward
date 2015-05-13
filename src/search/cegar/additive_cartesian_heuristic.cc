@@ -77,7 +77,7 @@ void AdditiveCartesianHeuristic::build_abstractions(const Decomposition &decompo
         abs_opts.set<Subtask>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
         abs_opts.set<double>("max_time", rem_time / rem_subtasks);
-        // TODO: Can we only do this for LandmarkDecompositions?
+        // TODO: Should we only do this for LandmarkDecompositions?
         abs_opts.set<bool>("separate_unreachable_facts", true);
         Abstraction abstraction(abs_opts);
 

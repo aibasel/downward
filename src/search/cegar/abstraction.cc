@@ -23,7 +23,7 @@ struct Flaw {
     AbstractState *abs_state;
     const AbstractState desired_abs_state;
 
-    Flaw(State &&conc_state, AbstractState *abs_state, AbstractState &&desired_abs_state)
+    Flaw(State && conc_state, AbstractState *abs_state, AbstractState && desired_abs_state)
         : conc_state(conc_state),
           abs_state(abs_state),
           desired_abs_state(std::move(desired_abs_state)) {
@@ -206,9 +206,9 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                 cout << "  Operator not applicable: " << next_op.get_name() << endl;
             ++unmet_preconditions;
             return make_shared<Flaw>(
-                move(conc_state),
-                abs_state,
-                AbstractState::get_abstract_state(task_proxy, next_op.get_preconditions()));
+                       move(conc_state),
+                       abs_state,
+                       AbstractState::get_abstract_state(task_proxy, next_op.get_preconditions()));
         } else {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
@@ -230,9 +230,9 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
         return make_shared<Flaw>(
-            move(conc_state),
-            abs_state,
-            AbstractState::get_abstract_state(task_proxy, task_proxy.get_goals()));
+                   move(conc_state),
+                   abs_state,
+                   AbstractState::get_abstract_state(task_proxy, task_proxy.get_goals()));
     }
 }
 
