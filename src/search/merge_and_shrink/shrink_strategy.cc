@@ -102,7 +102,12 @@ void ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1, TransitionSystem
       the size limit imposed by max_states and max_states_before_merge,
       or if their size is larger than threshold. In the former case, the
       transition system is forced to be shrunk down to the size limit, in
-      the latter case, shrinking does not necessarily take place.
+      the latter case, the shrink strategy is still called with the new
+      size limit, which means that it does not have to shrink the size of the
+      transition system, but it *may* do so. This is useful e.g. for the
+      bisimulation shrink strategy, which searches for a perfect bisimulation
+      (which is information-preserving) as long as the size limit is not
+      exceeded.
     */
 
     if (must_shrink(ts2, min(new_size2, shrink_threshold_before_merge))) {
