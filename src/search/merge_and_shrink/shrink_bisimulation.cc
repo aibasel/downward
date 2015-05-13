@@ -81,60 +81,11 @@ void release_memory(vector<T> &vec) {
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
-      threshold(opts.get<int>("threshold")),
       group_by_h(opts.get<bool>("group_by_h")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
 ShrinkBisimulation::~ShrinkBisimulation() {
-}
-
-string ShrinkBisimulation::name() const {
-    return "bisimulation";
-}
-
-void ShrinkBisimulation::dump_strategy_specific_options() const {
-    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
-    cout << "Bisimulation threshold: " << threshold << endl;
-    cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
-    cout << "At limit: ";
-    if (at_limit == RETURN) {
-        cout << "return";
-    } else if (at_limit == USE_UP) {
-        cout << "use up limit";
-    } else {
-        ABORT("Unknown setting for at_limit.");
-    }
-    cout << endl;
-}
-
-bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
-    return true;
-}
-
-void ShrinkBisimulation::shrink(
-    TransitionSystem &ts, int target) {
-    // TODO: Explain this min(target, threshold) stuff. Also, make the
-    //       output clearer, which right now is rubbish, calling the
-    //       min(...) "threshold". The reasoning behind this is that
-    //       we need to shrink if we're above the threshold or if
-    //       *after* composition we'd be above the size limit, so
-    //       target can either be less or larger than threshold.
-    if (must_shrink(ts, min(target, threshold))) {
-        StateEquivalenceRelation equivalence_relation;
-        compute_abstraction(ts, target, equivalence_relation);
-        apply(ts, equivalence_relation, target);
-    }
-}
-
-void ShrinkBisimulation::shrink_before_merge(
-    TransitionSystem &ts1, TransitionSystem &ts2) {
-    pair<int, int> new_sizes = compute_shrink_sizes(ts1.get_size(), ts2.get_size());
-    int new_size1 = new_sizes.first;
-    int new_size2 = new_sizes.second;
-
-    shrink(ts2, new_size2);
-    shrink(ts1, new_size1);
 }
 
 int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
@@ -247,7 +198,7 @@ void ShrinkBisimulation::compute_signatures(
 }
 
 void ShrinkBisimulation::compute_abstraction(
-    TransitionSystem &ts,
+    const TransitionSystem &ts,
     int target_size,
     StateEquivalenceRelation &equivalence_relation) {
     int num_states = ts.get_size();
@@ -371,10 +322,33 @@ void ShrinkBisimulation::compute_abstraction(
     }
 }
 
+void ShrinkBisimulation::shrink(const TransitionSystem &ts,
+                                int target,
+                                StateEquivalenceRelation &equivalence_relation) {
+    compute_abstraction(ts, target, equivalence_relation);
+}
+
+string ShrinkBisimulation::name() const {
+    return "bisimulation";
+}
+
+void ShrinkBisimulation::dump_strategy_specific_options() const {
+    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+    cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
+    cout << "At limit: ";
+    if (at_limit == RETURN) {
+        cout << "return";
+    } else if (at_limit == USE_UP) {
+        cout << "use up limit";
+    } else {
+        ABORT("Unknown setting for at_limit.");
+    }
+    cout << endl;
+}
+
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
-    parser.add_option<int>("threshold", "TODO: document", "-1");  // default: same as max_states
     parser.add_option<bool>("group_by_h", "TODO: document", "false");
 
     vector<string> at_limit;
@@ -391,20 +365,10 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
 
     ShrinkStrategy::handle_option_defaults(opts);
 
-    int threshold = opts.get<int>("threshold");
-    if (threshold == -1) {
-        threshold = opts.get<int>("max_states");
-        opts.set("threshold", threshold);
-    }
-    if (threshold < 1)
-        parser.error("bisimulation threshold must be at least 1");
-    if (threshold > opts.get<int>("max_states"))
-        parser.error("bisimulation threshold must not be larger than size limit");
-
-    if (!parser.dry_run())
-        return new ShrinkBisimulation(opts);
-    else
+    if (parser.dry_run())
         return 0;
+    else
+        return new ShrinkBisimulation(opts);
 }
 
 static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
