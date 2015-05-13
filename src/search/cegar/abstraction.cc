@@ -65,8 +65,8 @@ Abstraction::Abstraction(const Options &opts)
     build();
     Log() << "Done building abstraction.";
 
-    /*Even if we found a concrete solution, we might have refined in the
-      last iteration, so we should update the h values. */
+    /* Even if we found a concrete solution, we might have refined in the
+       last iteration, so we should update the h values. */
     update_h_values();
 
     print_statistics();
@@ -151,20 +151,20 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.insert(v1);
     states.insert(v2);
 
-    // Since the search is always started from the abstract
-    // initial state, v2 is never "init" and v1 is never "goal".
+    /* Since the search is always started from the abstract initial state, v2
+       is never the new initial state and v1 is never a goal state. */
     if (state == init) {
         assert(v1->is_abstraction_of(task_proxy.get_initial_state()));
         assert(!v2->is_abstraction_of(task_proxy.get_initial_state()));
         init = v1;
         if (DEBUG)
-            cout << "Using new init state: " << *init << endl;
+            cout << "New init state: " << *init << endl;
     }
     if (is_goal(state)) {
         goals.erase(state);
         goals.insert(v2);
         if (DEBUG)
-            cout << "Using new/additional goal state: " << *v2 << endl;
+            cout << "New/additional goal state: " << *v2 << endl;
     }
 
     int num_states = get_num_states();
@@ -192,8 +192,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         const OperatorProxy next_op = solution[step].first;
         AbstractState *next_abs_state = solution[step].second;
         if (!abs_state->is_abstraction_of(conc_state)) {
-            assert(step >= 1);
-            assert(prev_abs_state);
+            assert(step >= 1 && prev_abs_state);
             if (DEBUG)
                 cout << "  Paths deviate." << endl;
             ++deviations;
@@ -208,7 +207,8 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             return make_shared<Flaw>(
                        move(conc_state),
                        abs_state,
-                       AbstractState::get_abstract_state(task_proxy, next_op.get_preconditions()));
+                       AbstractState::get_abstract_state(
+                            task_proxy, next_op.get_preconditions()));
         } else {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
@@ -225,14 +225,14 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         // We found a concrete solution.
         return nullptr;
     } else {
-        // Get unmet goals and refine the last state.
         if (DEBUG)
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
         return make_shared<Flaw>(
                    move(conc_state),
                    abs_state,
-                   AbstractState::get_abstract_state(task_proxy, task_proxy.get_goals()));
+                   AbstractState::get_abstract_state(
+                        task_proxy, task_proxy.get_goals()));
     }
 }
 
