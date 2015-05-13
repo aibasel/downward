@@ -258,22 +258,22 @@ void LandmarkCutHeuristic::validate_h_max() const {
     // Using conditional compilation to avoid complaints about unused
     // variables when using NDEBUG. This whole code does nothing useful
     // when assertions are switched off anyway.
-    for (const RelaxedOperator *op : &relaxed_operators) {
-        if (op->unsatisfied_preconditions) {
+    for (const RelaxedOperator &op : relaxed_operators) {
+        if (op.unsatisfied_preconditions) {
             bool reachable = true;
-            for (RelaxedProposition *pre : op->preconditions) {
+            for (RelaxedProposition *pre : op.preconditions) {
                 if (pre->status == UNREACHED) {
                     reachable = false;
                     break;
                 }
             }
             assert(!reachable);
-            assert(!op->h_max_supporter);
+            assert(!op.h_max_supporter);
         } else {
-            assert(op->h_max_supporter);
-            int h_max_cost = op->h_max_supporter_cost;
-            assert(h_max_cost == op->h_max_supporter->h_max_cost);
-            for (RelaxedProposition *pre : op->preconditions) {
+            assert(op.h_max_supporter);
+            int h_max_cost = op.h_max_supporter_cost;
+            assert(h_max_cost == op.h_max_supporter->h_max_cost);
+            for (RelaxedProposition *pre : op.preconditions) {
                 assert(pre->status != UNREACHED);
                 assert(pre->h_max_cost <= h_max_cost);
             }
