@@ -19,6 +19,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     TransitionSystem *final_transition_system;
     TransitionSystem *build_transition_system();
 
+    void report_peak_memory_delta(bool final = false) const;
     void dump_options() const;
     void warn_on_unusual_options() const;
 protected:
