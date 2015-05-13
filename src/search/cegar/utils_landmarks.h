@@ -4,12 +4,15 @@
 #include "utils.h"
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 class LandmarkGraph;
 
 namespace cegar {
+using VarToValues = std::unordered_map<int, std::vector<int> >;
+
 std::shared_ptr<LandmarkGraph> get_landmark_graph();
 std::vector<Fact> get_fact_landmarks(std::shared_ptr<LandmarkGraph> landmark_graph);
 VarToValues get_prev_landmarks(std::shared_ptr<LandmarkGraph>, Fact fact);

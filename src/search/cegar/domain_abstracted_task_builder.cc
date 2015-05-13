@@ -1,10 +1,47 @@
 #include "domain_abstracted_task_builder.h"
 
 #include <sstream>
+#include <string>
 
 using namespace std;
 
 namespace cegar {
+class DomainAbstractedTaskBuilder {
+private:
+    std::vector<int> domain_size;
+    std::vector<int> initial_state_values;
+    std::vector<Fact> goals;
+    std::vector<std::vector<std::string> > fact_names;
+    std::vector<std::vector<int> > value_map;
+    std::shared_ptr<AbstractTask> task;
+
+    void initialize(const std::shared_ptr<AbstractTask> parent);
+    void move_fact(int var, int before, int after);
+    void combine_values(int var, const ValueGroups &groups);
+    std::string get_combined_fact_name(int var, const ValueGroup &values) const;
+
+public:
+    DomainAbstractedTaskBuilder(
+        const std::shared_ptr<AbstractTask> parent,
+        const VarToGroups &value_groups);
+
+    std::shared_ptr<AbstractTask> get_task() const;
+};
+
+DomainAbstractedTaskBuilder::DomainAbstractedTaskBuilder(
+    const std::shared_ptr<AbstractTask> parent,
+    const VarToGroups &value_groups) {
+    initialize(parent);
+    for (const auto &pair : value_groups) {
+        int var = pair.first;
+        const ValueGroups &groups = pair.second;
+        combine_values(var, groups);
+    }
+    task = make_shared<DomainAbstractedTask>(
+       parent, move(domain_size), move(initial_state_values), move(goals),
+       move(fact_names), move(value_map));
+}
+
 void DomainAbstractedTaskBuilder::initialize(const shared_ptr<AbstractTask> parent) {
     int num_vars = parent->get_num_variables();
     domain_size.resize(num_vars);
@@ -94,17 +131,13 @@ void DomainAbstractedTaskBuilder::combine_values(int var, const ValueGroups &gro
     domain_size[var] = new_domain_size;
 }
 
-shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task(
+shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task() const {
+    return task;
+}
+
+shared_ptr<AbstractTask> build_domain_abstracted_task(
     const shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups) {
-    initialize(parent);
-    for (const auto &pair : value_groups) {
-        int var = pair.first;
-        const ValueGroups &groups = pair.second;
-        combine_values(var, groups);
-    }
-    return make_shared<DomainAbstractedTask>(
-               parent, move(domain_size), move(initial_state_values), move(goals),
-               move(fact_names), move(value_map));
+    return DomainAbstractedTaskBuilder(parent, value_groups).get_task();
 }
 }

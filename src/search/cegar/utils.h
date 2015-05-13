@@ -3,7 +3,6 @@
 
 #include <limits>
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -28,7 +27,6 @@ const int INF = std::numeric_limits<int>::max();
 const int MAX_COST_VALUE = 100000000;
 
 using Fact = std::pair<int, int>;
-using VarToValues = std::unordered_map<int, std::vector<int> >;
 
 std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(std::shared_ptr<AbstractTask> task);
 
