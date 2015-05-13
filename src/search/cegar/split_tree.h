@@ -55,12 +55,12 @@ public:
 
     Node *get_child(int value) const;
 
-    void set_h(int new_h) {
+    void set_h_value(int new_h) {
         assert(new_h >= h);
         h = new_h;
     }
 
-    int get_h() const {return h; }
+    int get_h_value() const {return h; }
 };
 
 class SplitTree {

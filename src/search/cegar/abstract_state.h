@@ -23,7 +23,7 @@ using Loops = std::vector<OperatorProxy>;
 
 class AbstractState {
 private:
-    // Abstract domains for each variable.
+    // Abstract domains for all variables.
     const Domains domains;
 
     // This state's node in the refinement hierarchy.
@@ -36,6 +36,7 @@ private:
     // Self-loops.
     Loops loops;
 
+    // Construct instances with factory methods.
     AbstractState(const Domains &domains, Node *node);
 
     void add_arc(OperatorProxy op, AbstractState *other);
@@ -63,10 +64,14 @@ public:
 
     bool contains(FactProxy fact) const;
 
-    // Return the set of states in which applying "op" leads to this state.
+    // Return the Cartesian set of states in which applying "op" leads to this state.
     AbstractState regress(OperatorProxy op) const;
 
-    // Separate the values in "wanted" from the other values in the abstract domain.
+    /*
+      Split this state into two new states by separating the "wanted" values
+      from the other values in the abstract domain and return the resulting two
+      new states.
+    */
     std::pair<AbstractState *, AbstractState *> split(int var, std::vector<int> wanted);
 
     void add_loop(OperatorProxy op);
@@ -74,8 +79,8 @@ public:
     bool is_abstraction_of(const State &conc_state) const;
     bool is_abstraction_of(const AbstractState &abs_state) const;
 
-    void set_h(int new_h);
-    int get_h() const;
+    void set_h_value(int new_h);
+    int get_h_value() const;
 
     const Arcs &get_outgoing_arcs() const {return outgoing_arcs; }
     const Arcs &get_incoming_arcs() const {return incoming_arcs; }
@@ -85,11 +90,14 @@ public:
         return os << state.domains;
     }
 
-    // Create the initial unrefined abstract state on the heap. Must be deleted by the caller.
-    static AbstractState *get_trivial_abstract_state(TaskProxy task_proxy, Node *root_node);
+    /* Create the initial unrefined abstract state on the heap. Must be deleted
+       by the caller.   */
+    static AbstractState *get_trivial_abstract_state(
+        TaskProxy task_proxy, Node *root_node);
 
     // Create the Cartesian set that corresponds to the given fact conditions.
-    static AbstractState get_abstract_state(TaskProxy task_proxy, const ConditionsProxy &conditions);
+    static AbstractState get_abstract_state(
+        TaskProxy task_proxy, const ConditionsProxy &conditions);
 };
 }
 

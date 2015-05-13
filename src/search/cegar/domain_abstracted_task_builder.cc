@@ -24,6 +24,7 @@ public:
     DomainAbstractedTaskBuilder(
         const std::shared_ptr<AbstractTask> parent,
         const VarToGroups &value_groups);
+    ~DomainAbstractedTaskBuilder() = default;
 
     std::shared_ptr<AbstractTask> get_task() const;
 };

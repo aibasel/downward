@@ -45,13 +45,15 @@ public:
 
     void backwards_dijkstra(const AbstractStates goals);
 
+    /* Traverse abstraction and remember the minimum cost we need to keep for
+       each operator in order not to decrease any heuristic values. */
     std::vector<int> get_needed_costs(AbstractState *init, int num_ops);
 
     const Solution &get_solution() {
         return solution;
     }
 
-    int get_g(AbstractState *state) const;
+    int get_g_value(AbstractState *state) const;
 };
 }
 

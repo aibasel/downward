@@ -52,12 +52,11 @@ struct Flaw {
 Abstraction::Abstraction(const Options &opts)
     : task_proxy(*opts.get<shared_ptr<AbstractTask> >("transform")),
       do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
+      max_states(opts.get<int>("max_states")),
       abstract_search(opts),
       split_selector(opts.get<shared_ptr<AbstractTask> >("transform"),
                      PickSplit(opts.get<int>("pick"))),
-      max_states(opts.get<int>("max_states")),
       timer(opts.get<double>("max_time")),
-      concrete_initial_state(task_proxy.get_initial_state()),
       init(nullptr),
       deviations(0),
       unmet_preconditions(0),
@@ -66,8 +65,8 @@ Abstraction::Abstraction(const Options &opts)
     build();
     Log() << "Done building abstraction.";
 
-    // Even if we found a concrete solution, we might have refined in the
-    // last iteration, so we must update the h values.
+    /*Even if we found a concrete solution, we might have refined in the
+      last iteration, so we should update the h values. */
     update_h_values();
 
     print_statistics();
@@ -84,9 +83,10 @@ bool Abstraction::is_goal(AbstractState *state) const {
 
 void Abstraction::separate_unreachable_facts() {
     assert(states.size() == 1);
-    FactProxy landmark = task_proxy.get_goals()[0];
+    assert(task_proxy.get_goals().size() == 1);
+    FactProxy goal = task_proxy.get_goals()[0];
     unordered_set<FactProxy> reachable_facts = get_relaxed_reachable_facts(
-        task_proxy, landmark);
+        task_proxy, goal);
     for (VariableProxy var : task_proxy.get_variables()) {
         int var_id = var.get_id();
         vector<int> unreachable_values;
@@ -108,7 +108,7 @@ void Abstraction::create_trivial_abstraction() {
         init->add_loop(op);
     }
     states.insert(init);
-    if (do_separate_unreachable_facts)
+    if (do_separate_unreachable_facts && task_proxy.get_goals().size() == 1)
         separate_unreachable_facts();
 }
 
@@ -154,8 +154,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     // Since the search is always started from the abstract
     // initial state, v2 is never "init" and v1 is never "goal".
     if (state == init) {
-        assert(v1->is_abstraction_of(concrete_initial_state));
-        assert(!v2->is_abstraction_of(concrete_initial_state));
+        assert(v1->is_abstraction_of(task_proxy.get_initial_state()));
+        assert(!v2->is_abstraction_of(task_proxy.get_initial_state()));
         init = v1;
         if (DEBUG)
             cout << "Using new init state: " << *init << endl;
@@ -180,8 +180,8 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
 
     AbstractState *abs_state = init;
     AbstractState *prev_abs_state = nullptr;
-    State conc_state = concrete_initial_state;
-    State prev_conc_state = concrete_initial_state;  // Arbitrary state.
+    State conc_state = task_proxy.get_initial_state();
+    State prev_conc_state = task_proxy.get_initial_state();  // Arbitrary state.
 
     if (DEBUG)
         cout << "  Initial abstract state: " << *abs_state << endl;
@@ -239,12 +239,12 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
 void Abstraction::update_h_values() {
     abstract_search.backwards_dijkstra(goals);
     for (AbstractState *state : states) {
-        state->set_h(abstract_search.get_g(state));
+        state->set_h_value(abstract_search.get_g_value(state));
     }
 }
 
-int Abstraction::get_init_h() const {
-    return init->get_h();
+int Abstraction::get_h_value_of_initial_state() const {
+    return init->get_h_value();
 }
 
 vector<int> Abstraction::get_needed_costs() {
@@ -258,7 +258,7 @@ void Abstraction::print_statistics() {
     int dead_ends = 0;
     int arc_size = 0;
     for (AbstractState *state : states) {
-        if (state->get_h() == INF)
+        if (state->get_h_value() == INF)
             ++dead_ends;
         const Arcs &incoming_arcs = state->get_incoming_arcs();
         const Arcs &outgoing_arcs = state->get_outgoing_arcs();
@@ -280,7 +280,7 @@ void Abstraction::print_statistics() {
     cout << "Total operator cost: " << total_cost << endl;
     cout << "States: " << get_num_states() << endl;
     cout << "Dead ends: " << dead_ends << endl;
-    cout << "Init-h: " << init->get_h() << endl;
+    cout << "Init-h: " << init->get_h_value() << endl;
 
     cout << "Transitions: " << total_incoming_arcs << endl;
     cout << "Self-loops: " << total_loops << endl;

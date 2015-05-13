@@ -27,36 +27,34 @@ const int STATES_LOG_STEP = 1000;
 class Abstraction {
     const TaskProxy task_proxy;
     const bool do_separate_unreachable_facts;
+    const int max_states;
 
     AbstractSearch abstract_search;
-
-    // Strategy for picking the next flaw in case of multiple possibilities.
     SplitSelector split_selector;
-
-    const int max_states;
 
     // Limit the time for building the abstraction.
     CountdownTimer timer;
 
-    const State concrete_initial_state;
-
-    // Set of all valid states, i.e. states that have not been split.
+    // Set of all abstract states, i.e. states that have not been split.
     AbstractStates states;
 
-    // Abstract init and goal states.
+    // Abstract initial and goal states.
     AbstractState *init;
     AbstractStates goals;
 
-    // Statistics.
+    // Count the number of times each flaw type is encountered.
     int deviations;
     int unmet_preconditions;
     int unmet_goals;
 
-    // Refinement hierarchy containing two child states for each split state.
+    // Refinement hierarchy.
     SplitTree split_tree;
 
     void create_trivial_abstraction();
+
+    // Map all states with unreachable facts to arbitrary goal states.
     void separate_unreachable_facts();
+
     bool may_keep_refining() const;
 
     // Build abstraction.
@@ -69,12 +67,11 @@ class Abstraction {
 
     AbstractState get_cartesian_set(const ConditionsProxy &conditions) const;
 
-    // Try to convert the abstract solution into a concrete trace. If a flaw
-    // is encountered, refine the abstraction in a way that prevents the flaw
-    // from appearing in the next round again.
+    /* Try to convert the abstract solution into a concrete trace. Return the
+       first encountered flaw or nullptr if there is no flaw. */
     std::shared_ptr<Flaw> find_flaw(const Solution &solution);
 
-    // Make Dijkstra search to calculate all goal distances and update h-values.
+    // Perform Dijkstra's algorithm from the goal states to update the h-values.
     void update_h_values();
 
     void print_statistics();
@@ -90,12 +87,11 @@ public:
 
     int get_num_states() const {return states.size(); }
 
-    // Methods for additive abstractions.
-    // For each operator op from a1 to a2, set cost'(op) = max(h(a1)-h(a2), 0).
-    // This makes the next abstraction additive to all previous ones.
+    /* For each operator calculate the mimimum cost that is needed to preserve
+       all abstract goal distances. */
     std::vector<int> get_needed_costs();
 
-    int get_init_h() const;
+    int get_h_value_of_initial_state() const;
 };
 }
 
