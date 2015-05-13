@@ -32,8 +32,8 @@ ShrinkStrategy::~ShrinkStrategy() {
   passed as const.
  */
 void ShrinkStrategy::apply(TransitionSystem &ts,
-    const StateEquivalenceRelation &equivalence_relation,
-    int target) const {
+                           const StateEquivalenceRelation &equivalence_relation,
+                           int target) const {
     // TODO: We currently violate this; see issue250
     //assert(equivalence_relation.size() <= target);
     ts.apply_abstraction(equivalence_relation);
