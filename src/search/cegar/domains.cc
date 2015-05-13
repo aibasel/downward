@@ -72,8 +72,8 @@ bool Domains::test(int var, int value) const {
 }
 
 size_t Domains::count(int var) const {
-    // Profiling showed that an explicit loop is faster than doing:
-    // (values & masks[var]).count(); (even if using a temp bitset).
+    /* Profiling showed that an explicit loop is faster than intersecting with
+       a mask and calling dynamic_bitset::count(). */
     int num_values = 0;
     for (int value = 0; value < orig_domain_sizes[var]; ++value) {
         num_values += test(var, value);
@@ -82,10 +82,11 @@ size_t Domains::count(int var) const {
 }
 
 bool Domains::intersects(const Domains &other, int var) const {
-    // Using test() directly doesn't make execution much faster even for
-    // problems with many boolean vars. We use temp_values to reduce
-    // memory allocations. This substantially reduces the relative time
-    // spent in this method.
+    /*
+      Using test() directly is usually a bit slower, even for problems with
+      many boolean vars. We use a temporary bitset to reduce memory
+      allocations. This substantially reduces the time spent in this method.
+    */
     temp_bits.set();
     temp_bits &= bits;
     temp_bits &= other.bits;
