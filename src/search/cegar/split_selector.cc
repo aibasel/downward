@@ -25,7 +25,7 @@ SplitSelector::SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick)
 int SplitSelector::get_constrainedness(const AbstractState &state, int var_id) const {
     int rem_values = state.count(var_id);
     assert(rem_values >= 2);
-    return rem_values;
+    return -rem_values;
 }
 
 double SplitSelector::get_refinedness(const AbstractState &state, int var_id) const {
@@ -95,7 +95,7 @@ const Split &SplitSelector::pick_split(const AbstractState &state,
     }
 
     if (DEBUG) {
-        cout << "Vector<split> for state " << state << ": " << endl;
+        cout << "Splits for state " << state << ": " << endl;
         for (const Split &split : splits)
             cout << split.var_id << "=" << split.values << " ";
         cout << endl;

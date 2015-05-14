@@ -13,11 +13,11 @@ class AdditiveHeuristic;
 namespace cegar {
 class AbstractState;
 
-// Strategies for selecting a flaw in case there are multiple possibilities.
+// Strategies for selecting a split in case there are multiple possibilities.
 enum class PickSplit {
     RANDOM,
     // Number of remaining values for each variable.
-    // "Constrainment" is bigger if there are less remaining possible values.
+    // "Constrainedness" is bigger if there are less remaining possible values.
     MIN_CONSTRAINED,
     MAX_CONSTRAINED,
     // Refinement: - (remaining_values / original_domain_size)
