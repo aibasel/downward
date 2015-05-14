@@ -16,10 +16,6 @@ class AbstractState;
 // Strategies for selecting a split in case there are multiple possibilities.
 enum class PickSplit {
     RANDOM,
-    // Number of remaining values for each variable.
-    // "Constrainedness" is bigger if there are less remaining possible values.
-    MIN_CONSTRAINED,
-    MAX_CONSTRAINED,
     // Refinement: - (remaining_values / original_domain_size)
     MIN_REFINED,
     MAX_REFINED,
@@ -44,7 +40,6 @@ class SplitSelector {
 
     const PickSplit pick;
 
-    int get_constrainedness(const AbstractState &state, int var_id) const;
     double get_refinedness(const AbstractState &state, int var_id) const;
     int get_hadd_value(int var_id, int value) const;
     int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
