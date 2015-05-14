@@ -57,7 +57,7 @@ static bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
 }
 
 static unordered_set<FactProxy> compute_possibly_before_facts(
-        TaskProxy task, FactProxy last_fact) {
+    TaskProxy task, FactProxy last_fact) {
     unordered_set<FactProxy> pb_facts;
 
     // Add facts from initial state.

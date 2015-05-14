@@ -37,7 +37,7 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
 }
 
 void AdditiveCartesianHeuristic::reduce_remaining_costs(
-        const vector<int> &needed_costs) {
+    const vector<int> &needed_costs) {
     assert(remaining_costs.size() == needed_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
         assert(needed_costs[i] <= remaining_costs[i]);
@@ -47,7 +47,7 @@ void AdditiveCartesianHeuristic::reduce_remaining_costs(
 }
 
 shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
-        shared_ptr<AbstractTask> parent) const {
+    shared_ptr<AbstractTask> parent) const {
     Options opts;
     opts.set<Subtask>("transform", parent);
     opts.set<vector<int> >("operator_costs", remaining_costs);
@@ -62,7 +62,7 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(
-        const Decomposition &decomposition) {
+    const Decomposition &decomposition) {
     Subtasks subtasks = decomposition.get_subtasks();
 
     int rem_subtasks = subtasks.size();
@@ -131,7 +131,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
     for (CartesianHeuristic heuristic : heuristics) {
         heuristic.evaluate(global_state);
         int h = heuristic.get_heuristic();
-        if(h == DEAD_END)
+        if (h == DEAD_END)
             return DEAD_END;
         sum_h += h;
     }

@@ -49,12 +49,12 @@ FactDecomposition::FactDecomposition(const Options &opts)
 
 void FactDecomposition::remove_initial_state_facts(Facts &facts) const {
     facts.erase(remove_if(
-            facts.begin(), facts.end(),
-            [&](Fact fact) {
-                return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
-            }
-            ),
-        facts.end());
+                    facts.begin(), facts.end(),
+                    [&](Fact fact) {
+                        return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
+                    }
+                    ),
+                facts.end());
 }
 
 Facts FactDecomposition::get_filtered_and_ordered_facts() const {
@@ -119,7 +119,7 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
 }
 
 Subtask LandmarkDecomposition::get_domain_abstracted_task(
-        Subtask parent, Fact fact) const {
+    Subtask parent, Fact fact) const {
     assert(combine_facts);
     VarToGroups value_groups;
     for (auto &pair : get_prev_landmarks(landmark_graph, fact)) {

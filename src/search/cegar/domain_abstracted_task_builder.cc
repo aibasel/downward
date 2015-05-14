@@ -39,8 +39,8 @@ DomainAbstractedTaskBuilder::DomainAbstractedTaskBuilder(
         combine_values(var, groups);
     }
     task = make_shared<DomainAbstractedTask>(
-       parent, move(domain_size), move(initial_state_values), move(goals),
-       move(fact_names), move(value_map));
+        parent, move(domain_size), move(initial_state_values), move(goals),
+        move(fact_names), move(value_map));
 }
 
 void DomainAbstractedTaskBuilder::initialize(const shared_ptr<AbstractTask> parent) {
