@@ -11,20 +11,22 @@ namespace cegar {
 class Node {
     static const int UNDEFINED = -2;
     /*
-      While right_child always corresponds to a (possibly split) abstract
-      state, left_child may correspond to a helper node. Helper nodes
-      are added to the hierarchy to allow for efficient lookup in case
-      more than one atom is split off a state.
+      While right_child is always the node of a (possibly split) abstract
+      state, left_child may be a helper node. We add helper nodes to the
+      hierarchy to allow for efficient lookup in case more than one fact is
+      split off a state.
     */
     Node *left_child;
     Node *right_child;
-    // Save the variable and value for which we split.
+
+    // Save the variable and value for which the corresponding state was split.
     int var;
     int value;
-    // Estimated cost to goal node.
+
+    // Estimated cost to nearest goal state from this node's state.
     int h;
 
-    void split(int var, int value, Node *left_child, Node *right_child);
+    void set_members(int var, int value, Node *left_child, Node *right_child);
 
 public:
     Node();
@@ -35,8 +37,8 @@ public:
 
     /*
       Update the split tree for the new split. Additionally to the left and
-      right child nodes add |values|-1 OR-nodes that all have the right child as
-      their right child and the next OR-node as their left child.
+      right child nodes add |values|-1 helper nodes that all have the right
+      child as their right child and the next helper node as their left child.
     */
     std::pair<Node *, Node *> split(int var, const std::vector<int> &values);
 
@@ -60,8 +62,11 @@ public:
         h = new_h;
     }
 
-    int get_h_value() const {return h; }
+    int get_h_value() const {
+        return h;
+    }
 };
+
 
 class SplitTree {
     Node *root;
