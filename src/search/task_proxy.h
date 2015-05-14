@@ -528,10 +528,6 @@ public:
         }
         return State(*task, std::move(new_values));
     }
-
-    std::size_t hash() const {
-        return hash_sequence(values, values.size());
-    }
 };
 
 
@@ -594,13 +590,6 @@ struct hash<FactProxy> {
         std::pair<int, int> raw_fact = make_pair(fact.get_variable().get_id(), fact.get_value());
         std::hash<std::pair<int, int> > hasher;
         return hasher(raw_fact);
-    }
-};
-
-template<>
-struct hash<State> {
-    size_t operator()(const State &state) const {
-        return state.hash();
     }
 };
 }
