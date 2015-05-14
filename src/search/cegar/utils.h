@@ -28,14 +28,16 @@ const int MAX_COST_VALUE = 100000000;
 
 using Fact = std::pair<int, int>;
 
-std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(std::shared_ptr<AbstractTask> task);
+std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(
+    std::shared_ptr<AbstractTask> task);
 
 /*
   The set of relaxed-reachable facts is the possibly-before set of facts that
   can be reached in the delete-relaxation before 'fact' is reached the first
-  time plus 'fact' itself.
+  time, plus 'fact' itself.
 */
-std::unordered_set<FactProxy> get_relaxed_reachable_facts(TaskProxy task, FactProxy fact);
+std::unordered_set<FactProxy> get_relaxed_reachable_facts(
+    TaskProxy task, FactProxy fact);
 
 std::vector<int> get_domain_sizes(TaskProxy task);
 
