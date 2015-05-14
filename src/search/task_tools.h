@@ -48,8 +48,4 @@ void verify_no_conditional_effects(TaskProxy task);
 
 void dump_task(TaskProxy task);
 
-inline std::pair<int, int> get_raw_fact(FactProxy fact_proxy) {
-    return std::make_pair(fact_proxy.get_variable().get_id(), fact_proxy.get_value());
-}
-
 #endif
