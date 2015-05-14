@@ -31,7 +31,7 @@ void Domains::initialize_static_members(vector<int> && domain_sizes) {
         num_facts += orig_domain_sizes[var];
     }
     for (int var = 0; var < num_vars; ++var) {
-        // -----0000 -> --1110000 --> 001110000
+        // 0000-----  =>  0000111--  =>  000011100
         Bitset mask(borders[var]);
         mask.resize(borders[var] + orig_domain_sizes[var], true);
         mask.resize(num_facts, false);
