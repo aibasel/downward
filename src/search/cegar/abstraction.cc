@@ -208,7 +208,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                        move(conc_state),
                        abs_state,
                        AbstractState::get_abstract_state(
-                            task_proxy, next_op.get_preconditions()));
+                           task_proxy, next_op.get_preconditions()));
         } else {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
@@ -232,7 +232,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                    move(conc_state),
                    abs_state,
                    AbstractState::get_abstract_state(
-                        task_proxy, task_proxy.get_goals()));
+                       task_proxy, task_proxy.get_goals()));
     }
 }
 

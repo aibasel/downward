@@ -31,13 +31,13 @@ const string &DomainAbstractedTask::get_fact_name(int var, int value) const {
 pair<int, int> DomainAbstractedTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
     return get_task_fact(parent->get_operator_precondition(
-        op_index, fact_index, is_axiom));
+                             op_index, fact_index, is_axiom));
 }
 
 pair<int, int> DomainAbstractedTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     return get_task_fact(parent->get_operator_effect(
-        op_index, eff_index, is_axiom));
+                             op_index, eff_index, is_axiom));
 }
 
 pair<int, int> DomainAbstractedTask::get_goal_fact(int index) const {
@@ -49,7 +49,7 @@ vector<int> DomainAbstractedTask::get_initial_state_values() const {
 }
 
 vector<int> DomainAbstractedTask::get_state_values(
-        const GlobalState &global_state) const {
+    const GlobalState &global_state) const {
     int num_vars = domain_size.size();
     vector<int> state_data(num_vars);
     for (int var = 0; var < num_vars; ++var) {

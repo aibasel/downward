@@ -53,7 +53,7 @@ vector<Fact> get_fact_landmarks(shared_ptr<LandmarkGraph> landmark_graph) {
   true for the first time.
 */
 VarToValues get_prev_landmarks(
-        shared_ptr<LandmarkGraph> landmark_graph, Fact fact) {
+    shared_ptr<LandmarkGraph> landmark_graph, Fact fact) {
     VarToValues groups;
     LandmarkNode *node = landmark_graph->get_landmark(fact);
     assert(node);
@@ -82,7 +82,7 @@ VarToValues get_prev_landmarks(
 static string get_quoted_node_name(Fact fact) {
     stringstream out;
     out << "\"" << g_fact_names[fact.first][fact.second]
-            << " (" << fact.first << "=" << fact.second << ")\"";
+        << " (" << fact.first << "=" << fact.second << ")\"";
     return out.str();
 }
 
@@ -91,7 +91,7 @@ void dump_landmark_graph(shared_ptr<LandmarkGraph> graph) {
 }
 
 void write_landmark_graph_dot_file(shared_ptr<LandmarkGraph> graph) {
-    const set<LandmarkNode *> &nodes= graph->get_nodes();
+    const set<LandmarkNode *> &nodes = graph->get_nodes();
 
     ofstream dotfile("landmark-graph.dot");
     if (!dotfile.is_open()) {
