@@ -89,7 +89,7 @@ GoalDecomposition::GoalDecomposition(const Options &opts)
 Facts GoalDecomposition::get_facts() const {
     Facts facts;
     for (FactProxy goal : task_proxy.get_goals()) {
-        facts.push_back(get_raw_fact(goal));
+        facts.emplace_back(goal.get_variable().get_id(), goal.get_value());
     }
     return facts;
 }
