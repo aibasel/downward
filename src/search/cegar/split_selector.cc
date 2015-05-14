@@ -22,12 +22,6 @@ SplitSelector::SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick)
         additive_heuristic = get_additive_heuristic(task);
 }
 
-int SplitSelector::get_constrainedness(const AbstractState &state, int var_id) const {
-    int rem_values = state.count(var_id);
-    assert(rem_values >= 2);
-    return -rem_values;
-}
-
 double SplitSelector::get_refinedness(const AbstractState &state, int var_id) const {
     double all_values = task_proxy.get_variables()[var_id].get_domain_size();
     assert(all_values >= 2);
@@ -69,9 +63,7 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
     int var_id = split.var_id;
     const vector<int> &values = split.values;
     double rating;
-    if (pick == PickSplit::MIN_CONSTRAINED || pick == PickSplit::MAX_CONSTRAINED) {
-        rating = get_constrainedness(state, var_id);
-    } else if (pick == PickSplit::MIN_REFINED || pick == PickSplit::MAX_REFINED) {
+    if (pick == PickSplit::MIN_REFINED || pick == PickSplit::MAX_REFINED) {
         rating = get_refinedness(state, var_id);
     } else if (pick == PickSplit::MIN_HADD || pick == PickSplit::MAX_HADD) {
         rating = get_extreme_hadd_value(var_id, values);
@@ -79,8 +71,7 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
         exit_with(EXIT_INPUT_ERROR);
     }
-    if (pick == PickSplit::MIN_CONSTRAINED || pick == PickSplit::MIN_REFINED ||
-        pick == PickSplit::MIN_HADD) {
+    if (pick == PickSplit::MIN_REFINED || pick == PickSplit::MIN_HADD) {
         rating = -rating;
     }
     return rating;
