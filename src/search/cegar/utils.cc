@@ -16,8 +16,12 @@ using namespace std;
 namespace cegar {
 bool DEBUG = false;
 
-// For values <= 50 MB the planner is often killed during the search.
-// Reserving 75 MB avoids this.
+/*
+  Reserve some memory that we can release once we hit the memory limit. Due to
+  memory fragmentation the planner is often killed during the search if we
+  reserve <= 50 MB. Amounts >= 100 MB are not necessary and only limit the size
+  of the abstractions. Reserving 75 MB seems to be a good compromise.
+*/
 static const int MEMORY_PADDING_MB = 75;
 
 static char *cegar_memory_padding = nullptr;
@@ -35,7 +39,8 @@ shared_ptr<AdditiveHeuristic> get_additive_heuristic(shared_ptr<AbstractTask> ta
     return additive_heuristic;
 }
 
-static bool operator_applicable(OperatorProxy op, const unordered_set<FactProxy> &facts) {
+static bool operator_applicable(OperatorProxy op,
+                                const unordered_set<FactProxy> &facts) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (facts.count(precondition) == 0)
             return false;
@@ -51,7 +56,8 @@ static bool operator_achieves_fact(OperatorProxy op, FactProxy fact) {
     return false;
 }
 
-static unordered_set<FactProxy> compute_possibly_before_facts(TaskProxy task, FactProxy last_fact) {
+static unordered_set<FactProxy> compute_possibly_before_facts(
+        TaskProxy task, FactProxy last_fact) {
     unordered_set<FactProxy> pb_facts;
 
     // Add facts from initial state.
