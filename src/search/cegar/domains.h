@@ -9,9 +9,13 @@ namespace cegar {
 using Bitset = boost::dynamic_bitset<>;
 
 class Domains {
-    // Possible values of each variable in this state.
-    // Values are represented from right to left (least- to most-significant).
-    // 11 10 001 -> var0 = {0}, var1 = {1}, var2 = {0,1}
+    /*
+      We represent the possible values of all variables in a single bitset.
+      Example:
+        Original domains: {0,1,2}, {0,1}, {0,1}
+        Possible values:  {0},     {1},   {0,1}
+        Bitset:           100      01     11    => 1000111
+    */
     Bitset bits;
 
     static std::vector<int> orig_domain_sizes;
@@ -19,7 +23,7 @@ class Domains {
     static int num_facts;
     // The first bit for var is at borders[var].
     static std::vector<int> borders;
-    // masks[var][pos] == true iff pos belongs to var.
+    // masks[var][pos] is set iff pos belongs to var.
     static std::vector<Bitset> masks;
     static std::vector<Bitset> inverse_masks;
     // Temporary bitset for speeding up calculations.
@@ -45,8 +49,6 @@ public:
 
     size_t count(int var) const;
     bool intersects(const Domains &other, int var) const;
-    // Return true if all abstract domains are supersets of the
-    // other's respective domains.
     bool is_superset_of(const Domains &other) const;
 
     friend std::ostream &operator<<(std::ostream &os, const Domains &bits);
