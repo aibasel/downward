@@ -82,7 +82,8 @@ void DomainAbstractedTaskBuilder::move_fact(int var, int before, int after) {
     }
 }
 
-string DomainAbstractedTaskBuilder::get_combined_fact_name(int var, const ValueGroup &values) const {
+string DomainAbstractedTaskBuilder::get_combined_fact_name(
+    int var, const ValueGroup &values) const {
     stringstream name;
     string sep = "";
     for (int value : values) {
@@ -94,20 +95,20 @@ string DomainAbstractedTaskBuilder::get_combined_fact_name(int var, const ValueG
 
 void DomainAbstractedTaskBuilder::combine_values(int var, const ValueGroups &groups) {
     vector<string> combined_fact_names;
-    unordered_set<int> group_union;
+    unordered_set<int> groups_union;
     int num_merged_values = 0;
     for (const ValueGroup &group : groups) {
         combined_fact_names.push_back(get_combined_fact_name(var, group));
-        group_union.insert(group.begin(), group.end());
+        groups_union.insert(group.begin(), group.end());
         num_merged_values += group.size();
     }
-    assert(static_cast<int>(group_union.size()) == num_merged_values);
+    assert(static_cast<int>(groups_union.size()) == num_merged_values);
 
     int next_free_pos = 0;
 
     // Move all facts that are not part of groups to the front.
     for (int before = 0; before < domain_size[var]; ++before) {
-        if (group_union.count(before) == 0) {
+        if (groups_union.count(before) == 0) {
             move_fact(var, before, next_free_pos++);
         }
     }
