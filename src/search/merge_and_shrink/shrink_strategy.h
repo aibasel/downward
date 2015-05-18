@@ -46,7 +46,7 @@ protected:
     /*
       Shrink the transition system to a size at most target. This can be
       called even if the current size respects the target size already
-      (if threshold is lower).
+      (if shrink_threshold_before_merge is lower).
     */
     virtual void shrink(const TransitionSystem &ts,
                         int target,
