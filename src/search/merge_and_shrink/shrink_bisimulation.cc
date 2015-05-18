@@ -25,7 +25,7 @@ typedef vector<pair<int, int> > SuccessorSignature;
 /* TODO: The following class should probably be renamed. It encodes
    all we need to know about a state for bisimulation: its h value,
    which equivalence class ("group") it currently belongs to, its
-   signature (see above), and what the original state is. */
+   successor signature (see above), and what the original state is. */
 
 struct Signature {
     int h_and_goal; // -1 for goal states; h value for non-goal states
