@@ -141,7 +141,7 @@ class PDBHeuristic : public Heuristic {
     std::size_t hash_index(const State &state) const;
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     /*
       Important: It is assumed that the pattern (passed via Options) is

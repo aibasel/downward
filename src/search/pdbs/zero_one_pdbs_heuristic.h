@@ -13,7 +13,7 @@ class ZeroOnePDBsHeuristic : public Heuristic {
     std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     ZeroOnePDBsHeuristic(const Options &opts,
                          const std::vector<int> &op_costs = std::vector<int>());

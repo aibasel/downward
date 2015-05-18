@@ -153,12 +153,11 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/dominance_pruner.h \
            pdbs/match_tree.h \
            pdbs/max_cliques.h \
+           pdbs/pattern_generation_edelkamp.h \
            pdbs/pattern_generation_haslum.h \
            pdbs/pdb_heuristic.h \
            pdbs/util.h \
-# TODO re-enable before merging
-#           pdbs/pattern_generation_edelkamp.h \
-#           pdbs/zero_one_pdbs_heuristic.h \
+           pdbs/zero_one_pdbs_heuristic.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward
