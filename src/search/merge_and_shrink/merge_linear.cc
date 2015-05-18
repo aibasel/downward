@@ -51,10 +51,6 @@ string MergeLinear::name() const {
 
 static MergeStrategy *_parse(OptionParser &parser) {
     vector<string> merge_strategies;
-    //TODO: it's a bit dangerous that the merge strategies here
-    // have to be specified exactly in the same order
-    // as in the enum definition. Try to find a way around this,
-    // or at least raise an error when the order is wrong.
     merge_strategies.push_back("CG_GOAL_LEVEL");
     merge_strategies.push_back("CG_GOAL_RANDOM");
     merge_strategies.push_back("GOAL_CG_LEVEL");
