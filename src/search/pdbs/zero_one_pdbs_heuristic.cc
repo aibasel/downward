@@ -19,30 +19,31 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const vector<int> &op_costs)
     : Heuristic(opts) {
     vector<int> operator_costs;
+    const OperatorsProxy &operators = task_proxy.get_operators();
     if (op_costs.empty()) { // if no operator costs are specified, use default operator costs
-        operator_costs.reserve(g_operators.size());
-        for (size_t i = 0; i < g_operators.size(); ++i)
-            operator_costs.push_back(get_adjusted_cost(g_operators[i]));
+        operator_costs.reserve(operators.size());
+        for (const OperatorProxy &op : operators)
+            operator_costs.push_back(op.get_cost());
     } else {
-        assert(op_costs.size() == g_operators.size());
+        assert(op_costs.size() == operators.size());
         operator_costs = op_costs;
     }
     const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
     //Timer timer;
     approx_mean_finite_h = 0;
     pattern_databases.reserve(pattern_collection.size());
-    for (size_t i = 0; i < pattern_collection.size(); ++i) {
+    for (const vector<int> &pattern : pattern_collection) {
         Options opts;
         opts.set<shared_ptr<AbstractTask> >("transform", task);
         opts.set<int>("cost_type", cost_type);
-        opts.set<vector<int> >("pattern", pattern_collection[i]);
+        opts.set<vector<int> >("pattern", pattern);
         PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, operator_costs);
         pattern_databases.push_back(pdb_heuristic);
 
         // Set cost of relevant operators to 0 for further iterations (action cost partitioning).
-        for (size_t j = 0; j < g_operators.size(); ++j) {
-            if (pdb_heuristic->is_operator_relevant(g_operators[j]))
-                operator_costs[j] = 0;
+        for (const OperatorProxy &op : operators) {
+            if (pdb_heuristic->is_operator_relevant(op))
+                operator_costs[op.get_id()] = 0;
         }
 
         approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();
@@ -52,30 +53,30 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
 }
 
 ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        delete pattern_databases[i];
+    for (PDBHeuristic *pdb_heuristic : pattern_databases) {
+        delete pdb_heuristic;
     }
 }
 
 void ZeroOnePDBsHeuristic::initialize() {
 }
 
-int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &state) {
+int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     // since we use action cost partitioning, we can simply add up all h-values
     // from the patterns in the pattern collection
     int h_val = 0;
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        pattern_databases[i]->evaluate(state);
-        if (pattern_databases[i]->is_dead_end())
+    for (PDBHeuristic *pdb_heuristic : pattern_databases) {
+        pdb_heuristic->evaluate(global_state);
+        if (pdb_heuristic->is_dead_end())
             return -1;
-        h_val += pattern_databases[i]->get_heuristic();
+        h_val += pdb_heuristic->get_heuristic();
     }
     return h_val;
 }
 
 void ZeroOnePDBsHeuristic::dump() const {
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        cout << pattern_databases[i]->get_pattern() << endl;
+    for (PDBHeuristic *pdb_heuristic : pattern_databases) {
+        cout << pdb_heuristic->get_pattern() << endl;
     }
 }
 
