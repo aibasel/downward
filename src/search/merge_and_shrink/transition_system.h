@@ -109,8 +109,10 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
-    // TODO: do we need these friend declarations? can we not make
-    // the required private fields protected?
+    /*
+      These friend definitions are required to give the inheriting classes
+      access to passed base class objects (e.g. in CompositeTransitionSystem).
+    */
     friend class AtomicTransitionSystem;
     friend class CompositeTransitionSystem;
 
