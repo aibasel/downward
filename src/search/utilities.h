@@ -92,4 +92,9 @@ template<typename T>
 void unused_parameter(const T &) {
 }
 
+template<class T>
+void release_vector_memory(std::vector<T> &vec) {
+    std::vector<T>().swap(vec);
+}
+
 #endif
