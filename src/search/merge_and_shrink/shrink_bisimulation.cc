@@ -72,12 +72,6 @@ struct Signature {
 };
 
 
-// TODO: This is a general tool that probably belongs somewhere else.
-template<class T>
-void release_memory(vector<T> &vec) {
-    vector<T>().swap(vec);
-}
-
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
@@ -308,7 +302,7 @@ void ShrinkBisimulation::compute_abstraction(
     /* Reduce memory pressure before generating the equivalence
        relation since this is one of the code parts relevant to peak
        memory. */
-    release_memory(signatures);
+    release_vector_memory(signatures);
 
     // Generate final result.
     assert(equivalence_relation.empty());
