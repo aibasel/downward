@@ -63,9 +63,10 @@ public:
     void dump(const std::vector<int> &pattern) const;
 };
 
-// Implements a single PDB
-class GlobalOperator;
 class GlobalState;
+class OperatorProxy;
+
+// Implements a single PDB
 class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;
 
@@ -101,7 +102,7 @@ class PDBHeuristic : public Heuristic {
       call to recursive method multiyply_out. variable_to_index maps
       variables in the task to their index in the pattern or -1.
     */
-    void build_abstract_operators(const GlobalOperator &op, int cost,
+    void build_abstract_operators(const OperatorProxy &op, int cost,
                                   const std::vector<int> &variable_to_index,
                                   std::vector<AbstractOperator> &operators);
 
@@ -137,7 +138,7 @@ class PDBHeuristic : public Heuristic {
       according abstract state. This is only used for table lookup
       (distances) during search.
     */
-    std::size_t hash_index(const GlobalState &state) const;
+    std::size_t hash_index(const State &state) const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
@@ -174,7 +175,7 @@ public:
     double compute_mean_finite_h() const;
 
     // Returns true iff op has an effect on a variable in the pattern.
-    bool is_operator_relevant(const GlobalOperator &op) const;
+    bool is_operator_relevant(const OperatorProxy &op) const;
 };
 
 #endif

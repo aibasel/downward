@@ -8,6 +8,7 @@
 #include "../global_state.h"
 #include "../plugin.h"
 #include "../priority_queue.h"
+#include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -61,8 +62,10 @@ PDBHeuristic::PDBHeuristic(
     const Options &opts, bool dump,
     const vector<int> &operator_costs)
     : Heuristic(opts) {
-    verify_no_axioms_no_conditional_effects();
-    assert(operator_costs.empty() || operator_costs.size() == g_operators.size());
+    verify_no_axioms(task_proxy);
+    verify_no_conditional_effects(task_proxy);
+    assert(operator_costs.empty() ||
+           operator_costs.size() == task_proxy.get_operators().size());
 
     Timer timer;
     set_pattern(opts.get_list<int>("pattern"), operator_costs);
@@ -107,7 +110,7 @@ void PDBHeuristic::multiply_out(int pos, int cost, vector<pair<int, int> > &prev
     }
 }
 
-void PDBHeuristic::build_abstract_operators(const GlobalOperator &op, int cost,
+void PDBHeuristic::build_abstract_operators(const OperatorProxy &op, int cost,
                                             const std::vector<int> &variable_to_index,
                                             vector<AbstractOperator> &operators) {
     vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
@@ -115,30 +118,35 @@ void PDBHeuristic::build_abstract_operators(const GlobalOperator &op, int cost,
     vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect
     vector<pair<int, int> > effects_without_pre; // all variable value pairs that are a precondition (value = -1)
 
-    const vector<GlobalCondition> &preconditions = op.get_preconditions();
-    const vector<GlobalEffect> &effects = op.get_effects();
-    vector<bool> has_precond_and_effect_on_var(g_variable_domain.size(), false);
-    vector<bool> has_precondition_on_var(g_variable_domain.size(), false);
+    int num_vars = task_proxy.get_variables().size();
+    vector<bool> has_precond_and_effect_on_var(num_vars, false);
+    vector<bool> has_precondition_on_var(num_vars, false);
 
-    for (size_t i = 0; i < preconditions.size(); ++i)
-        has_precondition_on_var[preconditions[i].var] = true;
+    for (const FactProxy &pre : op.get_preconditions())
+        has_precondition_on_var[pre.get_variable().get_id()] = true;
 
-    for (size_t i = 0; i < effects.size(); ++i) {
-        if (variable_to_index[effects[i].var] != -1) {
-            if (has_precondition_on_var[effects[i].var]) {
-                has_precond_and_effect_on_var[effects[i].var] = true;
-                eff_pairs.push_back(make_pair(variable_to_index[effects[i].var], effects[i].val));
+    for (const EffectProxy &eff : op.get_effects()) {
+        int var_id = eff.get_fact().get_variable().get_id();
+        int pattern_var_id = variable_to_index[var_id];
+        int val = eff.get_fact().get_value();
+        if (pattern_var_id != -1) {
+            if (has_precondition_on_var[var_id]) {
+                has_precond_and_effect_on_var[var_id] = true;
+                eff_pairs.push_back(make_pair(pattern_var_id, val));
             } else {
-                effects_without_pre.push_back(make_pair(variable_to_index[effects[i].var], effects[i].val));
+                effects_without_pre.push_back(make_pair(pattern_var_id, val));
             }
         }
     }
-    for (size_t i = 0; i < preconditions.size(); ++i) {
-        if (variable_to_index[preconditions[i].var] != -1) { // variable occurs in pattern
-            if (has_precond_and_effect_on_var[preconditions[i].var]) {
-                pre_pairs.push_back(make_pair(variable_to_index[preconditions[i].var], preconditions[i].val));
+    for (const FactProxy &pre : op.get_preconditions()) {
+        int var_id = pre.get_variable().get_id();
+        int pattern_var_id = variable_to_index[var_id];
+        int val = pre.get_value();
+        if (pattern_var_id != -1) { // variable occurs in pattern
+            if (has_precond_and_effect_on_var[var_id]) {
+                pre_pairs.push_back(make_pair(pattern_var_id, val));
             } else {
-                prev_pairs.push_back(make_pair(variable_to_index[preconditions[i].var], preconditions[i].val));
+                prev_pairs.push_back(make_pair(pattern_var_id, val));
             }
         }
     }
@@ -146,35 +154,37 @@ void PDBHeuristic::build_abstract_operators(const GlobalOperator &op, int cost,
 }
 
 void PDBHeuristic::create_pdb(const std::vector<int> &operator_costs) {
-    vector<int> variable_to_index(g_variable_name.size(), -1);
+    VariablesProxy vars = task_proxy.get_variables();
+    vector<int> variable_to_index(vars.size(), -1);
     for (size_t i = 0; i < pattern.size(); ++i) {
         variable_to_index[pattern[i]] = i;
     }
 
     // compute all abstract operators
     vector<AbstractOperator> operators;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        const GlobalOperator &op = g_operators[i];
+    for (const OperatorProxy &op : task_proxy.get_operators()) {
         int op_cost;
         if (operator_costs.empty()) {
-            op_cost = get_adjusted_cost(op);
+            op_cost = op.get_cost();
         } else {
-            op_cost = operator_costs[i];
+            op_cost = operator_costs[op.get_id()];
         }
         build_abstract_operators(op, op_cost, variable_to_index, operators);
     }
 
     // build the match tree
     MatchTree match_tree(pattern, hash_multipliers);
-    for (size_t i = 0; i < operators.size(); ++i) {
-        match_tree.insert(operators[i]);
+    for (const AbstractOperator &op : operators) {
+        match_tree.insert(op);
     }
 
     // compute abstract goal var-val pairs
     vector<pair<int, int> > abstract_goal;
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        if (variable_to_index[g_goal[i].first] != -1) {
-            abstract_goal.push_back(make_pair(variable_to_index[g_goal[i].first], g_goal[i].second));
+    for (const FactProxy &goal : task_proxy.get_goals()) {
+        int var_id = goal.get_variable().get_id();
+        int val = goal.get_value();
+        if (variable_to_index[var_id] != -1) {
+            abstract_goal.push_back(make_pair(variable_to_index[var_id], val));
         }
     }
 
@@ -222,16 +232,19 @@ void PDBHeuristic::set_pattern(const vector<int> &pat,
     num_states = 1;
     for (size_t i = 0; i < pattern.size(); ++i) {
         hash_multipliers.push_back(num_states);
-        num_states *= g_variable_domain[pattern[i]];
+        const VariableProxy &var = task_proxy.get_variables()[pattern[i]];
+        num_states *= var.get_domain_size();
     }
     create_pdb(operator_costs);
 }
 
-bool PDBHeuristic::is_goal_state(const size_t state_index, const vector<pair<int, int> > &abstract_goal) const {
+bool PDBHeuristic::is_goal_state(const size_t state_index,
+                                 const vector<pair<int, int> > &abstract_goal) const {
     for (size_t i = 0; i < abstract_goal.size(); ++i) {
-        int var = abstract_goal[i].first;
-        int temp = state_index / hash_multipliers[var];
-        int val = temp % g_variable_domain[pattern[var]];
+        int var_id = abstract_goal[i].first;
+        const VariableProxy &var = task_proxy.get_variables()[pattern[var_id]];
+        int temp = state_index / hash_multipliers[var_id];
+        int val = temp % var.get_domain_size();
         if (val != abstract_goal[i].second) {
             return false;
         }
@@ -239,10 +252,10 @@ bool PDBHeuristic::is_goal_state(const size_t state_index, const vector<pair<int
     return true;
 }
 
-size_t PDBHeuristic::hash_index(const GlobalState &state) const {
+size_t PDBHeuristic::hash_index(const State &state) const {
     size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
-        index += hash_multipliers[i] * state[pattern[i]];
+        index += hash_multipliers[i] * state[pattern[i]].get_value();
     }
     return index;
 }
@@ -250,7 +263,8 @@ size_t PDBHeuristic::hash_index(const GlobalState &state) const {
 void PDBHeuristic::initialize() {
 }
 
-int PDBHeuristic::compute_heuristic(const GlobalState &state) {
+int PDBHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
     int h = distances[hash_index(state)];
     if (h == numeric_limits<int>::max())
         return DEAD_END;
@@ -273,11 +287,10 @@ double PDBHeuristic::compute_mean_finite_h() const {
     }
 }
 
-bool PDBHeuristic::is_operator_relevant(const GlobalOperator &op) const {
-    const std::vector<GlobalEffect> &effects = op.get_effects();
-    for (size_t i = 0; i < effects.size(); ++i) {
-        int var = effects[i].var;
-        if (binary_search(pattern.begin(), pattern.end(), var)) {
+bool PDBHeuristic::is_operator_relevant(const OperatorProxy &op) const {
+    for (const EffectProxy &effect : op.get_effects()) {
+        int var_id = effect.get_fact().get_variable().get_id();
+        if (binary_search(pattern.begin(), pattern.end(), var_id)) {
             return true;
         }
     }
