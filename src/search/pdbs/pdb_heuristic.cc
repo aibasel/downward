@@ -3,9 +3,6 @@
 #include "match_tree.h"
 #include "util.h"
 
-#include "../globals.h"
-#include "../global_operator.h"
-#include "../global_state.h"
 #include "../plugin.h"
 #include "../priority_queue.h"
 #include "../task_tools.h"
@@ -25,9 +22,13 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
                                    const vector<pair<int, int> > &eff_pairs, int c,
                                    const vector<size_t> &hash_multipliers)
-    : cost(c), regression_preconditions(prev_pairs) {
-    regression_preconditions.insert(regression_preconditions.end(), eff_pairs.begin(), eff_pairs.end());
-    sort(regression_preconditions.begin(), regression_preconditions.end()); // for MatchTree construction
+    : cost(c),
+      regression_preconditions(prev_pairs) {
+    regression_preconditions.insert(regression_preconditions.end(),
+                                    eff_pairs.begin(),
+                                    eff_pairs.end());
+    // Sort preconditions for MatchTree construction.
+    sort(regression_preconditions.begin(), regression_preconditions.end());
     for (size_t i = 1; i < regression_preconditions.size(); ++i) {
         assert(regression_preconditions[i].first != regression_preconditions[i - 1].first);
     }
@@ -47,13 +48,16 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
 AbstractOperator::~AbstractOperator() {
 }
 
-void AbstractOperator::dump(const vector<int> &pattern) const {
+void AbstractOperator::dump(const vector<int> &pattern,
+                            const TaskProxy &task_proxy) const {
     cout << "AbstractOperator:" << endl;
     cout << "Regression preconditions:" << endl;
     for (size_t i = 0; i < regression_preconditions.size(); ++i) {
-        cout << "Variable: " << regression_preconditions[i].first << " (True name: "
-             << g_variable_name[pattern[regression_preconditions[i].first]] << ", Index: "
-             << i << ") Value: " << regression_preconditions[i].second << endl;
+        int var_id = regression_preconditions[i].first;
+        int val = regression_preconditions[i].second;
+        cout << "Variable: " << var_id << " (True name: "
+             << task_proxy.get_variables()[pattern[var_id]].get_name()
+             << ", Index: " << i << ") Value: " << val << endl;
     }
     cout << "Hash effect:" << hash_effect << endl;
 }
@@ -89,14 +93,15 @@ void PDBHeuristic::multiply_out(int pos, int cost, vector<pair<int, int> > &prev
     } else {
         // For each possible value for the current variable, build an
         // abstract operator.
-        int var = effects_without_pre[pos].first;
+        int var_id = effects_without_pre[pos].first;
         int eff = effects_without_pre[pos].second;
-        for (int i = 0; i < g_variable_domain[pattern[var]]; ++i) {
+        const VariableProxy &var = task_proxy.get_variables()[pattern[var_id]];
+        for (int i = 0; i < var.get_domain_size(); ++i) {
             if (i != eff) {
-                pre_pairs.push_back(make_pair(var, i));
-                eff_pairs.push_back(make_pair(var, eff));
+                pre_pairs.push_back(make_pair(var_id, i));
+                eff_pairs.push_back(make_pair(var_id, eff));
             } else {
-                prev_pairs.push_back(make_pair(var, i));
+                prev_pairs.push_back(make_pair(var_id, i));
             }
             multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
                          effects_without_pre, operators);
@@ -173,27 +178,28 @@ void PDBHeuristic::create_pdb(const std::vector<int> &operator_costs) {
     }
 
     // build the match tree
-    MatchTree match_tree(pattern, hash_multipliers);
+    MatchTree match_tree(task, pattern, hash_multipliers);
     for (const AbstractOperator &op : operators) {
         match_tree.insert(op);
     }
 
     // compute abstract goal var-val pairs
-    vector<pair<int, int> > abstract_goal;
+    vector<pair<int, int> > abstract_goals;
     for (const FactProxy &goal : task_proxy.get_goals()) {
         int var_id = goal.get_variable().get_id();
         int val = goal.get_value();
         if (variable_to_index[var_id] != -1) {
-            abstract_goal.push_back(make_pair(variable_to_index[var_id], val));
+            abstract_goals.push_back(make_pair(variable_to_index[var_id], val));
         }
     }
 
     distances.reserve(num_states);
-    AdaptiveQueue<size_t> pq; // (first implicit entry: priority,) second entry: index for an abstract state
+    // (first implicit entry: priority,) second entry: index for an abstract state
+    AdaptiveQueue<size_t> pq;
 
     // initialize queue
     for (size_t state_index = 0; state_index < num_states; ++state_index) {
-        if (is_goal_state(state_index, abstract_goal)) {
+        if (is_goal_state(state_index, abstract_goals)) {
             pq.push(0, state_index);
             distances.push_back(0);
         } else {
@@ -213,9 +219,9 @@ void PDBHeuristic::create_pdb(const std::vector<int> &operator_costs) {
         // regress abstract_state
         vector<const AbstractOperator *> applicable_operators;
         match_tree.get_applicable_operators(state_index, applicable_operators);
-        for (size_t i = 0; i < applicable_operators.size(); ++i) {
-            size_t predecessor = state_index + applicable_operators[i]->get_hash_effect();
-            int alternative_cost = distances[state_index] + applicable_operators[i]->get_cost();
+        for (const AbstractOperator *op : applicable_operators) {
+            size_t predecessor = state_index + op->get_hash_effect();
+            int alternative_cost = distances[state_index] + op->get_cost();
             if (alternative_cost < distances[predecessor]) {
                 distances[predecessor] = alternative_cost;
                 pq.push(alternative_cost, predecessor);
@@ -230,22 +236,23 @@ void PDBHeuristic::set_pattern(const vector<int> &pat,
     pattern = pat;
     hash_multipliers.reserve(pattern.size());
     num_states = 1;
-    for (size_t i = 0; i < pattern.size(); ++i) {
+    for (int pattern_var_id : pattern) {
         hash_multipliers.push_back(num_states);
-        const VariableProxy &var = task_proxy.get_variables()[pattern[i]];
+        const VariableProxy &var = task_proxy.get_variables()[pattern_var_id];
         num_states *= var.get_domain_size();
     }
     create_pdb(operator_costs);
 }
 
 bool PDBHeuristic::is_goal_state(const size_t state_index,
-                                 const vector<pair<int, int> > &abstract_goal) const {
-    for (size_t i = 0; i < abstract_goal.size(); ++i) {
-        int var_id = abstract_goal[i].first;
-        const VariableProxy &var = task_proxy.get_variables()[pattern[var_id]];
-        int temp = state_index / hash_multipliers[var_id];
+                                 const vector<pair<int, int> > &abstract_goals) const {
+    for (pair<int, int> abstract_goal : abstract_goals) {
+        int pattern_var_id = abstract_goal.first;
+        int var_id = pattern[pattern_var_id];
+        const VariableProxy &var = task_proxy.get_variables()[var_id];
+        int temp = state_index / hash_multipliers[pattern_var_id];
         int val = temp % var.get_domain_size();
-        if (val != abstract_goal[i].second) {
+        if (val != abstract_goal.second) {
             return false;
         }
     }

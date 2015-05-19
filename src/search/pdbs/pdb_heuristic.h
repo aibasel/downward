@@ -60,7 +60,8 @@ public:
       the original concrete operator)
     */
     int get_cost() const {return cost; }
-    void dump(const std::vector<int> &pattern) const;
+    void dump(const std::vector<int> &pattern,
+              const TaskProxy &task_proxy) const;
 };
 
 class GlobalState;
@@ -131,7 +132,7 @@ class PDBHeuristic : public Heuristic {
       state is a goal state.
     */
     bool is_goal_state(const std::size_t state_index,
-                       const std::vector<std::pair<int, int> > &abstract_goal) const;
+                       const std::vector<std::pair<int, int> > &abstract_goals) const;
 
     /*
       The given concrete state is used to calculate the index of the
