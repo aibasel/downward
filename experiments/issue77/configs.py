@@ -36,10 +36,10 @@ def configs_optimal_core():
             "astar(merge_and_shrink(merge_strategy=merge_dfp,"
             "shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,"
             "greedy=false,group_by_h=true)))"],
-        "astar_selmax_lmcut_lmcount": [
-            "--search",
-            "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),"
-            "admissible=true)],training_set=1000),mpd=true)"],
+        #"astar_selmax_lmcut_lmcount": [
+        #    "--search",
+        #    "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),"
+        #    "admissible=true)],training_set=1000),mpd=true)"],
     }
 
 
