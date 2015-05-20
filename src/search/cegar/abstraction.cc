@@ -190,16 +190,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             break;
         const OperatorProxy op = step.first;
         AbstractState *next_abs_state = step.second;
-        if (!is_applicable(op, conc_state)) {
-            if (DEBUG)
-                cout << "  Operator not applicable: " << op.get_name() << endl;
-            ++unmet_preconditions;
-            return make_shared<Flaw>(
-                       move(conc_state),
-                       abs_state,
-                       AbstractState::get_abstract_state(
-                           task_proxy, op.get_preconditions()));
-        } else {
+        if (is_applicable(op, conc_state)) {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
                      << op.get_name() << endl;
@@ -214,8 +205,16 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             }
             abs_state = next_abs_state;
             conc_state = move(next_conc_state);
+        } else {
+            if (DEBUG)
+                cout << "  Operator not applicable: " << op.get_name() << endl;
+            ++unmet_preconditions;
+            return make_shared<Flaw>(
+                       move(conc_state),
+                       abs_state,
+                       AbstractState::get_abstract_state(
+                           task_proxy, op.get_preconditions()));
         }
-
     }
     assert(is_goal(abs_state));
     if (is_goal_state(task_proxy, conc_state)) {
