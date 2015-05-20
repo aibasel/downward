@@ -181,7 +181,7 @@ static SearchEngine *_parse(OptionParser &parser) {
         return nullptr;
     } else if (parser.dry_run()) {
         //check if the supplied search engines can be parsed
-        for (ParseTree config : opts.get_list<ParseTree>("engine_configs")) {
+        for (const ParseTree &config : opts.get_list<ParseTree>("engine_configs")) {
             OptionParser test_parser(config, true);
             test_parser.start_parsing<SearchEngine *>();
         }
