@@ -199,9 +199,10 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                 if (DEBUG)
                     cout << "  Paths deviate." << endl;
                 ++deviations;
-                return make_shared<Flaw>(move(conc_state),
-                                         abs_state,
-                                         next_abs_state->regress(op));
+                return make_shared<Flaw>(
+                           move(conc_state),
+                           abs_state,
+                           next_abs_state->regress(op));
             }
             abs_state = next_abs_state;
             conc_state = move(next_conc_state);
