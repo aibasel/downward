@@ -24,12 +24,6 @@
 #include <vector>
 
 #if OPERATING_SYSTEM == WINDOWS
-#include <process.h>
-#else
-#include <unistd.h>
-#endif
-
-#if OPERATING_SYSTEM == WINDOWS
 #define NO_RETURN __declspec(noreturn)
 #else
 #define NO_RETURN __attribute__((noreturn))
@@ -105,12 +99,6 @@ template<typename T>
 void unused_parameter(const T &) {
 }
 
-inline int get_process_id() {
-#if OPERATING_SYSTEM == WINDOWS
-    return _getpid();
-#else
-    return getpid();
-#endif
-}
+int get_process_id();
 
 #endif
