@@ -5,22 +5,17 @@
 #include <fstream>
 #include <limits>
 
-#if OPERATING_SYSTEM == WINDOWS
-#include <process.h>
-#else
-#include <unistd.h>
-#endif
-
 using namespace std;
 
-
 #if OPERATING_SYSTEM == LINUX
+#include <unistd.h>
 static void exit_handler(int exit_code, void *hint);
 #elif OPERATING_SYSTEM == OSX
 static void exit_handler();
 #include <mach/mach.h>
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
 #include <windows.h>
+#include <process.h>
 #include <psapi.h>
 #endif
 
