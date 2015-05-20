@@ -180,41 +180,39 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
 
     AbstractState *abs_state = init;
     State conc_state = task_proxy.get_initial_state();
-    State prev_conc_state = task_proxy.get_initial_state();  // Arbitrary state.
     assert(abs_state->is_abstraction_of(conc_state));
 
     if (DEBUG)
         cout << "  Initial abstract state: " << *abs_state << endl;
 
-    for (size_t step = 0; step < solution.size(); ++step) {
+    for (auto &step : solution) {
         if (!memory_padding_is_reserved())
             break;
-        const OperatorProxy next_op = solution[step].first;
-        AbstractState *next_abs_state = solution[step].second;
-        if (!is_applicable(next_op, conc_state)) {
+        const OperatorProxy op = step.first;
+        AbstractState *next_abs_state = step.second;
+        if (!is_applicable(op, conc_state)) {
             if (DEBUG)
-                cout << "  Operator not applicable: " << next_op.get_name() << endl;
+                cout << "  Operator not applicable: " << op.get_name() << endl;
             ++unmet_preconditions;
             return make_shared<Flaw>(
                        move(conc_state),
                        abs_state,
                        AbstractState::get_abstract_state(
-                           task_proxy, next_op.get_preconditions()));
+                           task_proxy, op.get_preconditions()));
         } else {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
-                     << next_op.get_name() << endl;
-            State next_conc_state = move(conc_state.apply(next_op));
+                     << op.get_name() << endl;
+            State next_conc_state = move(conc_state.apply(op));
             if (!next_abs_state->is_abstraction_of(next_conc_state)) {
                 if (DEBUG)
                     cout << "  Paths deviate." << endl;
                 ++deviations;
                 return make_shared<Flaw>(move(conc_state),
                                          abs_state,
-                                         next_abs_state->regress(next_op));
+                                         next_abs_state->regress(op));
             }
             abs_state = next_abs_state;
-            prev_conc_state = move(conc_state);
             conc_state = move(next_conc_state);
         }
 
