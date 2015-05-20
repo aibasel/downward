@@ -44,7 +44,7 @@ double ExactTimer::current_clock() const {
 #if OPERATING_SYSTEM == WINDOWS
     LARGE_INTEGER time;
     if (QueryPerformanceCounter(&time) == FALSE) {
-       ABORT("Failed to querry current_clock.");
+        ABORT("Failed to querry current_clock.");
     }
     return static_cast<double>(time.QuadPart);
 #else
