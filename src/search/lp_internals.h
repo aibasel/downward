@@ -26,7 +26,7 @@ std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
   the planner will attempt to terminate gracefully, like it does with
   uncaught out-of-memory exceptions in other parts of the code.
 */
-FD_NO_RETURN
+NO_RETURN
 void handle_coin_error(const CoinError &error);
 
 #endif

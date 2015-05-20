@@ -22,12 +22,10 @@
 #define OPERATING_SYSTEM LINUX
 #endif
 
-//TODO: add compiler checks
-//if gcc needs the __attribute__ behind the function we need to use a macro
-#if OPERATING_SYSTEM != WINDOWS
-#define FD_NO_RETURN __attribute__((noreturn))
+#if OPERATING_SYSTEM == WINDOWS
+#define NO_RETURN __declspec(noreturn)
 #else
-#define FD_NO_RETURN __declspec(noreturn)
+#define NO_RETURN __attribute__((noreturn))
 #endif
 
 #define ABORT(msg) \
@@ -51,7 +49,7 @@ enum ExitCode {
     EXIT_OUT_OF_MEMORY = 6
 };
 
-FD_NO_RETURN extern void exit_with(ExitCode returncode);
+NO_RETURN extern void exit_with(ExitCode returncode);
 
 extern void register_event_handlers();
 
