@@ -4,6 +4,13 @@
 #include <csignal>
 #include <fstream>
 #include <limits>
+
+#if OPERATING_SYSTEM == WINDOWS
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 using namespace std;
 
 
@@ -162,4 +169,13 @@ bool is_product_within_limit(int factor1, int factor2, int limit) {
     assert(factor1 >= 0 && factor1 <= limit);
     assert(factor2 >= 0 && factor2 <= limit);
     return factor2 == 0 || factor1 <= limit / factor2;
+}
+
+
+int get_process_id() {
+#if OPERATING_SYSTEM == WINDOWS
+    return _getpid();
+#else
+    return getpid();
+#endif
 }
