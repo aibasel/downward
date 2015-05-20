@@ -80,8 +80,15 @@ void AdditiveCartesianHeuristic::build_abstractions(
         abs_opts.set<Subtask>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
         abs_opts.set<double>("max_time", timer->get_remaining_time() / rem_subtasks);
-        // TODO: Should we only do this for LandmarkDecompositions? Explain.
-        abs_opts.set<bool>("separate_unreachable_facts", true);
+        /*
+          For landmark tasks we have to map all states in which the landmark
+          might have been achieved to arbitrary abstract goal states. For the
+          other decompositions our method won't find unreachable facts, but
+          calling it unconditionally for subtasks with one goal doesn't hurt
+          and simplifies the implementation.
+        */
+        abs_opts.set<bool>("separate_unreachable_facts",
+                           TaskProxy(*subtask).get_goals().size() == 1);
         Abstraction abstraction(abs_opts);
 
         ++num_abstractions;

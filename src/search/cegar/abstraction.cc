@@ -108,7 +108,7 @@ void Abstraction::create_trivial_abstraction() {
         init->add_loop(op);
     }
     states.insert(init);
-    if (do_separate_unreachable_facts && task_proxy.get_goals().size() == 1)
+    if (do_separate_unreachable_facts)
         separate_unreachable_facts();
 }
 
