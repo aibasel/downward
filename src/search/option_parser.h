@@ -154,9 +154,8 @@ class OptionParser {
     static SearchEngine *parse_cmd_line_aux(
         const std::vector<std::string> &args, bool dry_run);
 public:
-	OptionParser() = delete;
-	OptionParser(const OptionParser &other) = delete;
-	OptionParser &operator=(const OptionParser &other) = delete;
+    OptionParser(const OptionParser &other) = delete;
+    OptionParser &operator=(const OptionParser &other) = delete;
     OptionParser(std::string config, bool dr);
     OptionParser(ParseTree pt, bool dr);
     ~OptionParser() = default;
@@ -282,11 +281,11 @@ void OptionParser::add_option(
             }
         }
     }
-	std::unique_ptr<OptionParser> subparser(
-		use_default ?
-		new OptionParser(default_value, dry_run()) :
-		new OptionParser(subtree(parse_tree, arg), dry_run()));
-	T result = TokenParser<T>::parse(*subparser);
+    std::unique_ptr<OptionParser> subparser(
+        use_default ?
+        new OptionParser(default_value, dry_run()) :
+        new OptionParser(subtree(parse_tree, arg), dry_run()));
+    T result = TokenParser<T>::parse(*subparser);
     opts.set<T>(k, result);
     //if we have not reached the keyword parameters yet
     //and did not use the default value,
