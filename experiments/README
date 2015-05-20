@@ -10,7 +10,7 @@ provides the greatest flexibility.
 Previously, most experiments imported lab's downward/configs.py module.
 To make experiments more self-contained, the module has been deprecated
 and we recommend either copying configy.py into the experiment
-directory (see issue508 for an example) or manually specifying the
+directory (see issue77 for an example) or manually specifying the
 configurations (see issue511).
 
 Below we list some experiments that show how certain tasks can be
