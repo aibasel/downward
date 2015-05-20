@@ -80,7 +80,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
         abs_opts.set<Subtask>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
         abs_opts.set<double>("max_time", timer->get_remaining_time() / rem_subtasks);
-        // TODO: Should we only do this for LandmarkDecompositions?
+        // TODO: Should we only do this for LandmarkDecompositions? Explain.
         abs_opts.set<bool>("separate_unreachable_facts", true);
         Abstraction abstraction(abs_opts);
 
@@ -128,7 +128,7 @@ void AdditiveCartesianHeuristic::print_statistics() const {
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
     int sum_h = 0;
-    for (CartesianHeuristic heuristic : heuristics) {
+    for (CartesianHeuristic &heuristic : heuristics) {
         heuristic.evaluate(global_state);
         int h = heuristic.get_heuristic();
         if (h == DEAD_END)
