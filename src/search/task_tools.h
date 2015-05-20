@@ -46,6 +46,7 @@ bool has_conditional_effects(TaskProxy task);
 */
 void verify_no_conditional_effects(TaskProxy task);
 
+void dump_state(const State &state);
 void dump_task(TaskProxy task);
 
 #endif
