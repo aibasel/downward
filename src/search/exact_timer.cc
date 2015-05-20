@@ -5,19 +5,10 @@
 #include <ctime>
 #include <ostream>
 
-#if OPERATING_SYSTEM != WINDOWS
-#include <unistd.h>
-#else
-#include <chrono>
-#endif
-
-
-#if OPERATING_SYSTEM == OSX
+#if OPERATING_SYSTEM == WINDOWS
+#include <windows.h>
+#elif OPERATING_SYSTEM == OSX
 #include <mach/mach_time.h>
-#elif OPERATING_SYSTEM == CYGWIN
-#ifndef CLOCK_PROCESS_CPUTIME_ID
-#define CLOCK_PROCESS_CPUTIME_ID (clockid_t(2))
-#endif
 #endif
 
 using namespace std;
@@ -50,7 +41,13 @@ ExactTimer::~ExactTimer() {
 }
 
 double ExactTimer::current_clock() const {
-#if OPERATING_SYSTEM != WINDOWS
+#if OPERATING_SYSTEM == WINDOWS
+    LARGE_INTEGER time;
+    if (QueryPerformanceCounter(&time) == FALSE) {
+       ABORT("Failed to querry current_clock.");
+    }
+    return static_cast<double>(time.QuadPart);
+#else
     timespec tp;
 #if OPERATING_SYSTEM == OSX
     static uint64_t start = mach_absolute_time();
@@ -60,9 +57,6 @@ double ExactTimer::current_clock() const {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
 #endif
     return (tp.tv_sec * 1e9) + tp.tv_nsec;
-#else
-    auto tp = std::chrono::high_resolution_clock::now();
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
 #endif
 }
 
