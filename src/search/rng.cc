@@ -3,13 +3,6 @@
 
 #include <chrono>
 
-#if OPERATING_SYSTEM != WINDOWS
-#include <unistd.h>
-#else
-#include <process.h>
-#define getpid _getpid
-#endif
-
 using namespace std;
 
 
@@ -22,7 +15,7 @@ using namespace std;
 */
 RandomNumberGenerator::RandomNumberGenerator() {
     unsigned int secs = chrono::system_clock::now().time_since_epoch().count();
-    seed(secs + getpid());
+    seed(secs + get_process_id());
 }
 
 RandomNumberGenerator::RandomNumberGenerator(int seed_) {

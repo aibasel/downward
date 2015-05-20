@@ -1,11 +1,6 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include <cstdlib>
-#include <iostream>
-#include <utility>
-#include <vector>
-#include <functional>
 
 #define LINUX 0
 #define OSX 1
@@ -20,6 +15,18 @@
 #define OPERATING_SYSTEM OSX
 #else
 #define OPERATING_SYSTEM LINUX
+#endif
+
+#include <cstdlib>
+#include <iostream>
+#include <utility>
+#include <vector>
+#include <functional>
+
+#if OPERATING_SYSTEM == WINDOWS
+#include <process.h>
+#else
+#include <unistd.h>
 #endif
 
 #if OPERATING_SYSTEM == WINDOWS
@@ -96,6 +103,14 @@ bool in_bounds(size_t index, const T &container) {
 
 template<typename T>
 void unused_parameter(const T &) {
+}
+
+inline int get_process_id() {
+#if OPERATING_SYSTEM == WINDOWS
+    return _getpid();
+#else
+    return getpid();
+#endif
 }
 
 #endif
