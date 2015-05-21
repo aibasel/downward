@@ -113,6 +113,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     cout << "Starting merge-and-shrink main loop..." << endl;
     vector<int> transition_system_order;
     while (!merge_strategy->done()) {
+        // Choose next transition systems to merge
         pair<int, int> next_transition_system = merge_strategy->get_next(all_transition_systems);
         int system_one = next_transition_system.first;
         transition_system_order.push_back(system_one);
@@ -123,11 +124,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         transition_system_order.push_back(system_two);
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
+        transition_system->statistics(use_expensive_statistics);
+        other_transition_system->statistics(use_expensive_statistics);
 
         if (labels->reduce_before_shrinking()) {
+            // Label reduction before shrinking
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-            transition_system->statistics(use_expensive_statistics);
-            other_transition_system->statistics(use_expensive_statistics);
         }
 
         /*
@@ -139,6 +141,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (!other_transition_system->is_solvable())
             return other_transition_system;
 
+        // Shrinking
         pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
         if (shrunk.first)
             transition_system->statistics(use_expensive_statistics);
@@ -146,24 +149,22 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
             other_transition_system->statistics(use_expensive_statistics);
 
         if (labels->reduce_before_merging()) {
+            // Label reduction before merging
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-            transition_system->statistics(use_expensive_statistics);
-            other_transition_system->statistics(use_expensive_statistics);
         }
 
+        // Merging
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
             labels, transition_system, other_transition_system);
+        new_transition_system->statistics(use_expensive_statistics);
+        all_transition_systems.push_back(new_transition_system);
 
         transition_system->release_memory();
         other_transition_system->release_memory();
-
-        new_transition_system->statistics(use_expensive_statistics);
-        report_peak_memory_delta();
-
         all_transition_systems[system_one] = 0;
         all_transition_systems[system_two] = 0;
-        all_transition_systems.push_back(new_transition_system);
 
+        report_peak_memory_delta();
         cout << endl;
     }
 
