@@ -109,6 +109,7 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
+    std::vector<int> varset;
     /*
       These friend definitions are required to give the inheriting classes
       access to passed base class objects (e.g. in CompositeTransitionSystem).
@@ -213,8 +214,6 @@ class TransitionSystem {
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
 protected:
-    std::vector<int> varset;
-
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
