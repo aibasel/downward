@@ -106,10 +106,11 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
         exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
+    cout << endl;
     TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels, cost_type);
+    cout << endl;
 
-    cout << "Merging transition systems..." << endl;
-
+    cout << "Starting merge-and-shrink main loop..." << endl;
     vector<int> transition_system_order;
     while (!merge_strategy->done()) {
         pair<int, int> next_transition_system = merge_strategy->get_next(all_transition_systems);
@@ -162,6 +163,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         all_transition_systems[system_one] = 0;
         all_transition_systems[system_two] = 0;
         all_transition_systems.push_back(new_transition_system);
+
+        cout << endl;
     }
 
     assert(all_transition_systems.size() == g_variable_domain.size() * 2 - 1);
@@ -180,12 +183,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 
-    final_transition_system->statistics(use_expensive_statistics);
     final_transition_system->release_memory();
 
     delete labels;
     labels = 0;
 
+    cout << "Done with merge-and-shrink main loop." << endl;
     cout << "Order of merged transition systems: ";
     for (size_t i = 1; i < transition_system_order.size(); i += 2) {
         cout << transition_system_order[i - 1] << " " << transition_system_order[i] << ", ";
@@ -203,7 +206,6 @@ void MergeAndShrinkHeuristic::initialize() {
 
     verify_no_axioms();
 
-    cout << "Building transition system..." << endl;
     final_transition_system = build_transition_system();
     if (!final_transition_system->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
