@@ -147,8 +147,7 @@ class TransitionSystem {
     std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), except during
-      label reduction. Whenever new labels are generated through label
-      reduction, this is updated immediately afterwards.
+      the incorporation of a label mapping as computed by label reduction.
     */
     int num_labels;
 

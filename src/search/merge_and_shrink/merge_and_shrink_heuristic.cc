@@ -129,7 +129,10 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
             other_transition_system->statistics(use_expensive_statistics);
         }
 
-        // TODO: check for all ts if they are solvable? or only for the new one below?
+        /*
+          NOTE: both the shrinking strategy classes and the construction of
+          the composite require input transition systems to be solvable.
+        */
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
