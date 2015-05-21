@@ -22,10 +22,12 @@ using namespace std;
 
 typedef vector<pair<int, int> > SuccessorSignature;
 
-/* TODO: The following class should probably be renamed. It encodes
-   all we need to know about a state for bisimulation: its h value,
-   which equivalence class ("group") it currently belongs to, its
-   successor signature (see above), and what the original state is. */
+/*
+  The following class encodes all we need to know about a state for
+  bisimulation: its h value, which equivalence class ("group") it currently
+  belongs to, its successor signature (see above), and what the original
+  state is.
+*/
 
 struct Signature {
     int h_and_goal; // -1 for goal states; h value for non-goal states
@@ -186,9 +188,6 @@ void ShrinkBisimulation::compute_signatures(
     }
 
     ::sort(signatures.begin(), signatures.end());
-    /* TODO: Should we sort an index set rather than shuffle the whole
-       signatures around? But since swapping vectors is fast, we
-       probably don't have to worry about that. */
 }
 
 void ShrinkBisimulation::compute_abstraction(
