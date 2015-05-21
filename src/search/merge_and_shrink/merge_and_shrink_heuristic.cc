@@ -215,6 +215,7 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
     report_peak_memory_delta(true);
+    cout << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
