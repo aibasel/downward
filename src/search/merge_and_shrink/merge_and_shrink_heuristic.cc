@@ -138,17 +138,11 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         if (!other_transition_system->is_solvable())
             return other_transition_system;
 
-        shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
-        // TODO: Make shrink_before_merge return a pair of bools
-        //       that tells us whether they have actually changed,
-        //       and use that to decide whether to dump statistics?
-        // (The old code would print statistics on transition system iff it was
-        // shrunk. This is not so easy any more since this method is not
-        // in control, and the shrink strategy doesn't know whether we want
-        // expensive statistics. As a temporary aid, we just print the
-        // statistics always now, whether or not we shrunk.)
-        transition_system->statistics(use_expensive_statistics);
-        other_transition_system->statistics(use_expensive_statistics);
+        pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
+        if (shrunk.first)
+            transition_system->statistics(use_expensive_statistics);
+        if (shrunk.second)
+            other_transition_system->statistics(use_expensive_statistics);
 
         if (labels->reduce_before_merging()) {
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);

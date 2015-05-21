@@ -36,17 +36,14 @@ private:
     */
     const int shrink_threshold_before_merge;
 
+    bool abstract_transition_system(TransitionSystem &ts, int new_size);
     std::pair<std::size_t, std::size_t> compute_shrink_sizes(
         std::size_t size1, std::size_t size2) const;
-    bool must_shrink(const TransitionSystem &ts, int threshold) const;
-    void apply(TransitionSystem &ts,
-               const StateEquivalenceRelation &equivalence_relation,
-               int target) const;
 protected:
     /*
       Shrink the transition system to a size at most target. This can be
       called even if the current size respects the target size already
-      (if shrink_threshold_before_merge is lower).
+      (if shrink_threshold_before_merge is smaller).
     */
     virtual void shrink(const TransitionSystem &ts,
                         int target,
@@ -57,7 +54,7 @@ public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
 
-    void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
+    std::pair<bool, bool> shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 
     void dump_options() const;
     std::string get_name() const;

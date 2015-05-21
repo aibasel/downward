@@ -504,13 +504,13 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     }
 }
 
-void TransitionSystem::apply_abstraction(
+bool TransitionSystem::apply_abstraction(
     const vector<forward_list<AbstractStateRef> > &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
-        return;
+        return false;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
@@ -602,6 +602,7 @@ void TransitionSystem::apply_abstraction(
         compute_distances_and_prune();
     }
     assert(is_valid());
+    return true;
 }
 
 void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> > > &label_mapping,
