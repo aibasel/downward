@@ -42,11 +42,19 @@ ExactTimer::~ExactTimer() {
 
 double ExactTimer::current_clock() const {
 #if OPERATING_SYSTEM == WINDOWS
-    LARGE_INTEGER time;
-    if (QueryPerformanceCounter(&time) == FALSE) {
-        ABORT("Failed to querry current_clock.");
+    static LARGE_INTEGER frequency = {
+        0, 0
+    };
+    static LARGE_INTEGER start_time;
+    LARGE_INTEGER now;
+    if (!frequency.QuadPart) {
+        QueryPerformanceFrequency(&frequency);
+        QueryPerformanceCounter(&start_time);
     }
-    return static_cast<double>(time.QuadPart);
+    QueryPerformanceCounter(&now);
+    now.QuadPart = now.QuadPart - start_time.QuadPart;
+    now.QuadPart *= 1e9;
+    return static_cast<double>(now.QuadPart / frequency.QuadPart);
 #else
     timespec tp;
 #if OPERATING_SYSTEM == OSX
