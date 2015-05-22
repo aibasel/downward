@@ -34,6 +34,7 @@ protected:
     GlobalState current_state;
     StateID current_predecessor_id;
     const GlobalOperator *current_operator;
+    // TODO: Remove, since it's stored in current_eval_context?
     int current_g;
     int current_real_g;
     EagerEvaluationContext current_eval_context;
