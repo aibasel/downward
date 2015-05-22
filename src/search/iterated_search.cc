@@ -74,7 +74,7 @@ SearchStatus IteratedSearch::step() {
         found_plan = current_search->get_plan();
         plan_cost = calculate_plan_cost(found_plan);
         if (plan_cost < best_bound) {
-            save_plan(found_plan);
+            save_plan(found_plan, true);
             best_bound = plan_cost;
             set_plan(found_plan);
         }

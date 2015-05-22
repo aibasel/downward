@@ -1,8 +1,17 @@
-This directory archives Fast Downward experiments. All experiments
-use their own common_setup.py module that simplifies the creation of
-experiments. We recommend using common_setup.py from issue392 for
-new experiments since it is the most polished version and provides
-the greatest flexibility.
+This directory archives Fast Downward experiments.
+
+Experiments using lab
+=====================
+All experiments use their own common_setup.py module that simplifies
+the creation of experiments. We recommend using common_setup.py from
+issue508 for new experiments since it is the most polished version and
+provides the greatest flexibility.
+
+Previously, most experiments imported lab's downward/configs.py module.
+To make experiments more self-contained, the module has been deprecated
+and we recommend either copying configy.py into the experiment
+directory (see issue508 for an example) or manually specifying the
+configurations (see issue511).
 
 Below we list some experiments that show how certain tasks can be
 performed:
@@ -15,7 +24,13 @@ performed:
     suite_satisficing_with_ipc11.
 
 * Add a custom log parser:
-  * issue469/issue469.py adds a parser for raw_memory
+  * issue439/regressions.py
+
+* Compare all attributes for tasks where we lose coverage:
+  * issue439/regressions.py
+
+* Use custom time limit:
+  * issue439/issue439.py
 
 * Add scatter plots for custom attributes:
   * issue214/issue214.py
@@ -25,3 +40,22 @@ performed:
 
 * Independent CompareRevisionReports for portfolio configs and core solvers:
   * issue462/issue462-opt.py
+
+
+Microbenchmarks
+===============
+
+Some experiments don't run the whole planner or planner components, but
+just contain small microbenchmarks for particular functionality. These
+may be a good starting point for similar microbenchmarks. Examples:
+
+* Benchmarking of random number generation (self-contained):
+  * issue269/rng-microbenchmark
+
+* Benchmarking of range-based for loops (uses planner code):
+  * issue510/iterator-microbenchmark
+
+If you add your own microbenchmark, it is recommended to start from a
+copy of an existing example and follow the naming convention
+issue[...]/[...]-microbenchmark for the code. This way, .hgignore
+should be set up correctly out of the box.

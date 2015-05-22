@@ -1,11 +1,13 @@
 #include "lazy_search.h"
 
 #include "g_evaluator.h"
+#include "globals.h"
 #include "heuristic.h"
+#include "plugin.h"
+#include "rng.h"
 #include "successor_generator.h"
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
-#include "plugin.h"
 
 #include <algorithm>
 #include <limits>
@@ -72,11 +74,11 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     }
 
     if (randomize_successors) {
-        random_shuffle(all_operators.begin(), all_operators.end());
+        g_rng.shuffle(all_operators);
         // Note that preferred_operators can contain duplicates that are
         // only filtered out later, which gives operators "preferred
         // multiple times" a higher chance to be ordered early.
-        random_shuffle(preferred_operators.begin(), preferred_operators.end());
+        g_rng.shuffle(preferred_operators);
     }
 
     if (preferred_successors_first) {

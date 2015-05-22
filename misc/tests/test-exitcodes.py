@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -9,7 +11,7 @@ REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
 
 TASKS = {
-    "strips": "gripper/prob01.pddl",
+    "strips": "miconic/s1-0.pddl",
     "axioms": "philosophers/p01-phil2.pddl",
     "cond-eff": "miconic-simpleadl/s1-0.pddl",
 }
@@ -21,6 +23,18 @@ EXIT_UNSUPPORTED = 3
 EXIT_UNSOLVABLE = 4
 EXIT_UNSOLVED_INCOMPLETE = 5
 
+MERGE_AND_SHRINK = ('astar(merge_and_shrink('
+    'merge_strategy=merge_dfp,'
+        'shrink_strategy=shrink_bisimulation('
+         'max_states=50000,'
+        'threshold=1,'
+        'greedy=false,'
+        'group_by_h=true),'
+    'label_reduction=label_reduction('
+        'before_shrinking=true,'
+        'before_merging=false)'
+'))')
+
 TESTS = [
     ("strips", "astar(add())", EXIT_PLAN_FOUND),
     ("strips", "astar(hm())", EXIT_PLAN_FOUND),
@@ -31,7 +45,7 @@ TESTS = [
     ("strips", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_PLAN_FOUND),
     ("strips", "astar(lmcount(lm_hm(), admissible=false))", EXIT_PLAN_FOUND),
     ("strips", "astar(lmcount(lm_hm(), admissible=true))", EXIT_PLAN_FOUND),
-    ("strips", "astar(merge_and_shrink())", EXIT_PLAN_FOUND),
+    ("strips", MERGE_AND_SHRINK, EXIT_PLAN_FOUND),
     ("axioms", "astar(add())", EXIT_PLAN_FOUND),
     ("axioms", "astar(hm())", EXIT_UNSOLVED_INCOMPLETE),
     ("axioms", "ehc(hm())", EXIT_UNSOLVED_INCOMPLETE),
@@ -46,7 +60,7 @@ TESTS = [
     ("axioms", "astar(lmcount(lm_hm(), admissible=true))", EXIT_UNSUPPORTED),
     ("axioms", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_PLAN_FOUND),
     ("axioms", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_UNSUPPORTED),
-    ("axioms", "astar(merge_and_shrink())", EXIT_UNSUPPORTED),
+    ("axioms", MERGE_AND_SHRINK, EXIT_UNSUPPORTED),
     ("cond-eff", "astar(add())", EXIT_PLAN_FOUND),
     ("cond-eff", "astar(hm())", EXIT_PLAN_FOUND),
     ("cond-eff", "astar(ipdb())", EXIT_UNSUPPORTED),
@@ -59,13 +73,14 @@ TESTS = [
     ("cond-eff", "astar(lmcount(lm_hm(), admissible=true))", EXIT_UNSUPPORTED),
     ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_PLAN_FOUND),
     ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_UNSUPPORTED),
-    ("cond-eff", "astar(merge_and_shrink())", EXIT_PLAN_FOUND),
+    ("cond-eff", MERGE_AND_SHRINK, EXIT_PLAN_FOUND),
 ]
 
 
 def run_plan_script(task_type, relpath, search):
     problem = os.path.join(REPO_BASE, "benchmarks", relpath)
-    print "\nRun %(search)s on %(task_type)s task:" % locals()
+    print("\nRun %(search)s on %(task_type)s task:" % locals())
+    sys.stdout.flush()
     return subprocess.call(
         [os.path.join(REPO_BASE, "src", "fast-downward.py"), problem, "--search", search])
 
@@ -85,13 +100,13 @@ def main():
     cleanup()
 
     if failures:
-        print "\nFailures:"
+        print("\nFailures:")
         for task_type, search, expected, exitcode in failures:
-            print ("%(search)s on %(task_type)s task: expected %(expected)d, "
+            print("%(search)s on %(task_type)s task: expected %(expected)d, "
                    "got %(exitcode)d" % locals())
         sys.exit(1)
     else:
-        print "\nNo errors detected."
+        print("\nNo errors detected.")
 
 
 main()

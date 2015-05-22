@@ -54,7 +54,8 @@ def instantiate(task, model):
             variable_mapping = dict([(par.name, arg)
                                      for par, arg in zip(parameters, atom.args)])
             inst_action = action.instantiate(variable_mapping, init_facts,
-                                             fluent_facts, type_to_objects)
+                                             fluent_facts, type_to_objects,
+                                             task.use_min_cost_metric)
             if inst_action:
                 instantiated_actions.append(inst_action)
         elif isinstance(atom.predicate, pddl.Axiom):

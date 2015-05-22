@@ -8,8 +8,6 @@
 #include "search_node_info.h"
 
 using namespace std;
-using namespace __gnu_cxx;
-
 
 SearchNode::SearchNode(StateID state_id_, SearchNodeInfo &info_,
                        OperatorCost cost_type_)

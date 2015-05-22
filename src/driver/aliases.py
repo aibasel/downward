@@ -171,7 +171,8 @@ def set_options_for_alias(alias_name, args):
     assert not args.portfolio
 
     if alias_name in ALIASES:
-        args.search_options = ALIASES[alias_name]
+        args.search_options = [x.replace(" ", "").replace("\n", "")
+                               for x in ALIASES[alias_name]]
     elif alias_name in PORTFOLIOS:
         args.portfolio = PORTFOLIOS[alias_name]
     else:

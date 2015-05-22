@@ -48,7 +48,7 @@ protected:
     virtual void partition_into_buckets(const TransitionSystem &ts, std::vector<Bucket> &buckets) const;
 
 public:
-    ShrinkFH(const Options &opts);
+    explicit ShrinkFH(const Options &opts);
     virtual ~ShrinkFH();
 };
 
