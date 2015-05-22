@@ -44,13 +44,14 @@ class ScalarEvaluator;
      new best f value.
 */
 
-class EvaluationContext {
-protected:
-    std::unordered_map<ScalarEvaluator *, EvaluationResult> eval_results;
+using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
 
+class EvaluationContext {
 public:
     EvaluationContext() = default;
     ~EvaluationContext() = default;
+
+    virtual const EvaluationResults &get_eval_results() const = 0;
 
     virtual const EvaluationResult &get_result(ScalarEvaluator *heur) = 0;
 
@@ -78,7 +79,7 @@ public:
 
     template<class Callback>
     void for_each_evaluator_value(const Callback &callback) const {
-        for (const auto &element : eval_results) {
+        for (const auto &element : get_eval_results()) {
             const ScalarEvaluator *eval = element.first;
             int h = element.second.get_h_value();
             callback(eval, h);
