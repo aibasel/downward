@@ -7,6 +7,7 @@
 class SearchStatistics;
 
 class EagerEvaluationContext : public EvaluationContext {
+    EvaluationResults eval_results;
     GlobalState state;
     int g_value;
     bool preferred;
@@ -25,6 +26,10 @@ public:
     */
     explicit EagerEvaluationContext(const GlobalState &state);
     ~EagerEvaluationContext() = default;
+
+    virtual const EvaluationResults &get_eval_results() const {
+        return eval_results;
+    }
 
     virtual const EvaluationResult &get_result(ScalarEvaluator *heur) override;
 

@@ -13,6 +13,10 @@ public:
         const EagerEvaluationContext &eval_context, int g_value, bool is_preferred);
     ~LazyEvaluationContext() = default;
 
+    virtual const EvaluationResults &get_eval_results() const {
+        return eval_context.get_eval_results();
+    }
+
     virtual const EvaluationResult &get_result(ScalarEvaluator *heur) override;
 
     virtual const GlobalState &get_state() const override;
