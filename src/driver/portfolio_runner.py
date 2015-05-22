@@ -161,7 +161,7 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
     args = list(args_template)
     adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager)
     args.extend([
-        "--internal-plan-counter", str(plan_manager.get_plan_counter() + 1)])
+        "--internal-previous-portfolio-plans", str(plan_manager.get_plan_counter())])
     result = run_search(executable, args, sas_file, plan_manager, run_timeout, memory)
     plan_manager.process_new_plans()
     return result

@@ -7,11 +7,9 @@
 
 #include <cassert>
 #include <iostream>
-#include <ext/hash_map>
+#include <unordered_map>
 
 using namespace std;
-using namespace __gnu_cxx;
-
 
 /* A successor signature characterizes the behaviour of an abstract
    state in so far as bisimulation cares about it. States with
@@ -83,60 +81,11 @@ void release_memory(vector<T> &vec) {
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
-      threshold(opts.get<int>("threshold")),
       group_by_h(opts.get<bool>("group_by_h")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
 ShrinkBisimulation::~ShrinkBisimulation() {
-}
-
-string ShrinkBisimulation::name() const {
-    return "bisimulation";
-}
-
-void ShrinkBisimulation::dump_strategy_specific_options() const {
-    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
-    cout << "Bisimulation threshold: " << threshold << endl;
-    cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
-    cout << "At limit: ";
-    if (at_limit == RETURN) {
-        cout << "return";
-    } else if (at_limit == USE_UP) {
-        cout << "use up limit";
-    } else {
-        ABORT("Unknown setting for at_limit.");
-    }
-    cout << endl;
-}
-
-bool ShrinkBisimulation::reduce_labels_before_shrinking() const {
-    return true;
-}
-
-void ShrinkBisimulation::shrink(
-    TransitionSystem &ts, int target) {
-    // TODO: Explain this min(target, threshold) stuff. Also, make the
-    //       output clearer, which right now is rubbish, calling the
-    //       min(...) "threshold". The reasoning behind this is that
-    //       we need to shrink if we're above the threshold or if
-    //       *after* composition we'd be above the size limit, so
-    //       target can either be less or larger than threshold.
-    if (must_shrink(ts, min(target, threshold))) {
-        EquivalenceRelation equivalence_relation;
-        compute_abstraction(ts, target, equivalence_relation);
-        apply(ts, equivalence_relation, target);
-    }
-}
-
-void ShrinkBisimulation::shrink_before_merge(
-    TransitionSystem &ts1, TransitionSystem &ts2) {
-    pair<int, int> new_sizes = compute_shrink_sizes(ts1.get_size(), ts2.get_size());
-    int new_size1 = new_sizes.first;
-    int new_size2 = new_sizes.second;
-
-    shrink(ts2, new_size2);
-    shrink(ts1, new_size1);
 }
 
 int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
@@ -151,7 +100,7 @@ int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
        unsolvable.
     */
 
-    typedef hash_map<int, int> GroupMap;
+    typedef unordered_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < ts.get_size(); ++state) {
@@ -194,11 +143,12 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    int num_labels = ts.get_num_labels();
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        const vector<Transition> &transitions =
-            ts.get_transitions_for_label(label_no);
-        int label_cost = ts.get_label_cost_by_index(label_no);
+    const list<LabelGroup> &grouped_labels = ts.get_grouped_labels();
+    int label_group_counter = 0;
+    for (LabelGroupConstIter group_it = grouped_labels.begin();
+         group_it != grouped_labels.end(); ++group_it) {
+        const LabelGroup &label_group = *group_it;
+        const vector<Transition> &transitions = label_group.get_const_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
@@ -206,15 +156,17 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = ts.get_goal_distance(trans.src);
                 int target_h = ts.get_goal_distance(trans.target);
-                assert(target_h + label_cost >= src_h);
-                skip_transition = (target_h + label_cost != src_h);
+                int cost = label_group.get_cost();
+                assert(target_h + cost >= src_h);
+                skip_transition = (target_h + cost != src_h);
             }
             if (!skip_transition) {
                 int target_group = state_to_group[trans.target];
                 signatures[trans.src + 1].succ_signature.push_back(
-                    make_pair(label_no, target_group));
+                    make_pair(label_group_counter, target_group));
             }
         }
+        ++label_group_counter;
     }
 
     /* Step 3: Canonicalize the representation. The resulting
@@ -246,9 +198,9 @@ void ShrinkBisimulation::compute_signatures(
 }
 
 void ShrinkBisimulation::compute_abstraction(
-    TransitionSystem &ts,
+    const TransitionSystem &ts,
     int target_size,
-    EquivalenceRelation &equivalence_relation) {
+    StateEquivalenceRelation &equivalence_relation) {
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
@@ -370,10 +322,33 @@ void ShrinkBisimulation::compute_abstraction(
     }
 }
 
+void ShrinkBisimulation::shrink(const TransitionSystem &ts,
+                                int target,
+                                StateEquivalenceRelation &equivalence_relation) {
+    compute_abstraction(ts, target, equivalence_relation);
+}
+
+string ShrinkBisimulation::name() const {
+    return "bisimulation";
+}
+
+void ShrinkBisimulation::dump_strategy_specific_options() const {
+    cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
+    cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
+    cout << "At limit: ";
+    if (at_limit == RETURN) {
+        cout << "return";
+    } else if (at_limit == USE_UP) {
+        cout << "use up limit";
+    } else {
+        ABORT("Unknown setting for at_limit.");
+    }
+    cout << endl;
+}
+
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
-    parser.add_option<int>("threshold", "TODO: document", "-1");  // default: same as max_states
     parser.add_option<bool>("group_by_h", "TODO: document", "false");
 
     vector<string> at_limit;
@@ -390,20 +365,10 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
 
     ShrinkStrategy::handle_option_defaults(opts);
 
-    int threshold = opts.get<int>("threshold");
-    if (threshold == -1) {
-        threshold = opts.get<int>("max_states");
-        opts.set("threshold", threshold);
-    }
-    if (threshold < 1)
-        parser.error("bisimulation threshold must be at least 1");
-    if (threshold > opts.get<int>("max_states"))
-        parser.error("bisimulation threshold must not be larger than size limit");
-
-    if (!parser.dry_run())
-        return new ShrinkBisimulation(opts);
-    else
+    if (parser.dry_run())
         return 0;
+    else
+        return new ShrinkBisimulation(opts);
 }
 
 static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);

@@ -1,12 +1,34 @@
 #include "global_operator.h"
 
 #include "globals.h"
+#include "utilities.h"
 
+#include <cassert>
 #include <iostream>
+
 using namespace std;
+
+
+static void check_fact(int var, int val) {
+    if (!in_bounds(var, g_variable_domain)) {
+        cerr << "Invalid variable id: " << var << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
+    if (val < 0 || val >= g_variable_domain[var]) {
+        cerr << "Invalid value for variable " << var << ": " << val << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
+}
 
 GlobalCondition::GlobalCondition(istream &in) {
     in >> var >> val;
+    check_fact(var, val);
+}
+
+GlobalCondition::GlobalCondition(int variable, int value)
+    : var(variable),
+      val(value) {
+    check_fact(var, val);
 }
 
 // TODO if the input file format has been changed, we would need something like this
@@ -18,6 +40,12 @@ GlobalCondition::GlobalCondition(istream &in) {
 //    in >> var >> post;
 //}
 
+GlobalEffect::GlobalEffect(int variable, int value, const vector<GlobalCondition> &conds)
+    : var(variable),
+      val(value),
+      conditions(conds) {
+    check_fact(var, val);
+}
 
 void GlobalOperator::read_pre_post(istream &in) {
     int cond_count, var, pre, post;
@@ -27,6 +55,9 @@ void GlobalOperator::read_pre_post(istream &in) {
     for (int i = 0; i < cond_count; ++i)
         conditions.push_back(GlobalCondition(in));
     in >> var >> pre >> post;
+    if (pre != -1)
+        check_fact(var, pre);
+    check_fact(var, post);
     if (pre != -1)
         preconditions.push_back(GlobalCondition(var, pre));
     effects.push_back(GlobalEffect(var, post, conditions));

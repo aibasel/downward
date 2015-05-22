@@ -1,7 +1,6 @@
 #include "merge_dfp.h"
 
 #include "transition_system.h"
-#include "label.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -40,6 +39,49 @@ int MergeDFP::get_corrected_index(int index) const {
     return border_atomics_composites - 1 - index;
 }
 
+void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
+                                   vector<int> &label_ranks) const {
+    int num_labels = transition_system->get_num_labels();
+    // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
+    label_ranks.resize(num_labels, -1);
+
+    const std::list<LabelGroup> &grouped_labels = transition_system->get_grouped_labels();
+    for (LabelGroupConstIter group_it = grouped_labels.begin();
+         group_it != grouped_labels.end(); ++group_it) {
+        // Relevant labels with no transitions have a rank of infinity.
+        int label_rank = INF;
+        const vector<Transition> &transitions = group_it->get_const_transitions();
+        bool group_relevant = false;
+        if (static_cast<int>(transitions.size()) == transition_system->get_size()) {
+            /*
+              A label group is irrelevant in the earlier notion if it has
+              exactly a self loop transition for every state.
+            */
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                if (transitions[i].target != transitions[i].src) {
+                    group_relevant = true;
+                    break;
+                }
+            }
+        } else {
+            group_relevant = true;
+        }
+        if (!group_relevant) {
+            label_rank = -1;
+        } else {
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const Transition &t = transitions[i];
+                label_rank = min(label_rank, transition_system->get_goal_distance(t.target));
+            }
+        }
+        for (LabelConstIter label_it = group_it->begin();
+             label_it != group_it->end(); ++label_it) {
+            int label_no = *label_it;
+            label_ranks[label_no] = label_rank;
+        }
+    }
+}
+
 pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_transition_systems) {
     assert(!done());
 
@@ -62,7 +104,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
             indices_mapping.push_back(ts_index);
             transition_system_label_ranks.push_back(vector<int>());
             vector<int> &label_ranks = transition_system_label_ranks[transition_system_label_ranks.size() - 1];
-            transition_system->compute_label_ranks(label_ranks);
+            compute_label_ranks(transition_system, label_ranks);
         }
     }
 

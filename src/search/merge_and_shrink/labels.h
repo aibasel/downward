@@ -1,8 +1,6 @@
 #ifndef MERGE_AND_SHRINK_LABELS_H
 #define MERGE_AND_SHRINK_LABELS_H
 
-#include "../operator_cost.h"
-
 #include <vector>
 
 class EquivalenceRelation;
@@ -16,7 +14,11 @@ class TransitionSystem;
 */
 class Labels {
     std::vector<Label *> labels;
+    std::vector<int> transition_system_order;
 
+    // Options for label reduction
+    bool lr_before_shrinking;
+    bool lr_before_merging;
     /*
       none: no label reduction will be performed
 
@@ -33,12 +35,10 @@ class Labels {
       transition systems until no more labels can be reduced.
     */
     enum LabelReductionMethod {
-        NONE,
         TWO_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS,
         ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT
     };
-
     /*
       Order in which iterations of label reduction considers the set of all
       transition systems. Regular is the fast downward order plus appending
@@ -51,37 +51,37 @@ class Labels {
         REVERSE,
         RANDOM
     };
+    LabelReductionMethod lr_method;
+    LabelReductionSystemOrder lr_system_order;
 
-    LabelReductionMethod label_reduction_method;
-    LabelReductionSystemOrder label_reduction_system_order;
-    std::vector<int> transition_system_order;
-
-    // Apply the label mapping to all transition systems. Also clear cache.
-    void notify_transition_systems(
-        int ts_index,
-        const std::vector<TransitionSystem *> &all_transition_systems,
-        const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
-        std::vector<EquivalenceRelation *> &cached_equivalence_relations) const;
+    // Apply the label mapping to all transition systems.
+    void notify_transition_systems(int ts_index,
+                                   const std::vector<TransitionSystem *> &all_transition_systems,
+                                   const std::vector<std::pair<int, std::vector<int> > > &label_mapping) const;
     // Apply the given label equivalence relation to the set of labels
     bool apply_label_reduction(
         const EquivalenceRelation *relation,
         std::vector<std::pair<int, std::vector<int> > > &label_mapping);
-    EquivalenceRelation *compute_combinable_equivalence_relation(
-        int ts_index,
-        const std::vector<TransitionSystem *> &all_transition_systems,
-        std::vector<EquivalenceRelation *> &cached_local_equivalence_relations) const;
+    EquivalenceRelation *compute_combinable_equivalence_relation(int ts_index,
+                                                                 const std::vector<TransitionSystem *> &all_transition_systems) const;
 
 public:
-    Labels(const Options &options, OperatorCost cost_type);
+    explicit Labels(const Options &options);
     ~Labels() {}
+    void add_label(int cost);
     void reduce(std::pair<int, int> next_merge,
                 const std::vector<TransitionSystem *> &all_transition_systems);
-    // TODO: consider removing get_label_by_index and forwarding all required
-    // methods of Label and giving access to them by label number.
-    const Label *get_label_by_index(int index) const;
-    bool is_label_reduced(int label_no) const;
+    bool is_current_label(int label_no) const;
+    int get_label_cost(int label_no) const;
     void dump_labels() const;
     void dump_label_reduction_options() const;
+
+    bool reduce_before_shrinking() const {
+        return lr_before_shrinking;
+    }
+    bool reduce_before_merging() const {
+        return lr_before_merging;
+    }
 
     int get_size() const {
         return labels.size();

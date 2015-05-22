@@ -27,7 +27,7 @@ class AbstractOperator {
       Effect of the operator during regression search on a given
       abstract state number.
     */
-    size_t hash_effect;
+    std::size_t hash_effect;
 public:
     /*
       Abstract operators are built from concrete operators. The
@@ -38,7 +38,7 @@ public:
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &preconditions,
                      const std::vector<std::pair<int, int> > &effects, int cost,
-                     const std::vector<size_t> &hash_multipliers);
+                     const std::vector<std::size_t> &hash_multipliers);
     ~AbstractOperator();
 
     /*
@@ -53,7 +53,7 @@ public:
       Returns the effect of the abstract operator in form of a value
       change (+ or -) to an abstract state index
     */
-    size_t get_hash_effect() const {return hash_effect; }
+    std::size_t get_hash_effect() const {return hash_effect; }
 
     /*
       Returns the cost of the abstract operator (same as the cost of
@@ -70,7 +70,7 @@ class PDBHeuristic : public Heuristic {
     std::vector<int> pattern;
 
     // size of the PDB
-    size_t num_states;
+    std::size_t num_states;
 
     /*
       final h-values for abstract-states.
@@ -79,7 +79,7 @@ class PDBHeuristic : public Heuristic {
     std::vector<int> distances;
 
     // multipliers for each variable for perfect hash function
-    std::vector<size_t> hash_multipliers;
+    std::vector<std::size_t> hash_multipliers;
 
     /*
       Recursive method; called by build_abstract_operators. In the case
@@ -129,7 +129,7 @@ class PDBHeuristic : public Heuristic {
       given pairs of goal variables and values. Returns true iff the
       state is a goal state.
     */
-    bool is_goal_state(const size_t state_index,
+    bool is_goal_state(const std::size_t state_index,
                        const std::vector<std::pair<int, int> > &abstract_goal) const;
 
     /*
@@ -137,7 +137,7 @@ class PDBHeuristic : public Heuristic {
       according abstract state. This is only used for table lookup
       (distances) during search.
     */
-    size_t hash_index(const GlobalState &state) const;
+    std::size_t hash_index(const GlobalState &state) const;
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
@@ -161,7 +161,7 @@ public:
     const std::vector<int> &get_pattern() const {return pattern; }
 
     // Returns the size (number of abstrat states) of the PDB
-    size_t get_size() const {return num_states; }
+    std::size_t get_size() const {return num_states; }
 
     /*
       Returns the average h-value over all states, where dead-ends are

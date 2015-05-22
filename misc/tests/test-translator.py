@@ -54,6 +54,7 @@ def get_task_name(path):
 
 def translate_task(python, task_file):
     print('Translate %s with %s' % (get_task_name(task_file), python))
+    sys.stdout.flush()
     cmd = [python, TRANSLATOR, task_file]
     try:
         output = subprocess.check_output(cmd, env={'PYTHONHASHSEED': 'random'})
@@ -112,12 +113,14 @@ def main():
                 with open('output.sas') as output_sas:
                     combined_output.write(output_sas.read())
         print('Compare output')
+        sys.stdout.flush()
         assert len(VERSIONS) == 2, 'Code only tests difference between 2 versions'
         try:
             subprocess.check_call(['diff'] + [version + '.sas' for version in VERSIONS])
         except subprocess.CalledProcessError:
             sys.exit('Error: output differs')
         print()
+        sys.stdout.flush()
     cleanup()
 
 

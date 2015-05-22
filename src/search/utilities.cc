@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <csignal>
-#include <iostream>
 #include <fstream>
 #include <limits>
 using namespace std;
@@ -81,9 +80,6 @@ void exit_with(ExitCode exitcode) {
         break;
     case EXIT_OUT_OF_MEMORY:
         cout << "Memory limit has been reached." << endl;
-        break;
-    case EXIT_TIMEOUT:
-        cout << "Time limit has been reached." << endl;
         break;
     default:
         cerr << "Exitcode: " << exitcode << endl;

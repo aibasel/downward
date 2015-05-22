@@ -1,11 +1,14 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_PARETO_OPEN_LIST_H
 
+#include "../globals.h"
 #include "../option_parser.h"
+#include "../rng.h"
 
 #include <iostream>
 #include <cassert>
 #include <limits>
+
 using namespace std;
 
 template<class Entry>
@@ -141,7 +144,7 @@ Entry ParetoOpenList<Entry>::remove_min(vector<int> *key) {
         else
             numerator = 1;
         seen += numerator;
-        if ((rand() % seen) < numerator)
+        if (g_rng(seen) < numerator)
             selected = it;
     }
     if (key) {

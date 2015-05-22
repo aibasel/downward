@@ -69,9 +69,8 @@ def run_search(args):
         if not args.search_options:
             raise ValueError(
                 "search needs --alias, --portfolio, or search options")
-        args.search_options.extend(["--internal-plan-file", args.plan_file])
-        args.search_options = [
-            x.replace(" ", "").replace("\n", "") for x in args.search_options]
+        if "--help" not in args.search_options:
+            args.search_options.extend(["--internal-plan-file", args.plan_file])
         logging.info("search arguments: %s" % args.search_options)
         call_cmd(executable, args.search_options, debug=args.debug,
                  stdin=args.search_input)

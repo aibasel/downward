@@ -35,7 +35,7 @@ from downward.checkouts import Translator, Preprocessor, Planner
 from downward import checkouts
 from downward.reports.absolute import AbsoluteReport
 
-from check import Check, RegressionCheckReport
+from regression_test import Check, RegressionCheckReport
 
 
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -55,9 +55,17 @@ CONFIGS['nightly'] = [
     ('lama-2011', ['ipc', 'seq-sat-lama-2011']),
     ('blind', ['--search', 'astar(blind())']),
     ('merge-and-shrink-bisim', ['--search',
-        'astar(merge_and_shrink(merge_strategy=merge_linear(variable_order=reverse_level),'
-            'shrink_strategy=shrink_bisimulation(max_states=50000,greedy=false,'
-            'group_by_h=true)))']),
+        'astar(merge_and_shrink('
+             'merge_strategy=merge_dfp,'
+             'shrink_strategy=shrink_bisimulation('
+                 'max_states=50000,'
+                 'threshold=1,'
+                 'greedy=false,'
+                 'group_by_h=true),'
+             'label_reduction=label_reduction('
+                 'before_shrinking=true,'
+                 'before_merging=false)'
+         '))']),
     ('lmcount-optimal', ['--search',
         'astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true,lpsolver=CPLEX))']),
 ]
