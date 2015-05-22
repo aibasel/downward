@@ -5,9 +5,7 @@
 #include <ctime>
 #include <ostream>
 
-#if OPERATING_SYSTEM == WINDOWS
-#include <windows.h>
-#elif OPERATING_SYSTEM == OSX
+#if OPERATING_SYSTEM == OSX
 #include <mach/mach_time.h>
 #endif
 
@@ -32,6 +30,10 @@ void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp)
 
 
 ExactTimer::ExactTimer() {
+#if OPERATING_SYSTEM == WINDOWS
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&start_time);
+#endif
     last_start_clock = current_clock();
     collected_time = 0;
     stopped = false;
@@ -42,17 +44,9 @@ ExactTimer::~ExactTimer() {
 
 double ExactTimer::current_clock() const {
 #if OPERATING_SYSTEM == WINDOWS
-    static LARGE_INTEGER frequency = {
-        0, 0
-    };
-    static LARGE_INTEGER start_time;
     LARGE_INTEGER now;
-    if (!frequency.QuadPart) {
-        QueryPerformanceFrequency(&frequency);
-        QueryPerformanceCounter(&start_time);
-    }
     QueryPerformanceCounter(&now);
-    now.QuadPart = now.QuadPart - start_time.QuadPart;
+    now.QuadPart -= start_time.QuadPart;
     now.QuadPart *= 1e9;
     return static_cast<double>(now.QuadPart / frequency.QuadPart);
 #else
