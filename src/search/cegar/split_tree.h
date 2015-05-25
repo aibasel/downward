@@ -30,7 +30,7 @@ class Node {
 
 public:
     Node();
-    ~Node() = default;
+    ~Node();
 
     Node(const Node &) = delete;
     Node &operator=(const Node &) = delete;
@@ -48,6 +48,11 @@ public:
                (left_child && right_child &&
                 var != UNDEFINED && value != UNDEFINED));
         return left_child;
+    }
+
+    bool owns_right_child() const {
+        assert(is_split());
+        return !left_child->is_split() || left_child->right_child != right_child;
     }
 
     int get_var() const {
@@ -73,7 +78,8 @@ class SplitTree {
 
 public:
     SplitTree();
-    // TODO: Add destructor that deletes all nodes.
+    ~SplitTree();
+
     Node *get_node(const State &state) const;
     Node *get_root() const {return root; }
 };
