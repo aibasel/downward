@@ -54,18 +54,9 @@ SplitTree::SplitTree()
     : root(new Node()) {
 }
 
-SplitTree::~SplitTree() {
-    delete root;
-}
-
-SplitTree::SplitTree(SplitTree && other)
-    : root(other.root) {
-    other.root = nullptr;
-}
-
 Node *SplitTree::get_node(const State &state) const {
     assert(root);
-    Node *current = root;
+    Node *current = root.get();
     while (current->is_split()) {
         current = current->get_child(state[current->get_var()].get_value());
     }
