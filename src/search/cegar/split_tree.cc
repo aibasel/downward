@@ -55,7 +55,12 @@ SplitTree::SplitTree()
 }
 
 SplitTree::~SplitTree() {
-    //delete root;
+    delete root;
+}
+
+SplitTree::SplitTree(SplitTree && other)
+    : root(other.root) {
+    other.root = nullptr;
 }
 
 Node *SplitTree::get_node(const State &state) const {
