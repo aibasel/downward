@@ -9,9 +9,9 @@
 using namespace std;
 
 namespace cegar {
-CartesianHeuristic::CartesianHeuristic(const Options &opts)
+CartesianHeuristic::CartesianHeuristic(const Options &opts, SplitTree && split_tree)
     : Heuristic(opts),
-      split_tree(opts.get<SplitTree>("split_tree")) {
+      split_tree(move(split_tree)) {
 }
 
 void CartesianHeuristic::initialize() {
