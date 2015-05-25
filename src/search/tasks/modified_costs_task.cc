@@ -8,6 +8,7 @@
 using namespace std;
 
 
+namespace tasks {
 ModifiedCostsTask::ModifiedCostsTask(const Options &opts)
     : DelegatingTask(opts.get<shared_ptr<AbstractTask> >("transform")),
       operator_costs(opts.get<vector<int> >("operator_costs")) {
@@ -19,4 +20,5 @@ int ModifiedCostsTask::get_operator_cost(int index, bool is_axiom) const {
     if (is_axiom)
         return parent->get_operator_cost(index, is_axiom);
     return operator_costs[index];
+}
 }

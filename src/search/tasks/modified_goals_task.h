@@ -1,12 +1,12 @@
-#ifndef CEGAR_MODIFIED_GOALS_TASK_H
-#define CEGAR_MODIFIED_GOALS_TASK_H
+#ifndef TASKS_MODIFIED_GOALS_TASK_H
+#define TASKS_MODIFIED_GOALS_TASK_H
 
 #include "../delegating_task.h"
 
 #include <utility>
 #include <vector>
 
-namespace cegar {
+namespace tasks {
 class ModifiedGoalsTask : public DelegatingTask {
 private:
     const std::vector<std::pair<int, int> > goals;

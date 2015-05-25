@@ -1,6 +1,5 @@
 #include "decompositions.h"
 
-#include "modified_goals_task.h"
 #include "utils_landmarks.h"
 
 #include "../option_parser.h"
@@ -8,6 +7,7 @@
 #include "../task_tools.h"
 
 #include "../tasks/domain_abstracted_task_factory.h"
+#include "../tasks/modified_goals_task.h"
 
 #include <algorithm>
 #include <cassert>
@@ -102,7 +102,8 @@ Subtasks GoalDecomposition::get_subtasks() const {
         Facts goals {
             goal
         };
-        abstracted_task = make_shared<ModifiedGoalsTask>(abstracted_task, goals);
+        abstracted_task = make_shared<tasks::ModifiedGoalsTask>(abstracted_task,
+                                                                goals);
         tasks.push_back(abstracted_task);
     }
     return tasks;
@@ -143,7 +144,7 @@ Subtasks LandmarkDecomposition::get_subtasks() const {
         Facts goals {
             landmark
         };
-        subtask = make_shared<ModifiedGoalsTask>(subtask, goals);
+        subtask = make_shared<tasks::ModifiedGoalsTask>(subtask, goals);
         if (combine_facts) {
             subtask = get_domain_abstracted_task(subtask, landmark);
         }
