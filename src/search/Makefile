@@ -93,6 +93,9 @@ HEADERS = \
           lp_internals.h \
           lp_solver.h \
 
+HEADERS += tasks/domain_abstracted_task.h \
+           tasks/domain_abstracted_task_factory.h \
+
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
 ## commenting out the respective lines in the Makefile.
@@ -165,8 +168,6 @@ HEADERS += cegar/abstract_search.h \
            cegar/additive_cartesian_heuristic.h \
            cegar/cartesian_heuristic.h \
            cegar/decompositions.h \
-           cegar/domain_abstracted_task.h \
-           cegar/domain_abstracted_task_builder.h \
            cegar/domains.h \
            cegar/modified_costs_task.h \
            cegar/modified_goals_task.h \

@@ -1,12 +1,13 @@
 #include "decompositions.h"
 
-#include "domain_abstracted_task_builder.h"
 #include "modified_goals_task.h"
 #include "utils_landmarks.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
+
+#include "../tasks/domain_abstracted_task_factory.h"
 
 #include <algorithm>
 #include <cassert>
