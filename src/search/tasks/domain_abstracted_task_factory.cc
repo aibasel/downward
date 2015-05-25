@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace tasks {
 class DomainAbstractedTaskFactory {
 private:
     std::vector<int> domain_size;
