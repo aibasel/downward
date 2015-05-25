@@ -95,6 +95,8 @@ HEADERS = \
 
 HEADERS += tasks/domain_abstracted_task.h \
            tasks/domain_abstracted_task_factory.h \
+           tasks/modified_costs_task.h \
+           tasks/modified_goals_task.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
@@ -169,8 +171,6 @@ HEADERS += cegar/abstract_search.h \
            cegar/cartesian_heuristic.h \
            cegar/decompositions.h \
            cegar/domains.h \
-           cegar/modified_costs_task.h \
-           cegar/modified_goals_task.h \
            cegar/split_selector.h \
            cegar/split_tree.h \
            cegar/utils.h \

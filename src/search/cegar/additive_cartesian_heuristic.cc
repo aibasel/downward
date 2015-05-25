@@ -3,12 +3,13 @@
 #include "abstraction.h"
 #include "cartesian_heuristic.h"
 #include "decompositions.h"
-#include "modified_costs_task.h"
 #include "utils.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
+
+#include "../tasks/modified_costs_task.h"
 
 #include <algorithm>
 #include <cassert>
@@ -51,7 +52,7 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
     Options opts;
     opts.set<Subtask>("transform", parent);
     opts.set<vector<int> >("operator_costs", remaining_costs);
-    return make_shared<ModifiedCostsTask>(opts);
+    return make_shared<tasks::ModifiedCostsTask>(opts);
 }
 
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {

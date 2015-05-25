@@ -7,6 +7,7 @@
 
 class Options;
 
+namespace tasks {
 class ModifiedCostsTask : public DelegatingTask {
     const std::vector<int> operator_costs;
 public:
@@ -15,5 +16,6 @@ public:
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
 };
+}
 
 #endif

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace tasks {
 ModifiedGoalsTask::ModifiedGoalsTask(
     const std::shared_ptr<AbstractTask> parent,
     const std::vector<std::pair<int, int> > &goals)
