@@ -13,6 +13,15 @@ Node::Node()
       h(0) {
 }
 
+Node::~Node() {
+    if (is_split()) {
+        if (owns_right_child()) {
+            delete right_child;
+        }
+        delete left_child;
+    }
+}
+
 void Node::set_members(int var, int value, Node *left_child, Node *right_child) {
     this->var = var;
     this->value = value;
@@ -43,6 +52,10 @@ Node *Node::get_child(int value) const {
 
 SplitTree::SplitTree()
     : root(new Node()) {
+}
+
+SplitTree::~SplitTree() {
+    //delete root;
 }
 
 Node *SplitTree::get_node(const State &state) const {
