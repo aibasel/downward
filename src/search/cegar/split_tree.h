@@ -80,6 +80,11 @@ public:
     SplitTree();
     ~SplitTree();
 
+    SplitTree(const SplitTree &) = delete;
+    SplitTree &operator=(SplitTree &) = delete;
+
+    SplitTree(SplitTree &&) = default;
+
     Node *get_node(const State &state) const;
     Node *get_root() const {return root; }
 };

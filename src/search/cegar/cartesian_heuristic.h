@@ -10,7 +10,6 @@ class Options;
 
 namespace cegar {
 class CartesianHeuristic : public Heuristic {
-    // TODO: Store as unique_ptr.
     const SplitTree split_tree;
 
 protected:
@@ -18,7 +17,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state);
 
 public:
-    explicit CartesianHeuristic(const Options &options);
+    explicit CartesianHeuristic(const Options &options, SplitTree && split_tree);
     ~CartesianHeuristic() = default;
 };
 }

@@ -102,8 +102,8 @@ void AdditiveCartesianHeuristic::build_abstractions(
             Options opts;
             opts.set<int>("cost_type", 0);
             opts.set<Subtask>("transform", subtask);
-            opts.set<SplitTree>("split_tree", abstraction.get_split_tree());
-            heuristics.emplace_back(opts);
+            heuristics.push_back(make_shared<CartesianHeuristic>(
+                                     opts, abstraction.get_split_tree()));
         }
         if (!may_build_another_abstraction())
             break;
@@ -136,9 +136,9 @@ void AdditiveCartesianHeuristic::print_statistics() const {
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
     int sum_h = 0;
-    for (CartesianHeuristic &heuristic : heuristics) {
-        heuristic.evaluate(global_state);
-        int h = heuristic.get_heuristic();
+    for (shared_ptr<CartesianHeuristic> heuristic : heuristics) {
+        heuristic->evaluate(global_state);
+        int h = heuristic->get_heuristic();
         if (h == DEAD_END)
             return DEAD_END;
         sum_h += h;
