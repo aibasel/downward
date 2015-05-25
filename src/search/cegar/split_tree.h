@@ -2,6 +2,7 @@
 #define CEGAR_SPLIT_TREE_H
 
 #include <cassert>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -74,19 +75,16 @@ public:
 
 
 class SplitTree {
-    Node *root;
+    std::unique_ptr<Node> root;
 
 public:
     SplitTree();
-    ~SplitTree();
+    ~SplitTree() = default;
 
-    SplitTree(const SplitTree &) = delete;
-    SplitTree &operator=(SplitTree &) = delete;
-
-    SplitTree(SplitTree && other);
+    SplitTree(SplitTree &&) = default;
 
     Node *get_node(const State &state) const;
-    Node *get_root() const {return root; }
+    Node *get_root() const {return root.get(); }
 };
 }
 
