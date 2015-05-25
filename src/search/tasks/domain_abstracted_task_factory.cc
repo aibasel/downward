@@ -1,4 +1,4 @@
-#include "domain_abstracted_task_builder.h"
+#include "domain_abstracted_task_factory.h"
 
 #include <sstream>
 #include <string>
@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace cegar {
-class DomainAbstractedTaskBuilder {
+class DomainAbstractedTaskFactory {
 private:
     std::vector<int> domain_size;
     std::vector<int> initial_state_values;
@@ -21,15 +21,15 @@ private:
     std::string get_combined_fact_name(int var, const ValueGroup &values) const;
 
 public:
-    DomainAbstractedTaskBuilder(
+    DomainAbstractedTaskFactory(
         const std::shared_ptr<AbstractTask> parent,
         const VarToGroups &value_groups);
-    ~DomainAbstractedTaskBuilder() = default;
+    ~DomainAbstractedTaskFactory() = default;
 
     std::shared_ptr<AbstractTask> get_task() const;
 };
 
-DomainAbstractedTaskBuilder::DomainAbstractedTaskBuilder(
+DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
     const std::shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups) {
     initialize(parent);
@@ -43,7 +43,7 @@ DomainAbstractedTaskBuilder::DomainAbstractedTaskBuilder(
         move(fact_names), move(value_map));
 }
 
-void DomainAbstractedTaskBuilder::initialize(const shared_ptr<AbstractTask> parent) {
+void DomainAbstractedTaskFactory::initialize(const shared_ptr<AbstractTask> parent) {
     int num_vars = parent->get_num_variables();
     domain_size.resize(num_vars);
     initial_state_values = parent->get_initial_state_values();
@@ -61,7 +61,7 @@ void DomainAbstractedTaskBuilder::initialize(const shared_ptr<AbstractTask> pare
     }
 }
 
-void DomainAbstractedTaskBuilder::move_fact(int var, int before, int after) {
+void DomainAbstractedTaskFactory::move_fact(int var, int before, int after) {
     assert(in_bounds(var, domain_size));
     assert(0 <= before && before < domain_size[var]);
     assert(0 <= after && after < domain_size[var]);
@@ -82,7 +82,7 @@ void DomainAbstractedTaskBuilder::move_fact(int var, int before, int after) {
     }
 }
 
-string DomainAbstractedTaskBuilder::get_combined_fact_name(
+string DomainAbstractedTaskFactory::get_combined_fact_name(
     int var, const ValueGroup &values) const {
     stringstream name;
     string sep = "";
@@ -93,7 +93,7 @@ string DomainAbstractedTaskBuilder::get_combined_fact_name(
     return name.str();
 }
 
-void DomainAbstractedTaskBuilder::combine_values(int var, const ValueGroups &groups) {
+void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &groups) {
     vector<string> combined_fact_names;
     unordered_set<int> groups_union;
     int num_merged_values = 0;
@@ -133,13 +133,13 @@ void DomainAbstractedTaskBuilder::combine_values(int var, const ValueGroups &gro
     domain_size[var] = new_domain_size;
 }
 
-shared_ptr<AbstractTask> DomainAbstractedTaskBuilder::get_task() const {
+shared_ptr<AbstractTask> DomainAbstractedTaskFactory::get_task() const {
     return task;
 }
 
 shared_ptr<AbstractTask> build_domain_abstracted_task(
     const shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups) {
-    return DomainAbstractedTaskBuilder(parent, value_groups).get_task();
+    return DomainAbstractedTaskFactory(parent, value_groups).get_task();
 }
 }

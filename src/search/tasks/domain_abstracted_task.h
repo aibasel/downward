@@ -1,5 +1,5 @@
-#ifndef CEGAR_DOMAIN_ABSTRACTED_TASK_H
-#define CEGAR_DOMAIN_ABSTRACTED_TASK_H
+#ifndef TASKS_DOMAIN_ABSTRACTED_TASK_H
+#define TASKS_DOMAIN_ABSTRACTED_TASK_H
 
 #include "../delegating_task.h"
 #include "../utilities.h"
