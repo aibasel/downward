@@ -122,14 +122,14 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
 Subtask LandmarkDecomposition::get_domain_abstracted_task(
     Subtask parent, Fact fact) const {
     assert(combine_facts);
-    VarToGroups value_groups;
+    tasks::VarToGroups value_groups;
     for (auto &pair : get_prev_landmarks(landmark_graph, fact)) {
         int var = pair.first;
         vector<int> &group = pair.second;
         if (group.size() >= 2)
             value_groups[var].push_back(group);
     }
-    return build_domain_abstracted_task(parent, value_groups);
+    return tasks::build_domain_abstracted_task(parent, value_groups);
 }
 
 Facts LandmarkDecomposition::get_facts() const {

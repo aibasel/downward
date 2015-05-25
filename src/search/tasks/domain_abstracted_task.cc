@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace tasks {
 DomainAbstractedTask::DomainAbstractedTask(
     const shared_ptr<AbstractTask> parent,
     vector<int> && domain_size,

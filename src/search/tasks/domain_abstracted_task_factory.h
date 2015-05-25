@@ -8,7 +8,7 @@
 
 class AbstractTask;
 
-namespace cegar {
+namespace tasks {
 std::shared_ptr<AbstractTask> build_domain_abstracted_task(
     const std::shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups);
