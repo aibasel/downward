@@ -163,7 +163,7 @@ static Heuristic *_parse(OptionParser &parser) {
     pick_strategies.push_back("MIN_HADD");
     pick_strategies.push_back("MAX_HADD");
     parser.add_enum_option(
-        "pick", pick_strategies, "how to pick the next flaw", "MAX_REFINED");
+        "pick", pick_strategies, "split-selection strategy", "MAX_REFINED");
     parser.add_option<bool>(
         "use_general_costs", "allow negative costs in cost partitioning", "true");
     parser.add_option<bool>(
