@@ -64,7 +64,7 @@ public:
 
     bool contains(FactProxy fact) const;
 
-    // Return the Cartesian set of states in which applying "op" leads to this state.
+    // Return the abstract state in which applying "op" leads to this state.
     AbstractState regress(OperatorProxy op) const;
 
     /*
@@ -72,7 +72,8 @@ public:
       from the other values in the abstract domain and return the resulting two
       new states.
     */
-    std::pair<AbstractState *, AbstractState *> split(int var, std::vector<int> wanted);
+    std::pair<AbstractState *, AbstractState *> split(
+        int var, const std::vector<int> &wanted);
 
     void add_loop(OperatorProxy op);
 
@@ -90,8 +91,10 @@ public:
         return os << state.domains;
     }
 
-    /* Create the initial unrefined abstract state on the heap. Must be deleted
-       by the caller.   */
+    /*
+      Create the initial unrefined abstract state on the heap. Must be deleted
+      by the caller.
+    */
     static AbstractState *get_trivial_abstract_state(
         TaskProxy task_proxy, Node *root_node);
 
