@@ -25,7 +25,7 @@ public:
       for heuristics.
     */
     explicit EagerEvaluationContext(const GlobalState &state);
-    ~EagerEvaluationContext() = default;
+    virtual ~EagerEvaluationContext() = default;
 
     virtual const EvaluationResults &get_eval_results() const {
         return eval_results;

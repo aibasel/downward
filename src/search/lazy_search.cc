@@ -57,15 +57,15 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
 
-    set<const GlobalOperator *> pref_ops;
+    vector<const GlobalOperator *> preferred_operators;
     for (Heuristic *heur : preferred_operator_heuristics) {
         if (!current_eval_context.is_heuristic_infinite(heur)) {
             vector<const GlobalOperator *> preferred =
                 current_eval_context.get_preferred_operators(heur);
-            pref_ops.insert(preferred.begin(), preferred.end());
+            preferred_operators.insert(
+                preferred_operators.end(), preferred.begin(), preferred.end());
         }
     }
-    vector<const GlobalOperator *> preferred_operators(pref_ops.begin(), pref_ops.end());
 
     if (randomize_successors) {
         g_rng.shuffle(all_operators);
@@ -133,7 +133,6 @@ SearchStatus LazySearch::fetch_next_state() {
 
     // TODO: set is_preferred.
     current_eval_context = EagerEvaluationContext(current_state, current_g, false, &statistics);
-    statistics.inc_evaluated_states();
 
     return IN_PROGRESS;
 }
@@ -159,12 +158,13 @@ SearchStatus LazySearch::step() {
         GlobalState parent_state = g_state_registry->lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        for (Heuristic *heuristic : heuristics) {
-            if (current_operator) {
+        if (current_operator) {
+            for (Heuristic *heuristic : heuristics)
                 heuristic->reach_state(parent_state, *current_operator, current_state);
-            }
         }
+        statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
+            // TODO: Generalize code for using multiple heuristics.
             int h = current_eval_context.get_heuristic_value(heuristics[0]);
             if (reopen) {
                 node.reopen(parent_node, current_operator);

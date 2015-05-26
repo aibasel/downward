@@ -84,7 +84,7 @@ SearchStatus IteratedSearch::step() {
     }
     current_search->print_statistics();
 
-    const SearchStatistics current_stats = current_search->get_statistics();
+    const SearchStatistics &current_stats = current_search->get_statistics();
     statistics.inc_expanded(current_stats.get_expanded());
     statistics.inc_evaluated_states(current_stats.get_evaluated_states());
     statistics.inc_evaluations(current_stats.get_evaluations());
