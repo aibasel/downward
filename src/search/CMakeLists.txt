@@ -1,5 +1,31 @@
+### TODO documentation is out of date
+
+###   * Usage: cmake . ; make [-j2]
+###   * The first command creates and stores options in the file CMakeCache.txt.
+###     Changing the default values for the options here has no effect, you need
+###     to change them in CMakeCache.txt or pass -DMY_OPTION to cmake.
+###
+### You probably won't need to change this system, unless you want to tweak it for a specific
+### platform.  By default, four build targets are defined:
+###
+### * -DCMAKE_BUILD_TYPE=Debug          - no optimisation, full debugging information
+### * -DCMAKE_BUILD_TYPE=Release        - -O3 optimisation, static binary, no debugging information
+### * -DCMAKE_BUILD_TYPE=RelWithDebInfo - -O3 optimisation, static binary, but with debugging information
+### * -DCMAKE_BUILD_TYPE=Profile        - -O3 optimisation, profile information linked in
+###
+### We overwrite the default configuration to include "-g", allow cross
+### compilation and switch to pedantic error reporting.
+
+
 # Version 2.6 introduces functions.
 cmake_minimum_required(VERSION 2.6)
+
+set(TARGET "downward")
+
+project(${TARGET})
+
+
+## == Default Options ==
 
 # Default to Release build, unless specified otherwise
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile")
@@ -17,27 +43,20 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/toolchain-32bit.cmake")
 endif()
 
-set(TARGET "downward")
-
-project(${TARGET})
-
-### Fast Downward CMake build file
-### Unless someone adopts it, queries/comments to Andrew.Coles@cis.strath.ac.uk
-###
-###   * Usage: cmake . ; make [-j2]
-###   * The first command creates and stores options in the file CMakeCache.txt.
-###     Changing the default values for the options here has no effect, you need
-###     to change them in CMakeCache.txt or pass -DMY_OPTION to cmake.
-
-## == Path containing some helper CMake modules ==
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
-
+# Default to static compilation on all systems except OS X.
 option(DOWNWARD_LINK_RELEASE_STATICALLY
        "Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable static linking of the executable in release mode. On OS X, this is unsupported and will be silently disabled."
        YES)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(DOWNWARD_LINK_RELEASE_STATICALLY NO)
 endif()
+
+# Path containing custom CMake modules
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
+
+
+## == Source Files and Target ==
 
 include("FastDownwardPlugins")
 
@@ -47,23 +66,19 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
 # Use distinct names for the different targets
 set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
 
-## == Definition of build flags ==
-##
-## You probably won't need to change this system, unless you want to tweak it for a specific
-## platform.  By default, four build targets are defined:
-##
-## * -DCMAKE_BUILD_TYPE=Debug          - no optimisation, full debugging information
-## * -DCMAKE_BUILD_TYPE=Release        - -O3 optimisation, static binary, no debugging information
-## * -DCMAKE_BUILD_TYPE=RelWithDebInfo - -O3 optimisation, static binary, but with debugging information
-## * -DCMAKE_BUILD_TYPE=Profile        - -O3 optimisation, profile information linked in
-##
-## We overwrite the default configuration to include "-g", allow cross
-## compilation and switch to pedantic error reporting.
+add_executable(${TARGET}
+    planner.cc
+    ${search_main_SRCS}
+    ${search_plugin_SRCS}
+)
+
+
+
+## == Build Flags ==
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-# Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wno-deprecated -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}/ext")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
@@ -76,7 +91,7 @@ set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${BITWIDTHOPT}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -g")
 
 
-## Configuration-specific options
+## Configuration-specific flags
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_DEBUG "-O3")
 set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
@@ -101,26 +116,25 @@ if(DOWNWARD_LINK_RELEASE_STATICALLY)
     endif()
 endif()
 
-## == Defining the executable target ==
-
-add_executable(${TARGET}
-    planner.cc
-    ${search_main_SRCS}
-    ${search_plugin_SRCS}
-)
 
 
-# Finally, find the rt library for the exact timer
+## == Libraries ==
+
+# On Linux, find the rt library for the exact timer
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     find_library(RT_LIBRARY rt)
     target_link_libraries(${TARGET} ${RT_LIBRARY})
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+endif()
+
+# On Windows, find the psapi library for determining peak memory
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     find_library(PSAPI_LIBRARY psapi)
     target_link_libraries(${TARGET} ${PSAPI_LIBRARY})
 endif()
 
 
-## == Finding the LP libraries ==
+
+## == LP libraries ==
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
 ## evaluation. Static linking is a bit tricky: we need to specify the
