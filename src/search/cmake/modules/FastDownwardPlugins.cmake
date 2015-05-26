@@ -4,51 +4,66 @@
 ## it to the following list
 
 set(search_main_SRCS
-          axioms.cc
-          causal_graph.cc
-          combining_evaluator.cc
-          countdown_timer.cc
-          domain_transition_graph.cc
-          eager_search.cc
-          enforced_hill_climbing_search.cc
-          equivalence_relation.cc
-          exact_timer.cc
-          g_evaluator.cc
-          global_operator.cc
-          global_state.cc
-          globals.cc
-          heuristic.cc
-          int_packer.cc
-          ipc_max_heuristic.cc
-          iterated_search.cc
-          lazy_search.cc
-          max_evaluator.cc
-          operator_cost.cc
-          option_parser.cc
-          option_parser_util.cc
-          segmented_vector.cc
-          per_state_information.cc
-          pref_evaluator.cc
-          relaxation_heuristic.cc
-          rng.cc
-          search_engine.cc
-          search_node_info.cc
-          search_progress.cc
-          search_space.cc
-          state_id.cc
-          state_registry.cc
-          successor_generator.cc
-          sum_evaluator.cc
-          timer.cc
-          utilities.cc
-          variable_order_finder.cc
-          weighted_evaluator.cc
-          open_lists/alternation_open_list.cc
-          open_lists/open_list_buckets.cc
-          open_lists/pareto_open_list.cc
-          open_lists/standard_scalar_open_list.cc
-          open_lists/tiebreaking_open_list.cc
-          lp_solver_interface.cc
+        abstract_task.cc
+        axioms.cc
+        causal_graph.cc
+        combining_evaluator.cc
+        cost_adapted_task.cc
+        countdown_timer.cc
+        delegating_task.cc
+        doc.cc
+        domain_transition_graph.cc
+        eager_search.cc
+        enforced_hill_climbing_search.cc
+        equivalence_relation.cc
+        evaluator.cc
+        exact_timer.cc
+        g_evaluator.cc
+        global_operator.cc
+        globals.cc
+        global_state.cc
+        heuristic.cc
+        int_packer.cc
+        ipc_max_heuristic.cc
+        iterated_search.cc
+        lazy_search.cc
+        lp_internals.cc
+        lp_solver.cc
+        max_evaluator.cc
+        operator_cost.cc
+        option_parser.cc
+        option_parser_util.cc
+        per_state_information.cc
+        plugin.cc
+        pref_evaluator.cc
+        priority_queue.cc
+        relaxation_heuristic.cc
+        rng.cc
+        root_task.cc
+        scalar_evaluator.cc
+        search_engine.cc
+        search_node_info.cc
+        search_progress.cc
+        search_space.cc
+        segmented_vector.cc
+        state_id.cc
+        state_registry.cc
+        successor_generator.cc
+        sum_evaluator.cc
+        task_proxy.cc
+        task_tools.cc
+        timer.cc
+        tracer.cc
+        utilities.cc
+        utilities_hash.cc
+        variable_order_finder.cc
+        weighted_evaluator.cc
+        open_lists/alternation_open_list.cc
+        open_lists/open_list_buckets.cc
+        open_lists/open_list.cc
+        open_lists/pareto_open_list.cc
+        open_lists/standard_scalar_open_list.cc
+        open_lists/tiebreaking_open_list.cc
 )
 
 
@@ -125,7 +140,6 @@ option(PLUGIN_MAS_HEURISTIC "The Merge-and-Shrink heuristic" TRUE)
 if(PLUGIN_MAS_HEURISTIC)
     set(search_plugin_SRCS
         ${search_plugin_SRCS}
-        merge_and_shrink/label.cc
         merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
         merge_and_shrink/merge_dfp.cc
@@ -150,13 +164,14 @@ if(PLUGIN_LANDMARKS)
         landmarks/lama_ff_synergy.cc
         landmarks/landmark_cost_assignment.cc
         landmarks/landmark_count_heuristic.cc
-        landmarks/landmark_status_manager.cc
-        landmarks/landmark_graph_merged.cc
-        landmarks/landmark_graph.cc
         landmarks/landmark_factory.cc
         landmarks/landmark_factory_rpg_exhaust.cc
         landmarks/landmark_factory_rpg_sasp.cc
         landmarks/landmark_factory_zhu_givan.cc
+        landmarks/landmark_graph.cc
+        landmarks/landmark_graph_merged.cc
+        landmarks/landmark_status_manager.cc
+        landmarks/landmark_types.cc
         landmarks/util.cc
     )
 endif()
