@@ -49,7 +49,7 @@ using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult
 class EvaluationContext {
 public:
     EvaluationContext() = default;
-    ~EvaluationContext() = default;
+    virtual ~EvaluationContext() = default;
 
     virtual const EvaluationResults &get_eval_results() const = 0;
 
