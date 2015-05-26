@@ -1,5 +1,5 @@
 # - Find the Open Solver Interface by COIN/OR.
-# This module will search for the OSI the proxies for the solvers
+# This module will search for the OSI proxies for the solvers
 # specified as components in the FIND_PACKAGE call.
 # Possible solvers are:
 #
