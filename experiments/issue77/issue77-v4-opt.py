@@ -12,7 +12,7 @@ print(sorted(CONFIGS.keys()))
 print(len(CONFIGS))
 
 
-SUITE = downward.suites.suite_satisficing_with_ipc11()
+SUITE = downward.suites.suite_optimal_with_ipc11()
 
 exp = common_setup.IssueExperiment(
     search_revisions=["issue77-v3", "issue77-v4"],
