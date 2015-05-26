@@ -20,12 +20,9 @@
 # Version 2.6 introduces functions.
 cmake_minimum_required(VERSION 2.6)
 
-set(TARGET "downward")
-
-project(${TARGET})
 
 
-## == Default Options ==
+## == Default options ==
 
 # Default to Release build, unless specified otherwise
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile")
@@ -43,6 +40,18 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/toolchain-32bit.cmake")
 endif()
 
+
+
+## == Project ==
+
+set(TARGET "downward")
+
+project(${TARGET})
+
+
+
+## == System specific default options ==
+
 # Default to static compilation on all systems except OS X.
 option(DOWNWARD_LINK_RELEASE_STATICALLY
        "Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable static linking of the executable in release mode. On OS X, this is unsupported and will be silently disabled."
@@ -56,15 +65,15 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 
 
-## == Source Files and Target ==
+## == Target and source files ==
 
-include("FastDownwardPlugins")
-
-# First, make a lower-case version of the build type
+# Output binary to src folder and use build type as suffix.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
-
-# Use distinct names for the different targets
 set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
+
+# Collect source files needed for the active plugins.
+include("FastDownwardPlugins")
 
 add_executable(${TARGET}
     planner.cc
@@ -74,7 +83,7 @@ add_executable(${TARGET}
 
 
 
-## == Build Flags ==
+## == Build flags ==
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
