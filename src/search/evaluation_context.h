@@ -87,15 +87,6 @@ public:
     int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
     const std::vector<const GlobalOperator *> &get_preferred_operators(
         ScalarEvaluator *heur);
-
-    template<class Callback>
-    void for_each_evaluator_value(const Callback &callback) const {
-        for (const auto &element : cache.get_eval_results()) {
-            const ScalarEvaluator *eval = element.first;
-            int h = element.second.get_h_value();
-            callback(eval, h);
-        }
-    }
 };
 
 #endif
