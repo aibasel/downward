@@ -5,7 +5,7 @@
 
 #include "../causal_graph.h"
 #include "../countdown_timer.h"
-#include "../eager_evaluation_context.h"
+#include "../evaluation_context.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
@@ -105,7 +105,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
                                             vector<GlobalState> &samples,
                                             double average_operator_cost) {
     const GlobalState &initial_state = sample_registry.get_initial_state();
-    EagerEvaluationContext eval_context(initial_state);
+    EvaluationContext eval_context(initial_state);
 
     int h = eval_context.get_heuristic_value(current_heuristic);
     int n;
@@ -218,7 +218,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
                                                     const GlobalState &sample,
                                                     const vector<vector<PDBHeuristic *> > &max_additive_subsets) {
-    EagerEvaluationContext eval_context(sample);
+    EvaluationContext eval_context(sample);
 
     if (eval_context.is_heuristic_infinite(pdb_heuristic)) {
         return true;
@@ -260,7 +260,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             ++num_iterations;
             cout << "current collection size is " << current_heuristic->get_size() << endl;
             // TODO think about how to handle this when state_registries are moved into the search algorithms.
-            EagerEvaluationContext eval_context(g_initial_state());
+            EvaluationContext eval_context(g_initial_state());
             cout << "current initial h value: ";
             if (eval_context.is_heuristic_infinite(current_heuristic)) {
                 cout << "infinite => stopping hill climbing" << endl;
@@ -354,7 +354,7 @@ void PatternGenerationHaslum::initialize() {
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
 
-    EagerEvaluationContext eval_context(g_initial_state());
+    EvaluationContext eval_context(g_initial_state());
     if (eval_context.is_heuristic_infinite(current_heuristic))
         return;
 

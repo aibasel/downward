@@ -3,7 +3,7 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
-#include "../eager_evaluation_context.h"
+#include "../evaluation_context.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
@@ -71,7 +71,7 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &state) {
       CanonicalPDBsHeuristic::compute_heuristic.
     */
 
-    EagerEvaluationContext eval_context(state);
+    EvaluationContext eval_context(state);
     int h_val = 0;
     for (PDBHeuristic *pdb : pattern_databases) {
         if (eval_context.is_heuristic_infinite(pdb))
