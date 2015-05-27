@@ -1,12 +1,12 @@
 #ifndef LAZY_SEARCH_H
 #define LAZY_SEARCH_H
 
-#include "eager_evaluation_context.h"
 #include "global_state.h"
 #include "scalar_evaluator.h"
 #include "search_engine.h"
 #include "search_progress.h"
 #include "search_space.h"
+#include "state_evaluation_context.h"
 
 #include "open_lists/open_list.h"
 
@@ -34,10 +34,9 @@ protected:
     GlobalState current_state;
     StateID current_predecessor_id;
     const GlobalOperator *current_operator;
-    // TODO: Remove, since it's stored in current_eval_context?
     int current_g;
     int current_real_g;
-    EagerEvaluationContext current_eval_context;
+    StateEvaluationContext current_eval_context;
 
     virtual void initialize();
     virtual SearchStatus step();
