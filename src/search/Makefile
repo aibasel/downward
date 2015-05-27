@@ -62,6 +62,7 @@ HEADERS = \
           lazy_evaluation_context.h \
           lazy_search.h \
           max_evaluator.h \
+          node_evaluation_context.h \
           operator_cost.h \
           option_parser.h \
           option_parser_util.h \
