@@ -47,6 +47,7 @@ class SearchStatistics;
 */
 
 class EvaluationContext {
+    // TODO: Store cache as shared_ptr?
     HeuristicCache cache;
     int g_value;
     bool preferred;
@@ -64,18 +65,9 @@ public:
         SearchStatistics *statistics = nullptr);
     ~EvaluationContext() = default;
 
-    const EvaluationResults &get_eval_results() const {
-        return cache.get_eval_results();
-    }
-
     const EvaluationResult &get_result(ScalarEvaluator *heur);
-
-    const HeuristicCache &get_cache() const {
-        return cache;
-    }
-
+    const HeuristicCache &get_cache() const;
     const GlobalState &get_state() const;
-
     int get_g_value() const;
     bool is_preferred() const;
 
@@ -98,7 +90,7 @@ public:
 
     template<class Callback>
     void for_each_evaluator_value(const Callback &callback) const {
-        for (const auto &element : get_eval_results()) {
+        for (const auto &element : cache.get_eval_results()) {
             const ScalarEvaluator *eval = element.first;
             int h = element.second.get_h_value();
             callback(eval, h);
