@@ -36,6 +36,8 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 ## as a bug.
 DOWNWARD_OS ?= auto
 
+# TODO: Restore ipc_max_heuristic.h, enforced_hill_climbing.h and PDB code.
+
 HEADERS = \
           axioms.h \
           causal_graph.h \
@@ -44,9 +46,7 @@ HEADERS = \
           countdown_timer.h \
           delegating_task.h \
           domain_transition_graph.h \
-          eager_evaluation_context.h \
           eager_search.h \
-          enforced_hill_climbing_search.h \
           equivalence_relation.h \
           evaluation_context.h \
           evaluation_result.h \
@@ -57,9 +57,7 @@ HEADERS = \
           globals.h \
           heuristic.h \
           int_packer.h \
-          ipc_max_heuristic.cc \
           iterated_search.h \
-          lazy_evaluation_context.h \
           lazy_search.h \
           max_evaluator.h \
           node_evaluation_context.h \
@@ -157,15 +155,15 @@ HEADERS += landmarks/exploration.h \
 #            learning/state_space_sample.h \
 #            learning/state_vars_feature_extractor.h \
 
-HEADERS += pdbs/canonical_pdbs_heuristic.h \
-           pdbs/dominance_pruner.h \
-           pdbs/match_tree.h \
-           pdbs/max_cliques.h \
-           pdbs/pattern_generation_edelkamp.h \
-           pdbs/pattern_generation_haslum.h \
-           pdbs/pdb_heuristic.h \
-           pdbs/util.h \
-           pdbs/zero_one_pdbs_heuristic.h \
+#HEADERS += pdbs/canonical_pdbs_heuristic.h \
+#           pdbs/dominance_pruner.h \
+#           pdbs/match_tree.h \
+#           pdbs/max_cliques.h \
+#           pdbs/pattern_generation_edelkamp.h \
+#           pdbs/pattern_generation_haslum.h \
+#           pdbs/pdb_heuristic.h \
+#           pdbs/util.h \
+#           pdbs/zero_one_pdbs_heuristic.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward
