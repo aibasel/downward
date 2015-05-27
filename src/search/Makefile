@@ -77,6 +77,7 @@ HEADERS = \
           search_progress.h \
           search_space.h \
           search_statistics.h \
+          state_evaluation_context.h \
           state_id.h \
           state_registry.h \
           successor_generator.h \
