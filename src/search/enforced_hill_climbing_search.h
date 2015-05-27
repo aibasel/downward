@@ -1,7 +1,7 @@
 #ifndef ENFORCED_HILL_CLIMBING_SEARCH_H
 #define ENFORCED_HILL_CLIMBING_SEARCH_H
 
-#include "eager_evaluation_context.h"
+#include "evaluation_context.h"
 #include "search_engine.h"
 
 #include "open_lists/open_list.h"
@@ -33,7 +33,7 @@ protected:
     bool use_preferred;
     PreferredUsage preferred_usage;
 
-    EagerEvaluationContext current_eval_context;
+    EvaluationContext current_eval_context;
 
     // Statistics
     std::map<int, std::pair<int, int> > d_counts;

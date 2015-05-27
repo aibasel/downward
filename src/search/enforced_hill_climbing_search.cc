@@ -2,7 +2,6 @@
 
 #include "g_evaluator.h"
 #include "global_operator.h"
-#include "lazy_evaluation_context.h"
 #include "plugin.h"
 #include "pref_evaluator.h"
 #include "successor_generator.h"
@@ -113,9 +112,9 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context, int d) 
         int new_d = d + get_adjusted_cost(*op);
         OpenListEntryEHC entry = make_pair(
             current_eval_context.get_state().get_id(), make_pair(new_d, op));
-        LazyEvaluationContext lazy_eval_context(
-            current_eval_context, new_d, op->is_marked());
-        open_list->insert(lazy_eval_context, entry);
+        EvaluationContext new_eval_context(
+            current_eval_context.get_cache(), new_d, op->is_marked(), nullptr);
+        open_list->insert(new_eval_context, entry);
         op->unmark();
     }
 
@@ -155,7 +154,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         if (node.is_new()) {
             int g_value = parent_node.get_g() + get_adjusted_cost(*last_op);
-            EagerEvaluationContext eval_context(
+            EvaluationContext eval_context(
                 state, g_value, last_op->is_marked(), &statistics);
             reach_state(parent_state, *last_op, state);
 
