@@ -36,7 +36,7 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 ## as a bug.
 DOWNWARD_OS ?= auto
 
-# TODO: Restore ipc_max_heuristic.h, enforced_hill_climbing.h and PDB code.
+# TODO: Restore enforced_hill_climbing.h.
 
 HEADERS = \
           axioms.h \
@@ -58,6 +58,7 @@ HEADERS = \
           heuristic_cache.h \
           heuristic.h \
           int_packer.h \
+          ipc_max_heuristic.h \
           iterated_search.h \
           lazy_search.h \
           max_evaluator.h \
