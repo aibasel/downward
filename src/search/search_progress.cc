@@ -1,6 +1,6 @@
 #include "search_progress.h"
 
-#include "heuristic_cache.h"
+#include "evaluation_context.h"
 #include "heuristic.h"
 
 #include <iostream>
@@ -39,7 +39,7 @@ void SearchProgress::output_line(const string &description,
          << heuristic->get_description() << ": " << h << endl;
 }
 
-bool SearchProgress::check_progress(const HeuristicCache &eval_context) {
+bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
     bool result = false;
     eval_context.for_each_evaluator_value(
         [this, &result](const ScalarEvaluator * evaluator, int h) {
