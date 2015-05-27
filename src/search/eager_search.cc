@@ -60,7 +60,7 @@ void EagerSearch::initialize() {
     if (open_list->is_dead_end(eval_context)) {
         cout << "Initial state is a dead end." << endl;
     } else {
-        if (search_progress.check_progress(eval_context.get_cache()))
+        if (search_progress.check_progress(eval_context))
             print_checkpoint_line(0);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
@@ -164,7 +164,7 @@ SearchStatus EagerSearch::step() {
             succ_node.open(succ_h, node, op);
 
             open_list->insert(eval_context, succ_state.get_id());
-            if (search_progress.check_progress(eval_context.get_cache())) {
+            if (search_progress.check_progress(eval_context)) {
                 print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }

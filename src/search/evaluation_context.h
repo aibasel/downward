@@ -9,6 +9,7 @@
 class GlobalOperator;
 class GlobalState;
 class ScalarEvaluator;
+class SearchStatistics;
 
 /*
   TODO: Now that we have an explicit EvaluationResult class, it's
@@ -45,29 +46,32 @@ class ScalarEvaluator;
      new best f value.
 */
 
-using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
-
 class EvaluationContext {
-    HeuristicCache eval_context;
-    EvaluationResults eval_results;
+    HeuristicCache cache;
     int g_value;
     bool preferred;
+    SearchStatistics *statistics;
 
 public:
     EvaluationContext(
-        const HeuristicCache &eval_context, int g_value, bool is_preferred);
+        const HeuristicCache &cache, int g_value, bool is_preferred,
+        SearchStatistics *statistics);
     EvaluationContext(
-        const GlobalState &state, int g_value, bool is_preferred, SearchStatistics *statistics);
+        const GlobalState &state, int g_value, bool is_preferred,
+        SearchStatistics *statistics);
+    EvaluationContext(
+        const GlobalState &state,
+        SearchStatistics *statistics = nullptr);
     ~EvaluationContext() = default;
 
     const EvaluationResults &get_eval_results() const {
-        return eval_context.get_eval_results();
+        return cache.get_eval_results();
     }
 
     const EvaluationResult &get_result(ScalarEvaluator *heur);
 
     const HeuristicCache &get_cache() const {
-        return eval_context;
+        return cache;
     }
 
     const GlobalState &get_state() const;

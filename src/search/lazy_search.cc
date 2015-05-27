@@ -1,8 +1,8 @@
 #include "lazy_search.h"
 
-#include "evaluation_context.h"
 #include "g_evaluator.h"
 #include "globals.h"
+#include "heuristic_cache.h"
 #include "heuristic.h"
 #include "plugin.h"
 #include "rng.h"
@@ -107,7 +107,7 @@ void LazySearch::generate_successors() {
             op->unmark();
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
-                current_eval_context, new_g, is_preferred);
+                current_eval_context.get_cache(), new_g, is_preferred, nullptr);
             open_list->insert(new_eval_context, make_pair(current_state.get_id(), op));
         }
     }
@@ -131,7 +131,7 @@ SearchStatus LazySearch::fetch_next_state() {
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
-    current_eval_context = HeuristicCache(current_state, &statistics);
+    current_eval_context = EvaluationContext(current_state, &statistics);
 
     return IN_PROGRESS;
 }
@@ -162,9 +162,7 @@ SearchStatus LazySearch::step() {
                 heuristic->reach_state(parent_state, *current_operator, current_state);
         }
         statistics.inc_evaluated_states();
-        // TODO: g value and preferredness are wrong.
-        EvaluationContext node_evaluation_context(current_eval_context, 0, false);
-        if (!open_list->is_dead_end(node_evaluation_context)) {
+        if (!open_list->is_dead_end(current_eval_context)) {
             // TODO: Generalize code for using multiple heuristics.
             int h = current_eval_context.get_heuristic_value(heuristics[0]);
             if (reopen) {

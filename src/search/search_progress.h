@@ -3,9 +3,8 @@
 
 #include <unordered_map>
 
+class EvaluationContext;
 class Heuristic;
-class HeuristicCache;
-
 
 /*
   This class helps track search progress.
@@ -39,7 +38,7 @@ public:
 
       Prints one line of output for each new best heuristic value.
     */
-    bool check_progress(const HeuristicCache &eval_context);
+    bool check_progress(const EvaluationContext &eval_context);
 
     /*
       Print information on the first heuristic value seen for each heuristic.
