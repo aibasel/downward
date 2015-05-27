@@ -4,25 +4,20 @@
 
 #include "ext/tree_util.hh"
 
-#include <limits>
-
 IteratedSearch::IteratedSearch(const Options &opts)
     : SearchEngine(opts),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
-      continue_on_solve(opts.get<bool>("continue_on_solve")) {
-    last_phase_found_solution = false;
-    best_bound = bound;
-    iterated_found_solution = false;
-}
-
-IteratedSearch::~IteratedSearch() {
+      continue_on_solve(opts.get<bool>("continue_on_solve")),
+      phase(0),
+      last_phase_found_solution(false),
+      best_bound(bound),
+      iterated_found_solution(false) {
 }
 
 void IteratedSearch::initialize() {
-    phase = 0;
 }
 
 SearchEngine *IteratedSearch::get_search_engine(
