@@ -1,5 +1,6 @@
 #include "state_evaluation_context.h"
 
+#include "eager_evaluation_context.h"
 #include "heuristic.h"
 #include "search_statistics.h"
 
@@ -19,7 +20,9 @@ StateEvaluationContext::StateEvaluationContext(const GlobalState &state)
 const EvaluationResult &StateEvaluationContext::get_result(ScalarEvaluator *heur) {
     EvaluationResult &result = eval_results[heur];
     if (result.is_uninitialized()) {
-        // TODO: Implement: result = heur->compute_result(*this);
+        // TODO: Fix this.
+        EagerEvaluationContext eval_context(state, 0, false, nullptr);
+        result = heur->compute_result(eval_context);
         if (statistics && dynamic_cast<const Heuristic *>(heur)) {
             /* Only count evaluations of actual Heuristics, not arbitrary
                scalar evaluators. */
