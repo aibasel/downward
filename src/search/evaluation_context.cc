@@ -43,6 +43,10 @@ const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
     return result;
 }
 
+const HeuristicCache &EvaluationContext::get_cache() const {
+    return cache;
+}
+
 const GlobalState &EvaluationContext::get_state() const {
     return cache.get_state();
 }
