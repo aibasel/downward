@@ -1,4 +1,4 @@
-#include "state_evaluation_context.h"
+#include "heuristic_cache.h"
 
 #include "evaluation_context.h"
 #include "heuristic.h"
@@ -7,17 +7,17 @@
 using namespace std;
 
 
-StateEvaluationContext::StateEvaluationContext(
+HeuristicCache::HeuristicCache(
     const GlobalState &state, SearchStatistics *statistics)
     : state(state),
       statistics(statistics) {
 }
 
-StateEvaluationContext::StateEvaluationContext(const GlobalState &state)
-    : StateEvaluationContext(state, nullptr) {
+HeuristicCache::HeuristicCache(const GlobalState &state)
+    : HeuristicCache(state, nullptr) {
 }
 
-const EvaluationResult &StateEvaluationContext::get_result(ScalarEvaluator *heur) {
+const EvaluationResult &HeuristicCache::get_result(ScalarEvaluator *heur) {
     assert(dynamic_cast<const Heuristic *>(heur));
     EvaluationResult &result = eval_results[heur];
     if (result.is_uninitialized()) {
@@ -33,25 +33,25 @@ const EvaluationResult &StateEvaluationContext::get_result(ScalarEvaluator *heur
     return result;
 }
 
-const GlobalState &StateEvaluationContext::get_state() const {
+const GlobalState &HeuristicCache::get_state() const {
     return state;
 }
 
-bool StateEvaluationContext::is_heuristic_infinite(ScalarEvaluator *heur) {
+bool HeuristicCache::is_heuristic_infinite(ScalarEvaluator *heur) {
     return get_result(heur).is_infinite();
 }
 
-int StateEvaluationContext::get_heuristic_value(ScalarEvaluator *heur) {
+int HeuristicCache::get_heuristic_value(ScalarEvaluator *heur) {
     int h = get_result(heur).get_h_value();
     assert(h != EvaluationResult::INFINITE);
     return h;
 }
 
-int StateEvaluationContext::get_heuristic_value_or_infinity(ScalarEvaluator *heur) {
+int HeuristicCache::get_heuristic_value_or_infinity(ScalarEvaluator *heur) {
     return get_result(heur).get_h_value();
 }
 
 const vector<const GlobalOperator *> &
-StateEvaluationContext::get_preferred_operators(ScalarEvaluator *heur) {
+HeuristicCache::get_preferred_operators(ScalarEvaluator *heur) {
     return get_result(heur).get_preferred_operators();
 }

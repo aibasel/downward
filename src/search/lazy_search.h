@@ -2,11 +2,11 @@
 #define LAZY_SEARCH_H
 
 #include "global_state.h"
+#include "heuristic_cache.h"
 #include "scalar_evaluator.h"
 #include "search_engine.h"
 #include "search_progress.h"
 #include "search_space.h"
-#include "state_evaluation_context.h"
 
 #include "open_lists/open_list.h"
 
@@ -36,7 +36,7 @@ protected:
     const GlobalOperator *current_operator;
     int current_g;
     int current_real_g;
-    StateEvaluationContext current_eval_context;
+    HeuristicCache current_eval_context;
 
     virtual void initialize();
     virtual SearchStatus step();

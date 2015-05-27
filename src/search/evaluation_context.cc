@@ -9,7 +9,7 @@ using namespace std;
 
 
 EvaluationContext::EvaluationContext(
-    const StateEvaluationContext &eval_context, int g_value, bool is_preferred)
+    const HeuristicCache &eval_context, int g_value, bool is_preferred)
     : eval_context(eval_context),
       g_value(g_value),
       preferred(is_preferred) {
@@ -17,7 +17,7 @@ EvaluationContext::EvaluationContext(
 
 EvaluationContext::EvaluationContext(
     const GlobalState &state, int g_value, bool is_preferred, SearchStatistics *statistics)
-    : EvaluationContext(StateEvaluationContext(state, statistics), g_value, is_preferred) {
+    : EvaluationContext(HeuristicCache(state, statistics), g_value, is_preferred) {
 }
 
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {

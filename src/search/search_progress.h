@@ -3,8 +3,8 @@
 
 #include <unordered_map>
 
-class StateEvaluationContext;
 class Heuristic;
+class HeuristicCache;
 
 
 /*
@@ -39,7 +39,7 @@ public:
 
       Prints one line of output for each new best heuristic value.
     */
-    bool check_progress(const StateEvaluationContext &eval_context);
+    bool check_progress(const HeuristicCache &eval_context);
 
     /*
       Print information on the first heuristic value seen for each heuristic.

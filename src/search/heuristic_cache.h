@@ -1,5 +1,5 @@
-#ifndef STATE_EVALUATION_CONTEXT_H
-#define STATE_EVALUATION_CONTEXT_H
+#ifndef HEURISTIC_CACHE_H
+#define HEURISTIC_CACHE_H
 
 #include "evaluation_result.h"
 #include "global_state.h"
@@ -11,7 +11,7 @@ class SearchStatistics;
 
 using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
 
-class StateEvaluationContext {
+class HeuristicCache {
     EvaluationResults eval_results;
     GlobalState state;
     SearchStatistics *statistics;
@@ -19,15 +19,15 @@ class StateEvaluationContext {
 public:
     // TODO: Select one constructor?
     // Use "statistics = nullptr" if no statistics are desired.
-    StateEvaluationContext(
+    HeuristicCache(
         const GlobalState &state, SearchStatistics *statistics);
 
     /*
       Use the following constructor when you don't need statistics,
       e.g. when sampling states for heuristics.
     */
-    explicit StateEvaluationContext(const GlobalState &state);
-    ~StateEvaluationContext() = default;
+    explicit HeuristicCache(const GlobalState &state);
+    ~HeuristicCache() = default;
 
     const EvaluationResults &get_eval_results() const {
         return eval_results;
