@@ -36,8 +36,6 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 ## as a bug.
 DOWNWARD_OS ?= auto
 
-# TODO: Restore enforced_hill_climbing.h.
-
 HEADERS = \
           axioms.h \
           causal_graph.h \
@@ -47,6 +45,7 @@ HEADERS = \
           delegating_task.h \
           domain_transition_graph.h \
           eager_search.h \
+          enforced_hill_climbing_search.h \
           equivalence_relation.h \
           evaluation_context.h \
           evaluation_result.h \
