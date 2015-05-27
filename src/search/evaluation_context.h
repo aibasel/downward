@@ -2,7 +2,7 @@
 #define EVALUATION_CONTEXT_H
 
 #include "evaluation_result.h"
-#include "state_evaluation_context.h"
+#include "heuristic_cache.h"
 
 #include <unordered_map>
 
@@ -48,14 +48,14 @@ class ScalarEvaluator;
 using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
 
 class EvaluationContext {
-    StateEvaluationContext eval_context;
+    HeuristicCache eval_context;
     EvaluationResults eval_results;
     int g_value;
     bool preferred;
 
 public:
     EvaluationContext(
-        const StateEvaluationContext &eval_context, int g_value, bool is_preferred);
+        const HeuristicCache &eval_context, int g_value, bool is_preferred);
     EvaluationContext(
         const GlobalState &state, int g_value, bool is_preferred, SearchStatistics *statistics);
     ~EvaluationContext() = default;
@@ -66,7 +66,7 @@ public:
 
     const EvaluationResult &get_result(ScalarEvaluator *heur);
 
-    const StateEvaluationContext &get_cache() const {
+    const HeuristicCache &get_cache() const {
         return eval_context;
     }
 

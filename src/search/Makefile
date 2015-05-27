@@ -55,6 +55,7 @@ HEADERS = \
           global_operator.h \
           global_state.h \
           globals.h \
+          heuristic_cache.h \
           heuristic.h \
           int_packer.h \
           iterated_search.h \
@@ -75,7 +76,6 @@ HEADERS = \
           search_progress.h \
           search_space.h \
           search_statistics.h \
-          state_evaluation_context.h \
           state_id.h \
           state_registry.h \
           successor_generator.h \
