@@ -2,6 +2,7 @@
 #define EVALUATION_CONTEXT_H
 
 #include "evaluation_result.h"
+#include "state_evaluation_context.h"
 
 #include <unordered_map>
 
@@ -47,18 +48,32 @@ class ScalarEvaluator;
 using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
 
 class EvaluationContext {
+    StateEvaluationContext eval_context;
+    EvaluationResults eval_results;
+    int g_value;
+    bool preferred;
+
 public:
-    EvaluationContext() = default;
-    virtual ~EvaluationContext() = default;
+    EvaluationContext(
+        const StateEvaluationContext &eval_context, int g_value, bool is_preferred);
+    EvaluationContext(
+        const GlobalState &state, int g_value, bool is_preferred, SearchStatistics *statistics);
+    ~EvaluationContext() = default;
 
-    virtual const EvaluationResults &get_eval_results() const = 0;
+    const EvaluationResults &get_eval_results() const {
+        return eval_context.get_eval_results();
+    }
 
-    virtual const EvaluationResult &get_result(ScalarEvaluator *heur) = 0;
+    const EvaluationResult &get_result(ScalarEvaluator *heur);
 
-    virtual const GlobalState &get_state() const = 0;
+    const StateEvaluationContext &get_cache() const {
+        return eval_context;
+    }
 
-    virtual int get_g_value() const = 0;
-    virtual bool is_preferred() const = 0;
+    const GlobalState &get_state() const;
+
+    int get_g_value() const;
+    bool is_preferred() const;
 
     /*
       Use get_heuristic_value() to query finite heuristic values. It

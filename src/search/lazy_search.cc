@@ -1,9 +1,9 @@
 #include "lazy_search.h"
 
+#include "evaluation_context.h"
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
-#include "lazy_evaluation_context.h"
 #include "plugin.h"
 #include "rng.h"
 #include "successor_generator.h"
@@ -26,7 +26,7 @@ LazySearch::LazySearch(const Options &opts)
       current_operator(nullptr),
       current_g(0),
       current_real_g(0),
-      current_eval_context(current_state, current_g, true, &statistics) {
+      current_eval_context(current_state, &statistics) {
 }
 
 void LazySearch::set_pref_operator_heuristics(
@@ -106,7 +106,7 @@ void LazySearch::generate_successors() {
         if (is_preferred)
             op->unmark();
         if (new_real_g < bound) {
-            LazyEvaluationContext new_eval_context(
+            EvaluationContext new_eval_context(
                 current_eval_context, new_g, is_preferred);
             open_list->insert(new_eval_context, make_pair(current_state.get_id(), op));
         }
@@ -131,8 +131,7 @@ SearchStatus LazySearch::fetch_next_state() {
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
-    // TODO: set is_preferred.
-    current_eval_context = EagerEvaluationContext(current_state, current_g, false, &statistics);
+    current_eval_context = StateEvaluationContext(current_state, &statistics);
 
     return IN_PROGRESS;
 }
@@ -163,7 +162,9 @@ SearchStatus LazySearch::step() {
                 heuristic->reach_state(parent_state, *current_operator, current_state);
         }
         statistics.inc_evaluated_states();
-        if (!open_list->is_dead_end(current_eval_context)) {
+        // TODO: g value and preferredness are wrong.
+        EvaluationContext node_evaluation_context(current_eval_context, 0, false);
+        if (!open_list->is_dead_end(node_evaluation_context)) {
             // TODO: Generalize code for using multiple heuristics.
             int h = current_eval_context.get_heuristic_value(heuristics[0]);
             if (reopen) {
