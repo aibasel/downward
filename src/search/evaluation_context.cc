@@ -27,7 +27,7 @@ EvaluationContext::EvaluationContext(
 EvaluationContext::EvaluationContext(
     const GlobalState &state,
     SearchStatistics *statistics)
-    : EvaluationContext(HeuristicCache(state), -1, false, statistics) {
+    : EvaluationContext(HeuristicCache(state), INVALID, false, statistics) {
 }
 
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
@@ -52,10 +52,12 @@ const GlobalState &EvaluationContext::get_state() const {
 }
 
 int EvaluationContext::get_g_value() const {
+    assert(g_value != INVALID);
     return g_value;
 }
 
 bool EvaluationContext::is_preferred() const {
+    assert(g_value != INVALID);
     return preferred;
 }
 
