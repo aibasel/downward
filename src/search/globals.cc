@@ -266,7 +266,7 @@ void read_everything(istream &in) {
     // so must be built after the problem has been read in.
 
     cout << "building causal graph..." << flush;
-    g_causal_graph = new CausalGraph;
+    g_causal_graph = &g_root_task()->get_causal_graph();
     cout << "done! [t=" << g_timer << "]" << endl;
 
     cout << "packing state variables..." << flush;
@@ -393,7 +393,7 @@ vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
-CausalGraph *g_causal_graph;
+const CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
