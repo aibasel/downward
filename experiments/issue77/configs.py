@@ -167,18 +167,36 @@ def configs_satisficing_extended():
             "iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3),"
             "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])"],
         # pareto open list
-        "pareto_ff": [
+        "eager_pareto_ff": [
             "--heuristic",
             "h=ff()",
             "--search",
             "eager(pareto([sum([g(), h]), h]), reopen_closed=true,"
             "f_eval=sum([g(), h]))"],
         # bucket-based open list
-        "bucket_lmcut": [
+        "eager_bucket_lmcut": [
             "--heuristic",
             "h=lmcut()",
             "--search",
             "eager(single_buckets(h), reopen_closed=true)"],
+        # LAMA's first iteration
+        "lama_first": [
+            "--if-unit-cost",
+            "--heuristic",
+            "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true))",
+            "--search",
+            "lazy_greedy([hff,hlm],preferred=[hff,hlm])",
+            "--if-non-unit-cost",
+            "--heuristic",
+            "hlm1,hff1=lm_ff_syn(lm_rhw(reasonable_orders=true,"
+            "                           lm_cost_type=one,cost_type=one))",
+            "--heuristic",
+            "hlm2,hff2=lm_ff_syn(lm_rhw(reasonable_orders=true,"
+            "                           lm_cost_type=plusone,cost_type=plusone))",
+            "--search",
+            "lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],"
+            "            cost_type=one,reopen_closed=false)",
+            "--always"],
     }
 
 
