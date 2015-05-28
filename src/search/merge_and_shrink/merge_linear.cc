@@ -11,7 +11,8 @@ using namespace std;
 
 MergeLinear::MergeLinear(const Options &opts)
     : MergeStrategy(),
-      order(VariableOrderType(opts.get_enum("variable_order"))),
+      // TODO when switching merge and shrink to new task interface, use task from opts instead of g_root_task().
+      order(g_root_task(), VariableOrderType(opts.get_enum("variable_order"))),
       need_first_index(true) {
 }
 
