@@ -1,5 +1,6 @@
 #include "abstract_task.h"
 
+#include "causal_graph.h"
 #include "cost_adapted_task.h"
 #include "globals.h"
 #include "operator_cost.h"
@@ -9,6 +10,13 @@
 #include <iostream>
 
 using namespace std;
+
+const CausalGraph &AbstractTask::get_causal_graph() const {
+    if (!causal_graph) {
+        causal_graph = new CausalGraph(*this);
+    }
+    return *causal_graph;
+}
 
 shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
    /*

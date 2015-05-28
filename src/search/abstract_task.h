@@ -6,11 +6,13 @@
 #include <utility>
 #include <vector>
 
+class CausalGraph;
 class GlobalOperator;
 class GlobalState;
 class Options;
 
 class AbstractTask {
+    mutable CausalGraph *causal_graph = nullptr;
 public:
     AbstractTask() = default;
     virtual ~AbstractTask() = default;
@@ -41,6 +43,9 @@ public:
 
     virtual std::vector<int> get_initial_state_values() const = 0;
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const = 0;
+
+    // The causal graph of the task is created only on demand.
+    const CausalGraph &get_causal_graph() const;
 };
 
 std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts);

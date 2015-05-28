@@ -53,6 +53,8 @@
 
 typedef std::vector<std::vector<int> > IntRelation;
 
+class AbstractTask;
+class TaskProxy;
 
 class CausalGraph {
     IntRelation pre_to_eff;
@@ -62,7 +64,7 @@ class CausalGraph {
     IntRelation successors;
     IntRelation predecessors;
 public:
-    CausalGraph();
+    CausalGraph(const AbstractTask &task);
     ~CausalGraph();
 
     /*
@@ -103,7 +105,7 @@ public:
         return predecessors[var];
     }
 
-    void dump() const;
+    void dump(const TaskProxy &task_proxy) const;
 };
 
 #endif
