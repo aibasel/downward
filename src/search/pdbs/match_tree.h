@@ -12,19 +12,18 @@ class TaskProxy;
 
 // Implements a Successor Generator for abstract operators
 class MatchTree {
+    std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
     struct Node;
     std::vector<int> pattern; // as in PDBHeuristic
     std::vector<size_t> hash_multipliers; // as in PDBHeuristic
     Node *root;
-    // Called by insert.
-    void build_recursively(const AbstractOperator &op,
-                           int pre_index,
-                           Node **edge_from_parent);
-    // Called by get_applicable_operators.
-    void traverse(Node *node, const size_t state_index,
+    void insert_recursive(const AbstractOperator &op,
+                          int pre_index,
+                          Node **edge_from_parent);
+    void get_applicable_operators_recursive(Node *node, const size_t state_index,
         std::vector<const AbstractOperator *> &applicable_operators) const;
-    void _dump(Node *node) const;
+    void dump_recursive(Node *node) const;
 public:
     // Initialize an empty match tree.
     MatchTree(std::shared_ptr<AbstractTask> task,
