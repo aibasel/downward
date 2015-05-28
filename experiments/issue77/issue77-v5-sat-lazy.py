@@ -18,7 +18,7 @@ print(len(CONFIGS))
 SUITE = downward.suites.suite_satisficing_with_ipc11()
 
 exp = common_setup.IssueExperiment(
-    search_revisions=["issue77-base", "issue77-v5"],
+    search_revisions=["issue77-v5-base", "issue77-v5"],
     configs=CONFIGS,
     suite=SUITE
     )
