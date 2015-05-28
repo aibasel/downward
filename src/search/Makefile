@@ -38,6 +38,7 @@ DOWNWARD_OS ?= auto
 
 
 HEADERS = \
+          abstract_task.h \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
