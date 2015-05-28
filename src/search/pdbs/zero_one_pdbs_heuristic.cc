@@ -3,9 +3,6 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../utilities.h"
@@ -33,11 +30,11 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     approx_mean_finite_h = 0;
     pattern_databases.reserve(pattern_collection.size());
     for (const vector<int> &pattern : pattern_collection) {
-        Options opts;
-        opts.set<shared_ptr<AbstractTask> >("transform", task);
-        opts.set<int>("cost_type", cost_type);
-        opts.set<vector<int> >("pattern", pattern);
-        PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, operator_costs);
+        Options pdb_opts;
+        pdb_opts.set<shared_ptr<AbstractTask> >("transform", task);
+        pdb_opts.set<int>("cost_type", cost_type);
+        pdb_opts.set<vector<int> >("pattern", pattern);
+        PDBHeuristic *pdb_heuristic = new PDBHeuristic(pdb_opts, false, operator_costs);
         pattern_databases.push_back(pdb_heuristic);
 
         // Set cost of relevant operators to 0 for further iterations (action cost partitioning).
