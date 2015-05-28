@@ -123,7 +123,7 @@ void PDBHeuristic::build_abstract_operators(const OperatorProxy &op, int cost,
     vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect
     vector<pair<int, int> > effects_without_pre; // all variable value pairs that are a precondition (value = -1)
 
-    int num_vars = task_proxy.get_variables().size();
+    size_t num_vars = task_proxy.get_variables().size();
     vector<bool> has_precond_and_effect_on_var(num_vars, false);
     vector<bool> has_precondition_on_var(num_vars, false);
 

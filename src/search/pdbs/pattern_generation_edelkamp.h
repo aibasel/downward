@@ -42,7 +42,7 @@ class PatternGenerationEdelkamp {
        from options. This method does not check for pdb_max_size or disjoint patterns. */
     void mutate();
 
-    /* Transforms a vector of bools (internal pattern representation in this class, mainly for easy mutation)
+    /* Transforms a bit vector (internal pattern representation in this class, mainly for easy mutation)
        to the "normal" pattern form vector<int>, which we need for ZeroOnePDBsHeuristic. */
     void transform_to_pattern_normal_form(const std::vector<bool> &bitvector, std::vector<int> &pattern) const;
 

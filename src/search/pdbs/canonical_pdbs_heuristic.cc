@@ -44,10 +44,10 @@ void CanonicalPDBsHeuristic::_add_pattern(const vector<int> &pattern) {
     size += pattern_databases.back()->get_size();
 }
 
-bool CanonicalPDBsHeuristic::are_patterns_additive(const vector<int> &patt1,
-                                                   const vector<int> &patt2) const {
-    for (int v1 : patt1) {
-        for (int v2 : patt2) {
+bool CanonicalPDBsHeuristic::are_patterns_additive(
+   const vector<int> &pattern1, const vector<int> &pattern2) const {
+    for (int v1 : pattern1) {
+        for (int v2 : pattern2) {
             if (!are_additive[v1][v2]) {
                 return false;
             }

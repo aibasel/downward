@@ -40,7 +40,7 @@ class PatternGenerationHaslum {
                                              std::vector<std::vector<int> > &new_candidates,
                                              std::vector<PDBHeuristic *> &candidate_pdbs) const;
 
-    /* Performs num_samples random walks with a lenght (different for each random walk) chosen
+    /* Performs num_samples random walks with a length (different for each random walk) chosen
        according to a binomial distribution with n = 4 * solution depth estimate and p = 0.5,
        starting from the initial state. In each step of a random walk, a random operator is taken
        and applied to the current state. If a dead end is reached or no more operators are
@@ -65,7 +65,7 @@ class PatternGenerationHaslum {
 
     /* This is the core algorithm of this class. As soon as after an iteration, the improvement (according
        to the "counting approximation") is smaller than the minimal required improvement, the search is
-       stopped. This method uses a vector to store PDBs to avoid recomputation of the same PDBs later.
+       stopped. This method uses a vector to store PDBs to avoid re-computation of the same PDBs later.
        This is quite a large time gain, but may use too much memory. Also a set is used to store all
        patterns in their "normal form" for duplicate detection.
        TODO: This method computes all PDBs already for candidate iteration, but for each call of

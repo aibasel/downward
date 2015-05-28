@@ -43,7 +43,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
         total_so_far += fitness_values[i];
         cumulative_fitness.push_back(total_so_far);
     }
-    // total_so_far is now sum over all fitness values
+    // total_so_far is now sum over all fitness values.
 
     vector<vector<vector<bool> > > new_pattern_collections;
     new_pattern_collections.reserve(num_collections);
@@ -104,9 +104,11 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     while (!vars_to_check.empty()) {
         int var = vars_to_check.back();
         vars_to_check.pop_back();
-        // A variable is relevant to the pattern if it is a goal variable or if
-        // there is a pre->eff arc from the variable to a relevant variable.
-        // Note that there is no point in considering eff->eff arcs here.
+        /*
+          A variable is relevant to the pattern if it is a goal variable or if
+          there is a pre->eff arc from the variable to a relevant variable.
+          Note that there is no point in considering eff->eff arcs here.
+        */
         const vector<int> &rel = g_causal_graph->get_eff_to_pre(var);
         for (size_t i = 0; i < rel.size(); ++i) {
             int var_no = rel[i];
@@ -125,7 +127,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
 
 bool PatternGenerationEdelkamp::is_pattern_too_large(
     const vector<int> &pattern) const {
-    // test if the pattern respects the memory limit
+    // Test if the pattern respects the memory limit.
     int mem = 1;
     for (size_t i = 0; i < pattern.size(); ++i) {
         int domain_size = g_variable_domain[pattern[i]];
@@ -178,26 +180,27 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             pattern_collection.push_back(pattern);
         }
         if (!pattern_valid) {
-            // set fitness to a very small value to cover cases in which all patterns are invalid
+            /* Set fitness to a very small value to cover cases in which all
+               patterns are invalid. */
             fitness = 0.001;
         } else {
-            // generate the pattern collection heuristic and get its fitness value.
+            // Generate the pattern collection heuristic and get its fitness value.
             Options opts;
             opts.set<shared_ptr<AbstractTask> >("transform", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
-            ZeroOnePDBsHeuristic *zoppch =
+            ZeroOnePDBsHeuristic *pattern_collection_heuristic =
                 new ZeroOnePDBsHeuristic(opts);
-            fitness = zoppch->get_approx_mean_finite_h();
-            // update the best heuristic found so far.
+            fitness = pattern_collection_heuristic->get_approx_mean_finite_h();
+            // Update the best heuristic found so far.
             if (fitness > best_fitness) {
                 best_fitness = fitness;
                 cout << "best_fitness = " << best_fitness << endl;
                 delete best_heuristic;
-                best_heuristic = zoppch;
+                best_heuristic = pattern_collection_heuristic;
                 //best_heuristic->dump();
             } else {
-                delete zoppch;
+                delete pattern_collection_heuristic;
             }
         }
         fitness_values.push_back(fitness);
@@ -212,7 +215,7 @@ void PatternGenerationEdelkamp::bin_packing() {
     }
 
     for (int i = 0; i < num_collections; ++i) {
-        // random variable ordering for all pattern collections
+        // Use random variable ordering for all pattern collections.
         g_rng.shuffle(variables);
         vector<vector<bool> > pattern_collection;
         vector<bool> pattern(g_variable_name.size(), false);
@@ -220,7 +223,8 @@ void PatternGenerationEdelkamp::bin_packing() {
         for (size_t j = 0; j < variables.size(); ++j) {
             int var = variables[j];
             int next_var_size = g_variable_domain[var];
-            if (next_var_size > pdb_max_size) // var never fits into a bin
+            if (next_var_size > pdb_max_size)
+                // var never fits into a bin.
                 continue;
             if (!is_product_within_limit(current_size, next_var_size, pdb_max_size)) {
                 // Open a new bin for var.
@@ -232,11 +236,13 @@ void PatternGenerationEdelkamp::bin_packing() {
             current_size *= next_var_size;
             pattern[var] = true;
         }
-        // the last bin has not bin inserted into pattern_collection, do so now.
-        // We test current_size against 1 because this is cheaper than
-        // testing if pattern is an all-zero bitvector. current_size
-        // can only be 1 if *all* variables have a domain larger than
-        // pdb_max_size.
+        /*
+          The last bin has not bin inserted into pattern_collection, do so now.
+          We test current_size against 1 because this is cheaper than
+          testing if pattern is an all-zero bitvector. current_size
+          can only be 1 if *all* variables have a domain larger than
+          pdb_max_size.
+        */
         if (current_size > 1) {
             pattern_collection.push_back(pattern);
         }

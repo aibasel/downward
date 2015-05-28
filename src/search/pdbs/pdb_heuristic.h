@@ -99,8 +99,8 @@ class PDBHeuristic : public Heuristic {
 
     /*
       Computes all abstract operators for a given concrete operator (by
-      its global operator number). Initializes datastructures for initial
-      call to recursive method multiyply_out. variable_to_index maps
+      its global operator number). Initializes data structures for initial
+      call to recursive method multiply_out. variable_to_index maps
       variables in the task to their index in the pattern or -1.
     */
     void build_abstract_operators(const OperatorProxy &op, int cost,
@@ -162,14 +162,14 @@ public:
     // Returns the pattern (i.e. all variables used) of the PDB
     const std::vector<int> &get_pattern() const {return pattern; }
 
-    // Returns the size (number of abstrat states) of the PDB
+    // Returns the size (number of abstract states) of the PDB
     std::size_t get_size() const {return num_states; }
 
     /*
       Returns the average h-value over all states, where dead-ends are
       ignored (they neither increase the sum of all h-values nor the
       number of entries for the mean value calculation). If all states
-      are dead-ends, infinity is retuned.
+      are dead-ends, infinity is returned.
       Note: This is only calculated when called; avoid repeated calls to
       this method!
     */
