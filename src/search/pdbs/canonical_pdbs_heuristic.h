@@ -15,14 +15,14 @@ class CanonicalPDBsHeuristic : public Heuristic {
 
     /* Returns true iff the two patterns are additive i.e. there is no operator
        which affects variables in pattern one as well as in pattern two. */
-    bool are_patterns_additive(const std::vector<int> &patt1,
-                               const std::vector<int> &patt2) const;
+    bool are_patterns_additive(const std::vector<int> &pattern1,
+                               const std::vector<int> &pattern2) const;
 
     /* Computation of maximal additive subsets of patterns. A maximal clique represents
        a maximal additive subset of patterns. */
     void compute_max_cliques();
 
-    /* Precompution of pairwise additive variables i.e. variables where no operator affects
+    /* Precomputation of pairwise additive variables i.e. variables where no operator affects
        both variables at the same time. */
     void compute_additive_vars();
 
@@ -50,11 +50,13 @@ public:
     void get_max_additive_subsets(const std::vector<int> &new_pattern,
                                   std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
 
-    // to avoid unneccessary overhead in the sampling procedure of iPDB, provide
-    // this method to only evaluate the heuristic to check whether a
-    // given state is a dead end or not (see issue404).
-    // set Heuristic's evaluator_value to DEAD_END if state is a dead end and to
-    // 0 otherwise.
+    /*
+      To avoid unnecessary overhead in the sampling procedure of iPDB, provide
+      this method to only evaluate the heuristic to check whether a
+      given state is a dead end or not (see issue404).
+      Sets evaluator_value to DEAD_END if state is a dead end and to
+      0 otherwise.
+    */
     void evaluate_dead_end(const GlobalState &state);
     const std::vector<PDBHeuristic *> &get_pattern_databases() const {return pattern_databases; }
     int get_size() const {return size; }

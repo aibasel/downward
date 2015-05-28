@@ -127,7 +127,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
         if (hill_climbing_timer->is_expired())
             throw HillClimbingTimeout();
 
-        // calculate length of random walk accoring to a binomial distribution
+        // calculate length of random walk according to a binomial distribution
         int length = 0;
         for (int j = 0; j < n; ++j) {
             double random = g_rng(); // [0..1)
@@ -161,11 +161,13 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
     vector<GlobalState> &samples,
     vector<PDBHeuristic *> &candidate_pdbs) {
-    // TODO: The original implementation by Haslum et al. uses astar to compute h values for
-    // the sample states only instead of generating all PDBs.
-    // improvement: best improvement (= hightest count) for a pattern so far.
-    // We require that a pattern must have an improvement of at least one in
-    // order to be taken into account.
+    /*
+      TODO: The original implementation by Haslum et al. uses A* to compute h values for
+      the sample states only instead of generating all PDBs.
+      improvement: best improvement (= highest count) for a pattern so far.
+      We require that a pattern must have an improvement of at least one in
+      order to be taken into account.
+    */
     int improvement = 0;
     int best_pdb_index = -1;
 
@@ -175,18 +177,21 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
             throw HillClimbingTimeout();
 
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
-        if (pdb_heuristic == 0) {
+        if (!pdb_heuristic) {
             // candidate pattern is too large or has already been added to
             // the canonical heuristic.
             continue;
         }
-        // If a candidate's size added to the current collection's size exceeds the maximum
-        // collection size, then delete the PDB and let the PDB's entry point to a null reference
+        /*
+          If a candidate's size added to the current collection's size exceeds
+          the maximum collection size, then delete the pdb and let the pdb's
+          entry point to a null reference
+        */
         int combined_size = current_heuristic->get_size() +
                             pdb_heuristic->get_size();
         if (combined_size > collection_max_size) {
             delete pdb_heuristic;
-            candidate_pdbs[i] = 0;
+            candidate_pdbs[i] = nullptr;
             continue;
         }
 
@@ -194,7 +199,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
         // samples for which the current pattern collection heuristic would be improved
         // if the new pattern was included into it.
         // TODO: The original implementation by Haslum et al. uses m/t as a statistical
-        // confidence intervall to stop the astar-search (which they use, see above) earlier.
+        // confidence interval to stop the A*-search (which they use, see above) earlier.
         int count = 0;
         vector<vector<PDBHeuristic *> > max_additive_subsets;
         current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
@@ -234,7 +239,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
             h_subset += max_additive_subsets[i][j]->get_heuristic();
         }
         if (h_pattern + h_subset > h_collection) {
-            // return true if one max additive subest is found for which the condition is met
+            // return true if one max additive subset is found for which the condition is met
             return true;
         }
     }

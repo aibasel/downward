@@ -33,7 +33,7 @@ class MaxCliqueComputer {
             if (intersection.size() > max) {
                 max = intersection.size();
                 vertex = subg[i];
-                //cout << "sucess: there is a maximizing vertex." << endl;
+                //cout << "success: there is a maximizing vertex." << endl;
             }
         }
         return vertex;
