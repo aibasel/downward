@@ -17,7 +17,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      current_eval_context(g_initial_state(), 0, true, &statistics),
+      current_eval_context(g_initial_state(), &statistics),
       num_ehc_phases(0),
       last_num_expanded(-1) {
     heuristics.insert(preferred_operator_heuristics.begin(),
@@ -115,7 +115,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context, int d) 
         OpenListEntryEHC entry = make_pair(
             eval_context.get_state().get_id(), make_pair(new_d, op));
         EvaluationContext new_eval_context(
-            eval_context.get_cache(), new_d, op->is_marked(), nullptr);
+            eval_context.get_cache(), new_d, op->is_marked(), &statistics);
         open_list->insert(new_eval_context, entry);
         op->unmark();
     }
@@ -155,10 +155,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         SearchNode node = search_space.get_node(state);
 
         if (node.is_new()) {
-            int g_value = parent_node.get_g() + get_adjusted_cost(*last_op);
-            // TODO: Can we omit the g_value and preferredness here?
-            EvaluationContext eval_context(
-                state, g_value, last_op->is_marked(), &statistics);
+            EvaluationContext eval_context(state, &statistics);
             reach_state(parent_state, *last_op, state);
             statistics.inc_evaluated_states();
 
