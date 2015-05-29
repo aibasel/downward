@@ -113,9 +113,9 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context, int d) 
     for (const GlobalOperator *op : get_successors(eval_context)) {
         int new_d = d + get_adjusted_cost(*op);
         OpenListEntryEHC entry = make_pair(
-            current_eval_context.get_state().get_id(), make_pair(new_d, op));
+            eval_context.get_state().get_id(), make_pair(new_d, op));
         EvaluationContext new_eval_context(
-            current_eval_context.get_cache(), new_d, op->is_marked(), nullptr);
+            eval_context.get_cache(), new_d, op->is_marked(), nullptr);
         open_list->insert(new_eval_context, entry);
         op->unmark();
     }
