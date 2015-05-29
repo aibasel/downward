@@ -88,13 +88,11 @@ Facts GoalDecomposition::get_facts(const TaskProxy &task_proxy) const {
 Tasks GoalDecomposition::get_subtasks(const Task &task) const {
     Tasks subtasks;
     for (Fact goal : get_filtered_and_ordered_facts(task)) {
-        Task abstracted_task = task;
         Facts goals {
             goal
         };
-        abstracted_task = make_shared<tasks::ModifiedGoalsTask>(
-            abstracted_task, goals);
-        subtasks.push_back(abstracted_task);
+        Task subtask = make_shared<tasks::ModifiedGoalsTask>(task, goals);
+        subtasks.push_back(subtask);
     }
     return subtasks;
 }
@@ -131,11 +129,10 @@ Facts LandmarkDecomposition::get_facts(const TaskProxy &) const {
 Tasks LandmarkDecomposition::get_subtasks(const Task &task) const {
     Tasks subtasks;
     for (Fact landmark : get_filtered_and_ordered_facts(task)) {
-        Task subtask = task;
         Facts goals {
             landmark
         };
-        subtask = make_shared<tasks::ModifiedGoalsTask>(subtask, goals);
+        Task subtask = make_shared<tasks::ModifiedGoalsTask>(task, goals);
         if (combine_facts) {
             subtask = get_domain_abstracted_task(subtask, landmark);
         }
