@@ -63,9 +63,11 @@ class CausalGraph {
 
     IntRelation successors;
     IntRelation predecessors;
+
+    void dump(const TaskProxy &task_proxy) const;
 public:
-    CausalGraph(const AbstractTask &task);
-    ~CausalGraph();
+    CausalGraph(const TaskProxy &task_proxy);
+    ~CausalGraph() = default;
 
     /*
       All below methods querying neighbors (of some sort or other) of
@@ -104,8 +106,10 @@ public:
     const std::vector<int> &get_predecessors(int var) const {
         return predecessors[var];
     }
-
-    void dump(const TaskProxy &task_proxy) const;
 };
+
+/* Create or retrieve a causal graph from cache. We build at most one
+   causal graph per AbstractTask. */
+extern const CausalGraph &get_causal_graph(const AbstractTask *task);
 
 #endif

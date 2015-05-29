@@ -3,6 +3,7 @@
 
 #include "../operator_cost.h"
 #include "../state_registry.h"
+#include "../task_proxy.h"
 
 #include <map>
 #include <memory>
@@ -18,6 +19,7 @@ class PDBHeuristic;
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
     std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
     const int pdb_max_size; // maximum number of states for each pdb
     const int collection_max_size; // maximum added size of all pdbs
     const int num_samples;

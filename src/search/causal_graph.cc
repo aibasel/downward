@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <unordered_map>
 #include <unordered_set>
 
 using namespace std;
@@ -149,9 +150,7 @@ struct CausalGraphBuilder {
     }
 };
 
-
-CausalGraph::CausalGraph(const AbstractTask &task) {
-    TaskProxy task_proxy(task);
+CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     CausalGraphBuilder cg_builder(num_variables);
 
@@ -171,11 +170,6 @@ CausalGraph::CausalGraph(const AbstractTask &task) {
     // dump(task_proxy);
 }
 
-
-CausalGraph::~CausalGraph() {
-}
-
-
 void CausalGraph::dump(const TaskProxy &task_proxy) const {
     cout << "Causal graph: " << endl;
     for (const VariableProxy &var : task_proxy.get_variables()) {
@@ -187,4 +181,16 @@ void CausalGraph::dump(const TaskProxy &task_proxy) const {
              << "    successors: " << successors[var_id] << endl
              << "    predecessors: " << predecessors[var_id] << endl;
     }
+}
+
+static unordered_map<const AbstractTask *,
+                     unique_ptr<CausalGraph> > causal_graph_cache;
+
+const CausalGraph &get_causal_graph(const AbstractTask *task) {
+    if (causal_graph_cache.count(task) == 0) {
+        TaskProxy task_proxy(*task);
+        unique_ptr<CausalGraph> cg(new CausalGraph(task_proxy));
+        causal_graph_cache.insert(make_pair(task, move(cg)));
+    }
+    return *causal_graph_cache[task];
 }

@@ -109,7 +109,13 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
           there is a pre->eff arc from the variable to a relevant variable.
           Note that there is no point in considering eff->eff arcs here.
         */
-        const vector<int> &rel = g_causal_graph->get_eff_to_pre(var);
+
+
+        // TODO use local task_proxy
+        TaskProxy task_proxy(*g_root_task());
+        const CausalGraph &cg = task_proxy.get_causal_graph();
+
+        const vector<int> &rel = cg.get_eff_to_pre(var);
         for (size_t i = 0; i < rel.size(); ++i) {
             int var_no = rel[i];
             if (in_original_pattern.count(var_no) &&

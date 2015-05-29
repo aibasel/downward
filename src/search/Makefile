@@ -77,6 +77,7 @@ HEADERS = \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
+          task_proxy.h \
           task_tools.h \
           timer.h \
           tracer.h \

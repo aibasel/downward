@@ -537,9 +537,7 @@ public:
         return State(*task, task->get_state_values(global_state));
     }
 
-    const CausalGraph &get_causal_graph() const {
-        return task->get_causal_graph();
-    }
+    const CausalGraph &get_causal_graph() const;
 };
 
 

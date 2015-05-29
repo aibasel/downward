@@ -32,6 +32,7 @@ struct HillClimbingTimeout : public exception {};
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     : task(get_task_from_options(opts)),
+      task_proxy(*task),
       pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
@@ -48,8 +49,9 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
 PatternGenerationHaslum::~PatternGenerationHaslum() {
 }
 
-void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pdb,
-                                                          vector<vector<int> > &candidate_patterns) {
+void PatternGenerationHaslum::generate_candidate_patterns(
+    const PDBHeuristic *pdb, vector<vector<int> > &candidate_patterns) {
+    const CausalGraph  &causal_graph = task_proxy.get_causal_graph();
     const vector<int> &pattern = pdb->get_pattern();
     int pdb_size = pdb->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -57,18 +59,18 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
            variable from pattern. It would also make sense to consider
            *goal* variables connected by effect-effect arcs, but we
            don't. This may be worth experimenting with. */
-        const vector<int> &rel_vars = g_causal_graph->get_eff_to_pre(pattern[i]);
+        const vector<int> &rel_vars = causal_graph.get_eff_to_pre(pattern[i]);
         vector<int> relevant_vars;
         // Only use relevant variables which are not already in pattern.
         set_difference(rel_vars.begin(), rel_vars.end(),
                        pattern.begin(), pattern.end(),
                        back_inserter(relevant_vars));
-        for (size_t j = 0; j < relevant_vars.size(); ++j) {
-            int var = relevant_vars[j];
-            int var_domain = g_variable_domain[var];
-            if (is_product_within_limit(pdb_size, var_domain, pdb_max_size)) {
+        for (int rel_var_id : relevant_vars) {
+            VariableProxy rel_var = task_proxy.get_variables()[rel_var_id];
+            int rel_var_size = rel_var.get_domain_size();
+            if (is_product_within_limit(pdb_size, rel_var_size, pdb_max_size)) {
                 vector<int> new_pattern(pattern);
-                new_pattern.push_back(var);
+                new_pattern.push_back(rel_var_id);
                 sort(new_pattern.begin(), new_pattern.end());
                 candidate_patterns.push_back(new_pattern);
             } else {
@@ -78,22 +80,25 @@ void PatternGenerationHaslum::generate_candidate_patterns(const PDBHeuristic *pd
     }
 }
 
-size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &generated_patterns,
-                                                             vector<vector<int> > &new_candidates,
-                                                             vector<PDBHeuristic *> &candidate_pdbs) const {
-    // For the new candidate patterns check whether they already have been candidates before and
-    // thus already a PDB has been created an inserted into candidate_pdbs.
+size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
+    set<vector<int> > &generated_patterns, vector<vector<int> > &new_candidates,
+    vector<PDBHeuristic *> &candidate_pdbs) const {
+    /*
+      For the new candidate patterns check whether they already have been
+      candidates before and thus already a PDB has been created an inserted into
+      candidate_pdbs.
+    */
     size_t max_pdb_size = 0;
-    for (size_t i = 0; i < new_candidates.size(); ++i) {
-        if (generated_patterns.count(new_candidates[i]) == 0) {
+    for (const vector<int> &new_candidate : new_candidates) {
+        if (generated_patterns.count(new_candidate) == 0) {
             Options opts;
             opts.set<shared_ptr<AbstractTask> >("transform", task);
             opts.set<int>("cost_type", cost_type);
-            opts.set<vector<int> >("pattern", new_candidates[i]);
+            opts.set<vector<int> >("pattern", new_candidate);
             candidate_pdbs.push_back(new PDBHeuristic(opts, false));
             max_pdb_size = max(max_pdb_size,
                                candidate_pdbs.back()->get_size());
-            generated_patterns.insert(new_candidates[i]);
+            generated_patterns.insert(new_candidate);
         }
     }
     return max_pdb_size;
@@ -111,23 +116,25 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
     if (h == 0) {
         n = 10;
     } else {
-        // Convert heuristic value into an approximate number of actions
-        // (does nothing on unit-cost problems).
-        // average_operator_cost cannot equal 0, as in this case, all operators
-        // must have costs of 0 and in this case the if-clause triggers.
+        /*
+          Convert heuristic value into an approximate number of actions
+          (does nothing on unit-cost problems).
+          average_operator_cost cannot equal 0, as in this case, all operators
+          must have costs of 0 and in this case the if-clause triggers.
+        */
         int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
         n = 4 * solution_steps_estimate;
     }
     double p = 0.5;
-    // The expected walk length is np = 2 * estimated number of solution steps.
-    // (We multiply by 2 because the heuristic is underestimating.)
+    /* The expected walk length is np = 2 * estimated number of solution steps.
+       (We multiply by 2 because the heuristic is underestimating.) */
 
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
         if (hill_climbing_timer->is_expired())
             throw HillClimbingTimeout();
 
-        // calculate length of random walk according to a binomial distribution
+        // Calculate length of random walk according to a binomial distribution.
         int length = 0;
         for (int j = 0; j < n; ++j) {
             double random = g_rng(); // [0..1)
@@ -135,25 +142,28 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
                 ++length;
         }
 
-        // random walk of length length
+        // Sample one state with a random walk of length length.
         GlobalState current_state(initial_state);
         for (int j = 0; j < length; ++j) {
             vector<const GlobalOperator *> applicable_ops;
-            g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-            // if there are no applicable operators --> do not walk further
+            g_successor_generator->generate_applicable_ops(
+                current_state, applicable_ops);
+            // If there are no applicable operators, do not walk further.
             if (applicable_ops.empty()) {
                 break;
             } else {
                 const GlobalOperator *random_op = *g_rng.choose(applicable_ops);
                 assert(random_op->is_applicable(current_state));
-                current_state = sample_registry.get_successor_state(current_state, *random_op);
-                // if current state is a dead end, then restart with initial state
+                current_state = sample_registry.get_successor_state(
+                    current_state, *random_op);
+                /* If current state is a dead end, then restart the random walk
+                   with the initial state. */
                 current_heuristic->evaluate_dead_end(current_state);
                 if (current_heuristic->is_dead_end())
                     current_state = initial_state;
             }
         }
-        // last state of the random walk is used as sample
+        // The last state of the random walk is used as a sample.
         samples.push_back(current_state);
     }
 }
@@ -162,8 +172,8 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
     vector<GlobalState> &samples,
     vector<PDBHeuristic *> &candidate_pdbs) {
     /*
-      TODO: The original implementation by Haslum et al. uses A* to compute h values for
-      the sample states only instead of generating all PDBs.
+      TODO: The original implementation by Haslum et al. uses A* to compute
+      h values for the sample states only instead of generating all PDBs.
       improvement: best improvement (= highest count) for a pattern so far.
       We require that a pattern must have an improvement of at least one in
       order to be taken into account.
@@ -178,8 +188,8 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
         PDBHeuristic *pdb_heuristic = candidate_pdbs[i];
         if (!pdb_heuristic) {
-            // candidate pattern is too large or has already been added to
-            // the canonical heuristic.
+            /* candidate pattern is too large or has already been added to
+               the canonical heuristic. */
             continue;
         }
         /*
@@ -195,16 +205,23 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
             continue;
         }
 
-        // Calculate the "counting approximation" for all sample states: count the number of
-        // samples for which the current pattern collection heuristic would be improved
-        // if the new pattern was included into it.
-        // TODO: The original implementation by Haslum et al. uses m/t as a statistical
-        // confidence interval to stop the A*-search (which they use, see above) earlier.
+        /*
+          Calculate the "counting approximation" for all sample states: count
+          the number of samples for which the current pattern collection
+          heuristic would be improved if the new pattern was included into it.
+        */
+        /*
+          TODO: The original implementation by Haslum et al. uses m/t as a
+          statistical confidence interval to stop the A*-search (which they use,
+          see above) earlier.
+        */
         int count = 0;
         vector<vector<PDBHeuristic *> > max_additive_subsets;
-        current_heuristic->get_max_additive_subsets(pdb_heuristic->get_pattern(), max_additive_subsets);
-        for (size_t j = 0; j < samples.size(); ++j) {
-            if (is_heuristic_improved(pdb_heuristic, samples[j], max_additive_subsets))
+        current_heuristic->get_max_additive_subsets(
+            pdb_heuristic->get_pattern(), max_additive_subsets);
+        for (GlobalState &sample : samples) {
+            if (is_heuristic_improved(pdb_heuristic, sample,
+                                      max_additive_subsets))
                 ++count;
         }
         if (count > improvement) {
@@ -220,26 +237,29 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
     return make_pair(improvement, best_pdb_index);
 }
 
-bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
-                                                    const GlobalState &sample,
-                                                    const vector<vector<PDBHeuristic *> > &max_additive_subsets) {
+bool PatternGenerationHaslum::is_heuristic_improved(
+    PDBHeuristic *pdb_heuristic, const GlobalState &sample,
+    const vector<vector<PDBHeuristic *> > &max_additive_subsets) {
     pdb_heuristic->evaluate(sample);
     if (pdb_heuristic->is_dead_end()) {
         return true;
     }
-    int h_pattern = pdb_heuristic->get_heuristic(); // h-value of the new pattern
+    // h-value of the new pattern
+    int h_pattern = pdb_heuristic->get_heuristic();
 
     current_heuristic->evaluate(sample);
-    int h_collection = current_heuristic->get_heuristic(); // h-value of the current collection heuristic
-    for (size_t i = 0; i < max_additive_subsets.size(); ++i) { // for each max additive subset...
+    // h-value of the current collection heuristic
+    int h_collection = current_heuristic->get_heuristic();
+    for (const auto &max_additive_subset : max_additive_subsets) {
         int h_subset = 0;
-        for (size_t j = 0; j < max_additive_subsets[i].size(); ++j) { // ...calculate its h-value
-            max_additive_subsets[i][j]->evaluate(sample);
-            assert(!max_additive_subsets[i][j]->is_dead_end());
-            h_subset += max_additive_subsets[i][j]->get_heuristic();
+        for (PDBHeuristic *additive_pdb_heuristic : max_additive_subset) {
+            additive_pdb_heuristic->evaluate(sample);
+            assert(!additive_pdb_heuristic->is_dead_end());
+            h_subset += additive_pdb_heuristic->get_heuristic();
         }
         if (h_pattern + h_subset > h_collection) {
-            // return true if one max additive subset is found for which the condition is met
+            /* Return true if one max additive subset is found
+               for which the condition is met. */
             return true;
         }
     }
@@ -247,21 +267,24 @@ bool PatternGenerationHaslum::is_heuristic_improved(PDBHeuristic *pdb_heuristic,
 }
 
 void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
-                                            vector<vector<int> > &initial_candidate_patterns) {
+    vector<vector<int> > &initial_candidate_patterns) {
     hill_climbing_timer = new CountdownTimer(max_time);
-    // stores all candidate patterns generated so far in order to avoid duplicates
+    // Candidate patterns generated so far (used to avoid duplicates).
     set<vector<int> > generated_patterns;
-    // new_candidates is the set of new pattern candidates from the last call to generate_candidate_patterns
+    /* Set of new pattern candidates from the last call to
+       generate_candidate_patterns */
     vector<vector<int> > &new_candidates = initial_candidate_patterns;
-    // all candidate patterns are converted into pdbs once and stored
+    // All candidate patterns are converted into pdbs once and stored
     vector<PDBHeuristic *> candidate_pdbs;
     int num_iterations = 0;
     size_t max_pdb_size = 0;
     try {
         while (true) {
             ++num_iterations;
-            cout << "current collection size is " << current_heuristic->get_size() << endl;
-            // TODO think about how to handle this when state_registries are moved into the search algorithms.
+            cout << "current collection size is "
+                 << current_heuristic->get_size() << endl;
+            /* TODO think about how to handle this when state_registries are
+               moved into the search algorithms. */
             current_heuristic->evaluate(g_initial_state());
             cout << "current initial h value: ";
             if (current_heuristic->is_dead_end()) {
@@ -271,9 +294,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                 cout << current_heuristic->get_heuristic() << endl;
             }
 
-            size_t new_max_pdb_size = generate_pdbs_for_candidates(generated_patterns,
-                                                                   new_candidates,
-                                                                   candidate_pdbs);
+            size_t new_max_pdb_size = generate_pdbs_for_candidates(
+                generated_patterns, new_candidates, candidate_pdbs);
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
             StateRegistry sample_registry;
@@ -286,27 +308,31 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
             int best_pdb_index = improvement_and_index.second;
 
             if (improvement < min_improvement) {
-                cout << "Improvement below threshold. Stop hill climbing." << endl;
+                cout << "Improvement below threshold. Stop hill climbing."
+                     << endl;
                 break;
             }
 
-            // add the best pattern to the CanonicalPDBsHeuristic
+            // Add the best pattern to the CanonicalPDBsHeuristic.
             assert(best_pdb_index != -1);
             const PDBHeuristic *best_pdb = candidate_pdbs[best_pdb_index];
             const vector<int> &best_pattern = best_pdb->get_pattern();
-            cout << "found a better pattern with improvement " << improvement << endl;
+            cout << "found a better pattern with improvement " << improvement
+                 << endl;
             cout << "pattern: " << best_pattern << endl;
             current_heuristic->add_pattern(best_pattern);
 
-            // clear current new_candidates and get successors for next iteration
+            /* Clear current new_candidates and get successors for next
+               iteration. */
             new_candidates.clear();
             generate_candidate_patterns(best_pdb, new_candidates);
 
             // remove from candidate_pdbs the added PDB
             delete candidate_pdbs[best_pdb_index];
-            candidate_pdbs[best_pdb_index] = 0;
+            candidate_pdbs[best_pdb_index] = nullptr;
 
-            cout << "Hill climbing time so far: " << *hill_climbing_timer << endl;
+            cout << "Hill climbing time so far: " << *hill_climbing_timer
+                 << endl;
         }
     } catch (HillClimbingTimeout &e) {
         cout << "Time limit reached. Abort hill climbing." << endl;
@@ -332,7 +358,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     }
 
     delete hill_climbing_timer;
-    hill_climbing_timer = 0;
+    hill_climbing_timer = nullptr;
 }
 
 void PatternGenerationHaslum::initialize() {
