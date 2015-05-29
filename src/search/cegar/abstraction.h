@@ -83,7 +83,9 @@ public:
     Abstraction(const Abstraction &) = delete;
     Abstraction &operator=(const Abstraction &) = delete;
 
-    SplitTree && get_split_tree() {return std::move(split_tree); }
+    SplitTree && get_split_tree() {
+        return std::move(split_tree);
+    }
 
     int get_num_states() const {return states.size(); }
 
