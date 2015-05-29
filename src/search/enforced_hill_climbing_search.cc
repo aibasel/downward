@@ -57,6 +57,8 @@ void EnforcedHillClimbingSearch::initialize() {
             "ranking successors" : "pruning") << endl;
     }
 
+    statistics.inc_evaluated_states();
+
     if (current_eval_context.is_heuristic_infinite(heuristic)) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
@@ -154,9 +156,11 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         if (node.is_new()) {
             int g_value = parent_node.get_g() + get_adjusted_cost(*last_op);
+            // TODO: Can we omit the g_value and preferredness here?
             EvaluationContext eval_context(
                 state, g_value, last_op->is_marked(), &statistics);
             reach_state(parent_state, *last_op, state);
+            statistics.inc_evaluated_states();
 
             if (eval_context.is_heuristic_infinite(heuristic)) {
                 node.mark_as_dead_end();
