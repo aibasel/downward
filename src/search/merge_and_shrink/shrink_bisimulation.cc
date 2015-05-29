@@ -77,7 +77,6 @@ struct Signature {
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
     : ShrinkStrategy(opts),
       greedy(opts.get<bool>("greedy")),
-      group_by_h(opts.get<bool>("group_by_h")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
@@ -224,7 +223,6 @@ void ShrinkBisimulation::compute_abstraction(
         int sig_start = 1; // Skip over initial sentinel.
         while (true) {
             int h_and_goal = signatures[sig_start].h_and_goal;
-            int group = signatures[sig_start].group;
             if (h_and_goal > max_h) {
                 // We have hit the end sentinel.
                 assert(h_and_goal == INF);
@@ -237,13 +235,8 @@ void ShrinkBisimulation::compute_abstraction(
             int num_new_groups = 0;
             int sig_end;
             for (sig_end = sig_start; true; ++sig_end) {
-                if (group_by_h) {
-                    if (signatures[sig_end].h_and_goal != h_and_goal)
-                        break;
-                } else {
-                    if (signatures[sig_end].group != group)
-                        break;
-                }
+                if (signatures[sig_end].h_and_goal != h_and_goal)
+                    break;
 
                 const Signature &prev_sig = signatures[sig_end - 1];
                 const Signature &curr_sig = signatures[sig_end];
@@ -327,7 +320,6 @@ string ShrinkBisimulation::name() const {
 
 void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
-    cout << "Group by h: " << (group_by_h ? "yes" : "no") << endl;
     cout << "At limit: ";
     if (at_limit == RETURN) {
         cout << "return";
@@ -342,7 +334,6 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
 static ShrinkStrategy *_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
-    parser.add_option<bool>("group_by_h", "TODO: document", "false");
 
     vector<string> at_limit;
     at_limit.push_back("RETURN");

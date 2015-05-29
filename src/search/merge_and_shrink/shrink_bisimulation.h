@@ -13,7 +13,6 @@ class ShrinkBisimulation : public ShrinkStrategy {
     };
 
     const bool greedy;
-    const bool group_by_h;
     const AtLimit at_limit;
 
     void compute_abstraction(const TransitionSystem &ts,
