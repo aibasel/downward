@@ -66,6 +66,8 @@ class CausalGraph {
 
     void dump(const TaskProxy &task_proxy) const;
 public:
+    /* Use the factory function get_causal_graph to create causal graphs
+       to avoid creating more than one causal graph per AbstractTask */
     CausalGraph(const TaskProxy &task_proxy);
     ~CausalGraph() = default;
 
@@ -108,8 +110,8 @@ public:
     }
 };
 
-/* Create or retrieve a causal graph from cache. We build at most one
-   causal graph per AbstractTask. */
+/* Create or retrieve a causal graph from cache. If causal graphs are created
+   with this function, we build at most one causal graph per AbstractTask. */
 extern const CausalGraph &get_causal_graph(const AbstractTask *task);
 
 #endif

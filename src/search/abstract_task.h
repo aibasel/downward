@@ -6,13 +6,11 @@
 #include <utility>
 #include <vector>
 
-class CausalGraph;
 class GlobalOperator;
 class GlobalState;
 class Options;
 
 class AbstractTask {
-    mutable CausalGraph *causal_graph = nullptr;
 public:
     AbstractTask() = default;
     virtual ~AbstractTask() = default;
