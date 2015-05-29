@@ -49,10 +49,7 @@ void AdditiveCartesianHeuristic::reduce_remaining_costs(
 
 shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
     shared_ptr<AbstractTask> parent) const {
-    Options opts;
-    opts.set<Task>("transform", parent);
-    opts.set<vector<int> >("operator_costs", remaining_costs);
-    return make_shared<tasks::ModifiedCostsTask>(opts);
+    return make_shared<tasks::ModifiedCostsTask>(parent, remaining_costs);
 }
 
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {

@@ -1,17 +1,15 @@
 #include "modified_costs_task.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
-#include <memory>
+#include <cassert>
 
 using namespace std;
 
 
 namespace tasks {
-ModifiedCostsTask::ModifiedCostsTask(const Options &opts)
-    : DelegatingTask(opts.get<shared_ptr<AbstractTask> >("transform")),
-      operator_costs(opts.get<vector<int> >("operator_costs")) {
+ModifiedCostsTask::ModifiedCostsTask(const std::shared_ptr<AbstractTask> parent,
+                                     const std::vector<int> &costs)
+    : DelegatingTask(parent),
+      operator_costs(costs) {
     assert(static_cast<int>(operator_costs.size()) == get_num_operators());
 }
 
