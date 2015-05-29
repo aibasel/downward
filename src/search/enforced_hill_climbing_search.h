@@ -23,7 +23,14 @@ enum class PreferredUsage {
 };
 
 class EnforcedHillClimbingSearch : public SearchEngine {
-protected:
+    std::vector<const GlobalOperator *> get_successors(
+        EvaluationContext &eval_context);
+    void expand(EvaluationContext &eval_context, int d);
+    void reach_state(
+        const GlobalState &parent, const GlobalOperator &op,
+        const GlobalState &state);
+    SearchStatus ehc();
+
     OpenList<OpenListEntryEHC> *open_list;
     GEvaluator *g_evaluator;
 
@@ -40,15 +47,9 @@ protected:
     int num_ehc_phases;
     int last_num_expanded;
 
+protected:
     virtual void initialize() override;
     virtual SearchStatus step() override;
-    SearchStatus ehc();
-    void expand(EvaluationContext &eval_context, int d);
-    std::vector<const GlobalOperator *> get_successors(
-        EvaluationContext &eval_context);
-    void reach_state(
-        const GlobalState &parent, const GlobalOperator &op,
-        const GlobalState &state);
 
 public:
     explicit EnforcedHillClimbingSearch(const Options &opts);
