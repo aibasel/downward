@@ -64,7 +64,7 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
 
 void AdditiveCartesianHeuristic::build_abstractions(
     const Decomposition &decomposition) {
-    Tasks subtasks = decomposition.get_subtasks();
+    Tasks subtasks = decomposition.get_subtasks(task);
 
     int rem_subtasks = subtasks.size();
     for (Task subtask : subtasks) {

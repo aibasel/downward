@@ -19,36 +19,27 @@
 using namespace std;
 
 namespace cegar {
-Decomposition::Decomposition(const Options &opts)
-    : task(get_task_from_options(opts)),
-      task_proxy(*task) {
-}
-
-Task Decomposition::get_original_task() const {
-    return task;
-}
-
-
 NoDecomposition::NoDecomposition(const Options &opts)
-    : Decomposition(opts),
+    : Decomposition(),
       num_copies(opts.get<int>("copies")) {
 }
 
-Tasks NoDecomposition::get_subtasks() const {
-    Tasks tasks;
+Tasks NoDecomposition::get_subtasks(const Task &task) const {
+    Tasks subtasks;
     for (int i = 0; i < num_copies; ++i) {
-        tasks.push_back(get_original_task());
+        subtasks.push_back(task);
     }
-    return tasks;
+    return subtasks;
 }
 
 
 FactDecomposition::FactDecomposition(const Options &opts)
-    : Decomposition(opts),
+    : Decomposition(),
       subtask_order(SubtaskOrder(opts.get_enum("order"))) {
 }
 
-void FactDecomposition::remove_initial_state_facts(Facts &facts) const {
+void FactDecomposition::remove_initial_state_facts(
+    const TaskProxy &task_proxy, Facts &facts) const {
     facts.erase(remove_if(
                     facts.begin(), facts.end(),
                     [&](Fact fact) {
@@ -58,14 +49,15 @@ void FactDecomposition::remove_initial_state_facts(Facts &facts) const {
                 facts.end());
 }
 
-Facts FactDecomposition::get_filtered_and_ordered_facts() const {
-    Facts facts = get_facts();
-    remove_initial_state_facts(facts);
-    order_facts(facts);
+Facts FactDecomposition::get_filtered_and_ordered_facts(const Task &task) const {
+    TaskProxy task_proxy(*task);
+    Facts facts = get_facts(task_proxy);
+    remove_initial_state_facts(task_proxy, facts);
+    order_facts(task, facts);
     return facts;
 }
 
-void FactDecomposition::order_facts(vector<Fact> &facts) const {
+void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const {
     assert(subtask_order != SubtaskOrder::ORIGINAL);
     cout << "Sort " << facts.size() << " facts" << endl;
     if (subtask_order == SubtaskOrder::MIXED) {
@@ -73,7 +65,7 @@ void FactDecomposition::order_facts(vector<Fact> &facts) const {
     } else if (subtask_order == SubtaskOrder::HADD_UP ||
                subtask_order == SubtaskOrder::HADD_DOWN) {
         sort(facts.begin(), facts.end(),
-             SortHaddValuesUp(get_additive_heuristic(get_original_task())));
+             SortHaddValuesUp(get_additive_heuristic(task)));
         if (subtask_order == SubtaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {
@@ -87,7 +79,7 @@ GoalDecomposition::GoalDecomposition(const Options &opts)
     : FactDecomposition(opts) {
 }
 
-Facts GoalDecomposition::get_facts() const {
+Facts GoalDecomposition::get_facts(const TaskProxy &task_proxy) const {
     Facts facts;
     for (FactProxy goal : task_proxy.get_goals()) {
         facts.emplace_back(goal.get_variable().get_id(), goal.get_value());
@@ -95,18 +87,18 @@ Facts GoalDecomposition::get_facts() const {
     return facts;
 }
 
-Tasks GoalDecomposition::get_subtasks() const {
-    Tasks tasks;
-    for (Fact goal : get_filtered_and_ordered_facts()) {
-        Task abstracted_task = get_original_task();
+Tasks GoalDecomposition::get_subtasks(const Task &task) const {
+    Tasks subtasks;
+    for (Fact goal : get_filtered_and_ordered_facts(task)) {
+        Task abstracted_task = task;
         Facts goals {
             goal
         };
-        abstracted_task = make_shared<tasks::ModifiedGoalsTask>(abstracted_task,
-                                                                goals);
-        tasks.push_back(abstracted_task);
+        abstracted_task = make_shared<tasks::ModifiedGoalsTask>(
+            abstracted_task, goals);
+        subtasks.push_back(abstracted_task);
     }
-    return tasks;
+    return subtasks;
 }
 
 
@@ -133,14 +125,15 @@ Task LandmarkDecomposition::get_domain_abstracted_task(
     return tasks::build_domain_abstracted_task(parent, value_groups);
 }
 
-Facts LandmarkDecomposition::get_facts() const {
+Facts LandmarkDecomposition::get_facts(const TaskProxy &) const {
+    // TODO: Use landmark graph for task once the LM code supports tasks API.
     return get_fact_landmarks(landmark_graph);
 }
 
-Tasks LandmarkDecomposition::get_subtasks() const {
+Tasks LandmarkDecomposition::get_subtasks(const Task &task) const {
     Tasks subtasks;
-    for (Fact landmark : get_filtered_and_ordered_facts()) {
-        Task subtask = get_original_task();
+    for (Fact landmark : get_filtered_and_ordered_facts(task)) {
+        Task subtask = task;
         Facts goals {
             landmark
         };
@@ -154,7 +147,6 @@ Tasks LandmarkDecomposition::get_subtasks() const {
 }
 
 static shared_ptr<Decomposition> _parse_original(OptionParser &parser) {
-    Heuristic::add_options_to_parser(parser);
     parser.add_option<int>("copies", "number of task copies", "1");
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -164,7 +156,6 @@ static shared_ptr<Decomposition> _parse_original(OptionParser &parser) {
 }
 
 static void add_common_fact_decomposition_options(OptionParser &parser) {
-    Heuristic::add_options_to_parser(parser);
     vector<string> subtask_orders;
     subtask_orders.push_back("ORIGINAL");
     subtask_orders.push_back("MIXED");

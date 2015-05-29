@@ -24,18 +24,8 @@ enum class SubtaskOrder {
 
 
 class Decomposition {
-    const std::shared_ptr<AbstractTask> task;
-
-protected:
-    const TaskProxy task_proxy;
-
-    Task get_original_task() const;
-
 public:
-    explicit Decomposition(const Options &options);
-    virtual ~Decomposition() = default;
-
-    virtual Tasks get_subtasks() const = 0;
+    virtual Tasks get_subtasks(const Task &task) const = 0;
 };
 
 
@@ -46,7 +36,7 @@ public:
     explicit NoDecomposition(const Options &options);
     virtual ~NoDecomposition() = default;
 
-    virtual Tasks get_subtasks() const override;
+    virtual Tasks get_subtasks(const Task &task) const override;
 };
 
 
@@ -69,13 +59,13 @@ class FactDecomposition : public Decomposition {
         }
     };
 
-    void remove_initial_state_facts(Facts &facts) const;
-    void order_facts(Facts &facts) const;
+    void remove_initial_state_facts(const TaskProxy &task_proxy, Facts &facts) const;
+    void order_facts(const Task &task, Facts &facts) const;
 
 protected:
-    virtual Facts get_facts() const = 0;
+    virtual Facts get_facts(const TaskProxy &task_proxy) const = 0;
 
-    Facts get_filtered_and_ordered_facts() const;
+    Facts get_filtered_and_ordered_facts(const Task &task) const;
 
 public:
     explicit FactDecomposition(const Options &options);
@@ -85,13 +75,13 @@ public:
 
 class GoalDecomposition : public FactDecomposition {
 protected:
-    virtual Facts get_facts() const override;
+    virtual Facts get_facts(const TaskProxy &task_proxy) const override;
 
 public:
     explicit GoalDecomposition(const Options &options);
     virtual ~GoalDecomposition() = default;
 
-    virtual Tasks get_subtasks() const override;
+    virtual Tasks get_subtasks(const Task &task) const override;
 };
 
 
@@ -102,13 +92,13 @@ class LandmarkDecomposition : public FactDecomposition {
     Task get_domain_abstracted_task(Task parent, Fact fact) const;
 
 protected:
-    virtual Facts get_facts() const override;
+    virtual Facts get_facts(const TaskProxy &) const override;
 
 public:
     explicit LandmarkDecomposition(const Options &opts);
     virtual ~LandmarkDecomposition() = default;
 
-    virtual Tasks get_subtasks() const override;
+    virtual Tasks get_subtasks(const Task &task) const override;
 };
 }
 
