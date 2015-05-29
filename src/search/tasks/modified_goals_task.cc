@@ -5,9 +5,9 @@ using namespace std;
 namespace tasks {
 ModifiedGoalsTask::ModifiedGoalsTask(
     const std::shared_ptr<AbstractTask> parent,
-    const std::vector<std::pair<int, int> > &goals)
+    std::vector<std::pair<int, int> > && goals)
     : DelegatingTask(parent),
-      goals(goals) {
+      goals(move(goals)) {
 }
 
 int ModifiedGoalsTask::get_num_goals() const {

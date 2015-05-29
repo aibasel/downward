@@ -13,7 +13,7 @@ private:
 
 public:
     ModifiedGoalsTask(const std::shared_ptr<AbstractTask> parent,
-                      const std::vector<std::pair<int, int> > &goals);
+                      std::vector<std::pair<int, int> > && goals);
 
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
