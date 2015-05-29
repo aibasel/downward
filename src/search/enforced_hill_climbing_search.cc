@@ -78,7 +78,7 @@ vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
     if (!use_preferred || preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
         g_successor_generator->generate_applicable_ops(eval_context.get_state(), ops);
 
-        // mark preferred operators as preferred
+        // Mark preferred operators.
         if (use_preferred &&
             preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
             for (const GlobalOperator *op : ops) {
@@ -220,7 +220,6 @@ static SearchEngine *_parse(OptionParser &parser) {
         preferred_usages,
         "preferred operator usage",
         "PRUNE_BY_PREFERRED");
-
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics",
