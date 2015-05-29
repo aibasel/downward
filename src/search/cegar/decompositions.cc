@@ -20,8 +20,7 @@ using namespace std;
 
 namespace cegar {
 NoDecomposition::NoDecomposition(const Options &opts)
-    : Decomposition(),
-      num_copies(opts.get<int>("copies")) {
+    : num_copies(opts.get<int>("copies")) {
 }
 
 Tasks NoDecomposition::get_subtasks(const Task &task) const {
@@ -34,8 +33,7 @@ Tasks NoDecomposition::get_subtasks(const Task &task) const {
 
 
 FactDecomposition::FactDecomposition(const Options &opts)
-    : Decomposition(),
-      subtask_order(SubtaskOrder(opts.get_enum("order"))) {
+    : subtask_order(SubtaskOrder(opts.get_enum("order"))) {
 }
 
 void FactDecomposition::remove_initial_state_facts(
