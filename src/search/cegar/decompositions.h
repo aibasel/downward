@@ -12,8 +12,8 @@
 namespace cegar {
 using Fact = std::pair<int, int>;
 using Facts = std::vector<Fact>;
-using Subtask = std::shared_ptr<AbstractTask>;
-using Subtasks = std::vector<Subtask>;
+using Task = std::shared_ptr<AbstractTask>;
+using Tasks = std::vector<Task>;
 
 enum class SubtaskOrder {
     ORIGINAL,
@@ -29,13 +29,13 @@ class Decomposition {
 protected:
     const TaskProxy task_proxy;
 
-    Subtask get_original_task() const;
+    Task get_original_task() const;
 
 public:
     explicit Decomposition(const Options &options);
     virtual ~Decomposition() = default;
 
-    virtual Subtasks get_subtasks() const = 0;
+    virtual Tasks get_subtasks() const = 0;
 };
 
 
@@ -46,7 +46,7 @@ public:
     explicit NoDecomposition(const Options &options);
     virtual ~NoDecomposition() = default;
 
-    virtual Subtasks get_subtasks() const override;
+    virtual Tasks get_subtasks() const override;
 };
 
 
@@ -91,7 +91,7 @@ public:
     explicit GoalDecomposition(const Options &options);
     virtual ~GoalDecomposition() = default;
 
-    virtual Subtasks get_subtasks() const override;
+    virtual Tasks get_subtasks() const override;
 };
 
 
@@ -99,7 +99,7 @@ class LandmarkDecomposition : public FactDecomposition {
     const std::shared_ptr<LandmarkGraph> landmark_graph;
     bool combine_facts;
 
-    Subtask get_domain_abstracted_task(Subtask parent, Fact fact) const;
+    Task get_domain_abstracted_task(Task parent, Fact fact) const;
 
 protected:
     virtual Facts get_facts() const override;
@@ -108,7 +108,7 @@ public:
     explicit LandmarkDecomposition(const Options &opts);
     virtual ~LandmarkDecomposition() = default;
 
-    virtual Subtasks get_subtasks() const override;
+    virtual Tasks get_subtasks() const override;
 };
 }
 

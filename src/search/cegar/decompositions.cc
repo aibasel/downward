@@ -24,7 +24,7 @@ Decomposition::Decomposition(const Options &opts)
       task_proxy(*task) {
 }
 
-Subtask Decomposition::get_original_task() const {
+Task Decomposition::get_original_task() const {
     return task;
 }
 
@@ -34,8 +34,8 @@ NoDecomposition::NoDecomposition(const Options &opts)
       num_copies(opts.get<int>("copies")) {
 }
 
-Subtasks NoDecomposition::get_subtasks() const {
-    Subtasks tasks;
+Tasks NoDecomposition::get_subtasks() const {
+    Tasks tasks;
     for (int i = 0; i < num_copies; ++i) {
         tasks.push_back(get_original_task());
     }
@@ -95,10 +95,10 @@ Facts GoalDecomposition::get_facts() const {
     return facts;
 }
 
-Subtasks GoalDecomposition::get_subtasks() const {
-    Subtasks tasks;
+Tasks GoalDecomposition::get_subtasks() const {
+    Tasks tasks;
     for (Fact goal : get_filtered_and_ordered_facts()) {
-        Subtask abstracted_task = get_original_task();
+        Task abstracted_task = get_original_task();
         Facts goals {
             goal
         };
@@ -120,8 +120,8 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
         write_landmark_graph_dot_file(landmark_graph);
 }
 
-Subtask LandmarkDecomposition::get_domain_abstracted_task(
-    Subtask parent, Fact fact) const {
+Task LandmarkDecomposition::get_domain_abstracted_task(
+    Task parent, Fact fact) const {
     assert(combine_facts);
     tasks::VarToGroups value_groups;
     for (auto &pair : get_prev_landmarks(landmark_graph, fact)) {
@@ -137,10 +137,10 @@ Facts LandmarkDecomposition::get_facts() const {
     return get_fact_landmarks(landmark_graph);
 }
 
-Subtasks LandmarkDecomposition::get_subtasks() const {
-    Subtasks subtasks;
+Tasks LandmarkDecomposition::get_subtasks() const {
+    Tasks subtasks;
     for (Fact landmark : get_filtered_and_ordered_facts()) {
-        Subtask subtask = get_original_task();
+        Task subtask = get_original_task();
         Facts goals {
             landmark
         };

@@ -50,7 +50,7 @@ void AdditiveCartesianHeuristic::reduce_remaining_costs(
 shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
     shared_ptr<AbstractTask> parent) const {
     Options opts;
-    opts.set<Subtask>("transform", parent);
+    opts.set<Task>("transform", parent);
     opts.set<vector<int> >("operator_costs", remaining_costs);
     return make_shared<tasks::ModifiedCostsTask>(opts);
 }
@@ -64,10 +64,10 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
 
 void AdditiveCartesianHeuristic::build_abstractions(
     const Decomposition &decomposition) {
-    Subtasks subtasks = decomposition.get_subtasks();
+    Tasks subtasks = decomposition.get_subtasks();
 
     int rem_subtasks = subtasks.size();
-    for (Subtask subtask : subtasks) {
+    for (Task subtask : subtasks) {
         cout << endl;
 
         subtask = get_remaining_costs_task(subtask);
@@ -78,7 +78,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
         }
 
         Options abs_opts(options);
-        abs_opts.set<Subtask>("transform", subtask);
+        abs_opts.set<Task>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
         abs_opts.set<double>("max_time", timer->get_remaining_time() / rem_subtasks);
         /*
@@ -101,7 +101,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
         if (init_h > 0) {
             Options opts;
             opts.set<int>("cost_type", 0);
-            opts.set<Subtask>("transform", subtask);
+            opts.set<Task>("transform", subtask);
             heuristics.push_back(make_shared<CartesianHeuristic>(
                                      opts, abstraction.get_split_tree()));
         }
