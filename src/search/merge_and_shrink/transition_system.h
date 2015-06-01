@@ -103,6 +103,12 @@ public:
     int get_cost() const {
         return cost;
     }
+    void sort() {
+        labels.sort();
+    }
+    bool operator<(const LabelGroup &other) const {
+        return labels.front() < *other.begin();
+    }
 };
 
 typedef std::list<LabelGroup>::iterator LabelGroupIter;
