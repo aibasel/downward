@@ -143,8 +143,16 @@ void ShrinkBisimulation::compute_signatures(
       Note that the final result of the bisimulation may depend on the
       order in which transitions are considered below.
     */
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
+    list<LabelGroup> copy_group(grouped_labels);
+    for (LabelGroupIter group_it = copy_group.begin();
+         group_it != copy_group.end(); ++group_it) {
+        group_it->sort();
+    }
+    copy_group.sort();
+
+
+    for (LabelGroupConstIter group_it = copy_group.begin();
+         group_it != copy_group.end(); ++group_it) {
         const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions = label_group.get_const_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
