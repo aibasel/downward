@@ -23,7 +23,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
                           std::vector<int> &state_to_group);
     void compute_signatures(const TransitionSystem &ts,
                             std::vector<Signature> &signatures,
-                            std::vector<int> &state_to_group);
+                            const std::vector<int> &state_to_group);
 protected:
     virtual void shrink(const TransitionSystem &ts,
                         int target,
