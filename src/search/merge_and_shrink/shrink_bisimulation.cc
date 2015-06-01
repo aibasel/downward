@@ -101,7 +101,6 @@ int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
     for (int state = 0; state < ts.get_size(); ++state) {
         int h = ts.get_goal_distance(state);
         assert(h >= 0 && h != INF);
-        assert(ts.get_init_distance(state) != INF);
 
         if (ts.is_goal_state(state)) {
             assert(h == 0);
@@ -122,7 +121,7 @@ int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
 void ShrinkBisimulation::compute_signatures(
     const TransitionSystem &ts,
     vector<Signature> &signatures,
-    vector<int> &state_to_group) {
+    const vector<int> &state_to_group) {
     assert(signatures.empty());
 
     // Step 1: Compute bare state signatures (without transition information).
@@ -140,6 +139,10 @@ void ShrinkBisimulation::compute_signatures(
     // Step 2: Add transition information.
     const list<LabelGroup> &grouped_labels = ts.get_grouped_labels();
     int label_group_counter = 0;
+    /*
+      Note that the final result of the bisimulation may depend on the
+      order in which transitions are considered below.
+    */
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
         const LabelGroup &label_group = *group_it;
