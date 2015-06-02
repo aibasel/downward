@@ -24,33 +24,35 @@ ShrinkStrategy::ShrinkStrategy(const Options &opts)
 ShrinkStrategy::~ShrinkStrategy() {
 }
 
-/*
-  TODO: I think we could get a nicer division of responsibilities if
-  this method were part of the transition system class. The shrink
-  strategies would then return generate an equivalence class
-  ("collapsed_groups") and not modify the transition system, which would be
-  passed as const.
- */
-void ShrinkStrategy::apply(TransitionSystem &ts,
-                           const StateEquivalenceRelation &equivalence_relation,
-                           int target) const {
-    // TODO: We currently violate this; see issue250
-    //assert(equivalence_relation.size() <= target);
-    ts.apply_abstraction(equivalence_relation);
-    cout << ts.tag() << "size after shrink " << ts.get_size()
-         << ", target " << target << endl;
-    //assert(ts.size() <= target);
-}
-
-bool ShrinkStrategy::must_shrink(
-    const TransitionSystem &ts, int threshold) const {
-    assert(threshold >= 1);
+bool ShrinkStrategy::abstract_transition_system(TransitionSystem &ts, int new_size) {
     assert(ts.is_solvable());
+    /*
+      If the current size of the transition is larger than the given
+      new_size or the threshold shrink_threshold_before_merge, then the
+      shrink strategy computes an abstraction of size at most new_size.
+
+      This means that if the current size of the transition system already
+      respects the imposed limit new_size but is larger than the threshold
+      parameter, the shrink strategy nevertheless computes an abstraction
+      (of size at most new_size). This can be useful for the bisimulation
+      shrink strategy which may compute a perfect bisimulation also in cases
+      where the size limit would not require to shrink the transition system.
+    */
     int num_states = ts.get_size();
-    if (num_states > threshold) {
-        cout << ts.tag() << "shrink from size " << num_states
-             << " (threshold: " << threshold << ")" << endl;
-        return true;
+    if (num_states > min(new_size, shrink_threshold_before_merge)) {
+        cout << ts.tag() << "current size: " << num_states;
+        if (new_size < num_states)
+            cout << " (new size limit: " << new_size;
+        else {
+            assert(shrink_threshold_before_merge < num_states);
+            cout << " (shrink threshold: " << shrink_threshold_before_merge;
+        }
+        cout << ")" << endl;
+        StateEquivalenceRelation equivalence_relation;
+        shrink(ts, new_size, equivalence_relation);
+        // TODO: We currently violate this; see issue250
+        //assert(equivalence_relation.size() <= new_size);
+        return ts.apply_abstraction(equivalence_relation);
     }
     return false;
 }
@@ -91,36 +93,22 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-void ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2) {
+pair<bool, bool> ShrinkStrategy::shrink_before_merge(TransitionSystem &ts1,
+                                                     TransitionSystem &ts2) {
+    /*
+      Compute the size limit for both transition systems as imposed by
+      max_states and max_states_before_merge.
+    */
     pair<int, int> new_sizes = compute_shrink_sizes(
         ts1.get_size(), ts2.get_size());
-    int new_size1 = new_sizes.first;
-    int new_size2 = new_sizes.second;
 
     /*
-      Shrink one or both transition systems if their size is larger than
-      the size limit imposed by max_states and max_states_before_merge,
-      or if their size is larger than threshold. In the former case, the
-      transition system is forced to be shrunk down to the size limit, in
-      the latter case, the shrink strategy is still called with the new
-      size limit, which means that it does not have to shrink the size of the
-      transition system, but it *may* do so. This is useful e.g. for the
-      bisimulation shrink strategy, which searches for a perfect bisimulation
-      (which is information-preserving) as long as the size limit is not
-      exceeded.
+      For both transition systems, possibly compute and apply an
+      abstraction.
     */
-
-    if (must_shrink(ts2, min(new_size2, shrink_threshold_before_merge))) {
-        StateEquivalenceRelation equivalence_relation;
-        shrink(ts2, new_size2, equivalence_relation);
-        apply(ts2, equivalence_relation, new_size2);
-    }
-
-    if (must_shrink(ts1, min(new_size1, shrink_threshold_before_merge))) {
-        StateEquivalenceRelation equivalence_relation;
-        shrink(ts1, new_size1, equivalence_relation);
-        apply(ts1, equivalence_relation, new_size1);
-    }
+    bool shrunk2 = abstract_transition_system(ts2, new_sizes.second);
+    bool shrunk1 = abstract_transition_system(ts1, new_sizes.first);
+    return make_pair(shrunk1, shrunk2);
 }
 
 void ShrinkStrategy::dump_options() const {
