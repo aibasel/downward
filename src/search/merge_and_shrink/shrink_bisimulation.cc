@@ -142,6 +142,13 @@ void ShrinkBisimulation::compute_signatures(
     /*
       Note that the final result of the bisimulation may depend on the
       order in which transitions are considered below.
+
+      If label groups were sorted (every group by increasing label numbers,
+      groups by smallest label number), then the following configuration
+      gives a different result on parcprinter-08-strips:p06.pddl:
+      astar(merge_and_shrink(merge_strategy=merge_dfp,
+            shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,greedy=false),
+            label_reduction=label_reduction(before_shrinking=true,before_merging=false)))
     */
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
