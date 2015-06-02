@@ -374,7 +374,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                 }
                 grouped_labels.erase(group2_it);
                 --group2_it;
-                vector<Transition>().swap(transitions2);
+                release_vector_memory(transitions2);
             }
         }
     }
@@ -504,13 +504,13 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     }
 }
 
-void TransitionSystem::apply_abstraction(
+bool TransitionSystem::apply_abstraction(
     const vector<forward_list<AbstractStateRef> > &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
-        return;
+        return false;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
@@ -561,9 +561,9 @@ void TransitionSystem::apply_abstraction(
     }
 
     // Release memory.
-    vector<int>().swap(init_distances);
-    vector<int>().swap(goal_distances);
-    vector<bool>().swap(goal_states);
+    release_vector_memory(init_distances);
+    release_vector_memory(goal_distances);
+    release_vector_memory(goal_states);
 
     // Update all transitions. Locally equivalent labels remain locally equivalent.
     for (LabelGroupIter group_it = grouped_labels.begin();
@@ -602,6 +602,7 @@ void TransitionSystem::apply_abstraction(
         compute_distances_and_prune();
     }
     assert(is_valid());
+    return true;
 }
 
 void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> > > &label_mapping,
@@ -687,7 +688,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 group.erase(label_it);
                 // Note: we cannot invalidate the tupel label_to_positions[label_no]
                 if (group.empty()) {
-                    vector<Transition>().swap(group.get_transitions());
+                    release_vector_memory(group.get_transitions());
                     affected_groups.erase(&group);
                     grouped_labels.erase(group_it);
                 } else {
@@ -715,7 +716,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     || (new_transitions == other_transitions)) {
                     found_equivalent_labels = true;
                     add_label_to_group(group_it, new_label_no);
-                    vector<Transition>().swap(transitions_of_groups[new_label_no]);
+                    release_vector_memory(transitions_of_groups[new_label_no]);
                     break;
                 }
             }
@@ -754,8 +755,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
 void TransitionSystem::release_memory() {
     list<LabelGroup>().swap(grouped_labels);
-    vector<vector<Transition> >().swap(transitions_of_groups);
-    vector<tuple<LabelGroupIter, LabelIter> >().swap(label_to_positions);
+    release_vector_memory(transitions_of_groups);
+    release_vector_memory(label_to_positions);
 }
 
 string TransitionSystem::tag() const {
@@ -1020,8 +1021,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
-            // TODO: test against overflow? pitfall: transitions could be empty!
-            if (transitions1.size() * transitions2.size() > new_transitions.max_size())
+            if (transitions1.size() && transitions2.size()
+                    && transitions1.size() > new_transitions.max_size() / transitions2.size())
                 exit_with(EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {
