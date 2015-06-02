@@ -13,7 +13,6 @@ class MergeAndShrinkHeuristic : public Heuristic {
     ShrinkStrategy *const shrink_strategy;
     Labels *labels;
     const bool use_expensive_statistics;
-    const bool terminate;
     int starting_peak_memory;
 
     TransitionSystem *final_transition_system;

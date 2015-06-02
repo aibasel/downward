@@ -20,8 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       labels(opts.get<Labels *>("label_reduction")),
-      use_expensive_statistics(opts.get<bool>("expensive_statistics")),
-      terminate(opts.get<bool>("terminate")) {
+      use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -45,8 +44,6 @@ void MergeAndShrinkHeuristic::dump_options() const {
     labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
-    cout << "Only compute the abstraction and terminate afterwards: "
-         << (terminate ? "yes" : "no") << endl;
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
@@ -220,9 +217,6 @@ void MergeAndShrinkHeuristic::initialize() {
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
-    if (terminate) {
-        return DEAD_END;
-    }
     int cost = final_transition_system->get_cost(state);
     if (cost == -1)
         return DEAD_END;
@@ -317,11 +311,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "(in terms of time and memory). When this is used, the planner "
         "prints a big warning on stderr with information on the performance "
         "impact. Don't use when benchmarking!)",
-        "false");
-    parser.add_option<bool>(
-        "terminate",
-        "terminate planner after heuristic computation finished (by reporting "
-        "all states as dead ends)",
         "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
