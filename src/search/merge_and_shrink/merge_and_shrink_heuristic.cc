@@ -253,7 +253,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "shrink strategy; choose between shrink_fh and shrink_bisimulation. "
         "A good configuration for bisimulation based shrinking is: "
         "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, "
-        "threshold=1, greedy=false, group_by_h=true)");
+        "threshold=1, greedy=false)");
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
         make_pair("shrink_fh(max_states=N)",
@@ -271,7 +271,7 @@ static Heuristic *_parse(OptionParser &parser) {
                   "reduce_labels_before_shrinking=false and "
                   "reduce_labels_before_merging=true."));
     shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, group_by_h=false)",
+        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
                   "Greedy bisimulation without size bound "
                   "(called M&S-gop in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert). "
@@ -283,7 +283,7 @@ static Heuristic *_parse(OptionParser &parser) {
                   "reduce_labels_before_shrinking=true and "
                   "reduce_labels_before_merging=false."));
     shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=N, greedy=false, group_by_h=true)",
+        make_pair("shrink_bisimulation(max_states=N, greedy=false)",
                   "Exact bisimulation with a size limit "
                   "(called DFP-bop in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert), "
