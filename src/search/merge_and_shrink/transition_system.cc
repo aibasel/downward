@@ -1022,7 +1022,7 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
             if (transitions1.size() && transitions2.size()
-                    && transitions1.size() > new_transitions.max_size() / transitions2.size())
+                && transitions1.size() > new_transitions.max_size() / transitions2.size())
                 exit_with(EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {
