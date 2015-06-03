@@ -16,6 +16,9 @@ class AbstractState;
 // Strategies for selecting a split in case there are multiple possibilities.
 enum class PickSplit {
     RANDOM,
+    // Number of values that land in the state whose h-value is probably raised.
+    MIN_UNWANTED,
+    MAX_UNWANTED,
     // Refinement: - (remaining_values / original_domain_size)
     MIN_REFINED,
     MAX_REFINED,
@@ -40,6 +43,7 @@ class SplitSelector {
 
     const PickSplit pick;
 
+    int get_num_unwanted_values(const AbstractState &state, const Split &split) const;
     double get_refinedness(const AbstractState &state, int var_id) const;
     int get_hadd_value(int var_id, int value) const;
     int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
