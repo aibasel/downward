@@ -15,7 +15,6 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       g_evaluator(new GEvaluator()),
       heuristic(opts.get<Heuristic *>("h")),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
-      use_preferred(false),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_eval_context(g_initial_state(), &statistics),
       num_ehc_phases(0),
@@ -210,7 +209,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Enforced hill-climbing", "");
+    parser.document_synopsis("Lazy enforced hill-climbing", "");
     parser.add_option<Heuristic *>("h", "heuristic");
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
