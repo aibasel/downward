@@ -153,8 +153,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "max_time", "maximum time in seconds for building abstractions", "900");
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
-    pick_strategies.push_back("MIN_CONSTRAINED");
-    pick_strategies.push_back("MAX_CONSTRAINED");
+    pick_strategies.push_back("MIN_UNWANTED");
+    pick_strategies.push_back("MAX_UNWANTED");
     pick_strategies.push_back("MIN_REFINED");
     pick_strategies.push_back("MAX_REFINED");
     pick_strategies.push_back("MIN_HADD");
