@@ -47,7 +47,6 @@ class SearchStatistics;
 */
 
 class EvaluationContext {
-    // TODO: Store cache as shared_ptr?
     HeuristicCache cache;
     int g_value;
     bool preferred;
@@ -57,8 +56,10 @@ class EvaluationContext {
 
 public:
     /*
-      Use existing heuristic cache when looking up heuristic values. Used for
-      example by lazy search.
+      Copy existing heuristic cache and use it to look up heuristic values.
+      Used for example by lazy search.
+
+      TODO: Can we reuse caches? Can we move them instead of copying them?
     */
     EvaluationContext(
         const HeuristicCache &cache, int g_value, bool is_preferred,

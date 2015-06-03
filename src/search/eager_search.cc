@@ -319,7 +319,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     //does not work:
     Plugin<OpenList<StateID> >::register_open_lists();
 
-    parser.document_synopsis("Eager best first search", "");
+    parser.document_synopsis("Eager best-first search", "");
 
     parser.add_option<OpenList<StateID> *>("open", "open list");
     parser.add_option<bool>("reopen_closed",

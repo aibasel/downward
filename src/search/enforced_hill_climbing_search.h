@@ -18,10 +18,16 @@ typedef std::pair<StateID, std::pair<int, const GlobalOperator * > > OpenListEnt
 
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
-    RANK_PREFERRED_FIRST,
-    MAX_PREFERRED_USAGE
+    RANK_PREFERRED_FIRST
 };
 
+/*
+  Enforced hill-climbing with deferred evaluation.
+
+  TODO: We should test if this lazy implementation really has any benefits over
+  an eager one. We hypothesize that both versions need to evaluate and store
+  the same states anyways.
+*/
 class EnforcedHillClimbingSearch : public SearchEngine {
     std::vector<const GlobalOperator *> get_successors(
         EvaluationContext &eval_context);

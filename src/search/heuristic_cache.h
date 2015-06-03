@@ -10,6 +10,9 @@ class ScalarEvaluator;
 
 using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
 
+/*
+  Store a state and evaluation results for this state.
+*/
 class HeuristicCache {
     EvaluationResults eval_results;
     GlobalState state;
@@ -22,7 +25,7 @@ public:
         return eval_results;
     }
 
-    EvaluationResult &get_result(ScalarEvaluator *heur);
+    EvaluationResult &operator[](ScalarEvaluator *heur);
 
     const GlobalState &get_state() const;
 };
