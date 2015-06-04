@@ -7,14 +7,17 @@ from downward.reports.scatter import ScatterPlotReport
 from downward.reports.plot import PlotReport
 
 
+EPSILON = 0.01
+
+
 def get_relative_change(val1, val2):
     """
     >>> get_relative_change(10, 0)
-    -1.0
+    -999.0
     >>> get_relative_change(10, 1)
-    -0.9
+    -9.0
     >>> get_relative_change(10, 5)
-    -0.5
+    -1.0
     >>> get_relative_change(10, 10)
     0.0
     >>> get_relative_change(10, 15)
@@ -24,16 +27,18 @@ def get_relative_change(val1, val2):
     >>> get_relative_change(10, 100)
     9.0
     >>> get_relative_change(0, 10)
-    1.0
+    999.0
     >>> get_relative_change(0, 0)
     0.0
     """
     assert val1 >= 0, val1
     assert val2 >= 0, val2
     if val1 == 0:
-        if val2 == 0:
-            return 0.0
-        return 1.0
+        val1 = EPSILON
+    if val2 == 0:
+        val2 = EPSILON
+    if val1 > val2:
+        return 1 - val1 / float(val2)
     return val2 / float(val1) - 1
 
 
@@ -42,8 +47,9 @@ class RelativeScatterPlotReport(ScatterPlotReport):
     Generate a scatter plot that shows a specific attribute in two
     configurations. The attribute value in config 1 is shown on the
     x-axis and the relation to the value in config 2 on the y-axis.
-    If the value in config 1 is c1 and the value in config 2 is c2, the
-    plot contains the point (c1, c2/c1 - 1).
+    If the value for config 1 is v1 and the value for config 2 is v2,
+    the plot contains the point (v1, 1 - v1/v2) if v1 > v2 and the
+    point (v1, v2/v1 - 1) otherwise.
     """
 
     def _fill_categories(self, runs):
