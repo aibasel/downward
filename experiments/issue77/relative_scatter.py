@@ -63,13 +63,15 @@ class RelativeScatterPlotReport(ScatterPlotReport):
             if val1 is None or val2 is None:
                 continue
             category = self.get_category(run1, run2)
-            assert val1 > 0, (domain, problem, self.configs[0], val1)
-            assert val2 > 0, (domain, problem, self.configs[1], val2)
+            assert val1 >= 0, (domain, problem, self.configs[0], val1)
+            assert val2 >= 0, (domain, problem, self.configs[1], val2)
             x = val1
             y = get_relative_change(val1, val2)
             categories[category].append((x, y))
-            self.ylim_top = max(self.ylim_top, y)
             self.ylim_bottom = min(self.ylim_bottom, y)
+            self.ylim_top = max(self.ylim_top, y)
+        self.ylim_bottom *= 1.1
+        self.ylim_top *= 1.1
         return categories
 
     def _set_scales(self, xscale, yscale):
