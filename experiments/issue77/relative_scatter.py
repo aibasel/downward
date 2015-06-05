@@ -1,7 +1,4 @@
 from collections import defaultdict
-import os
-
-from lab import tools
 
 from downward.reports.scatter import ScatterPlotReport
 from downward.reports.plot import PlotReport

@@ -41,6 +41,9 @@ performed:
 * Independent CompareRevisionReports for portfolio configs and core solvers:
   * issue462/issue462-opt.py
 
+* RelativeScatterPlotReport:
+  * issue77/issue77-v7-opt.py
+
 
 Microbenchmarks
 ===============
