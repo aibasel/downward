@@ -29,7 +29,9 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     if (!use_preferred || preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
         open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
     } else {
-        vector<ScalarEvaluator *> evals {g_evaluator, new PrefEvaluator};
+        vector<ScalarEvaluator *> evals {
+            g_evaluator, new PrefEvaluator
+        };
         open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
     }
 }
