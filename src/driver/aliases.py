@@ -51,7 +51,7 @@ eager(alt([tiebreaking([sum([g(),weight(hAdd,10)]),hAdd]),
            tiebreaking([sum([g(),weight(hgc,10)]),hgc]),
            tiebreaking([sum([g(),weight(hgc,10)]),hgc],pref_only=true)],
           boost=500),
-      preferred=[hcea,hgc],reopen_closed=true,pathmax=true,cost_type=normal)
+      preferred=[hcea,hgc],reopen_closed=true,cost_type=normal)
 ],repeat_last=true,continue_on_fail=true)"""]
 
 ALIASES["seq-sat-fd-autotune-2"] = [
@@ -131,7 +131,7 @@ ALIASES["seq-opt-fd-autotune"] = [
     "--heuristic", "hselmax=selmax([hlmcut,hhmax],alpha=4,classifier=0,"
     "                              conf_threshold=0.85,training_set=10,"
     "                              sample=0,uniform=true)",
-    "--search", "astar(hselmax,mpd=false,pathmax=true,cost_type=normal)"]
+    "--search", "astar(hselmax,mpd=false,cost_type=normal)"]
 
 ALIASES["seq-opt-selmax"] = [
     "--search",

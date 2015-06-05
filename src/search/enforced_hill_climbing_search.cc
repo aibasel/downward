@@ -1,74 +1,66 @@
 #include "enforced_hill_climbing_search.h"
 
+#include "g_evaluator.h"
 #include "global_operator.h"
-#include "heuristic.h"
 #include "plugin.h"
 #include "pref_evaluator.h"
 #include "successor_generator.h"
 #include "utilities.h"
 
+using namespace std;
+
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const Options &opts)
     : SearchEngine(opts),
+      g_evaluator(new GEvaluator()),
       heuristic(opts.get<Heuristic *>("h")),
-      use_preferred(false),
+      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
-      current_state(g_initial_state()),
-      num_ehc_phases(0) {
-    if (opts.contains("preferred")) {
-        preferred_heuristics = opts.get_list<Heuristic *>("preferred");
-        if (preferred_heuristics.empty()) {
-            use_preferred = false;
-            preferred_contains_eval = false;
-        } else if (find(preferred_heuristics.begin(),
-                        preferred_heuristics.end(),
-                        heuristic) != preferred_heuristics.end()) {
-            use_preferred = true;
-            preferred_contains_eval = true;
-        }
+      current_eval_context(g_initial_state(), &statistics),
+      num_ehc_phases(0),
+      last_num_expanded(-1) {
+    heuristics.insert(preferred_operator_heuristics.begin(),
+                      preferred_operator_heuristics.end());
+    heuristics.insert(heuristic);
+    use_preferred = find(preferred_operator_heuristics.begin(),
+                         preferred_operator_heuristics.end(), heuristic) !=
+                    preferred_operator_heuristics.end();
+
+    if (!use_preferred || preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
+        open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
+    } else {
+        vector<ScalarEvaluator *> evals {
+            g_evaluator, new PrefEvaluator
+        };
+        open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
     }
-    search_progress.add_heuristic(heuristic);
-    g_evaluator = new GEvaluator();
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
     delete g_evaluator;
+    delete open_list;
 }
 
-void EnforcedHillClimbingSearch::evaluate(const GlobalState &parent, const GlobalOperator *op, const GlobalState &state) {
-    search_progress.inc_evaluated_states();
-
-    if (!preferred_contains_eval) {
-        if (op != NULL) {
-            heuristic->reach_state(parent, *op, state);
-        }
-        heuristic->evaluate(state);
-        search_progress.inc_evaluations();
+void EnforcedHillClimbingSearch::reach_state(
+    const GlobalState &parent, const GlobalOperator &op, const GlobalState &state) {
+    for (Heuristic *heur : heuristics) {
+        heur->reach_state(parent, op, state);
     }
-    for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
-        if (op != NULL) {
-            preferred_heuristics[i]->reach_state(parent, *op, state);
-        }
-        preferred_heuristics[i]->evaluate(state);
-    }
-    search_progress.inc_evaluations(preferred_heuristics.size());
 }
 
 void EnforcedHillClimbingSearch::initialize() {
-    assert(heuristic != NULL);
-    current_g = 0;
-    cout << "Conducting Enforced Hill Climbing Search" << endl;
+    assert(heuristic);
+    cout << "Conducting enforced hill-climbing search, (real) bound = "
+         << bound << endl;
     if (use_preferred) {
         cout << "Using preferred operators for "
-             << (preferred_usage == RANK_PREFERRED_FIRST ? "ranking successors"
-            : "pruning") << endl;
+             << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
+            "ranking successors" : "pruning") << endl;
     }
-    cout << "(real) g-bound = " << bound << endl;
 
-    SearchNode node = search_space.get_node(current_state);
-    evaluate(current_state, NULL, current_state);
+    statistics.inc_evaluated_states();
 
-    if (heuristic->is_dead_end()) {
+    if (current_eval_context.is_heuristic_infinite(heuristic)) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
             exit_with(EXIT_UNSOLVABLE);
@@ -76,141 +68,121 @@ void EnforcedHillClimbingSearch::initialize() {
             exit_with(EXIT_UNSOLVED_INCOMPLETE);
     }
 
-    search_progress.get_initial_h_values();
-
-    current_h = heuristic->get_heuristic();
+    int current_h = current_eval_context.get_heuristic_value(heuristic);
+    SearchNode node = search_space.get_node(current_eval_context.get_state());
     node.open_initial(current_h);
-
-    if (!use_preferred || (preferred_usage == PRUNE_BY_PREFERRED)) {
-        open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
-    } else {
-        vector<ScalarEvaluator *> evals;
-        evals.push_back(g_evaluator);
-        evals.push_back(new PrefEvaluator);
-        open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
-    }
 }
 
-void EnforcedHillClimbingSearch::get_successors(const GlobalState &state, vector<const GlobalOperator *> &ops) {
-    if (!use_preferred || preferred_usage == RANK_PREFERRED_FIRST) {
-        g_successor_generator->generate_applicable_ops(state, ops);
+vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
+    EvaluationContext &eval_context) {
+    vector<const GlobalOperator *> ops;
+    if (!use_preferred || preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
+        g_successor_generator->generate_applicable_ops(eval_context.get_state(), ops);
 
-        // mark preferred operators as preferred
-        if (use_preferred && (preferred_usage == RANK_PREFERRED_FIRST)) {
-            for (size_t i = 0; i < ops.size(); ++i) {
-                ops[i]->unmark();
+        // Mark preferred operators.
+        if (use_preferred &&
+            preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST) {
+            for (const GlobalOperator *op : ops) {
+                op->unmark();
             }
-            vector<const GlobalOperator *> preferred_ops;
-            for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
-                preferred_heuristics[i]->get_preferred_operators(preferred_ops);
-            }
-            for (size_t i = 0; i < preferred_ops.size(); ++i) {
-                preferred_ops[i]->mark();
+            for (Heuristic *pref_heuristic : preferred_operator_heuristics) {
+                const vector<const GlobalOperator *> &pref_ops =
+                    eval_context.get_preferred_operators(pref_heuristic);
+                for (const GlobalOperator *op : pref_ops) {
+                    op->mark();
+                }
             }
         }
     } else {
-        vector<const GlobalOperator *> preferred_ops;
-        for (size_t i = 0; i < preferred_heuristics.size(); ++i) {
-            preferred_heuristics[i]->get_preferred_operators(preferred_ops);
-            for (size_t j = 0; j < preferred_ops.size(); ++j) {
-                if (!preferred_ops[j]->is_marked()) {
-                    preferred_ops[j]->mark();
-                    ops.push_back(preferred_ops[j]);
+        for (Heuristic *pref_heuristic : preferred_operator_heuristics) {
+            const vector<const GlobalOperator *> &pref_ops =
+                eval_context.get_preferred_operators(pref_heuristic);
+            for (const GlobalOperator *op : pref_ops) {
+                if (!op->is_marked()) {
+                    op->mark();
+                    ops.push_back(op);
                 }
             }
         }
     }
-    search_progress.inc_expanded();
-    search_progress.inc_generated_ops(ops.size());
+    statistics.inc_expanded();
+    statistics.inc_generated_ops(ops.size());
+    return ops;
+}
+
+void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context, int d) {
+    for (const GlobalOperator *op : get_successors(eval_context)) {
+        int new_d = d + get_adjusted_cost(*op);
+        OpenListEntryEHC entry = make_pair(
+            eval_context.get_state().get_id(), make_pair(new_d, op));
+        EvaluationContext new_eval_context(
+            eval_context.get_cache(), new_d, op->is_marked(), &statistics);
+        open_list->insert(new_eval_context, entry);
+        op->unmark();
+    }
+
+    SearchNode node = search_space.get_node(eval_context.get_state());
+    node.close();
 }
 
 SearchStatus EnforcedHillClimbingSearch::step() {
-    //cout << "s = ";
-    //for (int i = 0; i < g_variable_domain.size(); ++i) {
-    //    cout << current_state[i] << " ";
-    //}
-    //cout << endl;
-    last_expanded = search_progress.get_expanded();
-    search_progress.check_h_progress(current_g);
+    last_num_expanded = statistics.get_expanded();
+    search_progress.check_progress(current_eval_context);
 
-    // current_state is the current state, and it is the last state to be evaluated
-    // current_h is the h value of the current state
-
-    if (check_goal_and_set_plan(current_state)) {
+    if (check_goal_and_set_plan(current_eval_context.get_state())) {
         return SOLVED;
     }
 
-    vector<const GlobalOperator *> ops;
-    get_successors(current_state, ops);
-
-    SearchNode current_node = search_space.get_node(current_state);
-    current_node.close();
-
-    for (size_t i = 0; i < ops.size(); ++i) {
-        int d = get_adjusted_cost(*ops[i]);
-        OpenListEntryEHC entry = make_pair(current_state.get_id(), make_pair(d, ops[i]));
-        open_list->evaluate(d, ops[i]->is_marked());
-        open_list->insert(entry);
-        ops[i]->unmark();
-    }
+    expand(current_eval_context, 0);
     return ehc();
 }
 
 SearchStatus EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
-        OpenListEntryEHC next = open_list->remove_min();
-        StateID last_parent_id = next.first;
-        GlobalState last_parent = g_state_registry->lookup_state(last_parent_id);
-        int d = next.second.first;
-        const GlobalOperator *last_op = next.second.second;
+        OpenListEntryEHC entry = open_list->remove_min();
+        StateID parent_state_id = entry.first;
+        int d = entry.second.first;
+        const GlobalOperator *last_op = entry.second.second;
 
-        if (search_space.get_node(last_parent).get_real_g() + last_op->get_cost() >= bound)
+        GlobalState parent_state = g_state_registry->lookup_state(parent_state_id);
+        SearchNode parent_node = search_space.get_node(parent_state);
+
+        if (parent_node.get_real_g() + last_op->get_cost() >= bound)
             continue;
 
-        GlobalState s = g_state_registry->get_successor_state(last_parent, *last_op);
-        search_progress.inc_generated();
+        GlobalState state = g_state_registry->get_successor_state(parent_state, *last_op);
+        statistics.inc_generated();
 
-        SearchNode node = search_space.get_node(s);
+        SearchNode node = search_space.get_node(state);
 
         if (node.is_new()) {
-            evaluate(last_parent, last_op, s);
+            EvaluationContext eval_context(state, &statistics);
+            reach_state(parent_state, *last_op, state);
+            statistics.inc_evaluated_states();
 
-            if (heuristic->is_dead_end()) {
+            if (eval_context.is_heuristic_infinite(heuristic)) {
                 node.mark_as_dead_end();
-                search_progress.inc_dead_ends();
+                statistics.inc_dead_ends();
                 continue;
             }
 
-            int h = heuristic->get_heuristic();
-            node.open(h, search_space.get_node(last_parent), last_op);
+            int h = eval_context.get_heuristic_value(heuristic);
+            node.open(h, parent_node, last_op);
 
-            if (h < current_h) {
-                current_g = node.get_g();
+            if (h < current_eval_context.get_heuristic_value(heuristic)) {
                 ++num_ehc_phases;
-                if (d_counts.find(d) == d_counts.end()) {
+                if (d_counts.count(d) == 0) {
                     d_counts[d] = make_pair(0, 0);
                 }
-                pair<int, int> p = d_counts[d];
-                p.first = p.first + 1;
-                p.second = p.second + search_progress.get_expanded() - last_expanded;
-                d_counts[d] = p;
+                pair<int, int> &d_pair = d_counts[d];
+                d_pair.first += 1;
+                d_pair.second += statistics.get_expanded() - last_num_expanded;
 
-                current_state = s;
-                current_h = heuristic->get_heuristic();
+                current_eval_context = eval_context;
                 open_list->clear();
                 return IN_PROGRESS;
             } else {
-                vector<const GlobalOperator *> ops;
-                get_successors(s, ops);
-
-                node.close();
-                for (size_t i = 0; i < ops.size(); ++i) {
-                    int new_d = d + get_adjusted_cost(*ops[i]);
-                    OpenListEntryEHC entry = make_pair(node.get_state_id(), make_pair(new_d, ops[i]));
-                    open_list->evaluate(new_d, ops[i]->is_marked());
-                    open_list->insert(entry);
-                    ops[i]->unmark();
-                }
+                expand(eval_context, d);
             }
         }
     }
@@ -218,43 +190,48 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
     return FAILED;
 }
 
-void EnforcedHillClimbingSearch::statistics() const {
-    search_progress.print_statistics();
+void EnforcedHillClimbingSearch::print_statistics() const {
+    statistics.print_detailed_statistics();
 
-    cout << "EHC Phases: " << num_ehc_phases << endl;
-    cout << "Average expansions per EHC Phase: " << (double)search_progress.get_expanded() / (double)num_ehc_phases << endl;
+    cout << "EHC phases: " << num_ehc_phases << endl;
+    assert(num_ehc_phases != 0);
+    cout << "Average expansions per EHC phase: "
+         << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
+         << endl;
 
-    map<int, pair<int, int> >::const_iterator it;
-    for (it = d_counts.begin(); it != d_counts.end(); ++it) {
-        pair<int, pair<int, int> > p = *it;
-        cout << "EHC phases of depth " << p.first << " : " << p.second.first << " - Avg. Expansions: " << (double)p.second.second / (double)p.second.first << endl;
+    for (auto count : d_counts) {
+        int depth = count.first;
+        int phases = count.second.first;
+        assert(phases != 0);
+        int total_expansions = count.second.second;
+        cout << "EHC phases of depth " << depth << ": " << phases
+             << " - Avg. Expansions: "
+             << static_cast<double>(total_expansions) / phases << endl;
     }
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Enforced hill-climbing", "");
+    parser.document_synopsis("Lazy enforced hill-climbing", "");
     parser.add_option<Heuristic *>("h", "heuristic");
-    parser.add_option<bool>("bfs_use_cost",
-                            "use cost for bfs", "false");
     vector<string> preferred_usages;
     preferred_usages.push_back("PRUNE_BY_PREFERRED");
     preferred_usages.push_back("RANK_PREFERRED_FIRST");
-    parser.add_enum_option("preferred_usage", preferred_usages,
-                           "preferred operator usage",
-                           "PRUNE_BY_PREFERRED");
-
+    parser.add_enum_option(
+        "preferred_usage",
+        preferred_usages,
+        "preferred operator usage",
+        "PRUNE_BY_PREFERRED");
     parser.add_list_option<Heuristic *>(
         "preferred",
-        "use preferred operators of these heuristics", "[]");
+        "use preferred operators of these heuristics",
+        "[]");
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    EnforcedHillClimbingSearch *engine = 0;
-    if (!parser.dry_run()) {
-        engine = new EnforcedHillClimbingSearch(opts);
-    }
-
-    return engine;
+    if (parser.dry_run())
+        return nullptr;
+    else
+        return new EnforcedHillClimbingSearch(opts);
 }
 
 static Plugin<SearchEngine> _plugin("ehc", _parse);

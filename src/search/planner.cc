@@ -44,8 +44,7 @@ int main(int argc, const char **argv) {
     g_timer.stop();
 
     engine->save_plan_if_necessary();
-    engine->statistics();
-    engine->heuristic_statistics();
+    engine->print_statistics();
     cout << "Search time: " << search_timer << endl;
     cout << "Total time: " << g_timer << endl;
 

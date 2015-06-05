@@ -5,6 +5,7 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../evaluation_context.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
@@ -21,7 +22,8 @@ using namespace std;
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
     : Heuristic(opts) {
-    const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
+    const vector<vector<int> > &pattern_collection(
+        opts.get_list<vector<int> >("patterns"));
     Timer timer;
     size = 0;
     pattern_databases.reserve(pattern_collection.size());
@@ -134,17 +136,33 @@ int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &state) {
     assert(!max_cliques.empty());
     // if we have an empty collection, then max_cliques = { \emptyset }
 
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        pattern_databases[i]->evaluate(state);
-        if (pattern_databases[i]->is_dead_end())
+    /*
+      We use an internal EvaluationContext here to compute the PDBs
+      inside this canonical PDB heuristic.
+
+      We don't want to use the evaluation context by the surrounding
+      search because we want our internal PDBs to be "invisible" to
+      that search. If we used the external evaluation context, we
+      would see output for each new "best heuristic value" for them,
+      each PDB evaluation would show up as an evaluation in the
+      statistics, etc.
+
+      Using an evaluation context here at all obviously introduces
+      overhead, and in the future we might want to reconsider the
+      question whether having the contained PDBs actually be Heuristic
+      objects is the best implementation choice.
+    */
+
+    EvaluationContext eval_context(state);
+
+    for (PDBHeuristic *pdb : pattern_databases)
+        if (eval_context.is_heuristic_infinite(pdb))
             return DEAD_END;
-    }
-    for (size_t i = 0; i < max_cliques.size(); ++i) {
-        const vector<PDBHeuristic *> &clique = max_cliques[i];
+
+    for (const vector<PDBHeuristic *> &clique : max_cliques) {
         int clique_h = 0;
-        for (size_t j = 0; j < clique.size(); ++j) {
-            clique_h += clique[j]->get_heuristic();
-        }
+        for (PDBHeuristic *pdb : clique)
+            clique_h += eval_context.get_heuristic_value(pdb);
         max_h = max(max_h, clique_h);
     }
     return max_h;
@@ -224,16 +242,18 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
-void CanonicalPDBsHeuristic::evaluate_dead_end(const GlobalState &state) {
-    int evaluator_value = 0;
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        pattern_databases[i]->evaluate(state);
-        if (pattern_databases[i]->is_dead_end()) {
-            evaluator_value = DEAD_END;
-            break;
-        }
-    }
-    set_evaluator_value(evaluator_value);
+bool CanonicalPDBsHeuristic::is_dead_end(const GlobalState &state) const {
+    /*
+      See comment regarding evaluation contexts in compute_heuristic.
+      The efficiency concern is even more valid here because we don't
+      use the same PDB value once, so the caching feature of
+      evaluation contexts is not needed here.
+    */
+    EvaluationContext eval_context(state);
+    for (PDBHeuristic *pdb : pattern_databases)
+        if (eval_context.is_heuristic_infinite(pdb))
+            return true;
+    return false;
 }
 
 void CanonicalPDBsHeuristic::dump_cgraph(const vector<vector<int> > &cgraph) const {
