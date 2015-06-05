@@ -15,6 +15,8 @@ from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import CompareRevisionsReport
 from downward.reports.scatter import ScatterPlotReport
 
+from relative_scatter import RelativeScatterPlotReport
+
 
 def parse_args():
     ARGPARSER.add_argument(
@@ -304,7 +306,7 @@ class IssueExperiment(DownwardExperiment):
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
 
-    def add_scatter_plot_step(self, attributes=None):
+    def add_scatter_plot_step(self, attributes=None, relative=False):
         """Add a step that creates scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
@@ -315,10 +317,20 @@ class IssueExperiment(DownwardExperiment):
 
             exp.add_scatter_plot_step(attributes=["expansions"])
 
+        Use `relative=True` to create relative scatter plots. ::
+
+            exp.add_scatter_plot_step(relative=True)
+
         """
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        scatter_dir = os.path.join(self.eval_dir, "scatter")
+
+        if relative:
+            scatter_plot_class = RelativeScatterPlotReport
+            scatter_dir = os.path.join(self.eval_dir, "relative-scatter")
+        else:
+            scatter_plot_class = ScatterPlotReport
+            scatter_dir = os.path.join(self.eval_dir, "scatter")
 
         def is_portfolio(config_nick):
             return "fdss" in config_nick
@@ -328,7 +340,7 @@ class IssueExperiment(DownwardExperiment):
             print "Make scatter plot for", name
             algo1 = "%s-%s" % (rev1, config_nick)
             algo2 = "%s-%s" % (rev2, config_nick)
-            report = ScatterPlotReport(
+            report = scatter_plot_class(
                 filter_config=[algo1, algo2],
                 attributes=[attribute],
                 get_category=lambda run1, run2: run1["domain"],

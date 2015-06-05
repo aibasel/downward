@@ -5,7 +5,6 @@ import downward.suites
 
 import common_setup
 import configs
-import relative_scatter
 
 CONFIGS = configs.default_configs_optimal(ipc=False, extended=False)
 
@@ -22,13 +21,6 @@ exp = common_setup.IssueExperiment(
     )
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
-exp.add_scatter_plot_step(attributes=SCATTER_ATTRIBUTES)
-
-for attribute in SCATTER_ATTRIBUTES:
-    exp.add_report(relative_scatter.RelativeScatterPlotReport(
-            filter_config=["issue77-v7-base-astar_blind", "issue77-v7-astar_blind"],
-            attributes=attribute,
-            get_category=lambda run1, run2: run1["domain"],),
-        outfile="astar_blind-%(attribute)s.png" % locals())
+exp.add_scatter_plot_step(attributes=SCATTER_ATTRIBUTES, relative=True)
 
 exp()
