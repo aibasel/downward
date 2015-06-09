@@ -22,7 +22,7 @@ class VariableOrderFinder {
     void select_next(int position, int var_no);
 public:
     VariableOrderFinder(VariableOrderType variable_order_type);
-    ~VariableOrderFinder();
+    ~VariableOrderFinder() = default;
     bool done() const;
     int next();
     void dump() const;

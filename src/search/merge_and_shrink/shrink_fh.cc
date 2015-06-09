@@ -22,17 +22,6 @@ ShrinkFH::ShrinkFH(const Options &opts)
 ShrinkFH::~ShrinkFH() {
 }
 
-string ShrinkFH::name() const {
-    return "f-preserving";
-}
-
-void ShrinkFH::dump_strategy_specific_options() const {
-    cout << "Prefer shrinking high or low f states: "
-         << (f_start == HIGH ? "high" : "low") << endl
-         << "Prefer shrinking high or low h states: "
-         << (h_start == HIGH ? "high" : "low") << endl;
-}
-
 void ShrinkFH::partition_into_buckets(
     const TransitionSystem &ts, vector<Bucket> &buckets) const {
     assert(buckets.empty());
@@ -150,6 +139,17 @@ void ShrinkFH::ordered_buckets_use_vector(
     assert(static_cast<int>(buckets.size()) == bucket_count);
 }
 
+string ShrinkFH::name() const {
+    return "f-preserving";
+}
+
+void ShrinkFH::dump_strategy_specific_options() const {
+    cout << "Prefer shrinking high or low f states: "
+         << (f_start == HIGH ? "high" : "low") << endl
+         << "Prefer shrinking high or low h states: "
+         << (h_start == HIGH ? "high" : "low") << endl;
+}
+
 static ShrinkStrategy *_parse(OptionParser &parser) {
     parser.document_synopsis("f-Preserving", "");
     ShrinkStrategy::add_options_to_parser(parser);
@@ -170,10 +170,10 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
 
     ShrinkStrategy::handle_option_defaults(opts);
 
-    if (!parser.dry_run())
-        return new ShrinkFH(opts);
-    else
+    if (parser.dry_run())
         return 0;
+    else
+        return new ShrinkFH(opts);
 }
 
 static Plugin<ShrinkStrategy> _plugin("shrink_fh", _parse);

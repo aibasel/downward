@@ -101,4 +101,9 @@ void unused_parameter(const T &) {
 
 int get_process_id();
 
+template<class T>
+void release_vector_memory(std::vector<T> &vec) {
+    std::vector<T>().swap(vec);
+}
+
 #endif

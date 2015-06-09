@@ -23,6 +23,17 @@ EXIT_UNSUPPORTED = 3
 EXIT_UNSOLVABLE = 4
 EXIT_UNSOLVED_INCOMPLETE = 5
 
+MERGE_AND_SHRINK = ('astar(merge_and_shrink('
+    'merge_strategy=merge_dfp,'
+        'shrink_strategy=shrink_bisimulation('
+         'max_states=50000,'
+        'threshold=1,'
+        'greedy=false),'
+    'label_reduction=label_reduction('
+        'before_shrinking=true,'
+        'before_merging=false)'
+'))')
+
 TESTS = [
     ("strips", "astar(add())", EXIT_PLAN_FOUND),
     ("strips", "astar(hm())", EXIT_PLAN_FOUND),
@@ -33,7 +44,7 @@ TESTS = [
     ("strips", "astar(lmcount(lm_rhw(), admissible=true))", EXIT_PLAN_FOUND),
     ("strips", "astar(lmcount(lm_hm(), admissible=false))", EXIT_PLAN_FOUND),
     ("strips", "astar(lmcount(lm_hm(), admissible=true))", EXIT_PLAN_FOUND),
-    ("strips", "astar(merge_and_shrink())", EXIT_PLAN_FOUND),
+    ("strips", MERGE_AND_SHRINK, EXIT_PLAN_FOUND),
     ("axioms", "astar(add())", EXIT_PLAN_FOUND),
     ("axioms", "astar(hm())", EXIT_UNSOLVED_INCOMPLETE),
     ("axioms", "ehc(hm())", EXIT_UNSOLVED_INCOMPLETE),
@@ -48,7 +59,7 @@ TESTS = [
     ("axioms", "astar(lmcount(lm_hm(), admissible=true))", EXIT_UNSUPPORTED),
     ("axioms", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_PLAN_FOUND),
     ("axioms", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_UNSUPPORTED),
-    ("axioms", "astar(merge_and_shrink())", EXIT_UNSUPPORTED),
+    ("axioms", MERGE_AND_SHRINK, EXIT_UNSUPPORTED),
     ("cond-eff", "astar(add())", EXIT_PLAN_FOUND),
     ("cond-eff", "astar(hm())", EXIT_PLAN_FOUND),
     ("cond-eff", "astar(ipdb())", EXIT_UNSUPPORTED),
@@ -61,7 +72,7 @@ TESTS = [
     ("cond-eff", "astar(lmcount(lm_hm(), admissible=true))", EXIT_UNSUPPORTED),
     ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=false))", EXIT_PLAN_FOUND),
     ("cond-eff", "astar(lmcount(lm_exhaust(), admissible=true))", EXIT_UNSUPPORTED),
-    ("cond-eff", "astar(merge_and_shrink())", EXIT_PLAN_FOUND),
+    ("cond-eff", MERGE_AND_SHRINK, EXIT_PLAN_FOUND),
 ]
 
 

@@ -101,8 +101,12 @@ public:
         return *this;
     }
 
-    bool operator!=(const ProxyIterator &it) const {
-        return pos != it.pos;
+    bool operator==(const ProxyIterator &other) const {
+        return pos == other.pos;
+    }
+
+    bool operator!=(const ProxyIterator &other) const {
+        return !(*this == other);
     }
 };
 
@@ -136,6 +140,7 @@ public:
     }
 
     bool operator==(FactProxy const &other) const {
+        assert(task == other.task);
         return var_id == other.var_id && value == other.value;
     }
 
@@ -171,6 +176,7 @@ public:
     }
 
     bool operator==(const FactsProxyIterator &other) const {
+        assert(task == other.task);
         return var_id == other.var_id && value == other.value;
     }
 
@@ -365,6 +371,15 @@ public:
     OperatorProxy(const AbstractTask &task, int index, bool is_axiom)
         : task(&task), index(index), is_an_axiom(is_axiom) {}
     ~OperatorProxy() = default;
+
+    bool operator==(const OperatorProxy &other) const {
+        assert(task == other.task);
+        return index == other.index && is_an_axiom == other.is_an_axiom;
+    }
+
+    bool operator!=(const OperatorProxy &other) const {
+        return !(*this == other);
+    }
 
     PreconditionsProxy get_preconditions() const {
         return PreconditionsProxy(*task, index, is_an_axiom);

@@ -109,8 +109,11 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
-    // TODO: do we need these friend declarations? can we not make
-    // the required private fields protected?
+    std::vector<int> varset;
+    /*
+      These friend definitions are required to give the inheriting classes
+      access to passed base class objects (e.g. in CompositeTransitionSystem).
+    */
     friend class AtomicTransitionSystem;
     friend class CompositeTransitionSystem;
 
@@ -144,8 +147,7 @@ class TransitionSystem {
     std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), except during
-      label reduction. Whenever new labels are generated through label
-      reduction, this is updated immediately afterwards.
+      the incorporation of a label mapping as computed by label reduction.
     */
     int num_labels;
 
@@ -161,8 +163,6 @@ class TransitionSystem {
     int max_h;
 
     bool goal_relevant;
-
-    mutable int peak_memory;
 
     /*
       Invariant of this class:
@@ -213,12 +213,9 @@ class TransitionSystem {
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
 protected:
-    std::vector<int> varset;
-
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
-    virtual int memory_estimate() const;
 public:
     explicit TransitionSystem(Labels *labels);
     virtual ~TransitionSystem();
@@ -226,7 +223,7 @@ public:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels,
                                                 OperatorCost cost_type);
-    void apply_abstraction(std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
+    bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
     void release_memory();
@@ -245,11 +242,6 @@ public:
     bool is_solvable() const;
     int get_cost(const GlobalState &state) const;
     void statistics(bool include_expensive_statistics) const;
-    // NOTE: This will only return something useful if the memory estimates
-    //       have been computed along the way by calls to statistics().
-    // TODO: Find a better way of doing this that doesn't require
-    //       a mutable attribute?
-    int get_peak_memory_estimate() const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
     int get_size() const {
@@ -296,7 +288,6 @@ protected:
         const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
-    virtual int memory_estimate() const;
 public:
     AtomicTransitionSystem(Labels *labels, int variable);
     virtual ~AtomicTransitionSystem();
@@ -311,7 +302,6 @@ protected:
         const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
-    virtual int memory_estimate() const;
 public:
     CompositeTransitionSystem(Labels *labels, TransitionSystem *ts1, TransitionSystem *ts2);
     virtual ~CompositeTransitionSystem();
