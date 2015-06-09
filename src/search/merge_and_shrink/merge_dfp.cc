@@ -165,6 +165,11 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
             }
         }
     }
+    /*
+      There always exists at least one goal relevant transition system,
+      assuming that the global goal specification is non-empty. Hence at
+      this point, we must have found a pair of transition systems to merge.
+    */
     assert(first != -1);
     assert(second != -1);
     cout << "Next pair of indices: (" << first << ", " << second << ")" << endl;

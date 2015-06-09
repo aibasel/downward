@@ -47,6 +47,7 @@ class OpenList;
 class OptionParser;
 class SearchEngine;
 class ShrinkStrategy;
+class Labels;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.
@@ -129,6 +130,12 @@ template <>
 class TokenParser<ShrinkStrategy *> {
 public:
     static inline ShrinkStrategy *parse(OptionParser &p);
+};
+
+template <>
+class TokenParser<Labels *> {
+public:
+    static inline Labels *parse(OptionParser &p);
 };
 
 template <>
@@ -215,6 +222,7 @@ public:
     }
 
 private:
+    std::string unparsed_config;
     Options opts;
     const ParseTree parse_tree;
     bool dry_run_;
@@ -222,6 +230,8 @@ private:
 
     ParseTree::sibling_iterator next_unparsed_argument;
     std::vector<std::string> valid_keys;
+
+    void set_unparsed_config();
 };
 
 //Definitions of OptionParsers template functions:
@@ -423,6 +433,10 @@ MergeStrategy *TokenParser<MergeStrategy *>::parse(OptionParser &p) {
 
 ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
     return lookup_in_registry<ShrinkStrategy>(p);
+}
+
+Labels *TokenParser<Labels *>::parse(OptionParser &p) {
+    return lookup_in_registry<Labels>(p);
 }
 
 

@@ -52,8 +52,7 @@ TransitionSystem::TransitionSystem(Labels *labels_)
     : labels(labels_),
       transitions_of_groups(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
       label_to_positions(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
-      num_labels(labels->get_size()),
-      peak_memory(0) {
+      num_labels(labels->get_size()) {
     clear_distances();
 }
 
@@ -376,7 +375,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                 }
                 grouped_labels.erase(group2_it);
                 --group2_it;
-                vector<Transition>().swap(transitions2);
+                release_vector_memory(transitions2);
             }
         }
     }
@@ -506,13 +505,13 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     }
 }
 
-void TransitionSystem::apply_abstraction(
-    vector<forward_list<AbstractStateRef> > &collapsed_groups) {
+bool TransitionSystem::apply_abstraction(
+    const vector<forward_list<AbstractStateRef> > &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
-        return;
+        return false;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
@@ -523,8 +522,8 @@ void TransitionSystem::apply_abstraction(
     vector<int> abstraction_mapping(num_states, PRUNED_STATE);
 
     for (size_t group_no = 0; group_no < collapsed_groups.size(); ++group_no) {
-        Group &group = collapsed_groups[group_no];
-        for (Group::iterator pos = group.begin(); pos != group.end(); ++pos) {
+        const Group &group = collapsed_groups[group_no];
+        for (Group::const_iterator pos = group.begin(); pos != group.end(); ++pos) {
             AbstractStateRef state = *pos;
             assert(abstraction_mapping[state] == PRUNED_STATE);
             abstraction_mapping[state] = group_no;
@@ -538,10 +537,10 @@ void TransitionSystem::apply_abstraction(
 
     bool must_clear_distances = false;
     for (AbstractStateRef new_state = 0; new_state < new_num_states; ++new_state) {
-        Group &group = collapsed_groups[new_state];
+        const Group &group = collapsed_groups[new_state];
         assert(!group.empty());
 
-        Group::iterator pos = group.begin();
+        Group::const_iterator pos = group.begin();
         int &new_init_dist = new_init_distances[new_state];
         int &new_goal_dist = new_goal_distances[new_state];
 
@@ -563,9 +562,9 @@ void TransitionSystem::apply_abstraction(
     }
 
     // Release memory.
-    vector<int>().swap(init_distances);
-    vector<int>().swap(goal_distances);
-    vector<bool>().swap(goal_states);
+    release_vector_memory(init_distances);
+    release_vector_memory(goal_distances);
+    release_vector_memory(goal_states);
 
     // Update all transitions. Locally equivalent labels remain locally equivalent.
     for (LabelGroupIter group_it = grouped_labels.begin();
@@ -604,6 +603,7 @@ void TransitionSystem::apply_abstraction(
         compute_distances_and_prune();
     }
     assert(is_valid());
+    return true;
 }
 
 void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> > > &label_mapping,
@@ -689,7 +689,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 group.erase(label_it);
                 // Note: we cannot invalidate the tupel label_to_positions[label_no]
                 if (group.empty()) {
-                    vector<Transition>().swap(group.get_transitions());
+                    release_vector_memory(group.get_transitions());
                     affected_groups.erase(&group);
                     grouped_labels.erase(group_it);
                 } else {
@@ -717,7 +717,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     || (new_transitions == other_transitions)) {
                     found_equivalent_labels = true;
                     add_label_to_group(group_it, new_label_no);
-                    vector<Transition>().swap(transitions_of_groups[new_label_no]);
+                    release_vector_memory(transitions_of_groups[new_label_no]);
                     break;
                 }
             }
@@ -756,8 +756,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
 void TransitionSystem::release_memory() {
     list<LabelGroup>().swap(grouped_labels);
-    vector<vector<Transition> >().swap(transitions_of_groups);
-    vector<tuple<LabelGroupIter, LabelIter> >().swap(label_to_positions);
+    release_vector_memory(transitions_of_groups);
+    release_vector_memory(label_to_positions);
 }
 
 string TransitionSystem::tag() const {
@@ -779,25 +779,6 @@ int TransitionSystem::get_cost(const GlobalState &state) const {
     int cost = goal_distances[abs_state];
     assert(cost != INF);
     return cost;
-}
-
-int TransitionSystem::memory_estimate() const {
-    int result = sizeof(TransitionSystem);
-    result += sizeof(vector<Transition>) * transitions_of_groups.capacity();
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        result += sizeof(LabelGroup); // size of class LabelGroup
-        result += sizeof(int) * group_it->size(); // size of list<int>
-        result += sizeof(int); // size of cost
-        result += sizeof(vector<Transition> *); // size of transitions pointer
-        const vector<Transition> &transitions = group_it->get_const_transitions();
-        result += sizeof(vector<Transition>) * transitions.capacity(); // size of transitions
-    }
-    result += sizeof(vector<tuple<LabelGroupIter, LabelIter> >) * label_to_positions.capacity();
-    result += sizeof(int) * init_distances.capacity();
-    result += sizeof(int) * goal_distances.capacity();
-    result += sizeof(bool) * goal_states.capacity();
-    return result;
 }
 
 int TransitionSystem::total_transitions() const {
@@ -823,15 +804,12 @@ int TransitionSystem::unique_unlabeled_transitions() const {
 }
 
 void TransitionSystem::statistics(bool include_expensive_statistics) const {
-    int memory = memory_estimate();
-    peak_memory = max(peak_memory, memory);
     cout << tag() << get_size() << " states, ";
     if (include_expensive_statistics)
         cout << unique_unlabeled_transitions();
     else
         cout << "???";
-    cout << "/" << total_transitions() << " arcs, " << memory << " bytes"
-         << endl;
+    cout << "/" << total_transitions() << " arcs, " << endl;
     cout << tag();
     if (!are_distances_computed()) {
         cout << "distances not computed";
@@ -842,10 +820,6 @@ void TransitionSystem::statistics(bool include_expensive_statistics) const {
         cout << "transition system is unsolvable";
     }
     cout << " [t=" << g_timer << "]" << endl;
-}
-
-int TransitionSystem::get_peak_memory_estimate() const {
-    return peak_memory;
 }
 
 void TransitionSystem::dump_dot_graph() const {
@@ -980,13 +954,6 @@ AbstractStateRef AtomicTransitionSystem::get_abstract_state(const GlobalState &s
     return lookup_table[value];
 }
 
-int AtomicTransitionSystem::memory_estimate() const {
-    int result = TransitionSystem::memory_estimate();
-    result += sizeof(AtomicTransitionSystem) - sizeof(TransitionSystem);
-    result += sizeof(AbstractStateRef) * lookup_table.capacity();
-    return result;
-}
-
 
 
 CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
@@ -1055,8 +1022,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
-            // TODO: test against overflow? pitfall: transitions could be empty!
-            if (transitions1.size() * transitions2.size() > new_transitions.max_size())
+            if (transitions1.size() && transitions2.size()
+                && transitions1.size() > new_transitions.max_size() / transitions2.size())
                 exit_with(EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {
@@ -1128,13 +1095,4 @@ AbstractStateRef CompositeTransitionSystem::get_abstract_state(const GlobalState
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
         return PRUNED_STATE;
     return lookup_table[state1][state2];
-}
-
-int CompositeTransitionSystem::memory_estimate() const {
-    int result = TransitionSystem::memory_estimate();
-    result += sizeof(CompositeTransitionSystem) - sizeof(TransitionSystem);
-    result += sizeof(vector<AbstractStateRef> ) * lookup_table.capacity();
-    for (size_t i = 0; i < lookup_table.size(); ++i)
-        result += sizeof(AbstractStateRef) * lookup_table[i].capacity();
-    return result;
 }

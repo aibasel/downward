@@ -12,18 +12,10 @@ class ShrinkBisimulation : public ShrinkStrategy {
         USE_UP
     };
 
-    /*
-      threshold: Shrink the transition system iff it is larger than this
-      size. Note that this is set independently from max_states, which
-      is the number of states to which the transition system is shrunk.
-    */
-
     const bool greedy;
-    const int threshold;
-    const bool group_by_h;
     const AtLimit at_limit;
 
-    void compute_abstraction(TransitionSystem &ts,
+    void compute_abstraction(const TransitionSystem &ts,
                              int target_size,
                              StateEquivalenceRelation &equivalence_relation);
 
@@ -31,18 +23,16 @@ class ShrinkBisimulation : public ShrinkStrategy {
                           std::vector<int> &state_to_group);
     void compute_signatures(const TransitionSystem &ts,
                             std::vector<Signature> &signatures,
-                            std::vector<int> &state_to_group);
-public:
-    ShrinkBisimulation(const Options &opts);
-    virtual ~ShrinkBisimulation();
-
-    virtual std::string name() const;
+                            const std::vector<int> &state_to_group);
+protected:
+    virtual void shrink(const TransitionSystem &ts,
+                        int target,
+                        StateEquivalenceRelation &equivalence_relation);
     virtual void dump_strategy_specific_options() const;
-
-    virtual bool reduce_labels_before_shrinking() const;
-
-    virtual void shrink(TransitionSystem &ts, int target);
-    virtual void shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
+    virtual std::string name() const;
+public:
+    explicit ShrinkBisimulation(const Options &opts);
+    virtual ~ShrinkBisimulation();
 };
 
 #endif
