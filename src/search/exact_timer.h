@@ -2,12 +2,12 @@
 #define EXACT_TIMER_H
 
 #include "utilities.h"
+#if OPERATING_SYSTEM == WINDOWS
+#include "utilities_windows.h"
+#endif
 
 #include <iosfwd>
 
-#if OPERATING_SYSTEM == WINDOWS
-#include <windows.h>
-#endif
 
 class ExactTimer {
     double last_start_clock;
