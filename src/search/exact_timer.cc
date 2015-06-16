@@ -47,7 +47,7 @@ double ExactTimer::current_clock() const {
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
     now.QuadPart -= start_time.QuadPart;
-    now.QuadPart *= 1e9;
+    now.QuadPart *= static_cast<LONGLONG>(1e9);
     return static_cast<double>(now.QuadPart / frequency.QuadPart);
 #else
     timespec tp;
