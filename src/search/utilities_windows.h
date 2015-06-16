@@ -4,7 +4,7 @@
 #define NOMINMAX
 #endif
 
-// speedup buildprocess by skiping some includes https://support.microsoft.com/de-ch/kb/166474
+// speed up build process by skipping some includes https://support.microsoft.com/de-ch/kb/166474
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
