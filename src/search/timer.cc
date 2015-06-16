@@ -5,7 +5,7 @@
 #include <ostream>
 
 #if OPERATING_SYSTEM == WINDOWS
-#include <windows.h>
+#include "utilities_windows.h"
 #else
 #include <sys/times.h>
 #include <unistd.h>

@@ -14,7 +14,7 @@ static void exit_handler(int exit_code, void *hint);
 static void exit_handler();
 #include <mach/mach.h>
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
-#include <windows.h>
+#include "utilities_windows.h"
 #include <process.h>
 #include <psapi.h>
 #endif
