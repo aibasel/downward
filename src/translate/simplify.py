@@ -236,6 +236,14 @@ class VarValueRenaming(object):
                 # Conditional effect that is impossible to trigger, or
                 # effect that sets an always true value. Swallow this.
                 pass
+                # TODO: Possible bug here: "DoesNothing" indicates
+                # that we have a conditional effect that is impossible
+                # to trigger, but I don't think this means we can
+                # ignore the whole pre_post entry. If there is a
+                # nontrivial precondition associated with the entry,
+                # then we must consider it, as the precondition part
+                # of the entry has nothing to do with the conditional
+                # effect part.
         op.pre_post = new_pre_post
         if not new_pre_post:
             raise DoesNothing
@@ -264,8 +272,32 @@ class VarValueRenaming(object):
         try:
             self.translate_pairs_in_place(cond)
         except Impossible:
+            # Explanation for the following assertion: we want to get
+            # rid of the postcondition, but not the precondition. That
+            # is, the precondition should become a prevail condition.
+            # Our calling code currently does not support this (and in
+            # any case it's not really clear what should happen if the
+            # same precondition occurs as part of multiple conditional
+            # effects etc. -- is it still a precondition then?) The
+            # correct fix for this is to get rid of the
+            # prevail/precondition distinction, which is very fuzzy in
+            # the presence of conditional effects.
+            assert new_pre == -1 or new_pre is always_true, "we're in trouble"
             raise DoesNothing
-        assert new_post is not always_false
+
+        if new_post is always_false:
+            # Our analysis shows that the effect is impossible. If our
+            # analysis isn't buggy, this must imply that the effect
+            # condition, in conjunction with the operator
+            # precondition, never triggers. We trust this analysis and
+            # ignore the effect. A more defensive programming style
+            # would perhaps try to understand more deeply what is
+            # going on here.
+
+            # Regarding the assertion, see the other assertion with
+            # the same error message above.
+            assert new_pre == -1 or new_pre is always_true, "we're in trouble"
+            raise DoesNothing
         if new_pre is always_true:
             assert new_post is always_true
             raise DoesNothing
