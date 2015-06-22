@@ -35,7 +35,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Default tool chain forces a 32 bit compilation
-# disable toolchain file for now
+# disable tool chain file for now
 if(0 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     message("Defaulting to 32 bit compilation.")
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/toolchain-32bit.cmake")
@@ -57,7 +57,7 @@ project(${TARGET})
 option(DOWNWARD_LINK_RELEASE_STATICALLY
        "Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable static linking of the executable in release mode. On OS X, this is unsupported and will be silently disabled."
        YES)
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+if(APPLE)
     set(DOWNWARD_LINK_RELEASE_STATICALLY NO)
 endif()
 
@@ -117,7 +117,7 @@ if(DOWNWARD_LINK_RELEASE_STATICALLY)
     endif()
 
     if(${LOWER_CASE_BUILD_TYPE} STREQUAL "release")
-        if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        if(UNIX)
             set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
         else()
             set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -131,13 +131,13 @@ endif()
 ## == Libraries ==
 
 # On Linux, find the rt library for the exact timer
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(UNIX AND NOT APPLE)
     find_library(RT_LIBRARY rt)
     target_link_libraries(${TARGET} ${RT_LIBRARY})
 endif()
 
 # On Windows, find the psapi library for determining peak memory
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+if(WIN32)
     target_link_libraries(${TARGET} psapi)
 endif()
 
