@@ -15,7 +15,7 @@ class ExactTimer {
     bool stopped;
 #if OPERATING_SYSTEM == WINDOWS
     LARGE_INTEGER frequency;
-    LARGE_INTEGER start_time;
+    LARGE_INTEGER start_ticks;
 #endif
 
     double current_clock() const;
