@@ -551,10 +551,6 @@ bool OptionParser::help_mode() const {
     return help_mode_;
 }
 
-void OptionParser::set_parse_tree(const ParseTree &pt) {
-    parse_tree = pt;
-}
-
-ParseTree *OptionParser::get_parse_tree() {
+const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
 }
