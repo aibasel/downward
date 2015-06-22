@@ -161,8 +161,11 @@ class OptionParser {
     static SearchEngine *parse_cmd_line_aux(
         const std::vector<std::string> &args, bool dry_run);
 public:
+    OptionParser(const OptionParser &other) = delete;
+    OptionParser &operator=(const OptionParser &other) = delete;
     OptionParser(std::string config, bool dr);
     OptionParser(ParseTree pt, bool dr);
+    ~OptionParser() = default;
 
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(
@@ -205,8 +208,7 @@ public:
     void warning(std::string msg);
 
     Options parse(); //parse is not the best name for this function. It just does some checks and returns the parsed options Parsing happens before that. Change?
-    ParseTree *get_parse_tree();
-    void set_parse_tree(const ParseTree &pt);
+    const ParseTree *get_parse_tree();
     void set_help_mode(bool m);
 
     bool dry_run() const;
@@ -222,7 +224,7 @@ public:
 private:
     std::string unparsed_config;
     Options opts;
-    ParseTree parse_tree;
+    const ParseTree parse_tree;
     bool dry_run_;
     bool help_mode_;
 
@@ -289,11 +291,11 @@ void OptionParser::add_option(
             }
         }
     }
-    OptionParser subparser =
-        (use_default ?
-         OptionParser(default_value, dry_run()) :
-         OptionParser(subtree(parse_tree, arg), dry_run()));
-    T result = TokenParser<T>::parse(subparser);
+    std::unique_ptr<OptionParser> subparser(
+        use_default ?
+        new OptionParser(default_value, dry_run()) :
+        new OptionParser(subtree(parse_tree, arg), dry_run()));
+    T result = TokenParser<T>::parse(*subparser);
     opts.set<T>(k, result);
     //if we have not reached the keyword parameters yet
     //and did not use the default value,
