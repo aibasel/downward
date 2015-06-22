@@ -137,8 +137,7 @@ endif()
 
 # On Windows, find the psapi library for determining peak memory
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    find_library(PSAPI_LIBRARY psapi)
-    target_link_libraries(${TARGET} ${PSAPI_LIBRARY})
+    target_link_libraries(${TARGET} psapi)
 endif()
 
 
