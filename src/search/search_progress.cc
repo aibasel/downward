@@ -21,7 +21,6 @@ bool SearchProgress::process_heuristic_value(const Heuristic *heuristic, int h) 
     bool was_inserted = insert_result.second;
     if (was_inserted) {
         // We haven't seen this heuristic before.
-        initial_heuristic_values[heuristic] = h;
         return true;
     } else {
         int &best_h = iter->second;
