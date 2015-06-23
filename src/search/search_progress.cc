@@ -54,11 +54,3 @@ bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
     }
     return result;
 }
-
-void SearchProgress::print_initial_h_values() const {
-    for (const auto &entry : initial_heuristic_values) {
-        const Heuristic *heur = entry.first;
-        int h = entry.second;
-        output_line("Initial", heur, h);
-    }
-}
