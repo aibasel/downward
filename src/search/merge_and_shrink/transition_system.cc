@@ -611,7 +611,32 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     assert(are_distances_computed());
     assert(are_transitions_sorted_unique());
 
-    // Go over the mapping of reduced labels to new label one by one.
+    /*
+      We iterate over the given label mapping, treating every new label and
+      the reduced old labels separately. We further distinguish the case
+      where we know that the reduced labels are all from the same equivalence
+      group from the case where we may combine arbitrary labels. We also
+      assume that only labels of the same cost are reduced.
+
+      The case where only equivalent labels are combined is simple: remove all
+      old labels from the label group and add the new one.
+
+      The other case is more involved: again remove all old labels from their
+      groups, and the groups themselves if they become empty. Also collect
+      the transitions of all reduced labels. Add a new group for every new
+      label and assign the collected transitions to this group. Recompute the
+      cost of all groups and compute locally equivalent labels.
+
+      NOTE: Previously, this latter case was computed in a more incremental
+      fashion: Rather than recomputing cost of all groups, we only recomputed
+      cost for groups from which we actually removed labels (hence temporarily
+      storing these affected groups). Furthermore, rather than computing
+      locally equivalent labels from scratch, we did not per default add a new
+      group for every label, but checked for an existing equivalent label
+      group. In issue539, it turned out that this incremental fashion of
+      computation does not accelerate the computation.
+    */
+
     for (size_t i = 0; i < label_mapping.size(); ++i) {
         const vector<int> &old_label_nos = label_mapping[i].second;
         assert(old_label_nos.size() >= 2);
@@ -624,17 +649,11 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         }
 
         /*
-          Remove all existing labels from their group.
-
-          If only equivalent labels are combined, we do not remove the (single)
-          group if it becomes empty, but use it for the new label. Otherwise,
-          we remove all groups that become empty and collect the transitions
-          of the old labels being reduced. In a second step (below), we add
-          a new group for the new label and add all collected transitions.
+          Remove all existing labels from their group(s) and possibly the
+          groups themselves.
         */
         LabelGroupIter canonical_group_it = get_group_it(old_label_nos[0]);
-        // collected_transitions collects all transitions from all old labels
-        // We use a set so that transitions are sorted.
+        // We use a set to collect the reduced label's transitions so that they are sorted.
         set<Transition> collected_transitions;
         for (size_t i = 0; i < old_label_nos.size(); ++i) {
             int label_no = old_label_nos[i];
@@ -658,16 +677,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         }
 
         if (only_equivalent_labels) {
-            /*
-              Here we handle those transitions systems for which we know that
-              only locally equivalent labels are combined which means that
-              the new label has the same transitions as the reduced ones.
-            */
-
-            /*
-              Add the new label to the group and add an entry to label_to_positions.
-              The cost of the group does not need to be updated.
-            */
+            // No need to update the group's cost due to the assumption of exact label reduction.
             add_label_to_group(canonical_group_it, new_label_no, false);
         } else {
             transitions_of_groups[new_label_no].assign(
@@ -680,10 +690,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     }
 
     if (!only_equivalent_labels) {
-        /*
-          Recompute the cost of every label group because minimal cost may have
-          changed by removing labels from a group.
-        */
+        // Recompute the cost all label groups.
         for (LabelGroupIter group_it = grouped_labels.begin();
              group_it != grouped_labels.end(); ++group_it) {
             group_it->set_cost(INF);
