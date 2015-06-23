@@ -173,7 +173,7 @@ class TransitionSystem {
        - All labels are incorporated (is_label_reduced() == true)).
        - Distances are computed and stored (are_distances_computed() == true).
        - Locally equivalent labels are computed. This cannot explicitly be
-         test because of labels and transitions being coupled in the data
+         tested because of labels and transitions being coupled in the data
          structure representing transitions.
       Note that those tests are expensive to compute and hence only used as
       an assertion.
