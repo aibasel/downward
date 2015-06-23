@@ -1,9 +1,9 @@
 #include "merge_and_shrink_heuristic.h"
 
-#include "transition_system.h"
 #include "labels.h"
 #include "merge_strategy.h"
 #include "shrink_strategy.h"
+#include "transition_system.h"
 
 #include "../global_state.h"
 #include "../globals.h"

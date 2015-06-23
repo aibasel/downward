@@ -19,8 +19,7 @@ public:
     bool done() const {
         return remaining_merges == 0;
     }
-    // implementations of get_next should decrease remaining_merges by one
-    // everytime they return a pair of transition systems which are merged next.
+    // Implementations of get_next have to decrease remaining_merges by one
     virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems) = 0;
     virtual std::string name() const = 0;
 };
