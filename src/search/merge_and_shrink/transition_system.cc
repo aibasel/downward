@@ -669,7 +669,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             LabelIter label_it = get_label_it(label_no);
             group_it->erase(label_it);
             // Note: we cannot invalidate the tupel label_to_positions[label_no]
-            if (!only_equivalent_labels)  {
+            if (!only_equivalent_labels) {
                 if (group_it->empty()) {
                     release_vector_memory(group_it->get_transitions());
                     grouped_labels.erase(group_it);
