@@ -18,8 +18,6 @@ class SearchProgress {
     std::unordered_map<const Heuristic *, int> best_heuristic_values;
 
     bool process_heuristic_value(const Heuristic *heuristic, int h);
-    void output_line(const std::string &description,
-                     const Heuristic *heuristic, int h) const;
 
 public:
     SearchProgress() = default;
@@ -28,7 +26,7 @@ public:
     /*
       Call the following function after each state evaluation.
 
-      It keeps track of the initial and best heuristic value for each
+      It keeps track of the best heuristic value for each
       heuristic evaluated, returning true if at least one heuristic
       value is the best value seen for this heuristic so far. (This
       includes the case where the evaluation context includes a
