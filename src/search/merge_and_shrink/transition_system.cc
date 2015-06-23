@@ -703,9 +703,9 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 }
             }
         }
+        compute_locally_equivalent_labels();
     }
 
-    compute_locally_equivalent_labels();
     assert(is_valid());
 }
 
