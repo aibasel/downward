@@ -3,9 +3,10 @@
 
 #include "../global_state.h"
 #include "../heuristic.h"
-#include "../lp_solver_interface.h"
+#include "../lp_solver.h"
 #include "../state_registry.h"
 
+#include <memory>
 #include <vector>
 
 namespace potentials {
@@ -29,9 +30,7 @@ class PotentialHeuristic: public Heuristic {
             : row(row_), col(col_), element(element_) {
         }
     };
-#ifdef USE_LP
-    OsiSolverInterface *lp_solver;
-#endif
+    std::unique_ptr<LPSolver> lp_solver;
     OptimizationFunction optimization_function;
     Heuristic *sampling_heuristic;
     double sampling_steps_factor;
@@ -42,8 +41,7 @@ class PotentialHeuristic: public Heuristic {
     bool debug;
     bool feasible_lp_solution;
     int num_cols;
-    bool use_resolve;
-    std::vector<std::vector<int> > fact_lp_vars;
+    std::vector<std::vector<int> > lp_var_ids;
     std::vector<std::vector<double> > fact_potential;
     int num_samples_covered;
     bool optimize_potential_for_state(const GlobalState &state);
@@ -69,7 +67,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &state);
 public:
     explicit PotentialHeuristic(const Options &options);
-    ~PotentialHeuristic();
+    ~PotentialHeuristic() = default;
 };
 
 void add_common_potential_options_to_parser(OptionParser &parser);
