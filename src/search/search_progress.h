@@ -39,14 +39,6 @@ public:
       Prints one line of output for each new best heuristic value.
     */
     bool check_progress(const EvaluationContext &eval_context);
-
-    /*
-      Print information on the first heuristic value seen for each heuristic.
-
-      (This assumes that check_progress has previously been called to
-      feed information to the SearchProgress instance.)
-    */
-    void print_initial_h_values() const;
 };
 
 #endif

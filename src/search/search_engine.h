@@ -51,6 +51,12 @@ public:
     static void add_options_to_parser(OptionParser &parser);
 };
 
+/*
+  Print heuristic values of all heuristics evaluated in the evaluation context.
+
+  It is an error (guarded by an assertion) if no heuristic has been evaluated
+  in the given context.
+*/
 void print_initial_h_values(const EvaluationContext &eval_context);
 
 #endif
