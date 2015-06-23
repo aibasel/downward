@@ -149,6 +149,10 @@ void ShrinkBisimulation::compute_signatures(
       astar(merge_and_shrink(merge_strategy=merge_dfp,
             shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,greedy=false),
             label_reduction=label_reduction(before_shrinking=true,before_merging=false)))
+
+      The same behavioral difference can be obtained even without modifying
+      the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
+      Running the above config on those two revisions yields the same difference.
     */
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
