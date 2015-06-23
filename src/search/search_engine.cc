@@ -1,6 +1,7 @@
 #include "search_engine.h"
 
 #include "countdown_timer.h"
+#include "evaluation_context.h"
 #include "globals.h"
 #include "operator_cost.h"
 #include "option_parser.h"
@@ -99,4 +100,17 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
+}
+
+void print_initial_h_values(const EvaluationContext &eval_context) {
+    assert(!eval_context.get_cache().get_eval_results().empty());
+    for (const auto &element : eval_context.get_cache().get_eval_results()) {
+        const ScalarEvaluator *evaluator = element.first;
+        int h = element.second.get_h_value();
+        const Heuristic *heuristic = dynamic_cast<const Heuristic *>(evaluator);
+        if (heuristic) {
+            cout << "Initial heuristic value for "
+                 << heuristic->get_description() << ": " << h << endl;
+        }
+    }
 }
