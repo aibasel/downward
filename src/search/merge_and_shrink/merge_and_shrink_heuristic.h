@@ -3,10 +3,10 @@
 
 #include "../heuristic.h"
 
-class TransitionSystem;
 class Labels;
 class MergeStrategy;
 class ShrinkStrategy;
+class TransitionSystem;
 
 class MergeAndShrinkHeuristic : public Heuristic {
     MergeStrategy *const merge_strategy;
