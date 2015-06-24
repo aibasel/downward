@@ -72,47 +72,6 @@ int PotentialHeuristics::compute_heuristic(const GlobalState &state) {
     return value;
 }
 
-StateID PotentialHeuristics::get_max_covering_heuristic(
-        const unordered_map<StateID, PotentialHeuristic *, hash_state_id> &heuristics,
-        const vector<GlobalState> &samples,
-        const unordered_map<StateID, int, hash_state_id> &sample_to_max_h) {
-    StateID best_state_id = StateID::no_state;
-    int max_num_covered = 0;
-    for (auto it = heuristics.begin(); it != heuristics.end(); ++it) {
-        const StateID &state_id = it->first;
-        PotentialHeuristic *heuristic = it->second;
-        // If the heuristic covered only one sample in the last round, skip it.
-        if (heuristic->num_samples_covered == 1) {
-            continue;
-        }
-        int num_covered = 0;
-        for (size_t i = 0; i < samples.size(); ++i) {
-            const GlobalState &sample = samples[i];
-            int max_h = sample_to_max_h.at(sample.get_id());
-            int h = heuristic->compute_heuristic(sample);
-            assert(h >= 0);
-            assert(h <= max_h);
-            if (sample.get_id() == state_id) {
-                assert(h == max_h);
-            }
-            if (h == max_h) {
-                ++num_covered;
-            }
-        }
-        assert(num_covered >= 1);
-        heuristic->num_samples_covered = num_covered;
-        if (num_covered > max_num_covered) {
-            best_state_id = state_id;
-            max_num_covered = num_covered;
-        }
-    }
-    // All heuristics cover exactly one sample so we choose a random heuristic.
-    if (best_state_id == StateID::no_state) {
-        best_state_id = g_rng.choose(samples)->get_id();
-    }
-    return best_state_id;
-}
-
 void PotentialHeuristics::filter_samples(
         vector<GlobalState> &samples,
         unordered_map<StateID, int, hash_state_id> &sample_to_max_h,
@@ -213,9 +172,6 @@ void PotentialHeuristics::find_complementary_heuristics() {
             StateID state_id = StateID::no_state;
             if (cover_strategy == RANDOM) {
                 state_id = g_rng.choose(samples)->get_id();
-            } else if (cover_strategy == MAX_COVER) {
-                state_id = get_max_covering_heuristic(
-                            single_heuristics, samples, sample_to_max_h);
             }
             assert(state_id != StateID::no_state);
             PotentialHeuristic *single_heuristic = single_heuristics[state_id];
@@ -260,9 +216,6 @@ static Heuristic *_parse(OptionParser &parser) {
     cover_strategy.push_back("RANDOM");
     cover_strategy_doc.push_back(
         "add function for random sample");
-    cover_strategy.push_back("MAX_COVER");
-    cover_strategy_doc.push_back(
-        "add function that covers most samples");
     parser.add_enum_option("cover_strategy",
                            cover_strategy,
                            "Which potential function for a single sample to choose.",

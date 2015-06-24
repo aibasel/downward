@@ -14,8 +14,7 @@
 namespace potentials {
 
 enum CoverStrategy {
-    RANDOM,
-    MAX_COVER
+    RANDOM
 };
 
 struct hash_state_id {
@@ -35,10 +34,6 @@ class PotentialHeuristics: public Heuristic {
     double max_covering_time;
     bool debug;
     std::vector<PotentialHeuristic *> heuristics;
-    StateID get_max_covering_heuristic(
-            const std::unordered_map<StateID, PotentialHeuristic *, hash_state_id> &heuristics,
-            const std::vector<GlobalState> &samples,
-            const std::unordered_map<StateID, int, hash_state_id> &sample_to_max_h);
     void filter_samples(
             std::vector<GlobalState> &samples,
             std::unordered_map<StateID, int, hash_state_id> &sample_to_max_h,
