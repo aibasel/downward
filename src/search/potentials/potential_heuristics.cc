@@ -17,7 +17,6 @@ namespace potentials {
 PotentialHeuristics::PotentialHeuristics(const Options &options)
     : Heuristic(options),
       optimization_function(OptimizationFunction(options.get_enum("optimization_function"))),
-      cover_strategy(CoverStrategy(options.get_enum("cover_strategy"))),
       size(options.get<int>("size")),
       opts(options),
       num_samples(options.get<int>("num_samples")),
@@ -169,11 +168,7 @@ void PotentialHeuristics::find_complementary_heuristics() {
                       single_heuristics);
         if (samples.size() == last_num_samples) {
             cout << "No sample was removed -> Choose a precomputed heuristic." << endl;
-            StateID state_id = StateID::no_state;
-            if (cover_strategy == RANDOM) {
-                state_id = g_rng.choose(samples)->get_id();
-            }
-            assert(state_id != StateID::no_state);
+            StateID state_id = g_rng.choose(samples)->get_id();
             PotentialHeuristic *single_heuristic = single_heuristics[state_id];
             heuristics.push_back(single_heuristic);
             single_heuristics.erase(state_id);
@@ -211,16 +206,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "max_covering_time",
         "time limit in seconds for covering samples",
         "infinity");
-    vector<string> cover_strategy;
-    vector<string> cover_strategy_doc;
-    cover_strategy.push_back("RANDOM");
-    cover_strategy_doc.push_back(
-        "add function for random sample");
-    parser.add_enum_option("cover_strategy",
-                           cover_strategy,
-                           "Which potential function for a single sample to choose.",
-                           "RANDOM",
-                           cover_strategy_doc);
     Options opts = parser.parse();
     if (parser.dry_run())
         return 0;
