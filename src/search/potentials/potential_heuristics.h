@@ -12,11 +12,6 @@
 
 
 namespace potentials {
-
-enum CoverStrategy {
-    RANDOM
-};
-
 struct hash_state_id {
     size_t operator()(const StateID &id) const {
         return id.hash();
@@ -25,7 +20,6 @@ struct hash_state_id {
 
 class PotentialHeuristics: public Heuristic {
     OptimizationFunction optimization_function;
-    CoverStrategy cover_strategy;
     int size;
     Options opts;
     int num_samples;
