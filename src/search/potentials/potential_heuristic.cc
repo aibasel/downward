@@ -369,7 +369,10 @@ void PotentialHeuristic::sample_states(StateRegistry &sample_registry,
 }
 
 void PotentialHeuristic::release_memory() {
-    lp_solver.reset();
+    if (lp_solver){
+        delete lp_solver;
+        lp_solver = nullptr;
+    }
     vector<vector<int> >().swap(lp_var_ids);
 }
 
