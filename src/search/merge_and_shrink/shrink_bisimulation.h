@@ -13,7 +13,6 @@ class ShrinkBisimulation : public ShrinkStrategy {
     };
 
     const bool greedy;
-    const bool group_by_h;
     const AtLimit at_limit;
 
     void compute_abstraction(const TransitionSystem &ts,
@@ -24,7 +23,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
                           std::vector<int> &state_to_group);
     void compute_signatures(const TransitionSystem &ts,
                             std::vector<Signature> &signatures,
-                            std::vector<int> &state_to_group);
+                            const std::vector<int> &state_to_group);
 protected:
     virtual void shrink(const TransitionSystem &ts,
                         int target,
