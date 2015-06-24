@@ -20,16 +20,6 @@ enum OptimizationFunction {
 
 class PotentialHeuristic: public Heuristic {
     friend class PotentialHeuristics;
-    // TODO: avoid duplication from OCP
-    class MatrixEntry {
-    public:
-        int row;
-        int col;
-        double element;
-        MatrixEntry(int row_, int col_, double element_)
-            : row(row_), col(col_), element(element_) {
-        }
-    };
     std::unique_ptr<LPSolver> lp_solver;
     OptimizationFunction optimization_function;
     Heuristic *sampling_heuristic;
@@ -54,17 +44,17 @@ class PotentialHeuristic: public Heuristic {
                        Heuristic *heuristic);
     void filter_dead_ends(const std::vector<GlobalState> &samples,
                           std::vector<GlobalState> &non_dead_end_states);
-#ifdef USE_LP
     void set_objective_for_state(const GlobalState &state);
     void set_objective_for_states(const std::vector<GlobalState> &states);
     void extract_lp_solution();
     bool solve_lp();
     void release_memory();
     void dump_potentials() const;
-#endif
+
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
+
 public:
     explicit PotentialHeuristic(const Options &options);
     ~PotentialHeuristic() = default;
