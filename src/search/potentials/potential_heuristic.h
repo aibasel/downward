@@ -20,7 +20,7 @@ enum OptimizationFunction {
 
 class PotentialHeuristic: public Heuristic {
     friend class PotentialHeuristics;
-    std::unique_ptr<LPSolver> lp_solver;
+    LPSolver *lp_solver;
     OptimizationFunction optimization_function;
     Heuristic *sampling_heuristic;
     double sampling_steps_factor;
