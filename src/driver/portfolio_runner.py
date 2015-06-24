@@ -21,7 +21,10 @@ __all__ = ["run"]
 
 import math
 import os
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import signal
 import subprocess
 import sys
@@ -292,6 +295,9 @@ def get_portfolio_attributes(portfolio):
 
 
 def run(portfolio, executable, sas_file, plan_manager):
+    if resource is None:
+        raise ValueError("The module resource could not be imported "
+                         "successfully, but is required for portfolio running.")
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
