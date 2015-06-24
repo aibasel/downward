@@ -365,7 +365,8 @@ tree<T> subtree(
 class Options {
 public:
     Options(bool hm = false)
-        : help_mode(hm) {
+        : unparsed_config("<missing>"),
+          help_mode(hm) {
     }
 
     void set_help_mode(bool hm) {
@@ -402,6 +403,14 @@ public:
     }
 
     template <class T>
+    T get(std::string key, const T &default_value) const {
+        if (storage.count(key))
+            return get<T>(key);
+        else
+            return default_value;
+    }
+
+    template <class T>
     void verify_list_non_empty(std::string key) const {
         if (!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T> >(key);
@@ -427,7 +436,16 @@ public:
     bool contains(std::string key) const {
         return storage.find(key) != storage.end();
     }
+
+    std::string get_unparsed_config() const {
+        return unparsed_config;
+    }
+
+    void set_unparsed_config(const std::string &config) {
+        unparsed_config = config;
+    }
 private:
+    std::string unparsed_config;
     bool help_mode;
 };
 

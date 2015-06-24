@@ -15,7 +15,7 @@
 #ifdef USE_LP
 #define LP_METHOD(X) X;
 #else
-#define LP_METHOD(X) __attribute__((noreturn)) X { \
+#define LP_METHOD(X) NO_RETURN X { \
         ABORT("LP method called but the planner was compiled without LP support.\n" \
               "See http://www.fast-downward.org/LPBuildInstructions\n" \
               "to install an LP solver and use it in the planner."); \

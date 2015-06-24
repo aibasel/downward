@@ -1,6 +1,7 @@
 #ifndef LAZY_SEARCH_H
 #define LAZY_SEARCH_H
 
+#include "evaluation_context.h"
 #include "global_state.h"
 #include "scalar_evaluator.h"
 #include "search_engine.h"
@@ -35,6 +36,7 @@ protected:
     const GlobalOperator *current_operator;
     int current_g;
     int current_real_g;
+    EvaluationContext current_eval_context;
 
     virtual void initialize();
     virtual SearchStatus step();
@@ -45,13 +47,17 @@ protected:
     void reward_progress();
 
     void get_successor_operators(std::vector<const GlobalOperator *> &ops);
-public:
 
-    LazySearch(const Options &opts);
-    virtual ~LazySearch();
+    // TODO: Move into SearchEngine?
+    void print_checkpoint_line(int g) const;
+
+public:
+    explicit LazySearch(const Options &opts);
+    virtual ~LazySearch() = default;
+
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);
 
-    virtual void statistics() const;
+    virtual void print_statistics() const override;
 };
 
 #endif

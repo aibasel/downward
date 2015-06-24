@@ -682,10 +682,10 @@ void HMLandmarks::calc_achievers() {
 }
 
 void HMLandmarks::free_unneeded_memory() {
-    std::vector<HMEntry>().swap(h_m_table_);
-    std::vector<PMOp>().swap(pm_ops_);
-    std::vector<std::vector<bool> >().swap(interesting_);
-    std::vector<std::pair<int, std::vector<int> > >().swap(unsat_pc_count_);
+    release_vector_memory(h_m_table_);
+    release_vector_memory(pm_ops_);
+    release_vector_memory(interesting_);
+    release_vector_memory(unsat_pc_count_);
 
     set_indices_.clear();
     lm_node_table_.clear();
