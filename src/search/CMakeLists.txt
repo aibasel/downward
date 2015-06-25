@@ -161,6 +161,7 @@ endif()
 
 
 ## == LP libraries ==
+if(NOT MSVC)
 ## We want to link the Linear Programming libraries statically since
 ## they are unlikely to be preinstalled on the grids we use for
 ## evaluation. Static linking is a bit tricky: we need to specify the
@@ -177,8 +178,9 @@ endif()
 ## using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
 ## afterwards (unless in release mode with static linking enabled). See
 ## http://ubuntuforums.org/showthread.php?t=491455
-set(_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+    set(_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+endif()
 
 find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
 find_package(CoinUtils)
@@ -213,4 +215,7 @@ if(OSI_FOUND AND COINUTILS_FOUND)
         add_definitions("-D COIN_HAS_GRB")
     endif()
 endif()
-set(CMAKE_FIND_LIBRARY_SUFFIXES ${_CMAKE_FIND_LIBRARY_SUFFIXES})
+
+if(NOT MSVC)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${_CMAKE_FIND_LIBRARY_SUFFIXES})
+endif()

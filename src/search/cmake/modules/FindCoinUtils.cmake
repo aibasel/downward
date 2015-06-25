@@ -1,22 +1,23 @@
-set(_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
-if(DEFINED ENV{DOWNWARD_COIN_ROOT})
-    set(CMAKE_FIND_ROOT_PATH $ENV{DOWNWARD_COIN_ROOT})
-    set(_COIN_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
-endif()
-
 find_path(COINUTILS_INCLUDES
     NAMES
     CoinPragma.hpp
     PATHS
-    /include/coin
-    ${_COIN_ROOT_OPTS}
+    ${DOWNWARD_COIN_ROOT}
+    $ENV{DOWNWARD_COIN_ROOT}
+    PATH_SUFFIXES
+    include
+    include/coin
 )
 
 find_library(COINUTILS_LIBRARIES
+    NAMES
     CoinUtils
+    libCoinUtils
     PATHS
-    /lib
-    ${_COIN_ROOT_OPTS}
+    ${DOWNWARD_COIN_ROOT}
+    $ENV{DOWNWARD_COIN_ROOT}
+    PATH_SUFFIXES
+    lib
 )
 
 include(FindPackageHandleStandardArgs)

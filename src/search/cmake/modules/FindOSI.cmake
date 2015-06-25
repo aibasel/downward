@@ -23,29 +23,31 @@
 # Note that the standard FIND_PACKAGE features are supported
 # (i.e., QUIET, REQUIRED, etc.).
 
-set(_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
-if(DEFINED ENV{DOWNWARD_COIN_ROOT})
-    set(CMAKE_FIND_ROOT_PATH $ENV{DOWNWARD_COIN_ROOT})
-    set(_COIN_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
-endif()
-
 find_path(OSI_INCLUDES
     NAMES
     OsiConfig.h config_osi.h
     PATHS
-    /include/coin
-    ${_COIN_ROOT_OPTS}
+    $ENV{DOWNWARD_COIN_ROOT}
+    ${DOWNWARD_COIN_ROOT}
+    PATH_SUFFIXES
+    include
+    include/coin
 )
 
 set(OSI_LIBRARIES "")
 foreach(solver ${OSI_FIND_COMPONENTS})
     set(OSI_${solver}_FOUND FALSE)
     find_library(OSI_${solver}_LIBRARY
+        NAMES
         Osi${solver}
+        libOsi${solver}
         PATHS
-        /lib
-        ${_COIN_ROOT_OPTS}
+        ${DOWNWARD_COIN_ROOT}
+        $ENV{DOWNWARD_COIN_ROOT}
+        PATH_SUFFIXES
+        lib
     )
+
     set(OSI_${solver}_LIBRARIES ${OSI_${solver}_LIBRARY})
     if(OSI_${solver}_LIBRARIES)
         list(APPEND OSI_LIBRARIES ${OSI_${solver}_LIBRARIES})
@@ -56,9 +58,12 @@ endforeach()
 
 find_library(OSI_LIBRARY
     Osi
+    libOsi
     PATHS
-    /lib
-    ${_COIN_ROOT_OPTS}
+    ${DOWNWARD_COIN_ROOT}
+    $ENV{DOWNWARD_COIN_ROOT}
+    PATH_SUFFIXES
+    lib
 )
 
 ## Basic Osi libs must be added after (!) all osi solver libs
