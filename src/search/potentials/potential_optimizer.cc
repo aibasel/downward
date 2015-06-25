@@ -70,8 +70,7 @@ bool PotentialOptimizer::has_optimal_solution() const {
 }
 
 bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
-    set_objective_for_state(state);
-    return solve_lp();
+    return optimize_for_samples({state});
 }
 
 bool PotentialOptimizer::optimize_for_all_states() {
@@ -93,10 +92,7 @@ bool PotentialOptimizer::optimize_for_all_states() {
 
 bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples) {
     set_objective_for_states(samples);
-    bool feasible = solve_lp();
-    if (!feasible)
-        ABORT("LP for samples infeasible. Please filter dead ends or limit the potentials.");
-    return feasible;
+    return solve_lp();
 }
 
 void PotentialOptimizer::filter_dead_ends(const vector<GlobalState> &samples,
@@ -115,22 +111,10 @@ void PotentialOptimizer::filter_dead_ends(const vector<GlobalState> &samples,
     cout << "Non dead-end samples: " << non_dead_end_states.size() << endl;
 }
 
-void PotentialOptimizer::set_objective_for_state(const GlobalState &state) {
-    for (int i = 0; i < num_cols; ++i) {
-        lp_solver.set_objective_coefficient(i, 0);
-    }
-    int num_vars = g_variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        int value = state[var];
-        lp_solver.set_objective_coefficient(lp_var_ids[var][value], 1);
-    }
-}
-
 void PotentialOptimizer::set_objective_for_states(const vector<GlobalState> &states) {
     vector<int> coefficients(num_cols, 0);
     int num_vars = g_variable_domain.size();
-    for (size_t i = 0; i < states.size(); ++i) {
-        const GlobalState &state = states[i];
+    for (const GlobalState &state : states) {
         for (int var = 0; var < num_vars; ++var) {
             int value = state[var];
             coefficients[lp_var_ids[var][value]] += 1;

@@ -36,7 +36,6 @@ class PotentialOptimizer {
     void construct_lp();
     void filter_dead_ends(const std::vector<GlobalState> &samples,
                           std::vector<GlobalState> &non_dead_end_states);
-    void set_objective_for_state(const GlobalState &state);
     void set_objective_for_states(const std::vector<GlobalState> &states);
     void extract_lp_solution();
     bool solve_lp();
