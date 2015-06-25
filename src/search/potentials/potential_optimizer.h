@@ -44,6 +44,8 @@ public:
     explicit PotentialOptimizer(const Options &options);
     ~PotentialOptimizer() = default;
 
+    void set_objective(const std::vector<double> &coefficients);
+
     bool optimize_for_state(const GlobalState &state);
     bool optimize_for_all_states();
     bool optimize_for_samples(const std::vector<GlobalState> &samples);

@@ -75,15 +75,13 @@ bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
 
 bool PotentialOptimizer::optimize_for_all_states() {
     int num_vars = g_variable_domain.size();
-    vector<double> coefficients(num_cols, 0);
+    vector<double> coefficients(num_cols, 0.0);
     for (int var = 0; var < num_vars; ++var) {
         for (int value = 0; value < g_variable_domain[var]; ++value) {
             coefficients[lp_var_ids[var][value]] = 1.0 / g_variable_domain[var];
         }
     }
-    for (int i = 0; i < num_cols; ++i) {
-        lp_solver.set_objective_coefficient(i, coefficients[i]);
-    }
+    set_objective(coefficients);
     bool feasible = solve_lp();
     if (!feasible)
         ABORT("Potentials must be bounded in the LP for all states.");
@@ -112,14 +110,19 @@ void PotentialOptimizer::filter_dead_ends(const vector<GlobalState> &samples,
 }
 
 void PotentialOptimizer::set_objective_for_states(const vector<GlobalState> &states) {
-    vector<int> coefficients(num_cols, 0);
+    vector<double> coefficients(num_cols, 0.0);
     int num_vars = g_variable_domain.size();
     for (const GlobalState &state : states) {
         for (int var = 0; var < num_vars; ++var) {
             int value = state[var];
-            coefficients[lp_var_ids[var][value]] += 1;
+            coefficients[lp_var_ids[var][value]] += 1.0;
         }
     }
+    set_objective(coefficients);
+}
+
+void PotentialOptimizer::set_objective(const vector<double> &coefficients) {
+    assert(static_cast<int>(coefficients.size()) == num_cols);
     for (int i = 0; i < num_cols; ++i) {
         lp_solver.set_objective_coefficient(i, coefficients[i]);
     }
