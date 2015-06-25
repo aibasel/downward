@@ -13,6 +13,8 @@ class StateRegistry;
 
 namespace potentials {
 
+class PotentialHeuristic;
+
 enum OptimizationFunction {
     INITIAL_STATE,
     EACH_STATE,
@@ -34,9 +36,7 @@ class PotentialOptimizer {
     std::vector<std::vector<int> > lp_var_ids;
     std::vector<std::vector<double> > fact_potentials;
     int num_samples_covered;
-    bool optimize_potential_for_state(const GlobalState &state);
-    bool optimize_potential_for_all_states();
-    bool optimize_potential_for_samples(const std::vector<GlobalState> &samples);
+
     void construct_lp();
     void sample_states(StateRegistry &sample_registry,
                        std::vector<GlobalState> &samples,
@@ -55,8 +55,12 @@ public:
     explicit PotentialOptimizer(const Options &options);
     ~PotentialOptimizer() = default;
 
+    bool optimize_for_state(const GlobalState &state);
+    bool optimize_for_all_states();
+    bool optimize_for_samples(const std::vector<GlobalState> &samples);
+
     bool has_optimal_solution() const;
-    const std::vector<std::vector<double> > &get_fact_potentials() const;
+    std::shared_ptr<Heuristic> get_heuristic() const;
 };
 
 void add_common_potential_options_to_parser(OptionParser &parser);
