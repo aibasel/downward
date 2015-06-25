@@ -24,7 +24,6 @@ int PotentialHeuristic::compute_heuristic(const GlobalState &state) {
     for (int var = 0; var < num_vars; ++var) {
         heuristic_value += fact_potentials[var][state[var]];
     }
-    // TODO avoid code duplication with landmark count heuristic
     double epsilon = 0.01;
     return static_cast<int>(max(0.0, ceil(heuristic_value - epsilon)));
 }
