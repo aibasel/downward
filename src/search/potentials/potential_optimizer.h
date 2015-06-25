@@ -45,7 +45,6 @@ class PotentialOptimizer {
     void extract_lp_solution();
     bool solve_lp();
     void release_memory();
-    void dump_potentials() const;
 
 public:
     explicit PotentialOptimizer(const Options &options);
