@@ -23,7 +23,7 @@ enum OptimizationFunction {
 };
 
 class PotentialOptimizer {
-    LPSolver *lp_solver;
+    LPSolver lp_solver;
     OptimizationFunction optimization_function;
     Heuristic *sampling_heuristic;
     double sampling_steps_factor;
@@ -44,7 +44,6 @@ class PotentialOptimizer {
     void set_objective_for_states(const std::vector<GlobalState> &states);
     void extract_lp_solution();
     bool solve_lp();
-    void release_memory();
 
 public:
     explicit PotentialOptimizer(const Options &options);

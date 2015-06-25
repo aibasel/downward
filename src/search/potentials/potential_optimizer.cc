@@ -23,7 +23,7 @@ using namespace std;
 namespace potentials {
 
 PotentialOptimizer::PotentialOptimizer(const Options &options)
-    : lp_solver(new LPSolver(LPSolverType(options.get_enum("lpsolver")))),
+    : lp_solver(LPSolverType(options.get_enum("lpsolver"))),
       optimization_function(OptimizationFunction(options.get_enum("optimization_function"))),
       sampling_heuristic(options.get<Heuristic *>("sampling_heuristic")),
       sampling_steps_factor(options.get<double>("sampling_steps_factor")),
@@ -69,7 +69,7 @@ PotentialOptimizer::PotentialOptimizer(const Options &options)
 }
 
 bool PotentialOptimizer::has_optimal_solution() const {
-    return lp_solver->has_optimal_solution();
+    return lp_solver.has_optimal_solution();
 }
 
 bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
@@ -86,7 +86,7 @@ bool PotentialOptimizer::optimize_for_all_states() {
         }
     }
     for (int i = 0; i < num_cols; ++i) {
-        lp_solver->set_objective_coefficient(i, coefficients[i]);
+        lp_solver.set_objective_coefficient(i, coefficients[i]);
     }
     bool feasible = solve_lp();
     if (!feasible)
@@ -119,14 +119,13 @@ void PotentialOptimizer::filter_dead_ends(const vector<GlobalState> &samples,
 }
 
 void PotentialOptimizer::set_objective_for_state(const GlobalState &state) {
-    assert(lp_solver);
     for (int i = 0; i < num_cols; ++i) {
-        lp_solver->set_objective_coefficient(i, 0);
+        lp_solver.set_objective_coefficient(i, 0);
     }
     int num_vars = g_variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
         int value = state[var];
-        lp_solver->set_objective_coefficient(lp_var_ids[var][value], 1);
+        lp_solver.set_objective_coefficient(lp_var_ids[var][value], 1);
     }
 }
 
@@ -141,13 +140,13 @@ void PotentialOptimizer::set_objective_for_states(const vector<GlobalState> &sta
         }
     }
     for (int i = 0; i < num_cols; ++i) {
-        lp_solver->set_objective_coefficient(i, coefficients[i]);
+        lp_solver.set_objective_coefficient(i, coefficients[i]);
     }
 }
 
 void PotentialOptimizer::construct_lp() {
     double upper_bound = (max_potential == numeric_limits<double>::infinity() ?
-                          lp_solver->get_infinity() : max_potential);
+                          lp_solver.get_infinity() : max_potential);
 
     vector<LPVariable> lp_variables;
     int num_lp_vars = 0;
@@ -158,7 +157,7 @@ void PotentialOptimizer::construct_lp() {
         lp_var_ids[var].resize(g_variable_domain[var] + 1);
         for (int val = 0; val < g_variable_domain[var] + 1; ++val) {
             // Use dummy coefficient for now. Set the real coefficients later.
-            lp_variables.emplace_back(-lp_solver->get_infinity(), upper_bound, 1.0);
+            lp_variables.emplace_back(-lp_solver.get_infinity(), upper_bound, 1.0);
             lp_var_ids[var][val] = num_lp_vars++;
         }
     }
@@ -176,7 +175,7 @@ void PotentialOptimizer::construct_lp() {
             var_to_precondition[preconditions[j].var] = preconditions[j].val;
         }
         const vector<GlobalEffect> &effects = op.get_effects();
-        LPConstraint constraint(-lp_solver->get_infinity(), op.get_cost());
+        LPConstraint constraint(-lp_solver.get_infinity(), op.get_cost());
         vector<pair<int, int> > coefficients;
         for (size_t j = 0; j < effects.size(); ++j) {
             int var = effects[j].var;
@@ -227,40 +226,32 @@ void PotentialOptimizer::construct_lp() {
             // Create Constraint:
             // P_{V=v} <= P_{V=u}
             // Note that we could eliminate variables P_{V=u} if V is undefined in the goal.
-            LPConstraint constraint(-lp_solver->get_infinity(), 0);
+            LPConstraint constraint(-lp_solver.get_infinity(), 0);
             constraint.insert(val_lp, 1);
             constraint.insert(undef_val_lp, -1);
             lp_constraints.push_back(constraint);
         }
     }
-    lp_solver->load_problem(LPObjectiveSense::MAXIMIZE, lp_variables, lp_constraints);
+    lp_solver.load_problem(LPObjectiveSense::MAXIMIZE, lp_variables, lp_constraints);
 }
 
 bool PotentialOptimizer::solve_lp() {
-    lp_solver->solve();
-    if (lp_solver->has_optimal_solution()) {
+    lp_solver.solve();
+    if (lp_solver.has_optimal_solution()) {
         extract_lp_solution();
     }
-    return lp_solver->has_optimal_solution();
+    return lp_solver.has_optimal_solution();
 }
 
 void PotentialOptimizer::extract_lp_solution() {
-    assert(lp_solver->has_optimal_solution());
-    const vector<double> solution = lp_solver->extract_solution();
+    assert(lp_solver.has_optimal_solution());
+    const vector<double> solution = lp_solver.extract_solution();
     int num_vars = g_variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
         for (int val = 0; val < g_variable_domain[var]; ++val) {
             fact_potentials[var][val] = solution[lp_var_ids[var][val]];
         }
     }
-}
-
-void PotentialOptimizer::release_memory() {
-    if (lp_solver){
-        delete lp_solver;
-        lp_solver = nullptr;
-    }
-    vector<vector<int> >().swap(lp_var_ids);
 }
 
 shared_ptr<Heuristic> PotentialOptimizer::get_heuristic() const {
