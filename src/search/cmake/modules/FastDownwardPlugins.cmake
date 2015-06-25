@@ -16,12 +16,14 @@ set(search_main_SRCS
         eager_search
         enforced_hill_climbing_search
         equivalence_relation
-        evaluator
+        evaluation_context
+        evaluation_result
         exact_timer
         g_evaluator
         global_operator
         globals
         global_state
+        heuristic_cache
         heuristic
         int_packer
         ipc_max_heuristic
@@ -45,6 +47,7 @@ set(search_main_SRCS
         search_node_info
         search_progress
         search_space
+        search_statistics
         segmented_vector
         state_id
         state_registry
@@ -59,7 +62,7 @@ set(search_main_SRCS
         variable_order_finder
         weighted_evaluator
         open_lists/alternation_open_list
-        open_lists/open_list_buckets
+        open_lists/bucket_open_list
         open_lists/open_list
         open_lists/pareto_open_list
         open_lists/standard_scalar_open_list
