@@ -7,18 +7,15 @@
 #include "../heuristic.h"
 #include "../option_parser.h"
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 
 namespace potentials {
-struct hash_state_id {
-    size_t operator()(const StateID &id) const {
-        return id.hash();
-    }
-};
 
 class PotentialHeuristics: public Heuristic {
+    PotentialOptimizer optimizer;
     OptimizationFunction optimization_function;
     int size;
     Options opts;
@@ -27,21 +24,22 @@ class PotentialHeuristics: public Heuristic {
     double max_filtering_time;
     double max_covering_time;
     bool debug;
-    std::vector<PotentialOptimizer *> heuristics;
+    std::vector<std::shared_ptr<Heuristic> > heuristics;
     void filter_samples(
             std::vector<GlobalState> &samples,
-            std::unordered_map<StateID, int, hash_state_id> &sample_to_max_h,
-            PotentialOptimizer &heuristic,
-            std::unordered_map<StateID, PotentialOptimizer *, hash_state_id> &single_heuristics) const;
+            std::unordered_map<StateID, int> &sample_to_max_h,
+            std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics);
     void cover_samples(
             std::vector<GlobalState> &samples,
-            const std::unordered_map<StateID, int, hash_state_id> &sample_to_max_h,
-            PotentialOptimizer &heuristic,
-            std::unordered_map<StateID, PotentialOptimizer *, hash_state_id> &single_heuristics) const;
+            const std::unordered_map<StateID, int> &sample_to_max_h,
+            const std::shared_ptr<Heuristic> heuristic,
+            std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
     void find_complementary_heuristics();
+
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
+
 public:
     PotentialHeuristics(const Options &options);
     ~PotentialHeuristics();

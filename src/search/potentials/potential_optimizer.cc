@@ -42,25 +42,25 @@ PotentialOptimizer::PotentialOptimizer(const Options &options)
     }
     construct_lp();
     if (optimization_function == INITIAL_STATE) {
-        optimize_potential_for_state(g_initial_state());
+        optimize_for_state(g_initial_state());
     } else if (optimization_function == ALL_STATES_AVG) {
-        optimize_potential_for_all_states();
+        optimize_for_all_states();
     } else if (optimization_function == SAMPLES_AVG) {
         vector<GlobalState> samples;
-        optimize_potential_for_state(g_initial_state());
+        optimize_for_state(g_initial_state());
         if (has_optimal_solution()) {
             StateRegistry sample_registry;
             Options opts;
             opts.set<int>("cost_type", 0);
-            PotentialHeuristic sampling_heuristic(opts, get_fact_potentials());
-            sample_states(sample_registry, samples, num_samples, sampling_heuristic);
+            shared_ptr<Heuristic> sampling_heuristic = get_heuristic();
+            sample_states(sample_registry, samples, num_samples, *sampling_heuristic);
         }
         if (max_potential == numeric_limits<double>::infinity()) {
             vector<GlobalState> dead_end_free_samples;
             filter_dead_ends(samples, dead_end_free_samples);
-            optimize_potential_for_samples(dead_end_free_samples);
+            optimize_for_samples(dead_end_free_samples);
         } else {
-            optimize_potential_for_samples(samples);
+            optimize_for_samples(samples);
         }
     }
     cout << "Initialization of PotentialOptimizer: " << initialization_timer << endl;
@@ -70,12 +70,12 @@ bool PotentialOptimizer::has_optimal_solution() const {
     return lp_solver->has_optimal_solution();
 }
 
-bool PotentialOptimizer::optimize_potential_for_state(const GlobalState &state) {
+bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
     set_objective_for_state(state);
     return solve_lp();
 }
 
-bool PotentialOptimizer::optimize_potential_for_all_states() {
+bool PotentialOptimizer::optimize_for_all_states() {
     int num_vars = g_variable_domain.size();
     vector<double> coefficients(num_cols, 0);
     for (int var = 0; var < num_vars; ++var) {
@@ -92,7 +92,7 @@ bool PotentialOptimizer::optimize_potential_for_all_states() {
     return feasible;
 }
 
-bool PotentialOptimizer::optimize_potential_for_samples(const vector<GlobalState> &samples) {
+bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples) {
     set_objective_for_states(samples);
     bool feasible = solve_lp();
     if (!feasible)
@@ -109,7 +109,7 @@ void PotentialOptimizer::filter_dead_ends(const vector<GlobalState> &samples,
             cout << "Ran out of time filtering dead ends." << endl;
             break;
         }
-        if (optimize_potential_for_state(samples[i]))
+        if (optimize_for_state(samples[i]))
             non_dead_end_states.push_back(samples[i]);
     }
     cout << "Time for filtering dead ends: " << filtering_timer << endl;
@@ -349,8 +349,11 @@ void PotentialOptimizer::release_memory() {
     vector<vector<int> >().swap(lp_var_ids);
 }
 
-const std::vector<std::vector<double> > &PotentialOptimizer::get_fact_potentials() const {
-    return fact_potentials;
+shared_ptr<Heuristic> PotentialOptimizer::get_heuristic() const {
+    assert(has_optimal_solution());
+    Options opts;
+    opts.set<int>("cost_type", 0);
+    return make_shared<PotentialHeuristic>(opts, fact_potentials);
 }
 
 void add_common_potential_options_to_parser(OptionParser &parser) {
@@ -416,7 +419,9 @@ static Heuristic *_parse(OptionParser &parser) {
         opts.set<Heuristic *>("sampling_heuristic", 0);
     }
     PotentialOptimizer optimizer(opts);
-    return new PotentialHeuristic(opts, optimizer.get_fact_potentials());
+    // TODO: Fix.
+    shared_ptr<Heuristic> *heuristic = new shared_ptr<Heuristic>(optimizer.get_heuristic());
+    return heuristic->get();
 }
 
 static Plugin<Heuristic> _plugin("potential", _parse);
