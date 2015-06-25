@@ -165,7 +165,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/zero_one_pdbs_heuristic.h \
 
 HEADERS += potentials/potential_heuristic.h \
-           potentials/potential_heuristics.h \
+           potentials/potential_optimizer.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward

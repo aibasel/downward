@@ -39,7 +39,7 @@ void PotentialHeuristics::initialize() {
     if (size >= 1) {
         heuristics.reserve(size);
         for (int i = 0; i < size; ++i) {
-            PotentialHeuristic *heuristic = new PotentialHeuristic(options);
+            PotentialOptimizer *heuristic = new PotentialOptimizer(options);
 
             // HACK: Initialize heuristic.
             EvaluationContext eval_context(g_initial_state());
@@ -59,7 +59,7 @@ int PotentialHeuristics::compute_heuristic(const GlobalState &state) {
     EvaluationContext eval_context(state);
     int value = 0;
     for (size_t i = 0; i < heuristics.size(); ++i) {
-        PotentialHeuristic *heuristic = heuristics[i];
+        PotentialOptimizer *heuristic = heuristics[i];
         assert(heuristic);
 
         if (eval_context.is_heuristic_infinite(heuristic)) {
@@ -74,8 +74,8 @@ int PotentialHeuristics::compute_heuristic(const GlobalState &state) {
 void PotentialHeuristics::filter_samples(
         vector<GlobalState> &samples,
         unordered_map<StateID, int, hash_state_id> &sample_to_max_h,
-        PotentialHeuristic &heuristic,
-        unordered_map<StateID, PotentialHeuristic *, hash_state_id> &single_heuristics) const {
+        PotentialOptimizer &heuristic,
+        unordered_map<StateID, PotentialOptimizer *, hash_state_id> &single_heuristics) const {
     assert(sample_to_max_h.empty());
     assert(single_heuristics.empty());
     CountdownTimer filtering_timer(max_filtering_time);
@@ -95,7 +95,7 @@ void PotentialHeuristics::filter_samples(
         bool feasible = heuristic.optimize_potential_for_state(sample);
         if (feasible) {
             dead_end_free_samples.push_back(sample);
-            PotentialHeuristic *single_heuristic = new PotentialHeuristic(heuristic);
+            PotentialOptimizer *single_heuristic = new PotentialOptimizer(heuristic);
             single_heuristic->lp_solver = 0;
             sample_to_max_h[sample.get_id()] = single_heuristic->compute_heuristic(sample);
             single_heuristics.insert(make_pair(sample.get_id(), single_heuristic));
@@ -113,8 +113,8 @@ void PotentialHeuristics::filter_samples(
 void PotentialHeuristics::cover_samples(
         vector<GlobalState> &samples,
         const unordered_map<StateID, int, hash_state_id> &sample_to_max_h,
-        PotentialHeuristic &heuristic,
-        unordered_map<StateID, PotentialHeuristic *, hash_state_id> &single_heuristics) const {
+        PotentialOptimizer &heuristic,
+        unordered_map<StateID, PotentialOptimizer *, hash_state_id> &single_heuristics) const {
     vector<GlobalState> suboptimal_samples;
     for (size_t i = 0; i < samples.size(); ++i) {
         int max_h = sample_to_max_h.at(samples[i].get_id());
@@ -135,7 +135,7 @@ void PotentialHeuristics::cover_samples(
 void PotentialHeuristics::find_complementary_heuristics() {
     Options options(opts);
     options.set<int>("optimization_function", INITIAL_STATE);
-    PotentialHeuristic helper_heuristic(options);
+    PotentialOptimizer helper_heuristic(options);
 
     // HACK: Initialize heuristic.
     EvaluationContext eval_context(g_initial_state());
@@ -144,7 +144,7 @@ void PotentialHeuristics::find_complementary_heuristics() {
     StateRegistry sample_registry;
     vector<GlobalState> samples;
     unordered_map<StateID, int, hash_state_id> sample_to_max_h;
-    unordered_map<StateID, PotentialHeuristic *, hash_state_id> single_heuristics;
+    unordered_map<StateID, PotentialOptimizer *, hash_state_id> single_heuristics;
 
     Heuristic *heuristic = opts.get<Heuristic *>("sampling_heuristic");
     helper_heuristic.sample_states(sample_registry, samples, num_samples, heuristic);
@@ -169,12 +169,12 @@ void PotentialHeuristics::find_complementary_heuristics() {
         if (samples.size() == last_num_samples) {
             cout << "No sample was removed -> Choose a precomputed heuristic." << endl;
             StateID state_id = g_rng.choose(samples)->get_id();
-            PotentialHeuristic *single_heuristic = single_heuristics[state_id];
+            PotentialOptimizer *single_heuristic = single_heuristics[state_id];
             heuristics.push_back(single_heuristic);
             single_heuristics.erase(state_id);
             cover_samples(samples, sample_to_max_h, *single_heuristic, single_heuristics);
         } else {
-            PotentialHeuristic *group_heuristic = new PotentialHeuristic(helper_heuristic);
+            PotentialOptimizer *group_heuristic = new PotentialOptimizer(helper_heuristic);
             heuristics.push_back(group_heuristic);
         }
         if (debug)
