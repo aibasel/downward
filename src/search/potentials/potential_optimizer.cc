@@ -244,17 +244,6 @@ bool PotentialOptimizer::solve_lp() {
     return lp_solver->has_optimal_solution();
 }
 
-void PotentialOptimizer::dump_potentials() const {
-    cout << "Fact potentials:" << endl;
-    int num_vars = g_variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        for (int val = 0; val < g_variable_domain[var]; ++val) {
-            cout << g_fact_names[var][val] << ": " << fact_potentials[var][val] << endl;
-        }
-        cout << endl;
-    }
-}
-
 void PotentialOptimizer::extract_lp_solution() {
     assert(lp_solver->has_optimal_solution());
     const vector<double> solution = lp_solver->extract_solution();
