@@ -112,7 +112,7 @@ void PotentialHeuristics::cover_samples(
         const std::shared_ptr<Heuristic> heuristic,
         unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
     vector<GlobalState> suboptimal_samples;
-    for (const GlobalState sample : samples) {
+    for (const GlobalState &sample : samples) {
         int max_h = sample_to_max_h.at(sample.get_id());
         int h = EvaluationContext(sample).get_heuristic_value(heuristic.get());
         assert(h <= max_h);

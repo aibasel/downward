@@ -99,13 +99,13 @@ void PotentialOptimizer::filter_dead_ends(const vector<GlobalState> &samples,
                                           vector<GlobalState> &non_dead_end_states) {
     CountdownTimer filtering_timer(max_filtering_time);
     non_dead_end_states.clear();
-    for (size_t i = 0; i < samples.size(); ++i) {
+    for (const GlobalState &sample : samples) {
         if (filtering_timer.is_expired()) {
             cout << "Ran out of time filtering dead ends." << endl;
             break;
         }
-        if (optimize_for_state(samples[i]))
-            non_dead_end_states.push_back(samples[i]);
+        if (optimize_for_state(sample))
+            non_dead_end_states.push_back(sample);
     }
     cout << "Time for filtering dead ends: " << filtering_timer << endl;
     cout << "Non dead-end samples: " << non_dead_end_states.size() << endl;
