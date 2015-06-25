@@ -17,16 +17,13 @@ class PotentialHeuristic;
 
 enum OptimizationFunction {
     INITIAL_STATE,
-    EACH_STATE,
-    ALL_STATES_AVG,
-    SAMPLES_AVG
+    ALL_STATES,
+    SAMPLES
 };
 
 class PotentialOptimizer {
     LPSolver lp_solver;
     OptimizationFunction optimization_function;
-    Heuristic *sampling_heuristic;
-    double sampling_steps_factor;
     int num_samples;
     double max_potential;
     double max_sampling_time;
@@ -35,7 +32,6 @@ class PotentialOptimizer {
     int num_cols;
     std::vector<std::vector<int> > lp_var_ids;
     std::vector<std::vector<double> > fact_potentials;
-    int num_samples_covered;
 
     void construct_lp();
     void filter_dead_ends(const std::vector<GlobalState> &samples,

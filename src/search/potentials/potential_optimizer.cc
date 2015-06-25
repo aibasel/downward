@@ -25,15 +25,12 @@ namespace potentials {
 PotentialOptimizer::PotentialOptimizer(const Options &options)
     : lp_solver(LPSolverType(options.get_enum("lpsolver"))),
       optimization_function(OptimizationFunction(options.get_enum("optimization_function"))),
-      sampling_heuristic(options.get<Heuristic *>("sampling_heuristic")),
-      sampling_steps_factor(options.get<double>("sampling_steps_factor")),
       num_samples(options.get<int>("num_samples")),
       max_potential(options.get<double>("max_potential")),
       max_sampling_time(options.get<double>("max_sampling_time")),
       max_filtering_time(options.get<double>("max_filtering_time")),
       debug(options.get<bool>("debug")),
-      num_cols(-1),
-      num_samples_covered(0) {
+      num_cols(-1) {
     verify_no_axioms_no_conditional_effects();
     Timer initialization_timer;
     fact_potentials.resize(g_variable_domain.size());
@@ -44,9 +41,9 @@ PotentialOptimizer::PotentialOptimizer(const Options &options)
     construct_lp();
     if (optimization_function == INITIAL_STATE) {
         optimize_for_state(g_initial_state());
-    } else if (optimization_function == ALL_STATES_AVG) {
+    } else if (optimization_function == ALL_STATES) {
         optimize_for_all_states();
-    } else if (optimization_function == SAMPLES_AVG) {
+    } else if (optimization_function == SAMPLES) {
         vector<GlobalState> samples;
         optimize_for_state(g_initial_state());
         if (has_optimal_solution()) {
@@ -267,30 +264,17 @@ void add_common_potential_options_to_parser(OptionParser &parser) {
     optimization_function.push_back("INITIAL_STATE");
     optimization_function_doc.push_back(
         "optimize heuristic for initial state");
-    optimization_function.push_back("EACH_STATE");
-    optimization_function_doc.push_back(
-        "optimize heuristic for each state separately");
-    optimization_function.push_back("ALL_STATES_AVG");
+    optimization_function.push_back("ALL_STATES");
     optimization_function_doc.push_back(
         "optimize heuristic for all states");
-    optimization_function.push_back("SAMPLES_AVG");
+    optimization_function.push_back("SAMPLES");
     optimization_function_doc.push_back(
         "optimize heuristic for a set of sample states");
     parser.add_enum_option("optimization_function",
                            optimization_function,
                            "Optimization function.",
-                           "SAMPLES_AVG",
+                           "SAMPLES",
                            optimization_function_doc);
-    parser.add_option<Heuristic *>(
-        "sampling_heuristic",
-        "heuristic for sampling",
-        "",
-        OptionFlags(false));
-    parser.add_option<double>(
-        "sampling_steps_factor",
-        "multiply the number of estimated solution steps by this factor and "
-        "center the random walk ends around it",
-        "2.0");
     parser.add_option<int>(
         "num_samples",
         "Number of states to sample if optimization_function=samples",
