@@ -185,11 +185,9 @@ static Heuristic *_parse(OptionParser &parser) {
         "infinity");
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
-    if (!opts.contains("sampling_heuristic")) {
-        opts.set<Heuristic *>("sampling_heuristic", 0);
-    }
-    return new PotentialHeuristics(opts);
+        return nullptr;
+    else
+        return new PotentialHeuristics(opts);
 }
 
 static Plugin<Heuristic> _plugin("potentials", _parse);

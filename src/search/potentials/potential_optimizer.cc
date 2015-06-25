@@ -288,9 +288,6 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-    if (!opts.contains("sampling_heuristic")) {
-        opts.set<Heuristic *>("sampling_heuristic", 0);
-    }
     PotentialOptimizer optimizer(opts);
     // TODO: Fix.
     shared_ptr<Heuristic> *heuristic = new shared_ptr<Heuristic>(optimizer.get_heuristic());
