@@ -76,6 +76,8 @@ set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
 # Collect source files needed for the active plugins.
 include("FastDownwardPlugins")
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
+
 add_executable(${TARGET}
     planner.cc
     ${search_main_SRCS}
@@ -86,46 +88,61 @@ add_executable(${TARGET}
 
 ## == Build flags ==
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR}/ext")
+if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
 
-if(APPLE)
-    ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/local/include/")
-endif()
-
-set(CMAKE_CXX_LINK_FLAGS "")
-set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${BITWIDTHOPT}")
-set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -g")
-
-
-## Configuration-specific flags
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
-set(CMAKE_CXX_FLAGS_DEBUG "-O3")
-set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
-
-set(CMAKE_CXX_LINK_FLAGS_PROFILE "-pg")
-
-# Here, we modify the default Release build compile flags to make a static executable
-# This is done slightly differently for different compilers: the -static-libgcc flag
-# makes no sense if using the Intel compiler.
-if(DOWNWARD_LINK_RELEASE_STATICALLY)
-    if(CMAKE_COMPILER_IS_GNUCXX)
-        set(CMAKE_CXX_LINK_FLAGS_RELEASE "${CMAKE_CXX_LINK_FLAGS_RELEASE} -static-libgcc")
+    if(APPLE)
+        ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
+        ## TODO: we do ship tree.hh so why add another external include
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/local/include/")
     endif()
 
-    if(${LOWER_CASE_BUILD_TYPE} STREQUAL "release")
-        if(UNIX)
+    set(CMAKE_CXX_LINK_FLAGS "")
+    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${BITWIDTHOPT}")
+    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -g")
+
+
+    ## Configuration-specific flags
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_DEBUG "-O3")
+    set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
+
+    set(CMAKE_CXX_LINK_FLAGS_PROFILE "-pg")
+
+
+
+    # Here, we modify the default Release build compile flags to make a static executable
+    # This is done slightly differently for different compilers: the -static-libgcc flag
+    # makes no sense if using the Intel compiler.
+    if(DOWNWARD_LINK_RELEASE_STATICALLY)
+        if(CMAKE_COMPILER_IS_GNUCXX)
+            set(CMAKE_CXX_LINK_FLAGS_RELEASE "${CMAKE_CXX_LINK_FLAGS_RELEASE} -static-libgcc")
+        endif()
+
+        if(${LOWER_CASE_BUILD_TYPE} STREQUAL "release")
             set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-        else()
-            set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-            message(WARNING "Static release build is only tested on linux.")
         endif()
     endif()
-endif()
 
+elseif(MSVC)
+    # enable exceptions
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -EHsc")
+    set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
+
+
+    # disable warnings
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4018 -wd4101 -wd4996")
+    # -WX == -Werror
+    # -Wall is also avalible but gives you way to many warnings
+
+    if(DOWNWARD_LINK_RELEASE_STATICALLY)
+        foreach(_bt DEBUG RELEASE PROFILE)
+            string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
+        endforeach()
+    endif()
+endif()
 
 
 ## == Libraries ==
