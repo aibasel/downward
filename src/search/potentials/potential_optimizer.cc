@@ -8,6 +8,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
+#include "../sampling.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../timer.h"
@@ -53,7 +54,8 @@ PotentialOptimizer::PotentialOptimizer(const Options &options)
             Options opts;
             opts.set<int>("cost_type", 0);
             shared_ptr<Heuristic> sampling_heuristic = get_heuristic();
-            sample_states(sample_registry, samples, num_samples, *sampling_heuristic);
+            samples = sample_states_with_random_walks(
+                sample_registry, num_samples, *sampling_heuristic);
         }
         if (max_potential == numeric_limits<double>::infinity()) {
             vector<GlobalState> dead_end_free_samples;
@@ -262,83 +264,6 @@ void PotentialOptimizer::extract_lp_solution() {
             fact_potentials[var][val] = solution[lp_var_ids[var][val]];
         }
     }
-}
-
-// TODO: Avoid code duplication with iPDB.
-void PotentialOptimizer::sample_states(StateRegistry &sample_registry,
-                                       vector<GlobalState> &samples,
-                                       int num_samples,
-                                       Heuristic &heuristic) {
-    CountdownTimer sampling_timer(max_sampling_time);
-
-    double average_operator_cost = 0;
-    for (size_t i = 0; i < g_operators.size(); ++i)
-        average_operator_cost += g_operators[i].get_cost();
-    average_operator_cost /= g_operators.size();
-
-    const GlobalState &initial_state = sample_registry.get_initial_state();
-    EvaluationContext eval_context(initial_state);
-    if (eval_context.is_heuristic_infinite(&heuristic)) {
-        cout << "Initial state is a dead end, abort sampling." << endl;
-        return;
-    }
-    int h = eval_context.get_heuristic_value(&heuristic);
-    cout << "Sampling heuristic solution cost estimate: " << h << endl;
-
-    int n;
-    if (h == 0) {
-        n = 10;
-    } else {
-        // Convert heuristic value into an approximate number of actions
-        // (does nothing on unit-cost problems).
-        // average_operator_cost cannot equal 0, as in this case, all operators
-        // must have costs of 0 and in this case the if-clause triggers.
-        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
-        n = 2 * sampling_steps_factor * solution_steps_estimate;
-    }
-    double p = 0.5;
-    // The expected walk length is np = sampling_steps_factor * estimated number of solution steps.
-    // (We multiply by 2 because the heuristic is underestimating.)
-    cout << "Expected walk length: " << n * p << endl;
-
-    samples.reserve(num_samples);
-    for (int i = 0; i < num_samples; ++i) {
-        if (sampling_timer.is_expired()) {
-            cout << "Ran out of time sampling." << endl;
-            break;
-        }
-
-        // calculate length of random walk accoring to a binomial distribution
-        int length = 0;
-        for (int j = 0; j < n; ++j) {
-            double random = g_rng(); // [0..1)
-            if (random < p)
-                ++length;
-        }
-
-        // random walk of length length
-        GlobalState current_state(initial_state);
-        for (int j = 0; j < length; ++j) {
-            vector<const GlobalOperator *> applicable_ops;
-            g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
-            // if there are no applicable operators --> do not walk further
-            if (applicable_ops.empty()) {
-                break;
-            } else {
-                const GlobalOperator *random_op = *g_rng.choose(applicable_ops);
-                assert(random_op->is_applicable(current_state));
-                current_state = sample_registry.get_successor_state(current_state, *random_op);
-                // if current state is a dead end, then restart with initial state
-                EvaluationContext eval_context(current_state);
-                if (eval_context.is_heuristic_infinite(&heuristic))
-                    current_state = initial_state;
-            }
-        }
-        // last state of the random walk is used as sample
-        samples.push_back(current_state);
-    }
-    cout << "Time for sampling: " << sampling_timer << endl;
-    cout << "Samples: " << samples.size() << endl;
 }
 
 void PotentialOptimizer::release_memory() {

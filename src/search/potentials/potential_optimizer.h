@@ -38,10 +38,6 @@ class PotentialOptimizer {
     int num_samples_covered;
 
     void construct_lp();
-    void sample_states(StateRegistry &sample_registry,
-                       std::vector<GlobalState> &samples,
-                       int num_samples,
-                       Heuristic &heuristic);
     void filter_dead_ends(const std::vector<GlobalState> &samples,
                           std::vector<GlobalState> &non_dead_end_states);
     void set_objective_for_state(const GlobalState &state);
