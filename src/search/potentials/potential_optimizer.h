@@ -23,12 +23,12 @@ enum OptimizationFunction {
 
 class PotentialOptimizer {
     LPSolver lp_solver;
-    OptimizationFunction optimization_function;
-    int num_samples;
-    double max_potential;
-    double max_sampling_time;
-    double max_filtering_time;
-    bool debug;
+    const OptimizationFunction optimization_function;
+    const int num_samples;
+    const double max_potential;
+    const double max_sampling_time;
+    const double max_filtering_time;
+    const bool debug;
     int num_cols;
     std::vector<std::vector<int> > lp_var_ids;
     std::vector<std::vector<double> > fact_potentials;

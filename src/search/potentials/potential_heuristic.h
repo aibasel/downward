@@ -7,7 +7,7 @@
 
 namespace potentials {
 class PotentialHeuristic : public Heuristic {
-    std::vector<std::vector<double> > fact_potentials;
+    const std::vector<std::vector<double> > fact_potentials;
 
 protected:
     virtual void initialize();

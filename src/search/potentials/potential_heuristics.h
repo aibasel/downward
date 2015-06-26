@@ -15,15 +15,16 @@
 namespace potentials {
 
 class PotentialHeuristics: public Heuristic {
+    const bool diversify;
+    const int max_num_heuristics;
+    const int num_samples;
+    const double max_potential;
+    const double max_filtering_time;
+    const double max_covering_time;
+    const bool debug;
     PotentialOptimizer optimizer;
-    OptimizationFunction optimization_function;
-    int size;
-    int num_samples;
-    double max_potential;
-    double max_filtering_time;
-    double max_covering_time;
-    bool debug;
     std::vector<std::shared_ptr<Heuristic> > heuristics;
+
     void filter_samples(
             std::vector<GlobalState> &samples,
             std::unordered_map<StateID, int> &sample_to_max_h,
@@ -33,7 +34,7 @@ class PotentialHeuristics: public Heuristic {
             const std::unordered_map<StateID, int> &sample_to_max_h,
             const std::shared_ptr<Heuristic> heuristic,
             std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
-    void find_complementary_heuristics();
+    void find_diverse_heuristics();
 
 protected:
     virtual void initialize();
