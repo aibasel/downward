@@ -34,9 +34,7 @@ class PotentialOptimizer {
     std::vector<std::vector<double> > fact_potentials;
 
     void construct_lp();
-    void filter_dead_ends(const std::vector<GlobalState> &samples,
-                          std::vector<GlobalState> &non_dead_end_states);
-    void set_objective_for_states(const std::vector<GlobalState> &states);
+    void filter_dead_ends(std::vector<GlobalState> &samples);
     void extract_lp_solution();
     bool solve_lp();
 

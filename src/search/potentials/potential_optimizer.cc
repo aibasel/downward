@@ -55,12 +55,9 @@ PotentialOptimizer::PotentialOptimizer(const Options &options)
                 sample_registry, num_samples, *sampling_heuristic);
         }
         if (max_potential == numeric_limits<double>::infinity()) {
-            vector<GlobalState> dead_end_free_samples;
-            filter_dead_ends(samples, dead_end_free_samples);
-            optimize_for_samples(dead_end_free_samples);
-        } else {
-            optimize_for_samples(samples);
+            filter_dead_ends(samples);
         }
+        optimize_for_samples(samples);
     }
     cout << "Initialization of PotentialOptimizer: " << initialization_timer << endl;
 }
@@ -89,36 +86,32 @@ bool PotentialOptimizer::optimize_for_all_states() {
 }
 
 bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples) {
-    set_objective_for_states(samples);
-    return solve_lp();
-}
-
-void PotentialOptimizer::filter_dead_ends(const vector<GlobalState> &samples,
-                                          vector<GlobalState> &non_dead_end_states) {
-    CountdownTimer filtering_timer(max_filtering_time);
-    non_dead_end_states.clear();
-    for (const GlobalState &sample : samples) {
-        if (filtering_timer.is_expired()) {
-            cout << "Ran out of time filtering dead ends." << endl;
-            break;
-        }
-        if (optimize_for_state(sample))
-            non_dead_end_states.push_back(sample);
-    }
-    cout << "Time for filtering dead ends: " << filtering_timer << endl;
-    cout << "Non dead-end samples: " << non_dead_end_states.size() << endl;
-}
-
-void PotentialOptimizer::set_objective_for_states(const vector<GlobalState> &states) {
     vector<double> coefficients(num_cols, 0.0);
     int num_vars = g_variable_domain.size();
-    for (const GlobalState &state : states) {
+    for (const GlobalState &state : samples) {
         for (int var = 0; var < num_vars; ++var) {
             int value = state[var];
             coefficients[lp_var_ids[var][value]] += 1.0;
         }
     }
     set_objective(coefficients);
+    return solve_lp();
+}
+
+void PotentialOptimizer::filter_dead_ends(vector<GlobalState> &samples) {
+    CountdownTimer filtering_timer(max_filtering_time);
+    vector<GlobalState> non_dead_end_samples;
+    for (const GlobalState &sample : samples) {
+        if (filtering_timer.is_expired()) {
+            cout << "Ran out of time filtering dead ends." << endl;
+            break;
+        }
+        if (optimize_for_state(sample))
+            non_dead_end_samples.push_back(sample);
+    }
+    cout << "Time for filtering dead ends: " << filtering_timer << endl;
+    cout << "Non dead-end samples: " << non_dead_end_samples.size() << endl;
+    swap(samples, non_dead_end_samples);
 }
 
 void PotentialOptimizer::set_objective(const vector<double> &coefficients) {
