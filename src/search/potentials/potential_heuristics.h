@@ -18,7 +18,6 @@ class PotentialHeuristics: public Heuristic {
     const bool diversify;
     const int max_num_heuristics;
     const int num_samples;
-    const double max_potential;
     const double max_filtering_time;
     const double max_covering_time;
     const bool debug;

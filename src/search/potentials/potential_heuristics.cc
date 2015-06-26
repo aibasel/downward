@@ -23,7 +23,6 @@ PotentialHeuristics::PotentialHeuristics(const Options &opts)
       diversify(opts.get<bool>("diversify")),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
       num_samples(opts.get<int>("num_samples")),
-      max_potential(opts.get<double>("max_potential")),
       max_filtering_time(opts.get<double>("max_filtering_time")),
       max_covering_time(opts.get<double>("max_covering_time")),
       debug(opts.get<bool>("debug")),
