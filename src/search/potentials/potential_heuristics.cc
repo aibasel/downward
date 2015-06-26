@@ -179,6 +179,10 @@ static Heuristic *_parse(OptionParser &parser) {
         "maximum number of potential heuristics",
         "infinity");
     parser.add_option<double>(
+        "max_filtering_time",
+        "time limit in seconds for filtering dead end samples",
+        "infinity");
+    parser.add_option<double>(
         "max_covering_time",
         "time limit in seconds for covering samples",
         "infinity");

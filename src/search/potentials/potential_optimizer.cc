@@ -22,44 +22,17 @@ using namespace std;
 
 namespace potentials {
 
-PotentialOptimizer::PotentialOptimizer(const Options &options)
-    : lp_solver(LPSolverType(options.get_enum("lpsolver"))),
-      num_samples(options.get<int>("num_samples")),
-      max_potential(options.get<double>("max_potential")),
-      max_sampling_time(options.get<double>("max_sampling_time")),
-      max_filtering_time(options.get<double>("max_filtering_time")),
-      debug(options.get<bool>("debug")),
+PotentialOptimizer::PotentialOptimizer(const Options &opts)
+    : lp_solver(LPSolverType(opts.get_enum("lpsolver"))),
+      max_potential(opts.get<double>("max_potential")),
       num_cols(-1) {
     verify_no_axioms_no_conditional_effects();
-    Timer initialization_timer;
     fact_potentials.resize(g_variable_domain.size());
     int num_vars = g_variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
         fact_potentials[var].resize(g_variable_domain[var]);
     }
     construct_lp();
-    OptimizationFunction opt_func(OptimizationFunction(options.get_enum("optimization_function")));
-    if (opt_func == INITIAL_STATE) {
-        optimize_for_state(g_initial_state());
-    } else if (opt_func == ALL_STATES) {
-        optimize_for_all_states();
-    } else if (opt_func == SAMPLES) {
-        StateRegistry sample_registry;
-        vector<GlobalState> samples;
-        optimize_for_state(g_initial_state());
-        if (has_optimal_solution()) {
-            Options opts;
-            opts.set<int>("cost_type", 0);
-            shared_ptr<Heuristic> sampling_heuristic = get_heuristic();
-            samples = sample_states_with_random_walks(
-                sample_registry, num_samples, *sampling_heuristic);
-        }
-        if (max_potential == numeric_limits<double>::infinity()) {
-            filter_dead_ends(samples);
-        }
-        optimize_for_samples(samples);
-    }
-    cout << "Initialization of PotentialOptimizer: " << initialization_timer << endl;
 }
 
 bool PotentialOptimizer::has_optimal_solution() const {
@@ -99,18 +72,11 @@ bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples
 }
 
 void PotentialOptimizer::filter_dead_ends(vector<GlobalState> &samples) {
-    CountdownTimer filtering_timer(max_filtering_time);
     vector<GlobalState> non_dead_end_samples;
     for (const GlobalState &sample : samples) {
-        if (filtering_timer.is_expired()) {
-            cout << "Ran out of time filtering dead ends." << endl;
-            break;
-        }
         if (optimize_for_state(sample))
             non_dead_end_samples.push_back(sample);
     }
-    cout << "Time for filtering dead ends: " << filtering_timer << endl;
-    cout << "Non dead-end samples: " << non_dead_end_samples.size() << endl;
     swap(samples, non_dead_end_samples);
 }
 
@@ -121,9 +87,13 @@ void PotentialOptimizer::set_objective(const vector<double> &coefficients) {
     }
 }
 
+bool PotentialOptimizer::potentials_are_bounded() const {
+    return max_potential != numeric_limits<double>::infinity();
+}
+
 void PotentialOptimizer::construct_lp() {
-    double upper_bound = (max_potential == numeric_limits<double>::infinity() ?
-                          lp_solver.get_infinity() : max_potential);
+    double upper_bound = (potentials_are_bounded() ? max_potential :
+                                                     lp_solver.get_infinity());
 
     vector<LPVariable> lp_variables;
     int num_lp_vars = 0;
@@ -238,38 +208,57 @@ shared_ptr<Heuristic> PotentialOptimizer::get_heuristic() const {
     return make_shared<PotentialHeuristic>(opts, fact_potentials);
 }
 
+shared_ptr<Heuristic> create_potential_heuristic(const Options &opts) {
+    PotentialOptimizer optimizer(opts);
+    OptFunc opt_func(OptFunc(opts.get_enum("opt_func")));
+    if (opt_func == OptFunc::INITIAL_STATE) {
+        optimizer.optimize_for_state(g_initial_state());
+    } else if (opt_func == OptFunc::ALL_STATES) {
+        optimizer.optimize_for_all_states();
+    } else if (opt_func == OptFunc::SAMPLES) {
+        StateRegistry sample_registry;
+        vector<GlobalState> samples;
+        optimizer.optimize_for_state(g_initial_state());
+        if (optimizer.has_optimal_solution()) {
+            shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
+            samples = sample_states_with_random_walks(
+                sample_registry, opts.get<int>("num_samples"), *sampling_heuristic);
+        }
+        if (!optimizer.potentials_are_bounded()) {
+            optimizer.filter_dead_ends(samples);
+        }
+        optimizer.optimize_for_samples(samples);
+    } else {
+        ABORT("Unkown optimization function");
+    }
+    return optimizer.get_heuristic();
+}
+
 void add_common_potential_options_to_parser(OptionParser &parser) {
-    vector<string> optimization_function;
-    vector<string> optimization_function_doc;
-    optimization_function.push_back("INITIAL_STATE");
-    optimization_function_doc.push_back(
+    vector<string> opt_funcs;
+    vector<string> opt_funcs_doc;
+    opt_funcs.push_back("INITIAL_STATE");
+    opt_funcs_doc.push_back(
         "optimize heuristic for initial state");
-    optimization_function.push_back("ALL_STATES");
-    optimization_function_doc.push_back(
+    opt_funcs.push_back("ALL_STATES");
+    opt_funcs_doc.push_back(
         "optimize heuristic for all states");
-    optimization_function.push_back("SAMPLES");
-    optimization_function_doc.push_back(
+    opt_funcs.push_back("SAMPLES");
+    opt_funcs_doc.push_back(
         "optimize heuristic for a set of sample states");
-    parser.add_enum_option("optimization_function",
-                           optimization_function,
-                           "Optimization function.",
-                           "SAMPLES",
-                           optimization_function_doc);
+    parser.add_enum_option(
+        "opt_func",
+        opt_funcs,
+        "Optimization function",
+        "SAMPLES",
+        opt_funcs_doc);
     parser.add_option<int>(
         "num_samples",
-        "Number of states to sample if optimization_function=samples",
+        "Number of states to sample if opt_func=SAMPLES",
         "1000");
     parser.add_option<double>(
         "max_potential",
         "Bound potentials by this number",
-        "infinity");
-    parser.add_option<double>(
-        "max_sampling_time",
-        "time limit in seconds for sampling states",
-        "infinity");
-    parser.add_option<double>(
-        "max_filtering_time",
-        "time limit in seconds for filtering dead ends",
         "infinity");
     parser.add_option<bool>(
         "debug",
@@ -284,9 +273,8 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-    PotentialOptimizer optimizer(opts);
     // TODO: Fix.
-    shared_ptr<Heuristic> *heuristic = new shared_ptr<Heuristic>(optimizer.get_heuristic());
+    shared_ptr<Heuristic> *heuristic = new shared_ptr<Heuristic>(create_potential_heuristic(opts));
     return heuristic->get();
 }
 

@@ -15,7 +15,7 @@ namespace potentials {
 
 class PotentialHeuristic;
 
-enum OptimizationFunction {
+enum class OptFunc {
     INITIAL_STATE,
     ALL_STATES,
     SAMPLES
@@ -23,35 +23,35 @@ enum OptimizationFunction {
 
 class PotentialOptimizer {
     LPSolver lp_solver;
-    const int num_samples;
     const double max_potential;
-    const double max_sampling_time;
-    const double max_filtering_time;
-    const bool debug;
     int num_cols;
     std::vector<std::vector<int> > lp_var_ids;
     std::vector<std::vector<double> > fact_potentials;
 
     void construct_lp();
-    void filter_dead_ends(std::vector<GlobalState> &samples);
-    void extract_lp_solution();
+    void set_objective(const std::vector<double> &coefficients);
     bool solve_lp();
+    void extract_lp_solution();
 
 public:
-    explicit PotentialOptimizer(const Options &options);
+    explicit PotentialOptimizer(const Options &opts);
     ~PotentialOptimizer() = default;
 
-    void set_objective(const std::vector<double> &coefficients);
+    void filter_dead_ends(std::vector<GlobalState> &samples);
 
     bool optimize_for_state(const GlobalState &state);
     bool optimize_for_all_states();
     bool optimize_for_samples(const std::vector<GlobalState> &samples);
 
     bool has_optimal_solution() const;
+    bool potentials_are_bounded() const;
+
     std::shared_ptr<Heuristic> get_heuristic() const;
 };
 
 void add_common_potential_options_to_parser(OptionParser &parser);
+
+std::shared_ptr<Heuristic> create_potential_heuristic(const Options &opts);
 
 }
 #endif
