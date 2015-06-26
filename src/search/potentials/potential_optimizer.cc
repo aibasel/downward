@@ -71,15 +71,6 @@ bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples
     return solve_lp();
 }
 
-void PotentialOptimizer::filter_dead_ends(vector<GlobalState> &samples) {
-    vector<GlobalState> non_dead_end_samples;
-    for (const GlobalState &sample : samples) {
-        if (optimize_for_state(sample))
-            non_dead_end_samples.push_back(sample);
-    }
-    swap(samples, non_dead_end_samples);
-}
-
 void PotentialOptimizer::set_objective(const vector<double> &coefficients) {
     assert(static_cast<int>(coefficients.size()) == num_cols);
     for (int i = 0; i < num_cols; ++i) {
@@ -208,6 +199,17 @@ shared_ptr<Heuristic> PotentialOptimizer::get_heuristic() const {
     return make_shared<PotentialHeuristic>(opts, fact_potentials);
 }
 
+
+void filter_dead_ends(PotentialOptimizer &optimizer, vector<GlobalState> &samples) {
+    assert(!optimizer.potentials_are_bounded());
+    vector<GlobalState> non_dead_end_samples;
+    for (const GlobalState &sample : samples) {
+        if (optimizer.optimize_for_state(sample))
+            non_dead_end_samples.push_back(sample);
+    }
+    swap(samples, non_dead_end_samples);
+}
+
 void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
     StateRegistry sample_registry;
     vector<GlobalState> samples;
@@ -218,7 +220,7 @@ void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
             sample_registry, num_samples, *sampling_heuristic);
     }
     if (!optimizer.potentials_are_bounded()) {
-        optimizer.filter_dead_ends(samples);
+        filter_dead_ends(optimizer, samples);
     }
     optimizer.optimize_for_samples(samples);
 }
