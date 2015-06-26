@@ -20,22 +20,23 @@ using namespace std;
 namespace potentials {
 PotentialHeuristics::PotentialHeuristics(const Options &opts)
     : Heuristic(opts),
-      optimizer(opts),
-      optimization_function(OptimizationFunction(opts.get_enum("optimization_function"))),
-      size(opts.get<int>("size")),
+      diversify(opts.get<bool>("diversify")),
+      max_num_heuristics(opts.get<int>("max_num_heuristics")),
       num_samples(opts.get<int>("num_samples")),
       max_potential(opts.get<double>("max_potential")),
       max_filtering_time(opts.get<double>("max_filtering_time")),
       max_covering_time(opts.get<double>("max_covering_time")),
-      debug(opts.get<bool>("debug")) {
+      debug(opts.get<bool>("debug")),
+      optimizer(opts) {
 }
 
 void PotentialHeuristics::initialize() {
     Timer initialization_timer;
     verify_no_axioms_no_conditional_effects();
-    if (size >= 1) {
-        heuristics.reserve(size);
-        for (int i = 0; i < size; ++i) {
+    if (diversify) {
+        find_diverse_heuristics();
+    } else {
+        for (int i = 0; i < max_num_heuristics; ++i) {
             // TODO: Filter or bound potentials (by reusing code).
             optimizer.optimize_for_state(g_initial_state());
             shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
@@ -45,11 +46,9 @@ void PotentialHeuristics::initialize() {
             optimizer.optimize_for_samples(samples);
             heuristics.push_back(optimizer.get_heuristic());
         }
-    } else {
-        find_complementary_heuristics();
     }
     cout << "Potential heuristics: " << heuristics.size() << endl;
-    cout << "Initialization of PotentialHeuristics: " << initialization_timer << endl;
+    cout << "Initialization of potential heuristics: " << initialization_timer << endl;
 }
 
 int PotentialHeuristics::compute_heuristic(const GlobalState &state) {
@@ -124,7 +123,7 @@ void PotentialHeuristics::cover_samples(
     swap(samples, suboptimal_samples);
 }
 
-void PotentialHeuristics::find_complementary_heuristics() {
+void PotentialHeuristics::find_diverse_heuristics() {
     // Sample states.
     optimizer.optimize_for_state(g_initial_state());
     shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
@@ -139,8 +138,7 @@ void PotentialHeuristics::find_complementary_heuristics() {
 
     // Cover samples.
     CountdownTimer covering_timer(max_covering_time);
-    size_t max_num_heuristics = (size == 0) ? numeric_limits<size_t>::max() : abs(size);
-    while (!samples.empty() && heuristics.size() < max_num_heuristics) {
+    while (!samples.empty() && static_cast<int>(heuristics.size()) < max_num_heuristics) {
         if (covering_timer.is_expired()) {
             cout << "Ran out of time covering samples." << endl;
         }
@@ -172,15 +170,23 @@ static Heuristic *_parse(OptionParser &parser) {
     add_lp_solver_option_to_parser(parser);
     add_common_potential_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
+    parser.add_option<bool>(
+        "diversify",
+        "use automatic diversification",
+        "true");
     parser.add_option<int>(
-        "size",
-        "Number of potential heuristics to create. Use 0 to determine size automatically.",
-        "1");
+        "max_num_heuristics",
+        "maximum number of potential heuristics",
+        "infinity");
     parser.add_option<double>(
         "max_covering_time",
         "time limit in seconds for covering samples",
         "infinity");
     Options opts = parser.parse();
+    if (!opts.get<bool>("diversify") &&
+        opts.get<int>("max_num_heuristics") == numeric_limits<int>::infinity()) {
+        parser.error("Either use diversify=true or specify max_num_heuristics");
+    }
     if (parser.dry_run())
         return nullptr;
     else
