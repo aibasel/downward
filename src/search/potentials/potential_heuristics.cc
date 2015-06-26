@@ -18,20 +18,16 @@ using namespace std;
 
 
 namespace potentials {
-PotentialHeuristics::PotentialHeuristics(const Options &options)
-    : Heuristic(options),
-      optimizer(options),
-      optimization_function(OptimizationFunction(options.get_enum("optimization_function"))),
-      size(options.get<int>("size")),
-      opts(options),
-      num_samples(options.get<int>("num_samples")),
-      max_potential(options.get<double>("max_potential")),
+PotentialHeuristics::PotentialHeuristics(const Options &opts)
+    : Heuristic(opts),
+      optimizer(opts),
+      optimization_function(OptimizationFunction(opts.get_enum("optimization_function"))),
+      size(opts.get<int>("size")),
+      num_samples(opts.get<int>("num_samples")),
+      max_potential(opts.get<double>("max_potential")),
       max_filtering_time(opts.get<double>("max_filtering_time")),
       max_covering_time(opts.get<double>("max_covering_time")),
-      debug(options.get<bool>("debug")) {
-}
-
-PotentialHeuristics::~PotentialHeuristics() {
+      debug(opts.get<bool>("debug")) {
 }
 
 void PotentialHeuristics::initialize() {

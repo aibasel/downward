@@ -9,8 +9,8 @@ using namespace std;
 
 
 namespace potentials {
-PotentialHeuristic::PotentialHeuristic(const Options &options,
-                                       const FactPotentials &fact_potentials)
+PotentialHeuristic::PotentialHeuristic(
+    const Options &options, const vector<vector<double> > &fact_potentials)
     : Heuristic(options),
       fact_potentials(fact_potentials) {
 }
