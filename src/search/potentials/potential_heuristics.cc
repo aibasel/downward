@@ -40,6 +40,7 @@ void PotentialHeuristics::initialize() {
     if (size >= 1) {
         heuristics.reserve(size);
         for (int i = 0; i < size; ++i) {
+            // TODO: Filter or bound potentials (by reusing code).
             optimizer.optimize_for_state(g_initial_state());
             shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
             StateRegistry sample_registry;
