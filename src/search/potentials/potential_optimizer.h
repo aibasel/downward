@@ -14,10 +14,11 @@ namespace potentials {
 class PotentialOptimizer {
     LPSolver lp_solver;
     const double max_potential;
-    int num_facts;
-    std::vector<std::vector<int> > fact_ids;
+    int num_lp_vars;
+    std::vector<std::vector<int> > lp_var_ids;
     std::vector<std::vector<double> > fact_potentials;
 
+    void initialize();
     void construct_lp();
     void set_lp_objective(const std::vector<double> &coefficients);
     bool solve_lp();
