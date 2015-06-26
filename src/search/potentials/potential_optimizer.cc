@@ -208,6 +208,21 @@ shared_ptr<Heuristic> PotentialOptimizer::get_heuristic() const {
     return make_shared<PotentialHeuristic>(opts, fact_potentials);
 }
 
+void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
+    StateRegistry sample_registry;
+    vector<GlobalState> samples;
+    optimizer.optimize_for_state(g_initial_state());
+    if (optimizer.has_optimal_solution()) {
+        shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
+        samples = sample_states_with_random_walks(
+            sample_registry, num_samples, *sampling_heuristic);
+    }
+    if (!optimizer.potentials_are_bounded()) {
+        optimizer.filter_dead_ends(samples);
+    }
+    optimizer.optimize_for_samples(samples);
+}
+
 shared_ptr<Heuristic> create_potential_heuristic(const Options &opts) {
     PotentialOptimizer optimizer(opts);
     OptFunc opt_func(OptFunc(opts.get_enum("opt_func")));
@@ -216,18 +231,7 @@ shared_ptr<Heuristic> create_potential_heuristic(const Options &opts) {
     } else if (opt_func == OptFunc::ALL_STATES) {
         optimizer.optimize_for_all_states();
     } else if (opt_func == OptFunc::SAMPLES) {
-        StateRegistry sample_registry;
-        vector<GlobalState> samples;
-        optimizer.optimize_for_state(g_initial_state());
-        if (optimizer.has_optimal_solution()) {
-            shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
-            samples = sample_states_with_random_walks(
-                sample_registry, opts.get<int>("num_samples"), *sampling_heuristic);
-        }
-        if (!optimizer.potentials_are_bounded()) {
-            optimizer.filter_dead_ends(samples);
-        }
-        optimizer.optimize_for_samples(samples);
+        optimize_for_samples(optimizer, opts.get<int>("num_samples"));
     } else {
         ABORT("Unkown optimization function");
     }
