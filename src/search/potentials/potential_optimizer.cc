@@ -25,14 +25,24 @@ enum class OptFunc {
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
     : lp_solver(LPSolverType(opts.get_enum("lpsolver"))),
       max_potential(opts.get<double>("max_potential")),
-      num_facts(-1) {
+      num_lp_vars(0) {
     verify_no_axioms_no_conditional_effects();
+    initialize();
+    construct_lp();
+}
+
+void PotentialOptimizer::initialize() {
+    lp_var_ids.resize(g_variable_domain.size());
     fact_potentials.resize(g_variable_domain.size());
     int num_vars = g_variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
+        // Include dummy value for "unknown" value.
+        lp_var_ids[var].resize(g_variable_domain[var] + 1);
+        for (int val = 0; val < g_variable_domain[var] + 1; ++val) {
+            lp_var_ids[var][val] = num_lp_vars++;
+        }
         fact_potentials[var].resize(g_variable_domain[var]);
     }
-    construct_lp();
 }
 
 bool PotentialOptimizer::has_optimal_solution() const {
@@ -45,10 +55,10 @@ bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
 
 bool PotentialOptimizer::optimize_for_all_states() {
     int num_vars = g_variable_domain.size();
-    vector<double> coefficients(num_facts, 0.0);
+    vector<double> coefficients(num_lp_vars, 0.0);
     for (int var = 0; var < num_vars; ++var) {
         for (int value = 0; value < g_variable_domain[var]; ++value) {
-            coefficients[fact_ids[var][value]] = 1.0 / g_variable_domain[var];
+            coefficients[lp_var_ids[var][value]] = 1.0 / g_variable_domain[var];
         }
     }
     set_lp_objective(coefficients);
@@ -63,12 +73,12 @@ bool PotentialOptimizer::optimize_for_all_states() {
 }
 
 bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples) {
-    vector<double> coefficients(num_facts, 0.0);
+    vector<double> coefficients(num_lp_vars, 0.0);
     int num_vars = g_variable_domain.size();
     for (const GlobalState &state : samples) {
         for (int var = 0; var < num_vars; ++var) {
             int value = state[var];
-            coefficients[fact_ids[var][value]] += 1.0;
+            coefficients[lp_var_ids[var][value]] += 1.0;
         }
     }
     set_lp_objective(coefficients);
@@ -76,8 +86,8 @@ bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples
 }
 
 void PotentialOptimizer::set_lp_objective(const vector<double> &coefficients) {
-    assert(static_cast<int>(coefficients.size()) == num_facts);
-    for (int i = 0; i < num_facts; ++i) {
+    assert(static_cast<int>(coefficients.size()) == num_lp_vars);
+    for (int i = 0; i < num_lp_vars; ++i) {
         lp_solver.set_objective_coefficient(i, coefficients[i]);
     }
 }
@@ -91,19 +101,10 @@ void PotentialOptimizer::construct_lp() {
                                                      lp_solver.get_infinity());
 
     vector<LPVariable> lp_variables;
-    int num_lp_vars = 0;
-    vector<vector<int> > lp_vars;
-    fact_ids.resize(g_variable_domain.size());
-    const int num_vars = g_variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        fact_ids[var].resize(g_variable_domain[var] + 1);
-        for (int val = 0; val < g_variable_domain[var] + 1; ++val) {
-            // Use dummy coefficient for now. Set the real coefficients later.
-            lp_variables.emplace_back(-lp_solver.get_infinity(), upper_bound, 1.0);
-            fact_ids[var][val] = num_lp_vars++;
-        }
+    for (int lp_var_id = 0; lp_var_id < num_lp_vars; ++lp_var_id) {
+        // Use dummy coefficient for now. Adapt coefficient later.
+        lp_variables.emplace_back(-lp_solver.get_infinity(), upper_bound, 1.0);
     }
-    num_facts = num_lp_vars;
 
     vector<LPConstraint> lp_constraints;
     lp_constraints.reserve(g_operators.size());
@@ -129,8 +130,8 @@ void PotentialOptimizer::construct_lp() {
                 pre = it->second;
             }
             int post = effects[j].val;
-            int pre_lp = fact_ids[var][pre];
-            int post_lp = fact_ids[var][post];
+            int pre_lp = lp_var_ids[var][pre];
+            int post_lp = lp_var_ids[var][post];
             assert(pre_lp != post_lp);
             coefficients.emplace_back(pre_lp, 1);
             coefficients.emplace_back(post_lp, -1);
@@ -140,6 +141,8 @@ void PotentialOptimizer::construct_lp() {
             constraint.insert(coeff.first, coeff.second);
         lp_constraints.push_back(constraint);
     }
+
+    int num_vars = g_variable_domain.size();
 
     /* Create full goal state. Use dummy value |dom(V)| for variables V
        undefined in the goal. */
@@ -157,14 +160,14 @@ void PotentialOptimizer::construct_lp() {
         // Create Constraint (we use variable bounds to express this constraint):
         // P_{V=goal[V]} = 0
         // TODO: Do not set lower bound?
-        LPVariable &lp_var = lp_variables[fact_ids[var][goal[var]]];
+        LPVariable &lp_var = lp_variables[lp_var_ids[var][goal[var]]];
         lp_var.lower_bound = 0;
         lp_var.upper_bound = 0;
 
         int undef_val = g_variable_domain[var];
-        int undef_val_lp = fact_ids[var][undef_val];
+        int undef_val_lp = lp_var_ids[var][undef_val];
         for (int val = 0; val < g_variable_domain[var]; ++val) {
-            int val_lp = fact_ids[var][val];
+            int val_lp = lp_var_ids[var][val];
             // Create Constraint:
             // P_{V=v} <= P_{V=u}
             // Note that we could eliminate variables P_{V=u} if V is undefined in the goal.
@@ -191,7 +194,7 @@ void PotentialOptimizer::extract_lp_solution() {
     int num_vars = g_variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
         for (int val = 0; val < g_variable_domain[var]; ++val) {
-            fact_potentials[var][val] = solution[fact_ids[var][val]];
+            fact_potentials[var][val] = solution[lp_var_ids[var][val]];
         }
     }
 }
