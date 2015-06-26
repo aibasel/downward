@@ -31,7 +31,6 @@ vector<GlobalState> sample_states_with_random_walks(
         return samples;
     }
     int h = eval_context.get_heuristic_value(&heuristic);
-    cout << "Sampling heuristic solution cost estimate: " << h << endl;
 
     int n;
     if (h == 0) {
