@@ -44,10 +44,10 @@ PotentialOptimizer::PotentialOptimizer(const Options &options)
     } else if (optimization_function == ALL_STATES) {
         optimize_for_all_states();
     } else if (optimization_function == SAMPLES) {
+        StateRegistry sample_registry;
         vector<GlobalState> samples;
         optimize_for_state(g_initial_state());
         if (has_optimal_solution()) {
-            StateRegistry sample_registry;
             Options opts;
             opts.set<int>("cost_type", 0);
             shared_ptr<Heuristic> sampling_heuristic = get_heuristic();
