@@ -37,8 +37,6 @@ public:
     explicit PotentialOptimizer(const Options &opts);
     ~PotentialOptimizer() = default;
 
-    void filter_dead_ends(std::vector<GlobalState> &samples);
-
     bool optimize_for_state(const GlobalState &state);
     bool optimize_for_all_states();
     bool optimize_for_samples(const std::vector<GlobalState> &samples);
