@@ -286,8 +286,9 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-    // TODO: Fix.
-    shared_ptr<Heuristic> *heuristic = new shared_ptr<Heuristic>(create_potential_heuristic(opts));
+    // TODO: Fix memory leak once issue526 is merged.
+    shared_ptr<Heuristic> *heuristic = new shared_ptr<Heuristic>(
+        create_potential_heuristic(opts));
     return heuristic->get();
 }
 
