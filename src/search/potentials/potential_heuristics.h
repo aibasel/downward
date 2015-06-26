@@ -18,7 +18,6 @@ class PotentialHeuristics: public Heuristic {
     PotentialOptimizer optimizer;
     OptimizationFunction optimization_function;
     int size;
-    Options opts;
     int num_samples;
     double max_potential;
     double max_filtering_time;
@@ -41,8 +40,8 @@ protected:
     virtual int compute_heuristic(const GlobalState &state);
 
 public:
-    PotentialHeuristics(const Options &options);
-    ~PotentialHeuristics();
+    PotentialHeuristics(const Options &opts);
+    ~PotentialHeuristics() = default;
 };
 
 }

@@ -5,11 +5,9 @@
 
 #include <vector>
 
-using FactPotentials = std::vector<std::vector<double> >;
-
 namespace potentials {
 class PotentialHeuristic : public Heuristic {
-    FactPotentials fact_potentials;
+    std::vector<std::vector<double> > fact_potentials;
 
 protected:
     virtual void initialize();
@@ -17,7 +15,7 @@ protected:
 
 public:
     PotentialHeuristic(const Options &options,
-                       const FactPotentials &fact_potentials);
+                       const std::vector<std::vector<double> > &fact_potentials);
     ~PotentialHeuristic() = default;
 };
 }
