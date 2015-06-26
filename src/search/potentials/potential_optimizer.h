@@ -23,7 +23,6 @@ enum OptimizationFunction {
 
 class PotentialOptimizer {
     LPSolver lp_solver;
-    const OptimizationFunction optimization_function;
     const int num_samples;
     const double max_potential;
     const double max_sampling_time;

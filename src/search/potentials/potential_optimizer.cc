@@ -24,7 +24,6 @@ namespace potentials {
 
 PotentialOptimizer::PotentialOptimizer(const Options &options)
     : lp_solver(LPSolverType(options.get_enum("lpsolver"))),
-      optimization_function(OptimizationFunction(options.get_enum("optimization_function"))),
       num_samples(options.get<int>("num_samples")),
       max_potential(options.get<double>("max_potential")),
       max_sampling_time(options.get<double>("max_sampling_time")),
@@ -39,11 +38,12 @@ PotentialOptimizer::PotentialOptimizer(const Options &options)
         fact_potentials[var].resize(g_variable_domain[var]);
     }
     construct_lp();
-    if (optimization_function == INITIAL_STATE) {
+    OptimizationFunction opt_func(OptimizationFunction(options.get_enum("optimization_function")));
+    if (opt_func == INITIAL_STATE) {
         optimize_for_state(g_initial_state());
-    } else if (optimization_function == ALL_STATES) {
+    } else if (opt_func == ALL_STATES) {
         optimize_for_all_states();
-    } else if (optimization_function == SAMPLES) {
+    } else if (opt_func == SAMPLES) {
         StateRegistry sample_registry;
         vector<GlobalState> samples;
         optimize_for_state(g_initial_state());
