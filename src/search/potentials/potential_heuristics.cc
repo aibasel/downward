@@ -37,13 +37,7 @@ void PotentialHeuristics::initialize() {
         find_diverse_heuristics();
     } else {
         for (int i = 0; i < max_num_heuristics; ++i) {
-            // TODO: Filter or bound potentials (by reusing code).
-            optimizer.optimize_for_state(g_initial_state());
-            shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
-            StateRegistry sample_registry;
-            vector<GlobalState> samples = sample_states_with_random_walks(
-                sample_registry, num_samples, *sampling_heuristic);
-            optimizer.optimize_for_samples(samples);
+            optimize_for_samples(optimizer, num_samples);
             heuristics.push_back(optimizer.get_heuristic());
         }
     }
@@ -188,7 +182,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "infinity");
     Options opts = parser.parse();
     if (!opts.get<bool>("diversify") &&
-        opts.get<int>("max_num_heuristics") == numeric_limits<int>::infinity()) {
+        opts.get<int>("max_num_heuristics") == numeric_limits<int>::max()) {
         parser.error("Either use diversify=true or specify max_num_heuristics");
     }
     if (parser.dry_run())

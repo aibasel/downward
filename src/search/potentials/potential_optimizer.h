@@ -51,6 +51,7 @@ public:
 
 void add_common_potential_options_to_parser(OptionParser &parser);
 
+void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples);
 std::shared_ptr<Heuristic> create_potential_heuristic(const Options &opts);
 
 }
