@@ -364,16 +364,17 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
 void PatternGenerationHaslum::initialize() {
     // calculate average operator costs
     double average_operator_cost = 0;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        average_operator_cost += get_adjusted_action_cost(g_operators[i], cost_type);
+    for (const OperatorProxy &op : task_proxy.get_operators()) {
+        average_operator_cost += op.get_cost();
     }
-    average_operator_cost /= g_operators.size();
+    average_operator_cost /= task_proxy.get_operators().size();
     cout << "Average operator cost: " << average_operator_cost << endl;
 
     // initial collection: a pdb for each goal variable
     vector<vector<int> > initial_pattern_collection;
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        initial_pattern_collection.push_back(vector<int>(1, g_goal[i].first));
+    for (const FactProxy &goal : task_proxy.get_goals()) {
+        int goal_var_id = goal.get_variable().get_id();
+        initial_pattern_collection.emplace_back(1, goal_var_id);
     }
     Options opts;
     opts.set<shared_ptr<AbstractTask> >("transform", task);
@@ -386,8 +387,8 @@ void PatternGenerationHaslum::initialize() {
 
     // initial candidate patterns, computed separately for each pattern from the initial collection
     vector<vector<int> > initial_candidate_patterns;
-    for (size_t i = 0; i < current_heuristic->get_pattern_databases().size(); ++i) {
-        const PDBHeuristic *current_pdb = current_heuristic->get_pattern_databases()[i];
+    for (const PDBHeuristic *current_pdb :
+         current_heuristic->get_pattern_databases()) {
         generate_candidate_patterns(current_pdb, initial_candidate_patterns);
     }
     // remove duplicates in the candidate list
