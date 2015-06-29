@@ -519,6 +519,9 @@ bool SelectiveMaxHeuristic::reach_state(const GlobalState &parent_state, const G
         val = heuristics[i]->reach_state(parent_state, op, state);
         ret = ret || val;
     }
+    if(ret && cache_h_values) {
+        heuristic_cache[state].dirty = true;
+    }
     return ret;
 }
 

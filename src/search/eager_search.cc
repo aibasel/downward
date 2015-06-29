@@ -98,7 +98,7 @@ SearchStatus EagerSearch::step() {
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     // This evaluates the expanded state (again) to get preferred ops
-    EvaluationContext eval_context(s, node.get_g(), false, &statistics);
+    EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
     for (Heuristic *heur : preferred_operator_heuristics) {
         /* In an alternation search with unreliable heuristics, it is
            possible that this heuristic considers the state a dead
@@ -131,13 +131,9 @@ SearchStatus EagerSearch::step() {
               Note: we must call reach_state for each heuristic, so
               don't break out of the for loop early.
             */
-            bool h_is_dirty = false;
             for (Heuristic *heuristic : heuristics) {
-                if (heuristic->reach_state(s, *op, succ_state))
-                    h_is_dirty = true;
+                heuristic->reach_state(s, *op, succ_state);
             }
-            if (h_is_dirty && use_multi_path_dependence)
-                succ_node.set_h_dirty();
         }
 
         if (succ_node.is_new()) {
