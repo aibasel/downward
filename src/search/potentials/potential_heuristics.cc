@@ -57,7 +57,7 @@ int PotentialHeuristics::compute_heuristic(const GlobalState &state) {
     return value;
 }
 
-void PotentialHeuristics::filter_samples(
+void PotentialHeuristics::filter_dead_ends_and_duplicates(
         vector<GlobalState> &samples,
         unordered_map<StateID, int> &sample_to_max_h,
         unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) {
@@ -82,8 +82,9 @@ void PotentialHeuristics::filter_samples(
             dead_end_free_samples.push_back(sample);
             shared_ptr<Heuristic> single_heuristic = optimizer.get_heuristic();
             EvaluationContext eval_context(sample);
-            sample_to_max_h[sample.get_id()] = eval_context.get_heuristic_value(single_heuristic.get());
-            single_heuristics.insert(make_pair(sample.get_id(), single_heuristic));
+            sample_to_max_h[sample.get_id()] = eval_context.get_heuristic_value(
+                single_heuristic.get());
+            single_heuristics[sample.get_id()] = single_heuristic;
         } else {
             ++num_dead_ends;
         }
@@ -91,16 +92,19 @@ void PotentialHeuristics::filter_samples(
     cout << "Time for filtering dead ends: " << filtering_timer << endl;
     cout << "Duplicate samples: " << num_duplicates << endl;
     cout << "Dead end samples: " << num_dead_ends << endl;
-    cout << "Unique non-dead-end samples: " << dead_end_free_samples.size() << endl;
+    cout << "Unique non-dead-end samples: " << dead_end_free_samples.size()
+         << endl;
+    assert(num_duplicates + num_dead_ends + dead_end_free_samples.size() ==
+        samples.size());
     swap(samples, dead_end_free_samples);
 }
 
-void PotentialHeuristics::cover_samples(
+void PotentialHeuristics::filter_covered_samples(
         vector<GlobalState> &samples,
         const unordered_map<StateID, int> &sample_to_max_h,
         const std::shared_ptr<Heuristic> heuristic,
         unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
-    vector<GlobalState> suboptimal_samples;
+    vector<GlobalState> not_covered_samples;
     for (const GlobalState &sample : samples) {
         int max_h = sample_to_max_h.at(sample.get_id());
         int h = EvaluationContext(sample).get_heuristic_value(heuristic.get());
@@ -110,10 +114,41 @@ void PotentialHeuristics::cover_samples(
         if (h == max_h) {
             single_heuristics.erase(sample.get_id());
         } else {
-            suboptimal_samples.push_back(sample);
+            not_covered_samples.push_back(sample);
         }
     }
-    swap(samples, suboptimal_samples);
+    swap(samples, not_covered_samples);
+}
+
+void PotentialHeuristics::cover_samples(
+        vector<GlobalState> &samples,
+        const unordered_map<StateID, int> &sample_to_max_h,
+        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) {
+    CountdownTimer covering_timer(max_covering_time);
+    while (!samples.empty() && static_cast<int>(heuristics.size()) < max_num_heuristics) {
+        if (covering_timer.is_expired()) {
+            cout << "Ran out of time covering samples." << endl;
+            break;
+        }
+        cout << "Create heuristic #" << heuristics.size() + 1 << endl;
+        optimizer.optimize_for_samples(samples);
+        shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
+        size_t last_num_samples = samples.size();
+        filter_covered_samples(samples, sample_to_max_h, group_heuristic, single_heuristics);
+        if (samples.size() < last_num_samples) {
+            heuristics.push_back(group_heuristic);
+        } else {
+            cout << "No sample was removed -> Choose a precomputed heuristic." << endl;
+            StateID state_id = g_rng.choose(samples)->get_id();
+            shared_ptr<Heuristic> single_heuristic = single_heuristics[state_id];
+            single_heuristics.erase(state_id);
+            filter_covered_samples(samples, sample_to_max_h, single_heuristic, single_heuristics);
+            heuristics.push_back(single_heuristic);
+        }
+        cout << "Removed " << last_num_samples - samples.size()
+             << " samples. " << samples.size() << " remaining." << endl;
+    }
+    cout << "Time for covering samples: " << covering_timer << endl;
 }
 
 void PotentialHeuristics::find_diverse_heuristics() {
@@ -124,39 +159,13 @@ void PotentialHeuristics::find_diverse_heuristics() {
     vector<GlobalState> samples = sample_states_with_random_walks(
         sample_registry, num_samples, *sampling_heuristic);
 
-    // Filter dead ends.
+    // Filter dead end samples.
     unordered_map<StateID, int> sample_to_max_h;
     unordered_map<StateID, shared_ptr<Heuristic> > single_heuristics;
-    filter_samples(samples, sample_to_max_h, single_heuristics);
+    filter_dead_ends_and_duplicates(samples, sample_to_max_h, single_heuristics);
 
-    // Cover samples.
-    CountdownTimer covering_timer(max_covering_time);
-    while (!samples.empty() && static_cast<int>(heuristics.size()) < max_num_heuristics) {
-        if (covering_timer.is_expired()) {
-            cout << "Ran out of time covering samples." << endl;
-        }
-        cout << "Create heuristic #" << heuristics.size() + 1 << endl;
-        optimizer.optimize_for_samples(samples);
-        shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
-        size_t last_num_samples = samples.size();
-        cover_samples(samples, sample_to_max_h, group_heuristic, single_heuristics);
-        if (samples.size() < last_num_samples) {
-            heuristics.push_back(group_heuristic);
-        } else {
-            cout << "No sample was removed -> Choose a precomputed heuristic." << endl;
-            StateID state_id = g_rng.choose(samples)->get_id();
-            shared_ptr<Heuristic> single_heuristic = single_heuristics[state_id];
-            single_heuristics.erase(state_id);
-            cover_samples(samples, sample_to_max_h, single_heuristic, single_heuristics);
-            heuristics.push_back(single_heuristic);
-        }
-        cout << "Removed " << last_num_samples - samples.size()
-             << " samples. " << samples.size() << " remaining." << endl;
-    }
-    if (samples.empty()) {
-        assert(single_heuristics.empty());
-    }
-    cout << "Time for covering samples: " << covering_timer << endl;
+    // Iteratively cover samples.
+    cover_samples(samples, sample_to_max_h, single_heuristics);
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -190,5 +199,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new PotentialHeuristics(opts);
 }
 
-static Plugin<Heuristic> _plugin("potentials", _parse);
+static Plugin<Heuristic> _plugin("diverse_potentials", _parse);
 }
