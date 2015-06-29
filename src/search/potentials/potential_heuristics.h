@@ -13,7 +13,7 @@
 
 
 namespace potentials {
-
+// TODO: Split off into two classes. One with and one without diversification.
 class PotentialHeuristics: public Heuristic {
     const bool diversify;
     const int max_num_heuristics;
@@ -24,15 +24,28 @@ class PotentialHeuristics: public Heuristic {
     PotentialOptimizer optimizer;
     std::vector<std::shared_ptr<Heuristic> > heuristics;
 
-    void filter_samples(
+    /* Filter dead end samples and duplicates. Store potential heuristics and
+       maximum heuristic values for remaining samples. */
+    void filter_dead_ends_and_duplicates(
             std::vector<GlobalState> &samples,
             std::unordered_map<StateID, int> &sample_to_max_h,
             std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics);
-    void cover_samples(
+
+    // Remove all samples for which the heuristic achieves maximal values.
+    void filter_covered_samples(
             std::vector<GlobalState> &samples,
             const std::unordered_map<StateID, int> &sample_to_max_h,
             const std::shared_ptr<Heuristic> heuristic,
             std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
+
+    /* Iteratively try to find potential heuristics that achieve maximal values
+       for as many samples as possible. */
+    void cover_samples(
+        std::vector<GlobalState> &samples,
+        const std::unordered_map<StateID, int> &sample_to_max_h,
+        std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics);
+
+    // Sample states, then cover them.
     void find_diverse_heuristics();
 
 protected:

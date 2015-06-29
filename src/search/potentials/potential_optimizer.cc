@@ -292,5 +292,5 @@ static Heuristic *_parse(OptionParser &parser) {
     return heuristic->get();
 }
 
-static Plugin<Heuristic> _plugin("potential", _parse);
+static Plugin<Heuristic> _plugin("potentials", _parse);
 }
