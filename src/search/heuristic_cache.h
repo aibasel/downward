@@ -22,7 +22,7 @@ public:
     explicit HeuristicCache(const GlobalState &state);
     ~HeuristicCache() = default;
 
-    const EvaluationResults &get_eval_results() const;
+    bool empty() const;
 
     EvaluationResult &operator[](ScalarEvaluator *heur);
 
