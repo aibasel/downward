@@ -14,9 +14,9 @@ using namespace std;
 
 // TODO: Avoid code duplication with iPDB.
 vector<GlobalState> sample_states_with_random_walks(
-        StateRegistry &sample_registry,
-        int num_samples,
-        Heuristic &heuristic) {
+    StateRegistry &sample_registry,
+    int num_samples,
+    Heuristic &heuristic) {
     vector<GlobalState> samples;
 
     double average_operator_cost = 0;

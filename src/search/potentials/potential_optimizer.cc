@@ -50,7 +50,8 @@ bool PotentialOptimizer::has_optimal_solution() const {
 }
 
 bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
-    return optimize_for_samples({state});
+    return optimize_for_samples({state}
+                                );
 }
 
 bool PotentialOptimizer::optimize_for_all_states() {
@@ -98,7 +99,7 @@ bool PotentialOptimizer::potentials_are_bounded() const {
 
 void PotentialOptimizer::construct_lp() {
     double upper_bound = (potentials_are_bounded() ? max_potential :
-                                                     lp_solver.get_infinity());
+                          lp_solver.get_infinity());
 
     vector<LPVariable> lp_variables;
     for (int lp_var_id = 0; lp_var_id < num_lp_vars; ++lp_var_id) {
