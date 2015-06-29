@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 using namespace std;
@@ -91,12 +91,12 @@ void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
     /*
-      Algorithm: Put all unary operators into an unordered_map
+      Algorithm: Put all unary operators into an map
       (key: condition and effect; value: index in operator vector.
       This gets rid of operators with identical conditions.
 
-      Then go through the unordered_map, checking for each element if
-      none of the possible dominators are part of the unordered_map.
+      Then go through the map, checking for each element if
+      none of the possible dominators are part of the map.
       Put the element into the new operator vector iff this is the case.
 
       In both loops, be careful to ensure that a higher-cost operator
@@ -107,9 +107,8 @@ void RelaxationHeuristic::simplify() {
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
     typedef pair<vector<Proposition *>, Proposition *> HashKey;
-    typedef unordered_map<HashKey, int> HashMap;
+    typedef map<HashKey, int> HashMap;
     HashMap unary_operator_index;
-    unary_operator_index.reserve(unary_operators.size());
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
