@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 
+class Heuristic;
 class ScalarEvaluator;
 
 using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
@@ -21,13 +22,24 @@ public:
     explicit HeuristicCache(const GlobalState &state);
     ~HeuristicCache() = default;
 
-    const EvaluationResults &get_eval_results() const {
-        return eval_results;
-    }
+    const EvaluationResults &get_eval_results() const;
 
     EvaluationResult &operator[](ScalarEvaluator *heur);
 
     const GlobalState &get_state() const;
+
+    template<class Callback>
+    void for_each_heuristic_value(const Callback &callback) const {
+        for (const auto &element : eval_results) {
+            const ScalarEvaluator *eval = element.first;
+            const EvaluationResult &result = element.second;
+            const Heuristic *heuristic = dynamic_cast<const Heuristic *>(eval);
+            if (heuristic) {
+                int h = result.get_h_value();
+                callback(heuristic, h);
+            }
+        }
+    }
 };
 
 #endif
