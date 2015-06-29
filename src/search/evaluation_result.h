@@ -12,7 +12,7 @@ class EvaluationResult {
     int h_value;
     std::vector<const GlobalOperator *> preferred_operators;
 public:
-    static const int INFINITE = std::numeric_limits<int>::max();
+    static const int INFINITE;
 
     EvaluationResult();
 

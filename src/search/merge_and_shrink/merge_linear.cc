@@ -15,7 +15,7 @@ MergeLinear::MergeLinear(const Options &opts)
       need_first_index(true) {
 }
 
-pair<int, int> MergeLinear::get_next(const std::vector<TransitionSystem *> &all_transition_systems) {
+pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {
     assert(!done() && !order.done());
 
     int first;

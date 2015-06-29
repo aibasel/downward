@@ -9,6 +9,8 @@
   LP class instead.
 */
 
+#include "utilities.h"
+
 #include <memory>
 
 class CoinError;
@@ -24,7 +26,7 @@ std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
   the planner will attempt to terminate gracefully, like it does with
   uncaught out-of-memory exceptions in other parts of the code.
 */
-__attribute__((noreturn))
+NO_RETURN
 void handle_coin_error(const CoinError &error);
 
 #endif
