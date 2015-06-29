@@ -16,12 +16,24 @@
 
 #if defined(__CYGWIN32__)
 #define OPERATING_SYSTEM CYGWIN
-#elif defined(__WINNT__)
+#elif defined(_WIN32)
 #define OPERATING_SYSTEM WINDOWS
 #elif defined(__APPLE__)
 #define OPERATING_SYSTEM OSX
 #else
 #define OPERATING_SYSTEM LINUX
+#endif
+
+#include <cstdlib>
+#include <functional>
+#include <iostream>
+#include <utility>
+#include <vector>
+
+#if OPERATING_SYSTEM == WINDOWS
+#define NO_RETURN __declspec(noreturn)
+#else
+#define NO_RETURN __attribute__((noreturn))
 #endif
 
 #define ABORT(msg) \
@@ -45,7 +57,7 @@ enum ExitCode {
     EXIT_OUT_OF_MEMORY = 6
 };
 
-extern void exit_with(ExitCode returncode) __attribute__((noreturn));
+NO_RETURN extern void exit_with(ExitCode returncode);
 
 extern void register_event_handlers();
 
@@ -104,6 +116,13 @@ bool in_bounds(size_t index, const T &container) {
 
 template<typename T>
 void unused_parameter(const T &) {
+}
+
+int get_process_id();
+
+template<class T>
+void release_vector_memory(std::vector<T> &vec) {
+    std::vector<T>().swap(vec);
 }
 
 /*

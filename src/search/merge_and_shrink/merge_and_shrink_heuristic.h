@@ -3,17 +3,16 @@
 
 #include "../heuristic.h"
 
-class TransitionSystem;
 class Labels;
 class MergeStrategy;
 class ShrinkStrategy;
+class TransitionSystem;
 
 class MergeAndShrinkHeuristic : public Heuristic {
     MergeStrategy *const merge_strategy;
     ShrinkStrategy *const shrink_strategy;
     Labels *labels;
     const bool use_expensive_statistics;
-    const bool terminate;
     int starting_peak_memory;
 
     TransitionSystem *final_transition_system;

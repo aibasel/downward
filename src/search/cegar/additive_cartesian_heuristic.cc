@@ -132,13 +132,12 @@ void AdditiveCartesianHeuristic::print_statistics() const {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
+    EvaluationContext eval_context(global_state);
     int sum_h = 0;
     for (shared_ptr<CartesianHeuristic> heuristic : heuristics) {
-        heuristic->evaluate(global_state);
-        int h = heuristic->get_heuristic();
-        if (h == DEAD_END)
+        if (eval_context.is_heuristic_infinite(heuristic.get()))
             return DEAD_END;
-        sum_h += h;
+        sum_h += eval_context.get_heuristic_value(heuristic.get());
     }
     assert(sum_h >= 0);
     return sum_h;

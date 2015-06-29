@@ -15,8 +15,9 @@
 #include <cstring>
 #include <deque>
 #include <functional>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <iterator>
 #include <limits>
 #include <set>
 #include <string>
@@ -374,7 +375,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                 }
                 grouped_labels.erase(group2_it);
                 --group2_it;
-                vector<Transition>().swap(transitions2);
+                release_vector_memory(transitions2);
             }
         }
     }
@@ -504,13 +505,13 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
     }
 }
 
-void TransitionSystem::apply_abstraction(
+bool TransitionSystem::apply_abstraction(
     const vector<forward_list<AbstractStateRef> > &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
-        return;
+        return false;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
@@ -561,9 +562,9 @@ void TransitionSystem::apply_abstraction(
     }
 
     // Release memory.
-    vector<int>().swap(init_distances);
-    vector<int>().swap(goal_distances);
-    vector<bool>().swap(goal_states);
+    release_vector_memory(init_distances);
+    release_vector_memory(goal_distances);
+    release_vector_memory(goal_states);
 
     // Update all transitions. Locally equivalent labels remain locally equivalent.
     for (LabelGroupIter group_it = grouped_labels.begin();
@@ -602,6 +603,7 @@ void TransitionSystem::apply_abstraction(
         compute_distances_and_prune();
     }
     assert(is_valid());
+    return true;
 }
 
 void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> > > &label_mapping,
@@ -610,8 +612,32 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
     assert(are_distances_computed());
     assert(are_transitions_sorted_unique());
 
-    // Go over the mapping of reduced labels to new label one by one.
-    unordered_set<LabelGroup *> affected_groups;
+    /*
+      We iterate over the given label mapping, treating every new label and
+      the reduced old labels separately. We further distinguish the case
+      where we know that the reduced labels are all from the same equivalence
+      group from the case where we may combine arbitrary labels. We also
+      assume that only labels of the same cost are reduced.
+
+      The case where only equivalent labels are combined is simple: remove all
+      old labels from the label group and add the new one.
+
+      The other case is more involved: again remove all old labels from their
+      groups, and the groups themselves if they become empty. Also collect
+      the transitions of all reduced labels. Add a new group for every new
+      label and assign the collected transitions to this group. Recompute the
+      cost of all groups and compute locally equivalent labels.
+
+      NOTE: Previously, this latter case was computed in a more incremental
+      fashion: Rather than recomputing cost of all groups, we only recomputed
+      cost for groups from which we actually removed labels (hence temporarily
+      storing these affected groups). Furthermore, rather than computing
+      locally equivalent labels from scratch, we did not per default add a new
+      group for every label, but checked for an existing equivalent label
+      group. In issue539, it turned out that this incremental fashion of
+      computation does not accelerate the computation.
+    */
+
     for (size_t i = 0; i < label_mapping.size(); ++i) {
         const vector<int> &old_label_nos = label_mapping[i].second;
         assert(old_label_nos.size() >= 2);
@@ -623,130 +649,61 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             assert(old_label_nos[j] < num_labels);
         }
 
-        if (only_equivalent_labels) {
-            /*
-              Here we handle those transitions systems for which we know that
-              only locally equivalent labels are combined which means that
-              the new label has the same transitions as the reduced ones.
-            */
-
-            /*
-              Remove all existing labels from their group.
-            */
-            LabelGroupIter canonical_group_it = get_group_it(old_label_nos[0]);
-            for (size_t i = 0; i < old_label_nos.size(); ++i) {
-                int label_no = old_label_nos[i];
-                assert(get_group_it(label_no) == canonical_group_it);
-                LabelIter label_it = get_label_it(label_no);
-                canonical_group_it->erase(label_it);
-                // Note: we cannot invalidate the tupel label_to_positions[label_no]
-            }
-
-            /*
-              Add the new label to the group and add an entry to label_to_positions.
-              The cost of the group does not need to be updated.
-            */
-            add_label_to_group(canonical_group_it, new_label_no, false);
-        } else {
-            /*
-              Here we handle those label reductions for which not all
-              reduced labels have necessarily been locally equivalent before.
-
-              Note that we have to do this in a two-fold manner: first, we
-              compute the new transitions from the old ones and delete the
-              entries for both the reduced labels and their transitions. In
-              a second iteration, we test for all new labels and their
-              transitions if they are locally equivalent with others. If we
-              did so for every "single" label mapping immediately, we would
-              miss the case that new labels can be locally equivalent to each
-              other. The alternative would be to perform a "full" computation
-              of locally equivalent labels afterwards.
-            */
-
-            // collected_transitions collects all transitions from all old labels
-            set<Transition> collected_transitions;
-            for (size_t j = 0; j < old_label_nos.size(); ++j) {
-                int old_label_no = old_label_nos[j];
+        /*
+          Remove all existing labels from their group(s) and possibly the
+          groups themselves.
+        */
+        LabelGroupIter canonical_group_it = get_group_it(old_label_nos[0]);
+        // We use a set to collect the reduced label's transitions so that they are sorted.
+        set<Transition> collected_transitions;
+        for (size_t i = 0; i < old_label_nos.size(); ++i) {
+            int label_no = old_label_nos[i];
+            LabelGroupIter group_it = get_group_it(label_no);
+            if (only_equivalent_labels) {
+                assert(group_it == canonical_group_it);
+            } else {
                 const vector<Transition> &old_transitions =
-                    get_group_it(old_label_no)->get_const_transitions();
+                    group_it->get_const_transitions();
                 collected_transitions.insert(old_transitions.begin(), old_transitions.end());
             }
-            transitions_of_groups[new_label_no].assign(
-                collected_transitions.begin(), collected_transitions.end());
-
-            /*
-              Remove all existing labels from their group (and the group itself if
-              it becomes empty). We store all groups from which we removed labels
-              to recompute their cost later.
-            */
-            for (size_t i = 0; i < old_label_nos.size(); ++i) {
-                int label_no = old_label_nos[i];
-                LabelGroupIter group_it = get_group_it(label_no);
-                LabelGroup &group = *group_it;
-                LabelIter label_it = get_label_it(label_no);
-                group.erase(label_it);
-                // Note: we cannot invalidate the tupel label_to_positions[label_no]
-                if (group.empty()) {
-                    vector<Transition>().swap(group.get_transitions());
-                    affected_groups.erase(&group);
+            LabelIter label_it = get_label_it(label_no);
+            group_it->erase(label_it);
+            // Note: we cannot invalidate the tupel label_to_positions[label_no]
+            if (!only_equivalent_labels) {
+                if (group_it->empty()) {
+                    release_vector_memory(group_it->get_transitions());
                     grouped_labels.erase(group_it);
-                } else {
-                    affected_groups.insert(&group);
                 }
             }
+        }
+
+        if (only_equivalent_labels) {
+            // No need to update the group's cost due to the assumption of exact label reduction.
+            add_label_to_group(canonical_group_it, new_label_no, false);
+        } else {
+            transitions_of_groups[new_label_no].assign(
+                collected_transitions.begin(), collected_transitions.end());
+            LabelGroupIter group_it =
+                add_empty_label_group(&transitions_of_groups[new_label_no]);
+            add_label_to_group(group_it, new_label_no);
         }
         ++num_labels;
     }
 
     if (!only_equivalent_labels) {
-        /*
-          For every new label, find existing locally equivalent labels or add
-          a new own group for it.
-        */
-        for (size_t i = 0; i < label_mapping.size(); ++i) {
-            // We use the new label number as index for transitions of groups
-            int new_label_no = label_mapping[i].first;
-            const vector<Transition> &new_transitions = transitions_of_groups[new_label_no];
-            bool found_equivalent_labels = false;
-            for (LabelGroupIter group_it = grouped_labels.begin();
-                 group_it != grouped_labels.end(); ++group_it) {
-                const vector<Transition> &other_transitions = group_it->get_const_transitions();
-                if ((new_transitions.empty() && other_transitions.empty())
-                    || (new_transitions == other_transitions)) {
-                    found_equivalent_labels = true;
-                    add_label_to_group(group_it, new_label_no);
-                    vector<Transition>().swap(transitions_of_groups[new_label_no]);
-                    break;
-                }
-            }
-            if (!found_equivalent_labels) {
-                LabelGroupIter group_it =
-                    add_empty_label_group(&transitions_of_groups[new_label_no]);
-                add_label_to_group(group_it, new_label_no);
-                /*
-                  We do not need to check if the label's cost is less than the
-                  group's cost, because we just created it (cost = INF), but
-                  this should be inexpensive.
-                */
-            }
-        }
-
-        /*
-          For every label group where we removed a label from, recompute
-          the cost.
-        */
-        for (auto affected_groups_it = affected_groups.begin();
-             affected_groups_it != affected_groups.end(); ++affected_groups_it) {
-            LabelGroup &group = **affected_groups_it;
-            group.set_cost(INF);
-            for (LabelConstIter label_it = group.begin();
-                 label_it != group.end(); ++label_it) {
+        // Recompute the cost all label groups.
+        for (LabelGroupIter group_it = grouped_labels.begin();
+             group_it != grouped_labels.end(); ++group_it) {
+            group_it->set_cost(INF);
+            for (LabelConstIter label_it = group_it->begin();
+                 label_it != group_it->end(); ++label_it) {
                 int cost = labels->get_label_cost(*label_it);
-                if (cost < group.get_cost()) {
-                    group.set_cost(cost);
+                if (cost < group_it->get_cost()) {
+                    group_it->set_cost(cost);
                 }
             }
         }
+        compute_locally_equivalent_labels();
     }
 
     assert(is_valid());
@@ -754,8 +711,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
 void TransitionSystem::release_memory() {
     list<LabelGroup>().swap(grouped_labels);
-    vector<vector<Transition> >().swap(transitions_of_groups);
-    vector<tuple<LabelGroupIter, LabelIter> >().swap(label_to_positions);
+    release_vector_memory(transitions_of_groups);
+    release_vector_memory(label_to_positions);
 }
 
 string TransitionSystem::tag() const {
@@ -1020,8 +977,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
-            // TODO: test against overflow? pitfall: transitions could be empty!
-            if (transitions1.size() * transitions2.size() > new_transitions.max_size())
+            if (transitions1.size() && transitions2.size()
+                && transitions1.size() > new_transitions.max_size() / transitions2.size())
                 exit_with(EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {
