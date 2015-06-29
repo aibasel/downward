@@ -33,16 +33,16 @@ class PotentialHeuristics: public Heuristic {
 
     // Remove all samples for which the heuristic achieves maximal values.
     void filter_covered_samples(
-            std::vector<GlobalState> &samples,
-            const std::unordered_map<StateID, int> &sample_to_max_h,
             const std::shared_ptr<Heuristic> heuristic,
+            std::vector<GlobalState> &samples,
+            std::unordered_map<StateID, int> &sample_to_max_h,
             std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
 
     /* Iteratively try to find potential heuristics that achieve maximal values
        for as many samples as possible. */
     void cover_samples(
         std::vector<GlobalState> &samples,
-        const std::unordered_map<StateID, int> &sample_to_max_h,
+        std::unordered_map<StateID, int> &sample_to_max_h,
         std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics);
 
     // Sample states, then cover them.
