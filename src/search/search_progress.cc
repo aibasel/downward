@@ -32,14 +32,15 @@ bool SearchProgress::process_heuristic_value(const Heuristic *heuristic, int h) 
 }
 
 bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
-    bool result = false;
+    bool progress = false;
     eval_context.get_cache().for_each_heuristic_value(
-        [this, &result](const Heuristic *heur, int h) {
+        [this, &progress](const Heuristic *heur, const EvaluationResult &result) {
+        int h = result.get_h_value();
         if (process_heuristic_value(heur, h)) {
             cout << "New best heuristic value for "
                  << heur->get_description() << ": " << h << endl;
-            result = true;
+            progress = true;
         }
     });
-    return result;
+    return progress;
 }

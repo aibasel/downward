@@ -35,8 +35,7 @@ public:
             const EvaluationResult &result = element.second;
             const Heuristic *heuristic = dynamic_cast<const Heuristic *>(eval);
             if (heuristic) {
-                int h = result.get_h_value();
-                callback(heuristic, h);
+                callback(heuristic, result);
             }
         }
     }
