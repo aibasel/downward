@@ -11,7 +11,7 @@ class PotentialHeuristic : public Heuristic {
 
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 
 public:
     PotentialHeuristic(const Options &options,

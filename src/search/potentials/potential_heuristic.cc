@@ -1,7 +1,7 @@
 #include "potential_heuristic.h"
 
-#include "../global_state.h"
-#include "../globals.h" // TODO: Remove.
+#include "../task_proxy.h"
+#include "../utilities.h"
 
 #include <cmath>
 
@@ -18,13 +18,17 @@ PotentialHeuristic::PotentialHeuristic(
 void PotentialHeuristic::initialize() {
 }
 
-int PotentialHeuristic::compute_heuristic(const GlobalState &state) {
+int PotentialHeuristic::compute_heuristic(const GlobalState &global_state) {
+    const State state = convert_global_state(global_state);
     double heuristic_value = 0.0;
-    int num_vars = g_variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        heuristic_value += fact_potentials[var][state[var]];
+    for (FactProxy fact : state) {
+        int var_id = fact.get_variable().get_id();
+        int value = fact.get_value();
+        assert(in_bounds(var_id, fact_potentials));
+        assert(in_bounds(value, fact_potentials[var_id]));
+        heuristic_value += fact_potentials[var_id][value];
     }
-    double epsilon = 0.01;
+    const double epsilon = 0.01;
     return static_cast<int>(max(0.0, ceil(heuristic_value - epsilon)));
 }
 }
