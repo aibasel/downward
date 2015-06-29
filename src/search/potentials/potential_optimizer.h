@@ -2,6 +2,7 @@
 #define POTENTIALS_POTENTIAL_OPTIMIZER_H
 
 #include "../lp_solver.h"
+#include "../task_proxy.h"
 
 #include <memory>
 #include <vector>
@@ -12,12 +13,15 @@ class Options;
 
 namespace potentials {
 class PotentialOptimizer {
+    std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
     LPSolver lp_solver;
     const double max_potential;
     int num_lp_vars;
     std::vector<std::vector<int> > lp_var_ids;
     std::vector<std::vector<double> > fact_potentials;
 
+    int get_lp_var_id(const FactProxy &fact) const;
     void initialize();
     void construct_lp();
     void set_lp_objective(const std::vector<double> &coefficients);
