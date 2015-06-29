@@ -362,7 +362,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
 }
 
 void PatternGenerationHaslum::initialize() {
-    // calculate average operator costs
+    // Calculate average operator costs.
     double average_operator_cost = 0;
     for (const OperatorProxy &op : task_proxy.get_operators()) {
         average_operator_cost += op.get_cost();
@@ -370,7 +370,7 @@ void PatternGenerationHaslum::initialize() {
     average_operator_cost /= task_proxy.get_operators().size();
     cout << "Average operator cost: " << average_operator_cost << endl;
 
-    // initial collection: a pdb for each goal variable
+    // Generate initial collection: a pdb for each goal variable.
     vector<vector<int> > initial_pattern_collection;
     for (const FactProxy &goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
@@ -385,46 +385,53 @@ void PatternGenerationHaslum::initialize() {
     if (current_heuristic->is_dead_end())
         return;
 
-    // initial candidate patterns, computed separately for each pattern from the initial collection
+    /* Generate initial candidate patterns (based on each pattern from
+       the initial collection). */
     vector<vector<int> > initial_candidate_patterns;
     for (const PDBHeuristic *current_pdb :
          current_heuristic->get_pattern_databases()) {
         generate_candidate_patterns(current_pdb, initial_candidate_patterns);
     }
-    // remove duplicates in the candidate list
+    // Remove duplicates in the candidate list.
     sort(initial_candidate_patterns.begin(), initial_candidate_patterns.end());
     initial_candidate_patterns.erase(unique(initial_candidate_patterns.begin(),
                                             initial_candidate_patterns.end()),
                                      initial_candidate_patterns.end());
-    cout << "done calculating initial pattern collection and candidate patterns for the search" << endl;
+    cout << "done calculating initial pattern collection and "
+         << "candidate patterns for the search" << endl;
 
-    // call to this method modifies initial_candidate_patterns (contains the new_candidates
-    // after each call to generate_candidate_patterns)
     if (max_time > 0)
+        /* A call to the following method modifies initial_candidate_patterns
+           (contains the new_candidates after each call to
+           generate_candidate_patterns) */
         hill_climbing(average_operator_cost, initial_candidate_patterns);
 }
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
-        "This pattern generation method is an adaption of the algorithm described "
-        "in the following paper:\n\n"
-        " * Patrik Haslum, Adi Botea, Malte Helmert, Blai Bonet and Sven Koenig.<<BR>>\n"
-        " [Domain-Independent Construction of Pattern Database Heuristics for Cost-Optimal "
-        "Planning http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf].<<BR>>\n"
-        " In //Proceedings of the 22nd AAAI Conference on Artificial Intelligence (AAAI 2007)//, "
-        "pp. 1007-1012. AAAI Press 2007.\n"
+        "This pattern generation method is an adaption of the algorithm "
+        "described in the following paper:\n\n"
+        " * Patrik Haslum, Adi Botea, Malte Helmert, Blai Bonet and "
+        "Sven Koenig.<<BR>>\n"
+        " [Domain-Independent Construction of Pattern Database Heuristics for "
+        "Cost-Optimal Planning http://www.informatik.uni-freiburg.de/~ki"
+        "/papers/haslum-etal-aaai07.pdf].<<BR>>\n "
+        "In //Proceedings of the 22nd AAAI Conference on Artificial "
+        "Intelligence (AAAI 2007)//, pp. 1007-1012. AAAI Press 2007.\n"
         "For implementation notes, see also this paper:\n\n"
         " * Silvan Sievers, Manuela Ortlieb and Malte Helmert.<<BR>>\n"
-        " [Efficient Implementation of Pattern Database Heuristics for Classical Planning "
+        " [Efficient Implementation of Pattern Database Heuristics for "
+        "Classical Planning "
         "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf].<<BR>>\n"
-        " In //Proceedings of the Fifth Annual Symposium on Combinatorial Search (SoCS 2012)//, "
+        " In //Proceedings of the Fifth Annual Symposium on Combinatorial "
+        "Search (SoCS 2012)//, "
         "pp. 105-111. AAAI Press 2012.\n");
     parser.document_note(
         "Note",
         "The pattern collection created by the algorithm will always contain "
-        "all patterns consisting of a single goal variable, even if this violates "
-        "the pdb_max_size or collection_max_size limits.");
+        "all patterns consisting of a single goal variable, even if this "
+        "violates the pdb_max_size or collection_max_size limits.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
@@ -434,43 +441,55 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
     parser.document_note(
         "Note",
-        "This pattern generation method uses the canonical pattern collection heuristic.");
+        "This pattern generation method uses the canonical pattern collection "
+        "heuristic.");
     parser.document_note(
         "Implementation Notes",
-        "The following will very briefly describe the algorithm and explain the differences "
-        "between the original implementation from 2007 and the new one in Fast Downward.\n\n"
-        "The aim of the algorithm is to output a pattern collection for which the "
-        "Heuristic#Canonical_PDB yields the best heuristic estimates.\n\n"
-        "The algorithm is basically a local search (hill climbing) which searches the "
-        "\"pattern neighbourhood\" (starting initially with a pattern for each goal variable) "
-        "for improving the pattern collection. This is done exactly as described in the "
-        "section \"pattern construction as search\" in the paper. For evaluating the "
-        "neighbourhood, the \"counting approximation\" as introduced in the paper was "
-        "implemented. An important difference however consists in the fact that this "
-        "implementation computes all pattern databases for each candidate pattern rather than "
-        "using A* search to compute the heuristic values only for the sample states for each "
-        "pattern.\n\nAlso the logic for sampling the search space differs a bit from the "
-        "original implementation. The original implementation uses a random walk of a length "
-        "which is binomially distributed with the mean at the estimated solution depth "
-        "(estimation is done with the current pattern collection heuristic). In the Fast "
-        "Downward implementation, also a random walk is used, where the length is the "
-        "estimation of the number of solution steps, which is calculated by dividing the "
-        "current heuristic estimate for the initial state by the average operator costs of "
-        "the planning task (calculated only once and not updated during sampling!) to take "
-        "non-unit cost problems into account. This yields a random walk of an expected lenght "
-        "of np = 2 * estimated number of solution steps. If the random walk gets stuck, it is "
-        "being restarted from the initial state, exactly as described in the original paper.\n\n"
-        "The section \"avoiding redundant evaluations\" describes how the search neighbourhood "
-        "of patterns can be restricted to variables that are somewhat relevant to the variables "
-        "already included in the pattern by analyzing causal graphs. This is also implemented "
-        "in Fast Downward, but we only consider precondition-to-effect arcs of the causal graph, "
-        "ignoring effect-to-effect arcs. The second approach described in the paper (statistical "
-        "confidence interval) is not applicable to this implementation, as it doesn't use A* "
-        "search but constructs the entire pattern databases for all candidate patterns anyway.\n"
-        "The search is ended if there is no more improvement (or the improvement is smaller "
-        "than the minimal improvement which can be set as an option), however there is no "
-        "limit of iterations of the local search. This is similar to the techniques used in "
-        "the original implementation as described in the paper.", true);
+        "The following will very briefly describe the algorithm and explain "
+        "the differences between the original implementation from 2007 and the "
+        "new one in Fast Downward.\n\n"
+        "The aim of the algorithm is to output a pattern collection for which "
+        "the Heuristic#Canonical_PDB yields the best heuristic estimates.\n\n"
+        "The algorithm is basically a local search (hill climbing) which "
+        "searches the \"pattern neighbourhood\" (starting initially with a "
+        "pattern for each goal variable) for improving the pattern collection. "
+        "This is done exactly as described in the section \"pattern "
+        "construction as search\" in the paper. For evaluating the "
+        "neighbourhood, the \"counting approximation\" as introduced in the "
+        "paper was implemented. An important difference however consists in "
+        "the fact that this implementation computes all pattern databases for "
+        "each candidate pattern rather than using A* search to compute the "
+        "heuristic values only for the sample states for each pattern.\n\n"
+        "Also the logic for sampling the search space differs a bit from the "
+        "original implementation. The original implementation uses a random "
+        "walk of a length which is binomially distributed with the mean at the "
+        "estimated solution depth (estimation is done with the current pattern "
+        "collection heuristic). In the Fast Downward implementation, also a "
+        "random walk is used, where the length is the estimation of the number "
+        "of solution steps, which is calculated by dividing the current "
+        "heuristic estimate for the initial state by the average operator "
+        "costs of the planning task (calculated only once and not updated "
+        "during sampling!) to take non-unit cost problems into account. This "
+        "yields a random walk of an expected lenght of np = 2 * estimated "
+        "number of solution steps. If the random walk gets stuck, it is being "
+        "restarted from the initial state, exactly as described in the "
+        "original paper.\n\n"
+        "The section \"avoiding redundant evaluations\" describes how the "
+        "search neighbourhood of patterns can be restricted to variables that "
+        "are somewhat relevant to the variables already included in the "
+        "pattern by analyzing causal graphs. This is also implemented in Fast "
+        "Downward, but we only consider precondition-to-effect arcs of the "
+        "causal graph, ignoring effect-to-effect arcs. The second approach "
+        "described in the paper (statistical confidence interval) is not "
+        "applicable to this implementation, as it doesn't use A* search but "
+        "constructs the entire pattern databases for all candidate patterns "
+        "anyway.\n"
+        "The search is ended if there is no more improvement (or the "
+        "improvement is smaller than the minimal improvement which can be set "
+        "as an option), however there is no limit of iterations of the local "
+        "search. This is similar to the techniques used in the original "
+        "implementation as described in the paper.",
+        true);
 
     parser.add_option<int>("pdb_max_size",
                            "maximal number of states per pattern database ",
@@ -479,14 +498,19 @@ static Heuristic *_parse(OptionParser &parser) {
                            "maximal number of states in the pattern collection",
                            "20000000");
     parser.add_option<int>("num_samples",
-                           "number of samples (random states) on which to evaluate each candidate pattern collection",
+                           "number of samples (random states) on which to "
+                           "evaluate each candidate pattern collection",
                            "1000");
     parser.add_option<int>("min_improvement",
-                           "minimum number of samples on which a candidate pattern collection must improve on the "
-                           "current one to be considered as the next pattern collection ", "10");
+                           "minimum number of samples on which a candidate "
+                           "pattern collection must improve on the current one "
+                           "to be considered as the next pattern collection ",
+                           "10");
     parser.add_option<double>("max_time",
-                              "maximum time in seconds for improving the initial pattern "
-                              "collection via hill climbing. If set to 0, no hill climbing is performed at all.",
+                              "maximum time in seconds for improving the "
+                              "initial pattern collection via hill climbing. "
+                              "If set to 0, no hill climbing is performed at "
+                              "all.",
                               "infinity");
 
     Heuristic::add_options_to_parser(parser);
@@ -501,7 +525,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (opts.get<int>("min_improvement") < 1)
         parser.error("minimum improvement must be at least 1");
     if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
-        parser.error("minimum improvement must not be higher than number of samples");
+        parser.error("minimum improvement must not be higher than number of "
+                     "samples");
 
     if (parser.dry_run())
         return 0;
