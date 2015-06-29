@@ -10,9 +10,7 @@
 #include "../state_registry.h"
 #include "../timer.h"
 
-#include <cmath>
 #include <numeric>
-#include <unordered_map>
 
 using namespace std;
 
@@ -181,7 +179,7 @@ void PotentialHeuristics::find_diverse_heuristics() {
 
 static Heuristic *_parse(OptionParser &parser) {
     add_lp_solver_option_to_parser(parser);
-    add_common_potential_options_to_parser(parser);
+    add_common_potentials_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     parser.add_option<bool>(
         "diversify",

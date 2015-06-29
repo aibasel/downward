@@ -36,7 +36,7 @@ void PotentialOptimizer::initialize() {
     fact_potentials.resize(g_variable_domain.size());
     int num_vars = g_variable_domain.size();
     for (int var = 0; var < num_vars; ++var) {
-        // Include dummy value for "unknown" value.
+        // Add LP variable for "unknown" value.
         lp_var_ids[var].resize(g_variable_domain[var] + 1);
         for (int val = 0; val < g_variable_domain[var] + 1; ++val) {
             lp_var_ids[var][val] = num_lp_vars++;
@@ -247,7 +247,7 @@ shared_ptr<Heuristic> create_potential_heuristic(const Options &opts) {
     return optimizer.get_heuristic();
 }
 
-void add_common_potential_options_to_parser(OptionParser &parser) {
+void add_common_potentials_options_to_parser(OptionParser &parser) {
     vector<string> opt_funcs;
     vector<string> opt_funcs_doc;
     opt_funcs.push_back("INITIAL_STATE");
@@ -281,7 +281,7 @@ void add_common_potential_options_to_parser(OptionParser &parser) {
 
 static Heuristic *_parse(OptionParser &parser) {
     add_lp_solver_option_to_parser(parser);
-    add_common_potential_options_to_parser(parser);
+    add_common_potentials_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
