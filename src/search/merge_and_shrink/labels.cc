@@ -187,7 +187,7 @@ void Labels::reduce(pair<int, int> next_merge,
         }
         delete relation;
         relation = 0;
-        vector<pair<int, vector<int> > >().swap(label_mapping);
+        release_vector_memory(label_mapping);
 
         relation = compute_combinable_equivalence_relation(
             next_merge.second,

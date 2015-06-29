@@ -3,6 +3,7 @@
 #include "pdb_heuristic.h"
 #include "util.h"
 
+#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../utilities.h"
@@ -59,14 +60,21 @@ void ZeroOnePDBsHeuristic::initialize() {
 }
 
 int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
-    // since we use action cost partitioning, we can simply add up all h-values
-    // from the patterns in the pattern collection
+    /*
+      Because we use cost partitioning, we can simply add up all
+      heuristic values of all patterns in the pattern collection.
+
+      The use of evaluation contexts maybe makes this a bit less
+      efficient than it ought to be. See discussion in
+      CanonicalPDBsHeuristic::compute_heuristic.
+    */
+
+    EvaluationContext eval_context(global_state);
     int h_val = 0;
-    for (PDBHeuristic *pdb_heuristic : pattern_databases) {
-        pdb_heuristic->evaluate(global_state);
-        if (pdb_heuristic->is_dead_end())
+    for (PDBHeuristic *pdb : pattern_databases) {
+        if (eval_context.is_heuristic_infinite(pdb))
             return -1;
-        h_val += pdb_heuristic->get_heuristic();
+        h_val += eval_context.get_heuristic_value(pdb);
     }
     return h_val;
 }

@@ -1,47 +1,48 @@
 #include "combining_evaluator.h"
 
-#include <limits>
+#include "evaluation_context.h"
+#include "evaluation_result.h"
 
 using namespace std;
 
+
 CombiningEvaluator::CombiningEvaluator(
     const vector<ScalarEvaluator *> &subevaluators_)
-    : subevaluators(subevaluators_),
-      subevaluator_values(subevaluators_.size()) {
+    : subevaluators(subevaluators_) {
+    all_dead_ends_are_reliable = true;
+    for (const ScalarEvaluator *subevaluator : subevaluators)
+        if (!subevaluator->dead_ends_are_reliable())
+            all_dead_ends_are_reliable = false;
 }
 
 CombiningEvaluator::~CombiningEvaluator() {
 }
 
-void CombiningEvaluator::evaluate(int g, bool preferred) {
-    dead_end = false;
-    dead_end_reliable = false;
-    for (size_t i = 0; i < subevaluators.size(); ++i) {
-        subevaluators[i]->evaluate(g, preferred);
-        subevaluator_values[i] = subevaluators[i]->get_value();
-        if (subevaluators[i]->is_dead_end()) {
-            dead_end = true;
-            if (subevaluators[i]->dead_end_is_reliable())
-                dead_end_reliable = true;
+bool CombiningEvaluator::dead_ends_are_reliable() const {
+    return all_dead_ends_are_reliable;
+}
+
+EvaluationResult CombiningEvaluator::compute_result(
+    EvaluationContext &eval_context) {
+    // This marks no preferred operators.
+    EvaluationResult result;
+    vector<int> values;
+    values.reserve(subevaluators.size());
+
+    // Collect component values. Return infinity if any is infinite.
+    for (ScalarEvaluator *subevaluator : subevaluators) {
+        int h_val = eval_context.get_heuristic_value_or_infinity(subevaluator);
+        if (h_val == EvaluationResult::INFINITE) {
+            result.set_h_value(h_val);
+            return result;
+        } else {
+            values.push_back(h_val);
         }
     }
 
-    if (dead_end)
-        value = numeric_limits<int>::max();
-    else
-        value = combine_values(subevaluator_values);
-}
-
-bool CombiningEvaluator::is_dead_end() const {
-    return dead_end;
-}
-
-bool CombiningEvaluator::dead_end_is_reliable() const {
-    return dead_end_reliable;
-}
-
-int CombiningEvaluator::get_value() const {
-    return value;
+    // If we arrived here, all subevaluator values are finite.
+    result.set_h_value(combine_values(values));
+    return result;
 }
 
 void CombiningEvaluator::get_involved_heuristics(std::set<Heuristic *> &hset) {
