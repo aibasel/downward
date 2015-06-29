@@ -106,11 +106,16 @@ void print_initial_h_values(const EvaluationContext &eval_context) {
     assert(!eval_context.get_cache().get_eval_results().empty());
     for (const auto &element : eval_context.get_cache().get_eval_results()) {
         const ScalarEvaluator *evaluator = element.first;
-        int h = element.second.get_h_value();
+        const EvaluationResult &result = element.second;
         const Heuristic *heuristic = dynamic_cast<const Heuristic *>(evaluator);
         if (heuristic) {
             cout << "Initial heuristic value for "
-                 << heuristic->get_description() << ": " << h << endl;
+                 << heuristic->get_description() << ": ";
+            if (result.is_infinite())
+                cout << "infinity";
+            else
+                cout << result.get_h_value();
+            cout << endl;
         }
     }
 }
