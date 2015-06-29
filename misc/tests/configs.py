@@ -30,14 +30,14 @@ def configs_optimal_core():
             "--search",
             "astar(merge_and_shrink(merge_strategy=merge_dfp,"
             "shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,"
-            "greedy=false,group_by_h=true),"
+            "greedy=false),"
             "label_reduction=label_reduction(before_shrinking=true,"
             "before_merging=false)))"],
         "astar_merge_and_shrink_dfp_greedy_bisim": [
             "--search",
             "astar(merge_and_shrink(merge_strategy=merge_dfp,"
             "shrink_strategy=shrink_bisimulation(max_states=infinity,threshold=1,"
-            "greedy=true,group_by_h=false),"
+            "greedy=true),"
             "label_reduction=label_reduction(before_shrinking=true,"
             "before_merging=false)))"],
         "astar_selmax_lmcut_lmcount": [
@@ -51,8 +51,7 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
         'shrink_strategy=shrink_bisimulation('
          'max_states=50000,'
         'threshold=1,'
-        'greedy=false,'
-        'group_by_h=true),'
+        'greedy=false),'
     'label_reduction=label_reduction('
         'before_shrinking=true,'
         'before_merging=false)'
@@ -187,14 +186,14 @@ def configs_satisficing_extended():
             "--heuristic",
             "h=ff()",
             "--search",
-            "eager(pareto([sum([g(), h]), h]), reopen_closed=true, pathmax=false,"
+            "eager(pareto([sum([g(), h]), h]), reopen_closed=true,"
             "f_eval=sum([g(), h]))"],
         # bucket-based open list
         "bucket_lmcut": [
             "--heuristic",
             "h=lmcut()",
             "--search",
-            "eager(single_buckets(h), reopen_closed=true, pathmax=false)"],
+            "eager(single_buckets(h), reopen_closed=true)"],
     }
 
 
