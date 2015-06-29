@@ -9,7 +9,6 @@
 #include <cassert>
 #include <algorithm>
 
-//class GlobalOperator;
 class GlobalState;
 
 namespace POR {

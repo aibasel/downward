@@ -21,35 +21,6 @@ enum PORMethodEnum {
     SSS_EXPANSION_CORE = 2
 };
 
-struct ExpansionCoreDTG {
-    struct Arc {
-        Arc(int target_value_, int operator_no_)
-            : target_value(target_value_),
-              operator_no(operator_no_) {
-        }
-        int target_value;
-        int operator_no;
-    };
-
-    struct Node {
-        std::vector<Arc> outgoing;
-        std::vector<Arc> incoming;
-    };
-
-    std::vector<Node> nodes;
-    std::vector<bool> goal_values;
-
-    void recurse_forwards(int value, std::vector<bool> &reachable) const;
-    void recurse_backwards(int value, std::vector<bool> &relevant) const;
-public:
-    ExpansionCoreDTG();
-    ~ExpansionCoreDTG();
-
-    void forward_reachability_analysis(int start_value,
-                                       std::vector<bool> &reachable) const;
-    void backward_relevance_analysis(std::vector<bool> &relevant) const;
-};
-
 class PORMethod {
 public:
     PORMethod();
