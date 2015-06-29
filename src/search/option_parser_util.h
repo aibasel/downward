@@ -393,7 +393,7 @@ public:
         try {
             T result = boost::any_cast<T>(it->second);
             return result;
-        } catch (const boost::bad_any_cast &bac) {
+        } catch (const boost::bad_any_cast &) {
             std::cout << "Invalid conversion while retrieving config options!"
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
