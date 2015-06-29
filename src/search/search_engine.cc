@@ -103,7 +103,7 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
 }
 
 void print_initial_h_values(const EvaluationContext &eval_context) {
-    assert(!eval_context.get_cache().get_eval_results().empty());
+    assert(!eval_context.get_cache().empty());
     eval_context.get_cache().for_each_heuristic_value(
         [](const Heuristic *heur, const EvaluationResult &result) {
         cout << "Initial heuristic value for "
