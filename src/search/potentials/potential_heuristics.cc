@@ -23,7 +23,6 @@ PotentialHeuristics::PotentialHeuristics(const Options &opts)
       num_samples(opts.get<int>("num_samples")),
       max_filtering_time(opts.get<double>("max_filtering_time")),
       max_covering_time(opts.get<double>("max_covering_time")),
-      debug(opts.get<bool>("debug")),
       optimizer(opts) {
 }
 
@@ -107,8 +106,7 @@ void PotentialHeuristics::filter_covered_samples(
         int max_h = sample_to_max_h.at(sample.get_id());
         int h = EvaluationContext(sample).get_heuristic_value(heuristic.get());
         assert(h <= max_h);
-        if (debug)
-            cout << h << "/" << max_h << endl;
+        // TODO: Count as covered if max_h <= 0.
         if (h == max_h) {
             sample_to_max_h.erase(sample.get_id());
             single_heuristics.erase(sample.get_id());

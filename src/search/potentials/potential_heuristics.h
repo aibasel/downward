@@ -20,7 +20,6 @@ class PotentialHeuristics: public Heuristic {
     const int num_samples;
     const double max_filtering_time;
     const double max_covering_time;
-    const bool debug;
     mutable PotentialOptimizer optimizer;
     std::vector<std::shared_ptr<Heuristic> > heuristics;
 
