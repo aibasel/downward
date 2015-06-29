@@ -100,9 +100,9 @@ void PotentialHeuristics::filter_dead_ends_and_duplicates(
 }
 
 void PotentialHeuristics::filter_covered_samples(
-        vector<GlobalState> &samples,
-        const unordered_map<StateID, int> &sample_to_max_h,
         const std::shared_ptr<Heuristic> heuristic,
+        vector<GlobalState> &samples,
+        unordered_map<StateID, int> &sample_to_max_h,
         unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
     vector<GlobalState> not_covered_samples;
     for (const GlobalState &sample : samples) {
@@ -112,6 +112,7 @@ void PotentialHeuristics::filter_covered_samples(
         if (debug)
             cout << h << "/" << max_h << endl;
         if (h == max_h) {
+            sample_to_max_h.erase(sample.get_id());
             single_heuristics.erase(sample.get_id());
         } else {
             not_covered_samples.push_back(sample);
@@ -122,7 +123,7 @@ void PotentialHeuristics::filter_covered_samples(
 
 void PotentialHeuristics::cover_samples(
         vector<GlobalState> &samples,
-        const unordered_map<StateID, int> &sample_to_max_h,
+        unordered_map<StateID, int> &sample_to_max_h,
         unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) {
     CountdownTimer covering_timer(max_covering_time);
     while (!samples.empty() && static_cast<int>(heuristics.size()) < max_num_heuristics) {
@@ -134,7 +135,7 @@ void PotentialHeuristics::cover_samples(
         optimizer.optimize_for_samples(samples);
         shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
         size_t last_num_samples = samples.size();
-        filter_covered_samples(samples, sample_to_max_h, group_heuristic, single_heuristics);
+        filter_covered_samples(group_heuristic, samples, sample_to_max_h, single_heuristics);
         if (samples.size() < last_num_samples) {
             heuristics.push_back(group_heuristic);
         } else {
@@ -142,7 +143,7 @@ void PotentialHeuristics::cover_samples(
             StateID state_id = g_rng.choose(samples)->get_id();
             shared_ptr<Heuristic> single_heuristic = single_heuristics[state_id];
             single_heuristics.erase(state_id);
-            filter_covered_samples(samples, sample_to_max_h, single_heuristic, single_heuristics);
+            filter_covered_samples(single_heuristic, samples, sample_to_max_h, single_heuristics);
             heuristics.push_back(single_heuristic);
         }
         cout << "Removed " << last_num_samples - samples.size()
