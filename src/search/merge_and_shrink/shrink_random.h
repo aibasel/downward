@@ -10,8 +10,9 @@ protected:
     virtual void partition_into_buckets(const TransitionSystem &ts, std::vector<Bucket> &buckets) const;
 
     virtual std::string name() const;
+    void dump_strategy_specific_options() const {}
 public:
-    ShrinkRandom(const Options &opts);
+    explicit ShrinkRandom(const Options &opts);
     virtual ~ShrinkRandom();
 };
 

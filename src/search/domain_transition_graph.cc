@@ -1,14 +1,16 @@
+#include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <map>
-#include <cassert>
-#include <ext/hash_map>
+#include <unordered_map>
+
 using namespace std;
-using namespace __gnu_cxx;
 
 #include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "globals.h"
 #include "utilities.h"
+#include "utilities_hash.h"
 
 
 void DomainTransitionGraph::read_all(istream &in) {
@@ -122,7 +124,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             // afterthought.
             sort(precond_pairs.begin(), precond_pairs.end());
 
-            hash_map<int, int> pre_map;
+            unordered_map<int, int> pre_map;
             const vector<GlobalCondition> &preconditions = the_operator->get_preconditions();
             for (size_t j = 0; j < preconditions.size(); ++j)
                 pre_map[preconditions[j].var] = preconditions[j].val;
@@ -131,7 +133,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             for (size_t j = 0; j < effects.size(); ++j) {
                 int var_no = effects[j].var;
                 int pre = -1;
-                hash_map<int, int>::const_iterator pre_it = pre_map.find(var_no);
+                auto pre_it = pre_map.find(var_no);
                 if (pre_it != pre_map.end())
                     pre = pre_it->second;
                 int post = effects[j].val;
@@ -160,7 +162,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                 }
             }
 
-#define TRACK_SIDE_EFFECTS true
+#define TRACK_SIDE_EFFECTS 1
 #if !TRACK_SIDE_EFFECTS
             cea_effect.clear();
 #endif
@@ -188,18 +190,6 @@ void DomainTransitionGraph::get_successors(int value, vector<int> &result) const
         result.push_back(transitions[i].target->value);
 }
 
-class hash_pair_vector {
-public:
-    size_t operator()(const vector<pair<int, int> > &vec) const {
-        unsigned long hash_value = 0;
-        for (size_t i = 0; i < vec.size(); ++i) {
-            hash_value = 17 * hash_value + vec[i].first;
-            hash_value = 17 * hash_value + vec[i].second;
-        }
-        return size_t(hash_value);
-    }
-};
-
 void ValueTransition::simplify() {
     simplify_labels(labels);
     simplify_labels(cea_labels);
@@ -210,19 +200,19 @@ void ValueTransition::simplify_labels(
     // Remove labels with duplicate or dominated conditions.
 
     /*
-      Algorithm: Put all transitions into a hash_map
+      Algorithm: Put all transitions into an unordered_map
       (key: condition, value: index in label list).
       This already gets rid of transitions with identical conditions.
 
-      Then go through the hash_map, checking for each element if
-      none of the subset conditions are part of the hash_map.
+      Then go through the unordered_map, checking for each element if
+      none of the subset conditions are part of the unordered_map.
       Put the element into the new labels list iff this is the case.
      */
 
     typedef vector<pair<int, int> > HashKey;
-    typedef hash_map<HashKey, int, hash_pair_vector> HashMap;
+    typedef unordered_map<HashKey, int> HashMap;
     HashMap label_index;
-    label_index.resize(label_vec.size() * 2);
+    label_index.reserve(label_vec.size());
 
     for (size_t i = 0; i < label_vec.size(); ++i) {
         HashKey key;

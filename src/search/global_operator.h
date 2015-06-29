@@ -2,10 +2,7 @@
 #define GLOBAL_OPERATOR_H
 
 #include "global_state.h"
-#include "globals.h"
-#include "utilities.h"
 
-#include <cassert>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -14,10 +11,7 @@ struct GlobalCondition {
     int var;
     int val;
     explicit GlobalCondition(std::istream &in);
-    GlobalCondition(int variable, int value) : var(variable), val(value) {
-        assert(in_bounds(var, g_variable_name));
-        assert(val >= 0 && val < g_variable_domain[var]);
-    }
+    GlobalCondition(int variable, int value);
 
     bool is_applicable(const GlobalState &state) const {
         return state[var] == val;
@@ -39,8 +33,7 @@ struct GlobalEffect {
     int val;
     std::vector<GlobalCondition> conditions;
     explicit GlobalEffect(std::istream &in);
-    GlobalEffect(int variable, int value, const std::vector<GlobalCondition> &conds)
-        : var(variable), val(value), conditions(conds) {}
+    GlobalEffect(int variable, int value, const std::vector<GlobalCondition> &conds);
 
     bool does_fire(const GlobalState &state) const {
         for (size_t i = 0; i < conditions.size(); ++i)
@@ -64,7 +57,7 @@ class GlobalOperator {
 public:
     explicit GlobalOperator(std::istream &in, bool is_axiom);
     void dump() const;
-    std::string get_name() const {return name; }
+    const std::string &get_name() const {return name; }
 
     bool is_axiom() const {return is_an_axiom; }
 

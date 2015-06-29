@@ -1,13 +1,14 @@
 #include "timer.h"
 #include "utilities.h"
 
+#include <iomanip>
 #include <ostream>
-#include <unistd.h>
 
 #if OPERATING_SYSTEM == WINDOWS
-#include <windows.h>
+#include "utilities_windows.h"
 #else
 #include <sys/times.h>
+#include <unistd.h>
 #endif
 
 using namespace std;
@@ -22,6 +23,7 @@ Timer::~Timer() {
 }
 
 double Timer::current_clock() const {
+    //TODO: use chrono too?
 #if OPERATING_SYSTEM == WINDOWS
     // http://nadeausoftware.com/articles/2012/03/c_c_tip_how_measure_cpu_time_benchmarking
     FILETIME createTime;
@@ -79,6 +81,6 @@ ostream &operator<<(ostream &os, const Timer &timer) {
         value = 0.0;  // We sometimes get inaccuracies from god knows where.
     if (value < 1e-10)
         value = 0.0;  // Don't care about such small values.
-    os << value << "s";
+    os << fixed << setprecision(2) << value << "s";
     return os;
 }

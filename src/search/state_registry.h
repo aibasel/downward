@@ -7,9 +7,10 @@
 #include "segmented_vector.h"
 #include "state_id.h"
 #include "utilities.h"
+#include "utilities_hash.h"
 
 #include <set>
-#include <ext/hash_set>
+#include <unordered_set>
 
 /*
   Overview of classes relevant to storing and working with registered states.
@@ -105,7 +106,7 @@ class StateRegistry {
             : state_data_pool(state_data_pool_) {
         }
         size_t operator()(StateID id) const {
-            return ::hash_number_sequence(state_data_pool[id.value], g_state_packer->get_num_bins());
+            return ::hash_sequence(state_data_pool[id.value], g_state_packer->get_num_bins());
         }
     };
 
@@ -115,7 +116,7 @@ class StateRegistry {
             : state_data_pool(state_data_pool_) {
         }
 
-        size_t operator()(StateID lhs, StateID rhs) const {
+        bool operator()(StateID lhs, StateID rhs) const {
             size_t size = g_state_packer->get_num_bins();
             const PackedStateBin *lhs_data = state_data_pool[lhs.value];
             const PackedStateBin *rhs_data = state_data_pool[rhs.value];
@@ -128,9 +129,9 @@ class StateRegistry {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    typedef __gnu_cxx::hash_set<StateID,
-                                StateIDSemanticHash,
-                                StateIDSemanticEqual> StateIDSet;
+    typedef std::unordered_set<StateID,
+                               StateIDSemanticHash,
+                               StateIDSemanticEqual> StateIDSet;
 
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;

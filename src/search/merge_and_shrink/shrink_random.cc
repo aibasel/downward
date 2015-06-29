@@ -17,10 +17,6 @@ ShrinkRandom::ShrinkRandom(const Options &opts)
 ShrinkRandom::~ShrinkRandom() {
 }
 
-string ShrinkRandom::name() const {
-    return "random";
-}
-
 void ShrinkRandom::partition_into_buckets(
     const TransitionSystem &ts, vector<Bucket> &buckets) const {
     assert(buckets.empty());
@@ -33,6 +29,10 @@ void ShrinkRandom::partition_into_buckets(
     assert(!big_bucket.empty());
 }
 
+string ShrinkRandom::name() const {
+    return "random";
+}
+
 static ShrinkStrategy *_parse(OptionParser &parser) {
     parser.document_synopsis("Random", "");
     ShrinkStrategy::add_options_to_parser(parser);
@@ -42,10 +42,10 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
 
     ShrinkStrategy::handle_option_defaults(opts);
 
-    if (!parser.dry_run())
-        return new ShrinkRandom(opts);
-    else
+    if (parser.dry_run())
         return 0;
+    else
+        return new ShrinkRandom(opts);
 }
 
 static Plugin<ShrinkStrategy> _plugin("shrink_random", _parse);

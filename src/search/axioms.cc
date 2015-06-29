@@ -3,6 +3,8 @@
 #include "globals.h"
 #include "int_packer.h"
 
+#include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <vector>
 

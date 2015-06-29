@@ -3,20 +3,22 @@
 
 #include "../heuristic.h"
 
-class TransitionSystem;
 class Labels;
 class MergeStrategy;
 class ShrinkStrategy;
+class TransitionSystem;
 
 class MergeAndShrinkHeuristic : public Heuristic {
     MergeStrategy *const merge_strategy;
     ShrinkStrategy *const shrink_strategy;
-    const bool use_expensive_statistics;
     Labels *labels;
+    const bool use_expensive_statistics;
+    int starting_peak_memory;
 
     TransitionSystem *final_transition_system;
     TransitionSystem *build_transition_system();
 
+    void report_peak_memory_delta(bool final = false) const;
     void dump_options() const;
     void warn_on_unusual_options() const;
 protected:

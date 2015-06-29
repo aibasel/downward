@@ -2,16 +2,16 @@
 #define OPEN_LISTS_TIEBREAKING_OPEN_LIST_H
 
 #include "open_list.h"
-#include "../evaluator.h"
 
 #include <deque>
 #include <map>
-#include <vector>
 #include <utility>
+#include <vector>
 
-class ScalarEvaluator;
-class Options;
 class OptionParser;
+class Options;
+class ScalarEvaluator;
+
 
 template<class Entry>
 class TieBreakingOpenList : public OpenList<Entry> {
@@ -21,36 +21,33 @@ class TieBreakingOpenList : public OpenList<Entry> {
     int size;
 
     std::vector<ScalarEvaluator *> evaluators;
-    std::vector<int> last_evaluated_value;
-    bool last_preferred;
-    bool dead_end;
-    bool first_is_dead_end;
-    bool dead_end_reliable;
-    bool allow_unsafe_pruning; // don't insert if main evaluator
-    // says dead end, even if not reliably
+    /*
+      If allow_unsafe_pruning is true, we ignore (don't insert) states
+      which the first evaluator considers a dead end, even if it is
+      not a safe heuristic.
+    */
+    bool allow_unsafe_pruning;
 
-    const std::vector<int> &get_value(); // currently not used
     int dimension() const;
+
 protected:
-    Evaluator *get_evaluator() {return this; }
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
 
 public:
-    TieBreakingOpenList(const Options &opts);
+    explicit TieBreakingOpenList(const Options &opts);
     TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
                         bool preferred_only, bool unsafe_pruning);
-    ~TieBreakingOpenList();
+    virtual ~TieBreakingOpenList() override = default;
 
-    // open list interface
-    int insert(const Entry &entry);
-    Entry remove_min(std::vector<int> *key = 0);
-    bool empty() const;
-    void clear();
-
-    // tuple evaluator interface
-    void evaluate(int g, bool preferred);
-    bool is_dead_end() const;
-    bool dead_end_is_reliable() const;
-    void get_involved_heuristics(std::set<Heuristic *> &hset);
+    virtual Entry remove_min(std::vector<int> *key = 0) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override;
 
     static OpenList<Entry> *_parse(OptionParser &parser);
 };
