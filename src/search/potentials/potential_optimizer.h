@@ -39,7 +39,7 @@ public:
     std::shared_ptr<Heuristic> get_heuristic() const;
 };
 
-void add_common_potential_options_to_parser(OptionParser &parser);
+void add_common_potentials_options_to_parser(OptionParser &parser);
 
 void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples);
 }
