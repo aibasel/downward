@@ -1,5 +1,28 @@
 # -*- coding: utf-8 -*-
 
+"""This module contains a function for simplifying tasks in
+finite-domain representation (SASTask). Usage:
+
+    simplify.filter_unreachable_propositions(sas_task)
+
+simplifies `sas_task` in-place. If simplification detects that the
+task is unsolvable, the function raises `simplify.Impossible`.
+
+The simplification procedure generates DTGs for the task and then
+removes facts that are unreachable from the initial state in a DTG.
+Note that such unreachable facts can exist even though we perform a
+relaxed reachability analysis before grounding (and DTG reachability
+is weaker than relaxed reachability) because the previous relaxed
+reachability does not take into account any mutex information, while
+PDDL-to-SAS conversion gets rid of certain operators that cannot be
+applicable given the mutex information.
+
+Despite the name, the method touches more than the set of facts. For
+example, operators that have preconditions on pruned facts are
+removed, too.
+"""
+
+
 from __future__ import print_function
 
 from collections import defaultdict
