@@ -8,6 +8,7 @@
 #include "../plugin.h"
 #include "../sampling.h"
 #include "../state_registry.h"
+#include "../task_tools.h"
 
 #include <cmath>
 #include <numeric>
@@ -23,25 +24,28 @@ enum class OptFunc {
 };
 
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
-    : lp_solver(LPSolverType(opts.get_enum("lpsolver"))),
+    : task(opts.get<shared_ptr<AbstractTask> >("transform")),
+      task_proxy(*task),
+      lp_solver(LPSolverType(opts.get_enum("lpsolver"))),
       max_potential(opts.get<double>("max_potential")),
       num_lp_vars(0) {
-    verify_no_axioms_no_conditional_effects();
+    verify_no_axioms(task_proxy);
+    verify_no_conditional_effects(task_proxy);
     initialize();
     construct_lp();
 }
 
 void PotentialOptimizer::initialize() {
-    lp_var_ids.resize(g_variable_domain.size());
-    fact_potentials.resize(g_variable_domain.size());
-    int num_vars = g_variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
+    VariablesProxy vars = task_proxy.get_variables();
+    lp_var_ids.resize(vars.size());
+    fact_potentials.resize(vars.size());
+    for (VariableProxy var : vars) {
         // Add LP variable for "unknown" value.
-        lp_var_ids[var].resize(g_variable_domain[var] + 1);
-        for (int val = 0; val < g_variable_domain[var] + 1; ++val) {
-            lp_var_ids[var][val] = num_lp_vars++;
+        lp_var_ids[var.get_id()].resize(var.get_domain_size() + 1);
+        for (int val = 0; val < var.get_domain_size() + 1; ++val) {
+            lp_var_ids[var.get_id()][val] = num_lp_vars++;
         }
-        fact_potentials[var].resize(g_variable_domain[var]);
+        fact_potentials[var.get_id()].resize(var.get_domain_size());
     }
 }
 
@@ -54,13 +58,14 @@ bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
                                 );
 }
 
+int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
+    return lp_var_ids[fact.get_variable().get_id()][fact.get_value()];
+}
+
 bool PotentialOptimizer::optimize_for_all_states() {
-    int num_vars = g_variable_domain.size();
     vector<double> coefficients(num_lp_vars, 0.0);
-    for (int var = 0; var < num_vars; ++var) {
-        for (int value = 0; value < g_variable_domain[var]; ++value) {
-            coefficients[lp_var_ids[var][value]] = 1.0 / g_variable_domain[var];
-        }
+    for (FactProxy fact : task_proxy.get_variables().get_facts()) {
+        coefficients[get_lp_var_id(fact)] = 1.0 / fact.get_variable().get_domain_size();
     }
     set_lp_objective(coefficients);
     bool optimal = solve_lp();
@@ -75,11 +80,10 @@ bool PotentialOptimizer::optimize_for_all_states() {
 
 bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples) {
     vector<double> coefficients(num_lp_vars, 0.0);
-    int num_vars = g_variable_domain.size();
-    for (const GlobalState &state : samples) {
-        for (int var = 0; var < num_vars; ++var) {
-            int value = state[var];
-            coefficients[lp_var_ids[var][value]] += 1.0;
+    for (const GlobalState &global_state : samples) {
+        State state = task_proxy.convert_global_state(global_state);
+        for (FactProxy fact : state) {
+            coefficients[get_lp_var_id(fact)] += 1.0;
         }
     }
     set_lp_objective(coefficients);
@@ -108,7 +112,6 @@ void PotentialOptimizer::construct_lp() {
     }
 
     vector<LPConstraint> lp_constraints;
-    lp_constraints.reserve(g_operators.size());
     for (size_t i = 0; i < g_operators.size(); ++i) {
         // Create Constraint:
         // Sum_{V in Vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)
