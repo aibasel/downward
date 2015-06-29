@@ -29,7 +29,7 @@ from __future__ import print_function
 from collections import defaultdict
 from itertools import count
 
-DEBUG = False
+DEBUG = True
 
 # TODO:
 # This is all quite hackish and would be easier if the translator were
@@ -345,7 +345,7 @@ class VarValueRenaming(object):
         axioms[:] = new_axioms
 
     def apply_to_operator(self, op):
-        op.dump()
+        op.dump() # TODO: Remove
 
         # The prevail translation may generate an Impossible exception,
         # which is propagated up.
@@ -478,9 +478,13 @@ def filter_unreachable_propositions(sas_task):
       Example: on(crate0, crate0) in depots-01.
     """
 
+    if DEBUG:
+        sas_task.validate()
     dtgs = build_dtgs(sas_task)
     renaming = build_renaming(dtgs)
     # apply_to_task may raise Impossible if the goal is detected as
     # unreachable. We let the exception propagate to the caller.
     renaming.apply_to_task(sas_task)
     print("%d propositions removed" % renaming.num_removed_values)
+    if DEBUG:
+        sas_task.validate()
