@@ -11,6 +11,7 @@
 
 
 class AxiomsProxy;
+class CausalGraph;
 class ConditionsProxy;
 class EffectProxy;
 class EffectConditionsProxy;
