@@ -4,6 +4,8 @@
 
 using namespace std;
 
+const int EvaluationResult::INFINITE = numeric_limits<int>::max();
+
 EvaluationResult::EvaluationResult() : h_value(UNINITIALIZED) {
 }
 
