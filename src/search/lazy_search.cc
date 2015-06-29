@@ -131,7 +131,7 @@ SearchStatus LazySearch::fetch_next_state() {
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
-    current_eval_context = EvaluationContext(current_state, &statistics);
+    current_eval_context = EvaluationContext(current_state, &statistics, true);
 
     return IN_PROGRESS;
 }

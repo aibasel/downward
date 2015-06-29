@@ -237,6 +237,9 @@ bool LandmarkCountHeuristic::reach_state(const GlobalState &parent_state,
              has changed and the h value should be recomputed. It's not
              wrong to always return true, but it may be more efficient to
              check that the LM set has actually changed. */
+    if(cache_h_values) {
+        heuristic_cache[state].dirty = true;
+    }
     return true;
 }
 

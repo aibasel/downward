@@ -11,23 +11,24 @@ using namespace std;
 
 EvaluationContext::EvaluationContext(
     const HeuristicCache &cache, int g_value, bool is_preferred,
-    SearchStatistics *statistics)
+    SearchStatistics *statistics, bool calculate_preferred)
     : cache(cache),
       g_value(g_value),
       preferred(is_preferred),
-      statistics(statistics) {
+      statistics(statistics),
+      calculate_preferred(calculate_preferred) {
 }
 
 EvaluationContext::EvaluationContext(
     const GlobalState &state, int g_value, bool is_preferred,
-    SearchStatistics *statistics)
-    : EvaluationContext(HeuristicCache(state), g_value, is_preferred, statistics) {
+    SearchStatistics *statistics, bool calculate_preferred)
+    : EvaluationContext(HeuristicCache(state), g_value, is_preferred, statistics, calculate_preferred) {
 }
 
 EvaluationContext::EvaluationContext(
     const GlobalState &state,
-    SearchStatistics *statistics)
-    : EvaluationContext(HeuristicCache(state), INVALID, false, statistics) {
+    SearchStatistics *statistics, bool calculate_preferred)
+    : EvaluationContext(HeuristicCache(state), INVALID, false, statistics, calculate_preferred) {
 }
 
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
@@ -78,4 +79,9 @@ int EvaluationContext::get_heuristic_value_or_infinity(ScalarEvaluator *heur) {
 const vector<const GlobalOperator *> &
 EvaluationContext::get_preferred_operators(ScalarEvaluator *heur) {
     return get_result(heur).get_preferred_operators();
+}
+
+
+bool EvaluationContext::get_calculate_preferred() const {
+    return calculate_preferred;
 }
