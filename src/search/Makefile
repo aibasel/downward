@@ -36,21 +36,25 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 ## as a bug.
 DOWNWARD_OS ?= auto
 
-
 HEADERS = \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
+          cost_adapted_task.h \
           countdown_timer.h \
+          delegating_task.h \
           domain_transition_graph.h \
           eager_search.h \
           enforced_hill_climbing_search.h \
           equivalence_relation.h \
+          evaluation_context.h \
+          evaluation_result.h \
           exact_timer.h \
           g_evaluator.h \
           global_operator.h \
           global_state.h \
           globals.h \
+          heuristic_cache.h \
           heuristic.h \
           int_packer.h \
           ipc_max_heuristic.h \
@@ -65,26 +69,34 @@ HEADERS = \
           pref_evaluator.h \
           relaxation_heuristic.h \
           rng.h \
+          root_task.h \
+          scalar_evaluator.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \
           search_space.h \
+          search_statistics.h \
           state_id.h \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
+          task_tools.h \
           timer.h \
+          tracer.h \
           utilities.h \
+          utilities_hash.h \
           variable_order_finder.h \
           weighted_evaluator.h \
           \
           open_lists/alternation_open_list.h \
-          open_lists/open_list_buckets.h \
+          open_lists/bucket_open_list.h \
+          open_lists/open_list.h \
           open_lists/pareto_open_list.h \
           open_lists/standard_scalar_open_list.h \
           open_lists/tiebreaking_open_list.h \
           \
-          lp_solver_interface.h \
+          lp_internals.h \
+          lp_solver.h \
 
 ## Each of the following "HEADERS += ..." constructs defines a
 ## "plugin" feature that can be enabled or disabled by simply
@@ -221,32 +233,12 @@ endif
 CXXFLAGS =
 CXXFLAGS += -g
 CXXFLAGS += $(BITWIDTHOPT)
-# Note: we write "-std=c++0x" rather than "-std=c++11" to support gcc 4.4.
-CXXFLAGS += -std=c++0x -Wall -Wextra -pedantic -Wno-deprecated -Werror
+CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -Werror
 
 CXXFLAGS += -Iext
 ifeq ($(DOWNWARD_OS), osx)
     ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
     CXXFLAGS += -I/opt/local/include/
-endif
-
-
-## The following lines contain workarounds for bugs when
-## cross-compiling to 64 bit on 32-bit systems using gcc 4.4 or gcc
-## 4.5 in some Ubuntu releases. (We don't usually cross-compile to
-## 64-bit, but in some cases we do; e.g. we did for the IPC.) See
-## http://stackoverflow.com/questions/4643197/missing-include-bits-cconfig-h-when-cross-compiling-64-bit-program-on-32-bit.
-ifeq ($(DOWNWARD_OS), linux) # workarounds only valid for Linux...
-    HAVE_GCC_4_4 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.4\.\\\))
-    HAVE_GCC_4_5 := $(shell expr "$$(gcc -dumpversion)" : \\\(4\.5\.\\\))
-
-    ifdef HAVE_GCC_4_4
-        CXXFLAGS += -I/usr/include/c++/4.4/i686-linux-gnu
-    endif
-
-    ifdef HAVE_GCC_4_5
-        CXXFLAGS += -I/usr/include/c++/4.5/i686-linux-gnu
-    endif
 endif
 
 LDFLAGS =
@@ -296,8 +288,11 @@ endif
 
 ifeq ($(DOWNWARD_USE_LP),1)
 
-$(DOWNWARD_COIN_ROOT):
-	$(error COIN is no longer bundled with Fast Downward. Please install COIN outside of the repository and set up the environment variable DOWNWARD_COIN_ROOT to the new path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
+COIN_ROOT_FOUND := $(shell test -d $(DOWNWARD_COIN_ROOT) && echo 1)
+
+ifneq ($(COIN_ROOT_FOUND),1)
+    $(error COIN not found. Please install COIN and set up the environment variable DOWNWARD_COIN_ROOT to its path. See http://www.fast-downward.org/LPBuildInstructions for details on how to install COIN and LP solvers)
+endif
 
 $(TARGET_RELEASE) $(OBJECTS_RELEASE): $(DOWNWARD_COIN_ROOT)
 $(TARGET_DEBUG) $(OBJECTS_DEBUG): $(DOWNWARD_COIN_ROOT)
@@ -349,7 +344,7 @@ COIN_LIBS += Osi CoinUtils
 ## http://ubuntuforums.org/showthread.php?t=491455
 
 COIN_CXXFLAGS += -I$(DOWNWARD_COIN_ROOT)/include/coin -D USE_LP
-ifeq ($(OS), osx)
+ifeq ($(DOWNWARD_OS), osx)
 COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib $(COIN_LIBS:%=-l %)
 else
 COIN_LDFLAGS += -L$(DOWNWARD_COIN_ROOT)/lib -Wl,-Bstatic $(COIN_LIBS:%=-l %)
@@ -441,7 +436,7 @@ Makefile.depend: $(SOURCES) $(HEADERS)
 
 ifneq ($(MAKECMDGOALS),clean)
     ifneq ($(MAKECMDGOALS),distclean)
-        -include Makefile.depend
+        include Makefile.depend
     endif
 endif
 

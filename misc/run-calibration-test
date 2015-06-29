@@ -99,12 +99,15 @@ solve-task \
 
 log "Testing merge-and-shrink..."
 MAS="merge_and_shrink(
-         merge_strategy=merge_linear(variable_order=reverse_level),
+         merge_strategy=merge_dfp,
          shrink_strategy=shrink_bisimulation(
-             max_states=infinity,
+             max_states=50000,
              threshold=1,
-             greedy=true,
-             group_by_h=true))"
+             greedy=false),
+         label_reduction=label_reduction(
+             before_shrinking=true,
+             before_merging=false)
+     )"
 solve-task \
     logistics00/domain.pddl \
     logistics00/probLOGISTICS-9-0.pddl \

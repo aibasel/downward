@@ -17,6 +17,7 @@
 
 class MergeStrategy;
 class ShrinkStrategy;
+class Labels;
 class LandmarkGraph;
 class Heuristic;
 class ScalarEvaluator;
@@ -25,6 +26,7 @@ class SearchEngine;
 class OptionParser;
 template<class Entry>
 class OpenList;
+class AbstractTask;
 
 
 struct ParseNode {
@@ -86,10 +88,8 @@ class Registry {
 public:
     typedef T (*Factory)(OptionParser &);
     static Registry<T> *instance() {
-        if (!instance_) {
-            instance_ = new Registry<T>();
-        }
-        return instance_;
+        static Registry<T> instance_;
+        return &instance_;
     }
 
     void register_object(std::string k, Factory f) {
@@ -97,33 +97,26 @@ public:
         registered[k] = f;
     }
 
-    bool contains(std::string k) {
+    bool contains(const std::string &k) {
         return registered.find(k) != registered.end();
     }
 
-    Factory get(std::string k) {
+    Factory get(const std::string &k) {
         return registered[k];
     }
 
     std::vector<std::string> get_keys() {
         std::vector<std::string> keys;
-        for (typename std::map<std::string, Factory>::iterator it =
-                 registered.begin();
-             it != registered.end(); ++it) {
-            keys.push_back(it->first);
+        for (auto it : registered) {
+            keys.push_back(it.first);
         }
         return keys;
     }
 
 private:
-    Registry() {}
-    static Registry<T> *instance_;
+    Registry() = default;
     std::map<std::string, Factory> registered;
 };
-
-template <class T>
-Registry<T> *Registry<T>::instance_ = 0;
-
 
 
 
@@ -133,10 +126,8 @@ template <class T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
-        if (!instance_) {
-            instance_ = new Predefinitions<T>();
-        }
-        return instance_;
+        static Predefinitions<T> instance_;
+        return &instance_;
     }
 
     void predefine(std::string k, T obj) {
@@ -144,24 +135,18 @@ public:
         predefined[k] = obj;
     }
 
-    bool contains(std::string k) {
+    bool contains(const std::string &k) {
         return predefined.find(k) != predefined.end();
     }
 
-    T get(std::string k) {
+    T get(const std::string &k) {
         return predefined[k];
     }
 
 private:
-    Predefinitions<T>() {
-    }
-    static Predefinitions<T> *instance_;
+    Predefinitions<T>() = default;
     std::map<std::string, T> predefined;
 };
-
-template <class T>
-Predefinitions<T> *Predefinitions<T>::instance_ = 0;
-
 
 
 class Synergy {
@@ -260,6 +245,20 @@ template <>
 struct TypeNamer<ShrinkStrategy *> {
     static std::string name() {
         return "ShrinkStrategy";
+    }
+};
+
+template <>
+struct TypeNamer<Labels *> {
+    static std::string name() {
+        return "Labels";
+    }
+};
+
+template <>
+struct TypeNamer<std::shared_ptr<AbstractTask> > {
+    static std::string name() {
+        return "AbstractTask";
     }
 };
 
@@ -366,7 +365,8 @@ tree<T> subtree(
 class Options {
 public:
     Options(bool hm = false)
-        : help_mode(hm) {
+        : unparsed_config("<missing>"),
+          help_mode(hm) {
     }
 
     void set_help_mode(bool hm) {
@@ -403,6 +403,14 @@ public:
     }
 
     template <class T>
+    T get(std::string key, const T &default_value) const {
+        if (storage.count(key))
+            return get<T>(key);
+        else
+            return default_value;
+    }
+
+    template <class T>
     void verify_list_non_empty(std::string key) const {
         if (!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T> >(key);
@@ -428,7 +436,16 @@ public:
     bool contains(std::string key) const {
         return storage.find(key) != storage.end();
     }
+
+    std::string get_unparsed_config() const {
+        return unparsed_config;
+    }
+
+    void set_unparsed_config(const std::string &config) {
+        unparsed_config = config;
+    }
 private:
+    std::string unparsed_config;
     bool help_mode;
 };
 
@@ -506,10 +523,8 @@ struct DocStruct {
 class DocStore {
 public:
     static DocStore *instance() {
-        if (!instance_) {
-            instance_ = new DocStore();
-        }
-        return instance_;
+        static DocStore instance_;
+        return &instance_;
     }
 
     void register_object(std::string k, std::string type);
@@ -540,8 +555,7 @@ public:
     std::vector<std::string> get_types();
 
 private:
-    DocStore() {}
-    static DocStore *instance_;
+    DocStore() = default;
     std::map<std::string, DocStruct> registered;
 };
 

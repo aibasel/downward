@@ -14,14 +14,14 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <unordered_set>
 #include <vector>
-#include <ext/hash_set>
 
-using namespace __gnu_cxx;
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
-    : pdb_max_size(opts.get<int>("pdb_max_size")),
+    : task(get_task_from_options(opts)),
+      pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
       mutation_probability(opts.get<double>("mutation_probability")),
@@ -88,8 +88,8 @@ void PatternGenerationEdelkamp::transform_to_pattern_normal_form(const vector<bo
 
 void PatternGenerationEdelkamp::remove_irrelevant_variables(
     vector<int> &pattern) const {
-    hash_set<int> in_original_pattern(pattern.begin(), pattern.end());
-    hash_set<int> in_pruned_pattern;
+    unordered_set<int> in_original_pattern(pattern.begin(), pattern.end());
+    unordered_set<int> in_pruned_pattern;
 
     vector<int> vars_to_check;
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -183,6 +183,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
         } else {
             // generate the pattern collection heuristic and get its fitness value.
             Options opts;
+            opts.set<shared_ptr<AbstractTask> >("transform", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
             ZeroOnePDBsHeuristic *zoppch =
@@ -212,7 +213,7 @@ void PatternGenerationEdelkamp::bin_packing() {
 
     for (int i = 0; i < num_collections; ++i) {
         // random variable ordering for all pattern collections
-        random_shuffle(variables.begin(), variables.end(), g_rng);
+        g_rng.shuffle(variables);
         vector<vector<bool> > pattern_collection;
         vector<bool> pattern(g_variable_name.size(), false);
         int current_size = 1;

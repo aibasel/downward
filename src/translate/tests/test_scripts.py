@@ -1,0 +1,23 @@
+import os.path
+import subprocess
+
+DIR = os.path.dirname(os.path.abspath(__file__))
+TRANSLATE_DIR = os.path.dirname(DIR)
+BENCHMARKS = os.path.abspath(os.path.join(DIR, "..", "..", "..", "benchmarks"))
+DOMAIN = os.path.join(BENCHMARKS, "gripper", "domain.pddl")
+PROBLEM = os.path.join(BENCHMARKS, "gripper", "prob01.pddl")
+SCRIPTS = [
+    "build_model.py",
+    "graph.py",
+    "instantiate.py",
+    "invariant_finder.py",
+    "normalize.py",
+    "pddl_to_prolog.py",
+    "translate.py",
+]
+
+def test_scripts():
+    for script in SCRIPTS:
+        script = os.path.join(TRANSLATE_DIR, script)
+        folder, filename = os.path.split(script)
+        assert subprocess.check_call(["python", filename, DOMAIN, PROBLEM], cwd=folder) == 0

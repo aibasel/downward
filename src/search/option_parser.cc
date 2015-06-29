@@ -3,6 +3,7 @@
 #include "ext/tree_util.hh"
 #include "plugin.h"
 #include "rng.h"
+
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -40,8 +41,6 @@ void OptionParser::warning(string msg) {
 Functions for printing help:
 */
 
-DocStore *DocStore::instance_ = 0;
-
 void OptionParser::set_help_mode(bool m) {
     dry_run_ = dry_run_ && m;
     help_mode_ = m;
@@ -62,6 +61,7 @@ static void get_help(string k) {
     pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
     get_help_templ<Heuristic *>(pt);
+    get_help_templ<shared_ptr<AbstractTask> >(pt);
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
@@ -69,6 +69,7 @@ static void get_help(string k) {
     get_help_templ<OpenList<int> *>(pt);
     get_help_templ<MergeStrategy *>(pt);
     get_help_templ<ShrinkStrategy *>(pt);
+    get_help_templ<Labels *>(pt);
 }
 
 template <class T>
@@ -86,6 +87,7 @@ static void get_full_help_templ() {
 static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
     get_full_help_templ<Heuristic *>();
+    get_full_help_templ<shared_ptr<AbstractTask> >();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
@@ -93,6 +95,7 @@ static void get_full_help() {
     get_full_help_templ<OpenList<int> *>();
     get_full_help_templ<MergeStrategy *>();
     get_full_help_templ<ShrinkStrategy *>();
+    get_full_help_templ<Labels *>();
 }
 
 
@@ -131,7 +134,7 @@ static void predefine_heuristic(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) { //normal predefinition
-        Predefinitions<Heuristic * >::instance()->predefine(
+        Predefinitions<Heuristic *>::instance()->predefine(
             definees[0], op.start_parsing<Heuristic *>());
     } else if (definees.size() > 1) { //synergy
         if (!dry_run) {
@@ -142,9 +145,9 @@ static void predefine_heuristic(std::string s, bool dry_run) {
                     definees[i], heur[i]);
             }
         } else {
-            for (size_t i = 0; i < definees.size(); ++i) {
+            for (const string &definee : definees) {
                 Predefinitions<Heuristic *>::instance()->predefine(
-                    definees[i], 0);
+                    definee, nullptr);
             }
         }
     } else {
@@ -233,7 +236,6 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 throw ArgError("missing argument after --random-seed");
             ++i;
             int seed = parse_int_arg(arg, args[i]);
-            srand(seed);
             g_rng.seed(seed);
             cout << "random seed: " << seed << endl;
         } else if ((arg.compare("--help") == 0) && dry_run) {
@@ -270,13 +272,14 @@ SearchEngine *OptionParser::parse_cmd_line_aux(
                 throw ArgError("missing argument after --internal-plan-file");
             ++i;
             g_plan_filename = args[i];
-        } else if (arg.compare("--internal-plan-counter") == 0) {
+        } else if (arg.compare("--internal-previous-portfolio-plans") == 0) {
             if (is_last)
-                throw ArgError("missing argument after --internal-plan-counter");
+                throw ArgError("missing argument after --internal-previous-portfolio-plans");
             ++i;
-            g_plan_counter = parse_int_arg(arg, args[i]);
-            if (g_plan_counter <= 0)
-                throw ArgError("argument for --internal-plan-counter must be positive");
+            g_is_part_of_anytime_portfolio = true;
+            g_num_previously_generated_plans = parse_int_arg(arg, args[i]);
+            if (g_num_previously_generated_plans < 0)
+                throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
         } else {
             throw ArgError("unknown option " + arg);
         }
@@ -304,8 +307,10 @@ string OptionParser::usage(string progname) {
         "    Use random seed SEED\n\n"
         "--internal-plan-file FILENAME\n"
         "    Plan will be output to a file called FILENAME\n\n"
-        "--internal-plan-counter COUNTER\n"
-        "    Start enumerating plan files with COUNTER, i.e. FILENAME.COUNTER\n\n"
+        "--internal-previous-portfolio-plans COUNTER\n"
+        "    This planner call is part of a portfolio which already created\n"
+        "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"
+        "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
         "See http://www.fast-downward.org/ for details.";
     return usage;
 }
@@ -391,6 +396,7 @@ OptionParser::OptionParser(const string config, bool dr)
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
+    set_unparsed_config();
 }
 
 
@@ -400,8 +406,14 @@ OptionParser::OptionParser(ParseTree pt, bool dr)
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
+    set_unparsed_config();
 }
 
+void OptionParser::set_unparsed_config() {
+    ostringstream stream;
+    kptree::print_tree_bracketed<ParseNode>(parse_tree, stream);
+    unparsed_config = stream.str();
+}
 
 string str_to_lower(string s) {
     transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -494,6 +506,7 @@ Options OptionParser::parse() {
         }
         last_key = pti->key;
     }
+    opts.set_unparsed_config(unparsed_config);
     return opts;
 }
 
@@ -538,10 +551,6 @@ bool OptionParser::help_mode() const {
     return help_mode_;
 }
 
-void OptionParser::set_parse_tree(const ParseTree &pt) {
-    parse_tree = pt;
-}
-
-ParseTree *OptionParser::get_parse_tree() {
+const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
 }

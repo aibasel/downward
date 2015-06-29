@@ -39,10 +39,53 @@ int MergeDFP::get_corrected_index(int index) const {
     return border_atomics_composites - 1 - index;
 }
 
-pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_transition_systems) {
+void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
+                                   vector<int> &label_ranks) const {
+    int num_labels = transition_system->get_num_labels();
+    // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
+    label_ranks.resize(num_labels, -1);
+
+    const std::list<LabelGroup> &grouped_labels = transition_system->get_grouped_labels();
+    for (LabelGroupConstIter group_it = grouped_labels.begin();
+         group_it != grouped_labels.end(); ++group_it) {
+        // Relevant labels with no transitions have a rank of infinity.
+        int label_rank = INF;
+        const vector<Transition> &transitions = group_it->get_const_transitions();
+        bool group_relevant = false;
+        if (static_cast<int>(transitions.size()) == transition_system->get_size()) {
+            /*
+              A label group is irrelevant in the earlier notion if it has
+              exactly a self loop transition for every state.
+            */
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                if (transitions[i].target != transitions[i].src) {
+                    group_relevant = true;
+                    break;
+                }
+            }
+        } else {
+            group_relevant = true;
+        }
+        if (!group_relevant) {
+            label_rank = -1;
+        } else {
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const Transition &t = transitions[i];
+                label_rank = min(label_rank, transition_system->get_goal_distance(t.target));
+            }
+        }
+        for (LabelConstIter label_it = group_it->begin();
+             label_it != group_it->end(); ++label_it) {
+            int label_no = *label_it;
+            label_ranks[label_no] = label_rank;
+        }
+    }
+}
+
+pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transition_systems) {
     assert(!done());
 
-    vector<TransitionSystem *> sorted_transition_systems;
+    vector<const TransitionSystem *> sorted_transition_systems;
     vector<int> indices_mapping;
     vector<vector<int> > transition_system_label_ranks;
     // Precompute a vector sorted_transition_systems which contains all exisiting
@@ -55,13 +98,13 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
         // order from the first one until the last one. See also explanation
         // at get_corrected_index().
         int ts_index = get_corrected_index(i);
-        TransitionSystem *transition_system = all_transition_systems[ts_index];
+        const TransitionSystem *transition_system = all_transition_systems[ts_index];
         if (transition_system) {
             sorted_transition_systems.push_back(transition_system);
             indices_mapping.push_back(ts_index);
             transition_system_label_ranks.push_back(vector<int>());
             vector<int> &label_ranks = transition_system_label_ranks[transition_system_label_ranks.size() - 1];
-            transition_system->compute_label_ranks(label_ranks);
+            compute_label_ranks(transition_system, label_ranks);
         }
     }
 
@@ -69,13 +112,13 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
     int second = -1;
     int minimum_weight = INF;
     for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
-        TransitionSystem *transition_system = sorted_transition_systems[ts_index];
+        const TransitionSystem *transition_system = sorted_transition_systems[ts_index];
         assert(transition_system);
         vector<int> &label_ranks = transition_system_label_ranks[ts_index];
         assert(!label_ranks.empty());
         for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
              ++other_ts_index) {
-            TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
+            const TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
             assert(other_transition_system);
             if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
                 vector<int> &other_label_ranks = transition_system_label_ranks[other_ts_index];
@@ -107,11 +150,11 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
         assert(minimum_weight == INF);
 
         for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
-            TransitionSystem *transition_system = sorted_transition_systems[ts_index];
+            const TransitionSystem *transition_system = sorted_transition_systems[ts_index];
             assert(transition_system);
             for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
                  ++other_ts_index) {
-                TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
+                const TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
                 assert(other_transition_system);
                 if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
                     first = indices_mapping[ts_index];
@@ -122,6 +165,11 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
             }
         }
     }
+    /*
+      There always exists at least one goal relevant transition system,
+      assuming that the global goal specification is non-empty. Hence at
+      this point, we must have found a pair of transition systems to merge.
+    */
     assert(first != -1);
     assert(second != -1);
     cout << "Next pair of indices: (" << first << ", " << second << ")" << endl;
