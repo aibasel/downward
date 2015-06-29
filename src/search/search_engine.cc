@@ -104,18 +104,14 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
 
 void print_initial_h_values(const EvaluationContext &eval_context) {
     assert(!eval_context.get_cache().get_eval_results().empty());
-    for (const auto &element : eval_context.get_cache().get_eval_results()) {
-        const ScalarEvaluator *evaluator = element.first;
-        const EvaluationResult &result = element.second;
-        const Heuristic *heuristic = dynamic_cast<const Heuristic *>(evaluator);
-        if (heuristic) {
-            cout << "Initial heuristic value for "
-                 << heuristic->get_description() << ": ";
-            if (result.is_infinite())
-                cout << "infinity";
-            else
-                cout << result.get_h_value();
-            cout << endl;
-        }
-    }
+    eval_context.get_cache().for_each_heuristic_value(
+        [](const Heuristic *heur, const EvaluationResult &result) {
+        cout << "Initial heuristic value for "
+             << heur->get_description() << ": ";
+        if (result.is_infinite())
+            cout << "infinity";
+        else
+            cout << result.get_h_value();
+        cout << endl;
+    });
 }
