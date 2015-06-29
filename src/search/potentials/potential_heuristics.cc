@@ -60,7 +60,7 @@ int PotentialHeuristics::compute_heuristic(const GlobalState &state) {
 void PotentialHeuristics::filter_dead_ends_and_duplicates(
         vector<GlobalState> &samples,
         unordered_map<StateID, int> &sample_to_max_h,
-        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) {
+        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
     assert(sample_to_max_h.empty());
     assert(single_heuristics.empty());
     CountdownTimer filtering_timer(max_filtering_time);
@@ -121,6 +121,30 @@ void PotentialHeuristics::filter_covered_samples(
     swap(samples, not_covered_samples);
 }
 
+shared_ptr<Heuristic> PotentialHeuristics::find_heuristic_and_remove_covered_samples(
+        vector<GlobalState> &samples,
+        unordered_map<StateID, int> &sample_to_max_h,
+        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
+    optimizer.optimize_for_samples(samples);
+    shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
+    size_t last_num_samples = samples.size();
+    filter_covered_samples(group_heuristic, samples, sample_to_max_h, single_heuristics);
+    shared_ptr<Heuristic> selected_heuristic = nullptr;
+    if (samples.size() < last_num_samples) {
+        selected_heuristic = group_heuristic;
+    } else {
+        cout << "No sample was removed -> Use a precomputed heuristic." << endl;
+        StateID state_id = g_rng.choose(samples)->get_id();
+        shared_ptr<Heuristic> single_heuristic = single_heuristics[state_id];
+        single_heuristics.erase(state_id);
+        filter_covered_samples(single_heuristic, samples, sample_to_max_h, single_heuristics);
+        selected_heuristic = single_heuristic;
+    }
+    cout << "Removed " << last_num_samples - samples.size() << " samples. "
+         << samples.size() << " remaining." << endl;
+    return selected_heuristic;
+}
+
 void PotentialHeuristics::cover_samples(
         vector<GlobalState> &samples,
         unordered_map<StateID, int> &sample_to_max_h,
@@ -131,23 +155,9 @@ void PotentialHeuristics::cover_samples(
             cout << "Ran out of time covering samples." << endl;
             break;
         }
-        cout << "Create heuristic #" << heuristics.size() + 1 << endl;
-        optimizer.optimize_for_samples(samples);
-        shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
-        size_t last_num_samples = samples.size();
-        filter_covered_samples(group_heuristic, samples, sample_to_max_h, single_heuristics);
-        if (samples.size() < last_num_samples) {
-            heuristics.push_back(group_heuristic);
-        } else {
-            cout << "No sample was removed -> Choose a precomputed heuristic." << endl;
-            StateID state_id = g_rng.choose(samples)->get_id();
-            shared_ptr<Heuristic> single_heuristic = single_heuristics[state_id];
-            single_heuristics.erase(state_id);
-            filter_covered_samples(single_heuristic, samples, sample_to_max_h, single_heuristics);
-            heuristics.push_back(single_heuristic);
-        }
-        cout << "Removed " << last_num_samples - samples.size()
-             << " samples. " << samples.size() << " remaining." << endl;
+        cout << "Find heuristic #" << heuristics.size() + 1 << endl;
+        heuristics.push_back(find_heuristic_and_remove_covered_samples(
+            samples, sample_to_max_h, single_heuristics));
     }
     cout << "Time for covering samples: " << covering_timer << endl;
 }

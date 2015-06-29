@@ -21,7 +21,7 @@ class PotentialHeuristics: public Heuristic {
     const double max_filtering_time;
     const double max_covering_time;
     const bool debug;
-    PotentialOptimizer optimizer;
+    mutable PotentialOptimizer optimizer;
     std::vector<std::shared_ptr<Heuristic> > heuristics;
 
     /* Filter dead end samples and duplicates. Store potential heuristics and
@@ -29,11 +29,18 @@ class PotentialHeuristics: public Heuristic {
     void filter_dead_ends_and_duplicates(
             std::vector<GlobalState> &samples,
             std::unordered_map<StateID, int> &sample_to_max_h,
-            std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics);
+            std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
 
     // Remove all samples for which the heuristic achieves maximal values.
     void filter_covered_samples(
             const std::shared_ptr<Heuristic> heuristic,
+            std::vector<GlobalState> &samples,
+            std::unordered_map<StateID, int> &sample_to_max_h,
+            std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
+
+    /* Return potential heuristic optimized for remaining samples or a
+       precomputed heuristic if the former does not cover additional samples. */
+    std::shared_ptr<Heuristic> find_heuristic_and_remove_covered_samples(
             std::vector<GlobalState> &samples,
             std::unordered_map<StateID, int> &sample_to_max_h,
             std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
