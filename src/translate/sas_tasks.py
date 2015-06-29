@@ -2,8 +2,17 @@ from __future__ import print_function
 
 SAS_FILE_VERSION = 3
 
+DEBUG = False
+
 
 class SASTask:
+    """Planning task in finite-domain representation.
+
+    The user is responsible for making sure that the data fits a
+    number of structural restrictions. For example, conditions should
+    generally be sorted and mention each variable at most once. See
+    the validate methods for details."""
+
     def __init__(self, variables, mutexes, init, goal,
                  operators, axioms, metric):
         self.variables = variables
@@ -15,6 +24,39 @@ class SASTask:
         self.axioms = sorted(axioms, key=lambda axiom: (
             axiom.condition, axiom.effect))
         self.metric = metric
+        if DEBUG:
+            self.validate()
+
+    def validate(self):
+        """Fail an assertion if the task is invalid.
+
+        A task is valid if all its components are valid. Valid tasks
+        are almost in a kind of "canonical form", but not quite. For
+        example, operators and axioms are permitted to be listed in
+        any order, even though it would be possible to require some
+        kind of canonical sorting.
+
+        Note that we require that all derived variables are binary.
+        This is stricter than what later parts of the planner are
+        supposed to handle, but some parts of the translator rely on
+        this. We might want to consider making this a general
+        requirement throughout the planner.
+
+        Note also that there is *no* general rule on what the init (=
+        fallback) value of a derived variable is. For example, in
+        PSR-Large #1, it can be either 0 or 1. While it is "usually"
+        1, code should not rely on this.
+        """
+        self.variables.validate()
+        for mutex in self.mutexes:
+            mutex.validate(self.variables)
+        self.init.validate(self.variables)
+        self.goal.validate(self.variables)
+        for op in self.operators:
+            op.validate(self.variables)
+        for axiom in self.axioms:
+            axiom.validate(self.variables, self.init)
+        assert self.metric is False or self.metric is True, self.metric
 
     def output(self, stream):
         print("begin_version", file=stream)
@@ -55,6 +97,36 @@ class SASVariables:
         self.axiom_layers = axiom_layers
         self.value_names = value_names
 
+    def validate(self):
+        """Validate variables.
+
+        The only nontrivial check is that derived variables are
+        binary. See commint on derived variables in the docstring of
+        SASTask.validate."""
+        assert len(self.ranges) == len(self.axiom_layers) == len(
+            self.value_names)
+        for (var_range, layer, var_value_names) in zip(
+                self.ranges, self.axiom_layers, self.value_names):
+            assert var_range == len(var_value_names)
+            assert layer == -1 or layer >= 0
+            if layer != -1:
+                assert var_range == 2
+
+    def validate_fact(self, fact):
+        """Assert that fact is a valid (var, value) pair."""
+        var, value = fact
+        assert 0 <= var < len(self.ranges)
+        assert 0 <= value < self.ranges[var]
+
+    def validate_condition(self, condition):
+        """Assert that the condition (list of facts) is sorted, mentions each
+        variable at most once, and only consists of valid facts."""
+        last_var = -1
+        for (var, value) in condition:
+            self.validate_fact((var, value))
+            assert var > last_var
+            last_var = var
+
     def dump(self):
         for var, (rang, axiom_layer) in enumerate(
                 zip(self.ranges, self.axiom_layers)):
@@ -87,6 +159,13 @@ class SASMutexGroup:
     def __init__(self, facts):
         self.facts = facts
 
+    def validate(self, variables):
+        """Assert that the facts in the mutex group are sorted and unique
+        and that they are all valid."""
+        for fact in self.facts:
+            variables.validate_fact(fact)
+        assert self.facts == sorted(set(self.facts))
+
     def dump(self):
         for var, val in self.facts:
             print("v%d: %d" % (var, val))
@@ -106,10 +185,20 @@ class SASInit:
     def __init__(self, values):
         self.values = values
 
+    def validate(self, variables):
+        """Validate initial state.
+
+        Assert that the initial state contains the correct number of
+        values and that all values are in range.
+        """
+
+        assert len(self.values) == len(variables.ranges)
+        for fact in enumerate(self.values):
+            variables.validate_fact(fact)
+
     def dump(self):
         for var, val in enumerate(self.values):
-            if val != -1:
-                print("v%d: %d" % (var, val))
+            print("v%d: %d" % (var, val))
 
     def output(self, stream):
         print("begin_state", file=stream)
@@ -121,6 +210,10 @@ class SASInit:
 class SASGoal:
     def __init__(self, pairs):
         self.pairs = sorted(pairs)
+
+    def validate(self, variables):
+        """Assert that the goal is a valid condition."""
+        variables.validate_condition(self.pairs)
 
     def dump(self):
         for var, val in self.pairs:
@@ -141,8 +234,67 @@ class SASOperator:
     def __init__(self, name, prevail, pre_post, cost):
         self.name = name
         self.prevail = sorted(prevail)
-        self.pre_post = sorted(pre_post)
+        self.pre_post = self._canonical_pre_post(pre_post)
         self.cost = cost
+
+    def _canonical_pre_post(self, pre_post):
+        # Return a sorted and uniquified version of pre_post. We would
+        # like to just use sorted(set(pre_post)), but this fails because
+        # the effect conditions are a list and hence not hashable.
+        def tuplify(entry):
+            var, pre, post, cond = entry
+            return var, pre, post, tuple(cond)
+        def listify(entry):
+            var, pre, post, cond = entry
+            return var, pre, post, list(cond)
+        pre_post = map(tuplify, pre_post)
+        pre_post = sorted(set(pre_post))
+        pre_post = map(listify, pre_post)
+        return pre_post
+
+    def validate(self, variables):
+        """Validate the operator.
+
+        Assert that
+        1. Prevail conditions are valid conditions (i.e., sorted and
+           all referring to different variables)
+        2. The pre_post list is sorted by (var, pre, post, cond), and the
+           same (var, pre, post, cond) 4-tuple is not repeated.
+        3. Effect conditions are valid conditions.
+        4. Variables occurring in pre_post rules do not have a prevail
+           condition.
+        5. Preconditions in pre_post are -1 or valid facts.
+        6. Effects are valid facts.
+        7. Effect variables are non-derived.
+        8. If a variable has multiple pre_post rules, then pre is
+           identical in all these rules.
+        9. There is at least one effect.
+        10. Costs are non-negative integers.
+
+        Odd things that are *not* illegal:
+        - Effect conditions that contradict a precondition or prevail
+          condition are permitted.
+        - The effect in a pre_post rule may be identical to the
+          precondition or to an effect condition of that effect.
+        """
+
+        variables.validate_condition(self.prevail)
+        assert self.pre_post == self._canonical_pre_post(self.pre_post)
+        prevail_vars = set(var for (var, value) in self.prevail)
+        pre_values = {}
+        for var, pre, post, cond in self.pre_post:
+            variables.validate_condition(cond)
+            assert var not in prevail_vars
+            if pre != -1:
+                variables.validate_fact((var, pre))
+            variables.validate_fact((var, post))
+            assert variables.axiom_layers[var] == -1
+            if var in pre_values:
+                assert pre_values[var] == pre
+            else:
+                pre_values[var] = pre
+        assert self.pre_post
+        assert self.cost >= 0 and self.cost == int(self.cost)
 
     def dump(self):
         print(self.name)
@@ -190,6 +342,56 @@ class SASAxiom:
 
         for _, val in condition:
             assert val >= 0, condition
+
+    def validate(self, variables, init):
+
+        """Validate the axiom.
+
+        Assert that the axiom condition is a valid condition, that the
+        effect is a valid fact, that the effect variable is a derived
+        variable, and that the layering condition is satisfied.
+
+        See the docstring of SASTask.validate for information on the
+        restriction on derived variables. The layering condition boils
+        down to:
+
+        1. Axioms always set the "non-init" value of the derived
+           variable.
+        2. Derived variables in the condition must have a lower of
+           equal layer to derived variables appearing in the effect.
+        3. Conditions with equal layer are only allowed when the
+           condition uses the "non-init" value of that variable.
+
+        TODO/bug: rule #1 is currently disabled because we currently
+        have axioms that violate it. This is likely due to the
+        "extended domain transition graphs" described in the Fast
+        Downward paper, Section 5.1. However, we want to eventually
+        changes this. See issue454. For cases where rule #1 is violated,
+        "non-init" should be "init" in rule #3.
+        """
+
+        variables.validate_condition(self.condition)
+        variables.validate_fact(self.effect)
+        eff_var, eff_value = self.effect
+        eff_layer = variables.axiom_layers[eff_var]
+        assert eff_layer >= 0
+        eff_init_value = init.values[eff_var]
+        ## The following rule is currently commented out because of
+        ## the TODO/bug mentioned in the docstring.
+        # assert eff_value != eff_init_value
+        for cond_var, cond_value in self.condition:
+            cond_layer = variables.axiom_layers[cond_var]
+            if cond_layer != -1:
+                assert cond_layer <= eff_layer
+                if cond_layer == eff_layer:
+                    cond_init_value = init.values[cond_var]
+                    ## Once the TODO/bug above is addressed, the
+                    ## following four lines can be simplified because
+                    ## we are guaranteed to land in the "if" branch.
+                    if eff_value != eff_init_value:
+                        assert cond_value != cond_init_value
+                    else:
+                        assert cond_value == cond_init_value
 
     def dump(self):
         print("Condition:")
