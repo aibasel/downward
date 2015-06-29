@@ -206,9 +206,13 @@ class VarValueRenaming(object):
         for old_var_no, (new_var_no, new_values) in enumerate(
                 zip(self.new_var_nos, self.new_values)):
             old_size = len(new_values)
-            new_size = self.new_sizes[new_var_no]
-            print("variable %d [size %d] => %d [size %d]" % (
-                old_var_no, old_size, new_var_no, new_size))
+            if new_var_no is None:
+                print("variable %d [size %d] => removed" % (
+                    old_var_no, old_size))
+            else:
+                new_size = self.new_sizes[new_var_no]
+                print("variable %d [size %d] => %d [size %d]" % (
+                    old_var_no, old_size, new_var_no, new_size))
             for old_value, new_value in enumerate(new_values):
                 if new_value is always_false:
                     new_value = "always false"
