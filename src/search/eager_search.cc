@@ -8,6 +8,7 @@
 #include "plugin.h"
 #include "successor_generator.h"
 #include "sum_evaluator.h"
+#include "por/por_method.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -20,7 +21,10 @@ EagerSearch::EagerSearch(const Options &opts)
       use_multi_path_dependence(opts.get<bool>("mpd")),
       open_list(opts.get<OpenList<StateID> *>("open")),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
-      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")) {
+      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
+      partial_order_reduction_method(0)
+{
+    partial_order_reduction_method = POR::create(opts.get_enum("partial_order_reduction"));
 }
 
 void EagerSearch::initialize() {
@@ -68,6 +72,13 @@ void EagerSearch::initialize() {
 
         open_list->insert(eval_context, initial_state.get_id());
     }
+    
+    partial_order_reduction_method->dump_options();
+
+}
+
+EagerSearch::~EagerSearch() {
+    delete partial_order_reduction_method;
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -80,6 +91,7 @@ void EagerSearch::print_statistics() const {
     search_progress.print_initial_h_values();
     statistics.print_detailed_statistics();
     search_space.print_statistics();
+    partial_order_reduction_method->dump_statistics();
 }
 
 SearchStatus EagerSearch::step() {
@@ -97,6 +109,12 @@ SearchStatus EagerSearch::step() {
     set<const GlobalOperator *> preferred_ops;
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
+
+    // Note that when preferred operators are in use, a preferred
+    // operator will be considered by the preferred operator queues
+    // even when pruned by the POR method.
+    partial_order_reduction_method->prune_operators(s, applicable_ops);
+    
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics);
     for (Heuristic *heur : preferred_operator_heuristics) {
@@ -324,6 +342,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<OpenList<StateID> *>("open", "open list");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
+
+    POR::add_parser_option(parser, "partial_order_reduction");
+
     parser.add_option<ScalarEvaluator *>(
         "f_eval",
         "set evaluator for jump statistics. "
@@ -368,6 +389,9 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("mpd",
                             "use multi-path dependence (LM-A*)", "false");
+
+    POR::add_parser_option(parser, "partial_order_reduction");
+
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -445,6 +469,9 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
+    
+    POR::add_parser_option(parser, "partial_order_reduction");
+
     SearchEngine::add_options_to_parser(parser);
 
 
