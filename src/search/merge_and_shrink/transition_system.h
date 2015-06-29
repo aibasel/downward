@@ -109,8 +109,11 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
-    // TODO: do we need these friend declarations? can we not make
-    // the required private fields protected?
+    std::vector<int> varset;
+    /*
+      These friend definitions are required to give the inheriting classes
+      access to passed base class objects (e.g. in CompositeTransitionSystem).
+    */
     friend class AtomicTransitionSystem;
     friend class CompositeTransitionSystem;
 
@@ -144,8 +147,7 @@ class TransitionSystem {
     std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), except during
-      label reduction. Whenever new labels are generated through label
-      reduction, this is updated immediately afterwards.
+      the incorporation of a label mapping as computed by label reduction.
     */
     int num_labels;
 
@@ -171,7 +173,7 @@ class TransitionSystem {
        - All labels are incorporated (is_label_reduced() == true)).
        - Distances are computed and stored (are_distances_computed() == true).
        - Locally equivalent labels are computed. This cannot explicitly be
-         test because of labels and transitions being coupled in the data
+         tested because of labels and transitions being coupled in the data
          structure representing transitions.
       Note that those tests are expensive to compute and hence only used as
       an assertion.
@@ -211,8 +213,6 @@ class TransitionSystem {
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
 protected:
-    std::vector<int> varset;
-
     virtual AbstractStateRef get_abstract_state(const GlobalState &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
@@ -223,7 +223,7 @@ public:
     static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
                                                 Labels *labels,
                                                 OperatorCost cost_type);
-    void apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
+    bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
     void release_memory();

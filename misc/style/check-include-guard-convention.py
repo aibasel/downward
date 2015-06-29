@@ -27,6 +27,7 @@ def check_header_files(component):
                 if line != expected:
                     errors.append('%s uses guard "%s" but should use "%s"' %
                                   (filename, line, expected))
+                break
     return errors
 
 

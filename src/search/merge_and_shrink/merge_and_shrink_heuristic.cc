@@ -1,9 +1,9 @@
 #include "merge_and_shrink_heuristic.h"
 
-#include "transition_system.h"
 #include "labels.h"
 #include "merge_strategy.h"
 #include "shrink_strategy.h"
+#include "transition_system.h"
 
 #include "../global_state.h"
 #include "../globals.h"
@@ -20,8 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       labels(opts.get<Labels *>("label_reduction")),
-      use_expensive_statistics(opts.get<bool>("expensive_statistics")),
-      terminate(opts.get<bool>("terminate")) {
+      use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -45,8 +44,6 @@ void MergeAndShrinkHeuristic::dump_options() const {
     labels->dump_label_reduction_options();
     cout << "Expensive statistics: "
          << (use_expensive_statistics ? "enabled" : "disabled") << endl;
-    cout << "Only compute the abstraction and terminate afterwards: "
-         << (terminate ? "yes" : "no") << endl;
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
@@ -106,12 +103,14 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
         exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
+    cout << endl;
     TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels, cost_type);
+    cout << endl;
 
-    cout << "Merging transition systems..." << endl;
-
+    cout << "Starting merge-and-shrink main loop..." << endl;
     vector<int> transition_system_order;
     while (!merge_strategy->done()) {
+        // Choose next transition systems to merge
         pair<int, int> next_transition_system = merge_strategy->get_next(all_transition_systems);
         int system_one = next_transition_system.first;
         transition_system_order.push_back(system_one);
@@ -122,49 +121,48 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         transition_system_order.push_back(system_two);
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
+        transition_system->statistics(use_expensive_statistics);
+        other_transition_system->statistics(use_expensive_statistics);
 
         if (labels->reduce_before_shrinking()) {
+            // Label reduction before shrinking
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-            transition_system->statistics(use_expensive_statistics);
-            other_transition_system->statistics(use_expensive_statistics);
         }
 
-        // TODO: check for all ts if they are solvable? or only for the new one below?
+        /*
+          NOTE: both the shrinking strategy classes and the construction of
+          the composite require input transition systems to be solvable.
+        */
         if (!transition_system->is_solvable())
             return transition_system;
         if (!other_transition_system->is_solvable())
             return other_transition_system;
 
-        shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
-        // TODO: Make shrink_before_merge return a pair of bools
-        //       that tells us whether they have actually changed,
-        //       and use that to decide whether to dump statistics?
-        // (The old code would print statistics on transition system iff it was
-        // shrunk. This is not so easy any more since this method is not
-        // in control, and the shrink strategy doesn't know whether we want
-        // expensive statistics. As a temporary aid, we just print the
-        // statistics always now, whether or not we shrunk.)
-        transition_system->statistics(use_expensive_statistics);
-        other_transition_system->statistics(use_expensive_statistics);
+        // Shrinking
+        pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
+        if (shrunk.first)
+            transition_system->statistics(use_expensive_statistics);
+        if (shrunk.second)
+            other_transition_system->statistics(use_expensive_statistics);
 
         if (labels->reduce_before_merging()) {
+            // Label reduction before merging
             labels->reduce(make_pair(system_one, system_two), all_transition_systems);
-            transition_system->statistics(use_expensive_statistics);
-            other_transition_system->statistics(use_expensive_statistics);
         }
 
+        // Merging
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
             labels, transition_system, other_transition_system);
+        new_transition_system->statistics(use_expensive_statistics);
+        all_transition_systems.push_back(new_transition_system);
 
         transition_system->release_memory();
         other_transition_system->release_memory();
-
-        new_transition_system->statistics(use_expensive_statistics);
-        report_peak_memory_delta();
-
         all_transition_systems[system_one] = 0;
         all_transition_systems[system_two] = 0;
-        all_transition_systems.push_back(new_transition_system);
+
+        report_peak_memory_delta();
+        cout << endl;
     }
 
     assert(all_transition_systems.size() == g_variable_domain.size() * 2 - 1);
@@ -183,11 +181,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
     if (!final_transition_system->is_solvable())
         return final_transition_system;
 
-    final_transition_system->statistics(use_expensive_statistics);
     final_transition_system->release_memory();
 
-    // TODO: delete labels here?
+    delete labels;
+    labels = 0;
 
+    cout << "Done with merge-and-shrink main loop." << endl;
     cout << "Order of merged transition systems: ";
     for (size_t i = 1; i < transition_system_order.size(); i += 2) {
         cout << transition_system_order[i - 1] << " " << transition_system_order[i] << ", ";
@@ -205,7 +204,6 @@ void MergeAndShrinkHeuristic::initialize() {
 
     verify_no_axioms();
 
-    cout << "Building transition system..." << endl;
     final_transition_system = build_transition_system();
     if (!final_transition_system->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
@@ -215,12 +213,10 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
     report_peak_memory_delta(true);
+    cout << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
-    if (terminate) {
-        return DEAD_END;
-    }
     int cost = final_transition_system->get_cost(state);
     if (cost == -1)
         return DEAD_END;
@@ -257,7 +253,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "shrink strategy; choose between shrink_fh and shrink_bisimulation. "
         "A good configuration for bisimulation based shrinking is: "
         "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, "
-        "threshold=1, greedy=false, group_by_h=true)");
+        "threshold=1, greedy=false)");
     ValueExplanations shrink_value_explanations;
     shrink_value_explanations.push_back(
         make_pair("shrink_fh(max_states=N)",
@@ -275,7 +271,7 @@ static Heuristic *_parse(OptionParser &parser) {
                   "reduce_labels_before_shrinking=false and "
                   "reduce_labels_before_merging=true."));
     shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true, group_by_h=false)",
+        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
                   "Greedy bisimulation without size bound "
                   "(called M&S-gop in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert). "
@@ -287,7 +283,7 @@ static Heuristic *_parse(OptionParser &parser) {
                   "reduce_labels_before_shrinking=true and "
                   "reduce_labels_before_merging=false."));
     shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=N, greedy=false, group_by_h=true)",
+        make_pair("shrink_bisimulation(max_states=N, greedy=false)",
                   "Exact bisimulation with a size limit "
                   "(called DFP-bop in the IJCAI 2011 paper by Nissim, "
                   "Hoffmann and Helmert), "
@@ -315,11 +311,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "(in terms of time and memory). When this is used, the planner "
         "prints a big warning on stderr with information on the performance "
         "impact. Don't use when benchmarking!)",
-        "false");
-    parser.add_option<bool>(
-        "terminate",
-        "terminate planner after heuristic computation finished (by reporting "
-        "all states as dead ends)",
         "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();

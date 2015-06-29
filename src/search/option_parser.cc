@@ -398,6 +398,7 @@ OptionParser::OptionParser(const string config, bool dr)
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
+    set_unparsed_config();
 }
 
 
@@ -407,8 +408,14 @@ OptionParser::OptionParser(ParseTree pt, bool dr)
       dry_run_(dr),
       help_mode_(false),
       next_unparsed_argument(first_child_of_root(parse_tree)) {
+    set_unparsed_config();
 }
 
+void OptionParser::set_unparsed_config() {
+    ostringstream stream;
+    kptree::print_tree_bracketed<ParseNode>(parse_tree, stream);
+    unparsed_config = stream.str();
+}
 
 string str_to_lower(string s) {
     transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -501,6 +508,7 @@ Options OptionParser::parse() {
         }
         last_key = pti->key;
     }
+    opts.set_unparsed_config(unparsed_config);
     return opts;
 }
 
@@ -545,10 +553,6 @@ bool OptionParser::help_mode() const {
     return help_mode_;
 }
 
-void OptionParser::set_parse_tree(const ParseTree &pt) {
-    parse_tree = pt;
-}
-
-ParseTree *OptionParser::get_parse_tree() {
+const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
 }
