@@ -55,9 +55,9 @@ int PotentialHeuristics::compute_heuristic(const GlobalState &state) {
 }
 
 void PotentialHeuristics::filter_dead_ends_and_duplicates(
-        vector<GlobalState> &samples,
-        unordered_map<StateID, int> &sample_to_max_h,
-        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
+    vector<GlobalState> &samples,
+    unordered_map<StateID, int> &sample_to_max_h,
+    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
     assert(sample_to_max_h.empty());
     assert(single_heuristics.empty());
     CountdownTimer filtering_timer(max_filtering_time);
@@ -92,15 +92,15 @@ void PotentialHeuristics::filter_dead_ends_and_duplicates(
     cout << "Unique non-dead-end samples: " << dead_end_free_samples.size()
          << endl;
     assert(num_duplicates + num_dead_ends + dead_end_free_samples.size() ==
-        samples.size());
+           samples.size());
     swap(samples, dead_end_free_samples);
 }
 
 void PotentialHeuristics::filter_covered_samples(
-        const std::shared_ptr<Heuristic> heuristic,
-        vector<GlobalState> &samples,
-        unordered_map<StateID, int> &sample_to_max_h,
-        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
+    const std::shared_ptr<Heuristic> heuristic,
+    vector<GlobalState> &samples,
+    unordered_map<StateID, int> &sample_to_max_h,
+    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
     vector<GlobalState> not_covered_samples;
     for (const GlobalState &sample : samples) {
         int max_h = sample_to_max_h.at(sample.get_id());
@@ -118,9 +118,9 @@ void PotentialHeuristics::filter_covered_samples(
 }
 
 shared_ptr<Heuristic> PotentialHeuristics::find_heuristic_and_remove_covered_samples(
-        vector<GlobalState> &samples,
-        unordered_map<StateID, int> &sample_to_max_h,
-        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
+    vector<GlobalState> &samples,
+    unordered_map<StateID, int> &sample_to_max_h,
+    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
     optimizer.optimize_for_samples(samples);
     shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
     size_t last_num_samples = samples.size();
@@ -142,9 +142,9 @@ shared_ptr<Heuristic> PotentialHeuristics::find_heuristic_and_remove_covered_sam
 }
 
 void PotentialHeuristics::cover_samples(
-        vector<GlobalState> &samples,
-        unordered_map<StateID, int> &sample_to_max_h,
-        unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) {
+    vector<GlobalState> &samples,
+    unordered_map<StateID, int> &sample_to_max_h,
+    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) {
     CountdownTimer covering_timer(max_covering_time);
     while (!samples.empty() && static_cast<int>(heuristics.size()) < max_num_heuristics) {
         if (covering_timer.is_expired()) {
@@ -153,7 +153,7 @@ void PotentialHeuristics::cover_samples(
         }
         cout << "Find heuristic #" << heuristics.size() + 1 << endl;
         heuristics.push_back(find_heuristic_and_remove_covered_samples(
-            samples, sample_to_max_h, single_heuristics));
+                                 samples, sample_to_max_h, single_heuristics));
     }
     cout << "Time for covering samples: " << covering_timer << endl;
 }
