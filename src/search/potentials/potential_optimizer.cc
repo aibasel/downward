@@ -247,7 +247,7 @@ shared_ptr<Heuristic> create_potential_heuristic(const Options &opts) {
 void add_common_potentials_options_to_parser(OptionParser &parser) {
     parser.add_option<int>(
         "num_samples",
-        "Number of states to sample if opt_func=SAMPLES",
+        "Number of states to sample",
         "1000");
     parser.add_option<double>(
         "max_potential",
