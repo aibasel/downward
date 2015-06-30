@@ -41,6 +41,9 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/toolchain-32bit.cmake")
 endif()
 
+# Path containing custom CMake modules
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
 
 
 ## == Project ==
@@ -48,13 +51,6 @@ endif()
 set(TARGET "downward")
 
 project(${TARGET})
-
-
-
-## == System specific default options ==
-
-# Path containing custom CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 
 
