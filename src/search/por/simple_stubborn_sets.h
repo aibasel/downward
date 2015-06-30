@@ -12,21 +12,8 @@
 class GlobalState;
 
 namespace POR {
-struct Fact {
-    int var;
-    int val;
-    Fact(int v, int d) : var(v), val(d) {}
-};
-
-inline bool operator<(const Fact &lhs, const Fact &rhs) {
-    return lhs.var < rhs.var;
-}
-////////////////////////////////////////////
 
 class SimpleStubbornSets : public PORMethodWithStatistics {
-    // achievers[var][value] contains all operator indices of
-    // operators that achieve the fact (var, value).
-    std::vector<std::vector<std::vector<int> > > achievers;
 
     // interference_relation[op1_no] contains all operator indices
     // of operators that interfere with op1.
@@ -47,8 +34,6 @@ class SimpleStubbornSets : public PORMethodWithStatistics {
     void add_interfering(int op_no);
 
     void compute_interference_relation();
-    void compute_achievers();
-    void compute_sorted_operators();
 protected:
     virtual void do_pruning(const GlobalState &state,
                             std::vector<const GlobalOperator *> &ops);
