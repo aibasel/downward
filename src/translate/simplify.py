@@ -116,31 +116,6 @@ def build_dtgs(task):
         for pre in pre_values:
             dtgs[var_no].add_arc(pre, post)
 
-    def get_combined_preconditions(op):
-        """Return a dict(int -> int) with the combined prevail and
-        preconditions of op.
-
-        Return None if there are internal contradictions (e.g.
-        multiple preconditions with different values)."""
-        conditions = {}
-        def add_condition(var, val):
-            """Try adding condition var->val. Return False if this
-            leads to contradictory conditions."""
-            current_condition = conditions.get(var)
-            if current_condition is None:
-                conditions[var] = val
-            elif current_condition != val:
-                return False
-            return True
-        for var, val in op.prevail:
-            if not add_condition(var, val):
-                return None
-        for var, pre, post, cond in op.pre_post:
-            if pre is not None:
-                if not add_condition(var, pre):
-                    return None
-        return conditions
-
     def get_effective_pre(var_no, conditions, effect_conditions):
         """Return combined information on the conditions on `var_no`
         from operator conditions and effect conditions.
@@ -168,7 +143,7 @@ def build_dtgs(task):
         return result
 
     for op in task.operators:
-        conditions = get_combined_preconditions(op)
+        conditions = dict(op.get_applicability_conditions())
         for var_no, _, post, cond in op.pre_post:
             effective_pre = get_effective_pre(var_no, conditions, cond)
             if effective_pre is not None:
