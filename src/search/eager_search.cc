@@ -293,9 +293,8 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 /*
- * TODO: HACK!  how do we do here if we don't save h values?
- * couldnt we use the key from the open list?
- * Currently we have more evaluations than normal
+ * TODO: HACK! This is brutally inefficient for simply looking up an h value
+ * furthermore it would recompute h for each and every state if h values are not saved
  */
 void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     if (f_evaluator) {

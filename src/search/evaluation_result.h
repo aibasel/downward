@@ -11,6 +11,7 @@ class EvaluationResult {
 
     int h_value;
     std::vector<const GlobalOperator *> preferred_operators;
+    bool count_evaluation;
 public:
     static const int INFINITE;
 
@@ -31,11 +32,13 @@ public:
     bool is_uninitialized() const;
     bool is_infinite() const;
     int get_h_value() const;
+    bool get_count_evaluation() const;
     const std::vector<const GlobalOperator *> &get_preferred_operators() const;
 
     void set_h_value(int value);
     void set_preferred_operators(
         std::vector<const GlobalOperator *> && preferred_operators);
+    void set_count_evaluation(bool count_eval);
 };
 
 #endif

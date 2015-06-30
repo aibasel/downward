@@ -26,6 +26,10 @@ EvaluationResult::get_preferred_operators() const {
     return preferred_operators;
 }
 
+bool EvaluationResult::get_count_evaluation() const {
+    return count_evaluation;
+}
+
 void EvaluationResult::set_h_value(int value) {
     h_value = value;
 }
@@ -33,4 +37,8 @@ void EvaluationResult::set_h_value(int value) {
 void EvaluationResult::set_preferred_operators(
     std::vector<const GlobalOperator *> && preferred_ops) {
     preferred_operators = move(preferred_ops);
+}
+
+void EvaluationResult::set_count_evaluation(bool count_eval) {
+    count_evaluation = count_eval;
 }
