@@ -130,8 +130,6 @@ void DiversePotentialHeuristics::find_diverse_heuristics() {
         sample_registry, num_samples, *sampling_heuristic);
 
     // Filter dead end samples.
-    unordered_map<StateID, int> sample_to_max_h;
-    unordered_map<StateID, shared_ptr<Heuristic> > single_heuristics;
     filter_dead_ends_and_duplicates(samples);
 
     // Iteratively cover samples.
