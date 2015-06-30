@@ -30,21 +30,16 @@ public:
     bool is_closed() const;
     bool is_dead_end() const;
 
-    bool is_h_dirty() const;
-    void set_h_dirty();
-    void clear_h_dirty();
     int get_g() const;
     int get_real_g() const;
-    int get_h() const;
 
-    void open_initial(int h);
-    void open(int h, const SearchNode &parent_node,
+    void open_initial();
+    void open(const SearchNode &parent_node,
               const GlobalOperator *parent_op);
     void reopen(const SearchNode &parent_node,
                 const GlobalOperator *parent_op);
     void update_parent(const SearchNode &parent_node,
                        const GlobalOperator *parent_op);
-    void increase_h(int h);
     void close();
     void mark_as_dead_end();
 

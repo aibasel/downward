@@ -64,7 +64,7 @@ void EagerSearch::initialize() {
             print_checkpoint_line(0);
         start_f_value_statistics(eval_context);
         SearchNode node = search_space.get_node(initial_state);
-        node.open_initial(eval_context.get_heuristic_value(heuristics[0]));
+        node.open_initial();
 
         open_list->insert(eval_context, initial_state.get_id());
     }
@@ -148,16 +148,13 @@ SearchStatus EagerSearch::step() {
             EvaluationContext eval_context(
                 succ_state, succ_g, is_preferred, &statistics);
             statistics.inc_evaluated_states();
-            succ_node.clear_h_dirty();
 
             if (open_list->is_dead_end(eval_context)) {
                 succ_node.mark_as_dead_end();
                 statistics.inc_dead_ends();
                 continue;
             }
-
-            int succ_h = eval_context.get_heuristic_value(heuristics[0]);
-            succ_node.open(succ_h, node, op);
+            succ_node.open(node, op);
 
             open_list->insert(eval_context, succ_state.get_id());
             if (search_progress.check_progress(eval_context)) {
@@ -246,27 +243,24 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
             if (node.is_dead_end())
                 continue;
             int pushed_h = last_key_removed[1];
-            assert(node.get_h() >= pushed_h);
-            if (node.get_h() > pushed_h) {
-                // cout << "LM-A* skip h" << endl;
-                continue;
-            }
-            assert(node.get_h() == pushed_h);
-            if (!node.is_closed() && node.is_h_dirty()) {
+
+            /* TODO: old mpd distincted also if pushed h is smaller than
+             * stored h (without recomputing);
+             * --> run tests if we loose performance
+             */
+
+            //this seems weird - why can the node not be closed?
+            if(!node.is_closed()) {
                 EvaluationContext eval_context(
                     node.get_state(), node.get_g(), false, &statistics);
-                node.clear_h_dirty();
 
                 if (open_list->is_dead_end(eval_context)) {
                     node.mark_as_dead_end();
                     statistics.inc_dead_ends();
                     continue;
                 }
-
-                int new_h = eval_context.get_heuristic_value(heuristics[0]);
-                if (new_h > node.get_h()) {
+                if(pushed_h < eval_context.get_result(heuristics[0]).get_h_value()) {
                     assert(node.is_open());
-                    node.increase_h(new_h);
                     open_list->insert(eval_context, node.get_state_id());
                     continue;
                 }
@@ -298,14 +292,20 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
+/*
+ * TODO: HACK!  how do we do here if we don't save h values?
+ * couldnt we use the key from the open list?
+ * Currently we have more evaluations than normal
+ */
 void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     if (f_evaluator) {
         /*
           TODO: This code doesn't fit the idea of supporting
           an arbitrary f evaluator.
         */
-        int new_f_value = node.get_g() + node.get_h();
-        statistics.report_f_value_progress(new_f_value);
+        EvaluationContext eval_context(node.get_state(), node.get_g(), false, &statistics);
+        int f_value = eval_context.get_heuristic_value(f_evaluator);
+        statistics.report_f_value_progress(f_value);
     }
 }
 
