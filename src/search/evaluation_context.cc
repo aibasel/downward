@@ -32,10 +32,8 @@ EvaluationContext::EvaluationContext(
 }
 
 /*
- * TODO: Evaluations are also increased, if the heuristic only looks up a cached result.
- * This leads to more evaluations in the statistic than are actually done.
- * The heuristic would need to give some sort of feedback, if it actually calculated
- * a heuristic value or just returned a cached value
+ * TODO: information whether the heuristic actually evaluated the state or just looked up a cache
+ * is stored in the EvaluationResult currently. Maybe there are also better ways...
  */
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
     EvaluationResult &result = cache[heur];
@@ -44,7 +42,9 @@ const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
         if (statistics && dynamic_cast<const Heuristic *>(heur)) {
             /* Only count evaluations of actual Heuristics, not arbitrary
                scalar evaluators. */
-            statistics->inc_evaluations();
+            if(result.get_count_evaluation()) {
+                statistics->inc_evaluations();
+            }
         }
     }
     return result;

@@ -93,6 +93,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     if(!calculate_preferred & cache_h_values &&
             heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
        heuristic = heuristic_cache[state].h;
+       result.set_count_evaluation(false);
     } else {
        heuristic = compute_heuristic(state);
        if(cache_h_values) {
@@ -100,6 +101,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
        }
        for (const GlobalOperator *preferred_operator : preferred_operators)
            preferred_operator->unmark();
+       result.set_count_evaluation(true);
     }
 
     assert(heuristic == DEAD_END || heuristic >= 0);
