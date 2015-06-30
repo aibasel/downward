@@ -31,6 +31,12 @@ EvaluationContext::EvaluationContext(
     : EvaluationContext(HeuristicCache(state), INVALID, false, statistics, calculate_preferred) {
 }
 
+/*
+ * TODO: Evaluations are also increased, if the heuristic only looks up a cached result.
+ * This leads to more evaluations in the statistic than are actually done.
+ * The heuristic would need to give some sort of feedback, if it actually calculated
+ * a heuristic value or just returned a cached value
+ */
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
     EvaluationResult &result = cache[heur];
     if (result.is_uninitialized()) {
