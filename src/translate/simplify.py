@@ -29,6 +29,8 @@ from __future__ import print_function
 from collections import defaultdict
 from itertools import count
 
+import sas_tasks
+
 DEBUG = True
 
 # TODO:
@@ -274,7 +276,7 @@ class VarValueRenaming(object):
     def apply_to_init(self, init):
         init_pairs = list(enumerate(init.values))
         try:
-            self.translate_pairs_in_place(init_pairs)
+            self.convert_pairs(init_pairs)
         except Impossible:
             assert False, "Initial state impossible? Inconceivable!"
         new_values = [None] * self.new_var_count
@@ -285,20 +287,19 @@ class VarValueRenaming(object):
 
     def apply_to_goals(self, goals):
         # This may propagate Impossible up.
-        self.translate_pairs_in_place(goals)
+        self.convert_pairs(goals)
 
     def apply_to_operators(self, operators):
         new_operators = []
         num_removed = 0
         for op in operators:
-            try:
-                self.apply_to_operator(op)
-            except (Impossible, DoesNothing):
+            new_op = self.translate_operator(op)
+            if new_op is None:
                 num_removed += 1
                 if DEBUG:
                     print("Removed operator: %s" % op.name)
             else:
-                new_operators.append(op)
+                new_operators.append(new_op)
         print("%d operators removed" % num_removed)
         operators[:] = new_operators
 
@@ -318,38 +319,67 @@ class VarValueRenaming(object):
         print("%d axioms removed" % num_removed)
         axioms[:] = new_axioms
 
-    def apply_to_operator(self, op):
+    def translate_operator(self, op):
+        """Compute a new operator from op where the var/value renaming has
+        been applied. Return None if op should be pruned (because it
+        is always inapplicable or has no effect.)"""
+
+        # We do not call this apply_to_operator, breaking the analogy
+        # with the other methods, because it creates a new operator
+        # rather than transforming in-place. The reason for this is
+        # that it would be quite difficult to generate the operator
+        # in-place.
+
+        # This method is trickier than it may at first appear. For
+        # example, pre_post values should be fully sorted (see
+        # documentation in the sas_tasks module), and pruning effect
+        # conditions from a conditional effects can break this sort
+        # order. Recreating the operator from scratch solves this
+        # because the pre_post entries are sorted by
+        # SASOperator.__init__.
+
+        # Also, when we detect a pre_post pair where the effect part
+        # can never trigger, the precondition part is still important,
+        # but may be demoted to a prevail condition. Whether or not
+        # this happens depends on the presence of other pre_post
+        # entries for the same variable. We solve this by computing
+        # the sorting into prevail vs. preconditions from scratch, too.
+
         op.dump() # TODO: Remove
 
-        # The prevail translation may generate an Impossible exception,
-        # which is propagated up.
-        self.translate_pairs_in_place(op.prevail)
+        applicability_conditions = op.get_applicability_conditions()
+        try:
+            self.convert_pairs(applicability_conditions)
+        except Impossible:
+            # The operator is never applicable.
+            return None
+        conditions_dict = dict(applicability_conditions)
+        new_prevail_vars = set(conditions_dict)
+
         new_pre_post = []
         for entry in op.pre_post:
-            try:
-                new_pre_post.append(self.translate_pre_post(entry))
-                # This may raise Impossible if "pre" is always false.
-                # This is then propagated up.
-            except DoesNothing:
-                # Conditional effect that is impossible to trigger, or
-                # effect that sets an always true value. Swallow this.
-                pass
-                # TODO: Possible bug here: "DoesNothing" indicates
-                # that we have a conditional effect that is impossible
-                # to trigger, but I don't think this means we can
-                # ignore the whole pre_post entry. If there is a
-                # nontrivial precondition associated with the entry,
-                # then we must consider it, as the precondition part
-                # of the entry has nothing to do with the conditional
-                # effect part.
-        op.pre_post = new_pre_post
+            new_entry = self.translate_pre_post(entry, conditions_dict)
+            if new_entry is not None:
+                new_pre_post.append(new_entry)
+                # Mark the variable in the entry as not prevailed.
+                new_var = new_entry[0]
+                new_prevail_vars.discard(new_var)
+
         if not new_pre_post:
-            raise DoesNothing
+            # The operator has no effect.
+            return None
+        new_prevail = sorted(
+            (var, value)
+            for (var, value) in conditions_dict.items()
+            if var in new_prevail_vars)
+        return sas_tasks.SASOperator(
+            name=op.name, prevail=new_prevail, pre_post=new_pre_post,
+            cost=op.cost)
 
     def apply_to_axiom(self, axiom):
         # The following line may generate an Impossible exception,
         # which is propagated up.
-        self.translate_pairs_in_place(axiom.condition)
+        self.convert_pairs(axiom.condition)
         new_var, new_value = self.translate_pair(axiom.effect)
         # If the new_value is always false, then the condition must
         # have been impossible.
@@ -358,51 +388,71 @@ class VarValueRenaming(object):
             raise DoesNothing
         axiom.effect = new_var, new_value
 
-    def translate_pre_post(self, pre_post_tuple):
-        (var_no, pre, post, cond) = pre_post_tuple
+    def translate_pre_post(self, pre_post_entry, conditions_dict):
+        """Return a translated version of a pre_post entry.
+        If the entry never causes a value change, return None.
+
+        (It might seem that a possible precondition part of pre_post
+        gets lost in this case, but pre_post entries that become
+        prevail conditions are handled elsewhere.)
+
+        conditions_dict contains all applicability conditions
+        (prevail/pre) of the operator, already converted. This is
+        used to detect effect conditions that can never fire.
+
+        The method may assume that the operator remains reachable,
+        i.e., that it does not have impossible preconditions, as these
+        are already checked elsewhere.
+
+        Possible cases:
+        - effect is always_true => return None
+        - effect equals prevailed value => return None
+        - effect condition is impossible given operator applicability
+          condition => return None
+        - otherwise => return converted pre_post tuple
+        """
+
+        var_no, pre, post, cond = pre_post_entry
         new_var_no, new_post = self.translate_pair((var_no, post))
+
+        if new_post is always_true:
+            return None
+
         if pre == -1:
             new_pre = -1
         else:
             _, new_pre = self.translate_pair((var_no, pre))
-        if new_pre is always_false:
-            raise Impossible
+        assert new_pre is not always_false, (
+            "This function should only be called for operators "
+            "whose applicability conditions are deemed possible.")
+
+        if new_post == new_pre:
+            return None
+
+        new_cond = list(cond)
         try:
-            self.translate_pairs_in_place(cond)
+            self.convert_pairs(new_cond)
         except Impossible:
-            # Explanation for the following assertion: we want to get
-            # rid of the postcondition, but not the precondition. That
-            # is, the precondition should become a prevail condition.
-            # Our calling code currently does not support this (and in
-            # any case it's not really clear what should happen if the
-            # same precondition occurs as part of multiple conditional
-            # effects etc. -- is it still a precondition then?) The
-            # correct fix for this is to get rid of the
-            # prevail/precondition distinction, which is very fuzzy in
-            # the presence of conditional effects.
-            assert new_pre == -1 or new_pre is always_true, "we're in trouble"
-            raise DoesNothing
+            # The effect conditions can never be satisfied.
+            return None
 
-        if new_post is always_false:
-            # Our analysis shows that the effect is impossible. If our
-            # analysis isn't buggy, this must imply that the effect
-            # condition, in conjunction with the operator
-            # precondition, never triggers. We trust this analysis and
-            # ignore the effect. A more defensive programming style
-            # would perhaps try to understand more deeply what is
-            # going on here.
+        for cond_var, cond_value in new_cond:
+            if (cond_var in conditions_dict and
+                conditions_dict[cond_var] != cond_value):
+                # This effect condition is not compatible with
+                # the applicability conditions.
+                return None
 
-            # Regarding the assertion, see the other assertion with
-            # the same error message above.
-            assert new_pre == -1 or new_pre is always_true, "we're in trouble"
-            raise DoesNothing
-        if new_pre is always_true:
-            assert new_post is always_true
-            raise DoesNothing
-        elif new_post is always_true:
-            assert new_pre == -1
-            raise DoesNothing
-        return new_var_no, new_pre, new_post, cond
+        assert new_post is not always_false, (
+            "if we survived so far, this effect can trigger "
+            "(as far as our analysis can determine this), "
+            "and then new_post cannot be always_false")
+
+        assert new_pre is not always_true, (
+            "if this pre_post changes the value and can fire, "
+            "new_pre cannot be always_true")
+
+        return new_var_no, new_pre, new_post, new_cond
 
     def translate_pair(self, fact_pair):
         (var_no, value) = fact_pair
@@ -410,7 +460,8 @@ class VarValueRenaming(object):
         new_value = self.new_values[var_no][value]
         return new_var_no, new_value
 
-    def translate_pairs_in_place(self, pairs):
+    def convert_pairs(self, pairs):
+        # We call this convert_... because it is an in-place method.
         new_pairs = []
         for pair in pairs:
             new_var_no, new_value = self.translate_pair(pair)
