@@ -3,7 +3,8 @@
 ## If you're adding another file to the codebase which *isn't* a plugin, add
 ## it to the following list
 
-set(search_main_SRCS
+set(PLANNER_SOURCES
+        planner
         abstract_task
         axioms
         causal_graph
@@ -73,76 +74,67 @@ set(search_main_SRCS
 ## Details of the plugins
 #
 # For now, everything defaults to being enabled - it's up to the user to specify -DPLUGIN_FOO=FALSE to disable
-# a given plugin
-
-# First, initialise empty list of plugin source files
-
-set(search_plugin_SRCS
-
-)
-
-
-# The recipe for defining a pluging should be fairly self-explanatory.  The text in double-quotes is
+# a given plugin.
+# The recipe for defining a pluging should be fairly self-explanatory. The text in double-quotes is
 # a free-form natural language description, used in the CMake GUI to explain what the flag means.
 
 option(PLUGIN_ADDITIVE_HEURISTIC "The additive heuristic" TRUE)
 if(PLUGIN_ADDITIVE_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} additive_heuristic)
+    list(APPEND PLANNER_SOURCES additive_heuristic)
 endif()
 
 
 option(PLUGIN_BLIND_SEARCH_HEURISTIC "The 'blind search' heuristic" TRUE)
 if(PLUGIN_BLIND_SEARCH_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} blind_search_heuristic)
+    list(APPEND PLANNER_SOURCES blind_search_heuristic)
 endif()
 
 
 option(PLUGIN_CEA_HEURISTIC "The context-enhanced additive heuristic" TRUE)
 if(PLUGIN_CEA_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} cea_heuristic)
+    list(APPEND PLANNER_SOURCES cea_heuristic)
 endif()
 
 
 option(PLUGIN_CG_HEURISTIC "The causal graph heuristic" TRUE)
 if(PLUGIN_CG_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} cg_heuristic cg_cache)
+    list(APPEND PLANNER_SOURCES cg_heuristic cg_cache)
 endif()
 
 
 option(PLUGIN_FF_HEURISTIC "The FF heuristic (an implementation of the RPG heuristic)" TRUE)
 if(PLUGIN_FF_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} ff_heuristic)
+    list(APPEND PLANNER_SOURCES ff_heuristic)
 endif()
 
 
 option(PLUGIN_GOAL_COUNT_HEURISTIC "The goal-counting heuristic" TRUE)
 if(PLUGIN_GOAL_COUNT_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} goal_count_heuristic)
+    list(APPEND PLANNER_SOURCES goal_count_heuristic)
 endif()
 
 
 option(PLUGIN_HM_HEURISTIC "The h^m heuristic" TRUE)
 if(PLUGIN_HM_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} hm_heuristic)
+    list(APPEND PLANNER_SOURCES hm_heuristic)
 endif()
 
 
 option(PLUGIN_LM_CUT_HEURISTIC "The LM-cut heuristic" TRUE)
 if(PLUGIN_LM_CUT_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} lm_cut_heuristic)
+    list(APPEND PLANNER_SOURCES lm_cut_heuristic)
 endif()
 
 
 option(PLUGIN_MAX_HEURISTIC "The Max heuristic" TRUE)
 if(PLUGIN_MAX_HEURISTIC)
-    set(search_plugin_SRCS ${search_plugin_SRCS} max_heuristic)
+    list(APPEND PLANNER_SOURCES max_heuristic)
 endif()
 
 
 option(PLUGIN_MAS_HEURISTIC "The Merge-and-Shrink heuristic" TRUE)
 if(PLUGIN_MAS_HEURISTIC)
-    set(search_plugin_SRCS
-        ${search_plugin_SRCS}
+    list(APPEND PLANNER_SOURCES
         merge_and_shrink/labels
         merge_and_shrink/merge_and_shrink_heuristic
         merge_and_shrink/merge_dfp
@@ -160,8 +152,7 @@ endif()
 
 option(PLUGIN_LANDMARKS "Plugin containing the code to reason with landmarks" TRUE)
 if(PLUGIN_LANDMARKS)
-    set(search_plugin_SRCS
-        ${search_plugin_SRCS}
+    list(APPEND PLANNER_SOURCES
         landmarks/exploration
         landmarks/h_m_landmarks
         landmarks/lama_ff_synergy
@@ -182,8 +173,7 @@ endif()
 
 option(PLUGIN_LEARNING "Plugin containing the code to reason with learning" FALSE)
 if(PLUGIN_LEARNING)
-    set(search_plugin_SRCS
-        ${search_plugin_SRCS}
+    list(APPEND PLANNER_SOURCES
         learning/AODE
         learning/classifier
         learning/composite_feature_extractor
@@ -201,8 +191,7 @@ endif()
 
 option(PLUGIN_PDBS "Plugin containing the code for PDBs" TRUE)
 if(PLUGIN_PDBS)
-    set(search_plugin_SRCS
-        ${search_plugin_SRCS}
+    list(APPEND PLANNER_SOURCES
         pdbs/canonical_pdbs_heuristic
         pdbs/dominance_pruner
         pdbs/match_tree

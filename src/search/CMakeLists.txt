@@ -66,11 +66,7 @@ include("FastDownwardPlugins")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 
-add_executable(${TARGET}
-    planner.cc
-    ${search_main_SRCS}
-    ${search_plugin_SRCS}
-)
+add_executable(${TARGET} ${PLANNER_SOURCES})
 
 
 
