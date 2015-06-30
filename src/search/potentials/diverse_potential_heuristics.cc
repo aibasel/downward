@@ -23,14 +23,12 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
       max_covering_time(opts.get<double>("max_covering_time")) {
     Timer initialization_timer;
     find_diverse_heuristics();
-    cout << "Potential heuristics: " << heuristics.size() << endl;
+    cout << "Potential heuristics: " << diverse_heuristics.size() << endl;
     cout << "Initialization of potential heuristics: " << initialization_timer << endl;
 }
 
 void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
-    vector<GlobalState> &samples,
-    unordered_map<StateID, int> &sample_to_max_h,
-    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
+    vector<GlobalState> &samples) {
     assert(sample_to_max_h.empty());
     assert(single_heuristics.empty());
     CountdownTimer filtering_timer(max_filtering_time);
@@ -71,9 +69,7 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
 
 void DiversePotentialHeuristics::filter_covered_samples(
     const std::shared_ptr<Heuristic> heuristic,
-    vector<GlobalState> &samples,
-    unordered_map<StateID, int> &sample_to_max_h,
-    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
+    vector<GlobalState> &samples) {
     vector<GlobalState> not_covered_samples;
     for (const GlobalState &sample : samples) {
         int max_h = sample_to_max_h.at(sample.get_id());
@@ -91,13 +87,11 @@ void DiversePotentialHeuristics::filter_covered_samples(
 }
 
 shared_ptr<Heuristic> DiversePotentialHeuristics::find_heuristic_and_remove_covered_samples(
-    vector<GlobalState> &samples,
-    unordered_map<StateID, int> &sample_to_max_h,
-    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) const {
+    vector<GlobalState> &samples) {
     optimizer.optimize_for_samples(samples);
     shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
     size_t last_num_samples = samples.size();
-    filter_covered_samples(group_heuristic, samples, sample_to_max_h, single_heuristics);
+    filter_covered_samples(group_heuristic, samples);
     shared_ptr<Heuristic> selected_heuristic = nullptr;
     if (samples.size() < last_num_samples) {
         selected_heuristic = group_heuristic;
@@ -106,7 +100,7 @@ shared_ptr<Heuristic> DiversePotentialHeuristics::find_heuristic_and_remove_cove
         StateID state_id = g_rng.choose(samples)->get_id();
         shared_ptr<Heuristic> single_heuristic = single_heuristics[state_id];
         single_heuristics.erase(state_id);
-        filter_covered_samples(single_heuristic, samples, sample_to_max_h, single_heuristics);
+        filter_covered_samples(single_heuristic, samples);
         selected_heuristic = single_heuristic;
     }
     cout << "Removed " << last_num_samples - samples.size() << " samples. "
@@ -114,19 +108,15 @@ shared_ptr<Heuristic> DiversePotentialHeuristics::find_heuristic_and_remove_cove
     return selected_heuristic;
 }
 
-void DiversePotentialHeuristics::cover_samples(
-    vector<GlobalState> &samples,
-    unordered_map<StateID, int> &sample_to_max_h,
-    unordered_map<StateID, shared_ptr<Heuristic> > &single_heuristics) {
+void DiversePotentialHeuristics::cover_samples(vector<GlobalState> &samples) {
     CountdownTimer covering_timer(max_covering_time);
-    while (!samples.empty() && static_cast<int>(heuristics.size()) < max_num_heuristics) {
+    while (!samples.empty() && static_cast<int>(diverse_heuristics.size()) < max_num_heuristics) {
         if (covering_timer.is_expired()) {
             cout << "Ran out of time covering samples." << endl;
             break;
         }
-        cout << "Find heuristic #" << heuristics.size() + 1 << endl;
-        heuristics.push_back(find_heuristic_and_remove_covered_samples(
-                                 samples, sample_to_max_h, single_heuristics));
+        cout << "Find heuristic #" << diverse_heuristics.size() + 1 << endl;
+        diverse_heuristics.push_back(find_heuristic_and_remove_covered_samples(samples));
     }
     cout << "Time for covering samples: " << covering_timer << endl;
 }
@@ -142,14 +132,14 @@ void DiversePotentialHeuristics::find_diverse_heuristics() {
     // Filter dead end samples.
     unordered_map<StateID, int> sample_to_max_h;
     unordered_map<StateID, shared_ptr<Heuristic> > single_heuristics;
-    filter_dead_ends_and_duplicates(samples, sample_to_max_h, single_heuristics);
+    filter_dead_ends_and_duplicates(samples);
 
     // Iteratively cover samples.
-    cover_samples(samples, sample_to_max_h, single_heuristics);
+    cover_samples(samples);
 }
 
 vector<shared_ptr<Heuristic> > DiversePotentialHeuristics::get_heuristics() const {
-    return heuristics;
+    return diverse_heuristics;
 }
 
 static Heuristic *_parse(OptionParser &parser) {

@@ -11,7 +11,7 @@ class Options;
 
 namespace potentials {
 class SampleBasedPotentialHeuristics {
-    mutable PotentialOptimizer optimizer;
+    PotentialOptimizer optimizer;
     std::vector<std::shared_ptr<Heuristic> > heuristics;
 
 public:
