@@ -132,8 +132,9 @@ def get_elapsed_time():
     processes.
 
     Note: According to the os.times documentation, Windows sets the
-    child time components to 0, so time slices for portfolios will be
-    allocated slightly wrongly there.
+    child time components to 0, so if we ever support running
+    portfolios on Windows, time slices will be allocated slightly
+    wrongly there.
     """
     return sum(os.times()[:4])
 
