@@ -11,9 +11,9 @@
 #
 #  OSI_FOUND                 - TRUE if all components are found.
 #  OSI_INCLUDE_DIRS          - Full paths to all include dirs.
-#  OSI_LIBRARY               - Full paths to the OSI library.
 #  OSI_LIBRARIES             - Full paths to all libraries.
 #  OSI_<solver>_FOUND        - TRUE if a proxy for <solver> is found.
+#  OSI_<solver>_INCLUDE_DIRS - Full path to include directories for <solver>.
 #  OSI_<solver>_LIBRARIES    - Full path to proxy and main libraries for <solver>.
 #
 # Example Usages:
@@ -23,10 +23,12 @@
 # Note that the standard FIND_PACKAGE features are supported
 # (i.e., QUIET, REQUIRED, etc.).
 
-find_path(OSI_INCLUDES
+
+# Find include dirs.
+find_path(OSI_INCLUDE_DIRS
     NAMES
-    OsiConfig.h config_osi.h
-    PATHS
+    OsiConfig.h config_osi.h CoinPragma.hpp
+    HINTS
     $ENV{DOWNWARD_COIN_ROOT}
     ${DOWNWARD_COIN_ROOT}
     PATH_SUFFIXES
@@ -34,49 +36,83 @@ find_path(OSI_INCLUDES
     include/coin
 )
 
-set(OSI_LIBRARIES "")
-foreach(solver ${OSI_FIND_COMPONENTS})
-    set(OSI_${solver}_FOUND FALSE)
-    find_library(OSI_${solver}_LIBRARY
-        NAMES
-        Osi${solver}
-        libOsi${solver}
-        PATHS
-        ${DOWNWARD_COIN_ROOT}
-        $ENV{DOWNWARD_COIN_ROOT}
-        PATH_SUFFIXES
-        lib
-    )
-
-    set(OSI_${solver}_LIBRARIES ${OSI_${solver}_LIBRARY})
-    if(OSI_${solver}_LIBRARIES)
-        list(APPEND OSI_LIBRARIES ${OSI_${solver}_LIBRARIES})
-        set(OSI_${solver}_FOUND TRUE)
-    endif()
-    mark_as_advanced(OSI_${solver}_LIBRARY)
-endforeach()
-
-find_library(OSI_LIBRARY
-    Osi
-    libOsi
-    PATHS
+# Find main libraries.
+find_library(OSI_COINUTILS_LIBRARY
+    NAMES
+    CoinUtils
+    libCoinUtils
+    HINTS
     ${DOWNWARD_COIN_ROOT}
     $ENV{DOWNWARD_COIN_ROOT}
     PATH_SUFFIXES
     lib
 )
+find_library(OSI_LIBRARY
+    Osi
+    libOsi
+    HINTS
+    ${DOWNWARD_COIN_ROOT}
+    $ENV{DOWNWARD_COIN_ROOT}
+    PATH_SUFFIXES
+    lib
+)
+set(OSI_LIBRARIES ${OSI_LIBRARY} ${OSI_COINUTILS_LIBRARY})
 
-## Basic Osi libs must be added after (!) all osi solver libs
-list(APPEND OSI_LIBRARIES ${OSI_LIBRARY})
+# Find solver proxies.
+foreach(SOLVER ${OSI_FIND_COMPONENTS})
+    set(OSI_${SOLVER}_FOUND FALSE)
+    find_library(OSI_${SOLVER}_LIBRARIES
+        NAMES
+        Osi${SOLVER}
+        libOsi${SOLVER}
+        HINTS
+        ${DOWNWARD_COIN_ROOT}
+        $ENV{DOWNWARD_COIN_ROOT}
+        PATH_SUFFIXES
+        lib
+    )
+endforeach()
 
-# Restore the original search paths
-set(CMAKE_FIND_ROOT_PATH ${_CMAKE_FIND_ROOT_PATH})
+# A component is present if its adapter is present and its solver is present.
 
+# Clp component
+if(OSI_Clp_LIBRARIES)
+    find_package(Clp)
+    if (CPLEX_FOUND)
+        list(APPEND OSI_Clp_LIBRARIES ${CLP_LIBRARIES})
+        list(APPEND OSI_Clp_INCLUDE_DIRS ${CLP_INCLUDE_DIRS})
+        set(OSI_Clp_FOUND TRUE)
+    endif()
+endif()
+
+# Cpx component
+if(OSI_Cpx_LIBRARIES)
+    find_package(Cplex)
+    if (CPLEX_FOUND)
+        list(APPEND OSI_Cpx_LIBRARIES ${CPLEX_LIBRARIES})
+        list(APPEND OSI_Cpx_INCLUDE_DIRS ${CPLEX_INCLUDE_DIRS})
+        set(OSI_Cpx_FOUND TRUE)
+    endif()
+endif()
+
+# Grb component
+if(OSI_Grb_LIBRARIES)
+    message(FATAL_ERROR "Gurobi is not tested yet. Try to copy the config of cplex above and the file cmake/modules/FindCplex.cmake and adapt them for gurobi.")
+    set(OSI_Grb_FOUND FALSE)
+endif()
+
+
+# Check for consistency and handle arguments like QUIET, REQUIRED, etc.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     OSI
-    REQUIRED_VARS OSI_INCLUDES OSI_LIBRARIES
+    REQUIRED_VARS OSI_INCLUDE_DIRS OSI_LIBRARIES
     HANDLE_COMPONENTS
 )
 
-mark_as_advanced(OSI_INCLUDES OSI_LIBRARY OSI_LIBRARIES)
+# Do not show internal variables in cmake GUIs like ccmake.
+mark_as_advanced(OSI_INCLUDE_DIRS OSI_LIBRARY OSI_COINUTILS_LIBRARY OSI_LIBRARIES)
+foreach(SOLVER ${OSI_FIND_COMPONENTS})
+    mark_as_advanced(OSI_${SOLVER}_LIBRARIES)
+    mark_as_advanced(OSI_${SOLVER}_INCLUDE_DIRS)
+endforeach()
