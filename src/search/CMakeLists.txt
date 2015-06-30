@@ -36,7 +36,7 @@ endif()
 
 # Default tool chain forces a 32 bit compilation
 # disable tool chain file for now
-if(0 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     message("Defaulting to 32 bit compilation.")
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/toolchain-32bit.cmake")
 endif()
