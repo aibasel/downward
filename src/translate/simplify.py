@@ -31,7 +31,7 @@ from itertools import count
 
 import sas_tasks
 
-DEBUG = True
+DEBUG = False
 
 # TODO:
 # This is all quite hackish and would be easier if the translator were
