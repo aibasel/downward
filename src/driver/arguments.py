@@ -58,8 +58,8 @@ Examples:
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
-    """Preserve newlines and spacing."""
     def _fill_text(self, text, width, indent):
+        """Preserve newlines and spacing."""
         return ''.join([indent + line for line in text.splitlines(True)])
 
     def _format_args(self, action, default_metavar):
@@ -262,6 +262,20 @@ def parse_args():
     components.add_argument(
         "--search", action="store_true",
         help="run search component")
+
+    components = ["translate", "preprocess", "search", "overall"]
+
+    time_limits = parser.add_argument_group(
+        title="time limits in seconds or with suffixes s, m, h (e.g. 100s, 30m, 1h)")
+    for component in components:
+        time_limits.add_argument(
+            "--{component}-timeout".format(**locals()))
+
+    memory_limits = parser.add_argument_group(
+        title="memory limits in MB or with suffixes M, G (e.g. 1024M, 2G)")
+    for component in components:
+        memory_limits.add_argument(
+            "--{component}-memory".format(**locals()))
 
     driver_other = parser.add_argument_group(
         title="other driver options")
