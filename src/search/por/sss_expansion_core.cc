@@ -9,18 +9,12 @@ using namespace std;
 class GlobalState;
 
 namespace POR {
-std::vector<std::vector<FactEC> > operator_preconds;
-std::vector<std::vector<FactEC> > operator_effects;
 
-// Copied from SimpleStubbornSets
+// TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
     int op_index = op - &*g_operators.begin();
     assert(op_index >= 0 && op_index < g_operators.size());
     return op_index;
-}
-
-inline bool operator<(const GlobalOperator &lhs, const GlobalOperator &rhs) {
-    return get_op_index(&lhs) < get_op_index(&rhs);
 }
 
 static inline bool is_v_applicable(int var, int op_no, const GlobalState &state, std::vector<std::vector<int> > &v_precond) {
@@ -39,19 +33,19 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
     return make_pair(-1, -1);
 }
 
-static inline void get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars) {
+void SSS_ExpansionCore::get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars) {
     disabled_vars.clear();
     size_t i = 0;
     size_t j = 0;
-    while (i < operator_preconds[op2_no].size() && j < operator_effects[op1_no].size()) {
-        int read_var = operator_preconds[op2_no][i].var;
-        int write_var = operator_effects[op1_no][j].var;
+    while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
+        int read_var = op_preconds[op2_no][i].var;
+        int write_var = op_effects[op1_no][j].var;
         if (read_var < write_var) {
             i++;
         } else {
             if (read_var == write_var) {
-                int read_value = operator_preconds[op2_no][i].val;
-                int write_value = operator_effects[op1_no][j].val;
+                int read_value = op_preconds[op2_no][i].val;
+                int write_value = op_effects[op1_no][j].val;
                 if (read_value != write_value) {
                     disabled_vars.push_back(read_var);
                 }
@@ -63,36 +57,6 @@ static inline void get_disabled_vars(int op1_no, int op2_no, std::vector<int> &d
             }
         }
     }
-}
-
-static inline bool can_disable(int op1_no, int op2_no) {
-    std::vector<int> disabled_vars;
-    get_disabled_vars(op1_no, op2_no, disabled_vars);
-    return !disabled_vars.empty();
-}
-
-// Copied from SimpleStubbornSets
-static inline bool can_conflict(int op1_no, int op2_no) {
-    size_t i = 0;
-    size_t j = 0;
-    while (i < operator_effects[op1_no].size() && j < operator_effects[op2_no].size()) {
-        int var1 = operator_effects[op1_no][i].var;
-        int var2 = operator_effects[op2_no][j].var;
-        if (var1 < var2)
-            i++;
-        else if (var1 == var2) {
-            int value1 = operator_effects[op1_no][i].val;
-            int value2 = operator_effects[op2_no][j].val;
-            if (value1 != value2)
-                return true;
-            i++;
-            j++;
-        } else {
-            // var1 > var2
-            j++;
-        }
-    }
-    return false;
 }
 
 
@@ -118,86 +82,7 @@ void SSS_ExpansionCore::dump_options() const {
     cout << "partial order reduction method: sss_expansion core" << endl;
 }
 
-// Copied from SimpleStubbornSets
-// void SSS_ExpansionCore::compute_sorted_operators() {
-//     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
-//         GlobalOperator *op = &g_operators[op_no];
-//         const vector<PrePost> &pre_post = op->get_pre_post();
-//         const vector<Prevail> &prevail = op->get_prevail();
 
-//         vector<FactEC> pre;
-//         vector<FactEC> eff;
-
-//         for (size_t i = 0; i < pre_post.size(); i++) {
-//             const PrePost *pp = &pre_post[i];
-//             if (pp->pre != -1) {
-//                 FactEC p(pp->var, pp->pre);
-//                 pre.push_back(p);
-//             }
-//             FactEC e(pp->var, pp->post);
-//             eff.push_back(e);
-//         }
-//         for (size_t i = 0; i < prevail.size(); i++) {
-//             const Prevail *pp = &prevail[i];
-//             FactEC p(pp->var, pp->prev);
-//             pre.push_back(p);
-//         }
-//         if (pre.size() != 0) {
-//             sort(pre.begin(), pre.end());
-//             for (size_t i = 0; i < pre.size() - 1; ++i) {
-//                 assert(pre[i].var < pre[i + 1].var);
-//             }
-//         }
-//         sort(eff.begin(), eff.end());
-//         for (size_t i = 0; i < eff.size() - 1; ++i) {
-//             assert(eff[i].var < eff[i + 1].var);
-//         }
-//         operator_preconds.push_back(pre);
-//         operator_effects.push_back(eff);
-//     }
-// }
-
-void SSS_ExpansionCore::compute_sorted_operators() {
-    for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
-        GlobalOperator *op = &g_operators[op_no];
-	
-	const vector<GlobalCondition> &preconds = op->get_preconditions();
-	const vector<GlobalEffect> &effects = op->get_effects();
-
-        vector<FactEC> pre;
-        vector<FactEC> eff;
-
-	for (size_t i = 0; i < preconds.size(); i++) {
-	    int var = preconds[i].var;
-	    int val = preconds[i].val;
-	    FactEC p(var, val);
-	    pre.push_back(p);
-	}
-	
-	for (size_t i = 0; i < effects.size(); i++) {
-	    int var = effects[i].var;
-	    int val = effects[i].val;
-	    FactEC e(var, val);
-	    eff.push_back(e);
-	}
-	
-        if (pre.size() != 0) {
-            sort(pre.begin(), pre.end());
-            for (size_t i = 0; i < pre.size() - 1; ++i) {
-                assert(pre[i].var < pre[i + 1].var);
-            }
-        }
-        sort(eff.begin(), eff.end());
-        for (size_t i = 0; i < eff.size() - 1; ++i) {
-            assert(eff[i].var < eff[i + 1].var);
-        }
-        operator_preconds.push_back(pre);
-        operator_effects.push_back(eff);
-    }
-}
-
-
-// This code is copied from ExpansionCore
 void SSS_ExpansionCore::build_dtgs() {
     /*
   NOTE: Code lifted and adapted from M&S atomic abstraction code.
@@ -290,22 +175,6 @@ void SSS_ExpansionCore::compute_v_precond() {
                     v_precond[op_no][var] = preconds[i].val;
                 }
 	    }
-
-            // const vector<Prevail> &prevail = g_operators[op_no].get_prevail();
-            // for (size_t i = 0; i < prevail.size(); ++i) {
-            //     int prevar = prevail[i].var;
-            //     if (prevar == var) {
-            //         v_precond[op_no][var] = prevail[i].prev;
-            //     }
-            // }
-            // const vector<PrePost> &pre_post = g_operators[op_no].get_pre_post();
-            // for (size_t i = 0; i < pre_post.size(); ++i) {
-            //     int prevar = pre_post[i].var;
-            //     if (prevar == var) {
-            //         v_precond[op_no][var] = pre_post[i].pre;
-            //     }
-            // }
-
         }
     }
 }
@@ -327,7 +196,6 @@ void SSS_ExpansionCore::build_reachability_map() {
 }
 
 
-// Copied from ExpansionCore and adapted
 void SSS_ExpansionCore::recurse_forwards(int var, int start_value, int current_value, std::vector<bool> &reachable) {
     ExpansionCoreDTG &dtg = dtgs[var];
     if (!reachable[current_value]) {
@@ -355,33 +223,6 @@ void SSS_ExpansionCore::compute_active_operators(const GlobalState &state) {
             }
 	}
 	 
-        // const vector<Prevail> &prevail = op.get_prevail();
-        // for (size_t i = 0; i < prevail.size(); ++i) {
-        //     int var = prevail[i].var;
-        //     int value = prevail[i].prev;
-        //     int current_value = state[var];
-        //     std::vector<bool> &reachable_values = reachability_map[var][current_value];
-        //     if (!reachable_values[value]) {
-        //         all_preconditions_are_active = false;
-        //         break;
-        //     }
-        // }
-        // if (all_preconditions_are_active) {
-        //     const vector<PrePost> &pre_post = op.get_pre_post();
-        //     for (size_t i = 0; i < pre_post.size(); ++i) {
-        //         int var = pre_post[i].var;
-        //         int value = pre_post[i].pre;
-        //         if (value != -1) {
-        //             int current_value = state[var];
-        //             std::vector<bool> &reachable_values = reachability_map[var][current_value];
-        //             if (!reachable_values[value]) {
-        //                 all_preconditions_are_active = false;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
-
         if (all_preconditions_are_active) {
             active_ops[op_no] = true;
         }
@@ -409,25 +250,8 @@ void SSS_ExpansionCore::compute_conflicts_and_disabling() {
     }
 }
 
-//Copied from SimpleStubbornSets
-void SSS_ExpansionCore::compute_achievers() {
-    size_t num_variables = g_variable_domain.size();
-    achievers.resize(num_variables);
-    for (uint var_no = 0; var_no < num_variables; ++var_no)
-        achievers[var_no].resize(g_variable_domain[var_no]);
 
-    for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
-        const GlobalOperator &op = g_operators[op_no];
-	const vector<GlobalEffect> &effects = op.get_effects();
-        for (size_t i = 0; i < effects.size(); ++i) {
-            int var = effects[i].var;
-            int value = effects[i].val;
-            achievers[var][value].push_back(op_no);
-        }
-    }
-}
-
-//Copied from SimpleStubbornSets
+//Adapted from SimpleStubbornSets
 inline void SSS_ExpansionCore::mark_as_stubborn(int op_no, const GlobalState &state) {
     if (!stubborn_ec[op_no]) {
         stubborn_ec[op_no] = true;
@@ -436,7 +260,6 @@ inline void SSS_ExpansionCore::mark_as_stubborn(int op_no, const GlobalState &st
         const GlobalOperator &op = g_operators[op_no];
         if (op.is_applicable(state)) {
 	    const vector<GlobalEffect> &effects = op.get_effects();
-	    // const vector<PrePost> &pre_post = op.get_pre_post();
             for (size_t i = 0; i < effects.size(); ++i) {
                 int var = effects[i].var;
                 written_vars[var] = true;
@@ -445,7 +268,6 @@ inline void SSS_ExpansionCore::mark_as_stubborn(int op_no, const GlobalState &st
     }
 }
 
-//Copied from SimpleStubbornSets
 void SSS_ExpansionCore::add_nes_for_fact(pair<int, int> fact, const GlobalState &state) {
     int var = fact.first;
     int value = fact.second;
@@ -480,12 +302,6 @@ void SSS_ExpansionCore::apply_s5(const GlobalOperator &op, const GlobalState &st
 	int var = preconds[i].var;
 	int value = preconds[i].val;
 	
-    
-    // const vector<Prevail> &prevail = op.get_prevail();
-    // for (size_t i = 0; i < prevail.size(); ++i) {
-    //     int var = prevail[i].var;
-    //     int value = prevail[i].prev;
-
         if (state[var] != value) {
             if (written_vars[var]) {
                 if (!nes_computed[var][value]) {
@@ -499,24 +315,6 @@ void SSS_ExpansionCore::apply_s5(const GlobalOperator &op, const GlobalState &st
             }
         }
     }
-
-    // const vector<PrePost> &pre_post = op.get_pre_post();
-    // for (size_t i = 0; i < pre_post.size(); ++i) {
-    //     int var = pre_post[i].var;
-    //     int value = pre_post[i].pre;
-    //     if (value != -1 && state[var] != value) {
-    //         if (written_vars[var]) {
-    //             if (!nes_computed[var][value]) {
-    //                 std::pair<int, int> fact = make_pair(var, value);
-    //                 add_nes_for_fact(fact, state);
-    //             }
-    //             return;
-    //         }
-    //         if (violated_pre_post.first == -1) {
-    //             violated_pre_post = make_pair(var, value);
-    //         }
-    //     }
-    // }
 
     if (violated_pre_post.first != -1) {
         if (!nes_computed[violated_pre_post.first][violated_pre_post.second]) {
@@ -534,7 +332,6 @@ void SSS_ExpansionCore::apply_s5(const GlobalOperator &op, const GlobalState &st
 }
 
 
-//Copied from SimpleStubbornSets and adapted
 void SSS_ExpansionCore::do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) {
     stubborn_ec.clear();
     stubborn_ec.assign(g_operators.size(), false);
