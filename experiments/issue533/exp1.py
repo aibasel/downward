@@ -111,7 +111,7 @@ SUITE = [
 ]
 
 exp = common_setup.IssueExperiment(
-    search_revisions=REVS,
+    revisions=REVS,
     configs=CONFIGS,
     suite=SUITE,
     limits=LIMITS,
