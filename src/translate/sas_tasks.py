@@ -333,6 +333,23 @@ class SASOperator:
                 size += 1
         return size
 
+    def get_applicability_conditions(self):
+        """Return the combined applicability conditions
+        (prevail conditions and preconditions) of the operator.
+
+        Returns a sorted list of (var, value) pairs. This is
+        guaranteed to contain at most one fact per variable and
+        must hence be non-contradictory."""
+        conditions = {}
+        for var, val in self.prevail:
+            assert var not in conditions
+            conditions[var] = val
+        for var, pre, post, cond in self.pre_post:
+            if pre != -1:
+                assert var not in conditions or conditions[var] == pre
+                conditions[var] = pre
+        return sorted(conditions.items())
+
 
 class SASAxiom:
     def __init__(self, condition, effect):
