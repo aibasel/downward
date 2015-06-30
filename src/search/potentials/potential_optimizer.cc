@@ -24,7 +24,7 @@ enum class OptFunc {
 };
 
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
-    : task(opts.get<shared_ptr<AbstractTask> >("transform")),
+    : task(get_task_from_options(opts)),
       task_proxy(*task),
       lp_solver(LPSolverType(opts.get_enum("lpsolver"))),
       max_potential(opts.get<double>("max_potential")),
@@ -112,30 +112,28 @@ void PotentialOptimizer::construct_lp() {
     }
 
     vector<LPConstraint> lp_constraints;
-    for (size_t i = 0; i < g_operators.size(); ++i) {
-        // Create Constraint:
-        // Sum_{V in Vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)
-        const GlobalOperator &op = g_operators[i];
-        const vector<GlobalCondition> &preconditions = op.get_preconditions();
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        // Create constraint:
+        // Sum_{V in vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)
         unordered_map<int, int> var_to_precondition;
-        for (size_t j = 0; j < preconditions.size(); ++j) {
-            var_to_precondition[preconditions[j].var] = preconditions[j].val;
+        for (FactProxy pre : op.get_preconditions()) {
+            var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }
-        const vector<GlobalEffect> &effects = op.get_effects();
         LPConstraint constraint(-lp_solver.get_infinity(), op.get_cost());
         vector<pair<int, int> > coefficients;
-        for (size_t j = 0; j < effects.size(); ++j) {
-            int var = effects[j].var;
+        for (EffectProxy effect : op.get_effects()) {
+            int var_id = effect.get_fact().get_variable().get_id();
             int pre = -1;
-            auto it = var_to_precondition.find(var);
+            auto it = var_to_precondition.find(var_id);
             if (it == var_to_precondition.end()) {
-                pre = g_variable_domain[var];
+                int undef_val = effect.get_fact().get_variable().get_domain_size();
+                pre = undef_val;
             } else {
                 pre = it->second;
             }
-            int post = effects[j].val;
-            int pre_lp = lp_var_ids[var][pre];
-            int post_lp = lp_var_ids[var][post];
+            int post = effect.get_fact().get_value();
+            int pre_lp = lp_var_ids[var_id][pre];
+            int post_lp = lp_var_ids[var_id][post];
             assert(pre_lp != post_lp);
             coefficients.emplace_back(pre_lp, 1);
             coefficients.emplace_back(post_lp, -1);
@@ -146,34 +144,31 @@ void PotentialOptimizer::construct_lp() {
         lp_constraints.push_back(constraint);
     }
 
-    int num_vars = g_variable_domain.size();
-
     /* Create full goal state. Use dummy value |dom(V)| for variables V
        undefined in the goal. */
-    vector<int> goal(g_variable_domain.size(), -1);
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        goal[g_goal[i].first] = g_goal[i].second;
+    vector<int> goal(task_proxy.get_variables().size(), -1);
+    for (FactProxy fact : task_proxy.get_goals()) {
+        goal[fact.get_variable().get_id()] = fact.get_value();
     }
-    for (int var = 0; var < num_vars; ++var) {
-        int undef_val = g_variable_domain[var];
-        if (goal[var] == -1)
-            goal[var] = undef_val;
+    for (VariableProxy var : task_proxy.get_variables()) {
+        int undef_val = var.get_domain_size();
+        if (goal[var.get_id()] == -1)
+            goal[var.get_id()] = undef_val;
     }
 
-    for (int var = 0; var < num_vars; ++var) {
-        // Create Constraint (we use variable bounds to express this constraint):
-        // P_{V=goal[V]} = 0
+    for (VariableProxy var : task_proxy.get_variables()) {
+        // Create constraint (using variable bounds): P_{V=goal[V]} = 0
         // TODO: Do not set lower bound?
-        LPVariable &lp_var = lp_variables[lp_var_ids[var][goal[var]]];
+        int var_id = var.get_id();
+        LPVariable &lp_var = lp_variables[lp_var_ids[var_id][goal[var_id]]];
         lp_var.lower_bound = 0;
         lp_var.upper_bound = 0;
 
-        int undef_val = g_variable_domain[var];
-        int undef_val_lp = lp_var_ids[var][undef_val];
-        for (int val = 0; val < g_variable_domain[var]; ++val) {
-            int val_lp = lp_var_ids[var][val];
-            // Create Constraint:
-            // P_{V=v} <= P_{V=u}
+        int undef_val = var.get_domain_size();
+        int undef_val_lp = lp_var_ids[var_id][undef_val];
+        for (int val = 0; val < var.get_domain_size(); ++val) {
+            int val_lp = lp_var_ids[var_id][val];
+            // Create constraint: P_{V=v} <= P_{V=u}
             // Note that we could eliminate variables P_{V=u} if V is undefined in the goal.
             LPConstraint constraint(-lp_solver.get_infinity(), 0);
             constraint.insert(val_lp, 1);
@@ -195,11 +190,9 @@ bool PotentialOptimizer::solve_lp() {
 void PotentialOptimizer::extract_lp_solution() {
     assert(lp_solver.has_optimal_solution());
     const vector<double> solution = lp_solver.extract_solution();
-    int num_vars = g_variable_domain.size();
-    for (int var = 0; var < num_vars; ++var) {
-        for (int val = 0; val < g_variable_domain[var]; ++val) {
-            fact_potentials[var][val] = solution[lp_var_ids[var][val]];
-        }
+    for (FactProxy fact : task_proxy.get_variables().get_facts()) {
+        fact_potentials[fact.get_variable().get_id()][fact.get_value()] =
+            solution[get_lp_var_id(fact)];
     }
 }
 
