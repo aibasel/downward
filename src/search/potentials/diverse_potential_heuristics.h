@@ -3,49 +3,41 @@
 
 #include "potential_optimizer.h"
 
+#include "../state_id.h"
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-class StateID;
-
 
 namespace potentials {
 class DiversePotentialHeuristics {
-    mutable PotentialOptimizer optimizer;
+    PotentialOptimizer optimizer;
     const int max_num_heuristics;
     const int num_samples;
     const double max_filtering_time;
     const double max_covering_time;
-    std::vector<std::shared_ptr<Heuristic> > heuristics;
+    std::unordered_map<StateID, std::shared_ptr<Heuristic> > single_heuristics;
+    std::unordered_map<StateID, int> sample_to_max_h;
+    std::vector<std::shared_ptr<Heuristic> > diverse_heuristics;
 
     /* Filter dead end samples and duplicates. Store potential heuristics and
        maximum heuristic values for remaining samples. */
-    void filter_dead_ends_and_duplicates(
-        std::vector<GlobalState> &samples,
-        std::unordered_map<StateID, int> &sample_to_max_h,
-        std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
+    void filter_dead_ends_and_duplicates(std::vector<GlobalState> &samples);
 
     // Remove all samples for which the heuristic achieves maximal values.
     void filter_covered_samples(
         const std::shared_ptr<Heuristic> heuristic,
-        std::vector<GlobalState> &samples,
-        std::unordered_map<StateID, int> &sample_to_max_h,
-        std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
+        std::vector<GlobalState> &samples);
 
     /* Return potential heuristic optimized for remaining samples or a
        precomputed heuristic if the former does not cover additional samples. */
     std::shared_ptr<Heuristic> find_heuristic_and_remove_covered_samples(
-        std::vector<GlobalState> &samples,
-        std::unordered_map<StateID, int> &sample_to_max_h,
-        std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics) const;
+        std::vector<GlobalState> &samples);
 
     /* Iteratively try to find potential heuristics that achieve maximal values
        for as many samples as possible. */
-    void cover_samples(
-        std::vector<GlobalState> &samples,
-        std::unordered_map<StateID, int> &sample_to_max_h,
-        std::unordered_map<StateID, std::shared_ptr<Heuristic> > &single_heuristics);
+    void cover_samples(std::vector<GlobalState> &samples);
 
     // Sample states, then cover them.
     void find_diverse_heuristics();
