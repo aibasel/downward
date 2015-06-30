@@ -31,7 +31,7 @@ from itertools import count
 
 import sas_tasks
 
-DEBUG = True
+DEBUG = False
 
 # TODO:
 # This is all quite hackish and would be easier if the translator were
@@ -344,8 +344,6 @@ class VarValueRenaming(object):
         # this happens depends on the presence of other pre_post
         # entries for the same variable. We solve this by computing
         # the sorting into prevail vs. preconditions from scratch, too.
-
-        op.dump() # TODO: Remove
 
         applicability_conditions = op.get_applicability_conditions()
         try:
