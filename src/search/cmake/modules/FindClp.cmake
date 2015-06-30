@@ -4,25 +4,24 @@ if(DEFINED ENV{DOWNWARD_COIN_ROOT})
     set(_COIN_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
 endif()
 
-find_path(CLP_INCLUDES
+find_path(CLP_INCLUDE_DIRS
     NAMES
     ClpSimplex.hpp
-    PATHS
-    /include/coin
+    HINTS
     ${_COIN_ROOT_OPTS}
 )
 
 find_library(CLP_LIBRARIES
+    NAMES
     Clp
-    PATHS
-    /lib
+    HINTS
     ${_COIN_ROOT_OPTS}
 )
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     Clp
-    REQUIRED_VARS CLP_INCLUDES CLP_LIBRARIES
+    REQUIRED_VARS CLP_INCLUDE_DIRS CLP_LIBRARIES
 )
 
-mark_as_advanced(CLP_INCLUDES CLP_LIBRARIES)
+mark_as_advanced(CLP_INCLUDE_DIRS CLP_LIBRARIES)
