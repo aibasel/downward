@@ -44,7 +44,7 @@ vector<GlobalState> sample_states_with_random_walks(
         n = 4 * solution_steps_estimate;
     }
     double p = 0.5;
-    // The expected walk length is np = sampling_steps_factor * estimated number of solution steps.
+    // The expected walk length is np = 2 * estimated number of solution steps.
     // (We multiply by 2 because the heuristic is underestimating.)
 
     samples.reserve(num_samples);
