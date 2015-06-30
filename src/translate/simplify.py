@@ -121,8 +121,7 @@ def build_dtgs(task):
         from operator conditions and effect conditions.
 
         - conditions: dict(int -> int) containing the combined
-          operator prevail and preconditions (see
-          get_combined_preconditions)
+          operator prevail and preconditions
         - effect_conditions: list(pair(int, int)) containing the
           effect conditions
 
