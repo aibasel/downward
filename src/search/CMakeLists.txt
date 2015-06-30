@@ -53,14 +53,6 @@ project(${TARGET})
 
 ## == System specific default options ==
 
-# Default to static compilation on all systems except OS X.
-option(DOWNWARD_LINK_RELEASE_STATICALLY
-       "Set DOWNWARD_LINK_RELEASE_STATICALLY to 0 or 1 (default) to disable/enable static linking of the executable in release mode. On OS X, this is unsupported and will be silently disabled."
-       YES)
-if(APPLE)
-    set(DOWNWARD_LINK_RELEASE_STATICALLY NO)
-endif()
-
 # Path containing custom CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
@@ -110,47 +102,24 @@ if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
 
     set(CMAKE_CXX_LINK_FLAGS_PROFILE "-pg")
-
-
-
-    # Here, we modify the default Release build compile flags to make a static executable
-    # This is done slightly differently for different compilers: the -static-libgcc flag
-    # makes no sense if using the Intel compiler.
-    if(DOWNWARD_LINK_RELEASE_STATICALLY)
-        if(CMAKE_COMPILER_IS_GNUCXX)
-            set(CMAKE_CXX_LINK_FLAGS_RELEASE "${CMAKE_CXX_LINK_FLAGS_RELEASE} -static-libgcc")
-        endif()
-
-        if(${LOWER_CASE_BUILD_TYPE} STREQUAL "release")
-            set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-        endif()
-    endif()
-
 elseif(MSVC)
     # enable exceptions
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -EHsc")
     set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
 
-
     # disable warnings
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4018 -wd4101 -wd4996")
     # -WX == -Werror
     # -Wall is also avalible but gives you way to many warnings
-
-    if(DOWNWARD_LINK_RELEASE_STATICALLY)
-        foreach(_bt DEBUG RELEASE PROFILE)
-            string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
-        endforeach()
-    endif()
 endif()
+
 
 
 ## == Libraries ==
 
 # On Linux, find the rt library for the exact timer
 if(UNIX AND NOT APPLE)
-    find_library(RT_LIBRARY rt)
-    target_link_libraries(${TARGET} ${RT_LIBRARY})
+    target_link_libraries(${TARGET} rt)
 endif()
 
 # On Windows, find the psapi library for determining peak memory
@@ -158,32 +127,7 @@ if(WIN32)
     target_link_libraries(${TARGET} psapi)
 endif()
 
-
-
-## == LP libraries ==
-if(NOT MSVC)
-## We want to link the Linear Programming libraries statically since
-## they are unlikely to be preinstalled on the grids we use for
-## evaluation. Static linking is a bit tricky: we need to specify the
-## libraries *after* the source files and in such an order that if A
-## depends on B, A is listed before B. (In case of dependency cycles,
-## we can and must list them multiple times.) The following set of
-## libraries and their ordering have been determined experimentally
-## and hence might break if we use more functions from the LP
-## libraries. See
-## http://ask.metafilter.com/117792/How-to-fix-C-static-linking-problems
-
-## We want to always link the COIN libraries statically, even if static
-## linking is otherwise disabled. We accomplish this by
-## using -Wl,-Bstatic before the COIN libs and -Wl,-Bdynamic
-## afterwards (unless in release mode with static linking enabled). See
-## http://ubuntuforums.org/showthread.php?t=491455
-    set(_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-endif()
-
 find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
-
 if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND))
     foreach(SOLVER Cpx Clp Grb)
         if(OSI_${SOLVER}_FOUND)
@@ -199,8 +143,4 @@ if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND))
     add_definitions("-D USE_LP")
     include_directories(${OSI_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${OSI_LIBRARIES})
-endif()
-
-if(NOT MSVC)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${_CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
