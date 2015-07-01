@@ -1,6 +1,6 @@
 #include "zero_one_pdbs_heuristic.h"
 
-#include "pdb_heuristic.h"
+#include "pattern_database.h"
 #include "util.h"
 
 #include "../evaluation_context.h"
@@ -31,28 +31,24 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     approx_mean_finite_h = 0;
     pattern_databases.reserve(pattern_collection.size());
     for (const vector<int> &pattern : pattern_collection) {
-        Options pdb_opts;
-        pdb_opts.set<shared_ptr<AbstractTask> >("transform", task);
-        pdb_opts.set<int>("cost_type", cost_type);
-        pdb_opts.set<vector<int> >("pattern", pattern);
-        PDBHeuristic *pdb_heuristic = new PDBHeuristic(pdb_opts, false, operator_costs);
-        pattern_databases.push_back(pdb_heuristic);
+        PatternDatabase *pdb = new PatternDatabase(task, pattern, false, operator_costs);
+        pattern_databases.push_back(pdb);
 
         // Set cost of relevant operators to 0 for further iterations (action cost partitioning).
         for (const OperatorProxy &op : operators) {
-            if (pdb_heuristic->is_operator_relevant(op))
+            if (pdb->is_operator_relevant(op))
                 operator_costs[op.get_id()] = 0;
         }
 
-        approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();
+        approx_mean_finite_h += pdb->compute_mean_finite_h();
     }
     //cout << "All or nothing PDB collection construction time: " <<
     //timer << endl;
 }
 
 ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
-    for (PDBHeuristic *pdb_heuristic : pattern_databases) {
-        delete pdb_heuristic;
+    for (PatternDatabase *pdb : pattern_databases) {
+        delete pdb;
     }
 }
 
@@ -63,25 +59,21 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     /*
       Because we use cost partitioning, we can simply add up all
       heuristic values of all patterns in the pattern collection.
-
-      The use of evaluation contexts maybe makes this a bit less
-      efficient than it ought to be. See discussion in
-      CanonicalPDBsHeuristic::compute_heuristic.
     */
-
-    EvaluationContext eval_context(global_state);
+    State state = convert_global_state(global_state);
     int h_val = 0;
-    for (PDBHeuristic *pdb : pattern_databases) {
-        if (eval_context.is_heuristic_infinite(pdb))
+    for (PatternDatabase *pdb : pattern_databases) {
+        int pdb_value = pdb->get_value(state);
+        if (pdb_value == numeric_limits<int>::max())
             return -1;
-        h_val += eval_context.get_heuristic_value(pdb);
+        h_val += pdb_value;
     }
     return h_val;
 }
 
 void ZeroOnePDBsHeuristic::dump() const {
-    for (PDBHeuristic *pdb_heuristic : pattern_databases) {
-        cout << pdb_heuristic->get_pattern() << endl;
+    for (PatternDatabase *pdb : pattern_databases) {
+        cout << pdb->get_pattern() << endl;
     }
 }
 

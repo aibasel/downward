@@ -2,7 +2,7 @@
 
 #include "dominance_pruner.h"
 #include "max_cliques.h"
-#include "pdb_heuristic.h"
+#include "pattern_database.h"
 #include "util.h"
 
 #include "../evaluation_context.h"
@@ -32,17 +32,13 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
 }
 
 CanonicalPDBsHeuristic::~CanonicalPDBsHeuristic() {
-    for (PDBHeuristic *pdb : pattern_databases) {
+    for (PatternDatabase *pdb : pattern_databases) {
         delete pdb;
     }
 }
 
 void CanonicalPDBsHeuristic::add_pdb_for_pattern(const vector<int> &pattern) {
-    Options opts;
-    opts.set<shared_ptr<AbstractTask> >("transform", task);
-    opts.set<int>("cost_type", cost_type);
-    opts.set<vector<int> >("pattern", pattern);
-    pattern_databases.push_back(new PDBHeuristic(opts, false));
+    pattern_databases.push_back(new PatternDatabase(task, pattern));
     size += pattern_databases.back()->get_size();
 }
 
@@ -81,7 +77,7 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
     max_cliques.reserve(cgraph_max_cliques.size());
 
     for (const vector<int> &cgraph_max_clique : cgraph_max_cliques) {
-        vector<PDBHeuristic *> clique;
+        vector<PatternDatabase *> clique;
         clique.reserve(cgraph_max_clique.size());
         for (int pdb_id : cgraph_max_clique) {
             clique.push_back(pattern_databases[pdb_id]);
@@ -114,7 +110,7 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
 
     // Recompute size (if patterns were pruned, the size is out of date).
     size = 0;
-    for (PDBHeuristic *pdb : pattern_databases) {
+    for (PatternDatabase *pdb : pattern_databases) {
         size += pdb->get_size();
     }
 
@@ -129,38 +125,20 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
 void CanonicalPDBsHeuristic::initialize() {
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &state) {
+int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
     int max_h = 0;
     assert(!max_cliques.empty());
     // If we have an empty collection, then max_cliques = { \emptyset }.
 
-    /*
-      We use an internal EvaluationContext here to compute the PDBs
-      inside this canonical PDB heuristic.
-
-      We don't want to use the evaluation context by the surrounding
-      search because we want our internal PDBs to be "invisible" to
-      that search. If we used the external evaluation context, we
-      would see output for each new "best heuristic value" for them,
-      each PDB evaluation would show up as an evaluation in the
-      statistics, etc.
-
-      Using an evaluation context here at all obviously introduces
-      overhead, and in the future we might want to reconsider the
-      question whether having the contained PDBs actually be Heuristic
-      objects is the best implementation choice.
-    */
-
-    EvaluationContext eval_context(state);
-
-    for (PDBHeuristic *pdb : pattern_databases)
-        if (eval_context.is_heuristic_infinite(pdb))
+    for (PatternDatabase *pdb : pattern_databases)
+        if (pdb->get_value(state) == numeric_limits<int>::max())
             return DEAD_END;
 
-    for (const vector<PDBHeuristic *> &clique : max_cliques) {
+    for (const vector<PatternDatabase *> &clique : max_cliques) {
         int clique_h = 0;
-        for (PDBHeuristic *pdb : clique)
-            clique_h += eval_context.get_heuristic_value(pdb);
+        for (PatternDatabase *pdb : clique)
+            clique_h += pdb->get_value(state);
         max_h = max(max_h, clique_h);
     }
     return max_h;
@@ -174,7 +152,7 @@ void CanonicalPDBsHeuristic::add_pattern(const vector<int> &pattern) {
 
 void CanonicalPDBsHeuristic::get_max_additive_subsets(
     const vector<int> &new_pattern,
-    vector<vector<PDBHeuristic *> > &max_additive_subsets) {
+    vector<vector<PatternDatabase *> > &max_additive_subsets) {
     /*
       We compute additive pattern sets S with the property that we could
       add the new pattern P to S and still have an additive pattern set.
@@ -221,11 +199,11 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
       "new" cliques including P.
       */
 
-    for (const vector<PDBHeuristic *> & clique : max_cliques) {
+    for (const vector<PatternDatabase *> & clique : max_cliques) {
         // Take all patterns which are additive to new_pattern.
-        vector<PDBHeuristic *> subset;
+        vector<PatternDatabase *> subset;
         subset.reserve(clique.size());
-        for (PDBHeuristic *pdb : clique) {
+        for (PatternDatabase *pdb : clique) {
             if (are_patterns_additive(new_pattern, pdb->get_pattern())) {
                 subset.push_back(pdb);
             }
@@ -237,20 +215,14 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     if (max_additive_subsets.empty()) {
         // If nothing was additive with the new variable, then
         // the only additive subset is the empty set.
-        max_additive_subsets.push_back(vector<PDBHeuristic *>());
+        max_additive_subsets.push_back(vector<PatternDatabase *>());
     }
 }
 
-bool CanonicalPDBsHeuristic::is_dead_end(const GlobalState &state) const {
-    /*
-      See comment regarding evaluation contexts in compute_heuristic.
-      The efficiency concern is even more valid here because we don't
-      use the same PDB value once, so the caching feature of
-      evaluation contexts is not needed here.
-    */
-    EvaluationContext eval_context(state);
-    for (PDBHeuristic *pdb : pattern_databases)
-        if (eval_context.is_heuristic_infinite(pdb))
+bool CanonicalPDBsHeuristic::is_dead_end(const GlobalState &global_state) const {
+    State state = convert_global_state(global_state);
+    for (PatternDatabase *pdb : pattern_databases)
+        if (pdb->get_value(state) == numeric_limits<int>::max())
             return true;
     return false;
 }
@@ -267,9 +239,9 @@ void CanonicalPDBsHeuristic::dump_cliques() const {
     assert(!max_cliques.empty());
     cout << max_cliques.size() << " maximal clique(s)" << endl;
     cout << "Maximal cliques are (";
-    for (const vector<PDBHeuristic *> & clique : max_cliques) {
+    for (const vector<PatternDatabase *> & clique : max_cliques) {
         cout << "[";
-        for (PDBHeuristic *pdb : clique) {
+        for (PatternDatabase *pdb : clique) {
             cout << "{ ";
             for (int var_id : pdb->get_pattern()) {
                 cout << var_id << " ";
@@ -282,7 +254,7 @@ void CanonicalPDBsHeuristic::dump_cliques() const {
 }
 
 void CanonicalPDBsHeuristic::dump() const {
-    for (PDBHeuristic *pdb : pattern_databases) {
+    for (PatternDatabase *pdb : pattern_databases) {
         cout << pdb->get_pattern() << endl;
     }
 }

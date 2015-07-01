@@ -5,16 +5,17 @@
 
 #include <vector>
 
+class PatternDatabase;
+
 // Implements the canonical heuristic function.
-class PDBHeuristic;
 class CanonicalPDBsHeuristic : public Heuristic {
     // The sum of all abstract state sizes of all pdbs in the collection.
     int size;
     // A maximal clique represents a maximal additive subset of patterns.
-    std::vector<std::vector<PDBHeuristic *> > max_cliques;
+    std::vector<std::vector<PatternDatabase *> > max_cliques;
     // A pair of variables is additive if no operatorhas an effect on both.
     std::vector<std::vector<bool> > are_additive;
-    std::vector<PDBHeuristic *> pattern_databases;
+    std::vector<PatternDatabase *> pattern_databases;
 
     /* Returns true iff the two patterns are additive i.e. there is no operator
        which affects variables in pattern one as well as in pattern two. */
@@ -28,7 +29,7 @@ class CanonicalPDBsHeuristic : public Heuristic {
        no operator affects both variables at the same time. */
     void compute_additive_vars();
 
-    // Adds a PDB heuristic for pattern but does not recompute max_cliques.
+    // Adds a PDB for pattern but does not recompute max_cliques.
     void add_pdb_for_pattern(const std::vector<int> &pattern);
 
     void dump_cgraph(const std::vector<std::vector<int> > &cgraph) const;
@@ -51,7 +52,7 @@ public:
     // checks for all max cliques if they would be additive to this pattern
     void get_max_additive_subsets(
         const std::vector<int> &new_pattern,
-        std::vector<std::vector<PDBHeuristic *> > &max_additive_subsets);
+        std::vector<std::vector<PatternDatabase *> > &max_additive_subsets);
 
     /*
       The following method offers a quick dead-end check for the
@@ -59,8 +60,8 @@ public:
       efficiently test if the canonical heuristic is infinite than
       computing the exact heuristic value.
     */
-    bool is_dead_end(const GlobalState &state) const;
-    const std::vector<PDBHeuristic *> &get_pattern_databases() const {
+    bool is_dead_end(const GlobalState &global_state) const;
+    const std::vector<PatternDatabase *> &get_pattern_databases() const {
         return pattern_databases;
     }
     int get_size() const {
