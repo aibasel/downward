@@ -29,6 +29,16 @@ def get_elapsed_time():
     return sum(os.times()[:4])
 
 
+def get_external_timeout():
+    # Time limits are either positive values in seconds or -1 (RLIM_INFINITY).
+    soft, hard = resource.getrlimit(resource.RLIMIT_CPU)
+    if soft != resource.RLIM_INFINITY:
+        return soft
+    elif hard != resource.RLIM_INFINITY:
+        return hard
+    else:
+        return None
+
 def get_external_hard_memory_limit():
     # Memory limits are either positive values in bytes or -1 (RLIM_INFINITY).
     _, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
@@ -59,12 +69,14 @@ def set_integer_memory_limit(parser, args, component):
         setattr(args, param, _get_memory_limit_in_bytes(parser, limit))
 
 
-def get_timeout(component_timeout, overall_timeout):
-    min_timeout = get_min([component_timeout, overall_timeout])
-    if min_timeout is None:
-        return None
-    return max(0, min_timeout - get_elapsed_time())
-
 def get_memory_limit(component_limit, overall_limit):
     external_limit = get_external_hard_memory_limit()
     return get_min([component_limit, overall_limit, external_limit])
+
+
+def get_timeout(component_timeout, overall_timeout):
+    external_timeout = get_external_timeout()
+    min_timeout = get_min([component_timeout, overall_timeout, external_timeout])
+    if min_timeout is None:
+        return None
+    return max(0, min_timeout - get_elapsed_time())
