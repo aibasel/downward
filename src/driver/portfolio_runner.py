@@ -19,15 +19,8 @@ the process is started.
 
 __all__ = ["run"]
 
-import math
-import os
-try:
-    import resource
-except ImportError:
-    resource = None
 import signal
 import subprocess
-import sys
 import traceback
 
 from . import call
@@ -46,10 +39,7 @@ EXIT_UNSOLVED_INCOMPLETE = 5
 EXIT_OUT_OF_MEMORY = 6
 EXIT_TIMEOUT = 7
 EXIT_TIMEOUT_AND_MEMORY = 8
-if hasattr(signal, 'SIGXCPU'):
-    EXIT_SIGXCPU = -signal.SIGXCPU
-else:
-    EXIT_SIGXCPU = None
+EXIT_SIGXCPU = -signal.SIGXCPU if hasattr(signal, 'SIGXCPU') else None
 
 EXPECTED_EXITCODES = set([
     EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
@@ -259,13 +249,6 @@ def get_portfolio_attributes(portfolio):
 
 
 def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
-    if resource is None:
-        raise NotImplementedError(
-            "The 'resource' module could not be imported, "
-            "but is required for running portfolios. "
-            "As this module is not available on Windows, we do "
-            "not support running portfolios on this platform.")
-
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
