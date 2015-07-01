@@ -6,6 +6,7 @@ import os.path
 import subprocess
 import sys
 
+from . import call
 from . import portfolio_runner
 from .plan_manager import PlanManager
 
@@ -17,18 +18,13 @@ PREPROCESS = os.path.join(SRC_DIR, "preprocess", "preprocess")
 SEARCH_DIR = os.path.join(SRC_DIR, "search")
 
 
-def call_cmd(cmd, args, debug, stdin=None):
+def call_cmd(cmd, options, debug, stdin=None, timeout=None, memory=None):
     if not os.path.exists(cmd):
         target = " debug" if debug else ""
         raise IOError(
-            "Could not find %s. Please run \"./build_all%s\"." %
-            (cmd, target))
-    sys.stdout.flush()
-    if stdin:
-        with open(stdin) as stdin_file:
-            subprocess.check_call([cmd] + args, stdin=stdin_file)
-    else:
-        subprocess.check_call([cmd] + args)
+            "Could not find {cmd}. "
+            "Please run './build_all{target}'.".format(**locals()))
+    call.check_call([cmd] + options, stdin=stdin, timeout=timeout, memory=memory)
 
 
 def run_translate(args):
@@ -36,7 +32,7 @@ def run_translate(args):
     logging.info("translator inputs: %s" % args.translate_inputs)
     logging.info("translator arguments: %s" % args.translate_options)
     call_cmd(TRANSLATE, args.translate_inputs + args.translate_options,
-             debug=args.debug)
+             debug=args.debug, timeout=args.translate_timeout)
 
 
 def run_preprocess(args):
