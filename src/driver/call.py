@@ -25,7 +25,6 @@ def _set_limit(kind, soft, hard=None):
 
 
 def _set_time_limit(timeout):
-    # TODO: Raise soft limit if timeout=None
     if timeout is None:
         return
     # Don't try to raise the hard limit.
@@ -54,14 +53,15 @@ def check_call(cmd, stdin=None, timeout=None, memory=None):
             "The 'resource' module is not available on your platform. "
             "Therefore, setting time or memory limits, and running "
             "portfolios is not possible.")
-    sys.stdout.flush()
 
     def set_limits():
         _set_time_limit(timeout)
         _set_memory_limit(memory)
 
-    kwargs = dict(preexec_fn=set_limits)
+    preexec_fn = set_limits if resource else None
+    kwargs = dict(preexec_fn=preexec_fn)
 
+    sys.stdout.flush()
     if stdin:
         with open(stdin) as stdin_file:
             return subprocess.check_call(cmd, stdin=stdin_file, **kwargs)
