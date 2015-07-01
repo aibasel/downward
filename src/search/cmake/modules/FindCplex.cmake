@@ -8,6 +8,9 @@
 # Usage:
 #  find_package(cplex)
 #
+# The location of Cplex can be specified using the environment variable
+# or cmake parameter DOWNWARD_CPLEX_ROOT.
+#
 # Note that the standard FIND_PACKAGE features are supported
 # (i.e., QUIET, REQUIRED, etc.).
 
@@ -21,29 +24,51 @@ find_path(CPLEX_INCLUDE_DIRS
     include/ilcplex
 )
 
-#TODO: version and path detection
 if(UNIX)
-    if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-        set(CPLEX_LIBRARY_PATH_SUFFIX
-            "lib/x86_sles10_4.1/static_pic"
-            "lib/x86_linux/static_pic")
-    elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-        set(CPLEX_LIBRARY_PATH_SUFFIX
-            "lib/x86-64_sles10_4.1/static_pic"
-            "lib/x86-64_linux/static_pic")
-    else()
-        message(WARNING "Bitwidth could not be detected, preferring 32bit version of Cplex")
-        set(CPLEX_LIBRARY_PATH_SUFFIX
-            "lib/x86_sles10_4.1/static_pic"
-            "lib/x86_linux/static_pic"
-            "lib/x86-64_sles10_4.1/static_pic"
-            "lib/x86-64_linux/static_pic")
-    endif()
-elseif(MSVC)
-    set(CPLEX_LIBRARY_PATH_SUFFIX "lib/x86_windows_vs2013/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
+        "lib/x86_sles10_4.1/static_pic"
+        "lib/x86_linux/static_pic")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
+        "lib/x86-64_sles10_4.1/static_pic"
+        "lib/x86-64_linux/static_pic")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
+elseif(MSVC10)
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_vs2011/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_vs2011/stat_mdd")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_vs2011/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_vs2011/stat_mdd")
+elseif(MSVC11)
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_vs2012/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_vs2012/stat_mdd")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_vs2012/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_vs2012/stat_mdd")
+elseif(MSVC12)
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_vs2013/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_vs2013/stat_mdd")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_vs2013/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_vs2013/stat_mdd")
 endif()
 
-find_library(CPLEX_LIBRARIES
+if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32})
+elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64})
+else()
+    message(WARNING "Bitwidth could not be detected, preferring 32bit version of Cplex")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE
+        ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32}
+        ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64}
+    )
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG
+        ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32}
+        ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64}
+    )
+endif()
+
+find_library(CPLEX_LIBRARY_RELEASE
     NAMES
     cplex
     cplex1262
@@ -51,12 +76,26 @@ find_library(CPLEX_LIBRARIES
     $ENV{DOWNWARD_CPLEX_ROOT}
     ${DOWNWARD_CPLEX_ROOT}
     PATH_SUFFIXES
-    ${CPLEX_LIBRARY_PATH_SUFFIX}
+    ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE}
 )
 
-if(CPLEX_LIBRARIES)
+find_library(CPLEX_LIBRARY_DEBUG
+    NAMES
+    cplex
+    cplex1262
+    HINTS
+    $ENV{DOWNWARD_CPLEX_ROOT}
+    ${DOWNWARD_CPLEX_ROOT}
+    PATH_SUFFIXES
+    ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG}
+)
+
+if(CPLEX_LIBRARY_RELEASE OR CPLEX_LIBRARY_DEBUG)
     find_package(Threads REQUIRED)
-    set(CPLEX_LIBRARIES ${CPLEX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    set(CPLEX_LIBRARIES
+        optimized ${CPLEX_LIBRARY_RELEASE} ${CMAKE_THREAD_LIBS_INIT}
+        debug ${CPLEX_LIBRARY_DEBUG} ${CMAKE_THREAD_LIBS_INIT}
+    )
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -65,4 +104,10 @@ find_package_handle_standard_args(
     REQUIRED_VARS CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES
 )
 
-mark_as_advanced(CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES CPLEX_LIBRARY_PATH_SUFFIX)
+mark_as_advanced(
+    CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES CPLEX_LIBRARY_PATH_SUFFIX
+    CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32
+    CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64
+    CPLEX_LIBRARY_PATH_SUFFIX_RELEASE CPLEX_LIBRARY_PATH_SUFFIX_DEBUG
+    CPLEX_LIBRARY_RELEASE CPLEX_LIBRARY_DEBUG
+)
