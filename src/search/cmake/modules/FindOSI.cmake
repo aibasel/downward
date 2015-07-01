@@ -73,8 +73,10 @@ find_library(OSI_LIBRARY_DEBUG
 )
 
 set(OSI_LIBRARIES
-    OPTIMIZED ${OSI_LIBRARY_RELEASE} ${OSI_COINUTILS_LIBRARY_RELEASE}
-    DEBUG ${OSI_LIBRARY_DEBUG} ${OSI_COINUTILS_LIBRARY_DEBUG})
+    optimized ${OSI_LIBRARY_RELEASE}
+    optimized ${OSI_COINUTILS_LIBRARY_RELEASE}
+    debug ${OSI_LIBRARY_DEBUG}
+    debug ${OSI_COINUTILS_LIBRARY_DEBUG})
 
 # Find solver proxies.
 foreach(SOLVER ${OSI_FIND_COMPONENTS})
@@ -90,8 +92,8 @@ foreach(SOLVER ${OSI_FIND_COMPONENTS})
         PATH_SUFFIXES lib
     )
     set(OSI_${SOLVER}_LIBRARIES
-        OPTIMIZED ${OSI_${SOLVER}_LIBRARY_RELEASE}
-        DEBUG ${OSI_${SOLVER}_LIBRARY_DEBUG})
+        optimized ${OSI_${SOLVER}_LIBRARY_RELEASE}
+        debug ${OSI_${SOLVER}_LIBRARY_DEBUG})
 endforeach()
 
 # A component is present if its adapter is present and its solver is present.
