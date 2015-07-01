@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 from . import call
+from . import limits
 from . import portfolio_runner
 from .plan_manager import PlanManager
 
@@ -24,6 +25,10 @@ def call_cmd(cmd, options, debug, stdin=None, timeout=None, memory=None):
         raise IOError(
             "Could not find {cmd}. "
             "Please run './build_all{target}'.".format(**locals()))
+    if timeout is not None:
+        logging.info("Timeout: {}".format(timeout))
+    if memory is not None:
+        logging.info("Memory limit: {}".format(memory))
     call.check_call([cmd] + options, stdin=stdin, timeout=timeout, memory=memory)
 
 
@@ -31,8 +36,11 @@ def run_translate(args):
     logging.info("Running translator.")
     logging.info("translator inputs: %s" % args.translate_inputs)
     logging.info("translator arguments: %s" % args.translate_options)
-    call_cmd(TRANSLATE, args.translate_inputs + args.translate_options,
-             debug=args.debug, timeout=args.translate_timeout)
+    call_cmd(
+        TRANSLATE, args.translate_inputs + args.translate_options,
+        debug=args.debug,
+        timeout=limits.get_timeout(args.translate_timeout, args.overall_timeout),
+        memory=limits.get_memory_limit(args.translate_memory, args.overall_memory))
 
 
 def run_preprocess(args):
