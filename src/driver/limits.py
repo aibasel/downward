@@ -27,6 +27,7 @@ def get_elapsed_time():
     return sum(os.times()[:4])
 
 
+# TODO: Remove?
 def get_external_timeout():
     # Time limits are either positive values in seconds or -1 (RLIM_INFINITY).
     soft, hard = resource.getrlimit(resource.RLIMIT_CPU)

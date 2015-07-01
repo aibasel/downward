@@ -272,12 +272,14 @@ def parse_args():
         "--search", action="store_true",
         help="run search component")
 
+    # TODO: Default values?
     time_limits = parser.add_argument_group(
         title="time limits in seconds or with suffixes s, m, h (e.g. 100s, 30m, 1h)")
     for component in COMPONENTS_PLUS_OVERALL:
         time_limits.add_argument(
             "--{component}-timeout".format(**locals()))
 
+    # TODO: Default values?
     memory_limits = parser.add_argument_group(
         title="memory limits in MB or with suffixes M, G (e.g. 1024M, 2G)")
     for component in COMPONENTS_PLUS_OVERALL:
