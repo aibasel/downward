@@ -5,12 +5,12 @@
 
 #include <vector>
 
-class PDBHeuristic;
+class PatternDatabase;
 
 class ZeroOnePDBsHeuristic : public Heuristic {
     // summed up mean finite h-values of all PDBs - this is an approximation only, see get-method
     double approx_mean_finite_h;
-    std::vector<PDBHeuristic *> pattern_databases; // final pattern databases
+    std::vector<PatternDatabase *> pattern_databases; // final pattern databases
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);

@@ -8,14 +8,13 @@
 #include <vector>
 
 class AbstractOperator;
-class TaskProxy;
 
 // Successor Generator for abstract operators.
 class MatchTree {
     std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
     struct Node;
-    // See PDBHeuristic for documentation on pattern and hash_multipliers.
+    // See PatternDatabase for documentation on pattern and hash_multipliers.
     std::vector<int> pattern;
     std::vector<size_t> hash_multipliers;
     Node *root;

@@ -1,6 +1,6 @@
 #include "match_tree.h"
 
-#include "pdb_heuristic.h"
+#include "pattern_database.h"
 
 #include "../task_proxy.h"
 
