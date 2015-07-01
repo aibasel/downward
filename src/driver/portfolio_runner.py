@@ -316,18 +316,17 @@ def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
               "Use driver options to limit the runtime.")
 
     # TODO: add default for --overall-timeout and remove DEFAULT_TIMEOUT?
-    timeout = timeout or DEFAULT_TIMEOUT
+    timeout = timeout or DEFAULT_TIMEOUT - get_elapsed_time()
 
-    remaining_time_at_start = float(timeout) - get_elapsed_time()
-    print("remaining time at start: %.2f" % remaining_time_at_start)
+    print("portfolio timeout: %.2f" % timeout)
 
     if optimal:
         exitcodes = run_opt(configs, executable, sas_file, plan_manager,
-                            remaining_time_at_start, memory)
+                            timeout, memory)
     else:
         exitcodes = run_sat(configs, executable, sas_file, plan_manager,
                             final_config, final_config_builder,
-                            remaining_time_at_start, memory)
+                            timeout, memory)
     exitcode = generate_exitcode(exitcodes)
     if exitcode != 0:
         raise subprocess.CalledProcessError(exitcode, ["run-portfolio", portfolio])
