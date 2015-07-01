@@ -47,8 +47,11 @@ def run_preprocess(args):
     logging.info("Running preprocessor.")
     logging.info("preprocessor input: %s" % args.preprocess_input)
     logging.info("preprocessor arguments: %s" % args.preprocess_options)
-    call_cmd(PREPROCESS, args.preprocess_options, debug=args.debug,
-             stdin=args.preprocess_input)
+    call_cmd(
+        PREPROCESS, args.preprocess_options, debug=args.debug,
+        stdin=args.preprocess_input,
+        timeout=limits.get_timeout(args.preprocess_timeout, args.overall_timeout),
+        memory=limits.get_memory_limit(args.preprocess_memory, args.overall_memory))
 
 
 def run_search(args):
