@@ -142,3 +142,8 @@ if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND))
     include_directories(${OSI_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${OSI_LIBRARIES})
 endif()
+
+if(CPLEX_RUNTIME_LIBRARY)
+    file(COPY ${CPLEX_RUNTIME_LIBRARY} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+

@@ -4,6 +4,7 @@
 #  CPLEX_FOUND                 - TRUE if Cplex was found.
 #  CPLEX_INCLUDE_DIRS          - Full paths to all include dirs.
 #  CPLEX_LIBRARIES             - Full paths to all libraries.
+#  CPLEX_RUNTIME_LIBRARY       - Full path to the dll file on windows
 #
 # Usage:
 #  find_package(cplex)
@@ -33,21 +34,24 @@ if(UNIX)
         "lib/x86-64_sles10_4.1/static_pic"
         "lib/x86-64_linux/static_pic")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
-elseif(MSVC10)
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_vs2011/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_vs2011/stat_mdd")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_vs2011/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_vs2011/stat_mdd")
-elseif(MSVC11)
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_vs2012/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_vs2012/stat_mdd")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_vs2012/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_vs2012/stat_mdd")
-elseif(MSVC12)
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_vs2013/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_vs2013/stat_mdd")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_vs2013/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_vs2013/stat_mdd")
+elseif(MSVC)
+    if (MSVC10)
+        set(CPLEX_COMPILER_HINT "vs2011")
+    elseif(MSVC11)
+        set(CPLEX_COMPILER_HINT "vs2012")
+    elseif(MSVC12)
+        set(CPLEX_COMPILER_HINT "vs2013")
+    endif()
+
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mda")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
+    if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x86_win32")
+    elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x86_win64")
+    endif()
 endif()
 
 if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
@@ -96,6 +100,20 @@ if(CPLEX_LIBRARY_RELEASE OR CPLEX_LIBRARY_DEBUG)
         optimized ${CPLEX_LIBRARY_RELEASE} ${CMAKE_THREAD_LIBS_INIT}
         debug ${CPLEX_LIBRARY_DEBUG} ${CMAKE_THREAD_LIBS_INIT}
     )
+endif()
+
+# HACK: there must be a better way to find the dll file
+find_path(CPLEX_RUNTIME_LIBRARY_PATH
+    NAMES
+    cplex1262.dll
+    HINTS
+    $ENV{DOWNWARD_CPLEX_ROOT}
+    ${DOWNWARD_CPLEX_ROOT}
+    PATH_SUFFIXES
+    ${CPLEX_RUNTIME_LIBRARY_HINT}
+)
+if(CPLEX_RUNTIME_LIBRARY_PATH)
+    set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex1262.dll")
 endif()
 
 include(FindPackageHandleStandardArgs)
