@@ -75,8 +75,7 @@ def get_memory_limit(component_limit, overall_limit):
 
 
 def get_timeout(component_timeout, overall_timeout):
-    external_timeout = get_external_timeout()
-    min_timeout = get_min([component_timeout, overall_timeout, external_timeout])
-    if min_timeout is None:
-        return None
-    return max(0, min_timeout - get_elapsed_time())
+    # TODO: assert component_timeout <= overall_timeout
+    if overall_timeout is not None:
+        overall_timeout = max(0, overall_timeout - get_elapsed_time())
+    return get_min([component_timeout, overall_timeout])
