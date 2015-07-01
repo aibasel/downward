@@ -19,7 +19,6 @@ class SearchStatistics {
     int dead_end_states;
 
     int generated_ops;    // no of operators that were returned as applicable
-    int pathmax_corrections; // no of pathmax corrections;
 
     // Statistics related to f values
     int lastjump_f_value; //f value obtained in the last jump
