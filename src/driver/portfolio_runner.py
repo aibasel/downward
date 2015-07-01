@@ -298,7 +298,7 @@ def get_portfolio_attributes(portfolio):
     return attributes
 
 
-def run(portfolio, executable, sas_file, plan_manager):
+def run(portfolio, executable, sas_file, plan_manager, timeout):
     if resource is None:
         raise ValueError("The module resource could not be imported "
                          "successfully, but is required for portfolio running.\n "
@@ -309,31 +309,17 @@ def run(portfolio, executable, sas_file, plan_manager):
     optimal = attributes["OPTIMAL"]
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
-    timeout = attributes.get("TIMEOUT")
+    # TODO: Deprecate TIMEOUT.
+    file_timeout = attributes.get("TIMEOUT")
 
-    # Time limits are either positive values in seconds or -1 (unlimited).
-    soft_time_limit, hard_time_limit = resource.getrlimit(resource.RLIMIT_CPU)
-    print("External time limits: %d, %d" % (soft_time_limit, hard_time_limit))
-    external_time_limit = None
-    if soft_time_limit != resource.RLIM_INFINITY:
-        external_time_limit = soft_time_limit
-    elif hard_time_limit != resource.RLIM_INFINITY:
-        external_time_limit = hard_time_limit
-    if (external_time_limit is not None and
-            timeout is not None and
-            timeout != external_time_limit):
-        print("The externally set timeout (%d) differs from the one "
-              "in the portfolio file (%d). Is this expected?" %
-              (external_time_limit, timeout), file=sys.stderr)
-    # Prefer limits in the order: external soft limit, external hard limit,
-    # from portfolio file, default.
-    if external_time_limit is not None:
-        timeout = external_time_limit
-    elif timeout is None:
-        print("No timeout has been set for the portfolio so we take "
-              "the default of %ds." % DEFAULT_TIMEOUT, file=sys.stderr)
-        timeout = DEFAULT_TIMEOUT
-    print("Internal time limit: %d" % timeout)
+    if (timeout is not None and
+            file_timeout is not None and
+            timeout != file_timeout):
+        print("The specified timeout ({timeout}) differs from the one "
+              "in the portfolio file (file_timeout). "
+              "Is this expected?".format(**locals()), file=sys.stderr)
+    # TODO: Remove DEFAULT_TIMEOUT?
+    timeout = timeout or file_timeout or DEFAULT_TIMEOUT
 
     # Memory limits are either positive values in Bytes or -1 (unlimited).
     soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
