@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 import os.path
-import subprocess
-import sys
 
 from . import call
 from . import limits

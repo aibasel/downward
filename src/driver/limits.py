@@ -4,8 +4,6 @@ from __future__ import print_function
 
 import os
 import resource
-import subprocess
-import sys
 
 
 def get_min(values):

@@ -5,7 +5,10 @@ from __future__ import print_function
 """Make subprocess calls with time and memory limits."""
 
 import math
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import subprocess
 import sys
 
@@ -46,6 +49,11 @@ def _set_memory_limit(memory):
 
 
 def check_call(cmd, stdin=None, timeout=None, memory=None):
+    if (timeout is not None or memory is not None) and resource is None:
+        raise NotImplementedError(
+            "The 'resource' module is not available on your platform. "
+            "Therefore, setting time or memory limits, and running "
+            "portfolios is not possible.")
     sys.stdout.flush()
 
     def set_limits():
