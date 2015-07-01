@@ -49,6 +49,6 @@ def check_call(cmd, stdin=None, timeout=None, memory=None):
 
     if stdin:
         with open(stdin) as stdin_file:
-            subprocess.check_call(cmd, stdin=stdin_file, **kwargs)
+            return subprocess.check_call(cmd, stdin=stdin_file, **kwargs)
     else:
-        subprocess.check_call(cmd, **kwargs)
+        return subprocess.check_call(cmd, **kwargs)
