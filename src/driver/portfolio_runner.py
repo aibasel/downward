@@ -30,6 +30,8 @@ import subprocess
 import sys
 import traceback
 
+from . import limits
+
 
 DEFAULT_TIMEOUT = 1800
 
@@ -132,26 +134,13 @@ def run_search(executable, args, sas_file, plan_manager, timeout=None, memory=No
     return returncode
 
 
-def get_elapsed_time():
-    """
-    Return the CPU time taken by the python process and its child
-    processes.
-
-    Note: According to the os.times documentation, Windows sets the
-    child time components to 0, so if we ever support running
-    portfolios on Windows, time slices will be allocated slightly
-    wrongly there.
-    """
-    return sum(os.times()[:4])
-
-
-def determine_timeout(remaining_time_at_start, configs, pos):
-    remaining_time = remaining_time_at_start - get_elapsed_time()
+def compute_run_timeout(timeout, configs, pos):
+    remaining_time = timeout - limits.get_elapsed_time()
+    print("remaining time: {}".format(remaining_time))
     relative_time = configs[pos][0]
-    print("remaining time: %s" % remaining_time)
     remaining_relative_time = sum(config[0] for config in configs[pos:])
-    print("config %d: relative time %d, remaining %d" %
-          (pos, relative_time, remaining_relative_time))
+    print("config {}: relative time {}, remaining {}".format(
+          pos, relative_time, remaining_relative_time))
     # For the last config we have relative_time == remaining_relative_time, so
     # we use all of the remaining time at the end.
     run_timeout = remaining_time * relative_time / remaining_relative_time
@@ -159,9 +148,8 @@ def determine_timeout(remaining_time_at_start, configs, pos):
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
-                   executable, sas_file, plan_manager, remaining_time_at_start,
-                   memory):
-    run_timeout = determine_timeout(remaining_time_at_start, configs, pos)
+                   executable, sas_file, plan_manager, timeout, memory):
+    run_timeout = compute_run_timeout(timeout, configs, pos)
     if run_timeout <= 0:
         return None
     _, args_template = configs[pos]
@@ -175,7 +163,7 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
 
 
 def run_sat(configs, executable, sas_file, plan_manager, final_config,
-            final_config_builder, remaining_time_at_start, memory):
+            final_config_builder, timeout, memory):
     exitcodes = []
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
     # has non-unit costs, we start by treating all costs as one. When we find
@@ -188,8 +176,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
         for pos, (relative_time, args) in enumerate(configs):
             exitcode = run_sat_config(
                 configs, pos, search_cost_type, heuristic_cost_type,
-                executable, sas_file, plan_manager, remaining_time_at_start,
-                memory)
+                executable, sas_file, plan_manager, timeout, memory)
             if exitcode is None:
                 return exitcodes
 
@@ -207,8 +194,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                     heuristic_cost_type = "plusone"
                     exitcode = run_sat_config(
                         configs, pos, search_cost_type, heuristic_cost_type,
-                        executable, sas_file, plan_manager,
-                        remaining_time_at_start, memory)
+                        executable, sas_file, plan_manager, timeout, memory)
                     if exitcode is None:
                         return exitcodes
 
@@ -231,18 +217,18 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
         exitcode = run_sat_config(
             [(1, final_config)], 0, search_cost_type,
             heuristic_cost_type, executable, sas_file, plan_manager,
-            remaining_time_at_start, memory)
+            timeout, memory)
         if exitcode is not None:
             exitcodes.append(exitcode)
     return exitcodes
 
 
-def run_opt(configs, executable, sas_file, plan_manager, remaining_time_at_start,
-            memory):
+def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
     exitcodes = []
     for pos, (relative_time, args) in enumerate(configs):
-        timeout = determine_timeout(remaining_time_at_start, configs, pos)
-        exitcode = run_search(executable, args, sas_file, plan_manager, timeout, memory)
+        run_timeout = compute_run_timeout(timeout, configs, pos)
+        exitcode = run_search(executable, args, sas_file, plan_manager,
+                              run_timeout, memory)
         exitcodes.append(exitcode)
 
         if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
@@ -316,7 +302,11 @@ def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
               "Use driver options to limit the runtime.")
 
     # TODO: add default for --overall-timeout and remove DEFAULT_TIMEOUT?
-    timeout = timeout or DEFAULT_TIMEOUT - get_elapsed_time()
+    # TODO: Rename timeout to max_time?
+    if timeout:
+        timeout += limits.get_elapsed_time()
+    else:
+        timeout = DEFAULT_TIMEOUT
 
     print("portfolio timeout: %.2f" % timeout)
 
