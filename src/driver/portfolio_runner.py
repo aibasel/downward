@@ -21,7 +21,10 @@ __all__ = ["run"]
 
 import math
 import os
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 import signal
 import subprocess
 import sys
@@ -40,7 +43,10 @@ EXIT_UNSOLVED_INCOMPLETE = 5
 EXIT_OUT_OF_MEMORY = 6
 EXIT_TIMEOUT = 7
 EXIT_TIMEOUT_AND_MEMORY = 8
-EXIT_SIGXCPU = -signal.SIGXCPU
+if hasattr(signal, 'SIGXCPU'):
+    EXIT_SIGXCPU = -signal.SIGXCPU
+else:
+    EXIT_SIGXCPU = None
 
 EXPECTED_EXITCODES = set([
     EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
@@ -293,6 +299,11 @@ def get_portfolio_attributes(portfolio):
 
 
 def run(portfolio, executable, sas_file, plan_manager):
+    if resource is None:
+        raise ValueError("The module resource could not be imported "
+                         "successfully, but is required for portfolio running.\n "
+                         "As this module is not available for Windows, we do "
+                         "not support portfolios on Windows.")
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
