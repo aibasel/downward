@@ -176,7 +176,7 @@ class SASVariables:
 
 class SASMutexGroup:
     def __init__(self, facts):
-        self.facts = facts
+        self.facts = sorted(facts)
 
     def validate(self, variables):
         """Assert that the facts in the mutex group are sorted and unique
