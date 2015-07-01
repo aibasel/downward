@@ -3,6 +3,7 @@
 import argparse
 
 from . import aliases
+from . import limits
 
 
 DESCRIPTION = """Fast Downward driver script.
@@ -55,6 +56,8 @@ Examples:
 
 %s
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
+
+COMPONENTS_PLUS_OVERALL = ["translate", "preprocess", "search", "overall"]
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
@@ -228,6 +231,12 @@ def _set_components_and_inputs(parser, args):
         assert False, first
 
 
+def _convert_limits_to_ints(parser, args):
+    for component in COMPONENTS_PLUS_OVERALL:
+        limits.set_integer_timeout(parser, args, component)
+        limits.set_integer_memory_limit(parser, args, component)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description=DESCRIPTION, epilog=EPILOG,
@@ -263,17 +272,15 @@ def parse_args():
         "--search", action="store_true",
         help="run search component")
 
-    components = ["translate", "preprocess", "search", "overall"]
-
     time_limits = parser.add_argument_group(
         title="time limits in seconds or with suffixes s, m, h (e.g. 100s, 30m, 1h)")
-    for component in components:
+    for component in COMPONENTS_PLUS_OVERALL:
         time_limits.add_argument(
             "--{component}-timeout".format(**locals()))
 
     memory_limits = parser.add_argument_group(
         title="memory limits in MB or with suffixes M, G (e.g. 1024M, 2G)")
-    for component in components:
+    for component in COMPONENTS_PLUS_OVERALL:
         memory_limits.add_argument(
             "--{component}-memory".format(**locals()))
 
@@ -316,6 +323,8 @@ def parse_args():
             ("--alias", args.alias is not None),
             ("--portfolio", args.portfolio is not None),
             ("options for search component", bool(args.search_options))])
+
+    _convert_limits_to_ints(parser, args)
 
     if args.alias:
         try:
