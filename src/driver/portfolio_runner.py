@@ -300,10 +300,12 @@ def get_portfolio_attributes(portfolio):
 
 def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
     if resource is None:
-        raise ValueError("The module resource could not be imported "
-                         "successfully, but is required for portfolio running.\n "
-                         "As this module is not available for Windows, we do "
-                         "not support portfolios on Windows.")
+        raise NotImplementedError(
+            "The 'resource' module could not be imported, "
+            "but is required for running portfolios. "
+            "As this module is not available on Windows, we do "
+            "not support running portfolios on this platform.")
+
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
