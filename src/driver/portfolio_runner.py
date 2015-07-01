@@ -298,7 +298,7 @@ def get_portfolio_attributes(portfolio):
     return attributes
 
 
-def run(portfolio, executable, sas_file, plan_manager, timeout):
+def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
     if resource is None:
         raise ValueError("The module resource could not be imported "
                          "successfully, but is required for portfolio running.\n "
@@ -320,15 +320,6 @@ def run(portfolio, executable, sas_file, plan_manager, timeout):
               "Is this expected?".format(**locals()), file=sys.stderr)
     # TODO: Remove DEFAULT_TIMEOUT?
     timeout = timeout or file_timeout or DEFAULT_TIMEOUT
-
-    # Memory limits are either positive values in Bytes or -1 (unlimited).
-    soft_mem_limit, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
-    print("External memory limits: %d, %d" % (soft_mem_limit, hard_mem_limit))
-    if hard_mem_limit == resource.RLIM_INFINITY:
-        memory = None
-    else:
-        memory = hard_mem_limit
-    print("Internal memory limit: %s" % memory)
 
     remaining_time_at_start = float(timeout) - get_elapsed_time()
     print("remaining time at start: %.2f" % remaining_time_at_start)

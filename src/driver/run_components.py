@@ -64,12 +64,15 @@ def run_search(args):
         executable = os.path.join(SEARCH_DIR, "downward-release")
     logging.info("search executable: %s" % executable)
 
+    timeout = limits.get_timeout(args.search_timeout, args.overall_timeout)
+    memory = limits.get_memory_limit(args.search_memory, args.overall_memory)
+
     if args.portfolio:
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
         portfolio_runner.run(
             args.portfolio, executable, args.search_input, plan_manager,
-            timeout=limits.get_timeout(args.search_timeout, args.overall_timeout))
+            timeout, memory)
     else:
         if not args.search_options:
             raise ValueError(
@@ -78,4 +81,4 @@ def run_search(args):
             args.search_options.extend(["--internal-plan-file", args.plan_file])
         logging.info("search arguments: %s" % args.search_options)
         call_cmd(executable, args.search_options, debug=args.debug,
-                 stdin=args.search_input)
+                 stdin=args.search_input, timeout=timeout, memory=memory)
