@@ -311,17 +311,12 @@ def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
     optimal = attributes["OPTIMAL"]
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
-    # TODO: Deprecate TIMEOUT.
-    file_timeout = attributes.get("TIMEOUT")
+    if "TIMEOUT" in attributes:
+        print("Warning: The TIMEOUT attribute for portfolios is ignored. "
+              "Use driver options to limit the runtime.")
 
-    if (timeout is not None and
-            file_timeout is not None and
-            timeout != file_timeout):
-        print("The specified timeout ({timeout}) differs from the one "
-              "in the portfolio file (file_timeout). "
-              "Is this expected?".format(**locals()), file=sys.stderr)
-    # TODO: Remove DEFAULT_TIMEOUT?
-    timeout = timeout or file_timeout or DEFAULT_TIMEOUT
+    # TODO: add default for --overall-timeout and remove DEFAULT_TIMEOUT?
+    timeout = timeout or DEFAULT_TIMEOUT
 
     remaining_time_at_start = float(timeout) - get_elapsed_time()
     print("remaining time at start: %.2f" % remaining_time_at_start)
