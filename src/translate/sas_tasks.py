@@ -58,6 +58,25 @@ class SASTask:
             axiom.validate(self.variables, self.init)
         assert self.metric is False or self.metric is True, self.metric
 
+    def dump(self):
+        print("variables:")
+        self.variables.dump()
+        print("%d mutex groups:" % len(self.mutexes))
+        for mutex in self.mutexes:
+            print("group:")
+            mutex.dump()
+        print("init:")
+        self.init.dump()
+        print("goal:")
+        self.goal.dump()
+        print("%d operators:" % len(self.operators))
+        for operator in self.operators:
+            operator.dump()
+        print("%d axioms:" % len(self.axioms))
+        for axiom in self.axioms:
+            axiom.dump()
+        print("metric: %s" % self.metric)
+
     def output(self, stream):
         print("begin_version", file=stream)
         print(SAS_FILE_VERSION, file=stream)
