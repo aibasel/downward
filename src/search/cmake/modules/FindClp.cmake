@@ -5,17 +5,13 @@ if(DEFINED ENV{DOWNWARD_COIN_ROOT})
 endif()
 
 find_path(CLP_INCLUDE_DIRS
-    NAMES
-    ClpSimplex.hpp
-    HINTS
-    ${_COIN_ROOT_OPTS}
+    NAMES ClpSimplex.hpp
+    HINTS ${_COIN_ROOT_OPTS}
 )
 
 find_library(CLP_LIBRARIES
-    NAMES
-    Clp
-    HINTS
-    ${_COIN_ROOT_OPTS}
+    NAMES Clp
+    HINTS ${_COIN_ROOT_OPTS}
 )
 
 include(FindPackageHandleStandardArgs)

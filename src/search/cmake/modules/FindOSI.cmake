@@ -20,57 +20,78 @@
 #  find_package(OSI)
 #  find_package(OSI COMPONENTS Clp Cpx)
 #
+# The location of OSI can be specified using the environment variable
+# or cmake parameter DOWNWARD_COIN_ROOT. If different installations
+# for release and debug versions of osi are available, they can be
+# specified with DOWNWARD_COIN_ROOT_RELEASE and DOWNWARD_COIN_ROOT_DEBUG.
+#
 # Note that the standard FIND_PACKAGE features are supported
 # (i.e., QUIET, REQUIRED, etc.).
 
+set(COIN_HINT_PATHS_RELEASE
+    ${DOWNWARD_COIN_ROOT_RELEASE}
+    $ENV{DOWNWARD_COIN_ROOT_RELEASE}
+    ${DOWNWARD_COIN_ROOT}
+    $ENV{DOWNWARD_COIN_ROOT}
+)
+
+set(COIN_HINT_PATHS_DEBUG
+    ${DOWNWARD_COIN_ROOT_DEBUG}
+    $ENV{DOWNWARD_COIN_ROOT_DEBUG}
+    ${DOWNWARD_COIN_ROOT}
+    $ENV{DOWNWARD_COIN_ROOT}
+)
 
 # Find include dirs.
 find_path(OSI_INCLUDE_DIRS
-    NAMES
-    OsiConfig.h config_osi.h CoinPragma.hpp
-    HINTS
-    $ENV{DOWNWARD_COIN_ROOT}
-    ${DOWNWARD_COIN_ROOT}
-    PATH_SUFFIXES
-    include
-    include/coin
+    NAMES OsiConfig.h config_osi.h CoinPragma.hpp
+    HINTS ${COIN_HINT_PATHS_RELEASE} ${COIN_HINT_PATHS_DEBUG}
+    PATH_SUFFIXES include include/coin
 )
 
 # Find main libraries.
-find_library(OSI_COINUTILS_LIBRARY
-    NAMES
-    CoinUtils
-    libCoinUtils
-    HINTS
-    ${DOWNWARD_COIN_ROOT}
-    $ENV{DOWNWARD_COIN_ROOT}
-    PATH_SUFFIXES
-    lib
+find_library(OSI_COINUTILS_LIBRARY_RELEASE
+    NAMES CoinUtils libCoinUtils
+    HINTS ${COIN_HINT_PATHS_RELEASE}
+    PATH_SUFFIXES lib
 )
-find_library(OSI_LIBRARY
-    Osi
-    libOsi
-    HINTS
-    ${DOWNWARD_COIN_ROOT}
-    $ENV{DOWNWARD_COIN_ROOT}
-    PATH_SUFFIXES
-    lib
+find_library(OSI_COINUTILS_LIBRARY_DEBUG
+    NAMES CoinUtils libCoinUtils
+    HINTS ${COIN_HINT_PATHS_DEBUG}
+    PATH_SUFFIXES lib
 )
-set(OSI_LIBRARIES ${OSI_LIBRARY} ${OSI_COINUTILS_LIBRARY})
+
+find_library(OSI_LIBRARY_RELEASE
+    NAMES Osi libOsi
+    HINTS ${COIN_HINT_PATHS_RELEASE}
+    PATH_SUFFIXES lib
+)
+find_library(OSI_LIBRARY_DEBUG
+    NAMES Osi libOsi
+    HINTS ${COIN_HINT_PATHS_DEBUG}
+    PATH_SUFFIXES lib
+)
+
+set(OSI_LIBRARIES
+    OPTIMIZED ${OSI_LIBRARY_RELEASE} ${OSI_COINUTILS_LIBRARY_RELEASE}
+    DEBUG ${OSI_LIBRARY_DEBUG} ${OSI_COINUTILS_LIBRARY_DEBUG})
 
 # Find solver proxies.
 foreach(SOLVER ${OSI_FIND_COMPONENTS})
     set(OSI_${SOLVER}_FOUND FALSE)
-    find_library(OSI_${SOLVER}_LIBRARIES
-        NAMES
-        Osi${SOLVER}
-        libOsi${SOLVER}
-        HINTS
-        ${DOWNWARD_COIN_ROOT}
-        $ENV{DOWNWARD_COIN_ROOT}
-        PATH_SUFFIXES
-        lib
+    find_library(OSI_${SOLVER}_LIBRARY_RELEASE
+        NAMES Osi${SOLVER} libOsi${SOLVER}
+        HINTS ${COIN_HINT_PATHS_RELEASE}
+        PATH_SUFFIXES lib
     )
+    find_library(OSI_${SOLVER}_LIBRARY_DEBUG
+        NAMES Osi${SOLVER} libOsi${SOLVER}
+        HINTS ${COIN_HINT_PATHS_DEBUG}
+        PATH_SUFFIXES lib
+    )
+    set(OSI_${SOLVER}_LIBRARIES
+        OPTIMIZED ${OSI_${SOLVER}_LIBRARY_RELEASE}
+        DEBUG ${OSI_${SOLVER}_LIBRARY_DEBUG})
 endforeach()
 
 # A component is present if its adapter is present and its solver is present.
@@ -111,8 +132,10 @@ find_package_handle_standard_args(
 )
 
 # Do not show internal variables in cmake GUIs like ccmake.
-mark_as_advanced(OSI_INCLUDE_DIRS OSI_LIBRARY OSI_COINUTILS_LIBRARY OSI_LIBRARIES)
+mark_as_advanced(OSI_INCLUDE_DIRS OSI_LIBRARY_RELEASE OSI_LIBRARY_DEBUG
+                 OSI_COINUTILS_LIBRARY_RELEASE OSI_COINUTILS_LIBRARY_DEBUG
+                 OSI_LIBRARIES COIN_HINT_PATHS_RELEASE COIN_HINT_PATHS_DEBUG)
 foreach(SOLVER ${OSI_FIND_COMPONENTS})
-    mark_as_advanced(OSI_${SOLVER}_LIBRARIES)
-    mark_as_advanced(OSI_${SOLVER}_INCLUDE_DIRS)
+    mark_as_advanced(OSI_${SOLVER}_LIBRARY_RELEASE OSI_${SOLVER}_LIBRARY_DEBUG
+                     OSI_${SOLVER}_LIBRARIES OSI_${SOLVER}_INCLUDE_DIRS)
 endforeach()
