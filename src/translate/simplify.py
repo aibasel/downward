@@ -133,7 +133,7 @@ def build_dtgs(task):
         - None if there are contradictory conditions on var_no"""
 
         result = conditions.get(var_no, -1)
-        for cond_var_no, cond_val in cond:
+        for cond_var_no, cond_val in effect_conditions:
             if cond_var_no == var_no:
                 if result == -1:
                     # This is the first condition on var_no.
