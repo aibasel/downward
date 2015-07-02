@@ -5,14 +5,9 @@
 
 #include "../causal_graph.h"
 #include "../countdown_timer.h"
-#include "../evaluation_context.h"
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
-#include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../task_tools.h"
 #include "../timer.h"
@@ -282,20 +277,18 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
     vector<PatternDatabase *> candidate_pdbs;
     int num_iterations = 0;
     size_t max_pdb_size = 0;
+    State initial_state = task_proxy.get_initial_state();
     try {
         while (true) {
             ++num_iterations;
             cout << "current collection size is "
                  << current_heuristic->get_size() << endl;
-            /* TODO think about how to handle this when state_registries are
-               moved into the search algorithms. */
-            EvaluationContext eval_context(g_initial_state());
             cout << "current initial h value: ";
-            if (eval_context.is_heuristic_infinite(current_heuristic)) {
+            if (current_heuristic->is_dead_end(initial_state)) {
                 cout << "infinite => stopping hill climbing" << endl;
                 break;
             } else {
-                cout << eval_context.get_heuristic_value(current_heuristic)
+                cout << current_heuristic->compute_heuristic(initial_state)
                      << endl;
             }
 
@@ -386,8 +379,8 @@ void PatternGenerationHaslum::initialize() {
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
 
-    EvaluationContext eval_context(g_initial_state());
-    if (eval_context.is_heuristic_infinite(current_heuristic))
+    State initial_state = task_proxy.get_initial_state();
+    if (current_heuristic->is_dead_end(initial_state))
         return;
 
     /* Generate initial candidate patterns (based on each pattern from
