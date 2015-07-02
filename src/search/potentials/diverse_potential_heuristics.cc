@@ -1,5 +1,6 @@
 #include "diverse_potential_heuristics.h"
 
+#include "potential_function.h"
 #include "potential_heuristics.h"
 
 #include "../countdown_timer.h"
@@ -23,14 +24,14 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
       max_covering_time(opts.get<double>("max_covering_time")) {
     Timer initialization_timer;
     find_diverse_heuristics();
-    cout << "Potential heuristics: " << diverse_heuristics.size() << endl;
+    cout << "Potential heuristics: " << diverse_functions.size() << endl;
     cout << "Initialization of potential heuristics: " << initialization_timer << endl;
 }
 
 void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
     vector<GlobalState> &samples) {
     assert(sample_to_max_h.empty());
-    assert(single_heuristics.empty());
+    assert(single_functions.empty());
     CountdownTimer filtering_timer(max_filtering_time);
     int num_duplicates = 0;
     int num_dead_ends = 0;
@@ -41,18 +42,16 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
             break;
         }
         // Skipping duplicates is not necessary, but saves LP evaluations.
-        if (single_heuristics.count(sample.get_id()) != 0) {
+        if (single_functions.count(sample.get_id()) != 0) {
             ++num_duplicates;
             continue;
         }
         bool optimal = optimizer.optimize_for_state(sample);
         if (optimal) {
             dead_end_free_samples.push_back(sample);
-            shared_ptr<Heuristic> single_heuristic = optimizer.get_heuristic();
-            EvaluationContext eval_context(sample);
-            sample_to_max_h[sample.get_id()] = eval_context.get_heuristic_value(
-                single_heuristic.get());
-            single_heuristics[sample.get_id()] = single_heuristic;
+            shared_ptr<PotentialFunction> function = optimizer.get_potential_function();
+            sample_to_max_h[sample.get_id()] = function->get_value(sample);
+            single_functions[sample.get_id()] = function;
         } else {
             ++num_dead_ends;
         }
@@ -68,17 +67,17 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
 }
 
 void DiversePotentialHeuristics::filter_covered_samples(
-    const std::shared_ptr<Heuristic> heuristic,
+    const shared_ptr<PotentialFunction> function,
     vector<GlobalState> &samples) {
     vector<GlobalState> not_covered_samples;
     for (const GlobalState &sample : samples) {
         int max_h = sample_to_max_h.at(sample.get_id());
-        int h = EvaluationContext(sample).get_heuristic_value(heuristic.get());
+        int h = function->get_value(sample);
         assert(h <= max_h);
         // TODO: Count as covered if max_h <= 0.
         if (h == max_h) {
             sample_to_max_h.erase(sample.get_id());
-            single_heuristics.erase(sample.get_id());
+            single_functions.erase(sample.get_id());
         } else {
             not_covered_samples.push_back(sample);
         }
@@ -86,37 +85,38 @@ void DiversePotentialHeuristics::filter_covered_samples(
     swap(samples, not_covered_samples);
 }
 
-shared_ptr<Heuristic> DiversePotentialHeuristics::find_heuristic_and_remove_covered_samples(
+shared_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     vector<GlobalState> &samples) {
     optimizer.optimize_for_samples(samples);
-    shared_ptr<Heuristic> group_heuristic = optimizer.get_heuristic();
+    shared_ptr<PotentialFunction> group_function = optimizer.get_potential_function();
     size_t last_num_samples = samples.size();
-    filter_covered_samples(group_heuristic, samples);
-    shared_ptr<Heuristic> selected_heuristic = nullptr;
+    filter_covered_samples(group_function, samples);
+    shared_ptr<PotentialFunction> function = nullptr;
     if (samples.size() < last_num_samples) {
-        selected_heuristic = group_heuristic;
+        function = group_function;
     } else {
         cout << "No sample was removed -> Use a precomputed heuristic." << endl;
         StateID state_id = g_rng.choose(samples)->get_id();
-        shared_ptr<Heuristic> single_heuristic = single_heuristics[state_id];
-        single_heuristics.erase(state_id);
+        shared_ptr<PotentialFunction> single_heuristic = single_functions[state_id];
+        single_functions.erase(state_id);
         filter_covered_samples(single_heuristic, samples);
-        selected_heuristic = single_heuristic;
+        function = single_heuristic;
     }
     cout << "Removed " << last_num_samples - samples.size() << " samples. "
          << samples.size() << " remaining." << endl;
-    return selected_heuristic;
+    return function;
 }
 
 void DiversePotentialHeuristics::cover_samples(vector<GlobalState> &samples) {
     CountdownTimer covering_timer(max_covering_time);
-    while (!samples.empty() && static_cast<int>(diverse_heuristics.size()) < max_num_heuristics) {
+    while (!samples.empty() && static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
         if (covering_timer.is_expired()) {
             cout << "Ran out of time covering samples." << endl;
             break;
         }
-        cout << "Find heuristic #" << diverse_heuristics.size() + 1 << endl;
-        diverse_heuristics.push_back(find_heuristic_and_remove_covered_samples(samples));
+        cout << "Find heuristic #" << diverse_functions.size() + 1 << endl;
+        diverse_functions.push_back(
+            find_function_and_remove_covered_samples(samples));
     }
     cout << "Time for covering samples: " << covering_timer << endl;
 }
@@ -136,8 +136,8 @@ void DiversePotentialHeuristics::find_diverse_heuristics() {
     cover_samples(samples);
 }
 
-vector<shared_ptr<Heuristic> > DiversePotentialHeuristics::get_heuristics() const {
-    return diverse_heuristics;
+vector<shared_ptr<PotentialFunction> > DiversePotentialHeuristics::get_functions() const {
+    return diverse_functions;
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -163,9 +163,9 @@ static Heuristic *_parse(OptionParser &parser) {
     DiversePotentialHeuristics factory(opts);
 
     Options options;
-    options.set<int>("cost_type", 0);
-    options.set<vector<shared_ptr<Heuristic> > >(
-        "heuristics", factory.get_heuristics());
+    options.set<int>("cost_type", NORMAL);
+    options.set<vector<shared_ptr<PotentialFunction> > >(
+        "functions", factory.get_functions());
     return new PotentialHeuristics(options);
 }
 

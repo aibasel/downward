@@ -10,15 +10,20 @@ class Options;
 
 
 namespace potentials {
+
+class PotentialFunction;
+
 class SampleBasedPotentialHeuristics {
     PotentialOptimizer optimizer;
-    std::vector<std::shared_ptr<Heuristic> > heuristics;
+    std::vector<std::shared_ptr<PotentialFunction> > functions;
 
 public:
-    SampleBasedPotentialHeuristics(const Options &opts);
+    explicit SampleBasedPotentialHeuristics(const Options &opts);
     ~SampleBasedPotentialHeuristics() = default;
 
-    std::vector<std::shared_ptr<Heuristic> > get_heuristics() const;
+    std::vector<std::shared_ptr<PotentialFunction> > get_functions() const;
 };
+
 }
+
 #endif

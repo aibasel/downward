@@ -166,6 +166,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/zero_one_pdbs_heuristic.h \
 
 HEADERS += potentials/diverse_potential_heuristics.h \
+           potentials/potential_function.h \
            potentials/potential_heuristic.h \
            potentials/potential_heuristics.h \
            potentials/potential_optimizer.h \

@@ -12,6 +12,9 @@ class Heuristic;
 class Options;
 
 namespace potentials {
+
+class PotentialFunction;
+
 class PotentialOptimizer {
     std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
@@ -29,6 +32,7 @@ class PotentialOptimizer {
     void extract_lp_solution();
 
 public:
+    // TODO: Remove Options object.
     explicit PotentialOptimizer(const Options &opts);
     ~PotentialOptimizer() = default;
 
@@ -40,6 +44,7 @@ public:
 
     bool has_optimal_solution() const;
 
+    std::shared_ptr<PotentialFunction> get_potential_function() const;
     std::shared_ptr<Heuristic> get_heuristic() const;
 };
 
