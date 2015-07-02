@@ -476,20 +476,31 @@ public:
 };
 
 
+bool does_fire(EffectProxy effect, const State &state);
+
+
 class State {
     const AbstractTask *task;
-    const std::vector<int> values;
+    std::vector<int> values;
 public:
     using ItemType = FactProxy;
     State(const AbstractTask &task, std::vector<int> && values)
-        : task(&task), values(values) {
+        : task(&task), values(std::move(values)) {
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
+    State(const State &) = default;
 
     State(State && other)
         : task(other.task), values(std::move(other.values)) {
         other.task = nullptr;
+    }
+
+    State &operator=(const State && other) {
+        if (this != &other) {
+            values = std::move(other.values);
+        }
+        return *this;
     }
 
     std::size_t size() const {
@@ -503,6 +514,19 @@ public:
 
     FactProxy operator[](VariableProxy var) const {
         return (*this)[var.get_id()];
+    }
+
+    State apply(OperatorProxy op) const {
+        assert(!op.is_axiom());
+        //assert(is_applicable(op, state));
+        std::vector<int> new_values = values;
+        for (EffectProxy effect : op.get_effects()) {
+            if (does_fire(effect, *this)) {
+                FactProxy effect_fact = effect.get_fact();
+                new_values[effect_fact.get_variable().get_id()] = effect_fact.get_value();
+            }
+        }
+        return State(*task, std::move(new_values));
     }
 };
 
@@ -551,6 +575,14 @@ inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
 
 inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, var_id);
+}
+
+inline bool does_fire(EffectProxy effect, const State &state) {
+    for (FactProxy condition : effect.get_conditions()) {
+        if (state[condition.get_variable()] != condition)
+            return false;
+    }
+    return true;
 }
 
 #endif
