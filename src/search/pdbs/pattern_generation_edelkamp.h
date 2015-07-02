@@ -2,6 +2,7 @@
 #define PDBS_PATTERN_GENERATION_EDELKAMP_H
 
 #include "../operator_cost.h"
+#include "../task_proxy.h"
 
 #include <memory>
 #include <vector>
@@ -17,6 +18,7 @@ class ZeroOnePDBsHeuristic;
 
 class PatternGenerationEdelkamp {
     std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
     // Maximum number of states for each pdb
     const int pdb_max_size;
     const int num_collections;
