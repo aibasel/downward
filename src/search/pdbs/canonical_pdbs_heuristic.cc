@@ -128,6 +128,10 @@ void CanonicalPDBsHeuristic::initialize() {
 
 int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
+    return compute_heuristic(state);
+}
+
+int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     int max_h = 0;
     assert(!max_cliques.empty());
     // If we have an empty collection, then max_cliques = { \emptyset }.
