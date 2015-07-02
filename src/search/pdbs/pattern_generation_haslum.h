@@ -49,20 +49,20 @@ class PatternGenerationHaslum {
        applicable, the walk starts over again from the initial state. At the end of each random
        walk, the last state visited is taken as a sample state, thus totalling exactly
        num_samples of sample states. */
-    void sample_states(StateRegistry &sample_registry, std::vector<GlobalState> &samples,
+    void sample_states(std::vector<State> &samples,
                        double average_operator_costs);
 
 
     /* Searches for the best improving pdb in candidate_pdbs according to the
        counting approximation and the given samples. Returns the improvement and
        the index of the best pdb in candidate_pdbs. */
-    std::pair<int, int> find_best_improving_pdb(std::vector<GlobalState> &samples,
+    std::pair<int, int> find_best_improving_pdb(std::vector<State> &samples,
                                                 std::vector<PatternDatabase *> &candidate_pdbs);
 
     /* Returns true iff the h-value of the new pattern (from pdb) plus the h-value of all
        maximal additive subsets from the current pattern collection heuristic if the new pattern was
        added to it is greater than the the h-value of the current pattern collection. */
-    bool is_heuristic_improved(PatternDatabase *pdb, const GlobalState &sample,
+    bool is_heuristic_improved(PatternDatabase *pdb, const State &sample,
                                const std::vector<std::vector<PatternDatabase *> > &max_additive_subsets);
 
     /* This is the core algorithm of this class. As soon as after an iteration, the improvement (according
