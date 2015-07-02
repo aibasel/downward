@@ -41,6 +41,12 @@ public:
     explicit CanonicalPDBsHeuristic(const Options &opts);
     virtual ~CanonicalPDBsHeuristic();
 
+    /* TODO: we want to get rid of compute_heuristic(const GlobalState &state)
+       and change the interface to only use State objects. While we are doing
+       this, the following method already allows to get the heuristic value
+       for a State object. */
+    int compute_heuristic(const State &state) const;
+
     // Adds a new pattern to the collection and recomputes maximal cliques.
     void add_pattern(const std::vector<int> &pattern);
 
