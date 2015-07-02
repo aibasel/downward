@@ -268,7 +268,7 @@ class SASOperator:
             return var, pre, post, list(cond)
         pre_post = map(tuplify, pre_post)
         pre_post = sorted(set(pre_post))
-        pre_post = map(listify, pre_post)
+        pre_post = list(map(listify, pre_post))
         return pre_post
 
     def validate(self, variables):
