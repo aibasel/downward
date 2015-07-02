@@ -6,6 +6,7 @@ two tasks we want to test:
 
 cd ../benchmarks/trucks-strips
 for i in {00..19}; do cp p16.pddl p16-$i.pddl; done
+for i in {00..19}; do cp domain_p16.pddl domain_p16-$i.pddl; done
 
 cd ../freecell
 for i in {00..19}; do cp probfreecell-11-5.pddl probfreecell-11-5-$i.pddl; done
@@ -18,6 +19,7 @@ import common_setup
 
 
 REVS = ["issue544-base", "issue544-v1"]
+LIMITS = {"search_time": 1800}
 CONFIGS = {
     "eager_greedy_add": [
         "--heuristic",
@@ -53,10 +55,10 @@ else:
 
 
 exp = common_setup.IssueExperiment(
-    grid_priority=PRIORITY,
     revisions=REVS,
     configs=CONFIGS,
     suite=SUITE,
+    limits=LIMITS,
     )
 
 exp.add_comparison_table_step()
