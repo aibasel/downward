@@ -58,8 +58,8 @@ def translate_task(python, task_file):
     cmd = [python, TRANSLATOR, task_file]
     try:
         output = subprocess.check_output(cmd, env={"PYTHONHASHSEED": "random"})
-    except OSError:
-        sys.exit("Call failed: %s" % " ".join(cmd))
+    except OSError as err:
+        sys.exit("Call failed: %s\n%s" % (" ".join(cmd), err))
     # Remove non-deterministic timing and memory information from the log.
     for pattern in [r"\[.+s CPU, .+s wall-clock\]", r"\d+ KB"]:
         output = re.sub(pattern, "", output)
