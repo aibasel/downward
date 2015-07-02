@@ -1,5 +1,6 @@
 #include "potential_optimizer.h"
 
+#include "potential_function.h"
 #include "potential_heuristic.h"
 
 #include "../global_operator.h"
@@ -196,11 +197,14 @@ void PotentialOptimizer::extract_lp_solution() {
     }
 }
 
+shared_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
+    assert(has_optimal_solution());
+    return make_shared<PotentialFunction>(fact_potentials);
+}
+
 shared_ptr<Heuristic> PotentialOptimizer::get_heuristic() const {
     assert(has_optimal_solution());
-    Options opts;
-    opts.set<int>("cost_type", 0);
-    return make_shared<PotentialHeuristic>(opts, fact_potentials);
+    return create_potential_heuristic(get_potential_function());
 }
 
 
@@ -229,7 +233,7 @@ void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
     optimizer.optimize_for_samples(samples);
 }
 
-shared_ptr<Heuristic> create_potential_heuristic(const Options &opts) {
+shared_ptr<PotentialFunction> create_potential_function(const Options &opts) {
     PotentialOptimizer optimizer(opts);
     OptFunc opt_func(OptFunc(opts.get_enum("opt_func")));
     if (opt_func == OptFunc::INITIAL_STATE) {
@@ -241,7 +245,7 @@ shared_ptr<Heuristic> create_potential_heuristic(const Options &opts) {
     } else {
         ABORT("Unkown optimization function");
     }
-    return optimizer.get_heuristic();
+    return optimizer.get_potential_function();
 }
 
 void add_common_potentials_options_to_parser(OptionParser &parser) {
@@ -279,10 +283,10 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-    // TODO: Fix memory leak once issue526 is merged.
-    shared_ptr<Heuristic> *heuristic = new shared_ptr<Heuristic>(
-        create_potential_heuristic(opts));
-    return heuristic->get();
+
+    Options options;
+    options.set<int>("cost_type", NORMAL);
+    return new PotentialHeuristic(options, create_potential_function(opts));
 }
 
 static Plugin<Heuristic> _plugin("potentials", _parse);

@@ -8,16 +8,17 @@ using namespace std;
 
 
 namespace potentials {
+
 SampleBasedPotentialHeuristics::SampleBasedPotentialHeuristics(const Options &opts)
     : optimizer(opts) {
     for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
         optimize_for_samples(optimizer, opts.get<int>("num_samples"));
-        heuristics.push_back(optimizer.get_heuristic());
+        functions.push_back(optimizer.get_potential_function());
     }
 }
 
-vector<shared_ptr<Heuristic> > SampleBasedPotentialHeuristics::get_heuristics() const {
-    return heuristics;
+vector<shared_ptr<PotentialFunction> > SampleBasedPotentialHeuristics::get_functions() const {
+    return functions;
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -35,11 +36,12 @@ static Heuristic *_parse(OptionParser &parser) {
     SampleBasedPotentialHeuristics factory(opts);
 
     Options options;
-    options.set<int>("cost_type", 0);
-    options.set<vector<shared_ptr<Heuristic> > >(
-        "heuristics", factory.get_heuristics());
+    options.set<int>("cost_type", NORMAL);
+    options.set<vector<shared_ptr<PotentialFunction> > >(
+        "functions", factory.get_functions());
     return new PotentialHeuristics(options);
 }
 
 static Plugin<Heuristic> _plugin("sample_based_potentials", _parse);
+
 }
