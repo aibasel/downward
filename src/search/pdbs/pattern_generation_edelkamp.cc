@@ -20,6 +20,7 @@ using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     : task(get_task_from_options(opts)),
+      task_proxy(*task),
       pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
@@ -38,8 +39,8 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
     vector<double> cumulative_fitness;
     cumulative_fitness.reserve(fitness_values.size());
     double total_so_far = 0;
-    for (size_t i = 0; i < fitness_values.size(); ++i) {
-        total_so_far += fitness_values[i];
+    for (double fitness_value : fitness_values) {
+        total_so_far += fitness_value;
         cumulative_fitness.push_back(total_so_far);
     }
     // total_so_far is now sum over all fitness values.
@@ -65,9 +66,8 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
 }
 
 void PatternGenerationEdelkamp::mutate() {
-    for (size_t i = 0; i < pattern_collections.size(); ++i) {
-        for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
-            vector<bool> &pattern = pattern_collections[i][j];
+    for (auto &collection : pattern_collections) {
+        for (vector<bool> &pattern : collection) {
             for (size_t k = 0; k < pattern.size(); ++k) {
                 double random = g_rng(); // [0..1)
                 if (random < mutation_probability) {
@@ -92,12 +92,12 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     unordered_set<int> in_pruned_pattern;
 
     vector<int> vars_to_check;
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int var_no = g_goal[i].first;
-        if (in_original_pattern.count(var_no)) {
+    for (const FactProxy &goal : task_proxy.get_goals()) {
+        int var_id = goal.get_variable().get_id();
+        if (in_original_pattern.count(var_id)) {
             // Goals are causally relevant.
-            vars_to_check.push_back(var_no);
-            in_pruned_pattern.insert(var_no);
+            vars_to_check.push_back(var_id);
+            in_pruned_pattern.insert(var_id);
         }
     }
 
@@ -109,10 +109,6 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
           there is a pre->eff arc from the variable to a relevant variable.
           Note that there is no point in considering eff->eff arcs here.
         */
-
-
-        // TODO use local task_proxy
-        TaskProxy task_proxy(*g_root_task());
         const CausalGraph &cg = task_proxy.get_causal_graph();
 
         const vector<int> &rel = cg.get_eff_to_pre(var);
@@ -135,8 +131,10 @@ bool PatternGenerationEdelkamp::is_pattern_too_large(
     const vector<int> &pattern) const {
     // Test if the pattern respects the memory limit.
     int mem = 1;
+    const VariablesProxy &vars = task_proxy.get_variables();
     for (size_t i = 0; i < pattern.size(); ++i) {
-        int domain_size = g_variable_domain[pattern[i]];
+        const VariableProxy &var = vars[pattern[i]];
+        int domain_size = var.get_domain_size();
         if (!is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
         mem *= domain_size;
@@ -147,30 +145,29 @@ bool PatternGenerationEdelkamp::is_pattern_too_large(
 bool PatternGenerationEdelkamp::mark_used_variables(
     const vector<int> &pattern, vector<bool> &variables_used) const {
     for (size_t i = 0; i < pattern.size(); ++i) {
-        int var_no = pattern[i];
-        if (variables_used[var_no])
+        int var_id = pattern[i];
+        if (variables_used[var_id])
             return true;
-        variables_used[var_no] = true;
+        variables_used[var_id] = true;
     }
     return false;
 }
 
 void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
-    for (size_t i = 0; i < pattern_collections.size(); ++i) {
+    for (const auto &collection : pattern_collections) {
         //cout << "evaluate pattern collection " << (i + 1) << " of "
         //     << pattern_collections.size() << endl;
         double fitness = 0;
         bool pattern_valid = true;
-        vector<bool> variables_used(g_variable_domain.size(), false);
+        vector<bool> variables_used(task_proxy.get_variables().size(), false);
         vector<vector<int> > pattern_collection;
-        pattern_collection.reserve(pattern_collections[i].size());
-        for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
-            const vector<bool> &bitvector = pattern_collections[i][j];
+        pattern_collection.reserve(collection.size());
+        for (const vector<bool> &bitvector : collection) {
             vector<int> pattern;
             transform_to_pattern_normal_form(bitvector, pattern);
 
             if (is_pattern_too_large(pattern)) {
-                cout << "pattern " << j << " exceeds the memory limit!" << endl;
+                cout << "pattern exceeds the memory limit!" << endl;
                 pattern_valid = false;
                 break;
             }
@@ -216,21 +213,22 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
 }
 
 void PatternGenerationEdelkamp::bin_packing() {
-    vector<int> variables;
-    variables.reserve(g_variable_domain.size());
-    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-        variables.push_back(i);
+    const VariablesProxy &variables = task_proxy.get_variables();
+    vector<int> variable_ids;
+    variable_ids.reserve(variables.size());
+    for (size_t i = 0; i < variables.size(); ++i) {
+        variable_ids.push_back(i);
     }
 
     for (int i = 0; i < num_collections; ++i) {
         // Use random variable ordering for all pattern collections.
-        g_rng.shuffle(variables);
+        g_rng.shuffle(variable_ids);
         vector<vector<bool> > pattern_collection;
-        vector<bool> pattern(g_variable_name.size(), false);
+        vector<bool> pattern(variables.size(), false);
         int current_size = 1;
-        for (size_t j = 0; j < variables.size(); ++j) {
-            int var = variables[j];
-            int next_var_size = g_variable_domain[var];
+        for (size_t j = 0; j < variable_ids.size(); ++j) {
+            int var_id = variable_ids[j];
+            int next_var_size = variables[var_id].get_domain_size();
             if (next_var_size > pdb_max_size)
                 // var never fits into a bin.
                 continue;
@@ -239,11 +237,11 @@ void PatternGenerationEdelkamp::bin_packing() {
                 // Open a new bin for var.
                 pattern_collection.push_back(pattern);
                 pattern.clear();
-                pattern.resize(g_variable_name.size(), false);
+                pattern.resize(variables.size(), false);
                 current_size = 1;
             }
             current_size *= next_var_size;
-            pattern[var] = true;
+            pattern[var_id] = true;
         }
         /*
           The last bin has not bin inserted into pattern_collection, do so now.
