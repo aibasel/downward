@@ -38,7 +38,8 @@ public:
     */
     AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
                      const std::vector<std::pair<int, int> > &preconditions,
-                     const std::vector<std::pair<int, int> > &effects, int cost,
+                     const std::vector<std::pair<int, int> > &effects,
+                     int cost,
                      const std::vector<std::size_t> &hash_multipliers);
     ~AbstractOperator();
 

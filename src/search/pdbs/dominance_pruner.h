@@ -15,7 +15,8 @@ private:
     std::vector<std::vector<PatternDatabase *> > &max_cliques;
 
     // Precomputed superset relation of patterns.
-    typedef std::unordered_set<std::pair<PatternDatabase *, PatternDatabase *> > PDBRelation;
+    typedef std::unordered_set<
+        std::pair<PatternDatabase *, PatternDatabase *> > PDBRelation;
     PDBRelation superset_relation;
     void compute_superset_relation();
 
