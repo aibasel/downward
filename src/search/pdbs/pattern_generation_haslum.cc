@@ -8,7 +8,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
-#include "../successor_generator.h"
 #include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
