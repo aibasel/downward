@@ -135,7 +135,8 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples,
         // Sample one state with a random walk of length length.
         State current_state(initial_state);
         for (int j = 0; j < length; ++j) {
-            // TODO we want to use the successor generator here but it only handles GlobalState objects
+            /* TODO we want to use the successor generator here but it only
+               handles GlobalState objects */
             vector<OperatorProxy> applicable_ops;
             for (const OperatorProxy &op : task_proxy.get_operators()) {
                 if (is_applicable(op, current_state)) {

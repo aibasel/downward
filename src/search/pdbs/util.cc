@@ -128,7 +128,8 @@ void parse_pattern(OptionParser &parser, Options &opts) {
     if (parser.help_mode())
         return;
 
-    // TODO this is messy: we need a task to exist in the options, but we do not add the option here.
+    /* TODO this is messy: we need a task to exist in the options, but we do not
+       add the option here. */
     shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
 
@@ -163,7 +164,8 @@ void parse_patterns(OptionParser &parser, Options &opts) {
     if (parser.help_mode())
         return;
 
-    // TODO this is messy: we need a task to exist in the options, but we do not add the option here.
+    /* TODO this is messy: we need a task to exist in the options, but we do not
+       add the option here. */
     shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
 

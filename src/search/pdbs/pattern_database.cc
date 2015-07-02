@@ -18,9 +18,10 @@ using namespace std;
 
 AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
                                    const vector<pair<int, int> > &pre_pairs,
-                                   const vector<pair<int, int> > &eff_pairs, int c,
+                                   const vector<pair<int, int> > &eff_pairs,
+                                   int cost,
                                    const vector<size_t> &hash_multipliers)
-    : cost(c),
+    : cost(cost),
       regression_preconditions(prev_pairs) {
     regression_preconditions.insert(regression_preconditions.end(),
                                     eff_pairs.begin(),
@@ -28,7 +29,8 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
     // Sort preconditions for MatchTree construction.
     sort(regression_preconditions.begin(), regression_preconditions.end());
     for (size_t i = 1; i < regression_preconditions.size(); ++i) {
-        assert(regression_preconditions[i].first != regression_preconditions[i - 1].first);
+        assert(regression_preconditions[i].first !=
+               regression_preconditions[i - 1].first);
     }
     hash_effect = 0;
     assert(pre_pairs.size() == eff_pairs.size());
@@ -96,7 +98,9 @@ void PatternDatabase::multiply_out(
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
-            operators.push_back(AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost, hash_multipliers));
+            operators.push_back(
+                AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost,
+                                 hash_multipliers));
         }
     } else {
         // For each possible value for the current variable, build an
@@ -127,10 +131,14 @@ void PatternDatabase::build_abstract_operators(
     const OperatorProxy &op, int cost,
     const std::vector<int> &variable_to_index,
     vector<AbstractOperator> &operators) {
-    vector<pair<int, int> > prev_pairs; // all variable value pairs that are a prevail condition
-    vector<pair<int, int> > pre_pairs; // all variable value pairs that are a precondition (value != -1)
-    vector<pair<int, int> > eff_pairs; // all variable value pairs that are an effect
-    vector<pair<int, int> > effects_without_pre; // all variable value pairs that are a precondition (value = -1)
+    // All variable value pairs that are a prevail condition
+    vector<pair<int, int> > prev_pairs;
+    // All variable value pairs that are a precondition (value != -1)
+    vector<pair<int, int> > pre_pairs;
+    // All variable value pairs that are an effect
+    vector<pair<int, int> > eff_pairs;
+    // All variable value pairs that are a precondition (value = -1)
+    vector<pair<int, int> > effects_without_pre;
 
     size_t num_vars = task_proxy.get_variables().size();
     vector<bool> has_precond_and_effect_on_var(num_vars, false);
@@ -164,7 +172,8 @@ void PatternDatabase::build_abstract_operators(
             }
         }
     }
-    multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre, operators);
+    multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre,
+                 operators);
 }
 
 void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
@@ -203,7 +212,7 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
     }
 
     distances.reserve(num_states);
-    // (first implicit entry: priority,) second entry: index for an abstract state
+    // first implicit entry: priority, second entry: index for an abstract state
     AdaptiveQueue<size_t> pq;
 
     // initialize queue

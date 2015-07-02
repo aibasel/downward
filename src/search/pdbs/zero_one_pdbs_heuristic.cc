@@ -18,7 +18,9 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     : Heuristic(opts) {
     vector<int> operator_costs;
     const OperatorsProxy &operators = task_proxy.get_operators();
-    if (op_costs.empty()) { // if no operator costs are specified, use default operator costs
+
+    // If no operator costs are specified, use default operator costs.
+    if (op_costs.empty()) {
         operator_costs.reserve(operators.size());
         for (const OperatorProxy &op : operators)
             operator_costs.push_back(op.get_cost());
@@ -26,15 +28,20 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         assert(op_costs.size() == operators.size());
         operator_costs = op_costs;
     }
-    const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
+
+    const vector<vector<int> > &pattern_collection(
+        opts.get_list<vector<int> >("patterns"));
+
     //Timer timer;
     approx_mean_finite_h = 0;
     pattern_databases.reserve(pattern_collection.size());
     for (const vector<int> &pattern : pattern_collection) {
-        PatternDatabase *pdb = new PatternDatabase(task, pattern, false, operator_costs);
+        PatternDatabase *pdb = new PatternDatabase(task, pattern, false,
+                                                   operator_costs);
         pattern_databases.push_back(pdb);
 
-        // Set cost of relevant operators to 0 for further iterations (action cost partitioning).
+        /* Set cost of relevant operators to 0 for further iterations
+           (action cost partitioning). */
         for (const OperatorProxy &op : operators) {
             if (pdb->is_operator_relevant(op))
                 operator_costs[op.get_id()] = 0;
