@@ -66,7 +66,7 @@ public:
       efficiently test if the canonical heuristic is infinite than
       computing the exact heuristic value.
     */
-    bool is_dead_end(const GlobalState &global_state) const;
+    bool is_dead_end(const State &state) const;
     const std::vector<PatternDatabase *> &get_pattern_databases() const {
         return pattern_databases;
     }

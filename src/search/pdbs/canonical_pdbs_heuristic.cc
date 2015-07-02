@@ -230,8 +230,7 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
     }
 }
 
-bool CanonicalPDBsHeuristic::is_dead_end(const GlobalState &global_state) const {
-    State state = convert_global_state(global_state);
+bool CanonicalPDBsHeuristic::is_dead_end(const State &state) const {
     for (PatternDatabase *pdb : pattern_databases)
         if (pdb->get_value(state) == numeric_limits<int>::max())
             return true;

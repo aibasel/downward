@@ -14,6 +14,7 @@
 #include "../rng.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
+#include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -103,13 +104,10 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
     return max_pdb_size;
 }
 
-void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
-                                            vector<GlobalState> &samples,
+void PatternGenerationHaslum::sample_states(vector<State> &samples,
                                             double average_operator_cost) {
-    const GlobalState &initial_state = sample_registry.get_initial_state();
-    EvaluationContext eval_context(initial_state);
-
-    int h = eval_context.get_heuristic_value(current_heuristic);
+    const State &initial_state = task_proxy.get_initial_state();
+    int h = current_heuristic->compute_heuristic(initial_state);
     int n;
     if (h == 0) {
         n = 10;
@@ -141,23 +139,26 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
         }
 
         // Sample one state with a random walk of length length.
-        GlobalState current_state(initial_state);
+        State current_state(initial_state);
         for (int j = 0; j < length; ++j) {
-            vector<const GlobalOperator *> applicable_ops;
-            g_successor_generator->generate_applicable_ops(
-                current_state, applicable_ops);
+            // TODO we want to use the successor generator here but it only handles GlobalState objects
+            vector<OperatorProxy> applicable_ops;
+            for (const OperatorProxy &op : task_proxy.get_operators()) {
+                if (is_applicable(op, current_state)) {
+                    applicable_ops.push_back(op);
+                }
+            }
             // If there are no applicable operators, do not walk further.
             if (applicable_ops.empty()) {
                 break;
             } else {
-                const GlobalOperator *random_op = *g_rng.choose(applicable_ops);
-                assert(random_op->is_applicable(current_state));
-                current_state = sample_registry.get_successor_state(
-                    current_state, *random_op);
+                const OperatorProxy &random_op = *g_rng.choose(applicable_ops);
+                assert(is_applicable(random_op, current_state));
+                current_state = current_state.apply(random_op);
                 /* If current state is a dead end, then restart the random walk
                    with the initial state. */
                 if (current_heuristic->is_dead_end(current_state))
-                    current_state = initial_state;
+                    current_state = State(initial_state);
             }
         }
         // The last state of the random walk is used as a sample.
@@ -166,7 +167,7 @@ void PatternGenerationHaslum::sample_states(StateRegistry &sample_registry,
 }
 
 std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
-    vector<GlobalState> &samples,
+    vector<State> &samples,
     vector<PatternDatabase *> &candidate_pdbs) {
     /*
       TODO: The original implementation by Haslum et al. uses A* to compute
@@ -215,9 +216,8 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
         vector<vector<PatternDatabase *> > max_additive_subsets;
         current_heuristic->get_max_additive_subsets(
             pdb->get_pattern(), max_additive_subsets);
-        for (GlobalState &sample : samples) {
-            if (is_heuristic_improved(pdb, sample,
-                                      max_additive_subsets))
+        for (State &sample : samples) {
+            if (is_heuristic_improved(pdb, sample, max_additive_subsets))
                 ++count;
         }
         if (count > improvement) {
@@ -234,12 +234,10 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 }
 
 bool PatternGenerationHaslum::is_heuristic_improved(
-    PatternDatabase *pdb, const GlobalState &sample,
+    PatternDatabase *pdb, const State &sample,
     const vector<vector<PatternDatabase *> > &max_additive_subsets) {
-    State state = task_proxy.convert_global_state(sample);
-
     // h_pattern: h-value of the new pattern
-    int h_pattern = pdb->get_value(state);
+    int h_pattern = pdb->get_value(sample);
 
     if (h_pattern == numeric_limits<int>::max()) {
         return true;
@@ -253,13 +251,12 @@ bool PatternGenerationHaslum::is_heuristic_improved(
     pdb_h_values.reserve(current_heuristic->get_pattern_databases().size());
 
     // h_collection: h-value of the current collection heuristic
-    EvaluationContext eval_context(sample);
-    int h_collection = eval_context.get_heuristic_value(current_heuristic);
+    int h_collection = current_heuristic->compute_heuristic(sample);
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
         for (PatternDatabase *additive_pdb : subset) {
             if (!pdb_h_values.count(additive_pdb))
-                pdb_h_values[additive_pdb] = additive_pdb->get_value(state);
+                pdb_h_values[additive_pdb] = additive_pdb->get_value(sample);
             h_subset += pdb_h_values[additive_pdb];
         }
         if (h_pattern + h_subset > h_collection) {
@@ -306,9 +303,8 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
                 generated_patterns, new_candidates, candidate_pdbs);
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
-            StateRegistry sample_registry;
-            vector<GlobalState> samples;
-            sample_states(sample_registry, samples, average_operator_cost);
+            vector<State> samples;
+            sample_states(samples, average_operator_cost);
 
             pair<int, int> improvement_and_index =
                 find_best_improving_pdb(samples, candidate_pdbs);
