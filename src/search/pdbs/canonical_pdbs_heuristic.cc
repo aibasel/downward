@@ -13,6 +13,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -131,14 +132,20 @@ int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     assert(!max_cliques.empty());
     // If we have an empty collection, then max_cliques = { \emptyset }.
 
-    for (PatternDatabase *pdb : pattern_databases)
-        if (pdb->get_value(state) == numeric_limits<int>::max())
+    unordered_map<PatternDatabase *, int> pdb_h_values;
+    pdb_h_values.reserve(pattern_databases.size());
+
+    for (PatternDatabase *pdb : pattern_databases) {
+        int h = pdb->get_value(state);
+        if (h == numeric_limits<int>::max())
             return DEAD_END;
+        pdb_h_values[pdb] = h;
+    }
 
     for (const vector<PatternDatabase *> &clique : max_cliques) {
         int clique_h = 0;
         for (PatternDatabase *pdb : clique)
-            clique_h += pdb->get_value(state);
+            clique_h += pdb_h_values[pdb];
         max_h = max(max_h, clique_h);
     }
     return max_h;
