@@ -65,7 +65,7 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     for (PatternDatabase *pdb : pattern_databases) {
         int pdb_value = pdb->get_value(state);
         if (pdb_value == numeric_limits<int>::max())
-            return -1;
+            return DEAD_END;
         h_val += pdb_value;
     }
     return h_val;

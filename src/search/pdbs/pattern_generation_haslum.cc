@@ -24,6 +24,7 @@
 #include <exception>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -244,13 +245,23 @@ bool PatternGenerationHaslum::is_heuristic_improved(
         return true;
     }
 
+    /*
+      TODO: we still compute the value of each pdb twice:
+      once inside current_heuristic and once as part of max_additive_subsets.
+    */
+    unordered_map<PatternDatabase *, int> pdb_h_values;
+    pdb_h_values.reserve(current_heuristic->get_pattern_databases().size());
+
     // h_collection: h-value of the current collection heuristic
     EvaluationContext eval_context(sample);
     int h_collection = eval_context.get_heuristic_value(current_heuristic);
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
-        for (PatternDatabase *additive_pdb : subset)
-            h_subset += additive_pdb->get_value(state);
+        for (PatternDatabase *additive_pdb : subset) {
+            if (!pdb_h_values.count(additive_pdb))
+                pdb_h_values[additive_pdb] = additive_pdb->get_value(state);
+            h_subset += pdb_h_values[additive_pdb];
+        }
         if (h_pattern + h_subset > h_collection) {
             /*
               return true if a max additive subset is found for
