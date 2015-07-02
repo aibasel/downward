@@ -50,6 +50,6 @@ public:
 
 void add_common_potentials_options_to_parser(OptionParser &parser);
 
-void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples);
 }
+
 #endif

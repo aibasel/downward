@@ -1,5 +1,6 @@
 #include "sample_based_potential_heuristics.h"
 
+#include "admissible_potential_heuristics.h"
 #include "potential_heuristics.h"
 
 #include "../plugin.h"
