@@ -8,7 +8,6 @@
 #include <vector>
 
 class GlobalState;
-class Heuristic;
 class Options;
 
 namespace potentials {
@@ -32,7 +31,6 @@ class PotentialOptimizer {
     void extract_lp_solution();
 
 public:
-    // TODO: Remove Options object.
     explicit PotentialOptimizer(const Options &opts);
     ~PotentialOptimizer() = default;
 
@@ -45,7 +43,6 @@ public:
     bool has_optimal_solution() const;
 
     std::shared_ptr<PotentialFunction> get_potential_function() const;
-    std::shared_ptr<Heuristic> get_heuristic() const;
 };
 
 void add_common_potentials_options_to_parser(OptionParser &parser);

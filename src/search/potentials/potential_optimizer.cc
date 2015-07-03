@@ -1,7 +1,6 @@
 #include "potential_optimizer.h"
 
 #include "potential_function.h"
-#include "potential_heuristic.h"
 
 #include "../global_state.h"
 #include "../globals.h" // TODO: Remove.
@@ -192,11 +191,6 @@ void PotentialOptimizer::extract_lp_solution() {
 shared_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
     assert(has_optimal_solution());
     return make_shared<PotentialFunction>(fact_potentials);
-}
-
-shared_ptr<Heuristic> PotentialOptimizer::get_heuristic() const {
-    assert(has_optimal_solution());
-    return create_potential_heuristic(get_potential_function());
 }
 
 
