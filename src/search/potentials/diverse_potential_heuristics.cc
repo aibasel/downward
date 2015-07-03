@@ -100,10 +100,10 @@ shared_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remo
     } else {
         cout << "No sample was removed -> Use a precomputed function." << endl;
         StateID state_id = g_rng.choose(samples)->get_id();
-        shared_ptr<PotentialFunction> single_heuristic = single_functions[state_id];
+        shared_ptr<PotentialFunction> single_function = single_functions[state_id];
         single_functions.erase(state_id);
-        filter_covered_samples(single_heuristic, samples);
-        function = single_heuristic;
+        filter_covered_samples(single_function, samples);
+        function = single_function;
     }
     cout << "Removed " << last_num_samples - samples.size() << " samples. "
          << samples.size() << " remaining." << endl;
