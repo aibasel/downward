@@ -14,6 +14,10 @@ class Options;
 namespace potentials {
 class PotentialFunction;
 
+/*
+  Add admissible potential constraints to LP and allow optimizing for different
+  objectives.
+*/
 class PotentialOptimizer {
     std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;

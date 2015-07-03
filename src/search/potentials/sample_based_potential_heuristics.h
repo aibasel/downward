@@ -12,6 +12,10 @@ class Options;
 namespace potentials {
 class PotentialFunction;
 
+/*
+  Compute multiple potential functions that are optimized for different sets of
+  samples.
+*/
 class SampleBasedPotentialHeuristics {
     PotentialOptimizer optimizer;
     std::vector<std::shared_ptr<PotentialFunction> > functions;
