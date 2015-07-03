@@ -5,6 +5,7 @@
 
 #include <memory>
 
+
 namespace potentials {
 
 class PotentialFunction;

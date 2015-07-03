@@ -8,6 +8,7 @@ using namespace std;
 
 
 namespace potentials {
+
 PotentialHeuristic::PotentialHeuristic(const Options &options)
     : Heuristic(options),
       function(options.get<shared_ptr<PotentialFunction> >("function")) {

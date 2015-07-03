@@ -10,6 +10,7 @@
 class GlobalState;
 class Options;
 
+
 namespace potentials {
 
 class PotentialFunction;
