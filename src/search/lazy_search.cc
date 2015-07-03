@@ -6,7 +6,7 @@
 #include "heuristic.h"
 #include "plugin.h"
 #include "rng.h"
-#include "successor_generator.h"
+#include "global_successor_generator.h"
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
 
