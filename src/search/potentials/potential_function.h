@@ -6,7 +6,9 @@
 class GlobalState;
 class State;
 
+
 namespace potentials {
+
 class PotentialFunction {
     const std::vector<std::vector<double> > fact_potentials;
 
