@@ -8,10 +8,9 @@ using namespace std;
 
 
 namespace potentials {
-PotentialHeuristic::PotentialHeuristic(
-    const Options &options, shared_ptr<PotentialFunction> function)
+PotentialHeuristic::PotentialHeuristic(const Options &options)
     : Heuristic(options),
-      function(function) {
+      function(options.get<shared_ptr<PotentialFunction> >("function")) {
 }
 
 void PotentialHeuristic::initialize() {
@@ -26,7 +25,8 @@ std::shared_ptr<Heuristic> create_potential_heuristic(
     std::shared_ptr<PotentialFunction> function) {
     Options opts;
     opts.set<int>("cost_type", NORMAL);
-    return make_shared<PotentialHeuristic>(opts, function);
+    opts.set<shared_ptr<PotentialFunction> >("function", function);
+    return make_shared<PotentialHeuristic>(opts);
 }
 
 }

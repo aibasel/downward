@@ -18,8 +18,7 @@ protected:
 
 public:
     // TODO: Move function into options and make explicit.
-    PotentialHeuristic(const Options &options,
-                       std::shared_ptr<PotentialFunction> function);
+    explicit PotentialHeuristic(const Options &options);
     ~PotentialHeuristic() = default;
 };
 
