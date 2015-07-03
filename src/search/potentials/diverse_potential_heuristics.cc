@@ -32,9 +32,10 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
 
 void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
     vector<GlobalState> &samples) {
+    CountdownTimer filtering_timer(max_filtering_time);
     assert(sample_to_max_h.empty());
     assert(single_functions.empty());
-    CountdownTimer filtering_timer(max_filtering_time);
+    unordered_set<StateID> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
     vector<GlobalState> dead_end_free_samples;
@@ -43,8 +44,9 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
             cout << "Ran out of time filtering dead ends." << endl;
             break;
         }
+        StateID sample_id = sample.get_id();
         // Skipping duplicates is not necessary, but saves LP evaluations.
-        if (single_functions.count(sample.get_id()) != 0) {
+        if (single_functions.count(sample_id) || dead_ends.count(sample_id)) {
             ++num_duplicates;
             continue;
         }
@@ -55,6 +57,7 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
             sample_to_max_h[sample.get_id()] = function->get_value(sample);
             single_functions[sample.get_id()] = function;
         } else {
+            dead_ends.insert(sample_id);
             ++num_dead_ends;
         }
     }
