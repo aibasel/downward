@@ -29,6 +29,7 @@ class PotentialOptimizer {
     void construct_lp();
     void set_lp_objective(const std::vector<double> &coefficients);
     bool solve_lp();
+    bool has_optimal_solution() const;
     void extract_lp_solution();
 
 public:
@@ -40,8 +41,6 @@ public:
     bool optimize_for_state(const GlobalState &state);
     bool optimize_for_all_states();
     bool optimize_for_samples(const std::vector<GlobalState> &samples);
-
-    bool has_optimal_solution() const;
 
     std::shared_ptr<PotentialFunction> get_potential_function() const;
 };
