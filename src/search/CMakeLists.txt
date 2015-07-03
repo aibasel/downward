@@ -44,6 +44,9 @@ endif()
 # Path containing custom CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
+# Use all available LP solvers by default but allow to switch this off.
+option(USE_LP "Use an LP solver through the OSI interface." TRUE)
+
 
 
 ## == Project ==
@@ -125,25 +128,26 @@ if(WIN32)
     target_link_libraries(${TARGET} psapi)
 endif()
 
-find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
-if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND))
-    foreach(SOLVER Cpx Clp Grb)
-        if(OSI_${SOLVER}_FOUND)
-            string(TOUPPER ${SOLVER} TMP_SOLVER_UPPER_CASE)
-            mark_as_advanced(TMP_SOLVER_UPPER_CASE)
-            add_definitions("-D COIN_HAS_${TMP_SOLVER_UPPER_CASE}")
-            include_directories(${OSI_${SOLVER}_INCLUDE_DIRS})
-            target_link_libraries(${TARGET} ${OSI_${SOLVER}_LIBRARIES})
-        endif()
-    endforeach()
+if(USE_LP)
+    find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
+    if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND))
+        foreach(SOLVER Cpx Clp Grb)
+            if(OSI_${SOLVER}_FOUND)
+                string(TOUPPER ${SOLVER} TMP_SOLVER_UPPER_CASE)
+                mark_as_advanced(TMP_SOLVER_UPPER_CASE)
+                add_definitions("-D COIN_HAS_${TMP_SOLVER_UPPER_CASE}")
+                include_directories(${OSI_${SOLVER}_INCLUDE_DIRS})
+                target_link_libraries(${TARGET} ${OSI_${SOLVER}_LIBRARIES})
+            endif()
+        endforeach()
 
-    # Note that basic Osi libs must be added after (!) all osi solver libs.
-    add_definitions("-D USE_LP")
-    include_directories(${OSI_INCLUDE_DIRS})
-    target_link_libraries(${TARGET} ${OSI_LIBRARIES})
+        # Note that basic Osi libs must be added after (!) all osi solver libs.
+        add_definitions("-D USE_LP")
+        include_directories(${OSI_INCLUDE_DIRS})
+        target_link_libraries(${TARGET} ${OSI_LIBRARIES})
+    endif()
+
+    if(CPLEX_RUNTIME_LIBRARY)
+        file(COPY ${CPLEX_RUNTIME_LIBRARY} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
 endif()
-
-if(CPLEX_RUNTIME_LIBRARY)
-    file(COPY ${CPLEX_RUNTIME_LIBRARY} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-
