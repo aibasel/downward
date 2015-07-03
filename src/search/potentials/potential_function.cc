@@ -1,6 +1,6 @@
 #include "potential_function.h"
 
-#include "../globals.h" // TODO: Remove.
+#include "../globals.h"
 #include "../task_proxy.h"
 #include "../utilities.h"
 

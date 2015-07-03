@@ -18,7 +18,6 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
 
 public:
-    // TODO: Move function into options and make explicit.
     explicit PotentialHeuristic(const Options &options);
     ~PotentialHeuristic() = default;
 };
