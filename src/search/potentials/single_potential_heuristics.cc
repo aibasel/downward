@@ -36,7 +36,8 @@ void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
     vector<GlobalState> samples;
     optimizer.optimize_for_state(g_initial_state());
     if (optimizer.has_optimal_solution()) {
-        shared_ptr<Heuristic> sampling_heuristic = optimizer.get_heuristic();
+        shared_ptr<Heuristic> sampling_heuristic =
+            create_potential_heuristic(optimizer.get_potential_function());
         samples = sample_states_with_random_walks(
             sample_registry, num_samples, *sampling_heuristic);
     }
