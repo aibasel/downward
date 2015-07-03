@@ -1,4 +1,4 @@
-#include "admissible_potential_heuristics.h"
+#include "single_potential_heuristics.h"
 
 #include "potential_function.h"
 #include "potential_heuristic.h"
@@ -91,6 +91,6 @@ static Heuristic *_parse(OptionParser &parser) {
     return new PotentialHeuristic(options, create_potential_function(opts));
 }
 
-static Plugin<Heuristic> _plugin("admissible_potentials", _parse);
+static Plugin<Heuristic> _plugin("single_potentials", _parse);
 
 }
