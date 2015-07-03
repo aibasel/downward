@@ -4,7 +4,7 @@
 #include "global_operator.h"
 #include "plugin.h"
 #include "pref_evaluator.h"
-#include "successor_generator.h"
+#include "global_successor_generator.h"
 #include "utilities.h"
 
 using namespace std;

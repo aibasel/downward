@@ -2,8 +2,6 @@
 
 #include "pattern_database.h"
 
-#include "../task_proxy.h"
-
 #include <cassert>
 #include <iostream>
 

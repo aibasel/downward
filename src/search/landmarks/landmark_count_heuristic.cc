@@ -2,7 +2,7 @@
 
 #include "../lp_solver.h"
 #include "../plugin.h"
-#include "../successor_generator.h"
+#include "../global_successor_generator.h"
 
 #include <cmath>
 #include <limits>

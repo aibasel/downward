@@ -10,7 +10,7 @@
 #include "rng.h"
 #include "root_task.h"
 #include "state_registry.h"
-#include "successor_generator.h"
+#include "global_successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
 
@@ -384,7 +384,7 @@ vector<pair<int, int> > g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
-SuccessorGenerator *g_successor_generator;
+GlobalSuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 
 Timer g_timer;
