@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -17,8 +19,8 @@ TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
 ]]
 
 CONFIGS = {}
-CONFIGS.update(configs.default_configs_optimal(core=True, ipc=False, extended=True))
-CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=False, extended=True))
+CONFIGS.update(configs.default_configs_optimal(core=True, ipc=True, extended=True))
+CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=True, extended=True))
 CONFIGS.update(configs.task_transformation_test_configs())
 
 if "astar_selmax_lmcut_lmcount" in CONFIGS:
@@ -26,9 +28,15 @@ if "astar_selmax_lmcut_lmcount" in CONFIGS:
 
 
 def run_plan_script(task, nick, config):
-    print "\nRun %(nick)s on %(task)s:" % locals()
+    cmd = [FAST_DOWNWARD]
+    if "--alias" in config:
+        assert len(config) == 2, config
+        cmd += config + [task]
+    else:
+        cmd += [task] + config
+    print("\nRun {}:".format(cmd))
     sys.stdout.flush()
-    subprocess.check_call([FAST_DOWNWARD, task] + config)
+    subprocess.check_call(cmd)
 
 
 def cleanup():
@@ -37,13 +45,13 @@ def cleanup():
 
 def main():
     subprocess.check_call(["./build_all"], cwd=SRC_DIR)
-    failures = []
     for task in TASKS:
         for nick, config in CONFIGS.items():
             try:
                 run_plan_script(task, nick, config)
             except subprocess.CalledProcessError:
-                sys.exit("\nError: %(nick)s failed to solve task %(task)s" % locals())
+                sys.exit(
+                    "\nError: {} failed to solve {}".format(nick, task))
     cleanup()
 
 main()
