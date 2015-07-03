@@ -8,7 +8,6 @@ using namespace std;
 
 
 namespace potentials {
-
 PotentialHeuristics::PotentialHeuristics(const Options &opts)
     : Heuristic(opts),
       functions(opts.get_list<shared_ptr<PotentialFunction> >("functions")) {
@@ -27,5 +26,4 @@ int PotentialHeuristics::compute_heuristic(const GlobalState &global_state) {
     }
     return value;
 }
-
 }

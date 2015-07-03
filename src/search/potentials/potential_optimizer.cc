@@ -14,7 +14,6 @@ using namespace std;
 
 
 namespace potentials {
-
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
     : task(get_task_from_options(opts)),
       task_proxy(*task),
@@ -203,5 +202,4 @@ void add_common_potentials_options_to_parser(OptionParser &parser) {
         "Bound potentials by this number",
         "infinity");
 }
-
 }

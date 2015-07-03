@@ -8,7 +8,6 @@
 
 
 namespace potentials {
-
 class PotentialFunction;
 
 class PotentialHeuristics : public Heuristic {
@@ -22,7 +21,6 @@ public:
     explicit PotentialHeuristics(const Options &opts);
     ~PotentialHeuristics() = default;
 };
-
 }
 
 #endif

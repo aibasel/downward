@@ -3,11 +3,9 @@
 
 
 namespace potentials {
-
 class PotentialOptimizer;
 
 void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples);
-
 }
 
 #endif

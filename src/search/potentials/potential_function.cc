@@ -10,7 +10,6 @@ using namespace std;
 
 
 namespace potentials {
-
 PotentialFunction::PotentialFunction(
     const vector<vector<double> > &fact_potentials)
     : fact_potentials(fact_potentials) {
@@ -32,5 +31,4 @@ int PotentialFunction::get_value(const State &state) const {
 int PotentialFunction::get_value(const GlobalState &global_state) const {
     return get_value(TaskProxy(*g_root_task()).convert_global_state(global_state));
 }
-
 }

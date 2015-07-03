@@ -11,7 +11,6 @@
 
 
 namespace potentials {
-
 class DiversePotentialHeuristics {
     PotentialOptimizer optimizer;
     const int max_num_heuristics;

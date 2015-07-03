@@ -17,7 +17,6 @@ using namespace std;
 
 
 namespace potentials {
-
 DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
@@ -175,5 +174,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("diverse_potentials", _parse);
-
 }
