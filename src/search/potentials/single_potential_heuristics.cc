@@ -88,7 +88,9 @@ static Heuristic *_parse(OptionParser &parser) {
 
     Options options;
     options.set<int>("cost_type", NORMAL);
-    return new PotentialHeuristic(options, create_potential_function(opts));
+    options.set<shared_ptr<PotentialFunction> >(
+        "function", create_potential_function(opts));
+    return new PotentialHeuristic(options);
 }
 
 static Plugin<Heuristic> _plugin("single_potentials", _parse);
