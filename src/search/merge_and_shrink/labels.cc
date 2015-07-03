@@ -118,7 +118,7 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
              << num_labels_after_reduction << " after reduction"
              << endl;
     }
-    return number_reduced_labels;
+    return number_reduced_labels > 0;
 }
 
 EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
