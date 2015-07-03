@@ -95,7 +95,7 @@ shared_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remo
     if (samples.size() < last_num_samples) {
         function = group_function;
     } else {
-        cout << "No sample was removed -> Use a precomputed heuristic." << endl;
+        cout << "No sample was removed -> Use a precomputed function." << endl;
         StateID state_id = g_rng.choose(samples)->get_id();
         shared_ptr<PotentialFunction> single_heuristic = single_functions[state_id];
         single_functions.erase(state_id);
@@ -109,7 +109,8 @@ shared_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remo
 
 void DiversePotentialHeuristics::cover_samples(vector<GlobalState> &samples) {
     CountdownTimer covering_timer(max_covering_time);
-    while (!samples.empty() && static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
+    while (!samples.empty() &&
+           static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
         if (covering_timer.is_expired()) {
             cout << "Ran out of time covering samples." << endl;
             break;
@@ -141,9 +142,6 @@ vector<shared_ptr<PotentialFunction> > DiversePotentialHeuristics::get_functions
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    add_lp_solver_option_to_parser(parser);
-    add_common_potentials_options_to_parser(parser);
-    Heuristic::add_options_to_parser(parser);
     parser.add_option<int>(
         "max_num_heuristics",
         "maximum number of potential heuristics",
@@ -156,6 +154,9 @@ static Heuristic *_parse(OptionParser &parser) {
         "max_covering_time",
         "time limit in seconds for covering samples",
         "infinity");
+    add_common_potentials_options_to_parser(parser);
+    add_lp_solver_option_to_parser(parser);
+    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
