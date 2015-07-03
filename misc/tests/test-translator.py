@@ -53,13 +53,14 @@ def get_task_name(path):
 
 
 def translate_task(python, task_file):
-    print("Translate %s with %s" % (get_task_name(task_file), python))
+    print("Translate {} with {}".format(get_task_name(task_file), python))
     sys.stdout.flush()
     cmd = [python, TRANSLATOR, task_file]
     try:
         output = subprocess.check_output(cmd, env={"PYTHONHASHSEED": "random"})
     except OSError as err:
-        sys.exit("Call failed: %s\n%s" % (" ".join(cmd), err))
+        sys.exit("Call failed: {}\n{}".format(" ".join(cmd), err))
+    output = str(output)
     # Remove non-deterministic timing and memory information from the log.
     for pattern in [r"\[.+s CPU, .+s wall-clock\]", r"\d+ KB"]:
         output = re.sub(pattern, "", output)
