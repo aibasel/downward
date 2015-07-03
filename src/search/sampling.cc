@@ -12,7 +12,9 @@
 using namespace std;
 
 
-// TODO: Avoid code duplication with iPDB.
+/* TODO: issue529 lets the iPDB random walks use the task interface. Once that
+   issue is merged we can use the State class in the potentials code as well
+   and avoid the code duplication with iPDB. */
 vector<GlobalState> sample_states_with_random_walks(
     StateRegistry &sample_registry,
     int num_samples,
