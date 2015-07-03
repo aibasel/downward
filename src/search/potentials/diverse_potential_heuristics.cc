@@ -24,10 +24,10 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
       num_samples(opts.get<int>("num_samples")),
       max_filtering_time(opts.get<double>("max_filtering_time")),
       max_covering_time(opts.get<double>("max_covering_time")) {
-    Timer initialization_timer;
+    Timer init_timer;
     find_diverse_heuristics();
     cout << "Potential heuristics: " << diverse_functions.size() << endl;
-    cout << "Initialization of potential heuristics: " << initialization_timer << endl;
+    cout << "Initialization of potential heuristics: " << init_timer << endl;
 }
 
 void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
@@ -38,7 +38,7 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
     unordered_set<StateID> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
-    vector<GlobalState> dead_end_free_samples;
+    vector<GlobalState> non_dead_ends;
     for (const GlobalState &sample : samples) {
         if (filtering_timer.is_expired()) {
             cout << "Ran out of time filtering dead ends." << endl;
@@ -52,7 +52,7 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
         }
         bool optimal = optimizer.optimize_for_state(sample);
         if (optimal) {
-            dead_end_free_samples.push_back(sample);
+            non_dead_ends.push_back(sample);
             shared_ptr<PotentialFunction> function = optimizer.get_potential_function();
             sample_to_max_h[sample.get_id()] = function->get_value(sample);
             single_functions[sample.get_id()] = function;
@@ -64,11 +64,9 @@ void DiversePotentialHeuristics::filter_dead_ends_and_duplicates(
     cout << "Time for filtering dead ends: " << filtering_timer << endl;
     cout << "Duplicate samples: " << num_duplicates << endl;
     cout << "Dead end samples: " << num_dead_ends << endl;
-    cout << "Unique non-dead-end samples: " << dead_end_free_samples.size()
-         << endl;
-    assert(num_duplicates + num_dead_ends + dead_end_free_samples.size() ==
-           samples.size());
-    swap(samples, dead_end_free_samples);
+    cout << "Unique non-dead-end samples: " << non_dead_ends.size() << endl;
+    assert(num_duplicates + num_dead_ends + non_dead_ends.size() == samples.size());
+    swap(samples, non_dead_ends);
 }
 
 void DiversePotentialHeuristics::filter_covered_samples(
