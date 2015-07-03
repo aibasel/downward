@@ -9,7 +9,6 @@ using namespace std;
 
 
 namespace potentials {
-
 SampleBasedPotentialHeuristics::SampleBasedPotentialHeuristics(const Options &opts)
     : optimizer(opts) {
     for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
@@ -44,5 +43,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("sample_based_potentials", _parse);
-
 }

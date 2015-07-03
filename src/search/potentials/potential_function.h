@@ -8,7 +8,6 @@ class State;
 
 
 namespace potentials {
-
 class PotentialFunction {
     const std::vector<std::vector<double> > fact_potentials;
 
@@ -21,7 +20,6 @@ public:
     // TODO: Remove once we use State instead of GlobalState.
     int get_value(const GlobalState &global_state) const;
 };
-
 }
 
 #endif

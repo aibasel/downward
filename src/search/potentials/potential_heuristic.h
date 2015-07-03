@@ -7,7 +7,6 @@
 
 
 namespace potentials {
-
 class PotentialFunction;
 
 class PotentialHeuristic : public Heuristic {
@@ -24,7 +23,6 @@ public:
 
 std::shared_ptr<Heuristic> create_potential_heuristic(
     std::shared_ptr<PotentialFunction> function);
-
 }
 
 #endif

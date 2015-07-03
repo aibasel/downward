@@ -10,7 +10,6 @@ class Options;
 
 
 namespace potentials {
-
 class PotentialFunction;
 
 class SampleBasedPotentialHeuristics {
@@ -23,7 +22,6 @@ public:
 
     std::vector<std::shared_ptr<PotentialFunction> > get_functions() const;
 };
-
 }
 
 #endif

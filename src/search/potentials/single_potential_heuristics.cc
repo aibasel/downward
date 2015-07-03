@@ -14,7 +14,6 @@ using namespace std;
 
 
 namespace potentials {
-
 enum class OptFunc {
     INITIAL_STATE,
     ALL_STATES,
@@ -93,5 +92,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("single_potentials", _parse);
-
 }

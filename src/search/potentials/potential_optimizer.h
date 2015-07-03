@@ -12,7 +12,6 @@ class Options;
 
 
 namespace potentials {
-
 class PotentialFunction;
 
 class PotentialOptimizer {
@@ -46,7 +45,6 @@ public:
 };
 
 void add_common_potentials_options_to_parser(OptionParser &parser);
-
 }
 
 #endif
