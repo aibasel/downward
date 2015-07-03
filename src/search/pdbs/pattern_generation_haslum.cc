@@ -307,7 +307,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
 
             cout << "Hill climbing time so far: " << *hill_climbing_timer << endl;
         }
-    } catch (HillClimbingTimeout &e) {
+    } catch (HillClimbingTimeout &) {
         cout << "Time limit reached. Abort hill climbing." << endl;
     }
 
