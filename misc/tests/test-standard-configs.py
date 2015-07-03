@@ -45,7 +45,6 @@ def cleanup():
 
 def main():
     subprocess.check_call(["./build_all"], cwd=SRC_DIR)
-    failures = []
     for task in TASKS:
         for nick, config in CONFIGS.items():
             try:
