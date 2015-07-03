@@ -108,10 +108,21 @@ elseif(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -EHsc")
     set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
 
-    # disable warnings
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4018 -wd4101 -wd4996")
-    # -WX == -Werror
-    # -Wall is also avalible but gives you way to many warnings
+    # Use warning level 4 (-W4) and treat warnings as errors (-WX)
+    # -Wall currently detects too many warnings outside of our code to be useful.
+    string(REPLACE "/W3" "-W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX")
+
+    # Disable warnings that currently trigger in the code until we fix them.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4800") # forcing value to bool
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4512") # assignment operator could not be generated
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4706") # assignment within conditional expression (in tree.hh)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4100") # unreferenced formal parameter (in OSI)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4127") # conditional expression is constant (in tree.hh and in our code)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4244") # conversion with possible loss of data
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4702") # unreachable code
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4239") # nonstandard extension used
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4996") # function call with parameters that may be unsafe
 endif()
 
 
