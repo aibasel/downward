@@ -9,6 +9,9 @@
 namespace potentials {
 class PotentialFunction;
 
+/*
+  Use an internal potential function to evaluate a given state.
+*/
 class PotentialHeuristic : public Heuristic {
     std::shared_ptr<PotentialFunction> function;
 

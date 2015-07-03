@@ -10,6 +10,9 @@
 namespace potentials {
 class PotentialFunction;
 
+/*
+  Maximize over multiple potential functions.
+*/
 class PotentialHeuristics : public Heuristic {
     std::vector<std::shared_ptr<PotentialFunction> > functions;
 
