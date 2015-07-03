@@ -173,14 +173,14 @@ void PotentialOptimizer::construct_lp() {
 
 bool PotentialOptimizer::solve_lp() {
     lp_solver.solve();
-    if (lp_solver.has_optimal_solution()) {
+    if (has_optimal_solution()) {
         extract_lp_solution();
     }
-    return lp_solver.has_optimal_solution();
+    return has_optimal_solution();
 }
 
 void PotentialOptimizer::extract_lp_solution() {
-    assert(lp_solver.has_optimal_solution());
+    assert(has_optimal_solution());
     const vector<double> solution = lp_solver.extract_solution();
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
         fact_potentials[fact.get_variable().get_id()][fact.get_value()] =
@@ -189,7 +189,6 @@ void PotentialOptimizer::extract_lp_solution() {
 }
 
 shared_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
-    assert(has_optimal_solution());
     return make_shared<PotentialFunction>(fact_potentials);
 }
 
