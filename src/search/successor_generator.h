@@ -1,21 +1,24 @@
 #ifndef SUCCESSOR_GENERATOR_H
 #define SUCCESSOR_GENERATOR_H
 
+#include "task_proxy.h"
+
 #include <iostream>
+#include <memory>
 #include <vector>
 
-class GlobalOperator;
-class GlobalState;
+class AbstractTask;
+class OperatorProxy;
+class State;
 
 class SuccessorGenerator {
+    std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
 public:
-    virtual ~SuccessorGenerator() {}
-    virtual void generate_applicable_ops(const GlobalState &curr,
-                                         std::vector<const GlobalOperator *> &ops) = 0;
-    void dump() {_dump("  "); }
-    virtual void _dump(std::string indent) = 0;
+    SuccessorGenerator(std::shared_ptr<AbstractTask> task);
+    ~SuccessorGenerator() = default;
+    void generate_applicable_ops(const State &state,
+                                 std::vector<OperatorProxy> &applicable_ops);
 };
-
-SuccessorGenerator *read_successor_generator(std::istream &in);
 
 #endif
