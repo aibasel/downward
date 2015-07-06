@@ -34,15 +34,25 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif()
 
-# Default tool chain forces a 32 bit compilation
-# disable tool chain file for now
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    message("Defaulting to 32 bit compilation.")
-    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/toolchain-32bit.cmake")
-endif()
-
 # Path containing custom CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
+# Allow to compile a 64-bit version.
+# Since compiling for 32-bit works differently on each platform, we let
+# the users set up their own build environment and only check which one
+# is used. Compiling a 64-bit version of the planner without explicitly
+# settig ALLOW_64_BIT to true results in an error.
+option(ALLOW_64_BIT "Allow to compile a 64-bit version." FALSE)
+
+# On Unix, we explicitly force compilation to 32-bit unless ALLOW_64_BIT is set.
+# Has to be done before defining the project.
+if(UNIX AND NOT ALLOW_64_BIT)
+    set(CMAKE_SYSTEM_LIBRARY_PATH /lib32 /usr/lib32 /usr/local/lib32)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" CACHE STRING "c++ flags")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32" CACHE STRING "c flags")
+endif()
 
 # Use all available LP solvers by default but allow to switch this off.
 option(USE_LP "Use an LP solver through the OSI interface." TRUE)
@@ -54,6 +64,33 @@ option(USE_LP "Use an LP solver through the OSI interface." TRUE)
 set(TARGET "downward")
 
 project(${TARGET})
+
+
+
+## == Validating options ==
+
+if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+    if(ALLOW_64_BIT)
+        message(WARNING "Bitwidth is 32-bit but ALLOW_64_BIT is set. "
+        "Do not set ALLOW_64_BIT unless you are sure you want a 64-bit build. "
+        "See http://www.fast-downward.org/PlannerUsage#A64bit for details.")
+    else()
+        message("Building for 32-bit.")
+    endif()
+elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+    if(ALLOW_64_BIT)
+        message("Building for 64-bit.")
+    else()
+        message(FATAL_ERROR "You are compiling the planner for 64-bit, "
+        "which is not recommended. "
+        "Use -DALLOW_64_BIT=true if you need a 64-bit build. "
+        "See http://www.fast-downward.org/PlannerUsage#A64bit for details.")
+    endif()
+else()
+    message(FATAL_ERROR, "Could not determine bitwidth. We recommend to "
+    "build the planner for 32-bit. "
+    "See http://www.fast-downward.org/PlannerUsage#A64bit for details.")
+endif()
 
 
 
