@@ -3,6 +3,7 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "task_proxy.h"
+#include "timer.h"
 #include "utilities.h"
 
 #include <algorithm>
@@ -13,6 +14,20 @@
 
 using namespace std;
 
+/*
+  We only want to create one causal graph per task, so they are cached globally.
+
+  TODO: We need to rethink the memory management here. Objects in this cache are
+  never reclaimed (before termination of the program). Also, currently every
+  heuristic that uses one would receive its own causal graph object even if it
+  uses an unmodified task because it will create its own copy of
+  CostAdaptedTask.
+  We have the same problems for other objects that are associated with tasks
+  (causal graphs, successor generators and axiom evlauators, DTGs, ...) and can
+  maybe deal with all of them in the same way.
+*/
+static unordered_map<const AbstractTask *,
+                     unique_ptr<CausalGraph> > causal_graph_cache;
 
 /*
   An IntRelationBuilder constructs an IntRelation by adding one pair
@@ -151,6 +166,8 @@ struct CausalGraphBuilder {
 };
 
 CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
+    Timer timer;
+    cout << "building causal graph..." << flush;
     int num_variables = task_proxy.get_variables().size();
     CausalGraphBuilder cg_builder(num_variables);
 
@@ -168,6 +185,7 @@ CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
     cg_builder.succ_builder.compute_relation(successors);
 
     // dump(task_proxy);
+    cout << "done! [t=" << timer << "]" << endl;
 }
 
 void CausalGraph::dump(const TaskProxy &task_proxy) const {
@@ -182,9 +200,6 @@ void CausalGraph::dump(const TaskProxy &task_proxy) const {
              << "    predecessors: " << predecessors[var_id] << endl;
     }
 }
-
-static unordered_map<const AbstractTask *,
-                     unique_ptr<CausalGraph> > causal_graph_cache;
 
 const CausalGraph &get_causal_graph(const AbstractTask *task) {
     if (causal_graph_cache.count(task) == 0) {
