@@ -149,7 +149,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples,
             } else {
                 const OperatorProxy &random_op = *g_rng.choose(applicable_ops);
                 assert(is_applicable(random_op, current_state));
-                current_state = current_state.apply(random_op);
+                current_state = current_state.get_successor(random_op);
                 /* If current state is a dead end, then restart the random walk
                    with the initial state. */
                 if (current_heuristic->is_dead_end(current_state))
