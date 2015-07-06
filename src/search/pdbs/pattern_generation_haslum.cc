@@ -138,7 +138,7 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples,
             /* TODO we want to use the successor generator here but it only
                handles GlobalState objects */
             vector<OperatorProxy> applicable_ops;
-            for (const OperatorProxy &op : task_proxy.get_operators()) {
+            for (OperatorProxy op : task_proxy.get_operators()) {
                 if (is_applicable(op, current_state)) {
                     applicable_ops.push_back(op);
                 }
@@ -361,7 +361,7 @@ void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
 void PatternGenerationHaslum::initialize() {
     // Calculate average operator costs.
     double average_operator_cost = 0;
-    for (const OperatorProxy &op : task_proxy.get_operators()) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
         average_operator_cost += op.get_cost();
     }
     average_operator_cost /= task_proxy.get_operators().size();
@@ -369,7 +369,7 @@ void PatternGenerationHaslum::initialize() {
 
     // Generate initial collection: a pdb for each goal variable.
     vector<vector<int> > initial_pattern_collection;
-    for (const FactProxy &goal : task_proxy.get_goals()) {
+    for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }

@@ -19,7 +19,7 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
 */
 void SuccessorGenerator::generate_applicable_ops(
     const State &state, std::vector<OperatorProxy> &applicable_ops) {
-    for (const OperatorProxy &op : task_proxy.get_operators()) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
         if (is_applicable(op, state)) {
             applicable_ops.push_back(op);
         }

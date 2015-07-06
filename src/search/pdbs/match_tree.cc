@@ -92,7 +92,7 @@ void MatchTree::insert_recursive(
         const pair<int, int> &var_val = regression_preconditions[pre_index];
         int pattern_var_id = var_val.first;
         int var_id = pattern[pattern_var_id];
-        const VariableProxy &var = task_proxy.get_variables()[var_id];
+        VariableProxy var = task_proxy.get_variables()[var_id];
         int var_domain_size = var.get_domain_size();
 
         // Set up node correctly or insert a new node if necessary.

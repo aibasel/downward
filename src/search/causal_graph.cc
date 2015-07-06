@@ -133,9 +133,9 @@ struct CausalGraphBuilder {
         EffectsProxy effects = op.get_effects();
 
         // Handle pre->eff links from preconditions.
-        for (const FactProxy &pre : op.get_preconditions()) {
+        for (FactProxy pre : op.get_preconditions()) {
             int pre_var_id = pre.get_variable().get_id();
-            for (const EffectProxy &eff : effects) {
+            for (EffectProxy eff : effects) {
                 int eff_var_id = eff.get_fact().get_variable().get_id();
                 if (pre_var_id != eff_var_id)
                     handle_pre_eff_arc(pre_var_id, eff_var_id);
@@ -143,10 +143,10 @@ struct CausalGraphBuilder {
         }
 
         // Handle pre->eff links from effect conditions.
-        for (const EffectProxy &eff : effects) {
+        for (EffectProxy eff : effects) {
             VariableProxy eff_var = eff.get_fact().get_variable();
             int eff_var_id = eff_var.get_id();
-            for (const FactProxy &pre : eff.get_conditions()) {
+            for (FactProxy pre : eff.get_conditions()) {
                 int pre_var_id = pre.get_variable().get_id();
                 if (pre_var_id != eff_var_id)
                     handle_pre_eff_arc(pre_var_id, eff_var_id);
@@ -171,10 +171,10 @@ CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     CausalGraphBuilder cg_builder(num_variables);
 
-    for (const OperatorProxy &op : task_proxy.get_operators())
+    for (OperatorProxy op : task_proxy.get_operators())
         cg_builder.handle_operator(op);
 
-    for (const OperatorProxy &op : task_proxy.get_axioms())
+    for (OperatorProxy op : task_proxy.get_axioms())
         cg_builder.handle_operator(op);
 
     cg_builder.pre_eff_builder.compute_relation(pre_to_eff);
@@ -190,7 +190,7 @@ CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
 
 void CausalGraph::dump(const TaskProxy &task_proxy) const {
     cout << "Causal graph: " << endl;
-    for (const VariableProxy &var : task_proxy.get_variables()) {
+    for (VariableProxy var : task_proxy.get_variables()) {
         int var_id = var.get_id();
         cout << "#" << var_id << " [" << var.get_name() << "]:" << endl
              << "    pre->eff arcs: " << pre_to_eff[var_id] << endl

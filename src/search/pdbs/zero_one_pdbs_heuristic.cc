@@ -17,12 +17,12 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const vector<int> &op_costs)
     : Heuristic(opts) {
     vector<int> operator_costs;
-    const OperatorsProxy &operators = task_proxy.get_operators();
+    OperatorsProxy operators = task_proxy.get_operators();
 
     // If no operator costs are specified, use default operator costs.
     if (op_costs.empty()) {
         operator_costs.reserve(operators.size());
-        for (const OperatorProxy &op : operators)
+        for (OperatorProxy op : operators)
             operator_costs.push_back(op.get_cost());
     } else {
         assert(op_costs.size() == operators.size());
@@ -42,7 +42,7 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
 
         /* Set cost of relevant operators to 0 for further iterations
            (action cost partitioning). */
-        for (const OperatorProxy &op : operators) {
+        for (OperatorProxy op : operators) {
             if (pdb->is_operator_relevant(op))
                 operator_costs[op.get_id()] = 0;
         }
