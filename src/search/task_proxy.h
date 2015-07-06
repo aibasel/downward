@@ -2,6 +2,7 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
+#include "utilities.h"
 
 #include <cassert>
 #include <cstddef>
@@ -516,7 +517,10 @@ public:
         return (*this)[var.get_id()];
     }
 
-    State apply(OperatorProxy op) const {
+    State get_successor(OperatorProxy op) const {
+        if (task->get_num_axioms() > 0) {
+            ABORT("State::apply currently does not support axioms.");
+        }
         assert(!op.is_axiom());
         //assert(is_applicable(op, state));
         std::vector<int> new_values = values;
