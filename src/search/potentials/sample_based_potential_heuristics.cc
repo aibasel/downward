@@ -36,7 +36,11 @@ static Heuristic *_parse(OptionParser &parser) {
     SampleBasedPotentialHeuristics factory(opts);
 
     Options options;
-    options.set<int>("cost_type", NORMAL);
+    if (opts.contains("transform")) {
+        options.set<shared_ptr<AbstractTask> >(
+            "transform", opts.get<shared_ptr<AbstractTask> >("transform"));
+    }
+    options.set<int>("cost_type", opts.get<int>("cost_type"));
     options.set<vector<shared_ptr<PotentialFunction> > >(
         "functions", factory.get_functions());
     return new PotentialHeuristics(options);
