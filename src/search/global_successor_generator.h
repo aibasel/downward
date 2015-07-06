@@ -1,5 +1,5 @@
-#ifndef SUCCESSOR_GENERATOR_H
-#define SUCCESSOR_GENERATOR_H
+#ifndef GLOBAL_SUCCESSOR_GENERATOR_H
+#define GLOBAL_SUCCESSOR_GENERATOR_H
 
 #include <iostream>
 #include <vector>

@@ -2,9 +2,9 @@
 
 #include "g_evaluator.h"
 #include "global_operator.h"
+#include "global_successor_generator.h"
 #include "plugin.h"
 #include "pref_evaluator.h"
-#include "global_successor_generator.h"
 #include "utilities.h"
 
 using namespace std;

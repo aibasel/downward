@@ -2,11 +2,11 @@
 
 #include "evaluation_context.h"
 #include "g_evaluator.h"
+#include "global_successor_generator.h"
 #include "globals.h"
 #include "heuristic.h"
 #include "option_parser.h"
 #include "plugin.h"
-#include "global_successor_generator.h"
 #include "sum_evaluator.h"
 
 #include <cassert>

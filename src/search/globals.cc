@@ -5,12 +5,12 @@
 #include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
+#include "global_successor_generator.h"
 #include "heuristic.h"
 #include "int_packer.h"
 #include "rng.h"
 #include "root_task.h"
 #include "state_registry.h"
-#include "global_successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
 
