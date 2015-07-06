@@ -13,9 +13,6 @@ PotentialHeuristic::PotentialHeuristic(const Options &options)
       function(options.get<shared_ptr<PotentialFunction> >("function")) {
 }
 
-void PotentialHeuristic::initialize() {
-}
-
 int PotentialHeuristic::compute_heuristic(const GlobalState &global_state) {
     const State state = convert_global_state(global_state);
     return function->get_value(state);

@@ -16,7 +16,6 @@ class PotentialHeuristic : public Heuristic {
     std::shared_ptr<PotentialFunction> function;
 
 protected:
-    virtual void initialize() override;
     virtual int compute_heuristic(const GlobalState &global_state) override;
 
 public:
