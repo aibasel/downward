@@ -16,7 +16,6 @@ SearchStatistics::SearchStatistics() {
     generated_states = 0;
     dead_end_states = 0;
     generated_ops = 0;
-    pathmax_corrections = 0;
 
     lastjump_expanded_states = 0;
     lastjump_reopened_states = 0;
@@ -61,9 +60,6 @@ void SearchStatistics::print_detailed_statistics() const {
     cout << "Evaluations: " << evaluations << endl;
     cout << "Generated " << generated_states << " state(s)." << endl;
     cout << "Dead ends: " << dead_end_states << " state(s)." << endl;
-    if (pathmax_corrections > 0) {
-        cout << "Pathmax corrections: " << pathmax_corrections << endl;
-    }
 
     if (lastjump_f_value >= 0) {
         cout << "Expanded until last jump: "

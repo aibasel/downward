@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 using namespace std;
@@ -91,12 +91,12 @@ void RelaxationHeuristic::simplify() {
     // Remove duplicate or dominated unary operators.
 
     /*
-      Algorithm: Put all unary operators into an unordered_map
+      Algorithm: Put all unary operators into a map
       (key: condition and effect; value: index in operator vector.
       This gets rid of operators with identical conditions.
 
-      Then go through the unordered_map, checking for each element if
-      none of the possible dominators are part of the unordered_map.
+      Then go through the map, checking for each element if
+      none of the possible dominators are part of the map.
       Put the element into the new operator vector iff this is the case.
 
       In both loops, be careful to ensure that a higher-cost operator
@@ -106,10 +106,9 @@ void RelaxationHeuristic::simplify() {
 
     cout << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
 
-    typedef pair<vector<Proposition *>, Proposition *> HashKey;
-    typedef unordered_map<HashKey, int> HashMap;
-    HashMap unary_operator_index;
-    unary_operator_index.reserve(unary_operators.size());
+    typedef pair<vector<Proposition *>, Proposition *> Key;
+    typedef map<Key, int> Map;
+    Map unary_operator_index;
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
@@ -118,12 +117,12 @@ void RelaxationHeuristic::simplify() {
                  return p1->id < p2->id;
              }
              );
-        HashKey key(op.precondition, op.effect);
-        pair<HashMap::iterator, bool> inserted = unary_operator_index.insert(
+        Key key(op.precondition, op.effect);
+        pair<Map::iterator, bool> inserted = unary_operator_index.insert(
             make_pair(key, i));
         if (!inserted.second) {
             // We already had an element with this key; check its cost.
-            HashMap::iterator iter = inserted.first;
+            Map::iterator iter = inserted.first;
             int old_op_no = iter->second;
             int old_cost = unary_operators[old_op_no].base_cost;
             int new_cost = unary_operators[i].base_cost;
@@ -137,19 +136,19 @@ void RelaxationHeuristic::simplify() {
     vector<UnaryOperator> old_unary_operators;
     old_unary_operators.swap(unary_operators);
 
-    for (HashMap::iterator it = unary_operator_index.begin();
+    for (Map::iterator it = unary_operator_index.begin();
          it != unary_operator_index.end(); ++it) {
-        const HashKey &key = it->first;
+        const Key &key = it->first;
         int unary_operator_no = it->second;
-        int powerset_size = (1 << key.first.size()) - 1; // -1: only consider proper subsets
         bool match = false;
-        if (powerset_size <= 31) { // HACK! Don't spend too much time here...
+        if (key.first.size() <= 5) { // HACK! Don't spend too much time here...
+            int powerset_size = (1 << key.first.size()) - 1; // -1: only consider proper subsets
             for (int mask = 0; mask < powerset_size; ++mask) {
-                HashKey dominating_key = make_pair(vector<Proposition *>(), key.second);
+                Key dominating_key = make_pair(vector<Proposition *>(), key.second);
                 for (size_t i = 0; i < key.first.size(); ++i)
                     if (mask & (1 << i))
                         dominating_key.first.push_back(key.first[i]);
-                HashMap::iterator found = unary_operator_index.find(
+                Map::iterator found = unary_operator_index.find(
                     dominating_key);
                 if (found != unary_operator_index.end()) {
                     int my_cost = old_unary_operators[unary_operator_no].base_cost;
