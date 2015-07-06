@@ -91,9 +91,9 @@ void CanonicalPDBsHeuristic::compute_additive_vars() {
     assert(are_additive.empty());
     int num_vars = task_proxy.get_variables().size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
-    for (const OperatorProxy &op : task_proxy.get_operators()) {
-        for (const EffectProxy &e1 : op.get_effects()) {
-            for (const EffectProxy &e2 : op.get_effects()) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        for (EffectProxy e1 : op.get_effects()) {
+            for (EffectProxy e2 : op.get_effects()) {
                 int e1_var_id = e1.get_fact().get_variable().get_id();
                 int e2_var_id = e2.get_fact().get_variable().get_id();
                 are_additive[e1_var_id][e2_var_id] = false;

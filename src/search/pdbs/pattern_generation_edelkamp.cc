@@ -92,7 +92,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     unordered_set<int> in_pruned_pattern;
 
     vector<int> vars_to_check;
-    for (const FactProxy &goal : task_proxy.get_goals()) {
+    for (FactProxy goal : task_proxy.get_goals()) {
         int var_id = goal.get_variable().get_id();
         if (in_original_pattern.count(var_id)) {
             // Goals are causally relevant.
@@ -131,9 +131,9 @@ bool PatternGenerationEdelkamp::is_pattern_too_large(
     const vector<int> &pattern) const {
     // Test if the pattern respects the memory limit.
     int mem = 1;
-    const VariablesProxy &vars = task_proxy.get_variables();
+    VariablesProxy vars = task_proxy.get_variables();
     for (size_t i = 0; i < pattern.size(); ++i) {
-        const VariableProxy &var = vars[pattern[i]];
+        VariableProxy var = vars[pattern[i]];
         int domain_size = var.get_domain_size();
         if (!is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
@@ -213,7 +213,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
 }
 
 void PatternGenerationEdelkamp::bin_packing() {
-    const VariablesProxy &variables = task_proxy.get_variables();
+    VariablesProxy variables = task_proxy.get_variables();
     vector<int> variable_ids;
     variable_ids.reserve(variables.size());
     for (size_t i = 0; i < variables.size(); ++i) {

@@ -32,7 +32,7 @@ VariableOrderFinder::VariableOrderFinder(shared_ptr<AbstractTask> task,
 
     is_causal_predecessor.resize(var_count, false);
     is_goal_variable.resize(var_count, false);
-    for (const FactProxy &goal : task_proxy.get_goals())
+    for (FactProxy goal : task_proxy.get_goals())
         is_goal_variable[goal.get_variable().get_id()] = true;
 }
 

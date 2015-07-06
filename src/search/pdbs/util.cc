@@ -94,7 +94,7 @@ static void build_combo_patterns(
     pattern_collection.push_back(large_pattern);
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
     TaskProxy task_proxy(*task);
-    for (const FactProxy &goal : task_proxy.get_goals()) {
+    for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
         if (used_vars.count(goal_var_id) == 0)
             pattern_collection.emplace_back(1, goal_var_id);
@@ -105,7 +105,7 @@ static void build_singleton_patterns(
     TaskProxy task_proxy, vector<vector<int> > &pattern_collection) {
     // Build singleton pattern from each goal variable.
     assert(pattern_collection.empty());
-    for (const FactProxy &goal : task_proxy.get_goals()) {
+    for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
         pattern_collection.emplace_back(1, goal_var_id);
     }
