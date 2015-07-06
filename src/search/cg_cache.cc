@@ -18,6 +18,8 @@ CGCache::CGCache() {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = g_variable_domain.size();
+    /* TODO when switching merge and shrink to new task interface, use a
+       task passed as a parameter instead of g_root_task(). */
     TaskProxy task_proxy(*g_root_task());
     const CausalGraph &cg = task_proxy.get_causal_graph();
 
