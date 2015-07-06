@@ -47,7 +47,8 @@
   1 } x S for arbitrary sets S. Our current code only requires that S
   is hashable and sortable, and we have one assertion that checks that
   S = {0, ..., K - 1}. This could easily be changed if such a
-  generalization is useful anywhere in the code. */
+  generalization is useful anywhere in the code.
+*/
 
 #include <vector>
 
