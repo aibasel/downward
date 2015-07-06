@@ -19,7 +19,6 @@ class SearchStatistics {
     int dead_end_states;
 
     int generated_ops;    // no of operators that were returned as applicable
-    int pathmax_corrections; // no of pathmax corrections;
 
     // Statistics related to f values
     int lastjump_f_value; //f value obtained in the last jump
@@ -39,7 +38,6 @@ public:
     void inc_generated(int inc = 1) {generated_states += inc; }
     void inc_reopened(int inc = 1) {reopened_states += inc; }
     void inc_generated_ops(int inc = 1) {generated_ops += inc; }
-    void inc_pathmax_corrections(int inc = 1) {pathmax_corrections += inc; }
     void inc_evaluations(int inc = 1) {evaluations += inc; }
     void inc_dead_ends(int inc = 1) {dead_end_states += inc; }
 
@@ -50,7 +48,6 @@ public:
     int get_generated() const {return generated_states; }
     int get_reopened() const {return reopened_states; }
     int get_generated_ops() const {return generated_ops; }
-    int get_pathmax_corrections() const {return pathmax_corrections; }
 
     /*
       Call the following method with the f value of every expanded
