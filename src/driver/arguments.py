@@ -276,15 +276,13 @@ def parse_args():
     time_limits = parser.add_argument_group(
         title="time limits in seconds or with suffixes s, m, h (e.g. 100s, 30m, 1h)")
     for component in COMPONENTS_PLUS_OVERALL:
-        time_limits.add_argument(
-            "--{component}-timeout".format(**locals()))
+        time_limits.add_argument("--{}-timeout".format(component))
 
     # TODO: Default values?
     memory_limits = parser.add_argument_group(
         title="memory limits in MB or with suffixes M, G (e.g. 1024M, 2G)")
     for component in COMPONENTS_PLUS_OVERALL:
-        memory_limits.add_argument(
-            "--{component}-memory".format(**locals()))
+        memory_limits.add_argument("--{}-memory".format(component))
 
     driver_other = parser.add_argument_group(
         title="other driver options")
