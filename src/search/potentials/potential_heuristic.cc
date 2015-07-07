@@ -18,11 +18,4 @@ int PotentialHeuristic::compute_heuristic(const GlobalState &global_state) {
     return function->get_value(state);
 }
 
-std::shared_ptr<Heuristic> create_potential_heuristic(
-    std::shared_ptr<PotentialFunction> function) {
-    Options opts;
-    opts.set<int>("cost_type", NORMAL);
-    opts.set<shared_ptr<PotentialFunction> >("function", function);
-    return make_shared<PotentialHeuristic>(opts);
-}
 }
