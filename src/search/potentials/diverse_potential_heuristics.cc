@@ -1,8 +1,8 @@
 #include "diverse_potential_heuristics.h"
 
 #include "potential_function.h"
-#include "potential_heuristic.h"
 #include "potential_heuristics.h"
+#include "single_potential_heuristics.h"
 
 #include "../countdown_timer.h"
 #include "../globals.h"
@@ -126,12 +126,9 @@ void DiversePotentialHeuristics::cover_samples(vector<GlobalState> &samples) {
 
 void DiversePotentialHeuristics::find_diverse_heuristics() {
     // Sample states.
-    optimizer.optimize_for_state(g_initial_state());
-    shared_ptr<Heuristic> sampling_heuristic = create_potential_heuristic(
-        optimizer.get_potential_function());
     StateRegistry sample_registry;
-    vector<GlobalState> samples = sample_states_with_random_walks(
-        sample_registry, num_samples, *sampling_heuristic);
+    vector<GlobalState> samples = sample_without_dead_end_detection(
+        optimizer, sample_registry, num_samples);
 
     // Filter dead end samples.
     filter_dead_ends_and_duplicates(samples);
