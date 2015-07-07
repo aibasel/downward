@@ -2,29 +2,54 @@
 
 from __future__ import print_function
 
-import os
-import resource
+import util
+
+import math
+try:
+    import resource
+except ImportError:
+    resource = None
+import sys
 
 
-def get_min(values):
-    """Filter None values and return minimum."""
-    values = [val for val in values if val is not None]
-    if values:
-        return min(values)
-    return None
+def can_set_limits():
+    return resource is not None
 
 
-def get_elapsed_time():
-    """
-    Return the CPU time taken by the python process and its child
-    processes.
+def _set_limit(kind, soft, hard=None):
+    if hard is None:
+        hard = soft
+    try:
+        resource.setrlimit(kind, (soft, hard))
+    except (OSError, ValueError) as err:
+        print(
+            "Limit for {} could not be set to ({},{}) ({}). "
+            "Previous limit: {}".format(
+                kind, soft, hard, err, resource.getrlimit(kind)),
+            file=sys.stderr)
 
-    Note: According to the os.times documentation, Windows sets the
-    child time components to 0, so if we ever support running
-    portfolios on Windows, time slices will be allocated slightly
-    wrongly there.
-    """
-    return sum(os.times()[:4])
+
+def set_time_limit(timeout):
+    if timeout is None:
+        return
+    # Don't try to raise the hard limit.
+    _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
+    if external_hard_limit == resource.RLIM_INFINITY:
+        external_hard_limit = float("inf")
+    # Soft limit reached --> SIGXCPU.
+    # Hard limit reached --> SIGKILL.
+    soft_limit = int(math.ceil(timeout))
+    hard_limit = min(soft_limit + 1, external_hard_limit)
+    print("timeout %.2f -> (%d, %d)" % (timeout, soft_limit, hard_limit))
+    sys.stdout.flush()
+    _set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
+
+
+def set_memory_limit(memory):
+    if memory is None:
+        memory = resource.RLIM_INFINITY
+    # Memory in bytes.
+    _set_limit(resource.RLIMIT_AS, memory)
 
 
 # TODO: Remove?
@@ -70,10 +95,10 @@ def set_memory_limit_in_bytes(parser, args, component):
 
 def get_memory_limit(component_limit, overall_limit):
     external_limit = get_external_hard_memory_limit()
-    return get_min([component_limit, overall_limit, external_limit])
+    return util.get_min([component_limit, overall_limit, external_limit])
 
 
 def get_timeout(component_timeout, overall_timeout):
     if overall_timeout is not None:
-        overall_timeout = max(0, overall_timeout - get_elapsed_time())
-    return get_min([component_timeout, overall_timeout])
+        overall_timeout = max(0, overall_timeout - util.get_elapsed_time())
+    return util.get_min([component_timeout, overall_timeout])

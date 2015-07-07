@@ -24,7 +24,7 @@ import subprocess
 import traceback
 
 from . import call
-from . import limits
+from . import util
 
 
 DEFAULT_TIMEOUT = 1800
@@ -99,7 +99,7 @@ def run_search(executable, args, sas_file, plan_manager, time, memory):
 
 
 def compute_run_time(timeout, configs, pos):
-    remaining_time = timeout - limits.get_elapsed_time()
+    remaining_time = timeout - util.get_elapsed_time()
     print("remaining time: {}".format(remaining_time))
     relative_time = configs[pos][0]
     remaining_relative_time = sum(config[0] for config in configs[pos:])
@@ -267,7 +267,7 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     if time is None:
         timeout = DEFAULT_TIMEOUT
     else:
-        timeout = limits.get_elapsed_time() + time
+        timeout = util.get_elapsed_time() + time
 
     if optimal:
         exitcodes = run_opt(configs, executable, sas_file, plan_manager,
