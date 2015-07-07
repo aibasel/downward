@@ -52,17 +52,6 @@ def set_memory_limit(memory):
     _set_limit(resource.RLIMIT_AS, memory)
 
 
-# TODO: Remove?
-def get_external_timeout():
-    # Time limits are either positive values in seconds or -1 (RLIM_INFINITY).
-    soft, hard = resource.getrlimit(resource.RLIMIT_CPU)
-    if soft != resource.RLIM_INFINITY:
-        return soft
-    elif hard != resource.RLIM_INFINITY:
-        return hard
-    else:
-        return None
-
 def get_external_hard_memory_limit():
     # Memory limits are either positive values in bytes or -1 (RLIM_INFINITY).
     _, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
