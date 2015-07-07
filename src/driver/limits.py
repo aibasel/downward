@@ -52,7 +52,7 @@ def set_memory_limit(memory):
     _set_limit(resource.RLIMIT_AS, memory)
 
 
-def get_external_hard_memory_limit():
+def _get_external_hard_memory_limit():
     # Memory limits are either positive values in bytes or -1 (RLIM_INFINITY).
     _, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
     if hard_mem_limit == resource.RLIM_INFINITY:
@@ -83,7 +83,7 @@ def set_memory_limit_in_bytes(parser, args, component):
 
 
 def get_memory_limit(component_limit, overall_limit):
-    external_limit = get_external_hard_memory_limit()
+    external_limit = _get_external_hard_memory_limit()
     return util.get_min([component_limit, overall_limit, external_limit])
 
 
