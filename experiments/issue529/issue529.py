@@ -5,6 +5,7 @@ from downward import configs, suites
 from downward.reports.scatter import ScatterPlotReport
 
 import common_setup
+from relativescatter import RelativeScatterPlotReport
 
 
 SEARCH_REVS = ["issue529-v1-base", "issue529-v1"]
@@ -44,5 +45,16 @@ exp = common_setup.IssueExperiment(
 
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
+
+for conf in CONFIGS:
+    for attr in ("memory", "total_time"):
+        exp.add_report(
+            RelativeScatterPlotReport(
+                attributes=[attr],
+                get_category=lambda run1, run2: run1.get("domain"),
+                filter_config=["issue529-v1-base-%s" % conf, "issue529-v1-%s" % conf]
+            ),
+            outfile='issue529_base_v1_%s_%s.png' % (conf, attr)
+        )
 
 exp()
