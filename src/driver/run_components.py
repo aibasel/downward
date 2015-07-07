@@ -27,8 +27,11 @@ def check_for_executable(executable, debug):
 def print_component_settings(nick, inputs, options, timeout, memory):
     logging.info("{} input: {}".format(nick, inputs))
     logging.info("{} arguments: {}".format(nick, options))
+    if timeout is not None:
+        timeout = str(timeout) + "s"
     logging.info("{} timeout: {}".format(nick, timeout))
-    logging.info("{} memory limit: {}".format(nick, memory))
+    logging.info("{} memory limit: {:.2} MB".format(
+        nick, limits.convert_to_mb(memory)))
 
 
 def call_component(executable, options, stdin=None, timeout=None, memory=None):
