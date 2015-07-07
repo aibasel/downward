@@ -10,7 +10,6 @@ using namespace std;
 SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     : task(task),
       task_proxy(*task) {
-
 }
 
 /*

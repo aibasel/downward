@@ -44,7 +44,7 @@ void CanonicalPDBsHeuristic::add_pdb_for_pattern(const vector<int> &pattern) {
 }
 
 bool CanonicalPDBsHeuristic::are_patterns_additive(
-   const vector<int> &pattern1, const vector<int> &pattern2) const {
+    const vector<int> &pattern1, const vector<int> &pattern2) const {
     for (int v1 : pattern1) {
         for (int v2 : pattern2) {
             if (!are_additive[v1][v2]) {
@@ -210,7 +210,7 @@ void CanonicalPDBsHeuristic::get_max_additive_subsets(
       "new" cliques including P.
       */
 
-    for (const vector<PatternDatabase *> & clique : max_cliques) {
+    for (const vector<PatternDatabase *> &clique : max_cliques) {
         // Take all patterns which are additive to new_pattern.
         vector<PatternDatabase *> subset;
         subset.reserve(clique.size());
@@ -249,7 +249,7 @@ void CanonicalPDBsHeuristic::dump_cliques() const {
     assert(!max_cliques.empty());
     cout << max_cliques.size() << " maximal clique(s)" << endl;
     cout << "Maximal cliques are (";
-    for (const vector<PatternDatabase *> & clique : max_cliques) {
+    for (const vector<PatternDatabase *> &clique : max_cliques) {
         cout << "[";
         for (PatternDatabase *pdb : clique) {
             cout << "{ ";

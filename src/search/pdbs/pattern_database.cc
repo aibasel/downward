@@ -67,9 +67,9 @@ PatternDatabase::PatternDatabase(
     const vector<int> &pattern,
     bool dump,
     const vector<int> &operator_costs)
-        : task(task),
-          task_proxy(*task),
-          pattern(pattern) {
+    : task(task),
+      task_proxy(*task),
+      pattern(pattern) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
     assert(operator_costs.empty() ||

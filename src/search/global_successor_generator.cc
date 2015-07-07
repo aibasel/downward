@@ -58,8 +58,8 @@ void GlobalSuccessorGeneratorSwitch::_dump(string indent) {
     default_generator->_dump(indent + "  ");
 }
 
-void GlobalSuccessorGeneratorGenerate::generate_applicable_ops(const GlobalState &,
-                                                         vector<const GlobalOperator *> &ops) {
+void GlobalSuccessorGeneratorGenerate::generate_applicable_ops(
+    const GlobalState &, vector<const GlobalOperator *> &ops) {
     ops.insert(ops.end(), op.begin(), op.end());
 }
 
