@@ -233,8 +233,8 @@ def _set_components_and_inputs(parser, args):
 
 def _convert_limits_to_ints(parser, args):
     for component in COMPONENTS_PLUS_OVERALL:
-        limits.set_integer_timeout(parser, args, component)
-        limits.set_integer_memory_limit(parser, args, component)
+        limits.set_timeout_in_seconds(parser, args, component)
+        limits.set_memory_limit_in_bytes(parser, args, component)
 
 
 def parse_args():
