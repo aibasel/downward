@@ -2,7 +2,7 @@
 
 #include "potential_function.h"
 #include "potential_heuristics.h"
-#include "single_potential_heuristics.h"
+#include "util.h"
 
 #include "../countdown_timer.h"
 #include "../globals.h"
