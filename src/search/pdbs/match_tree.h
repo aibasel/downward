@@ -21,8 +21,8 @@ class MatchTree {
     void insert_recursive(const AbstractOperator &op,
                           int pre_index,
                           Node **edge_from_parent);
-    void get_applicable_operators_recursive(Node *node,
-        const size_t state_index,
+    void get_applicable_operators_recursive(
+        Node *node, const size_t state_index,
         std::vector<const AbstractOperator *> &applicable_operators) const;
     void dump_recursive(Node *node) const;
 public:
@@ -39,7 +39,8 @@ public:
       Extracts all applicable abstract operators for the abstract state given
       by state_index (the index is converted back to variable/values pairs).
     */
-    void get_applicable_operators(size_t state_index,
+    void get_applicable_operators(
+        size_t state_index,
         std::vector<const AbstractOperator *> &applicable_operators) const;
     void dump() const;
 };

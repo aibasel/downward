@@ -49,7 +49,7 @@ PatternGenerationHaslum::~PatternGenerationHaslum() {
 
 void PatternGenerationHaslum::generate_candidate_patterns(
     const PatternDatabase *pdb, vector<vector<int> > &candidate_patterns) {
-    const CausalGraph  &causal_graph = task_proxy.get_causal_graph();
+    const CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const vector<int> &pattern = pdb->get_pattern();
     int pdb_size = pdb->get_size();
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -265,7 +265,8 @@ bool PatternGenerationHaslum::is_heuristic_improved(
     return false;
 }
 
-void PatternGenerationHaslum::hill_climbing(double average_operator_cost,
+void PatternGenerationHaslum::hill_climbing(
+    double average_operator_cost,
     vector<vector<int> > &initial_candidate_patterns) {
     hill_climbing_timer = new CountdownTimer(max_time);
     // Candidate patterns generated so far (used to avoid duplicates).

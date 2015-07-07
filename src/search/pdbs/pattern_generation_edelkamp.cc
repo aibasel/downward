@@ -378,7 +378,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (opts.get<int>("num_episodes") < 0)
         parser.error("number of episodes must be a non negative number");
     if (opts.get<double>("mutation_probability") < 0 ||
-                         opts.get<double>("mutation_probability") > 1)
+        opts.get<double>("mutation_probability") > 1)
         parser.error("mutation probability must be in [0..1]");
 
     if (parser.dry_run())
