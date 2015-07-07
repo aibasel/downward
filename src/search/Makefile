@@ -37,6 +37,7 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 DOWNWARD_OS ?= auto
 
 HEADERS = \
+          abstract_task.h \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
@@ -53,6 +54,7 @@ HEADERS = \
           g_evaluator.h \
           global_operator.h \
           global_state.h \
+          global_successor_generator.h \
           globals.h \
           heuristic_cache.h \
           heuristic.h \
@@ -80,6 +82,7 @@ HEADERS = \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
+          task_proxy.h \
           task_tools.h \
           timer.h \
           tracer.h \
@@ -158,6 +161,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/dominance_pruner.h \
            pdbs/match_tree.h \
            pdbs/max_cliques.h \
+           pdbs/pattern_database.h \
            pdbs/pattern_generation_edelkamp.h \
            pdbs/pattern_generation_haslum.h \
            pdbs/pdb_heuristic.h \
