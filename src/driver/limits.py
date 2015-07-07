@@ -55,13 +55,13 @@ def _get_memory_limit_in_bytes(parser, limit_string):
     return int(limit_string)
 
 
-def set_integer_timeout(parser, args, component):
+def set_timeout_in_seconds(parser, args, component):
     param = component + "_timeout"
     timeout = getattr(args, param)
     if timeout is not None:
         setattr(args, param, _get_timeout_in_seconds(timeout))
 
-def set_integer_memory_limit(parser, args, component):
+def set_memory_limit_in_bytes(parser, args, component):
     param = component + "_memory"
     limit = getattr(args, param)
     if limit is not None:
