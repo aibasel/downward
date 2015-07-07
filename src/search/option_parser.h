@@ -195,6 +195,8 @@ public:
                          std::string h = "", std::string def_val = "",
                          const OptionFlags &flags = OptionFlags());
 
+    bool is_valid_option(std::string k) const;
+
     void document_values(std::string argument,
                          ValueExplanations value_explanations) const;
     void document_synopsis(std::string name, std::string note) const;
