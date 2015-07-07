@@ -1,7 +1,7 @@
 #include "sample_based_potential_heuristics.h"
 
-#include "single_potential_heuristics.h"
 #include "potential_heuristics.h"
+#include "util.h"
 
 #include "../plugin.h"
 

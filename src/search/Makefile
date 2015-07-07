@@ -172,6 +172,7 @@ HEADERS += potentials/diverse_potential_heuristics.h \
            potentials/potential_optimizer.h \
            potentials/sample_based_potential_heuristics.h \
            potentials/single_potential_heuristics.h \
+           potentials/util.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward
