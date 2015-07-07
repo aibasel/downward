@@ -30,14 +30,21 @@ void filter_dead_ends(PotentialOptimizer &optimizer, vector<GlobalState> &sample
     swap(samples, non_dead_end_samples);
 }
 
+vector<GlobalState> sample_without_dead_end_detection(
+    PotentialOptimizer &optimizer, StateRegistry &sample_registry, int num_samples) {
+    optimizer.optimize_for_state(g_initial_state());
+    int init_h = optimizer.get_potential_function()->get_value(g_initial_state());
+    return sample_states_with_random_walks(
+        sample_registry, num_samples, init_h, [](const GlobalState &) {
+            // Currently, our potential functions can't detect dead ends.
+            return false;
+            });
+}
+
 void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
     StateRegistry sample_registry;
-    vector<GlobalState> samples;
-    optimizer.optimize_for_state(g_initial_state());
-    shared_ptr<Heuristic> sampling_heuristic =
-        create_potential_heuristic(optimizer.get_potential_function());
-    samples = sample_states_with_random_walks(
-        sample_registry, num_samples, *sampling_heuristic);
+    vector<GlobalState> samples = sample_without_dead_end_detection(
+        optimizer, sample_registry, num_samples);
     if (!optimizer.potentials_are_bounded()) {
         filter_dead_ends(optimizer, samples);
     }
