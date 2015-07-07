@@ -252,7 +252,7 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     Run the configs in the given portfolio file.
 
     The portfolio is allowed to run for at most *time* seconds and may
-    use a maximum of *memory* TODO.
+    use a maximum of *memory* bytes.
     """
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
