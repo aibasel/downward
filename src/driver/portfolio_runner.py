@@ -83,14 +83,14 @@ def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
             break
 
 
-def run_search(executable, args, sas_file, plan_manager, timeout, memory):
+def run_search(executable, args, sas_file, plan_manager, time, memory):
     complete_args = [executable] + args + [
         "--internal-plan-file", plan_manager.get_plan_prefix()]
     print("args: %s" % complete_args)
 
     try:
         returncode = call.check_call(
-            complete_args, stdin=sas_file, timeout=timeout, memory=memory)
+            complete_args, stdin=sas_file, timeout=time, memory=memory)
     except subprocess.CalledProcessError as err:
         returncode = err.returncode
     print("returncode: %d" % returncode)
@@ -98,7 +98,7 @@ def run_search(executable, args, sas_file, plan_manager, timeout, memory):
     return returncode
 
 
-def compute_run_timeout(timeout, configs, pos):
+def compute_run_time(timeout, configs, pos):
     remaining_time = timeout - limits.get_elapsed_time()
     print("remaining time: {}".format(remaining_time))
     relative_time = configs[pos][0]
@@ -107,21 +107,20 @@ def compute_run_timeout(timeout, configs, pos):
           pos, relative_time, remaining_relative_time))
     # For the last config we have relative_time == remaining_relative_time, so
     # we use all of the remaining time at the end.
-    run_timeout = remaining_time * relative_time / remaining_relative_time
-    return run_timeout
+    return remaining_time * relative_time / remaining_relative_time
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
                    executable, sas_file, plan_manager, timeout, memory):
-    run_timeout = compute_run_timeout(timeout, configs, pos)
-    if run_timeout <= 0:
+    run_time = compute_run_time(timeout, configs, pos)
+    if run_time <= 0:
         return None
     _, args_template = configs[pos]
     args = list(args_template)
     adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager)
     args.extend([
         "--internal-previous-portfolio-plans", str(plan_manager.get_plan_counter())])
-    result = run_search(executable, args, sas_file, plan_manager, run_timeout, memory)
+    result = run_search(executable, args, sas_file, plan_manager, run_time, memory)
     plan_manager.process_new_plans()
     return result
 
@@ -190,9 +189,9 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
 def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
     exitcodes = []
     for pos, (relative_time, args) in enumerate(configs):
-        run_timeout = compute_run_timeout(timeout, configs, pos)
+        run_time = compute_run_time(timeout, configs, pos)
         exitcode = run_search(executable, args, sas_file, plan_manager,
-                              run_timeout, memory)
+                              run_time, memory)
         exitcodes.append(exitcode)
 
         if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
@@ -248,7 +247,13 @@ def get_portfolio_attributes(portfolio):
     return attributes
 
 
-def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
+def run(portfolio, executable, sas_file, plan_manager, time, memory):
+    """
+    Run the configs in the given portfolio file.
+
+    The portfolio is allowed to run for at most *time* seconds and may
+    use a maximum of *memory* TODO.
+    """
     attributes = get_portfolio_attributes(portfolio)
     configs = attributes["CONFIGS"]
     optimal = attributes["OPTIMAL"]
@@ -259,13 +264,10 @@ def run(portfolio, executable, sas_file, plan_manager, timeout, memory):
               "Use driver options to limit the runtime.")
 
     # TODO: add default for --overall-timeout and remove DEFAULT_TIMEOUT?
-    # TODO: Rename timeout to max_time?
-    if timeout:
-        timeout += limits.get_elapsed_time()
-    else:
+    if time is None:
         timeout = DEFAULT_TIMEOUT
-
-    print("portfolio timeout: %.2f" % timeout)
+    else:
+        timeout = limits.get_elapsed_time() + time
 
     if optimal:
         exitcodes = run_opt(configs, executable, sas_file, plan_manager,
