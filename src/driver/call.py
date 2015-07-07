@@ -58,8 +58,9 @@ def check_call(cmd, stdin=None, timeout=None, memory=None):
         _set_time_limit(timeout)
         _set_memory_limit(memory)
 
-    preexec_fn = set_limits if resource else None
-    kwargs = dict(preexec_fn=preexec_fn)
+    kwargs = {}
+    if resource:
+        kwargs["preexec_fn"] = set_limits
 
     sys.stdout.flush()
     if stdin:
