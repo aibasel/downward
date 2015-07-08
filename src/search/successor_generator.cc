@@ -142,8 +142,11 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     conditions.reserve(operators.size());
     list<OperatorProxy> all_operators;
     for (OperatorProxy op : operators) {
-        Condition cond(begin(op.get_preconditions()),
-                       end(op.get_preconditions()));
+        Condition cond;
+        cond.reserve(op.get_preconditions().size());
+        for (FactProxy pre : op.get_preconditions()) {
+            cond.push_back(pre);
+        }
         // Conditions must be ordered by variable id.
         sort(cond.begin(), cond.end(), smaller_variable_id);
         all_operators.push_back(op);
@@ -179,10 +182,11 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
         return new GeneratorEmpty;
 
     VariablesProxy variables = task_proxy.get_variables();
+    int num_variables = variables.size();
 
     while (true) {
         // Test if no further switch is necessary (or possible).
-        if (switch_var_id == variables.size())
+        if (switch_var_id == num_variables)
             return new GeneratorLeaf(move(operator_queue));
 
         VariableProxy switch_var = variables[switch_var_id];
@@ -240,7 +244,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
         } else {
             // this switch var can be left out because no operator depends on it
             ++switch_var_id;
-            operator_queue(move(default_operators));
+            default_operators.swap(operator_queue);
         }
     }
 }
