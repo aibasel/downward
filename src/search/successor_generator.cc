@@ -64,7 +64,7 @@ public:
 };
 
 GeneratorSwitch::GeneratorSwitch(
-    const VariableProxy &switch_var, list<int> &&immediate_operators,
+    const VariableProxy &switch_var, list<OperatorProxy> &&immediate_operators,
     const vector<GeneratorBase *> &&generator_for_value,
     GeneratorBase *default_generator)
     : switch_var(switch_var),
@@ -84,23 +84,25 @@ void GeneratorSwitch::dump(string indent) const {
     cout << indent << "immediately:" << endl;
     for (const OperatorProxy &op : immediate_operators)
         cout << indent << op.get_name() << endl;
-    for (FactProxy fact : switch_var) {
-        cout << indent << "case " << fact.get_name() << ":" << endl;
-        generator_for_value[fact.get_value()]->dump(indent + "  ");
+    for (int val = 0; val < switch_var.get_domain_size(); ++val) {
+        cout << indent << "case "
+             << switch_var.get_fact(val).get_name() << ":" << endl;
+        generator_for_value[val]->dump(indent + "  ");
     }
     cout << indent << "always:" << endl;
     default_generator->dump(indent + "  ");
 }
 
 void GeneratorSwitch::generate_cpp_input(ofstream &outfile) const {
-    int level = switch_var->get_level();
-    assert(level != -1);
-    outfile << "switch " << level << endl;
+// TODO level not supported in task interface.
+//    int level = switch_var->get_level();
+//    assert(level != -1);
+//    outfile << "switch " << level << endl;
     outfile << "check " << immediate_operators.size() << endl;
     for (const OperatorProxy &op : immediate_operators)
         outfile << op.get_id() << endl;
-    for (FactProxy fact : switch_var) {
-        generator_for_value[fact.get_value()]->generate_cpp_input(outfile);
+    for (int val = 0; val < switch_var.get_domain_size(); ++val) {
+        generator_for_value[val]->generate_cpp_input(outfile);
     }
     default_generator->generate_cpp_input(outfile);
 }
