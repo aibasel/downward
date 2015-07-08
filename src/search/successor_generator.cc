@@ -138,15 +138,8 @@ void GeneratorEmpty::generate_cpp_input(ofstream &outfile) const {
 SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     : task(task),
       task_proxy(*task) {
-}
-
-SuccessorGenerator::SuccessorGenerator() {
-    root = 0;
-}
-
-SuccessorGenerator::SuccessorGenerator(const vector<Variable *> &variables,
-                                       const vector<Operator> &operators) {
     // We need the iterators to conditions to be stable:
+    // Conditions must be ordered by variable id.
     conditions.reserve(operators.size());
     list<int> all_operator_indices;
     for (int i = 0; i < operators.size(); i++) {
@@ -167,10 +160,11 @@ SuccessorGenerator::SuccessorGenerator(const vector<Variable *> &variables,
         next_condition_by_op.push_back(conditions.back().begin());
     }
 
-    var_order = variables;
-    sort(var_order.begin(), var_order.end());
-
     root = construct_recursive(0, all_operator_indices);
+}
+
+SuccessorGenerator::SuccessorGenerator() {
+    root = 0;
 }
 
 SuccessorGenerator::~SuccessorGenerator() {
