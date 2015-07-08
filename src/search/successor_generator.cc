@@ -27,6 +27,10 @@ using namespace std;
 
 */
 
+bool smaller_variable_id (const FactProxy &f1, const FactProxy &f2) {
+    return (f1.get_variable().get_id() < f2.get_variable().get_id());
+}
+
 class GeneratorBase {
 public:
     virtual ~GeneratorBase() = default;
@@ -141,7 +145,7 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
         Condition cond(begin(op.get_preconditions()),
                        end(op.get_preconditions()));
         // Conditions must be ordered by variable id.
-        sort(cond.begin(), cond.end());
+        sort(cond.begin(), cond.end(), smaller_variable_id);
         all_operators.push_back(op);
         conditions.push_back(cond);
         next_condition_by_op.push_back(conditions.back().begin());
