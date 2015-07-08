@@ -20,13 +20,12 @@ class SuccessorGenerator {
 
     GeneratorBase *root;
 
-    typedef std::vector<std::pair<int, int> > Condition;
+    typedef std::vector<std::pair<VariableProxy, int> > Condition;
     GeneratorBase *construct_recursive(int switch_var_id,
                                        std::list<int> &op_indices);
 
     std::vector<Condition> conditions;
     std::vector<Condition::const_iterator> next_condition_by_op;
-    std::vector<int> var_order;
 
     SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
