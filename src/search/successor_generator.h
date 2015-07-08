@@ -20,7 +20,7 @@ class SuccessorGenerator {
 
     GeneratorBase *root;
 
-    typedef std::vector<std::pair<VariableProxy, int> > Condition;
+    typedef std::vector<FactProxy> Condition;
     GeneratorBase *construct_recursive(
         int switch_var_id, list<OperatorProxy> &operator_queue);
 
