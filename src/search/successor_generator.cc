@@ -138,10 +138,8 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     conditions.reserve(operators.size());
     list<OperatorProxy> all_operators;
     for (OperatorProxy op : operators) {
-        Condition cond;
-        for (FactProxy pre : op.get_preconditions()) {
-            cond.push_back(make_pair(pre.get_variable(), pre.get_value()));
-        }
+        Condition cond(begin(op.get_preconditions()),
+                       end(op.get_preconditions()));
         // Conditions must be ordered by variable id.
         sort(cond.begin(), cond.end());
         all_operators.push_back(op);
@@ -196,15 +194,14 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
                 applicable_operators.push_back(op);
             } else {
                 all_ops_are_immediate = false;
-                const VariableProxy &var = cond_iter->first;
-                int val = cond_iter->second;
-                if (var == switch_var) {
+                FactProxy fact = *cond_iter;
+                if (fact.get_variable() == switch_var) {
                     var_is_interesting = true;
                     while (cond_iter != conditions[op_id].end() &&
-                           cond_iter->first == switch_var) {
+                           cond_iter->get_variable() == switch_var) {
                         ++cond_iter;
                     }
-                    operators_for_val[val].push_back(op);
+                    operators_for_val[fact.get_value()].push_back(op);
                 } else {
                     default_operators.push_back(op);
                 }
