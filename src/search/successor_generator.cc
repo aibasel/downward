@@ -42,8 +42,8 @@ class GeneratorSwitch : public GeneratorBase {
 public:
     ~GeneratorSwitch();
     GeneratorSwitch(const VariableProxy &switch_var,
-                    list<OperatorProxy> &immediate_operators,
-                    const vector<GeneratorBase *> &generator_for_value,
+                    list<OperatorProxy> &&immediate_operators,
+                    const vector<GeneratorBase *> &&generator_for_value,
                     GeneratorBase *default_generator);
     virtual void dump(string indent) const;
     virtual void generate_cpp_input(ofstream &outfile) const;
@@ -52,7 +52,7 @@ public:
 class GeneratorLeaf : public GeneratorBase {
     list<OperatorProxy> applicable_operators;
 public:
-    GeneratorLeaf(list<OperatorProxy> &applicable_operators);
+    GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
     virtual void dump(string indent) const;
     virtual void generate_cpp_input(ofstream &outfile) const;
 };
@@ -64,18 +64,18 @@ public:
 };
 
 GeneratorSwitch::GeneratorSwitch(
-    const VariableProxy &switch_var, list<int> &immediate_operators_ids,
-    const vector<GeneratorBase *> &generator_for_value,
+    const VariableProxy &switch_var, list<int> &&immediate_operators,
+    const vector<GeneratorBase *> &&generator_for_value,
     GeneratorBase *default_generator)
     : switch_var(switch_var),
-      generator_for_value(generator_for_value),
+      immediate_operators(move(immediate_operators)),
+      generator_for_value(move(generator_for_value)),
       default_generator(default_generator) {
-    immediate_operators_ids.swap(operators);
 }
 
 GeneratorSwitch::~GeneratorSwitch() {
-    for (int i = 0; i < generator_for_value.size(); i++)
-        delete generator_for_value[i];
+    for (GeneratorBase * generator : generator_for_value)
+        delete generator;
     delete default_generator;
 }
 
@@ -84,9 +84,9 @@ void GeneratorSwitch::dump(string indent) const {
     cout << indent << "immediately:" << endl;
     for (const OperatorProxy &op : immediate_operators)
         cout << indent << op.get_name() << endl;
-    for (int i = 0; i < switch_var.get_domain_size(); i++) {
-        cout << indent << "case " << i << ":" << endl;
-        generator_for_value[i]->dump(indent + "  ");
+    for (FactProxy fact : switch_var) {
+        cout << indent << "case " << fact.get_name() << ":" << endl;
+        generator_for_value[fact.get_value()]->dump(indent + "  ");
     }
     cout << indent << "always:" << endl;
     default_generator->dump(indent + "  ");
@@ -99,14 +99,14 @@ void GeneratorSwitch::generate_cpp_input(ofstream &outfile) const {
     outfile << "check " << immediate_operators.size() << endl;
     for (const OperatorProxy &op : immediate_operators)
         outfile << op.get_id() << endl;
-    for (int i = 0; i < switch_var.get_domain_size(); i++) {
-        generator_for_value[i]->generate_cpp_input(outfile);
+    for (FactProxy fact : switch_var) {
+        generator_for_value[fact.get_value()]->generate_cpp_input(outfile);
     }
     default_generator->generate_cpp_input(outfile);
 }
 
-GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &applicable_operators) {
-    applicable_operators.swap(applicable_operators);
+GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
+    : applicable_operators(move(applicable_operators)) {
 }
 
 void GeneratorLeaf::dump(string indent) const {
@@ -168,14 +168,14 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
     while (true) {
         // Test if no further switch is necessary (or possible).
         if (switch_var_id == variables.size())
-            return new GeneratorLeaf(operator_queue);
+            return new GeneratorLeaf(move(operator_queue));
 
         VariableProxy switch_var = variables[switch_var_id];
-        int number_of_children = switch_var->get_range();
+        int number_of_children = switch_var.get_domain_size();
 
-        vector<list<OperatorProxy> > ops_for_val(number_of_children);
-        list<OperatorProxy> default_ops;
-        list<OperatorProxy> applicable_ops;
+        vector<list<OperatorProxy> > operators_for_val(number_of_children);
+        list<OperatorProxy> default_operators;
+        list<OperatorProxy> applicable_operators;
 
         bool all_ops_are_immediate = true;
         bool var_is_interesting = false;
@@ -187,10 +187,11 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
             assert(op_id >= 0 && op_id < next_condition_by_op.size());
             Condition::const_iterator &cond_iter = next_condition_by_op[op_id];
             assert(cond_iter - conditions[op_id].begin() >= 0);
-            assert(cond_iter - conditions[op_id].begin() <= conditions[op_id].size());
+            assert(cond_iter - conditions[op_id].begin()
+                   <= conditions[op_id].size());
             if (cond_iter == conditions[op_id].end()) {
                 var_is_interesting = true;
-                applicable_ops.push_back(op);
+                applicable_operators.push_back(op);
             } else {
                 all_ops_are_immediate = false;
                 const VariableProxy &var = cond_iter->first;
@@ -201,29 +202,31 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
                            cond_iter->first == switch_var) {
                         ++cond_iter;
                     }
-                    ops_for_val[val].push_back(op);
+                    operators_for_val[val].push_back(op);
                 } else {
-                    default_ops.push_back(op);
+                    default_operators.push_back(op);
                 }
             }
         }
 
         if (all_ops_are_immediate) {
-            return new GeneratorLeaf(applicable_ops);
+            return new GeneratorLeaf(move(applicable_operators));
         } else if (var_is_interesting) {
             vector<GeneratorBase *> generator_for_val;
-            for (int j = 0; j < number_of_children; j++) {
-                generator_for_val.push_back(construct_recursive(
-                    switch_var_id + 1, ops_for_val[j]));
+            for (list<OperatorProxy> ops : operators_for_val) {
+                generator_for_val.push_back(
+                    construct_recursive(switch_var_id + 1, ops));
             }
             GeneratorBase *default_generator = construct_recursive(
-                switch_var_id + 1, default_ops);
-            return new GeneratorSwitch(switch_var, applicable_ops,
-                                       generator_for_val, default_generator);
+                switch_var_id + 1, default_operators);
+            return new GeneratorSwitch(switch_var,
+                                       move(applicable_operators),
+                                       move(generator_for_val),
+                                       default_generator);
         } else {
             // this switch var can be left out because no operator depends on it
             ++switch_var_id;
-            default_ops.swap(operator_queue);
+            operator_queue(move(default_operators));
         }
     }
 }
