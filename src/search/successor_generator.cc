@@ -4,11 +4,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <vector>
 using namespace std;
 
 /* NOTE on possible optimizations:
