@@ -3,7 +3,6 @@
 
 #include "task_proxy.h"
 
-#include <iostream>
 #include <list>
 #include <memory>
 #include <vector>
@@ -12,7 +11,6 @@ class AbstractTask;
 class GeneratorBase;
 class OperatorProxy;
 class State;
-class Variable;
 
 class SuccessorGenerator {
     std::shared_ptr<AbstractTask> task;
