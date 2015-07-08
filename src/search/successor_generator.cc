@@ -34,8 +34,6 @@ bool smaller_variable_id (const FactProxy &f1, const FactProxy &f2) {
 class GeneratorBase {
 public:
     virtual ~GeneratorBase() = default;
-    virtual void dump(string indent) const = 0;
-    virtual void generate_cpp_input(ofstream &outfile) const = 0;
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const = 0;
 };
@@ -51,8 +49,6 @@ public:
                     list<OperatorProxy> &&immediate_operators,
                     const vector<GeneratorBase *> &&generator_for_value,
                     GeneratorBase *default_generator);
-    virtual void dump(string indent) const;
-    virtual void generate_cpp_input(ofstream &outfile) const;
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
 };
@@ -61,16 +57,12 @@ class GeneratorLeaf : public GeneratorBase {
     list<OperatorProxy> applicable_operators;
 public:
     GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
-    virtual void dump(string indent) const;
-    virtual void generate_cpp_input(ofstream &outfile) const;
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
 };
 
 class GeneratorEmpty : public GeneratorBase {
 public:
-    virtual void dump(string indent) const;
-    virtual void generate_cpp_input(ofstream &outfile) const;
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
 };
@@ -91,34 +83,6 @@ GeneratorSwitch::~GeneratorSwitch() {
     delete default_generator;
 }
 
-void GeneratorSwitch::dump(string indent) const {
-    cout << indent << "switch on " << switch_var.get_name() << endl;
-    cout << indent << "immediately:" << endl;
-    for (const OperatorProxy &op : immediate_operators)
-        cout << indent << op.get_name() << endl;
-    for (int val = 0; val < switch_var.get_domain_size(); ++val) {
-        cout << indent << "case "
-             << switch_var.get_fact(val).get_name() << ":" << endl;
-        generator_for_value[val]->dump(indent + "  ");
-    }
-    cout << indent << "always:" << endl;
-    default_generator->dump(indent + "  ");
-}
-
-void GeneratorSwitch::generate_cpp_input(ofstream &outfile) const {
-// TODO level not supported in task interface.
-//    int level = switch_var->get_level();
-//    assert(level != -1);
-//    outfile << "switch " << level << endl;
-    outfile << "check " << immediate_operators.size() << endl;
-    for (const OperatorProxy &op : immediate_operators)
-        outfile << op.get_id() << endl;
-    for (int val = 0; val < switch_var.get_domain_size(); ++val) {
-        generator_for_value[val]->generate_cpp_input(outfile);
-    }
-    default_generator->generate_cpp_input(outfile);
-}
-
 void GeneratorSwitch::generate_applicable_ops(
     const State &state, vector<OperatorProxy> &applicable_ops) const {
     applicable_ops.insert(applicable_ops.end(),
@@ -129,20 +93,8 @@ void GeneratorSwitch::generate_applicable_ops(
     default_generator->generate_applicable_ops(state, applicable_ops);
 }
 
-
 GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
-}
-
-void GeneratorLeaf::dump(string indent) const {
-    for (const OperatorProxy &op : applicable_operators)
-        cout << indent << op.get_name() << endl;
-}
-
-void GeneratorLeaf::generate_cpp_input(ofstream &outfile) const {
-    outfile << "check " << applicable_operators.size() << endl;
-    for (const OperatorProxy &op : applicable_operators)
-        outfile << op.get_id() << endl;
 }
 
 void GeneratorLeaf::generate_applicable_ops(
@@ -150,14 +102,6 @@ void GeneratorLeaf::generate_applicable_ops(
     applicable_ops.insert(applicable_ops.end(),
                           applicable_operators.begin(),
                           applicable_operators.end());
-}
-
-void GeneratorEmpty::dump(string indent) const {
-    cout << indent << "<empty>" << endl;
-}
-
-void GeneratorEmpty::generate_cpp_input(ofstream &outfile) const {
-    outfile << "check 0" << endl;
 }
 
 void GeneratorEmpty::generate_applicable_ops(
@@ -280,19 +224,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
     }
 }
 
-/*
-  TODO: this is a dummy implementation that will be replaced with code from the
-  preprocessor in issue547. For now, we just loop through operators every time.
-*/
 void SuccessorGenerator::generate_applicable_ops(
     const State &state, vector<OperatorProxy> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
-}
-
-void SuccessorGenerator::dump() const {
-    cout << "Successor Generator:" << endl;
-    root->dump("  ");
-}
-void SuccessorGenerator::generate_cpp_input(ofstream &outfile) const {
-    root->generate_cpp_input(outfile);
 }

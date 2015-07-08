@@ -34,9 +34,6 @@ public:
     SuccessorGenerator& operator=(SuccessorGenerator &&other) noexcept;
     ~SuccessorGenerator();
 
-    void dump() const;
-    void generate_cpp_input(std::ofstream &outfile) const;
-
     void generate_applicable_ops(
         const State &state, std::vector<OperatorProxy> &applicable_ops) const;
 };
