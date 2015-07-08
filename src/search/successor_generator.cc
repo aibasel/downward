@@ -1,5 +1,6 @@
 #include "successor_generator.h"
 
+#include "global_state.h"
 #include "task_tools.h"
 
 #include <algorithm>
@@ -31,6 +32,9 @@ public:
     virtual ~GeneratorBase() = default;
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const = 0;
+    // Transitional method, used until the search is switched to the new task interface.
+    virtual void generate_applicable_ops(
+        const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const = 0;
 };
 
 class GeneratorSwitch : public GeneratorBase {
@@ -46,6 +50,9 @@ public:
                     GeneratorBase *default_generator);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
+    // Transitional method, used until the search is switched to the new task interface.
+    virtual void generate_applicable_ops(
+        const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
 };
 
 class GeneratorLeaf : public GeneratorBase {
@@ -54,12 +61,18 @@ public:
     GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
+    // Transitional method, used until the search is switched to the new task interface.
+    virtual void generate_applicable_ops(
+        const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
 };
 
 class GeneratorEmpty : public GeneratorBase {
 public:
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
+    // Transitional method, used until the search is switched to the new task interface.
+    virtual void generate_applicable_ops(
+        const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const;
 };
 
 GeneratorSwitch::GeneratorSwitch(
@@ -88,6 +101,16 @@ void GeneratorSwitch::generate_applicable_ops(
     default_generator->generate_applicable_ops(state, applicable_ops);
 }
 
+void GeneratorSwitch::generate_applicable_ops(
+    const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const {
+    for (OperatorProxy op : immediate_operators) {
+        applicable_ops.push_back(op.get_global_operator());
+    }
+    int val = state[switch_var.get_id()];
+    generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
+    default_generator->generate_applicable_ops(state, applicable_ops);
+}
+
 GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
@@ -99,8 +122,19 @@ void GeneratorLeaf::generate_applicable_ops(
                           applicable_operators.end());
 }
 
+void GeneratorLeaf::generate_applicable_ops(
+    const GlobalState &, vector<const GlobalOperator *> &applicable_ops) const{
+    for (OperatorProxy op : applicable_operators) {
+        applicable_ops.push_back(op.get_global_operator());
+    }
+}
+
 void GeneratorEmpty::generate_applicable_ops(
     const State &, vector<OperatorProxy> &) const{
+}
+
+void GeneratorEmpty::generate_applicable_ops(
+    const GlobalState &, vector<const GlobalOperator *> &) const{
 }
 
 SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
@@ -221,5 +255,11 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
 
 void SuccessorGenerator::generate_applicable_ops(
     const State &state, vector<OperatorProxy> &applicable_ops) const {
+    root->generate_applicable_ops(state, applicable_ops);
+}
+
+
+void SuccessorGenerator::generate_applicable_ops(
+    const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
 }
