@@ -154,8 +154,19 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     root = construct_recursive(0, all_operators);
 }
 
-SuccessorGenerator::SuccessorGenerator() {
-    root = 0;
+SuccessorGenerator::SuccessorGenerator(SuccessorGenerator &&other)
+    : task(other.task),
+      task_proxy(other.task_proxy),
+      root(other.root) {
+    other.root = nullptr;
+}
+
+SuccessorGenerator& SuccessorGenerator::operator=(SuccessorGenerator &&other) {
+    delete root;
+    task = other.task;
+    task_proxy = other.task_proxy;
+    root = other.root;
+    other.root = nullptr;
 }
 
 SuccessorGenerator::~SuccessorGenerator() {
