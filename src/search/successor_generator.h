@@ -29,9 +29,10 @@ class SuccessorGenerator {
 
     SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
-    SuccessorGenerator();
     SuccessorGenerator(std::shared_ptr<AbstractTask> task);
-    ~SuccessorGenerator() = default;
+    SuccessorGenerator(SuccessorGenerator &&other) noexcept;
+    SuccessorGenerator& operator=(SuccessorGenerator &&other) noexcept;
+    ~SuccessorGenerator();
 
     void dump() const;
     void generate_cpp_input(std::ofstream &outfile) const;
