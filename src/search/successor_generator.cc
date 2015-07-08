@@ -36,6 +36,8 @@ public:
     virtual ~GeneratorBase() = default;
     virtual void dump(string indent) const = 0;
     virtual void generate_cpp_input(ofstream &outfile) const = 0;
+    virtual void generate_applicable_ops(
+        const State &state, vector<OperatorProxy> &applicable_ops) const = 0;
 };
 
 class GeneratorSwitch : public GeneratorBase {
@@ -51,6 +53,8 @@ public:
                     GeneratorBase *default_generator);
     virtual void dump(string indent) const;
     virtual void generate_cpp_input(ofstream &outfile) const;
+    virtual void generate_applicable_ops(
+        const State &state, vector<OperatorProxy> &applicable_ops) const;
 };
 
 class GeneratorLeaf : public GeneratorBase {
@@ -59,12 +63,16 @@ public:
     GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
     virtual void dump(string indent) const;
     virtual void generate_cpp_input(ofstream &outfile) const;
+    virtual void generate_applicable_ops(
+        const State &state, vector<OperatorProxy> &applicable_ops) const;
 };
 
 class GeneratorEmpty : public GeneratorBase {
 public:
     virtual void dump(string indent) const;
     virtual void generate_cpp_input(ofstream &outfile) const;
+    virtual void generate_applicable_ops(
+        const State &state, vector<OperatorProxy> &applicable_ops) const;
 };
 
 GeneratorSwitch::GeneratorSwitch(
@@ -111,6 +119,17 @@ void GeneratorSwitch::generate_cpp_input(ofstream &outfile) const {
     default_generator->generate_cpp_input(outfile);
 }
 
+void GeneratorSwitch::generate_applicable_ops(
+    const State &state, vector<OperatorProxy> &applicable_ops) const {
+    applicable_ops.insert(applicable_ops.end(),
+                          immediate_operators.begin(),
+                          immediate_operators.end());
+    int val = state[switch_var].get_value();
+    generator_for_value[val]->generate_applicable_ops(state, applicable_ops);
+    default_generator->generate_applicable_ops(state, applicable_ops);
+}
+
+
 GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
@@ -126,12 +145,23 @@ void GeneratorLeaf::generate_cpp_input(ofstream &outfile) const {
         outfile << op.get_id() << endl;
 }
 
+void GeneratorLeaf::generate_applicable_ops(
+    const State &, vector<OperatorProxy> &applicable_ops) const{
+    applicable_ops.insert(applicable_ops.end(),
+                          applicable_operators.begin(),
+                          applicable_operators.end());
+}
+
 void GeneratorEmpty::dump(string indent) const {
     cout << indent << "<empty>" << endl;
 }
 
 void GeneratorEmpty::generate_cpp_input(ofstream &outfile) const {
     outfile << "check 0" << endl;
+}
+
+void GeneratorEmpty::generate_applicable_ops(
+    const State &, vector<OperatorProxy> &) const{
 }
 
 SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
@@ -157,19 +187,20 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     root = construct_recursive(0, all_operators);
 }
 
-SuccessorGenerator::SuccessorGenerator(SuccessorGenerator &&other)
+SuccessorGenerator::SuccessorGenerator(SuccessorGenerator &&other) noexcept
     : task(other.task),
       task_proxy(other.task_proxy),
       root(other.root) {
     other.root = nullptr;
 }
 
-SuccessorGenerator& SuccessorGenerator::operator=(SuccessorGenerator &&other) {
+SuccessorGenerator& SuccessorGenerator::operator=(SuccessorGenerator &&other) noexcept {
     delete root;
     task = other.task;
     task_proxy = other.task_proxy;
     root = other.root;
     other.root = nullptr;
+    return *this;
 }
 
 SuccessorGenerator::~SuccessorGenerator() {
@@ -254,12 +285,8 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
   preprocessor in issue547. For now, we just loop through operators every time.
 */
 void SuccessorGenerator::generate_applicable_ops(
-    const State &state, std::vector<OperatorProxy> &applicable_ops) {
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        if (is_applicable(op, state)) {
-            applicable_ops.push_back(op);
-        }
-    }
+    const State &state, vector<OperatorProxy> &applicable_ops) const {
+    root->generate_applicable_ops(state, applicable_ops);
 }
 
 void SuccessorGenerator::dump() const {
