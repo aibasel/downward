@@ -35,13 +35,13 @@ public:
 };
 
 class GeneratorSwitch : public GeneratorBase {
-    int switch_var_id;
+    VariableProxy switch_var;
     list<int> immediate_operators_ids;
     vector<GeneratorBase *> generator_for_value;
     GeneratorBase *default_generator;
 public:
     ~GeneratorSwitch();
-    GeneratorSwitch(int switch_var_id,
+    GeneratorSwitch(const VariableProxy &switch_var,
                     list<int> &immediate_operators_ids,
                     const vector<GeneratorBase *> &generator_for_value,
                     GeneratorBase *default_generator);
@@ -64,10 +64,10 @@ public:
 };
 
 GeneratorSwitch::GeneratorSwitch(
-    int switch_var_id, list<int> &immediate_operators_ids,
+    const VariableProxy &switch_var, list<int> &immediate_operators_ids,
     const vector<GeneratorBase *> &generator_for_value,
     GeneratorBase *default_generator)
-    : switch_var_id(switch_var_id),
+    : switch_var(switch_var),
       generator_for_value(generator_for_value),
       default_generator(default_generator) {
     immediate_operators_ids.swap(operators);
@@ -80,12 +80,12 @@ GeneratorSwitch::~GeneratorSwitch() {
 }
 
 void GeneratorSwitch::dump(string indent) const {
-    cout << indent << "switch on " << switch_var_id->get_name() << endl;
+    cout << indent << "switch on " << switch_var.get_name() << endl;
     cout << indent << "immediately:" << endl;
     for (list<int>::const_iterator op_iter = immediate_operators_ids.begin();
          op_iter != immediate_operators_ids.end(); ++op_iter)
         cout << indent << *op_iter << endl;
-    for (int i = 0; i < switch_var_id->get_range(); i++) {
+    for (int i = 0; i < switch_var.get_domain_size(); i++) {
         cout << indent << "case " << i << ":" << endl;
         generator_for_value[i]->dump(indent + "  ");
     }
@@ -94,14 +94,14 @@ void GeneratorSwitch::dump(string indent) const {
 }
 
 void GeneratorSwitch::generate_cpp_input(ofstream &outfile) const {
-    int level = switch_var_id->get_level();
+    int level = switch_var->get_level();
     assert(level != -1);
     outfile << "switch " << level << endl;
     outfile << "check " << immediate_operators_ids.size() << endl;
     for (list<int>::const_iterator op_iter = immediate_operators_ids.begin();
          op_iter != immediate_operators_ids.end(); ++op_iter)
         outfile << *op_iter << endl;
-    for (int i = 0; i < switch_var_id->get_range(); i++) {
+    for (int i = 0; i < switch_var.get_domain_size(); i++) {
         //cout << "case "<<switch_var->get_name()<<" (Level " <<switch_var->get_level() <<
         //  ") has value " << i << ":" << endl;
         generator_for_value[i]->generate_cpp_input(outfile);
@@ -138,29 +138,23 @@ void GeneratorEmpty::generate_cpp_input(ofstream &outfile) const {
 SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     : task(task),
       task_proxy(*task) {
+    OperatorsProxy operators = task_proxy.get_operators();
     // We need the iterators to conditions to be stable:
-    // Conditions must be ordered by variable id.
     conditions.reserve(operators.size());
-    list<int> all_operator_indices;
-    for (int i = 0; i < operators.size(); i++) {
-        const Operator *op = &operators[i];
+    list<int> all_operator_ids;
+    for (OperatorProxy op : operators) {
         Condition cond;
-        for (int j = 0; j < op->get_prevail().size(); j++) {
-            Operator::Prevail prev = op->get_prevail()[j];
-            cond.push_back(make_pair(prev.var, prev.prev));
+        for (FactProxy pre : op.get_preconditions()) {
+            cond.push_back(make_pair(pre.get_variable(), pre.get_value()));
         }
-        for (int j = 0; j < op->get_pre_post().size(); j++) {
-            Operator::PrePost pre_post = op->get_pre_post()[j];
-            if (pre_post.pre != -1)
-                cond.push_back(make_pair(pre_post.var, pre_post.pre));
-        }
+        // Conditions must be ordered by variable id.
         sort(cond.begin(), cond.end());
-        all_operator_indices.push_back(i);
+        all_operator_ids.push_back(op.get_id());
         conditions.push_back(cond);
         next_condition_by_op.push_back(conditions.back().begin());
     }
 
-    root = construct_recursive(0, all_operator_indices);
+    root = construct_recursive(0, all_operator_ids);
 }
 
 SuccessorGenerator::SuccessorGenerator() {
@@ -176,12 +170,14 @@ GeneratorBase *SuccessorGenerator::construct_recursive(int switch_var_id,
     if (operator_ids.empty())
         return new GeneratorEmpty;
 
+    VariablesProxy variables = task_proxy.get_variables();
+
     while (true) {
         // Test if no further switch is necessary (or possible).
-        if (switch_var_id == var_order.size())
+        if (switch_var_id == variables.size())
             return new GeneratorLeaf(operator_ids);
 
-        Variable *switch_var = var_order[switch_var_id];
+        VariableProxy switch_var = variables[switch_var_id];
         int number_of_children = switch_var->get_range();
 
         vector<list<int> > ops_for_val_ids(number_of_children);
@@ -203,7 +199,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(int switch_var_id,
                 applicable_op_ids.push_back(op_id);
             } else {
                 all_ops_are_immediate = false;
-                Variable *var = cond_iter->first;
+                const VariableProxy &var = cond_iter->first;
                 int val = cond_iter->second;
                 if (var == switch_var) {
                     var_is_interesting = true;
