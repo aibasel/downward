@@ -33,6 +33,7 @@ def _set_limit(kind, soft, hard=None):
 def set_time_limit(timeout):
     if timeout is None:
         return
+    assert can_set_limits()
     # Don't try to raise the hard limit.
     _, external_hard_limit = resource.getrlimit(resource.RLIMIT_CPU)
     if external_hard_limit == resource.RLIM_INFINITY:
@@ -47,6 +48,7 @@ def set_time_limit(timeout):
 
 
 def set_memory_limit(memory):
+    assert can_set_limits()
     if memory is None:
         memory = resource.RLIM_INFINITY
     # Memory in bytes.
@@ -60,6 +62,8 @@ def convert_to_mb(num_bytes):
 
 
 def _get_external_hard_memory_limit():
+    if not resource:
+        return None
     # Memory limits are either positive values in bytes or -1 (RLIM_INFINITY).
     _, hard_mem_limit = resource.getrlimit(resource.RLIMIT_AS)
     if hard_mem_limit == resource.RLIM_INFINITY:
@@ -114,6 +118,7 @@ def get_memory_limit(component_limit, overall_limit):
 
 
 def get_timeout(component_timeout, overall_timeout):
+    # TODO: Take the external soft (or hard) time limit into account?
     if overall_timeout is not None:
         overall_timeout = max(0, overall_timeout - util.get_elapsed_time())
     return util.get_min([component_timeout, overall_timeout])
