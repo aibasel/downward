@@ -1,6 +1,5 @@
 #include "potential_function.h"
 
-#include "../globals.h"
 #include "../task_proxy.h"
 #include "../utilities.h"
 
@@ -28,7 +27,4 @@ int PotentialFunction::get_value(const State &state) const {
     return static_cast<int>(max(0.0, ceil(heuristic_value - epsilon)));
 }
 
-int PotentialFunction::get_value(const GlobalState &global_state) const {
-    return get_value(TaskProxy(*g_root_task()).convert_global_state(global_state));
-}
 }

@@ -2,9 +2,7 @@
 
 #include "potential_function.h"
 
-#include "../global_state.h"
-#include "../globals.h" // TODO: Remove.
-#include "../option_parser.h" // TODO: Remove.
+#include "../option_parser.h"
 #include "../task_tools.h"
 
 #include <numeric>
@@ -44,7 +42,7 @@ bool PotentialOptimizer::has_optimal_solution() const {
     return lp_solver.has_optimal_solution();
 }
 
-bool PotentialOptimizer::optimize_for_state(const GlobalState &state) {
+bool PotentialOptimizer::optimize_for_state(const State &state) {
     return optimize_for_samples({state}
                                 );
 }
@@ -69,10 +67,9 @@ bool PotentialOptimizer::optimize_for_all_states() {
     return optimal;
 }
 
-bool PotentialOptimizer::optimize_for_samples(const vector<GlobalState> &samples) {
+bool PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
     vector<double> coefficients(num_lp_vars, 0.0);
-    for (const GlobalState &global_state : samples) {
-        State state = task_proxy.convert_global_state(global_state);
+    for (const State &state : samples) {
         for (FactProxy fact : state) {
             coefficients[get_lp_var_id(fact)] += 1.0;
         }
@@ -86,6 +83,10 @@ void PotentialOptimizer::set_lp_objective(const vector<double> &coefficients) {
     for (int i = 0; i < num_lp_vars; ++i) {
         lp_solver.set_objective_coefficient(i, coefficients[i]);
     }
+}
+
+const TaskProxy &PotentialOptimizer::get_task_proxy() const {
+    return task_proxy;
 }
 
 bool PotentialOptimizer::potentials_are_bounded() const {

@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
-class GlobalState;
 class Options;
+class State;
 
 
 namespace potentials {
@@ -39,11 +39,12 @@ public:
     explicit PotentialOptimizer(const Options &opts);
     ~PotentialOptimizer() = default;
 
+    const TaskProxy &get_task_proxy() const;
     bool potentials_are_bounded() const;
 
-    bool optimize_for_state(const GlobalState &state);
+    bool optimize_for_state(const State &state);
     bool optimize_for_all_states();
-    bool optimize_for_samples(const std::vector<GlobalState> &samples);
+    bool optimize_for_samples(const std::vector<State> &samples);
 
     std::shared_ptr<PotentialFunction> get_potential_function() const;
 };

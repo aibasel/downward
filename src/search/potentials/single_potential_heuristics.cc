@@ -5,7 +5,6 @@
 #include "potential_optimizer.h"
 #include "util.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -21,9 +20,11 @@ enum class OptFunc {
 
 shared_ptr<PotentialFunction> create_potential_function(const Options &opts) {
     PotentialOptimizer optimizer(opts);
-    OptFunc opt_func(OptFunc(opts.get_enum("opt_func")));
+    shared_ptr<AbstractTask> task = get_task_from_options(opts);
+    TaskProxy task_proxy(*task);
+    OptFunc opt_func = static_cast<OptFunc>(opts.get_enum("opt_func"));
     if (opt_func == OptFunc::INITIAL_STATE) {
-        optimizer.optimize_for_state(g_initial_state());
+        optimizer.optimize_for_state(task_proxy.get_initial_state());
     } else if (opt_func == OptFunc::ALL_STATES) {
         optimizer.optimize_for_all_states();
     } else if (opt_func == OptFunc::SAMPLES) {

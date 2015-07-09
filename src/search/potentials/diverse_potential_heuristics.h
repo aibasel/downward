@@ -3,7 +3,7 @@
 
 #include "potential_optimizer.h"
 
-#include "../state_id.h"
+#include "../task_proxy.h"
 
 #include <memory>
 #include <unordered_map>
@@ -11,33 +11,36 @@
 
 
 namespace potentials {
+
+using Function = std::shared_ptr<PotentialFunction>;
+using SamplesAndFunctions = std::unordered_map<State, Function>;
+
 class DiversePotentialHeuristics {
     PotentialOptimizer optimizer;
     const int max_num_heuristics;
     const int num_samples;
     const double max_filtering_time;
     const double max_covering_time;
-    std::unordered_map<StateID, std::shared_ptr<PotentialFunction> > single_functions;
-    std::unordered_map<StateID, int> sample_to_max_h;
-    std::vector<std::shared_ptr<PotentialFunction> > diverse_functions;
+    std::vector<Function > diverse_functions;
 
     /* Filter dead end samples and duplicates. Store potential heuristics and
        maximum heuristic values for remaining samples. */
-    void filter_dead_ends_and_duplicates(std::vector<GlobalState> &samples);
+    SamplesAndFunctions filter_samples_and_compute_functions(
+        const std::vector<State> &samples);
 
     // Remove all samples for which the heuristic achieves maximal values.
     void filter_covered_samples(
-        const std::shared_ptr<PotentialFunction> heuristic,
-        std::vector<GlobalState> &samples);
+        const Function chosen_function,
+        SamplesAndFunctions &samples_and_functions);
 
     /* Return potential heuristic optimized for remaining samples or a
        precomputed heuristic if the former does not cover additional samples. */
-    std::shared_ptr<PotentialFunction> find_function_and_remove_covered_samples(
-        std::vector<GlobalState> &samples);
+    Function find_function_and_remove_covered_samples(
+        SamplesAndFunctions &samples);
 
     /* Iteratively try to find potential heuristics that achieve maximal values
        for as many samples as possible. */
-    void cover_samples(std::vector<GlobalState> &samples);
+    void cover_samples(SamplesAndFunctions &samples_and_functions);
 
     // Sample states, then cover them.
     void find_diverse_heuristics();
@@ -46,7 +49,7 @@ public:
     explicit DiversePotentialHeuristics(const Options &opts);
     ~DiversePotentialHeuristics() = default;
 
-    std::vector<std::shared_ptr<PotentialFunction> > get_functions() const;
+    std::vector<Function > get_functions() const;
 };
 }
 #endif
