@@ -26,11 +26,13 @@ vector<State> sample_without_dead_end_detection(
     State initial_state = task_proxy.get_initial_state();
     optimizer.optimize_for_state(initial_state);
     int init_h = optimizer.get_potential_function()->get_value(initial_state);
+    CountdownTimer timer(numeric_limits<double>::infinity());
     return sample_states_with_random_walks(
         task_proxy, num_samples, init_h, [](const State &) {
             // Currently, our potential functions can't detect dead ends.
             return false;
-            });
+            },
+        timer);
 }
 
 void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
