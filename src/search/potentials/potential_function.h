@@ -3,7 +3,6 @@
 
 #include <vector>
 
-class GlobalState;
 class State;
 
 
@@ -23,8 +22,6 @@ public:
     ~PotentialFunction() = default;
 
     int get_value(const State &state) const;
-    // TODO: Remove once we use State instead of GlobalState.
-    int get_value(const GlobalState &global_state) const;
 };
 }
 

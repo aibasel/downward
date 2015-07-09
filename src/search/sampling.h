@@ -1,11 +1,10 @@
 #ifndef SAMPLING_H
 #define SAMPLING_H
 
-#include "global_operator.h"
-#include "global_successor_generator.h"
 #include "globals.h"
 #include "rng.h"
-#include "state_registry.h"
+#include "task_proxy.h"
+#include "task_tools.h"
 
 #include <vector>
 
@@ -13,19 +12,19 @@
    issue is merged we can use the State class in the potentials code as well
    and avoid the code duplication with iPDB. */
 template<class Callback>
-std::vector<GlobalState> sample_states_with_random_walks(
-    StateRegistry &sample_registry,
+std::vector<State> sample_states_with_random_walks(
+    TaskProxy task_proxy,
     int num_samples,
     int init_h,
     const Callback &is_dead_end) {
-    std::vector<GlobalState> samples;
+    std::vector<State> samples;
 
     double average_operator_cost = 0;
-    for (std::size_t i = 0; i < g_operators.size(); ++i)
-        average_operator_cost += g_operators[i].get_cost();
-    average_operator_cost /= g_operators.size();
+    for (OperatorProxy op : task_proxy.get_operators())
+        average_operator_cost += op.get_cost();
+    average_operator_cost /= task_proxy.get_operators().size();
 
-    const GlobalState &initial_state = sample_registry.get_initial_state();
+    const State &initial_state = task_proxy.get_initial_state();
 
     int n;
     if (init_h == 0) {
@@ -53,20 +52,25 @@ std::vector<GlobalState> sample_states_with_random_walks(
         }
 
         // random walk of length length
-        GlobalState current_state(initial_state);
+        State current_state(initial_state);
         for (int j = 0; j < length; ++j) {
-            std::vector<const GlobalOperator *> applicable_ops;
-            g_successor_generator->generate_applicable_ops(current_state, applicable_ops);
+            // TODO: Use successor generator.
+            std::vector<OperatorProxy> applicable_ops;
+            for (OperatorProxy op : task_proxy.get_operators()) {
+                if (is_applicable(op, current_state)) {
+                    applicable_ops.push_back(op);
+                }
+            }
             // if there are no applicable operators --> do not walk further
             if (applicable_ops.empty()) {
                 break;
             } else {
-                const GlobalOperator *random_op = *g_rng.choose(applicable_ops);
-                assert(random_op->is_applicable(current_state));
-                current_state = sample_registry.get_successor_state(current_state, *random_op);
+                const OperatorProxy random_op = *g_rng.choose(applicable_ops);
+                assert(is_applicable(random_op, current_state));
+                current_state = current_state.get_successor(random_op);
                 // if current state is a dead end, then restart with initial state
                 if (is_dead_end(current_state))
-                    current_state = initial_state;
+                    current_state = State(initial_state);
             }
         }
         // last state of the random walk is used as sample
