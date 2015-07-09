@@ -24,6 +24,9 @@ def call_cmd(cmd, args, debug, stdin=None):
             "Could not find %s. Please run \"./build_all%s\"." %
             (cmd, target))
     sys.stdout.flush()
+    if cmd.endswith(".py"):
+        args.insert(0, cmd)
+        cmd = sys.executable
     if stdin:
         with open(stdin) as stdin_file:
             subprocess.check_call([cmd] + args, stdin=stdin_file)

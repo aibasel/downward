@@ -2,10 +2,10 @@
 #define SAMPLING_H
 
 #include "global_operator.h"
+#include "global_successor_generator.h"
 #include "globals.h"
 #include "rng.h"
 #include "state_registry.h"
-#include "successor_generator.h"
 
 #include <vector>
 

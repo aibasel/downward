@@ -70,8 +70,10 @@ struct LPVariable {
     ~LPVariable();
 };
 
+#ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 class LPSolver {
     bool is_initialized;
     bool is_solved;
@@ -143,6 +145,8 @@ public:
     LP_METHOD(int get_num_constraints() const)
     LP_METHOD(void print_statistics() const)
 };
+#ifdef __GNUG__
 #pragma GCC diagnostic pop
+#endif
 
 #endif
