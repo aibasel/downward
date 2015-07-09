@@ -510,6 +510,11 @@ Options OptionParser::parse() {
     return opts;
 }
 
+bool OptionParser::is_valid_option(std::string k) const {
+    return std::find(valid_keys.begin(),
+                     valid_keys.end(), k) != valid_keys.end();
+}
+
 void OptionParser::document_values(string argument,
                                    ValueExplanations value_explanations) const {
     DocStore::instance()->add_value_explanations(

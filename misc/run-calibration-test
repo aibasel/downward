@@ -56,7 +56,7 @@ function solve-task {
     log "$(grep '^Plan \(invalid\|valid\)' "$TMP")"
     rm "$TMP"
 
-    ./cleanup 1>> "$STDOUT" 2>> "$STDERR"
+    ./cleanup.py 1>> "$STDOUT" 2>> "$STDERR"
 
     log
 }

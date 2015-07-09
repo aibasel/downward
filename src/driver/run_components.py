@@ -2,6 +2,7 @@
 
 import logging
 import os.path
+import sys
 
 from . import call
 from . import limits
@@ -35,6 +36,9 @@ def print_component_settings(nick, inputs, options, timeout, memory):
 
 
 def call_component(executable, options, stdin=None, timeout=None, memory=None):
+    if executable.endswith(".py"):
+        options.insert(0, executable)
+        executable = sys.executable
     call.check_call(
         [executable] + options,
         stdin=stdin, timeout=timeout, memory=memory)

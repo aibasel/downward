@@ -26,7 +26,7 @@ def preprocess():
 
 
 def cleanup():
-    subprocess.check_call("./cleanup", cwd=SRC_DIR)
+    subprocess.check_call("./cleanup.py", cwd=SRC_DIR)
 
 
 def run_driver(cmd):
