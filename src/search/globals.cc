@@ -254,6 +254,11 @@ void read_everything(istream &in) {
     read_goal(in);
     read_operators(in);
     read_axioms(in);
+    check_magic(in, "begin_SG");
+    /* TODO: remove successor operator from preprocessor. It is not used and we
+       only read it here because it is in the output format. */
+    read_successor_generator(in);
+    check_magic(in, "end_SG");
     DomainTransitionGraph::read_all(in);
     check_magic(in, "begin_CG"); // ignore everything from here
 

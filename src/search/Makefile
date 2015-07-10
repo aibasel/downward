@@ -54,6 +54,7 @@ HEADERS = \
           g_evaluator.h \
           global_operator.h \
           global_state.h \
+          global_successor_generator.h \
           globals.h \
           heuristic_cache.h \
           heuristic.h \
