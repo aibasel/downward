@@ -8,7 +8,7 @@ class CustomParser(Parser):
         Parser.__init__(self)
         self.add_pattern(
             "successor_generator_time",
-            "Building successor generator...done! [t=(.+)s]\]",
+            "Building successor generator...done! \[t=(.+)s\]",
             required=False,
             type=float)
 
