@@ -5,7 +5,6 @@
 #include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
-#include "global_successor_generator.h"
 #include "heuristic.h"
 #include "int_packer.h"
 #include "rng.h"
@@ -255,11 +254,15 @@ void read_everything(istream &in) {
     read_goal(in);
     read_operators(in);
     read_axioms(in);
+
+    // Ignore successor generator from preprocessor output.
     check_magic(in, "begin_SG");
-    /* TODO: remove successor operator from preprocessor. It is not used and we
-       only read it here because it is in the output format. */
-    read_successor_generator(in);
+    while (!peek_magic(in, "end_SG")) {
+        string dummy_string;
+        getline(in, dummy_string);
+    }
     check_magic(in, "end_SG");
+
     DomainTransitionGraph::read_all(in);
     check_magic(in, "begin_CG"); // ignore everything from here
 
