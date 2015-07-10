@@ -104,12 +104,14 @@ void PatternGenerationHaslum::sample_states(
     int init_h = current_heuristic->compute_heuristic(
         task_proxy.get_initial_state());
 
-    samples = sample_states_with_random_walks(
-        task_proxy, num_samples, init_h, average_operator_cost,
-        [this](const State &state) {return current_heuristic->is_dead_end(state);},
-        *hill_climbing_timer);
-    if (hill_climbing_timer->is_expired())
+    try {
+        samples = sample_states_with_random_walks(
+            task_proxy, num_samples, init_h, average_operator_cost,
+            [this](const State &state) {return current_heuristic->is_dead_end(state);},
+            *hill_climbing_timer);
+    } catch (SamplingTimeout &) {
         throw HillClimbingTimeout();
+    }
 }
 
 std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
