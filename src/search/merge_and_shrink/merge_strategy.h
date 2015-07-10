@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+class TaskProxy;
 class TransitionSystem;
 
 class MergeStrategy {
@@ -13,6 +14,7 @@ protected:
 public:
     MergeStrategy();
     virtual ~MergeStrategy() {}
+    virtual void initialize(const TaskProxy &task_proxy);
 
     void dump_options() const;
 
