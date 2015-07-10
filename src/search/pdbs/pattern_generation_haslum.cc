@@ -99,11 +99,13 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
     return max_pdb_size;
 }
 
-void PatternGenerationHaslum::sample_states(vector<State> &samples,
-                                            double) {
-    const State &initial_state = task_proxy.get_initial_state();
+void PatternGenerationHaslum::sample_states(
+    vector<State> &samples, double average_operator_cost) {
+    int init_h = current_heuristic->compute_heuristic(
+        task_proxy.get_initial_state());
+
     samples = sample_states_with_random_walks(
-        task_proxy, num_samples, current_heuristic->compute_heuristic(initial_state),
+        task_proxy, num_samples, init_h, average_operator_cost,
         [this](const State &state) {return current_heuristic->is_dead_end(state);},
         *hill_climbing_timer);
     if (hill_climbing_timer->is_expired())
@@ -309,12 +311,7 @@ void PatternGenerationHaslum::hill_climbing(
 }
 
 void PatternGenerationHaslum::initialize() {
-    // Calculate average operator costs.
-    double average_operator_cost = 0;
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        average_operator_cost += op.get_cost();
-    }
-    average_operator_cost /= task_proxy.get_operators().size();
+    double average_operator_cost = get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
     // Generate initial collection: a pdb for each goal variable.
