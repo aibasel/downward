@@ -63,8 +63,7 @@ class PatternGenerationHaslum {
       state. At the end of each random walk, the last state visited is taken as
       a sample state, thus totalling exactly num_samples of sample states.
     */
-    void sample_states(std::vector<State> &samples,
-                       double average_operator_costs);
+    void sample_states(std::vector<State> &samples, double);
 
     /*
       Searches for the best improving pdb in candidate_pdbs according to the
