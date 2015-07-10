@@ -3,6 +3,8 @@
 
 from downward import configs, suites
 from downward.reports.scatter import ScatterPlotReport
+from lab.experiment import Step
+from lab.fetcher import Fetcher
 
 import common_setup
 from relativescatter import RelativeScatterPlotReport
@@ -32,12 +34,13 @@ exp = common_setup.IssueExperiment(
     suite=SUITE,
     )
 exp.add_search_parser("custom-parser.py")
+exp.add_step(Step('refetch', Fetcher(), exp.path, parsers=['custom-parser.py']))
 
 attributes = attributes=exp.DEFAULT_TABLE_ATTRIBUTES + ["successor_generator_time"]
 exp.add_comparison_table_step(attributes=attributes)
 
 for conf in CONFIGS:
-    for attr in ("memory", "total_time"):
+    for attr in ("memory", "search_time"):
         exp.add_report(
             RelativeScatterPlotReport(
                 attributes=[attr],
