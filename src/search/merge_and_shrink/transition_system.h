@@ -6,10 +6,12 @@
 #include <forward_list>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
 
+class AbstractTask;
 class Label;
 class Labels;
 class State;
@@ -120,6 +122,8 @@ class TransitionSystem {
     static const int PRUNED_STATE = -1;
     static const int DISTANCE_UNKNOWN = -2;
 
+    const std::shared_ptr<AbstractTask> task;
+
     /*
       There should only be one instance of Labels at runtime. It is created
       and managed by MergeAndShrinkHeuristic. All transition system instances
@@ -217,12 +221,13 @@ protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
 public:
-    explicit TransitionSystem(Labels *labels);
+    TransitionSystem(const std::shared_ptr<AbstractTask> task,
+                     const Labels *labels);
     virtual ~TransitionSystem();
 
-    static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
-                                                Labels *labels,
-                                                OperatorCost cost_type);
+    static void build_atomic_transition_systems(const std::shared_ptr<AbstractTask> task,
+                                                std::vector<TransitionSystem *> &result,
+                                                Labels *labels);
     bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
@@ -289,7 +294,9 @@ protected:
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    AtomicTransitionSystem(Labels *labels, int variable);
+    AtomicTransitionSystem(const std::shared_ptr<AbstractTask> task,
+                           const Labels *labels,
+                           int variable);
     virtual ~AtomicTransitionSystem();
 };
 
@@ -303,7 +310,10 @@ protected:
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    CompositeTransitionSystem(Labels *labels, TransitionSystem *ts1, TransitionSystem *ts2);
+    CompositeTransitionSystem(const std::shared_ptr<AbstractTask> task,
+                              const Labels *labels,
+                              TransitionSystem *ts1,
+                              TransitionSystem *ts2);
     virtual ~CompositeTransitionSystem();
 };
 

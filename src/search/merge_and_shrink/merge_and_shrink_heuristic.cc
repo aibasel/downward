@@ -106,7 +106,9 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(num_vars * 2 - 1);
     cout << endl;
-    TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels, cost_type);
+    TransitionSystem::build_atomic_transition_systems(task,
+                                                      all_transition_systems,
+                                                      labels);
     cout << endl;
 
     cout << "Starting merge-and-shrink main loop..." << endl;
@@ -154,7 +156,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
 
         // Merging
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
-            labels, transition_system, other_transition_system);
+            task, labels, transition_system, other_transition_system);
         new_transition_system->statistics(use_expensive_statistics);
         all_transition_systems.push_back(new_transition_system);
 

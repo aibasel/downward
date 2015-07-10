@@ -3,7 +3,6 @@
 #include "labels.h"
 #include "shrink_fh.h"
 
-#include "../global_operator.h"
 #include "../globals.h"
 #include "../priority_queue.h"
 #include "../task_proxy.h"
@@ -48,12 +47,16 @@ const int TransitionSystem::PRUNED_STATE;
 const int TransitionSystem::DISTANCE_UNKNOWN;
 
 
-TransitionSystem::TransitionSystem(Labels *labels_)
-    : labels(labels_),
-      transitions_of_groups(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
-      label_to_positions(g_operators.empty() ? 0 : g_operators.size() * 2 - 1),
+TransitionSystem::TransitionSystem(const shared_ptr<AbstractTask> task,
+                                   const Labels *labels_)
+    : task(task),
+      labels(labels_),
       num_labels(labels->get_size()) {
     clear_distances();
+    TaskProxy task_proxy(*task);
+    size_t num_ops = task_proxy.get_operators().size();
+    transitions_of_groups.resize(num_ops ? num_ops * 2 -1 : 0);
+    label_to_positions.resize(num_ops ? num_ops * 2 -1 : 0);
 }
 
 TransitionSystem::~TransitionSystem() {
@@ -381,46 +384,49 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     }
 }
 
-void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *> &result,
-                                                       Labels *labels,
-                                                       OperatorCost cost_type) {
+void TransitionSystem::build_atomic_transition_systems(const shared_ptr<AbstractTask> task,
+                                                       vector<TransitionSystem *> &result,
+                                                       Labels *labels) {
     assert(result.empty());
     cout << "Building atomic transition systems... " << endl;
-    int var_count = g_variable_domain.size();
+    TaskProxy task_proxy(*task);
+    int var_count = task_proxy.get_variables().size();
 
     // Step 1: Create the transition system objects without transitions.
-    for (int var_no = 0; var_no < var_count; ++var_no)
-        result.push_back(new AtomicTransitionSystem(labels, var_no));
+    for (int var_id = 0; var_id < var_count; ++var_id)
+        result.push_back(new AtomicTransitionSystem(task, labels, var_id));
 
     // Step 2: Add transitions.
-    int op_count = g_operators.size();
+    int op_count = task_proxy.get_operators().size();
     vector<vector<bool> > relevant_labels(result.size(), vector<bool>(op_count, false));
+    OperatorsProxy operators = task_proxy.get_operators();
     for (int label_no = 0; label_no < op_count; ++label_no) {
-        const GlobalOperator &op = g_operators[label_no];
-        labels->add_label(get_adjusted_action_cost(op, cost_type));
-        const vector<GlobalCondition> &preconditions = op.get_preconditions();
-        const vector<GlobalEffect> &effects = op.get_effects();
+        OperatorProxy op = operators[label_no];
+        labels->add_label(op.get_cost());
+        PreconditionsProxy preconditions = op.get_preconditions();
+        EffectsProxy effects = op.get_effects();
         unordered_map<int, int> pre_val;
         vector<bool> has_effect_on_var(var_count, false);
-        for (size_t i = 0; i < preconditions.size(); ++i)
-            pre_val[preconditions[i].var] = preconditions[i].val;
+        for (FactProxy precondition : preconditions)
+            pre_val[precondition.get_variable().get_id()] = precondition.get_value();
 
-        for (size_t i = 0; i < effects.size(); ++i) {
-            int var = effects[i].var;
-            has_effect_on_var[var] = true;
-            int post_value = effects[i].val;
-            TransitionSystem *ts = result[var];
+        for (EffectProxy effect : effects) {
+            FactProxy fact = effect.get_fact();
+            int var_id = fact.get_variable().get_id();
+            has_effect_on_var[var_id] = true;
+            int post_value = fact.get_value();
+            TransitionSystem *ts = result[var_id];
 
             // Determine possible values that var can have when this
             // operator is applicable.
             int pre_value = -1;
-            auto pre_val_it = pre_val.find(var);
+            auto pre_val_it = pre_val.find(var_id);
             if (pre_val_it != pre_val.end())
                 pre_value = pre_val_it->second;
             int pre_value_min, pre_value_max;
             if (pre_value == -1) {
                 pre_value_min = 0;
-                pre_value_max = g_variable_domain[var];
+                pre_value_max = task_proxy.get_variables()[var_id].get_domain_size();
             } else {
                 pre_value_min = pre_value;
                 pre_value_max = pre_value + 1;
@@ -433,12 +439,12 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
               has_other_effect_cond is true iff there exists an effect
               condition on a variable other than var.
             */
-            const vector<GlobalCondition> &eff_cond = effects[i].conditions;
+            EffectConditionsProxy effect_conditions = effect.get_conditions();
             int cond_effect_pre_value = -1;
             bool has_other_effect_cond = false;
-            for (size_t j = 0; j < eff_cond.size(); ++j) {
-                if (eff_cond[j].var == var) {
-                    cond_effect_pre_value = eff_cond[j].val;
+            for (FactProxy condition : effect_conditions) {
+                if (condition.get_variable().get_id() == var_id) {
+                    cond_effect_pre_value = condition.get_value();
                 } else {
                     has_other_effect_cond = true;
                 }
@@ -456,7 +462,7 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
             }
 
             // Handle transitions that occur when the effect does not trigger.
-            if (!eff_cond.empty()) {
+            if (!effect_conditions.empty()) {
                 for (int value = pre_value_min; value < pre_value_max; ++value) {
                     /* Add self-loop if the effect might not trigger.
                        If the effect has a condition on another variable, then
@@ -470,16 +476,17 @@ void TransitionSystem::build_atomic_transition_systems(vector<TransitionSystem *
                 }
             }
 
-            relevant_labels[var][label_no] = true;
+            relevant_labels[var_id][label_no] = true;
         }
-        for (size_t i = 0; i < preconditions.size(); ++i) {
-            int var = preconditions[i].var;
-            if (!has_effect_on_var[var]) {
-                int value = preconditions[i].val;
-                TransitionSystem *ts = result[var];
+
+        for (FactProxy precondition : preconditions) {
+            int var_id = precondition.get_variable().get_id();
+            if (!has_effect_on_var[var_id]) {
+                int value = precondition.get_value();
+                TransitionSystem *ts = result[var_id];
                 Transition trans(value, value);
                 ts->transitions_of_groups[label_no].push_back(trans);
-                relevant_labels[var][label_no] = true;
+                relevant_labels[var_id][label_no] = true;
             }
         }
     }
@@ -839,24 +846,28 @@ void TransitionSystem::dump_labels_and_transitions() const {
 
 
 
-AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
-    : TransitionSystem(labels), variable(variable_) {
+AtomicTransitionSystem::AtomicTransitionSystem(const shared_ptr<AbstractTask> task,
+                                               const Labels *labels,
+                                               int variable)
+    : TransitionSystem(task, labels), variable(variable) {
+    TaskProxy task_proxy(*task);
     varset.push_back(variable);
     /*
       This generates the states of the atomic transition system, but not the
       arcs: It is more efficient to generate all arcs of all atomic
       transition systems simultaneously.
      */
-    int range = g_variable_domain[variable];
+    int range = task_proxy.get_variables()[variable].get_domain_size();
 
-    int init_value = g_initial_state()[variable];
+    int init_value = task_proxy.get_initial_state()[variable].get_value();
     int goal_value = -1;
     goal_relevant = false;
-    for (size_t goal_no = 0; goal_no < g_goal.size(); ++goal_no) {
-        if (g_goal[goal_no].first == variable) {
+    GoalsProxy goals = task_proxy.get_goals();
+    for (FactProxy goal : goals) {
+        if (goal.get_variable().get_id() == variable) {
             goal_relevant = true;
             assert(goal_value == -1);
-            goal_value = g_goal[goal_no].second;
+            goal_value = goal.get_value();
         }
     }
 
@@ -876,7 +887,8 @@ AtomicTransitionSystem::AtomicTransitionSystem(Labels *labels, int variable_)
       Prepare grouped_labels data structure: add one single-element
       group for every operator.
     */
-    for (int label_no = 0; label_no < static_cast<int>(g_operators.size()); ++label_no) {
+    int num_op = task_proxy.get_operators().size();
+    for (int label_no = 0; label_no < num_op; ++label_no) {
         // We use the label number as index for transitions of groups
         LabelGroupIter group_it = add_empty_label_group(&transitions_of_groups[label_no]);
         add_label_to_group(group_it, label_no, false);
@@ -911,10 +923,11 @@ AbstractStateRef AtomicTransitionSystem::get_abstract_state(const State &state) 
 
 
 
-CompositeTransitionSystem::CompositeTransitionSystem(Labels *labels,
+CompositeTransitionSystem::CompositeTransitionSystem(const shared_ptr<AbstractTask> task,
+                                                     const Labels *labels,
                                                      TransitionSystem *ts1,
                                                      TransitionSystem *ts2)
-    : TransitionSystem(labels) {
+    : TransitionSystem(task, labels) {
     cout << "Merging " << ts1->description() << " and "
          << ts2->description() << endl;
 
@@ -1038,9 +1051,11 @@ void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
 }
 
 string CompositeTransitionSystem::description() const {
+    TaskProxy task_proxy(*task);
+    int num_vars = task_proxy.get_variables().size();
     ostringstream s;
     s << "transition system (" << varset.size() << "/"
-      << g_variable_domain.size() << " vars)";
+      << num_vars << " vars)";
     return s.str();
 }
 
