@@ -3,6 +3,13 @@
 
 from downward import configs, suites
 from downward.reports.scatter import ScatterPlotReport
+# Cactus plots are experimental in lab, and require some changes to
+# classes in lab, so we cannot add them es external files here.
+try:
+    from downward.reports.cactus import CactusPlotReport
+    has_cactus_plot = True
+except:
+    has_cactus_plot = False
 from lab.experiment import Step
 from lab.fetcher import Fetcher
 
@@ -49,5 +56,14 @@ for conf in CONFIGS:
             ),
             outfile='issue547_base_v1_%s_%s.png' % (conf, attr)
         )
+
+if has_cactus_plot:
+    exp.add_report(CactusPlotReport(attributes=['successor_generator_time'],
+                 filter_config_nick="astar_blind",
+                 ylabel='successor_generator_time',
+                 get_category=lambda run: run['config_nick'],
+                 category_styles={'astar_blind': {'linestyle': '-', 'c':'red'}}
+                 ))
+
 
 exp()
