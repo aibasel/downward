@@ -6,6 +6,7 @@
 class Labels;
 class MergeStrategy;
 class ShrinkStrategy;
+class Timer;
 class TransitionSystem;
 
 class MergeAndShrinkHeuristic : public Heuristic {
@@ -16,7 +17,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     int starting_peak_memory;
 
     TransitionSystem *final_transition_system;
-    TransitionSystem *build_transition_system();
+    TransitionSystem *build_transition_system(const Timer &timer);
 
     void report_peak_memory_delta(bool final = false) const;
     void dump_options() const;

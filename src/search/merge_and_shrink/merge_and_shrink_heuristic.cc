@@ -94,7 +94,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
+TransitionSystem *MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
@@ -125,8 +125,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         transition_system_order.push_back(system_two);
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
-        transition_system->statistics(use_expensive_statistics);
-        other_transition_system->statistics(use_expensive_statistics);
+        transition_system->statistics(timer, use_expensive_statistics);
+        other_transition_system->statistics(timer, use_expensive_statistics);
 
         if (labels->reduce_before_shrinking()) {
             // Label reduction before shrinking
@@ -143,11 +143,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
             return other_transition_system;
 
         // Shrinking
-        pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
+        pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system,
+                                                                       *other_transition_system);
         if (shrunk.first)
-            transition_system->statistics(use_expensive_statistics);
+            transition_system->statistics(timer, use_expensive_statistics);
         if (shrunk.second)
-            other_transition_system->statistics(use_expensive_statistics);
+            other_transition_system->statistics(timer, use_expensive_statistics);
 
         if (labels->reduce_before_merging()) {
             // Label reduction before merging
@@ -157,7 +158,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         // Merging
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
             task, labels, transition_system, other_transition_system);
-        new_transition_system->statistics(use_expensive_statistics);
+        new_transition_system->statistics(timer, use_expensive_statistics);
         all_transition_systems.push_back(new_transition_system);
 
         transition_system->release_memory();
@@ -208,14 +209,15 @@ void MergeAndShrinkHeuristic::initialize() {
 
     verify_no_axioms();
 
-    final_transition_system = build_transition_system();
+    final_transition_system = build_transition_system(timer);
     if (!final_transition_system->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
     }
     cout << "Final transition system size: " << final_transition_system->get_size() << endl;
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
-         << endl << "initial h value: "
+         << endl;
+    cout << "initial h value: "
             // TODO: after adopting the task interface everywhere, change this
             // back_insertto compute_heuristic(task_proxy.get_initial_state())
          << final_transition_system->get_cost(task_proxy.get_initial_state())

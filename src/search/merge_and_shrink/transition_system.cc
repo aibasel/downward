@@ -2,7 +2,6 @@
 
 #include "labels.h"
 
-#include "../globals.h"
 #include "../priority_queue.h"
 #include "../task_proxy.h"
 #include "../timer.h"
@@ -760,7 +759,8 @@ int TransitionSystem::unique_unlabeled_transitions() const {
            - unique_transitions.begin();
 }
 
-void TransitionSystem::statistics(bool include_expensive_statistics) const {
+void TransitionSystem::statistics(const Timer &timer,
+                                  bool include_expensive_statistics) const {
     cout << tag() << get_size() << " states, ";
     if (include_expensive_statistics)
         cout << unique_unlabeled_transitions();
@@ -776,7 +776,7 @@ void TransitionSystem::statistics(bool include_expensive_statistics) const {
     } else {
         cout << "transition system is unsolvable";
     }
-    cout << " [t=" << g_timer << "]" << endl;
+    cout << " [t=" << timer << "]" << endl;
 }
 
 void TransitionSystem::dump_dot_graph() const {
