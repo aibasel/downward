@@ -15,13 +15,12 @@ struct SamplingTimeout : public std::exception {};
 
 double get_average_operator_cost(TaskProxy task_proxy);
 
-template<class Callback>
-std::vector<State> sample_states_with_random_walks(
+inline std::vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
     int num_samples,
     int init_h,
-    int average_operator_cost,
-    const Callback &is_dead_end,
+    double average_operator_cost,
+    std::function<bool(State)> is_dead_end,
     const CountdownTimer &timer) {
     std::vector<State> samples;
 
@@ -37,6 +36,7 @@ std::vector<State> sample_states_with_random_walks(
           average_operator_cost cannot equal 0, as in this case, all operators
           must have costs of 0 and in this case the if-clause triggers.
         */
+        assert(average_operator_cost != 0);
         int solution_steps_estimate = int((init_h / average_operator_cost) + 0.5);
         n = 4 * solution_steps_estimate;
     }
