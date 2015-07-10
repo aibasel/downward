@@ -7,10 +7,9 @@
 #include "../countdown_timer.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
-#include "../sampling.h"
-#include "../state_registry.h"
 #include "../timer.h"
+
+#include <unordered_set>
 
 using namespace std;
 
