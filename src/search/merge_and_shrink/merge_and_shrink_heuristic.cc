@@ -5,7 +5,6 @@
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
-#include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -13,6 +12,7 @@
 
 #include <cassert>
 #include <vector>
+
 using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
@@ -100,9 +100,10 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
 
     // Set of all transition systems. Entries with 0 have been merged.
     vector<TransitionSystem *> all_transition_systems;
-    if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
+    size_t num_vars = task_proxy.get_variables().size();
+    if (num_vars * 2 - 1 > all_transition_systems.max_size())
         exit_with(EXIT_OUT_OF_MEMORY);
-    all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
+    all_transition_systems.reserve(num_vars * 2 - 1);
     cout << endl;
     TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels, cost_type);
     cout << endl;
@@ -165,7 +166,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         cout << endl;
     }
 
-    assert(all_transition_systems.size() == g_variable_domain.size() * 2 - 1);
+    assert(all_transition_systems.size() == num_vars * 2 - 1);
     TransitionSystem *final_transition_system = 0;
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         if (all_transition_systems[i]) {
@@ -216,7 +217,8 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << endl;
 }
 
-int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
+int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
     int cost = final_transition_system->get_cost(state);
     if (cost == -1)
         return DEAD_END;

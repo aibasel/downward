@@ -10,9 +10,9 @@
 #include <tuple>
 #include <vector>
 
-class GlobalState;
 class Label;
 class Labels;
+class State;
 
 typedef int AbstractStateRef;
 
@@ -213,7 +213,7 @@ class TransitionSystem {
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
 protected:
-    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const = 0;
+    virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
 public:
@@ -240,7 +240,7 @@ public:
     */
     std::string tag() const;
     bool is_solvable() const;
-    int get_cost(const GlobalState &state) const;
+    int get_cost(const State &state) const;
     void statistics(bool include_expensive_statistics) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
@@ -287,7 +287,7 @@ protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
-    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
+    virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
     AtomicTransitionSystem(Labels *labels, int variable);
     virtual ~AtomicTransitionSystem();
@@ -301,7 +301,7 @@ protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
-    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
+    virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
     CompositeTransitionSystem(Labels *labels, TransitionSystem *ts1, TransitionSystem *ts2);
     virtual ~CompositeTransitionSystem();

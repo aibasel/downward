@@ -23,7 +23,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     void warn_on_unusual_options() const;
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     MergeAndShrinkHeuristic(const Options &opts);
     ~MergeAndShrinkHeuristic();
