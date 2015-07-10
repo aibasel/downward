@@ -29,6 +29,7 @@ HEADERS = \
           operator.h \
           scc.h \
           state.h \
+          successor_generator.h \
           variable.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)

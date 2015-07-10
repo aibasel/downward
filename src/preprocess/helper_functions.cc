@@ -12,6 +12,7 @@ using namespace std;
 #include "operator.h"
 #include "axiom.h"
 #include "variable.h"
+#include "successor_generator.h"
 #include "domain_transition_graph.h"
 
 
@@ -163,6 +164,7 @@ void generate_cpp_input(bool /*solvable_in_poly_time*/,
                         const vector<pair<Variable *, int> > &goals,
                         const vector<Operator> &operators,
                         const vector<Axiom> &axioms,
+                        const SuccessorGenerator &sg,
                         const vector<DomainTransitionGraph> transition_graphs,
                         const CausalGraph &cg) {
     /* NOTE: solvable_in_poly_time flag is no longer included in output,
@@ -213,6 +215,10 @@ void generate_cpp_input(bool /*solvable_in_poly_time*/,
     outfile << axioms.size() << endl;
     for (int i = 0; i < axioms.size(); i++)
         axioms[i].generate_cpp_input(outfile);
+
+    outfile << "begin_SG" << endl;
+    sg.generate_cpp_input(outfile);
+    outfile << "end_SG" << endl;
 
     for (int i = 0; i < var_count; i++) {
         outfile << "begin_DTG" << endl;

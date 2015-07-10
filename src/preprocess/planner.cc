@@ -7,6 +7,7 @@
  */
 
 #include "helper_functions.h"
+#include "successor_generator.h"
 #include "causal_graph.h"
 #include "domain_transition_graph.h"
 #include "state.h"
@@ -68,6 +69,9 @@ int main(int argc, const char **) {
     //TODO: genauer machen? (highest level var muss nicht scc sein...gemacht)
     //nur Werte, die wichtig sind fuer drunterliegende vars muessen in scc sein
     cout << "solveable in poly time " << solveable_in_poly_time << endl;
+    cout << "Building successor generator..." << endl;
+    SuccessorGenerator successor_generator(ordering, operators);
+    //successor_generator.dump();
 
     // Output some task statistics
     int facts = 0;
@@ -97,7 +101,7 @@ int main(int argc, const char **) {
     cout << "Writing output..." << endl;
     generate_cpp_input(solveable_in_poly_time, ordering, metric,
                        mutexes, initial_state, goals,
-                       operators, axioms,
+                       operators, axioms, successor_generator,
                        transition_graphs, causal_graph);
     cout << "done" << endl;
 }
