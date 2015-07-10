@@ -6,6 +6,7 @@
 #include "../global_operator.h"
 #include "../globals.h"
 #include "../priority_queue.h"
+#include "../task_proxy.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -725,7 +726,7 @@ bool TransitionSystem::is_solvable() const {
     return init_state != PRUNED_STATE;
 }
 
-int TransitionSystem::get_cost(const GlobalState &state) const {
+int TransitionSystem::get_cost(const State &state) const {
     assert(are_distances_computed());
     int abs_state = get_abstract_state(state);
     if (abs_state == PRUNED_STATE)
@@ -903,8 +904,8 @@ string AtomicTransitionSystem::description() const {
     return s.str();
 }
 
-AbstractStateRef AtomicTransitionSystem::get_abstract_state(const GlobalState &state) const {
-    int value = state[variable];
+AbstractStateRef AtomicTransitionSystem::get_abstract_state(const State &state) const {
+    int value = state[variable].get_value();
     return lookup_table[value];
 }
 
@@ -1043,7 +1044,7 @@ string CompositeTransitionSystem::description() const {
     return s.str();
 }
 
-AbstractStateRef CompositeTransitionSystem::get_abstract_state(const GlobalState &state) const {
+AbstractStateRef CompositeTransitionSystem::get_abstract_state(const State &state) const {
     AbstractStateRef state1 = components[0]->get_abstract_state(state);
     AbstractStateRef state2 = components[1]->get_abstract_state(state);
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
