@@ -62,7 +62,7 @@ SamplesAndFunctions DiversePotentialHeuristics::filter_samples_and_compute_funct
 
 void DiversePotentialHeuristics::filter_covered_samples(
     const Function chosen_function,
-    SamplesAndFunctions &samples_and_functions) {
+    SamplesAndFunctions &samples_and_functions) const {
     for (auto it = samples_and_functions.begin(); it != samples_and_functions.end();) {
         const State &sample = it->first;
         Function sample_function = it->second;
@@ -91,7 +91,7 @@ Function DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     if (samples_and_functions.size() < last_num_samples) {
         function = group_function;
     } else {
-        cout << "No sample was removed -> Use a arbitrary precomputed function." << endl;
+        cout << "No sample was removed -> Use arbitrary precomputed function." << endl;
         Function single_function = samples_and_functions.begin()->second;
         filter_covered_samples(single_function, samples_and_functions);
         function = single_function;

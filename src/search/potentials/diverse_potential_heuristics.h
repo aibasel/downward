@@ -21,24 +21,24 @@ class DiversePotentialHeuristics {
     const int num_samples;
     const double max_filtering_time;
     const double max_covering_time;
-    std::vector<Function > diverse_functions;
+    std::vector<Function> diverse_functions;
 
-    /* Filter dead end samples and duplicates. Store potential heuristics and
-       maximum heuristic values for remaining samples. */
+    /* Filter dead end samples and duplicates. Store potential heuristics
+       for remaining samples. */
     SamplesAndFunctions filter_samples_and_compute_functions(
         const std::vector<State> &samples);
 
-    // Remove all samples for which the heuristic achieves maximal values.
+    // Remove all samples for which the function achieves maximal values.
     void filter_covered_samples(
         const Function chosen_function,
-        SamplesAndFunctions &samples_and_functions);
+        SamplesAndFunctions &samples_and_functions) const;
 
-    /* Return potential heuristic optimized for remaining samples or a
+    /* Return potential function optimized for remaining samples or a
        precomputed heuristic if the former does not cover additional samples. */
     Function find_function_and_remove_covered_samples(
         SamplesAndFunctions &samples);
 
-    /* Iteratively try to find potential heuristics that achieve maximal values
+    /* Iteratively try to find potential functions that achieve maximal values
        for as many samples as possible. */
     void cover_samples(SamplesAndFunctions &samples_and_functions);
 
