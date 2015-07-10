@@ -5,6 +5,7 @@
 #include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
+#include "global_successor_generator.h"
 #include "heuristic.h"
 #include "int_packer.h"
 #include "rng.h"
