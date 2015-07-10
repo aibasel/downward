@@ -3,7 +3,6 @@
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
-#include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -36,13 +35,16 @@ Labels::Labels(const Options &options)
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(LabelReductionMethod(options.get_enum("method"))),
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
+}
+
+void Labels::initialize(const TaskProxy &task_proxy) {
     // Reserve memory for labels
-    if (!g_operators.empty()) {
-        labels.reserve(g_operators.size() * 2 - 1);
+    if (!task_proxy.get_operators().empty()) {
+        labels.reserve(task_proxy.get_operators().size() * 2 - 1);
     }
 
     // Compute the transition system order
-    size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
+    size_t max_transition_system_count = task_proxy.get_variables().size() * 2 - 1;
     transition_system_order.reserve(max_transition_system_count);
     if (lr_system_order == REGULAR
         || lr_system_order == RANDOM) {
