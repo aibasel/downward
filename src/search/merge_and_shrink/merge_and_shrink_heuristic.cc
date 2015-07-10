@@ -7,6 +7,7 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_tools.h"
 #include "../timer.h"
 
 #include <cassert>
@@ -207,7 +208,7 @@ void MergeAndShrinkHeuristic::initialize() {
     dump_options();
     warn_on_unusual_options();
 
-    verify_no_axioms();
+    verify_no_axioms(task_proxy);
 
     final_transition_system = build_transition_system(timer);
     if (!final_transition_system->is_solvable()) {
