@@ -5,7 +5,6 @@
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../timer.h"
@@ -214,7 +213,11 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << "Final transition system size: " << final_transition_system->get_size() << endl;
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
-         << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
+         << endl << "initial h value: "
+            // TODO: after adopting the task interface everywhere, change this
+            // back_insertto compute_heuristic(task_proxy.get_initial_state())
+         << final_transition_system->get_cost(task_proxy.get_initial_state())
+         << endl;
     report_peak_memory_delta(true);
     cout << endl;
 }
