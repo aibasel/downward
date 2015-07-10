@@ -19,9 +19,9 @@ MergeLinear::~MergeLinear() {
     delete variable_order_finder;
 }
 
-void MergeLinear::initialize(const TaskProxy &task_proxy) {
-    MergeStrategy::initialize(task_proxy);
-    variable_order_finder = new VariableOrderFinder(task_proxy, variable_order);
+void MergeLinear::initialize(shared_ptr<AbstractTask> task) {
+    MergeStrategy::initialize(task);
+    variable_order_finder = new VariableOrderFinder(task, variable_order);
 }
 
 pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {

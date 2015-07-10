@@ -1,10 +1,11 @@
 #ifndef MERGE_AND_SHRINK_MERGE_STRATEGY_H
 #define MERGE_AND_SHRINK_MERGE_STRATEGY_H
 
+#include <memory>
 #include <string>
 #include <vector>
 
-class TaskProxy;
+class AbstractTask;
 class TransitionSystem;
 
 class MergeStrategy {
@@ -14,7 +15,7 @@ protected:
 public:
     MergeStrategy();
     virtual ~MergeStrategy() {}
-    virtual void initialize(const TaskProxy &task_proxy);
+    virtual void initialize(std::shared_ptr<AbstractTask> task);
 
     void dump_options() const;
 

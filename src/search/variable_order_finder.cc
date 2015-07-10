@@ -13,9 +13,10 @@
 using namespace std;
 
 
-VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
+VariableOrderFinder::VariableOrderFinder(std::shared_ptr<AbstractTask> task,
                                          VariableOrderType variable_order_type)
-    : task_proxy(task_proxy),
+    : task(task),
+      task_proxy(*task),
       variable_order_type(variable_order_type) {
     int var_count = task_proxy.get_variables().size();
     if (variable_order_type == REVERSE_LEVEL) {

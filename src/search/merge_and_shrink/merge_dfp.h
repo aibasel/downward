@@ -18,7 +18,7 @@ protected:
 public:
     MergeDFP();
     virtual ~MergeDFP() override {}
-    virtual void initialize(const TaskProxy &task_proxy) override;
+    virtual void initialize(std::shared_ptr<AbstractTask> task) override;
 
     virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems);
     virtual std::string name() const;

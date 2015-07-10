@@ -18,8 +18,8 @@ MergeDFP::MergeDFP()
     : MergeStrategy() {
 }
 
-void MergeDFP::initialize(const TaskProxy &task_proxy) {
-    MergeStrategy::initialize(task_proxy);
+void MergeDFP::initialize(shared_ptr<AbstractTask> task) {
+    MergeStrategy::initialize(task);
     /*
       n := remaining_merges + 1 is the number of variables of the planning task
       and thus the number of atomic transition systems. These will be stored at
