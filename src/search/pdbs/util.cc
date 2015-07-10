@@ -63,8 +63,8 @@ static void build_pattern_for_size_limit(
     if (size_limit < 1)
         parser.error("abstraction size must be at least 1");
 
-    VariableOrderFinder order(task, GOAL_CG_LEVEL);
     TaskProxy task_proxy(*task);
+    VariableOrderFinder order(task_proxy, GOAL_CG_LEVEL);
     int size = 1;
     while (true) {
         if (order.done())

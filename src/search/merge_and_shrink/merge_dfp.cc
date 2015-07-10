@@ -15,12 +15,18 @@ using namespace std;
 
 
 MergeDFP::MergeDFP()
-    : MergeStrategy(),
-      border_atomics_composites(remaining_merges + 1) {
-    // n := remaining_merges + 1 is the number of variables of the planning task
-    // and thus the number of atomic transition systems. These will be stored at
-    // indices 0 to n-1 and thus n is the index at which the first composite
-    // transition system will be stored at.
+    : MergeStrategy() {
+}
+
+void MergeDFP::initialize(const TaskProxy &task_proxy) {
+    MergeStrategy::initialize(task_proxy);
+    /*
+      n := remaining_merges + 1 is the number of variables of the planning task
+      and thus the number of atomic transition systems. These will be stored at
+      indices 0 to n-1 and thus n is the index at which the first composite
+      transition system will be stored at.
+    */
+    border_atomics_composites = remaining_merges + 1;
 }
 
 int MergeDFP::get_corrected_index(int index) const {

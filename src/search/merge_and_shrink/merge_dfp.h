@@ -14,10 +14,11 @@ class MergeDFP : public MergeStrategy {
     void compute_label_ranks(const TransitionSystem *transition_system,
                              std::vector<int> &label_ranks) const;
 protected:
-    virtual void dump_strategy_specific_options() const {}
+    virtual void dump_strategy_specific_options() const override {}
 public:
     MergeDFP();
-    virtual ~MergeDFP() {}
+    virtual ~MergeDFP() override {}
+    virtual void initialize(const TaskProxy &task_proxy) override;
 
     virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems);
     virtual std::string name() const;
