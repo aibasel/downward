@@ -1,7 +1,6 @@
 #include "transition_system.h"
 
 #include "labels.h"
-#include "shrink_fh.h"
 
 #include "../globals.h"
 #include "../priority_queue.h"
@@ -11,13 +10,9 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
-#include <cstring>
 #include <deque>
 #include <functional>
-#include <fstream>
 #include <iostream>
-#include <iterator>
 #include <limits>
 #include <set>
 #include <string>
