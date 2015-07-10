@@ -36,7 +36,7 @@ exp = common_setup.IssueExperiment(
 exp.add_search_parser("custom-parser.py")
 exp.add_step(Step('refetch', Fetcher(), exp.path, parsers=['custom-parser.py']))
 
-attributes = attributes=exp.DEFAULT_TABLE_ATTRIBUTES + ["successor_generator_time"]
+attributes = attributes=exp.DEFAULT_TABLE_ATTRIBUTES + ["successor_generator_time", "reopened_until_last_jump"]
 exp.add_comparison_table_step(attributes=attributes)
 
 for conf in CONFIGS:
