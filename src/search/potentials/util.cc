@@ -3,7 +3,10 @@
 #include "potential_function.h"
 #include "potential_optimizer.h"
 
+#include "../countdown_timer.h"
 #include "../sampling.h"
+
+#include <limits>
 
 using namespace std;
 
