@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-class TaskProxy;
+#include "task_proxy.h"
 
 enum VariableOrderType {
     CG_GOAL_LEVEL,
@@ -16,7 +16,8 @@ enum VariableOrderType {
 };
 
 class VariableOrderFinder {
-    const TaskProxy &task_proxy;
+    std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
     const VariableOrderType variable_order_type;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
@@ -25,7 +26,7 @@ class VariableOrderFinder {
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(const TaskProxy &task_proxy,
+    VariableOrderFinder(std::shared_ptr<AbstractTask> task,
                         VariableOrderType variable_order_type);
     ~VariableOrderFinder() = default;
     bool done() const;

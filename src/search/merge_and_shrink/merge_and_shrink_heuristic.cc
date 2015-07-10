@@ -20,7 +20,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       labels(opts.get<Labels *>("label_reduction")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
-    merge_strategy->initialize(task_proxy);
+    merge_strategy->initialize(task);
     labels->initialize(task_proxy);
 }
 
