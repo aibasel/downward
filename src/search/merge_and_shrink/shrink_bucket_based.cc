@@ -8,8 +8,8 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-using namespace std;
 
+using namespace std;
 
 ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
     : ShrinkStrategy(opts) {
