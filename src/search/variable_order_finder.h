@@ -1,10 +1,10 @@
 #ifndef VARIABLE_ORDER_FINDER_H
 #define VARIABLE_ORDER_FINDER_H
 
+#include "task_proxy.h"
+
 #include <memory>
 #include <vector>
-
-#include "task_proxy.h"
 
 enum VariableOrderType {
     CG_GOAL_LEVEL,
