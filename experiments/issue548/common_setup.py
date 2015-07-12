@@ -3,6 +3,7 @@
 import itertools
 import os
 import platform
+import subprocess
 import sys
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
@@ -277,6 +278,7 @@ class IssueExperiment(DownwardExperiment):
         report = AbsoluteReport(**kwargs)
         outfile = get_experiment_name() + "." + report.output_format
         self.add_report(report, outfile=outfile)
+        self.add_step(Step('publish-absolute-report', call, ['publish', outfile]))
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -304,6 +306,15 @@ class IssueExperiment(DownwardExperiment):
                 report(self.eval_dir, outfile)
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
+
+        def publish_comparison_tables():
+            for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
+                outfile = os.path.join(self.eval_dir,
+                                       "%s-%s-%s-compare.html" %
+                                       (self.name, rev1, rev2))
+                subprocess.call(['publish', outfile])
+
+        self.add_step(Step('publish-comparison-reports', publish_comparison_tables))
 
     def add_scatter_plot_step(self, attributes=None):
         """Add a step that creates scatter plots for all revision pairs.
