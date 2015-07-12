@@ -16,12 +16,10 @@ public:
     MergeStrategy();
     virtual ~MergeStrategy() {}
     virtual void initialize(std::shared_ptr<AbstractTask> task);
-
+    bool initialized() const;
+    bool done() const;
     void dump_options() const;
 
-    bool done() const {
-        return remaining_merges == 0;
-    }
     // Implementations of get_next have to decrease remaining_merges by one
     virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems) = 0;
     virtual std::string name() const = 0;

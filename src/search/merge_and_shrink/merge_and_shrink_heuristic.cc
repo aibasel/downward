@@ -107,7 +107,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system(const Timer &
         exit_with(EXIT_OUT_OF_MEMORY);
     all_transition_systems.reserve(num_vars * 2 - 1);
     cout << endl;
-    TransitionSystem::build_atomic_transition_systems(task,
+    TransitionSystem::build_atomic_transition_systems(task_proxy,
                                                       all_transition_systems,
                                                       labels);
     cout << endl;
@@ -158,7 +158,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system(const Timer &
 
         // Merging
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
-            task, labels, transition_system, other_transition_system);
+            task_proxy, labels, transition_system, other_transition_system);
         new_transition_system->statistics(timer, use_expensive_statistics);
         all_transition_systems.push_back(new_transition_system);
 
@@ -220,7 +220,7 @@ void MergeAndShrinkHeuristic::initialize() {
          << endl;
     cout << "initial h value: "
             // TODO: after adopting the task interface everywhere, change this
-            // back_insertto compute_heuristic(task_proxy.get_initial_state())
+            // back to compute_heuristic(task_proxy.get_initial_state())
          << final_transition_system->get_cost(task_proxy.get_initial_state())
          << endl;
     report_peak_memory_delta(true);

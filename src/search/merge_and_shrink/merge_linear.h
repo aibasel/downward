@@ -9,7 +9,7 @@ class Options;
 
 class MergeLinear : public MergeStrategy {
     // Only needed until variable order finder is initialized.
-    VariableOrderType variable_order;
+    VariableOrderType variable_order_type;
     VariableOrderFinder *variable_order_finder;
     bool need_first_index;
 protected:
