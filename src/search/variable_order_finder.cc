@@ -2,7 +2,6 @@
 
 #include "causal_graph.h"
 #include "globals.h"
-#include "task_proxy.h"
 #include "utilities.h"
 
 #include <algorithm>
@@ -10,8 +9,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-using namespace std;
 
+using namespace std;
 
 VariableOrderFinder::VariableOrderFinder(std::shared_ptr<AbstractTask> task,
                                          VariableOrderType variable_order_type)
