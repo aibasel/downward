@@ -41,16 +41,18 @@ const int TransitionSystem::PRUNED_STATE;
 const int TransitionSystem::DISTANCE_UNKNOWN;
 
 
-TransitionSystem::TransitionSystem(const shared_ptr<AbstractTask> task,
-                                   const Labels *labels_)
-    : task(task),
-      labels(labels_),
-      num_labels(labels->get_size()) {
+TransitionSystem::TransitionSystem(const TaskProxy task_proxy,
+                                   const Labels *labels)
+    : labels(labels),
+      num_labels(labels->get_size()),
+      num_variables(task_proxy.get_variables().size()) {
     clear_distances();
-    TaskProxy task_proxy(*task);
     size_t num_ops = task_proxy.get_operators().size();
-    transitions_of_groups.resize(num_ops ? num_ops * 2 -1 : 0);
-    label_to_positions.resize(num_ops ? num_ops * 2 -1 : 0);
+    if (num_ops > 0) {
+        size_t max_num_labels = num_ops * 2 - 1;
+        transitions_of_groups.resize(max_num_labels);
+        label_to_positions.resize(max_num_labels);
+    }
 }
 
 TransitionSystem::~TransitionSystem() {
@@ -378,24 +380,22 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     }
 }
 
-void TransitionSystem::build_atomic_transition_systems(const shared_ptr<AbstractTask> task,
+void TransitionSystem::build_atomic_transition_systems(const TaskProxy task_proxy,
                                                        vector<TransitionSystem *> &result,
                                                        Labels *labels) {
     assert(result.empty());
     cout << "Building atomic transition systems... " << endl;
-    TaskProxy task_proxy(*task);
     int var_count = task_proxy.get_variables().size();
 
     // Step 1: Create the transition system objects without transitions.
-    for (int var_id = 0; var_id < var_count; ++var_id)
-        result.push_back(new AtomicTransitionSystem(task, labels, var_id));
+    for (VariableProxy var : task_proxy.get_variables())
+        result.push_back(new AtomicTransitionSystem(task_proxy, labels, var.get_id()));
 
     // Step 2: Add transitions.
     int op_count = task_proxy.get_operators().size();
     vector<vector<bool> > relevant_labels(result.size(), vector<bool>(op_count, false));
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (int label_no = 0; label_no < op_count; ++label_no) {
-        OperatorProxy op = operators[label_no];
+    for (OperatorProxy op: task_proxy.get_operators()) {
+        int label_no = op.get_id();
         labels->add_label(op.get_cost());
         PreconditionsProxy preconditions = op.get_preconditions();
         EffectsProxy effects = op.get_effects();
@@ -406,6 +406,7 @@ void TransitionSystem::build_atomic_transition_systems(const shared_ptr<Abstract
 
         for (EffectProxy effect : effects) {
             FactProxy fact = effect.get_fact();
+            VariableProxy var = fact.get_variable();
             int var_id = fact.get_variable().get_id();
             has_effect_on_var[var_id] = true;
             int post_value = fact.get_value();
@@ -420,7 +421,7 @@ void TransitionSystem::build_atomic_transition_systems(const shared_ptr<Abstract
             int pre_value_min, pre_value_max;
             if (pre_value == -1) {
                 pre_value_min = 0;
-                pre_value_max = task_proxy.get_variables()[var_id].get_domain_size();
+                pre_value_max = var.get_domain_size();
             } else {
                 pre_value_min = pre_value;
                 pre_value_max = pre_value + 1;
@@ -841,25 +842,24 @@ void TransitionSystem::dump_labels_and_transitions() const {
 
 
 
-AtomicTransitionSystem::AtomicTransitionSystem(const shared_ptr<AbstractTask> task,
+AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy task_proxy,
                                                const Labels *labels,
-                                               int variable)
-    : TransitionSystem(task, labels), variable(variable) {
-    TaskProxy task_proxy(*task);
-    varset.push_back(variable);
+                                               int var_id)
+    : TransitionSystem(task_proxy, labels), variable(var_id) {
+    varset.push_back(var_id);
     /*
       This generates the states of the atomic transition system, but not the
       arcs: It is more efficient to generate all arcs of all atomic
       transition systems simultaneously.
      */
-    int range = task_proxy.get_variables()[variable].get_domain_size();
+    int range = task_proxy.get_variables()[var_id].get_domain_size();
 
-    int init_value = task_proxy.get_initial_state()[variable].get_value();
+    int init_value = task_proxy.get_initial_state()[var_id].get_value();
     int goal_value = -1;
     goal_relevant = false;
     GoalsProxy goals = task_proxy.get_goals();
     for (FactProxy goal : goals) {
-        if (goal.get_variable().get_id() == variable) {
+        if (goal.get_variable().get_id() == var_id) {
             goal_relevant = true;
             assert(goal_value == -1);
             goal_value = goal.get_value();
@@ -918,11 +918,11 @@ AbstractStateRef AtomicTransitionSystem::get_abstract_state(const State &state) 
 
 
 
-CompositeTransitionSystem::CompositeTransitionSystem(const shared_ptr<AbstractTask> task,
+CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy task_proxy,
                                                      const Labels *labels,
                                                      TransitionSystem *ts1,
                                                      TransitionSystem *ts2)
-    : TransitionSystem(task, labels) {
+    : TransitionSystem(task_proxy, labels) {
     cout << "Merging " << ts1->description() << " and "
          << ts2->description() << endl;
 
@@ -1046,11 +1046,9 @@ void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
 }
 
 string CompositeTransitionSystem::description() const {
-    TaskProxy task_proxy(*task);
-    int num_vars = task_proxy.get_variables().size();
     ostringstream s;
     s << "transition system (" << varset.size() << "/"
-      << num_vars << " vars)";
+      << num_variables << " vars)";
     return s.str();
 }
 

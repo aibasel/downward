@@ -38,6 +38,8 @@ Labels::Labels(const Options &options)
 }
 
 void Labels::initialize(const TaskProxy &task_proxy) {
+    assert(!initialized());
+
     // Reserve memory for labels
     if (!task_proxy.get_operators().empty()) {
         labels.reserve(task_proxy.get_operators().size() * 2 - 1);
@@ -60,7 +62,12 @@ void Labels::initialize(const TaskProxy &task_proxy) {
     }
 }
 
+bool Labels::initialized() const {
+    return !transition_system_order.empty();
+}
+
 void Labels::add_label(int cost) {
+    assert(initialized());
     labels.push_back(new Label(cost));
 }
 
@@ -163,6 +170,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
 
 void Labels::reduce(pair<int, int> next_merge,
                     const vector<TransitionSystem *> &all_transition_systems) {
+    assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = all_transition_systems.size();
 

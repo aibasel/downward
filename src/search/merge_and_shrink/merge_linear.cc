@@ -11,7 +11,7 @@ using namespace std;
 
 MergeLinear::MergeLinear(const Options &opts)
     : MergeStrategy(),
-      variable_order(VariableOrderType(opts.get_enum("variable_order"))),
+      variable_order_type(VariableOrderType(opts.get_enum("variable_order"))),
       need_first_index(true) {
 }
 
@@ -21,11 +21,13 @@ MergeLinear::~MergeLinear() {
 
 void MergeLinear::initialize(shared_ptr<AbstractTask> task) {
     MergeStrategy::initialize(task);
-    variable_order_finder = new VariableOrderFinder(task, variable_order);
+    variable_order_finder = new VariableOrderFinder(task, variable_order_type);
 }
 
 pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {
-    assert(!done() && !variable_order_finder->done());
+    assert(initialized());
+    assert(!done());
+    assert(!variable_order_finder->done());
 
     int first;
     if (need_first_index) {

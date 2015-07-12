@@ -89,6 +89,7 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
 }
 
 pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transition_systems) {
+    assert(initialized());
     assert(!done());
 
     vector<const TransitionSystem *> sorted_transition_systems;

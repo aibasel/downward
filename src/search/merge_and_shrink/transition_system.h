@@ -1,7 +1,7 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
-#include "../operator_cost.h"
+#include "../task_proxy.h"
 
 #include <forward_list>
 #include <iostream>
@@ -11,7 +11,6 @@
 #include <tuple>
 #include <vector>
 
-class AbstractTask;
 class Label;
 class Labels;
 class State;
@@ -123,8 +122,6 @@ class TransitionSystem {
     static const int PRUNED_STATE = -1;
     static const int DISTANCE_UNKNOWN = -2;
 
-    const std::shared_ptr<AbstractTask> task;
-
     /*
       There should only be one instance of Labels at runtime. It is created
       and managed by MergeAndShrinkHeuristic. All transition system instances
@@ -155,6 +152,8 @@ class TransitionSystem {
       the incorporation of a label mapping as computed by label reduction.
     */
     int num_labels;
+    // Number of variables of the task used by merge-and-shrink
+    const int num_variables;
 
     int num_states;
 
@@ -222,11 +221,11 @@ protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
 public:
-    TransitionSystem(const std::shared_ptr<AbstractTask> task,
+    TransitionSystem(const TaskProxy task_proxy,
                      const Labels *labels);
     virtual ~TransitionSystem();
 
-    static void build_atomic_transition_systems(const std::shared_ptr<AbstractTask> task,
+    static void build_atomic_transition_systems(const TaskProxy task_proxy,
                                                 std::vector<TransitionSystem *> &result,
                                                 Labels *labels);
     bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
@@ -296,9 +295,9 @@ protected:
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    AtomicTransitionSystem(const std::shared_ptr<AbstractTask> task,
+    AtomicTransitionSystem(const TaskProxy task_proxy,
                            const Labels *labels,
-                           int variable);
+                           int var_id);
     virtual ~AtomicTransitionSystem();
 };
 
@@ -312,7 +311,7 @@ protected:
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    CompositeTransitionSystem(const std::shared_ptr<AbstractTask> task,
+    CompositeTransitionSystem(const TaskProxy task_proxy,
                               const Labels *labels,
                               TransitionSystem *ts1,
                               TransitionSystem *ts2);
