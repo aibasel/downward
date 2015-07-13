@@ -55,6 +55,12 @@ def check_planner_exit_reason(content, props):
     props['search_out_of_time'] = search_out_of_time
     props['search_out_of_memory'] = search_out_of_memory
 
+    # Compute actual search time
+    if ms_abstraction_constructed == True and props.get('search_time') is not None:
+        difference = props.get('search_time') - props.get('ms_construction_time')
+        print difference
+        props['actual_search_time'] = difference
+
 parser.add_function(check_planner_exit_reason)
 
 def check_perfect_heuristic(content, props):
