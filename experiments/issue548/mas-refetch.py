@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from downward import suites
-from lab.reports import Attribute, avg
+from lab.reports import Attribute, gm
 
 import common_setup
 
@@ -45,7 +45,7 @@ perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False
 proved_unsolvability = Attribute('proved_unsolvability', absolute=True, min_wins=False)
 
 # m&s attributes
-ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, functions=[avg])
+ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, functions=[gm])
 ms_abstraction_constructed = Attribute('ms_abstraction_constructed', absolute=True, min_wins=False)
 ms_final_size = Attribute('ms_final_size', absolute=False, min_wins=True)
 ms_out_of_memory = Attribute('ms_out_of_memory', absolute=True, min_wins=True)
