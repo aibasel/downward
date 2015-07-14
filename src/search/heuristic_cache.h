@@ -22,8 +22,6 @@ public:
     explicit HeuristicCache(const GlobalState &state);
     ~HeuristicCache() = default;
 
-    bool empty() const;
-
     EvaluationResult &operator[](ScalarEvaluator *heur);
 
     const GlobalState &get_state() const;
@@ -35,6 +33,8 @@ public:
             const EvaluationResult &result = element.second;
             const Heuristic *heuristic = dynamic_cast<const Heuristic *>(eval);
             if (heuristic) {
+                /* We want to consider only Heuristic instances, not other
+                   ScalarEvaluator instances. */
                 callback(heuristic, result);
             }
         }

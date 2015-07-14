@@ -14,6 +14,7 @@ class Heuristic;
   the heuristics than all previously seen ones.
 */
 
+
 class SearchProgress {
     std::unordered_map<const Heuristic *, int> best_heuristic_values;
 
@@ -26,12 +27,12 @@ public:
     /*
       Call the following function after each state evaluation.
 
-      It keeps track of the best heuristic value for each
-      heuristic evaluated, returning true if at least one heuristic
-      value is the best value seen for this heuristic so far. (This
-      includes the case where the evaluation context includes a
-      heuristic that has not been evaluated previously, e.g. after
-      evaluating the initial state.)
+      It keeps track of the best heuristic value for each heuristic
+      evaluated, returning true if at least one heuristic value is the
+      best value seen for this heuristic so far. (This includes the
+      case where the evaluation context includes a heuristic that has
+      not been evaluated previously, e.g. after evaluating the initial
+      state.)
 
       Prints one line of output for each new best heuristic value.
     */
