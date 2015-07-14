@@ -18,7 +18,7 @@ class SuccessorGenerator {
     std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
 
-    GeneratorBase *root;
+    std::unique_ptr<GeneratorBase> root;
 
     typedef std::vector<FactProxy> Condition;
     GeneratorBase *construct_recursive(
@@ -30,8 +30,6 @@ class SuccessorGenerator {
     SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
     SuccessorGenerator(std::shared_ptr<AbstractTask> task);
-    SuccessorGenerator(SuccessorGenerator &&other) noexcept;
-    SuccessorGenerator& operator=(SuccessorGenerator &&other) noexcept;
     ~SuccessorGenerator();
 
     void generate_applicable_ops(
