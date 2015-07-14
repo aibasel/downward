@@ -39,6 +39,7 @@ exp = common_setup.IssueExperiment(
     processes=4,
     email='silvan.sievers@unibas.ch',
     )
+exp.add_search_parser('ms-parser.py')
 
 # planner outcome attributes
 perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False)
