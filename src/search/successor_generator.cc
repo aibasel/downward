@@ -157,27 +157,10 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
         next_condition_by_op.push_back(conditions.back().begin());
     }
 
-    root = construct_recursive(0, all_operators);
-}
-
-SuccessorGenerator::SuccessorGenerator(SuccessorGenerator &&other) noexcept
-    : task(other.task),
-      task_proxy(other.task_proxy),
-      root(other.root) {
-    other.root = nullptr;
-}
-
-SuccessorGenerator& SuccessorGenerator::operator=(SuccessorGenerator &&other) noexcept {
-    delete root;
-    task = other.task;
-    task_proxy = other.task_proxy;
-    root = other.root;
-    other.root = nullptr;
-    return *this;
+    root = unique_ptr<GeneratorBase>(construct_recursive(0, all_operators));
 }
 
 SuccessorGenerator::~SuccessorGenerator() {
-    delete root;
 }
 
 GeneratorBase *SuccessorGenerator::construct_recursive(
