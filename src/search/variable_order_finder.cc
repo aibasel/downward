@@ -12,7 +12,7 @@
 
 using namespace std;
 
-VariableOrderFinder::VariableOrderFinder(std::shared_ptr<AbstractTask> task,
+VariableOrderFinder::VariableOrderFinder(shared_ptr<AbstractTask> task,
                                          VariableOrderType variable_order_type)
     : task(task),
       task_proxy(*task),
