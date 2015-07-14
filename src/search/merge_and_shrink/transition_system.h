@@ -1,8 +1,6 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
-#include "../task_proxy.h"
-
 #include <forward_list>
 #include <iostream>
 #include <list>
@@ -14,6 +12,7 @@
 class Label;
 class Labels;
 class State;
+class TaskProxy;
 class Timer;
 
 typedef int AbstractStateRef;
@@ -221,11 +220,11 @@ protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
 public:
-    TransitionSystem(const TaskProxy task_proxy,
+    TransitionSystem(const TaskProxy &task_proxy,
                      const Labels *labels);
     virtual ~TransitionSystem();
 
-    static void build_atomic_transition_systems(const TaskProxy task_proxy,
+    static void build_atomic_transition_systems(const TaskProxy &task_proxy,
                                                 std::vector<TransitionSystem *> &result,
                                                 Labels *labels);
     bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
@@ -295,7 +294,7 @@ protected:
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    AtomicTransitionSystem(const TaskProxy task_proxy,
+    AtomicTransitionSystem(const TaskProxy &task_proxy,
                            const Labels *labels,
                            int var_id);
     virtual ~AtomicTransitionSystem();
@@ -311,7 +310,7 @@ protected:
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    CompositeTransitionSystem(const TaskProxy task_proxy,
+    CompositeTransitionSystem(const TaskProxy &task_proxy,
                               const Labels *labels,
                               TransitionSystem *ts1,
                               TransitionSystem *ts2);

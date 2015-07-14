@@ -41,7 +41,7 @@ const int TransitionSystem::PRUNED_STATE;
 const int TransitionSystem::DISTANCE_UNKNOWN;
 
 
-TransitionSystem::TransitionSystem(const TaskProxy task_proxy,
+TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const Labels *labels)
     : labels(labels),
       num_labels(labels->get_size()),
@@ -380,7 +380,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     }
 }
 
-void TransitionSystem::build_atomic_transition_systems(const TaskProxy task_proxy,
+void TransitionSystem::build_atomic_transition_systems(const TaskProxy &task_proxy,
                                                        vector<TransitionSystem *> &result,
                                                        Labels *labels) {
     assert(result.empty());
@@ -842,7 +842,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
 
 
 
-AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy task_proxy,
+AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
                                                const Labels *labels,
                                                int var_id)
     : TransitionSystem(task_proxy, labels), variable(var_id) {
@@ -918,7 +918,7 @@ AbstractStateRef AtomicTransitionSystem::get_abstract_state(const State &state) 
 
 
 
-CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy task_proxy,
+CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy,
                                                      const Labels *labels,
                                                      TransitionSystem *ts1,
                                                      TransitionSystem *ts2)
