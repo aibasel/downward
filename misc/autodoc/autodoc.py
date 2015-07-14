@@ -178,4 +178,5 @@ if __name__ == '__main__':
         logging.warning("There are pages in the wiki documentation "
             "that are not created by Fast Downward:\n" +
             "\n".join(sorted(missing_titles)))
+        sys.exit(2)
     print "Done"
