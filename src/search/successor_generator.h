@@ -12,10 +12,10 @@ class OperatorProxy;
 class State;
 
 class SuccessorGenerator {
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
 public:
-    SuccessorGenerator(std::shared_ptr<AbstractTask> task);
+    SuccessorGenerator(const std::shared_ptr<AbstractTask> task);
     ~SuccessorGenerator() = default;
     void generate_applicable_ops(const State &state,
                                  std::vector<OperatorProxy> &applicable_ops);
