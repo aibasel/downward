@@ -9,8 +9,12 @@
 #include "../plugin.h"
 #include "../task_tools.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include <cassert>
+#include <iostream>
+#include <string>
+#include <utility>
 #include <vector>
 
 using namespace std;

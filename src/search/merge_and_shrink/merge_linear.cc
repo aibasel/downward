@@ -5,7 +5,7 @@
 #include "../utilities.h"
 
 #include <cassert>
-#include <cstdlib>
+#include <iostream>
 
 using namespace std;
 

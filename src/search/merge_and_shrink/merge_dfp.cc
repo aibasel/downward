@@ -4,11 +4,9 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 
 using namespace std;

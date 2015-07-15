@@ -3,8 +3,6 @@
 
 #include "merge_strategy.h"
 
-class Options;
-
 class MergeDFP : public MergeStrategy {
     // border_atomic_composites is the first index at which a composite
     // transition system can be found in vector of all transition systems as passed

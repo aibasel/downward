@@ -4,12 +4,11 @@
 #include <forward_list>
 #include <iostream>
 #include <list>
-#include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
-class Label;
 class Labels;
 class State;
 class TaskProxy;
