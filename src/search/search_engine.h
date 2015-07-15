@@ -51,4 +51,9 @@ public:
     static void add_options_to_parser(OptionParser &parser);
 };
 
+/*
+  Print heuristic values of all heuristics evaluated in the evaluation context.
+*/
+void print_initial_h_values(const EvaluationContext &eval_context);
+
 #endif

@@ -188,6 +188,9 @@ SearchStatus LazySearch::step() {
             node.mark_as_dead_end();
             statistics.inc_dead_ends();
         }
+        if (current_predecessor_id == StateID::no_state) {
+            print_initial_h_values(current_eval_context);
+        }
     }
     return fetch_next_state();
 }
@@ -203,7 +206,6 @@ void LazySearch::print_checkpoint_line(int g) const {
 }
 
 void LazySearch::print_statistics() const {
-    search_progress.print_initial_h_values();
     statistics.print_detailed_statistics();
     search_space.print_statistics();
 }
