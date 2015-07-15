@@ -7,7 +7,7 @@
 #include <vector>
 using namespace std;
 
-SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
+SuccessorGenerator::SuccessorGenerator(const shared_ptr<AbstractTask> task)
     : task(task),
       task_proxy(*task) {
 }

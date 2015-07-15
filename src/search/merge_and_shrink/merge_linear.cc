@@ -5,36 +5,43 @@
 #include "../utilities.h"
 
 #include <cassert>
-#include <cstdlib>
+#include <iostream>
 
 using namespace std;
 
 MergeLinear::MergeLinear(const Options &opts)
     : MergeStrategy(),
-      // TODO when switching merge and shrink to new task interface, use task from opts instead of g_root_task().
-      order(g_root_task(), VariableOrderType(opts.get_enum("variable_order"))),
+      variable_order_type(VariableOrderType(opts.get_enum("variable_order"))),
       need_first_index(true) {
 }
 
+void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
+    MergeStrategy::initialize(task);
+    variable_order_finder =
+        unique_ptr<VariableOrderFinder>(new VariableOrderFinder(task, variable_order_type));
+}
+
 pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {
-    assert(!done() && !order.done());
+    assert(initialized());
+    assert(!done());
+    assert(!variable_order_finder->done());
 
     int first;
     if (need_first_index) {
         need_first_index = false;
-        first = order.next();
+        first = variable_order_finder->next();
         cout << "First variable: " << first << endl;
     } else {
         // The most recent composite transition system is appended at the end of
         // all_transition_systems in merge_and_shrink.cc
         first = all_transition_systems.size() - 1;
     }
-    int second = order.next();
+    int second = variable_order_finder->next();
     cout << "Next variable: " << second << endl;
     assert(all_transition_systems[first]);
     assert(all_transition_systems[second]);
     --remaining_merges;
-    if (done() && !order.done()) {
+    if (done() && !variable_order_finder->done()) {
         cerr << "Variable order finder not done, but no merges remaining" << endl;
         exit_with(EXIT_CRITICAL_ERROR);
     }
@@ -43,7 +50,7 @@ pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_trans
 
 void MergeLinear::dump_strategy_specific_options() const {
     cout << "Linear merge strategy: ";
-    order.dump();
+    variable_order_finder->dump();
 }
 
 string MergeLinear::name() const {

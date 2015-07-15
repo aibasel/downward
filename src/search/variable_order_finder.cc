@@ -9,10 +9,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
-
-VariableOrderFinder::VariableOrderFinder(shared_ptr<AbstractTask> task,
+VariableOrderFinder::VariableOrderFinder(const shared_ptr<AbstractTask> task,
                                          VariableOrderType variable_order_type)
     : task(task),
       task_proxy(*task),
