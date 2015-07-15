@@ -24,8 +24,8 @@ using namespace std;
 
 */
 
-bool smaller_variable_id (const FactProxy &f1, const FactProxy &f2) {
-    return (f1.get_variable().get_id() < f2.get_variable().get_id());
+bool smaller_variable_id(const FactProxy &f1, const FactProxy &f2) {
+    return f1.get_variable().get_id() < f2.get_variable().get_id();
 }
 
 class GeneratorBase {
@@ -46,8 +46,8 @@ class GeneratorSwitch : public GeneratorBase {
 public:
     ~GeneratorSwitch();
     GeneratorSwitch(const VariableProxy &switch_var,
-                    list<OperatorProxy> &&immediate_operators,
-                    const vector<GeneratorBase *> &&generator_for_value,
+                    list<OperatorProxy> && immediate_operators,
+                    const vector<GeneratorBase *> && generator_for_value,
                     GeneratorBase *default_generator);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
@@ -59,7 +59,7 @@ public:
 class GeneratorLeaf : public GeneratorBase {
     list<OperatorProxy> applicable_operators;
 public:
-    GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
+    GeneratorLeaf(list<OperatorProxy> && applicable_operators);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -77,8 +77,8 @@ public:
 };
 
 GeneratorSwitch::GeneratorSwitch(
-    const VariableProxy &switch_var, list<OperatorProxy> &&immediate_operators,
-    const vector<GeneratorBase *> &&generator_for_value,
+    const VariableProxy &switch_var, list<OperatorProxy> && immediate_operators,
+    const vector<GeneratorBase *> && generator_for_value,
     GeneratorBase *default_generator)
     : switch_var(switch_var),
       immediate_operators(move(immediate_operators)),
@@ -87,7 +87,7 @@ GeneratorSwitch::GeneratorSwitch(
 }
 
 GeneratorSwitch::~GeneratorSwitch() {
-    for (GeneratorBase * generator : generator_for_value)
+    for (GeneratorBase *generator : generator_for_value)
         delete generator;
     delete default_generator;
 }
@@ -112,30 +112,30 @@ void GeneratorSwitch::generate_applicable_ops(
     default_generator->generate_applicable_ops(state, applicable_ops);
 }
 
-GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
+GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> && applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
 
 void GeneratorLeaf::generate_applicable_ops(
-    const State &, vector<OperatorProxy> &applicable_ops) const{
+    const State &, vector<OperatorProxy> &applicable_ops) const {
     applicable_ops.insert(applicable_ops.end(),
                           applicable_operators.begin(),
                           applicable_operators.end());
 }
 
 void GeneratorLeaf::generate_applicable_ops(
-    const GlobalState &, vector<const GlobalOperator *> &applicable_ops) const{
+    const GlobalState &, vector<const GlobalOperator *> &applicable_ops) const {
     for (OperatorProxy op : applicable_operators) {
         applicable_ops.push_back(op.get_global_operator());
     }
 }
 
 void GeneratorEmpty::generate_applicable_ops(
-    const State &, vector<OperatorProxy> &) const{
+    const State &, vector<OperatorProxy> &) const {
 }
 
 void GeneratorEmpty::generate_applicable_ops(
-    const GlobalState &, vector<const GlobalOperator *> &) const{
+    const GlobalState &, vector<const GlobalOperator *> &) const {
 }
 
 SuccessorGenerator::SuccessorGenerator(const shared_ptr<AbstractTask> task)
@@ -193,11 +193,11 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
             OperatorProxy op = operator_queue.front();
             operator_queue.pop_front();
             int op_id = op.get_id();
-            assert(op_id >= 0 && op_id < (int) next_condition_by_op.size());
+            assert(op_id >= 0 && op_id < (int)next_condition_by_op.size());
             Condition::const_iterator &cond_iter = next_condition_by_op[op_id];
             assert(cond_iter - conditions[op_id].begin() >= 0);
             assert(cond_iter - conditions[op_id].begin()
-                   <= (int) conditions[op_id].size());
+                   <= (int)conditions[op_id].size());
             if (cond_iter == conditions[op_id].end()) {
                 var_is_interesting = true;
                 applicable_operators.push_back(op);
