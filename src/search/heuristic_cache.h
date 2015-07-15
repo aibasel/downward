@@ -3,10 +3,10 @@
 
 #include "evaluation_result.h"
 #include "global_state.h"
+#include "heuristic.h"
 
 #include <unordered_map>
 
-class Heuristic;
 class ScalarEvaluator;
 
 using EvaluationResults = std::unordered_map<ScalarEvaluator *, EvaluationResult>;
