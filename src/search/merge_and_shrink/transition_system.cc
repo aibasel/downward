@@ -9,13 +9,14 @@
 
 #include <algorithm>
 #include <cassert>
+#include <ctype.h>
 #include <deque>
-#include <functional>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <set>
-#include <string>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 
 using namespace std;

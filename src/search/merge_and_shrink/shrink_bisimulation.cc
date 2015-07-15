@@ -4,7 +4,9 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <unordered_map>

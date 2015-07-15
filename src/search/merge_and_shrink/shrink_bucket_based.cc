@@ -1,7 +1,5 @@
 #include "shrink_bucket_based.h"
 
-#include "transition_system.h"
-
 #include "../globals.h"
 #include "../rng.h"
 

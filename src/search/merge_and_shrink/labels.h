@@ -1,6 +1,7 @@
 #ifndef MERGE_AND_SHRINK_LABELS_H
 #define MERGE_AND_SHRINK_LABELS_H
 
+#include <utility>
 #include <vector>
 
 class EquivalenceRelation;

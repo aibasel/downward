@@ -7,9 +7,13 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
+#include "../task_proxy.h"
+#include "../utilities.h"
 
-#include <algorithm>
 #include <cassert>
+#include <iostream>
+#include <limits>
+#include <string>
 #include <unordered_map>
 
 using namespace std;
