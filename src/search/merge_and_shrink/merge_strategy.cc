@@ -7,10 +7,10 @@
 
 using namespace std;
 
-MergeStrategy::MergeStrategy() : remaining_merges(-1) {
+MergeStrategy::MergeStrategy() : remaining_merges(UNINITIALIZED) {
 }
 
-void MergeStrategy::initialize(shared_ptr<AbstractTask> task) {
+void MergeStrategy::initialize(const shared_ptr<AbstractTask> task) {
     assert(!initialized());
     /*
       There are number of variables many atomic transition systems and we have
@@ -22,7 +22,7 @@ void MergeStrategy::initialize(shared_ptr<AbstractTask> task) {
 }
 
 bool MergeStrategy::initialized() const {
-    return remaining_merges != -1;
+    return remaining_merges != UNINITIALIZED;
 }
 
 bool MergeStrategy::done() const {

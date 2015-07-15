@@ -109,7 +109,7 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
-    std::vector<int> varset;
+    std::vector<int> var_id_set;
     /*
       These friend definitions are required to give the inheriting classes
       access to passed base class objects (e.g. in CompositeTransitionSystem).
@@ -285,7 +285,7 @@ public:
 
 
 class AtomicTransitionSystem : public TransitionSystem {
-    int variable;
+    int var_id;
     std::vector<AbstractStateRef> lookup_table;
 protected:
     virtual void apply_abstraction_to_lookup_table(

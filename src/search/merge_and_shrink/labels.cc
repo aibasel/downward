@@ -277,16 +277,19 @@ void Labels::reduce(pair<int, int> next_merge,
 }
 
 bool Labels::is_current_label(int label_no) const {
+    assert(initialized());
     assert(in_bounds(label_no, labels));
     return labels[label_no];
 }
 
 int Labels::get_label_cost(int label_no) const {
+    assert(initialized());
     assert(labels[label_no]);
     return labels[label_no]->get_cost();
 }
 
 void Labels::dump_labels() const {
+    assert(initialized());
     cout << "active labels:" << endl;
     for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
         if (labels[label_no]) {
@@ -296,6 +299,7 @@ void Labels::dump_labels() const {
 }
 
 void Labels::dump_label_reduction_options() const {
+    assert(initialized());
     cout << "Label reduction options:" << endl;
     cout << "Before merging: "
          << (lr_before_merging ? "enabled" : "disabled") << endl;

@@ -252,6 +252,15 @@ public:
         assert(index < get_domain_size());
         return FactProxy(*task, id, index);
     }
+
+    bool operator==(const VariableProxy &other) const {
+        assert(task == other.task);
+        return id == other.id;
+    }
+
+    bool operator!=(const VariableProxy &other) const {
+        return !(*this == other);
+    }
 };
 
 

@@ -16,7 +16,7 @@ MergeDFP::MergeDFP()
     : MergeStrategy() {
 }
 
-void MergeDFP::initialize(shared_ptr<AbstractTask> task) {
+void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
     MergeStrategy::initialize(task);
     /*
       n := remaining_merges + 1 is the number of variables of the planning task

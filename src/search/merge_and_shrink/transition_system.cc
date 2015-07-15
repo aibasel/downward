@@ -386,29 +386,29 @@ void TransitionSystem::build_atomic_transition_systems(const TaskProxy &task_pro
                                                        Labels *labels) {
     assert(result.empty());
     cout << "Building atomic transition systems... " << endl;
-    int var_count = task_proxy.get_variables().size();
+    VariablesProxy variables = task_proxy.get_variables();
+    OperatorsProxy operators = task_proxy.get_operators();
 
     // Step 1: Create the transition system objects without transitions.
-    for (VariableProxy var : task_proxy.get_variables())
+    for (VariableProxy var : variables)
         result.push_back(new AtomicTransitionSystem(task_proxy, labels, var.get_id()));
 
     // Step 2: Add transitions.
-    int op_count = task_proxy.get_operators().size();
-    vector<vector<bool> > relevant_labels(result.size(), vector<bool>(op_count, false));
-    for (OperatorProxy op: task_proxy.get_operators()) {
+    vector<vector<bool> > relevant_labels(result.size(), vector<bool>(operators.size(), false));
+    for (OperatorProxy op: operators) {
         int label_no = op.get_id();
         labels->add_label(op.get_cost());
         PreconditionsProxy preconditions = op.get_preconditions();
         EffectsProxy effects = op.get_effects();
         unordered_map<int, int> pre_val;
-        vector<bool> has_effect_on_var(var_count, false);
+        vector<bool> has_effect_on_var(variables.size(), false);
         for (FactProxy precondition : preconditions)
             pre_val[precondition.get_variable().get_id()] = precondition.get_value();
 
         for (EffectProxy effect : effects) {
             FactProxy fact = effect.get_fact();
             VariableProxy var = fact.get_variable();
-            int var_id = fact.get_variable().get_id();
+            int var_id = var.get_id();
             has_effect_on_var[var_id] = true;
             int post_value = fact.get_value();
             TransitionSystem *ts = result[var_id];
@@ -439,7 +439,7 @@ void TransitionSystem::build_atomic_transition_systems(const TaskProxy &task_pro
             int cond_effect_pre_value = -1;
             bool has_other_effect_cond = false;
             for (FactProxy condition : effect_conditions) {
-                if (condition.get_variable().get_id() == var_id) {
+                if (condition.get_variable() == var) {
                     cond_effect_pre_value = condition.get_value();
                 } else {
                     has_other_effect_cond = true;
@@ -784,8 +784,8 @@ void TransitionSystem::statistics(const Timer &timer,
 void TransitionSystem::dump_dot_graph() const {
     assert(is_valid());
     cout << "digraph transition system";
-    for (size_t i = 0; i < varset.size(); ++i)
-        cout << "_" << varset[i];
+    for (size_t i = 0; i < var_id_set.size(); ++i)
+        cout << "_" << var_id_set[i];
     cout << " {" << endl;
     cout << "    node [shape = none] start;" << endl;
     for (int i = 0; i < num_states; ++i) {
@@ -846,8 +846,8 @@ void TransitionSystem::dump_labels_and_transitions() const {
 AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
                                                const Labels *labels,
                                                int var_id)
-    : TransitionSystem(task_proxy, labels), variable(var_id) {
-    varset.push_back(var_id);
+    : TransitionSystem(task_proxy, labels), var_id(var_id) {
+    var_id_set.push_back(var_id);
     /*
       This generates the states of the atomic transition system, but not the
       arcs: It is more efficient to generate all arcs of all atomic
@@ -883,8 +883,8 @@ AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
       Prepare grouped_labels data structure: add one single-element
       group for every operator.
     */
-    int num_op = task_proxy.get_operators().size();
-    for (int label_no = 0; label_no < num_op; ++label_no) {
+    int num_ops = task_proxy.get_operators().size();
+    for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
         LabelGroupIter group_it = add_empty_label_group(&transitions_of_groups[label_no]);
         add_label_to_group(group_it, label_no, false);
@@ -908,12 +908,12 @@ void AtomicTransitionSystem::apply_abstraction_to_lookup_table(
 
 string AtomicTransitionSystem::description() const {
     ostringstream s;
-    s << "atomic transition system #" << variable;
+    s << "atomic transition system #" << var_id;
     return s.str();
 }
 
 AbstractStateRef AtomicTransitionSystem::get_abstract_state(const State &state) const {
-    int value = state[variable].get_value();
+    int value = state[var_id].get_value();
     return lookup_table[value];
 }
 
@@ -933,8 +933,8 @@ CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy
     components[0] = ts1;
     components[1] = ts2;
 
-    ::set_union(ts1->varset.begin(), ts1->varset.end(), ts2->varset.begin(),
-                ts2->varset.end(), back_inserter(varset));
+    ::set_union(ts1->var_id_set.begin(), ts1->var_id_set.end(), ts2->var_id_set.begin(),
+                ts2->var_id_set.end(), back_inserter(var_id_set));
 
     int ts1_size = ts1->get_size();
     int ts2_size = ts2->get_size();
@@ -1048,7 +1048,7 @@ void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
 
 string CompositeTransitionSystem::description() const {
     ostringstream s;
-    s << "transition system (" << varset.size() << "/"
+    s << "transition system (" << var_id_set.size() << "/"
       << num_variables << " vars)";
     return s.str();
 }
