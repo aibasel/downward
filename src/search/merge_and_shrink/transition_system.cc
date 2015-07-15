@@ -395,7 +395,7 @@ void TransitionSystem::build_atomic_transition_systems(const TaskProxy &task_pro
 
     // Step 2: Add transitions.
     vector<vector<bool> > relevant_labels(result.size(), vector<bool>(operators.size(), false));
-    for (OperatorProxy op: operators) {
+    for (OperatorProxy op : operators) {
         int label_no = op.get_id();
         labels->add_label(op.get_cost());
         PreconditionsProxy preconditions = op.get_preconditions();
