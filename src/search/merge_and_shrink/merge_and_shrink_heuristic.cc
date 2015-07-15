@@ -5,14 +5,18 @@
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
-#include "../global_state.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_tools.h"
 #include "../timer.h"
+#include "../utilities.h"
 
 #include <cassert>
+#include <iostream>
+#include <string>
+#include <utility>
 #include <vector>
+
 using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
@@ -21,6 +25,8 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
       labels(opts.get<Labels *>("label_reduction")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
+    merge_strategy->initialize(task);
+    labels->initialize(task_proxy);
 }
 
 MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
@@ -93,18 +99,21 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
+TransitionSystem *MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
     // Set of all transition systems. Entries with 0 have been merged.
     vector<TransitionSystem *> all_transition_systems;
-    if (g_variable_domain.size() * 2 - 1 > all_transition_systems.max_size())
+    size_t num_vars = task_proxy.get_variables().size();
+    if (num_vars * 2 - 1 > all_transition_systems.max_size())
         exit_with(EXIT_OUT_OF_MEMORY);
-    all_transition_systems.reserve(g_variable_domain.size() * 2 - 1);
+    all_transition_systems.reserve(num_vars * 2 - 1);
     cout << endl;
-    TransitionSystem::build_atomic_transition_systems(all_transition_systems, labels, cost_type);
+    TransitionSystem::build_atomic_transition_systems(task_proxy,
+                                                      all_transition_systems,
+                                                      labels);
     cout << endl;
 
     cout << "Starting merge-and-shrink main loop..." << endl;
@@ -121,8 +130,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         transition_system_order.push_back(system_two);
         TransitionSystem *other_transition_system = all_transition_systems[system_two];
         assert(other_transition_system);
-        transition_system->statistics(use_expensive_statistics);
-        other_transition_system->statistics(use_expensive_statistics);
+        transition_system->statistics(timer, use_expensive_statistics);
+        other_transition_system->statistics(timer, use_expensive_statistics);
 
         if (labels->reduce_before_shrinking()) {
             // Label reduction before shrinking
@@ -139,11 +148,12 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
             return other_transition_system;
 
         // Shrinking
-        pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system, *other_transition_system);
+        pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system,
+                                                                       *other_transition_system);
         if (shrunk.first)
-            transition_system->statistics(use_expensive_statistics);
+            transition_system->statistics(timer, use_expensive_statistics);
         if (shrunk.second)
-            other_transition_system->statistics(use_expensive_statistics);
+            other_transition_system->statistics(timer, use_expensive_statistics);
 
         if (labels->reduce_before_merging()) {
             // Label reduction before merging
@@ -152,8 +162,8 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
 
         // Merging
         TransitionSystem *new_transition_system = new CompositeTransitionSystem(
-            labels, transition_system, other_transition_system);
-        new_transition_system->statistics(use_expensive_statistics);
+            task_proxy, labels, transition_system, other_transition_system);
+        new_transition_system->statistics(timer, use_expensive_statistics);
         all_transition_systems.push_back(new_transition_system);
 
         transition_system->release_memory();
@@ -165,7 +175,7 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system() {
         cout << endl;
     }
 
-    assert(all_transition_systems.size() == g_variable_domain.size() * 2 - 1);
+    assert(all_transition_systems.size() == num_vars * 2 - 1);
     TransitionSystem *final_transition_system = 0;
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         if (all_transition_systems[i]) {
@@ -202,21 +212,27 @@ void MergeAndShrinkHeuristic::initialize() {
     dump_options();
     warn_on_unusual_options();
 
-    verify_no_axioms();
+    verify_no_axioms(task_proxy);
 
-    final_transition_system = build_transition_system();
+    final_transition_system = build_transition_system(timer);
     if (!final_transition_system->is_solvable()) {
         cout << "Abstract problem is unsolvable!" << endl;
     }
     cout << "Final transition system size: " << final_transition_system->get_size() << endl;
 
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
-         << endl << "initial h value: " << compute_heuristic(g_initial_state()) << endl;
+         << endl;
+    cout << "initial h value: "
+    // TODO: after adopting the task interface everywhere, change this
+    // back to compute_heuristic(task_proxy.get_initial_state())
+    << final_transition_system->get_cost(task_proxy.get_initial_state())
+    << endl;
     report_peak_memory_delta(true);
     cout << endl;
 }
 
-int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &state) {
+int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
     int cost = final_transition_system->get_cost(state);
     if (cost == -1)
         return DEAD_END;

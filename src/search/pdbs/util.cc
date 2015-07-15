@@ -52,7 +52,7 @@ static void validate_and_normalize_patterns(
 }
 
 static void build_pattern_for_size_limit(
-    shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
+    const shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
     vector<int> &pattern) {
     /*
        - Error if size_limit is invalid (< 1).
@@ -84,7 +84,7 @@ static void build_pattern_for_size_limit(
 }
 
 static void build_combo_patterns(
-    shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
+    const shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
     vector<vector<int> > &pattern_collection) {
     // Take one large pattern and then single-variable patterns for
     // all goal variables that are not in the large pattern.
@@ -129,7 +129,7 @@ void parse_pattern(OptionParser &parser, Options &opts) {
     if (parser.help_mode())
         return;
 
-    shared_ptr<AbstractTask> task = get_task_from_options(opts);
+    const shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
 
     vector<int> pattern;
@@ -164,7 +164,7 @@ void parse_patterns(OptionParser &parser, Options &opts) {
     if (parser.help_mode())
         return;
 
-    shared_ptr<AbstractTask> task = get_task_from_options(opts);
+    const shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
 
     vector<vector<int> > pattern_collection;
