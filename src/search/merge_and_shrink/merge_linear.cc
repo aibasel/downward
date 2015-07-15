@@ -15,13 +15,10 @@ MergeLinear::MergeLinear(const Options &opts)
       need_first_index(true) {
 }
 
-MergeLinear::~MergeLinear() {
-    delete variable_order_finder;
-}
-
-void MergeLinear::initialize(shared_ptr<AbstractTask> task) {
+void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
     MergeStrategy::initialize(task);
-    variable_order_finder = new VariableOrderFinder(task, variable_order_type);
+    variable_order_finder =
+        unique_ptr<VariableOrderFinder>(new VariableOrderFinder(task, variable_order_type));
 }
 
 pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {

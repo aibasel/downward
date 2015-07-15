@@ -5,19 +5,21 @@
 
 #include "../variable_order_finder.h"
 
+#include <memory>
+
 class Options;
 
 class MergeLinear : public MergeStrategy {
     // Only needed until variable order finder is initialized.
     VariableOrderType variable_order_type;
-    VariableOrderFinder *variable_order_finder;
+    std::unique_ptr<VariableOrderFinder> variable_order_finder;
     bool need_first_index;
 protected:
     virtual void dump_strategy_specific_options() const override;
 public:
     explicit MergeLinear(const Options &opts);
-    virtual ~MergeLinear() override;
-    virtual void initialize(std::shared_ptr<AbstractTask> task) override;
+    virtual ~MergeLinear() override = default;
+    virtual void initialize(const std::shared_ptr<AbstractTask> task) override;
 
     virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems);
     virtual std::string name() const;
