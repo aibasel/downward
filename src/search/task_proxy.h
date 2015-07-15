@@ -236,6 +236,15 @@ public:
         : task(&task), id(id) {}
     ~VariableProxy() = default;
 
+    bool operator==(const VariableProxy &other) const {
+        assert(task == other.task);
+        return id == other.id;
+    }
+
+    bool operator!=(const VariableProxy &other) const {
+        return !(*this == other);
+    }
+
     int get_id() const {
         return id;
     }
@@ -251,15 +260,6 @@ public:
     FactProxy get_fact(int index) const {
         assert(index < get_domain_size());
         return FactProxy(*task, id, index);
-    }
-
-    bool operator==(const VariableProxy &other) const {
-        assert(task == other.task);
-        return id == other.id;
-    }
-
-    bool operator!=(const VariableProxy &other) const {
-        return !(*this == other);
     }
 };
 
