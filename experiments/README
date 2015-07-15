@@ -44,6 +44,9 @@ performed:
 * RelativeScatterPlotReport:
   * issue77/issue77-v7-opt.py
 
+* M&S: configs and additional parsing:
+  * issue548/base-v2.py and issue548/ms-parser.py
+
 
 Microbenchmarks
 ===============

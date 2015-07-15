@@ -61,7 +61,7 @@ bool MatchTree::Node::is_leaf_node() const {
     return var_id == LEAF_NODE;
 }
 
-MatchTree::MatchTree(shared_ptr<AbstractTask> task,
+MatchTree::MatchTree(const shared_ptr<AbstractTask> task,
                      const vector<int> &pattern,
                      const vector<size_t> &hash_multipliers)
     : task(task),
