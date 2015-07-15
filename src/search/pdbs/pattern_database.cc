@@ -63,7 +63,7 @@ void AbstractOperator::dump(const vector<int> &pattern,
 }
 
 PatternDatabase::PatternDatabase(
-    std::shared_ptr<AbstractTask> task,
+    const std::shared_ptr<AbstractTask> task,
     const vector<int> &pattern,
     bool dump,
     const vector<int> &operator_costs)

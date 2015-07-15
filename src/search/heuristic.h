@@ -32,7 +32,7 @@ class Heuristic : public ScalarEvaluator {
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
     // Hold a reference to the task implementation and pass it to objects that need it.
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
     OperatorCost cost_type;
@@ -73,7 +73,5 @@ public:
 
     std::string get_description() const;
 };
-
-std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts);
 
 #endif
