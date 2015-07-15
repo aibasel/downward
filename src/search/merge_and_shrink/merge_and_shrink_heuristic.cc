@@ -223,10 +223,10 @@ void MergeAndShrinkHeuristic::initialize() {
     cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
          << endl;
     cout << "initial h value: "
-            // TODO: after adopting the task interface everywhere, change this
-            // back to compute_heuristic(task_proxy.get_initial_state())
-         << final_transition_system->get_cost(task_proxy.get_initial_state())
-         << endl;
+    // TODO: after adopting the task interface everywhere, change this
+    // back to compute_heuristic(task_proxy.get_initial_state())
+    << final_transition_system->get_cost(task_proxy.get_initial_state())
+    << endl;
     report_peak_memory_delta(true);
     cout << endl;
 }
