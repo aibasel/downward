@@ -3,6 +3,9 @@
 #include "helper_functions.h"
 
 #include <cassert>
+#include <fstream>
+#include <iostream>
+
 using namespace std;
 
 Variable::Variable(istream &in) {

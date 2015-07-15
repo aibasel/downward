@@ -5,12 +5,12 @@
 #include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
-#include "global_successor_generator.h"
 #include "heuristic.h"
 #include "int_packer.h"
 #include "rng.h"
 #include "root_task.h"
 #include "state_registry.h"
+#include "successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
 
@@ -254,9 +254,15 @@ void read_everything(istream &in) {
     read_goal(in);
     read_operators(in);
     read_axioms(in);
+
+    // Ignore successor generator from preprocessor output.
     check_magic(in, "begin_SG");
-    g_successor_generator = read_successor_generator(in);
+    while (!peek_magic(in, "end_SG")) {
+        string dummy_string;
+        getline(in, dummy_string);
+    }
     check_magic(in, "end_SG");
+
     DomainTransitionGraph::read_all(in);
     check_magic(in, "begin_CG"); // ignore everything from here
 
@@ -282,6 +288,10 @@ void read_everything(istream &in) {
          << g_state_packer->get_num_bins() *
     g_state_packer->get_bin_size_in_bytes() << endl;
 
+    cout << "Building successor generator..." << flush;
+    g_successor_generator = new SuccessorGenerator(g_root_task());
+    cout << "done! [t=" << g_timer << "]" << endl;
+
     cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
 
@@ -301,8 +311,6 @@ void dump_everything() {
     initial_state.dump_fdr();
     dump_goal();
     /*
-    cout << "Successor Generator:" << endl;
-    g_successor_generator->dump();
     for(int i = 0; i < g_variable_domain.size(); ++i)
       g_transition_graphs[i]->dump();
     */
@@ -384,7 +392,7 @@ vector<pair<int, int> > g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
-GlobalSuccessorGenerator *g_successor_generator;
+SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
 
 Timer g_timer;
