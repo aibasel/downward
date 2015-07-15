@@ -2,6 +2,7 @@
 
 #include "global_state.h"
 #include "task_tools.h"
+#include "utilities.h"
 
 #include <algorithm>
 #include <cassert>
@@ -158,6 +159,8 @@ SuccessorGenerator::SuccessorGenerator(shared_ptr<AbstractTask> task)
     }
 
     root = unique_ptr<GeneratorBase>(construct_recursive(0, all_operators));
+    release_vector_memory(conditions);
+    release_vector_memory(next_condition_by_op);
 }
 
 SuccessorGenerator::~SuccessorGenerator() {
@@ -190,11 +193,11 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
             OperatorProxy op = operator_queue.front();
             operator_queue.pop_front();
             int op_id = op.get_id();
-            assert(op_id >= 0 && op_id < next_condition_by_op.size());
+            assert(op_id >= 0 && op_id < (int) next_condition_by_op.size());
             Condition::const_iterator &cond_iter = next_condition_by_op[op_id];
             assert(cond_iter - conditions[op_id].begin() >= 0);
             assert(cond_iter - conditions[op_id].begin()
-                   <= conditions[op_id].size());
+                   <= (int) conditions[op_id].size());
             if (cond_iter == conditions[op_id].end()) {
                 var_is_interesting = true;
                 applicable_operators.push_back(op);
