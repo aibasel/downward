@@ -68,6 +68,8 @@ void EagerSearch::initialize() {
 
         open_list->insert(eval_context, initial_state.get_id());
     }
+
+    print_initial_h_values(eval_context);
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -77,7 +79,6 @@ void EagerSearch::print_checkpoint_line(int g) const {
 }
 
 void EagerSearch::print_statistics() const {
-    search_progress.print_initial_h_values();
     statistics.print_detailed_statistics();
     search_space.print_statistics();
 }

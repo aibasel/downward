@@ -17,7 +17,7 @@ class ZeroOnePDBsHeuristic;
    Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007. */
 
 class PatternGenerationEdelkamp {
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
     // Maximum number of states for each pdb
     const int pdb_max_size;

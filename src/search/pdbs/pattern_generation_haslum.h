@@ -19,7 +19,7 @@ class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
     // maximum number of states for each pdb
     const int pdb_max_size;
