@@ -3,25 +3,14 @@
 import os
 
 
-def get_min(values):
-    """
-    Filter None values and return minimum. Return None if filtered list
-    is empty.
-    """
-    values = [val for val in values if val is not None]
-    if values:
-        return min(values)
-    return None
-
-
 def get_elapsed_time():
     """
     Return the CPU time taken by the python process and its child
     processes.
-
-    Note: According to the os.times documentation, Windows sets the
-    child time components to 0, so if we ever support running
-    portfolios on Windows, time slices will be allocated slightly
-    wrongly there.
     """
+    if os.name == "nt":
+        # The child time components of os.times() are 0 on Windows. If
+        # we ever end up using this method on Windows, we need to be
+        # aware of this, so it's prudent to complain loudly.
+        raise NotImplementedError("cannot use get_elapsed_time() on Windows")
     return sum(os.times()[:4])

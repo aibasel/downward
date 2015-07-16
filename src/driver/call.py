@@ -16,13 +16,14 @@ def check_call(cmd, stdin=None, timeout=None, memory=None):
         limits.set_memory_limit(memory)
 
     kwargs = {}
-    if limits.can_set_limits():
-        kwargs["preexec_fn"] = set_limits
-    elif timeout is not None or memory is not None:
-        raise NotImplementedError(
-            "The 'resource' module is not available on your platform. "
-            "Therefore, setting time or memory limits, and running "
-            "portfolios is not possible.")
+    if timeout is not None or memory is not None:
+        if limits.can_set_limits():
+            kwargs["preexec_fn"] = set_limits
+        else:
+            raise NotImplementedError(
+                "The 'resource' module is not available on your platform. "
+                "Therefore, setting time or memory limits, and running "
+                "portfolios is not possible.")
 
     sys.stdout.flush()
     if stdin:
