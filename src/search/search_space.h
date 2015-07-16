@@ -63,7 +63,7 @@ public:
                     std::vector<const GlobalOperator *> &path) const;
 
     void dump() const;
-    void statistics() const;
+    void print_statistics() const;
 };
 
 #endif

@@ -5,12 +5,12 @@
 #include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
+#include "global_successor_generator.h"
 #include "heuristic.h"
 #include "int_packer.h"
 #include "rng.h"
 #include "root_task.h"
 #include "state_registry.h"
-#include "successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
 
@@ -262,13 +262,6 @@ void read_everything(istream &in) {
 
     cout << "done reading input! [t=" << g_timer << "]" << endl;
 
-    // NOTE: causal graph is computed from the problem specification,
-    // so must be built after the problem has been read in.
-
-    cout << "building causal graph..." << flush;
-    g_causal_graph = new CausalGraph;
-    cout << "done! [t=" << g_timer << "]" << endl;
-
     cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
@@ -391,9 +384,8 @@ vector<pair<int, int> > g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
-SuccessorGenerator *g_successor_generator;
+GlobalSuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
-CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";

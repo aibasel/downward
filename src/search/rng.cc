@@ -1,7 +1,7 @@
 #include "rng.h"
+#include "utilities.h"
 
 #include <chrono>
-#include <unistd.h>
 
 using namespace std;
 
@@ -14,8 +14,9 @@ using namespace std;
   is probably good enough.
 */
 RandomNumberGenerator::RandomNumberGenerator() {
-    unsigned int secs = chrono::system_clock::now().time_since_epoch().count();
-    seed(secs + getpid());
+    unsigned int secs = static_cast<unsigned int>(
+        chrono::system_clock::now().time_since_epoch().count());
+    seed(secs + get_process_id());
 }
 
 RandomNumberGenerator::RandomNumberGenerator(int seed_) {

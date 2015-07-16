@@ -1,11 +1,9 @@
 #include "zero_one_pdbs_heuristic.h"
 
-#include "pdb_heuristic.h"
+#include "pattern_database.h"
 #include "util.h"
 
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../globals.h"
+#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../utilities.h"
@@ -19,63 +17,70 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const vector<int> &op_costs)
     : Heuristic(opts) {
     vector<int> operator_costs;
-    if (op_costs.empty()) { // if no operator costs are specified, use default operator costs
-        operator_costs.reserve(g_operators.size());
-        for (size_t i = 0; i < g_operators.size(); ++i)
-            operator_costs.push_back(get_adjusted_cost(g_operators[i]));
+    OperatorsProxy operators = task_proxy.get_operators();
+
+    // If no operator costs are specified, use default operator costs.
+    if (op_costs.empty()) {
+        operator_costs.reserve(operators.size());
+        for (OperatorProxy op : operators)
+            operator_costs.push_back(op.get_cost());
     } else {
-        assert(op_costs.size() == g_operators.size());
+        assert(op_costs.size() == operators.size());
         operator_costs = op_costs;
     }
-    const vector<vector<int> > &pattern_collection(opts.get_list<vector<int> >("patterns"));
+
+    const vector<vector<int> > &pattern_collection(
+        opts.get_list<vector<int> >("patterns"));
+
     //Timer timer;
     approx_mean_finite_h = 0;
     pattern_databases.reserve(pattern_collection.size());
-    for (size_t i = 0; i < pattern_collection.size(); ++i) {
-        Options opts;
-        opts.set<shared_ptr<AbstractTask> >("transform", task);
-        opts.set<int>("cost_type", cost_type);
-        opts.set<vector<int> >("pattern", pattern_collection[i]);
-        PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, operator_costs);
-        pattern_databases.push_back(pdb_heuristic);
+    for (const vector<int> &pattern : pattern_collection) {
+        PatternDatabase *pdb = new PatternDatabase(task, pattern, false,
+                                                   operator_costs);
+        pattern_databases.push_back(pdb);
 
-        // Set cost of relevant operators to 0 for further iterations (action cost partitioning).
-        for (size_t j = 0; j < g_operators.size(); ++j) {
-            if (pdb_heuristic->is_operator_relevant(g_operators[j]))
-                operator_costs[j] = 0;
+        /* Set cost of relevant operators to 0 for further iterations
+           (action cost partitioning). */
+        for (OperatorProxy op : operators) {
+            if (pdb->is_operator_relevant(op))
+                operator_costs[op.get_id()] = 0;
         }
 
-        approx_mean_finite_h += pdb_heuristic->compute_mean_finite_h();
+        approx_mean_finite_h += pdb->compute_mean_finite_h();
     }
     //cout << "All or nothing PDB collection construction time: " <<
     //timer << endl;
 }
 
 ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        delete pattern_databases[i];
+    for (PatternDatabase *pdb : pattern_databases) {
+        delete pdb;
     }
 }
 
 void ZeroOnePDBsHeuristic::initialize() {
 }
 
-int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &state) {
-    // since we use action cost partitioning, we can simply add up all h-values
-    // from the patterns in the pattern collection
+int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
+    /*
+      Because we use cost partitioning, we can simply add up all
+      heuristic values of all patterns in the pattern collection.
+    */
+    State state = convert_global_state(global_state);
     int h_val = 0;
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        pattern_databases[i]->evaluate(state);
-        if (pattern_databases[i]->is_dead_end())
-            return -1;
-        h_val += pattern_databases[i]->get_heuristic();
+    for (PatternDatabase *pdb : pattern_databases) {
+        int pdb_value = pdb->get_value(state);
+        if (pdb_value == numeric_limits<int>::max())
+            return DEAD_END;
+        h_val += pdb_value;
     }
     return h_val;
 }
 
 void ZeroOnePDBsHeuristic::dump() const {
-    for (size_t i = 0; i < pattern_databases.size(); ++i) {
-        cout << pattern_databases[i]->get_pattern() << endl;
+    for (PatternDatabase *pdb : pattern_databases) {
+        cout << pdb->get_pattern() << endl;
     }
 }
 

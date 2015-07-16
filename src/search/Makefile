@@ -36,8 +36,8 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 ## as a bug.
 DOWNWARD_OS ?= auto
 
-
 HEADERS = \
+          abstract_task.h \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
@@ -48,11 +48,15 @@ HEADERS = \
           eager_search.h \
           enforced_hill_climbing_search.h \
           equivalence_relation.h \
+          evaluation_context.h \
+          evaluation_result.h \
           exact_timer.h \
           g_evaluator.h \
           global_operator.h \
           global_state.h \
+          global_successor_generator.h \
           globals.h \
+          heuristic_cache.h \
           heuristic.h \
           int_packer.h \
           ipc_max_heuristic.h \
@@ -68,14 +72,17 @@ HEADERS = \
           relaxation_heuristic.h \
           rng.h \
           root_task.h \
+          scalar_evaluator.h \
           search_engine.h \
           search_node_info.h \
           search_progress.h \
           search_space.h \
+          search_statistics.h \
           state_id.h \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
+          task_proxy.h \
           task_tools.h \
           timer.h \
           tracer.h \
@@ -85,7 +92,8 @@ HEADERS = \
           weighted_evaluator.h \
           \
           open_lists/alternation_open_list.h \
-          open_lists/open_list_buckets.h \
+          open_lists/bucket_open_list.h \
+          open_lists/open_list.h \
           open_lists/pareto_open_list.h \
           open_lists/standard_scalar_open_list.h \
           open_lists/tiebreaking_open_list.h \
@@ -153,6 +161,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/dominance_pruner.h \
            pdbs/match_tree.h \
            pdbs/max_cliques.h \
+           pdbs/pattern_database.h \
            pdbs/pattern_generation_edelkamp.h \
            pdbs/pattern_generation_haslum.h \
            pdbs/pdb_heuristic.h \

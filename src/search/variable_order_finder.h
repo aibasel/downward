@@ -1,6 +1,9 @@
 #ifndef VARIABLE_ORDER_FINDER_H
 #define VARIABLE_ORDER_FINDER_H
 
+#include "task_proxy.h"
+
+#include <memory>
 #include <vector>
 
 enum VariableOrderType {
@@ -13,6 +16,8 @@ enum VariableOrderType {
 };
 
 class VariableOrderFinder {
+    const std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
     const VariableOrderType variable_order_type;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
@@ -21,7 +26,8 @@ class VariableOrderFinder {
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(VariableOrderType variable_order_type);
+    VariableOrderFinder(const std::shared_ptr<AbstractTask> task,
+                        VariableOrderType variable_order_type);
     ~VariableOrderFinder() = default;
     bool done() const;
     int next();

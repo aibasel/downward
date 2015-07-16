@@ -5,12 +5,16 @@
 #include "utilities.h"
 
 #ifdef USE_LP
+#ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include <OsiSolverInterface.hpp>
 #include <CoinPackedMatrix.hpp>
 #include <CoinPackedVector.hpp>
+#ifdef __GNUG__
 #pragma GCC diagnostic pop
+#endif
 #endif
 
 #include <cassert>

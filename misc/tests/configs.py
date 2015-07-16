@@ -106,17 +106,17 @@ def configs_satisficing_core():
 
 def configs_optimal_ipc():
     return {
-        "seq_opt_merge_and_shrink": ["ipc", "seq-opt-merge-and-shrink"],
-        "seq_opt_fdss_1": ["ipc", "seq-opt-fdss-1"],
-        "seq_opt_fdss_2": ["ipc", "seq-opt-fdss-2"],
+        "seq_opt_merge_and_shrink": ["--alias", "seq-opt-merge-and-shrink"],
+        "seq_opt_fdss_1": ["--alias", "seq-opt-fdss-1"],
+        "seq_opt_fdss_2": ["--alias", "seq-opt-fdss-2"],
     }
 
 
 def configs_satisficing_ipc():
     return {
-        "seq_sat_lama_2011": ["ipc", "seq-sat-lama-2011"],
-        "seq_sat_fdss_1": ["ipc", "seq-sat-fdss-1"],
-        "seq_sat_fdss_2": ["ipc", "seq-sat-fdss-2"],
+        "seq_sat_lama_2011": ["--alias", "seq-sat-lama-2011"],
+        "seq_sat_fdss_1": ["--alias", "seq-sat-fdss-1"],
+        "seq_sat_fdss_2": ["--alias", "seq-sat-fdss-2"],
     }
 
 
@@ -186,14 +186,14 @@ def configs_satisficing_extended():
             "--heuristic",
             "h=ff()",
             "--search",
-            "eager(pareto([sum([g(), h]), h]), reopen_closed=true, pathmax=false,"
+            "eager(pareto([sum([g(), h]), h]), reopen_closed=true,"
             "f_eval=sum([g(), h]))"],
         # bucket-based open list
         "bucket_lmcut": [
             "--heuristic",
             "h=lmcut()",
             "--search",
-            "eager(single_buckets(h), reopen_closed=true, pathmax=false)"],
+            "eager(single_buckets(h), reopen_closed=true)"],
     }
 
 
