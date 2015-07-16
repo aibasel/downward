@@ -31,8 +31,9 @@ def print_component_settings(nick, inputs, options, timeout, memory):
     if timeout is not None:
         timeout = str(timeout) + "s"
     logging.info("{} timeout: {}".format(nick, timeout))
-    logging.info("{} memory limit: {:.2} MB".format(
-        nick, limits.convert_to_mb(memory)))
+    if memory is not None:
+        memory = "{:.2} MB".format(limits.convert_to_mb(memory))
+    logging.info("{} memory limit: {}".format(nick, memory))
 
 
 def call_component(executable, options, stdin=None, timeout=None, memory=None):

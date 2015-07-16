@@ -61,8 +61,8 @@ COMPONENTS_PLUS_OVERALL = ["translate", "preprocess", "search", "overall"]
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
+    """Preserve newlines and spacing."""
     def _fill_text(self, text, width, indent):
-        """Preserve newlines and spacing."""
         return ''.join([indent + line for line in text.splitlines(True)])
 
     def _format_args(self, action, default_metavar):
@@ -272,15 +272,15 @@ def parse_args():
         "--search", action="store_true",
         help="run search component")
 
-    # TODO: Default values?
     time_limits = parser.add_argument_group(
-        title="time limits in seconds or with suffixes s, m, h (e.g. 100s, 30m, 1h)")
+        title="time limits in seconds or with suffixes s, m, h (e.g. 100s, 30m, 1h)",
+        description="TODO")
     for component in COMPONENTS_PLUS_OVERALL:
         time_limits.add_argument("--{}-timeout".format(component))
 
-    # TODO: Default values?
     memory_limits = parser.add_argument_group(
-        title="memory limits in MB or with suffixes K, M, G (e.g. 1024M, 2G)")
+        title="memory limits in MB or with suffixes K, M, G (e.g. 1024M, 2G)",
+        description="TODO")
     for component in COMPONENTS_PLUS_OVERALL:
         memory_limits.add_argument("--{}-memory".format(component))
 
