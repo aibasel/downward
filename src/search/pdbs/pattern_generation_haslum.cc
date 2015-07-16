@@ -37,6 +37,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
+      successor_generator(task),
       num_rejected(0),
       hill_climbing_timer(0) {
     Timer timer;
@@ -134,15 +135,11 @@ void PatternGenerationHaslum::sample_states(vector<State> &samples,
 
         // Sample one state with a random walk of length length.
         State current_state(initial_state);
+        vector<OperatorProxy> applicable_ops;
         for (int j = 0; j < length; ++j) {
-            /* TODO we want to use the successor generator here but it only
-               handles GlobalState objects */
-            vector<OperatorProxy> applicable_ops;
-            for (OperatorProxy op : task_proxy.get_operators()) {
-                if (is_applicable(op, current_state)) {
-                    applicable_ops.push_back(op);
-                }
-            }
+            applicable_ops.clear();
+            successor_generator.generate_applicable_ops(current_state,
+                                                        applicable_ops);
             // If there are no applicable operators, do not walk further.
             if (applicable_ops.empty()) {
                 break;
