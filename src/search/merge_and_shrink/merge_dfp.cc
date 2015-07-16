@@ -4,23 +4,27 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 
 using namespace std;
 
 
 MergeDFP::MergeDFP()
-    : MergeStrategy(),
-      border_atomics_composites(remaining_merges + 1) {
-    // n := remaining_merges + 1 is the number of variables of the planning task
-    // and thus the number of atomic transition systems. These will be stored at
-    // indices 0 to n-1 and thus n is the index at which the first composite
-    // transition system will be stored at.
+    : MergeStrategy() {
+}
+
+void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
+    MergeStrategy::initialize(task);
+    /*
+      n := remaining_merges + 1 is the number of variables of the planning task
+      and thus the number of atomic transition systems. These will be stored at
+      indices 0 to n-1 and thus n is the index at which the first composite
+      transition system will be stored at.
+    */
+    border_atomics_composites = remaining_merges + 1;
 }
 
 int MergeDFP::get_corrected_index(int index) const {
@@ -82,10 +86,11 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
     }
 }
 
-pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_transition_systems) {
+pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transition_systems) {
+    assert(initialized());
     assert(!done());
 
-    vector<TransitionSystem *> sorted_transition_systems;
+    vector<const TransitionSystem *> sorted_transition_systems;
     vector<int> indices_mapping;
     vector<vector<int> > transition_system_label_ranks;
     // Precompute a vector sorted_transition_systems which contains all exisiting
@@ -98,7 +103,7 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
         // order from the first one until the last one. See also explanation
         // at get_corrected_index().
         int ts_index = get_corrected_index(i);
-        TransitionSystem *transition_system = all_transition_systems[ts_index];
+        const TransitionSystem *transition_system = all_transition_systems[ts_index];
         if (transition_system) {
             sorted_transition_systems.push_back(transition_system);
             indices_mapping.push_back(ts_index);
@@ -112,13 +117,13 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
     int second = -1;
     int minimum_weight = INF;
     for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
-        TransitionSystem *transition_system = sorted_transition_systems[ts_index];
+        const TransitionSystem *transition_system = sorted_transition_systems[ts_index];
         assert(transition_system);
         vector<int> &label_ranks = transition_system_label_ranks[ts_index];
         assert(!label_ranks.empty());
         for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
              ++other_ts_index) {
-            TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
+            const TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
             assert(other_transition_system);
             if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
                 vector<int> &other_label_ranks = transition_system_label_ranks[other_ts_index];
@@ -150,11 +155,11 @@ pair<int, int> MergeDFP::get_next(const std::vector<TransitionSystem *> &all_tra
         assert(minimum_weight == INF);
 
         for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
-            TransitionSystem *transition_system = sorted_transition_systems[ts_index];
+            const TransitionSystem *transition_system = sorted_transition_systems[ts_index];
             assert(transition_system);
             for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
                  ++other_ts_index) {
-                TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
+                const TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
                 assert(other_transition_system);
                 if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
                     first = indices_mapping[ts_index];

@@ -2,6 +2,7 @@
 #define MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <forward_list>
 
