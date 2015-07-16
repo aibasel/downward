@@ -21,6 +21,7 @@ __all__ = ["run"]
 
 import signal
 import subprocess
+import sys
 import traceback
 
 from . import call
@@ -259,14 +260,20 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     optimal = attributes["OPTIMAL"]
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
-    if "TIMEOUT" in attributes:
-        print("Warning: The TIMEOUT attribute for portfolios is ignored. "
-              "Use driver options to limit the runtime.")
+    timeout = attributes.get("TIMEOUT")
 
-    # TODO: add default for --overall-timeout and remove DEFAULT_TIMEOUT?
     if time is None:
-        timeout = DEFAULT_TIMEOUT
+        if timeout is None:
+            sys.exit(
+                "Portfolios need a time limit. Either pass it to the "
+                "planner script or define a TIMEOUT attribute in the "
+                "portfolio file.")
     else:
+        if timeout is not None:
+            print(
+                "Warning: You passed a time limit to the planner script. "
+                "The TIMEOUT attribute in the portfolio file is "
+                "therefore ignored.")
         timeout = util.get_elapsed_time() + time
 
     if optimal:
