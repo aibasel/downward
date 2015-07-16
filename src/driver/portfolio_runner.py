@@ -260,21 +260,18 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     optimal = attributes["OPTIMAL"]
     final_config = attributes.get("FINAL_CONFIG")
     final_config_builder = attributes.get("FINAL_CONFIG_BUILDER")
-    timeout = attributes.get("TIMEOUT")
+    if "TIMEOUT" in attributes:
+        sys.exit(
+            "The TIMEOUT attribute in portfolios has been removed. "
+            "Please pass a time limit to fast-downward.py.")
+
 
     if time is None:
-        if timeout is None:
-            sys.exit(
-                "Portfolios need a time limit. Either pass it to the "
-                "planner script or define a TIMEOUT attribute in the "
-                "portfolio file.")
-    else:
-        if timeout is not None:
-            print(
-                "Warning: You passed a time limit to the planner script. "
-                "The TIMEOUT attribute in the portfolio file is "
-                "therefore ignored.")
-        timeout = util.get_elapsed_time() + time
+        sys.exit(
+            "Portfolios need a time limit. Please pass --search-timeout "
+            "or --overall-timeout to fast-downward.py.")
+
+    timeout = util.get_elapsed_time() + time
 
     if optimal:
         exitcodes = run_opt(configs, executable, sas_file, plan_manager,
