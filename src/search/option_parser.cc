@@ -415,16 +415,19 @@ void OptionParser::set_unparsed_config() {
     unparsed_config = stream.str();
 }
 
-string str_to_lower(string s) {
+static string str_to_lower(string s) {
     transform(s.begin(), s.end(), s.begin(), ::tolower);
     return s;
+}
+
+bool is_none_string(const std::string &value) {
+    return str_to_lower(value).compare("none") == 0;
 }
 
 void OptionParser::add_enum_option(string k,
                                    vector<string > enumeration,
                                    string h, string def_val,
-                                   vector<string> enum_docs,
-                                   const OptionFlags &flags) {
+                                   vector<string> enum_docs) {
     if (help_mode_) {
         ValueExplanations value_explanations;
         string enum_descr = "{";
@@ -442,16 +445,17 @@ void OptionParser::add_enum_option(string k,
 
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
-                                      enum_descr, def_val, flags.mandatory,
+                                      enum_descr, def_val, 
                                       value_explanations);
         return;
     }
 
     //enum arguments can be given by name or by number:
     //first parse the corresponding string like a normal argument...
-    add_option<string>(k, h, def_val, flags);
+    add_option<string>(k, h, def_val);
 
-    if (!flags.mandatory && !opts.contains(k))
+    // If def_val="None", the option is not stored.
+    if (!opts.contains(k))
         return;
 
     string name = str_to_lower(opts.get<string>(k));

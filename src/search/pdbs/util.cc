@@ -122,8 +122,7 @@ void parse_pattern(OptionParser &parser, Options &opts) {
         "list of variable numbers of the planning task that should be used as "
         "pattern. Default: the variables are selected automatically based on a "
         "simple greedy strategy.",
-        "",
-        OptionFlags(false));
+        "None");
 
     opts = parser.parse();
     if (parser.help_mode())
@@ -153,8 +152,7 @@ void parse_patterns(OptionParser &parser, Options &opts) {
         "list of patterns (which are lists of variable numbers of the planning "
         "task). Default: each goal variable is used as a single-variable "
         "pattern in the collection.",
-        "",
-        OptionFlags(false));
+        "None");
     parser.add_option<bool>(
         "combo", "use the combo strategy", "false");
     parser.add_option<int>(
