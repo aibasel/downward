@@ -511,8 +511,8 @@ Options OptionParser::parse() {
 }
 
 bool OptionParser::is_valid_option(const std::string &k) const {
-    return help_mode() || std::find(
-               valid_keys.begin(), valid_keys.end(), k) != valid_keys.end();
+    assert(!help_mode());
+    return find(valid_keys.begin(), valid_keys.end(), k) != valid_keys.end();
 }
 
 void OptionParser::document_values(string argument,

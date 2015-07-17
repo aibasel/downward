@@ -112,7 +112,8 @@ static void build_singleton_patterns(
 }
 
 void parse_pattern(OptionParser &parser, Options &opts) {
-    assert(parser.is_valid_option("transform"));
+    if (!parser.help_mode())
+        assert(parser.is_valid_option("transform"));
     parser.add_option<int>(
         "max_states",
         "maximal number of abstract states in the pattern database",
@@ -147,7 +148,8 @@ void parse_pattern(OptionParser &parser, Options &opts) {
 }
 
 void parse_patterns(OptionParser &parser, Options &opts) {
-    assert(parser.is_valid_option("transform"));
+    if (!parser.help_mode())
+        assert(parser.is_valid_option("transform"));
     parser.add_list_option<vector<int> >(
         "patterns",
         "list of patterns (which are lists of variable numbers of the planning "
