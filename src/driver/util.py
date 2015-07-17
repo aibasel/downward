@@ -2,6 +2,9 @@
 
 import os
 
+DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
+SRC_DIR = os.path.dirname(DRIVER_DIR)
+
 
 def get_elapsed_time():
     """
