@@ -331,6 +331,19 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
+    if (parser.help_mode()) {
+        cout << "A currently recommended good configuration uses bisimulation "
+                "based shrinking (alternating max states from 50000 to 200000 is "
+                "reasonable), DFP merging, and the appropriate label "
+                "reduction setting:"
+             << endl;
+        cout << "merge_and_shrink(shrink_strategy=shrink_bisimulation(max_states=100000,"
+                "threshold=1,greedy=false),merge_strategy=merge_dfp,"
+                "label_reduction=label_reduction(before_shrinking=true, before_merging=false))"
+             << endl;
+        cout << endl;
+    }
+
     if (parser.dry_run()) {
         return 0;
     } else {
