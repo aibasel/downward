@@ -37,8 +37,6 @@ def run_driver(cmd):
 
 def test_commandline_args():
     for description, cmd in EXAMPLES:
-        if "--portfolio" in cmd:
-            continue
         cmd = [x.strip('"') for x in cmd]
         assert run_driver(cmd) == 0
 
