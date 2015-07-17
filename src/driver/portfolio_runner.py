@@ -91,7 +91,8 @@ def run_search(executable, args, sas_file, plan_manager, time, memory):
 
     try:
         returncode = call.check_call(
-            complete_args, stdin=sas_file, timeout=time, memory=memory)
+            complete_args, stdin=sas_file,
+            time_limit=time, memory_limit=memory)
     except subprocess.CalledProcessError as err:
         returncode = err.returncode
     print("returncode: %d" % returncode)
@@ -268,8 +269,8 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
 
     if time is None:
         sys.exit(
-            "Portfolios need a time limit. Please pass --search-timeout "
-            "or --overall-timeout to fast-downward.py.")
+            "Portfolios need a time limit. Please pass --search-time-limit "
+            "or --overall-time-limit to fast-downward.py.")
 
     timeout = util.get_elapsed_time() + time
 

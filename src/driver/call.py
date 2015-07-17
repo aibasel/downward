@@ -10,13 +10,13 @@ import subprocess
 import sys
 
 
-def check_call(cmd, stdin=None, timeout=None, memory=None):
+def check_call(cmd, stdin=None, time_limit=None, memory_limit=None):
     def set_limits():
-        limits.set_time_limit(timeout)
-        limits.set_memory_limit(memory)
+        limits.set_time_limit(time_limit)
+        limits.set_memory_limit(memory_limit)
 
     kwargs = {}
-    if timeout is not None or memory is not None:
+    if time_limit is not None or memory_limit is not None:
         if limits.can_set_limits():
             kwargs["preexec_fn"] = set_limits
         else:
