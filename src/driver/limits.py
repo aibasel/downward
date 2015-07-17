@@ -130,13 +130,18 @@ def set_memory_limit_in_bytes(parser, args, component):
 
 
 def get_memory_limit(component_limit, overall_limit):
-    """TODO"""
+    """
+    Return the lowest of the following memory limits:
+    component, overall, external soft, external hard.
+    """
     limits = [component_limit, overall_limit, _get_external_memory_limit()]
     limits = [limit for limit in limits if limit is not None]
     return min(limits) if limits else None
 
 def get_timeout(component_timeout, overall_timeout):
-    """TODO"""
+    """
+    Return the minimum timeout imposed by any internal and external limit.
+    """
     elapsed_time = util.get_elapsed_time()
     external_timeout = _get_external_timeout()
     timeouts = []
