@@ -11,9 +11,9 @@ LIMITS = {"search_time": 1800}
 SUITE = suites.suite_satisficing_with_ipc11()
 
 CONFIGS = {
-        "seq_sat_fdss_1": ["--alias", "seq-sat-fdss-1"],
-        "seq_sat_fdss_2": ["--alias", "seq-sat-fdss-2"],
-    }
+    "seq_sat_fdss_1": ["--alias", "seq-sat-fdss-1"],
+    "seq_sat_fdss_2": ["--alias", "seq-sat-fdss-2"],
+}
 
 exp = common_setup.IssueExperiment(
     search_revisions=REVS,
