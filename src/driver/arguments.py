@@ -5,6 +5,7 @@ import os.path
 
 from . import aliases
 from . import limits
+from .util import SRC_DIR
 
 
 DESCRIPTION = """Fast Downward driver script.
@@ -41,8 +42,8 @@ Portfolios require that a time limit is in effect. Portfolio configurations
 that exceed their time or memory limit are aborted, and the next
 configuration is run."""
 
-
-EXAMPLE_PORTFOLIO = os.path.relpath(aliases.PORTFOLIOS["seq-opt-fdss-1"])
+EXAMPLE_PORTFOLIO = os.path.relpath(
+    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=SRC_DIR)
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",

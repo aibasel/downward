@@ -6,23 +6,20 @@ Test module for Fast Downward driver script. Run with
     py.test driver/tests.py
 """
 
-import os
+import os.path
 import subprocess
 
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
 from .portfolio_runner import EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE
-
-
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from .util import SRC_DIR
 
 
 def preprocess():
     """Create preprocessed task."""
-    os.chdir(SRC_DIR)
     cmd = ["./fast-downward.py", "--translate", "--preprocess",
            "../benchmarks/gripper/prob01.pddl"]
-    assert subprocess.check_call(cmd) == 0
+    assert subprocess.check_call(cmd, cwd=SRC_DIR) == 0
 
 
 def cleanup():
@@ -32,7 +29,7 @@ def cleanup():
 def run_driver(cmd):
     cleanup()
     preprocess()
-    return subprocess.call(cmd)
+    return subprocess.call(cmd, cwd=SRC_DIR)
 
 
 def test_commandline_args():
