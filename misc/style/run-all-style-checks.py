@@ -54,12 +54,9 @@ def check_preprocessor_and_search_style():
 
 
 def main():
-    ok = True
-    ok &= check_translator_style()
-    ok &= check_translator_pyflakes()
-    ok &= check_include_guard_convention()
-    ok &= check_preprocessor_and_search_style()
-    if ok:
+    tests = [test for test_name, test in globals().items()
+             if test_name.startswith("check_")]
+    if all(test() for test in tests):
         print("All style checks passed")
     else:
         sys.exit(1)
