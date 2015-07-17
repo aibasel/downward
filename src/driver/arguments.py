@@ -50,7 +50,8 @@ EXAMPLES = [
     ("Run predefined configuration (LAMA-2011) on preprocessed task:",
      ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output"]),
     ("Run a portfolio on a preprocessed task:",
-     ["./fast-downward.py", "--portfolio", "my-portfolio.py", "output"]),
+     ["./fast-downward.py", "--portfolio", "my-portfolio.py",
+      "--search-time-limit", "30m", "output"]),
     ("Run the search component in debug mode (with assertions enabled):",
      ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
@@ -247,7 +248,7 @@ def _set_components_and_inputs(parser, args):
 
 def _convert_limits_to_ints(parser, args):
     for component in COMPONENTS_PLUS_OVERALL:
-        limits.set_timeout_in_seconds(parser, args, component)
+        limits.set_time_limit_in_seconds(parser, args, component)
         limits.set_memory_limit_in_bytes(parser, args, component)
 
 
@@ -289,8 +290,8 @@ def parse_args():
     limits = parser.add_argument_group(
         title="time and memory limits", description=LIMITS_HELP)
     for component in COMPONENTS_PLUS_OVERALL:
-        limits.add_argument("--{}-timeout".format(component))
-        limits.add_argument("--{}-memory".format(component))
+        limits.add_argument("--{}-time-limit".format(component))
+        limits.add_argument("--{}-memory-limit".format(component))
 
     driver_other = parser.add_argument_group(
         title="other driver options")
