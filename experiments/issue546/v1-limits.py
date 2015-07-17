@@ -26,7 +26,6 @@ class FastDownwardLimits(common_setup.IssueExperiment):
                 mem_limit = search_kwargs["mem_limit"]
                 del search_kwargs["time_limit"]
                 del search_kwargs["mem_limit"]
-                script = search_args[0]
                 search_args.insert(1, "--search-timeout")
                 search_args.insert(2, str(time_limit))
                 search_args.insert(3, "--search-memory")
