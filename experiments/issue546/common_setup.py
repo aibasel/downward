@@ -127,7 +127,9 @@ class IssueExperiment(DownwardExperiment):
     PORTFOLIO_ATTRIBUTES = [
         "cost",
         "coverage",
+        "error",
         "plan_length",
+        "run_dir",
         ]
 
     def __init__(self, configs, suite, grid_priority=None, path=None,

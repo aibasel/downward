@@ -4,7 +4,7 @@ Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
 the creation of experiments. We recommend using common_setup.py from
-issue508 for new experiments since it is the most polished version and
+issue546 for new experiments since it is the most polished version and
 provides the greatest flexibility.
 
 Previously, most experiments imported lab's downward/configs.py module.
