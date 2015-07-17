@@ -21,7 +21,7 @@ exp = common_setup.IssueExperiment(
     suite=SUITE,
     limits=LIMITS,
     )
-exp.add_comparison_table_step()
-exp.add_scatter_plot_step()
+exp.add_comparison_table_step(
+    attributes=common_setup.IssueExperiment.PORTFOLIO_ATTRIBUTES)
 
 exp()
