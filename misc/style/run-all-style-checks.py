@@ -32,13 +32,19 @@ def check_translator_style():
     return ok
 
 
-def check_translator_pyflakes():
+def _run_pyflakes(path):
     python_files = []
-    for root, dirs, files in os.walk(os.path.join(SRC_DIR, "translate")):
+    for root, dirs, files in os.walk(path):
         python_files.extend([
             os.path.join(root, f) for f in files
             if f.endswith(".py") and f != "__init__.py"])
     return subprocess.call(["pyflakes"] + python_files) == 0
+
+def check_translator_pyflakes():
+    return _run_pyflakes(os.path.join(SRC_DIR, "translate"))
+
+def check_driver_pyflakes():
+    return _run_pyflakes(os.path.join(SRC_DIR, "driver"))
 
 
 def check_include_guard_convention():
