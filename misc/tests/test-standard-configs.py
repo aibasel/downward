@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -35,8 +36,10 @@ if os.name == "nt":
     del CONFIGS["seq_sat_fdss_1"]
     del CONFIGS["seq_sat_fdss_2"]
 
-def run_plan_script(task, nick, config):
+def run_plan_script(task, nick, config, debug):
     cmd = [sys.executable, FAST_DOWNWARD]
+    if debug:
+        cmd.append("--debug")
     if "--alias" in config:
         assert len(config) == 2, config
         cmd += config + [task]
@@ -55,14 +58,19 @@ def main():
     # We cannot call bash scripts on Windows. After we switched to cmake,
     # we want to replace build_all by a python script.
     if os.name == "posix":
-        subprocess.check_call(["./build_all"], cwd=SRC_DIR)
+        jobs = multiprocessing.cpu_count()
+        cmd = ["./build_all", "-j{}".format(jobs)]
+        subprocess.check_call(cmd, cwd=SRC_DIR)
+        subprocess.check_call(cmd + ["debug"], cwd=SRC_DIR)
     for task in TASKS:
         for nick, config in CONFIGS.items():
-            try:
-                run_plan_script(task, nick, config)
-            except subprocess.CalledProcessError:
-                sys.exit(
-                    "\nError: {} failed to solve {}".format(nick, task))
-            cleanup()
+            for debug in [False, True]:
+                try:
+                    run_plan_script(task, nick, config, debug)
+                except subprocess.CalledProcessError:
+                    sys.exit(
+                        "\nError: {} failed to solve {} (debug={})".format(
+                            nick, task, debug))
+                cleanup()
 
 main()
