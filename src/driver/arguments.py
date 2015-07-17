@@ -26,6 +26,20 @@ By default, component options are passed to the search component. Use
 component options to override the default for the following options, until
 overridden again. (See below for examples.)"""
 
+LIMITS_HELP = """You can limit the time or memory for individual components
+or the whole planner. The effective limit for each component is the minimum
+of the component, overall, external soft, and external hard limits.
+
+Limits are given in seconds or MiB. You can change the unit by using the
+suffixes s, m, h and K, M, G.
+
+By default, all limits are inactive. Only external limits (e.g. set with
+ulimit) are respected.
+
+Portfolios require that a time limit is in effect. Portfolio configurations
+that exceed their time or memory limit are aborted, and the next
+configuration is run."""
+
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
      ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
@@ -272,17 +286,11 @@ def parse_args():
         "--search", action="store_true",
         help="run search component")
 
-    time_limits = parser.add_argument_group(
-        title="time limits in seconds or with suffixes s, m, h (e.g. 100s, 30m, 1h)",
-        description="TODO")
+    limits = parser.add_argument_group(
+        title="time and memory limits", description=LIMITS_HELP)
     for component in COMPONENTS_PLUS_OVERALL:
-        time_limits.add_argument("--{}-timeout".format(component))
-
-    memory_limits = parser.add_argument_group(
-        title="memory limits in MB or with suffixes K, M, G (e.g. 1024M, 2G)",
-        description="TODO")
-    for component in COMPONENTS_PLUS_OVERALL:
-        memory_limits.add_argument("--{}-memory".format(component))
+        limits.add_argument("--{}-timeout".format(component))
+        limits.add_argument("--{}-memory".format(component))
 
     driver_other = parser.add_argument_group(
         title="other driver options")
