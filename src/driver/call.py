@@ -4,7 +4,7 @@ from __future__ import print_function
 
 """Make subprocess calls with time and memory limits."""
 
-import limits
+from . import limits
 
 import subprocess
 import sys
