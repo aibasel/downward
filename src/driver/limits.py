@@ -2,7 +2,7 @@
 
 from __future__ import division, print_function
 
-import util
+from . import util
 
 import math
 import re
