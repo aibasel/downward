@@ -7,7 +7,7 @@ Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
 
 from __future__ import print_function
 
-import os.path
+import os
 import re
 import subprocess
 import sys
@@ -32,6 +32,21 @@ def check_translator_style():
     return ok
 
 
+def _run_pyflakes(path):
+    python_files = []
+    for root, dirs, files in os.walk(path):
+        python_files.extend([
+            os.path.join(root, f) for f in files
+            if f.endswith(".py") and f != "__init__.py"])
+    return subprocess.call(["pyflakes"] + python_files) == 0
+
+def check_translator_pyflakes():
+    return _run_pyflakes(os.path.join(SRC_DIR, "translate"))
+
+def check_driver_pyflakes():
+    return _run_pyflakes(os.path.join(SRC_DIR, "driver"))
+
+
 def check_include_guard_convention():
     return subprocess.call("./check-include-guard-convention.py", cwd=DIR) == 0
 
@@ -45,11 +60,9 @@ def check_preprocessor_and_search_style():
 
 
 def main():
-    ok = True
-    ok &= check_translator_style()
-    ok &= check_include_guard_convention()
-    ok &= check_preprocessor_and_search_style()
-    if ok:
+    tests = [test for test_name, test in globals().items()
+             if test_name.startswith("check_")]
+    if all(test() for test in tests):
         print("All style checks passed")
     else:
         sys.exit(1)

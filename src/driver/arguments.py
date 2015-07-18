@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import os.path
 
 from . import aliases
+from . import limits
+from .util import SRC_DIR
 
 
 DESCRIPTION = """Fast Downward driver script.
@@ -25,6 +28,23 @@ By default, component options are passed to the search component. Use
 component options to override the default for the following options, until
 overridden again. (See below for examples.)"""
 
+LIMITS_HELP = """You can limit the time or memory for individual components
+or the whole planner. The effective limit for each component is the minimum
+of the component, overall, external soft, and external hard limits.
+
+Limits are given in seconds or MiB. You can change the unit by using the
+suffixes s, m, h and K, M, G.
+
+By default, all limits are inactive. Only external limits (e.g. set with
+ulimit) are respected.
+
+Portfolios require that a time limit is in effect. Portfolio configurations
+that exceed their time or memory limit are aborted, and the next
+configuration is run."""
+
+EXAMPLE_PORTFOLIO = os.path.relpath(
+    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=SRC_DIR)
+
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
      ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
@@ -35,7 +55,8 @@ EXAMPLES = [
     ("Run predefined configuration (LAMA-2011) on preprocessed task:",
      ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output"]),
     ("Run a portfolio on a preprocessed task:",
-     ["./fast-downward.py", "--portfolio", "my-portfolio.py", "output"]),
+     ["./fast-downward.py", "--portfolio", EXAMPLE_PORTFOLIO,
+      "--search-time-limit", "30m", "output"]),
     ("Run the search component in debug mode (with assertions enabled):",
      ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
@@ -55,6 +76,8 @@ Examples:
 
 %s
 """ % "\n\n".join("%s\n%s" % (desc, " ".join(cmd)) for desc, cmd in EXAMPLES)
+
+COMPONENTS_PLUS_OVERALL = ["translate", "preprocess", "search", "overall"]
 
 
 class RawHelpFormatter(argparse.HelpFormatter):
@@ -228,6 +251,12 @@ def _set_components_and_inputs(parser, args):
         assert False, first
 
 
+def _convert_limits_to_ints(parser, args):
+    for component in COMPONENTS_PLUS_OVERALL:
+        limits.set_time_limit_in_seconds(parser, args, component)
+        limits.set_memory_limit_in_bytes(parser, args, component)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description=DESCRIPTION, epilog=EPILOG,
@@ -262,6 +291,12 @@ def parse_args():
     components.add_argument(
         "--search", action="store_true",
         help="run search component")
+
+    limits = parser.add_argument_group(
+        title="time and memory limits", description=LIMITS_HELP)
+    for component in COMPONENTS_PLUS_OVERALL:
+        limits.add_argument("--{}-time-limit".format(component))
+        limits.add_argument("--{}-memory-limit".format(component))
 
     driver_other = parser.add_argument_group(
         title="other driver options")
@@ -302,6 +337,8 @@ def parse_args():
             ("--alias", args.alias is not None),
             ("--portfolio", args.portfolio is not None),
             ("options for search component", bool(args.search_options))])
+
+    _convert_limits_to_ints(parser, args)
 
     if args.alias:
         try:
