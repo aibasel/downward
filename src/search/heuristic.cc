@@ -53,14 +53,12 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
-    // TODO: When the cost_type option is gone, use "no_transform" as default here
-    //       and remove the OptionFlags argument.
+    // TODO: When the cost_type option is gone, use "no_transform" as default.
     parser.add_option<shared_ptr<AbstractTask> >(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
-        "",
-        OptionFlags(false));
+        OptionParser::NONE);
 }
 
 //this solution to get default values seems not optimal:

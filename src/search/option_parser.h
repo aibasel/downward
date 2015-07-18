@@ -167,6 +167,8 @@ public:
     OptionParser(ParseTree pt, bool dr);
     ~OptionParser() = default;
 
+    static const std::string NONE;
+
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(
         int argc, const char **argv, bool dr, bool is_unit_cost);
@@ -178,22 +180,19 @@ public:
     template <class T>
     T start_parsing();
 
-    //add option with default value
-    //call with mandatory = false to specify an optional parameter without default value
+    /* Add option with default value. Use def_val=NONE for optional
+       parameters without default values. */
     template <class T>
     void add_option(
-        std::string k, std::string h = "", std::string def_val = "",
-        const OptionFlags &flags = OptionFlags());
+        std::string k, std::string h = "", std::string def_val = "");
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
                          std::string h = "", std::string def_val = "",
-                         std::vector<std::string> enum_doc = std::vector<std::string>(),
-                         const OptionFlags &flags = OptionFlags());
+                         std::vector<std::string> enum_doc = std::vector<std::string>());
     template <class T>
     void add_list_option(std::string k,
-                         std::string h = "", std::string def_val = "",
-                         const OptionFlags &flags = OptionFlags());
+                         std::string h = "", std::string def_val = "");
 
     bool is_valid_option(const std::string &k) const;
 
@@ -250,12 +249,11 @@ T OptionParser::start_parsing() {
 template <class T>
 void OptionParser::add_option(
     std::string k,
-    std::string h, std::string default_value, const OptionFlags &flags) {
+    std::string h, std::string default_value) {
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
-                                      TypeNamer<T>::name(), default_value,
-                                      flags.mandatory);
+                                      TypeNamer<T>::name(), default_value);
         return;
     }
     valid_keys.push_back(k);
@@ -264,11 +262,9 @@ void OptionParser::add_option(
     //scenario where we have already handled all arguments
     if (arg == parse_tree.end(parse_tree.begin())) {
         if (default_value.empty()) {
-            if (flags.mandatory) {
-                error("missing option: " + k);
-            } else {
-                return;
-            }
+            error("missing option: " + k);
+        } else if (default_value == NONE) {
+            return;
         } else {
             use_default = true;
         }
@@ -282,11 +278,9 @@ void OptionParser::add_option(
             }
             if (arg == parse_tree.end(parse_tree.begin())) {
                 if (default_value.empty()) {
-                    if (flags.mandatory) {
-                        error("missing option: " + k);
-                    } else {
-                        return;
-                    }
+                    error("missing option: " + k);
+                } else if (default_value == NONE) {
+                    return;
                 } else {
                     use_default = true;
                 }
@@ -309,8 +303,8 @@ void OptionParser::add_option(
 
 template <class T>
 void OptionParser::add_list_option(
-    std::string k, std::string h, std::string def_val, const OptionFlags &flags) {
-    add_option<std::vector<T> >(k, h, def_val, flags);
+    std::string k, std::string h, std::string def_val) {
+    add_option<std::vector<T> >(k, h, def_val);
 }
 
 //Definitions of TokenParser<T>:
