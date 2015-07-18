@@ -99,7 +99,7 @@ class IssueExperiment(DownwardExperiment):
         "error",
         "evaluations",
         "expansions",
-        # "expansions_until_last_jump",
+        "expansions_until_last_jump",
         "generated",
         "memory",
         "quality",
