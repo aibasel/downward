@@ -159,7 +159,7 @@ SearchStatus LazySearch::step() {
 
     SearchNode node = search_space.get_node(current_state);
     bool reopen = reopen_closed_nodes && !node.is_new() &&
-        !node.is_dead_end() && (current_g < node.get_g());
+                  !node.is_dead_end() && (current_g < node.get_g());
 
     if (node.is_new() || reopen) {
         StateID dummy_id = current_predecessor_id;
