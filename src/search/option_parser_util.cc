@@ -160,7 +160,8 @@ void Txt2TagsPrinter::print_usage(string call_name, const DocStruct &info) {
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
             os << arg.kwd;
-            os << "=" << info.arg_help[i].default_value;
+            if (!arg.default_value.empty())
+                os << "=" << arg.default_value;
             if (i != info.arg_help.size() - 1)
                 os << ", ";
         }
@@ -258,7 +259,8 @@ void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
             os << arg.kwd;
-            os << "=" << info.arg_help[i].default_value;
+            if (!arg.default_value.empty())
+                os << "=" << arg.default_value;
             if (i != info.arg_help.size() - 1)
                 os << ", ";
         }
