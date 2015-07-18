@@ -58,7 +58,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
-        "None");
+        OptionParser::NONE);
 }
 
 //this solution to get default values seems not optimal:

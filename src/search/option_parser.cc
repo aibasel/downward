@@ -14,6 +14,9 @@
 using namespace std;
 
 
+const string OptionParser::NONE = "<none>";
+
+
 ArgError::ArgError(std::string msg_) : msg(msg_) {
 }
 
@@ -420,10 +423,6 @@ static string str_to_lower(string s) {
     return s;
 }
 
-bool is_none_string(const std::string &value) {
-    return str_to_lower(value).compare("none") == 0;
-}
-
 void OptionParser::add_enum_option(string k,
                                    vector<string > enumeration,
                                    string h, string def_val,
@@ -445,7 +444,7 @@ void OptionParser::add_enum_option(string k,
 
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
-                                      enum_descr, def_val, 
+                                      enum_descr, def_val,
                                       value_explanations);
         return;
     }
@@ -454,7 +453,6 @@ void OptionParser::add_enum_option(string k,
     //first parse the corresponding string like a normal argument...
     add_option<string>(k, h, def_val);
 
-    // If def_val="None", the option is not stored.
     if (!opts.contains(k))
         return;
 
@@ -514,9 +512,9 @@ Options OptionParser::parse() {
     return opts;
 }
 
-bool OptionParser::is_valid_option(std::string k) const {
-    return std::find(valid_keys.begin(),
-                     valid_keys.end(), k) != valid_keys.end();
+bool OptionParser::is_valid_option(const std::string &k) const {
+    assert(!help_mode());
+    return find(valid_keys.begin(), valid_keys.end(), k) != valid_keys.end();
 }
 
 void OptionParser::document_values(string argument,

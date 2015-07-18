@@ -167,6 +167,8 @@ public:
     OptionParser(ParseTree pt, bool dr);
     ~OptionParser() = default;
 
+    static const std::string NONE;
+
     //this is where input from the commandline goes:
     static SearchEngine *parse_cmd_line(
         int argc, const char **argv, bool dr, bool is_unit_cost);
@@ -178,7 +180,7 @@ public:
     template <class T>
     T start_parsing();
 
-    /* Add option with default value. Use def_val="None" for optional
+    /* Add option with default value. Use def_val=NONE for optional
        parameters without default values. */
     template <class T>
     void add_option(
@@ -192,7 +194,7 @@ public:
     void add_list_option(std::string k,
                          std::string h = "", std::string def_val = "");
 
-    bool is_valid_option(std::string k) const;
+    bool is_valid_option(const std::string &k) const;
 
     void document_values(std::string argument,
                          ValueExplanations value_explanations) const;
@@ -244,8 +246,6 @@ T OptionParser::start_parsing() {
     return TokenParser<T>::parse(*this);
 }
 
-bool is_none_string(const std::string &value);
-
 template <class T>
 void OptionParser::add_option(
     std::string k,
@@ -263,7 +263,7 @@ void OptionParser::add_option(
     if (arg == parse_tree.end(parse_tree.begin())) {
         if (default_value.empty()) {
             error("missing option: " + k);
-        } else if (is_none_string(default_value)) {
+        } else if (default_value == NONE) {
             return;
         } else {
             use_default = true;
@@ -279,7 +279,7 @@ void OptionParser::add_option(
             if (arg == parse_tree.end(parse_tree.begin())) {
                 if (default_value.empty()) {
                     error("missing option: " + k);
-                } else if (is_none_string(default_value)) {
+                } else if (default_value == NONE) {
                     return;
                 } else {
                     use_default = true;
