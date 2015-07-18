@@ -158,13 +158,12 @@ def configs_satisficing_extended():
             "h=cea()",
             "--search",
             "lazy_greedy(h, preferred=h)"],
-        # TODO: lazy wA* violates assertions. Fixing this is issue558.
         # lazy wA*
-        #"lazy_wa3_ff": [
-        #    "--heuristic",
-        #    "h=ff()",
-        #    "--search",
-        #    "lazy_wastar(h,w=3,preferred=h)"],
+        "lazy_wa3_ff": [
+            "--heuristic",
+            "h=ff()",
+            "--search",
+            "lazy_wastar(h,w=3,preferred=h)"],
         # eager wA*
         "eager_wa3_cg": [
             "--heuristic",
@@ -175,14 +174,13 @@ def configs_satisficing_extended():
         "ehc_ff": [
             "--search",
             "ehc(ff())"],
-        # TODO: This config violates assertions. Fixing this is issue558.
         # iterated
-        #"iterated_wa_ff": [
-        #    "--heuristic",
-        #    "h=ff()",
-        #    "--search",
-        #    "iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3),"
-        #    "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])"],
+        "iterated_wa_ff": [
+            "--heuristic",
+            "h=ff()",
+            "--search",
+            "iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3),"
+            "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])"],
         # pareto open list
         "pareto_ff": [
             "--heuristic",
