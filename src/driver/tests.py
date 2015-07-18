@@ -6,7 +6,6 @@ Test module for Fast Downward driver script. Run with
     py.test driver/tests.py
 """
 
-import os.path
 import subprocess
 
 from .aliases import ALIASES, PORTFOLIOS
@@ -51,6 +50,7 @@ def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
         if name in ["seq-opt-fd-autotune", "seq-opt-selmax"]:
             continue
-        cmd = ["./fast-downward.py", "--portfolio", portfolio, "output"]
+        cmd = ["./fast-downward.py", "--portfolio", portfolio,
+               "--search-time-limit", "30m", "output"]
         assert run_driver(cmd) in [
             EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE]
