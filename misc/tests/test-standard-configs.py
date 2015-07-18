@@ -23,6 +23,7 @@ CONFIGS = {}
 CONFIGS.update(configs.default_configs_optimal(core=True, ipc=True, extended=True))
 CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=True, extended=True))
 CONFIGS.update(configs.task_transformation_test_configs())
+CONFIGS.update(configs.regression_test_configs())
 # TODO: Include again, once issue558 is fixed.
 del CONFIGS["seq_sat_fdss_1"]
 del CONFIGS["seq_sat_fdss_2"]

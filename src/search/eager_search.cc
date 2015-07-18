@@ -329,8 +329,7 @@ static SearchEngine *_parse(OptionParser &parser) {
         "f_eval",
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
-        "",
-        OptionFlags(false));
+        OptionParser::NONE);
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
