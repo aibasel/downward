@@ -12,6 +12,7 @@ MergeStrategy::MergeStrategy() : remaining_merges(UNINITIALIZED) {
 
 void MergeStrategy::initialize(const shared_ptr<AbstractTask> task) {
     assert(!initialized());
+    cout << "Initializing merge strategy..." << endl;
     /*
       There are number of variables many atomic transition systems and we have
       to perform one less merges than this number until we have merged
