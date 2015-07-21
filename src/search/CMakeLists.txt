@@ -53,7 +53,6 @@ option(ALLOW_64_BIT "Allow to compile a 64-bit version." FALSE)
 # On Unix, we explicitly force compilation to 32-bit unless ALLOW_64_BIT is set.
 # Has to be done before defining the project.
 if(UNIX AND NOT ALLOW_64_BIT)
-    set(CMAKE_SYSTEM_LIBRARY_PATH /lib32 /usr/lib32 /usr/local/lib32)
     set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" CACHE STRING "c++ flags")
