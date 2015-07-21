@@ -26,8 +26,7 @@ void SCC::dfs(int vertex) {
     stack.push_back(vertex);
 
     const vector<int> &successors = graph[vertex];
-    for (int i = 0; i < successors.size(); i++) {
-        int succ = successors[i];
+    for (int succ : successors) {
         int succ_dfs_number = dfs_numbers[succ];
         if (succ_dfs_number == -1) {
             dfs(succ);
@@ -39,8 +38,9 @@ void SCC::dfs(int vertex) {
 
     if (dfs_minima[vertex] == vertex_dfs_number) {
         int stack_index = stack_indices[vertex];
+        int num_stack_entries = stack.size();
         vector<int> scc;
-        for (int i = stack_index; i < stack.size(); i++) {
+        for (int i = stack_index; i < num_stack_entries; i++) {
             scc.push_back(stack[i]);
             stack_indices[stack[i]] = -1;
         }

@@ -31,9 +31,9 @@ bool Axiom::is_redundant() const {
 void strip_axioms(vector<Axiom> &axioms) {
     int old_count = axioms.size();
     int new_index = 0;
-    for (int i = 0; i < axioms.size(); i++)
-        if (!axioms[i].is_redundant())
-            axioms[new_index++] = axioms[i];
+    for (const Axiom &axiom : axioms)
+        if (!axiom.is_redundant())
+            axioms[new_index++] = axiom;
     axioms.erase(axioms.begin() + new_index, axioms.end());
     cout << axioms.size() << " of " << old_count << " axiom rules necessary." << endl;
 }
@@ -41,8 +41,8 @@ void strip_axioms(vector<Axiom> &axioms) {
 void Axiom::dump() const {
     cout << "axiom:" << endl;
     cout << "conditions:";
-    for (int i = 0; i < conditions.size(); i++)
-        cout << "  " << conditions[i].var->get_name() << " := " << conditions[i].cond;
+    for (const Condition &condition : conditions)
+        cout << "  " << condition.var->get_name() << " := " << condition.cond;
     cout << endl;
     cout << "derived:" << endl;
     cout << effect_var->get_name() << " -> " << effect_val << endl;
@@ -57,9 +57,9 @@ void Axiom::generate_cpp_input(ofstream &outfile) const {
     assert(effect_var->get_level() != -1);
     outfile << "begin_rule" << endl;
     outfile << conditions.size() << endl;
-    for (int i = 0; i < conditions.size(); i++) {
-        assert(conditions[i].var->get_level() != -1);
-        outfile << conditions[i].var->get_level() << " " << conditions[i].cond << endl;
+    for (const Condition &condition : conditions) {
+        assert(condition.var->get_level() != -1);
+        outfile << condition.var->get_level() << " " << condition.cond << endl;
     }
     outfile << effect_var->get_level() << " " << old_val << " " << effect_val << endl;
     outfile << "end_rule" << endl;
