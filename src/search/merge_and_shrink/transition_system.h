@@ -1,18 +1,18 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
-#include "../operator_cost.h"
-
 #include <forward_list>
 #include <iostream>
 #include <list>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
-class GlobalState;
-class Label;
 class Labels;
+class State;
+class TaskProxy;
+class Timer;
 
 typedef int AbstractStateRef;
 
@@ -109,7 +109,7 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
-    std::vector<int> varset;
+    std::vector<int> var_id_set;
     /*
       These friend definitions are required to give the inheriting classes
       access to passed base class objects (e.g. in CompositeTransitionSystem).
@@ -150,6 +150,8 @@ class TransitionSystem {
       the incorporation of a label mapping as computed by label reduction.
     */
     int num_labels;
+    // Number of variables of the task used by merge-and-shrink
+    const int num_variables;
 
     int num_states;
 
@@ -213,16 +215,17 @@ class TransitionSystem {
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
 protected:
-    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const = 0;
+    virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
 public:
-    explicit TransitionSystem(Labels *labels);
+    TransitionSystem(const TaskProxy &task_proxy,
+                     const Labels *labels);
     virtual ~TransitionSystem();
 
-    static void build_atomic_transition_systems(std::vector<TransitionSystem *> &result,
-                                                Labels *labels,
-                                                OperatorCost cost_type);
+    static void build_atomic_transition_systems(const TaskProxy &task_proxy,
+                                                std::vector<TransitionSystem *> &result,
+                                                Labels *labels);
     bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
@@ -240,8 +243,9 @@ public:
     */
     std::string tag() const;
     bool is_solvable() const;
-    int get_cost(const GlobalState &state) const;
-    void statistics(bool include_expensive_statistics) const;
+    int get_cost(const State &state) const;
+    void statistics(const Timer &timer,
+                    bool include_expensive_statistics) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
     int get_size() const {
@@ -281,15 +285,17 @@ public:
 
 
 class AtomicTransitionSystem : public TransitionSystem {
-    int variable;
+    int var_id;
     std::vector<AbstractStateRef> lookup_table;
 protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
-    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
+    virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    AtomicTransitionSystem(Labels *labels, int variable);
+    AtomicTransitionSystem(const TaskProxy &task_proxy,
+                           const Labels *labels,
+                           int var_id);
     virtual ~AtomicTransitionSystem();
 };
 
@@ -301,9 +307,12 @@ protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
-    virtual AbstractStateRef get_abstract_state(const GlobalState &state) const;
+    virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
-    CompositeTransitionSystem(Labels *labels, TransitionSystem *ts1, TransitionSystem *ts2);
+    CompositeTransitionSystem(const TaskProxy &task_proxy,
+                              const Labels *labels,
+                              TransitionSystem *ts1,
+                              TransitionSystem *ts2);
     virtual ~CompositeTransitionSystem();
 };
 

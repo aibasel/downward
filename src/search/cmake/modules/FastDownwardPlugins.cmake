@@ -196,6 +196,7 @@ if(PLUGIN_PDBS)
         pdbs/dominance_pruner
         pdbs/match_tree
         pdbs/max_cliques
+        pdbs/pattern_database
         pdbs/pattern_generation_edelkamp
         pdbs/pattern_generation_haslum
         pdbs/pdb_heuristic
