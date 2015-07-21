@@ -3,6 +3,9 @@
 #include "helper_functions.h"
 #include "variable.h"
 
+#include <fstream>
+#include <iostream>
+
 MutexGroup::MutexGroup(istream &in, const vector<Variable *> &variables) {
     int size;
     check_magic(in, "begin_mutex_group");

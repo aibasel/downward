@@ -254,20 +254,19 @@ void read_everything(istream &in) {
     read_goal(in);
     read_operators(in);
     read_axioms(in);
+
+    // Ignore successor generator from preprocessor output.
     check_magic(in, "begin_SG");
-    g_successor_generator = read_successor_generator(in);
+    while (!peek_magic(in, "end_SG")) {
+        string dummy_string;
+        getline(in, dummy_string);
+    }
     check_magic(in, "end_SG");
+
     DomainTransitionGraph::read_all(in);
     check_magic(in, "begin_CG"); // ignore everything from here
 
     cout << "done reading input! [t=" << g_timer << "]" << endl;
-
-    // NOTE: causal graph is computed from the problem specification,
-    // so must be built after the problem has been read in.
-
-    cout << "building causal graph..." << flush;
-    g_causal_graph = new CausalGraph;
-    cout << "done! [t=" << g_timer << "]" << endl;
 
     cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
@@ -289,6 +288,10 @@ void read_everything(istream &in) {
          << g_state_packer->get_num_bins() *
     g_state_packer->get_bin_size_in_bytes() << endl;
 
+    cout << "Building successor generator..." << flush;
+    g_successor_generator = new SuccessorGenerator(g_root_task());
+    cout << "done! [t=" << g_timer << "]" << endl;
+
     cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
 
@@ -308,8 +311,6 @@ void dump_everything() {
     initial_state.dump_fdr();
     dump_goal();
     /*
-    cout << "Successor Generator:" << endl;
-    g_successor_generator->dump();
     for(int i = 0; i < g_variable_domain.size(); ++i)
       g_transition_graphs[i]->dump();
     */
@@ -393,7 +394,6 @@ vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
-CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";

@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import multiprocessing
 import os
 import subprocess
 import sys
@@ -22,6 +23,11 @@ CONFIGS = {}
 CONFIGS.update(configs.default_configs_optimal(core=True, ipc=True, extended=True))
 CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=True, extended=True))
 CONFIGS.update(configs.task_transformation_test_configs())
+CONFIGS.update(configs.regression_test_configs())
+# TODO: Include again, once issue558 is fixed.
+del CONFIGS["seq_sat_fdss_1"]
+del CONFIGS["seq_sat_fdss_2"]
+del CONFIGS["seq_sat_lama_2011"]
 
 if "astar_selmax_lmcut_lmcount" in CONFIGS:
     del CONFIGS["astar_selmax_lmcut_lmcount"]
@@ -35,8 +41,10 @@ if os.name == "nt":
     del CONFIGS["seq_sat_fdss_1"]
     del CONFIGS["seq_sat_fdss_2"]
 
-def run_plan_script(task, nick, config):
-    cmd = [sys.executable, FAST_DOWNWARD]
+def run_plan_script(task, nick, config, debug):
+    cmd = [sys.executable, FAST_DOWNWARD, "--search-time-limit", "30m"]
+    if debug:
+        cmd.append("--debug")
     if "--alias" in config:
         assert len(config) == 2, config
         cmd += config + [task]
@@ -55,14 +63,19 @@ def main():
     # We cannot call bash scripts on Windows. After we switched to cmake,
     # we want to replace build_all by a python script.
     if os.name == "posix":
-        subprocess.check_call(["./build_all"], cwd=SRC_DIR)
+        jobs = multiprocessing.cpu_count()
+        cmd = ["./build_all", "-j{}".format(jobs)]
+        subprocess.check_call(cmd, cwd=SRC_DIR)
+        subprocess.check_call(cmd + ["debug"], cwd=SRC_DIR)
     for task in TASKS:
         for nick, config in CONFIGS.items():
-            try:
-                run_plan_script(task, nick, config)
-            except subprocess.CalledProcessError:
-                sys.exit(
-                    "\nError: {} failed to solve {}".format(nick, task))
-            cleanup()
+            for debug in [False, True]:
+                try:
+                    run_plan_script(task, nick, config, debug)
+                except subprocess.CalledProcessError:
+                    sys.exit(
+                        "\nError: {} failed to solve {} (debug={})".format(
+                            nick, task, debug))
+                cleanup()
 
 main()

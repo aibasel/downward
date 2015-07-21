@@ -1,11 +1,13 @@
 #ifndef MERGE_AND_SHRINK_LABELS_H
 #define MERGE_AND_SHRINK_LABELS_H
 
+#include <utility>
 #include <vector>
 
 class EquivalenceRelation;
 class Label;
 class Options;
+class TaskProxy;
 class TransitionSystem;
 
 /*
@@ -68,6 +70,8 @@ class Labels {
 public:
     explicit Labels(const Options &options);
     ~Labels() {}
+    void initialize(const TaskProxy &task_proxy);
+    bool initialized() const;
     void add_label(int cost);
     void reduce(std::pair<int, int> next_merge,
                 const std::vector<TransitionSystem *> &all_transition_systems);
