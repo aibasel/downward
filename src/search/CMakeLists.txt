@@ -1,17 +1,19 @@
-### TODO documentation is out of date
-
-###   * Usage: cmake . ; make [-j2]
-###   * The first command creates and stores options in the file CMakeCache.txt.
+###   * Usage:
+###         mkdir build
+###         cd build
+###         cmake path/to/src/search
+###         make [-j4]
+###   * The call to cmake creates and stores options in the file CMakeCache.txt.
 ###     Changing the default values for the options here has no effect, you need
-###     to change them in CMakeCache.txt or pass -DMY_OPTION to cmake.
+###     to change them in CMakeCache.txt, pass -DMY_OPTION to cmake, or use a
+###     cmake GUI like ccmake to edit the cache.
 ###
 ### You probably won't need to change this system, unless you want to tweak it for a specific
-### platform.  By default, four build targets are defined:
+### platform. By default, three build targets are defined:
 ###
-### * -DCMAKE_BUILD_TYPE=Debug          - no optimisation, full debugging information
-### * -DCMAKE_BUILD_TYPE=Release        - -O3 optimisation, static binary, no debugging information
-### * -DCMAKE_BUILD_TYPE=RelWithDebInfo - -O3 optimisation, static binary, but with debugging information
-### * -DCMAKE_BUILD_TYPE=Profile        - -O3 optimisation, profile information linked in
+### * -DCMAKE_BUILD_TYPE=Release        - -O3 optimisation, debugging symbols, assertions inactive
+### * -DCMAKE_BUILD_TYPE=Debug          - -O3 optimisation, full debugging information, assertions active
+### * -DCMAKE_BUILD_TYPE=Profile        - like Debug but with profile information linked in
 ###
 ### We overwrite the default configuration to include "-g", allow cross
 ### compilation and switch to pedantic error reporting.
@@ -26,6 +28,10 @@ cmake_minimum_required(VERSION 2.6)
 
 # Default to Release build, unless specified otherwise
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile")
+set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}"
+    CACHE STRING "List of supported configurations.")
+mark_as_advanced(CMAKE_CONFIGURATION_TYPES)
+
 if(NOT CMAKE_BUILD_TYPE)
     message("Defaulting to release build.")
     set(CMAKE_BUILD_TYPE Release
@@ -52,10 +58,13 @@ if(UNIX AND NOT ALLOW_64_BIT)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" CACHE STRING "c++ flags")
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32" CACHE STRING "c flags")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32" CACHE STRING "linker flags")
 endif()
 
-# Use all available LP solvers by default but allow to switch this off.
-option(USE_LP "Use an LP solver through the OSI interface." TRUE)
+# Use all available LP solvers by default. If no solvers are installed,
+# this option can remain true. Setting this to false will compile without
+# LP solvers even if some of them are installed.
+option(USE_LP "Use all available LP solvers." TRUE)
 
 
 
@@ -130,8 +139,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/local/include/")
     endif()
 
-    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${BITWIDTHOPT}")
-    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -g")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
 
 
     ## Configuration-specific flags
@@ -139,27 +147,29 @@ if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS_DEBUG "-O3")
     set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
 
-    set(CMAKE_CXX_LINK_FLAGS_PROFILE "-pg")
+    set(CMAKE_EXE_LINKER_FLAGS_PROFILE "-pg")
 elseif(MSVC)
     # enable exceptions
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -EHsc")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
     set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
 
-    # Use warning level 4 (-W4) and treat warnings as errors (-WX)
+    # Use warning level 4 (/W4) and treat warnings as errors (/WX)
     # -Wall currently detects too many warnings outside of our code to be useful.
-    string(REPLACE "/W3" "-W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -WX")
+    string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 
     # Disable warnings that currently trigger in the code until we fix them.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4800") # forcing value to bool
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4512") # assignment operator could not be generated
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4706") # assignment within conditional expression (in tree.hh)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4100") # unreferenced formal parameter (in OSI)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4127") # conditional expression is constant (in tree.hh and in our code)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4244") # conversion with possible loss of data
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4702") # unreachable code
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4239") # nonstandard extension used
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4996") # function call with parameters that may be unsafe
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4800") # forcing value to bool
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4512") # assignment operator could not be generated
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4706") # assignment within conditional expression (in tree.hh)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100") # unreferenced formal parameter (in OSI)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4127") # conditional expression is constant (in tree.hh and in our code)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244") # conversion with possible loss of data
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4702") # unreachable code
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4239") # nonstandard extension used
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996") # function call with parameters that may be unsafe
+
+    # TODO: Configuration-specific flags
 endif()
 
 

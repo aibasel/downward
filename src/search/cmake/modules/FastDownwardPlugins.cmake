@@ -75,7 +75,7 @@ set(PLANNER_SOURCES
 #
 # For now, everything defaults to being enabled - it's up to the user to specify -DPLUGIN_FOO=FALSE to disable
 # a given plugin.
-# The recipe for defining a pluging should be fairly self-explanatory. The text in double-quotes is
+# The recipe for defining a plugin should be fairly self-explanatory. The text in double-quotes is
 # a free-form natural language description, used in the CMake GUI to explain what the flag means.
 
 option(PLUGIN_ADDITIVE_HEURISTIC "The additive heuristic" TRUE)
