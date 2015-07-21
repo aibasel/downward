@@ -35,6 +35,7 @@ if(UNIX)
         "lib/x86-64_linux/static_pic")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
 elseif(MSVC)
+    # Note that the numbers are correct: Visual Studio 2011 is version 10
     if (MSVC10)
         set(CPLEX_COMPILER_HINT "vs2011")
     elseif(MSVC11)
