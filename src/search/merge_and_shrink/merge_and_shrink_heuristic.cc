@@ -230,14 +230,21 @@ int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) 
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Merge-and-shrink heuristic",
-                             "A currently recommended good configuration uses bisimulation "
-                             "based shrinking (alternating max states from 50000 to 200000 is "
-                             "reasonable), DFP merging, and the appropriate label "
-                             "reduction setting:\n"
-                             "merge_and_shrink(shrink_strategy=shrink_bisimulation(max_states=100000,"
-                             "threshold=1,greedy=false),merge_strategy=merge_dfp,"
-                             "label_reduction=label_reduction(before_shrinking=true, before_merging=false))");
+    parser.document_synopsis(
+        "Merge-and-shrink heuristic",
+        "This module implements the algorithm described in the following paper:\n\n"
+        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
+        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
+        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
+        "In //Proceedings of the 28th AAAI Conference on Artificial "
+        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.\n"
+        "For a more exhaustive description of merge-and-shrink, see the journal "
+        "paper\n\n"
+        " * Malte Helmert, Patrik Haslum, Joerg Hoffmann, and Raz Nissim.<<BR>>\n"
+        " [Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds "
+        "in Factored State Spaces. "
+        "http://ai.cs.unibas.ch/papers/helmert-et-al-jacm2014.pdf].<<BR>>\n "
+        "//Journal of the ACM 61 (3)//, pp. 16:1-63. 2014");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
@@ -251,70 +258,36 @@ static Heuristic *_parse(OptionParser &parser) {
         "for tasks that are not factored (in the sense of the JACM 2014 "
         "merge-and-shrink paper), the atomic transition systems on which "
         "merge-and-shrink heuristics are based are nondeterministic, "
-        "which can lead to poor heuristics even when no shrinking is "
-        "performed.");
+        "which can lead to poor heuristics even when only perfect shrinking "
+        "is performed.");
+    parser.document_note(
+        "Note",
+        "A currently recommended good configuration uses bisimulation "
+        "based shrinking (selecting max states from 50000 to 200000 is "
+        "reasonable), DFP merging, and the appropriate label "
+        "reduction setting:\n"
+        "merge_and_shrink(shrink_strategy=shrink_bisimulation(max_states=100000,"
+        "threshold=1,greedy=false),merge_strategy=merge_dfp(),"
+        "label_reduction=label_reduction(before_shrinking=true, before_merging=false))");
 
     // Merge strategy option.
     parser.add_option<shared_ptr<MergeStrategy> >(
         "merge_strategy",
-        "merge strategy; choose between merge_linear with various variable "
-        "orderings and merge_dfp.");
+        "See detailed documentation for merge strategies. "
+        "We currently recommend merge_dfp.");
 
     // Shrink strategy option.
     parser.add_option<shared_ptr<ShrinkStrategy> >(
         "shrink_strategy",
-        "shrink strategy; choose between shrink_fh and shrink_bisimulation. "
-        "A good configuration for bisimulation based shrinking is: "
-        "shrink_bisimulation(max_states=50000, max_states_before_merge=50000, "
-        "threshold=1, greedy=false)");
-    ValueExplanations shrink_value_explanations;
-    shrink_value_explanations.push_back(
-        make_pair("shrink_fh(max_states=N)",
-                  "f-preserving transition systems from the "
-                  "Helmert/Haslum/Hoffmann ICAPS 2007 paper "
-                  "(called HHH in the IJCAI 2011 paper by Nissim, "
-                  "Hoffmann and Helmert). "
-                  "Here, N is a numerical parameter for which sensible values "
-                  "include 1000, 10000, 50000, 100000 and 200000. "
-                  "Combine this with the default linear merge strategy "
-                  "CG_GOAL_LEVEL to match the heuristic "
-                  "in the paper. "
-                  "This strategy performs best when used with label reduction "
-                  "before merging, it is hence recommended to set "
-                  "reduce_labels_before_shrinking=false and "
-                  "reduce_labels_before_merging=true."));
-    shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
-                  "Greedy bisimulation without size bound "
-                  "(called M&S-gop in the IJCAI 2011 paper by Nissim, "
-                  "Hoffmann and Helmert). "
-                  "Combine this with the linear merge strategy "
-                  "REVERSE_LEVEL to match "
-                  "the heuristic in the paper. "
-                  "This strategy performs best when used with label reduction "
-                  "before shrinking, it is hence recommended to set "
-                  "reduce_labels_before_shrinking=true and "
-                  "reduce_labels_before_merging=false."));
-    shrink_value_explanations.push_back(
-        make_pair("shrink_bisimulation(max_states=N, greedy=false)",
-                  "Exact bisimulation with a size limit "
-                  "(called DFP-bop in the IJCAI 2011 paper by Nissim, "
-                  "Hoffmann and Helmert), "
-                  "where N is a numerical parameter for which sensible values "
-                  "include 1000, 10000, 50000, 100000 and 200000. "
-                  "Combine this with the linear merge strategy "
-                  "REVERSE_LEVEL to match "
-                  "the heuristic in the paper. "
-                  "This strategy performs best when used with label reduction "
-                  "before shrinking, it is hence recommended to set "
-                  "reduce_labels_before_shrinking=true and "
-                  "reduce_labels_before_merging=false."));
-    parser.document_values("shrink_strategy", shrink_value_explanations);
+        "See detailed documentation for shrink strategies. "
+        "We currently recommend shrink_bisimulation.");
 
     // Label reduction option.
-    parser.add_option<shared_ptr<Labels>>("label_reduction",
-                                "Choose relevant options for label reduction. "
-                                "Also note the interaction with shrink strategies.");
+    parser.add_option<shared_ptr<Labels> >(
+        "label_reduction",
+        "See detailed documentation for labels. There is currently only "
+        "one 'option' to use label_reduction. Also note the interaction "
+        "with shrink strategies.");
 
     // General merge-and-shrink options.
     parser.add_option<bool>(
@@ -331,8 +304,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     } else {
-        MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(opts);
-        return result;
+        return new MergeAndShrinkHeuristic(opts);
     }
 }
 
