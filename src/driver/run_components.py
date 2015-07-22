@@ -11,9 +11,9 @@ from .plan_manager import PlanManager
 from .util import SRC_DIR
 
 
-TRANSLATE = os.path.join(SRC_DIR, "translate", "translate.py")
-PREPROCESS = os.path.join(SRC_DIR, "preprocess", "preprocess")
-SEARCH_DIR = os.path.join(SRC_DIR, "search")
+TRANSLATE = os.path.join(SRC_DIR, "components", "translate", "translate.py")
+PREPROCESS = os.path.join(SRC_DIR, "components", "preprocess")
+SEARCH = os.path.join(SRC_DIR, "components", "downward")
 
 
 def check_for_executable(executable, debug):
@@ -88,18 +88,14 @@ def run_search(args):
     plan_manager = PlanManager(args.plan_file)
     plan_manager.delete_existing_plans()
 
-    if args.debug:
-        executable = os.path.join(SEARCH_DIR, "downward-debug")
-    else:
-        executable = os.path.join(SEARCH_DIR, "downward-release")
-    logging.info("search executable: %s" % executable)
-    check_for_executable(executable, args.debug)
+    logging.info("search executable: %s" % SEARCH)
+    check_for_executable(SEARCH, args.debug)
 
     if args.portfolio:
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
         portfolio_runner.run(
-            args.portfolio, executable, args.search_input, plan_manager,
+            args.portfolio, SEARCH, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
         if not args.search_options:
@@ -108,6 +104,6 @@ def run_search(args):
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
         call_component(
-            executable, args.search_options,
+            SEARCH, args.search_options,
             stdin=args.search_input,
             time_limit=time_limit, memory_limit=memory_limit)
