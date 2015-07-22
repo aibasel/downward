@@ -89,9 +89,9 @@ void read_goal(istream &in, const vector<Variable *> &variables,
 
 void dump_goal(const vector<pair<Variable *, int> > &goals) {
     cout << "Goal Conditions:" << endl;
-    for (int i = 0; i < goals.size(); i++)
-        cout << "  " << goals[i].first->get_name() << ": "
-             << goals[i].second << endl;
+    for (const auto &goal : goals)
+        cout << "  " << goal.first->get_name() << ": "
+             << goal.second << endl;
 }
 
 void read_operators(istream &in, const vector<Variable *> &variables,
@@ -135,22 +135,23 @@ void dump_preprocessed_problem_description(const vector<Variable *> &variables,
                                            const vector<Operator> &operators,
                                            const vector<Axiom> &axioms) {
     cout << "Variables (" << variables.size() << "):" << endl;
-    for (int i = 0; i < variables.size(); i++)
-        variables[i]->dump();
+    for (Variable *var : variables)
+        var->dump();
 
     cout << "Initial State:" << endl;
     initial_state.dump();
     dump_goal(goals);
 
-    for (int i = 0; i < operators.size(); i++)
-        operators[i].dump();
-    for (int i = 0; i < axioms.size(); i++)
-        axioms[i].dump();
+    for (const Operator &op : operators)
+        op.dump();
+    for (const Axiom &axiom : axioms)
+        axiom.dump();
 }
 
 void dump_DTGs(const vector<Variable *> &ordering,
                vector<DomainTransitionGraph> &transition_graphs) {
-    for (int i = 0; i < transition_graphs.size(); i++) {
+    int num_graphs = transition_graphs.size();
+    for (int i = 0; i < num_graphs; i++) {
         cout << "Domain transition graph for " << ordering[i]->get_name() << ":" << endl;
         transition_graphs[i].dump();
     }
@@ -181,48 +182,48 @@ void generate_cpp_input(bool /*solvable_in_poly_time*/,
     outfile << metric << endl;
     outfile << "end_metric" << endl;
 
-    outfile << ordered_vars.size() << endl;
-    for (int i = 0; i < ordered_vars.size(); i++)
-        ordered_vars[i]->generate_cpp_input(outfile);
+    int num_vars = ordered_vars.size();
+    outfile << num_vars << endl;
+    for (Variable *var : ordered_vars)
+        var->generate_cpp_input(outfile);
 
     outfile << mutexes.size() << endl;
-    for (int i = 0; i < mutexes.size(); i++)
-        mutexes[i].generate_cpp_input(outfile);
+    for (const MutexGroup &mutex : mutexes)
+        mutex.generate_cpp_input(outfile);
 
-    int var_count = ordered_vars.size();
     outfile << "begin_state" << endl;
-    for (int i = 0; i < var_count; i++)
-        outfile << initial_state[ordered_vars[i]] << endl;  // for axioms default value
+    for (Variable *var : ordered_vars)
+        outfile << initial_state[var] << endl;  // for axioms default value
     outfile << "end_state" << endl;
 
     vector<int> ordered_goal_values;
-    ordered_goal_values.resize(var_count, -1);
-    for (int i = 0; i < goals.size(); i++) {
-        int var_index = goals[i].first->get_level();
-        ordered_goal_values[var_index] = goals[i].second;
+    ordered_goal_values.resize(num_vars, -1);
+    for (const auto &goal : goals) {
+        int var_index = goal.first->get_level();
+        ordered_goal_values[var_index] = goal.second;
     }
     outfile << "begin_goal" << endl;
     outfile << goals.size() << endl;
-    for (int i = 0; i < var_count; i++)
+    for (int i = 0; i < num_vars; i++)
         if (ordered_goal_values[i] != -1)
             outfile << i << " " << ordered_goal_values[i] << endl;
     outfile << "end_goal" << endl;
 
     outfile << operators.size() << endl;
-    for (int i = 0; i < operators.size(); i++)
-        operators[i].generate_cpp_input(outfile);
+    for (const Operator &op : operators)
+        op.generate_cpp_input(outfile);
 
     outfile << axioms.size() << endl;
-    for (int i = 0; i < axioms.size(); i++)
-        axioms[i].generate_cpp_input(outfile);
+    for (const Axiom &axiom : axioms)
+        axiom.generate_cpp_input(outfile);
 
     outfile << "begin_SG" << endl;
     sg.generate_cpp_input(outfile);
     outfile << "end_SG" << endl;
 
-    for (int i = 0; i < var_count; i++) {
+    for (const auto &dtg : transition_graphs) {
         outfile << "begin_DTG" << endl;
-        transition_graphs[i].generate_cpp_input(outfile);
+        dtg.generate_cpp_input(outfile);
         outfile << "end_DTG" << endl;
     }
 
