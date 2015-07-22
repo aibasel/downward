@@ -25,7 +25,7 @@ class ShrinkBisimulation : public ShrinkStrategy {
                             std::vector<Signature> &signatures,
                             const std::vector<int> &state_to_group);
 protected:
-    virtual void shrink(const TransitionSystem &ts,
+    virtual void compute_equivalence_relation(const TransitionSystem &ts,
                         int target,
                         StateEquivalenceRelation &equivalence_relation);
     virtual void dump_strategy_specific_options() const;

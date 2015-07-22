@@ -325,7 +325,7 @@ void ShrinkBisimulation::compute_abstraction(
     }
 }
 
-void ShrinkBisimulation::shrink(const TransitionSystem &ts,
+void ShrinkBisimulation::compute_equivalence_relation(const TransitionSystem &ts,
                                 int target,
                                 StateEquivalenceRelation &equivalence_relation) {
     compute_abstraction(ts, target, equivalence_relation);
