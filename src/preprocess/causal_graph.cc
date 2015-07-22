@@ -304,7 +304,7 @@ const {
         WeightedSuccessors *curr = succs[i];
         // print number of variables influenced by variable i
         outfile << number_of_succ[i] << endl;
-        for (const auto & succ : *curr) {
+        for (const auto &succ : *curr) {
             if (succ.first->get_level() != -1
                 // && succ.first->get_level() > ordered_vars[i]->get_level()
                 )
