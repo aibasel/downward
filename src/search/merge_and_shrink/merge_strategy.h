@@ -11,6 +11,7 @@ class TransitionSystem;
 
 class MergeStrategy {
     const int UNINITIALIZED = -1;
+    bool initialized() const;
 protected:
     int remaining_merges;
     virtual void dump_strategy_specific_options() const = 0;
@@ -18,7 +19,6 @@ public:
     MergeStrategy();
     virtual ~MergeStrategy() = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> task);
-    bool initialized() const;
     bool done() const;
     void dump_options() const;
 

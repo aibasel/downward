@@ -42,6 +42,10 @@ Labels::Labels(const Options &options)
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
 }
 
+bool Labels::initialized() const {
+    return !transition_system_order.empty();
+}
+
 void Labels::initialize(const TaskProxy &task_proxy) {
     assert(!initialized());
 
@@ -67,10 +71,6 @@ void Labels::initialize(const TaskProxy &task_proxy) {
     }
 }
 
-bool Labels::initialized() const {
-    return !transition_system_order.empty();
-}
-
 void Labels::add_label(int cost) {
     assert(initialized());
     labels.push_back(new Label(cost));
@@ -92,10 +92,12 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
                                    vector<pair<int, vector<int> > > &label_mapping) {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (BlockListConstIter group_it = relation->begin(); group_it != relation->end(); ++group_it) {
+    for (BlockListConstIter group_it = relation->begin();
+         group_it != relation->end(); ++group_it) {
         const Block &block = *group_it;
         unordered_map<int, vector<int> > equivalent_label_nos;
-        for (ElementListConstIter label_it = block.begin(); label_it != block.end(); ++label_it) {
+        for (ElementListConstIter label_it = block.begin();
+             label_it != block.end(); ++label_it) {
             assert(*label_it < static_cast<int>(labels.size()));
             int label_no = *label_it;
             Label *label = labels[label_no];
