@@ -340,6 +340,15 @@ void Labels::dump_options() const {
 }
 
 static shared_ptr<Labels>_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Generalized label reduction",
+        "This class implements the generalized label reduction described "
+        "in the following paper:\n\n"
+        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
+        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
+        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
+        "In //Proceedings of the 28th AAAI Conference on Artificial "
+        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.");
     parser.add_option<bool>("before_shrinking",
                             "apply label reduction before shrinking");
     parser.add_option<bool>("before_merging",
