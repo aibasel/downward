@@ -299,7 +299,7 @@ void Labels::dump_labels() const {
     }
 }
 
-void Labels::dump_label_reduction_options() const {
+void Labels::dump_options() const {
     assert(initialized());
     cout << "Label reduction options:" << endl;
     cout << "Before merging: "

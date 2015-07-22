@@ -18,6 +18,10 @@ class MergeAndShrinkHeuristic : public Heuristic {
     const bool use_expensive_statistics;
     long starting_peak_memory;
 
+    /*
+      TODO: after splitting transition system into several parts, we may
+      want to change all transition system pointers into unique_ptr.
+    */
     TransitionSystem *final_transition_system;
     TransitionSystem *build_transition_system(const Timer &timer);
 
