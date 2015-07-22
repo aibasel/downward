@@ -23,7 +23,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
       want to change all transition system pointers into unique_ptr.
     */
     TransitionSystem *final_transition_system;
-    TransitionSystem *build_transition_system(const Timer &timer);
+    void build_transition_system(const Timer &timer);
 
     void report_peak_memory_delta(bool final = false) const;
     void dump_options() const;
