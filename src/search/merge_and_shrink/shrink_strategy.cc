@@ -25,7 +25,7 @@ ShrinkStrategy::ShrinkStrategy(const Options &opts)
 ShrinkStrategy::~ShrinkStrategy() {
 }
 
-bool ShrinkStrategy::shrink_transition_system(TransitionSystem &ts, int new_size) {
+bool ShrinkStrategy::shrink_transition_system(TransitionSystem &ts, int new_size) const {
     assert(ts.is_solvable());
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
@@ -81,7 +81,7 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
 }
 
 pair<bool, bool> ShrinkStrategy::shrink(TransitionSystem &ts1,
-                                                     TransitionSystem &ts2) {
+                                        TransitionSystem &ts2) const {
     /*
       Compute the size limit for both transition systems as imposed by
       max_states and max_states_before_merge.
