@@ -182,10 +182,10 @@ GeneratorBase *SuccessorGenerator::construct_recursive(int switch_var_no,
         while (!op_indices.empty()) {
             int op_index = op_indices.front();
             op_indices.pop_front();
-            assert(op_index >= 0 && op_index < (int) next_condition_by_op.size());
+            assert(op_index >= 0 && op_index < (int)next_condition_by_op.size());
             Condition::const_iterator &cond_iter = next_condition_by_op[op_index];
             assert(cond_iter - conditions[op_index].begin() >= 0);
-            assert(cond_iter - conditions[op_index].begin() <= (int) conditions[op_index].size());
+            assert(cond_iter - conditions[op_index].begin() <= (int)conditions[op_index].size());
             if (cond_iter == conditions[op_index].end()) {
                 var_is_interesting = true;
                 applicable_ops_indices.push_back(op_index);
