@@ -110,7 +110,7 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" LOWER_CASE_BUILD_TYPE)
 set(TARGET "${TARGET}-${LOWER_CASE_BUILD_TYPE}")
 
 # Collect source files needed for the active plugins.
-include("FastDownwardPlugins")
+include("${CMAKE_CURRENT_SOURCE_DIR}/FastDownwardPlugins.cmake")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 
