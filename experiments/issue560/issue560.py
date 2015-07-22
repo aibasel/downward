@@ -30,4 +30,6 @@ exp.add_report(
     outfile='issue560_base_v1_preprocess_wall_clock_time.png'
 )
 
+exp.add_absolute_report_step(attributes=["preprocess_wall_clock_time"])
+
 exp()
