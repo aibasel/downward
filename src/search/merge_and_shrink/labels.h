@@ -22,8 +22,6 @@ class Labels {
     bool lr_before_shrinking;
     bool lr_before_merging;
     /*
-      none: no label reduction will be performed
-
       two_transition_systems: compute the 'combinable relation'
       for labels only for the two transition_systems that will
       be merged next and reduce labels.
