@@ -59,7 +59,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/components)
 add_custom_target(translator ALL)
 add_custom_command(TARGET translator POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/translate
+        ${CMAKE_CURRENT_SOURCE_DIR}/translate
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translate
     COMMENT "Copying translator module to output directory")
 
