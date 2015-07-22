@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from downward import suites
-
+from relativescatter import RelativeScatterPlotReport
 import common_setup
 
 
@@ -21,5 +21,13 @@ exp = common_setup.IssueExperiment(
     configs=CONFIGS,
     suite=SUITE,
     )
+
+exp.add_report(
+    RelativeScatterPlotReport(
+        attributes=["preprocess_wall_clock_time"],
+        get_category=lambda run1, run2: run1.get("domain"),
+    ),
+    outfile='issue560_base_v1_preprocess_wall_clock_time.png'
+)
 
 exp()
