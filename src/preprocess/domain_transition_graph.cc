@@ -36,12 +36,12 @@ void DomainTransitionGraph::addTransition(int from, int to, const Operator &op,
     const vector<Operator::Prevail> &prevail = op.get_prevail();
     for (const Operator::Prevail &prev : prevail)
         cond.push_back(make_pair(prev.var, prev.prev));
-    for (const Operator::PrePost &eff : op.get_pre_post()) {
-        if (eff.pre != -1) {
-            if (eff.var->get_level() == level)
-                assert(eff.pre == from);
+    for (const Operator::PrePost &op_pre_post : op.get_pre_post()) {
+        if (op_pre_post.pre != -1) {
+            if (op_pre_post.var->get_level() == level)
+                assert(op_pre_post.pre == from);
             else
-                cond.push_back(make_pair(eff.var, eff.pre));
+                cond.push_back(make_pair(op_pre_post.var, op_pre_post.pre));
         }
     }
     // Collect effect conditions for this effect.

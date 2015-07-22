@@ -40,18 +40,18 @@ void CausalGraph::weigh_graph_from_ops(const vector<Variable *> &,
                                        const vector<pair<Variable *, int> > &) {
     for (const Operator &op : operators) {
         const vector<Operator::Prevail> &prevail = op.get_prevail();
-        const vector<Operator::PrePost> &pre_post = op.get_pre_post();
+        const vector<Operator::PrePost> &pre_posts = op.get_pre_post();
         vector<Variable *> source_vars;
         for (const Operator::Prevail &prev : prevail)
             source_vars.push_back(prev.var);
-        for (const Operator::PrePost &eff : pre_post)
-            if (eff.pre != -1)
-                source_vars.push_back(eff.var);
+        for (const Operator::PrePost &pre_post : pre_posts)
+            if (pre_post.pre != -1)
+                source_vars.push_back(pre_post.var);
 
-        for (const Operator::PrePost &eff : pre_post) {
-            Variable *curr_target = eff.var;
-            if (eff.is_conditional_effect)
-                for (const Operator::EffCond &eff_cond : eff.effect_conds)
+        for (const Operator::PrePost &pre_post : pre_posts) {
+            Variable *curr_target = pre_post.var;
+            if (pre_post.is_conditional_effect)
+                for (const Operator::EffCond &eff_cond : pre_post.effect_conds)
                     source_vars.push_back(eff_cond.var);
 
             for (Variable *curr_source : source_vars) {
@@ -70,8 +70,8 @@ void CausalGraph::weigh_graph_from_ops(const vector<Variable *> &,
                 }
             }
 
-            if (eff.is_conditional_effect)
-                source_vars.erase(source_vars.end() - eff.effect_conds.size(),
+            if (pre_post.is_conditional_effect)
+                source_vars.erase(source_vars.end() - pre_post.effect_conds.size(),
                                   source_vars.end());
         }
     }
