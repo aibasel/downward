@@ -87,7 +87,7 @@ ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
 int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
-                                          vector<int> &state_to_group) {
+                                          vector<int> &state_to_group) const {
     /* Group 0 holds all goal states.
 
        Each other group holds all states with one particular h value.
@@ -124,7 +124,7 @@ int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
 void ShrinkBisimulation::compute_signatures(
     const TransitionSystem &ts,
     vector<Signature> &signatures,
-    const vector<int> &state_to_group) {
+    const vector<int> &state_to_group) const {
     assert(signatures.empty());
 
     // Step 1: Compute bare state signatures (without transition information).
@@ -209,7 +209,7 @@ void ShrinkBisimulation::compute_signatures(
 void ShrinkBisimulation::compute_abstraction(
     const TransitionSystem &ts,
     int target_size,
-    StateEquivalenceRelation &equivalence_relation) {
+    StateEquivalenceRelation &equivalence_relation) const {
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
@@ -325,9 +325,10 @@ void ShrinkBisimulation::compute_abstraction(
     }
 }
 
-void ShrinkBisimulation::compute_equivalence_relation(const TransitionSystem &ts,
-                                int target,
-                                StateEquivalenceRelation &equivalence_relation) {
+void ShrinkBisimulation::compute_equivalence_relation(
+    const TransitionSystem &ts,
+    int target,
+    StateEquivalenceRelation &equivalence_relation) const {
     compute_abstraction(ts, target, equivalence_relation);
 }
 

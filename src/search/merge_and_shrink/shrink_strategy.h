@@ -44,7 +44,7 @@ private:
       system, but it may attempt to e.g. shrink the transition system in an
       information preserving way.
     */
-    bool shrink_transition_system(TransitionSystem &ts, int new_size);
+    bool shrink_transition_system(TransitionSystem &ts, int new_size) const;
     /*
       If max_states_before_merge is violated by any of the two transition
       systems or if the product transition system would exceed max_states,
@@ -59,9 +59,10 @@ protected:
       transition system down to at most size target. This method needs to be
       specified by concrete shrinking strategies.
     */
-    virtual void compute_equivalence_relation(const TransitionSystem &ts,
-                        int target,
-                        StateEquivalenceRelation &equivalence_relation) = 0;
+    virtual void compute_equivalence_relation(
+        const TransitionSystem &ts,
+        int target,
+        StateEquivalenceRelation &equivalence_relation) const = 0;
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
@@ -72,7 +73,8 @@ public:
       The given transition systems are guaranteed to be solvable by the
       merge-and-shrink computation.
     */
-    std::pair<bool, bool> shrink(TransitionSystem &ts1, TransitionSystem &ts2);
+    std::pair<bool, bool> shrink(TransitionSystem &ts1,
+                                 TransitionSystem &ts2) const;
 
     void dump_options() const;
     std::string get_name() const;
