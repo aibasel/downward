@@ -349,6 +349,34 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Bismulation based shrink strategy",
+        "This shrink strategy implements the algorithm described in the paper:\n\n"
+        " * Raz Nissim, Joerg Hoffmann and Malte Helmert.<<BR>>\n"
+        " [Computing Perfect Heuristics in Polynomial Time: On Bisimulation "
+        "and Merge-and-Shrink Abstractions in Optimal Planning. "
+        "http://ai.cs.unibas.ch/papers/nissim-et-al-ijcai2011.pdf].<<BR>>\n "
+        "In //Proceedings of the Twenty-Second International Joint Conference "
+        "on Artificial Intelligence (IJCAI 2011)//, pp. 1983-1990. 2011.");
+    parser.document_note(
+        "shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
+        "Greedy bisimulation without size bound "
+        "(called M&S-gop in the IJCAI 2011 paper)."
+        "Combine this with the linear merge strategy "
+        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "This strategy performs best when used with label reduction "
+        "before shrinking (and no label reduction before merging).");
+    parser.document_note(
+        "shrink_bisimulation(max_states=N, greedy=false)",
+        "Exact bisimulation with a size limit "
+        "(called DFP-bop in the IJCAI 2011 paper), "
+        "where N is a numerical parameter for which sensible values "
+        "include 1000, 10000, 50000, 100000 and 200000. "
+        "Combine this with the linear merge strategy "
+        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "This strategy performs best when used with label reduction "
+        "before shrinking (and no label reduction before merging).");
+
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
 

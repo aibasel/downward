@@ -153,7 +153,24 @@ void ShrinkFH::dump_strategy_specific_options() const {
 }
 
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
-    parser.document_synopsis("f-Preserving", "");
+    parser.document_synopsis(
+        "f-preserving shrink strategy",
+        "This shrink strategy implements the algorithm described in the paper:\n\n"
+        " * Malte Helmert, Patrik Haslum and Joerg Hoffmann..<<BR>>\n"
+        " [Flexible Abstraction Heuristics for Optimal Sequential Planning. "
+        "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf].<<BR>>\n "
+        "In //Proceedings of the Seventeenth International Conference on "
+        "Automated Planning and Scheduling (ICAPS 2007)//, pp. 176-183. 2007. ");
+    parser.document_note(
+        "shrink_fh(max_states=N)",
+        "f-preserving shrinking of transition systems "
+        "(called HHH in the IJCAI 2011 paper, see shrink_bisimulation)."
+        "Here, N is a numerical parameter for which sensible values "
+        "include 1000, 10000, 50000, 100000 and 200000. "
+        "Combine this with the linear merge strategy "
+        "CG_GOAL_LEVEL to match the heuristic in the paper. "
+        "This strategy performs best when used with label reduction "
+        "before merging (and no label reduction before shrinking).");
     ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");
