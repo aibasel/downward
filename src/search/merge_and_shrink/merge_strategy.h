@@ -11,9 +11,9 @@ class TransitionSystem;
 
 class MergeStrategy {
     const int UNINITIALIZED = -1;
-    bool initialized() const;
 protected:
     int remaining_merges;
+    bool initialized() const;
     virtual void dump_strategy_specific_options() const = 0;
 public:
     MergeStrategy();
