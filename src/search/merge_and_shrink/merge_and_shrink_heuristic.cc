@@ -22,8 +22,8 @@ using namespace std;
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<shared_ptr<MergeStrategy> >("merge_strategy")),
-      shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
-      labels(opts.get<shared_ptr<Labels>>("label_reduction")),
+      shrink_strategy(opts.get<shared_ptr<ShrinkStrategy> >("shrink_strategy")),
+      labels(opts.get<shared_ptr<Labels> >("label_reduction")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")),
       starting_peak_memory(-1),
       final_transition_system(nullptr) {

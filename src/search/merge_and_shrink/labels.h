@@ -71,7 +71,7 @@ class Labels {
 public:
     explicit Labels(const Options &options);
     ~Labels() {}
-    void initialize(const TaskProxy &task_proxy);   
+    void initialize(const TaskProxy &task_proxy);
     void add_label(int cost);
     void reduce(std::pair<int, int> next_merge,
                 const std::vector<TransitionSystem *> &all_transition_systems);
