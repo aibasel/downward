@@ -21,3 +21,4 @@
 ^src/VAL/lex\.yy\.cc$
 ^src/VAL/validate$
 ^src/validate$
+^builds/.*$
