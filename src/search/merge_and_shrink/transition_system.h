@@ -309,6 +309,10 @@ protected:
     virtual std::string description() const;
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
+    /*
+      The given transition systems are guaranteed to be solvable by the
+      merge-and-shrink computation.
+    */
     CompositeTransitionSystem(const TaskProxy &task_proxy,
                               const std::shared_ptr<Labels> labels,
                               TransitionSystem *ts1,

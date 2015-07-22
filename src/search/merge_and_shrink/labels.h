@@ -78,7 +78,7 @@ public:
     bool is_current_label(int label_no) const;
     int get_label_cost(int label_no) const;
     void dump_labels() const;
-    void dump_label_reduction_options() const;
+    void dump_options() const;
 
     bool reduce_before_shrinking() const {
         return lr_before_shrinking;

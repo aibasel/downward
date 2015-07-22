@@ -55,6 +55,10 @@ public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
 
+    /*
+      The given transition systems are guaranteed to be solvable by the
+      merge-and-shrink computation.
+    */
     std::pair<bool, bool> shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
 
     void dump_options() const;
