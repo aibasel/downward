@@ -137,8 +137,8 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             }
 
             // Shrinking
-            pair<bool, bool> shrunk = shrink_strategy->shrink_before_merge(*transition_system1,
-                                                                           *transition_system2);
+            pair<bool, bool> shrunk = shrink_strategy->shrink(
+                *transition_system1, *transition_system2);
             if (shrunk.first)
                 transition_system1->statistics(timer, use_expensive_statistics);
             if (shrunk.second)
