@@ -57,7 +57,7 @@ string MergeLinear::name() const {
     return "linear";
 }
 
-static MergeStrategy *_parse(OptionParser &parser) {
+static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     vector<string> merge_strategies;
     merge_strategies.push_back("CG_GOAL_LEVEL");
     merge_strategies.push_back("CG_GOAL_RANDOM");
@@ -71,9 +71,9 @@ static MergeStrategy *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new MergeLinear(opts);
+        return shared_ptr<MergeStrategy>(new MergeLinear(opts));
 }
 
-static Plugin<MergeStrategy> _plugin("merge_linear", _parse);
+static PluginShared<MergeStrategy> _plugin("merge_linear", _parse);

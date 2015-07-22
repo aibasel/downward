@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <memory>
 #include <unordered_map>
 
 using namespace std;
@@ -347,7 +348,7 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << endl;
 }
 
-static ShrinkStrategy *_parse(OptionParser &parser) {
+static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
 
@@ -361,14 +362,14 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     if (parser.help_mode())
-        return 0;
+        return nullptr;
 
     ShrinkStrategy::handle_option_defaults(opts);
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new ShrinkBisimulation(opts);
+        return shared_ptr<ShrinkStrategy>(new ShrinkBisimulation(opts));
 }
 
-static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
+static PluginShared<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);

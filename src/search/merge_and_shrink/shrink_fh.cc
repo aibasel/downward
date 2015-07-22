@@ -9,6 +9,7 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <vector>
 
 using namespace std;
@@ -151,7 +152,7 @@ void ShrinkFH::dump_strategy_specific_options() const {
          << (h_start == HIGH ? "high" : "low") << endl;
 }
 
-static ShrinkStrategy *_parse(OptionParser &parser) {
+static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis("f-Preserving", "");
     ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
@@ -167,14 +168,14 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
         "LOW");
     Options opts = parser.parse();
     if (parser.help_mode())
-        return 0;
+        return nullptr;
 
     ShrinkStrategy::handle_option_defaults(opts);
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new ShrinkFH(opts);
+        return shared_ptr<ShrinkStrategy>(new ShrinkFH(opts));
 }
 
-static Plugin<ShrinkStrategy> _plugin("shrink_fh", _parse);
+static PluginShared<ShrinkStrategy> _plugin("shrink_fh", _parse);

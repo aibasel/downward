@@ -9,7 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <ctype.h>
+#include <cctype>
 #include <deque>
 #include <iostream>
 #include <iterator>
@@ -43,7 +43,7 @@ const int TransitionSystem::DISTANCE_UNKNOWN;
 
 
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
-                                   const Labels *labels)
+                                   const shared_ptr<Labels> labels)
     : labels(labels),
       num_labels(labels->get_size()),
       num_variables(task_proxy.get_variables().size()) {
@@ -383,7 +383,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 
 void TransitionSystem::build_atomic_transition_systems(const TaskProxy &task_proxy,
                                                        vector<TransitionSystem *> &result,
-                                                       Labels *labels) {
+                                                       shared_ptr<Labels> labels) {
     assert(result.empty());
     cout << "Building atomic transition systems... " << endl;
     VariablesProxy variables = task_proxy.get_variables();
@@ -488,7 +488,7 @@ void TransitionSystem::build_atomic_transition_systems(const TaskProxy &task_pro
     }
 
     for (size_t i = 0; i < result.size(); ++i) {
-        // Need to set the correct number of labels *after* generating them
+        // Need to set the correct number of shared_ptr<Labels> after* generating them
         TransitionSystem *ts = result[i];
         ts->num_labels = labels->get_size();
         /* Make all irrelevant labels explicit and set the cost of every
@@ -844,7 +844,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
 
 
 AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
-                                               const Labels *labels,
+                                               const shared_ptr<Labels> labels,
                                                int var_id)
     : TransitionSystem(task_proxy, labels), var_id(var_id) {
     var_id_set.push_back(var_id);
@@ -920,7 +920,7 @@ AbstractStateRef AtomicTransitionSystem::get_abstract_state(const State &state) 
 
 
 CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy,
-                                                     const Labels *labels,
+                                                     const shared_ptr<Labels> labels,
                                                      TransitionSystem *ts1,
                                                      TransitionSystem *ts2)
     : TransitionSystem(task_proxy, labels) {
