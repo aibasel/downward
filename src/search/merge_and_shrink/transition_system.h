@@ -125,7 +125,7 @@ class TransitionSystem {
       and managed by MergeAndShrinkHeuristic. All transition system instances
       have a pointer to this object to ease access to the set of labels.
     */
-    const Labels *labels;
+    const std::shared_ptr<Labels> labels;
     std::list<LabelGroup> grouped_labels;
     /*
       The transitions of a label group are never moved once they are stored
@@ -220,12 +220,12 @@ protected:
         const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
 public:
     TransitionSystem(const TaskProxy &task_proxy,
-                     const Labels *labels);
+                     const std::shared_ptr<Labels> labels);
     virtual ~TransitionSystem();
 
     static void build_atomic_transition_systems(const TaskProxy &task_proxy,
                                                 std::vector<TransitionSystem *> &result,
-                                                Labels *labels);
+                                                std::shared_ptr<Labels> labels);
     bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
@@ -294,7 +294,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
     AtomicTransitionSystem(const TaskProxy &task_proxy,
-                           const Labels *labels,
+                           const std::shared_ptr<Labels> labels,
                            int var_id);
     virtual ~AtomicTransitionSystem();
 };
@@ -310,7 +310,7 @@ protected:
     virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
     CompositeTransitionSystem(const TaskProxy &task_proxy,
-                              const Labels *labels,
+                              const std::shared_ptr<Labels> labels,
                               TransitionSystem *ts1,
                               TransitionSystem *ts2);
     virtual ~CompositeTransitionSystem();

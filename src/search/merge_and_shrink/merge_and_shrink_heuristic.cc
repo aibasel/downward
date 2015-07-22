@@ -21,18 +21,12 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      merge_strategy(opts.get<MergeStrategy *>("merge_strategy")),
-      shrink_strategy(opts.get<ShrinkStrategy *>("shrink_strategy")),
-      labels(opts.get<Labels *>("label_reduction")),
+      merge_strategy(opts.get<shared_ptr<MergeStrategy> >("merge_strategy")),
+      shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
+      labels(opts.get<shared_ptr<Labels>>("label_reduction")),
       use_expensive_statistics(opts.get<bool>("expensive_statistics")) {
     merge_strategy->initialize(task);
     labels->initialize(task_proxy);
-}
-
-MergeAndShrinkHeuristic::~MergeAndShrinkHeuristic() {
-    delete merge_strategy;
-    delete shrink_strategy;
-    delete labels;
 }
 
 void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
@@ -192,8 +186,6 @@ TransitionSystem *MergeAndShrinkHeuristic::build_transition_system(const Timer &
         return final_transition_system;
 
     final_transition_system->release_memory();
-
-    delete labels;
     labels = 0;
 
     cout << "Done with merge-and-shrink main loop." << endl;
@@ -258,13 +250,13 @@ static Heuristic *_parse(OptionParser &parser) {
         "performed.");
 
     // Merge strategy option.
-    parser.add_option<MergeStrategy *>(
+    parser.add_option<shared_ptr<MergeStrategy> >(
         "merge_strategy",
         "merge strategy; choose between merge_linear with various variable "
         "orderings and merge_dfp.");
 
     // Shrink strategy option.
-    parser.add_option<ShrinkStrategy *>(
+    parser.add_option<shared_ptr<ShrinkStrategy> >(
         "shrink_strategy",
         "shrink strategy; choose between shrink_fh and shrink_bisimulation. "
         "A good configuration for bisimulation based shrinking is: "
@@ -315,7 +307,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_values("shrink_strategy", shrink_value_explanations);
 
     // Label reduction option.
-    parser.add_option<Labels *>("label_reduction",
+    parser.add_option<shared_ptr<Labels>>("label_reduction",
                                 "Choose relevant options for label reduction. "
                                 "Also note the interaction with shrink strategies.");
 
@@ -345,7 +337,7 @@ static Heuristic *_parse(OptionParser &parser) {
     }
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
         MergeAndShrinkHeuristic *result = new MergeAndShrinkHeuristic(opts);
         return result;

@@ -13,6 +13,7 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -336,7 +337,7 @@ void Labels::dump_label_reduction_options() const {
     }
 }
 
-static Labels *_parse(OptionParser &parser) {
+static shared_ptr<Labels>_parse(OptionParser &parser) {
     parser.add_option<bool>("before_shrinking",
                             "apply label reduction before shrinking");
     parser.add_option<bool>("before_merging",
@@ -397,9 +398,8 @@ static Labels *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        Labels *result = new Labels(opts);
-        return result;
+        return shared_ptr<Labels>(new Labels(opts));
     }
 }
 
-static Plugin<Labels> _plugin("label_reduction", _parse);
+static PluginShared<Labels> _plugin("label_reduction", _parse);

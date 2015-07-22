@@ -192,11 +192,11 @@ string MergeDFP::name() const {
     return "dfp";
 }
 
-static MergeStrategy *_parse(OptionParser &parser) {
+static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new MergeDFP();
+        return shared_ptr<MergeStrategy>(new MergeDFP());
 }
 
-static Plugin<MergeStrategy> _plugin("merge_dfp", _parse);
+static PluginShared<MergeStrategy> _plugin("merge_dfp", _parse);
