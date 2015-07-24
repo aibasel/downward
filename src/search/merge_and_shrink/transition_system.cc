@@ -43,6 +43,7 @@ const int TransitionSystem::PRUNED_STATE;
 const int TransitionSystem::DISTANCE_UNKNOWN;
 
 
+// common case for both constructors
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const shared_ptr<Labels> labels)
     : labels(labels),
@@ -56,6 +57,168 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
         transitions_of_groups.resize(max_num_labels);
         label_to_positions.resize(max_num_labels);
     }
+}
+
+// atomic transition system constructor
+TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
+                                   const shared_ptr<Labels> labels,
+                                   int var_id)
+    : TransitionSystem(task_proxy, labels) {
+    var_id_set.push_back(var_id);
+    /*
+      This generates the states of the atomic transition system, but not the
+      arcs: It is more efficient to generate all arcs of all atomic
+      transition systems simultaneously.
+     */
+    int range = task_proxy.get_variables()[var_id].get_domain_size();
+
+    int init_value = task_proxy.get_initial_state()[var_id].get_value();
+    int goal_value = -1;
+    goal_relevant = false;
+    GoalsProxy goals = task_proxy.get_goals();
+    for (FactProxy goal : goals) {
+        if (goal.get_variable().get_id() == var_id) {
+            goal_relevant = true;
+            assert(goal_value == -1);
+            goal_value = goal.get_value();
+        }
+    }
+
+    num_states = range;
+    goal_states.resize(num_states, false);
+    for (int value = 0; value < range; ++value) {
+        if (value == goal_value || goal_value == -1) {
+            goal_states[value] = true;
+        }
+        if (value == init_value)
+            init_state = value;
+    }
+    // TODO: Use smart pointers.
+    heuristic_representation = new HeuristicRepresentationLeaf(var_id, range);
+
+    /*
+      Prepare grouped_labels data structure: add one single-element
+      group for every operator.
+    */
+    int num_ops = task_proxy.get_operators().size();
+    for (int label_no = 0; label_no < num_ops; ++label_no) {
+        // We use the label number as index for transitions of groups
+        LabelGroupIter group_it = add_empty_label_group(&transitions_of_groups[label_no]);
+        add_label_to_group(group_it, label_no, false);
+        /* We cannot set the cost here, because the labels have not been
+           created yet. */
+    }
+}
+
+// constructor for merges
+TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
+                                   const shared_ptr<Labels> labels,
+                                   TransitionSystem *ts1,
+                                   TransitionSystem *ts2)
+    : TransitionSystem(task_proxy, labels) {
+    cout << "Merging " << ts1->description() << " and "
+         << ts2->description() << endl;
+
+    assert(ts1->is_solvable() && ts2->is_solvable());
+    assert(ts1->is_valid() && ts2->is_valid());
+
+    ::set_union(ts1->var_id_set.begin(), ts1->var_id_set.end(), ts2->var_id_set.begin(),
+                ts2->var_id_set.end(), back_inserter(var_id_set));
+
+    int ts1_size = ts1->get_size();
+    int ts2_size = ts2->get_size();
+    num_states = ts1_size * ts2_size;
+    goal_states.resize(num_states, false);
+    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
+
+    for (int s1 = 0; s1 < ts1_size; ++s1) {
+        for (int s2 = 0; s2 < ts2_size; ++s2) {
+            int state = s1 * ts2_size + s2;
+            if (ts1->goal_states[s1] && ts2->goal_states[s2])
+                goal_states[state] = true;
+            if (s1 == ts1->init_state && s2 == ts2->init_state)
+                init_state = state;
+        }
+    }
+    // TODO: Use smart pointers.
+    heuristic_representation = new HeuristicRepresentationMerge(
+        ts1->heuristic_representation, ts2->heuristic_representation);
+
+    /*
+      We can compute the local equivalence relation of a composite T
+      from the local equivalence relations of the two components T1 and T2:
+      l and l' are locally equivalent in T iff:
+      (A) they are local equivalent in T1 and in T2, or
+      (B) they are both dead in T (e.g., this includes the case where
+          l is dead in T1 only and l' is dead in T2 only, so they are not
+          locally equivalent in either of the components).
+    */
+    int multiplier = ts2_size;
+    vector<int> dead_labels;
+    for (LabelGroupConstIter group1_it = ts1->grouped_labels.begin();
+         group1_it != ts1->grouped_labels.end(); ++group1_it) {
+        // Distribute the labels of this group among the "buckets"
+        // corresponding to the groups of ts2.
+        unordered_map<const LabelGroup *, vector<int> > buckets;
+        for (LabelConstIter label_it = group1_it->begin();
+             label_it != group1_it->end(); ++label_it) {
+            int label_no = *label_it;
+            LabelGroupIter group_it = ts2->get_group_it(label_no);
+            buckets[&*group_it].push_back(label_no);
+        }
+        // Now buckets contains all equivalence classes that are
+        // refinements of group1.
+
+        // Now create the new groups together with their transitions.
+        const vector<Transition> &transitions1 = group1_it->get_const_transitions();
+        for (const auto &bucket : buckets) {
+            const vector<Transition> &transitions2 = bucket.first->get_const_transitions();
+
+            // Create the new transitions for this bucket
+            vector<Transition> new_transitions;
+            if (transitions1.size() && transitions2.size()
+                && transitions1.size() > new_transitions.max_size() / transitions2.size())
+                exit_with(EXIT_OUT_OF_MEMORY);
+            new_transitions.reserve(transitions1.size() * transitions2.size());
+            for (size_t i = 0; i < transitions1.size(); ++i) {
+                int src1 = transitions1[i].src;
+                int target1 = transitions1[i].target;
+                for (size_t j = 0; j < transitions2.size(); ++j) {
+                    int src2 = transitions2[j].src;
+                    int target2 = transitions2[j].target;
+                    int src = src1 * multiplier + src2;
+                    int target = target1 * multiplier + target2;
+                    new_transitions.push_back(Transition(src, target));
+                }
+            }
+
+            // Create a new group if the transitions are not empty
+            const vector<int> &new_labels = bucket.second;
+            if (new_transitions.empty()) {
+                dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
+            } else {
+                sort(new_transitions.begin(), new_transitions.end());
+                int new_index = add_label_group(new_labels);
+                transitions_of_groups[new_index].swap(new_transitions);
+            }
+        }
+    }
+
+    /*
+      We collect all dead labels separately, because the bucket refining
+      does not work in cases where there are at least two dead labels l1
+      and l2 in the composite, where l1 was only a dead label in the first
+      component and l2 was only a dead label in the second component.
+      All dead labels should form one single label group.
+    */
+    if (!dead_labels.empty()) {
+        // Dead labels have empty transitions
+        add_label_group(dead_labels);
+    }
+
+    assert(are_transitions_sorted_unique());
+    compute_distances_and_prune();
+    assert(is_valid());
 }
 
 TransitionSystem::~TransitionSystem() {
@@ -393,7 +556,7 @@ void TransitionSystem::build_atomic_transition_systems(const TaskProxy &task_pro
 
     // Step 1: Create the transition system objects without transitions.
     for (VariableProxy var : variables)
-        result.push_back(new AtomicTransitionSystem(task_proxy, labels, var.get_id()));
+        result.push_back(new TransitionSystem(task_proxy, labels, var.get_id()));
 
     // Step 2: Add transitions.
     vector<vector<bool> > relevant_labels(result.size(), vector<bool>(operators.size(), false));
@@ -863,176 +1026,4 @@ void TransitionSystem::dump_labels_and_transitions() const {
         cout << endl;
         cout << "cost: " << group_it->get_cost() << endl;
     }
-}
-
-
-
-AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
-                                               const shared_ptr<Labels> labels,
-                                               int var_id)
-    : TransitionSystem(task_proxy, labels), var_id(var_id) {
-    var_id_set.push_back(var_id);
-    /*
-      This generates the states of the atomic transition system, but not the
-      arcs: It is more efficient to generate all arcs of all atomic
-      transition systems simultaneously.
-     */
-    int range = task_proxy.get_variables()[var_id].get_domain_size();
-
-    int init_value = task_proxy.get_initial_state()[var_id].get_value();
-    int goal_value = -1;
-    goal_relevant = false;
-    GoalsProxy goals = task_proxy.get_goals();
-    for (FactProxy goal : goals) {
-        if (goal.get_variable().get_id() == var_id) {
-            goal_relevant = true;
-            assert(goal_value == -1);
-            goal_value = goal.get_value();
-        }
-    }
-
-    num_states = range;
-    goal_states.resize(num_states, false);
-    for (int value = 0; value < range; ++value) {
-        if (value == goal_value || goal_value == -1) {
-            goal_states[value] = true;
-        }
-        if (value == init_value)
-            init_state = value;
-    }
-    // TODO: Use smart pointers.
-    heuristic_representation = new HeuristicRepresentationLeaf(var_id, range);
-
-    /*
-      Prepare grouped_labels data structure: add one single-element
-      group for every operator.
-    */
-    int num_ops = task_proxy.get_operators().size();
-    for (int label_no = 0; label_no < num_ops; ++label_no) {
-        // We use the label number as index for transitions of groups
-        LabelGroupIter group_it = add_empty_label_group(&transitions_of_groups[label_no]);
-        add_label_to_group(group_it, label_no, false);
-        /* We cannot set the cost here, because the labels have not been
-           created yet. */
-    }
-}
-
-AtomicTransitionSystem::~AtomicTransitionSystem() {
-}
-
-
-CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy,
-                                                     const shared_ptr<Labels> labels,
-                                                     TransitionSystem *ts1,
-                                                     TransitionSystem *ts2)
-    : TransitionSystem(task_proxy, labels) {
-    cout << "Merging " << ts1->description() << " and "
-         << ts2->description() << endl;
-
-    assert(ts1->is_solvable() && ts2->is_solvable());
-    assert(ts1->is_valid() && ts2->is_valid());
-
-    components[0] = ts1;
-    components[1] = ts2;
-
-    ::set_union(ts1->var_id_set.begin(), ts1->var_id_set.end(), ts2->var_id_set.begin(),
-                ts2->var_id_set.end(), back_inserter(var_id_set));
-
-    int ts1_size = ts1->get_size();
-    int ts2_size = ts2->get_size();
-    num_states = ts1_size * ts2_size;
-    goal_states.resize(num_states, false);
-    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
-
-    for (int s1 = 0; s1 < ts1_size; ++s1) {
-        for (int s2 = 0; s2 < ts2_size; ++s2) {
-            int state = s1 * ts2_size + s2;
-            if (ts1->goal_states[s1] && ts2->goal_states[s2])
-                goal_states[state] = true;
-            if (s1 == ts1->init_state && s2 == ts2->init_state)
-                init_state = state;
-        }
-    }
-    // TODO: Use smart pointers.
-    heuristic_representation = new HeuristicRepresentationMerge(
-        ts1->heuristic_representation, ts2->heuristic_representation);
-
-    /*
-      We can compute the local equivalence relation of a composite T
-      from the local equivalence relations of the two components T1 and T2:
-      l and l' are locally equivalent in T iff:
-      (A) they are local equivalent in T1 and in T2, or
-      (B) they are both dead in T (e.g., this includes the case where
-          l is dead in T1 only and l' is dead in T2 only, so they are not
-          locally equivalent in either of the components).
-    */
-    int multiplier = ts2_size;
-    vector<int> dead_labels;
-    for (LabelGroupConstIter group1_it = ts1->grouped_labels.begin();
-         group1_it != ts1->grouped_labels.end(); ++group1_it) {
-        // Distribute the labels of this group among the "buckets"
-        // corresponding to the groups of ts2.
-        unordered_map<const LabelGroup *, vector<int> > buckets;
-        for (LabelConstIter label_it = group1_it->begin();
-             label_it != group1_it->end(); ++label_it) {
-            int label_no = *label_it;
-            LabelGroupIter group_it = ts2->get_group_it(label_no);
-            buckets[&*group_it].push_back(label_no);
-        }
-        // Now buckets contains all equivalence classes that are
-        // refinements of group1.
-
-        // Now create the new groups together with their transitions.
-        const vector<Transition> &transitions1 = group1_it->get_const_transitions();
-        for (const auto &bucket : buckets) {
-            const vector<Transition> &transitions2 = bucket.first->get_const_transitions();
-
-            // Create the new transitions for this bucket
-            vector<Transition> new_transitions;
-            if (transitions1.size() && transitions2.size()
-                && transitions1.size() > new_transitions.max_size() / transitions2.size())
-                exit_with(EXIT_OUT_OF_MEMORY);
-            new_transitions.reserve(transitions1.size() * transitions2.size());
-            for (size_t i = 0; i < transitions1.size(); ++i) {
-                int src1 = transitions1[i].src;
-                int target1 = transitions1[i].target;
-                for (size_t j = 0; j < transitions2.size(); ++j) {
-                    int src2 = transitions2[j].src;
-                    int target2 = transitions2[j].target;
-                    int src = src1 * multiplier + src2;
-                    int target = target1 * multiplier + target2;
-                    new_transitions.push_back(Transition(src, target));
-                }
-            }
-
-            // Create a new group if the transitions are not empty
-            const vector<int> &new_labels = bucket.second;
-            if (new_transitions.empty()) {
-                dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
-            } else {
-                sort(new_transitions.begin(), new_transitions.end());
-                int new_index = add_label_group(new_labels);
-                transitions_of_groups[new_index].swap(new_transitions);
-            }
-        }
-    }
-
-    /*
-      We collect all dead labels separately, because the bucket refining
-      does not work in cases where there are at least two dead labels l1
-      and l2 in the composite, where l1 was only a dead label in the first
-      component and l2 was only a dead label in the second component.
-      All dead labels should form one single label group.
-    */
-    if (!dead_labels.empty()) {
-        // Dead labels have empty transitions
-        add_label_group(dead_labels);
-    }
-
-    assert(are_transitions_sorted_unique());
-    compute_distances_and_prune();
-    assert(is_valid());
-}
-
-CompositeTransitionSystem::~CompositeTransitionSystem() {
 }

@@ -229,10 +229,25 @@ private:
     AbstractStateRef get_abstract_state(const State &state) const;
     void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
-public:
+
     TransitionSystem(const TaskProxy &task_proxy,
                      const std::shared_ptr<Labels> labels);
-    virtual ~TransitionSystem();
+public:
+    // constructor for an atomic transition system
+    TransitionSystem(const TaskProxy &task_proxy,
+                     const std::shared_ptr<Labels> labels,
+                     int var_id);
+    /*
+      Constructor that merges two transition systems.
+
+      Invariant: the children ts1 and ts2 must be solvable.
+      (It is a bug to merge an unsolvable transition system.)
+    */
+    TransitionSystem(const TaskProxy &task_proxy,
+                     const std::shared_ptr<Labels> labels,
+                     TransitionSystem *ts1,
+                     TransitionSystem *ts2);
+    ~TransitionSystem();
 
     static void build_atomic_transition_systems(const TaskProxy &task_proxy,
                                                 std::vector<TransitionSystem *> &result,
@@ -292,31 +307,6 @@ public:
     bool is_goal_relevant() const {
         return goal_relevant;
     }
-};
-
-
-class AtomicTransitionSystem : public TransitionSystem {
-    int var_id;
-public:
-    AtomicTransitionSystem(const TaskProxy &task_proxy,
-                           const std::shared_ptr<Labels> labels,
-                           int var_id);
-    virtual ~AtomicTransitionSystem();
-};
-
-
-class CompositeTransitionSystem : public TransitionSystem {
-    TransitionSystem *components[2];
-public:
-    /*
-      The given transition systems are guaranteed to be solvable by the
-      merge-and-shrink computation.
-    */
-    CompositeTransitionSystem(const TaskProxy &task_proxy,
-                              const std::shared_ptr<Labels> labels,
-                              TransitionSystem *ts1,
-                              TransitionSystem *ts2);
-    virtual ~CompositeTransitionSystem();
 };
 
 #endif
