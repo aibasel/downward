@@ -10,7 +10,6 @@ from . import portfolio_runner
 from .plan_manager import PlanManager
 from .util import BUILDS_DIR
 
-
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("bin", "translate", "translate.py")
 REL_PREPROCESS_PATH = os.path.join("bin", "preprocess")
@@ -68,7 +67,7 @@ def run_translate(args):
 
 
 def run_preprocess(args):
-    logging.info("Running preprocessor.")
+    logging.info("Running preprocessor (%s)." % args.build)
     time_limit = limits.get_time_limit(
         args.preprocess_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
@@ -84,7 +83,7 @@ def run_preprocess(args):
 
 
 def run_search(args):
-    logging.info("Running search.")
+    logging.info("Running search (%s)." % args.build)
     time_limit = limits.get_time_limit(
         args.search_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
