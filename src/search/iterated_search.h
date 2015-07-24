@@ -25,14 +25,14 @@ class IteratedSearch : public SearchEngine {
     SearchEngine *create_phase(int p);
     SearchStatus step_return_value();
 
-    virtual void initialize();
-    virtual SearchStatus step();
+    virtual void initialize() override;
+    virtual SearchStatus step() override;
 
 public:
     explicit IteratedSearch(const Options &opts);
     virtual ~IteratedSearch() override = default;
 
-    virtual void save_plan_if_necessary() const;
+    virtual void save_plan_if_necessary() const override;
     virtual void print_statistics() const override;
 };
 
