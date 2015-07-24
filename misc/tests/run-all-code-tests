@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 ./test-standard-configs.py
 ./test-translator.py
 
-py.test ../../src/driver/tests.py
+py.test ../../driver/tests.py
 
 echo
 echo "All code tests passed"
