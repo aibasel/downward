@@ -769,6 +769,17 @@ void TransitionSystem::apply_abstraction_to_lookup_table(
         abstraction_mapping);
 }
 
+string TransitionSystem::description() const {
+    ostringstream s;
+    if (var_id_set.size() == 1) {
+        s << "atomic transition system #" << *var_id_set.begin();
+    } else {
+        s << "composite transition system with "
+          << var_id_set.size() << "/" << num_variables << " vars";
+    }
+    return s.str();
+}
+
 AbstractStateRef TransitionSystem::get_abstract_state(
     const State &state) const {
     return heuristic_representation->get_abstract_state(state);
@@ -909,12 +920,6 @@ AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
 AtomicTransitionSystem::~AtomicTransitionSystem() {
 }
 
-string AtomicTransitionSystem::description() const {
-    ostringstream s;
-    s << "atomic transition system #" << var_id;
-    return s.str();
-}
-
 
 CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy,
                                                      const shared_ptr<Labels> labels,
@@ -1030,11 +1035,4 @@ CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy
 }
 
 CompositeTransitionSystem::~CompositeTransitionSystem() {
-}
-
-string CompositeTransitionSystem::description() const {
-    ostringstream s;
-    s << "transition system (" << var_id_set.size() << "/"
-      << num_variables << " vars)";
-    return s.str();
 }
