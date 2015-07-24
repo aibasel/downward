@@ -5,7 +5,7 @@ import os.path
 
 from . import aliases
 from . import limits
-from .util import SRC_DIR
+from .util import PLANNER_ROOT_DIR
 
 
 DESCRIPTION = """Fast Downward driver script.
@@ -43,7 +43,7 @@ that exceed their time or memory limit are aborted, and the next
 configuration is run."""
 
 EXAMPLE_PORTFOLIO = os.path.relpath(
-    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=SRC_DIR)
+    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=PLANNER_ROOT_DIR)
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
@@ -304,8 +304,11 @@ def parse_args():
         "--alias",
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
     driver_other.add_argument(
+        "--build", default=None,
+        help="use specific build like release32 (default), debug32, release64, debug32, or a custom build")
+    driver_other.add_argument(
         "--debug", action="store_true",
-        help="use debug mode for search component")
+        help="use debug mode. This is an alias for --build=debug32. Do not use --debug and --build at the same time.")
     driver_other.add_argument(
         "--log-level", choices=["debug", "info", "warning"],
         default="info",
@@ -330,6 +333,17 @@ def parse_args():
     # --help" passes "--help" to the search code.
 
     args = parser.parse_args()
+
+    if args.build and args.debug:
+        parser.error("The option --debug is an alias for --build=debug32. "
+                     "Do no specify both --debug and --build.")
+    if not args.build:
+        if args.debug:
+            args.build = "debug32"
+        else:
+            args.build = "release32"
+
+    print("Using build " + args.build)
 
     _split_planner_args(parser, args)
 
