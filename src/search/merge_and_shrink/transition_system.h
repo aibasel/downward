@@ -205,11 +205,6 @@ private:
     int unique_unlabeled_transitions() const;
     std::string description() const;
 
-    // interact with merge-and-shrink representation
-    AbstractStateRef get_abstract_state(const State &state) const;
-    void apply_abstraction_to_lookup_table(
-        const std::vector<AbstractStateRef> &abstraction_mapping);
-
     TransitionSystem(const TaskProxy &task_proxy,
                      const std::shared_ptr<Labels> labels);
 public:
