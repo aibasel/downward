@@ -223,10 +223,9 @@ private:
     // Statistics and output
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
-    virtual std::string description() const = 0;
+    std::string description() const;
 
     // interact with merge-and-shrink representation
-
     AbstractStateRef get_abstract_state(const State &state) const;
     void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
@@ -298,8 +297,6 @@ public:
 
 class AtomicTransitionSystem : public TransitionSystem {
     int var_id;
-protected:
-    virtual std::string description() const;
 public:
     AtomicTransitionSystem(const TaskProxy &task_proxy,
                            const std::shared_ptr<Labels> labels,
@@ -310,8 +307,6 @@ public:
 
 class CompositeTransitionSystem : public TransitionSystem {
     TransitionSystem *components[2];
-protected:
-    virtual std::string description() const;
 public:
     /*
       The given transition systems are guaranteed to be solvable by the
