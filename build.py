@@ -31,6 +31,7 @@ def get_build_path(config_name):
 
 
 def build(config_name, cmake_parameters, make_parameters):
+    print("Building configuration " + config_name)
     build_path = get_build_path(config_name)
     rel_src_path = os.path.relpath(get_src_path(), build_path)
     try:
@@ -40,9 +41,11 @@ def build(config_name, cmake_parameters, make_parameters):
             pass
         else:
             raise
+
     subprocess.check_call(["cmake"] + cmake_parameters + [rel_src_path],
                           cwd=build_path)
     subprocess.check_call(["make"] + make_parameters, cwd=build_path)
+    print("Built configuration " + config_name + " successfully")
 
 def main():
     config_names = set()
