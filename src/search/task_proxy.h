@@ -2,6 +2,7 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
+#include "utilities.h"
 #include "utilities_hash.h"
 
 #include <cassert>
@@ -12,6 +13,7 @@
 
 
 class AxiomsProxy;
+class CausalGraph;
 class ConditionsProxy;
 class EffectProxy;
 class EffectConditionsProxy;
@@ -234,6 +236,15 @@ public:
     VariableProxy(const AbstractTask &task, int id)
         : task(&task), id(id) {}
     ~VariableProxy() = default;
+
+    bool operator==(const VariableProxy &other) const {
+        assert(task == other.task);
+        return id == other.id;
+    }
+
+    bool operator!=(const VariableProxy &other) const {
+        return !(*this == other);
+    }
 
     int get_id() const {
         return id;
@@ -516,7 +527,10 @@ public:
         return (*this)[var.get_id()];
     }
 
-    State apply(OperatorProxy op) const {
+    State get_successor(OperatorProxy op) const {
+        if (task->get_num_axioms() > 0) {
+            ABORT("State::apply currently does not support axioms.");
+        }
         assert(!op.is_axiom());
         //assert(is_applicable(op, state));
         std::vector<int> new_values = values;
@@ -561,6 +575,8 @@ public:
     State convert_global_state(const GlobalState &global_state) const {
         return State(*task, task->get_state_values(global_state));
     }
+
+    const CausalGraph &get_causal_graph() const;
 };
 
 

@@ -1,12 +1,14 @@
 #ifndef ABSTRACT_TASK_H
 #define ABSTRACT_TASK_H
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 class GlobalOperator;
 class GlobalState;
+class Options;
 
 class AbstractTask {
 public:
@@ -40,5 +42,7 @@ public:
     virtual std::vector<int> get_initial_state_values() const = 0;
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const = 0;
 };
+
+const std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts);
 
 #endif

@@ -37,6 +37,7 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 DOWNWARD_OS ?= auto
 
 HEADERS = \
+          abstract_task.h \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
@@ -80,6 +81,7 @@ HEADERS = \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
+          task_proxy.h \
           task_tools.h \
           timer.h \
           tracer.h \
@@ -113,25 +115,37 @@ HEADERS += tasks/domain_abstracted_task.h \
 
 HEADERS += additive_heuristic.h
 HEADERS += blind_search_heuristic.h
-#HEADERS += cea_heuristic.h
-#HEADERS += cg_heuristic.h cg_cache.h
-#HEADERS += ff_heuristic.h
-#HEADERS += goal_count_heuristic.h
-#HEADERS += hm_heuristic.h
-#HEADERS += lm_cut_heuristic.h
-#HEADERS += max_heuristic.h
-#
-#HEADERS += merge_and_shrink/labels.h \
-#           merge_and_shrink/merge_and_shrink_heuristic.h \
-#           merge_and_shrink/merge_dfp.h \
-#           merge_and_shrink/merge_linear.h \
-#           merge_and_shrink/merge_strategy.h \
-#           merge_and_shrink/shrink_bisimulation.h \
-#           merge_and_shrink/shrink_bucket_based.h \
-#           merge_and_shrink/shrink_fh.h \
-#           merge_and_shrink/shrink_random.h \
-#           merge_and_shrink/shrink_strategy.h \
-#           merge_and_shrink/transition_system.h \
+HEADERS += cea_heuristic.h
+HEADERS += cg_heuristic.h cg_cache.h
+HEADERS += ff_heuristic.h
+HEADERS += goal_count_heuristic.h
+HEADERS += hm_heuristic.h
+HEADERS += lm_cut_heuristic.h
+HEADERS += max_heuristic.h
+
+HEADERS += cegar/abstract_search.h \
+           cegar/abstract_state.h \
+           cegar/abstraction.h \
+           cegar/additive_cartesian_heuristic.h \
+           cegar/cartesian_heuristic.h \
+           cegar/decompositions.h \
+           cegar/domains.h \
+           cegar/split_selector.h \
+           cegar/split_tree.h \
+           cegar/utils.h \
+           cegar/utils_landmarks.h \
+
+HEADERS += merge_and_shrink/labels.h \
+           merge_and_shrink/merge_and_shrink_heuristic.h \
+           merge_and_shrink/merge_dfp.h \
+           merge_and_shrink/merge_linear.h \
+           merge_and_shrink/merge_strategy.h \
+           merge_and_shrink/shrink_bisimulation.h \
+           merge_and_shrink/shrink_bucket_based.h \
+           merge_and_shrink/shrink_fh.h \
+           merge_and_shrink/shrink_random.h \
+           merge_and_shrink/shrink_strategy.h \
+           merge_and_shrink/transition_system.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \
@@ -159,27 +173,16 @@ HEADERS += landmarks/exploration.h \
 #            learning/state_space_sample.h \
 #            learning/state_vars_feature_extractor.h \
 
-#HEADERS += pdbs/canonical_pdbs_heuristic.h \
-#           pdbs/dominance_pruner.h \
-#           pdbs/match_tree.h \
-#           pdbs/max_cliques.h \
-#           pdbs/pattern_generation_edelkamp.h \
-#           pdbs/pattern_generation_haslum.h \
-#           pdbs/pdb_heuristic.h \
-#           pdbs/util.h \
-#           pdbs/zero_one_pdbs_heuristic.h \
-
-HEADERS += cegar/abstract_search.h \
-           cegar/abstract_state.h \
-           cegar/abstraction.h \
-           cegar/additive_cartesian_heuristic.h \
-           cegar/cartesian_heuristic.h \
-           cegar/decompositions.h \
-           cegar/domains.h \
-           cegar/split_selector.h \
-           cegar/split_tree.h \
-           cegar/utils.h \
-           cegar/utils_landmarks.h \
+HEADERS += pdbs/canonical_pdbs_heuristic.h \
+           pdbs/dominance_pruner.h \
+           pdbs/match_tree.h \
+           pdbs/max_cliques.h \
+           pdbs/pattern_database.h \
+           pdbs/pattern_generation_edelkamp.h \
+           pdbs/pattern_generation_haslum.h \
+           pdbs/pdb_heuristic.h \
+           pdbs/util.h \
+           pdbs/zero_one_pdbs_heuristic.h \
 
 SOURCES = planner.cc $(HEADERS:%.h=%.cc)
 TARGET = downward

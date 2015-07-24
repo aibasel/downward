@@ -83,7 +83,7 @@ template<class T>
 ostream &operator<<(ostream &stream, const vector<T> &vec) {
     stream << "[";
     string sep = "";
-    for (auto &item : vec) {
+    for (const auto &item : vec) {
         stream << sep << item;
         sep = ", ";
     }

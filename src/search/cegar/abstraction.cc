@@ -194,7 +194,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             if (DEBUG)
                 cout << "  Move to " << *next_abs_state << " with "
                      << op.get_name() << endl;
-            State next_conc_state = move(conc_state.apply(op));
+            State next_conc_state = move(conc_state.get_successor(op));
             if (!next_abs_state->is_abstraction_of(next_conc_state)) {
                 if (DEBUG)
                     cout << "  Paths deviate." << endl;
