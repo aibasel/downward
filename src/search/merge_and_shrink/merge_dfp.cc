@@ -208,7 +208,7 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return shared_ptr<MergeStrategy>(new MergeDFP());
+        return make_shared<MergeDFP>();
 }
 
 static PluginShared<MergeStrategy> _plugin("merge_dfp", _parse);

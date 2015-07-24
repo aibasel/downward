@@ -409,7 +409,7 @@ static shared_ptr<Labels>_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        return shared_ptr<Labels>(new Labels(opts));
+        return make_shared<Labels>(opts);
     }
 }
 

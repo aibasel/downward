@@ -46,7 +46,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return shared_ptr<ShrinkStrategy>(new ShrinkRandom(opts));
+        return make_shared<ShrinkRandom>(opts);
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_random", _parse);

@@ -192,7 +192,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return shared_ptr<ShrinkStrategy>(new ShrinkFH(opts));
+        return make_shared<ShrinkFH>(opts);
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_fh", _parse);
