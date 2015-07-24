@@ -348,8 +348,6 @@ def parse_args():
         else:
             args.build = "release32"
 
-    print("Using build " + args.build)
-
     _split_planner_args(parser, args)
 
     _check_mutex_args(parser, [
