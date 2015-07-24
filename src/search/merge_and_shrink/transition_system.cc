@@ -763,6 +763,17 @@ int TransitionSystem::unique_unlabeled_transitions() const {
            - unique_transitions.begin();
 }
 
+void TransitionSystem::apply_abstraction_to_lookup_table(
+    const vector<AbstractStateRef> &abstraction_mapping) {
+    heuristic_representation->apply_abstraction_to_lookup_table(
+        abstraction_mapping);
+}
+
+AbstractStateRef TransitionSystem::get_abstract_state(
+    const State &state) const {
+    return heuristic_representation->get_abstract_state(state);
+}
+
 void TransitionSystem::statistics(const Timer &timer,
                                   bool include_expensive_statistics) const {
     cout << tag() << get_size() << " states, ";
@@ -898,23 +909,11 @@ AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
 AtomicTransitionSystem::~AtomicTransitionSystem() {
 }
 
-void AtomicTransitionSystem::apply_abstraction_to_lookup_table(
-    const vector<AbstractStateRef> &abstraction_mapping) {
-    heuristic_representation->apply_abstraction_to_lookup_table(
-        abstraction_mapping);
-}
-
 string AtomicTransitionSystem::description() const {
     ostringstream s;
     s << "atomic transition system #" << var_id;
     return s.str();
 }
-
-AbstractStateRef AtomicTransitionSystem::get_abstract_state(
-    const State &state) const {
-    return heuristic_representation->get_abstract_state(state);
-}
-
 
 
 CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy,
@@ -1033,19 +1032,9 @@ CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy
 CompositeTransitionSystem::~CompositeTransitionSystem() {
 }
 
-void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
-    const vector<AbstractStateRef> &abstraction_mapping) {
-    heuristic_representation->apply_abstraction_to_lookup_table(
-        abstraction_mapping);
-}
-
 string CompositeTransitionSystem::description() const {
     ostringstream s;
     s << "transition system (" << var_id_set.size() << "/"
       << num_variables << " vars)";
     return s.str();
-}
-
-AbstractStateRef CompositeTransitionSystem::get_abstract_state(const State &state) const {
-    return heuristic_representation->get_abstract_state(state);
 }
