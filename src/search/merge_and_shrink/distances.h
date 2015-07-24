@@ -5,14 +5,8 @@ class TransitionSystem;
 
 #include <vector>
 
-class Distances {
-    /*
-      TODO: Remove the following friend. We only need it while we're
-      refactoring to make sure the "old" and "new" distance
-      computations are in sync.
-    */
-    friend class TransitionSystem;
 
+class Distances {
     // TODO: The following two are copied from transition_system.h;
     // that's just a temporary hack.
     static const int PRUNED_STATE = -1;
@@ -59,6 +53,19 @@ public:
 
     int get_goal_distance(int state) const {
         return goal_distances[state];
+    }
+
+    /*
+      TODO: The following two methods are temporary and should
+      eventually be removed. See comments in
+      TransitionSystem::apply_abstraction().
+    */
+    std::vector<int> &please_let_me_mess_with_init_distances() {
+        return init_distances;
+    }
+
+    std::vector<int> &please_let_me_mess_with_goal_distances() {
+        return goal_distances;
     }
 };
 

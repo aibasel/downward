@@ -4,7 +4,6 @@
 #include "heuristic_representation.h"
 #include "labels.h"
 
-#include "../priority_queue.h"
 #include "../task_proxy.h"
 #include "../timer.h"
 #include "../utilities.h"
@@ -12,7 +11,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
-#include <deque>
 #include <iostream>
 #include <iterator>
 #include <limits>
@@ -52,7 +50,6 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
       num_variables(task_proxy.get_variables().size()),
       heuristic_representation(nullptr),
       distances(make_unique_ptr<Distances>(*this)) {
-    clear_distances();
     size_t num_ops = task_proxy.get_operators().size();
     if (num_ops > 0) {
         size_t max_num_labels = num_ops * 2 - 1;
@@ -228,28 +225,10 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
 TransitionSystem::~TransitionSystem() {
 }
 
-void TransitionSystem::assert_distances_in_sync() const {
-    assert(init_distances == distances->init_distances);
-    assert(goal_distances == distances->goal_distances);
-    assert(max_f == distances->max_f);
-    assert(max_g == distances->max_g);
-    assert(max_h == distances->max_h);
-}
-
 bool TransitionSystem::is_valid() const {
-    return are_distances_computed()
+    return distances->are_distances_computed()
            && are_transitions_sorted_unique()
            && is_label_reduced();
-}
-
-void TransitionSystem::clear_distances() {
-    distances->clear_distances();
-    max_f = DISTANCE_UNKNOWN;
-    max_g = DISTANCE_UNKNOWN;
-    max_h = DISTANCE_UNKNOWN;
-    init_distances.clear();
-    goal_distances.clear();
-    assert_distances_in_sync();
 }
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
@@ -266,108 +245,6 @@ void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
     apply_abstraction(equivalence_relation);
 }
 
-bool TransitionSystem::are_distances_computed() const {
-    bool result;
-    if (max_h == DISTANCE_UNKNOWN) {
-        assert(max_f == DISTANCE_UNKNOWN);
-        assert(max_g == DISTANCE_UNKNOWN);
-        assert(init_distances.empty());
-        assert(goal_distances.empty());
-        result = false;
-    } else {
-        result = true;
-    }
-    assert(result == distances->are_distances_computed());
-    return result;
-}
-
-bool TransitionSystem::is_unit_cost() const {
-    bool result = true;
-    for (int label_no = 0; label_no < labels->get_size(); ++label_no)
-        if (labels->is_current_label(label_no) &&
-            labels->get_label_cost(label_no) != 1) {
-            result = false;
-            break;
-        }
-    assert(result == distances->is_unit_cost());
-    return result;
-}
-
-std::vector<bool> TransitionSystem::compute_distances() {
-    /*
-      This method does the following:
-      - Computes the distances of abstract states from the abstract
-        initial state ("abstract g") and from the abstract goal states
-        ("abstract h").
-      - Set max_f, max_g and max_h.
-      - Return a vector<bool> that indicates which states can be pruned
-        because the are unreachable (abstract g is infinite) or
-        irrelevant (abstract h is infinite).
-      - Display statistics on max_f, max_g and max_h and on unreachable
-        and irrelevant states.
-    */
-
-    cout << tag() << flush;
-    assert(!are_distances_computed());
-    assert(init_distances.empty() && goal_distances.empty());
-
-    distances->compute_distances();
-
-    if (init_state == PRUNED_STATE) {
-        cout << "init state was pruned, no distances to compute" << endl;
-        // If init_state was pruned, then everything must have been pruned.
-        assert(num_states == 0);
-        max_f = max_g = max_h = INF;
-        assert_distances_in_sync();
-        return vector<bool>();
-    }
-
-    init_distances.resize(num_states, INF);
-    goal_distances.resize(num_states, INF);
-    if (is_unit_cost()) {
-        cout << "computing distances using unit-cost algorithm" << endl;
-        compute_init_distances_unit_cost();
-        compute_goal_distances_unit_cost();
-    } else {
-        cout << "computing distances using general-cost algorithm" << endl;
-        compute_init_distances_general_cost();
-        compute_goal_distances_general_cost();
-    }
-
-    max_f = 0;
-    max_g = 0;
-    max_h = 0;
-
-    int unreachable_count = 0, irrelevant_count = 0;
-    vector<bool> to_be_pruned_states(num_states, false);
-    for (int i = 0; i < num_states; ++i) {
-        int g = init_distances[i];
-        int h = goal_distances[i];
-        // States that are both unreachable and irrelevant are counted
-        // as unreachable, not irrelevant. (Doesn't really matter, of
-        // course.)
-        if (g == INF) {
-            ++unreachable_count;
-            to_be_pruned_states[i] = true;
-        } else if (h == INF) {
-            ++irrelevant_count;
-            to_be_pruned_states[i] = true;
-        } else {
-            max_f = max(max_f, g + h);
-            max_g = max(max_g, g);
-            max_h = max(max_h, h);
-        }
-    }
-    if (unreachable_count || irrelevant_count) {
-        cout << tag()
-             << "unreachable: " << unreachable_count << " states, "
-             << "irrelevant: " << irrelevant_count << " states" << endl;
-    }
-    assert(are_distances_computed());
-    assert_distances_in_sync();
-    return to_be_pruned_states;
-}
-
 void TransitionSystem::compute_distances_and_prune() {
     /*
       This method does all that compute_distances does and
@@ -375,140 +252,7 @@ void TransitionSystem::compute_distances_and_prune() {
       is infinite) or irrelevant (abstract h is infinite).
     */
     assert(are_transitions_sorted_unique());
-    discard_states(compute_distances());
-}
-
-static void breadth_first_search(
-    const vector<vector<int> > &graph, deque<int> &queue,
-    vector<int> &distances) {
-    while (!queue.empty()) {
-        int state = queue.front();
-        queue.pop_front();
-        for (size_t i = 0; i < graph[state].size(); ++i) {
-            int successor = graph[state][i];
-            if (distances[successor] > distances[state] + 1) {
-                distances[successor] = distances[state] + 1;
-                queue.push_back(successor);
-            }
-        }
-    }
-}
-
-void TransitionSystem::compute_init_distances_unit_cost() {
-    vector<vector<AbstractStateRef> > forward_graph(num_states);
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_const_transitions();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
-            forward_graph[transition.src].push_back(transition.target);
-        }
-    }
-
-    deque<AbstractStateRef> queue;
-    for (AbstractStateRef state = 0; state < num_states; ++state) {
-        if (state == init_state) {
-            init_distances[state] = 0;
-            queue.push_back(state);
-        }
-    }
-    breadth_first_search(forward_graph, queue, init_distances);
-}
-
-void TransitionSystem::compute_goal_distances_unit_cost() {
-    vector<vector<AbstractStateRef> > backward_graph(num_states);
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_const_transitions();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
-            backward_graph[transition.target].push_back(transition.src);
-        }
-    }
-
-    deque<AbstractStateRef> queue;
-    for (AbstractStateRef state = 0; state < num_states; ++state) {
-        if (goal_states[state]) {
-            goal_distances[state] = 0;
-            queue.push_back(state);
-        }
-    }
-    breadth_first_search(backward_graph, queue, goal_distances);
-}
-
-static void dijkstra_search(
-    const vector<vector<pair<int, int> > > &graph,
-    AdaptiveQueue<int> &queue,
-    vector<int> &distances) {
-    while (!queue.empty()) {
-        pair<int, int> top_pair = queue.pop();
-        int distance = top_pair.first;
-        int state = top_pair.second;
-        int state_distance = distances[state];
-        assert(state_distance <= distance);
-        if (state_distance < distance)
-            continue;
-        for (size_t i = 0; i < graph[state].size(); ++i) {
-            const pair<int, int> &transition = graph[state][i];
-            int successor = transition.first;
-            int cost = transition.second;
-            int successor_cost = state_distance + cost;
-            if (distances[successor] > successor_cost) {
-                distances[successor] = successor_cost;
-                queue.push(successor_cost, successor);
-            }
-        }
-    }
-}
-
-void TransitionSystem::compute_init_distances_general_cost() {
-    vector<vector<pair<int, int> > > forward_graph(num_states);
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_const_transitions();
-        int cost = group_it->get_cost();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
-            forward_graph[transition.src].push_back(
-                make_pair(transition.target, cost));
-        }
-    }
-
-    // TODO: Reuse the same queue for multiple computations to save speed?
-    //       Also see compute_goal_distances_general_cost.
-    AdaptiveQueue<int> queue;
-    for (AbstractStateRef state = 0; state < num_states; ++state) {
-        if (state == init_state) {
-            init_distances[state] = 0;
-            queue.push(0, state);
-        }
-    }
-    dijkstra_search(forward_graph, queue, init_distances);
-}
-
-void TransitionSystem::compute_goal_distances_general_cost() {
-    vector<vector<pair<int, int> > > backward_graph(num_states);
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_const_transitions();
-        int cost = group_it->get_cost();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
-            backward_graph[transition.target].push_back(
-                make_pair(transition.src, cost));
-        }
-    }
-
-    // TODO: Reuse the same queue for multiple computations to save speed?
-    //       Also see compute_init_distances_general_cost.
-    AdaptiveQueue<int> queue;
-    for (AbstractStateRef state = 0; state < num_states; ++state) {
-        if (goal_states[state]) {
-            goal_distances[state] = 0;
-            queue.push(0, state);
-        }
-    }
-    dijkstra_search(backward_graph, queue, goal_distances);
+    discard_states(distances->compute_distances());
 }
 
 void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
@@ -733,6 +477,19 @@ bool TransitionSystem::apply_abstraction(
         }
     }
 
+    /*
+      TODO: The following lines are a temporary hack while we think
+      about a better way to update the distances. One possibility is
+      to move the distance-related part of the following code into
+      Distances; a drawback of that is that we then need two passes
+      over the abstraction mapping, which presumably hurts our cache
+      locality.
+    */
+    vector<int> &init_distances =
+        distances->please_let_me_mess_with_init_distances();
+    vector<int> &goal_distances =
+        distances->please_let_me_mess_with_goal_distances();
+
     int new_num_states = collapsed_groups.size();
     vector<int> new_init_distances(new_num_states, INF);
     vector<int> new_goal_distances(new_num_states, INF);
@@ -799,7 +556,7 @@ bool TransitionSystem::apply_abstraction(
 
     if (must_clear_distances) {
         cout << tag() << "simplification was not f-preserving!" << endl;
-        clear_distances();
+        distances->clear_distances();
     }
 
     if (must_clear_distances) {
@@ -812,7 +569,7 @@ bool TransitionSystem::apply_abstraction(
 void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> > > &label_mapping,
                                              bool only_equivalent_labels) {
     assert(!is_label_reduced());
-    assert(are_distances_computed());
+    assert(distances->are_distances_computed());
     assert(are_transitions_sorted_unique());
 
     /*
@@ -925,16 +682,16 @@ string TransitionSystem::tag() const {
 }
 
 bool TransitionSystem::is_solvable() const {
-    assert(are_distances_computed());
+    assert(distances->are_distances_computed());
     return init_state != PRUNED_STATE;
 }
 
 int TransitionSystem::get_cost(const State &state) const {
-    assert(are_distances_computed());
+    assert(distances->are_distances_computed());
     int abs_state = get_abstract_state(state);
     if (abs_state == PRUNED_STATE)
         return -1;
-    int cost = goal_distances[abs_state];
+    int cost = distances->get_goal_distance(abs_state);
     assert(cost != INF);
     return cost;
 }
@@ -991,12 +748,15 @@ void TransitionSystem::statistics(const Timer &timer,
     else
         cout << "???";
     cout << "/" << total_transitions() << " arcs, " << endl;
+    // TODO: Turn the following block into Distances::statistics()?
     cout << tag();
-    if (!are_distances_computed()) {
+    if (!distances->are_distances_computed()) {
         cout << "distances not computed";
     } else if (is_solvable()) {
-        cout << "init h=" << goal_distances[init_state] << ", max f=" << max_f
-             << ", max g=" << max_g << ", max h=" << max_h;
+        cout << "init h=" << distances->get_goal_distance(init_state)
+             << ", max f=" << distances->get_max_f()
+             << ", max g=" << distances->get_max_g()
+             << ", max h=" << distances->get_max_h();
     } else {
         cout << "transition system is unsolvable";
     }
@@ -1061,4 +821,24 @@ void TransitionSystem::dump_labels_and_transitions() const {
         cout << endl;
         cout << "cost: " << group_it->get_cost() << endl;
     }
+}
+
+int TransitionSystem::get_max_f() const {
+    return distances->get_max_f();
+}
+
+int TransitionSystem::get_max_g() const {
+    return distances->get_max_g();
+}
+
+int TransitionSystem::get_max_h() const {
+    return distances->get_max_h();
+}
+
+int TransitionSystem::get_init_distance(int state) const {
+    return distances->get_init_distance(state);
+}
+
+int TransitionSystem::get_goal_distance(int state) const {
+    return distances->get_goal_distance(state);
 }
