@@ -266,16 +266,18 @@ bool TransitionSystem::are_distances_computed() const {
     return true;
 }
 
-void TransitionSystem::compute_distances_and_prune() {
-    /* This method computes the distances of abstract states from the
-       abstract initial state ("abstract g") and from the abstract
-       goal states ("abstract h"). It also prunes all states that are
-       unreachable (abstract g is infinite) or irrelevant (abstact h
-       is infinite).
-
-       In addition to its main job of pruning state and setting
-       init_distances and goal_distances, it also sets max_f, max_g
-       and max_h.
+std::vector<bool> TransitionSystem::compute_distances() {
+    /*
+      This method does the following:
+      - Computes the distances of abstract states from the abstract
+        initial state ("abstract g") and from the abstract goal states
+        ("abstract h").
+      - Set max_f, max_g and max_h.
+      - Return a vector<bool> that indicates which states can be pruned
+        because the are unreachable (abstract g is infinite) or
+        irrelevant (abstract h is infinite).
+      - Display statistics on max_f, max_g and max_h and on unreachable
+        and irrelevant states.
     */
 
     cout << tag() << flush;
@@ -288,7 +290,7 @@ void TransitionSystem::compute_distances_and_prune() {
         // If init_state was pruned, then everything must have been pruned.
         assert(num_states == 0);
         max_f = max_g = max_h = INF;
-        return;
+        return vector<bool>();
     }
 
     bool is_unit_cost = true;
@@ -341,9 +343,18 @@ void TransitionSystem::compute_distances_and_prune() {
         cout << tag()
              << "unreachable: " << unreachable_count << " states, "
              << "irrelevant: " << irrelevant_count << " states" << endl;
-        discard_states(to_be_pruned_states);
     }
     assert(are_distances_computed());
+    return to_be_pruned_states;
+}
+
+void TransitionSystem::compute_distances_and_prune() {
+    /*
+      This method does all that compute_distances does and
+      additionally prunes all states that are unreachable (abstract g
+      is infinite) or irrelevant (abstract h is infinite).
+    */
+    discard_states(compute_distances());
 }
 
 static void breadth_first_search(
