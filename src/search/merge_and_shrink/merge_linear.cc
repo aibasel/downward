@@ -17,8 +17,8 @@ MergeLinear::MergeLinear(const Options &opts)
 
 void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
     MergeStrategy::initialize(task);
-    variable_order_finder =
-        unique_ptr<VariableOrderFinder>(new VariableOrderFinder(task, variable_order_type));
+    variable_order_finder = make_unique_ptr<VariableOrderFinder>(
+        task, variable_order_type);
 }
 
 pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {

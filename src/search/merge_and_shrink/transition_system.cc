@@ -1,5 +1,6 @@
 #include "transition_system.h"
 
+#include "distances.h"
 #include "heuristic_representation.h"
 #include "labels.h"
 
@@ -94,8 +95,8 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
             init_state = value;
     }
 
-    heuristic_representation = unique_ptr<HeuristicRepresentationLeaf>(
-        new HeuristicRepresentationLeaf(var_id, range));
+    heuristic_representation = make_unique_ptr<HeuristicRepresentationLeaf>(
+        var_id, range);
 
     /*
       Prepare grouped_labels data structure: add one single-element
@@ -142,10 +143,9 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
         }
     }
 
-    heuristic_representation = unique_ptr<HeuristicRepresentationMerge>(
-        new HeuristicRepresentationMerge(
-            move(ts1->heuristic_representation),
-            move(ts2->heuristic_representation)));
+    heuristic_representation = make_unique_ptr<HeuristicRepresentationMerge>(
+        move(ts1->heuristic_representation),
+        move(ts2->heuristic_representation));
 
     /*
       We can compute the local equivalence relation of a composite T
