@@ -224,10 +224,12 @@ private:
     int total_transitions() const;
     int unique_unlabeled_transitions() const;
     virtual std::string description() const = 0;
-protected:
-    virtual AbstractStateRef get_abstract_state(const State &state) const = 0;
-    virtual void apply_abstraction_to_lookup_table(
-        const std::vector<AbstractStateRef> &abstraction_mapping) = 0;
+
+    // interact with merge-and-shrink representation
+
+    AbstractStateRef get_abstract_state(const State &state) const;
+    void apply_abstraction_to_lookup_table(
+        const std::vector<AbstractStateRef> &abstraction_mapping);
 public:
     TransitionSystem(const TaskProxy &task_proxy,
                      const std::shared_ptr<Labels> labels);
@@ -297,10 +299,7 @@ public:
 class AtomicTransitionSystem : public TransitionSystem {
     int var_id;
 protected:
-    virtual void apply_abstraction_to_lookup_table(
-        const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
-    virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
     AtomicTransitionSystem(const TaskProxy &task_proxy,
                            const std::shared_ptr<Labels> labels,
@@ -312,10 +311,7 @@ public:
 class CompositeTransitionSystem : public TransitionSystem {
     TransitionSystem *components[2];
 protected:
-    virtual void apply_abstraction_to_lookup_table(
-        const std::vector<AbstractStateRef> &abstraction_mapping);
     virtual std::string description() const;
-    virtual AbstractStateRef get_abstract_state(const State &state) const;
 public:
     /*
       The given transition systems are guaranteed to be solvable by the
