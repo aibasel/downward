@@ -93,8 +93,9 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
         if (value == init_value)
             init_state = value;
     }
-    // TODO: Use smart pointers.
-    heuristic_representation = new HeuristicRepresentationLeaf(var_id, range);
+
+    heuristic_representation = unique_ptr<HeuristicRepresentationLeaf>(
+        new HeuristicRepresentationLeaf(var_id, range));
 
     /*
       Prepare grouped_labels data structure: add one single-element
@@ -140,9 +141,11 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                 init_state = state;
         }
     }
-    // TODO: Use smart pointers.
-    heuristic_representation = new HeuristicRepresentationMerge(
-        ts1->heuristic_representation, ts2->heuristic_representation);
+
+    heuristic_representation = unique_ptr<HeuristicRepresentationMerge>(
+        new HeuristicRepresentationMerge(
+            move(ts1->heuristic_representation),
+            move(ts2->heuristic_representation)));
 
     /*
       We can compute the local equivalence relation of a composite T
