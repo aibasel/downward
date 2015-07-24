@@ -11,6 +11,7 @@ from .plan_manager import PlanManager
 from .util import BUILDS_DIR
 
 
+#TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("bin", "translate", "translate.py")
 REL_PREPROCESS_PATH = os.path.join("bin", "preprocess")
 REL_SEARCH_PATH = os.path.join("bin", "downward")
