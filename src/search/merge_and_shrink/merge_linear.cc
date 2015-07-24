@@ -82,7 +82,7 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return shared_ptr<MergeStrategy>(new MergeLinear(opts));
+        return make_shared<MergeLinear>(opts);
 }
 
 static PluginShared<MergeStrategy> _plugin("merge_linear", _parse);
