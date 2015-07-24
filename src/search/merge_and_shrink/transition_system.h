@@ -4,6 +4,7 @@
 #include <forward_list>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
