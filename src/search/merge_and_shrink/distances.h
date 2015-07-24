@@ -6,6 +6,39 @@ class TransitionSystem;
 #include <vector>
 
 
+/*
+  TODO: Possible interface improvements for this class:
+
+  - Get rid of please_let_me_mess_with_... methods.
+  - Rather than have compute_distances() return a vector<bool>,
+    store it inside as an attribute (just like init_distances and
+    goal_distances).
+  - Check TODOs in implementation file.
+
+  (Many of these would need performance tests, as distance computation
+  can be one of the bottlenecks in our code.)
+
+  TODO: Possible performance improvements:
+  - Make the interface more fine-grained, so that it becomes possible
+    to only compute the things that we actually want to use. For
+    example, in many configurations we do not really care about g
+    values (although we might still want to prune unreachable
+    states... we might want to make this configurable).
+  - Get rid of the vector<bool> of prunable states; this can be
+    deduced from init_distances and goal_distances anyway. Not clear
+    which of these options would be better.
+  - We currently try to keep the distance information after shrinking
+    (going quite far to avoid recomputation; see the caller of the
+    please_let_me_mess_with_... methods). Does this really serve a
+    purpose? *After* shrinking, why are we interested in the distances
+    in the first place? The main point of the distances is to inform
+    the shrink strategies. (OK, I guess some merge strategies care
+    about them, too -- but should *all* merge strategies pay for that?
+    And if these merge strategies only care about h values, which we
+    usually preserve, wouldn't it be better to invalidate g values
+    then?)
+*/
+
 class Distances {
     static const int DISTANCE_UNKNOWN = -1;
 

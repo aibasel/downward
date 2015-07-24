@@ -21,19 +21,20 @@
 
 using namespace std;
 
-/* Implementation note: Transitions are grouped by their label groups,
- not by source state or any such thing. Such a grouping is beneficial
- for fast generation of products because we can iterate label group by
- label group, and it also allows applying transition system mappings very
- efficiently.
+/*
+  Implementation note: Transitions are grouped by their label groups,
+  not by source state or any such thing. Such a grouping is beneficial
+  for fast generation of products because we can iterate label group
+  by label group, and it also allows applying transition system
+  mappings very efficiently.
 
- We rarely need to be able to efficiently query the successors of a
- given state; actually, only the distance computation requires that,
- and it simply generates such a graph representation of the
- transitions itself. Various experiments have shown that maintaining
- a graph representation permanently for the benefit of distance
- computation is not worth the overhead.
- */
+  We rarely need to be able to efficiently query the successors of a
+  given state; actually, only the distance computation requires that,
+  and it simply generates such a graph representation of the
+  transitions itself. Various experiments have shown that maintaining
+  a graph representation permanently for the benefit of distance
+  computation is not worth the overhead.
+*/
 
 const int INF = numeric_limits<int>::max();
 
