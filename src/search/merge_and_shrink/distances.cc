@@ -10,6 +10,9 @@
 using namespace std;
 
 
+const int Distances::DISTANCE_UNKNOWN;
+
+
 Distances::Distances(const TransitionSystem &transition_system)
     : transition_system(transition_system) {
     clear_distances();
@@ -223,7 +226,7 @@ std::vector<bool> Distances::compute_distances() {
 
     int num_states = get_num_states();
 
-    if (transition_system.get_init_state() == PRUNED_STATE) {
+    if (transition_system.get_init_state() == TransitionSystem::PRUNED_STATE) {
         cout << "init state was pruned, no distances to compute" << endl;
         // If init_state was pruned, then everything must have been pruned.
         assert(num_states == 0);
@@ -274,4 +277,16 @@ std::vector<bool> Distances::compute_distances() {
     }
     assert(are_distances_computed());
     return to_be_pruned_states;
+}
+
+int Distances::get_max_f() const {
+    return max_f;
+}
+
+int Distances::get_max_g() const {
+    return max_g;
+}
+
+int Distances::get_max_h() const {
+    return max_h;
 }
