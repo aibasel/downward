@@ -190,9 +190,11 @@ private:
     void compute_goal_distances_unit_cost();
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
-    void discard_states(const std::vector<bool> &to_be_pruned_states);
     bool are_distances_computed() const;
+    std::vector<bool> compute_distances();
+
     void compute_distances_and_prune();
+    void discard_states(const std::vector<bool> &to_be_pruned_states);
 
     // Methods related to the representation of transitions and labels
     LabelGroupIter add_empty_label_group(std::vector<Transition> *transitions) {
