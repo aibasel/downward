@@ -34,8 +34,11 @@ set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-add_custom_target(translator ALL)
-add_custom_command(TARGET translator POST_BUILD
+
+## == Planner components as subprojects ==
+
+add_custom_target(translate ALL)
+add_custom_command(TARGET translate POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/translate
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translate
