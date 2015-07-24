@@ -25,12 +25,19 @@ int Distances::get_num_states() const {
     return transition_system.get_size();
 }
 
-void Distances::clear_distances() {
-    max_f = DISTANCE_UNKNOWN;
-    max_g = DISTANCE_UNKNOWN;
-    max_h = DISTANCE_UNKNOWN;
-    init_distances.clear();
-    goal_distances.clear();
+bool Distances::is_unit_cost() const {
+    /*
+      TODO: Is this a good implementation? It differs from the
+      previous implementation in transition_system.cc because that
+      would require access to more attributes. One nice thing about it
+      is that it gets at the label cost information in the same way
+      that the actual shortest-path algorithms (e.g.
+      compute_goal_distances_general_cost) do.
+    */
+    for (const LabelGroup &group : transition_system.get_grouped_labels())
+        if (group.get_cost() != 1)
+            return false;
+    return true;
 }
 
 static void breadth_first_search(
@@ -180,6 +187,14 @@ void Distances::compute_goal_distances_general_cost() {
     dijkstra_search(backward_graph, queue, goal_distances);
 }
 
+void Distances::clear_distances() {
+    max_f = DISTANCE_UNKNOWN;
+    max_g = DISTANCE_UNKNOWN;
+    max_h = DISTANCE_UNKNOWN;
+    init_distances.clear();
+    goal_distances.clear();
+}
+
 bool Distances::are_distances_computed() const {
     if (max_h == DISTANCE_UNKNOWN) {
         assert(max_f == DISTANCE_UNKNOWN);
@@ -188,21 +203,6 @@ bool Distances::are_distances_computed() const {
         assert(goal_distances.empty());
         return false;
     }
-    return true;
-}
-
-bool Distances::is_unit_cost() const {
-    /*
-      TODO: Is this a good implementation? It differs from the
-      previous implementation in transition_system.cc because that
-      would require access to more attributes. One nice thing about it
-      is that it gets at the label cost information in the same way
-      that the actual shortest-path algorithms (e.g.
-      compute_goal_distances_general_cost) do.
-    */
-    for (const LabelGroup &group : transition_system.get_grouped_labels())
-        if (group.get_cost() != 1)
-            return false;
     return true;
 }
 
