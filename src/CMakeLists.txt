@@ -22,7 +22,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 # Path containing custom CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
 
 fast_downward_set_configuration_types()
@@ -33,28 +33,6 @@ fast_downward_check_64_bit_option()
 set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-
-add_custom_target(driver ALL)
-add_custom_command(TARGET driver POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/driver
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/driver
-    COMMENT "Copying driver module to output directory")
-
-add_custom_command(TARGET driver POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_SOURCE_DIR}/fast-downward.py
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    COMMENT "Copying driver script to output directory")
-
-add_custom_target(cleanup ALL)
-add_custom_command(TARGET cleanup POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_SOURCE_DIR}/cleanup.py
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    COMMENT "Copying cleanup script to output directory")
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/components)
 
 add_custom_target(translator ALL)
 add_custom_command(TARGET translator POST_BUILD
