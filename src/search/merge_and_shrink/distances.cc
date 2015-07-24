@@ -251,7 +251,7 @@ std::vector<bool> Distances::compute_distances() {
     max_h = 0;
 
     int unreachable_count = 0, irrelevant_count = 0;
-    vector<bool> to_be_pruned_states(num_states, false);
+    vector<bool> prunable_states(num_states, false);
     for (int i = 0; i < num_states; ++i) {
         int g = init_distances[i];
         int h = goal_distances[i];
@@ -260,10 +260,10 @@ std::vector<bool> Distances::compute_distances() {
         // course.)
         if (g == INF) {
             ++unreachable_count;
-            to_be_pruned_states[i] = true;
+            prunable_states[i] = true;
         } else if (h == INF) {
             ++irrelevant_count;
-            to_be_pruned_states[i] = true;
+            prunable_states[i] = true;
         } else {
             max_f = max(max_f, g + h);
             max_g = max(max_g, g);
@@ -276,7 +276,7 @@ std::vector<bool> Distances::compute_distances() {
              << "irrelevant: " << irrelevant_count << " states" << endl;
     }
     assert(are_distances_computed());
-    return to_be_pruned_states;
+    return prunable_states;
 }
 
 int Distances::get_max_f() const {
