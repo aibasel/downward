@@ -12,6 +12,7 @@ using namespace std;
 
 Distances::Distances(const TransitionSystem &transition_system)
     : transition_system(transition_system) {
+    clear_distances();
 }
 
 Distances::~Distances() {

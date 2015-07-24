@@ -1,14 +1,6 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
-/*
-  TODO: Remove the following two includes eventually. We need them
-  while we're asserting that the old and new distance computations are
-  identical.
-*/
-#include <cassert>
-#include "distances.h"
-
 #include <forward_list>
 #include <iostream>
 #include <list>
@@ -167,19 +159,10 @@ private:
     std::unique_ptr<HeuristicRepresentation> heuristic_representation;
     std::unique_ptr<Distances> distances;
 
-    std::vector<int> init_distances;
-    std::vector<int> goal_distances;
     std::vector<bool> goal_states;
     AbstractStateRef init_state;
 
-    int max_f;
-    int max_g;
-    int max_h;
-
     bool goal_relevant;
-
-    // TODO: Remove this temporary method once we use new distances code.
-    void assert_distances_in_sync() const;
 
     /*
       Invariant of this class:
@@ -196,16 +179,6 @@ private:
       an assertion.
     */
     bool is_valid() const;
-
-    // Methods related to computation of distances
-    void clear_distances();
-    void compute_init_distances_unit_cost();
-    void compute_goal_distances_unit_cost();
-    void compute_init_distances_general_cost();
-    void compute_goal_distances_general_cost();
-    bool are_distances_computed() const;
-    bool is_unit_cost() const;
-    std::vector<bool> compute_distances();
 
     void compute_distances_and_prune();
     void discard_states(const std::vector<bool> &to_be_pruned_states);
@@ -290,32 +263,29 @@ public:
         return init_state;
     }
 
+    /*
+      TODO: We probably want to get rid of the methods below that just
+      forward to distances, by giving the users of these methods
+      access to the the distances object instead.
+
+      This might also help address a possible performance problem we
+      might have at the moment, now that these methods are no longer
+      inlined here. (To be able to inline them, we would need to
+      include distances.h here, which we would rather not.)
+    */
+
     // Methods only used by shrink strategies.
-    int get_max_f() const {
-        assert(max_f == distances->get_max_f());
-        return max_f;
-    }
-    int get_max_g() const { // currently not being used
-        assert(max_g == distances->get_max_g());
-        return max_g;
-    }
-    int get_max_h() const {
-        assert(max_h == distances->get_max_h());
-        return max_h;
-    }
+    int get_max_f() const;
+    int get_max_g() const; // currently not being used
+    int get_max_h() const;
+
     bool is_goal_state(int state) const {
         return goal_states[state];
     }
-    int get_init_distance(int state) const {
-        assert(init_distances[state] == distances->get_init_distance(state));
-        return init_distances[state];
-    }
+    int get_init_distance(int state) const;
 
     // Used by both shrink strategies and MergeDFP
-    int get_goal_distance(int state) const {
-        assert(goal_distances[state] == distances->get_goal_distance(state));
-        return goal_distances[state];
-    }
+    int get_goal_distance(int state) const;
 
     // Methods only used by MergeDFP.
     int get_num_labels() const {
