@@ -6,6 +6,13 @@ class TransitionSystem;
 #include <vector>
 
 class Distances {
+    /*
+      TODO: Remove the following friend. We only need it while we're
+      refactoring to make sure the "old" and "new" distance
+      computations are in sync.
+    */
+    friend class TransitionSystem;
+
     // TODO: The following two are copied from transition_system.h;
     // that's just a temporary hack.
     static const int PRUNED_STATE = -1;
