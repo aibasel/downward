@@ -30,6 +30,16 @@ def _set_limit(kind, soft, hard=None):
             file=sys.stderr)
 
 
+def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
+    soft_limit = min(int(math.ceil(internal_limit)), external_hard_limit)
+    hard_limit = min(soft_limit + 1, external_hard_limit)
+    print("time limit %.2f -> (%d, %d)" %
+        (internal_limit, soft_limit, hard_limit))
+    sys.stdout.flush()
+    assert soft_limit <= hard_limit
+    return soft_limit, hard_limit
+
+
 def set_time_limit(time_limit):
     if time_limit is None:
         return
@@ -41,10 +51,8 @@ def set_time_limit(time_limit):
     assert time_limit <= external_hard_limit, (time_limit, external_hard_limit)
     # Soft limit reached --> SIGXCPU.
     # Hard limit reached --> SIGKILL.
-    soft_limit = int(math.ceil(time_limit))
-    hard_limit = min(soft_limit + 1, external_hard_limit)
-    print("time limit %.2f -> (%d, %d)" % (time_limit, soft_limit, hard_limit))
-    sys.stdout.flush()
+    soft_limit, hard_limit = _get_soft_and_hard_time_limits(
+        time_limit, external_hard_limit)
     _set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
 
 
