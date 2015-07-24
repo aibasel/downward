@@ -24,11 +24,13 @@ public:
 
 
 class HeuristicRepresentationLeaf : public HeuristicRepresentation {
+    friend class AtomicTransitionSystem; // for debugging during transition only
+
     const int var_id;
 
     std::vector<int> lookup_table;
 public:
-    HeuristicRepresentationLeaf(int domain_size, int var_id);
+    HeuristicRepresentationLeaf(int var_id, int domain_size);
     virtual ~HeuristicRepresentationLeaf() = default;
 
     virtual void apply_abstraction_to_lookup_table(
@@ -38,6 +40,7 @@ public:
 
 
 class HeuristicRepresentationMerge : public HeuristicRepresentation {
+    friend class CompositeTransitionSystem; // for debugging during transition only
     // TODO: Should become unique_ptr.
     HeuristicRepresentation *children[2];
     std::vector<std::vector<int> > lookup_table;

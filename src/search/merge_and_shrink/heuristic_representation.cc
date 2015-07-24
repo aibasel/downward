@@ -22,7 +22,7 @@ int HeuristicRepresentation::get_domain_size() const {
 
 
 HeuristicRepresentationLeaf::HeuristicRepresentationLeaf(
-    int domain_size, int var_id)
+    int var_id, int domain_size)
     : HeuristicRepresentation(domain_size),
       var_id(var_id),
       lookup_table(domain_size) {

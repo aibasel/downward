@@ -1,5 +1,6 @@
 #include "transition_system.h"
 
+#include "heuristic_representation.h"
 #include "labels.h"
 
 #include "../priority_queue.h"
@@ -46,7 +47,8 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const shared_ptr<Labels> labels)
     : labels(labels),
       num_labels(labels->get_size()),
-      num_variables(task_proxy.get_variables().size()) {
+      num_variables(task_proxy.get_variables().size()),
+      heuristic_representation(nullptr) {
     clear_distances();
     size_t num_ops = task_proxy.get_operators().size();
     if (num_ops > 0) {
@@ -878,6 +880,10 @@ AtomicTransitionSystem::AtomicTransitionSystem(const TaskProxy &task_proxy,
             init_state = value;
         lookup_table.push_back(value);
     }
+    // TODO: Use smart pointers.
+    heuristic_representation = new HeuristicRepresentationLeaf(var_id, range);
+    assert(lookup_table == dynamic_cast<HeuristicRepresentationLeaf *>(
+               heuristic_representation)->lookup_table);
 
     /*
       Prepare grouped_labels data structure: add one single-element
@@ -898,12 +904,16 @@ AtomicTransitionSystem::~AtomicTransitionSystem() {
 
 void AtomicTransitionSystem::apply_abstraction_to_lookup_table(
     const vector<AbstractStateRef> &abstraction_mapping) {
+    heuristic_representation->apply_abstraction_to_lookup_table(
+        abstraction_mapping);
     cout << tag() << "applying abstraction to lookup table" << endl;
     for (size_t i = 0; i < lookup_table.size(); ++i) {
         AbstractStateRef old_state = lookup_table[i];
         if (old_state != PRUNED_STATE)
             lookup_table[i] = abstraction_mapping[old_state];
     }
+    assert(lookup_table == dynamic_cast<HeuristicRepresentationLeaf *>(
+               heuristic_representation)->lookup_table);
 }
 
 string AtomicTransitionSystem::description() const {
@@ -914,7 +924,10 @@ string AtomicTransitionSystem::description() const {
 
 AbstractStateRef AtomicTransitionSystem::get_abstract_state(const State &state) const {
     int value = state[var_id].get_value();
-    return lookup_table[value];
+    int result = lookup_table[value];
+    assert(result == dynamic_cast<HeuristicRepresentationLeaf *>(
+               heuristic_representation)->get_abstract_state(state));
+    return result;
 }
 
 
@@ -953,6 +966,11 @@ CompositeTransitionSystem::CompositeTransitionSystem(const TaskProxy &task_proxy
                 init_state = state;
         }
     }
+    // TODO: Use smart pointers.
+    heuristic_representation = new HeuristicRepresentationMerge(
+        ts1->heuristic_representation, ts2->heuristic_representation);
+    assert(lookup_table == dynamic_cast<HeuristicRepresentationMerge *>(
+               heuristic_representation)->lookup_table);
 
     /*
       We can compute the local equivalence relation of a composite T
@@ -1036,6 +1054,8 @@ CompositeTransitionSystem::~CompositeTransitionSystem() {
 
 void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
     const vector<AbstractStateRef> &abstraction_mapping) {
+    heuristic_representation->apply_abstraction_to_lookup_table(
+        abstraction_mapping);
     cout << tag() << "applying abstraction to lookup table" << endl;
     for (int i = 0; i < components[0]->get_size(); ++i) {
         for (int j = 0; j < components[1]->get_size(); ++j) {
@@ -1044,6 +1064,8 @@ void CompositeTransitionSystem::apply_abstraction_to_lookup_table(
                 lookup_table[i][j] = abstraction_mapping[old_state];
         }
     }
+    assert(lookup_table == dynamic_cast<HeuristicRepresentationMerge *>(
+               heuristic_representation)->lookup_table);
 }
 
 string CompositeTransitionSystem::description() const {
@@ -1056,7 +1078,13 @@ string CompositeTransitionSystem::description() const {
 AbstractStateRef CompositeTransitionSystem::get_abstract_state(const State &state) const {
     AbstractStateRef state1 = components[0]->get_abstract_state(state);
     AbstractStateRef state2 = components[1]->get_abstract_state(state);
+    int result;
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)
-        return PRUNED_STATE;
-    return lookup_table[state1][state2];
+        result = PRUNED_STATE;
+    else
+        result = lookup_table[state1][state2];
+
+    assert(result == dynamic_cast<HeuristicRepresentationMerge *>(
+               heuristic_representation)->get_abstract_state(state));
+    return result;
 }

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+class HeuristicRepresentation;
 class Labels;
 class State;
 class TaskProxy;
@@ -118,7 +119,11 @@ class TransitionSystem {
     friend class AtomicTransitionSystem;
     friend class CompositeTransitionSystem;
 
+public:
+    // TODO: HACK: We have this public attribute in the middle here
+    // because we temporarily need access to it from HeuristicRepresentation.
     static const int PRUNED_STATE = -1;
+private:
     static const int DISTANCE_UNKNOWN = -2;
 
     /*
@@ -155,6 +160,10 @@ class TransitionSystem {
     const int num_variables;
 
     int num_states;
+
+    // TODO: Should become unique_ptr once we properly get rid of
+    // transition ssytems that have been merged into larger ones.
+    HeuristicRepresentation *heuristic_representation;
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;
