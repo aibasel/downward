@@ -8,23 +8,24 @@ if(NOT FAST_DOWNWARD_MAIN_CMAKELISTS_READ)
         "from the current directory and restart cmake.")
 endif()
 
-## == Default options ==
+## == Options ==
 
 # Use all available LP solvers by default. If no solvers are installed,
 # this option can remain true. Setting this to false will compile without
 # LP solvers even if some of them are installed.
 option(USE_LP "Use all available LP solvers." TRUE)
 
+
 ## == Project ==
 
 project(downward)
 fast_downward_set_compiler_flags()
 
-
-## == Target and source files ==
-
 # Collect source files needed for the active plugins.
 include("${CMAKE_CURRENT_SOURCE_DIR}/FastDownwardPlugins.cmake")
+add_executable(downward ${PLANNER_SOURCES})
+
+## == Includes ==
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 if(APPLE)
@@ -32,8 +33,6 @@ if(APPLE)
     ## TODO: we do ship tree.hh so why add another external include
     include_directories("/opt/local/include/")
 endif()
-
-add_executable(downward ${PLANNER_SOURCES})
 
 
 ## == Libraries ==
