@@ -8,21 +8,27 @@ from . import call
 from . import limits
 from . import portfolio_runner
 from .plan_manager import PlanManager
-from .util import SRC_DIR
+from .util import BUILDS_DIR
 
 
-TRANSLATE = os.path.join(SRC_DIR, "components", "translate", "translate.py")
-PREPROCESS = os.path.join(SRC_DIR, "components", "preprocess")
-SEARCH = os.path.join(SRC_DIR, "components", "downward")
+REL_TRANSLATE_PATH = os.path.join("bin", "translate", "translate.py")
+REL_PREPROCESS_PATH = os.path.join("bin", "preprocess")
+REL_SEARCH_PATH = os.path.join("bin", "downward")
 
-
-def check_for_executable(executable, debug):
-    if not os.path.exists(executable):
-        target = " debug" if debug else ""
+def get_executable(build, rel_path):
+    build_dir = os.path.join(BUILDS_DIR, build)
+    if not os.path.exists(build_dir):
         raise IOError(
-            "Could not find {executable}. "
-            "Please run './build_all{target}'.".format(**locals()))
+            "Could not find build '{build}' at {build_dir}. "
+            "Please run './build.py {build}'.".format(**locals()))
 
+    abs_path = os.path.join(build_dir, rel_path)
+    if not os.path.exists(abs_path):
+        raise IOError(
+            "Could not find '{rel_path}' in build '{build}'. "
+            "Please run './build.py {build}'.".format(**locals()))
+
+    return abs_path
 
 def print_component_settings(nick, inputs, options, time_limit, memory):
     logging.info("{} input: {}".format(nick, inputs))
@@ -54,8 +60,9 @@ def run_translate(args):
     print_component_settings(
         "translator", args.translate_inputs, args.translate_options,
         time_limit, memory_limit)
+    translate = get_executable(args.build, REL_TRANSLATE_PATH)
     call_component(
-        TRANSLATE, args.translate_inputs + args.translate_options,
+        translate, args.translate_inputs + args.translate_options,
         time_limit=time_limit, memory_limit=memory_limit)
 
 
@@ -68,9 +75,9 @@ def run_preprocess(args):
     print_component_settings(
         "preprocessor", args.preprocess_input, args.preprocess_options,
         time_limit, memory_limit)
-    check_for_executable(PREPROCESS, args.debug)
+    preprocess = get_executable(args.build, REL_PREPROCESS_PATH)
     call_component(
-        PREPROCESS, args.preprocess_options,
+        preprocess, args.preprocess_options,
         stdin=args.preprocess_input,
         time_limit=time_limit, memory_limit=memory_limit)
 
@@ -88,14 +95,14 @@ def run_search(args):
     plan_manager = PlanManager(args.plan_file)
     plan_manager.delete_existing_plans()
 
-    logging.info("search executable: %s" % SEARCH)
-    check_for_executable(SEARCH, args.debug)
+    search = get_executable(args.build, REL_SEARCH_PATH)
+    logging.info("search executable: %s" % search)
 
     if args.portfolio:
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
         portfolio_runner.run(
-            args.portfolio, SEARCH, args.search_input, plan_manager,
+            args.portfolio, search, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
         if not args.search_options:
@@ -104,6 +111,6 @@ def run_search(args):
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
         call_component(
-            SEARCH, args.search_options,
+            search, args.search_options,
             stdin=args.search_input,
             time_limit=time_limit, memory_limit=memory_limit)
