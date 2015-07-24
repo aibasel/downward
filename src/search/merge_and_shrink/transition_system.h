@@ -296,7 +296,6 @@ public:
 
 class AtomicTransitionSystem : public TransitionSystem {
     int var_id;
-    std::vector<AbstractStateRef> lookup_table;
 protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
@@ -312,7 +311,6 @@ public:
 
 class CompositeTransitionSystem : public TransitionSystem {
     TransitionSystem *components[2];
-    std::vector<std::vector<AbstractStateRef> > lookup_table;
 protected:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<AbstractStateRef> &abstraction_mapping);
