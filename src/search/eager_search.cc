@@ -248,8 +248,6 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
              * stored h (without recomputing);
              * --> run tests if we loose performance
              */
-
-            //this seems weird - why can the node not be closed?
             if(!node.is_closed()) {
                 EvaluationContext eval_context(
                     node.get_state(), node.get_g(), false, &statistics);
