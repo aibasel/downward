@@ -4,11 +4,13 @@
 #include "lp_solver.h"
 #include "utilities.h"
 
+#ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 #pragma GCC diagnostic ignored "-Woverflow"
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #include <OsiSolverInterface.hpp>
 
 #ifdef COIN_HAS_CLP
@@ -23,8 +25,9 @@
 #include <OsiGrbSolverInterface.hpp>
 #endif
 
+#ifdef __GNUG__
 #pragma GCC diagnostic pop
-
+#endif
 using namespace std;
 
 // CPLEX warning that is misleadingly reported with the severity of a critical error.

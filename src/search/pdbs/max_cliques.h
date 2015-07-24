@@ -14,8 +14,8 @@
    such that the algorithm is in O(3^{n/3}).
 
    This implementation is in O(n 3^{n/3}) because the cliques are
-   outputed explicitely. For a better runtime it could be useful to
-   use bitvectors instead of vectors.
+   output explicitly. For a better runtime it could be useful to
+   use bit vectors instead of vectors.
  */
 extern void compute_max_cliques(
     const std::vector<std::vector<int> > &graph,

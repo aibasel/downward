@@ -23,7 +23,7 @@ def _call_subprocesses(cmddesc, *cmd_lists):
     for cmd_list in cmd_lists:
         try:
             exitcode = subprocess.call(cmd_list)
-        except OSError, e:
+        except OSError as e:
             # If command is not found, swallow error and try next command.
             if e.errno != errno.ENOENT:
                 raise util.Abort("error running %s: %s" % (cmddesc, e))

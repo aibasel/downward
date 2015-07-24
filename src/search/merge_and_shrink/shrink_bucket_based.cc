@@ -1,15 +1,13 @@
 #include "shrink_bucket_based.h"
 
-#include "transition_system.h"
-
 #include "../globals.h"
 #include "../rng.h"
 
 #include <cassert>
 #include <iostream>
 #include <vector>
-using namespace std;
 
+using namespace std;
 
 ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
     : ShrinkStrategy(opts) {
