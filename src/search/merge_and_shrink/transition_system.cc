@@ -552,7 +552,8 @@ bool TransitionSystem::apply_abstraction(
     if (init_state == PRUNED_STATE)
         cout << tag() << "initial state pruned; task unsolvable" << endl;
 
-    apply_abstraction_to_lookup_table(abstraction_mapping);
+    heuristic_representation->apply_abstraction_to_lookup_table(
+        abstraction_mapping);
 
     if (must_clear_distances) {
         cout << tag() << "simplification was not f-preserving!" << endl;
@@ -688,7 +689,8 @@ bool TransitionSystem::is_solvable() const {
 
 int TransitionSystem::get_cost(const State &state) const {
     assert(distances->are_distances_computed());
-    int abs_state = get_abstract_state(state);
+    int abs_state = heuristic_representation->get_abstract_state(state);
+
     if (abs_state == PRUNED_STATE)
         return -1;
     int cost = distances->get_goal_distance(abs_state);
@@ -718,12 +720,6 @@ int TransitionSystem::unique_unlabeled_transitions() const {
            - unique_transitions.begin();
 }
 
-void TransitionSystem::apply_abstraction_to_lookup_table(
-    const vector<AbstractStateRef> &abstraction_mapping) {
-    heuristic_representation->apply_abstraction_to_lookup_table(
-        abstraction_mapping);
-}
-
 string TransitionSystem::description() const {
     ostringstream s;
     if (var_id_set.size() == 1) {
@@ -733,11 +729,6 @@ string TransitionSystem::description() const {
           << var_id_set.size() << "/" << num_variables << " vars";
     }
     return s.str();
-}
-
-AbstractStateRef TransitionSystem::get_abstract_state(
-    const State &state) const {
-    return heuristic_representation->get_abstract_state(state);
 }
 
 void TransitionSystem::statistics(const Timer &timer,
