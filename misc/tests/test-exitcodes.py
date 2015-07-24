@@ -9,6 +9,7 @@ import sys
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
+DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
 TASKS = {
     "strips": "miconic/s1-0.pddl",
@@ -81,18 +82,18 @@ def run_plan_script(task_type, relpath, search):
     print("\nRun %(search)s on %(task_type)s task:" % locals())
     sys.stdout.flush()
     return subprocess.call(
-        [sys.executable, os.path.join(REPO_BASE, "src", "fast-downward.py"), problem, "--search", search])
+        [sys.executable, DRIVER, problem, "--search", search])
 
 
 def cleanup():
-    subprocess.check_call([sys.executable, os.path.join(REPO_BASE, "src", "cleanup.py")])
+    subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
 
 def main():
     # We cannot call bash scripts on Windows. After we switched to cmake,
     # we want to replace build_all by a python script.
     if os.name == "posix":
-        subprocess.check_call(["./build_all"], cwd=os.path.join(REPO_BASE, "src"))
+        subprocess.check_call(["./build.py"], cwd=REPO_BASE)
     failures = []
     for task_type, search, expected in TESTS:
         relpath = TASKS[task_type]

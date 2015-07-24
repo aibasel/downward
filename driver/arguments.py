@@ -47,11 +47,11 @@ EXAMPLE_PORTFOLIO = os.path.relpath(
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
-     ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
+     ["./fast-downward.py", "benchmarks/gripper/prob01.pddl",
       "--search", '"astar(lmcut())"']),
     ("Translate and preprocess, run no search:",
      ["./fast-downward.py", "--translate", "--preprocess",
-      "../benchmarks/gripper/prob01.pddl"]),
+      "benchmarks/gripper/prob01.pddl"]),
     ("Run predefined configuration (LAMA-2011) on preprocessed task:",
      ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output"]),
     ("Run a portfolio on a preprocessed task:",
@@ -60,7 +60,7 @@ EXAMPLES = [
     ("Run the search component in debug mode (with assertions enabled):",
      ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
-     ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
+     ["./fast-downward.py", "benchmarks/gripper/prob01.pddl",
       "--translate-options", "--relaxed",
       "--search-options", "--search", '"astar(lmcut())"']),
 ]

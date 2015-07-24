@@ -12,8 +12,7 @@ import configs
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO, "benchmarks")
-SRC_DIR = os.path.join(REPO, "src")
-FAST_DOWNWARD = os.path.join(SRC_DIR, "fast-downward.py")
+FAST_DOWNWARD = os.path.join(REPO, "fast-downward.py")
 
 TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
     "miconic/s1-0.pddl",
@@ -52,7 +51,7 @@ def run_plan_script(task, nick, config, debug):
 
 
 def cleanup():
-    subprocess.check_call([sys.executable, os.path.join(SRC_DIR, "cleanup.py")])
+    subprocess.check_call([sys.executable, FAST_DOWNWARD, "--cleanup"])
 
 
 def main():
@@ -60,9 +59,8 @@ def main():
     # we want to replace build_all by a python script.
     if os.name == "posix":
         jobs = multiprocessing.cpu_count()
-        cmd = ["./build_all", "-j{}".format(jobs)]
-        subprocess.check_call(cmd, cwd=SRC_DIR)
-        subprocess.check_call(cmd + ["debug"], cwd=SRC_DIR)
+        cmd = ["./build.py", "release32", "debug32", "-j{}".format(jobs)]
+        subprocess.check_call(cmd, cwd=REPO)
     for task in TASKS:
         for nick, config in CONFIGS.items():
             for debug in [False, True]:
