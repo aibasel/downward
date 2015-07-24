@@ -10,7 +10,7 @@
 
 using namespace std;
 
-shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
+const shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
     /*
       TODO: This code is only intended for the transitional period while we
       still support the "old style" of adjusting costs (via the cost_type

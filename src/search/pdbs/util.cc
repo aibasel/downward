@@ -52,7 +52,7 @@ static void validate_and_normalize_patterns(
 }
 
 static void build_pattern_for_size_limit(
-    shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
+    const shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
     vector<int> &pattern) {
     /*
        - Error if size_limit is invalid (< 1).
@@ -84,7 +84,7 @@ static void build_pattern_for_size_limit(
 }
 
 static void build_combo_patterns(
-    shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
+    const shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
     vector<vector<int> > &pattern_collection) {
     // Take one large pattern and then single-variable patterns for
     // all goal variables that are not in the large pattern.
@@ -112,7 +112,8 @@ static void build_singleton_patterns(
 }
 
 void parse_pattern(OptionParser &parser, Options &opts) {
-    assert(parser.is_valid_option("transform"));
+    if (!parser.help_mode())
+        assert(parser.is_valid_option("transform"));
     parser.add_option<int>(
         "max_states",
         "maximal number of abstract states in the pattern database",
@@ -122,14 +123,13 @@ void parse_pattern(OptionParser &parser, Options &opts) {
         "list of variable numbers of the planning task that should be used as "
         "pattern. Default: the variables are selected automatically based on a "
         "simple greedy strategy.",
-        "",
-        OptionFlags(false));
+        OptionParser::NONE);
 
     opts = parser.parse();
     if (parser.help_mode())
         return;
 
-    shared_ptr<AbstractTask> task = get_task_from_options(opts);
+    const shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
 
     vector<int> pattern;
@@ -147,14 +147,14 @@ void parse_pattern(OptionParser &parser, Options &opts) {
 }
 
 void parse_patterns(OptionParser &parser, Options &opts) {
-    assert(parser.is_valid_option("transform"));
+    if (!parser.help_mode())
+        assert(parser.is_valid_option("transform"));
     parser.add_list_option<vector<int> >(
         "patterns",
         "list of patterns (which are lists of variable numbers of the planning "
         "task). Default: each goal variable is used as a single-variable "
         "pattern in the collection.",
-        "",
-        OptionFlags(false));
+        OptionParser::NONE);
     parser.add_option<bool>(
         "combo", "use the combo strategy", "false");
     parser.add_option<int>(
@@ -164,7 +164,7 @@ void parse_patterns(OptionParser &parser, Options &opts) {
     if (parser.help_mode())
         return;
 
-    shared_ptr<AbstractTask> task = get_task_from_options(opts);
+    const shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
 
     vector<vector<int> > pattern_collection;

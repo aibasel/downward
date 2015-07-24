@@ -3,6 +3,7 @@
 
 #include "../operator_cost.h"
 #include "../state_registry.h"
+#include "../successor_generator.h"
 #include "../task_proxy.h"
 
 #include <map>
@@ -18,7 +19,7 @@ class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternGenerationHaslum {
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
     // maximum number of states for each pdb
     const int pdb_max_size;
@@ -30,6 +31,7 @@ class PatternGenerationHaslum {
     const double max_time;
     const OperatorCost cost_type;
     CanonicalPDBsHeuristic *current_heuristic;
+    SuccessorGenerator successor_generator;
 
     // for stats only
     int num_rejected;

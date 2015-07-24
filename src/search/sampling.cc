@@ -3,6 +3,7 @@
 #include "countdown_timer.h"
 #include "globals.h"
 #include "rng.h"
+#include "successor_generator.h"
 #include "task_proxy.h"
 #include "task_tools.h"
 
@@ -20,6 +21,7 @@ double get_average_operator_cost(TaskProxy task_proxy) {
 
 vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
+    SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,
@@ -62,15 +64,11 @@ vector<State> sample_states_with_random_walks(
 
         // Sample one state with a random walk of length length.
         State current_state(initial_state);
+        vector<OperatorProxy> applicable_ops;
         for (int j = 0; j < length; ++j) {
-            /* TODO we want to use the successor generator here but it only
-               handles GlobalState objects */
-            vector<OperatorProxy> applicable_ops;
-            for (OperatorProxy op : task_proxy.get_operators()) {
-                if (is_applicable(op, current_state)) {
-                    applicable_ops.push_back(op);
-                }
-            }
+            applicable_ops.clear();
+            successor_generator.generate_applicable_ops(current_state,
+                                                        applicable_ops);
             // If there are no applicable operators, do not walk further.
             if (applicable_ops.empty()) {
                 break;

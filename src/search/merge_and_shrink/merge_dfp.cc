@@ -4,23 +4,27 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 
 using namespace std;
 
 
 MergeDFP::MergeDFP()
-    : MergeStrategy(),
-      border_atomics_composites(remaining_merges + 1) {
-    // n := remaining_merges + 1 is the number of variables of the planning task
-    // and thus the number of atomic transition systems. These will be stored at
-    // indices 0 to n-1 and thus n is the index at which the first composite
-    // transition system will be stored at.
+    : MergeStrategy() {
+}
+
+void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
+    MergeStrategy::initialize(task);
+    /*
+      n := remaining_merges + 1 is the number of variables of the planning task
+      and thus the number of atomic transition systems. These will be stored at
+      indices 0 to n-1 and thus n is the index at which the first composite
+      transition system will be stored at.
+    */
+    border_atomics_composites = remaining_merges + 1;
 }
 
 int MergeDFP::get_corrected_index(int index) const {
@@ -83,6 +87,7 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
 }
 
 pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transition_systems) {
+    assert(initialized());
     assert(!done());
 
     vector<const TransitionSystem *> sorted_transition_systems;

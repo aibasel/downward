@@ -26,7 +26,6 @@ public:
     explicit PotentialHeuristic(const Options &options);
     ~PotentialHeuristic() = default;
 };
-
 }
 
 #endif

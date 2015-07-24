@@ -7,6 +7,7 @@
 
 class CountdownTimer;
 class State;
+class SuccessorGenerator;
 class TaskProxy;
 
 
@@ -16,6 +17,7 @@ double get_average_operator_cost(TaskProxy task_proxy);
 
 std::vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
+    SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,

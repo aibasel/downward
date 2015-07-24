@@ -5,12 +5,13 @@
 #include "../option_parser.h"
 #include "../utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <vector>
-using namespace std;
+#include <limits>
 
+using namespace std;
 
 ShrinkStrategy::ShrinkStrategy(const Options &opts)
     : max_states(opts.get<int>("max_states")),

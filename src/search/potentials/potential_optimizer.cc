@@ -85,8 +85,8 @@ void PotentialOptimizer::set_lp_objective(const vector<double> &coefficients) {
     }
 }
 
-const TaskProxy &PotentialOptimizer::get_task_proxy() const {
-    return task_proxy;
+const std::shared_ptr<AbstractTask> PotentialOptimizer::get_task() const {
+    return task;
 }
 
 bool PotentialOptimizer::potentials_are_bounded() const {
