@@ -50,7 +50,8 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
     : labels(labels),
       num_labels(labels->get_size()),
       num_variables(task_proxy.get_variables().size()),
-      heuristic_representation(nullptr) {
+      heuristic_representation(nullptr),
+      distances(make_unique_ptr<Distances>(*this)) {
     clear_distances();
     size_t num_ops = task_proxy.get_operators().size();
     if (num_ops > 0) {
@@ -227,6 +228,14 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
 TransitionSystem::~TransitionSystem() {
 }
 
+void TransitionSystem::assert_distances_in_sync() const {
+    assert(init_distances == distances->init_distances);
+    assert(goal_distances == distances->goal_distances);
+    assert(max_f == distances->max_f);
+    assert(max_g == distances->max_g);
+    assert(max_h == distances->max_h);
+}
+
 bool TransitionSystem::is_valid() const {
     return are_distances_computed()
            && are_transitions_sorted_unique()
@@ -234,11 +243,13 @@ bool TransitionSystem::is_valid() const {
 }
 
 void TransitionSystem::clear_distances() {
+    distances->clear_distances();
     max_f = DISTANCE_UNKNOWN;
     max_g = DISTANCE_UNKNOWN;
     max_h = DISTANCE_UNKNOWN;
     init_distances.clear();
     goal_distances.clear();
+    assert_distances_in_sync();
 }
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
@@ -256,22 +267,30 @@ void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
 }
 
 bool TransitionSystem::are_distances_computed() const {
+    bool result;
     if (max_h == DISTANCE_UNKNOWN) {
         assert(max_f == DISTANCE_UNKNOWN);
         assert(max_g == DISTANCE_UNKNOWN);
         assert(init_distances.empty());
         assert(goal_distances.empty());
-        return false;
+        result = false;
+    } else {
+        result = true;
     }
-    return true;
+    assert(result == distances->are_distances_computed());
+    return result;
 }
 
 bool TransitionSystem::is_unit_cost() const {
+    bool result = true;
     for (int label_no = 0; label_no < labels->get_size(); ++label_no)
         if (labels->is_current_label(label_no) &&
-            labels->get_label_cost(label_no) != 1)
-            return false;
-    return true;
+            labels->get_label_cost(label_no) != 1) {
+            result = false;
+            break;
+        }
+    assert(result == distances->is_unit_cost());
+    return result;
 }
 
 std::vector<bool> TransitionSystem::compute_distances() {
@@ -292,11 +311,14 @@ std::vector<bool> TransitionSystem::compute_distances() {
     assert(!are_distances_computed());
     assert(init_distances.empty() && goal_distances.empty());
 
+    distances->compute_distances();
+
     if (init_state == PRUNED_STATE) {
         cout << "init state was pruned, no distances to compute" << endl;
         // If init_state was pruned, then everything must have been pruned.
         assert(num_states == 0);
         max_f = max_g = max_h = INF;
+        assert_distances_in_sync();
         return vector<bool>();
     }
 
@@ -342,6 +364,7 @@ std::vector<bool> TransitionSystem::compute_distances() {
              << "irrelevant: " << irrelevant_count << " states" << endl;
     }
     assert(are_distances_computed());
+    assert_distances_in_sync();
     return to_be_pruned_states;
 }
 
