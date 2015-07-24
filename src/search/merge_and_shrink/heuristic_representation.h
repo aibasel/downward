@@ -1,6 +1,7 @@
 #ifndef MERGE_AND_SHRINK_HEURISTIC_REPRESENTATION_H
 #define MERGE_AND_SHRINK_HEURISTIC_REPRESENTATION_H
 
+#include <memory>
 #include <vector>
 
 class State;
@@ -41,12 +42,12 @@ public:
 
 class HeuristicRepresentationMerge : public HeuristicRepresentation {
     friend class CompositeTransitionSystem; // for debugging during transition only
-    // TODO: Should become unique_ptr.
-    HeuristicRepresentation *children[2];
+    std::unique_ptr<HeuristicRepresentation> children[2];
     std::vector<std::vector<int> > lookup_table;
 public:
-    HeuristicRepresentationMerge(HeuristicRepresentation *child1,
-                                 HeuristicRepresentation *child2);
+    HeuristicRepresentationMerge(
+        std::unique_ptr<HeuristicRepresentation> child1,
+        std::unique_ptr<HeuristicRepresentation> child2);
     virtual ~HeuristicRepresentationMerge() = default;
 
     virtual void apply_abstraction_to_lookup_table(

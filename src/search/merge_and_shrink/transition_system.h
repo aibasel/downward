@@ -161,9 +161,7 @@ private:
 
     int num_states;
 
-    // TODO: Should become unique_ptr once we properly get rid of
-    // transition ssytems that have been merged into larger ones.
-    HeuristicRepresentation *heuristic_representation;
+    std::unique_ptr<HeuristicRepresentation> heuristic_representation;
 
     std::vector<int> init_distances;
     std::vector<int> goal_distances;

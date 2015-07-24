@@ -50,12 +50,13 @@ int HeuristicRepresentationLeaf::get_abstract_state(const State &state) const {
 
 
 HeuristicRepresentationMerge::HeuristicRepresentationMerge(
-    HeuristicRepresentation *child1, HeuristicRepresentation *child2)
+    unique_ptr<HeuristicRepresentation> child1,
+    unique_ptr<HeuristicRepresentation> child2)
     : HeuristicRepresentation(child1->get_domain_size() *
                               child2->get_domain_size()),
-      children{child1, child2},
-      lookup_table(child1->get_domain_size(),
-                   vector<int>(child2->get_domain_size())) {
+      children{move(child1), move(child2)},
+      lookup_table(children[0]->get_domain_size(),
+                   vector<int>(children[1]->get_domain_size())) {
     int counter = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
