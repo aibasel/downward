@@ -119,7 +119,6 @@ public:
     // because we temporarily need access to it from HeuristicRepresentation.
     static const int PRUNED_STATE = -1;
 private:
-    static const int DISTANCE_UNKNOWN = -2;
 
     /*
       There should only be one instance of Labels at runtime. It is created

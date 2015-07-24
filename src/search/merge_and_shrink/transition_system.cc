@@ -39,7 +39,6 @@ const int INF = numeric_limits<int>::max();
 
 
 const int TransitionSystem::PRUNED_STATE;
-const int TransitionSystem::DISTANCE_UNKNOWN;
 
 
 // common case for both constructors
