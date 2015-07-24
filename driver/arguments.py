@@ -308,7 +308,7 @@ def parse_args():
         help="use specific build like release32 (default), debug32, release64, debug32, or a custom build")
     driver_other.add_argument(
         "--debug", action="store_true",
-        help="use debug mode. This is an alias for --build=debug32. Do not use --debug and --build at the same time.")
+        help="alias for --build=debug32")
     driver_other.add_argument(
         "--log-level", choices=["debug", "info", "warning"],
         default="info",
@@ -320,6 +320,11 @@ def parse_args():
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
         help="run a portfolio specified in FILE")
+
+    driver_other.add_argument(
+        "--cleanup", action="store_true",
+        help="clean up temporary files (output, output.sas, sas_plan, sas_plan.*) and exit")
+
 
     parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,
@@ -360,7 +365,7 @@ def parse_args():
         except KeyError:
             parser.error("unknown alias: %r" % args.alias)
 
-    if not args.show_aliases:
+    if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
 
     return args
