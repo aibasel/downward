@@ -112,12 +112,6 @@ typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
     std::vector<int> var_id_set;
-    /*
-      These friend definitions are required to give the inheriting classes
-      access to passed base class objects (e.g. in CompositeTransitionSystem).
-    */
-    friend class AtomicTransitionSystem;
-    friend class CompositeTransitionSystem;
 
 public:
     // TODO: HACK: We have this public attribute in the middle here

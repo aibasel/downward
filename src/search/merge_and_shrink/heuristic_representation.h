@@ -20,13 +20,10 @@ public:
     virtual int get_abstract_state(const State &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<int> &abstraction_mapping) = 0;
-
 };
 
 
 class HeuristicRepresentationLeaf : public HeuristicRepresentation {
-    friend class AtomicTransitionSystem; // for debugging during transition only
-
     const int var_id;
 
     std::vector<int> lookup_table;
@@ -41,7 +38,6 @@ public:
 
 
 class HeuristicRepresentationMerge : public HeuristicRepresentation {
-    friend class CompositeTransitionSystem; // for debugging during transition only
     std::unique_ptr<HeuristicRepresentation> children[2];
     std::vector<std::vector<int> > lookup_table;
 public:
