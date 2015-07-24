@@ -11,7 +11,6 @@
 
 
 namespace potentials {
-
 using Function = std::shared_ptr<PotentialFunction>;
 using SamplesAndFunctions = std::unordered_map<State, Function>;
 

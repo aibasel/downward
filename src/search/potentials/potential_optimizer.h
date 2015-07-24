@@ -39,7 +39,7 @@ public:
     explicit PotentialOptimizer(const Options &opts);
     ~PotentialOptimizer() = default;
 
-    const TaskProxy &get_task_proxy() const;
+    const std::shared_ptr<AbstractTask> get_task() const;
     bool potentials_are_bounded() const;
 
     bool optimize_for_state(const State &state);

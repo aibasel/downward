@@ -71,7 +71,7 @@ class OperatorProxy;
 
 // Implements a single pattern database
 class PatternDatabase {
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
 
     std::vector<int> pattern;
@@ -162,7 +162,7 @@ public:
        empty, default operator costs are used.
     */
     PatternDatabase(
-        std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> task,
         const std::vector<int> &pattern,
         bool dump = false,
         const std::vector<int> &operator_costs = std::vector<int>());

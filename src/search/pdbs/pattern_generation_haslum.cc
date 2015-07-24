@@ -38,6 +38,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
+      successor_generator(task),
       num_rejected(0),
       hill_climbing_timer(0) {
     Timer timer;
@@ -106,8 +107,9 @@ void PatternGenerationHaslum::sample_states(
 
     try {
         samples = sample_states_with_random_walks(
-            task_proxy, num_samples, init_h, average_operator_cost,
-            [this](const State &state) {return current_heuristic->is_dead_end(state);},
+            task_proxy, successor_generator, num_samples, init_h, average_operator_cost,
+            [this](const State &state) {return current_heuristic->is_dead_end(state);
+            },
             *hill_climbing_timer);
     } catch (SamplingTimeout &) {
         throw HillClimbingTimeout();

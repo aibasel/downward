@@ -2,9 +2,9 @@
 
 #include "g_evaluator.h"
 #include "global_operator.h"
-#include "global_successor_generator.h"
 #include "plugin.h"
 #include "pref_evaluator.h"
+#include "successor_generator.h"
 #include "utilities.h"
 
 using namespace std;
@@ -58,9 +58,11 @@ void EnforcedHillClimbingSearch::initialize() {
             "ranking successors" : "pruning") << endl;
     }
 
+    bool dead_end = current_eval_context.is_heuristic_infinite(heuristic);
     statistics.inc_evaluated_states();
+    print_initial_h_values(current_eval_context);
 
-    if (current_eval_context.is_heuristic_infinite(heuristic)) {
+    if (dead_end) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
             exit_with(EXIT_UNSOLVABLE);

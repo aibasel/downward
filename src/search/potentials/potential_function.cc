@@ -26,5 +26,4 @@ int PotentialFunction::get_value(const State &state) const {
     const double epsilon = 0.01;
     return static_cast<int>(max(0.0, ceil(heuristic_value - epsilon)));
 }
-
 }

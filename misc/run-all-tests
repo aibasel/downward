@@ -1,0 +1,8 @@
+#! /bin/bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+./style/run-all-style-checks.py
+./tests/run-all-code-tests
