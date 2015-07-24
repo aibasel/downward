@@ -191,6 +191,7 @@ private:
     void compute_init_distances_general_cost();
     void compute_goal_distances_general_cost();
     bool are_distances_computed() const;
+    bool is_unit_cost() const;
     std::vector<bool> compute_distances();
 
     void compute_distances_and_prune();
@@ -270,6 +271,10 @@ public:
     void dump_labels_and_transitions() const;
     int get_size() const {
         return num_states;
+    }
+
+    int get_init_state() const {
+        return init_state;
     }
 
     // Methods only used by shrink strategies.

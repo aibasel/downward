@@ -266,6 +266,14 @@ bool TransitionSystem::are_distances_computed() const {
     return true;
 }
 
+bool TransitionSystem::is_unit_cost() const {
+    for (int label_no = 0; label_no < labels->get_size(); ++label_no)
+        if (labels->is_current_label(label_no) &&
+            labels->get_label_cost(label_no) != 1)
+            return false;
+    return true;
+}
+
 std::vector<bool> TransitionSystem::compute_distances() {
     /*
       This method does the following:
@@ -282,7 +290,6 @@ std::vector<bool> TransitionSystem::compute_distances() {
 
     cout << tag() << flush;
     assert(!are_distances_computed());
-    assert(are_transitions_sorted_unique());
     assert(init_distances.empty() && goal_distances.empty());
 
     if (init_state == PRUNED_STATE) {
@@ -293,19 +300,9 @@ std::vector<bool> TransitionSystem::compute_distances() {
         return vector<bool>();
     }
 
-    bool is_unit_cost = true;
-    for (int label_no = 0; label_no < labels->get_size(); ++label_no) {
-        if (labels->is_current_label(label_no)) {
-            if (labels->get_label_cost(label_no) != 1) {
-                is_unit_cost = false;
-                break;
-            }
-        }
-    }
-
     init_distances.resize(num_states, INF);
     goal_distances.resize(num_states, INF);
-    if (is_unit_cost) {
+    if (is_unit_cost()) {
         cout << "computing distances using unit-cost algorithm" << endl;
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
@@ -354,6 +351,7 @@ void TransitionSystem::compute_distances_and_prune() {
       additionally prunes all states that are unreachable (abstract g
       is infinite) or irrelevant (abstract h is infinite).
     */
+    assert(are_transitions_sorted_unique());
     discard_states(compute_distances());
 }
 
