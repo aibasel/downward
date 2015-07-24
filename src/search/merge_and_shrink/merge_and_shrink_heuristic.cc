@@ -149,7 +149,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             }
 
             // Merging
-            TransitionSystem *new_transition_system = new CompositeTransitionSystem(
+            TransitionSystem *new_transition_system = new TransitionSystem(
                 task_proxy, labels, transition_system1, transition_system2);
             new_transition_system->statistics(timer, use_expensive_statistics);
             all_transition_systems.push_back(new_transition_system);
