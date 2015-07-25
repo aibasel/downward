@@ -5,15 +5,14 @@
 
 class TransitionSystem;
 
+
 class FactoredTransitionSystem {
     // Set of all transition systems. Entries with nullptr have been merged.
     std::vector<TransitionSystem *> transition_systems;
 public:
-    FactoredTransitionSystem() {
-        // temporary default constructor; TODO: remove
-    }
     explicit FactoredTransitionSystem(
         std::vector<TransitionSystem *> &&transition_systems);
+    FactoredTransitionSystem(FactoredTransitionSystem &&) = default;
     ~FactoredTransitionSystem();
 
     // No copying or assignment.

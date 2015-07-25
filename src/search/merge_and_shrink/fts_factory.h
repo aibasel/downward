@@ -19,8 +19,7 @@ class TaskProxy;
 
 // TODO: The labels should eventually be part of the FTS rather
 // than something created externally.
-extern std::unique_ptr<FactoredTransitionSystem>
-create_factored_transition_system(
+extern FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy, std::shared_ptr<Labels> labels);
 
 #endif
