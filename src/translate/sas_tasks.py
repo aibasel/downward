@@ -2,7 +2,7 @@ from __future__ import print_function
 
 SAS_FILE_VERSION = 3
 
-DEBUG = True
+DEBUG = False
 
 
 class SASTask:
