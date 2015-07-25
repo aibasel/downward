@@ -1,5 +1,6 @@
 #include "merge_and_shrink_heuristic.h"
 
+#include "factored_transition_system.h"
 #include "labels.h"
 #include "merge_strategy.h"
 #include "shrink_strategy.h"
@@ -104,13 +105,12 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    // Set of all transition systems. Entries with nullptr have been merged.
-    vector<TransitionSystem *> all_transition_systems;
+    FactoredTransitionSystem fts;
     size_t num_vars = task_proxy.get_variables().size();
-    all_transition_systems.reserve(num_vars * 2 - 1);
+    fts.get_vector().reserve(num_vars * 2 - 1);
     TransitionSystem::build_atomic_transition_systems(
-        task_proxy, all_transition_systems, labels);
-    for (TransitionSystem *transition_system : all_transition_systems) {
+        task_proxy, fts.get_vector(), labels);
+    for (TransitionSystem *transition_system : fts.get_vector()) {
         if (!transition_system->is_solvable()) {
             final_transition_system = transition_system;
             break;
@@ -121,19 +121,20 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
     if (!final_transition_system) { // All atomic transition system are solvable.
         while (!merge_strategy->done()) {
             // Choose next transition systems to merge
-            pair<int, int> merge_indices = merge_strategy->get_next(all_transition_systems);
+            pair<int, int> merge_indices = merge_strategy->get_next(
+                fts.get_vector());
             int merge_index1 = merge_indices.first;
             int merge_index2 = merge_indices.second;
             assert(merge_index1 != merge_index2);
-            TransitionSystem *transition_system1 = all_transition_systems[merge_index1];
-            TransitionSystem *transition_system2 = all_transition_systems[merge_index2];
+            TransitionSystem *transition_system1 = fts[merge_index1];
+            TransitionSystem *transition_system2 = fts[merge_index2];
             assert(transition_system1);
             assert(transition_system2);
             transition_system1->statistics(timer, use_expensive_statistics);
             transition_system2->statistics(timer, use_expensive_statistics);
 
             if (labels->reduce_before_shrinking()) {
-                labels->reduce(merge_indices, all_transition_systems);
+                labels->reduce(merge_indices, fts.get_vector());
             }
 
             // Shrinking
@@ -145,14 +146,14 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
                 transition_system2->statistics(timer, use_expensive_statistics);
 
             if (labels->reduce_before_merging()) {
-                labels->reduce(merge_indices, all_transition_systems);
+                labels->reduce(merge_indices, fts.get_vector());
             }
 
             // Merging
             TransitionSystem *new_transition_system = new TransitionSystem(
                 task_proxy, labels, transition_system1, transition_system2);
             new_transition_system->statistics(timer, use_expensive_statistics);
-            all_transition_systems.push_back(new_transition_system);
+            fts.get_vector().push_back(new_transition_system);
 
             /*
               NOTE: both the shrinking strategy classes and the construction of
@@ -165,8 +166,8 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
 
             transition_system1->release_memory();
             transition_system2->release_memory();
-            all_transition_systems[merge_index1] = nullptr;
-            all_transition_systems[merge_index2] = nullptr;
+            fts[merge_index1] = nullptr;
+            fts[merge_index2] = nullptr;
 
             report_peak_memory_delta();
             cout << endl;
@@ -175,18 +176,18 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
 
     if (final_transition_system) {
         // Problem is unsolvable
-        for (TransitionSystem *transition_system : all_transition_systems) {
+        for (TransitionSystem *transition_system : fts.get_vector()) {
             if (transition_system) {
                 transition_system->release_memory();
                 transition_system = nullptr;
             }
         }
     } else {
-        assert(all_transition_systems.size() == num_vars * 2 - 1);
-        for (size_t i = 0; i < all_transition_systems.size() - 1; ++i) {
-            assert(!all_transition_systems[i]);
+        assert(fts.get_vector().size() == num_vars * 2 - 1);
+        for (size_t i = 0; i < fts.get_vector().size() - 1; ++i) {
+            assert(!fts[i]);
         }
-        final_transition_system = all_transition_systems.back();
+        final_transition_system = fts.get_vector().back();
         assert(final_transition_system);
         final_transition_system->release_memory();
     }
