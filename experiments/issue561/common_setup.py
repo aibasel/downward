@@ -3,7 +3,6 @@
 import itertools
 import os
 import platform
-import subprocess
 import sys
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
@@ -128,7 +127,9 @@ class IssueExperiment(DownwardExperiment):
     PORTFOLIO_ATTRIBUTES = [
         "cost",
         "coverage",
+        "error",
         "plan_length",
+        "run_dir",
         ]
 
     def __init__(self, configs, suite, grid_priority=None, path=None,
@@ -255,6 +256,17 @@ class IssueExperiment(DownwardExperiment):
         # list of combinations by setting and saving the algorithm nicks.
         return [_get_rev_nick(*combo) for combo in self.combinations]
 
+    @classmethod
+    def _is_portfolio(cls, config_nick):
+        return "fdss" in config_nick
+
+    @classmethod
+    def get_supported_attributes(cls, config_nick, attributes):
+        if cls._is_portfolio(config_nick):
+            return [attr for attr in attributes
+                    if attr in cls.PORTFOLIO_ATTRIBUTES]
+        return attributes
+
     def add_config(self, nick, config, timeout=None):
         DownwardExperiment.add_config(self, nick, config, timeout=timeout)
         self._config_nicks.append(nick)
@@ -278,7 +290,6 @@ class IssueExperiment(DownwardExperiment):
         report = AbsoluteReport(**kwargs)
         outfile = get_experiment_name() + "." + report.output_format
         self.add_report(report, outfile=outfile)
-        self.add_step(Step('publish-absolute-report', call, ['publish', outfile]))
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -307,15 +318,6 @@ class IssueExperiment(DownwardExperiment):
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
 
-        def publish_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
-                outfile = os.path.join(self.eval_dir,
-                                       "%s-%s-%s-compare.html" %
-                                       (self.name, rev1, rev2))
-                subprocess.call(['publish', outfile])
-
-        self.add_step(Step('publish-comparison-reports', publish_comparison_tables))
-
     def add_scatter_plot_step(self, attributes=None):
         """Add a step that creates scatter plots for all revision pairs.
 
@@ -332,9 +334,6 @@ class IssueExperiment(DownwardExperiment):
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
         scatter_dir = os.path.join(self.eval_dir, "scatter")
 
-        def is_portfolio(config_nick):
-            return "fdss" in config_nick
-
         def make_scatter_plot(config_nick, rev1, rev2, attribute):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
             print "Make scatter plot for", name
@@ -350,15 +349,10 @@ class IssueExperiment(DownwardExperiment):
 
         def make_scatter_plots():
             for config_nick in self._config_nicks:
-                if is_portfolio(config_nick):
-                    valid_attributes = [
-                        attr for attr in attributes
-                        if attr in self.PORTFOLIO_ATTRIBUTES]
-                else:
-                    valid_attributes = attributes
                 for rev1, rev2 in itertools.combinations(
                         self.revision_nicks, 2):
-                    for attribute in valid_attributes:
+                    for attribute in self.get_supported_attributes(
+                            config_nick, attributes):
                         make_scatter_plot(config_nick, rev1, rev2, attribute)
 
         self.add_step(Step("make-scatter-plots", make_scatter_plots))
