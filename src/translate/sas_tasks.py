@@ -120,7 +120,7 @@ class SASVariables:
         """Validate variables.
 
         The only nontrivial check is that derived variables are
-        binary. See commint on derived variables in the docstring of
+        binary. See comment on derived variables in the docstring of
         SASTask.validate."""
         assert len(self.ranges) == len(self.axiom_layers) == len(
             self.value_names)
