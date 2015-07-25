@@ -76,6 +76,3 @@ def main(rev1, rev2):
     exp.add_comparison_table_step(attributes=attributes)
 
     exp()
-
-
-main("issue561-base", "issue561-v1")
