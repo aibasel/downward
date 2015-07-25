@@ -195,7 +195,7 @@ void FTSFactory::finalize_transition_systems() {
       - Normalize transition systems.
     */
     for (size_t i = 0; i < transition_systems.size(); ++i) {
-        // Need to set the correct number of shared_ptr<Labels> after* generating them
+        // Need to set the correct number of labels *after* generating them
         TransitionSystem *ts = transition_systems[i];
         ts->num_labels = labels->get_size();
         /* Make all irrelevant labels explicit and set the cost of every
