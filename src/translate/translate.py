@@ -479,9 +479,9 @@ def trivial_task(solvable):
     mutexes = []
     init = sas_tasks.SASInit([0])
     if solvable:
-        goal_fact = (0, 1)
-    else:
         goal_fact = (0, 0)
+    else:
+        goal_fact = (0, 1)
     goal = sas_tasks.SASGoal([goal_fact])
     operators = []
     axioms = []
