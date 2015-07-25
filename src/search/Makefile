@@ -119,6 +119,7 @@ HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
 HEADERS += merge_and_shrink/distances.h \
+           merge_and_shrink/factored_transition_system.h \
            merge_and_shrink/heuristic_representation.h \
            merge_and_shrink/labels.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
