@@ -2,7 +2,7 @@ from __future__ import print_function
 
 SAS_FILE_VERSION = 3
 
-DEBUG = False
+DEBUG = True
 
 
 class SASTask:
@@ -119,14 +119,16 @@ class SASVariables:
     def validate(self):
         """Validate variables.
 
-        The only nontrivial check is that derived variables are
-        binary. See comment on derived variables in the docstring of
-        SASTask.validate."""
+        All variables must have range at least 2, and derived
+        variables must have range exactly 2. See comment on derived
+        variables in the docstring of SASTask.validate.
+        """
         assert len(self.ranges) == len(self.axiom_layers) == len(
             self.value_names)
         for (var_range, layer, var_value_names) in zip(
                 self.ranges, self.axiom_layers, self.value_names):
             assert var_range == len(var_value_names)
+            assert var_range >= 2
             assert layer == -1 or layer >= 0
             if layer != -1:
                 assert var_range == 2
@@ -231,7 +233,8 @@ class SASGoal:
         self.pairs = sorted(pairs)
 
     def validate(self, variables):
-        """Assert that the goal is a valid condition."""
+        """Assert that the goal is nonempty and a valid condition."""
+        assert self.pairs
         variables.validate_condition(self.pairs)
 
     def dump(self):
