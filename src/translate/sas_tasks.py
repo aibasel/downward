@@ -298,6 +298,29 @@ class SASOperator:
           condition are permitted.
         - The effect in a pre_post rule may be identical to the
           precondition or to an effect condition of that effect.
+
+        TODO/open question:
+        - It is currently not very clear what the semantics of operators
+          should be when effects "conflict", i.e., when multiple effects
+          trigger and want to set a given variable to two different
+          values. In the case where both are unconditional effects, we
+          should make sure that our representation doesn't actually
+          contain two such effects, but when at least one of them is
+          conditional, things are not so easy.
+
+          To make our life simpler when generating SAS+ tasks from
+          PDDL tasks, it probably makes most sense to generalize the
+          PDDL rule in this case: there is a value order where certain
+          values "win" over others in this situation. It probably
+          makes sense to say the "highest" values should win in this
+          case, because that's consistent with the PDDL rules if we
+          say false = 0 and true = 1, and also with our sort order of
+          effects it means we get the right result if we just apply
+          effects in sequence.
+
+          But whatever we end up deciding, we need to be clear about it,
+          document it and make sure that all of our code knows the rules
+          and follows them.
         """
 
         variables.validate_condition(self.prevail)
