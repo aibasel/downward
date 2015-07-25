@@ -448,6 +448,8 @@ def translate_task(strips_to_sas, ranges, translation_key,
     ## values, which is most of the time the case, and hence refrain from
     ## introducing axioms (that are not supported by all heuristics)
     goal_pairs = list(goal_dict_list[0].items())
+    if not goal_pairs:
+        return solvable_sas_task("Empty goal")
     goal = sas_tasks.SASGoal(goal_pairs)
 
     operators = translate_strips_operators(actions, strips_to_sas, ranges,
@@ -486,6 +488,10 @@ def trivial_task(solvable):
     metric = True
     return sas_tasks.SASTask(variables, mutexes, init, goal,
                              operators, axioms, metric)
+
+def solvable_sas_task(msg):
+    print("%s! Generating solvable task..." % msg)
+    return trivial_task(solvable=True)
 
 def unsolvable_sas_task(msg):
     print("%s! Generating unsolvable task..." % msg)
