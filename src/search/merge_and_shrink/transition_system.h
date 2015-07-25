@@ -143,17 +143,23 @@ private:
       new label group is added also increases runtime. See also issue492 and
       issue521.
     */
+public: // TODO: public while refactoring; make private again
     std::vector<std::vector<Transition> > transitions_of_groups;
+private:
     std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), except during
       the incorporation of a label mapping as computed by label reduction.
     */
+public: // TODO: public while refactoring; make private again
     int num_labels;
+private:
     // Number of variables of the task used by merge-and-shrink
     const int num_variables;
 
+public: // TODO: public while refactoring; make private again
     int num_states;
+private:
 
     std::unique_ptr<HeuristicRepresentation> heuristic_representation;
     std::unique_ptr<Distances> distances;
@@ -177,9 +183,13 @@ private:
       Note that those tests are expensive to compute and hence only used as
       an assertion.
     */
+public: // TODO: public while refactoring; make private again
     bool is_valid() const;
+private:
 
+public: // TODO: public while refactoring; make private again
     void compute_distances_and_prune();
+private:
     void discard_states(const std::vector<bool> &to_be_pruned_states);
 
     // Methods related to the representation of transitions and labels
@@ -189,16 +199,20 @@ private:
     void add_label_to_group(LabelGroupIter group_it, int label_no,
                             bool update_cost = true);
     int add_label_group(const std::vector<int> &new_labels);
+public: // TODO: public while refactoring; make private again
     LabelGroupIter get_group_it(int label_no) {
         return std::get<0>(label_to_positions[label_no]);
     }
+private:
     LabelIter get_label_it(int label_no) {
         return std::get<1>(label_to_positions[label_no]);
     }
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     bool is_label_reduced() const;
+public: // TODO: public while refactoring; make private again
     void compute_locally_equivalent_labels();
+private:
 
     // Statistics and output
     int total_transitions() const;
