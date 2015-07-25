@@ -19,12 +19,17 @@ class FTSFactory {
     shared_ptr<Labels> labels;
 
     vector<TransitionSystem *> transition_systems;
+    vector<vector<bool> > relevant_labels;
+
+    void build_empty_transition_systems();
+    void build_transitions();
+    void finalize_transition_systems();
 public:
     FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels);
     ~FTSFactory();
 
     /*
-      Note: create() may only be called once. We don't protect against
+      Note: create() may only be called once. We don't worry about
       misuse because the class is only used internally in this file.
     */
     FactoredTransitionSystem create();
@@ -38,22 +43,26 @@ FTSFactory::FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels)
 FTSFactory::~FTSFactory() {
 }
 
-FactoredTransitionSystem FTSFactory::create() {
-    assert(transition_systems.empty());
-    int num_vars = task_proxy.get_variables().size();
-    assert(num_vars >= 1);
-    transition_systems.reserve(num_vars * 2 - 1);
+void FTSFactory::build_empty_transition_systems() {
+    // Create the transition system objects without transitions.
+    VariablesProxy variables = task_proxy.get_variables();
+    assert(variables.size() >= 1);
+    // We reserve space for the transition systems added later by merging.
+    transition_systems.reserve(variables.size() * 2 - 1);
+    for (VariableProxy var : variables)
+        transition_systems.push_back(
+            new TransitionSystem(task_proxy, labels, var.get_id()));
+}
 
-    cout << "Building atomic transition systems... " << endl;
+void FTSFactory::build_transitions() {
+    // Add transitions to the empty transition system objects.
+    // Also determines relevant labels.
+
     VariablesProxy variables = task_proxy.get_variables();
     OperatorsProxy operators = task_proxy.get_operators();
 
-    // Step 1: Create the transition system objects without transitions.
-    for (VariableProxy var : variables)
-        transition_systems.push_back(new TransitionSystem(task_proxy, labels, var.get_id()));
-
-    // Step 2: Add transitions.
-    vector<vector<bool> > relevant_labels(transition_systems.size(), vector<bool>(operators.size(), false));
+    relevant_labels.resize(transition_systems.size(),
+                           vector<bool>(operators.size(), false));
     for (OperatorProxy op : operators) {
         int label_no = op.get_id();
         labels->add_label(op.get_cost());
@@ -145,6 +154,11 @@ FactoredTransitionSystem FTSFactory::create() {
             }
         }
     }
+}
+
+void FTSFactory::finalize_transition_systems() {
+    // Add transitions for irrelevant operators and normalize
+    // transition systems.
 
     for (size_t i = 0; i < transition_systems.size(); ++i) {
         // Need to set the correct number of shared_ptr<Labels> after* generating them
@@ -165,10 +179,18 @@ FactoredTransitionSystem FTSFactory::create() {
         ts->compute_distances_and_prune();
         assert(ts->is_valid());
     }
+}
+
+FactoredTransitionSystem FTSFactory::create() {
+    cout << "Building atomic transition systems... " << endl;
+    assert(transition_systems.empty());
+
+    build_empty_transition_systems();
+    build_transitions();
+    finalize_transition_systems();
 
     return FactoredTransitionSystem(move(transition_systems));
 }
-
 
 FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy, shared_ptr<Labels> labels) {
