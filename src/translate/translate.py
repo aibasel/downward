@@ -553,6 +553,8 @@ def pddl_to_sas(task):
                 simplify.filter_unreachable_propositions(sas_task)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
+            except simplify.TriviallySolvable:
+                return solvable_sas_task("Simplified to empty goal")
 
     return sas_task
 
