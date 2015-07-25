@@ -14,26 +14,34 @@
 using namespace std;
 
 
-static void build_atomic_transition_systems(
-    const TaskProxy &task_proxy,
-    vector<TransitionSystem *> &result,
-    shared_ptr<Labels> labels);
+class FTSFactory {
+    const TaskProxy &task_proxy;
+    shared_ptr<Labels> labels;
 
-
-FactoredTransitionSystem create_factored_transition_system(
-    const TaskProxy &task_proxy, shared_ptr<Labels> labels) {
     vector<TransitionSystem *> transition_systems;
-    int num_vars = task_proxy.get_variables().size();
-    assert(num_vars >= 1);
-    transition_systems.reserve(num_vars * 2 - 1);
-    build_atomic_transition_systems(task_proxy, transition_systems, labels);
-    return FactoredTransitionSystem(move(transition_systems));
+
+    void build_atomic_transition_systems();
+public:
+    FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels);
+    ~FTSFactory();
+
+    /*
+      Note: create() may only be called once. We don't protect against
+      misuse because the class is only used internally in this file.
+    */
+    FactoredTransitionSystem create();
+};
+
+
+FTSFactory::FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels)
+    : task_proxy(task_proxy), labels(labels) {
 }
 
-void build_atomic_transition_systems(
-    const TaskProxy &task_proxy,
-    vector<TransitionSystem *> &result,
-    shared_ptr<Labels> labels) {
+FTSFactory::~FTSFactory() {
+}
+
+void FTSFactory::build_atomic_transition_systems() {
+    vector<TransitionSystem *> &result = transition_systems;
     assert(result.empty());
     cout << "Building atomic transition systems... " << endl;
     VariablesProxy variables = task_proxy.get_variables();
@@ -158,3 +166,16 @@ void build_atomic_transition_systems(
     }
 }
 
+FactoredTransitionSystem FTSFactory::create() {
+    int num_vars = task_proxy.get_variables().size();
+    assert(num_vars >= 1);
+    transition_systems.reserve(num_vars * 2 - 1);
+    build_atomic_transition_systems();
+    return FactoredTransitionSystem(move(transition_systems));
+}
+
+
+FactoredTransitionSystem create_factored_transition_system(
+    const TaskProxy &task_proxy, shared_ptr<Labels> labels) {
+    return FTSFactory(task_proxy, labels).create();
+}
