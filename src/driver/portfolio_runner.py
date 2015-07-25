@@ -19,6 +19,7 @@ the process is started.
 
 __all__ = ["run"]
 
+import os
 import signal
 import subprocess
 import sys
@@ -268,9 +269,12 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
 
 
     if time is None:
-        sys.exit(
-            "Portfolios need a time limit. Please pass --search-time-limit "
-            "or --overall-time-limit to fast-downward.py.")
+        if os.name == "nt":
+            sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
+        else:
+            sys.exit(
+                "Portfolios need a time limit. Please pass --search-time-limit "
+                "or --overall-time-limit to fast-downward.py.")
 
     timeout = util.get_elapsed_time() + time
 
