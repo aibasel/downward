@@ -7,7 +7,7 @@ from lab.reports import Attribute, gm
 import common_setup
 
 
-REVS = ["issue548-base", "issue548-v2"]
+REVS = ["issue561-base", "issue561-v1"]
 LIMITS = {"search_time": 1800}
 SUITE = suites.suite_optimal_with_ipc11()
 
@@ -37,7 +37,7 @@ exp = common_setup.IssueExperiment(
     limits=LIMITS,
     test_suite=['depot:pfile1'],
     processes=4,
-    email='silvan.sievers@unibas.ch',
+    email='malte.helmert@unibas.ch',
     )
 exp.add_search_parser('ms-parser.py')
 
