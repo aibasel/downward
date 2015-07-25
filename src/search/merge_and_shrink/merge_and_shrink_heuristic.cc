@@ -1,6 +1,7 @@
 #include "merge_and_shrink_heuristic.h"
 
 #include "factored_transition_system.h"
+#include "fts_factory.h"
 #include "labels.h"
 #include "merge_strategy.h"
 #include "shrink_strategy.h"
@@ -105,11 +106,9 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    FactoredTransitionSystem fts;
+    FactoredTransitionSystem fts = create_factored_transition_system(
+        task_proxy, labels);
     size_t num_vars = task_proxy.get_variables().size();
-    fts.get_vector().reserve(num_vars * 2 - 1);
-    TransitionSystem::build_atomic_transition_systems(
-        task_proxy, fts.get_vector(), labels);
     for (TransitionSystem *transition_system : fts.get_vector()) {
         if (!transition_system->is_solvable()) {
             final_transition_system = transition_system;

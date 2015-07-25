@@ -3,18 +3,22 @@
 #include "factored_transition_system.h"
 #include "transition_system.h"
 
+#include "../task_proxy.h"
 #include "../utilities.h"
 
+#include <cassert>
 #include <vector>
 
 using namespace std;
 
 
-unique_ptr<FactoredTransitionSystem> create_factored_transition_system(
+FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy, shared_ptr<Labels> labels) {
     vector<TransitionSystem *> transition_systems;
+    int num_vars = task_proxy.get_variables().size();
+    assert(num_vars >= 1);
+    transition_systems.reserve(num_vars * 2 - 1);
     TransitionSystem::build_atomic_transition_systems(
         task_proxy, transition_systems, labels);
-    return make_unique_ptr<FactoredTransitionSystem>(
-        move(transition_systems));
+    return FactoredTransitionSystem(move(transition_systems));
 }
