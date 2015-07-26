@@ -25,7 +25,7 @@ class FTSFactory {
     vector<TransitionSystemData> transition_system_by_var;
 
     void build_labels();
-    void build_empty_transition_systems();
+    void initialize_transition_system_data();
     void add_transition(int var_no, int label_no,
                         int src_value, int dest_value);
     bool is_relevant(int var_no, int label_no) const;
@@ -67,8 +67,7 @@ void FTSFactory::build_labels() {
         labels->add_label(op.get_cost());
 }
 
-void FTSFactory::build_empty_transition_systems() {
-    // Initialize the internal transition system data.
+void FTSFactory::initialize_transition_system_data() {
     VariablesProxy variables = task_proxy.get_variables();
     int num_labels = labels->get_size();
     transition_system_by_var.resize(variables.size());
@@ -146,9 +145,11 @@ void FTSFactory::handle_operator_effect(
 
     // Handle transitions that occur when the effect triggers.
     for (int value = pre_value_min; value < pre_value_max; ++value) {
-        /* Only add a transition if it is possible that the effect
-           triggers. We can rule out that the effect triggers if it has
-           a condition on var and this condition is not satisfied. */
+        /*
+          Only add a transition if it is possible that the effect
+          triggers. We can rule out that the effect triggers if it has
+          a condition on var and this condition is not satisfied.
+        */
         if (cond_effect_pre_value == -1 || cond_effect_pre_value == value)
             add_transition(var_no, label_no, value, post_value);
     }
@@ -156,14 +157,15 @@ void FTSFactory::handle_operator_effect(
     // Handle transitions that occur when the effect does not trigger.
     if (!effect_conditions.empty()) {
         for (int value = pre_value_min; value < pre_value_max; ++value) {
-            /* Add self-loop if the effect might not trigger.
-               If the effect has a condition on another variable, then
-               it can fail to trigger no matter which value var has.
-               If it only has a condition on var, then the effect
-               fails to trigger if this condition is false. */
-            if (has_other_effect_cond || value != cond_effect_pre_value) {
+            /*
+              Add self-loop if the effect might not trigger.
+              If the effect has a condition on another variable, then
+              it can fail to trigger no matter which value var has.
+              If it only has a condition on var, then the effect
+              fails to trigger if this condition is false.
+            */
+            if (has_other_effect_cond || value != cond_effect_pre_value)
                 add_transition(var_no, label_no, value, value);
-            }
         }
     }
     mark_as_relevant(var_no, label_no);
@@ -218,7 +220,7 @@ void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable) {
 void FTSFactory::build_transitions() {
     /*
       - Add all transitions.
-      - Compute relevant operator information.
+      - Computes relevant operator information as a side effect.
     */
     for (OperatorProxy op : task_proxy.get_operators())
         build_transitions_for_operator(op);
@@ -249,7 +251,7 @@ FactoredTransitionSystem FTSFactory::create() {
     cout << "Building atomic transition systems... " << endl;
 
     build_labels();
-    build_empty_transition_systems();
+    initialize_transition_system_data();
     build_transitions();
 
     return FactoredTransitionSystem(create_transition_systems());
