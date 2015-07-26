@@ -23,6 +23,8 @@ class FTSFactory {
 
     void build_labels();
     void build_empty_transition_systems();
+    void add_transition(int var_no, int label_no,
+                        int src_value, int dest_value);
     unordered_map<int, int> compute_preconditions(OperatorProxy op);
     void handle_operator_effect(
         OperatorProxy op, EffectProxy effect,
@@ -70,6 +72,12 @@ void FTSFactory::build_empty_transition_systems() {
             new TransitionSystem(task_proxy, labels, var.get_id()));
 }
 
+void FTSFactory::add_transition(int var_no, int label_no,
+                                int src_value, int dest_value) {
+    transition_systems[var_no]->transitions_of_groups[label_no].push_back(
+        Transition(src_value, dest_value));
+}
+
 unordered_map<int, int> FTSFactory::compute_preconditions(OperatorProxy op) {
     unordered_map<int, int> pre_val;
     for (FactProxy precondition : op.get_preconditions())
@@ -84,15 +92,14 @@ void FTSFactory::handle_operator_effect(
     int label_no = op.get_id();
     FactProxy fact = effect.get_fact();
     VariableProxy var = fact.get_variable();
-    int var_id = var.get_id();
-    has_effect_on_var[var_id] = true;
+    int var_no = var.get_id();
+    has_effect_on_var[var_no] = true;
     int post_value = fact.get_value();
-    TransitionSystem *ts = transition_systems[var_id];
 
     // Determine possible values that var can have when this
     // operator is applicable.
     int pre_value = -1;
-    auto pre_val_it = pre_val.find(var_id);
+    auto pre_val_it = pre_val.find(var_no);
     if (pre_val_it != pre_val.end())
         pre_value = pre_val_it->second;
     int pre_value_min, pre_value_max;
@@ -127,10 +134,8 @@ void FTSFactory::handle_operator_effect(
         /* Only add a transition if it is possible that the effect
            triggers. We can rule out that the effect triggers if it has
            a condition on var and this condition is not satisfied. */
-        if (cond_effect_pre_value == -1 || cond_effect_pre_value == value) {
-            Transition trans(value, post_value);
-            ts->transitions_of_groups[label_no].push_back(trans);
-        }
+        if (cond_effect_pre_value == -1 || cond_effect_pre_value == value)
+            add_transition(var_no, label_no, value, post_value);
     }
 
     // Handle transitions that occur when the effect does not trigger.
@@ -142,25 +147,22 @@ void FTSFactory::handle_operator_effect(
                If it only has a condition on var, then the effect
                fails to trigger if this condition is false. */
             if (has_other_effect_cond || value != cond_effect_pre_value) {
-                Transition loop(value, value);
-                ts->transitions_of_groups[label_no].push_back(loop);
+                add_transition(var_no, label_no, value, value);
             }
         }
     }
-    relevant_labels[var_id][label_no] = true;
+    relevant_labels[var_no][label_no] = true;
 }
 
 void FTSFactory::handle_operator_precondition(
     OperatorProxy op, FactProxy precondition,
     const vector<bool> &has_effect_on_var) {
     int label_no = op.get_id();
-    int var_id = precondition.get_variable().get_id();
-    if (!has_effect_on_var[var_id]) {
+    int var_no = precondition.get_variable().get_id();
+    if (!has_effect_on_var[var_no]) {
         int value = precondition.get_value();
-        TransitionSystem *ts = transition_systems[var_id];
-        Transition trans(value, value);
-        ts->transitions_of_groups[label_no].push_back(trans);
-        relevant_labels[var_id][label_no] = true;
+        add_transition(var_no, label_no, value, value);
+        relevant_labels[var_no][label_no] = true;
     }
 }
 
@@ -201,19 +203,16 @@ void FTSFactory::finalize_transition_systems() {
     VariablesProxy variables = task_proxy.get_variables();
     for (VariableProxy variable : task_proxy.get_variables()) {
         size_t var_no = variable.get_id();
-        TransitionSystem *ts = transition_systems[var_no];
         int num_states = variable.get_domain_size();
         int num_labels = labels->get_size();
         /* Make all irrelevant labels explicit. */
         for (int label_no = 0; label_no < num_labels; ++label_no) {
             if (!relevant_labels[var_no][label_no]) {
-                for (int state = 0; state < num_states; ++state) {
-                    Transition loop(state, state);
-                    ts->transitions_of_groups[label_no].push_back(loop);
-                }
+                for (int state = 0; state < num_states; ++state)
+                    add_transition(var_no, label_no, state, state);
             }
         }
-        ts->hacky_finish_construction();
+        transition_systems[var_no]->hacky_finish_construction();
     }
 }
 
