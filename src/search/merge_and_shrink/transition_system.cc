@@ -285,7 +285,7 @@ void TransitionSystem::add_label_to_group(LabelGroupIter group_it,
                                           int label_no,
                                           bool update_cost) {
     LabelIter label_it = group_it->insert(label_no);
-    label_to_positions[label_no] = make_tuple(group_it, label_it);
+    label_to_positions[label_no] = make_pair(group_it, label_it);
     if (update_cost) {
         int label_cost = labels->get_label_cost(label_no);
         if (label_cost < group_it->get_cost()) {
@@ -508,7 +508,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             }
             LabelIter label_it = get_label_it(label_no);
             group_it->erase(label_it);
-            // Note: we cannot invalidate the tuple label_to_positions[label_no]
+            // Note: we cannot invalidate the pair label_to_positions[label_no]
             if (!only_equivalent_labels) {
                 if (group_it->empty()) {
                     release_vector_memory(group_it->get_transitions());
