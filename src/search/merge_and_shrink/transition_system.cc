@@ -104,9 +104,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
         LabelGroupIter group_it = add_empty_label_group(&transitions_of_groups[label_no]);
-        add_label_to_group(group_it, label_no, false);
-        /* We cannot set the cost here, because the labels have not been
-           created yet. */
+        add_label_to_group(group_it, label_no, true);
     }
 }
 

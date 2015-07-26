@@ -21,6 +21,7 @@ class FTSFactory {
     vector<TransitionSystem *> transition_systems;
     vector<vector<bool> > relevant_labels;
 
+    void build_labels();
     void build_empty_transition_systems();
     unordered_map<int, int> compute_preconditions(OperatorProxy op);
     void handle_operator_effect(
@@ -50,6 +51,12 @@ FTSFactory::FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels)
 }
 
 FTSFactory::~FTSFactory() {
+}
+
+void FTSFactory::build_labels() {
+    // Add all operators to the labels object.
+    for (OperatorProxy op : task_proxy.get_operators())
+        labels->add_label(op.get_cost());
 }
 
 void FTSFactory::build_empty_transition_systems() {
@@ -176,17 +183,14 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
 
 void FTSFactory::build_transitions() {
     /*
-      - Add all operators to the labels object.
       - Add transitions to the empty transition system objects.
       - Compute relevant labels.
     */
     OperatorsProxy operators = task_proxy.get_operators();
     relevant_labels.resize(transition_systems.size(),
                            vector<bool>(operators.size(), false));
-    for (OperatorProxy op : operators) {
-        labels->add_label(op.get_cost());
+    for (OperatorProxy op : operators)
         build_transitions_for_operator(op);
-    }
 }
 
 void FTSFactory::finalize_transition_systems() {
@@ -195,19 +199,16 @@ void FTSFactory::finalize_transition_systems() {
       - Normalize transition systems.
     */
     for (size_t i = 0; i < transition_systems.size(); ++i) {
-        // Need to set the correct number of labels *after* generating them
         TransitionSystem *ts = transition_systems[i];
-        ts->num_labels = labels->get_size();
-        /* Make all irrelevant labels explicit and set the cost of every
-           singleton label group. */
-        for (int label_no = 0; label_no < ts->num_labels; ++label_no) {
+        /* Make all irrelevant labels explicit. */
+        int num_labels = labels->get_size();
+        for (int label_no = 0; label_no < num_labels; ++label_no) {
             if (!relevant_labels[i][label_no]) {
                 for (int state = 0; state < ts->num_states; ++state) {
                     Transition loop(state, state);
                     ts->transitions_of_groups[label_no].push_back(loop);
                 }
             }
-            ts->get_group_it(label_no)->set_cost(labels->get_label_cost(label_no));
         }
         ts->hacky_finish_construction();
     }
@@ -217,6 +218,7 @@ FactoredTransitionSystem FTSFactory::create() {
     cout << "Building atomic transition systems... " << endl;
     assert(transition_systems.empty());
 
+    build_labels();
     build_empty_transition_systems();
     build_transitions();
     finalize_transition_systems();
