@@ -88,8 +88,6 @@ void FTSFactory::build_empty_transition_systems() {
 
 void FTSFactory::add_transition(int var_no, int label_no,
                                 int src_value, int dest_value) {
-    transition_systems[var_no]->transitions_of_groups[label_no].push_back(
-        Transition(src_value, dest_value));
     transition_system_by_var[var_no].transitions_by_label[label_no].push_back(
         Transition(src_value, dest_value));
 }
@@ -234,6 +232,23 @@ void FTSFactory::finalize_transition_systems() {
                     add_transition(var_no, label_no, state, state);
             }
         }
+
+        // Copy all transitions into the TransitionSystem objects.
+        /*
+          Note: this is ugly and copies instead of moving because
+          TransitionSystem is a bit peculiar about changing the identity
+          of transitions_of_groups. We will fix this later when we get
+          a constructor that can move the transitions.
+        */
+        TransitionSystemData &ts_data = transition_system_by_var[var_no];
+        TransitionSystem *ts = transition_systems[var_no];
+        for (int label_no = 0; label_no < num_labels; ++label_no) {
+            ts->transitions_of_groups[label_no].insert(
+                ts->transitions_of_groups[label_no].end(),
+                ts_data.transitions_by_label[label_no].begin(),
+                ts_data.transitions_by_label[label_no].end());
+        }
+
         transition_systems[var_no]->hacky_finish_construction();
     }
 }
