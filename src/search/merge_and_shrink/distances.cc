@@ -279,6 +279,60 @@ std::vector<bool> Distances::compute_distances() {
     return prunable_states;
 }
 
+bool Distances::apply_abstraction(
+    const vector<forward_list<int> > &collapsed_groups) {
+    assert(are_distances_computed());
+
+    /*
+      TODO: Get rid of this repeated typedef, which also occurs elsewhere;
+      we should have a typedef for this and perhaps also for a vector of
+      this at a more central place.
+    */
+    typedef forward_list<AbstractStateRef> Group;
+
+    int new_num_states = collapsed_groups.size();
+    vector<int> new_init_distances(new_num_states, DISTANCE_UNKNOWN);
+    vector<int> new_goal_distances(new_num_states, DISTANCE_UNKNOWN);
+
+    bool must_recompute = false;
+    for (int new_state = 0; new_state < new_num_states; ++new_state) {
+        const Group &group = collapsed_groups[new_state];
+        assert(!group.empty());
+
+        Group::const_iterator pos = group.begin();
+        int new_init_dist = init_distances[*pos];
+        int new_goal_dist = goal_distances[*pos];
+
+        ++pos;
+        for (; pos != group.end(); ++pos) {
+            if (init_distances[*pos] != new_init_dist) {
+                must_recompute = true;
+                break;
+            }
+            if (goal_distances[*pos] != new_goal_dist) {
+                must_recompute = true;
+                break;
+            }
+        }
+
+        if (must_recompute)
+            break;
+
+        new_init_distances[new_state] = new_init_dist;
+        new_goal_distances[new_state] = new_goal_dist;
+    }
+
+    if (must_recompute) {
+        clear_distances();
+        compute_distances();
+        return false;
+    } else {
+        init_distances = move(new_init_distances);
+        goal_distances = move(new_goal_distances);
+        return true;
+    }
+}
+
 int Distances::get_max_f() const {
     return max_f;
 }

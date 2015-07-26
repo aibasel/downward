@@ -3,6 +3,7 @@
 
 class TransitionSystem;
 
+#include <forward_list>
 #include <vector>
 
 
@@ -66,6 +67,18 @@ public:
     bool are_distances_computed() const;
     std::vector<bool> compute_distances();
 
+    /*
+      Update distances according to the given abstraction.
+      Returns true iff the abstraction was f-preserving.
+
+      It is OK for the abstraction to drop states, but then all
+      dropped states must be unreachable or irrelevant. (Otherwise,
+      the method might fail to detect that the distance information is
+      out of date.)
+    */
+    bool apply_abstraction(
+        const std::vector<std::forward_list<int> > &collapsed_groups);
+
     int get_max_f() const;
     int get_max_g() const;
     int get_max_h() const;
@@ -76,19 +89,6 @@ public:
 
     int get_goal_distance(int state) const {
         return goal_distances[state];
-    }
-
-    /*
-      TODO: The following two methods are temporary and should
-      eventually be removed. See comments in
-      TransitionSystem::apply_abstraction().
-    */
-    std::vector<int> &please_let_me_mess_with_init_distances() {
-        return init_distances;
-    }
-
-    std::vector<int> &please_let_me_mess_with_goal_distances() {
-        return goal_distances;
     }
 };
 
