@@ -22,7 +22,7 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
       max_filtering_time(opts.get<double>("max_filtering_time")),
       max_covering_time(opts.get<double>("max_covering_time")) {
     Timer init_timer;
-    find_diverse_heuristics();
+    find_diverse_functions();
     cout << "Potential heuristics: " << diverse_functions.size() << endl;
     cout << "Initialization of potential heuristics: " << init_timer << endl;
 }
@@ -116,7 +116,7 @@ void DiversePotentialHeuristics::cover_samples(SamplesAndFunctions &samples_and_
     cout << "Time for covering samples: " << covering_timer << endl;
 }
 
-void DiversePotentialHeuristics::find_diverse_heuristics() {
+void DiversePotentialHeuristics::find_diverse_functions() {
     // Sample states.
     vector<State> samples = sample_without_dead_end_detection(
         optimizer, num_samples);

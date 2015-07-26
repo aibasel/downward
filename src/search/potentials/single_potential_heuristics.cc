@@ -18,11 +18,11 @@ enum class OptFunc {
     SAMPLES
 };
 
-shared_ptr<PotentialFunction> create_potential_function(const Options &opts) {
+static shared_ptr<PotentialFunction> create_potential_function(
+    const Options &opts, OptFunc opt_func) {
     PotentialOptimizer optimizer(opts);
     shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
-    OptFunc opt_func = static_cast<OptFunc>(opts.get_enum("opt_func"));
     switch (opt_func) {
     case OptFunc::INITIAL_STATE:
         optimizer.optimize_for_state(task_proxy.get_initial_state());
@@ -39,24 +39,7 @@ shared_ptr<PotentialFunction> create_potential_function(const Options &opts) {
     return optimizer.get_potential_function();
 }
 
-static Heuristic *_parse(OptionParser &parser) {
-    vector<string> opt_funcs;
-    vector<string> opt_funcs_doc;
-    opt_funcs.push_back("INITIAL_STATE");
-    opt_funcs_doc.push_back(
-        "optimize heuristic for initial state");
-    opt_funcs.push_back("ALL_STATES");
-    opt_funcs_doc.push_back(
-        "optimize heuristic for all states");
-    opt_funcs.push_back("SAMPLES");
-    opt_funcs_doc.push_back(
-        "optimize heuristic for a set of sample states");
-    parser.add_enum_option(
-        "opt_func",
-        opt_funcs,
-        "Optimization function",
-        "SAMPLES",
-        opt_funcs_doc);
+static Heuristic *_parse(OptionParser &parser, OptFunc opt_func) {
     add_common_potentials_options_to_parser(parser);
     add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
@@ -65,9 +48,32 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     opts.set<shared_ptr<PotentialFunction> >(
-        "function", create_potential_function(opts));
+        "function", create_potential_function(opts, opt_func));
     return new PotentialHeuristic(opts);
 }
 
-static Plugin<Heuristic> _plugin("single_potentials", _parse);
+static Heuristic *_parse_initial_state_potential(OptionParser &parser) {
+    parser.document_synopsis(
+        "initial_state_potential", "optimize potentials for initial state");
+    return _parse(parser, OptFunc::INITIAL_STATE);
+}
+
+static Heuristic *_parse_all_states_potential(OptionParser &parser) {
+    parser.document_synopsis(
+        "all_states_potential", "optimize potentials for all states");
+    return _parse(parser, OptFunc::ALL_STATES);
+}
+
+static Heuristic *_parse_samples_potential(OptionParser &parser) {
+    parser.document_synopsis(
+        "samples_potential", "optimize potentials for samples");
+    return _parse(parser, OptFunc::SAMPLES);
+}
+
+static Plugin<Heuristic> _plugin_initial_state(
+    "initial_state_potential", _parse_initial_state_potential);
+static Plugin<Heuristic> _plugin_all_states(
+    "all_states_potential", _parse_all_states_potential);
+static Plugin<Heuristic> _plugin_samples(
+    "samples_potential", _parse_samples_potential);
 }
