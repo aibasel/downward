@@ -209,9 +209,7 @@ void FTSFactory::finalize_transition_systems() {
             }
             ts->get_group_it(label_no)->set_cost(labels->get_label_cost(label_no));
         }
-        ts->compute_locally_equivalent_labels();
-        ts->compute_distances_and_prune();
-        assert(ts->is_valid());
+        ts->hacky_finish_construction();
     }
 }
 

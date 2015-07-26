@@ -183,13 +183,9 @@ private:
       Note that those tests are expensive to compute and hence only used as
       an assertion.
     */
-public: // TODO: public while refactoring; make private again
     bool is_valid() const;
-private:
 
-public: // TODO: public while refactoring; make private again
     void compute_distances_and_prune();
-private:
     void discard_states(const std::vector<bool> &to_be_pruned_states);
 
     // Methods related to the representation of transitions and labels
@@ -210,9 +206,7 @@ private:
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     bool is_label_reduced() const;
-public: // TODO: public while refactoring; make private again
     void compute_locally_equivalent_labels();
-private:
 
     // Statistics and output
     int total_transitions() const;
@@ -238,9 +232,9 @@ public:
                      TransitionSystem *ts2);
     ~TransitionSystem();
 
-    static void build_atomic_transition_systems(const TaskProxy &task_proxy,
-                                                std::vector<TransitionSystem *> &result,
-                                                std::shared_ptr<Labels> labels);
+    // TODO: This method should go once we're done with the factory.
+    void hacky_finish_construction();
+
     bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
                                bool only_equivalent_labels);
