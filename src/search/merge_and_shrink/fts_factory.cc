@@ -23,7 +23,6 @@ class FTSFactory {
         vector<bool> relevant_labels;
     };
     vector<TransitionSystemData> transition_system_by_var;
-
     vector<TransitionSystem *> transition_systems;
 
     void build_labels();
@@ -69,21 +68,15 @@ void FTSFactory::build_labels() {
 }
 
 void FTSFactory::build_empty_transition_systems() {
-    // Create the transition system objects (without transitions).
+    // Initialize the internal transition system data.
     VariablesProxy variables = task_proxy.get_variables();
-    assert(variables.size() >= 1);
     int num_operators = task_proxy.get_operators().size();
-    // We reserve space for the transition systems added later by merging.
-    transition_systems.reserve(variables.size() * 2 - 1);
     transition_system_by_var.resize(variables.size());
     for (VariableProxy var : variables) {
-        transition_systems.push_back(
-            new TransitionSystem(task_proxy, labels, var.get_id()));
         TransitionSystemData &ts_data = transition_system_by_var[var.get_id()];
         ts_data.transitions_by_label.resize(num_operators);
         ts_data.relevant_labels.resize(num_operators, false);
     }
-
 }
 
 void FTSFactory::add_transition(int var_no, int label_no,
@@ -218,9 +211,14 @@ void FTSFactory::build_transitions() {
 void FTSFactory::finalize_transition_systems() {
     /*
       - Add transitions for irrelevant operators.
-      - Normalize transition systems.
+      - Create the actual TransitionSystem objects.
     */
+    assert(transition_systems.empty());
+    // We reserve space for the transition systems added later by merging.
     VariablesProxy variables = task_proxy.get_variables();
+    assert(variables.size() >= 1);
+    transition_systems.reserve(variables.size() * 2 - 1);
+
     for (VariableProxy variable : task_proxy.get_variables()) {
         size_t var_no = variable.get_id();
         int num_states = variable.get_domain_size();
@@ -233,6 +231,9 @@ void FTSFactory::finalize_transition_systems() {
             }
         }
 
+        TransitionSystem *ts =  new TransitionSystem(
+            task_proxy, labels, var_no);
+
         // Copy all transitions into the TransitionSystem objects.
         /*
           Note: this is ugly and copies instead of moving because
@@ -241,7 +242,6 @@ void FTSFactory::finalize_transition_systems() {
           a constructor that can move the transitions.
         */
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
-        TransitionSystem *ts = transition_systems[var_no];
         for (int label_no = 0; label_no < num_labels; ++label_no) {
             ts->transitions_of_groups[label_no].insert(
                 ts->transitions_of_groups[label_no].end(),
@@ -249,7 +249,8 @@ void FTSFactory::finalize_transition_systems() {
                 ts_data.transitions_by_label[label_no].end());
         }
 
-        transition_systems[var_no]->hacky_finish_construction();
+        ts->hacky_finish_construction();
+        transition_systems.push_back(ts);
     }
 }
 
