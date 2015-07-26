@@ -19,7 +19,7 @@ class FTSFactory {
     shared_ptr<Labels> labels;
 
     struct TransitionSystemData {
-        // vector<vector<Transition> > transitions_by_label;
+        vector<vector<Transition> > transitions_by_label;
         vector<bool> relevant_labels;
     };
     vector<TransitionSystemData> transition_system_by_var;
@@ -79,8 +79,9 @@ void FTSFactory::build_empty_transition_systems() {
     for (VariableProxy var : variables) {
         transition_systems.push_back(
             new TransitionSystem(task_proxy, labels, var.get_id()));
-        transition_system_by_var[var.get_id()].relevant_labels.resize(
-            num_operators, false);
+        TransitionSystemData &ts_data = transition_system_by_var[var.get_id()];
+        ts_data.transitions_by_label.resize(num_operators);
+        ts_data.relevant_labels.resize(num_operators, false);
     }
 
 }
@@ -88,6 +89,8 @@ void FTSFactory::build_empty_transition_systems() {
 void FTSFactory::add_transition(int var_no, int label_no,
                                 int src_value, int dest_value) {
     transition_systems[var_no]->transitions_of_groups[label_no].push_back(
+        Transition(src_value, dest_value));
+    transition_system_by_var[var_no].transitions_by_label[label_no].push_back(
         Transition(src_value, dest_value));
 }
 
