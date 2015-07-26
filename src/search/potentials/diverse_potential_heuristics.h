@@ -11,6 +11,7 @@
 
 
 namespace potentials {
+// TODO: Rethink ownership, use less shared pointers, remove these abbreviations.
 using Function = std::shared_ptr<PotentialFunction>;
 using SamplesAndFunctions = std::unordered_map<State, Function>;
 
@@ -18,6 +19,7 @@ class DiversePotentialHeuristics {
     PotentialOptimizer optimizer;
     const int max_num_heuristics;
     const int num_samples;
+    // TODO: Experiment with time limits and remove them if unneeded.
     const double max_filtering_time;
     const double max_covering_time;
     std::vector<Function> diverse_functions;
@@ -42,7 +44,7 @@ class DiversePotentialHeuristics {
     void cover_samples(SamplesAndFunctions &samples_and_functions);
 
     // Sample states, then cover them.
-    void find_diverse_heuristics();
+    void find_diverse_functions();
 
 public:
     explicit DiversePotentialHeuristics(const Options &opts);
