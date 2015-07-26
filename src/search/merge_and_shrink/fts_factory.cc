@@ -198,13 +198,16 @@ void FTSFactory::finalize_transition_systems() {
       - Add transitions for irrelevant operators.
       - Normalize transition systems.
     */
-    for (size_t i = 0; i < transition_systems.size(); ++i) {
-        TransitionSystem *ts = transition_systems[i];
-        /* Make all irrelevant labels explicit. */
+    VariablesProxy variables = task_proxy.get_variables();
+    for (VariableProxy variable : task_proxy.get_variables()) {
+        size_t var_no = variable.get_id();
+        TransitionSystem *ts = transition_systems[var_no];
+        int num_states = variable.get_domain_size();
         int num_labels = labels->get_size();
+        /* Make all irrelevant labels explicit. */
         for (int label_no = 0; label_no < num_labels; ++label_no) {
-            if (!relevant_labels[i][label_no]) {
-                for (int state = 0; state < ts->num_states; ++state) {
+            if (!relevant_labels[var_no][label_no]) {
+                for (int state = 0; state < num_states; ++state) {
                     Transition loop(state, state);
                     ts->transitions_of_groups[label_no].push_back(loop);
                 }
