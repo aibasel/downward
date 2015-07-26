@@ -108,7 +108,6 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
 
     FactoredTransitionSystem fts = create_factored_transition_system(
         task_proxy, labels);
-    size_t num_vars = task_proxy.get_variables().size();
     for (TransitionSystem *transition_system : fts.get_vector()) {
         if (!transition_system->is_solvable()) {
             final_transition_system = transition_system;
@@ -182,7 +181,8 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             }
         }
     } else {
-        assert(fts.get_vector().size() == num_vars * 2 - 1);
+        assert(fts.get_vector().size() ==
+               task_proxy.get_variables().size() * 2 - 1);
         for (size_t i = 0; i < fts.get_vector().size() - 1; ++i) {
             assert(!fts[i]);
         }
