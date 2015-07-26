@@ -144,6 +144,15 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis("Additive CEGAR heuristic", "");
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
+
     parser.add_list_option<shared_ptr<Decomposition> >(
         "decompositions", "task decompositions", "[landmarks,goals]");
     parser.add_option<int>(
