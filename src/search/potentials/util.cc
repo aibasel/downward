@@ -4,6 +4,7 @@
 #include "potential_optimizer.h"
 
 #include "../countdown_timer.h"
+#include "../option_parser.h"
 #include "../sampling.h"
 #include "../successor_generator.h"
 
@@ -50,4 +51,12 @@ void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
     }
     optimizer.optimize_for_samples(samples);
 }
+
+void add_common_potentials_options_to_parser(OptionParser &parser) {
+    parser.add_option<double>(
+        "max_potential",
+        "Bound potentials by this number",
+        "infinity");
+}
+
 }

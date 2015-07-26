@@ -192,15 +192,4 @@ shared_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const
     return make_shared<PotentialFunction>(fact_potentials);
 }
 
-
-void add_common_potentials_options_to_parser(OptionParser &parser) {
-    parser.add_option<int>(
-        "num_samples",
-        "Number of states to sample",
-        "1000");
-    parser.add_option<double>(
-        "max_potential",
-        "Bound potentials by this number",
-        "infinity");
-}
 }

@@ -26,6 +26,10 @@ static Heuristic *_parse(OptionParser &parser) {
         "num_heuristics",
         "number of potential heuristics",
         "1");
+    parser.add_option<int>(
+        "num_samples",
+        "Number of states to sample",
+        "1000");
     add_common_potentials_options_to_parser(parser);
     add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);

@@ -67,6 +67,10 @@ static Heuristic *_parse_all_states_potential(OptionParser &parser) {
 static Heuristic *_parse_samples_potential(OptionParser &parser) {
     parser.document_synopsis(
         "samples_potential", "optimize potentials for samples");
+    parser.add_option<int>(
+        "num_samples",
+        "Number of states to sample",
+        "1000");
     return _parse(parser, OptFunc::SAMPLES);
 }
 
