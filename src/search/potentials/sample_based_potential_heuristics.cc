@@ -9,8 +9,8 @@ using namespace std;
 
 
 namespace potentials {
-SampleBasedPotentialHeuristics::SampleBasedPotentialHeuristics(const Options &opts)
-    : optimizer(opts) {
+SampleBasedPotentialHeuristics::SampleBasedPotentialHeuristics(const Options &opts) {
+    PotentialOptimizer optimizer(opts);
     for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
         optimize_for_samples(optimizer, opts.get<int>("num_samples"));
         functions.push_back(optimizer.get_potential_function());
