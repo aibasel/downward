@@ -225,6 +225,12 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
 TransitionSystem::~TransitionSystem() {
 }
 
+void TransitionSystem::hacky_finish_construction() {
+    compute_locally_equivalent_labels();
+    compute_distances_and_prune();
+    assert(is_valid());
+}
+
 bool TransitionSystem::is_valid() const {
     return distances->are_distances_computed()
            && are_transitions_sorted_unique()
