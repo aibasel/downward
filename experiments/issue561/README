@@ -6,3 +6,4 @@ Description of tags for this issue:
 - issue561-v3: split off class for distance computations
 - issue561-v4: split off rudimentary FactoredTransitionSystem class
   and move construction of atomic transition systems into a factory
+- issue561-v5: remove "messy" methods of Distances
