@@ -23,7 +23,6 @@ class FTSFactory {
         vector<bool> relevant_labels;
     };
     vector<TransitionSystemData> transition_system_by_var;
-    vector<TransitionSystem *> transition_systems;
 
     void build_labels();
     void build_empty_transition_systems();
@@ -41,7 +40,7 @@ class FTSFactory {
         const vector<bool> &has_effect_on_var);
     void build_transitions_for_operator(OperatorProxy op);
     void build_transitions();
-    void finalize_transition_systems();
+    vector<TransitionSystem *> create_transition_systems();
 public:
     FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels);
     ~FTSFactory();
@@ -208,16 +207,16 @@ void FTSFactory::build_transitions() {
         build_transitions_for_operator(op);
 }
 
-void FTSFactory::finalize_transition_systems() {
+vector<TransitionSystem *> FTSFactory::create_transition_systems() {
     /*
       - Add transitions for irrelevant operators.
       - Create the actual TransitionSystem objects.
     */
-    assert(transition_systems.empty());
+    vector<TransitionSystem *> result;
     // We reserve space for the transition systems added later by merging.
     VariablesProxy variables = task_proxy.get_variables();
     assert(variables.size() >= 1);
-    transition_systems.reserve(variables.size() * 2 - 1);
+    result.reserve(variables.size() * 2 - 1);
 
     for (VariableProxy variable : task_proxy.get_variables()) {
         size_t var_no = variable.get_id();
@@ -235,20 +234,19 @@ void FTSFactory::finalize_transition_systems() {
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
         TransitionSystem *ts = new TransitionSystem(
             task_proxy, labels, var_no, move(ts_data.transitions_by_label));
-        transition_systems.push_back(ts);
+        result.push_back(ts);
     }
+    return result;
 }
 
 FactoredTransitionSystem FTSFactory::create() {
     cout << "Building atomic transition systems... " << endl;
-    assert(transition_systems.empty());
 
     build_labels();
     build_empty_transition_systems();
     build_transitions();
-    finalize_transition_systems();
 
-    return FactoredTransitionSystem(move(transition_systems));
+    return FactoredTransitionSystem(create_transition_systems());
 }
 
 FactoredTransitionSystem create_factored_transition_system(
