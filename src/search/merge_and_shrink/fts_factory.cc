@@ -18,13 +18,20 @@ class FTSFactory {
     const TaskProxy &task_proxy;
     shared_ptr<Labels> labels;
 
+    struct TransitionSystemData {
+        // vector<vector<Transition> > transitions_by_label;
+        vector<bool> relevant_labels;
+    };
+    vector<TransitionSystemData> transition_system_by_var;
+
     vector<TransitionSystem *> transition_systems;
-    vector<vector<bool> > relevant_labels;
 
     void build_labels();
     void build_empty_transition_systems();
     void add_transition(int var_no, int label_no,
                         int src_value, int dest_value);
+    bool is_relevant(int var_no, int label_no) const;
+    void mark_as_relevant(int var_no, int label_no);
     unordered_map<int, int> compute_preconditions(OperatorProxy op);
     void handle_operator_effect(
         OperatorProxy op, EffectProxy effect,
@@ -65,17 +72,31 @@ void FTSFactory::build_empty_transition_systems() {
     // Create the transition system objects (without transitions).
     VariablesProxy variables = task_proxy.get_variables();
     assert(variables.size() >= 1);
+    int num_operators = task_proxy.get_operators().size();
     // We reserve space for the transition systems added later by merging.
     transition_systems.reserve(variables.size() * 2 - 1);
-    for (VariableProxy var : variables)
+    transition_system_by_var.resize(variables.size());
+    for (VariableProxy var : variables) {
         transition_systems.push_back(
             new TransitionSystem(task_proxy, labels, var.get_id()));
+        transition_system_by_var[var.get_id()].relevant_labels.resize(
+            num_operators, false);
+    }
+
 }
 
 void FTSFactory::add_transition(int var_no, int label_no,
                                 int src_value, int dest_value) {
     transition_systems[var_no]->transitions_of_groups[label_no].push_back(
         Transition(src_value, dest_value));
+}
+
+bool FTSFactory::is_relevant(int var_no, int label_no) const {
+    return transition_system_by_var[var_no].relevant_labels[label_no];
+}
+
+void FTSFactory::mark_as_relevant(int var_no, int label_no) {
+    transition_system_by_var[var_no].relevant_labels[label_no] = true;
 }
 
 unordered_map<int, int> FTSFactory::compute_preconditions(OperatorProxy op) {
@@ -151,7 +172,7 @@ void FTSFactory::handle_operator_effect(
             }
         }
     }
-    relevant_labels[var_no][label_no] = true;
+    mark_as_relevant(var_no, label_no);
 }
 
 void FTSFactory::handle_operator_precondition(
@@ -162,7 +183,7 @@ void FTSFactory::handle_operator_precondition(
     if (!has_effect_on_var[var_no]) {
         int value = precondition.get_value();
         add_transition(var_no, label_no, value, value);
-        relevant_labels[var_no][label_no] = true;
+        mark_as_relevant(var_no, label_no);
     }
 }
 
@@ -189,8 +210,6 @@ void FTSFactory::build_transitions() {
       - Compute relevant labels.
     */
     OperatorsProxy operators = task_proxy.get_operators();
-    relevant_labels.resize(transition_systems.size(),
-                           vector<bool>(operators.size(), false));
     for (OperatorProxy op : operators)
         build_transitions_for_operator(op);
 }
@@ -207,7 +226,7 @@ void FTSFactory::finalize_transition_systems() {
         int num_labels = labels->get_size();
         /* Make all irrelevant labels explicit. */
         for (int label_no = 0; label_no < num_labels; ++label_no) {
-            if (!relevant_labels[var_no][label_no]) {
+            if (!is_relevant(var_no, label_no)) {
                 for (int state = 0; state < num_states; ++state)
                     add_transition(var_no, label_no, state, state);
             }
