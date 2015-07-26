@@ -93,11 +93,7 @@ TransitionSystem::TransitionSystem(
     }
 
     var_id_set.push_back(var_id);
-    /*
-      This generates the states of the atomic transition system, but not the
-      arcs: It is more efficient to generate all arcs of all atomic
-      transition systems simultaneously.
-     */
+
     int range = task_proxy.get_variables()[var_id].get_domain_size();
 
     int init_value = task_proxy.get_initial_state()[var_id].get_value();
