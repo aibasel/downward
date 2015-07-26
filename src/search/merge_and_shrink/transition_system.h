@@ -6,7 +6,6 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -146,7 +145,7 @@ private:
 public: // TODO: public while refactoring; make private again
     std::vector<std::vector<Transition> > transitions_of_groups;
 private:
-    std::vector<std::tuple<LabelGroupIter, LabelIter> > label_to_positions;
+    std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), except during
       the incorporation of a label mapping as computed by label reduction.
@@ -197,11 +196,11 @@ private:
     int add_label_group(const std::vector<int> &new_labels);
 public: // TODO: public while refactoring; make private again
     LabelGroupIter get_group_it(int label_no) {
-        return std::get<0>(label_to_positions[label_no]);
+        return label_to_positions[label_no].first;
     }
 private:
     LabelIter get_label_it(int label_no) {
-        return std::get<1>(label_to_positions[label_no]);
+        return label_to_positions[label_no].second;
     }
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
