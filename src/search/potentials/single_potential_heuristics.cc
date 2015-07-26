@@ -23,13 +23,17 @@ shared_ptr<PotentialFunction> create_potential_function(const Options &opts) {
     shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
     OptFunc opt_func = static_cast<OptFunc>(opts.get_enum("opt_func"));
-    if (opt_func == OptFunc::INITIAL_STATE) {
+    switch (opt_func) {
+    case OptFunc::INITIAL_STATE:
         optimizer.optimize_for_state(task_proxy.get_initial_state());
-    } else if (opt_func == OptFunc::ALL_STATES) {
+        break;
+    case OptFunc::ALL_STATES:
         optimizer.optimize_for_all_states();
-    } else if (opt_func == OptFunc::SAMPLES) {
+        break;
+    case OptFunc::SAMPLES:
         optimize_for_samples(optimizer, opts.get<int>("num_samples"));
-    } else {
+        break;
+    default:
         ABORT("Unkown optimization function");
     }
     return optimizer.get_potential_function();
