@@ -59,10 +59,39 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
 }
 
 // atomic transition system constructor
-TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
-                                   const shared_ptr<Labels> labels,
-                                   int var_id)
+TransitionSystem::TransitionSystem(
+    const TaskProxy &task_proxy,
+    const shared_ptr<Labels> labels,
+    int var_id,
+    vector<vector<Transition> > &&transitions_by_label)
     : TransitionSystem(task_proxy, labels) {
+
+    /*
+      TODO: Once we no longer delegate to another constructor,
+      the following line can be changed to an initialization:
+      ": transitions_of_groups(transitions_by_label)"
+    */
+    transitions_of_groups = move(transitions_by_label);
+    /*
+      TODO: The following if block and the interaction with the
+      constructor we delegate to are a hack and a bit of a performance
+      concern. The base constructor resizes transitions_of_groups to
+      size 2 * num_ops - 1, but then we discard it to move the
+      passed-in transitions into the object instead. Then we resize it
+      to size 2 * num_ops - 1 again.
+
+      So there are two unnecessary resizes, which of course don't come
+      for free. A potential fix would be requiring the factory to
+      already create transitions_of_groups with the appropriate size,
+      but this would perhaps leak an implementation detail that the
+      factory should not care about. For now, let's leave
+    */
+    int num_ops = task_proxy.get_operators().size();
+    if (num_ops > 0) {
+        int max_num_labels = num_ops * 2 - 1;
+        transitions_of_groups.resize(max_num_labels);
+    }
+
     var_id_set.push_back(var_id);
     /*
       This generates the states of the atomic transition system, but not the
@@ -100,12 +129,13 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
       Prepare grouped_labels data structure: add one single-element
       group for every operator.
     */
-    int num_ops = task_proxy.get_operators().size();
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
         LabelGroupIter group_it = add_empty_label_group(&transitions_of_groups[label_no]);
         add_label_to_group(group_it, label_no, true);
     }
+
+    hacky_finish_construction();
 }
 
 // constructor for merges

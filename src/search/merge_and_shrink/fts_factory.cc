@@ -231,25 +231,10 @@ void FTSFactory::finalize_transition_systems() {
             }
         }
 
-        TransitionSystem *ts =  new TransitionSystem(
-            task_proxy, labels, var_no);
-
-        // Copy all transitions into the TransitionSystem objects.
-        /*
-          Note: this is ugly and copies instead of moving because
-          TransitionSystem is a bit peculiar about changing the identity
-          of transitions_of_groups. We will fix this later when we get
-          a constructor that can move the transitions.
-        */
+        // Create the transition system.
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
-        for (int label_no = 0; label_no < num_labels; ++label_no) {
-            ts->transitions_of_groups[label_no].insert(
-                ts->transitions_of_groups[label_no].end(),
-                ts_data.transitions_by_label[label_no].begin(),
-                ts_data.transitions_by_label[label_no].end());
-        }
-
-        ts->hacky_finish_construction();
+        TransitionSystem *ts = new TransitionSystem(
+            task_proxy, labels, var_no, move(ts_data.transitions_by_label));
         transition_systems.push_back(ts);
     }
 }
