@@ -154,16 +154,8 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     DiversePotentialHeuristics factory(opts);
-
-    Options options;
-    if (opts.contains("transform")) {
-        options.set<shared_ptr<AbstractTask> >(
-            "transform", opts.get<shared_ptr<AbstractTask> >("transform"));
-    }
-    options.set<int>("cost_type", opts.get<int>("cost_type"));
-    options.set<vector<Function> >(
-        "functions", factory.get_functions());
-    return new PotentialHeuristics(options);
+    opts.set<vector<Function> >("functions", factory.get_functions());
+    return new PotentialHeuristics(opts);
 }
 
 static Plugin<Heuristic> _plugin("diverse_potentials", _parse);

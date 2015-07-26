@@ -64,15 +64,9 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    Options options;
-    if (opts.contains("transform")) {
-        options.set<shared_ptr<AbstractTask> >(
-            "transform", opts.get<shared_ptr<AbstractTask> >("transform"));
-    }
-    options.set<int>("cost_type", opts.get<int>("cost_type"));
-    options.set<shared_ptr<PotentialFunction> >(
+    opts.set<shared_ptr<PotentialFunction> >(
         "function", create_potential_function(opts));
-    return new PotentialHeuristic(options);
+    return new PotentialHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("single_potentials", _parse);
