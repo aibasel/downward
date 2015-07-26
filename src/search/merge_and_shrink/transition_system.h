@@ -61,7 +61,6 @@ class LabelGroup {
       and has a pointer to the position in TransitionSystem::transitions_of_groups
       where the transitions associated with this group live.
     */
-private:
     std::list<int> labels;
     std::vector<Transition> *transitions;
     int cost;
@@ -150,9 +149,7 @@ private:
       num_labels is always equal to labels->size(), except during
       the incorporation of a label mapping as computed by label reduction.
     */
-public: // TODO: public while refactoring; make private again
     int num_labels;
-private:
     // Number of variables of the task used by merge-and-shrink
     const int num_variables;
 
@@ -194,11 +191,9 @@ private:
     void add_label_to_group(LabelGroupIter group_it, int label_no,
                             bool update_cost = true);
     int add_label_group(const std::vector<int> &new_labels);
-public: // TODO: public while refactoring; make private again
     LabelGroupIter get_group_it(int label_no) {
         return label_to_positions[label_no].first;
     }
-private:
     LabelIter get_label_it(int label_no) {
         return label_to_positions[label_no].second;
     }
