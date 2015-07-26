@@ -48,8 +48,6 @@ public:
 
     std::shared_ptr<PotentialFunction> get_potential_function() const;
 };
-
-void add_common_potentials_options_to_parser(OptionParser &parser);
 }
 
 #endif

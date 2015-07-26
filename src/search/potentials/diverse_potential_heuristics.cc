@@ -135,6 +135,10 @@ vector<Function > DiversePotentialHeuristics::get_functions() const {
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>(
+        "num_samples",
+        "Number of states to sample",
+        "1000");
+    parser.add_option<int>(
         "max_num_heuristics",
         "maximum number of potential heuristics",
         "infinity");
