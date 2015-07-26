@@ -153,9 +153,7 @@ private:
     // Number of variables of the task used by merge-and-shrink
     const int num_variables;
 
-public: // TODO: public while refactoring; make private again
     int num_states;
-private:
 
     std::unique_ptr<HeuristicRepresentation> heuristic_representation;
     std::unique_ptr<Distances> distances;
