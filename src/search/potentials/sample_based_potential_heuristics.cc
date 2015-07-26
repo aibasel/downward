@@ -1,6 +1,6 @@
 #include "sample_based_potential_heuristics.h"
 
-#include "potential_heuristics.h"
+#include "potential_max_heuristic.h"
 #include "util.h"
 
 #include "../plugin.h"
@@ -40,7 +40,7 @@ static Heuristic *_parse(OptionParser &parser) {
     SampleBasedPotentialHeuristics factory(opts);
     opts.set<vector<shared_ptr<PotentialFunction> > >(
         "functions", factory.get_functions());
-    return new PotentialHeuristics(opts);
+    return new PotentialMaxHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("sample_based_potentials", _parse);

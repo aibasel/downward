@@ -1,7 +1,7 @@
 #include "diverse_potential_heuristics.h"
 
 #include "potential_function.h"
-#include "potential_heuristics.h"
+#include "potential_max_heuristic.h"
 #include "util.h"
 
 #include "../countdown_timer.h"
@@ -159,7 +159,7 @@ static Heuristic *_parse(OptionParser &parser) {
 
     DiversePotentialHeuristics factory(opts);
     opts.set<vector<Function> >("functions", factory.get_functions());
-    return new PotentialHeuristics(opts);
+    return new PotentialMaxHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("diverse_potentials", _parse);

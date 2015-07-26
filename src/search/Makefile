@@ -171,7 +171,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
 HEADERS += potentials/diverse_potential_heuristics.h \
            potentials/potential_function.h \
            potentials/potential_heuristic.h \
-           potentials/potential_heuristics.h \
+           potentials/potential_max_heuristic.h \
            potentials/potential_optimizer.h \
            potentials/sample_based_potential_heuristics.h \
            potentials/single_potential_heuristics.h \
