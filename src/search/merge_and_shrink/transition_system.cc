@@ -376,54 +376,26 @@ bool TransitionSystem::apply_abstraction(
         }
     }
 
-    /*
-      TODO: The following lines are a temporary hack while we think
-      about a better way to update the distances. One possibility is
-      to move the distance-related part of the following code into
-      Distances; a drawback of that is that we then need two passes
-      over the abstraction mapping, which presumably hurts our cache
-      locality.
-    */
-    vector<int> &init_distances =
-        distances->please_let_me_mess_with_init_distances();
-    vector<int> &goal_distances =
-        distances->please_let_me_mess_with_goal_distances();
+    if (!distances->apply_abstraction(collapsed_groups))
+        cout << tag() << "simplification was not f-preserving!" << endl;
 
     int new_num_states = collapsed_groups.size();
-    vector<int> new_init_distances(new_num_states, INF);
-    vector<int> new_goal_distances(new_num_states, INF);
     vector<bool> new_goal_states(new_num_states, false);
 
-    bool must_clear_distances = false;
     for (AbstractStateRef new_state = 0; new_state < new_num_states; ++new_state) {
         const Group &group = collapsed_groups[new_state];
         assert(!group.empty());
 
         Group::const_iterator pos = group.begin();
-        int &new_init_dist = new_init_distances[new_state];
-        int &new_goal_dist = new_goal_distances[new_state];
-
-        new_init_dist = init_distances[*pos];
-        new_goal_dist = goal_distances[*pos];
         new_goal_states[new_state] = goal_states[*pos];
 
         ++pos;
-        for (; pos != group.end(); ++pos) {
-            if (init_distances[*pos] != new_init_dist) {
-                must_clear_distances = true;
-            }
-            if (goal_distances[*pos] != new_goal_dist) {
-                must_clear_distances = true;
-            }
+        for (; pos != group.end(); ++pos)
             if (goal_states[*pos])
                 new_goal_states[new_state] = true;
-        }
     }
 
-    // Release memory.
-    release_vector_memory(init_distances);
-    release_vector_memory(goal_distances);
-    release_vector_memory(goal_states);
+    new_goal_states = move(goal_states);
 
     // Update all transitions. Locally equivalent labels remain locally equivalent.
     for (LabelGroupIter group_it = grouped_labels.begin();
@@ -444,9 +416,6 @@ bool TransitionSystem::apply_abstraction(
     compute_locally_equivalent_labels();
 
     num_states = new_num_states;
-    init_distances.swap(new_init_distances);
-    goal_distances.swap(new_goal_distances);
-    goal_states.swap(new_goal_states);
     init_state = abstraction_mapping[init_state];
     if (init_state == PRUNED_STATE)
         cout << tag() << "initial state pruned; task unsolvable" << endl;
@@ -454,14 +423,6 @@ bool TransitionSystem::apply_abstraction(
     heuristic_representation->apply_abstraction_to_lookup_table(
         abstraction_mapping);
 
-    if (must_clear_distances) {
-        cout << tag() << "simplification was not f-preserving!" << endl;
-        distances->clear_distances();
-    }
-
-    if (must_clear_distances) {
-        compute_distances_and_prune();
-    }
     assert(is_valid());
     return true;
 }
