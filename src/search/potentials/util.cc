@@ -13,7 +13,7 @@ using namespace std;
 
 
 namespace potentials {
-void filter_dead_ends(PotentialOptimizer &optimizer, vector<State> &samples) {
+static void filter_dead_ends(PotentialOptimizer &optimizer, vector<State> &samples) {
     assert(!optimizer.potentials_are_bounded());
     vector<State> non_dead_end_samples;
     for (const State &sample : samples) {
