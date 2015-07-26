@@ -135,7 +135,9 @@ TransitionSystem::TransitionSystem(
         add_label_to_group(group_it, label_no, true);
     }
 
-    hacky_finish_construction();
+    compute_locally_equivalent_labels();
+    compute_distances_and_prune();
+    assert(is_valid());
 }
 
 // constructor for merges
@@ -251,12 +253,6 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
 }
 
 TransitionSystem::~TransitionSystem() {
-}
-
-void TransitionSystem::hacky_finish_construction() {
-    compute_locally_equivalent_labels();
-    compute_distances_and_prune();
-    assert(is_valid());
 }
 
 bool TransitionSystem::is_valid() const {
