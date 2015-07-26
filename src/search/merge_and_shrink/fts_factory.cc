@@ -39,6 +39,7 @@ class FTSFactory {
         OperatorProxy op, FactProxy precondition,
         const vector<bool> &has_effect_on_var);
     void build_transitions_for_operator(OperatorProxy op);
+    void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
     vector<TransitionSystem *> create_transition_systems();
 public:
@@ -69,12 +70,12 @@ void FTSFactory::build_labels() {
 void FTSFactory::build_empty_transition_systems() {
     // Initialize the internal transition system data.
     VariablesProxy variables = task_proxy.get_variables();
-    int num_operators = task_proxy.get_operators().size();
+    int num_labels = labels->get_size();
     transition_system_by_var.resize(variables.size());
     for (VariableProxy var : variables) {
         TransitionSystemData &ts_data = transition_system_by_var[var.get_id()];
-        ts_data.transitions_by_label.resize(num_operators);
-        ts_data.relevant_labels.resize(num_operators, false);
+        ts_data.transitions_by_label.resize(num_labels);
+        ts_data.relevant_labels.resize(num_labels, false);
     }
 }
 
@@ -182,8 +183,9 @@ void FTSFactory::handle_operator_precondition(
 
 void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
     /*
-      - Add transitions induced by op.
-      - Mark op as relevant in the appropriate transition systems.
+      - Mark op as relevant in the transition systems corresponding
+        to variables on which it has a precondition or effect.
+      - Add transitions induced by op in these transition systems.
     */
     unordered_map<int, int> pre_val = compute_preconditions(op);
     vector<bool> has_effect_on_var(task_proxy.get_variables().size(), false);
@@ -191,46 +193,50 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
     for (EffectProxy effect : op.get_effects())
         handle_operator_effect(op, effect, pre_val, has_effect_on_var);
 
-    // We must handle preconditions *after* effects because handling
-    // the effects sets has_effect_on_var.
+    /*
+      We must handle preconditions *after* effects because handling
+      the effects sets has_effect_on_var.
+    */
     for (FactProxy precondition : op.get_preconditions())
         handle_operator_precondition(op, precondition, has_effect_on_var);
 }
 
+void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable) {
+    size_t var_no = variable.get_id();
+    int num_states = variable.get_domain_size();
+    int num_labels = labels->get_size();
+
+    // Make all irrelevant labels explicit.
+    for (int label_no = 0; label_no < num_labels; ++label_no) {
+        if (!is_relevant(var_no, label_no)) {
+            for (int state = 0; state < num_states; ++state)
+                add_transition(var_no, label_no, state, state);
+        }
+    }
+}
+
 void FTSFactory::build_transitions() {
     /*
-      - Add transitions to the empty transition system objects.
-      - Compute relevant labels.
+      - Add all transitions.
+      - Compute relevant operator information.
     */
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (OperatorProxy op : operators)
+    for (OperatorProxy op : task_proxy.get_operators())
         build_transitions_for_operator(op);
+
+    for (VariableProxy variable : task_proxy.get_variables())
+        build_transitions_for_irrelevant_ops(variable);
 }
 
 vector<TransitionSystem *> FTSFactory::create_transition_systems() {
-    /*
-      - Add transitions for irrelevant operators.
-      - Create the actual TransitionSystem objects.
-    */
-    vector<TransitionSystem *> result;
+    // Create the actual TransitionSystem objects.
+    int num_variables = task_proxy.get_variables().size();
+
     // We reserve space for the transition systems added later by merging.
-    VariablesProxy variables = task_proxy.get_variables();
-    assert(variables.size() >= 1);
-    result.reserve(variables.size() * 2 - 1);
+    vector<TransitionSystem *> result;
+    assert(num_variables >= 1);
+    result.reserve(num_variables * 2 - 1);
 
-    for (VariableProxy variable : task_proxy.get_variables()) {
-        size_t var_no = variable.get_id();
-        int num_states = variable.get_domain_size();
-        int num_labels = labels->get_size();
-        /* Make all irrelevant labels explicit. */
-        for (int label_no = 0; label_no < num_labels; ++label_no) {
-            if (!is_relevant(var_no, label_no)) {
-                for (int state = 0; state < num_states; ++state)
-                    add_transition(var_no, label_no, state, state);
-            }
-        }
-
-        // Create the transition system.
+    for (int var_no = 0; var_no < num_variables; ++var_no) {
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
         TransitionSystem *ts = new TransitionSystem(
             task_proxy, labels, var_no, move(ts_data.transitions_by_label));
