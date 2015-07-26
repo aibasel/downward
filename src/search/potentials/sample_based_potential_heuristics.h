@@ -17,7 +17,6 @@ class PotentialFunction;
   samples.
 */
 class SampleBasedPotentialHeuristics {
-    PotentialOptimizer optimizer;
     std::vector<std::shared_ptr<PotentialFunction> > functions;
 
 public:
