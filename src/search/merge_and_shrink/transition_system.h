@@ -141,9 +141,7 @@ private:
       new label group is added also increases runtime. See also issue492 and
       issue521.
     */
-public: // TODO: public while refactoring; make private again
     std::vector<std::vector<Transition> > transitions_of_groups;
-private:
     std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
     /*
       num_labels is always equal to labels->size(), except during
@@ -226,9 +224,6 @@ public:
                      TransitionSystem *ts1,
                      TransitionSystem *ts2);
     ~TransitionSystem();
-
-    // TODO: This method should go once we're done with the factory.
-    void hacky_finish_construction();
 
     bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
