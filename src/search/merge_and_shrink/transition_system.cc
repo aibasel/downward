@@ -126,8 +126,7 @@ TransitionSystem::TransitionSystem(
     */
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
-        LabelGroupIter group_it = add_empty_label_group(&transitions_of_groups[label_no]);
-        add_label_to_group(group_it, label_no);
+        add_label_group({label_no});
     }
 
     compute_locally_equivalent_labels();
