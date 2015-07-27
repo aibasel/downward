@@ -76,26 +76,26 @@ public:
     LabelIter begin() {
         return labels.begin();
     }
+    LabelConstIter begin() const {
+        return labels.begin();
+    }
     LabelIter end() {
+        return labels.end();
+    }
+    LabelConstIter end() const {
         return labels.end();
     }
     std::vector<Transition> &get_transitions() {
         return *transitions;
     }
-    LabelConstIter end() const {
-        return labels.end();
-    }
-    LabelConstIter begin() const {
-        return labels.begin();
+    const std::vector<Transition> &get_transitions() const {
+        return *transitions;
     }
     bool empty() const {
         return labels.empty();
     }
     int size() const {
         return labels.size();
-    }
-    const std::vector<Transition> &get_const_transitions() const {
-        return *transitions;
     }
     int get_cost() const {
         return cost;
