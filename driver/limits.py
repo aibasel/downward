@@ -13,6 +13,12 @@ except ImportError:
 import sys
 
 
+RESOURCE_MODULE_MISSING_MSG = (
+    "The 'resource' module is not available on your platform. "
+    "Therefore, setting time or memory limits, and running "
+    "portfolios is not possible.")
+
+
 def can_set_limits():
     return resource is not None
 
@@ -150,13 +156,18 @@ def get_time_limit(component_limit, overall_limit):
     """
     Return the minimum time limit imposed by any internal and external limit.
     """
-    elapsed_time = util.get_elapsed_time()
-    external_limit = _get_external_time_limit()
-    limits = []
-    if component_limit is not None:
-        limits.append(component_limit)
-    if overall_limit is not None:
-        limits.append(max(0, overall_limit - elapsed_time))
-    if external_limit is not None:
-        limits.append(max(0, external_limit - elapsed_time))
-    return min(limits) if limits else None
+    if can_set_limits():
+        elapsed_time = util.get_elapsed_time()
+        external_limit = _get_external_time_limit()
+        limits = []
+        if component_limit is not None:
+            limits.append(component_limit)
+        if overall_limit is not None:
+            limits.append(max(0, overall_limit - elapsed_time))
+        if external_limit is not None:
+            limits.append(max(0, external_limit - elapsed_time))
+        return min(limits) if limits else None
+    elif component_limit is None and overall_limit is None:
+        return None
+    else:
+        sys.exit(RESOURCE_MODULE_MISSING_MSG)

@@ -6,7 +6,9 @@ finite-domain representation (SASTask). Usage:
     simplify.filter_unreachable_propositions(sas_task)
 
 simplifies `sas_task` in-place. If simplification detects that the
-task is unsolvable, the function raises `simplify.Impossible`.
+task is unsolvable, the function raises `simplify.Impossible`. If it
+detects that is has an empty goal, the function raises
+`simplify.TriviallySolvable`.
 
 The simplification procedure generates DTGs for the task and then
 removes facts that are unreachable from the initial state in a DTG.
@@ -162,6 +164,9 @@ always_true = object()
 class Impossible(Exception):
     pass
 
+class TriviallySolvable(Exception):
+    pass
+
 class DoesNothing(Exception):
     pass
 
@@ -288,6 +293,12 @@ class VarValueRenaming(object):
     def apply_to_goals(self, goals):
         # This may propagate Impossible up.
         self.convert_pairs(goals)
+        if not goals:
+            # We raise an exception because we do not consider a SAS+
+            # task without goals well-formed. Our callers are supposed
+            # to catch this and replace the task with a well-formed
+            # trivially solvable task.
+            raise TriviallySolvable
 
     def apply_to_operators(self, operators):
         new_operators = []
@@ -506,7 +517,8 @@ def filter_unreachable_propositions(sas_task):
     dtgs = build_dtgs(sas_task)
     renaming = build_renaming(dtgs)
     # apply_to_task may raise Impossible if the goal is detected as
-    # unreachable. We let the exception propagate to the caller.
+    # unreachable or TriviallySolvable if it has no goal. We let the
+    # exceptions propagate to the caller.
     renaming.apply_to_task(sas_task)
     print("%d propositions removed" % renaming.num_removed_values)
     if DEBUG:
