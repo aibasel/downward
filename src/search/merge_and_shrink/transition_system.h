@@ -180,8 +180,7 @@ private:
     LabelGroupIter add_empty_label_group(std::vector<Transition> *transitions) {
         return grouped_labels.insert(grouped_labels.end(), LabelGroup(transitions));
     }
-    void add_label_to_group(LabelGroupIter group_it, int label_no,
-                            bool update_cost = true);
+    void add_label_to_group(LabelGroupIter group_it, int label_no);
     int add_label_group(const std::vector<int> &new_labels);
     LabelGroupIter get_group_it(int label_no) {
         return label_to_positions[label_no].first;
