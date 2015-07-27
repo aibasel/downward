@@ -107,11 +107,9 @@ typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
 public:
-    // TODO: HACK: We have this public attribute in the middle here
-    // because we temporarily need access to it from HeuristicRepresentation.
     static const int PRUNED_STATE = -1;
-private:
 
+private:
     std::vector<int> var_id_set;
 
     /*
