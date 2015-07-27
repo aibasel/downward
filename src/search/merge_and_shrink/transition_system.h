@@ -139,11 +139,7 @@ private:
     */
     std::vector<std::vector<Transition> > transitions_of_groups;
     std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
-    /*
-      num_labels is always equal to labels->size(), except during
-      the incorporation of a label mapping as computed by label reduction.
-    */
-    int num_labels;
+
     // Number of variables of the task used by merge-and-shrink
     const int num_variables;
 
@@ -163,7 +159,6 @@ private:
        - The transitions for every group of locally equivalent labels are
          sorted (by source, by target) and there are no duplicates
          (are_transitions_sorted_unique() == true).
-       - All labels are incorporated (is_label_reduced() == true)).
        - Distances are computed and stored (are_distances_computed() == true).
        - Locally equivalent labels are computed. This cannot explicitly be
          tested because of labels and transitions being coupled in the data
@@ -191,7 +186,6 @@ private:
     }
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
-    bool is_label_reduced() const;
     void compute_locally_equivalent_labels();
 
     // Statistics and output
@@ -276,9 +270,8 @@ public:
     int get_goal_distance(int state) const;
 
     // Methods only used by MergeDFP.
-    int get_num_labels() const {
-        return num_labels;
-    }
+    int get_num_labels() const;
+
     bool is_goal_relevant() const {
         return goal_relevant;
     }

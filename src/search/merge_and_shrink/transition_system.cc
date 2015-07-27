@@ -46,7 +46,6 @@ const int TransitionSystem::PRUNED_STATE;
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const shared_ptr<Labels> labels)
     : labels(labels),
-      num_labels(labels->get_size()),
       num_variables(task_proxy.get_variables().size()),
       heuristic_representation(nullptr),
       distances(make_unique_ptr<Distances>(*this)) {
@@ -253,8 +252,7 @@ TransitionSystem::~TransitionSystem() {
 
 bool TransitionSystem::is_valid() const {
     return distances->are_distances_computed()
-           && are_transitions_sorted_unique()
-           && is_label_reduced();
+        && are_transitions_sorted_unique();
 }
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
@@ -295,10 +293,6 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
         }
     }
     return true;
-}
-
-bool TransitionSystem::is_label_reduced() const {
-    return num_labels == labels->get_size();
 }
 
 void TransitionSystem::add_label_to_group(LabelGroupIter group_it,
@@ -429,7 +423,6 @@ bool TransitionSystem::apply_abstraction(
 
 void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> > > &label_mapping,
                                              bool only_equivalent_labels) {
-    assert(!is_label_reduced());
     assert(distances->are_distances_computed());
     assert(are_transitions_sorted_unique());
 
@@ -463,12 +456,6 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         const vector<int> &old_label_nos = label_mapping[i].second;
         assert(old_label_nos.size() >= 2);
         int new_label_no = label_mapping[i].first;
-        assert(new_label_no == num_labels);
-
-        // Assert that all old labels are in the correct range
-        for (size_t j = 0; j < old_label_nos.size(); ++j) {
-            assert(old_label_nos[j] < num_labels);
-        }
 
         /*
           Remove all existing labels from their group(s) and possibly the
@@ -508,7 +495,6 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 add_empty_label_group(&transitions_of_groups[new_label_no]);
             add_label_to_group(group_it, new_label_no);
         }
-        ++num_labels;
     }
 
     if (!only_equivalent_labels) {
@@ -692,4 +678,8 @@ int TransitionSystem::get_init_distance(int state) const {
 
 int TransitionSystem::get_goal_distance(int state) const {
     return distances->get_goal_distance(state);
+}
+
+int TransitionSystem::get_num_labels() const {
+    return labels->get_size();
 }
