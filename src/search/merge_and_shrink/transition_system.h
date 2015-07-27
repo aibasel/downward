@@ -156,7 +156,7 @@ private:
     std::vector<bool> goal_states;
     AbstractStateRef init_state;
 
-    bool goal_relevant;
+    bool goal_relevant; // TODO: Get rid of this?
 
     /*
       Invariant of this class:
