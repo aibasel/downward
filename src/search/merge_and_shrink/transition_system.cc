@@ -286,12 +286,9 @@ void TransitionSystem::normalize_given_transitions(vector<Transition> &transitio
 }
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_const_transitions();
-        if (!is_sorted_unique(transitions)) {
+    for (const LabelGroup &label_group : grouped_labels) {
+        if (!is_sorted_unique(label_group.get_const_transitions()))
             return false;
-        }
     }
     return true;
 }
