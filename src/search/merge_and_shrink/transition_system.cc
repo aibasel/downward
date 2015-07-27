@@ -294,16 +294,13 @@ bool TransitionSystem::are_transitions_sorted_unique() const {
 }
 
 void TransitionSystem::add_label_to_group(LabelGroupIter group_it,
-                                          int label_no,
-                                          bool update_cost) {
+                                          int label_no) {
     LabelIter label_it = group_it->insert(label_no);
     label_to_positions[label_no] = make_pair(group_it, label_it);
-    if (update_cost) {
-        int label_cost = labels->get_label_cost(label_no);
-        if (label_cost < group_it->get_cost()) {
-            group_it->set_cost(label_cost);
-        }
-    }
+
+    int label_cost = labels->get_label_cost(label_no);
+    if (label_cost < group_it->get_cost())
+        group_it->set_cost(label_cost);
 }
 
 int TransitionSystem::add_label_group(const vector<int> &new_labels) {
@@ -483,8 +480,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         }
 
         if (only_equivalent_labels) {
-            // No need to update the group's cost due to the assumption of exact label reduction.
-            add_label_to_group(canonical_group_it, new_label_no, false);
+            add_label_to_group(canonical_group_it, new_label_no);
         } else {
             transitions_of_groups[new_label_no].assign(
                 collected_transitions.begin(), collected_transitions.end());
