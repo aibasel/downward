@@ -106,13 +106,13 @@ typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
 class TransitionSystem {
-    std::vector<int> var_id_set;
-
 public:
     // TODO: HACK: We have this public attribute in the middle here
     // because we temporarily need access to it from HeuristicRepresentation.
     static const int PRUNED_STATE = -1;
 private:
+
+    std::vector<int> var_id_set;
 
     /*
       There should only be one instance of Labels at runtime. It is created
