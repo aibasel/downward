@@ -245,6 +245,10 @@ public:
         return init_state;
     }
 
+    bool is_goal_state(int state) const {
+        return goal_states[state];
+    }
+
     /*
       TODO: We probably want to get rid of the methods below that just
       forward to distances, by giving the users of these methods
@@ -255,24 +259,14 @@ public:
       inlined here. (To be able to inline them, we would need to
       include distances.h here, which we would rather not.)
     */
+    int get_max_f() const; // used by shrink strategies
+    int get_max_g() const; // unused
+    int get_max_h() const; // used by shrink strategies
+    int get_init_distance(int state) const; // used by shrink_fh
+    int get_goal_distance(int state) const; // used by shrink strategies and merge_dfp
 
-    // Methods only used by shrink strategies.
-    int get_max_f() const;
-    int get_max_g() const; // currently not being used
-    int get_max_h() const;
-
-    bool is_goal_state(int state) const {
-        return goal_states[state];
-    }
-    int get_init_distance(int state) const;
-
-    // Used by both shrink strategies and MergeDFP
-    int get_goal_distance(int state) const;
-
-    // Methods only used by MergeDFP.
-    int get_num_labels() const;
-
-    bool is_goal_relevant() const {
+    int get_num_labels() const;      // used by merge_dfp
+    bool is_goal_relevant() const {  // used by merge_dfp
         return goal_relevant;
     }
 };
