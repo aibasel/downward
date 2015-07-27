@@ -204,7 +204,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
 }
 
 void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable) {
-    size_t var_no = variable.get_id();
+    int var_no = variable.get_id();
     int num_states = variable.get_domain_size();
     int num_labels = labels->get_size();
 
