@@ -22,6 +22,9 @@ vector<shared_ptr<PotentialFunction> > SampleBasedPotentialHeuristics::get_funct
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Sample-based potential heuristics",
+        "Maximum over multiple potential heuristics optimized for samples");
     parser.add_option<int>(
         "num_heuristics",
         "number of potential heuristics",
