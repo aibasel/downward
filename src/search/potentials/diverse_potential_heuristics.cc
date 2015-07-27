@@ -134,6 +134,8 @@ vector<Function > DiversePotentialHeuristics::get_functions() const {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Diverse potential heuristics", "");
     parser.add_option<int>(
         "num_samples",
         "Number of states to sample",

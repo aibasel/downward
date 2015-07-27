@@ -54,19 +54,19 @@ static Heuristic *_parse(OptionParser &parser, OptFunc opt_func) {
 
 static Heuristic *_parse_initial_state_potential(OptionParser &parser) {
     parser.document_synopsis(
-        "initial_state_potential", "optimize potentials for initial state");
+        "Potential heuristic optimized for initial state", "");
     return _parse(parser, OptFunc::INITIAL_STATE);
 }
 
 static Heuristic *_parse_all_states_potential(OptionParser &parser) {
     parser.document_synopsis(
-        "all_states_potential", "optimize potentials for all states");
+        "Potential heuristic optimized for all states", "");
     return _parse(parser, OptFunc::ALL_STATES);
 }
 
 static Heuristic *_parse_samples_potential(OptionParser &parser) {
     parser.document_synopsis(
-        "samples_potential", "optimize potentials for samples");
+        "Potential heuristic optimized for samples", "");
     parser.add_option<int>(
         "num_samples",
         "Number of states to sample",
