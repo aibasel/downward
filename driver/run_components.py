@@ -12,8 +12,15 @@ from .util import BUILDS_DIR
 
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("bin", "translate", "translate.py")
-REL_PREPROCESS_PATH = os.path.join("bin", "preprocess")
-REL_SEARCH_PATH = os.path.join("bin", "downward")
+if os.name == "posix":
+    REL_PREPROCESS_PATH = os.path.join("bin", "preprocess")
+    REL_SEARCH_PATH = os.path.join("bin", "downward")
+elif os.name == "nt":
+    REL_PREPROCESS_PATH = os.path.join("bin", "preprocess.exe")
+    REL_SEARCH_PATH = os.path.join("bin", "downward.exe")
+else:
+    print("Unsupported OS: " + os.name)
+    sys.exit(1)
 
 def get_executable(build, rel_path):
     build_dir = os.path.join(BUILDS_DIR, build)

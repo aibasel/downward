@@ -12,6 +12,17 @@ CONFIGS = {
     "debug64":   ["-DCMAKE_BUILD_TYPE=Debug",   "-DALLOW_64_BIT=True", "-DCMAKE_CXX_FLAGS='-m64'"],
 }
 
+CMAKE = "cmake"
+if os.name == "posix":
+    MAKE = "make"
+    CMAKE_GENERATOR = "Unix Makefiles"
+elif os.name == "nt":
+    MAKE = "nmake"
+    CMAKE_GENERATOR = "NMake Makefiles"
+else:
+    print("Unsupported OS: " + os.name)
+    sys.exit(1)
+
 
 def get_project_root_path():
     import __main__
@@ -41,10 +52,12 @@ def build(config_name, cmake_parameters, make_parameters):
             pass
         else:
             raise
-
-    subprocess.check_call(["cmake"] + cmake_parameters + [rel_src_path],
+    
+    subprocess.check_call([CMAKE, "-G", CMAKE_GENERATOR]
+                          + cmake_parameters
+                          + [rel_src_path],
                           cwd=build_path)
-    subprocess.check_call(["make"] + make_parameters, cwd=build_path)
+    subprocess.check_call([MAKE] + make_parameters, cwd=build_path)
     print("Built configuration " + config_name + " successfully")
 
 def main():
