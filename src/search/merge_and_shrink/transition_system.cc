@@ -197,9 +197,9 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
         // refinements of group1.
 
         // Now create the new groups together with their transitions.
-        const vector<Transition> &transitions1 = group1_it->get_const_transitions();
+        const vector<Transition> &transitions1 = group1_it->get_transitions();
         for (const auto &bucket : buckets) {
-            const vector<Transition> &transitions2 = bucket.first->get_const_transitions();
+            const vector<Transition> &transitions2 = bucket.first->get_transitions();
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
@@ -287,7 +287,7 @@ void TransitionSystem::normalize_given_transitions(vector<Transition> &transitio
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
     for (const LabelGroup &label_group : grouped_labels) {
-        if (!is_sorted_unique(label_group.get_const_transitions()))
+        if (!is_sorted_unique(label_group.get_transitions()))
             return false;
     }
     return true;
@@ -323,7 +323,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     */
     for (LabelGroupIter group1_it = grouped_labels.begin();
          group1_it != grouped_labels.end(); ++group1_it) {
-        const vector<Transition> &transitions1 = group1_it->get_const_transitions();
+        const vector<Transition> &transitions1 = group1_it->get_transitions();
         for (LabelGroupIter group2_it = group1_it;
              group2_it != grouped_labels.end(); ++group2_it) {
             if (group2_it == group1_it)
@@ -468,7 +468,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 assert(group_it == canonical_group_it);
             } else {
                 const vector<Transition> &old_transitions =
-                    group_it->get_const_transitions();
+                    group_it->get_transitions();
                 collected_transitions.insert(old_transitions.begin(), old_transitions.end());
             }
             LabelIter label_it = get_label_it(label_no);
@@ -545,7 +545,7 @@ int TransitionSystem::total_transitions() const {
     int total = 0;
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        total += group_it->get_const_transitions().size();
+        total += group_it->get_transitions().size();
     }
     return total;
 }
@@ -554,7 +554,7 @@ int TransitionSystem::unique_unlabeled_transitions() const {
     vector<Transition> unique_transitions;
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_const_transitions();
+        const vector<Transition> &transitions = group_it->get_transitions();
         unique_transitions.insert(unique_transitions.end(), transitions.begin(),
                                   transitions.end());
     }
@@ -614,7 +614,7 @@ void TransitionSystem::dump_dot_graph() const {
     }
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_const_transitions();
+        const vector<Transition> &transitions = group_it->get_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
@@ -644,7 +644,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
         }
         cout << endl;
         cout << "transitions: ";
-        const vector<Transition> &transitions = group_it->get_const_transitions();
+        const vector<Transition> &transitions = group_it->get_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
