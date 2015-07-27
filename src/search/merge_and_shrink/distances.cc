@@ -226,10 +226,8 @@ std::vector<bool> Distances::compute_distances() {
 
     int num_states = get_num_states();
 
-    if (transition_system.get_init_state() == TransitionSystem::PRUNED_STATE) {
-        cout << "init state was pruned, no distances to compute" << endl;
-        // If init_state was pruned, then everything must have been pruned.
-        assert(num_states == 0);
+    if (num_states == 0) {
+        cout << "empty transition system, no distances to compute" << endl;
         max_f = max_g = max_h = INF;
         return vector<bool>();
     }
