@@ -1,23 +1,31 @@
 #include "sample_based_potential_heuristics.h"
 
 #include "potential_max_heuristic.h"
+#include "potential_optimizer.h"
 #include "util.h"
 
+#include "../option_parser.h"
 #include "../plugin.h"
+
+#include <memory>
+#include <vector>
 
 using namespace std;
 
 
 namespace potentials {
-SampleBasedPotentialHeuristics::SampleBasedPotentialHeuristics(const Options &opts) {
+/*
+  Compute multiple potential functions that are optimized for different
+  sets of samples.
+*/
+static vector<shared_ptr<PotentialFunction> > create_sample_based_potential_functions(
+    const Options &opts) {
+    vector<shared_ptr<PotentialFunction> > functions;
     PotentialOptimizer optimizer(opts);
     for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
         optimize_for_samples(optimizer, opts.get<int>("num_samples"));
         functions.push_back(optimizer.get_potential_function());
     }
-}
-
-vector<shared_ptr<PotentialFunction> > SampleBasedPotentialHeuristics::get_functions() const {
     return functions;
 }
 
@@ -38,9 +46,8 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    SampleBasedPotentialHeuristics factory(opts);
     opts.set<vector<shared_ptr<PotentialFunction> > >(
-        "functions", factory.get_functions());
+        "functions", create_sample_based_potential_functions(opts));
     return new PotentialMaxHeuristic(opts);
 }
 
