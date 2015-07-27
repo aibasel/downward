@@ -372,9 +372,6 @@ bool TransitionSystem::apply_abstraction(
         }
     }
 
-    if (!distances->apply_abstraction(collapsed_groups))
-        cout << tag() << "simplification was not f-preserving!" << endl;
-
     int new_num_states = collapsed_groups.size();
     vector<bool> new_goal_states(new_num_states, false);
 
@@ -416,6 +413,8 @@ bool TransitionSystem::apply_abstraction(
     if (init_state == PRUNED_STATE)
         cout << tag() << "initial state pruned; task unsolvable" << endl;
 
+    if (!distances->apply_abstraction(collapsed_groups))
+        cout << tag() << "simplification was not f-preserving!" << endl;
     heuristic_representation->apply_abstraction_to_lookup_table(
         abstraction_mapping);
 
