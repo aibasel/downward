@@ -1,30 +1,4 @@
 #ifndef POTENTIALS_SAMPLE_BASED_POTENTIAL_HEURISTICS_H
 #define POTENTIALS_SAMPLE_BASED_POTENTIAL_HEURISTICS_H
 
-#include "potential_optimizer.h"
-
-#include <memory>
-#include <vector>
-
-class Options;
-
-
-namespace potentials {
-class PotentialFunction;
-
-/*
-  Compute multiple potential functions that are optimized for different sets of
-  samples.
-*/
-class SampleBasedPotentialHeuristics {
-    std::vector<std::shared_ptr<PotentialFunction> > functions;
-
-public:
-    explicit SampleBasedPotentialHeuristics(const Options &opts);
-    ~SampleBasedPotentialHeuristics() = default;
-
-    std::vector<std::shared_ptr<PotentialFunction> > get_functions() const;
-};
-}
-
 #endif
