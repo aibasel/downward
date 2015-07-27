@@ -110,7 +110,17 @@ public:
     static const int PRUNED_STATE = -1;
 
 private:
-    std::vector<int> var_id_set;
+    /*
+      The following two attributes are only used for output.
+
+      - num_variables: total number of variables in the factored
+        transition system
+
+      - incorporated_variables: variables that contributed to this
+        transition system
+    */
+    const int num_variables;
+    std::vector<int> incorporated_variables;
 
     /*
       There should only be one instance of Labels at runtime. It is created
@@ -137,9 +147,6 @@ private:
     */
     std::vector<std::vector<Transition> > transitions_of_groups;
     std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
-
-    // Number of variables of the task used by merge-and-shrink
-    const int num_variables;
 
     int num_states;
 

@@ -45,8 +45,8 @@ const int TransitionSystem::PRUNED_STATE;
 // common case for both constructors
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const shared_ptr<Labels> labels)
-    : labels(labels),
-      num_variables(task_proxy.get_variables().size()),
+    : num_variables(task_proxy.get_variables().size()),
+      labels(labels),
       heuristic_representation(nullptr),
       distances(make_unique_ptr<Distances>(*this)) {
     size_t num_ops = task_proxy.get_operators().size();
@@ -91,7 +91,7 @@ TransitionSystem::TransitionSystem(
         transitions_of_groups.resize(max_num_labels);
     }
 
-    var_id_set.push_back(var_id);
+    incorporated_variables.push_back(var_id);
 
     int range = task_proxy.get_variables()[var_id].get_domain_size();
 
@@ -147,8 +147,10 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
     assert(ts1->is_solvable() && ts2->is_solvable());
     assert(ts1->is_valid() && ts2->is_valid());
 
-    ::set_union(ts1->var_id_set.begin(), ts1->var_id_set.end(), ts2->var_id_set.begin(),
-                ts2->var_id_set.end(), back_inserter(var_id_set));
+    ::set_union(
+        ts1->incorporated_variables.begin(), ts1->incorporated_variables.end(),
+        ts2->incorporated_variables.begin(), ts2->incorporated_variables.end(),
+        back_inserter(incorporated_variables));
 
     int ts1_size = ts1->get_size();
     int ts2_size = ts2->get_size();
@@ -568,11 +570,11 @@ int TransitionSystem::unique_unlabeled_transitions() const {
 
 string TransitionSystem::description() const {
     ostringstream s;
-    if (var_id_set.size() == 1) {
-        s << "atomic transition system #" << *var_id_set.begin();
+    if (incorporated_variables.size() == 1) {
+        s << "atomic transition system #" << *incorporated_variables.begin();
     } else {
         s << "composite transition system with "
-          << var_id_set.size() << "/" << num_variables << " vars";
+          << incorporated_variables.size() << "/" << num_variables << " vars";
     }
     return s.str();
 }
@@ -603,8 +605,8 @@ void TransitionSystem::statistics(const Timer &timer,
 void TransitionSystem::dump_dot_graph() const {
     assert(is_valid());
     cout << "digraph transition system";
-    for (size_t i = 0; i < var_id_set.size(); ++i)
-        cout << "_" << var_id_set[i];
+    for (size_t i = 0; i < incorporated_variables.size(); ++i)
+        cout << "_" << incorporated_variables[i];
     cout << " {" << endl;
     cout << "    node [shape = none] start;" << endl;
     for (int i = 0; i < num_states; ++i) {
