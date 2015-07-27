@@ -49,6 +49,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
       labels(labels),
       heuristic_representation(nullptr),
       distances(make_unique_ptr<Distances>(*this)) {
+    // TODO: Add a method Labels::get_max_size() that gives us max_num_labels.
     size_t num_ops = task_proxy.get_operators().size();
     if (num_ops > 0) {
         size_t max_num_labels = num_ops * 2 - 1;
@@ -94,7 +95,6 @@ TransitionSystem::TransitionSystem(
     incorporated_variables.push_back(var_id);
 
     int range = task_proxy.get_variables()[var_id].get_domain_size();
-
     int init_value = task_proxy.get_initial_state()[var_id].get_value();
     int goal_value = -1;
     goal_relevant = false;
