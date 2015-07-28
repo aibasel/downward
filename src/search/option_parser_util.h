@@ -82,6 +82,21 @@ struct ParseError {
 };
 
 
+struct Bounds {
+    std::string min;
+    std::string max;
+
+public:
+    Bounds(std::string min, std::string max)
+        : min(min), max(max) {}
+    ~Bounds() = default;
+
+    static Bounds no_bounds() {
+        return Bounds("", "");
+    }
+};
+
+
 //a registry<T> maps a string to a T-factory
 template <class T>
 class Registry {
@@ -453,17 +468,19 @@ typedef std::vector<std::pair<std::string, std::string> > ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
         std::string k, std::string h, std::string t_n, std::string def_val,
-        ValueExplanations val_expl)
+        Bounds bounds, ValueExplanations val_expl)
         : kwd(k),
           help(h),
           type_name(t_n),
           default_value(def_val),
+          bounds(bounds),
           value_explanations(val_expl) {
     }
     std::string kwd;
     std::string help;
     std::string type_name;
     std::string default_value;
+    Bounds bounds;
     std::vector<std::pair<std::string, std::string> > value_explanations;
 };
 
@@ -524,6 +541,7 @@ public:
                  std::string help,
                  std::string type,
                  std::string default_value,
+                 Bounds bounds,
                  ValueExplanations value_explanations = ValueExplanations());
     void add_value_explanations(std::string k,
                                 std::string arg_name,

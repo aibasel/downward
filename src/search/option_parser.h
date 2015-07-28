@@ -151,19 +151,6 @@ public:
 };
 
 
-struct Bounds {
-    std::string min;
-    std::string max;
-
-public:
-    Bounds(std::string min = "", std::string max = "")
-        : min(min), max(max) {}
-    ~Bounds() = default;
-};
-
-static const Bounds NO_BOUNDS = Bounds();
-
-
 /*The OptionParser stores a parse tree, and a Options.
 By calling addArgument, the parse tree is partially parsed,
 and the result is added to the Options.
@@ -196,7 +183,8 @@ public:
        parameters without default values. */
     template <class T>
     void add_option(
-        std::string k, std::string h = "", std::string def_val = "", Bounds bounds = NO_BOUNDS);
+        std::string k, std::string h = "", std::string def_val = "",
+        Bounds bounds = Bounds::no_bounds());
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
@@ -265,7 +253,8 @@ void OptionParser::add_option(
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
-                                      TypeNamer<T>::name(), default_value);
+                                      TypeNamer<T>::name(), default_value,
+                                      bounds);
         return;
     }
     valid_keys.push_back(k);

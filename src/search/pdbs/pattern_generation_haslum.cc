@@ -489,7 +489,7 @@ static Heuristic *_parse(OptionParser &parser) {
 
     parser.add_option<int>("pdb_max_size",
                            "maximal number of states per pattern database ",
-                           "2000000");
+                           "2000000", Bounds("1", "infinity"));
     parser.add_option<int>("collection_max_size",
                            "maximal number of states in the pattern collection",
                            "20000000");
