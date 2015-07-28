@@ -487,7 +487,7 @@ void OptionParser::add_enum_option(string k,
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
                                       enum_descr, def_val,
-                                      Bounds::no_bounds(),
+                                      Bounds::unlimited(),
                                       value_explanations);
         return;
     }

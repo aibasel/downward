@@ -91,15 +91,11 @@ public:
         : min(min), max(max) {}
     ~Bounds() = default;
 
-    static Bounds no_bounds() {
+    static Bounds unlimited() {
         return Bounds("", "");
     }
 
-    friend std::ostream &operator<<(std::ostream &out, const Bounds &bounds) {
-        if (!bounds.min.empty() || !bounds.max.empty())
-            out << "[" << bounds.min << "," << bounds.max << "]";
-        return out;
-    }
+    friend std::ostream &operator<<(std::ostream &out, const Bounds &bounds);
 };
 
 

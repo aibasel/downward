@@ -189,7 +189,7 @@ public:
     template <class T>
     void add_option(
         std::string k, std::string h = "", std::string def_val = "",
-        Bounds bounds = Bounds::no_bounds());
+        Bounds bounds = Bounds::unlimited());
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
