@@ -137,10 +137,10 @@ pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transiti
                 assert(!label_ranks2.empty());
                 assert(label_ranks1.size() == label_ranks2.size());
                 int pair_weight = INF;
-                for (size_t i = 0; i < label_ranks1.size(); ++i) {
-                    if (label_ranks1[i] != -1 && label_ranks2[i] != -1) {
+                for (size_t k = 0; k < label_ranks1.size(); ++k) {
+                    if (label_ranks1[k] != -1 && label_ranks2[k] != -1) {
                         // label is relevant in both transition_systems
-                        int max_label_rank = max(label_ranks1[i], label_ranks2[i]);
+                        int max_label_rank = max(label_ranks1[k], label_ranks2[k]);
                         pair_weight = min(pair_weight, max_label_rank);
                     }
                 }
