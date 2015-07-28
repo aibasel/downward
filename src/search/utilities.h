@@ -113,9 +113,9 @@ void release_vector_memory(std::vector<T> &vec) {
   to make_unique.
 */
 
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique_ptr(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+template<typename T, typename ... Args>
+std::unique_ptr<T> make_unique_ptr(Args && ... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
 }
 
 #endif

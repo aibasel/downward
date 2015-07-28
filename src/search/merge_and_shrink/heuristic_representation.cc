@@ -54,9 +54,9 @@ HeuristicRepresentationMerge::HeuristicRepresentationMerge(
     unique_ptr<HeuristicRepresentation> child2)
     : HeuristicRepresentation(child1->get_domain_size() *
                               child2->get_domain_size()),
-      children{move(child1), move(child2)},
-      lookup_table(children[0]->get_domain_size(),
-                   vector<int>(children[1]->get_domain_size())) {
+      children {move(child1), move(child2)},
+lookup_table(children[0]->get_domain_size(),
+             vector<int>(children[1]->get_domain_size())) {
     int counter = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
