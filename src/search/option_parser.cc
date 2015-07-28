@@ -201,6 +201,27 @@ void OptionParser::check_bounds<int>(
         error(key + " must be at most " + bounds.max);
 }
 
+template<>
+void OptionParser::check_bounds<double>(
+    const std::string &key, const double &value, const Bounds &bounds) {
+    double lower_bound = -numeric_limits<double>::infinity();
+    double upper_bound = numeric_limits<double>::infinity();
+    if (!bounds.min.empty()) {
+        OptionParser bound_parser(bounds.min, dry_run());
+        lower_bound = TokenParser<double>::parse(bound_parser);
+    }
+    if (!bounds.max.empty()) {
+        OptionParser bound_parser(bounds.max, dry_run());
+        upper_bound = TokenParser<double>::parse(bound_parser);
+    }
+    if (lower_bound > upper_bound)
+        ABORT("lower bound is greater than upper bound for " + key);
+    if (value < lower_bound)
+        error(key + " must be at least " + bounds.min);
+    if (value > upper_bound)
+        error(key + " must be at most " + bounds.max);
+}
+
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run, bool is_unit_cost) {
     vector<string> args;

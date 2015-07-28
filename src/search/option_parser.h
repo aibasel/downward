@@ -260,6 +260,10 @@ template<>
 void OptionParser::check_bounds<int>(
     const std::string &key, const int &value, const Bounds &bounds);
 
+template<>
+void OptionParser::check_bounds<double>(
+    const std::string &key, const double &value, const Bounds &bounds);
+
 template <class T>
 void OptionParser::add_option(
     std::string k, std::string h, std::string default_value, Bounds bounds) {
