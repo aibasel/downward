@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.3)
 
 if(NOT FAST_DOWNWARD_MAIN_CMAKELISTS_READ)
     message(
