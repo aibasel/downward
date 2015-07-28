@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -104,6 +105,17 @@ int get_process_id();
 template<class T>
 void release_vector_memory(std::vector<T> &vec) {
     std::vector<T>().swap(vec);
+}
+
+/*
+  make_unique_ptr is a poor man's version of make_unique. Once we
+  require C++14, we should change all occurrences of make_unique_ptr
+  to make_unique.
+*/
+
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique_ptr(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 #endif
