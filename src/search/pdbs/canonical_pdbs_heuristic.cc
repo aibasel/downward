@@ -45,6 +45,7 @@ void CanonicalPDBsHeuristic::_add_pattern(const vector<int> &pattern) {
     opts.set<shared_ptr<AbstractTask> >("transform", task);
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<int> >("pattern", pattern);
+    opts.set<bool>("cache_h", false);
     pattern_databases.push_back(new PDBHeuristic(opts, false));
     size += pattern_databases.back()->get_size();
 }

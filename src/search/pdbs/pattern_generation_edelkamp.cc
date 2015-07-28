@@ -186,6 +186,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             opts.set<shared_ptr<AbstractTask> >("transform", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
+            opts.set<bool>("cache_h", false);
             ZeroOnePDBsHeuristic *zoppch =
                 new ZeroOnePDBsHeuristic(opts);
             fitness = zoppch->get_approx_mean_finite_h();

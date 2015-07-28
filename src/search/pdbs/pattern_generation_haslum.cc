@@ -92,6 +92,7 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(set<vector<int> > &
             opts.set<shared_ptr<AbstractTask> >("transform", task);
             opts.set<int>("cost_type", cost_type);
             opts.set<vector<int> >("pattern", new_candidates[i]);
+            opts.set<bool>("cache_h", false);
             candidate_pdbs.push_back(new PDBHeuristic(opts, false));
             max_pdb_size = max(max_pdb_size,
                                candidate_pdbs.back()->get_size());
@@ -352,6 +353,7 @@ void PatternGenerationHaslum::initialize() {
     opts.set<shared_ptr<AbstractTask> >("transform", task);
     opts.set<int>("cost_type", cost_type);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
+    opts.set<bool>("cache_h", false);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
 
     EvaluationContext eval_context(g_initial_state());
