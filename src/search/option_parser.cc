@@ -180,6 +180,17 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
 Parse command line options
 */
 
+template<>
+void OptionParser::check_bounds<int>(std::string key, int &value, Bounds bounds) {
+    if (!bounds.min.empty()) {
+        OptionParser lower_bound_parser(bounds.min, dry_run());
+        int lower_bound = TokenParser<int>::parse(lower_bound_parser);
+        if (value < lower_bound) {
+            error(key + " must be at least " + bounds.min);
+        }
+    }
+}
+
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run, bool is_unit_cost) {
     vector<string> args;
