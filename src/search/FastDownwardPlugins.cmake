@@ -4,70 +4,72 @@
 ## it to the following list
 
 set(PLANNER_SOURCES
-        planner
-        abstract_task
-        axioms
-        causal_graph
-        combining_evaluator
-        cost_adapted_task
-        countdown_timer
-        delegating_task
-        doc
-        domain_transition_graph
-        eager_search
-        enforced_hill_climbing_search
-        equivalence_relation
-        evaluation_context
-        evaluation_result
-        exact_timer
-        g_evaluator
-        global_operator
-        globals
-        global_state
-        heuristic_cache
-        heuristic
-        int_packer
-        ipc_max_heuristic
-        iterated_search
-        lazy_search
-        lp_internals
-        lp_solver
-        max_evaluator
-        operator_cost
-        option_parser
-        option_parser_util
-        per_state_information
-        plugin
-        pref_evaluator
-        priority_queue
-        relaxation_heuristic
-        rng
-        root_task
-        scalar_evaluator
-        search_engine
-        search_node_info
-        search_progress
-        search_space
-        search_statistics
-        segmented_vector
-        state_id
-        state_registry
-        successor_generator
-        sum_evaluator
-        task_proxy
-        task_tools
-        timer
-        tracer
-        utilities
-        utilities_hash
-        variable_order_finder
-        weighted_evaluator
-        open_lists/alternation_open_list
-        open_lists/bucket_open_list
-        open_lists/open_list
-        open_lists/pareto_open_list
-        open_lists/standard_scalar_open_list
-        open_lists/tiebreaking_open_list
+        planner.cc
+
+        abstract_task.cc abstract_task.h
+        axioms.cc axioms.h
+        causal_graph.cc causal_graph.h
+        combining_evaluator.cc combining_evaluator.h
+        cost_adapted_task.cc cost_adapted_task.h
+        countdown_timer.cc countdown_timer.h
+        delegating_task.cc delegating_task.h
+        doc.h
+        domain_transition_graph.cc domain_transition_graph.h
+        eager_search.cc eager_search.h
+        enforced_hill_climbing_search.cc enforced_hill_climbing_search.h
+        equivalence_relation.cc equivalence_relation.h
+        evaluation_context.cc evaluation_context.h
+        evaluation_result.cc evaluation_result.h
+        exact_timer.cc exact_timer.h
+        g_evaluator.cc g_evaluator.h
+        global_operator.cc global_operator.h
+        globals.cc globals.h
+        global_state.cc global_state.h
+        heuristic_cache.cc heuristic_cache.h
+        heuristic.cc heuristic.h
+        int_packer.cc int_packer.h
+        ipc_max_heuristic.cc ipc_max_heuristic.h
+        iterated_search.cc iterated_search.h
+        lazy_search.cc lazy_search.h
+        lp_internals.cc lp_internals.h
+        lp_solver.cc lp_solver.h
+        max_evaluator.cc max_evaluator.h
+        operator_cost.cc operator_cost.h
+        option_parser.cc option_parser.h
+        option_parser_util.cc option_parser_util.h
+        per_state_information.cc per_state_information.h
+        plugin.h
+        pref_evaluator.cc pref_evaluator.h
+        priority_queue.h
+        relaxation_heuristic.cc relaxation_heuristic.h
+        rng.cc rng.h
+        root_task.cc root_task.h
+        scalar_evaluator.cc scalar_evaluator.h
+        search_engine.cc search_engine.h
+        search_node_info.cc search_node_info.h
+        search_progress.cc search_progress.h
+        search_space.cc search_space.h
+        search_statistics.cc search_statistics.h
+        segmented_vector.cc segmented_vector.h
+        state_id.cc state_id.h
+        state_registry.cc state_registry.h
+        successor_generator.cc successor_generator.h
+        sum_evaluator.cc sum_evaluator.h
+        task_proxy.cc task_proxy.h
+        task_tools.cc task_tools.h
+        timer.cc timer.h
+        tracer.cc tracer.h
+        utilities.cc utilities.h
+        utilities_hash.cc utilities_hash.h
+        utilities_windows.h
+        variable_order_finder.cc variable_order_finder.h
+        weighted_evaluator.cc weighted_evaluator.h
+        open_lists/alternation_open_list.cc open_lists/alternation_open_list.h
+        open_lists/bucket_open_list.cc open_lists/bucket_open_list.h
+        open_lists/open_list.cc open_lists/open_list.h
+        open_lists/pareto_open_list.cc open_lists/pareto_open_list.h
+        open_lists/standard_scalar_open_list.cc open_lists/standard_scalar_open_list.h
+        open_lists/tiebreaking_open_list.cc open_lists/tiebreaking_open_list.h
 )
 
 
