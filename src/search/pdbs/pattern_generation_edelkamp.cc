@@ -347,39 +347,38 @@ static Heuristic *_parse(OptionParser &parser) {
         "converted into probabilities and Roulette Wheel Selection is used.\n"
         "+\n\n", true);
 
-    parser.add_option<int>("pdb_max_size",
-                           "maximal number of states per pattern database ",
-                           "50000");
-    parser.add_option<int>("num_collections",
-                           "number of pattern collections to maintain in the "
-                           "genetic algorithm (population size)",
-                           "5");
-    parser.add_option<int>("num_episodes",
-                           "number of episodes for the genetic algorithm",
-                           "30");
-    parser.add_option<double>("mutation_probability",
-                              "probability between 0 and 1 for flipping a bit "
-                              "in the genetic algorithm",
-                              "0.01");
-    parser.add_option<bool>("disjoint",
-                            "consider a pattern collection invalid (giving it "
-                            "very low fitness) if its patterns are not disjoint",
-                            "false");
+    parser.add_option<int>(
+        "pdb_max_size",
+        "maximal number of states per pattern database ",
+        "50000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "num_collections",
+        "number of pattern collections to maintain in the genetic "
+        "algorithm (population size)",
+        "5",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "num_episodes",
+        "number of episodes for the genetic algorithm",
+        "30",
+        Bounds("0", "infinity"));
+    parser.add_option<double>(
+        "mutation_probability",
+        "probability between 0 and 1 for flipping a bit in the "
+        "genetic algorithm",
+        "0.01",
+        Bounds("0.0", "1.0"));
+    parser.add_option<bool>(
+        "disjoint",
+        "consider a pattern collection invalid (giving it very low "
+        "fitness) if its patterns are not disjoint",
+        "false");
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
-
-    if (opts.get<int>("pdb_max_size") < 1)
-        parser.error("size per pdb must be at least 1");
-    if (opts.get<int>("num_collections") < 1)
-        parser.error("number of pattern collections must be at least 1");
-    if (opts.get<int>("num_episodes") < 0)
-        parser.error("number of episodes must be a non negative number");
-    if (opts.get<double>("mutation_probability") < 0 ||
-        opts.get<double>("mutation_probability") > 1)
-        parser.error("mutation probability must be in [0..1]");
 
     if (parser.dry_run())
         return 0;
