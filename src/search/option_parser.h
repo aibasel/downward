@@ -181,7 +181,8 @@ public:
     T start_parsing();
 
     template<class T>
-    void check_bounds(std::string key, T &value, Bounds bounds);
+    void check_bounds(
+        const std::string &key, const T &value, const Bounds &bounds);
 
     /* Add option with default value. Use def_val=NONE for optional
        parameters without default values. */
@@ -251,11 +252,13 @@ T OptionParser::start_parsing() {
 }
 
 template<class T>
-void OptionParser::check_bounds(std::string, T &, Bounds) {
+void OptionParser::check_bounds(
+    const std::string &, const T &, const Bounds &) {
 }
 
 template<>
-void OptionParser::check_bounds<int>(std::string key, int &value, Bounds bounds);
+void OptionParser::check_bounds<int>(
+    const std::string &key, const int &value, const Bounds &bounds);
 
 template <class T>
 void OptionParser::add_option(

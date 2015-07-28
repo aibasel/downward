@@ -181,7 +181,8 @@ Parse command line options
 */
 
 template<>
-void OptionParser::check_bounds<int>(std::string key, int &value, Bounds bounds) {
+void OptionParser::check_bounds<int>(
+    const std::string &key, const int &value, const Bounds &bounds) {
     if (!bounds.min.empty()) {
         OptionParser lower_bound_parser(bounds.min, dry_run());
         int lower_bound = TokenParser<int>::parse(lower_bound_parser);
