@@ -182,7 +182,7 @@ Parse command line options
 
 template<>
 void OptionParser::check_bounds<int>(
-    const std::string &key, const int &value, const Bounds &bounds) {
+    const string &key, const int &value, const Bounds &bounds) {
     int lower_bound = numeric_limits<int>::lowest();
     int upper_bound = numeric_limits<int>::max();
     if (!bounds.min.empty()) {
@@ -203,7 +203,7 @@ void OptionParser::check_bounds<int>(
 
 template<>
 void OptionParser::check_bounds<double>(
-    const std::string &key, const double &value, const Bounds &bounds) {
+    const string &key, const double &value, const Bounds &bounds) {
     double lower_bound = -numeric_limits<double>::infinity();
     double upper_bound = numeric_limits<double>::infinity();
     if (!bounds.min.empty()) {
