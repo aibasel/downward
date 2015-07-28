@@ -474,7 +474,7 @@ typedef std::vector<std::pair<std::string, std::string> > ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
         std::string k, std::string h, std::string t_n, std::string def_val,
-        Bounds bounds, ValueExplanations val_expl)
+        const Bounds &bounds, ValueExplanations val_expl)
         : kwd(k),
           help(h),
           type_name(t_n),
