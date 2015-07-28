@@ -151,6 +151,7 @@ public:
 };
 
 
+
 /*The OptionParser stores a parse tree, and a Options.
 By calling addArgument, the parse tree is partially parsed,
 and the result is added to the Options.
@@ -250,10 +251,7 @@ T OptionParser::start_parsing() {
 }
 
 template<class T>
-void OptionParser::check_bounds(std::string key, T &value, Bounds bounds) {
-    unused_parameter(key);
-    unused_parameter(value);
-    unused_parameter(bounds);
+void OptionParser::check_bounds(std::string, T &, Bounds) {
 }
 
 template<>
