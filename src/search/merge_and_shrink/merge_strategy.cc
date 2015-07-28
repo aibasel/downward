@@ -10,6 +10,10 @@ using namespace std;
 MergeStrategy::MergeStrategy() : remaining_merges(UNINITIALIZED) {
 }
 
+bool MergeStrategy::initialized() const {
+    return remaining_merges != UNINITIALIZED;
+}
+
 void MergeStrategy::initialize(const shared_ptr<AbstractTask> task) {
     assert(!initialized());
     cout << "Initializing merge strategy..." << endl;
@@ -20,10 +24,6 @@ void MergeStrategy::initialize(const shared_ptr<AbstractTask> task) {
     */
     TaskProxy task_proxy(*task);
     remaining_merges = task_proxy.get_variables().size() - 1;
-}
-
-bool MergeStrategy::initialized() const {
-    return remaining_merges != UNINITIALIZED;
 }
 
 bool MergeStrategy::done() const {

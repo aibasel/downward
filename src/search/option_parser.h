@@ -121,21 +121,21 @@ public:
 };
 
 template <>
-class TokenParser<MergeStrategy *> {
+class TokenParser<std::shared_ptr<MergeStrategy> > {
 public:
-    static inline MergeStrategy *parse(OptionParser &p);
+    static inline std::shared_ptr<MergeStrategy>parse(OptionParser &p);
 };
 
 template <>
-class TokenParser<ShrinkStrategy *> {
+class TokenParser<std::shared_ptr<ShrinkStrategy> > {
 public:
-    static inline ShrinkStrategy *parse(OptionParser &p);
+    static inline std::shared_ptr<ShrinkStrategy>parse(OptionParser &p);
 };
 
 template <>
-class TokenParser<Labels *> {
+class TokenParser<std::shared_ptr<Labels> > {
 public:
-    static inline Labels *parse(OptionParser &p);
+    static inline std::shared_ptr<Labels>parse(OptionParser &p);
 };
 
 template <>
@@ -423,16 +423,16 @@ SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
     return lookup_in_registry<SearchEngine>(p);
 }
 
-MergeStrategy *TokenParser<MergeStrategy *>::parse(OptionParser &p) {
-    return lookup_in_registry<MergeStrategy>(p);
+std::shared_ptr<MergeStrategy>TokenParser<std::shared_ptr<MergeStrategy> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<MergeStrategy>(p);
 }
 
-ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
-    return lookup_in_registry<ShrinkStrategy>(p);
+std::shared_ptr<ShrinkStrategy>TokenParser<std::shared_ptr<ShrinkStrategy> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<ShrinkStrategy>(p);
 }
 
-Labels *TokenParser<Labels *>::parse(OptionParser &p) {
-    return lookup_in_registry<Labels>(p);
+std::shared_ptr<Labels>TokenParser<std::shared_ptr<Labels> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<Labels>(p);
 }
 
 

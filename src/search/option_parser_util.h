@@ -235,21 +235,21 @@ struct TypeNamer<Synergy *> {
 };
 
 template <>
-struct TypeNamer<MergeStrategy *> {
+struct TypeNamer<std::shared_ptr<MergeStrategy> > {
     static std::string name() {
         return "MergeStrategy";
     }
 };
 
 template <>
-struct TypeNamer<ShrinkStrategy *> {
+struct TypeNamer<std::shared_ptr<ShrinkStrategy> > {
     static std::string name() {
         return "ShrinkStrategy";
     }
 };
 
 template <>
-struct TypeNamer<Labels *> {
+struct TypeNamer<std::shared_ptr<Labels> > {
     static std::string name() {
         return "Labels";
     }
