@@ -135,6 +135,10 @@ endif()
 option(PLUGIN_MAS_HEURISTIC "The Merge-and-Shrink heuristic" TRUE)
 if(PLUGIN_MAS_HEURISTIC)
     list(APPEND PLANNER_SOURCES
+        merge_and_shrink/distances.h
+        merge_and_shrink/factored_transition_system.h
+        merge_and_shrink/fts_factory.h
+        merge_and_shrink/heuristic_representation.h
         merge_and_shrink/labels
         merge_and_shrink/merge_and_shrink_heuristic
         merge_and_shrink/merge_dfp
