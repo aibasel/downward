@@ -45,20 +45,29 @@ macro(fast_downward_set_compiler_flags)
 endmacro()
 
 
-macro(fast_downward_set_configuration_types)
-    # Multi-config generators (e.g. Visual Studio Projects) include
-    # all possible configurations in their output, while single-config
-    # generators (e.g. Makefiles) only include one config.
-    if(CMAKE_CONFIGURATION_TYPES)
-        set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile" CACHE STRING "" FORCE)
-    else()
-        if(NOT CMAKE_BUILD_TYPE)
-            message("Defaulting to release build.")
-            set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
-        endif()
+macro(fast_downward_add_profile_build)
+    if(NOT CMAKE_CONFIGURATION_TYPES)
         set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
-        # set the valid options for cmake-gui drop-down list
         set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;Profile")
+    endif()
+    set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
+    set(CMAKE_EXE_LINKER_FLAGS_PROFILE ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
+endmacro()
+
+macro(fast_downward_default_to_release_build)
+    # Only for single-config generators (like Makefiles) that choose the build type at generation time.
+    if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+        message("Defaulting to release build.")
+        set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
+    endif()
+endmacro()
+
+macro(fast_downward_set_configuration_types)
+    # Only for multi-config generators (like Visual Studio Projects) that choose
+    # the build type at build time.
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile"
+            CACHE STRING "Reset the configurations to what we need" FORCE)
     endif()
 endmacro()
 

@@ -25,10 +25,14 @@ cmake_minimum_required(VERSION 2.6)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
 
-fast_downward_set_configuration_types()
+fast_downward_default_to_release_build()
 fast_downward_add_64_bit_option()
-project(fast-downward)
+project(fast-downward CXX)
 fast_downward_check_64_bit_option()
+# Due to a bug in cmake configuration types are only set up correctly on the second cmake run.
+# This means that cmake has to be called twice for multi-config generators like Visual Studio.
+fast_downward_set_configuration_types()
+fast_downward_add_profile_build()
 
 set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
 
