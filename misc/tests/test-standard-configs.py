@@ -24,10 +24,6 @@ CONFIGS.update(configs.default_configs_optimal(core=True, ipc=True, extended=Tru
 CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=True, extended=True))
 CONFIGS.update(configs.task_transformation_test_configs())
 CONFIGS.update(configs.regression_test_configs())
-# TODO: Include again, once issue558 is fixed.
-del CONFIGS["seq_sat_fdss_1"]
-del CONFIGS["seq_sat_fdss_2"]
-del CONFIGS["seq_sat_lama_2011"]
 
 if "astar_selmax_lmcut_lmcount" in CONFIGS:
     del CONFIGS["astar_selmax_lmcut_lmcount"]
@@ -42,7 +38,9 @@ if os.name == "nt":
     del CONFIGS["seq_sat_fdss_2"]
 
 def run_plan_script(task, nick, config, debug):
-    cmd = [sys.executable, FAST_DOWNWARD, "--search-time-limit", "30m"]
+    cmd = [sys.executable, FAST_DOWNWARD]
+    if os.name != "nt":
+        cmd.extend(["--search-time-limit", "30m"])
     if debug:
         cmd.append("--debug")
     if "--alias" in config:
