@@ -20,9 +20,10 @@ void DocStore::add_arg(string k,
                        string help,
                        string type,
                        string default_value,
+                       Bounds bounds,
                        ValueExplanations value_explanations) {
     registered[k].arg_help.push_back(
-        ArgumentInfo(arg_name, help, type, default_value,
+        ArgumentInfo(arg_name, help, type, default_value, bounds,
                      value_explanations));
 }
 
