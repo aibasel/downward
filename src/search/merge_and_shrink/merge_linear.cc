@@ -62,9 +62,9 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
         "Linear merge strategies",
         "This merge strategy implements several linear merge orders, which "
         "are described in the paper:\n\n"
-        " * Malte Helmert, Patrik Haslum and Joerg Hoffmann..<<BR>>\n"
-        " [Flexible Abstraction Heuristics for Optimal Sequential Planning. "
-        "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf].<<BR>>\n "
+        " * Malte Helmert, Patrik Haslum and Joerg Hoffmann.<<BR>>\n"
+        " [Flexible Abstraction Heuristics for Optimal Sequential Planning "
+        "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf]<<BR>>\n "
         "In //Proceedings of the Seventeenth International Conference on "
         "Automated Planning and Scheduling (ICAPS 2007)//, pp. 176-183. 2007.");
     vector<string> merge_strategies;
