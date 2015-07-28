@@ -184,10 +184,17 @@ template<>
 void OptionParser::check_bounds<int>(
     const std::string &key, const int &value, const Bounds &bounds) {
     if (!bounds.min.empty()) {
-        OptionParser lower_bound_parser(bounds.min, dry_run());
-        int lower_bound = TokenParser<int>::parse(lower_bound_parser);
+        OptionParser bound_parser(bounds.min, dry_run());
+        int lower_bound = TokenParser<int>::parse(bound_parser);
         if (value < lower_bound) {
             error(key + " must be at least " + bounds.min);
+        }
+    }
+    if (!bounds.max.empty()) {
+        OptionParser bound_parser(bounds.max, dry_run());
+        int upper_bound = TokenParser<int>::parse(bound_parser);
+        if (value > upper_bound) {
+            error(key + " must be at most " + bounds.max);
         }
     }
 }
