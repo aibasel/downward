@@ -37,6 +37,7 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         opts.set<shared_ptr<AbstractTask> >("transform", task);
         opts.set<int>("cost_type", cost_type);
         opts.set<vector<int> >("pattern", pattern_collection[i]);
+        opts.set<bool>("cache_h", false);
         PDBHeuristic *pdb_heuristic = new PDBHeuristic(opts, false, operator_costs);
         pattern_databases.push_back(pdb_heuristic);
 
