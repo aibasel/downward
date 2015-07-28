@@ -4,7 +4,7 @@ using namespace std;
 
 
 FactoredTransitionSystem::FactoredTransitionSystem(
-    vector<TransitionSystem *> &&transition_systems)
+    vector<TransitionSystem *> && transition_systems)
     : transition_systems(transition_systems) {
 }
 

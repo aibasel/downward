@@ -63,9 +63,8 @@ TransitionSystem::TransitionSystem(
     const TaskProxy &task_proxy,
     const shared_ptr<Labels> labels,
     int var_id,
-    vector<vector<Transition> > &&transitions_by_label)
+    vector<vector<Transition> > && transitions_by_label)
     : TransitionSystem(task_proxy, labels) {
-
     /*
       TODO: Once we no longer delegate to another constructor,
       the following line can be changed to an initialization:
@@ -126,7 +125,8 @@ TransitionSystem::TransitionSystem(
     */
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
-        add_label_group({label_no});
+        add_label_group({label_no}
+                        );
     }
 
     compute_locally_equivalent_labels();
@@ -253,7 +253,7 @@ TransitionSystem::~TransitionSystem() {
 
 bool TransitionSystem::is_valid() const {
     return distances->are_distances_computed()
-        && are_transitions_sorted_unique();
+           && are_transitions_sorted_unique();
 }
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
