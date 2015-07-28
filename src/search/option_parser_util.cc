@@ -178,7 +178,7 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
         os << "- //" << arg.kwd << "// ("
-           << arg.type_name << "): "
+           << arg.type_name << arg.bounds << "): "
            << arg.help << endl;
         if (!arg.value_explanations.empty()) {
             for (size_t j = 0; j < arg.value_explanations.size(); ++j) {
@@ -273,7 +273,7 @@ void PlainPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
         os << " " << arg.kwd << "("
-           << arg.type_name << "): "
+           << arg.type_name << arg.bounds << "): "
            << arg.help << endl;
     }
 }
