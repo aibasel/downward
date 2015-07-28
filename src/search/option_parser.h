@@ -179,6 +179,9 @@ public:
     template <class T>
     T start_parsing();
 
+    template<class T>
+    void check_bounds(std::string key, T &value, Bounds bounds);
+
     /* Add option with default value. Use def_val=NONE for optional
        parameters without default values. */
     template <class T>
@@ -246,10 +249,27 @@ T OptionParser::start_parsing() {
     return TokenParser<T>::parse(*this);
 }
 
+template<class T>
+void OptionParser::check_bounds(std::string key, T &value, Bounds bounds) {
+    unused_parameter(key);
+    unused_parameter(value);
+    unused_parameter(bounds);
+}
+
+/*template<>
+void check_bounds<int>(const OptionParser &parser, int &value, Bounds bounds) {
+    if (!bounds.min.empty()) {
+        OptionParser lower_bound_parser(bounds.min, dry_run());
+        int lower_bound = TokenParser<T>::parse(lower_bound_parser);
+        if (value < lower_bound) {
+            parser.error(" must be at least " + bounds.min);
+        }
+    }
+}*/
+
 template <class T>
 void OptionParser::add_option(
     std::string k, std::string h, std::string default_value, Bounds bounds) {
-    unused_parameter(bounds);
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
@@ -293,6 +313,7 @@ void OptionParser::add_option(
         new OptionParser(default_value, dry_run()) :
         new OptionParser(subtree(parse_tree, arg), dry_run()));
     T result = TokenParser<T>::parse(*subparser);
+    check_bounds<T>(k, result, bounds);
     opts.set<T>(k, result);
     //if we have not reached the keyword parameters yet
     //and did not use the default value,
