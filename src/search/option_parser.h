@@ -256,16 +256,8 @@ void OptionParser::check_bounds(std::string key, T &value, Bounds bounds) {
     unused_parameter(bounds);
 }
 
-/*template<>
-void check_bounds<int>(const OptionParser &parser, int &value, Bounds bounds) {
-    if (!bounds.min.empty()) {
-        OptionParser lower_bound_parser(bounds.min, dry_run());
-        int lower_bound = TokenParser<T>::parse(lower_bound_parser);
-        if (value < lower_bound) {
-            parser.error(" must be at least " + bounds.min);
-        }
-    }
-}*/
+template<>
+void OptionParser::check_bounds<int>(std::string key, int &value, Bounds bounds);
 
 template <class T>
 void OptionParser::add_option(
