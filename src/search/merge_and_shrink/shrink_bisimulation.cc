@@ -365,8 +365,10 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "(called M&S-gop in the IJCAI 2011 paper)."
         "Combine this with the linear merge strategy "
         "REVERSE_LEVEL to match the heuristic in the paper. "
-        "This strategy performs best when used with label reduction "
-        "before shrinking (and no label reduction before merging).");
+        "When we last ran experiments on interaction of shrink strategies "
+        "with label reduction, this strategy performed best when used with "
+        "label reduction before shrinking (and no label reduction before "
+        "merging).");
     parser.document_note(
         "shrink_bisimulation(max_states=N, greedy=false)",
         "Exact bisimulation with a size limit "
@@ -375,8 +377,10 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "include 1000, 10000, 50000, 100000 and 200000. "
         "Combine this with the linear merge strategy "
         "REVERSE_LEVEL to match the heuristic in the paper. "
-        "This strategy performs best when used with label reduction "
-        "before shrinking (and no label reduction before merging).");
+        "When we last ran experiments on interaction of shrink strategies "
+        "with label reduction, this strategy performed best when used with "
+        "label reduction before shrinking (and no label reduction before "
+        "merging).");
 
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
