@@ -183,20 +183,22 @@ Parse command line options
 template<>
 void OptionParser::check_bounds<int>(
     const std::string &key, const int &value, const Bounds &bounds) {
+    int lower_bound = numeric_limits<int>::lowest();
+    int upper_bound = numeric_limits<int>::max();
     if (!bounds.min.empty()) {
         OptionParser bound_parser(bounds.min, dry_run());
-        int lower_bound = TokenParser<int>::parse(bound_parser);
-        if (value < lower_bound) {
-            error(key + " must be at least " + bounds.min);
-        }
+        lower_bound = TokenParser<int>::parse(bound_parser);
     }
     if (!bounds.max.empty()) {
         OptionParser bound_parser(bounds.max, dry_run());
-        int upper_bound = TokenParser<int>::parse(bound_parser);
-        if (value > upper_bound) {
-            error(key + " must be at most " + bounds.max);
-        }
+        upper_bound = TokenParser<int>::parse(bound_parser);
     }
+    if (lower_bound > upper_bound)
+        ABORT("lower bound is greater than upper bound for " + key);
+    if (value < lower_bound)
+        error(key + " must be at least " + bounds.min);
+    if (value > upper_bound)
+        error(key + " must be at most " + bounds.max);
 }
 
 SearchEngine *OptionParser::parse_cmd_line(
