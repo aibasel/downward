@@ -1,10 +1,13 @@
-#include <algorithm>
-#include <string>
-#include <vector>
 #include "option_parser_util.h"
 
-
 using namespace std;
+
+
+ostream &operator<<(ostream &out, const Bounds &bounds) {
+    if (!bounds.min.empty() || !bounds.max.empty())
+        out << "[" << bounds.min << "," << bounds.max << "]";
+    return out;
+}
 
 void DocStore::register_object(string k, string type) {
     transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
@@ -13,7 +16,6 @@ void DocStore::register_object(string k, string type) {
     registered[k].full_name = k;
     registered[k].synopsis = "";
 }
-
 
 void DocStore::add_arg(string k,
                        string arg_name,
