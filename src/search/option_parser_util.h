@@ -94,6 +94,12 @@ public:
     static Bounds no_bounds() {
         return Bounds("", "");
     }
+
+    friend std::ostream &operator<<(std::ostream &out, const Bounds &bounds) {
+        if (!bounds.min.empty() || !bounds.max.empty())
+            out << "[" << bounds.min << "," << bounds.max << "]";
+        return out;
+    }
 };
 
 
