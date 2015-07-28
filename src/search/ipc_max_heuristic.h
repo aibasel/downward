@@ -11,7 +11,7 @@ class IPCMaxHeuristic : public Heuristic {
     std::vector<Heuristic *> heuristics;
 
 protected:
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &state) override;
 
 public:
     explicit IPCMaxHeuristic(const Options &options);

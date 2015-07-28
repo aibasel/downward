@@ -13,6 +13,12 @@ except ImportError:
 import sys
 
 
+RESOURCE_MODULE_MISSING_MSG = (
+    "The 'resource' module is not available on your platform. "
+    "Therefore, setting time or memory limits, and running "
+    "portfolios is not possible.")
+
+
 def can_set_limits():
     return resource is not None
 
@@ -30,6 +36,16 @@ def _set_limit(kind, soft, hard=None):
             file=sys.stderr)
 
 
+def _get_soft_and_hard_time_limits(internal_limit, external_hard_limit):
+    soft_limit = min(int(math.ceil(internal_limit)), external_hard_limit)
+    hard_limit = min(soft_limit + 1, external_hard_limit)
+    print("time limit %.2f -> (%d, %d)" %
+        (internal_limit, soft_limit, hard_limit))
+    sys.stdout.flush()
+    assert soft_limit <= hard_limit
+    return soft_limit, hard_limit
+
+
 def set_time_limit(time_limit):
     if time_limit is None:
         return
@@ -41,10 +57,8 @@ def set_time_limit(time_limit):
     assert time_limit <= external_hard_limit, (time_limit, external_hard_limit)
     # Soft limit reached --> SIGXCPU.
     # Hard limit reached --> SIGKILL.
-    soft_limit = int(math.ceil(time_limit))
-    hard_limit = min(soft_limit + 1, external_hard_limit)
-    print("time limit %.2f -> (%d, %d)" % (time_limit, soft_limit, hard_limit))
-    sys.stdout.flush()
+    soft_limit, hard_limit = _get_soft_and_hard_time_limits(
+        time_limit, external_hard_limit)
     _set_limit(resource.RLIMIT_CPU, soft_limit, hard_limit)
 
 
@@ -142,13 +156,18 @@ def get_time_limit(component_limit, overall_limit):
     """
     Return the minimum time limit imposed by any internal and external limit.
     """
-    elapsed_time = util.get_elapsed_time()
-    external_limit = _get_external_time_limit()
-    limits = []
-    if component_limit is not None:
-        limits.append(component_limit)
-    if overall_limit is not None:
-        limits.append(max(0, overall_limit - elapsed_time))
-    if external_limit is not None:
-        limits.append(max(0, external_limit - elapsed_time))
-    return min(limits) if limits else None
+    if can_set_limits():
+        elapsed_time = util.get_elapsed_time()
+        external_limit = _get_external_time_limit()
+        limits = []
+        if component_limit is not None:
+            limits.append(component_limit)
+        if overall_limit is not None:
+            limits.append(max(0, overall_limit - elapsed_time))
+        if external_limit is not None:
+            limits.append(max(0, external_limit - elapsed_time))
+        return min(limits) if limits else None
+    elif component_limit is None and overall_limit is None:
+        return None
+    else:
+        sys.exit(RESOURCE_MODULE_MISSING_MSG)

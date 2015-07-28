@@ -332,7 +332,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                     int other_label_no = *group2_label_it;
                     add_label_to_group(group1_it, other_label_no);
                 }
-                grouped_labels.erase(group2_it);
+                group2_it = grouped_labels.erase(group2_it);
                 --group2_it;
                 release_vector_memory(transitions2);
             }

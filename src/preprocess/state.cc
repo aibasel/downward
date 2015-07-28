@@ -5,10 +5,10 @@ class Variable;
 
 State::State(istream &in, const vector<Variable *> &variables) {
     check_magic(in, "begin_state");
-    for (int i = 0; i < variables.size(); i++) {
+    for (Variable *var : variables) {
         int value;
         in >> value; //for axioms, this is default value
-        values[variables[i]] = value;
+        values[var] = value;
     }
     check_magic(in, "end_state");
 }
@@ -18,7 +18,6 @@ int State::operator[](Variable *var) const {
 }
 
 void State::dump() const {
-    for (map<Variable *, int>::const_iterator it = values.begin();
-         it != values.end(); ++it)
-        cout << "  " << it->first->get_name() << ": " << it->second << endl;
+    for (const auto &value : values)
+        cout << "  " << value.first->get_name() << ": " << value.second << endl;
 }
