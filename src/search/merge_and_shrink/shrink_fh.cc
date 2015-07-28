@@ -164,13 +164,15 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_note(
         "shrink_fh(max_states=N)",
         "f-preserving shrinking of transition systems "
-        "(called HHH in the IJCAI 2011 paper, see shrink_bisimulation)."
+        "(called HHH in the IJCAI 2011 paper, see shrink_bisimulation). "
         "Here, N is a numerical parameter for which sensible values "
         "include 1000, 10000, 50000, 100000 and 200000. "
         "Combine this with the linear merge strategy "
         "CG_GOAL_LEVEL to match the heuristic in the paper. "
-        "This strategy performs best when used with label reduction "
-        "before merging (and no label reduction before shrinking).");
+        "When we last ran experiments on interaction of shrink strategies "
+        "with label reduction, this strategy performed best when used with "
+        "label reduction before merging (and no label reduction before "
+        "shrinking).");
     ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");

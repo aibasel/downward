@@ -60,7 +60,7 @@ string MergeLinear::name() const {
 static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Linear merge strategies",
-        "This merge strategy implements several linear merge orders which "
+        "This merge strategy implements several linear merge orders, which "
         "are described in the paper:\n\n"
         " * Malte Helmert, Patrik Haslum and Joerg Hoffmann..<<BR>>\n"
         " [Flexible Abstraction Heuristics for Optimal Sequential Planning. "

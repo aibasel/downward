@@ -196,10 +196,10 @@ string MergeDFP::name() const {
 static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge strategy DFP",
-        "This merge strategy implements the algorithm originally described "
-        "in the paper by 'Directed  model  checking  with  distance-preserving "
-        "abstractions by Draeger, Finkebeiner and Podelski. SPIN 2006', "
-        "adapted to planning in the following paper:\n\n"
+        "This merge strategy implements the algorithm originally described in the "
+        "paper \"Directed model checking with distance-preserving abstractions\" "
+        "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
+        "the following paper:\n\n"
         " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
         " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
         "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
