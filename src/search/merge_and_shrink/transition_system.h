@@ -58,11 +58,11 @@ class LabelGroup {
       where the transitions associated with this group live.
     */
     std::list<int> labels;
-    std::vector<Transition> *transitions;
+    int id;
     int cost;
 public:
-    explicit LabelGroup(std::vector<Transition> *transitions_)
-        : transitions(transitions_), cost(INF) {
+    explicit LabelGroup(int id)
+        : id(id), cost(INF) {
     }
     void set_cost(int cost_) {
         cost = cost_;
@@ -85,11 +85,8 @@ public:
     LabelConstIter end() const {
         return labels.end();
     }
-    std::vector<Transition> &get_transitions() {
-        return *transitions;
-    }
-    const std::vector<Transition> &get_transitions() const {
-        return *transitions;
+    int get_id() const {
+        return id;
     }
     bool empty() const {
         return labels.empty();
@@ -177,8 +174,8 @@ private:
     void discard_states(const std::vector<bool> &to_be_pruned_states);
 
     // Methods related to the representation of transitions and labels
-    LabelGroupIter add_empty_label_group(std::vector<Transition> *transitions) {
-        return grouped_labels.insert(grouped_labels.end(), LabelGroup(transitions));
+    LabelGroupIter add_empty_label_group(int id) {
+        return grouped_labels.insert(grouped_labels.end(), LabelGroup(id));
     }
     void add_label_to_group(LabelGroupIter group_it, int label_no);
     int add_label_group(const std::vector<int> &new_labels);
@@ -226,6 +223,12 @@ public:
 
     const std::list<LabelGroup> &get_grouped_labels() const {
         return grouped_labels;
+    }
+    const std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) const {
+        return transitions_of_groups[group.get_id()];
+    }
+    std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) {
+        return transitions_of_groups[group.get_id()];
     }
     /*
       Method to identify the transition system in output.
