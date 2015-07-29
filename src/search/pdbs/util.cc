@@ -59,9 +59,7 @@ static void build_pattern_for_size_limit(
        - Pattern is normalized, i.e., variable numbers are sorted.
     */
     assert(pattern.empty());
-
-    if (size_limit < 1)
-        parser.error("abstraction size must be at least 1");
+    assert(size_limit >= 1);
 
     VariableOrderFinder order(task, GOAL_CG_LEVEL);
     TaskProxy task_proxy(*task);
@@ -117,7 +115,8 @@ void parse_pattern(OptionParser &parser, Options &opts) {
     parser.add_option<int>(
         "max_states",
         "maximal number of abstract states in the pattern database",
-        "1000000");
+        "1000000",
+        Bounds("1", "infinity"));
     parser.add_list_option<int>(
         "pattern",
         "list of variable numbers of the planning task that should be used as "
@@ -158,7 +157,10 @@ void parse_patterns(OptionParser &parser, Options &opts) {
     parser.add_option<bool>(
         "combo", "use the combo strategy", "false");
     parser.add_option<int>(
-        "max_states", "maximum abstraction size for combo strategy", "1000000");
+        "max_states",
+        "maximum abstraction size for combo strategy",
+        "1000000",
+        Bounds("1", "infinity"));
 
     opts = parser.parse();
     if (parser.help_mode())

@@ -180,6 +180,52 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
 Parse command line options
 */
 
+template<class T>
+void _check_bounds(
+    OptionParser &parser, const string &key, T value,
+    T lower_bound, T upper_bound) {
+    if (lower_bound > upper_bound)
+        ABORT("lower bound is greater than upper bound for " + key);
+    if (value < lower_bound || value > upper_bound) {
+        stringstream stream;
+        stream << key << " (" << value << ") must be in range ["
+               << lower_bound << ", " << upper_bound << "]";
+        parser.error(stream.str());
+    }
+}
+
+template<>
+void OptionParser::check_bounds<int>(
+    const string &key, const int &value, const Bounds &bounds) {
+    int lower_bound = numeric_limits<int>::lowest();
+    int upper_bound = numeric_limits<int>::max();
+    if (!bounds.min.empty()) {
+        OptionParser bound_parser(bounds.min, dry_run());
+        lower_bound = TokenParser<int>::parse(bound_parser);
+    }
+    if (!bounds.max.empty()) {
+        OptionParser bound_parser(bounds.max, dry_run());
+        upper_bound = TokenParser<int>::parse(bound_parser);
+    }
+    _check_bounds(*this, key, value, lower_bound, upper_bound);
+}
+
+template<>
+void OptionParser::check_bounds<double>(
+    const string &key, const double &value, const Bounds &bounds) {
+    double lower_bound = -numeric_limits<double>::infinity();
+    double upper_bound = numeric_limits<double>::infinity();
+    if (!bounds.min.empty()) {
+        OptionParser bound_parser(bounds.min, dry_run());
+        lower_bound = TokenParser<double>::parse(bound_parser);
+    }
+    if (!bounds.max.empty()) {
+        OptionParser bound_parser(bounds.max, dry_run());
+        upper_bound = TokenParser<double>::parse(bound_parser);
+    }
+    _check_bounds(*this, key, value, lower_bound, upper_bound);
+}
+
 SearchEngine *OptionParser::parse_cmd_line(
     int argc, const char **argv, bool dry_run, bool is_unit_cost) {
     vector<string> args;
@@ -445,6 +491,7 @@ void OptionParser::add_enum_option(string k,
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
                                       enum_descr, def_val,
+                                      Bounds::unlimited(),
                                       value_explanations);
         return;
     }
