@@ -67,6 +67,7 @@ fast_downward_plugin(
     NAME MAYBE_CORE
     HELP "Files that maybe should be in the core, even though it can be compiled without them"
     SOURCES
+        causal_graph.cc causal_graph.h
         equivalence_relation.cc equivalence_relation.h
         exact_timer.cc exact_timer.h
         per_state_information.cc per_state_information.h
@@ -74,26 +75,13 @@ fast_downward_plugin(
         search_node_info.cc search_node_info.h
         search_progress.cc search_progress.h
         segmented_vector.cc segmented_vector.h
+        task_proxy.cc task_proxy.h
+        task_tools.cc task_tools.h
         tracer.cc tracer.h
         utilities_hash.cc utilities_hash.h
         variable_order_finder.cc variable_order_finder.h
 )
 
-fast_downward_plugin(
-    NAME CAUSAL_GRAPH
-    HELP "The causal graph"
-    SOURCES
-        causal_graph.cc causal_graph.h
-)
-
-fast_downward_plugin(
-    NAME TASK_INTERFACE
-    HELP "The task interface"
-    SOURCES
-        task_proxy.cc task_proxy.h
-        task_tools.cc task_tools.h
-    DEPENDS CAUSAL_GRAPH
-)
 fast_downward_plugin(
     NAME G_EVALUATOR
     HELP "The g-evaluator"
@@ -172,7 +160,7 @@ fast_downward_plugin(
     HELP "Enforced hill-climbing search algorithm"
     SOURCES
         enforced_hill_climbing_search.cc enforced_hill_climbing_search.h
-    DEPENDS PREF_EVALUATOR
+    DEPENDS MAYBE_CORE PREF_EVALUATOR G_EVALUATOR
 )
 
 fast_downward_plugin(
@@ -208,6 +196,7 @@ fast_downward_plugin(
     NAME ADDITIVE_HEURISTIC
     HELP "The additive heuristic"
     SOURCES additive_heuristic.cc additive_heuristic.h
+    DEPENDS RELAXATION_HEURISTIC
 )
 
 fast_downward_plugin(
@@ -227,12 +216,14 @@ fast_downward_plugin(
     HELP "The causal graph heuristic"
     SOURCES cg_heuristic.cc cg_heuristic.h
             cg_cache.cc cg_cache.h
+    DEPENDS MAYBE_CORE
 )
 
 fast_downward_plugin(
     NAME FF_HEURISTIC
     HELP "The FF heuristic (an implementation of the RPG heuristic)"
     SOURCES ff_heuristic.cc ff_heuristic.h
+    DEPENDS ADDITIVE_HEURISTIC
 )
 
 fast_downward_plugin(
@@ -251,12 +242,14 @@ fast_downward_plugin(
     NAME LM_CUT_HEURISTIC
     HELP "The LM-cut heuristic"
     SOURCES lm_cut_heuristic.cc lm_cut_heuristic.h
+    DEPENDS MAYBE_CORE
 )
 
 fast_downward_plugin(
     NAME MAX_HEURISTIC
     HELP "The Max heuristic"
     SOURCES max_heuristic.cc max_heuristic.h
+    DEPENDS RELAXATION_HEURISTIC
 )
 
 fast_downward_plugin(
@@ -278,6 +271,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_random.cc merge_and_shrink/shrink_random.h
         merge_and_shrink/shrink_strategy.cc merge_and_shrink/shrink_strategy.h
         merge_and_shrink/transition_system.cc merge_and_shrink/transition_system.h
+    DEPENDS MAYBE_CORE
 )
 
 fast_downward_plugin(
@@ -298,6 +292,7 @@ fast_downward_plugin(
         landmarks/landmark_status_manager.cc landmarks/landmark_status_manager.h
         landmarks/landmark_types.h
         landmarks/util.cc landmarks/util.h
+    DEPENDS MAYBE_CORE LP_SOLVER
 )
 
 fast_downward_plugin(
@@ -332,6 +327,7 @@ fast_downward_plugin(
         pdbs/pdb_heuristic.cc pdbs/pdb_heuristic.h
         pdbs/util.cc pdbs/util.h
         pdbs/zero_one_pdbs_heuristic.cc pdbs/zero_one_pdbs_heuristic.h
+    DEPENDS MAYBE_CORE
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
