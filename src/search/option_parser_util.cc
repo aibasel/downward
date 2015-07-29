@@ -181,7 +181,7 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
         ArgumentInfo arg = info.arg_help[i];
         os << "- //" << arg.kwd << "// (" << arg.type_name;
         if (arg.bounds.has_bound())
-           os << " " << arg.bounds;
+            os << " " << arg.bounds;
         os << "): " << arg.help << endl;
         if (!arg.value_explanations.empty()) {
             for (size_t j = 0; j < arg.value_explanations.size(); ++j) {
@@ -189,10 +189,10 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
                     arg.value_explanations[j];
                 if (is_call(explanation.first)) {
                     os << endl << "```" << endl << explanation.first << endl << "```" << endl
-                       << " " << explanation.second << endl;
+                    << " " << explanation.second << endl;
                 } else {
                     os << " - ``" << explanation.first << "``: "
-                       << explanation.second << endl;
+                    << explanation.second << endl;
                 }
             }
         }
@@ -204,7 +204,7 @@ void Txt2TagsPrinter::print_notes(const DocStruct &info) {
         NoteInfo note = info.notes[i];
         if (note.long_text) {
             os << "=== " << note.name << " ===" << endl
-               << note.description << endl << endl;
+            << note.description << endl << endl;
         } else {
             os << "**" << note.name << ":** " << note.description << endl << endl;
         }
@@ -238,7 +238,7 @@ void Txt2TagsPrinter::print_category_header(string category_name) {
 
 void Txt2TagsPrinter::print_category_footer() {
     os << endl
-       << ">>>>CATEGORYEND<<<<" << endl;
+    << ">>>>CATEGORYEND<<<<" << endl;
 }
 
 PlainPrinter::PlainPrinter(ostream &out, bool pa)
@@ -277,7 +277,7 @@ void PlainPrinter::print_arguments(const DocStruct &info) {
         ArgumentInfo arg = info.arg_help[i];
         os << " " << arg.kwd << " (" << arg.type_name;
         if (arg.bounds.has_bound())
-           os << " " << arg.bounds;
+            os << " " << arg.bounds;
         os << "): " << arg.help << endl;
     }
 }
@@ -288,7 +288,7 @@ void PlainPrinter::print_notes(const DocStruct &info) {
             NoteInfo note = info.notes[i];
             if (note.long_text) {
                 os << "=== " << note.name << " ===" << endl
-                   << note.description << endl << endl;
+                << note.description << endl << endl;
             } else {
                 os << " * " << note.name << ": " << note.description << endl << endl;
             }
