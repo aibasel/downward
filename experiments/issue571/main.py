@@ -38,7 +38,7 @@ def main(rev1, rev2):
         limits=LIMITS,
         test_suite=['depot:pfile1'],
         processes=4,
-        email='malte.helmert@unibas.ch',
+        email='silvan.sievers@unibas.ch',
     )
     exp.add_search_parser('ms-parser.py')
 
