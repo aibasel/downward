@@ -52,7 +52,7 @@ def build(config_name, cmake_parameters, make_parameters):
             pass
         else:
             raise
-    
+
     subprocess.check_call([CMAKE, "-G", CMAKE_GENERATOR]
                           + cmake_parameters
                           + [rel_src_path],
