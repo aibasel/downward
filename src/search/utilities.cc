@@ -11,6 +11,7 @@ using namespace std;
 #include <unistd.h>
 static void exit_handler(int exit_code, void *hint);
 #elif OPERATING_SYSTEM == OSX
+#include <unistd.h>
 static void exit_handler();
 #include <mach/mach.h>
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
