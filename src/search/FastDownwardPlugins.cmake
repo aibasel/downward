@@ -137,21 +137,21 @@ endif()
 option(PLUGIN_MAS_HEURISTIC "The Merge-and-Shrink heuristic" TRUE)
 if(PLUGIN_MAS_HEURISTIC)
     list(APPEND PLANNER_SOURCES
-        merge_and_shrink/distances.h
-        merge_and_shrink/factored_transition_system.h
-        merge_and_shrink/fts_factory.h
-        merge_and_shrink/heuristic_representation.h
-        merge_and_shrink/labels
-        merge_and_shrink/merge_and_shrink_heuristic
-        merge_and_shrink/merge_dfp
-        merge_and_shrink/merge_linear
-        merge_and_shrink/merge_strategy
-        merge_and_shrink/shrink_bisimulation
-        merge_and_shrink/shrink_bucket_based
-        merge_and_shrink/shrink_fh
-        merge_and_shrink/shrink_random
-        merge_and_shrink/shrink_strategy
-        merge_and_shrink/transition_system
+        merge_and_shrink/distances.cc merge_and_shrink/distances.h
+        merge_and_shrink/factored_transition_system.cc merge_and_shrink/factored_transition_system.h
+        merge_and_shrink/fts_factory.cc merge_and_shrink/fts_factory.h
+        merge_and_shrink/heuristic_representation.cc merge_and_shrink/heuristic_representation.h
+        merge_and_shrink/labels.cc merge_and_shrink/labels.h
+        merge_and_shrink/merge_and_shrink_heuristic.cc merge_and_shrink/merge_and_shrink_heuristic.h
+        merge_and_shrink/merge_dfp.cc merge_and_shrink/merge_dfp.h
+        merge_and_shrink/merge_linear.cc merge_and_shrink/merge_linear.h
+        merge_and_shrink/merge_strategy.cc merge_and_shrink/merge_strategy.h
+        merge_and_shrink/shrink_bisimulation.cc merge_and_shrink/shrink_bisimulation.h
+        merge_and_shrink/shrink_bucket_based.cc merge_and_shrink/shrink_bucket_based.h
+        merge_and_shrink/shrink_fh.cc merge_and_shrink/shrink_fh.h
+        merge_and_shrink/shrink_random.cc merge_and_shrink/shrink_random.h
+        merge_and_shrink/shrink_strategy.cc merge_and_shrink/shrink_strategy.h
+        merge_and_shrink/transition_system.cc merge_and_shrink/transition_system.h
     )
 endif()
 
