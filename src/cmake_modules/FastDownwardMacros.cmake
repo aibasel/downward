@@ -1,7 +1,7 @@
 include(CMakeParseArguments)
 
 macro(fast_downward_set_compiler_flags)
-    if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
+    if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         include(CheckCXXCompilerFlag)
         check_cxx_compiler_flag( "-std=c++11" CXX11_FOUND )
         if(CXX11_FOUND)
@@ -22,7 +22,6 @@ macro(fast_downward_set_compiler_flags)
     elseif(MSVC)
         # enable exceptions
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
-        set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
 
         # Use warning level 4 (/W4) and treat warnings as errors (/WX)
         # -Wall currently detects too many warnings outside of our code to be useful.
@@ -42,7 +41,16 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4456") # declaration hides previous local declaration
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
 
-        # TODO: Configuration-specific flags
+        # TODO: Configuration-specific flags (we currently rely on the fact that
+        # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
+        # from cmake). This isthe case for most build environments, but we have less
+        # control over the way the binary is created.
+
+        # We don't offer a specific PROFILE build on Windows and use the settings from the DEBUG build.
+        set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
+        set(CMAKE_EXE_LINKER_FLAGS_PROFILE ${CMAKE_EXE_LINKER_FLAGS_PROFILE})
+    else()
+        message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER}")
     endif()
 endmacro()
 
