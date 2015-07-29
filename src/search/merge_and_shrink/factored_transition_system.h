@@ -12,7 +12,7 @@ class FactoredTransitionSystem {
 public:
     explicit FactoredTransitionSystem(
         std::vector<TransitionSystem *> && transition_systems);
-    FactoredTransitionSystem(FactoredTransitionSystem &&) = default;
+    FactoredTransitionSystem(FactoredTransitionSystem && other);
     ~FactoredTransitionSystem();
 
     // No copying or assignment.
