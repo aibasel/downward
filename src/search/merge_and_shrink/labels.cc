@@ -36,7 +36,8 @@ public:
 };
 
 Labels::Labels(const Options &options)
-    : lr_before_shrinking(options.get<bool>("before_shrinking")),
+    : max_size(-1),
+      lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(LabelReductionMethod(options.get_enum("method"))),
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
@@ -51,6 +52,7 @@ void Labels::initialize(const TaskProxy &task_proxy) {
 
     // Reserve memory for labels
     size_t num_ops = task_proxy.get_operators().size();
+    max_size = 0;
     if (num_ops > 0) {
         max_size = num_ops * 2 - 1;
         labels.reserve(max_size);

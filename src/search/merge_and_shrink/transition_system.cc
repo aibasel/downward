@@ -49,12 +49,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
       label_equivalence_relation(make_unique_ptr<LabelEquivalenceRelation>(labels)),
       heuristic_representation(nullptr),
       distances(make_unique_ptr<Distances>(*this)) {
-    // TODO: Add a method Labels::get_max_size() that gives us max_num_labels.
-    size_t num_ops = task_proxy.get_operators().size();
-    if (num_ops > 0) {
-        size_t max_num_labels = num_ops * 2 - 1;
-        transitions_of_groups.resize(max_num_labels);
-    }
+    transitions_of_groups.resize(labels->get_max_size());
 }
 
 // atomic transition system constructor
