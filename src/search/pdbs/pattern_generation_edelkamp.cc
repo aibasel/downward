@@ -365,8 +365,7 @@ static Heuristic *_parse(OptionParser &parser) {
         Bounds("0", "infinity"));
     parser.add_option<double>(
         "mutation_probability",
-        "probability between 0 and 1 for flipping a bit in the "
-        "genetic algorithm",
+        "probability for flipping a bit in the genetic algorithm",
         "0.01",
         Bounds("0.0", "1.0"));
     parser.add_option<bool>(
