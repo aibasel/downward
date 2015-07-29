@@ -50,8 +50,10 @@ void Labels::initialize(const TaskProxy &task_proxy) {
     assert(!initialized());
 
     // Reserve memory for labels
-    if (!task_proxy.get_operators().empty()) {
-        labels.reserve(task_proxy.get_operators().size() * 2 - 1);
+    size_t num_ops = task_proxy.get_operators().size();
+    if (num_ops > 0) {
+        max_size = num_ops * 2 - 1;
+        labels.reserve(max_size);
     }
 
     // Compute the transition system order
