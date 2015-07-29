@@ -137,10 +137,10 @@ pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transiti
                 assert(!label_ranks2.empty());
                 assert(label_ranks1.size() == label_ranks2.size());
                 int pair_weight = INF;
-                for (size_t i = 0; i < label_ranks1.size(); ++i) {
-                    if (label_ranks1[i] != -1 && label_ranks2[i] != -1) {
+                for (size_t k = 0; k < label_ranks1.size(); ++k) {
+                    if (label_ranks1[k] != -1 && label_ranks2[k] != -1) {
                         // label is relevant in both transition_systems
-                        int max_label_rank = max(label_ranks1[i], label_ranks2[i]);
+                        int max_label_rank = max(label_ranks1[k], label_ranks2[k]);
                         pair_weight = min(pair_weight, max_label_rank);
                     }
                 }
@@ -196,10 +196,10 @@ string MergeDFP::name() const {
 static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge strategy DFP",
-        "This merge strategy implements the algorithm originally described "
-        "in the paper by 'Directed  model  checking  with  distance-preserving "
-        "abstractions by Draeger, Finkebeiner and Podelski. SPIN 2006', "
-        "adapted to planning in the following paper:\n\n"
+        "This merge strategy implements the algorithm originally described in the "
+        "paper \"Directed model checking with distance-preserving abstractions\" "
+        "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
+        "the following paper:\n\n"
         " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
         " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
         "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "

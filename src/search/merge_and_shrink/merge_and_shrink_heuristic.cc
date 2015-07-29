@@ -232,7 +232,8 @@ int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
-        "This module implements the algorithm described in the following paper:\n\n"
+        "This heuristic implements the algorithm described in the following "
+        "paper:\n\n"
         " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
         " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
         "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
@@ -242,9 +243,12 @@ static Heuristic *_parse(OptionParser &parser) {
         "paper\n\n"
         " * Malte Helmert, Patrik Haslum, Joerg Hoffmann, and Raz Nissim.<<BR>>\n"
         " [Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds "
-        "in Factored State Spaces. "
+        "in Factored State Spaces "
         "http://ai.cs.unibas.ch/papers/helmert-et-al-jacm2014.pdf].<<BR>>\n "
-        "//Journal of the ACM 61 (3)//, pp. 16:1-63. 2014");
+        "//Journal of the ACM 61 (3)//, pp. 16:1-63. 2014\n"
+        "Please note that the journal paper describes the \"old\" theory of "
+        "label reduction, which has been superseded by the above conference "
+        "paper and is no longer implemented in Fast Downward.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
