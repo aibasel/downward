@@ -181,7 +181,7 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
         ArgumentInfo arg = info.arg_help[i];
         os << "- //" << arg.kwd << "// (" << arg.type_name;
         if (arg.bounds.has_bound())
-            os << " " << arg.bounds;
+            os << " \"\"" << arg.bounds << "\"\"";
         os << "): " << arg.help << endl;
         if (!arg.value_explanations.empty()) {
             for (size_t j = 0; j < arg.value_explanations.size(); ++j) {
