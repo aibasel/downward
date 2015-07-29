@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
+#include "label_equivalence_relation.h"
+
 #include <forward_list>
 #include <iostream>
 #include <list>
@@ -47,61 +49,6 @@ struct Transition {
     }
 };
 
-typedef std::list<int>::iterator LabelIter;
-typedef std::list<int>::const_iterator LabelConstIter;
-
-class LabelGroup {
-    /*
-      A label group contains a set of locally equivalent labels, possibly of
-      different cost, stores the minimum cost of all labels of the group,
-      and has a pointer to the position in TransitionSystem::transitions_of_groups
-      where the transitions associated with this group live.
-    */
-    std::list<int> labels;
-    int id;
-    int cost;
-public:
-    explicit LabelGroup(int id)
-        : id(id), cost(INF) {
-    }
-    void set_cost(int cost_) {
-        cost = cost_;
-    }
-    LabelIter insert(int label) {
-        return labels.insert(labels.end(), label);
-    }
-    void erase(LabelIter pos) {
-        labels.erase(pos);
-    }
-    LabelIter begin() {
-        return labels.begin();
-    }
-    LabelConstIter begin() const {
-        return labels.begin();
-    }
-    LabelIter end() {
-        return labels.end();
-    }
-    LabelConstIter end() const {
-        return labels.end();
-    }
-    int get_id() const {
-        return id;
-    }
-    bool empty() const {
-        return labels.empty();
-    }
-    int size() const {
-        return labels.size();
-    }
-    int get_cost() const {
-        return cost;
-    }
-};
-
-typedef std::list<LabelGroup>::iterator LabelGroupIter;
-typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
-
 class TransitionSystem {
 public:
     static const int PRUNED_STATE = -1;
@@ -119,16 +66,10 @@ private:
     const int num_variables;
     std::vector<int> incorporated_variables;
 
+    std::unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
     /*
-      There should only be one instance of Labels at runtime. It is created
-      and managed by MergeAndShrinkHeuristic. All transition system instances
-      have a pointer to this object to ease access to the set of labels.
-    */
-    const std::shared_ptr<Labels> labels;
-    std::list<LabelGroup> grouped_labels;
-    /*
-      The transitions of a label group are never moved once they are stored
-      at an index in transitions_of_groups.
+      The transitions of a label group are indexed via its id. The id of a
+      group does not change, and hence its transitions are never moved.
       Initially, every label is in a single label group, and its number is
       used to index transitions_of_groups. When adding new labels via label
       reduction, if a new label is not locally equivalent with any existing,
@@ -143,7 +84,6 @@ private:
       issue521.
     */
     std::vector<std::vector<Transition> > transitions_of_groups;
-    std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
 
     int num_states;
 
@@ -174,17 +114,6 @@ private:
     void discard_states(const std::vector<bool> &to_be_pruned_states);
 
     // Methods related to the representation of transitions and labels
-    LabelGroupIter add_empty_label_group(int id) {
-        return grouped_labels.insert(grouped_labels.end(), LabelGroup(id));
-    }
-    void add_label_to_group(LabelGroupIter group_it, int label_no);
-    int add_label_group(const std::vector<int> &new_labels);
-    LabelGroupIter get_group_it(int label_no) {
-        return label_to_positions[label_no].first;
-    }
-    LabelIter get_label_it(int label_no) {
-        return label_to_positions[label_no].second;
-    }
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     void compute_locally_equivalent_labels();
@@ -222,7 +151,7 @@ public:
     void release_memory();
 
     const std::list<LabelGroup> &get_grouped_labels() const {
-        return grouped_labels;
+        return label_equivalence_relation->get_grouped_labels();
     }
     const std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) const {
         return transitions_of_groups[group.get_id()];
