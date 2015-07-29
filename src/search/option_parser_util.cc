@@ -179,9 +179,10 @@ static bool is_call(string s) {
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
-        os << "- //" << arg.kwd << "// ("
-           << arg.type_name << arg.bounds << "): "
-           << arg.help << endl;
+        os << "- //" << arg.kwd << "// (" << arg.type_name;
+        if (arg.bounds.has_bound())
+           os << " " << arg.bounds;
+        os << "): " << arg.help << endl;
         if (!arg.value_explanations.empty()) {
             for (size_t j = 0; j < arg.value_explanations.size(); ++j) {
                 pair<string, string> explanation =
@@ -274,9 +275,10 @@ void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
 void PlainPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
-        os << " " << arg.kwd << "("
-           << arg.type_name << arg.bounds << "): "
-           << arg.help << endl;
+        os << " " << arg.kwd << " (" << arg.type_name;
+        if (arg.bounds.has_bound())
+           os << " " << arg.bounds;
+        os << "): " << arg.help << endl;
     }
 }
 
