@@ -91,6 +91,10 @@ public:
         : min(min), max(max) {}
     ~Bounds() = default;
 
+    bool has_bound() const {
+        return !min.empty() || !max.empty();
+    }
+
     static Bounds unlimited() {
         return Bounds("", "");
     }
