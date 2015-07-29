@@ -63,7 +63,8 @@ void Distances::compute_init_distances_unit_cost() {
     vector<vector<int> > forward_graph(get_num_states());
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_transitions();
+        const vector<Transition> &transitions =
+            transition_system.get_transitions_for_group(*group_it);
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             forward_graph[transition.src].push_back(transition.target);
@@ -88,7 +89,8 @@ void Distances::compute_goal_distances_unit_cost() {
     vector<vector<int> > backward_graph(get_num_states());
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_transitions();
+        const vector<Transition> &transitions =
+            transition_system.get_transitions_for_group(*group_it);
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             backward_graph[transition.target].push_back(transition.src);
@@ -137,7 +139,8 @@ void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(get_num_states());
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_transitions();
+        const vector<Transition> &transitions =
+            transition_system.get_transitions_for_group(*group_it);
         int cost = group_it->get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
@@ -166,7 +169,8 @@ void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(get_num_states());
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it->get_transitions();
+        const vector<Transition> &transitions =
+            transition_system.get_transitions_for_group(*group_it);
         int cost = group_it->get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
