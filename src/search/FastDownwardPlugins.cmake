@@ -8,13 +8,16 @@ set(PLANNER_SOURCES
 
         abstract_task.cc abstract_task.h
         axioms.cc axioms.h
+        causal_graph.cc causal_graph.h
         cost_adapted_task.cc cost_adapted_task.h
         countdown_timer.cc countdown_timer.h
         delegating_task.cc delegating_task.h
         doc.h # TODO: unused?
         domain_transition_graph.cc domain_transition_graph.h
+        equivalence_relation.cc equivalence_relation.h
         evaluation_context.cc evaluation_context.h
         evaluation_result.cc evaluation_result.h
+        exact_timer.cc exact_timer.h
         global_operator.cc global_operator.h
         globals.cc globals.h
         global_state.cc global_state.h
@@ -24,19 +27,36 @@ set(PLANNER_SOURCES
         operator_cost.cc operator_cost.h
         option_parser.cc option_parser.h
         option_parser_util.cc option_parser_util.h
+        per_state_information.cc per_state_information.h
         plugin.h
+        priority_queue.h
         rng.cc rng.h
         root_task.cc root_task.h
         scalar_evaluator.cc scalar_evaluator.h
         search_engine.cc search_engine.h
+        search_node_info.cc search_node_info.h
+        search_progress.cc search_progress.h
         search_space.cc search_space.h
         search_statistics.cc search_statistics.h
+        segmented_vector.cc segmented_vector.h
         state_id.cc state_id.h
         state_registry.cc state_registry.h
         successor_generator.cc successor_generator.h
+        task_proxy.cc task_proxy.h
+        task_tools.cc task_tools.h
         timer.cc timer.h
+        tracer.cc tracer.h
         utilities.cc utilities.h
+        utilities_hash.cc utilities_hash.h
         utilities_windows.h
+        variable_order_finder.cc variable_order_finder.h
+
+        open_lists/alternation_open_list.cc open_lists/alternation_open_list.h
+        open_lists/bucket_open_list.cc open_lists/bucket_open_list.h
+        open_lists/open_list.cc open_lists/open_list.h
+        open_lists/pareto_open_list.cc open_lists/pareto_open_list.h
+        open_lists/standard_scalar_open_list.cc open_lists/standard_scalar_open_list.h
+        open_lists/tiebreaking_open_list.cc open_lists/tiebreaking_open_list.h
 )
 
 ## Details of the plugins
@@ -62,25 +82,6 @@ set(PLANNER_SOURCES
 # DEPENDS lists plugins that will be automatically enabled if this plugin
 # is enabled. If the dependency was not enabled before, this will be logged.
 # DEACTIVATED sets the default value of the generated cmake option to false.
-
-fast_downward_plugin(
-    NAME MAYBE_CORE
-    HELP "Files that maybe should be in the core, even though it can be compiled without them"
-    SOURCES
-        causal_graph.cc causal_graph.h
-        equivalence_relation.cc equivalence_relation.h
-        exact_timer.cc exact_timer.h
-        per_state_information.cc per_state_information.h
-        priority_queue.h
-        search_node_info.cc search_node_info.h
-        search_progress.cc search_progress.h
-        segmented_vector.cc segmented_vector.h
-        task_proxy.cc task_proxy.h
-        task_tools.cc task_tools.h
-        tracer.cc tracer.h
-        utilities_hash.cc utilities_hash.h
-        variable_order_finder.cc variable_order_finder.h
-)
 
 fast_downward_plugin(
     NAME G_EVALUATOR
@@ -127,23 +128,11 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME OPEN_LISTS
-    HELP "open lists"
-    SOURCES
-        open_lists/alternation_open_list.cc open_lists/alternation_open_list.h
-        open_lists/bucket_open_list.cc open_lists/bucket_open_list.h
-        open_lists/open_list.cc open_lists/open_list.h
-        open_lists/pareto_open_list.cc open_lists/pareto_open_list.h
-        open_lists/standard_scalar_open_list.cc open_lists/standard_scalar_open_list.h
-        open_lists/tiebreaking_open_list.cc open_lists/tiebreaking_open_list.h
-)
-
-fast_downward_plugin(
     NAME EAGER_SEARCH
     HELP "Eager search algorithm"
     SOURCES
         eager_search.cc eager_search.h
-    DEPENDS MAYBE_CORE G_EVALUATOR SUM_EVALUATOR
+    DEPENDS G_EVALUATOR SUM_EVALUATOR
 )
 
 fast_downward_plugin(
@@ -151,7 +140,7 @@ fast_downward_plugin(
     HELP "Lazy search algorithm"
     SOURCES
         lazy_search.cc lazy_search.h
-    DEPENDS MAYBE_CORE G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
 )
 
 fast_downward_plugin(
@@ -159,7 +148,7 @@ fast_downward_plugin(
     HELP "Enforced hill-climbing search algorithm"
     SOURCES
         enforced_hill_climbing_search.cc enforced_hill_climbing_search.h
-    DEPENDS MAYBE_CORE PREF_EVALUATOR G_EVALUATOR
+    DEPENDS PREF_EVALUATOR G_EVALUATOR
 )
 
 fast_downward_plugin(
@@ -215,7 +204,6 @@ fast_downward_plugin(
     HELP "The causal graph heuristic"
     SOURCES cg_heuristic.cc cg_heuristic.h
             cg_cache.cc cg_cache.h
-    DEPENDS MAYBE_CORE
 )
 
 fast_downward_plugin(
@@ -241,7 +229,6 @@ fast_downward_plugin(
     NAME LM_CUT_HEURISTIC
     HELP "The LM-cut heuristic"
     SOURCES lm_cut_heuristic.cc lm_cut_heuristic.h
-    DEPENDS MAYBE_CORE
 )
 
 fast_downward_plugin(
@@ -270,7 +257,6 @@ fast_downward_plugin(
         merge_and_shrink/shrink_random.cc merge_and_shrink/shrink_random.h
         merge_and_shrink/shrink_strategy.cc merge_and_shrink/shrink_strategy.h
         merge_and_shrink/transition_system.cc merge_and_shrink/transition_system.h
-    DEPENDS MAYBE_CORE
 )
 
 fast_downward_plugin(
@@ -291,7 +277,7 @@ fast_downward_plugin(
         landmarks/landmark_status_manager.cc landmarks/landmark_status_manager.h
         landmarks/landmark_types.h
         landmarks/util.cc landmarks/util.h
-    DEPENDS MAYBE_CORE LP_SOLVER
+    DEPENDS LP_SOLVER
 )
 
 fast_downward_plugin(
@@ -326,7 +312,6 @@ fast_downward_plugin(
         pdbs/pdb_heuristic.cc pdbs/pdb_heuristic.h
         pdbs/util.cc pdbs/util.h
         pdbs/zero_one_pdbs_heuristic.cc pdbs/zero_one_pdbs_heuristic.h
-    DEPENDS MAYBE_CORE
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
