@@ -87,7 +87,6 @@ fast_downward_plugin(
     HELP "The g-evaluator"
     SOURCES
         g_evaluator.cc g_evaluator.h
-
 )
 
 fast_downward_plugin(
@@ -180,7 +179,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME RELAXATION_HEURISTIC
-    HELP "The base  class for relaxation heuristics"
+    HELP "The base class for relaxation heuristics"
     SOURCES
         relaxation_heuristic.cc relaxation_heuristic.h
 )
