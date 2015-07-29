@@ -1,0 +1,4 @@
+Description of tags for this issue:
+
+- issue571-base: base version before any changes
+- issue571-v1: split off class for LabelGroup and related data structure from TransitionSystem
