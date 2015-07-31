@@ -26,7 +26,7 @@ void LabelEquivalenceRelation::recompute_group_cost() {
 }
 
 void LabelEquivalenceRelation::add_label_to_group(LabelGroupIter group_it,
-                                          int label_no) {
+                                                  int label_no) {
     LabelIter label_it = group_it->insert(label_no);
     label_to_positions[label_no] = make_pair(group_it, label_it);
 
