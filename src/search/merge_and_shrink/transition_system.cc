@@ -460,9 +460,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
         } else {
             transitions_of_groups[new_label_no].assign(
                 collected_transitions.begin(), collected_transitions.end());
-            LabelGroupIter group_it =
-                label_equivalence_relation->add_empty_label_group(new_label_no);
-            label_equivalence_relation->add_label_to_group(group_it, new_label_no);
+            label_equivalence_relation->add_label_group({new_label_no});
         }
     }
 
