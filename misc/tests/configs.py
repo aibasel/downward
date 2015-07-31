@@ -211,6 +211,11 @@ def task_transformation_test_configs():
                            "transform=adapt_costs(cost_type=plusone))))"],
     }
 
+def regression_test_configs():
+    return {
+        "pdb": ["--search", "astar(pdb())"],
+    }
+
 
 def default_configs_optimal(core=True, ipc=True, extended=False):
     configs = {}

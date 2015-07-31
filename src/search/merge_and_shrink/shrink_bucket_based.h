@@ -37,9 +37,10 @@ private:
         StateEquivalenceRelation &equivalence_relation) const;
 
 protected:
-    virtual void shrink(const TransitionSystem &ts,
-                        int target,
-                        StateEquivalenceRelation &equivalence_relation);
+    virtual void compute_equivalence_relation(
+        const TransitionSystem &ts,
+        int target,
+        StateEquivalenceRelation &equivalence_relation) const override;
     virtual void partition_into_buckets(
         const TransitionSystem &ts, std::vector<Bucket> &buckets) const = 0;
 

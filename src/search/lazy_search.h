@@ -38,8 +38,8 @@ protected:
     int current_real_g;
     EvaluationContext current_eval_context;
 
-    virtual void initialize();
-    virtual SearchStatus step();
+    virtual void initialize() override;
+    virtual SearchStatus step() override;
 
     void generate_successors();
     SearchStatus fetch_next_state();
