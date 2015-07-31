@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 
-from .run_components import DRIVER_DIR
+from .util import DRIVER_DIR
 
 
 PORTFOLIO_DIR = os.path.join(DRIVER_DIR, "portfolios")

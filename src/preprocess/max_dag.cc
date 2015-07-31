@@ -5,21 +5,21 @@
 using namespace std;
 
 vector<int> MaxDAG::get_result() {
+    int num_nodes = weighted_graph.size();
     if (debug) {
-        for (int i = 0; i < weighted_graph.size(); i++) {
+        for (int i = 0; i < num_nodes; i++) {
             cout << "From " << i << ":";
-            for (int j = 0; j < weighted_graph[i].size(); j++)
-                cout << " " << weighted_graph[i][j].first
-                     << " [weight " << weighted_graph[i][j].second << "]";
+            for (const auto &trans : weighted_graph[i])
+                cout << " " << trans.first
+                     << " [weight " << trans.second << "]";
             cout << endl;
         }
     }
     vector<int> incoming_weights; // indexed by the graph's nodes
     incoming_weights.resize(weighted_graph.size(), 0);
-    for (int node = 0; node < weighted_graph.size(); node++) {
-        const vector<pair<int, int> > &weighted_edges = weighted_graph[node];
-        for (int i = 0; i < weighted_edges.size(); i++)
-            incoming_weights[weighted_edges[i].first] += weighted_edges[i].second;
+    for (const auto &weighted_edges : weighted_graph) {
+        for (const auto &edge : weighted_edges)
+            incoming_weights[edge.first] += edge.second;
     }
 
     // Build minHeap of nodes, compared by number of incoming edges.
@@ -27,7 +27,7 @@ vector<int> MaxDAG::get_result() {
 
     vector<HeapPosition> heap_positions;
     multimap<int, int> heap;
-    for (int node = 0; node < weighted_graph.size(); node++) {
+    for (int node = 0; node < num_nodes; node++) {
         if (debug)
             cout << "node " << node << " has " << incoming_weights[node] << " edges" << endl;
         HeapPosition pos = heap.insert(make_pair(incoming_weights[node], node));
@@ -46,10 +46,10 @@ vector<int> MaxDAG::get_result() {
         result.push_back(removed);
         heap.erase(heap.begin());
         const vector<pair<int, int> > &succs = weighted_graph[removed];
-        for (int i = 0; i < succs.size(); i++) {
-            int target = succs[i].first;
+        for (const auto &succ : succs) {
+            int target = succ.first;
             if (!done[target]) {
-                int arc_weight = succs[i].second;
+                int arc_weight = succ.second;
                 while (arc_weight >= 100000)
                     arc_weight -= 100000;
                 //cout << "Looking at arc from " << removed << " to " << target << endl;
@@ -63,8 +63,8 @@ vector<int> MaxDAG::get_result() {
     }
     if (debug) {
         cout << "result: " << endl;
-        for (int i = 0; i < result.size(); i++)
-            cout << result[i] << " - ";
+        for (int r : result)
+            cout << r << " - ";
         cout << endl;
     }
     return result;

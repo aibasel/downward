@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import glob
 import os.path
 import sys
@@ -36,7 +38,7 @@ def main():
     errors.extend(check_header_files("preprocess"))
     errors.extend(check_header_files("search"))
     for error in errors:
-        print error
+        print(error)
     if errors:
         sys.exit(1)
 
