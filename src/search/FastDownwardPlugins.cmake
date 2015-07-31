@@ -12,7 +12,6 @@ set(PLANNER_SOURCES
         cost_adapted_task.cc cost_adapted_task.h
         countdown_timer.cc countdown_timer.h
         delegating_task.cc delegating_task.h
-        doc.h # TODO: unused?
         domain_transition_graph.cc domain_transition_graph.h
         equivalence_relation.cc equivalence_relation.h
         evaluation_context.cc evaluation_context.h
@@ -28,8 +27,8 @@ set(PLANNER_SOURCES
         option_parser.cc option_parser.h
         option_parser_util.cc option_parser_util.h
         per_state_information.cc per_state_information.h
-        plugin.h
-        priority_queue.h
+        plugin.cc plugin.h
+        priority_queue.cc priority_queue.h
         rng.cc rng.h
         root_task.cc root_task.h
         scalar_evaluator.cc scalar_evaluator.h
@@ -48,7 +47,7 @@ set(PLANNER_SOURCES
         tracer.cc tracer.h
         utilities.cc utilities.h
         utilities_hash.cc utilities_hash.h
-        utilities_windows.h
+        utilities_windows.cc utilities_windows.h
         variable_order_finder.cc variable_order_finder.h
 
         open_lists/alternation_open_list.cc open_lists/alternation_open_list.h
@@ -275,7 +274,6 @@ fast_downward_plugin(
         landmarks/landmark_graph.cc landmarks/landmark_graph.h
         landmarks/landmark_graph_merged.cc landmarks/landmark_graph_merged.h
         landmarks/landmark_status_manager.cc landmarks/landmark_status_manager.h
-        landmarks/landmark_types.h
         landmarks/util.cc landmarks/util.h
     DEPENDS LP_SOLVER
 )
