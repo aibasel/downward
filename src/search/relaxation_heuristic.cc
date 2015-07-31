@@ -165,5 +165,7 @@ void RelaxationHeuristic::simplify() {
             unary_operators.push_back(old_unary_operators[unary_operator_no]);
     }
 
+    sort(unary_operators.begin(),unary_operators.end());
+
     cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
 }
