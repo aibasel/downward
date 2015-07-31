@@ -25,6 +25,12 @@ struct UnaryOperator {
                   int operator_no_, int base)
         : operator_no(operator_no_), precondition(pre), effect(eff),
           base_cost(base) {}
+
+    bool operator<(const UnaryOperator &other) const {
+        if (operator_no != other.operator_no)
+            return operator_no < other.operator_no;
+        return &effect < &other.effect;
+    }
 };
 
 struct Proposition {
@@ -43,6 +49,8 @@ struct Proposition {
         reached_by = 0;
         marked = false;
     }
+
+    bool operator<(const Proposition &other) const { return id < other.id; }
 };
 
 class RelaxationHeuristic : public Heuristic {
