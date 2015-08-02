@@ -68,6 +68,7 @@ static void get_help(string k) {
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
+    get_help_templ<shared_ptr<OpenListFactory> >(pt);
     Plugin<OpenList<int> >::register_open_lists();
     get_help_templ<OpenList<int> *>(pt);
     get_help_templ<shared_ptr<MergeStrategy> >(pt);
@@ -94,6 +95,7 @@ static void get_full_help() {
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
+    get_full_help_templ<shared_ptr<OpenListFactory> >();
     Plugin<OpenList<int> >::register_open_lists();
     get_full_help_templ<OpenList<int> *>();
     get_full_help_templ<shared_ptr<MergeStrategy> >();

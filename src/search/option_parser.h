@@ -42,6 +42,7 @@ If NT shall be predefinable:
 class AbstractTask;
 class LandmarkGraph;
 class MergeStrategy;
+class OpenListFactory;
 template<class Entry>
 class OpenList;
 class OptionParser;
@@ -118,6 +119,12 @@ template <>
 class TokenParser<ParseTree> {
 public:
     static inline ParseTree parse(OptionParser &p);
+};
+
+template <>
+class TokenParser<std::shared_ptr<OpenListFactory> > {
+public:
+    static inline std::shared_ptr<OpenListFactory> parse(OptionParser &p);
 };
 
 template <>
@@ -442,15 +449,19 @@ SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
     return lookup_in_registry<SearchEngine>(p);
 }
 
-std::shared_ptr<MergeStrategy>TokenParser<std::shared_ptr<MergeStrategy> >::parse(OptionParser &p) {
+std::shared_ptr<OpenListFactory> TokenParser<std::shared_ptr<OpenListFactory> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<OpenListFactory>(p);
+}
+
+std::shared_ptr<MergeStrategy> TokenParser<std::shared_ptr<MergeStrategy> >::parse(OptionParser &p) {
     return lookup_in_registry_shared<MergeStrategy>(p);
 }
 
-std::shared_ptr<ShrinkStrategy>TokenParser<std::shared_ptr<ShrinkStrategy> >::parse(OptionParser &p) {
+std::shared_ptr<ShrinkStrategy> TokenParser<std::shared_ptr<ShrinkStrategy> >::parse(OptionParser &p) {
     return lookup_in_registry_shared<ShrinkStrategy>(p);
 }
 
-std::shared_ptr<Labels>TokenParser<std::shared_ptr<Labels> >::parse(OptionParser &p) {
+std::shared_ptr<Labels> TokenParser<std::shared_ptr<Labels> >::parse(OptionParser &p) {
     return lookup_in_registry_shared<Labels>(p);
 }
 
