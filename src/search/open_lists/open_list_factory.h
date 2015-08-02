@@ -17,7 +17,7 @@ public:
 
     OpenListFactory(const OpenListFactory &) = delete;
 
-    virtual std::unique_ptr<OpenList<StateID> > create_open_list_state() = 0;
+    virtual std::unique_ptr<OpenList<StateID> > create_state_open_list() = 0;
 };
 
 #endif

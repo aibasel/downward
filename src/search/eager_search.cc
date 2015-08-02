@@ -20,7 +20,8 @@ EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<OpenList<StateID> *>("open")),
+      open_list(opts.get<shared_ptr<OpenListFactory> >("open_factory")->
+                create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")) {
 }
