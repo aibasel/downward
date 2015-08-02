@@ -4,6 +4,7 @@
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
+#include "open_lists/open_list_factory.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "successor_generator.h"
@@ -11,6 +12,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <memory>
 #include <set>
 using namespace std;
 
@@ -322,6 +324,8 @@ static SearchEngine *_parse(OptionParser &parser) {
 
     parser.document_synopsis("Eager best-first search", "");
 
+    parser.add_option<shared_ptr<OpenListFactory> >(
+        "open_factory", "open list", OptionParser::NONE);
     parser.add_option<OpenList<StateID> *>("open", "open list");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");

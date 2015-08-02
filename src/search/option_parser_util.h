@@ -20,6 +20,7 @@ class ShrinkStrategy;
 class Labels;
 class LandmarkGraph;
 class Heuristic;
+class OpenListFactory;
 class ScalarEvaluator;
 class Synergy;
 class SearchEngine;
@@ -252,6 +253,13 @@ template <>
 struct TypeNamer<Synergy *> {
     static std::string name() {
         return "Synergy";
+    }
+};
+
+template <>
+struct TypeNamer<std::shared_ptr<OpenListFactory> > {
+    static std::string name() {
+        return "OpenList";
     }
 };
 
