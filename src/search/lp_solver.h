@@ -99,7 +99,7 @@ class LPSolver {
     void clear_temporary_data();
 public:
     LP_METHOD(explicit LPSolver(LPSolverType solver_type))
-    LP_METHOD(~LPSolver())
+    ~LPSolver() = default;
 
     LP_METHOD(void load_problem(
                   LPObjectiveSense sense,
