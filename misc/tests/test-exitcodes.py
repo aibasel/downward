@@ -90,8 +90,10 @@ def cleanup():
 
 
 def main():
-    # We cannot call bash scripts on Windows. After we switched to cmake,
-    # we want to replace build_all by a python script.
+    # On Windows, ./build.py has to be called from the correct environment.
+    # Since we want this script to work even when we are in a regular
+    # shell, we do not build on Windows. If the planner is not yet built,
+    # the driver script will complain about this.
     if os.name == "posix":
         subprocess.check_call(["./build.py"], cwd=REPO_BASE)
     failures = []
