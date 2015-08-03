@@ -298,7 +298,8 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
         last_precond = precond.end();
 
     vector<short>::const_iterator context = trans->source->context.begin();
-    int *parent_vars = &*trans->source->owner->context_variables->begin();
+    vector<int>::const_iterator parent_vars =
+        trans->source->owner->context_variables->begin();
 
     for (; curr_precond != last_precond; ++curr_precond) {
         int local_var = curr_precond->local_var;
