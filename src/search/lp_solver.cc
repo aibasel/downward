@@ -85,9 +85,6 @@ LPSolver::LPSolver(LPSolverType solver_type)
     lp_solver = create_lp_solver(solver_type);
 }
 
-LPSolver::~LPSolver() {
-}
-
 void LPSolver::clear_temporary_data() {
     elements.clear();
     indices.clear();
