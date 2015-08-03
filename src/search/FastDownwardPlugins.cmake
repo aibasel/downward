@@ -62,6 +62,7 @@ set(CORE_SOURCES
 )
 
 fast_downward_add_headers_to_sources_list(CORE_SOURCES)
+source_group(core FILES ${CORE_SOURCES})
 list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 
 ## Details of the plugins
@@ -320,4 +321,3 @@ fast_downward_plugin(
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
 
-message(${PLANNER_SOURCES})
