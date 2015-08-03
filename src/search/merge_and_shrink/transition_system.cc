@@ -381,7 +381,7 @@ bool TransitionSystem::apply_abstraction(
                 new_goal_states[new_state] = true;
     }
 
-    new_goal_states = move(goal_states);
+    goal_states = move(new_goal_states);
 
     // Update all transitions. Locally equivalent labels remain locally equivalent.
     for (LabelGroupIter group_it = grouped_labels.begin();
