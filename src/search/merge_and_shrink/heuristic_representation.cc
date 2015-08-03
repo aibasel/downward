@@ -2,12 +2,9 @@
 
 #include "transition_system.h" // TODO: Try to get rid of this.
 
-#include "../utilities.h" // for defintion of OPERATING_SYSTEM
-#if OPERATING_SYSTEM == WINDOWS
-#include "../utilities_windows.h"
-#endif
 #include "../task_proxy.h"
 
+#include <algorithm>
 #include <numeric>
 
 using namespace std;
