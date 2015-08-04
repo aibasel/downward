@@ -62,7 +62,7 @@ set(CORE_SOURCES
 )
 
 fast_downward_add_headers_to_sources_list(CORE_SOURCES)
-source_group(core FILES ${CORE_SOURCES})
+source_group(core FILES planner.cc ${CORE_SOURCES})
 list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 
 ## Details of the plugins
