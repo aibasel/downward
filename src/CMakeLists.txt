@@ -41,13 +41,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 ## == Planner components as subprojects ==
 
-add_custom_target(translate ALL)
-add_custom_command(TARGET translate POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/translate
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translate
-    COMMENT "Copying translator module to output directory")
-
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VAL/")
     add_subdirectory(VAL)
 else()
@@ -57,3 +50,11 @@ endif()
 
 add_subdirectory(preprocess)
 add_subdirectory(search)
+
+# Copy the translator in the directory of the preprocess binary
+add_custom_target(translate ALL)
+add_custom_command(TARGET translate POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/translate
+        $<TARGET_FILE_DIR:preprocess>/translate
+    COMMENT "Copying translator module to output directory")
