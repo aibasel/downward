@@ -4,10 +4,11 @@
 #include "globals.h"
 #include "heuristic_cache.h"
 #include "heuristic.h"
-#include "open_lists/alternation_open_list.h"
-#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/alternation_open_list.h" // TODO: Remove
+#include "open_lists/standard_scalar_open_list.h" // TODO: Remove
 #include "plugin.h"
 #include "rng.h"
+#include "search_common.h"
 #include "successor_generator.h"
 #include "sum_evaluator.h"
 #include "weighted_evaluator.h"
@@ -23,7 +24,8 @@ static const int DEFAULT_LAZY_BOOST = 1000;
 
 LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
-      open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
+      open_list(opts.get<shared_ptr<OpenListFactory> >("open")->
+                create_edge_open_list()),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       randomize_successors(opts.get<bool>("randomize_successors")),
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
@@ -129,7 +131,7 @@ SearchStatus LazySearch::fetch_next_state() {
         return FAILED;
     }
 
-    OpenListEntryLazy next = open_list->remove_min();
+    EdgeOpenListEntry next = open_list->remove_min();
 
     current_predecessor_id = next.first;
     current_operator = next.second;
@@ -249,7 +251,7 @@ static void _add_succ_order_options(OptionParser &parser) {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
-    parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
+    parser.add_option<shared_ptr<OpenListFactory> >("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(
         "preferred",
@@ -324,34 +326,15 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
     LazySearch *engine = 0;
     if (!parser.dry_run()) {
-        vector<ScalarEvaluator *> evals =
-            opts.get_list<ScalarEvaluator *>("evals");
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        OpenList<OpenListEntryLazy> *open;
-        if ((evals.size() == 1) && preferred_list.empty()) {
-            open = new StandardScalarOpenList<OpenListEntryLazy>(evals[0],
-                                                                 false);
-        } else {
-            vector<OpenList<OpenListEntryLazy> *> inner_lists;
-            for (ScalarEvaluator *eval : evals) {
-                inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(eval, false));
-                if (!preferred_list.empty()) {
-                    inner_lists.push_back(
-                        new StandardScalarOpenList<OpenListEntryLazy>(eval, true));
-                }
-            }
-            open = new AlternationOpenList<OpenListEntryLazy>(
-                inner_lists, opts.get<int>("boost"));
-        }
-        opts.set("open", open);
+        opts.set("open", create_greedy_open_list_factory(opts));
         engine = new LazySearch(opts);
+        vector<Heuristic *> preferred_list = opts.get<vector<Heuristic *> >("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
 }
 
+#if false
 static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.document_synopsis(
         "(Weighted) A* search (lazy)",
@@ -418,7 +401,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
         vector<ScalarEvaluator *> evals = opts.get_list<ScalarEvaluator *>("evals");
         vector<Heuristic *> preferred_list =
             opts.get_list<Heuristic *>("preferred");
-        vector<OpenList<OpenListEntryLazy> *> inner_lists;
+        vector<OpenList<EdgeOpenListEntry> *> inner_lists;
         for (size_t i = 0; i < evals.size(); ++i) {
             GEvaluator *g = new GEvaluator();
             vector<ScalarEvaluator *> sum_evals;
@@ -434,19 +417,19 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
             SumEvaluator *f_eval = new SumEvaluator(sum_evals);
 
             inner_lists.push_back(
-                new StandardScalarOpenList<OpenListEntryLazy>(f_eval, false));
+                new StandardScalarOpenList<EdgeOpenListEntry>(f_eval, false));
 
             if (!preferred_list.empty()) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(f_eval,
+                    new StandardScalarOpenList<EdgeOpenListEntry>(f_eval,
                                                                   true));
             }
         }
-        OpenList<OpenListEntryLazy> *open;
+        OpenList<EdgeOpenListEntry> *open;
         if (inner_lists.size() == 1) {
             open = inner_lists[0];
         } else {
-            open = new AlternationOpenList<OpenListEntryLazy>(
+            open = new AlternationOpenList<EdgeOpenListEntry>(
                 inner_lists, opts.get<int>("boost"));
         }
 
@@ -457,7 +440,10 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     }
     return engine;
 }
+#endif
 
 static Plugin<SearchEngine> _plugin("lazy", _parse);
 static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_greedy);
+#if false
 static Plugin<SearchEngine> _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);
+#endif

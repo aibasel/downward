@@ -132,9 +132,14 @@ AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
     : options(options) {
 }
 
-unique_ptr<OpenList<StateID> >
+unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<AlternationOpenList<StateID> >(options);
+    return make_unique_ptr<AlternationOpenList<StateOpenListEntry> >(options);
+}
+
+unique_ptr<EdgeOpenList>
+AlternationOpenListFactory::create_edge_open_list() {
+    return make_unique_ptr<AlternationOpenList<EdgeOpenListEntry> >(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

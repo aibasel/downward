@@ -102,9 +102,14 @@ StandardScalarOpenListFactory::StandardScalarOpenListFactory(
     : options(options) {
 }
 
-unique_ptr<OpenList<StateID> >
+unique_ptr<StateOpenList>
 StandardScalarOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<StandardScalarOpenList<StateID> >(options);
+    return make_unique_ptr<StandardScalarOpenList<StateOpenListEntry> >(options);
+}
+
+unique_ptr<EdgeOpenList>
+StandardScalarOpenListFactory::create_edge_open_list() {
+    return make_unique_ptr<StandardScalarOpenList<EdgeOpenListEntry> >(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
