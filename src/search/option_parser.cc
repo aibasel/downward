@@ -69,8 +69,6 @@ static void get_help(string k) {
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
     get_help_templ<shared_ptr<OpenListFactory> >(pt);
-    Plugin<OpenList<int> >::register_open_lists();
-    get_help_templ<OpenList<int> *>(pt);
     get_help_templ<shared_ptr<MergeStrategy> >(pt);
     get_help_templ<shared_ptr<ShrinkStrategy> >(pt);
     get_help_templ<shared_ptr<Labels> >(pt);
@@ -96,8 +94,6 @@ static void get_full_help() {
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
     get_full_help_templ<shared_ptr<OpenListFactory> >();
-    Plugin<OpenList<int> >::register_open_lists();
-    get_full_help_templ<OpenList<int> *>();
     get_full_help_templ<shared_ptr<MergeStrategy> >();
     get_full_help_templ<shared_ptr<ShrinkStrategy> >();
     get_full_help_templ<shared_ptr<Labels> >();
@@ -346,7 +342,7 @@ string OptionParser::usage(string progname) {
         "* OUTPUT (filename): preprocessor output\n\n"
         "Options:\n"
         "--help [NAME]\n"
-        "    Prints help for all heuristics, openlists, etc. called NAME.\n"
+        "    Prints help for all heuristics, open lists, etc. called NAME.\n"
         "    Without parameter: prints help for everything available\n"
         "--landmarks LANDMARKS_PREDEFINITION\n"
         "    Predefines a set of landmarks that can afterwards be referenced\n"
