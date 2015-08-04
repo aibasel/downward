@@ -7,8 +7,7 @@ from lab.reports import Attribute, gm
 import common_setup
 
 
-def main(rev1, rev2):
-    REVS = [rev1, rev2]
+def main(revs=None, combinations=None):
     LIMITS = {"search_time": 1800}
     SUITE = suites.suite_optimal_with_ipc11()
 
@@ -32,7 +31,8 @@ def main(rev1, rev2):
     CONFIGS.update(F_CONFIGS)
 
     exp = common_setup.IssueExperiment(
-        search_revisions=REVS,
+        #search_revisions=revs,
+        combinations=combinations,
         configs=CONFIGS,
         suite=SUITE,
         limits=LIMITS,

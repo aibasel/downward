@@ -134,7 +134,8 @@ class IssueExperiment(DownwardExperiment):
 
     def __init__(self, configs, suite, grid_priority=None, path=None,
                  repo=None, revisions=None, search_revisions=None,
-                 test_suite=None, email=None, processes=1, **kwargs):
+                 test_suite=None, email=None, processes=1,
+                 combinations=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
         *configs* must be a non-empty dict of {nick: cmdline} pairs
@@ -221,7 +222,7 @@ class IssueExperiment(DownwardExperiment):
 
         kwargs.setdefault("combinations", [])
 
-        if not any([revisions, search_revisions, kwargs["combinations"]]):
+        if not any([revisions, search_revisions, combinations, kwargs["combinations"]]):
             raise ValueError('At least one of "revisions", "search_revisions" '
                              'or "combinations" must be given')
 
@@ -240,6 +241,13 @@ class IssueExperiment(DownwardExperiment):
                  Preprocessor(repo, base_rev, nick=rev),
                  Planner(repo, rev, nick=rev))
                 for rev in search_revisions])
+
+        if combinations:
+            kwargs["combinations"].extend([
+                (Translator(repo, comb[0]),
+                 Preprocessor(repo, comb[1]),
+                 Planner(repo, comb[2]))
+                for comb in combinations])
 
         DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
 
