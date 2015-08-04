@@ -19,6 +19,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_eval_context(g_initial_state(), &statistics),
+      current_round_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
     heuristics.insert(preferred_operator_heuristics.begin(),
@@ -75,6 +76,8 @@ void EnforcedHillClimbingSearch::initialize() {
     int current_h = current_eval_context.get_heuristic_value(heuristic);
     SearchNode node = search_space.get_node(current_eval_context.get_state());
     node.open_initial(current_h);
+
+    current_round_start_g = 0;
 }
 
 vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
@@ -115,8 +118,11 @@ vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
 }
 
 void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context, int d) {
+    SearchNode node = search_space.get_node(eval_context.get_state());
     for (const GlobalOperator *op : get_successors(eval_context)) {
         int new_d = d + get_adjusted_cost(*op);
+        int computed_new_d = node.get_g() - current_round_start_g + get_adjusted_cost(*op);
+        assert(new_d == computed_new_d);
         OpenListEntryEHC entry = make_pair(
             eval_context.get_state().get_id(), make_pair(new_d, op));
         EvaluationContext new_eval_context(
@@ -125,7 +131,6 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context, int d) 
         op->unmark();
     }
 
-    SearchNode node = search_space.get_node(eval_context.get_state());
     node.close();
 }
 
@@ -150,6 +155,10 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         GlobalState parent_state = g_state_registry->lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
+
+        int computed_d = parent_node.get_g() - current_round_start_g + get_adjusted_cost(*last_op);
+        cout << "d = " << d << ", computed_d = " << computed_d << endl;
+        assert(d == computed_d);
 
         if (parent_node.get_real_g() + last_op->get_cost() >= bound)
             continue;
@@ -184,6 +193,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
                 current_eval_context = eval_context;
                 open_list->clear();
+                current_round_start_g = node.get_g();
                 return IN_PROGRESS;
             } else {
                 expand(eval_context, d);
