@@ -23,7 +23,7 @@ EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<shared_ptr<OpenListFactory> >("open_factory")->
+      open_list(opts.get<shared_ptr<OpenListFactory> >("open")->
                 create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")) {
@@ -323,10 +323,7 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Eager best-first search", "");
 
-    // TODO: Remove OptionParser::NONE.
-    parser.add_option<shared_ptr<OpenListFactory> >(
-        "open_factory", "open list", OptionParser::NONE);
-    parser.add_option<OpenList<StateID> *>("open", "open list", OptionParser::NONE);
+    parser.add_option<shared_ptr<OpenListFactory> >("open", "open list");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
     parser.add_option<ScalarEvaluator *>(
