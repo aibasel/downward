@@ -27,7 +27,7 @@ include(FastDownwardMacros)
 
 fast_downward_default_to_release_build()
 fast_downward_add_64_bit_option()
-project(fast-downward CXX)
+project(fast-downward)
 fast_downward_check_64_bit_option()
 # Due to a bug in cmake configuration types are only set up correctly on the second cmake run.
 # This means that cmake has to be called twice for multi-config generators like Visual Studio.
