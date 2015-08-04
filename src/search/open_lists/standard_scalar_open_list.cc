@@ -97,17 +97,15 @@ bool StandardScalarOpenList<Entry>::is_reliable_dead_end(
 using namespace std;
 
 
-class StandardScalarOpenListFactory : public OpenListFactory {
-    Options options;
-public:
-    explicit StandardScalarOpenListFactory(const Options &options)
-        : options(options) {
-    }
+StandardScalarOpenListFactory::StandardScalarOpenListFactory(
+    const Options &options)
+    : options(options) {
+}
 
-    virtual unique_ptr<OpenList<StateID> > create_state_open_list() override {
-        return make_unique_ptr<StandardScalarOpenList<StateID> >(options);
-    }
-};
+unique_ptr<OpenList<StateID> >
+StandardScalarOpenListFactory::create_state_open_list() {
+    return make_unique_ptr<StandardScalarOpenList<StateID> >(options);
+}
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(

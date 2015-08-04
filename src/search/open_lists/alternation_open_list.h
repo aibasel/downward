@@ -3,10 +3,12 @@
 
 #include "open_list.h"
 
+#include "open_list_factory.h"
+
+#include "../option_parser_util.h"
+
 #include <memory>
 #include <vector>
-
-class Options;
 
 
 template<class Entry>
@@ -36,6 +38,17 @@ public:
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
 };
+
+
+class AlternationOpenListFactory : public OpenListFactory {
+    Options options;
+public:
+    explicit AlternationOpenListFactory(const Options &options);
+    virtual ~AlternationOpenListFactory() override = default;
+
+    virtual std::unique_ptr<OpenList<StateID> > create_state_open_list() override;
+};
+
 
 #include "alternation_open_list.cc"
 
