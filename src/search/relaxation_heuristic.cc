@@ -112,6 +112,8 @@ void RelaxationHeuristic::simplify() {
     typedef pair<vector<Proposition *>, Proposition *> Key;
     typedef unordered_map<Key, int> Map;
     Map unary_operator_index;
+    unary_operator_index.reserve(unary_operators.size());
+
 
     for (size_t i = 0; i < unary_operators.size(); ++i) {
         UnaryOperator &op = unary_operators[i];
