@@ -14,8 +14,6 @@
 class GEvaluator;
 class Options;
 
-typedef std::pair<StateID, std::pair<int, const GlobalOperator * > > OpenListEntryEHC;
-
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
     RANK_PREFERRED_FIRST
@@ -31,13 +29,13 @@ enum class PreferredUsage {
 class EnforcedHillClimbingSearch : public SearchEngine {
     std::vector<const GlobalOperator *> get_successors(
         EvaluationContext &eval_context);
-    void expand(EvaluationContext &eval_context, int d);
+    void expand(EvaluationContext &eval_context);
     void reach_state(
         const GlobalState &parent, const GlobalOperator &op,
         const GlobalState &state);
     SearchStatus ehc();
 
-    OpenList<OpenListEntryEHC> *open_list;
+    EdgeOpenList *open_list;
     GEvaluator *g_evaluator;
 
     Heuristic *heuristic;
