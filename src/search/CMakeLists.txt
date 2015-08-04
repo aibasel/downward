@@ -66,11 +66,11 @@ if(USE_LP)
         target_link_libraries(downward ${OSI_LIBRARIES})
     endif()
 
-    if(CPLEX_RUNTIME_LIBRARY)
+    if(OSI_Cpx_FOUND AND CPLEX_RUNTIME_LIBRARY)
         add_custom_command(TARGET downward POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy
             ${CPLEX_RUNTIME_LIBRARY}
-            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            $<TARGET_FILE_DIR:downward>
         )
     endif()
 endif()
