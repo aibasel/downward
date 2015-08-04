@@ -30,12 +30,12 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
                     preferred_operator_heuristics.end();
 
     if (!use_preferred || preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
-        open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
+        open_list = new StandardScalarOpenList<EdgeOpenListEntry>(g_evaluator, false);
     } else {
         vector<ScalarEvaluator *> evals {
             g_evaluator, new PrefEvaluator
         };
-        open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
+        open_list = new TieBreakingOpenList<EdgeOpenListEntry>(evals, false, true);
     }
 }
 
@@ -117,16 +117,14 @@ vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
     return ops;
 }
 
-void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context, int d) {
+void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
     for (const GlobalOperator *op : get_successors(eval_context)) {
-        int new_d = d + get_adjusted_cost(*op);
-        int computed_new_d = node.get_g() - current_round_start_g + get_adjusted_cost(*op);
-        assert(new_d == computed_new_d);
-        OpenListEntryEHC entry = make_pair(
-            eval_context.get_state().get_id(), make_pair(new_d, op));
+        int succ_g = node.get_g() + get_adjusted_cost(*op);
+        EdgeOpenListEntry entry = make_pair(
+            eval_context.get_state().get_id(), op);
         EvaluationContext new_eval_context(
-            eval_context.get_cache(), new_d, op->is_marked(), &statistics);
+            eval_context.get_cache(), succ_g, op->is_marked(), &statistics);
         open_list->insert(new_eval_context, entry);
         op->unmark();
     }
@@ -142,23 +140,22 @@ SearchStatus EnforcedHillClimbingSearch::step() {
         return SOLVED;
     }
 
-    expand(current_eval_context, 0);
+    expand(current_eval_context);
     return ehc();
 }
 
 SearchStatus EnforcedHillClimbingSearch::ehc() {
     while (!open_list->empty()) {
-        OpenListEntryEHC entry = open_list->remove_min();
+        EdgeOpenListEntry entry = open_list->remove_min();
         StateID parent_state_id = entry.first;
-        int d = entry.second.first;
-        const GlobalOperator *last_op = entry.second.second;
+        const GlobalOperator *last_op = entry.second;
 
         GlobalState parent_state = g_state_registry->lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        int computed_d = parent_node.get_g() - current_round_start_g + get_adjusted_cost(*last_op);
-        cout << "d = " << d << ", computed_d = " << computed_d << endl;
-        assert(d == computed_d);
+        // d: distance from initial node in this EHC round
+        int d = parent_node.get_g() - current_round_start_g +
+            get_adjusted_cost(*last_op);
 
         if (parent_node.get_real_g() + last_op->get_cost() >= bound)
             continue;
@@ -196,7 +193,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
                 current_round_start_g = node.get_g();
                 return IN_PROGRESS;
             } else {
-                expand(eval_context, d);
+                expand(eval_context);
             }
         }
     }
