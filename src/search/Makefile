@@ -60,11 +60,7 @@ HEADERS = \
           int_packer.h \
           ipc_max_heuristic.h \
           iterated_search.h \
-
-# TODO: Add this one again; make this contiguous again
-#HEADERS += lazy_search.h \
-
-HEADERS += \
+          lazy_search.h \
           max_evaluator.h \
           operator_cost.h \
           option_parser.h \

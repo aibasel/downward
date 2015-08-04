@@ -1,13 +1,10 @@
 #ifndef OPEN_LISTS_OPEN_LIST_FACTORY_H
 #define OPEN_LISTS_OPEN_LIST_FACTORY_H
 
+#include "open_list.h"
+
 #include <memory>
-
-
-class StateID;
-
-template<typename T>
-class OpenList;
+#include <utility>
 
 
 class OpenListFactory {
@@ -17,7 +14,8 @@ public:
 
     OpenListFactory(const OpenListFactory &) = delete;
 
-    virtual std::unique_ptr<OpenList<StateID> > create_state_open_list() = 0;
+    virtual std::unique_ptr<StateOpenList> create_state_open_list() = 0;
+    virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() = 0;
 
     /*
       The following template receives manual specializations (in the
