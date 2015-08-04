@@ -11,23 +11,32 @@ from .plan_manager import PlanManager
 from .util import BUILDS_DIR
 
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
-REL_TRANSLATE_PATH = os.path.join("bin", "translate", "translate.py")
+REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
-    REL_PREPROCESS_PATH = os.path.join("bin", "preprocess")
-    REL_SEARCH_PATH = os.path.join("bin", "downward")
+    REL_PREPROCESS_PATH = os.path.join("preprocess")
+    REL_SEARCH_PATH = os.path.join("downward")
 elif os.name == "nt":
-    REL_PREPROCESS_PATH = os.path.join("bin", "preprocess.exe")
-    REL_SEARCH_PATH = os.path.join("bin", "downward.exe")
+    REL_PREPROCESS_PATH = os.path.join("preprocess.exe")
+    REL_SEARCH_PATH = os.path.join("downward.exe")
 else:
     print("Unsupported OS: " + os.name)
     sys.exit(1)
 
 def get_executable(build, rel_path):
-    build_dir = os.path.join(BUILDS_DIR, build)
+    # First, consider 'build' to be a path directly to the binaries.
+    # The path can be absolute or relative to the current working
+    # directory.
+    build_dir = build
     if not os.path.exists(build_dir):
-        raise IOError(
-            "Could not find build '{build}' at {build_dir}. "
-            "Please run './build.py {build}'.".format(**locals()))
+        # If build is not a full path to the binaries, it might be the
+        # name of a build in our standard directory structure.
+        # in this case, the binaries are in
+        #   '<planner-root>/builds/<buildname>/bin'.
+        build_dir = os.path.join(BUILDS_DIR, build, "bin")
+        if not os.path.exists(build_dir):
+            raise IOError(
+                "Could not find build '{build}' at {build_dir}. "
+                "Please run './build.py {build}'.".format(**locals()))
 
     abs_path = os.path.join(build_dir, rel_path)
     if not os.path.exists(abs_path):
