@@ -75,6 +75,9 @@ LPVariable::LPVariable(double lower_bound_, double upper_bound_,
 LPVariable::~LPVariable() {
 }
 
+LPSolver::~LPSolver() {
+}
+
 #ifdef USE_LP
 
 LPSolver::LPSolver(LPSolverType solver_type)
