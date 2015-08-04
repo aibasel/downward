@@ -10,7 +10,7 @@
 using namespace std;
 
 
-static shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
+shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     ScalarEvaluator *eval, bool pref_only) {
     Options options;
     options.set("eval", eval);
