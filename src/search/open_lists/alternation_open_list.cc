@@ -25,17 +25,6 @@ AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
 }
 
 template<class Entry>
-AlternationOpenList<Entry>::AlternationOpenList(
-    vector<unique_ptr<OpenList<Entry> > > &&sublists,
-    int boost_amount)
-    : open_lists(move(sublists)),
-      priorities(open_lists.size(), 0),
-      boost_amount(boost_amount) {
-    assert(open_lists.size() > 0);
-    assert(open_lists.size() == priorities.size());
-}
-
-template<class Entry>
 void AlternationOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     for (const auto &sublist : open_lists)

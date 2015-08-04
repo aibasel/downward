@@ -23,9 +23,6 @@ protected:
 
 public:
     explicit AlternationOpenList(const Options &opts);
-    AlternationOpenList(
-        std::vector<std::unique_ptr<OpenList<Entry> > > &&sublists,
-        int boost_amount);
     virtual ~AlternationOpenList() override = default;
 
     virtual Entry remove_min(std::vector<int> *key = 0) override;
