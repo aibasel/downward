@@ -19,7 +19,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
       current_eval_context(g_initial_state(), &statistics),
-      current_round_start_g(-1),
+      current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
     heuristics.insert(preferred_operator_heuristics.begin(),
@@ -77,7 +77,7 @@ void EnforcedHillClimbingSearch::initialize() {
     SearchNode node = search_space.get_node(current_eval_context.get_state());
     node.open_initial(current_h);
 
-    current_round_start_g = 0;
+    current_phase_start_g = 0;
 }
 
 vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
@@ -153,8 +153,8 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         GlobalState parent_state = g_state_registry->lookup_state(parent_state_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        // d: distance from initial node in this EHC round
-        int d = parent_node.get_g() - current_round_start_g +
+        // d: distance from initial node in this EHC phase
+        int d = parent_node.get_g() - current_phase_start_g +
             get_adjusted_cost(*last_op);
 
         if (parent_node.get_real_g() + last_op->get_cost() >= bound)
@@ -190,7 +190,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
                 current_eval_context = eval_context;
                 open_list->clear();
-                current_round_start_g = node.get_g();
+                current_phase_start_g = node.get_g();
                 return IN_PROGRESS;
             } else {
                 expand(eval_context);
