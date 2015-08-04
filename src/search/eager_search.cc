@@ -4,12 +4,13 @@
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
-#include "open_lists/alternation_open_list.h"
+#include "open_lists/alternation_open_list.h" // TODO: Remove this
 #include "open_lists/open_list_factory.h"
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/tiebreaking_open_list.h"
+#include "open_lists/standard_scalar_open_list.h" // TODO: Remove this
+#include "open_lists/tiebreaking_open_list.h" // TODO: Remove this?
 #include "option_parser.h"
 #include "plugin.h"
+#include "search_common.h"
 #include "successor_generator.h"
 #include "sum_evaluator.h"
 #include "utilities.h"
@@ -449,41 +450,16 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "boost value for preferred operator open lists", "0");
     SearchEngine::add_options_to_parser(parser);
 
-
     Options opts = parser.parse();
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
-        vector<ScalarEvaluator *> evals =
-            opts.get_list<ScalarEvaluator *>("evals");
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        OpenList<StateID> *open;
-        if ((evals.size() == 1) && preferred_list.empty()) {
-            open = new StandardScalarOpenList<StateID>(evals[0], false);
-        } else {
-            vector<unique_ptr<OpenList<StateID> > > inner_lists;
-            for (ScalarEvaluator *evaluator : evals) {
-                inner_lists.push_back(
-                    make_unique_ptr<StandardScalarOpenList<StateID> >(
-                        evaluator, false));
-                if (!preferred_list.empty()) {
-                    inner_lists.push_back(
-                        make_unique_ptr<StandardScalarOpenList<StateID> >(
-                            evaluator, true));
-                }
-            }
-            open = new AlternationOpenList<StateID>(
-                move(inner_lists), opts.get<int>("boost"));
-        }
-
-        opts.set("open", open);
+        opts.set("open", create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
         opts.set("mpd", false);
         ScalarEvaluator *evaluator = nullptr;
         opts.set("f_eval", evaluator);
-        opts.set("preferred", preferred_list);
         engine = new EagerSearch(opts);
     }
     return engine;

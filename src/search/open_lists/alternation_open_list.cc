@@ -121,24 +121,21 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
 #include "open_list_factory.h"
 
 #include "../plugin.h"
+#include "../utilities.h"
 
 #include <memory>
 
 using namespace std;
 
 
-class AlternationOpenListFactory : public OpenListFactory {
-    Options options;
-public:
-    explicit AlternationOpenListFactory(const Options &options)
-        : options(options) {
-    }
+AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
+    : options(options) {
+}
 
-    virtual unique_ptr<OpenList<StateID> > create_state_open_list() override {
-        return make_unique_ptr<AlternationOpenList<StateID> >(options);
-    }
-};
-
+unique_ptr<OpenList<StateID> >
+AlternationOpenListFactory::create_state_open_list() {
+    return make_unique_ptr<AlternationOpenList<StateID> >(options);
+}
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis("Alternation open list",
