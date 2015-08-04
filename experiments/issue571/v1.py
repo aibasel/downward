@@ -3,4 +3,4 @@
 
 from main import main
 
-main("issue561-base", "issue561-v1")
+main(revisions=["issue561-base", "issue561-v1"])
