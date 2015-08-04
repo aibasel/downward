@@ -11,7 +11,7 @@
 using namespace std;
 
 int main(int argc, const char **argv) {
-    register_event_handlers();
+    // register_event_handlers();
 
     if (argc < 2) {
         cout << OptionParser::usage(argv[0]) << endl;

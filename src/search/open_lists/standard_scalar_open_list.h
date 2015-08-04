@@ -44,8 +44,6 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-
-    static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
 #include "standard_scalar_open_list.cc"

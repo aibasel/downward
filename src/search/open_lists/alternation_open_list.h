@@ -3,16 +3,15 @@
 
 #include "open_list.h"
 
-#include "../plugin.h"
-
+#include <memory>
 #include <vector>
 
 class Options;
-class OptionParser;
+
 
 template<class Entry>
 class AlternationOpenList : public OpenList<Entry> {
-    std::vector<OpenList<Entry> *> open_lists;
+    std::vector<std::unique_ptr<OpenList<Entry> > > open_lists;
     std::vector<int> priorities;
 
     const int boost_amount;
@@ -22,8 +21,9 @@ protected:
 
 public:
     explicit AlternationOpenList(const Options &opts);
-    AlternationOpenList(const std::vector<OpenList<Entry> *> &sublists,
-                        int boost_amount);
+    AlternationOpenList(
+        std::vector<std::unique_ptr<OpenList<Entry> > > &&sublists,
+        int boost_amount);
     virtual ~AlternationOpenList() override = default;
 
     virtual Entry remove_min(std::vector<int> *key = 0) override;
@@ -35,8 +35,6 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-
-    static OpenList<Entry> *_parse(OptionParser &parser);
 };
 
 #include "alternation_open_list.cc"

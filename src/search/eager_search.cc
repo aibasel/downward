@@ -12,6 +12,7 @@
 #include "plugin.h"
 #include "successor_generator.h"
 #include "sum_evaluator.h"
+#include "utilities.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -462,17 +463,19 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         if ((evals.size() == 1) && preferred_list.empty()) {
             open = new StandardScalarOpenList<StateID>(evals[0], false);
         } else {
-            vector<OpenList<StateID> *> inner_lists;
+            vector<unique_ptr<OpenList<StateID> > > inner_lists;
             for (ScalarEvaluator *evaluator : evals) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<StateID>(evaluator, false));
+                    make_unique_ptr<StandardScalarOpenList<StateID> >(
+                        evaluator, false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<StateID>(evaluator, true));
+                        make_unique_ptr<StandardScalarOpenList<StateID> >(
+                            evaluator, true));
                 }
             }
             open = new AlternationOpenList<StateID>(
-                inner_lists, opts.get<int>("boost"));
+                move(inner_lists), opts.get<int>("boost"));
         }
 
         opts.set("open", open);
