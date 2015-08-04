@@ -2,6 +2,8 @@
 
 #include "g_evaluator.h"
 #include "global_operator.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
 #include "plugin.h"
 #include "pref_evaluator.h"
 #include "successor_generator.h"

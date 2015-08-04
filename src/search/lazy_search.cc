@@ -4,6 +4,8 @@
 #include "globals.h"
 #include "heuristic_cache.h"
 #include "heuristic.h"
+#include "open_lists/alternation_open_list.h"
+#include "open_lists/standard_scalar_open_list.h"
 #include "plugin.h"
 #include "rng.h"
 #include "successor_generator.h"
@@ -12,6 +14,10 @@
 
 #include <algorithm>
 #include <limits>
+#include <vector>
+
+using namespace std;
+
 
 static const int DEFAULT_LAZY_BOOST = 1000;
 
@@ -243,7 +249,6 @@ static void _add_succ_order_options(OptionParser &parser) {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
-    Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(

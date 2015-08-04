@@ -4,7 +4,10 @@
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
+#include "open_lists/alternation_open_list.h"
 #include "open_lists/open_list_factory.h"
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "successor_generator.h"
@@ -318,16 +321,12 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    //open lists are currently registered with the parser on demand,
-    //because for templated classes the usual method of registering
-    //does not work:
-    Plugin<OpenList<StateID> >::register_open_lists();
-
     parser.document_synopsis("Eager best-first search", "");
 
+    // TODO: Remove OptionParser::NONE.
     parser.add_option<shared_ptr<OpenListFactory> >(
         "open_factory", "open list", OptionParser::NONE);
-    parser.add_option<OpenList<StateID> *>("open", "open list");
+    parser.add_option<OpenList<StateID> *>("open", "open list", OptionParser::NONE);
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
     parser.add_option<ScalarEvaluator *>(
