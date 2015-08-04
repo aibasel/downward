@@ -45,7 +45,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     PreferredUsage preferred_usage;
 
     EvaluationContext current_eval_context;
-    int current_round_start_g;
+    int current_phase_start_g;
 
     // Statistics
     std::map<int, std::pair<int, int> > d_counts;
