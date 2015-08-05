@@ -48,13 +48,13 @@ else()
     message(STATUS "Skipping VAL because it is not present.")
 endif()
 
-add_subdirectory(preprocess)
-add_subdirectory(search)
-
-# Copy the translator in the directory of the preprocess binary
+# Copy the translator in the output directory
 add_custom_target(translate ALL)
 add_custom_command(TARGET translate POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/translate
-        $<TARGET_FILE_DIR:preprocess>/translate
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/translate
     COMMENT "Copying translator module to output directory")
+
+add_subdirectory(preprocess)
+add_subdirectory(search)
