@@ -2,3 +2,5 @@ Description of tags for this issue:
 
 - issue571-base: base version before any changes
 - issue571-v1: split off class for LabelGroup and related data structure from TransitionSystem
+- issue571-base-v2: default branch revision after a few M&S fixes (partly related to Windows)
+- issue571-v2: after merging issue571-base-v2 from default
