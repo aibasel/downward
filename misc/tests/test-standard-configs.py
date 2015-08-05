@@ -38,7 +38,9 @@ if os.name == "nt":
     del CONFIGS["seq_sat_fdss_2"]
 
 def run_plan_script(task, nick, config, debug):
-    cmd = [sys.executable, FAST_DOWNWARD, "--search-time-limit", "30m"]
+    cmd = [sys.executable, FAST_DOWNWARD]
+    if os.name != "nt":
+        cmd.extend(["--search-time-limit", "30m"])
     if debug:
         cmd.append("--debug")
     if "--alias" in config:

@@ -13,6 +13,7 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -41,6 +42,10 @@ Labels::Labels(const Options &options)
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
 }
 
+bool Labels::initialized() const {
+    return !transition_system_order.empty();
+}
+
 void Labels::initialize(const TaskProxy &task_proxy) {
     assert(!initialized());
 
@@ -66,10 +71,6 @@ void Labels::initialize(const TaskProxy &task_proxy) {
     }
 }
 
-bool Labels::initialized() const {
-    return !transition_system_order.empty();
-}
-
 void Labels::add_label(int cost) {
     assert(initialized());
     labels.push_back(new Label(cost));
@@ -91,10 +92,12 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
                                    vector<pair<int, vector<int> > > &label_mapping) {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (BlockListConstIter group_it = relation->begin(); group_it != relation->end(); ++group_it) {
+    for (BlockListConstIter group_it = relation->begin();
+         group_it != relation->end(); ++group_it) {
         const Block &block = *group_it;
         unordered_map<int, vector<int> > equivalent_label_nos;
-        for (ElementListConstIter label_it = block.begin(); label_it != block.end(); ++label_it) {
+        for (ElementListConstIter label_it = block.begin();
+             label_it != block.end(); ++label_it) {
             assert(*label_it < static_cast<int>(labels.size()));
             int label_no = *label_it;
             Label *label = labels[label_no];
@@ -298,7 +301,7 @@ void Labels::dump_labels() const {
     }
 }
 
-void Labels::dump_label_reduction_options() const {
+void Labels::dump_options() const {
     assert(initialized());
     cout << "Label reduction options:" << endl;
     cout << "Before merging: "
@@ -336,7 +339,16 @@ void Labels::dump_label_reduction_options() const {
     }
 }
 
-static Labels *_parse(OptionParser &parser) {
+static shared_ptr<Labels>_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Generalized label reduction",
+        "This class implements the generalized label reduction described "
+        "in the following paper:\n\n"
+        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
+        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
+        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
+        "In //Proceedings of the 28th AAAI Conference on Artificial "
+        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.");
     parser.add_option<bool>("before_shrinking",
                             "apply label reduction before shrinking");
     parser.add_option<bool>("before_merging",
@@ -397,9 +409,8 @@ static Labels *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        Labels *result = new Labels(opts);
-        return result;
+        return make_shared<Labels>(opts);
     }
 }
 
-static Plugin<Labels> _plugin("label_reduction", _parse);
+static PluginShared<Labels> _plugin("label_reduction", _parse);

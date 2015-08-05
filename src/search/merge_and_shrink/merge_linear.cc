@@ -17,8 +17,8 @@ MergeLinear::MergeLinear(const Options &opts)
 
 void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
     MergeStrategy::initialize(task);
-    variable_order_finder =
-        unique_ptr<VariableOrderFinder>(new VariableOrderFinder(task, variable_order_type));
+    variable_order_finder = make_unique_ptr<VariableOrderFinder>(
+        task, variable_order_type);
 }
 
 pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {
@@ -57,7 +57,16 @@ string MergeLinear::name() const {
     return "linear";
 }
 
-static MergeStrategy *_parse(OptionParser &parser) {
+static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Linear merge strategies",
+        "This merge strategy implements several linear merge orders, which "
+        "are described in the paper:\n\n"
+        " * Malte Helmert, Patrik Haslum and Joerg Hoffmann.<<BR>>\n"
+        " [Flexible Abstraction Heuristics for Optimal Sequential Planning "
+        "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf]<<BR>>\n "
+        "In //Proceedings of the Seventeenth International Conference on "
+        "Automated Planning and Scheduling (ICAPS 2007)//, pp. 176-183. 2007.");
     vector<string> merge_strategies;
     merge_strategies.push_back("CG_GOAL_LEVEL");
     merge_strategies.push_back("CG_GOAL_RANDOM");
@@ -71,9 +80,9 @@ static MergeStrategy *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new MergeLinear(opts);
+        return make_shared<MergeLinear>(opts);
 }
 
-static Plugin<MergeStrategy> _plugin("merge_linear", _parse);
+static PluginShared<MergeStrategy> _plugin("merge_linear", _parse);

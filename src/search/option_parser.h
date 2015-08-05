@@ -125,21 +125,21 @@ public:
 };
 
 template <>
-class TokenParser<MergeStrategy *> {
+class TokenParser<std::shared_ptr<MergeStrategy> > {
 public:
-    static inline MergeStrategy *parse(OptionParser &p);
+    static inline std::shared_ptr<MergeStrategy>parse(OptionParser &p);
 };
 
 template <>
-class TokenParser<ShrinkStrategy *> {
+class TokenParser<std::shared_ptr<ShrinkStrategy> > {
 public:
-    static inline ShrinkStrategy *parse(OptionParser &p);
+    static inline std::shared_ptr<ShrinkStrategy>parse(OptionParser &p);
 };
 
 template <>
-class TokenParser<Labels *> {
+class TokenParser<std::shared_ptr<Labels> > {
 public:
-    static inline Labels *parse(OptionParser &p);
+    static inline std::shared_ptr<Labels>parse(OptionParser &p);
 };
 
 template <>
@@ -190,11 +190,16 @@ public:
     template <class T>
     T start_parsing();
 
+    template<class T>
+    void check_bounds(
+        const std::string &key, const T &value, const Bounds &bounds);
+
     /* Add option with default value. Use def_val=NONE for optional
        parameters without default values. */
     template <class T>
     void add_option(
-        std::string k, std::string h = "", std::string def_val = "");
+        std::string k, std::string h = "", std::string def_val = "",
+        Bounds bounds = Bounds::unlimited());
 
     void add_enum_option(std::string k,
                          std::vector<std::string > enumeration,
@@ -256,14 +261,27 @@ T OptionParser::start_parsing() {
     return TokenParser<T>::parse(*this);
 }
 
+template<class T>
+void OptionParser::check_bounds(
+    const std::string &, const T &, const Bounds &) {
+}
+
+template<>
+void OptionParser::check_bounds<int>(
+    const std::string &key, const int &value, const Bounds &bounds);
+
+template<>
+void OptionParser::check_bounds<double>(
+    const std::string &key, const double &value, const Bounds &bounds);
+
 template <class T>
 void OptionParser::add_option(
-    std::string k,
-    std::string h, std::string default_value) {
+    std::string k, std::string h, std::string default_value, Bounds bounds) {
     if (help_mode()) {
         DocStore::instance()->add_arg(parse_tree.begin()->value,
                                       k, h,
-                                      TypeNamer<T>::name(), default_value);
+                                      TypeNamer<T>::name(), default_value,
+                                      bounds);
         return;
     }
     valid_keys.push_back(k);
@@ -302,6 +320,7 @@ void OptionParser::add_option(
         new OptionParser(default_value, dry_run()) :
         new OptionParser(subtree(parse_tree, arg), dry_run()));
     T result = TokenParser<T>::parse(*subparser);
+    check_bounds<T>(k, result, bounds);
     opts.set<T>(k, result);
     //if we have not reached the keyword parameters yet
     //and did not use the default value,
@@ -433,16 +452,16 @@ SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
     return lookup_in_registry<SearchEngine>(p);
 }
 
-MergeStrategy *TokenParser<MergeStrategy *>::parse(OptionParser &p) {
-    return lookup_in_registry<MergeStrategy>(p);
+std::shared_ptr<MergeStrategy>TokenParser<std::shared_ptr<MergeStrategy> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<MergeStrategy>(p);
 }
 
-ShrinkStrategy *TokenParser<ShrinkStrategy *>::parse(OptionParser &p) {
-    return lookup_in_registry<ShrinkStrategy>(p);
+std::shared_ptr<ShrinkStrategy>TokenParser<std::shared_ptr<ShrinkStrategy> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<ShrinkStrategy>(p);
 }
 
-Labels *TokenParser<Labels *>::parse(OptionParser &p) {
-    return lookup_in_registry<Labels>(p);
+std::shared_ptr<Labels>TokenParser<std::shared_ptr<Labels> >::parse(OptionParser &p) {
+    return lookup_in_registry_shared<Labels>(p);
 }
 
 
