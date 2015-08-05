@@ -56,9 +56,10 @@ Facts FactDecomposition::get_filtered_and_ordered_facts(const Task &task) const 
 }
 
 void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const {
-    assert(subtask_order != SubtaskOrder::ORIGINAL);
     cout << "Sort " << facts.size() << " facts" << endl;
-    if (subtask_order == SubtaskOrder::MIXED) {
+    if (subtask_order == SubtaskOrder::ORIGINAL) {
+        // Nothing to do.
+    } else if (subtask_order == SubtaskOrder::MIXED) {
         g_rng.shuffle(facts);
     } else if (subtask_order == SubtaskOrder::HADD_UP ||
                subtask_order == SubtaskOrder::HADD_DOWN) {
