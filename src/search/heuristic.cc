@@ -65,7 +65,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 Options Heuristic::default_options() {
     Options opts = Options();
     opts.set<shared_ptr<AbstractTask> >("transform", g_root_task());
-    opts.set<int>("cost_type", 0);
+    opts.set<int>("cost_type", NORMAL);
     return opts;
 }
 
