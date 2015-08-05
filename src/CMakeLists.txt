@@ -45,7 +45,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VAL/")
     add_subdirectory(VAL)
 else()
     # This can happen for IPC submissions that should just include the planner code.
-    message(STATUS "Skipping VAL because it is not present.")
+    message("Skipping VAL because it is not present.")
 endif()
 
 # Copy the translator in the output directory
