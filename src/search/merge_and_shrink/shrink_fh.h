@@ -32,10 +32,11 @@ private:
     void ordered_buckets_use_map(const TransitionSystem &ts,
                                  std::vector<Bucket> &buckets) const;
 protected:
-    virtual std::string name() const;
-    virtual void dump_strategy_specific_options() const;
+    virtual std::string name() const override;
+    virtual void dump_strategy_specific_options() const override;
 
-    virtual void partition_into_buckets(const TransitionSystem &ts, std::vector<Bucket> &buckets) const;
+    virtual void partition_into_buckets(
+        const TransitionSystem &ts, std::vector<Bucket> &buckets) const;
 
 public:
     explicit ShrinkFH(const Options &opts);

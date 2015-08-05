@@ -20,10 +20,7 @@ def check_call(cmd, stdin=None, time_limit=None, memory_limit=None):
         if limits.can_set_limits():
             kwargs["preexec_fn"] = set_limits
         else:
-            raise NotImplementedError(
-                "The 'resource' module is not available on your platform. "
-                "Therefore, setting time or memory limits, and running "
-                "portfolios is not possible.")
+            sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
 
     sys.stdout.flush()
     if stdin:
