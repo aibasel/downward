@@ -192,7 +192,8 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
                value. */
             Options opts;
             opts.set<shared_ptr<AbstractTask> >("transform", task);
-            opts.set<int>("cost_type", cost_type);
+            // Since we pass a task transformation, cost_type won't be used.
+            opts.set<int>("cost_type", NORMAL);
             opts.set<vector<vector<int> > >("patterns", pattern_collection);
             ZeroOnePDBsHeuristic *pattern_collection_heuristic =
                 new ZeroOnePDBsHeuristic(opts);
