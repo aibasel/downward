@@ -595,7 +595,7 @@ void TransitionSystem::statistics(const Timer &timer,
 
 void TransitionSystem::dump_dot_graph() const {
     assert(is_valid());
-    cout << "digraph transition system";
+    cout << "digraph transition_system";
     for (size_t i = 0; i < incorporated_variables.size(); ++i)
         cout << "_" << incorporated_variables[i];
     cout << " {" << endl;
