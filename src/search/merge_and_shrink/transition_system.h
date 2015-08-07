@@ -153,8 +153,11 @@ public:
     const std::list<LabelGroup> &get_grouped_labels() const {
         return label_equivalence_relation->get_grouped_labels();
     }
+    const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
+        return transitions_of_groups[group_id];
+    }
     const std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) const {
-        return transitions_of_groups[group.get_id()];
+        return get_transitions_for_group_id(group.get_id());
     }
     std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) {
         return transitions_of_groups[group.get_id()];
