@@ -79,6 +79,7 @@ class LabelEquivalenceRelation {
     LabelGroupIter add_empty_label_group(int id) {
         return grouped_labels.insert(grouped_labels.end(), LabelGroup(id));
     }
+    void add_label_to_group(LabelGroupIter group_it, int label_no);
 public:
     explicit LabelEquivalenceRelation(const std::shared_ptr<Labels> labels);
     virtual ~LabelEquivalenceRelation() = default;
@@ -105,7 +106,8 @@ public:
 
     void replace_labels_by_label(
         const std::vector<int> &old_label_nos, int new_label_no);
-    void add_label_to_group(LabelGroupIter group_it, int label_no);
+    LabelGroupIter move_group_into_group(LabelGroupIter from_group, LabelGroupIter to_group);
+
     int add_label_group(const std::vector<int> &new_labels);
     LabelGroupIter get_group_it(int label_no) {
         return label_to_positions[label_no].first;
