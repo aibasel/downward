@@ -28,15 +28,17 @@ void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
 }
 
 int MergeDFP::get_corrected_index(int index) const {
-    // This method assumes that we iterate over the vector of all
-    // transition systems in inverted order (from back to front). It returns the
-    // unmodified index as long as we are in the range of composite
-    // transition systems (these are thus traversed in order from the last one
-    // to the first one) and modifies the index otherwise so that the order
-    // in which atomic transition systems are considered is from the first to the
-    // last one (from front to back). This is to emulate the previous behavior
-    // when new transition systems were not inserted after existing transition systems,
-    // but rather replaced arbitrarily one of the two original transition systems.
+    /*
+      This method assumes that we iterate over the vector of all
+      transition systems in inverted order (from back to front). It returns the
+      unmodified index as long as we are in the range of composite
+      transition systems (these are thus traversed in order from the last one
+      to the first one) and modifies the index otherwise so that the order
+      in which atomic transition systems are considered is from the first to the
+      last one (from front to back). This is to emulate the previous behavior
+      when new transition systems were not inserted after existing transition systems,
+      but rather replaced arbitrarily one of the two original transition systems.
+    */
     assert(index >= 0);
     if (index >= border_atomics_composites)
         return index;
@@ -49,12 +51,12 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     label_ranks.resize(num_labels, -1);
 
-    const std::list<LabelGroup> &grouped_labels = transition_system->get_grouped_labels();
+    const list<LabelGroup> &grouped_labels = transition_system->get_grouped_labels();
     for (LabelGroupConstIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
-        const vector<Transition> &transitions = group_it->get_const_transitions();
+        const vector<Transition> &transitions = group_it->get_transitions();
         bool group_relevant = false;
         if (static_cast<int>(transitions.size()) == transition_system->get_size()) {
             /*
@@ -93,79 +95,84 @@ pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transiti
     vector<const TransitionSystem *> sorted_transition_systems;
     vector<int> indices_mapping;
     vector<vector<int> > transition_system_label_ranks;
-    // Precompute a vector sorted_transition_systems which contains all exisiting
-    // transition systems from all_transition_systems in the desired order.
+    /*
+      Precompute a vector sorted_transition_systems which contains all exisiting
+      transition systems from all_transition_systems in the desired order and
+      compute label ranks.
+    */
     for (int i = all_transition_systems.size() - 1; i >= 0; --i) {
-        // We iterate from back to front, considering the composite
-        // transition systems in the order from "most recently added" (= at the back
-        // of the vector) to "first added" (= at border_atomics_composites).
-        // Afterwards, we consider the atomic transition systems in the "regular"
-        // order from the first one until the last one. See also explanation
-        // at get_corrected_index().
+        /*
+          We iterate from back to front, considering the composite
+          transition systems in the order from "most recently added" (= at the back
+          of the vector) to "first added" (= at border_atomics_composites).
+          Afterwards, we consider the atomic transition systems in the "regular"
+          order from the first one until the last one. See also explanation
+          at get_corrected_index().
+        */
         int ts_index = get_corrected_index(i);
         const TransitionSystem *transition_system = all_transition_systems[ts_index];
         if (transition_system) {
             sorted_transition_systems.push_back(transition_system);
             indices_mapping.push_back(ts_index);
             transition_system_label_ranks.push_back(vector<int>());
-            vector<int> &label_ranks = transition_system_label_ranks[transition_system_label_ranks.size() - 1];
+            vector<int> &label_ranks = transition_system_label_ranks.back();
             compute_label_ranks(transition_system, label_ranks);
         }
     }
 
-    int first = -1;
-    int second = -1;
+    int next_index1 = -1;
+    int next_index2 = -1;
     int minimum_weight = INF;
-    for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
-        const TransitionSystem *transition_system = sorted_transition_systems[ts_index];
-        assert(transition_system);
-        vector<int> &label_ranks = transition_system_label_ranks[ts_index];
-        assert(!label_ranks.empty());
-        for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
-             ++other_ts_index) {
-            const TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
-            assert(other_transition_system);
-            if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
-                vector<int> &other_label_ranks = transition_system_label_ranks[other_ts_index];
-                assert(!other_label_ranks.empty());
-                assert(label_ranks.size() == other_label_ranks.size());
+    for (size_t i = 0; i < sorted_transition_systems.size(); ++i) {
+        const TransitionSystem *transition_system1 = sorted_transition_systems[i];
+        assert(transition_system1);
+        const vector<int> &label_ranks1 = transition_system_label_ranks[i];
+        assert(!label_ranks1.empty());
+        for (size_t j = i + 1; j < sorted_transition_systems.size(); ++j) {
+            const TransitionSystem *transition_system2 = sorted_transition_systems[j];
+            assert(transition_system2);
+            if (transition_system1->is_goal_relevant()
+                || transition_system2->is_goal_relevant()) {
+                vector<int> &label_ranks2 = transition_system_label_ranks[j];
+                assert(!label_ranks2.empty());
+                assert(label_ranks1.size() == label_ranks2.size());
                 int pair_weight = INF;
-                for (size_t i = 0; i < label_ranks.size(); ++i) {
-                    if (label_ranks[i] != -1 && other_label_ranks[i] != -1) {
+                for (size_t k = 0; k < label_ranks1.size(); ++k) {
+                    if (label_ranks1[k] != -1 && label_ranks2[k] != -1) {
                         // label is relevant in both transition_systems
-                        int max_label_rank = max(label_ranks[i], other_label_ranks[i]);
+                        int max_label_rank = max(label_ranks1[k], label_ranks2[k]);
                         pair_weight = min(pair_weight, max_label_rank);
                     }
                 }
                 if (pair_weight < minimum_weight) {
                     minimum_weight = pair_weight;
-                    first = indices_mapping[ts_index];
-                    second = indices_mapping[other_ts_index];
-                    assert(all_transition_systems[first] == transition_system);
-                    assert(all_transition_systems[second] == other_transition_system);
+                    next_index1 = indices_mapping[i];
+                    next_index2 = indices_mapping[j];
+                    assert(all_transition_systems[next_index1] == transition_system1);
+                    assert(all_transition_systems[next_index2] == transition_system2);
                 }
             }
         }
     }
-    if (first == -1) {
-        // No pair with finite weight has been found. In this case, we simply
-        // take the first pair according to our ordering consisting of at
-        // least one goal relevant transition system.
-        assert(second == -1);
+    if (next_index1 == -1) {
+        /*
+          No pair with finite weight has been found. In this case, we simply
+          take the first pair according to our ordering consisting of at
+          least one goal relevant transition system.
+        */
+        assert(next_index2 == -1);
         assert(minimum_weight == INF);
 
-        for (size_t ts_index = 0; ts_index < sorted_transition_systems.size(); ++ts_index) {
-            const TransitionSystem *transition_system = sorted_transition_systems[ts_index];
-            assert(transition_system);
-            for (size_t other_ts_index = ts_index + 1; other_ts_index < sorted_transition_systems.size();
-                 ++other_ts_index) {
-                const TransitionSystem *other_transition_system = sorted_transition_systems[other_ts_index];
-                assert(other_transition_system);
-                if (transition_system->is_goal_relevant() || other_transition_system->is_goal_relevant()) {
-                    first = indices_mapping[ts_index];
-                    second = indices_mapping[other_ts_index];
-                    assert(all_transition_systems[first] == transition_system);
-                    assert(all_transition_systems[second] == other_transition_system);
+        for (size_t i = 0; i < sorted_transition_systems.size(); ++i) {
+            const TransitionSystem *transition_system1 = sorted_transition_systems[i];
+            for (size_t j = i + 1; j < sorted_transition_systems.size(); ++j) {
+                const TransitionSystem *transition_system2 = sorted_transition_systems[j];
+                if (transition_system1->is_goal_relevant()
+                    || transition_system2->is_goal_relevant()) {
+                    next_index1 = indices_mapping[i];
+                    next_index2 = indices_mapping[j];
+                    assert(all_transition_systems[next_index1] == transition_system1);
+                    assert(all_transition_systems[next_index2] == transition_system2);
                 }
             }
         }
@@ -175,28 +182,33 @@ pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transiti
       assuming that the global goal specification is non-empty. Hence at
       this point, we must have found a pair of transition systems to merge.
     */
-    assert(first != -1);
-    assert(second != -1);
-    cout << "Next pair of indices: (" << first << ", " << second << ")" << endl;
-//    if (remaining_merges > 1 && minimum_weight != INF) {
-//        // in the case we do not make a trivial choice of a next pair
-//        cout << "Computed weight: " << minimum_weight << endl;
-//    } else {
-//        cout << "No weight computed (pair has been chosen trivially by order)" << endl;
-//    }
+    assert(next_index1 != -1);
+    assert(next_index2 != -1);
+    cout << "Next pair of indices: (" << next_index1 << ", " << next_index2 << ")" << endl;
     --remaining_merges;
-    return make_pair(first, second);
+    return make_pair(next_index1, next_index2);
 }
 
 string MergeDFP::name() const {
     return "dfp";
 }
 
-static MergeStrategy *_parse(OptionParser &parser) {
+static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Merge strategy DFP",
+        "This merge strategy implements the algorithm originally described in the "
+        "paper \"Directed model checking with distance-preserving abstractions\" "
+        "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
+        "the following paper:\n\n"
+        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
+        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
+        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
+        "In //Proceedings of the 28th AAAI Conference on Artificial "
+        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.");
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new MergeDFP();
+        return make_shared<MergeDFP>();
 }
 
-static Plugin<MergeStrategy> _plugin("merge_dfp", _parse);
+static PluginShared<MergeStrategy> _plugin("merge_dfp", _parse);

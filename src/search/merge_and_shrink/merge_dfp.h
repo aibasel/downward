@@ -18,8 +18,8 @@ public:
     virtual ~MergeDFP() override = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> task) override;
 
-    virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems);
-    virtual std::string name() const;
+    virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems) override;
+    virtual std::string name() const override;
 };
 
 #endif
