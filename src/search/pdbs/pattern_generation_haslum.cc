@@ -373,7 +373,8 @@ void PatternGenerationHaslum::initialize() {
     }
     Options opts;
     opts.set<shared_ptr<AbstractTask> >("transform", task);
-    opts.set<int>("cost_type", cost_type);
+    // Since we pass a task transformation, cost_type won't be used.
+    opts.set<int>("cost_type", NORMAL);
     opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
 
