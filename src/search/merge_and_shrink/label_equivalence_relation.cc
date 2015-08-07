@@ -12,6 +12,16 @@ LabelEquivalenceRelation::LabelEquivalenceRelation(const std::shared_ptr<Labels>
     label_to_positions.resize(labels->get_max_size());
 }
 
+void LabelEquivalenceRelation::add_label_to_group(LabelGroupIter group_it,
+                                                  int label_no) {
+    LabelIter label_it = group_it->insert(label_no);
+    label_to_positions[label_no] = make_pair(group_it, label_it);
+
+    int label_cost = labels->get_label_cost(label_no);
+    if (label_cost < group_it->get_cost())
+        group_it->set_cost(label_cost);
+}
+
 void LabelEquivalenceRelation::recompute_group_cost() {
     for (LabelGroupIter group_it = grouped_labels.begin();
          group_it != grouped_labels.end(); ++group_it) {
@@ -31,8 +41,7 @@ void LabelEquivalenceRelation::replace_labels_by_label(
     const vector<int> &old_label_nos, int new_label_no) {
     // Add new label to group
     LabelGroupIter group_it = label_to_positions[old_label_nos.front()].first;
-    LabelIter label_it = group_it->insert(new_label_no);
-    label_to_positions[new_label_no] = make_pair(group_it, label_it);
+    add_label_to_group(group_it, new_label_no);
 
     // Remove old labels from group
     for (int old_label_no : old_label_nos) {
@@ -42,14 +51,14 @@ void LabelEquivalenceRelation::replace_labels_by_label(
     }
 }
 
-void LabelEquivalenceRelation::add_label_to_group(LabelGroupIter group_it,
-                                                  int label_no) {
-    LabelIter label_it = group_it->insert(label_no);
-    label_to_positions[label_no] = make_pair(group_it, label_it);
-
-    int label_cost = labels->get_label_cost(label_no);
-    if (label_cost < group_it->get_cost())
-        group_it->set_cost(label_cost);
+LabelGroupIter LabelEquivalenceRelation::move_group_into_group(
+    LabelGroupIter from_group, LabelGroupIter to_group) {
+    for (LabelConstIter group2_label_it = from_group->begin();
+         group2_label_it != from_group->end(); ++group2_label_it) {
+        int other_label_no = *group2_label_it;
+        add_label_to_group(to_group, other_label_no);
+    }
+    return grouped_labels.erase(from_group);
 }
 
 int LabelEquivalenceRelation::add_label_group(const vector<int> &new_labels) {

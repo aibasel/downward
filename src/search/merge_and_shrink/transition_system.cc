@@ -304,12 +304,8 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                 continue;
             vector<Transition> &transitions2 = get_transitions_for_group(*group2_it);
             if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
-                for (LabelConstIter group2_label_it = group2_it->begin();
-                     group2_label_it != group2_it->end(); ++group2_label_it) {
-                    int other_label_no = *group2_label_it;
-                    label_equivalence_relation->add_label_to_group(group1_it, other_label_no);
-                }
-                group2_it = label_equivalence_relation->erase(group2_it);
+                group2_it =
+                    label_equivalence_relation->move_group_into_group(group2_it, group1_it);
                 --group2_it;
                 release_vector_memory(transitions2);
             }
