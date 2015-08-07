@@ -61,14 +61,25 @@ LabelGroupIter LabelEquivalenceRelation::move_group_into_group(
     return grouped_labels.erase(from_group);
 }
 
+bool LabelEquivalenceRelation::erase(int label_no) {
+    LabelGroupIter group_it = label_to_positions[label_no].first;
+    group_it->erase(label_to_positions[label_no].second);
+    if (group_it->empty()) {
+        grouped_labels.erase(group_it);
+        return true;
+    }
+    return false;
+}
+
 int LabelEquivalenceRelation::add_label_group(const vector<int> &new_labels) {
-    int new_index = new_labels[0];
-    LabelGroupIter group_it = add_empty_label_group(new_index);
+    int new_id = new_labels[0];
+    LabelGroupIter group_it =
+        grouped_labels.insert(grouped_labels.end(), LabelGroup(new_id));
     for (size_t i = 0; i < new_labels.size(); ++i) {
         int label_no = new_labels[i];
         add_label_to_group(group_it, label_no);
     }
-    return new_index;
+    return new_id;
 }
 
 int LabelEquivalenceRelation::get_num_labels() const {

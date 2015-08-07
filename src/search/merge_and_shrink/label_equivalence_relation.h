@@ -76,9 +76,6 @@ class LabelEquivalenceRelation {
     std::list<LabelGroup> grouped_labels;
     std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
 
-    LabelGroupIter add_empty_label_group(int id) {
-        return grouped_labels.insert(grouped_labels.end(), LabelGroup(id));
-    }
     void add_label_to_group(LabelGroupIter group_it, int label_no);
 public:
     explicit LabelEquivalenceRelation(const std::shared_ptr<Labels> labels);
@@ -88,6 +85,7 @@ public:
     const std::list<LabelGroup> &get_grouped_labels() const {
         return grouped_labels;
     }
+    // only "compute_locally_equivalent_labels" needs non-const iterators.
     LabelGroupIter begin() {
         return grouped_labels.begin();
     }
@@ -100,20 +98,14 @@ public:
     LabelGroupConstIter end() const {
         return grouped_labels.end();
     }
-    LabelGroupIter erase(LabelGroupIter group_it) {
-        return grouped_labels.erase(group_it);
-    }
 
     void replace_labels_by_label(
         const std::vector<int> &old_label_nos, int new_label_no);
     LabelGroupIter move_group_into_group(LabelGroupIter from_group, LabelGroupIter to_group);
-
+    bool erase(int label_no);
     int add_label_group(const std::vector<int> &new_labels);
-    LabelGroupIter get_group_it(int label_no) {
-        return label_to_positions[label_no].first;
-    }
-    LabelIter get_label_it(int label_no) {
-        return label_to_positions[label_no].second;
+    int get_group_id(int label_no) {
+        return label_to_positions[label_no].first->get_id();
     }
     int get_num_labels() const;
 };

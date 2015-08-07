@@ -186,8 +186,8 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
         for (LabelConstIter label_it = group1_it->begin();
              label_it != group1_it->end(); ++label_it) {
             int label_no = *label_it;
-            LabelGroupIter group2_it = ts2->label_equivalence_relation->get_group_it(label_no);
-            buckets[group2_it->get_id()].push_back(label_no);
+            int group2_id = ts2->label_equivalence_relation->get_group_id(label_no);
+            buckets[group2_id].push_back(label_no);
         }
         // Now buckets contains all equivalence classes that are
         // refinements of group1.
@@ -358,7 +358,7 @@ bool TransitionSystem::apply_abstraction(
     goal_states = move(new_goal_states);
 
     // Update all transitions. Locally equivalent labels remain locally equivalent.
-    for (LabelGroupIter group_it = label_equivalence_relation->begin();
+    for (LabelGroupConstIter group_it = label_equivalence_relation->begin();
          group_it != label_equivalence_relation->end(); ++group_it) {
         vector<Transition> &transitions = get_transitions_for_group(*group_it);
         vector<Transition> new_transitions;
@@ -435,17 +435,13 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
             // We use a set to collect the reduced label's transitions so that they are sorted.
             set<Transition> collected_transitions;
             for (int old_label_no : old_label_nos) {
-                LabelGroupIter group_it = label_equivalence_relation->get_group_it(old_label_no);
-                if (!only_equivalent_labels) {
-                    const vector<Transition> &old_transitions =
-                        get_transitions_for_group(*group_it);
-                    collected_transitions.insert(old_transitions.begin(), old_transitions.end());
-                }
-                LabelIter label_it = label_equivalence_relation->get_label_it(old_label_no);
-                group_it->erase(label_it);
-                if (group_it->empty()) {
-                    release_vector_memory(get_transitions_for_group(*group_it));
-                    label_equivalence_relation->erase(group_it);
+                int group_id = label_equivalence_relation->get_group_id(old_label_no);
+                vector<Transition> &old_transitions =
+                    get_transitions_for_group_id(group_id);
+                collected_transitions.insert(old_transitions.begin(), old_transitions.end());
+                bool remove_group = label_equivalence_relation->erase(old_label_no);
+                if (remove_group) {
+                    release_vector_memory(old_transitions);
                 }
             }
             transitions_of_groups[new_label_no].assign(
