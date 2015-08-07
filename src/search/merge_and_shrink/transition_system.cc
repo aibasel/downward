@@ -182,12 +182,12 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
          group1_it != ts1->label_equivalence_relation->end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
-        unordered_map<const LabelGroup *, vector<int> > buckets;
+        unordered_map<int, vector<int> > buckets;
         for (LabelConstIter label_it = group1_it->begin();
              label_it != group1_it->end(); ++label_it) {
             int label_no = *label_it;
             LabelGroupIter group2_it = ts2->label_equivalence_relation->get_group_it(label_no);
-            buckets[&*group2_it].push_back(label_no);
+            buckets[group2_it->get_id()].push_back(label_no);
         }
         // Now buckets contains all equivalence classes that are
         // refinements of group1.
@@ -195,7 +195,8 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
         // Now create the new groups together with their transitions.
         const vector<Transition> &transitions1 = ts1->get_transitions_for_group(*group1_it);
         for (const auto &bucket : buckets) {
-            const vector<Transition> &transitions2 = ts2->get_transitions_for_group(*bucket.first);
+            const vector<Transition> &transitions2 =
+                ts2->get_transitions_for_group_id(bucket.first);
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
