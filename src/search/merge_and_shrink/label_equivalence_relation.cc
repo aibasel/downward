@@ -2,6 +2,8 @@
 
 #include "labels.h"
 
+#include <cassert>
+
 
 using namespace std;
 
@@ -22,6 +24,21 @@ void LabelEquivalenceRelation::recompute_group_cost() {
                 group_it->set_cost(cost);
             }
         }
+    }
+}
+
+void LabelEquivalenceRelation::replace_labels_by_label(
+    const vector<int> &old_label_nos, int new_label_no) {
+    // Add new label to group
+    LabelGroupIter group_it = label_to_positions[old_label_nos.front()].first;
+    LabelIter label_it = group_it->insert(new_label_no);
+    label_to_positions[new_label_no] = make_pair(group_it, label_it);
+
+    // Remove old labels from group
+    for (int old_label_no : old_label_nos) {
+        LabelIter label_it = label_to_positions[old_label_no].second;
+        assert(group_it == label_to_positions[old_label_no].first);
+        group_it->erase(label_it);
     }
 }
 
