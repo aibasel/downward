@@ -33,7 +33,7 @@ class DiversePotentialHeuristics {
 
     // Remove all samples for which the function achieves maximal values.
     void filter_covered_samples(
-        const Function chosen_function,
+        const PotentialFunction &chosen_function,
         SamplesAndFunctions &samples_and_functions) const;
 
     /* Return potential function optimized for remaining samples or a

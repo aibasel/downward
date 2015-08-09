@@ -61,14 +61,14 @@ SamplesAndFunctions DiversePotentialHeuristics::filter_samples_and_compute_funct
 }
 
 void DiversePotentialHeuristics::filter_covered_samples(
-    const Function chosen_function,
+    const PotentialFunction &chosen_function,
     SamplesAndFunctions &samples_and_functions) const {
     for (auto it = samples_and_functions.begin();
          it != samples_and_functions.end();) {
         const State &sample = it->first;
         Function sample_function = it->second;
         int max_h = sample_function->get_value(sample);
-        int h = chosen_function->get_value(sample);
+        int h = chosen_function.get_value(sample);
         assert(h <= max_h);
         // TODO: Count as covered if max_h <= 0.
         if (h == max_h) {
@@ -87,12 +87,12 @@ Function DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     optimizer.optimize_for_samples(samples);
     Function function = optimizer.get_potential_function();
     size_t last_num_samples = samples_and_functions.size();
-    filter_covered_samples(function, samples_and_functions);
+    filter_covered_samples(*function, samples_and_functions);
     if (samples_and_functions.size() == last_num_samples) {
         cout << "No sample removed -> Use arbitrary precomputed function."
              << endl;
         function = samples_and_functions.begin()->second;
-        filter_covered_samples(function, samples_and_functions);
+        filter_covered_samples(*function, samples_and_functions);
     }
     cout << "Removed " << last_num_samples - samples_and_functions.size()
          << " samples. " << samples_and_functions.size() << " remaining."
