@@ -117,6 +117,8 @@ void PotentialOptimizer::construct_lp() {
         vector<pair<int, int> > coefficients;
         for (EffectProxy effect : op.get_effects()) {
             int var_id = effect.get_fact().get_variable().get_id();
+
+            // Set pre to pre(op) if defined, otherwise to u = |dom(var)|.
             int pre = -1;
             auto it = var_to_precondition.find(var_id);
             if (it == var_to_precondition.end()) {
@@ -125,6 +127,7 @@ void PotentialOptimizer::construct_lp() {
             } else {
                 pre = it->second;
             }
+
             int post = effect.get_fact().get_value();
             int pre_lp = lp_var_ids[var_id][pre];
             int post_lp = lp_var_ids[var_id][post];
@@ -138,8 +141,8 @@ void PotentialOptimizer::construct_lp() {
         lp_constraints.push_back(constraint);
     }
 
-    /* Create full goal state. Use dummy value |dom(V)| for variables V
-       undefined in the goal. */
+    /* Create full goal state. Use value |dom(V)| as "undefined" value
+       for variables V undefined in the goal. */
     vector<int> goal(task_proxy.get_variables().size(), -1);
     for (FactProxy fact : task_proxy.get_goals()) {
         goal[fact.get_variable().get_id()] = fact.get_value();
@@ -152,7 +155,7 @@ void PotentialOptimizer::construct_lp() {
 
     for (VariableProxy var : task_proxy.get_variables()) {
         // Create constraint (using variable bounds): P_{V=goal[V]} = 0
-        // TODO: Do not set lower bound?
+        // TODO: Use constraint on potential sum instead of single potentials?
         int var_id = var.get_id();
         LPVariable &lp_var = lp_variables[lp_var_ids[var_id][goal[var_id]]];
         lp_var.lower_bound = 0;
@@ -163,7 +166,8 @@ void PotentialOptimizer::construct_lp() {
         for (int val = 0; val < var.get_domain_size(); ++val) {
             int val_lp = lp_var_ids[var_id][val];
             // Create constraint: P_{V=v} <= P_{V=u}
-            // Note that we could eliminate variables P_{V=u} if V is undefined in the goal.
+            // Note that we could eliminate variables P_{V=u} if V is
+            // undefined in the goal.
             LPConstraint constraint(-lp_solver.get_infinity(), 0);
             constraint.insert(val_lp, 1);
             constraint.insert(undef_val_lp, -1);
