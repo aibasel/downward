@@ -15,7 +15,6 @@ namespace potentials {
 enum class OptFunc {
     INITIAL_STATE,
     ALL_STATES,
-    SAMPLES
 };
 
 static shared_ptr<PotentialFunction> create_potential_function(
@@ -29,9 +28,6 @@ static shared_ptr<PotentialFunction> create_potential_function(
         break;
     case OptFunc::ALL_STATES:
         optimizer.optimize_for_all_states();
-        break;
-    case OptFunc::SAMPLES:
-        optimize_for_samples(optimizer, opts.get<int>("num_samples"));
         break;
     default:
         ABORT("Unkown optimization function");
@@ -62,20 +58,8 @@ static Heuristic *_parse_all_states_potential(OptionParser &parser) {
     return _parse(parser, OptFunc::ALL_STATES);
 }
 
-static Heuristic *_parse_samples_potential(OptionParser &parser) {
-    parser.document_synopsis(
-        "Potential heuristic optimized for samples", "");
-    parser.add_option<int>(
-        "num_samples",
-        "Number of states to sample",
-        "1000");
-    return _parse(parser, OptFunc::SAMPLES);
-}
-
 static Plugin<Heuristic> _plugin_initial_state(
     "initial_state_potential", _parse_initial_state_potential);
 static Plugin<Heuristic> _plugin_all_states(
     "all_states_potential", _parse_all_states_potential);
-static Plugin<Heuristic> _plugin_samples(
-    "samples_potential", _parse_samples_potential);
 }
