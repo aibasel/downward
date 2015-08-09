@@ -139,19 +139,23 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<int>(
         "num_samples",
         "Number of states to sample",
-        "1000");
+        "1000",
+        Bounds("0", "infinity"));
     parser.add_option<int>(
         "max_num_heuristics",
         "maximum number of potential heuristics",
-        "infinity");
+        "infinity",
+        Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_filtering_time",
         "time limit in seconds for filtering dead end samples",
-        "infinity");
+        "infinity",
+        Bounds("0.0", "infinity"));
     parser.add_option<double>(
         "max_covering_time",
         "time limit in seconds for covering samples",
-        "infinity");
+        "infinity",
+        Bounds("0.0", "infinity"));
     add_common_potentials_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
