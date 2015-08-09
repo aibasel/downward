@@ -44,8 +44,8 @@ SamplesAndFunctions DiversePotentialHeuristics::filter_samples_and_compute_funct
             ++num_duplicates;
             continue;
         }
-        bool optimal = optimizer.optimize_for_state(sample);
-        if (optimal) {
+        optimizer.optimize_for_state(sample);
+        if (optimizer.has_optimal_solution()) {
             samples_and_functions[sample] = optimizer.get_potential_function();
         } else {
             dead_ends.insert(sample);
