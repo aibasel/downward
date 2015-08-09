@@ -29,7 +29,7 @@ void PotentialOptimizer::initialize() {
     lp_var_ids.resize(vars.size());
     fact_potentials.resize(vars.size());
     for (VariableProxy var : vars) {
-        // Add LP variable for "unknown" value.
+        // Add LP variable for "undefined" value.
         lp_var_ids[var.get_id()].resize(var.get_domain_size() + 1);
         for (int val = 0; val < var.get_domain_size() + 1; ++val) {
             lp_var_ids[var.get_id()][val] = num_lp_vars++;
@@ -59,10 +59,12 @@ bool PotentialOptimizer::optimize_for_all_states() {
     set_lp_objective(coefficients);
     bool optimal = solve_lp();
     if (!optimal) {
-        if (potentials_are_bounded())
-            ABORT("LP unbounded even though potentials are bounded.");
-        else
-            ABORT("Potentials must be bounded for all-states LP.");
+        if (potentials_are_bounded()) {
+            ABORT("all-states LP unbounded even though potentials are bounded.");
+        } else {
+            cerr << "Potentials must be bounded for all-states LP." << endl;
+            exit_with(EXIT_INPUT_ERROR);
+        }
     }
     return optimal;
 }
