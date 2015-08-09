@@ -18,7 +18,8 @@ static void filter_dead_ends(PotentialOptimizer &optimizer, vector<State> &sampl
     assert(!optimizer.potentials_are_bounded());
     vector<State> non_dead_end_samples;
     for (const State &sample : samples) {
-        if (optimizer.optimize_for_state(sample))
+        optimizer.optimize_for_state(sample);
+        if (optimizer.has_optimal_solution())
             non_dead_end_samples.push_back(sample);
     }
     swap(samples, non_dead_end_samples);

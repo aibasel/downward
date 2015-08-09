@@ -42,23 +42,22 @@ bool PotentialOptimizer::has_optimal_solution() const {
     return lp_solver.has_optimal_solution();
 }
 
-bool PotentialOptimizer::optimize_for_state(const State &state) {
-    return optimize_for_samples({state}
-                                );
+void PotentialOptimizer::optimize_for_state(const State &state) {
+    optimize_for_samples({state});
 }
 
 int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
     return lp_var_ids[fact.get_variable().get_id()][fact.get_value()];
 }
 
-bool PotentialOptimizer::optimize_for_all_states() {
+void PotentialOptimizer::optimize_for_all_states() {
     vector<double> coefficients(num_lp_vars, 0.0);
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
         coefficients[get_lp_var_id(fact)] = 1.0 / fact.get_variable().get_domain_size();
     }
     set_lp_objective(coefficients);
-    bool optimal = solve_lp();
-    if (!optimal) {
+    solve_lp();
+    if (!has_optimal_solution()) {
         if (potentials_are_bounded()) {
             ABORT("all-states LP unbounded even though potentials are bounded.");
         } else {
@@ -66,10 +65,9 @@ bool PotentialOptimizer::optimize_for_all_states() {
             exit_with(EXIT_INPUT_ERROR);
         }
     }
-    return optimal;
 }
 
-bool PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
+void PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
     vector<double> coefficients(num_lp_vars, 0.0);
     for (const State &state : samples) {
         for (FactProxy fact : state) {
@@ -77,7 +75,7 @@ bool PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
         }
     }
     set_lp_objective(coefficients);
-    return solve_lp();
+    solve_lp();
 }
 
 void PotentialOptimizer::set_lp_objective(const vector<double> &coefficients) {
@@ -177,12 +175,11 @@ void PotentialOptimizer::construct_lp() {
     lp_solver.load_problem(LPObjectiveSense::MAXIMIZE, lp_variables, lp_constraints);
 }
 
-bool PotentialOptimizer::solve_lp() {
+void PotentialOptimizer::solve_lp() {
     lp_solver.solve();
     if (has_optimal_solution()) {
         extract_lp_solution();
     }
-    return has_optimal_solution();
 }
 
 void PotentialOptimizer::extract_lp_solution() {
