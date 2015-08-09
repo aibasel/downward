@@ -63,7 +63,8 @@ void add_common_potentials_options_to_parser(OptionParser &parser) {
     parser.add_option<double>(
         "max_potential",
         "Bound potentials by this number",
-        "infinity");
+        "1e8",
+        Bounds("0.0", "infinity"));
     add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 }
