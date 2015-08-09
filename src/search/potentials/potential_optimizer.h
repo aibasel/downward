@@ -15,8 +15,29 @@ namespace potentials {
 class PotentialFunction;
 
 /*
-  Add admissible potential constraints to LP and allow optimizing for different
-  objectives.
+  Add admissible potential constraints to LP and allow optimizing for
+  different objectives.
+
+  The implementation is based on transforming the task into transition
+  normal form (TNF) (Pommerening and Helmert, ICAPS 2015). We add an
+  undefined value u to each variable's domain, but do not create
+  forgetting operators or change existing operators explicitly.
+  Instead, we ensure that all fact potentials of a variable V are less
+  than or equal to the potential of V=u and implicitly set pre(op) to
+  V=u for operators op where pre(op) is undefined.
+
+  For more information we refer to the paper introducing potential
+  heuristics
+
+  Florian Pommerening, Malte Helmert, Gabriele Röger and Jendrik Seipp.
+  From Non-Negative to General Operator Cost Partitioning.
+  AAAI 2015.
+
+  and the paper comparing various optimization functions
+
+  Jendrik Seipp, Florian Pommerening and Malte Helmert.
+  New Optimization Functions for Potential Heuristics.
+  ICAPS 2015.
 */
 class PotentialOptimizer {
     std::shared_ptr<AbstractTask> task;
