@@ -63,7 +63,8 @@ SamplesAndFunctions DiversePotentialHeuristics::filter_samples_and_compute_funct
 void DiversePotentialHeuristics::filter_covered_samples(
     const Function chosen_function,
     SamplesAndFunctions &samples_and_functions) const {
-    for (auto it = samples_and_functions.begin(); it != samples_and_functions.end();) {
+    for (auto it = samples_and_functions.begin();
+         it != samples_and_functions.end();) {
         const State &sample = it->first;
         Function sample_function = it->second;
         int max_h = sample_function->get_value(sample);
@@ -79,29 +80,28 @@ void DiversePotentialHeuristics::filter_covered_samples(
 Function DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     SamplesAndFunctions &samples_and_functions) {
     vector<State> samples;
-    for (auto sample_and_function : samples_and_functions) {
+    for (auto &sample_and_function : samples_and_functions) {
         const State &state = sample_and_function.first;
         samples.push_back(state);
     }
     optimizer.optimize_for_samples(samples);
-    Function group_function = optimizer.get_potential_function();
+    Function function = optimizer.get_potential_function();
     size_t last_num_samples = samples_and_functions.size();
-    filter_covered_samples(group_function, samples_and_functions);
-    Function function = nullptr;
-    if (samples_and_functions.size() < last_num_samples) {
-        function = group_function;
-    } else {
-        cout << "No sample was removed -> Use arbitrary precomputed function." << endl;
-        Function single_function = samples_and_functions.begin()->second;
-        filter_covered_samples(single_function, samples_and_functions);
-        function = single_function;
+    filter_covered_samples(function, samples_and_functions);
+    if (samples_and_functions.size() == last_num_samples) {
+        cout << "No sample removed -> Use arbitrary precomputed function."
+             << endl;
+        function = samples_and_functions.begin()->second;
+        filter_covered_samples(function, samples_and_functions);
     }
-    cout << "Removed " << last_num_samples - samples_and_functions.size() << " samples. "
-         << samples_and_functions.size() << " remaining." << endl;
+    cout << "Removed " << last_num_samples - samples_and_functions.size()
+         << " samples. " << samples_and_functions.size() << " remaining."
+         << endl;
     return function;
 }
 
-void DiversePotentialHeuristics::cover_samples(SamplesAndFunctions &samples_and_functions) {
+void DiversePotentialHeuristics::cover_samples(
+    SamplesAndFunctions &samples_and_functions) {
     CountdownTimer covering_timer(max_covering_time);
     while (!samples_and_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
@@ -122,8 +122,8 @@ void DiversePotentialHeuristics::find_diverse_functions() {
         optimizer, num_samples);
 
     // Filter dead end samples.
-    SamplesAndFunctions samples_and_functions = filter_samples_and_compute_functions(
-        samples);
+    SamplesAndFunctions samples_and_functions =
+        filter_samples_and_compute_functions(samples);
 
     // Iteratively cover samples.
     cover_samples(samples_and_functions);
