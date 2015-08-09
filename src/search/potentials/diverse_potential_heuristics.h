@@ -17,6 +17,8 @@ using SamplesAndFunctions = std::unordered_map<State, Function>;
 
 class DiversePotentialHeuristics {
     PotentialOptimizer optimizer;
+    // TODO: Remove max_num_heuristics and control number of heuristics
+    // with num_samples parameter?
     const int max_num_heuristics;
     const int num_samples;
     // TODO: Experiment with time limits and remove them if unneeded.
