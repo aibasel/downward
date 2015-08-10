@@ -45,14 +45,12 @@ class DiversePotentialHeuristics {
        for as many samples as possible. */
     void cover_samples(SamplesAndFunctions &samples_and_functions);
 
-    // Sample states, then cover them.
-    void find_diverse_functions();
-
 public:
     explicit DiversePotentialHeuristics(const Options &opts);
     ~DiversePotentialHeuristics() = default;
 
-    std::vector<Function > &&get_functions();
+    // Sample states, then cover them.
+    std::vector<std::unique_ptr<PotentialFunction> > &&find_functions();
 };
 }
 #endif
