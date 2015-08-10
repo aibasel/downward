@@ -11,9 +11,8 @@
 
 
 namespace potentials {
-// TODO: Rethink ownership, use less shared pointers, remove these abbreviations.
-using Function = std::unique_ptr<PotentialFunction>;
-using SamplesAndFunctions = std::unordered_map<State, Function>;
+using SamplesAndFunctions =
+    std::unordered_map<State, std::unique_ptr<PotentialFunction>>;
 
 class DiversePotentialHeuristics {
     PotentialOptimizer optimizer;
@@ -24,7 +23,7 @@ class DiversePotentialHeuristics {
     // TODO: Experiment with time limits and remove them if unneeded.
     const double max_filtering_time;
     const double max_covering_time;
-    std::vector<Function> diverse_functions;
+    std::vector<std::unique_ptr<PotentialFunction> > diverse_functions;
 
     /* Filter dead end samples and duplicates. Store potential heuristics
        for remaining samples. */
@@ -38,7 +37,7 @@ class DiversePotentialHeuristics {
 
     /* Return potential function optimized for remaining samples or a
        precomputed heuristic if the former does not cover additional samples. */
-    Function find_function_and_remove_covered_samples(
+    std::unique_ptr<PotentialFunction> find_function_and_remove_covered_samples(
         SamplesAndFunctions &samples);
 
     /* Iteratively try to find potential functions that achieve maximal values
