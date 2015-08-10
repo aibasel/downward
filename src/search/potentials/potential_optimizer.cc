@@ -191,8 +191,8 @@ void PotentialOptimizer::extract_lp_solution() {
     }
 }
 
-shared_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
-    return make_shared<PotentialFunction>(fact_potentials);
+unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
+    return make_unique_ptr<PotentialFunction>(fact_potentials);
 }
 
 }

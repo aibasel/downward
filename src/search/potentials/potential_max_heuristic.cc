@@ -8,15 +8,17 @@ using namespace std;
 
 
 namespace potentials {
-PotentialMaxHeuristic::PotentialMaxHeuristic(const Options &opts)
+PotentialMaxHeuristic::PotentialMaxHeuristic(
+    const Options &opts,
+    vector<unique_ptr<PotentialFunction> > &&functions)
     : Heuristic(opts),
-      functions(opts.get_list<shared_ptr<PotentialFunction> >("functions")) {
+      functions(move(functions)) {
 }
 
 int PotentialMaxHeuristic::compute_heuristic(const GlobalState &global_state) {
     const State state = convert_global_state(global_state);
     int value = 0;
-    for (shared_ptr<PotentialFunction> function : functions) {
+    for (auto &function : functions) {
         value = max(value, function->get_value(state));
     }
     return value;

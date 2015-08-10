@@ -12,7 +12,7 @@
 
 namespace potentials {
 // TODO: Rethink ownership, use less shared pointers, remove these abbreviations.
-using Function = std::shared_ptr<PotentialFunction>;
+using Function = std::unique_ptr<PotentialFunction>;
 using SamplesAndFunctions = std::unordered_map<State, Function>;
 
 class DiversePotentialHeuristics {
@@ -52,7 +52,7 @@ public:
     explicit DiversePotentialHeuristics(const Options &opts);
     ~DiversePotentialHeuristics() = default;
 
-    std::vector<Function > get_functions() const;
+    std::vector<Function > &&get_functions();
 };
 }
 #endif
