@@ -43,7 +43,8 @@ bool PotentialOptimizer::has_optimal_solution() const {
 }
 
 void PotentialOptimizer::optimize_for_state(const State &state) {
-    optimize_for_samples({state});
+    optimize_for_samples({state}
+                         );
 }
 
 int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
@@ -195,5 +196,4 @@ unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const
     assert(has_optimal_solution());
     return make_unique_ptr<PotentialFunction>(fact_potentials);
 }
-
 }

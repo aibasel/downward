@@ -22,7 +22,7 @@ protected:
 public:
     explicit PotentialMaxHeuristic(
         const Options &opts,
-        std::vector<std::unique_ptr<PotentialFunction> > &&functions);
+        std::vector<std::unique_ptr<PotentialFunction> > && functions);
     ~PotentialMaxHeuristic() = default;
 };
 }

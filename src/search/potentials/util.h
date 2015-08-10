@@ -15,7 +15,6 @@ std::vector<State> sample_without_dead_end_detection(
 void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples);
 
 void add_common_potentials_options_to_parser(OptionParser &parser);
-
 }
 
 #endif
