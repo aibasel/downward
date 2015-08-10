@@ -16,8 +16,7 @@ class LabelGroup {
     /*
       A label group contains a set of locally equivalent labels, possibly of
       different cost, stores the minimum cost of all labels of the group,
-      and has a pointer to the position in TransitionSystem::transitions_of_groups
-      where the transitions associated with this group live.
+      and has an id.
     */
     std::list<int> labels;
     int id;
@@ -65,6 +64,34 @@ public:
 typedef std::list<LabelGroup>::iterator LabelGroupIter;
 typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
 
+class LabelEquivalenceRelation;
+
+class LabelGroupConstIterator {
+    const std::list<LabelGroup> &grouped_labels;
+    LabelGroupConstIter current;
+
+    friend class LabelEquivalenceRelation;
+    LabelGroupConstIterator(const std::list<LabelGroup> &grouped_labels,
+                            bool end);
+public:
+    LabelGroupConstIterator(const LabelGroupConstIterator &other);
+    const LabelGroup &operator*() {
+        return *current;
+    }
+    void operator++() {
+        ++current;
+    }
+    void operator--() {
+        --current;
+    }
+    bool operator==(const LabelGroupConstIterator &rhs) {
+        return current == rhs.current;
+    }
+
+    bool operator!=(const LabelGroupConstIterator &rhs) {
+        return current != rhs.current;
+    }
+};
 
 class LabelEquivalenceRelation {
     /*
@@ -82,32 +109,22 @@ public:
     virtual ~LabelEquivalenceRelation() = default;
 
     void recompute_group_cost();
-    const std::list<LabelGroup> &get_grouped_labels() const {
-        return grouped_labels;
-    }
-    // only "compute_locally_equivalent_labels" needs non-const iterators.
-    LabelGroupIter begin() {
-        return grouped_labels.begin();
-    }
-    LabelGroupConstIter begin() const {
-        return grouped_labels.begin();
-    }
-    LabelGroupIter end() {
-        return grouped_labels.end();
-    }
-    LabelGroupConstIter end() const {
-        return grouped_labels.end();
-    }
-
     void replace_labels_by_label(
         const std::vector<int> &old_label_nos, int new_label_no);
-    LabelGroupIter move_group_into_group(LabelGroupIter from_group, LabelGroupIter to_group);
+    void move_group_into_group(int from_label_no, int to_label_no);
     bool erase(int label_no);
     int add_label_group(const std::vector<int> &new_labels);
     int get_group_id(int label_no) {
         return label_to_positions[label_no].first->get_id();
     }
     int get_num_labels() const;
+
+    LabelGroupConstIterator begin() const {
+        return LabelGroupConstIterator(grouped_labels, false);
+    }
+    LabelGroupConstIterator end() const {
+        return LabelGroupConstIterator(grouped_labels, true);
+    }
 };
 
 #endif
