@@ -150,8 +150,11 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    const std::list<LabelGroup> &get_grouped_labels() const {
-        return label_equivalence_relation->get_grouped_labels();
+    LabelGroupConstIterator begin() const {
+        return label_equivalence_relation->begin();
+    }
+    LabelGroupConstIterator end() const {
+        return label_equivalence_relation->end();
     }
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
         return transitions_of_groups[group_id];

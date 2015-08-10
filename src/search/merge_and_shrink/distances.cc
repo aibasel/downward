@@ -34,9 +34,12 @@ bool Distances::is_unit_cost() const {
       that the actual shortest-path algorithms (e.g.
       compute_goal_distances_general_cost) do.
     */
-    for (const LabelGroup &group : transition_system.get_grouped_labels())
-        if (group.get_cost() != 1)
+    for (LabelGroupConstIterator group_it = transition_system.begin();
+         group_it != transition_system.end(); ++group_it) {
+        const LabelGroup &label_group = *group_it;
+        if (label_group.get_cost() != 1)
             return false;
+    }
     return true;
 }
 
@@ -57,14 +60,12 @@ static void breadth_first_search(
 }
 
 void Distances::compute_init_distances_unit_cost() {
-    const list<LabelGroup> &grouped_labels =
-        transition_system.get_grouped_labels();
-
     vector<vector<int> > forward_graph(get_num_states());
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
+    for (LabelGroupConstIterator group_it = transition_system.begin();
+         group_it != transition_system.end(); ++group_it) {
+        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(*group_it);
+            transition_system.get_transitions_for_group(label_group);
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             forward_graph[transition.src].push_back(transition.target);
@@ -83,14 +84,12 @@ void Distances::compute_init_distances_unit_cost() {
 }
 
 void Distances::compute_goal_distances_unit_cost() {
-    const list<LabelGroup> &grouped_labels =
-        transition_system.get_grouped_labels();
-
     vector<vector<int> > backward_graph(get_num_states());
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
+    for (LabelGroupConstIterator group_it = transition_system.begin();
+         group_it != transition_system.end(); ++group_it) {
+        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(*group_it);
+            transition_system.get_transitions_for_group(label_group);
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             backward_graph[transition.target].push_back(transition.src);
@@ -133,15 +132,13 @@ static void dijkstra_search(
 }
 
 void Distances::compute_init_distances_general_cost() {
-    const list<LabelGroup> &grouped_labels =
-        transition_system.get_grouped_labels();
-
     vector<vector<pair<int, int> > > forward_graph(get_num_states());
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
+    for (LabelGroupConstIterator group_it = transition_system.begin();
+         group_it != transition_system.end(); ++group_it) {
+        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(*group_it);
-        int cost = group_it->get_cost();
+            transition_system.get_transitions_for_group(label_group);
+        int cost = label_group.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             forward_graph[transition.src].push_back(
@@ -163,15 +160,13 @@ void Distances::compute_init_distances_general_cost() {
 }
 
 void Distances::compute_goal_distances_general_cost() {
-    const list<LabelGroup> &grouped_labels =
-        transition_system.get_grouped_labels();
-
     vector<vector<pair<int, int> > > backward_graph(get_num_states());
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
+    for (LabelGroupConstIterator group_it = transition_system.begin();
+         group_it != transition_system.end(); ++group_it) {
+        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(*group_it);
-        int cost = group_it->get_cost();
+            transition_system.get_transitions_for_group(label_group);
+        int cost = label_group.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             backward_graph[transition.target].push_back(

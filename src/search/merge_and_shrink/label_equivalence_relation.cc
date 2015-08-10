@@ -7,6 +7,18 @@
 
 using namespace std;
 
+LabelGroupConstIterator::LabelGroupConstIterator(
+    const list<LabelGroup> &grouped_labels, bool end)
+    : grouped_labels(grouped_labels),
+      current((end ? grouped_labels.end() : grouped_labels.begin())) {
+}
+
+LabelGroupConstIterator::LabelGroupConstIterator(const LabelGroupConstIterator &other)
+    : grouped_labels(other.grouped_labels),
+      current(other.current) {
+    ++current;
+}
+
 LabelEquivalenceRelation::LabelEquivalenceRelation(const std::shared_ptr<Labels> labels)
     : labels(labels) {
     label_to_positions.resize(labels->get_max_size());
@@ -51,14 +63,16 @@ void LabelEquivalenceRelation::replace_labels_by_label(
     }
 }
 
-LabelGroupIter LabelEquivalenceRelation::move_group_into_group(
-    LabelGroupIter from_group, LabelGroupIter to_group) {
+void LabelEquivalenceRelation::move_group_into_group(
+    int from_label_no, int to_label_no) {
+    LabelGroupIter to_group = label_to_positions[to_label_no].first;
+    LabelGroupIter from_group = label_to_positions[from_label_no].first;
     for (LabelConstIter group2_label_it = from_group->begin();
          group2_label_it != from_group->end(); ++group2_label_it) {
         int other_label_no = *group2_label_it;
         add_label_to_group(to_group, other_label_no);
     }
-    return grouped_labels.erase(from_group);
+    grouped_labels.erase(from_group);
 }
 
 bool LabelEquivalenceRelation::erase(int label_no) {
