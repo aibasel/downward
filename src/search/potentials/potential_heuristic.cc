@@ -8,9 +8,10 @@ using namespace std;
 
 
 namespace potentials {
-PotentialHeuristic::PotentialHeuristic(const Options &options)
-    : Heuristic(options),
-      function(options.get<shared_ptr<PotentialFunction> >("function")) {
+PotentialHeuristic::PotentialHeuristic(
+    const Options &opts, std::unique_ptr<PotentialFunction> function)
+    : Heuristic(opts),
+      function(move(function)) {
 }
 
 int PotentialHeuristic::compute_heuristic(const GlobalState &global_state) {

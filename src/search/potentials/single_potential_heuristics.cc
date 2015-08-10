@@ -17,7 +17,7 @@ enum class OptFunc {
     ALL_STATES,
 };
 
-static shared_ptr<PotentialFunction> create_potential_function(
+static unique_ptr<PotentialFunction> create_potential_function(
     const Options &opts, OptFunc opt_func) {
     PotentialOptimizer optimizer(opts);
     shared_ptr<AbstractTask> task = get_task_from_options(opts);
@@ -41,9 +41,7 @@ static Heuristic *_parse(OptionParser &parser, OptFunc opt_func) {
     if (parser.dry_run())
         return nullptr;
 
-    opts.set<shared_ptr<PotentialFunction> >(
-        "function", create_potential_function(opts, opt_func));
-    return new PotentialHeuristic(opts);
+    return new PotentialHeuristic(opts, create_potential_function(opts, opt_func));
 }
 
 static Heuristic *_parse_initial_state_potential(OptionParser &parser) {

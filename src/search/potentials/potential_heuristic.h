@@ -17,13 +17,14 @@ class PotentialFunction;
         Can we and do we want to handle dead-end states separately?
 */
 class PotentialHeuristic : public Heuristic {
-    std::shared_ptr<PotentialFunction> function;
+    std::unique_ptr<PotentialFunction> function;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
 
 public:
-    explicit PotentialHeuristic(const Options &options);
+    explicit PotentialHeuristic(
+        const Options &opts, std::unique_ptr<PotentialFunction> function);
     ~PotentialHeuristic() = default;
 };
 }

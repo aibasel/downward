@@ -66,13 +66,15 @@ void DiversePotentialHeuristics::filter_covered_samples(
     for (auto it = samples_and_functions.begin();
          it != samples_and_functions.end();) {
         const State &sample = it->first;
-        Function sample_function = it->second;
-        int max_h = sample_function->get_value(sample);
+        const PotentialFunction &sample_function = *it->second;
+        int max_h = sample_function.get_value(sample);
         int h = chosen_function.get_value(sample);
         assert(h <= max_h);
         // TODO: Count as covered if max_h <= 0.
         if (h == max_h) {
             it = samples_and_functions.erase(it);
+        } else {
+            ++it;
         }
     }
 }
@@ -91,7 +93,8 @@ Function DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     if (samples_and_functions.size() == last_num_samples) {
         cout << "No sample removed -> Use arbitrary precomputed function."
              << endl;
-        function = samples_and_functions.begin()->second;
+        function = move(samples_and_functions.begin()->second);
+        samples_and_functions.erase(samples_and_functions.begin());
         filter_covered_samples(*function, samples_and_functions);
     }
     cout << "Removed " << last_num_samples - samples_and_functions.size()
@@ -129,8 +132,8 @@ void DiversePotentialHeuristics::find_diverse_functions() {
     cover_samples(samples_and_functions);
 }
 
-vector<Function > DiversePotentialHeuristics::get_functions() const {
-    return diverse_functions;
+std::vector<Function> &&DiversePotentialHeuristics::get_functions() {
+    return move(diverse_functions);
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -162,8 +165,7 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     DiversePotentialHeuristics factory(opts);
-    opts.set<vector<Function> >("functions", factory.get_functions());
-    return new PotentialMaxHeuristic(opts);
+    return new PotentialMaxHeuristic(opts, factory.get_functions());
 }
 
 static Plugin<Heuristic> _plugin("diverse_potentials", _parse);

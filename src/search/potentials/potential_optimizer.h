@@ -68,7 +68,7 @@ public:
 
     bool has_optimal_solution() const;
 
-    std::shared_ptr<PotentialFunction> get_potential_function() const;
+    std::unique_ptr<PotentialFunction> get_potential_function() const;
 };
 }
 
