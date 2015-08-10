@@ -6,3 +6,4 @@ Description of tags for this issue:
 - issue571-v2: after merging issue571-base-v2 from default
 - issue571-v3: in constructor, label reduction of locally equivalent labels, and computation of locally equivalent labels in TransitionSystem, use group ids and methods of LabelEquivalenceRelation rather than manipulating the groups directly
 - issue571-v4: label reduction of non locally equivalent labels also uses the new class
+- issue571-v5: use a custom iterator when accessing LabelEquivalenceRelation (to hide the underlying containers)
