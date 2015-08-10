@@ -15,6 +15,7 @@ void DocStore::register_object(string k, string type) {
     registered[k].type = type;
     registered[k].full_name = k;
     registered[k].synopsis = "";
+    registered[k].hidden = false;
 }
 
 void DocStore::add_arg(string k,
