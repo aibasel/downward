@@ -29,7 +29,7 @@ class PotentialFunction;
   For more information we refer to the paper introducing potential
   heuristics
 
-  Florian Pommerening, Malte Helmert, Gabriele Röger and Jendrik Seipp.
+  Florian Pommerening, Malte Helmert, Gabriele Roeger and Jendrik Seipp.
   From Non-Negative to General Operator Cost Partitioning.
   AAAI 2015.
 

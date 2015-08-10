@@ -70,7 +70,7 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     return new PotentialMaxHeuristic(
-        opts, create_sample_based_potential_functions(opts));
+               opts, create_sample_based_potential_functions(opts));
 }
 
 static Plugin<Heuristic> _plugin("sample_based_potentials", _parse);

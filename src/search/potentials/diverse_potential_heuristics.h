@@ -12,7 +12,7 @@
 
 namespace potentials {
 using SamplesToFunctions =
-    std::unordered_map<State, std::unique_ptr<PotentialFunction>>;
+          std::unordered_map<State, std::unique_ptr<PotentialFunction> >;
 
 class DiversePotentialHeuristics {
     PotentialOptimizer optimizer;
@@ -49,7 +49,7 @@ public:
     ~DiversePotentialHeuristics() = default;
 
     // Sample states, then cover them.
-    std::vector<std::unique_ptr<PotentialFunction> > &&find_functions();
+    std::vector<std::unique_ptr<PotentialFunction> > && find_functions();
 };
 }
 #endif

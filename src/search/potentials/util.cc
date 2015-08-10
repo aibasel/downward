@@ -49,5 +49,4 @@ void add_common_potentials_options_to_parser(OptionParser &parser) {
     add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 }
-
 }
