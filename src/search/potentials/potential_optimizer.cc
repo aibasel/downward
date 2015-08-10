@@ -192,6 +192,7 @@ void PotentialOptimizer::extract_lp_solution() {
 }
 
 unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
+    assert(has_optimal_solution());
     return make_unique_ptr<PotentialFunction>(fact_potentials);
 }
 
