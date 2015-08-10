@@ -75,7 +75,7 @@ void DiversePotentialHeuristics::filter_covered_samples(
     }
 }
 
-Function DiversePotentialHeuristics::find_function_and_remove_covered_samples(
+unique_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     SamplesAndFunctions &samples_and_functions) {
     vector<State> samples;
     for (auto &sample_and_function : samples_and_functions) {
@@ -83,7 +83,7 @@ Function DiversePotentialHeuristics::find_function_and_remove_covered_samples(
         samples.push_back(state);
     }
     optimizer.optimize_for_samples(samples);
-    Function function = optimizer.get_potential_function();
+    std::unique_ptr<PotentialFunction> function = optimizer.get_potential_function();
     size_t last_num_samples = samples_and_functions.size();
     filter_covered_samples(*function, samples_and_functions);
     if (samples_and_functions.size() == last_num_samples) {
