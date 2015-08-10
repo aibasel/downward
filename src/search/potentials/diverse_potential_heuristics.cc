@@ -21,10 +21,6 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
       num_samples(opts.get<int>("num_samples")),
       max_filtering_time(opts.get<double>("max_filtering_time")),
       max_covering_time(opts.get<double>("max_covering_time")) {
-    Timer init_timer;
-    find_diverse_functions();
-    cout << "Potential heuristics: " << diverse_functions.size() << endl;
-    cout << "Initialization of potential heuristics: " << init_timer << endl;
 }
 
 SamplesAndFunctions DiversePotentialHeuristics::filter_samples_and_compute_functions(
@@ -119,7 +115,10 @@ void DiversePotentialHeuristics::cover_samples(
     cout << "Time for covering samples: " << covering_timer << endl;
 }
 
-void DiversePotentialHeuristics::find_diverse_functions() {
+vector<unique_ptr<PotentialFunction> > &&DiversePotentialHeuristics::find_functions() {
+    assert(diverse_functions.empty());
+    Timer init_timer;
+
     // Sample states.
     vector<State> samples = sample_without_dead_end_detection(
         optimizer, num_samples);
@@ -130,9 +129,10 @@ void DiversePotentialHeuristics::find_diverse_functions() {
 
     // Iteratively cover samples.
     cover_samples(samples_and_functions);
-}
 
-std::vector<Function> &&DiversePotentialHeuristics::get_functions() {
+    cout << "Potential heuristics: " << diverse_functions.size() << endl;
+    cout << "Initialization of potential heuristics: " << init_timer << endl;
+
     return move(diverse_functions);
 }
 
@@ -165,7 +165,7 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     DiversePotentialHeuristics factory(opts);
-    return new PotentialMaxHeuristic(opts, factory.get_functions());
+    return new PotentialMaxHeuristic(opts, factory.find_functions());
 }
 
 static Plugin<Heuristic> _plugin("diverse_potentials", _parse);
