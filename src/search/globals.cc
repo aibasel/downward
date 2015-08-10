@@ -86,8 +86,10 @@ bool peek_magic(istream &in, string magic) {
     string word;
     in >> word;
     bool result = (word == magic);
-    for (int i = word.size() - 1; i >= 0; --i)
+    for (int i = word.size() - 1; i >= 0; --i) {
         in.putback(word[i]);
+        assert(in.good());
+    }
     return result;
 }
 
