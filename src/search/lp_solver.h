@@ -109,6 +109,7 @@ public:
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity() const)
 
+    LP_METHOD(void set_objective_coefficients(const std::vector<double> &coefficients))
     LP_METHOD(void set_objective_coefficient(int index, double coefficient))
     LP_METHOD(void set_constraint_lower_bound(int index, double bound))
     LP_METHOD(void set_constraint_upper_bound(int index, double bound))
