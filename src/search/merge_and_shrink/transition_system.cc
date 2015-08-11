@@ -44,7 +44,7 @@ const int TransitionSystem::PRUNED_STATE;
 
 
 TSConstIterator::TSConstIterator(
-        shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
+        const shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
         const vector<vector<Transition> > &transitions_by_group_id,
         bool end)
     : label_equivalence_relation(label_equivalence_relation),
