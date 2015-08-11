@@ -1,8 +1,6 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
-#include "ts_iterator.h"
-
 #include <forward_list>
 #include <iostream>
 #include <list>
@@ -20,6 +18,8 @@ class TaskProxy;
 class Timer;
 
 typedef int AbstractStateRef;
+// Duplicata from LabelEquivalenceRelation
+typedef std::list<int>::const_iterator LabelConstIter;
 
 // Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
 extern const int INF;
@@ -47,6 +47,35 @@ struct Transition {
     friend std::ostream &operator<<(std::ostream &os, const Transition &trans) {
         os << trans.src << "->" << trans.target;
         return os;
+    }
+};
+
+class TSConstIterator {
+    std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation;
+    const std::vector<std::vector<Transition> > &transitions_by_group_id;
+    int current;
+public:
+    TSConstIterator(std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
+                    const std::vector<std::vector<Transition> > &transitions_by_group_id,
+                    bool end);
+    // NOTE: not explicit because we copy and assign these iterators when
+    // creating them.
+    TSConstIterator(const TSConstIterator &other);
+    void operator++();
+    bool operator==(const TSConstIterator &rhs) const {
+        return current == rhs.current;
+    }
+    bool operator!=(const TSConstIterator &rhs) const {
+        return current != rhs.current;
+    }
+    int get_id() const {
+        return current;
+    }
+    int get_cost() const;
+    LabelConstIter begin() const;
+    LabelConstIter end() const;
+    const std::vector<Transition> &get_transitions() const {
+        return transitions_by_group_id[current];
     }
 };
 
@@ -84,7 +113,7 @@ private:
       new label group is added also increases runtime. See also issue492 and
       issue521.
     */
-    std::vector<std::vector<Transition> > transitions_of_groups;
+    std::vector<std::vector<Transition> > transitions_by_group_id;
 
     int num_states;
 
@@ -118,6 +147,12 @@ private:
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
     bool are_transitions_sorted_unique() const;
     void compute_locally_equivalent_labels();
+    const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
+        return transitions_by_group_id[group_id];
+    }
+    std::vector<Transition> &get_transitions_for_group_id(int group_id) {
+        return transitions_by_group_id[group_id];
+    }
 
     // Statistics and output
     int total_transitions() const;
@@ -152,16 +187,12 @@ public:
     void release_memory();
 
     TSConstIterator begin() const {
-        return TSConstIterator(label_equivalence_relation, false);
+        return TSConstIterator(
+            label_equivalence_relation, transitions_by_group_id, false);
     }
     TSConstIterator end() const {
-        return TSConstIterator(label_equivalence_relation, true);
-    }
-    const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
-        return transitions_of_groups[group_id];
-    }
-    std::vector<Transition> &get_transitions_for_group_id(int group_id) {
-        return transitions_of_groups[group_id];
+        return TSConstIterator(
+            label_equivalence_relation, transitions_by_group_id, true);
     }
     /*
       Method to identify the transition system in output.
