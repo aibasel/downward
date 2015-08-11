@@ -159,14 +159,8 @@ public:
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
         return transitions_of_groups[group_id];
     }
-    const std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) const {
-        return get_transitions_for_group_id(group.get_id());
-    }
     std::vector<Transition> &get_transitions_for_group_id(int group_id) {
         return transitions_of_groups[group_id];
-    }
-    std::vector<Transition> &get_transitions_for_group(const LabelGroup &group) {
-        return get_transitions_for_group_id(group.get_id());
     }
     /*
       Method to identify the transition system in output.

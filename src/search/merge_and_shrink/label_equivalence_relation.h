@@ -19,12 +19,11 @@ class LabelGroup {
       and has an id.
     */
     std::list<int> labels;
-    int id;
     int cost;
 public:
-    explicit LabelGroup(int id)
+    LabelGroup()
         // TODO: duplication of INF in transition_system.h
-        : id(id), cost(std::numeric_limits<int>::max()) {
+        : cost(std::numeric_limits<int>::max()) {
     }
     void set_cost(int cost_) {
         cost = cost_;
@@ -35,6 +34,10 @@ public:
     void erase(LabelIter pos) {
         labels.erase(pos);
     }
+    void clear() {
+        labels.clear();
+    }
+
     LabelIter begin() {
         return labels.begin();
     }
@@ -47,9 +50,6 @@ public:
     LabelConstIter end() const {
         return labels.end();
     }
-    int get_id() const {
-        return id;
-    }
     bool empty() const {
         return labels.empty();
     }
@@ -61,35 +61,34 @@ public:
     }
 };
 
-typedef std::list<LabelGroup>::iterator LabelGroupIter;
-typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
-
 class LabelEquivalenceRelation;
 
 class LabelGroupConstIterator {
-    const std::list<LabelGroup> &grouped_labels;
-    LabelGroupConstIter current;
+    const std::vector<LabelGroup> &grouped_labels;
+    std::size_t current;
 
     friend class LabelEquivalenceRelation;
-    LabelGroupConstIterator(const std::list<LabelGroup> &grouped_labels,
+    LabelGroupConstIterator(const std::vector<LabelGroup> &grouped_labels,
                             bool end);
 public:
     LabelGroupConstIterator(const LabelGroupConstIterator &other);
-    const LabelGroup &operator*() {
-        return *current;
+    const LabelGroup &operator*() const {
+        return grouped_labels[current];
     }
     void operator++() {
         ++current;
+        while (current < grouped_labels.size() && grouped_labels[current].empty()) {
+            ++current;
+        }
     }
-    void operator--() {
-        --current;
-    }
-    bool operator==(const LabelGroupConstIterator &rhs) {
+    bool operator==(const LabelGroupConstIterator &rhs) const {
         return current == rhs.current;
     }
-
-    bool operator!=(const LabelGroupConstIterator &rhs) {
+    bool operator!=(const LabelGroupConstIterator &rhs) const {
         return current != rhs.current;
+    }
+    int get_id() const {
+        return current;
     }
 };
 
@@ -100,10 +99,10 @@ class LabelEquivalenceRelation {
     */
     const std::shared_ptr<Labels> labels;
 
-    std::list<LabelGroup> grouped_labels;
-    std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
+    std::vector<LabelGroup> grouped_labels;
+    std::vector<std::pair<int, LabelIter> > label_to_positions;
 
-    void add_label_to_group(LabelGroupIter group_it, int label_no);
+    void add_label_to_group(int group_id, int label_no);
 public:
     explicit LabelEquivalenceRelation(const std::shared_ptr<Labels> labels);
     virtual ~LabelEquivalenceRelation() = default;
@@ -111,11 +110,11 @@ public:
     void recompute_group_cost();
     void replace_labels_by_label(
         const std::vector<int> &old_label_nos, int new_label_no);
-    void move_group_into_group(int from_label_no, int to_label_no);
+    void move_group_into_group(int from_group_id, int to_group_id);
     bool erase(int label_no);
     int add_label_group(const std::vector<int> &new_labels);
     int get_group_id(int label_no) {
-        return label_to_positions[label_no].first->get_id();
+        return label_to_positions[label_no].first;
     }
     int get_num_labels() const;
 

@@ -57,7 +57,7 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
         const vector<Transition> &transitions =
-            transition_system->get_transitions_for_group(label_group);
+            transition_system->get_transitions_for_group_id(group_it.get_id());
         bool group_relevant = false;
         if (static_cast<int>(transitions.size()) == transition_system->get_size()) {
             /*
