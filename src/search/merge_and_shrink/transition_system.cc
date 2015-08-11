@@ -43,6 +43,54 @@ const int INF = numeric_limits<int>::max();
 const int TransitionSystem::PRUNED_STATE;
 
 
+TSConstIterator::TSConstIterator(
+        shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
+        const vector<vector<Transition> > &transitions_by_group_id,
+        bool end)
+    : label_equivalence_relation(label_equivalence_relation),
+      transitions_by_group_id(transitions_by_group_id),
+      current((end ? label_equivalence_relation->get_size() : 0)) {
+    while (current < label_equivalence_relation->get_size()
+            && (*label_equivalence_relation)[current].empty()) {
+        ++current;
+    }
+}
+
+TSConstIterator::TSConstIterator(const TSConstIterator &other)
+    : label_equivalence_relation(other.label_equivalence_relation),
+      transitions_by_group_id(other.transitions_by_group_id),
+      current(other.current) {
+    if (current < label_equivalence_relation->get_size()) {
+        // guard against creating an iterator from an end-iterator.
+        ++current;
+    }
+    while (current < label_equivalence_relation->get_size()
+           && (*label_equivalence_relation)[current].empty()) {
+        ++current;
+    }
+}
+
+void TSConstIterator::operator++() {
+    ++current;
+    while (current < label_equivalence_relation->get_size()
+           && (*label_equivalence_relation)[current].empty()) {
+        ++current;
+    }
+}
+
+int TSConstIterator::get_cost() const {
+    return (*label_equivalence_relation)[current].get_cost();
+}
+
+LabelConstIter TSConstIterator::begin() const {
+    return (*label_equivalence_relation)[current].begin();
+}
+
+LabelConstIter TSConstIterator::end() const {
+    return (*label_equivalence_relation)[current].end();
+}
+
+
 // common case for both constructors
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const shared_ptr<Labels> labels)
@@ -50,7 +98,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
       label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)),
       heuristic_representation(nullptr),
       distances(make_unique_ptr<Distances>(*this)) {
-    transitions_of_groups.resize(labels->get_max_size());
+    transitions_by_group_id.resize(labels->get_max_size());
 }
 
 // atomic transition system constructor
@@ -65,7 +113,7 @@ TransitionSystem::TransitionSystem(
       the following line can be changed to an initialization:
       ": transitions_of_groups(transitions_by_label)"
     */
-    transitions_of_groups = move(transitions_by_label);
+    transitions_by_group_id = move(transitions_by_label);
     /*
       TODO: The following if block and the interaction with the
       constructor we delegate to are a hack and a bit of a performance
@@ -83,7 +131,7 @@ TransitionSystem::TransitionSystem(
     int num_ops = task_proxy.get_operators().size();
     if (num_ops > 0) {
         int max_num_labels = num_ops * 2 - 1;
-        transitions_of_groups.resize(max_num_labels);
+        transitions_by_group_id.resize(max_num_labels);
     }
 
     incorporated_variables.push_back(var_id);
@@ -194,7 +242,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
         // refinements of group1.
 
         // Now create the new groups together with their transitions.
-        const vector<Transition> &transitions1 = ts1->get_transitions_for_group_id(group1_it.get_id());
+        const vector<Transition> &transitions1 = group1_it.get_transitions();
         for (const auto &bucket : buckets) {
             const vector<Transition> &transitions2 =
                 ts2->get_transitions_for_group_id(bucket.first);
@@ -224,7 +272,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
             } else {
                 sort(new_transitions.begin(), new_transitions.end());
                 int new_index = label_equivalence_relation->add_label_group(new_labels);
-                transitions_of_groups[new_index].swap(new_transitions);
+                transitions_by_group_id[new_index].swap(new_transitions);
             }
         }
     }
@@ -286,7 +334,7 @@ void TransitionSystem::normalize_given_transitions(vector<Transition> &transitio
 bool TransitionSystem::are_transitions_sorted_unique() const {
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
-        if (!is_sorted_unique(get_transitions_for_group_id(group_it.get_id())))
+        if (!is_sorted_unique(group_it.get_transitions()))
             return false;
     }
     return true;
@@ -299,8 +347,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     */
     for (TSConstIterator group1_it = begin();
          group1_it != end(); ++group1_it) {
-        int group1_id = group1_it.get_id();
-        const vector<Transition> &transitions1 = get_transitions_for_group_id(group1_id);
+        const vector<Transition> &transitions1 = group1_it.get_transitions();
         for (TSConstIterator group2_it = TSConstIterator(group1_it);
              group2_it != end(); ++group2_it) {
             assert(group2_it != group1_it);
@@ -308,7 +355,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
             vector<Transition> &transitions2 = get_transitions_for_group_id(group2_id);
             if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
                 label_equivalence_relation->move_group_into_group(
-                    group2_id, group1_id);
+                    group2_id, group1_it.get_id());
                 release_vector_memory(transitions2);
             }
         }
@@ -446,7 +493,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                 }
             }
             int group_id = label_equivalence_relation->add_label_group({new_label_no});
-            transitions_of_groups[group_id].assign(
+            transitions_by_group_id[group_id].assign(
                 collected_transitions.begin(), collected_transitions.end());
         }
     }
@@ -462,7 +509,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
 
 void TransitionSystem::release_memory() {
     label_equivalence_relation.reset();
-    release_vector_memory(transitions_of_groups);
+    release_vector_memory(transitions_by_group_id);
 }
 
 string TransitionSystem::tag() const {
@@ -491,7 +538,7 @@ int TransitionSystem::total_transitions() const {
     int total = 0;
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
-        total += get_transitions_for_group_id(group_it.get_id()).size();
+        total += group_it.get_transitions().size();
     }
     return total;
 }
@@ -500,7 +547,7 @@ int TransitionSystem::unique_unlabeled_transitions() const {
     vector<Transition> unique_transitions;
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
-        const vector<Transition> &transitions = get_transitions_for_group_id(group_it.get_id());
+        const vector<Transition> &transitions = group_it.get_transitions();
         unique_transitions.insert(unique_transitions.end(), transitions.begin(),
                                   transitions.end());
     }
@@ -560,7 +607,7 @@ void TransitionSystem::dump_dot_graph() const {
     }
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
-        const vector<Transition> &transitions = get_transitions_for_group_id(group_it.get_id());
+        const vector<Transition> &transitions = group_it.get_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
@@ -590,7 +637,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
         }
         cout << endl;
         cout << "transitions: ";
-        const vector<Transition> &transitions = get_transitions_for_group_id(group_it.get_id());
+        const vector<Transition> &transitions = group_it.get_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;

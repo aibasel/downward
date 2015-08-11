@@ -134,7 +134,6 @@ HEADERS += merge_and_shrink/distances.h \
            merge_and_shrink/shrink_random.h \
            merge_and_shrink/shrink_strategy.h \
            merge_and_shrink/transition_system.h \
-           merge_and_shrink/ts_iterator.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \

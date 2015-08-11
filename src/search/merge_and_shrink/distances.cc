@@ -62,8 +62,7 @@ void Distances::compute_init_distances_unit_cost() {
     vector<vector<int> > forward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group_id(group_it.get_id());
+        const vector<Transition> &transitions = group_it.get_transitions();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             forward_graph[transition.src].push_back(transition.target);
@@ -85,8 +84,7 @@ void Distances::compute_goal_distances_unit_cost() {
     vector<vector<int> > backward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group_id(group_it.get_id());
+        const vector<Transition> &transitions = group_it.get_transitions();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             backward_graph[transition.target].push_back(transition.src);
@@ -132,8 +130,7 @@ void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group_id(group_it.get_id());
+        const vector<Transition> &transitions = group_it.get_transitions();
         int cost = group_it.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
@@ -159,8 +156,7 @@ void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group_id(group_it.get_id());
+        const vector<Transition> &transitions = group_it.get_transitions();
         int cost = group_it.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
