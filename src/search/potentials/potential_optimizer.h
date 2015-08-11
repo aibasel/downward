@@ -24,7 +24,8 @@ class PotentialFunction;
   forgetting operators or change existing operators explicitly.
   Instead, we ensure that all fact potentials of a variable V are less
   than or equal to the potential of V=u and implicitly set pre(op) to
-  V=u for operators op where pre(op) is undefined.
+  V=u for operators op where pre(op) is undefined. Similarly, we set
+  s_\star(V) = u for variables V without a goal value.
 
   For more information we refer to the paper introducing potential
   heuristics
@@ -52,7 +53,7 @@ class PotentialOptimizer {
     void initialize();
     void construct_lp();
     void set_lp_objective(const std::vector<double> &coefficients);
-    void solve_lp();
+    void solve_and_extract();
     void extract_lp_solution();
 
 public:

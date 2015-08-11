@@ -5,13 +5,17 @@
 #include "../option_parser.h"
 #include "../task_tools.h"
 
-#include <numeric>
+#include <limits>
 #include <unordered_map>
 
 using namespace std;
 
 
 namespace potentials {
+static int get_undefined_value(VariableProxy var) {
+    return var.get_domain_size();
+}
+
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
     : task(get_task_from_options(opts)),
       task_proxy(*task),
@@ -21,7 +25,6 @@ PotentialOptimizer::PotentialOptimizer(const Options &opts)
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
     initialize();
-    construct_lp();
 }
 
 void PotentialOptimizer::initialize() {
@@ -36,6 +39,7 @@ void PotentialOptimizer::initialize() {
         }
         fact_potentials[var.get_id()].resize(var.get_domain_size());
     }
+    construct_lp();
 }
 
 bool PotentialOptimizer::has_optimal_solution() const {
@@ -48,23 +52,26 @@ void PotentialOptimizer::optimize_for_state(const State &state) {
 }
 
 int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
-    return lp_var_ids[fact.get_variable().get_id()][fact.get_value()];
+    int var_id = fact.get_variable().get_id();
+    int value = fact.get_value();
+    assert(in_bounds(var_id, lp_var_ids));
+    assert(in_bounds(value, lp_var_ids[var_id]));
+    return lp_var_ids[var_id][value];
 }
 
 void PotentialOptimizer::optimize_for_all_states() {
+    if (!potentials_are_bounded()) {
+        cerr << "Potentials must be bounded for all-states LP." << endl;
+        exit_with(EXIT_INPUT_ERROR);
+    }
     vector<double> coefficients(num_lp_vars, 0.0);
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
         coefficients[get_lp_var_id(fact)] = 1.0 / fact.get_variable().get_domain_size();
     }
     set_lp_objective(coefficients);
-    solve_lp();
+    solve_and_extract();
     if (!has_optimal_solution()) {
-        if (potentials_are_bounded()) {
-            ABORT("all-states LP unbounded even though potentials are bounded.");
-        } else {
-            cerr << "Potentials must be bounded for all-states LP." << endl;
-            exit_with(EXIT_INPUT_ERROR);
-        }
+        ABORT("all-states LP unbounded even though potentials are bounded.");
     }
 }
 
@@ -76,7 +83,7 @@ void PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
         }
     }
     set_lp_objective(coefficients);
-    solve_lp();
+    solve_and_extract();
 }
 
 void PotentialOptimizer::set_lp_objective(const vector<double> &coefficients) {
@@ -115,14 +122,14 @@ void PotentialOptimizer::construct_lp() {
         LPConstraint constraint(-lp_solver.get_infinity(), op.get_cost());
         vector<pair<int, int> > coefficients;
         for (EffectProxy effect : op.get_effects()) {
-            int var_id = effect.get_fact().get_variable().get_id();
+            VariableProxy var = effect.get_fact().get_variable();
+            int var_id = var.get_id();
 
             // Set pre to pre(op) if defined, otherwise to u = |dom(var)|.
             int pre = -1;
             auto it = var_to_precondition.find(var_id);
             if (it == var_to_precondition.end()) {
-                int undef_val = effect.get_fact().get_variable().get_domain_size();
-                pre = undef_val;
+                pre = get_undefined_value(var);
             } else {
                 pre = it->second;
             }
@@ -147,21 +154,26 @@ void PotentialOptimizer::construct_lp() {
         goal[fact.get_variable().get_id()] = fact.get_value();
     }
     for (VariableProxy var : task_proxy.get_variables()) {
-        int undef_val = var.get_domain_size();
         if (goal[var.get_id()] == -1)
-            goal[var.get_id()] = undef_val;
+            goal[var.get_id()] = get_undefined_value(var);
     }
 
     for (VariableProxy var : task_proxy.get_variables()) {
-        // Create constraint (using variable bounds): P_{V=goal[V]} = 0
-        // TODO: Use constraint on potential sum instead of single potentials?
+        /*
+          Create constraint (using variable bounds): P_{V=goal[V]} = 0
+          When each variable has a goal value (including the
+          "undefined" value), this is equivalent to the goal-awareness
+          constraint \sum_{fact in goal} P_fact <= 0. We can't set the
+          potential of one goal fact to +2 and another to -2, but if
+          all variables have goal values, this is not beneficial
+          anyway.
+        */
         int var_id = var.get_id();
         LPVariable &lp_var = lp_variables[lp_var_ids[var_id][goal[var_id]]];
         lp_var.lower_bound = 0;
         lp_var.upper_bound = 0;
 
-        int undef_val = var.get_domain_size();
-        int undef_val_lp = lp_var_ids[var_id][undef_val];
+        int undef_val_lp = lp_var_ids[var_id][get_undefined_value(var)];
         for (int val = 0; val < var.get_domain_size(); ++val) {
             int val_lp = lp_var_ids[var_id][val];
             // Create constraint: P_{V=v} <= P_{V=u}
@@ -176,7 +188,7 @@ void PotentialOptimizer::construct_lp() {
     lp_solver.load_problem(LPObjectiveSense::MAXIMIZE, lp_variables, lp_constraints);
 }
 
-void PotentialOptimizer::solve_lp() {
+void PotentialOptimizer::solve_and_extract() {
     lp_solver.solve();
     if (has_optimal_solution()) {
         extract_lp_solution();

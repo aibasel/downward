@@ -10,15 +10,6 @@
 using namespace std;
 
 
-double get_average_operator_cost(TaskProxy task_proxy) {
-    double average_operator_cost = 0;
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        average_operator_cost += op.get_cost();
-    }
-    average_operator_cost /= task_proxy.get_operators().size();
-    return average_operator_cost;
-}
-
 vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
     SuccessorGenerator &successor_generator,
@@ -26,7 +17,7 @@ vector<State> sample_states_with_random_walks(
     int init_h,
     double average_operator_cost,
     function<bool (State)> is_dead_end,
-    const CountdownTimer &timer) {
+    const CountdownTimer *timer) {
     vector<State> samples;
 
     const State &initial_state = task_proxy.get_initial_state();
@@ -51,7 +42,7 @@ vector<State> sample_states_with_random_walks(
 
     samples.reserve(num_samples);
     for (int i = 0; i < num_samples; ++i) {
-        if (timer.is_expired())
+        if (timer && timer->is_expired())
             throw SamplingTimeout();
 
         // Calculate length of random walk according to a binomial distribution.

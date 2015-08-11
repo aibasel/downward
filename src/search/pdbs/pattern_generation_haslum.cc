@@ -110,7 +110,7 @@ void PatternGenerationHaslum::sample_states(
             task_proxy, successor_generator, num_samples, init_h, average_operator_cost,
             [this](const State &state) {return current_heuristic->is_dead_end(state);
             },
-            *hill_climbing_timer);
+            hill_climbing_timer);
     } catch (SamplingTimeout &) {
         throw HillClimbingTimeout();
     }
