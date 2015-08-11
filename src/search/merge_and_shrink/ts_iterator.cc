@@ -1,10 +1,10 @@
-#include "label_group_iterator.h"
+#include "ts_iterator.h"
 
 #include "label_equivalence_relation.h"
 
 using namespace std;
 
-LabelGroupConstIterator::LabelGroupConstIterator(
+TSConstIterator::TSConstIterator(
         shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
         bool end)
     : label_equivalence_relation(label_equivalence_relation),
@@ -15,7 +15,7 @@ LabelGroupConstIterator::LabelGroupConstIterator(
     }
 }
 
-LabelGroupConstIterator::LabelGroupConstIterator(const LabelGroupConstIterator &other)
+TSConstIterator::TSConstIterator(const TSConstIterator &other)
     : label_equivalence_relation(other.label_equivalence_relation),
       current(other.current) {
     if (current < label_equivalence_relation->get_size()) {
@@ -27,7 +27,7 @@ LabelGroupConstIterator::LabelGroupConstIterator(const LabelGroupConstIterator &
     }
 }
 
-void LabelGroupConstIterator::operator++() {
+void TSConstIterator::operator++() {
     ++current;
     while (current < label_equivalence_relation->get_size()
            && (*label_equivalence_relation)[current].empty()) {
@@ -35,14 +35,14 @@ void LabelGroupConstIterator::operator++() {
     }
 }
 
-int LabelGroupConstIterator::get_cost() const {
+int TSConstIterator::get_cost() const {
     return (*label_equivalence_relation)[current].get_cost();
 }
 
-LabelConstIter LabelGroupConstIterator::begin() const {
+LabelConstIter TSConstIterator::begin() const {
     return (*label_equivalence_relation)[current].begin();
 }
 
-LabelConstIter LabelGroupConstIterator::end() const {
+LabelConstIter TSConstIterator::end() const {
     return (*label_equivalence_relation)[current].end();
 }

@@ -156,7 +156,7 @@ void ShrinkBisimulation::compute_signatures(
       the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
       Running the above config on those two revisions yields the same difference.
     */
-    for (LabelGroupConstIterator group_it = ts.begin();
+    for (TSConstIterator group_it = ts.begin();
          group_it != ts.end(); ++group_it) {
         const vector<Transition> &transitions =
             ts.get_transitions_for_group_id(group_it.get_id());

@@ -170,7 +170,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
         if (!ts || ts == fixed_transition_system) {
             continue;
         }
-        for (LabelGroupConstIterator group_it = ts->begin();
+        for (TSConstIterator group_it = ts->begin();
              group_it != ts->end(); ++group_it) {
             relation->refine(group_it.begin(), group_it.end());
         }

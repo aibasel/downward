@@ -9,20 +9,20 @@ typedef std::list<int>::const_iterator LabelConstIter;
 
 class LabelEquivalenceRelation;
 
-class LabelGroupConstIterator {
+class TSConstIterator {
     std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation;
     int current;
 public:
-    LabelGroupConstIterator(std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
+    TSConstIterator(std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
                             bool end);
     // NOTE: not explicit because we copy and assign these iterators when
     // creating them.
-    LabelGroupConstIterator(const LabelGroupConstIterator &other);
+    TSConstIterator(const TSConstIterator &other);
     void operator++();
-    bool operator==(const LabelGroupConstIterator &rhs) const {
+    bool operator==(const TSConstIterator &rhs) const {
         return current == rhs.current;
     }
-    bool operator!=(const LabelGroupConstIterator &rhs) const {
+    bool operator!=(const TSConstIterator &rhs) const {
         return current != rhs.current;
     }
     int get_id() const {

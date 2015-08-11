@@ -123,7 +123,6 @@ HEADERS += merge_and_shrink/distances.h \
            merge_and_shrink/fts_factory.h \
            merge_and_shrink/heuristic_representation.h \
            merge_and_shrink/label_equivalence_relation.h \
-           merge_and_shrink/label_group_iterator.h \
            merge_and_shrink/labels.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
            merge_and_shrink/merge_dfp.h \
@@ -135,6 +134,7 @@ HEADERS += merge_and_shrink/distances.h \
            merge_and_shrink/shrink_random.h \
            merge_and_shrink/shrink_strategy.h \
            merge_and_shrink/transition_system.h \
+           merge_and_shrink/ts_iterator.h \
 
 HEADERS += landmarks/exploration.h \
            landmarks/h_m_landmarks.h \

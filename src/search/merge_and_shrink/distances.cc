@@ -34,7 +34,7 @@ bool Distances::is_unit_cost() const {
       that the actual shortest-path algorithms (e.g.
       compute_goal_distances_general_cost) do.
     */
-    for (LabelGroupConstIterator group_it = transition_system.begin();
+    for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         if (group_it.get_cost() != 1)
             return false;
@@ -60,7 +60,7 @@ static void breadth_first_search(
 
 void Distances::compute_init_distances_unit_cost() {
     vector<vector<int> > forward_graph(get_num_states());
-    for (LabelGroupConstIterator group_it = transition_system.begin();
+    for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions =
             transition_system.get_transitions_for_group_id(group_it.get_id());
@@ -83,7 +83,7 @@ void Distances::compute_init_distances_unit_cost() {
 
 void Distances::compute_goal_distances_unit_cost() {
     vector<vector<int> > backward_graph(get_num_states());
-    for (LabelGroupConstIterator group_it = transition_system.begin();
+    for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions =
             transition_system.get_transitions_for_group_id(group_it.get_id());
@@ -130,7 +130,7 @@ static void dijkstra_search(
 
 void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(get_num_states());
-    for (LabelGroupConstIterator group_it = transition_system.begin();
+    for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions =
             transition_system.get_transitions_for_group_id(group_it.get_id());
@@ -157,7 +157,7 @@ void Distances::compute_init_distances_general_cost() {
 
 void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(get_num_states());
-    for (LabelGroupConstIterator group_it = transition_system.begin();
+    for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions =
             transition_system.get_transitions_for_group_id(group_it.get_id());
