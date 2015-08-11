@@ -15,8 +15,7 @@ typedef std::list<int>::const_iterator LabelConstIter;
 class LabelGroup {
     /*
       A label group contains a set of locally equivalent labels, possibly of
-      different cost, stores the minimum cost of all labels of the group,
-      and has an id.
+      different cost, and stores the minimum cost of all labels of the group.
     */
     std::list<int> labels;
     int cost;
