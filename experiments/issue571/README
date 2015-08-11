@@ -9,3 +9,4 @@ Description of tags for this issue:
 - issue571-v5: use a custom iterator when accessing LabelEquivalenceRelation (to hide the underlying containers)
 - issue571-v6: use vector instead of list to store LabelGroup objects
 - issue571-v7: move all implementation details of LabelGroupConstIterator into cc-file; move the class to its own file; hide LabelEquivalenceRelation and LabelGroup from transition_system.h and its users.
+- issue571-v8: LabelGroupConstIterator became TSConstIteartor and now lives in transition_system.h/cc. It also has a reference to the transitions, so iterating over TransitionSystem now allows to have access to both labels and transitions
