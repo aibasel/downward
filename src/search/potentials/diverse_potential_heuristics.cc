@@ -23,13 +23,14 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
       max_covering_time(opts.get<double>("max_covering_time")) {
 }
 
-SamplesToFunctions DiversePotentialHeuristics::filter_samples_and_compute_functions(
+SamplesToFunctionsMap
+DiversePotentialHeuristics::filter_samples_and_compute_functions(
     const vector<State> &samples) {
     CountdownTimer filtering_timer(max_filtering_time);
     unordered_set<State> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
-    SamplesToFunctions samples_to_functions;
+    SamplesToFunctionsMap samples_to_functions;
     for (const State &sample : samples) {
         if (filtering_timer.is_expired()) {
             cout << "Ran out of time filtering dead ends." << endl;
@@ -58,7 +59,7 @@ SamplesToFunctions DiversePotentialHeuristics::filter_samples_and_compute_functi
 
 void DiversePotentialHeuristics::remove_covered_samples(
     const PotentialFunction &chosen_function,
-    SamplesToFunctions &samples_to_functions) const {
+    SamplesToFunctionsMap &samples_to_functions) const {
     for (auto it = samples_to_functions.begin();
          it != samples_to_functions.end();) {
         const State &sample = it->first;
@@ -75,8 +76,9 @@ void DiversePotentialHeuristics::remove_covered_samples(
     }
 }
 
-unique_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remove_covered_samples(
-    SamplesToFunctions &samples_to_functions) {
+unique_ptr<PotentialFunction>
+DiversePotentialHeuristics::find_function_and_remove_covered_samples(
+    SamplesToFunctionsMap &samples_to_functions) {
     vector<State> uncovered_samples;
     for (auto &sample_and_function : samples_to_functions) {
         const State &state = sample_and_function.first;
@@ -101,7 +103,7 @@ unique_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remo
 }
 
 void DiversePotentialHeuristics::cover_samples(
-    SamplesToFunctions &samples_to_functions) {
+    SamplesToFunctionsMap &samples_to_functions) {
     CountdownTimer covering_timer(max_covering_time);
     while (!samples_to_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
@@ -125,7 +127,7 @@ vector<unique_ptr<PotentialFunction> > && DiversePotentialHeuristics::find_funct
         optimizer, num_samples);
 
     // Filter dead end samples.
-    SamplesToFunctions samples_to_functions =
+    SamplesToFunctionsMap samples_to_functions =
         filter_samples_and_compute_functions(samples);
 
     // Iteratively cover samples.

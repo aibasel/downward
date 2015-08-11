@@ -11,7 +11,7 @@
 
 
 namespace potentials {
-using SamplesToFunctions =
+using SamplesToFunctionsMap =
           std::unordered_map<State, std::unique_ptr<PotentialFunction> >;
 
 /*
@@ -30,22 +30,22 @@ class DiversePotentialHeuristics {
 
     /* Filter dead end samples and duplicates. Store potential heuristics
        for remaining samples. */
-    SamplesToFunctions filter_samples_and_compute_functions(
+    SamplesToFunctionsMap filter_samples_and_compute_functions(
         const std::vector<State> &samples);
 
     // Remove all samples for which the function achieves maximal values.
     void remove_covered_samples(
         const PotentialFunction &chosen_function,
-        SamplesToFunctions &samples_to_functions) const;
+        SamplesToFunctionsMap &samples_to_functions) const;
 
     /* Return potential function optimized for remaining samples or a
        precomputed heuristic if the former does not cover additional samples. */
     std::unique_ptr<PotentialFunction> find_function_and_remove_covered_samples(
-        SamplesToFunctions &samples_to_functions);
+        SamplesToFunctionsMap &samples_to_functions);
 
     /* Iteratively try to find potential functions that achieve maximal values
        for as many samples as possible. */
-    void cover_samples(SamplesToFunctions &samples_to_functions);
+    void cover_samples(SamplesToFunctionsMap &samples_to_functions);
 
 public:
     explicit DiversePotentialHeuristics(const Options &opts);
