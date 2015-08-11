@@ -52,7 +52,6 @@ class PotentialOptimizer {
     int get_lp_var_id(const FactProxy &fact) const;
     void initialize();
     void construct_lp();
-    void set_lp_objective(const std::vector<double> &coefficients);
     void solve_and_extract();
     void extract_lp_solution();
 
