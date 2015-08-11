@@ -3,10 +3,10 @@
 #include "potential_function.h"
 #include "potential_optimizer.h"
 
-#include "../countdown_timer.h"
 #include "../option_parser.h"
 #include "../sampling.h"
 #include "../successor_generator.h"
+#include "../task_tools.h"
 
 #include <limits>
 
@@ -22,18 +22,12 @@ vector<State> sample_without_dead_end_detection(
     optimizer.optimize_for_state(initial_state);
     SuccessorGenerator successor_generator(task);
     int init_h = optimizer.get_potential_function()->get_value(initial_state);
-    CountdownTimer timer(numeric_limits<double>::infinity());
     return sample_states_with_random_walks(
                task_proxy, successor_generator, num_samples, init_h,
-               get_average_operator_cost(task_proxy),
-               [] (const State &) {
-                   // Currently, our potential functions can't detect dead ends.
-                   return false;
-               },
-               timer);
+               get_average_operator_cost(task_proxy));
 }
 
-void add_common_potentials_options_to_parser(OptionParser &parser) {
+void prepare_parser_for_admissible_potentials(OptionParser &parser) {
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");

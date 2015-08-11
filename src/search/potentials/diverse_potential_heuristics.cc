@@ -56,7 +56,7 @@ SamplesToFunctions DiversePotentialHeuristics::filter_samples_and_compute_functi
     return samples_to_functions;
 }
 
-void DiversePotentialHeuristics::filter_covered_samples(
+void DiversePotentialHeuristics::remove_covered_samples(
     const PotentialFunction &chosen_function,
     SamplesToFunctions &samples_to_functions) const {
     for (auto it = samples_to_functions.begin();
@@ -77,21 +77,22 @@ void DiversePotentialHeuristics::filter_covered_samples(
 
 unique_ptr<PotentialFunction> DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     SamplesToFunctions &samples_to_functions) {
-    vector<State> samples;
+    vector<State> uncovered_samples;
     for (auto &sample_and_function : samples_to_functions) {
         const State &state = sample_and_function.first;
-        samples.push_back(state);
+        uncovered_samples.push_back(state);
     }
-    optimizer.optimize_for_samples(samples);
+    optimizer.optimize_for_samples(uncovered_samples);
     std::unique_ptr<PotentialFunction> function = optimizer.get_potential_function();
     size_t last_num_samples = samples_to_functions.size();
-    filter_covered_samples(*function, samples_to_functions);
+    remove_covered_samples(*function, samples_to_functions);
     if (samples_to_functions.size() == last_num_samples) {
         cout << "No sample removed -> Use arbitrary precomputed function."
              << endl;
         function = move(samples_to_functions.begin()->second);
+        // The move operation invalidated the entry, remove it.
         samples_to_functions.erase(samples_to_functions.begin());
-        filter_covered_samples(*function, samples_to_functions);
+        remove_covered_samples(*function, samples_to_functions);
     }
     cout << "Removed " << last_num_samples - samples_to_functions.size()
          << " samples. " << samples_to_functions.size() << " remaining."
@@ -159,7 +160,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "time limit in seconds for covering samples",
         "infinity",
         Bounds("0.0", "infinity"));
-    add_common_potentials_options_to_parser(parser);
+    prepare_parser_for_admissible_potentials(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

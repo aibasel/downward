@@ -64,7 +64,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "Number of states to sample",
         "1000",
         Bounds("0", "infinity"));
-    add_common_potentials_options_to_parser(parser);
+    prepare_parser_for_admissible_potentials(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

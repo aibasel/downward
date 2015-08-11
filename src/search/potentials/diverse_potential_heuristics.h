@@ -14,6 +14,9 @@ namespace potentials {
 using SamplesToFunctions =
           std::unordered_map<State, std::unique_ptr<PotentialFunction> >;
 
+/*
+  Factory class that finds diverse potential functions.
+*/
 class DiversePotentialHeuristics {
     PotentialOptimizer optimizer;
     // TODO: Remove max_num_heuristics and control number of heuristics
@@ -31,7 +34,7 @@ class DiversePotentialHeuristics {
         const std::vector<State> &samples);
 
     // Remove all samples for which the function achieves maximal values.
-    void filter_covered_samples(
+    void remove_covered_samples(
         const PotentialFunction &chosen_function,
         SamplesToFunctions &samples_to_functions) const;
 

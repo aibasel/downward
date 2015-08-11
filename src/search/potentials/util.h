@@ -12,9 +12,7 @@ class PotentialOptimizer;
 std::vector<State> sample_without_dead_end_detection(
     PotentialOptimizer &optimizer, int num_samples);
 
-void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples);
-
-void add_common_potentials_options_to_parser(OptionParser &parser);
+void prepare_parser_for_admissible_potentials(OptionParser &parser);
 }
 
 #endif
