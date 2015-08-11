@@ -327,6 +327,7 @@ void TransitionSystem::compute_distances_and_prune() {
 }
 
 void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
+    // TODO: should we get rid of this and use a set when collecting transitions?
     sort(transitions.begin(), transitions.end());
     transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
 }
