@@ -1,7 +1,7 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
-#include "label_group_iterator.h"
+#include "ts_iterator.h"
 
 #include <forward_list>
 #include <iostream>
@@ -151,11 +151,11 @@ public:
                                bool only_equivalent_labels);
     void release_memory();
 
-    LabelGroupConstIterator begin() const {
-        return LabelGroupConstIterator(label_equivalence_relation, false);
+    TSConstIterator begin() const {
+        return TSConstIterator(label_equivalence_relation, false);
     }
-    LabelGroupConstIterator end() const {
-        return LabelGroupConstIterator(label_equivalence_relation, true);
+    TSConstIterator end() const {
+        return TSConstIterator(label_equivalence_relation, true);
     }
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
         return transitions_of_groups[group_id];
