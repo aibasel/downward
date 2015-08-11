@@ -63,9 +63,8 @@ void Distances::compute_init_distances_unit_cost() {
     vector<vector<int> > forward_graph(get_num_states());
     for (LabelGroupConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(label_group);
+            transition_system.get_transitions_for_group_id(group_it.get_id());
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             forward_graph[transition.src].push_back(transition.target);
@@ -87,9 +86,8 @@ void Distances::compute_goal_distances_unit_cost() {
     vector<vector<int> > backward_graph(get_num_states());
     for (LabelGroupConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(label_group);
+            transition_system.get_transitions_for_group_id(group_it.get_id());
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             backward_graph[transition.target].push_back(transition.src);
@@ -137,7 +135,7 @@ void Distances::compute_init_distances_general_cost() {
          group_it != transition_system.end(); ++group_it) {
         const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(label_group);
+            transition_system.get_transitions_for_group_id(group_it.get_id());
         int cost = label_group.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
@@ -165,7 +163,7 @@ void Distances::compute_goal_distances_general_cost() {
          group_it != transition_system.end(); ++group_it) {
         const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            transition_system.get_transitions_for_group(label_group);
+            transition_system.get_transitions_for_group_id(group_it.get_id());
         int cost = label_group.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];

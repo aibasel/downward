@@ -160,7 +160,7 @@ void ShrinkBisimulation::compute_signatures(
          group_it != ts.end(); ++group_it) {
         const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
-            ts.get_transitions_for_group(label_group);
+            ts.get_transitions_for_group_id(group_it.get_id());
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
