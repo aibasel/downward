@@ -68,7 +68,7 @@ void PotentialOptimizer::optimize_for_all_states() {
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
         coefficients[get_lp_var_id(fact)] = 1.0 / fact.get_variable().get_domain_size();
     }
-    set_lp_objective(coefficients);
+    lp_solver.set_objective_coefficients(coefficients);
     solve_and_extract();
     if (!has_optimal_solution()) {
         ABORT("all-states LP unbounded even though potentials are bounded.");
@@ -82,15 +82,8 @@ void PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
             coefficients[get_lp_var_id(fact)] += 1.0;
         }
     }
-    set_lp_objective(coefficients);
+    lp_solver.set_objective_coefficients(coefficients);
     solve_and_extract();
-}
-
-void PotentialOptimizer::set_lp_objective(const vector<double> &coefficients) {
-    assert(static_cast<int>(coefficients.size()) == num_lp_vars);
-    for (int i = 0; i < num_lp_vars; ++i) {
-        lp_solver.set_objective_coefficient(i, coefficients[i]);
-    }
 }
 
 const std::shared_ptr<AbstractTask> PotentialOptimizer::get_task() const {
