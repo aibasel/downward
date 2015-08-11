@@ -18,7 +18,7 @@ class TaskProxy;
 class Timer;
 
 typedef int AbstractStateRef;
-// Duplicata from LabelEquivalenceRelation
+// Duplicate from LabelEquivalenceRelation
 typedef std::list<int>::const_iterator LabelConstIter;
 
 // Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
@@ -58,8 +58,7 @@ public:
     TSConstIterator(std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
                     const std::vector<std::vector<Transition> > &transitions_by_group_id,
                     bool end);
-    // NOTE: not explicit because we copy and assign these iterators when
-    // creating them.
+    // NOTE: not explicit because we copy and assign when creating instances.
     TSConstIterator(const TSConstIterator &other);
     void operator++();
     bool operator==(const TSConstIterator &rhs) const {
