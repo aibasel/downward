@@ -299,19 +299,14 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     */
     for (LabelGroupConstIterator group1_it = begin();
          group1_it != end(); ++group1_it) {
-        const vector<Transition> &transitions1 = get_transitions_for_group_id(group1_it.get_id());
+        int group1_id = group1_it.get_id();
+        const vector<Transition> &transitions1 = get_transitions_for_group_id(group1_id);
         for (LabelGroupConstIterator group2_it = LabelGroupConstIterator(group1_it);
              group2_it != end(); ++group2_it) {
             assert(group2_it != group1_it);
-            vector<Transition> &transitions2 = get_transitions_for_group_id(group2_it.get_id());
+            int group2_id = group2_it.get_id();
+            vector<Transition> &transitions2 = get_transitions_for_group_id(group2_id);
             if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
-                int group1_id = group1_it.get_id();
-                int group2_id = group2_it.get_id();
-                /*
-                  HACK: decrement the iterator before moving the group, because
-                  this involves deleting it, and hence the underlying iterator
-                  of LabelGroupConstIterator becomes invalid.
-                */
                 label_equivalence_relation->move_group_into_group(
                     group2_id, group1_id);
                 release_vector_memory(transitions2);
