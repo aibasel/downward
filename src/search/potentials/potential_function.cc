@@ -24,6 +24,6 @@ int PotentialFunction::get_value(const State &state) const {
         heuristic_value += fact_potentials[var_id][value];
     }
     const double epsilon = 0.01;
-    return static_cast<int>(max(0.0, ceil(heuristic_value - epsilon)));
+    return static_cast<int>(ceil(heuristic_value - epsilon));
 }
 }
