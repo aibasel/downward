@@ -170,30 +170,10 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
         if (!ts || ts == fixed_transition_system) {
             continue;
         }
-//        ts->dump_labels_and_transitions();
-//        LabelGroupConstIterator group_it = transition_system->begin();
-//        const list<LabelGroup> &grouped_labels2 = group_it.get_grouped_labels();
-//        LabelGroupConstIter group_it2 = grouped_labels2.begin();
         for (LabelGroupConstIterator group_it = ts->begin();
              group_it != ts->end(); ++group_it) {
-            const LabelGroup &label_group = *group_it;
-//            for (LabelConstIter label_it = label_group.begin();
-//                 label_it != label_group.end(); ++label_it) {
-//                cout << *label_it << ", ";
-//            }
-//            cout << endl;
-            relation->refine(label_group.begin(), label_group.end());
+            relation->refine(group_it.begin(), group_it.end());
         }
-//        const list<LabelGroup> &grouped_labels = ts->get_grouped_labels();
-//        LabelGroupConstIter group_it1 = grouped_labels.begin();
-//        for (; group_it1 != grouped_labels.end(); ++group_it1) {
-////            const LabelGroup &label_group2 = *group_it2;
-//            const LabelGroup &label_group1 = *group_it1;
-////            cout << "sizes: " << label_group1.size() << ", " << label_group2.size() << endl;
-////            assert(label_group1.size() == label_group2.size());
-//            relation->refine(label_group1.begin(), label_group1.end());
-////            ++group_it2;
-//        }
     }
     return relation;
 }

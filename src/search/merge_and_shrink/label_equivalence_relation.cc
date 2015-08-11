@@ -7,26 +7,6 @@
 
 using namespace std;
 
-LabelGroupConstIterator::LabelGroupConstIterator(
-    const vector<LabelGroup> &grouped_labels, bool end)
-    : grouped_labels(grouped_labels),
-      current((end ? grouped_labels.size() : 0)) {
-    while (current < grouped_labels.size() && grouped_labels[current].empty()) {
-        ++current;
-    }
-}
-
-LabelGroupConstIterator::LabelGroupConstIterator(const LabelGroupConstIterator &other)
-    : grouped_labels(other.grouped_labels),
-      current(other.current) {
-    if (current < grouped_labels.size()) {
-        ++current;
-    }
-    while (current < grouped_labels.size() && grouped_labels[current].empty()) {
-        ++current;
-    }
-}
-
 LabelEquivalenceRelation::LabelEquivalenceRelation(const std::shared_ptr<Labels> labels)
     : labels(labels) {
     grouped_labels.reserve(labels->get_max_size());
