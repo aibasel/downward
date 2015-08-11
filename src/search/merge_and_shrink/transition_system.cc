@@ -2,6 +2,7 @@
 
 #include "distances.h"
 #include "heuristic_representation.h"
+#include "label_equivalence_relation.h"
 #include "labels.h"
 
 #include "../task_proxy.h"
@@ -46,7 +47,7 @@ const int TransitionSystem::PRUNED_STATE;
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const shared_ptr<Labels> labels)
     : num_variables(task_proxy.get_variables().size()),
-      label_equivalence_relation(make_unique_ptr<LabelEquivalenceRelation>(labels)),
+      label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)),
       heuristic_representation(nullptr),
       distances(make_unique_ptr<Distances>(*this)) {
     transitions_of_groups.resize(labels->get_max_size());
@@ -182,10 +183,9 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
          group1_it != ts1->end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
-        const LabelGroup &label_group = *group1_it;
         unordered_map<int, vector<int> > buckets;
-        for (LabelConstIter label_it = label_group.begin();
-             label_it != label_group.end(); ++label_it) {
+        for (LabelConstIter label_it = group1_it.begin();
+             label_it != group1_it.end(); ++label_it) {
             int label_no = *label_it;
             int group2_id = ts2->label_equivalence_relation->get_group_id(label_no);
             buckets[group2_id].push_back(label_no);
@@ -560,15 +560,14 @@ void TransitionSystem::dump_dot_graph() const {
     }
     for (LabelGroupConstIterator group_it = begin();
          group_it != end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions = get_transitions_for_group_id(group_it.get_id());
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
             cout << "    node" << src << " -> node" << target << " [labels = ";
-            for (LabelConstIter label_it = label_group.begin();
-                 label_it != label_group.end(); ++label_it) {
-                if (label_it != label_group.begin())
+            for (LabelConstIter label_it = group_it.begin();
+                 label_it != group_it.end(); ++label_it) {
+                if (label_it != group_it.begin())
                     cout << ",";
                 cout << "l" << *label_it;
             }
@@ -582,11 +581,10 @@ void TransitionSystem::dump_labels_and_transitions() const {
     cout << tag() << "transitions" << endl;
     for (LabelGroupConstIterator group_it = begin();
          group_it != end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         cout << "labels: ";
-        for (LabelConstIter label_it = label_group.begin();
-             label_it != label_group.end(); ++label_it) {
-            if (label_it != label_group.begin())
+        for (LabelConstIter label_it = group_it.begin();
+             label_it != group_it.end(); ++label_it) {
+            if (label_it != group_it.begin())
                 cout << ",";
             cout << *label_it;
         }
@@ -601,7 +599,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
             cout << src << " -> " << target;
         }
         cout << endl;
-        cout << "cost: " << label_group.get_cost() << endl;
+        cout << "cost: " << group_it.get_cost() << endl;
     }
 }
 

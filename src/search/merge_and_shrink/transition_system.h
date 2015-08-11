@@ -1,7 +1,7 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
-#include "label_equivalence_relation.h"
+#include "label_group_iterator.h"
 
 #include <forward_list>
 #include <iostream>
@@ -13,6 +13,7 @@
 
 class Distances;
 class HeuristicRepresentation;
+class LabelEquivalenceRelation;
 class Labels;
 class State;
 class TaskProxy;
@@ -66,7 +67,7 @@ private:
     const int num_variables;
     std::vector<int> incorporated_variables;
 
-    std::unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
+    std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation;
     /*
       The transitions of a label group are indexed via its id. The id of a
       group does not change, and hence its transitions are never moved.
@@ -151,10 +152,10 @@ public:
     void release_memory();
 
     LabelGroupConstIterator begin() const {
-        return label_equivalence_relation->begin();
+        return LabelGroupConstIterator(label_equivalence_relation, false);
     }
     LabelGroupConstIterator end() const {
-        return label_equivalence_relation->end();
+        return LabelGroupConstIterator(label_equivalence_relation, true);
     }
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
         return transitions_of_groups[group_id];

@@ -36,8 +36,7 @@ bool Distances::is_unit_cost() const {
     */
     for (LabelGroupConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
-        if (label_group.get_cost() != 1)
+        if (group_it.get_cost() != 1)
             return false;
     }
     return true;
@@ -133,10 +132,9 @@ void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int> > > forward_graph(get_num_states());
     for (LabelGroupConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
             transition_system.get_transitions_for_group_id(group_it.get_id());
-        int cost = label_group.get_cost();
+        int cost = group_it.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             forward_graph[transition.src].push_back(
@@ -161,10 +159,9 @@ void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int> > > backward_graph(get_num_states());
     for (LabelGroupConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
             transition_system.get_transitions_for_group_id(group_it.get_id());
-        int cost = label_group.get_cost();
+        int cost = group_it.get_cost();
         for (size_t j = 0; j < transitions.size(); ++j) {
             const Transition &transition = transitions[j];
             backward_graph[transition.target].push_back(

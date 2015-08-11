@@ -158,7 +158,6 @@ void ShrinkBisimulation::compute_signatures(
     */
     for (LabelGroupConstIterator group_it = ts.begin();
          group_it != ts.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         const vector<Transition> &transitions =
             ts.get_transitions_for_group_id(group_it.get_id());
         for (size_t i = 0; i < transitions.size(); ++i) {
@@ -168,7 +167,7 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = ts.get_goal_distance(trans.src);
                 int target_h = ts.get_goal_distance(trans.target);
-                int cost = label_group.get_cost();
+                int cost = group_it.get_cost();
                 assert(target_h + cost >= src_h);
                 skip_transition = (target_h + cost != src_h);
             }

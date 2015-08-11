@@ -53,7 +53,6 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
 
     for (LabelGroupConstIterator group_it = transition_system->begin();
          group_it != transition_system->end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
         const vector<Transition> &transitions =
@@ -81,8 +80,8 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
                 label_rank = min(label_rank, transition_system->get_goal_distance(t.target));
             }
         }
-        for (LabelConstIter label_it = label_group.begin();
-             label_it != label_group.end(); ++label_it) {
+        for (LabelConstIter label_it = group_it.begin();
+             label_it != group_it.end(); ++label_it) {
             int label_no = *label_it;
             label_ranks[label_no] = label_rank;
         }
