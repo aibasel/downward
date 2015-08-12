@@ -25,7 +25,8 @@ protected:
 public:
     explicit PotentialHeuristic(
         const Options &opts, std::unique_ptr<PotentialFunction> function);
-    ~PotentialHeuristic() = default;
+    // Define in .cc file to avoid include in header.
+    ~PotentialHeuristic();
 };
 }
 
