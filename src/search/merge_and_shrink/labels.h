@@ -15,6 +15,7 @@ class TransitionSystem;
   and to perform label reduction on this set.
 */
 class Labels {
+    int max_size; // the maximum number of labels that can be created
     std::vector<Label *> labels;
     std::vector<int> transition_system_order;
 
@@ -89,6 +90,9 @@ public:
 
     int get_size() const {
         return labels.size();
+    }
+    int get_max_size() const {
+        return max_size;
     }
 };
 
