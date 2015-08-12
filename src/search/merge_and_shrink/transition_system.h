@@ -204,8 +204,7 @@ public:
     std::string tag() const;
     bool is_solvable() const;
     int get_cost(const State &state) const;
-    void statistics(const Timer &timer,
-                    bool include_expensive_statistics) const;
+    void statistics(const Timer &timer) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
     int get_size() const {

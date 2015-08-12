@@ -567,14 +567,9 @@ string TransitionSystem::description() const {
     return s.str();
 }
 
-void TransitionSystem::statistics(const Timer &timer,
-                                  bool include_expensive_statistics) const {
-    cout << tag() << get_size() << " states, ";
-    if (include_expensive_statistics)
-        cout << unique_unlabeled_transitions();
-    else
-        cout << "???";
-    cout << "/" << total_transitions() << " arcs, " << endl;
+void TransitionSystem::statistics(const Timer &timer) const {
+    cout << tag() << get_size() << " states, "
+         << total_transitions() << " arcs " << endl;
     // TODO: Turn the following block into Distances::statistics()?
     cout << tag();
     if (!distances->are_distances_computed()) {
