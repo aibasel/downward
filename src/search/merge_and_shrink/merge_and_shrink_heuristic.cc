@@ -26,7 +26,6 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy(opts.get<shared_ptr<MergeStrategy> >("merge_strategy")),
       shrink_strategy(opts.get<shared_ptr<ShrinkStrategy> >("shrink_strategy")),
       labels(opts.get<shared_ptr<Labels> >("label_reduction")),
-      use_expensive_statistics(opts.get<bool>("expensive_statistics")),
       starting_peak_memory(-1),
       final_transition_system(nullptr) {
     /*
@@ -50,24 +49,10 @@ void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
     labels->dump_options();
-    cout << "Expensive statistics: "
-         << (use_expensive_statistics ? "enabled" : "disabled") << endl;
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     string dashes(79, '=');
-    if (use_expensive_statistics) {
-        cerr << dashes << endl
-             << "WARNING! You have enabled extra statistics for "
-        "merge-and-shrink heuristics.\n"
-        "These statistics require a lot of time and memory.\n"
-        "When last tested (around Subversion revision 3011), enabling "
-        "the extra statistics\nincreased heuristic generation time by "
-        "76%. This figure may be significantly\nworse with more "
-        "recent code or for particular domains and instances.\n"
-        "You have been warned. Don't use this for benchmarking!"
-        << endl << dashes << endl;
-    }
     if (!labels->reduce_before_merging() && !labels->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You did not enable label reduction. This may "
@@ -128,8 +113,8 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             TransitionSystem *transition_system2 = fts[merge_index2];
             assert(transition_system1);
             assert(transition_system2);
-            transition_system1->statistics(timer, use_expensive_statistics);
-            transition_system2->statistics(timer, use_expensive_statistics);
+            transition_system1->statistics(timer);
+            transition_system2->statistics(timer);
 
             if (labels->reduce_before_shrinking()) {
                 labels->reduce(merge_indices, fts.get_vector());
@@ -139,9 +124,9 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             pair<bool, bool> shrunk = shrink_strategy->shrink(
                 *transition_system1, *transition_system2);
             if (shrunk.first)
-                transition_system1->statistics(timer, use_expensive_statistics);
+                transition_system1->statistics(timer);
             if (shrunk.second)
-                transition_system2->statistics(timer, use_expensive_statistics);
+                transition_system2->statistics(timer);
 
             if (labels->reduce_before_merging()) {
                 labels->reduce(merge_indices, fts.get_vector());
@@ -150,7 +135,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             // Merging
             TransitionSystem *new_transition_system = new TransitionSystem(
                 task_proxy, labels, transition_system1, transition_system2);
-            new_transition_system->statistics(timer, use_expensive_statistics);
+            new_transition_system->statistics(timer);
             fts.get_vector().push_back(new_transition_system);
 
             /*
@@ -293,15 +278,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "one 'option' to use label_reduction. Also note the interaction "
         "with shrink strategies.");
 
-    // General merge-and-shrink options.
-    parser.add_option<bool>(
-        "expensive_statistics",
-        "show statistics on \"unique unlabeled edges\" (WARNING: "
-        "these are *very* slow, i.e. too expensive to show by default "
-        "(in terms of time and memory). When this is used, the planner "
-        "prints a big warning on stderr with information on the performance "
-        "impact. Don't use when benchmarking!)",
-        "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
