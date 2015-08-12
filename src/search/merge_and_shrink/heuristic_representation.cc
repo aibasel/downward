@@ -32,8 +32,6 @@ HeuristicRepresentationLeaf::HeuristicRepresentationLeaf(
 
 void HeuristicRepresentationLeaf::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
-    cout << "leaf: applying abstraction to lookup table" << endl;
-
     int new_domain_size = 0;
     for (int &entry : lookup_table) {
         if (entry != TransitionSystem::PRUNED_STATE) {
@@ -70,7 +68,6 @@ HeuristicRepresentationMerge::HeuristicRepresentationMerge(
 
 void HeuristicRepresentationMerge::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
-    cout << "merge: applying abstraction to lookup table" << endl;
     int new_domain_size = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
