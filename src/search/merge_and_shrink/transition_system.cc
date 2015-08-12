@@ -44,14 +44,14 @@ const int TransitionSystem::PRUNED_STATE;
 
 
 TSConstIterator::TSConstIterator(
-        const shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
-        const vector<vector<Transition> > &transitions_by_group_id,
-        bool end)
+    const shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
+    const vector<vector<Transition> > &transitions_by_group_id,
+    bool end)
     : label_equivalence_relation(label_equivalence_relation),
       transitions_by_group_id(transitions_by_group_id),
       current((end ? label_equivalence_relation->get_size() : 0)) {
     while (current < label_equivalence_relation->get_size()
-            && (*label_equivalence_relation)[current].empty()) {
+           && (*label_equivalence_relation)[current].empty()) {
         ++current;
     }
 }
@@ -169,7 +169,7 @@ TransitionSystem::TransitionSystem(
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
         label_equivalence_relation->add_label_group({label_no}
-                                                   );
+                                                    );
         // We could assert that the return value equals label_no, but not
         // easily in release mode without unused variable error.
     }
@@ -327,7 +327,6 @@ void TransitionSystem::compute_distances_and_prune() {
 }
 
 void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
-    // TODO: should we get rid of this and use a set when collecting transitions?
     sort(transitions.begin(), transitions.end());
     transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
 }
@@ -493,7 +492,8 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     release_vector_memory(old_transitions);
                 }
             }
-            int group_id = label_equivalence_relation->add_label_group({new_label_no});
+            int group_id = label_equivalence_relation->add_label_group({new_label_no}
+                                                                       );
             transitions_by_group_id[group_id].assign(
                 collected_transitions.begin(), collected_transitions.end());
         }
@@ -568,14 +568,9 @@ string TransitionSystem::description() const {
     return s.str();
 }
 
-void TransitionSystem::statistics(const Timer &timer,
-                                  bool include_expensive_statistics) const {
-    cout << tag() << get_size() << " states, ";
-    if (include_expensive_statistics)
-        cout << unique_unlabeled_transitions();
-    else
-        cout << "???";
-    cout << "/" << total_transitions() << " arcs, " << endl;
+void TransitionSystem::statistics(const Timer &timer) const {
+    cout << tag() << get_size() << " states, "
+         << total_transitions() << " arcs " << endl;
     // TODO: Turn the following block into Distances::statistics()?
     cout << tag();
     if (!distances->are_distances_computed()) {

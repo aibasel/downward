@@ -21,7 +21,7 @@ class LabelGroup {
     int cost;
 public:
     LabelGroup()
-        // TODO: duplication of INF in transition_system.h
+    // TODO: duplication of INF in transition_system.h
         : cost(std::numeric_limits<int>::max()) {
     }
     void set_cost(int cost_) {
