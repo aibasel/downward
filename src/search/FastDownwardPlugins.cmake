@@ -252,6 +252,7 @@ fast_downward_plugin(
         merge_and_shrink/factored_transition_system.cc
         merge_and_shrink/fts_factory.cc
         merge_and_shrink/heuristic_representation.cc
+        merge_and_shrink/label_equivalence_relation.cc
         merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
         merge_and_shrink/merge_dfp.cc
