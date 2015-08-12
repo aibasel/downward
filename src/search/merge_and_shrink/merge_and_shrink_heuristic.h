@@ -15,7 +15,6 @@ class MergeAndShrinkHeuristic : public Heuristic {
     std::shared_ptr<MergeStrategy> merge_strategy;
     std::shared_ptr<ShrinkStrategy> shrink_strategy;
     std::shared_ptr<Labels> labels;
-    const bool use_expensive_statistics;
     long starting_peak_memory;
 
     /*
