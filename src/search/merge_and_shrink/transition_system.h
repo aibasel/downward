@@ -188,11 +188,11 @@ public:
 
     TSConstIterator begin() const {
         return TSConstIterator(
-            label_equivalence_relation, transitions_by_group_id, false);
+                   label_equivalence_relation, transitions_by_group_id, false);
     }
     TSConstIterator end() const {
         return TSConstIterator(
-            label_equivalence_relation, transitions_by_group_id, true);
+                   label_equivalence_relation, transitions_by_group_id, true);
     }
     /*
       Method to identify the transition system in output.
