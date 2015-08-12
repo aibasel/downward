@@ -51,8 +51,20 @@ struct Transition {
 };
 
 class TSConstIterator {
+    /*
+      This class allows users to easily iterate over both label groups and
+      their transitions of a TransitionSystem. Most importantly, it hides
+      the data structure used by LabelEquivalenceRelation, which could be
+      easily exchanged.
+    */
     const std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation;
+    // TODO: when we move more data out of TransitionSystem, such as
+    // Distances, HeuristicRepresentation and LabelEquivalenceRelation,
+    // we could easily change the following to be the TransitionSystem, rather
+    // than the underlying data structure. Then we could also move this
+    // iterator class in its own file.
     const std::vector<std::vector<Transition> > &transitions_by_group_id;
+    // current is the actual iterator, representing the label group's id.
     int current;
 public:
     TSConstIterator(const std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
