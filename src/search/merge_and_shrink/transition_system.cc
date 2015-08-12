@@ -56,20 +56,6 @@ TSConstIterator::TSConstIterator(
     }
 }
 
-TSConstIterator::TSConstIterator(const TSConstIterator &other)
-    : label_equivalence_relation(other.label_equivalence_relation),
-      transitions_by_group_id(other.transitions_by_group_id),
-      current(other.current) {
-    if (current < label_equivalence_relation->get_size()) {
-        // guard against creating an iterator from an end-iterator.
-        ++current;
-    }
-    while (current < label_equivalence_relation->get_size()
-           && (*label_equivalence_relation)[current].empty()) {
-        ++current;
-    }
-}
-
 void TSConstIterator::operator++() {
     ++current;
     while (current < label_equivalence_relation->get_size()
@@ -348,15 +334,16 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     for (TSConstIterator group1_it = begin();
          group1_it != end(); ++group1_it) {
         const vector<Transition> &transitions1 = group1_it.get_transitions();
-        for (TSConstIterator group2_it = TSConstIterator(group1_it);
+        for (TSConstIterator group2_it = group1_it;
              group2_it != end(); ++group2_it) {
-            assert(group2_it != group1_it);
-            int group2_id = group2_it.get_id();
-            vector<Transition> &transitions2 = get_transitions_for_group_id(group2_id);
-            if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
-                label_equivalence_relation->move_group_into_group(
-                    group2_id, group1_it.get_id());
-                release_vector_memory(transitions2);
+            if (group2_it != group1_it) {
+                int group2_id = group2_it.get_id();
+                vector<Transition> &transitions2 = get_transitions_for_group_id(group2_id);
+                if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
+                    label_equivalence_relation->move_group_into_group(
+                        group2_id, group1_it.get_id());
+                    release_vector_memory(transitions2);
+                }
             }
         }
     }
@@ -624,6 +611,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
     cout << tag() << "transitions" << endl;
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
+        cout << "group id: " << group_it.get_id() << endl;
         cout << "labels: ";
         for (LabelConstIter label_it = group_it.begin();
              label_it != group_it.end(); ++label_it) {
