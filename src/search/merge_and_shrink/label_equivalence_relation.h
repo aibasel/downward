@@ -67,6 +67,7 @@ class LabelEquivalenceRelation {
     const std::shared_ptr<Labels> labels;
 
     std::vector<LabelGroup> grouped_labels;
+    // maps each label to its group's id and its iterator within the group.
     std::vector<std::pair<int, LabelIter> > label_to_positions;
 
     void add_label_to_group(int group_id, int label_no);
@@ -80,7 +81,7 @@ public:
     void move_group_into_group(int from_group_id, int to_group_id);
     bool erase(int label_no);
     int add_label_group(const std::vector<int> &new_labels);
-    int get_group_id(int label_no) {
+    int get_group_id(int label_no) const {
         return label_to_positions[label_no].first;
     }
     int get_size() const {
