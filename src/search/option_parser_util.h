@@ -406,10 +406,9 @@ public:
         std::map<std::string, boost::any>::const_iterator it;
         it = storage.find(key);
         if (it == storage.end()) {
-            std::cout << "attempt to retrieve nonexisting object of name "
-                      << key << " (type: " << TypeNamer<T>::name() << ")"
-                      << " from Options. Aborting." << std::endl;
-            exit_with(EXIT_CRITICAL_ERROR);
+            ABORT("Attempt to retrieve nonexisting object of name " +
+                  key + " (type: " + TypeNamer<T>::name() +
+                  ") from options.");
         }
         try {
             T result = boost::any_cast<T>(it->second);
