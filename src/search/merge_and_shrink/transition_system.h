@@ -70,8 +70,6 @@ public:
     TSConstIterator(const std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
                     const std::vector<std::vector<Transition> > &transitions_by_group_id,
                     bool end);
-    // NOTE: not explicit because we copy and assign when creating instances.
-    TSConstIterator(const TSConstIterator &other);
     void operator++();
     bool operator==(const TSConstIterator &rhs) const {
         return current == rhs.current;
