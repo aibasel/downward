@@ -448,6 +448,8 @@ def translate_task(strips_to_sas, ranges, translation_key,
     ## values, which is most of the time the case, and hence refrain from
     ## introducing axioms (that are not supported by all heuristics)
     goal_pairs = list(goal_dict_list[0].items())
+    if not goal_pairs:
+        return solvable_sas_task("Empty goal")
     goal = sas_tasks.SASGoal(goal_pairs)
 
     operators = translate_strips_operators(actions, strips_to_sas, ranges,
@@ -467,8 +469,7 @@ def translate_task(strips_to_sas, ranges, translation_key,
                              operators, axioms, metric)
 
 
-def unsolvable_sas_task(msg):
-    print("%s! Generating unsolvable task..." % msg)
+def trivial_task(solvable):
     variables = sas_tasks.SASVariables(
         [2], [-1], [["Atom dummy(val1)", "Atom dummy(val2)"]])
     # We create no mutexes: the only possible mutex is between
@@ -477,13 +478,24 @@ def unsolvable_sas_task(msg):
     # finite-domain variable).
     mutexes = []
     init = sas_tasks.SASInit([0])
-    goal = sas_tasks.SASGoal([(0, 1)])
+    if solvable:
+        goal_fact = (0, 0)
+    else:
+        goal_fact = (0, 1)
+    goal = sas_tasks.SASGoal([goal_fact])
     operators = []
     axioms = []
     metric = True
     return sas_tasks.SASTask(variables, mutexes, init, goal,
                              operators, axioms, metric)
 
+def solvable_sas_task(msg):
+    print("%s! Generating solvable task..." % msg)
+    return trivial_task(solvable=True)
+
+def unsolvable_sas_task(msg):
+    print("%s! Generating unsolvable task..." % msg)
+    return trivial_task(solvable=False)
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
@@ -541,6 +553,8 @@ def pddl_to_sas(task):
                 simplify.filter_unreachable_propositions(sas_task)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
+            except simplify.TriviallySolvable:
+                return solvable_sas_task("Simplified to empty goal")
 
     return sas_task
 

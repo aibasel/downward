@@ -4,9 +4,12 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <memory>
 #include <unordered_map>
 
 using namespace std;
@@ -84,7 +87,7 @@ ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
 int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
-                                          vector<int> &state_to_group) {
+                                          vector<int> &state_to_group) const {
     /* Group 0 holds all goal states.
 
        Each other group holds all states with one particular h value.
@@ -121,7 +124,7 @@ int ShrinkBisimulation::initialize_groups(const TransitionSystem &ts,
 void ShrinkBisimulation::compute_signatures(
     const TransitionSystem &ts,
     vector<Signature> &signatures,
-    const vector<int> &state_to_group) {
+    const vector<int> &state_to_group) const {
     assert(signatures.empty());
 
     // Step 1: Compute bare state signatures (without transition information).
@@ -137,7 +140,6 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    const list<LabelGroup> &grouped_labels = ts.get_grouped_labels();
     int label_group_counter = 0;
     /*
       Note that the final result of the bisimulation may depend on the
@@ -154,10 +156,9 @@ void ShrinkBisimulation::compute_signatures(
       the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
       Running the above config on those two revisions yields the same difference.
     */
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
-        const vector<Transition> &transitions = label_group.get_const_transitions();
+    for (TSConstIterator group_it = ts.begin();
+         group_it != ts.end(); ++group_it) {
+        const vector<Transition> &transitions = group_it.get_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
@@ -165,7 +166,7 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = ts.get_goal_distance(trans.src);
                 int target_h = ts.get_goal_distance(trans.target);
-                int cost = label_group.get_cost();
+                int cost = group_it.get_cost();
                 assert(target_h + cost >= src_h);
                 skip_transition = (target_h + cost != src_h);
             }
@@ -206,7 +207,7 @@ void ShrinkBisimulation::compute_signatures(
 void ShrinkBisimulation::compute_abstraction(
     const TransitionSystem &ts,
     int target_size,
-    StateEquivalenceRelation &equivalence_relation) {
+    StateEquivalenceRelation &equivalence_relation) const {
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
@@ -322,9 +323,10 @@ void ShrinkBisimulation::compute_abstraction(
     }
 }
 
-void ShrinkBisimulation::shrink(const TransitionSystem &ts,
-                                int target,
-                                StateEquivalenceRelation &equivalence_relation) {
+void ShrinkBisimulation::compute_equivalence_relation(
+    const TransitionSystem &ts,
+    int target,
+    StateEquivalenceRelation &equivalence_relation) const {
     compute_abstraction(ts, target, equivalence_relation);
 }
 
@@ -345,7 +347,39 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
     cout << endl;
 }
 
-static ShrinkStrategy *_parse(OptionParser &parser) {
+static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Bismulation based shrink strategy",
+        "This shrink strategy implements the algorithm described in the paper:\n\n"
+        " * Raz Nissim, Joerg Hoffmann and Malte Helmert.<<BR>>\n"
+        " [Computing Perfect Heuristics in Polynomial Time: On Bisimulation "
+        "and Merge-and-Shrink Abstractions in Optimal Planning "
+        "http://ai.cs.unibas.ch/papers/nissim-et-al-ijcai2011.pdf].<<BR>>\n "
+        "In //Proceedings of the Twenty-Second International Joint Conference "
+        "on Artificial Intelligence (IJCAI 2011)//, pp. 1983-1990. 2011.");
+    parser.document_note(
+        "shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
+        "Greedy bisimulation without size bound "
+        "(called M&S-gop in the IJCAI 2011 paper)."
+        "Combine this with the linear merge strategy "
+        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "When we last ran experiments on interaction of shrink strategies "
+        "with label reduction, this strategy performed best when used with "
+        "label reduction before shrinking (and no label reduction before "
+        "merging).");
+    parser.document_note(
+        "shrink_bisimulation(max_states=N, greedy=false)",
+        "Exact bisimulation with a size limit "
+        "(called DFP-bop in the IJCAI 2011 paper), "
+        "where N is a numerical parameter for which sensible values "
+        "include 1000, 10000, 50000, 100000 and 200000. "
+        "Combine this with the linear merge strategy "
+        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "When we last ran experiments on interaction of shrink strategies "
+        "with label reduction, this strategy performed best when used with "
+        "label reduction before shrinking (and no label reduction before "
+        "merging).");
+
     ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
 
@@ -359,14 +393,14 @@ static ShrinkStrategy *_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     if (parser.help_mode())
-        return 0;
+        return nullptr;
 
     ShrinkStrategy::handle_option_defaults(opts);
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new ShrinkBisimulation(opts);
+        return make_shared<ShrinkBisimulation>(opts);
 }
 
-static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
+static PluginShared<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);

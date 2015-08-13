@@ -82,6 +82,27 @@ struct ParseError {
 };
 
 
+struct Bounds {
+    std::string min;
+    std::string max;
+
+public:
+    Bounds(std::string min, std::string max)
+        : min(min), max(max) {}
+    ~Bounds() = default;
+
+    bool has_bound() const {
+        return !min.empty() || !max.empty();
+    }
+
+    static Bounds unlimited() {
+        return Bounds("", "");
+    }
+
+    friend std::ostream &operator<<(std::ostream &out, const Bounds &bounds);
+};
+
+
 //a registry<T> maps a string to a T-factory
 template <class T>
 class Registry {
@@ -235,21 +256,21 @@ struct TypeNamer<Synergy *> {
 };
 
 template <>
-struct TypeNamer<MergeStrategy *> {
+struct TypeNamer<std::shared_ptr<MergeStrategy> > {
     static std::string name() {
         return "MergeStrategy";
     }
 };
 
 template <>
-struct TypeNamer<ShrinkStrategy *> {
+struct TypeNamer<std::shared_ptr<ShrinkStrategy> > {
     static std::string name() {
         return "ShrinkStrategy";
     }
 };
 
 template <>
-struct TypeNamer<Labels *> {
+struct TypeNamer<std::shared_ptr<Labels> > {
     static std::string name() {
         return "Labels";
     }
@@ -385,10 +406,9 @@ public:
         std::map<std::string, boost::any>::const_iterator it;
         it = storage.find(key);
         if (it == storage.end()) {
-            std::cout << "attempt to retrieve nonexisting object of name "
-                      << key << " (type: " << TypeNamer<T>::name() << ")"
-                      << " from Options. Aborting." << std::endl;
-            exit_with(EXIT_CRITICAL_ERROR);
+            ABORT("Attempt to retrieve nonexisting object of name " +
+                  key + " (type: " + TypeNamer<T>::name() +
+                  ") from options.");
         }
         try {
             T result = boost::any_cast<T>(it->second);
@@ -449,31 +469,23 @@ private:
     bool help_mode;
 };
 
-//TODO: get rid of OptionFlags, instead use default_value = "None" ?
-struct OptionFlags {
-    explicit OptionFlags(bool mand = true)
-        : mandatory(mand) {
-    }
-    bool mandatory;
-};
-
 typedef std::vector<std::pair<std::string, std::string> > ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
         std::string k, std::string h, std::string t_n, std::string def_val,
-        bool mand, ValueExplanations val_expl)
+        const Bounds &bounds, ValueExplanations val_expl)
         : kwd(k),
           help(h),
           type_name(t_n),
           default_value(def_val),
-          mandatory(mand),
+          bounds(bounds),
           value_explanations(val_expl) {
     }
     std::string kwd;
     std::string help;
     std::string type_name;
     std::string default_value;
-    bool mandatory;
+    Bounds bounds;
     std::vector<std::pair<std::string, std::string> > value_explanations;
 };
 
@@ -534,7 +546,7 @@ public:
                  std::string help,
                  std::string type,
                  std::string default_value,
-                 bool mandatory,
+                 Bounds bounds,
                  ValueExplanations value_explanations = ValueExplanations());
     void add_value_explanations(std::string k,
                                 std::string arg_name,

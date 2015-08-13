@@ -1,10 +1,13 @@
-#include <algorithm>
-#include <string>
-#include <vector>
 #include "option_parser_util.h"
 
-
 using namespace std;
+
+
+ostream &operator<<(ostream &out, const Bounds &bounds) {
+    if (!bounds.min.empty() || !bounds.max.empty())
+        out << "[" << bounds.min << ", " << bounds.max << "]";
+    return out;
+}
 
 void DocStore::register_object(string k, string type) {
     transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
@@ -12,18 +15,18 @@ void DocStore::register_object(string k, string type) {
     registered[k].type = type;
     registered[k].full_name = k;
     registered[k].synopsis = "";
+    registered[k].hidden = false;
 }
-
 
 void DocStore::add_arg(string k,
                        string arg_name,
                        string help,
                        string type,
                        string default_value,
-                       bool mandatory,
+                       Bounds bounds,
                        ValueExplanations value_explanations) {
     registered[k].arg_help.push_back(
-        ArgumentInfo(arg_name, help, type, default_value, mandatory,
+        ArgumentInfo(arg_name, help, type, default_value, bounds,
                      value_explanations));
 }
 
@@ -161,11 +164,8 @@ void Txt2TagsPrinter::print_usage(string call_name, const DocStruct &info) {
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
             os << arg.kwd;
-            if (!info.arg_help[i].default_value.empty()) {
-                os << "=" << info.arg_help[i].default_value;
-            } else if (!info.arg_help[i].mandatory) {
-                os << "=None";
-            }
+            if (!arg.default_value.empty())
+                os << "=" << arg.default_value;
             if (i != info.arg_help.size() - 1)
                 os << ", ";
         }
@@ -180,19 +180,20 @@ static bool is_call(string s) {
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
-        os << "- //" << arg.kwd << "// ("
-           << arg.type_name << "): "
-           << arg.help << endl;
+        os << "- //" << arg.kwd << "// (" << arg.type_name;
+        if (arg.bounds.has_bound())
+            os << " \"\"" << arg.bounds << "\"\"";
+        os << "): " << arg.help << endl;
         if (!arg.value_explanations.empty()) {
             for (size_t j = 0; j < arg.value_explanations.size(); ++j) {
                 pair<string, string> explanation =
                     arg.value_explanations[j];
                 if (is_call(explanation.first)) {
                     os << endl << "```" << endl << explanation.first << endl << "```" << endl
-                       << " " << explanation.second << endl;
+                    << " " << explanation.second << endl;
                 } else {
                     os << " - ``" << explanation.first << "``: "
-                       << explanation.second << endl;
+                    << explanation.second << endl;
                 }
             }
         }
@@ -204,7 +205,7 @@ void Txt2TagsPrinter::print_notes(const DocStruct &info) {
         NoteInfo note = info.notes[i];
         if (note.long_text) {
             os << "=== " << note.name << " ===" << endl
-               << note.description << endl << endl;
+            << note.description << endl << endl;
         } else {
             os << "**" << note.name << ":** " << note.description << endl << endl;
         }
@@ -238,7 +239,7 @@ void Txt2TagsPrinter::print_category_header(string category_name) {
 
 void Txt2TagsPrinter::print_category_footer() {
     os << endl
-       << ">>>>CATEGORYEND<<<<" << endl;
+    << ">>>>CATEGORYEND<<<<" << endl;
 }
 
 PlainPrinter::PlainPrinter(ostream &out, bool pa)
@@ -263,11 +264,8 @@ void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
         for (size_t i = 0; i < info.arg_help.size(); ++i) {
             ArgumentInfo arg = info.arg_help[i];
             os << arg.kwd;
-            if (!info.arg_help[i].default_value.empty()) {
-                os << "=" << info.arg_help[i].default_value;
-            } else if (!info.arg_help[i].mandatory) {
-                os << "=None";
-            }
+            if (!arg.default_value.empty())
+                os << "=" << arg.default_value;
             if (i != info.arg_help.size() - 1)
                 os << ", ";
         }
@@ -278,9 +276,10 @@ void PlainPrinter::print_usage(string call_name, const DocStruct &info) {
 void PlainPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
-        os << " " << arg.kwd << "("
-           << arg.type_name << "): "
-           << arg.help << endl;
+        os << " " << arg.kwd << " (" << arg.type_name;
+        if (arg.bounds.has_bound())
+            os << " " << arg.bounds;
+        os << "): " << arg.help << endl;
     }
 }
 
@@ -290,7 +289,7 @@ void PlainPrinter::print_notes(const DocStruct &info) {
             NoteInfo note = info.notes[i];
             if (note.long_text) {
                 os << "=== " << note.name << " ===" << endl
-                   << note.description << endl << endl;
+                << note.description << endl << endl;
             } else {
                 os << " * " << note.name << ": " << note.description << endl << endl;
             }

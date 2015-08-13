@@ -21,7 +21,7 @@ Heuristic::Heuristic(const Options &opts)
       cache_h_values(opts.get<bool>("cache_h")),
       task(get_task_from_options(opts)),
       task_proxy(*task),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))){
+      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
 }
 
 Heuristic::~Heuristic() {
@@ -55,14 +55,12 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
-    // TODO: When the cost_type option is gone, use "no_transform" as default here
-    //       and remove the OptionFlags argument.
+    // TODO: When the cost_type option is gone, use "no_transform" as default.
     parser.add_option<shared_ptr<AbstractTask> >(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
-        "",
-        OptionFlags(false));
+        OptionParser::NONE);
     parser.add_option<bool>("cache_h", "chache heuristic estimates", "true");
 }
 
@@ -70,7 +68,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
 Options Heuristic::default_options() {
     Options opts = Options();
     opts.set<shared_ptr<AbstractTask> >("transform", g_root_task());
-    opts.set<int>("cost_type", 0);
+    opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_h", false);
     return opts;
 }
@@ -133,34 +131,4 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
 string Heuristic::get_description() const {
     return description;
-}
-
-std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
-    /*
-      TODO: This code is only intended for the transitional period while we
-      still support the "old style" of adjusting costs for the heuristics (via
-      the cost_type parameter) in parallel with the "new style" (via task
-      transformations). Once all heuristics are adapted to support task
-      transformations and we can remove the "cost_type" attribute, the options
-      should always contain an AbstractTask object. Then we can directly
-      call opts.get<shared_ptr<AbstractTask>>("transform") where needed
-      and this function can be removed.
-    */
-    OperatorCost cost_type = OperatorCost(opts.get_enum("cost_type"));
-    if (opts.contains("transform") && cost_type != NORMAL) {
-        cerr << "You may specify either the cost_type option of the heuristic "
-             << "(deprecated) or use transform=adapt_costs() (recommended), "
-             << "but not both." << endl;
-        exit_with(EXIT_INPUT_ERROR);
-    }
-    shared_ptr<AbstractTask> task;
-    if (opts.contains("transform")) {
-        task = opts.get<shared_ptr<AbstractTask> >("transform");
-    } else {
-        Options options;
-        options.set<shared_ptr<AbstractTask> >("transform", g_root_task());
-        options.set<int>("cost_type", cost_type);
-        task = make_shared<CostAdaptedTask>(options);
-    }
-    return task;
 }
