@@ -175,7 +175,8 @@ if __name__ == '__main__':
         logging.info("no changes found")
     missing_titles = set(old_doc_titles) - set(new_doc_pages.keys()) - set([DOC_PREFIX + "Overview"])
     if missing_titles:
-        logging.warning("There are pages in the wiki documentation "
+        sys.exit(
+            "There are pages in the wiki documentation "
             "that are not created by Fast Downward:\n" +
             "\n".join(sorted(missing_titles)))
     print "Done"

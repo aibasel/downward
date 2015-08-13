@@ -26,7 +26,11 @@ LazySearch::LazySearch(const Options &opts)
       current_operator(nullptr),
       current_g(0),
       current_real_g(0),
-      current_eval_context(current_state, &statistics) {
+      current_eval_context(current_state, 0, true, &statistics) {
+    /*
+      We initialize current_eval_context in such a way that the initial node
+      counts as "preferred".
+    */
 }
 
 void LazySearch::set_pref_operator_heuristics(
@@ -131,7 +135,15 @@ SearchStatus LazySearch::fetch_next_state() {
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
-    current_eval_context = EvaluationContext(current_state, &statistics, true);
+    /*
+      Note: We mark the node in current_eval_context as "preferred"
+      here. This probably doesn't matter much either way because the
+      node has already been selected for expansion, but eventually we
+      should think more deeply about which path information to
+      associate with the expanded vs. evaluated nodes in lazy search
+      and where to obtain it from.
+    */
+    current_eval_context = EvaluationContext(current_state, current_g, true, &statistics);
 
     return IN_PROGRESS;
 }
@@ -146,7 +158,8 @@ SearchStatus LazySearch::step() {
 
 
     SearchNode node = search_space.get_node(current_state);
-    bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
+    bool reopen = reopen_closed_nodes && !node.is_new() &&
+                  !node.is_dead_end() && (current_g < node.get_g());
 
     if (node.is_new() || reopen) {
         StateID dummy_id = current_predecessor_id;
@@ -187,6 +200,9 @@ SearchStatus LazySearch::step() {
             node.mark_as_dead_end();
             statistics.inc_dead_ends();
         }
+        if (current_predecessor_id == StateID::no_state) {
+            print_initial_h_values(current_eval_context);
+        }
     }
     return fetch_next_state();
 }
@@ -202,7 +218,6 @@ void LazySearch::print_checkpoint_line(int g) const {
 }
 
 void LazySearch::print_statistics() const {
-    search_progress.print_initial_h_values();
     statistics.print_detailed_statistics();
     search_space.print_statistics();
 }

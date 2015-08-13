@@ -2,6 +2,7 @@
 #define MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <forward_list>
 
@@ -17,44 +18,63 @@ protected:
        An equivalence relation is a partitioning of states into
        equivalence classes. It may omit certain states entirely; these
        will be dropped completely and receive an h value of infinity.
-       This is used to remove unreachable and irrelevant states.
     */
 
     typedef int AbstractStateRef;
     typedef std::forward_list<AbstractStateRef> StateEquivalenceClass;
     typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
 private:
-    // The maximum size of a transition system at any point.
+    // Hard limit: the maximum size of a transition system at any point.
     const int max_states;
-    // The maximum size of a transition system before being merged.
+    // Hard limit: the maximum size of a transition system before being merged.
     const int max_states_before_merge;
     /*
-      shrink_threshold_before_merge: Shrink the transition system iff it is
-      larger than this size. Note that this is set independently from
-      max_states, which is the number of states to which the transition
-      system must be shrunk to respect the given limit.
+      A soft limit for triggering shrinking even if the hard limits
+      max_states and max_states_before_merge are not violated.
     */
     const int shrink_threshold_before_merge;
 
-    bool abstract_transition_system(TransitionSystem &ts, int new_size);
+    /*
+      This method checks if the transition system violates the hard or soft
+      limits and triggers the actual shrinking process if necessary.
+
+      Note that if only the soft limit shrink_threshold_before_merge is
+      violated, the  shrink strategy is asked to compute an equivalence
+      relation which is not required to reduce the sizes of the transition
+      system, but it may attempt to e.g. shrink the transition system in an
+      information preserving way.
+    */
+    bool shrink_transition_system(TransitionSystem &ts, int new_size) const;
+    /*
+      If max_states_before_merge is violated by any of the two transition
+      systems or if the product transition system would exceed max_states,
+      this method computes balanced sizes for both transition systems so
+      that these limits are respected again.
+    */
     std::pair<std::size_t, std::size_t> compute_shrink_sizes(
         std::size_t size1, std::size_t size2) const;
 protected:
     /*
-      Shrink the transition system to a size at most target. This can be
-      called even if the current size respects the target size already
-      (if shrink_threshold_before_merge is smaller).
+      Compute an equivalence relation on the states that shrinks the given
+      transition system down to at most size target. This method needs to be
+      specified by concrete shrinking strategies.
     */
-    virtual void shrink(const TransitionSystem &ts,
-                        int target,
-                        StateEquivalenceRelation &equivalence_relation) = 0;
+    virtual void compute_equivalence_relation(
+        const TransitionSystem &ts,
+        int target,
+        StateEquivalenceRelation &equivalence_relation) const = 0;
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
     ShrinkStrategy(const Options &opts);
     virtual ~ShrinkStrategy();
 
-    std::pair<bool, bool> shrink_before_merge(TransitionSystem &ts1, TransitionSystem &ts2);
+    /*
+      The given transition systems are guaranteed to be solvable by the
+      merge-and-shrink computation.
+    */
+    std::pair<bool, bool> shrink(TransitionSystem &ts1,
+                                 TransitionSystem &ts2) const;
 
     void dump_options() const;
     std::string get_name() const;

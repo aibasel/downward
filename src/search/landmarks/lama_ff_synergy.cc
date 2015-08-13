@@ -38,7 +38,7 @@ class LamaMasterHeuristic : public Heuristic {
     LamaFFSynergy *synergy;
 
 protected:
-    virtual int compute_heuristic(const GlobalState & /*state*/) {
+    virtual int compute_heuristic(const GlobalState & /*state*/) override {
         ABORT("This method should never be called.");
     }
 
@@ -74,7 +74,7 @@ class FFSlaveHeuristic : public Heuristic {
     LamaMasterHeuristic *master;
 
 protected:
-    virtual int compute_heuristic(const GlobalState & /*state*/) {
+    virtual int compute_heuristic(const GlobalState & /*state*/) override {
         ABORT("This method should never be called.");
     }
 
@@ -156,6 +156,7 @@ static Synergy *_parse(OptionParser &parser) {
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
+    add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();

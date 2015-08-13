@@ -19,8 +19,8 @@ class Heuristic : public ScalarEvaluator {
 
 
     struct HEntry {
-        int h : 31;
-        bool dirty : 1;
+        int h;
+        bool dirty;
         HEntry(int h_, bool dirty_) : h(h_), dirty(dirty_) {}
     };
 
@@ -50,7 +50,7 @@ protected:
     bool cache_h_values;
 
     // Hold a reference to the task implementation and pass it to objects that need it.
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
     OperatorCost cost_type;
@@ -90,8 +90,9 @@ public:
         EvaluationContext &eval_context) override;
 
     std::string get_description() const;
+    bool is_h_dirty(GlobalState& state) {
+        return heuristic_cache[state].dirty;
+    }
 };
-
-std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts);
 
 #endif

@@ -37,6 +37,7 @@ DOWNWARD_LINK_RELEASE_STATICALLY ?= 1
 DOWNWARD_OS ?= auto
 
 HEADERS = \
+          abstract_task.h \
           axioms.h \
           causal_graph.h \
           combining_evaluator.h \
@@ -80,6 +81,7 @@ HEADERS = \
           state_registry.h \
           successor_generator.h \
           sum_evaluator.h \
+          task_proxy.h \
           task_tools.h \
           timer.h \
           tracer.h \
@@ -116,7 +118,12 @@ HEADERS += hm_heuristic.h
 HEADERS += lm_cut_heuristic.h
 HEADERS += max_heuristic.h
 
-HEADERS += merge_and_shrink/labels.h \
+HEADERS += merge_and_shrink/distances.h \
+           merge_and_shrink/factored_transition_system.h \
+           merge_and_shrink/fts_factory.h \
+           merge_and_shrink/heuristic_representation.h \
+           merge_and_shrink/label_equivalence_relation.h \
+           merge_and_shrink/labels.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
            merge_and_shrink/merge_dfp.h \
            merge_and_shrink/merge_linear.h \
@@ -158,6 +165,7 @@ HEADERS += pdbs/canonical_pdbs_heuristic.h \
            pdbs/dominance_pruner.h \
            pdbs/match_tree.h \
            pdbs/max_cliques.h \
+           pdbs/pattern_database.h \
            pdbs/pattern_generation_edelkamp.h \
            pdbs/pattern_generation_haslum.h \
            pdbs/pdb_heuristic.h \

@@ -3,14 +3,18 @@
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
-#include "../global_operator.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
+#include "../task_proxy.h"
+#include "../utilities.h"
 
-#include <algorithm>
 #include <cassert>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <string>
 #include <unordered_map>
 
 using namespace std;
@@ -32,17 +36,30 @@ public:
 };
 
 Labels::Labels(const Options &options)
-    : lr_before_shrinking(options.get<bool>("before_shrinking")),
+    : max_size(-1),
+      lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(LabelReductionMethod(options.get_enum("method"))),
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
+}
+
+bool Labels::initialized() const {
+    return !transition_system_order.empty();
+}
+
+void Labels::initialize(const TaskProxy &task_proxy) {
+    assert(!initialized());
+
     // Reserve memory for labels
-    if (!g_operators.empty()) {
-        labels.reserve(g_operators.size() * 2 - 1);
+    size_t num_ops = task_proxy.get_operators().size();
+    max_size = 0;
+    if (num_ops > 0) {
+        max_size = num_ops * 2 - 1;
+        labels.reserve(max_size);
     }
 
     // Compute the transition system order
-    size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
+    size_t max_transition_system_count = task_proxy.get_variables().size() * 2 - 1;
     transition_system_order.reserve(max_transition_system_count);
     if (lr_system_order == REGULAR
         || lr_system_order == RANDOM) {
@@ -59,6 +76,7 @@ Labels::Labels(const Options &options)
 }
 
 void Labels::add_label(int cost) {
+    assert(initialized());
     labels.push_back(new Label(cost));
 }
 
@@ -78,10 +96,12 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
                                    vector<pair<int, vector<int> > > &label_mapping) {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (BlockListConstIter group_it = relation->begin(); group_it != relation->end(); ++group_it) {
+    for (BlockListConstIter group_it = relation->begin();
+         group_it != relation->end(); ++group_it) {
         const Block &block = *group_it;
         unordered_map<int, vector<int> > equivalent_label_nos;
-        for (ElementListConstIter label_it = block.begin(); label_it != block.end(); ++label_it) {
+        for (ElementListConstIter label_it = block.begin();
+             label_it != block.end(); ++label_it) {
             assert(*label_it < static_cast<int>(labels.size()));
             int label_no = *label_it;
             Label *label = labels[label_no];
@@ -129,8 +149,8 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
       iff l and l' are locally equivalent in all transition systems
       T' \neq T. (They may or may not be locally equivalent in T.)
     */
-    TransitionSystem *transition_system = all_transition_systems[ts_index];
-    assert(transition_system);
+    TransitionSystem *fixed_transition_system = all_transition_systems[ts_index];
+    assert(fixed_transition_system);
     //cout << transition_system->tag() << "compute combinable labels" << endl;
 
     // create the equivalence relation where all labels are equivalent
@@ -147,13 +167,12 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
 
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         TransitionSystem *ts = all_transition_systems[i];
-        if (!ts || ts == transition_system) {
+        if (!ts || ts == fixed_transition_system) {
             continue;
         }
-        const list<LabelGroup> &grouped_labels = ts->get_grouped_labels();
-        for (LabelGroupConstIter group_it = grouped_labels.begin();
-             group_it != grouped_labels.end(); ++group_it) {
-            relation->refine(group_it->begin(), group_it->end());
+        for (TSConstIterator group_it = ts->begin();
+             group_it != ts->end(); ++group_it) {
+            relation->refine(group_it.begin(), group_it.end());
         }
     }
     return relation;
@@ -161,6 +180,7 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
 
 void Labels::reduce(pair<int, int> next_merge,
                     const vector<TransitionSystem *> &all_transition_systems) {
+    assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = all_transition_systems.size();
 
@@ -263,16 +283,19 @@ void Labels::reduce(pair<int, int> next_merge,
 }
 
 bool Labels::is_current_label(int label_no) const {
+    assert(initialized());
     assert(in_bounds(label_no, labels));
     return labels[label_no];
 }
 
 int Labels::get_label_cost(int label_no) const {
+    assert(initialized());
     assert(labels[label_no]);
     return labels[label_no]->get_cost();
 }
 
 void Labels::dump_labels() const {
+    assert(initialized());
     cout << "active labels:" << endl;
     for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
         if (labels[label_no]) {
@@ -281,7 +304,8 @@ void Labels::dump_labels() const {
     }
 }
 
-void Labels::dump_label_reduction_options() const {
+void Labels::dump_options() const {
+    assert(initialized());
     cout << "Label reduction options:" << endl;
     cout << "Before merging: "
          << (lr_before_merging ? "enabled" : "disabled") << endl;
@@ -318,7 +342,16 @@ void Labels::dump_label_reduction_options() const {
     }
 }
 
-static Labels *_parse(OptionParser &parser) {
+static shared_ptr<Labels>_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Generalized label reduction",
+        "This class implements the generalized label reduction described "
+        "in the following paper:\n\n"
+        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
+        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
+        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
+        "In //Proceedings of the 28th AAAI Conference on Artificial "
+        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.");
     parser.add_option<bool>("before_shrinking",
                             "apply label reduction before shrinking");
     parser.add_option<bool>("before_merging",
@@ -379,9 +412,8 @@ static Labels *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        Labels *result = new Labels(opts);
-        return result;
+        return make_shared<Labels>(opts);
     }
 }
 
-static Plugin<Labels> _plugin("label_reduction", _parse);
+static PluginShared<Labels> _plugin("label_reduction", _parse);

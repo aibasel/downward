@@ -68,6 +68,8 @@ void EagerSearch::initialize() {
 
         open_list->insert(eval_context, initial_state.get_id());
     }
+
+    print_initial_h_values(eval_context);
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -77,7 +79,6 @@ void EagerSearch::print_checkpoint_line(int g) const {
 }
 
 void EagerSearch::print_statistics() const {
-    search_progress.print_initial_h_values();
     statistics.print_detailed_statistics();
     search_space.print_statistics();
 }
@@ -321,8 +322,7 @@ static SearchEngine *_parse(OptionParser &parser) {
         "f_eval",
         "set evaluator for jump statistics. "
         "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
-        "",
-        OptionFlags(false));
+        OptionParser::NONE);
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");

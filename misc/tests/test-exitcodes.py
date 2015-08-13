@@ -81,22 +81,25 @@ def run_plan_script(task_type, relpath, search):
     print("\nRun %(search)s on %(task_type)s task:" % locals())
     sys.stdout.flush()
     return subprocess.call(
-        [os.path.join(REPO_BASE, "src", "fast-downward.py"), problem, "--search", search])
+        [sys.executable, os.path.join(REPO_BASE, "src", "fast-downward.py"), problem, "--search", search])
 
 
 def cleanup():
-    subprocess.check_call([os.path.join(REPO_BASE, "src", "cleanup")])
+    subprocess.check_call([sys.executable, os.path.join(REPO_BASE, "src", "cleanup.py")])
 
 
 def main():
-    subprocess.check_call(["./build_all"], cwd=os.path.join(REPO_BASE, "src"))
+    # We cannot call bash scripts on Windows. After we switched to cmake,
+    # we want to replace build_all by a python script.
+    if os.name == "posix":
+        subprocess.check_call(["./build_all"], cwd=os.path.join(REPO_BASE, "src"))
     failures = []
     for task_type, search, expected in TESTS:
         relpath = TASKS[task_type]
         exitcode = run_plan_script(task_type, relpath, search)
         if not exitcode == expected:
             failures.append((task_type, search, expected, exitcode))
-    cleanup()
+        cleanup()
 
     if failures:
         print("\nFailures:")
