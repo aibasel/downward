@@ -7,7 +7,7 @@ macro(fast_downward_set_compiler_flags)
         if(CXX11_FOUND)
              set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
         else()
-            message(STATUS "${CMAKE_CXX_COMPILER} does not support C++11, please use a different compiler")
+            message(FATAL_ERROR "${CMAKE_CXX_COMPILER} does not support C++11, please use a different compiler")
         endif()
 
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
