@@ -23,6 +23,42 @@ else:
     print("Unsupported OS: " + os.name)
     sys.exit(1)
 
+DEFAULT_CONFIG = "release32"
+
+def print_usage():
+    script_name = os.path.basename(__file__)
+    configs = []
+    for name, args in sorted(CONFIGS.items()):
+        if name == DEFAULT_CONFIG:
+            name = name + " (default)"
+        configs.append(name + "\n    " + " ".join(args))
+    configs_string = "\n  ".join(configs)
+    cmake_name = os.path.basename(CMAKE)
+    make_name = os.path.basename(MAKE)
+    generator_name = CMAKE_GENERATOR.lower()
+    default_config_name = DEFAULT_CONFIG
+    print """Usage: {script_name} [BUILD [BUILD ...]] [--all] [MAKE_OPTIONS]
+
+Build one or more predefined build configuration of Fast Downward. The build
+uses {cmake_name} to generate {generator_name} and then uses {make_name} to compile the
+code. Build configurations differ in what parameters they pass to {cmake_name}.
+
+Build configurations
+  {configs_string}
+
+--all         Alias to build all build configurations.
+--help        Print this message and exit.
+
+Make options
+  All other parameters are forwarded to {make_name}.
+
+Example usage:
+  ./{script_name} -j4                 # build {default_config_name} in 4 threads
+  ./{script_name} -j4 downward        # as above, but only build the planner
+  ./{script_name} debug32 -j4         # build debug32 in 4 threads
+  ./{script_name} release64 debug64   # build both 64-bit build configs
+  ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
+""".format(**locals())
 
 def get_project_root_path():
     import __main__
@@ -64,14 +100,17 @@ def main():
     config_names = set()
     make_parameters = []
     for arg in sys.argv[1:]:
-        if arg == "--all":
+        if arg == "--help":
+            print_usage()
+            sys.exit(0)
+        elif arg == "--all":
             config_names |= set(CONFIGS.keys())
         elif arg in CONFIGS:
             config_names.add(arg)
         else:
             make_parameters.append(arg)
     if not config_names:
-        config_names.add("release32")
+        config_names.add(DEFAULT_CONFIG)
     for config_name in config_names:
         build(config_name, CONFIGS[config_name], make_parameters)
 
