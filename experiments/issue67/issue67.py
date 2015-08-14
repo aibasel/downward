@@ -6,7 +6,7 @@ import common_setup
 
 
 REVS = ["issue67-v1-base", "issue67-v1"]
-SUITE = suites.suite_all()
+SUITE = suites.suite_optimal_with_ipc11()
 
 CONFIGS = {
     "astar_blind": [
