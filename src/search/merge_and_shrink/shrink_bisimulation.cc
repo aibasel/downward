@@ -140,7 +140,6 @@ void ShrinkBisimulation::compute_signatures(
     signatures.push_back(Signature(INF, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
-    const list<LabelGroup> &grouped_labels = ts.get_grouped_labels();
     int label_group_counter = 0;
     /*
       Note that the final result of the bisimulation may depend on the
@@ -157,10 +156,9 @@ void ShrinkBisimulation::compute_signatures(
       the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
       Running the above config on those two revisions yields the same difference.
     */
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
-        const LabelGroup &label_group = *group_it;
-        const vector<Transition> &transitions = label_group.get_transitions();
+    for (TSConstIterator group_it = ts.begin();
+         group_it != ts.end(); ++group_it) {
+        const vector<Transition> &transitions = group_it.get_transitions();
         for (size_t i = 0; i < transitions.size(); ++i) {
             const Transition &trans = transitions[i];
             assert(signatures[trans.src + 1].state == trans.src);
@@ -168,7 +166,7 @@ void ShrinkBisimulation::compute_signatures(
             if (greedy) {
                 int src_h = ts.get_goal_distance(trans.src);
                 int target_h = ts.get_goal_distance(trans.target);
-                int cost = label_group.get_cost();
+                int cost = group_it.get_cost();
                 assert(target_h + cost >= src_h);
                 skip_transition = (target_h + cost != src_h);
             }
