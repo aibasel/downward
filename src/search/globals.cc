@@ -82,17 +82,6 @@ void save_plan(const vector<const GlobalOperator *> &plan,
     ++g_num_previously_generated_plans;
 }
 
-bool peek_magic(istream &in, string magic) {
-    string word;
-    in >> word;
-    bool result = (word == magic);
-    for (int i = word.size() - 1; i >= 0; --i) {
-        in.putback(word[i]);
-        assert(in.good());
-    }
-    return result;
-}
-
 void check_magic(istream &in, string magic) {
     string word;
     in >> word;
@@ -259,11 +248,10 @@ void read_everything(istream &in) {
 
     // Ignore successor generator from preprocessor output.
     check_magic(in, "begin_SG");
-    while (!peek_magic(in, "end_SG")) {
-        string dummy_string;
+    string dummy_string = "";
+    while (dummy_string != "end_SG") {
         getline(in, dummy_string);
     }
-    check_magic(in, "end_SG");
 
     DomainTransitionGraph::read_all(in);
     check_magic(in, "begin_CG"); // ignore everything from here
