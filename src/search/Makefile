@@ -122,6 +122,7 @@ HEADERS += merge_and_shrink/distances.h \
            merge_and_shrink/factored_transition_system.h \
            merge_and_shrink/fts_factory.h \
            merge_and_shrink/heuristic_representation.h \
+           merge_and_shrink/label_equivalence_relation.h \
            merge_and_shrink/labels.h \
            merge_and_shrink/merge_and_shrink_heuristic.h \
            merge_and_shrink/merge_dfp.h \
