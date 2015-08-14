@@ -49,7 +49,6 @@ pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_trans
 }
 
 void MergeLinear::dump_strategy_specific_options() const {
-    cout << "Linear merge strategy: ";
     variable_order_finder->dump();
 }
 
