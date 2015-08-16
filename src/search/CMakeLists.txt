@@ -28,12 +28,6 @@ add_executable(downward ${PLANNER_SOURCES})
 ## == Includes ==
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
-if(APPLE)
-    ## If you have Mac OS, you may be getting tree.hh from /opt/local/include.
-    ## TODO: we do ship tree.hh so why add another external include
-    include_directories("/opt/local/include/")
-endif()
-
 
 ## == Libraries ==
 
