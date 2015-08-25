@@ -23,9 +23,6 @@ class DiversePotentialHeuristics {
     // with num_samples parameter?
     const int max_num_heuristics;
     const int num_samples;
-    // TODO: Experiment with time limits and remove them if unneeded.
-    const double max_filtering_time;
-    const double max_covering_time;
     std::vector<std::unique_ptr<PotentialFunction> > diverse_functions;
 
     /* Filter dead end samples and duplicates. Store potential heuristics
