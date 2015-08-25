@@ -34,6 +34,7 @@ set(CORE_SOURCES
         priority_queue.cc
         rng.cc
         root_task.cc
+        sampling.cc
         scalar_evaluator.cc
         search_engine.cc
         search_node_info.cc
@@ -318,6 +319,21 @@ fast_downward_plugin(
         pdbs/pdb_heuristic.cc
         pdbs/util.cc
         pdbs/zero_one_pdbs_heuristic.cc
+)
+
+fast_downward_plugin(
+    NAME POTENTIALS
+    HELP "Plugin containing the code for potential heuristics"
+    SOURCES
+        potentials/diverse_potential_heuristics.cc
+        potentials/potential_function.cc
+        potentials/potential_heuristic.cc
+        potentials/potential_max_heuristic.cc
+        potentials/potential_optimizer.cc
+        potentials/sample_based_potential_heuristics.cc
+        potentials/single_potential_heuristics.cc
+        potentials/util.cc
+    DEPENDS LP_SOLVER
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
