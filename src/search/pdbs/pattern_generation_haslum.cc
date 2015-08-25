@@ -8,6 +8,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
+#include "../sampling.h"
 #include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
@@ -99,62 +100,19 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
     return max_pdb_size;
 }
 
-void PatternGenerationHaslum::sample_states(vector<State> &samples,
-                                            double average_operator_cost) {
-    const State &initial_state = task_proxy.get_initial_state();
-    int h = current_heuristic->compute_heuristic(initial_state);
-    int n;
-    if (h == 0) {
-        n = 10;
-    } else {
-        /*
-          Convert heuristic value into an approximate number of actions
-          (does nothing on unit-cost problems).
-          average_operator_cost cannot equal 0, as in this case, all operators
-          must have costs of 0 and in this case the if-clause triggers.
-        */
-        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
-        n = 4 * solution_steps_estimate;
-    }
-    double p = 0.5;
-    /* The expected walk length is np = 2 * estimated number of solution steps.
-       (We multiply by 2 because the heuristic is underestimating.) */
+void PatternGenerationHaslum::sample_states(
+    vector<State> &samples, double average_operator_cost) {
+    int init_h = current_heuristic->compute_heuristic(
+        task_proxy.get_initial_state());
 
-    samples.reserve(num_samples);
-    for (int i = 0; i < num_samples; ++i) {
-        if (hill_climbing_timer->is_expired())
-            throw HillClimbingTimeout();
-
-        // Calculate length of random walk according to a binomial distribution.
-        int length = 0;
-        for (int j = 0; j < n; ++j) {
-            double random = g_rng(); // [0..1)
-            if (random < p)
-                ++length;
-        }
-
-        // Sample one state with a random walk of length length.
-        State current_state(initial_state);
-        vector<OperatorProxy> applicable_ops;
-        for (int j = 0; j < length; ++j) {
-            applicable_ops.clear();
-            successor_generator.generate_applicable_ops(current_state,
-                                                        applicable_ops);
-            // If there are no applicable operators, do not walk further.
-            if (applicable_ops.empty()) {
-                break;
-            } else {
-                const OperatorProxy &random_op = *g_rng.choose(applicable_ops);
-                assert(is_applicable(random_op, current_state));
-                current_state = current_state.get_successor(random_op);
-                /* If current state is a dead end, then restart the random walk
-                   with the initial state. */
-                if (current_heuristic->is_dead_end(current_state))
-                    current_state = State(initial_state);
-            }
-        }
-        // The last state of the random walk is used as a sample.
-        samples.push_back(current_state);
+    try {
+        samples = sample_states_with_random_walks(
+            task_proxy, successor_generator, num_samples, init_h, average_operator_cost,
+            [this](const State &state) {return current_heuristic->is_dead_end(state);
+            },
+            hill_climbing_timer);
+    } catch (SamplingTimeout &) {
+        throw HillClimbingTimeout();
     }
 }
 
@@ -357,12 +315,7 @@ void PatternGenerationHaslum::hill_climbing(
 }
 
 void PatternGenerationHaslum::initialize() {
-    // Calculate average operator costs.
-    double average_operator_cost = 0;
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        average_operator_cost += op.get_cost();
-    }
-    average_operator_cost /= task_proxy.get_operators().size();
+    double average_operator_cost = get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
     // Generate initial collection: a pdb for each goal variable.
