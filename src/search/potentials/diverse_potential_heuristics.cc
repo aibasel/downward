@@ -4,7 +4,6 @@
 #include "potential_max_heuristic.h"
 #include "util.h"
 
-#include "../countdown_timer.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../timer.h"
@@ -18,24 +17,18 @@ namespace potentials {
 DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
-      num_samples(opts.get<int>("num_samples")),
-      max_filtering_time(opts.get<double>("max_filtering_time")),
-      max_covering_time(opts.get<double>("max_covering_time")) {
+      num_samples(opts.get<int>("num_samples")) {
 }
 
 SamplesToFunctionsMap
 DiversePotentialHeuristics::filter_samples_and_compute_functions(
     const vector<State> &samples) {
-    CountdownTimer filtering_timer(max_filtering_time);
+    Timer filtering_timer;
     unordered_set<State> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
     SamplesToFunctionsMap samples_to_functions;
     for (const State &sample : samples) {
-        if (filtering_timer.is_expired()) {
-            cout << "Ran out of time filtering dead ends." << endl;
-            break;
-        }
         // Skipping duplicates is not necessary, but saves LP evaluations.
         if (samples_to_functions.count(sample) || dead_ends.count(sample)) {
             ++num_duplicates;
@@ -104,13 +97,9 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
 
 void DiversePotentialHeuristics::cover_samples(
     SamplesToFunctionsMap &samples_to_functions) {
-    CountdownTimer covering_timer(max_covering_time);
+    Timer covering_timer;
     while (!samples_to_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
-        if (covering_timer.is_expired()) {
-            cout << "Ran out of time covering samples." << endl;
-            break;
-        }
         cout << "Find heuristic #" << diverse_functions.size() + 1 << endl;
         diverse_functions.push_back(
             find_function_and_remove_covered_samples(samples_to_functions));
@@ -152,16 +141,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "maximum number of potential heuristics",
         "infinity",
         Bounds("0", "infinity"));
-    parser.add_option<double>(
-        "max_filtering_time",
-        "time limit in seconds for filtering dead end samples",
-        "infinity",
-        Bounds("0.0", "infinity"));
-    parser.add_option<double>(
-        "max_covering_time",
-        "time limit in seconds for covering samples",
-        "infinity",
-        Bounds("0.0", "infinity"));
     prepare_parser_for_admissible_potentials(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
