@@ -18,7 +18,7 @@
 #endif
 
 #include <cassert>
-#include <limits>
+#include <numeric>
 
 using namespace std;
 
