@@ -18,7 +18,7 @@
 #endif
 
 #include <cassert>
-#include <limits>
+#include <numeric>
 
 using namespace std;
 
@@ -212,6 +212,20 @@ double LPSolver::get_infinity() const {
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
+}
+
+void LPSolver::set_objective_coefficients(const vector<double> &coefficients) {
+    assert(static_cast<int>(coefficients.size()) == get_num_variables());
+    vector<int> indices(coefficients.size());
+    iota(indices.begin(), indices.end(), 0);
+    try {
+        lp_solver->setObjCoeffSet(indices.data(),
+                                  indices.data() + indices.size(),
+                                  coefficients.data());
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+    is_solved = false;
 }
 
 void LPSolver::set_objective_coefficient(int index, double coefficient) {

@@ -3,6 +3,7 @@
 
 #include "abstract_task.h"
 #include "utilities.h"
+#include "utilities_hash.h"
 
 #include <cassert>
 #include <cstddef>
@@ -513,6 +514,20 @@ public:
         return *this;
     }
 
+    bool operator==(const State &other) const {
+        assert(task == other.task);
+        return values == other.values;
+    }
+
+    bool operator!=(const State &other) const {
+        return !(*this == other);
+    }
+
+    std::size_t hash() const {
+        std::hash<std::vector<int> > hasher;
+        return hasher(values);
+    }
+
     std::size_t size() const {
         return values.size();
     }
@@ -542,6 +557,16 @@ public:
         return State(*task, std::move(new_values));
     }
 };
+
+
+namespace std {
+template<>
+struct hash<State> {
+    size_t operator()(const State &state) const {
+        return state.hash();
+    }
+};
+}
 
 
 class TaskProxy {
