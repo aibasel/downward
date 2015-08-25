@@ -37,7 +37,7 @@ def print_usage():
     make_name = os.path.basename(MAKE)
     generator_name = CMAKE_GENERATOR.lower()
     default_config_name = DEFAULT_CONFIG
-    print """Usage: {script_name} [BUILD [BUILD ...]] [--all] [MAKE_OPTIONS]
+    print("""Usage: {script_name} [BUILD [BUILD ...]] [--all] [MAKE_OPTIONS]
 
 Build one or more predefined build configuration of Fast Downward. The build
 uses {cmake_name} to generate {generator_name} and then uses {make_name} to compile the
@@ -58,7 +58,7 @@ Example usage:
   ./{script_name} debug32 -j4         # build debug32 in 4 threads
   ./{script_name} release64 debug64   # build both 64-bit build configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
-""".format(**locals())
+""".format(**locals()))
 
 def get_project_root_path():
     import __main__
