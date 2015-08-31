@@ -34,6 +34,8 @@ def main():
                 run_components.run_preprocess(args)
             elif component == "search":
                 run_components.run_search(args)
+            elif component == "validate":
+                run_components.run_validate(args)
             else:
                 assert False
     except subprocess.CalledProcessError as err:
