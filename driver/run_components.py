@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 from . import call
+from . import exitcodes
 from . import limits
 from . import portfolio_runner
 from .plan_manager import PlanManager
@@ -135,8 +136,7 @@ def run_search(args):
                 stdin=args.search_input,
                 time_limit=time_limit, memory_limit=memory_limit)
         except subprocess.CalledProcessError as err:
-            # TODO: Move exit codes into separate module.
-            if err.returncode not in portfolio_runner.EXPECTED_EXITCODES:
+            if err.returncode not in exitcodes.EXPECTED_EXITCODES:
                 raise
 
 
