@@ -141,6 +141,7 @@ def _split_planner_args(parser, args):
     args.translate_options = []
     args.preprocess_options = []
     args.search_options = []
+    args.validate_options = []
 
     curr_options = args.search_options
     for option in options:
@@ -150,6 +151,8 @@ def _split_planner_args(parser, args):
             curr_options = args.preprocess_options
         elif option == "--search-options":
             curr_options = args.search_options
+        elif option == "--validate-options":
+            curr_options = args.validate_options
         else:
             curr_options.append(option)
 
@@ -179,13 +182,13 @@ def _set_components_automatically(parser, args):
     implements some simple heuristics:
 
     1. If there is exactly one input file and it looks like a
-       Fast-Downward-generated file, run search only.
+       Fast-Downward-generated file, run search and validate only.
     2. Otherwise, run all components."""
 
     if len(args.filenames) == 1 and _looks_like_search_input(args.filenames[0]):
-        args.components = ["search"]
+        args.components = ["search", "validate"]
     else:
-        args.components = ["translate", "preprocess", "search"]
+        args.components = ["translate", "preprocess", "search", "validate"]
 
 
 def _set_components_and_inputs(parser, args):
@@ -208,9 +211,14 @@ def _set_components_and_inputs(parser, args):
         args.components.append("preprocess")
     if args.search or args.run_all:
         args.components.append("search")
+    if args.validate or args.run_all:
+        args.components.append("validate")
 
     if args.components == ["translate", "search"]:
         parser.error("cannot run translator and search without preprocessor")
+    components = set(args.components)
+    if "validate" in components and "search" not in components:
+        parser.error("cannot run validate without search")
 
     if not args.components:
         _set_components_automatically(parser, args)
@@ -247,6 +255,9 @@ def _set_components_and_inputs(parser, args):
             args.search_input, = args.filenames
         else:
             parser.error("search needs exactly one input file")
+    elif first == "validate":
+        # We set the validator input files after the search finishes.
+        pass
     else:
         assert False, first
 
@@ -291,6 +302,9 @@ def parse_args():
     components.add_argument(
         "--search", action="store_true",
         help="run search component")
+    components.add_argument(
+        "--validate", action="store_true",
+        help="validate all plans")
 
     limits = parser.add_argument_group(
         title="time and memory limits", description=LIMITS_HELP)
