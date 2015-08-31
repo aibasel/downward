@@ -18,3 +18,23 @@ def get_elapsed_time():
         # aware of this, so it's prudent to complain loudly.
         raise NotImplementedError("cannot use get_elapsed_time() on Windows")
     return sum(os.times()[:4])
+
+
+def find_domain_filename(task_filename):
+    """
+    Find domain filename for the given task using automatic naming rules.
+    """
+    dirname, basename = os.path.split(task_filename)
+    domain_filename = os.path.join(dirname, "domain.pddl")
+    if not os.path.exists(domain_filename) and re.match(r"p[0-9][0-9]\b", basename):
+        domain_filename = os.path.join(dirname, basename[:4] + "domain.pddl")
+    if not os.path.exists(domain_filename) and re.match(r"p[0-9][0-9]\b", basename):
+        domain_filename = os.path.join(dirname, basename[:3] + "-domain.pddl")
+    if not os.path.exists(domain_filename) and re.match(r"p[0-9][0-9]\b", basename):
+        domain_filename = os.path.join(dirname, "domain_" + basename)
+    if not os.path.exists(domain_filename) and basename.endswith("-problem.pddl"):
+        domain_filename = os.path.join(dirname, basename[:-13] + "-domain.pddl")
+    if not os.path.exists(domain_filename):
+        raise SystemExit(
+            "Error: Could not find domain file using automatic naming rules.")
+    return domain_filename

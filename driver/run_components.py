@@ -9,8 +9,8 @@ from . import call
 from . import exitcodes
 from . import limits
 from . import portfolio_runner
+from . import util
 from .plan_manager import PlanManager
-from .util import BUILDS_DIR
 
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
@@ -36,7 +36,7 @@ def get_executable(build, rel_path):
         # name of a build in our standard directory structure.
         # in this case, the binaries are in
         #   '<repo-root>/builds/<buildname>/bin'.
-        build_dir = os.path.join(BUILDS_DIR, build, "bin")
+        build_dir = os.path.join(util.BUILDS_DIR, build, "bin")
         if not os.path.exists(build_dir):
             raise IOError(
                 "Could not find build '{build}' at {build_dir}. "
@@ -148,8 +148,10 @@ def run_validate(args):
         # Silently swallow input filenames.
         args.validate_inputs = []
     elif num_files == 1:
-        # TODO: Find domain file automatically if not given.
-        raise NotImplementedError
+        task_filename, = args.filenames
+        domain_filename = util.find_domain_filename(task_filename)
+        args.validate_inputs = (
+            [domain_filename, task_filename] + list(plan_files))
     elif num_files == 2:
         args.validate_inputs = args.filenames + list(plan_files)
     else:
