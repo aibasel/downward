@@ -67,14 +67,14 @@ def run_search(executable, args, sas_file, plan_manager, time, memory):
     print("args: %s" % complete_args)
 
     try:
-        returncode = call.check_call(
+        exitcode = call.check_call(
             complete_args, stdin=sas_file,
             time_limit=time, memory_limit=memory)
     except subprocess.CalledProcessError as err:
-        returncode = err.returncode
-    print("returncode: %d" % returncode)
+        exitcode = err.returncode
+    print("exitcode: %d" % exitcode)
     print()
-    return returncode
+    return exitcode
 
 
 def compute_run_time(timeout, configs, pos):
@@ -106,7 +106,6 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
 
 def run_sat(configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory):
-    returncodes = []
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
     # has non-unit costs, we start by treating all costs as one. When we find
     # a solution, we rerun the successful config with real costs.
@@ -120,11 +119,11 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 configs, pos, search_cost_type, heuristic_cost_type,
                 executable, sas_file, plan_manager, timeout, memory)
             if exitcode is None:
-                return returncodes
+                return
 
-            returncodes.append(exitcode)
+            yield exitcode
             if exitcode == exitcodes.EXIT_UNSOLVABLE:
-                return returncodes
+                return
 
             if exitcode == exitcodes.EXIT_PLAN_FOUND:
                 configs_next_round.append(args)
@@ -138,11 +137,11 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                         configs, pos, search_cost_type, heuristic_cost_type,
                         executable, sas_file, plan_manager, timeout, memory)
                     if exitcode is None:
-                        return returncodes
+                        return
 
-                    returncodes.append(exitcode)
+                    yield exitcode
                     if exitcode == exitcodes.EXIT_UNSOLVABLE:
-                        return returncodes
+                        return
                 if final_config_builder:
                     print("Build final config.")
                     final_config = final_config_builder(args)
@@ -161,21 +160,18 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
             heuristic_cost_type, executable, sas_file, plan_manager,
             timeout, memory)
         if exitcode is not None:
-            returncodes.append(exitcode)
-    return returncodes
+            yield exitcode
 
 
 def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
-    returncodes = []
     for pos, (relative_time, args) in enumerate(configs):
         run_time = compute_run_time(timeout, configs, pos)
         exitcode = run_search(executable, args, sas_file, plan_manager,
                               run_time, memory)
-        returncodes.append(exitcode)
+        yield exitcode
 
         if exitcode in [exitcodes.EXIT_PLAN_FOUND, exitcodes.EXIT_UNSOLVABLE]:
             break
-    return returncodes
 
 
 def can_change_cost_type(args):
