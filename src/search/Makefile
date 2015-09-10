@@ -92,6 +92,7 @@ HEADERS = \
           weighted_evaluator.h \
           \
           open_lists/alternation_open_list.h \
+          open_lists/epsilon_greedy_open_list.h \
           open_lists/bucket_open_list.h \
           open_lists/open_list.h \
           open_lists/pareto_open_list.h \

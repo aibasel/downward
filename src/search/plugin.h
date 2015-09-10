@@ -3,6 +3,7 @@
 
 #include "open_lists/alternation_open_list.h"
 #include "open_lists/bucket_open_list.h"
+#include "open_lists/epsilon_greedy_open_list.h"
 #include "open_lists/pareto_open_list.h"
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/tiebreaking_open_list.h"
@@ -52,6 +53,8 @@ public:
             "alt", AlternationOpenList<Entry>::_parse);
         Registry<OpenList<Entry > *>::instance()->register_object(
             "pareto", ParetoOpenList<Entry>::_parse);
+        Registry<OpenList<Entry > *>::instance()->register_object(
+            "epsilon_greedy", EpsilonGreedyOpenList<Entry>::_parse);
     }
 };
 
