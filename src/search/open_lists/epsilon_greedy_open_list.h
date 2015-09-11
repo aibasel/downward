@@ -154,7 +154,7 @@ public:
             " [A Comparison of Knowledge-Based GBFS Enhancements and "
             "Knowledge-Free Exploration "
             "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7943/8066]."
-            "<<BR>>\n"
+            "<<BR>>\n "
             "In //Proceedings of the Twenty-Fourth International "
             "Conference on Automated Planning and Scheduling (ICAPS "
             "2014)//, pp. 375-379. AAAI Press 2014.\n\n\n");
