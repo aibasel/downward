@@ -10,12 +10,7 @@
 #include <functional>
 
 /*
-    Epsilon-greedy open list based on
-
-        Richard Valenzano, Nathan R. Sturtevant, Jonathan Schaeffer and Fan Xie.
-        A Comparison of Knowledge-Based GBFS Enhancements and Knowledge-Free Exploration.
-        In Proceedings of the Twenty-Fourth International Conference on Automated
-        Planning and Scheduling (ICAPS 2014), pages 375-379. AAAI Press, 2014.
+    Epsilon-greedy open list based on Valenzano et al. (ICAPS 2014).
 
     With probability epsilon the next entry is selected uniformly
     randomly, otherwise the minimum entry is chosen. While the original
@@ -152,7 +147,17 @@ public:
         parser.document_synopsis(
             "Epsilon-greedy open list",
             "Chooses an entry uniformly randomly with probability "
-            "'epsilon', otherwise it returns the minimum entry.");
+            "'epsilon', otherwise it returns the minimum entry. "
+            "The algorithm is based on\n\n"
+            " * Richard Valenzano, Nathan R. Sturtevant, "
+            "Jonathan Schaeffer, and Fan Xie.<<BR>>\n"
+            " [A Comparison of Knowledge-Based GBFS Enhancements and "
+            "Knowledge-Free Exploration "
+            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7943/8066]."
+            "<<BR>>\n"
+            "In //Proceedings of the Twenty-Fourth International "
+            "Conference on Automated Planning and Scheduling (ICAPS "
+            "2014)//, pp. 375-379. AAAI Press 2014.\n\n\n");
         parser.add_option<ScalarEvaluator *>("eval", "scalar evaluator");
         parser.add_option<bool>(
             "pref_only",
