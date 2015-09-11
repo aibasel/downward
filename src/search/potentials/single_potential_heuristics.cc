@@ -47,13 +47,15 @@ static Heuristic *_parse(OptionParser &parser, OptimizeFor opt_func) {
 
 static Heuristic *_parse_initial_state_potential(OptionParser &parser) {
     parser.document_synopsis(
-        "Potential heuristic optimized for initial state", "");
+        "Potential heuristic optimized for initial state",
+        get_admissible_potentials_reference());
     return _parse(parser, OptimizeFor::INITIAL_STATE);
 }
 
 static Heuristic *_parse_all_states_potential(OptionParser &parser) {
     parser.document_synopsis(
-        "Potential heuristic optimized for all states", "");
+        "Potential heuristic optimized for all states",
+        get_admissible_potentials_reference());
     return _parse(parser, OptimizeFor::ALL_STATES);
 }
 

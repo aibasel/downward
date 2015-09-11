@@ -130,7 +130,8 @@ vector<unique_ptr<PotentialFunction> > && DiversePotentialHeuristics::find_funct
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Diverse potential heuristics", "");
+        "Diverse potential heuristics",
+        get_admissible_potentials_reference());
     parser.add_option<int>(
         "num_samples",
         "Number of states to sample",
