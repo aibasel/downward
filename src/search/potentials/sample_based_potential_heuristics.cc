@@ -53,7 +53,8 @@ static vector<unique_ptr<PotentialFunction> > create_sample_based_potential_func
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Sample-based potential heuristics",
-        "Maximum over multiple potential heuristics optimized for samples");
+        "Maximum over multiple potential heuristics optimized for samples. " +
+        get_admissible_potentials_reference());
     parser.add_option<int>(
         "num_heuristics",
         "number of potential heuristics",
