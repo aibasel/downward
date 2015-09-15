@@ -47,7 +47,7 @@ double ExactTimer::current_clock() const {
     LARGE_INTEGER now_ticks;
     QueryPerformanceCounter(&now_ticks);
     double ticks = static_cast<double>(now_ticks.QuadPart - start_ticks.QuadPart);
-    return ticks * 1e9 / frequency.QuadPart;
+    return ticks / frequency.QuadPart;
 #else
     timespec tp;
 #if OPERATING_SYSTEM == OSX
@@ -57,7 +57,7 @@ double ExactTimer::current_clock() const {
 #else
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
 #endif
-    return (tp.tv_sec * 1e9) + tp.tv_nsec;
+    return tp.tv_sec + tp.tv_nsec / 1e9;
 #endif
 }
 
@@ -89,7 +89,7 @@ double ExactTimer::reset() {
 }
 
 ostream &operator<<(ostream &os, const ExactTimer &timer) {
-    double value = timer() / 1e9;
+    double value = timer();
     if (value < 0 && value > -1e-10)
         value = 0.0;  // We sometimes get inaccuracies from God knows where.
     if (value < 1e-10)
