@@ -6,8 +6,6 @@
 #include "utilities_windows.h"
 #endif
 
-#include <iosfwd>
-
 
 class Timer {
     double last_start_clock;
@@ -19,9 +17,10 @@ class Timer {
 #endif
 
     double current_clock() const;
+
 public:
     Timer();
-    ~Timer();
+    ~Timer() = default;
     double operator()() const;
     double stop();
     void resume();
