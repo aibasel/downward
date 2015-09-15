@@ -1,7 +1,5 @@
 #include "timer.h"
 
-#include "utilities.h"
-
 #include <ctime>
 #include <ostream>
 
@@ -10,6 +8,7 @@
 #endif
 
 using namespace std;
+
 
 #if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
@@ -37,9 +36,6 @@ Timer::Timer() {
     last_start_clock = current_clock();
     collected_time = 0;
     stopped = false;
-}
-
-Timer::~Timer() {
 }
 
 double Timer::current_clock() const {
