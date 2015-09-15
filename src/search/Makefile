@@ -50,7 +50,6 @@ HEADERS = \
           equivalence_relation.h \
           evaluation_context.h \
           evaluation_result.h \
-          exact_timer.h \
           g_evaluator.h \
           global_operator.h \
           global_state.h \
