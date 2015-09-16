@@ -3,6 +3,7 @@
 
 #include "../heuristic.h"
 
+#include <unordered_map>
 #include <vector>
 
 class PatternDatabase;
@@ -40,6 +41,9 @@ protected:
 public:
     explicit CanonicalPDBsHeuristic(const Options &opts);
     virtual ~CanonicalPDBsHeuristic();
+
+    int compute_heuristic(
+        const std::unordered_map<PatternDatabase *, int> &pdb_h_values) const;
 
     /* TODO: we want to get rid of compute_heuristic(const GlobalState &state)
        and change the interface to only use State objects. While we are doing

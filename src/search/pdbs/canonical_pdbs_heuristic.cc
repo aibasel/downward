@@ -5,7 +5,6 @@
 #include "pattern_database.h"
 #include "util.h"
 
-#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../timer.h"
@@ -13,7 +12,6 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -131,11 +129,25 @@ int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     return compute_heuristic(state);
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
-    int max_h = 0;
-    assert(!max_cliques.empty());
+int CanonicalPDBsHeuristic::compute_heuristic(
+    const unordered_map<PatternDatabase *, int> &pdb_h_values) const {
+    assert(pdb_h_values.size() == pattern_databases.size());
     // If we have an empty collection, then max_cliques = { \emptyset }.
+    assert(!max_cliques.empty());
+    int max_h = 0;
+    for (const vector<PatternDatabase *> &clique : max_cliques) {
+        int clique_h = 0;
+        for (PatternDatabase *pdb : clique) {
+            assert(pdb_h_values.count(pdb) == 1);
+            assert(pdb_h_values.at(pdb) != numeric_limits<int>::max());
+            clique_h += pdb_h_values.at(pdb);
+        }
+        max_h = max(max_h, clique_h);
+    }
+    return max_h;
+}
 
+int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     unordered_map<PatternDatabase *, int> pdb_h_values;
     pdb_h_values.reserve(pattern_databases.size());
 
@@ -146,13 +158,7 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
         pdb_h_values[pdb] = h;
     }
 
-    for (const vector<PatternDatabase *> &clique : max_cliques) {
-        int clique_h = 0;
-        for (PatternDatabase *pdb : clique)
-            clique_h += pdb_h_values[pdb];
-        max_h = max(max_h, clique_h);
-    }
-    return max_h;
+    return compute_heuristic(pdb_h_values);
 }
 
 void CanonicalPDBsHeuristic::add_pattern(const vector<int> &pattern) {
