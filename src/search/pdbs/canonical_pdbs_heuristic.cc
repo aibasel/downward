@@ -129,35 +129,21 @@ int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     return compute_heuristic(state);
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(
-    const unordered_map<PatternDatabase *, int> &pdb_h_values) const {
-    assert(pdb_h_values.size() == pattern_databases.size());
+int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     // If we have an empty collection, then max_cliques = { \emptyset }.
     assert(!max_cliques.empty());
     int max_h = 0;
     for (const vector<PatternDatabase *> &clique : max_cliques) {
         int clique_h = 0;
         for (PatternDatabase *pdb : clique) {
-            assert(pdb_h_values.at(pdb) != numeric_limits<int>::max());
-            clique_h += pdb_h_values.at(pdb);
+            int h = pdb->get_value(state);
+            if (h == numeric_limits<int>::max())
+                return DEAD_END;
+            clique_h += h;
         }
         max_h = max(max_h, clique_h);
     }
     return max_h;
-}
-
-int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
-    unordered_map<PatternDatabase *, int> pdb_h_values;
-    pdb_h_values.reserve(pattern_databases.size());
-
-    for (PatternDatabase *pdb : pattern_databases) {
-        int h = pdb->get_value(state);
-        if (h == numeric_limits<int>::max())
-            return DEAD_END;
-        pdb_h_values[pdb] = h;
-    }
-
-    return compute_heuristic(pdb_h_values);
 }
 
 void CanonicalPDBsHeuristic::add_pattern(const vector<int> &pattern) {
