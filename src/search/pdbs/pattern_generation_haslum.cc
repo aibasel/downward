@@ -192,20 +192,15 @@ bool PatternGenerationHaslum::is_heuristic_improved(
         return true;
     }
 
-    pdb_h_values.clear();
-    for (PatternDatabase *pdb : current_heuristic->get_pattern_databases()) {
-        int h = pdb->get_value(sample);
-        if (h == numeric_limits<int>::max())
-            return false;
-        pdb_h_values[pdb] = h;
-    }
-
     // h_collection: h-value of the current collection heuristic
-    int h_collection = current_heuristic->compute_heuristic(pdb_h_values);
+    int h_collection = current_heuristic->compute_heuristic(sample);
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
         for (PatternDatabase *additive_pdb : subset) {
-            h_subset += pdb_h_values.at(additive_pdb);
+            int h = additive_pdb->get_value(sample);
+            if (h == numeric_limits<int>::max())
+                return false;
+            h_subset += h;
         }
         if (h_pattern + h_subset > h_collection) {
             /*
