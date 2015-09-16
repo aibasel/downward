@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 class CanonicalPDBsHeuristic;
@@ -32,6 +33,8 @@ class PatternGenerationHaslum {
     const OperatorCost cost_type;
     CanonicalPDBsHeuristic *current_heuristic;
     SuccessorGenerator successor_generator;
+
+    std::unordered_map<PatternDatabase *, int> pdb_h_values;
 
     // for stats only
     int num_rejected;
