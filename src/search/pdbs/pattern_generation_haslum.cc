@@ -20,7 +20,6 @@
 #include <exception>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -193,8 +192,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(
         return true;
     }
 
-    unordered_map<PatternDatabase *, int> pdb_h_values;
-    pdb_h_values.reserve(current_heuristic->get_pattern_databases().size());
+    pdb_h_values.clear();
     for (PatternDatabase *pdb : current_heuristic->get_pattern_databases()) {
         int h = pdb->get_value(sample);
         if (h == numeric_limits<int>::max())
