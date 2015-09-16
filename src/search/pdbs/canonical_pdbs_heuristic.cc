@@ -138,7 +138,6 @@ int CanonicalPDBsHeuristic::compute_heuristic(
     for (const vector<PatternDatabase *> &clique : max_cliques) {
         int clique_h = 0;
         for (PatternDatabase *pdb : clique) {
-            assert(pdb_h_values.count(pdb) == 1);
             assert(pdb_h_values.at(pdb) != numeric_limits<int>::max());
             clique_h += pdb_h_values.at(pdb);
         }
