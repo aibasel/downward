@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 

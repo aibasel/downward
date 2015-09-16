@@ -4,13 +4,13 @@ Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
 the creation of experiments. We recommend using common_setup.py from
-issue508 for new experiments since it is the most polished version and
+issue546 for new experiments since it is the most polished version and
 provides the greatest flexibility.
 
 Previously, most experiments imported lab's downward/configs.py module.
 To make experiments more self-contained, the module has been deprecated
-and we recommend either copying configy.py into the experiment
-directory (see issue508 for an example) or manually specifying the
+and we recommend either copying config.py into the experiment
+directory (see issue77 for an example) or manually specifying the
 configurations (see issue511).
 
 Below we list some experiments that show how certain tasks can be
@@ -41,6 +41,12 @@ performed:
 * Independent CompareRevisionReports for portfolio configs and core solvers:
   * issue462/issue462-opt.py
 
+* RelativeScatterPlotReport:
+  * issue77/issue77-v7-opt.py
+
+* M&S: configs and additional parsing:
+  * issue548/base-v2.py and issue548/ms-parser.py
+
 
 Microbenchmarks
 ===============
@@ -49,11 +55,8 @@ Some experiments don't run the whole planner or planner components, but
 just contain small microbenchmarks for particular functionality. These
 may be a good starting point for similar microbenchmarks. Examples:
 
-* Benchmarking of random number generation (self-contained):
+* Benchmarking of random number generation:
   * issue269/rng-microbenchmark
-
-* Benchmarking of range-based for loops (uses planner code):
-  * issue510/iterator-microbenchmark
 
 If you add your own microbenchmark, it is recommended to start from a
 copy of an existing example and follow the naming convention

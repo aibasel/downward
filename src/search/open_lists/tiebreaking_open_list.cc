@@ -1,17 +1,16 @@
 // HACK! Ignore this if used as a top-level compile target.
 #ifdef OPEN_LISTS_TIEBREAKING_OPEN_LIST_H
 
+#include "../evaluation_context.h"
+#include "../option_parser.h"
+#include "../scalar_evaluator.h"
+
 #include <iostream>
 #include <cassert>
 #include <limits>
-#include "../scalar_evaluator.h"
-#include "../option_parser.h"
+
 using namespace std;
 
-/*
-  Bucket-based implementation of a open list.
-  Nodes with identical heuristic value are expanded in FIFO order.
-*/
 
 template<class Entry>
 OpenList<Entry> *TieBreakingOpenList<Entry>::_parse(OptionParser &parser) {
@@ -36,7 +35,6 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0), evaluators(opts.get_list<ScalarEvaluator *>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
-    last_evaluated_value.resize(evaluators.size());
 }
 
 template<class Entry>
@@ -45,24 +43,18 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(
     bool preferred_only, bool unsafe_pruning)
     : OpenList<Entry>(preferred_only), size(0), evaluators(evals),
       allow_unsafe_pruning(unsafe_pruning) {
-    last_evaluated_value.resize(evaluators.size());
 }
 
 template<class Entry>
-TieBreakingOpenList<Entry>::~TieBreakingOpenList() {
-}
+void TieBreakingOpenList<Entry>::do_insertion(
+    EvaluationContext &eval_context, const Entry &entry) {
+    vector<int> key;
+    key.reserve(evaluators.size());
+    for (ScalarEvaluator *evaluator : evaluators)
+        key.push_back(eval_context.get_heuristic_value_or_infinity(evaluator));
 
-template<class Entry>
-int TieBreakingOpenList<Entry>::insert(const Entry &entry) {
-    if (OpenList<Entry>::only_preferred && !last_preferred)
-        return 0;
-    if (first_is_dead_end && allow_unsafe_pruning) {
-        return 0;
-    }
-    const std::vector<int> &key = last_evaluated_value;
     buckets[key].push_back(entry);
     ++size;
-    return 1;
 }
 
 template<class Entry>
@@ -96,52 +88,44 @@ void TieBreakingOpenList<Entry>::clear() {
 }
 
 template<class Entry>
-void TieBreakingOpenList<Entry>::evaluate(int g, bool preferred) {
-    dead_end = false;
-    dead_end_reliable = false;
-
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        evaluators[i]->evaluate(g, preferred);
-
-        // check for dead end
-        if (evaluators[i]->is_dead_end()) {
-            last_evaluated_value[i] = std::numeric_limits<int>::max();
-            dead_end = true;
-            if (evaluators[i]->dead_end_is_reliable()) {
-                dead_end_reliable = true;
-            }
-        } else { // add value if no dead end
-            last_evaluated_value[i] = evaluators[i]->get_value();
-        }
-    }
-    first_is_dead_end = evaluators[0]->is_dead_end();
-    last_preferred = preferred;
-}
-
-template<class Entry>
-bool TieBreakingOpenList<Entry>::is_dead_end() const {
-    return dead_end;
-}
-
-template<class Entry>
-bool TieBreakingOpenList<Entry>::dead_end_is_reliable() const {
-    return dead_end_reliable;
-}
-
-template<class Entry>
-const std::vector<int> &TieBreakingOpenList<Entry>::get_value() {
-    return last_evaluated_value;
-}
-
-template<class Entry>
 int TieBreakingOpenList<Entry>::dimension() const {
     return evaluators.size();
 }
 
 template<class Entry>
-void TieBreakingOpenList<Entry>::get_involved_heuristics(std::set<Heuristic *> &hset) {
-    for (size_t i = 0; i < evaluators.size(); ++i) {
-        evaluators[i]->get_involved_heuristics(hset);
-    }
+void TieBreakingOpenList<Entry>::get_involved_heuristics(
+    std::set<Heuristic *> &hset) {
+    for (ScalarEvaluator *evaluator : evaluators)
+        evaluator->get_involved_heuristics(hset);
 }
+
+template<class Entry>
+bool TieBreakingOpenList<Entry>::is_dead_end(
+    EvaluationContext &eval_context) const {
+    // TODO: Properly document this behaviour.
+    // If one safe heuristic detects a dead end, return true.
+    if (is_reliable_dead_end(eval_context))
+        return true;
+    // If the first heuristic detects a dead-end and we allow "unsafe
+    // pruning", return true.
+    if (allow_unsafe_pruning &&
+        eval_context.is_heuristic_infinite(evaluators[0]))
+        return true;
+    // Otherwise, return true if all heuristics agree this is a dead-end.
+    for (ScalarEvaluator *evaluator : evaluators)
+        if (!eval_context.is_heuristic_infinite(evaluator))
+            return false;
+    return true;
+}
+
+template<class Entry>
+bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
+    EvaluationContext &eval_context) const {
+    for (ScalarEvaluator *evaluator : evaluators)
+        if (eval_context.is_heuristic_infinite(evaluator) &&
+            evaluator->dead_ends_are_reliable())
+            return true;
+    return false;
+}
+
 #endif

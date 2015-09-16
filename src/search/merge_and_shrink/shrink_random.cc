@@ -6,6 +6,7 @@
 #include "../plugin.h"
 
 #include <cassert>
+#include <memory>
 
 using namespace std;
 
@@ -15,10 +16,6 @@ ShrinkRandom::ShrinkRandom(const Options &opts)
 }
 
 ShrinkRandom::~ShrinkRandom() {
-}
-
-string ShrinkRandom::name() const {
-    return "random";
 }
 
 void ShrinkRandom::partition_into_buckets(
@@ -33,19 +30,23 @@ void ShrinkRandom::partition_into_buckets(
     assert(!big_bucket.empty());
 }
 
-static ShrinkStrategy *_parse(OptionParser &parser) {
+string ShrinkRandom::name() const {
+    return "random";
+}
+
+static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis("Random", "");
     ShrinkStrategy::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
-        return 0;
+        return nullptr;
 
     ShrinkStrategy::handle_option_defaults(opts);
 
-    if (!parser.dry_run())
-        return new ShrinkRandom(opts);
+    if (parser.dry_run())
+        return nullptr;
     else
-        return 0;
+        return make_shared<ShrinkRandom>(opts);
 }
 
-static Plugin<ShrinkStrategy> _plugin("shrink_random", _parse);
+static PluginShared<ShrinkStrategy> _plugin("shrink_random", _parse);

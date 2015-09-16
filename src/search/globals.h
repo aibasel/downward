@@ -13,10 +13,10 @@ class CausalGraph;
 class DomainTransitionGraph;
 class GlobalOperator;
 class GlobalState;
+class SuccessorGenerator;
 class IntPacker;
 class LegacyCausalGraph;
 class RandomNumberGenerator;
-class SuccessorGenerator;
 class Timer;
 class StateRegistry;
 
@@ -32,6 +32,7 @@ int calculate_plan_cost(const std::vector<const GlobalOperator *> &plan);
 void read_everything(std::istream &in);
 void dump_everything();
 
+// The following six functions are deprecated. Use task_tools.h instead.
 bool is_unit_cost();
 bool has_axioms();
 void verify_no_axioms();
@@ -69,7 +70,6 @@ extern std::vector<GlobalOperator> g_axioms;
 extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern std::vector<DomainTransitionGraph *> g_transition_graphs;
-extern CausalGraph *g_causal_graph;
 extern LegacyCausalGraph *g_legacy_causal_graph;
 extern Timer g_timer;
 extern std::string g_plan_filename;

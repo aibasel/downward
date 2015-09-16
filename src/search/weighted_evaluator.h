@@ -3,27 +3,21 @@
 
 #include "scalar_evaluator.h"
 
-#include <string>
-#include <vector>
-
 class Options;
 
 class WeightedEvaluator : public ScalarEvaluator {
-private:
     ScalarEvaluator *evaluator;
     int w;
-    int value;
 
 public:
-    WeightedEvaluator(const Options &opts);
+    explicit WeightedEvaluator(const Options &opts);
     WeightedEvaluator(ScalarEvaluator *eval, int weight);
-    ~WeightedEvaluator();
+    virtual ~WeightedEvaluator() override;
 
-    void evaluate(int g, bool preferred);
-    bool is_dead_end() const;
-    bool dead_end_is_reliable() const;
-    int get_value() const;
-    void get_involved_heuristics(std::set<Heuristic *> &hset);
+    virtual bool dead_ends_are_reliable() const override;
+    virtual EvaluationResult compute_result(
+        EvaluationContext &eval_context) override;
+    virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 };
 
 #endif

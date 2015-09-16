@@ -2,6 +2,7 @@
 
 #include "g_evaluator.h"
 #include "globals.h"
+#include "heuristic_cache.h"
 #include "heuristic.h"
 #include "plugin.h"
 #include "rng.h"
@@ -22,12 +23,14 @@ LazySearch::LazySearch(const Options &opts)
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
       current_state(g_initial_state()),
       current_predecessor_id(StateID::no_state),
-      current_operator(NULL),
+      current_operator(nullptr),
       current_g(0),
-      current_real_g(0) {
-}
-
-LazySearch::~LazySearch() {
+      current_real_g(0),
+      current_eval_context(current_state, 0, true, &statistics) {
+    /*
+      We initialize current_eval_context in such a way that the initial node
+      counts as "preferred".
+    */
 }
 
 void LazySearch::set_pref_operator_heuristics(
@@ -36,41 +39,36 @@ void LazySearch::set_pref_operator_heuristics(
 }
 
 void LazySearch::initialize() {
-    //TODO children classes should output which kind of search
     cout << "Conducting lazy best first search, (real) bound = " << bound << endl;
 
-    assert(open_list != NULL);
+    assert(open_list);
     set<Heuristic *> hset;
     open_list->get_involved_heuristics(hset);
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
-        estimate_heuristics.push_back(*it);
-        search_progress.add_heuristic(*it);
-    }
-
-    // add heuristics that are used for preferred operators (in case they are
-    // not also used in the open list)
+    // Add heuristics that are used for preferred operators (in case they are
+    // not also used in the open list).
     hset.insert(preferred_operator_heuristics.begin(),
                 preferred_operator_heuristics.end());
 
-    for (set<Heuristic *>::iterator it = hset.begin(); it != hset.end(); ++it) {
-        heuristics.push_back(*it);
-    }
+    heuristics.assign(hset.begin(), hset.end());
     assert(!heuristics.empty());
 }
 
 void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     assert(ops.empty());
-    vector<const GlobalOperator *> all_operators;
-    vector<const GlobalOperator *> preferred_operators;
 
+    vector<const GlobalOperator *> all_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, all_operators);
 
-    for (size_t i = 0; i < preferred_operator_heuristics.size(); ++i) {
-        Heuristic *heur = preferred_operator_heuristics[i];
-        if (!heur->is_dead_end())
-            heur->get_preferred_operators(preferred_operators);
+    vector<const GlobalOperator *> preferred_operators;
+    for (Heuristic *heur : preferred_operator_heuristics) {
+        if (!current_eval_context.is_heuristic_infinite(heur)) {
+            vector<const GlobalOperator *> preferred =
+                current_eval_context.get_preferred_operators(heur);
+            preferred_operators.insert(
+                preferred_operators.end(), preferred.begin(), preferred.end());
+        }
     }
 
     if (randomize_successors) {
@@ -82,20 +80,20 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     }
 
     if (preferred_successors_first) {
-        for (size_t i = 0; i < preferred_operators.size(); ++i) {
-            if (!preferred_operators[i]->is_marked()) {
-                ops.push_back(preferred_operators[i]);
-                preferred_operators[i]->mark();
+        for (const GlobalOperator *op : preferred_operators) {
+            if (!op->is_marked()) {
+                ops.push_back(op);
+                op->mark();
             }
         }
 
-        for (size_t i = 0; i < all_operators.size(); ++i)
-            if (!all_operators[i]->is_marked())
-                ops.push_back(all_operators[i]);
+        for (const GlobalOperator *op : all_operators)
+            if (!op->is_marked())
+                ops.push_back(op);
     } else {
-        for (size_t i = 0; i < preferred_operators.size(); ++i)
-            if (!preferred_operators[i]->is_marked())
-                preferred_operators[i]->mark();
+        for (const GlobalOperator *op : preferred_operators)
+            if (!op->is_marked())
+                op->mark();
         ops.swap(all_operators);
     }
 }
@@ -103,18 +101,18 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
 void LazySearch::generate_successors() {
     vector<const GlobalOperator *> operators;
     get_successor_operators(operators);
-    search_progress.inc_generated(operators.size());
+    statistics.inc_generated(operators.size());
 
-    for (size_t i = 0; i < operators.size(); ++i) {
-        int new_g = current_g + get_adjusted_cost(*operators[i]);
-        int new_real_g = current_real_g + operators[i]->get_cost();
-        bool is_preferred = operators[i]->is_marked();
+    for (const GlobalOperator *op : operators) {
+        int new_g = current_g + get_adjusted_cost(*op);
+        int new_real_g = current_real_g + op->get_cost();
+        bool is_preferred = op->is_marked();
         if (is_preferred)
-            operators[i]->unmark();
+            op->unmark();
         if (new_real_g < bound) {
-            open_list->evaluate(new_g, is_preferred);
-            open_list->insert(
-                make_pair(current_state.get_id(), operators[i]));
+            EvaluationContext new_eval_context(
+                current_eval_context.get_cache(), new_g, is_preferred, nullptr);
+            open_list->insert(new_eval_context, make_pair(current_state.get_id(), op));
         }
     }
 }
@@ -137,6 +135,16 @@ SearchStatus LazySearch::fetch_next_state() {
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
+    /*
+      Note: We mark the node in current_eval_context as "preferred"
+      here. This probably doesn't matter much either way because the
+      node has already been selected for expansion, but eventually we
+      should think more deeply about which path information to
+      associate with the expanded vs. evaluated nodes in lazy search
+      and where to obtain it from.
+    */
+    current_eval_context = EvaluationContext(current_state, current_g, true, &statistics);
+
     return IN_PROGRESS;
 }
 
@@ -146,11 +154,12 @@ SearchStatus LazySearch::step() {
     // - current_predecessor is a permanent pointer to the predecessor of that state.
     // - current_operator is the operator which leads to current_state from predecessor.
     // - current_g is the g value of the current state according to the cost_type
-    // - current_g is the g value of the current state (using real costs)
+    // - current_real_g is the g value of the current state (using real costs)
 
 
     SearchNode node = search_space.get_node(current_state);
-    bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
+    bool reopen = reopen_closed_nodes && !node.is_new() &&
+                  !node.is_dead_end() && (current_g < node.get_g());
 
     if (node.is_new() || reopen) {
         StateID dummy_id = current_predecessor_id;
@@ -161,51 +170,57 @@ SearchStatus LazySearch::step() {
         GlobalState parent_state = g_state_registry->lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
-        for (size_t i = 0; i < heuristics.size(); ++i) {
-            if (current_operator != NULL) {
-                heuristics[i]->reach_state(parent_state, *current_operator, current_state);
-            }
-            heuristics[i]->evaluate(current_state);
+        if (current_operator) {
+            for (Heuristic *heuristic : heuristics)
+                heuristic->reach_state(parent_state, *current_operator, current_state);
         }
-        search_progress.inc_evaluated_states();
-        search_progress.inc_evaluations(heuristics.size());
-        open_list->evaluate(current_g, false);
-        if (!open_list->is_dead_end()) {
-            // We use the value of the first heuristic, because SearchSpace only
-            // supported storing one heuristic value
-            int h = heuristics[0]->get_value();
+        statistics.inc_evaluated_states();
+        if (!open_list->is_dead_end(current_eval_context)) {
+            // TODO: Generalize code for using multiple heuristics.
+            int h = current_eval_context.get_heuristic_value(heuristics[0]);
             if (reopen) {
                 node.reopen(parent_node, current_operator);
-                search_progress.inc_reopened();
+                statistics.inc_reopened();
             } else if (current_predecessor_id == StateID::no_state) {
                 node.open_initial(h);
-                search_progress.get_initial_h_values();
+                if (search_progress.check_progress(current_eval_context))
+                    print_checkpoint_line(current_g);
             } else {
                 node.open(h, parent_node, current_operator);
             }
             node.close();
             if (check_goal_and_set_plan(current_state))
                 return SOLVED;
-            if (search_progress.check_h_progress(current_g)) {
+            if (search_progress.check_progress(current_eval_context)) {
+                print_checkpoint_line(current_g);
                 reward_progress();
             }
             generate_successors();
-            search_progress.inc_expanded();
+            statistics.inc_expanded();
         } else {
             node.mark_as_dead_end();
-            search_progress.inc_dead_ends();
+            statistics.inc_dead_ends();
+        }
+        if (current_predecessor_id == StateID::no_state) {
+            print_initial_h_values(current_eval_context);
         }
     }
     return fetch_next_state();
 }
 
 void LazySearch::reward_progress() {
-    // Boost the "preferred operator" open lists somewhat whenever
     open_list->boost_preferred();
 }
 
-void LazySearch::statistics() const {
-    search_progress.print_statistics();
+void LazySearch::print_checkpoint_line(int g) const {
+    cout << "[g=" << g << ", ";
+    statistics.print_basic_statistics();
+    cout << "]" << endl;
+}
+
+void LazySearch::print_statistics() const {
+    statistics.print_detailed_statistics();
+    search_space.print_statistics();
 }
 
 
@@ -227,11 +242,10 @@ static void _add_succ_order_options(OptionParser &parser) {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    parser.document_synopsis("Lazy best first search", "");
+    parser.document_synopsis("Lazy best-first search", "");
     Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
-    parser.add_option<bool>("reopen_closed",
-                            "reopen closed nodes", "false");
+    parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
@@ -239,7 +253,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    LazySearch *engine = 0;
+    LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
         engine = new LazySearch(opts);
         vector<Heuristic *> preferred_list =
@@ -315,14 +329,12 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
                                                                  false);
         } else {
             vector<OpenList<OpenListEntryLazy> *> inner_lists;
-            for (size_t i = 0; i < evals.size(); ++i) {
+            for (ScalarEvaluator *eval : evals) {
                 inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(evals[i],
-                                                                  false));
+                    new StandardScalarOpenList<OpenListEntryLazy>(eval, false));
                 if (!preferred_list.empty()) {
                     inner_lists.push_back(
-                        new StandardScalarOpenList<OpenListEntryLazy>(evals[i],
-                                                                      true));
+                        new StandardScalarOpenList<OpenListEntryLazy>(eval, true));
                 }
             }
             open = new AlternationOpenList<OpenListEntryLazy>(
