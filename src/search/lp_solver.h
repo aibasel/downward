@@ -15,7 +15,7 @@
 #ifdef USE_LP
 #define LP_METHOD(X) X;
 #else
-#define LP_METHOD(X) __attribute__((noreturn)) X { \
+#define LP_METHOD(X) NO_RETURN X { \
         ABORT("LP method called but the planner was compiled without LP support.\n" \
               "See http://www.fast-downward.org/LPBuildInstructions\n" \
               "to install an LP solver and use it in the planner."); \
@@ -70,8 +70,10 @@ struct LPVariable {
     ~LPVariable();
 };
 
+#ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 class LPSolver {
     bool is_initialized;
     bool is_solved;
@@ -107,6 +109,7 @@ public:
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity() const)
 
+    LP_METHOD(void set_objective_coefficients(const std::vector<double> &coefficients))
     LP_METHOD(void set_objective_coefficient(int index, double coefficient))
     LP_METHOD(void set_constraint_lower_bound(int index, double bound))
     LP_METHOD(void set_constraint_upper_bound(int index, double bound))
@@ -118,7 +121,7 @@ public:
     /*
       Return true if the solving the LP showed that it is bounded feasible and
       the discovered solution is guaranteed to be optimal. We test for
-      optimality explicitly because solving the LP sometime finds suboptimal
+      optimality explicitly because solving the LP sometimes finds suboptimal
       solutions due to numerical difficulties.
       The LP has to be solved with a call to solve() before calling this method.
     */
@@ -143,6 +146,8 @@ public:
     LP_METHOD(int get_num_constraints() const)
     LP_METHOD(void print_statistics() const)
 };
+#ifdef __GNUG__
 #pragma GCC diagnostic pop
+#endif
 
 #endif

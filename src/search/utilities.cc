@@ -4,16 +4,19 @@
 #include <csignal>
 #include <fstream>
 #include <limits>
+
 using namespace std;
 
-
 #if OPERATING_SYSTEM == LINUX
+#include <unistd.h>
 static void exit_handler(int exit_code, void *hint);
 #elif OPERATING_SYSTEM == OSX
+#include <unistd.h>
 static void exit_handler();
 #include <mach/mach.h>
 #elif OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
-#include <windows.h>
+#include "utilities_windows.h"
+#include <process.h>
 #include <psapi.h>
 #endif
 
@@ -159,7 +162,17 @@ void print_peak_memory(bool use_buffered_input) {
 
 
 bool is_product_within_limit(int factor1, int factor2, int limit) {
-    assert(factor1 >= 0 && factor1 <= limit);
-    assert(factor2 >= 0 && factor2 <= limit);
+    assert(factor1 >= 0);
+    assert(factor2 >= 0);
+    assert(limit >= 0);
     return factor2 == 0 || factor1 <= limit / factor2;
+}
+
+
+int get_process_id() {
+#if OPERATING_SYSTEM == WINDOWS
+    return _getpid();
+#else
+    return getpid();
+#endif
 }

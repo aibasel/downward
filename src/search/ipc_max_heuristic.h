@@ -8,19 +8,18 @@
 class Options;
 
 class IPCMaxHeuristic : public Heuristic {
-    std::vector<Heuristic *> evaluators;
-    int value;
-    bool dead_end;
-    bool dead_end_reliable;
+    std::vector<Heuristic *> heuristics;
 
 protected:
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &state) override;
 
 public:
-    IPCMaxHeuristic(const Options &options);
-    ~IPCMaxHeuristic();
-    virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
-                             const GlobalState &state);
+    explicit IPCMaxHeuristic(const Options &options);
+    virtual ~IPCMaxHeuristic() = default;
+
+    virtual bool reach_state(const GlobalState &parent_state,
+                             const GlobalOperator &op,
+                             const GlobalState &state) override;
 };
 
 #endif

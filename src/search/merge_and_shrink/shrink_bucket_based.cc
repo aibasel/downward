@@ -1,36 +1,19 @@
 #include "shrink_bucket_based.h"
 
-#include "transition_system.h"
-
 #include "../globals.h"
 #include "../rng.h"
 
 #include <cassert>
 #include <iostream>
 #include <vector>
-using namespace std;
 
+using namespace std;
 
 ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
     : ShrinkStrategy(opts) {
 }
 
 ShrinkBucketBased::~ShrinkBucketBased() {
-}
-
-bool ShrinkBucketBased::reduce_labels_before_shrinking() const {
-    return false;
-}
-
-void ShrinkBucketBased::shrink(TransitionSystem &ts, int threshold) {
-    if (must_shrink(ts, threshold)) {
-        vector<Bucket> buckets;
-        partition_into_buckets(ts, buckets);
-
-        StateEquivalenceRelation equiv_relation;
-        compute_abstraction(buckets, threshold, equiv_relation);
-        apply(ts, equiv_relation, threshold);
-    }
 }
 
 void ShrinkBucketBased::compute_abstraction(
@@ -104,4 +87,13 @@ void ShrinkBucketBased::compute_abstraction(
             }
         }
     }
+}
+
+void ShrinkBucketBased::compute_equivalence_relation(
+    const TransitionSystem &ts,
+    int target,
+    StateEquivalenceRelation &equiv_relation) const {
+    vector<Bucket> buckets;
+    partition_into_buckets(ts, buckets);
+    compute_abstraction(buckets, target, equiv_relation);
 }

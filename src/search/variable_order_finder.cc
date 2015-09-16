@@ -9,13 +9,15 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
-
-VariableOrderFinder::VariableOrderFinder(
-    VariableOrderType variable_order_type_)
-    : variable_order_type(variable_order_type_) {
-    int var_count = g_variable_domain.size();
+VariableOrderFinder::VariableOrderFinder(const shared_ptr<AbstractTask> task,
+                                         VariableOrderType variable_order_type)
+    : task(task),
+      task_proxy(*task),
+      variable_order_type(variable_order_type) {
+    int var_count = task_proxy.get_variables().size();
     if (variable_order_type == REVERSE_LEVEL) {
         for (int i = 0; i < var_count; ++i)
             remaining_vars.push_back(i);
@@ -30,20 +32,18 @@ VariableOrderFinder::VariableOrderFinder(
 
     is_causal_predecessor.resize(var_count, false);
     is_goal_variable.resize(var_count, false);
-    for (size_t i = 0; i < g_goal.size(); ++i)
-        is_goal_variable[g_goal[i].first] = true;
-}
-
-VariableOrderFinder::~VariableOrderFinder() {
+    for (FactProxy goal : task_proxy.get_goals())
+        is_goal_variable[goal.get_variable().get_id()] = true;
 }
 
 void VariableOrderFinder::select_next(int position, int var_no) {
     assert(remaining_vars[position] == var_no);
     remaining_vars.erase(remaining_vars.begin() + position);
     selected_vars.push_back(var_no);
-    const vector<int> &new_vars = g_causal_graph->get_eff_to_pre(var_no);
-    for (size_t i = 0; i < new_vars.size(); ++i)
-        is_causal_predecessor[new_vars[i]] = true;
+    const CausalGraph &cg = task_proxy.get_causal_graph();
+    const vector<int> &new_vars = cg.get_eff_to_pre(var_no);
+    for (int new_var : new_vars)
+        is_causal_predecessor[new_var] = true;
 }
 
 bool VariableOrderFinder::done() const {

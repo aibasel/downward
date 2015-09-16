@@ -3,6 +3,9 @@
 #include "helper_functions.h"
 
 #include <cassert>
+#include <fstream>
+#include <iostream>
+
 using namespace std;
 
 Variable::Variable(istream &in) {
@@ -10,7 +13,7 @@ Variable::Variable(istream &in) {
     check_magic(in, "begin_variable");
     in >> ws >> name >> layer >> range >> ws;
     values.resize(range);
-    for (size_t i = 0; i < range; ++i)
+    for (int i = 0; i < range; ++i)
         getline(in, values[i]);
     check_magic(in, "end_variable");
     level = -1;
