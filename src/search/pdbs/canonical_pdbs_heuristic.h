@@ -3,7 +3,6 @@
 
 #include "../heuristic.h"
 
-#include <unordered_map>
 #include <vector>
 
 class PatternDatabase;

@@ -197,6 +197,8 @@ bool PatternGenerationHaslum::is_heuristic_improved(
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
         for (PatternDatabase *additive_pdb : subset) {
+            /* Experiments showed that it is faster to recompute the
+               h values than to cache them in an unordered_map. */
             int h = additive_pdb->get_value(sample);
             if (h == numeric_limits<int>::max())
                 return false;

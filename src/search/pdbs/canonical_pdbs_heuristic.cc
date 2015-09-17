@@ -136,6 +136,8 @@ int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
     for (const vector<PatternDatabase *> &clique : max_cliques) {
         int clique_h = 0;
         for (PatternDatabase *pdb : clique) {
+            /* Experiments showed that it is faster to recompute the
+               h values than to cache them in an unordered_map. */
             int h = pdb->get_value(state);
             if (h == numeric_limits<int>::max())
                 return DEAD_END;
