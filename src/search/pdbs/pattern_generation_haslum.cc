@@ -194,6 +194,9 @@ bool PatternGenerationHaslum::is_heuristic_improved(
 
     // h_collection: h-value of the current collection heuristic
     int h_collection = current_heuristic->compute_heuristic(sample);
+    if (h_collection == -1)
+        return false;
+
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
         for (PatternDatabase *additive_pdb : subset) {
