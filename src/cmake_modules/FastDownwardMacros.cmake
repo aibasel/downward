@@ -18,6 +18,14 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS_DEBUG "-O3")
         set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
     elseif(MSVC)
+        # We force linking to be static because the dynamically linked code is
+        # about 10% slower on Linux (see issue67). On Windows this is a compiler
+        # setting, not a linker setting.
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+        string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MT")
+        string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+
         # enable exceptions
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 
@@ -49,8 +57,8 @@ macro(fast_downward_set_compiler_flags)
 endmacro()
 
 macro(fast_downward_set_linker_flags)
-    # We force linking to be static because the dynamicly linked code is
-    # about 10% slower (see issue67).
+    # We force linking to be static because the dynamically linked code is
+    # about 10% slower on Linux (see issue67).
 
     # Any libs we build, should be static
     set(BUILD_SHARED_LIBS FALSE)
@@ -73,8 +81,6 @@ macro(fast_downward_set_linker_flags)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libgcc")
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libstdc++")
-    elseif(MSVC)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MT")
     endif()
 endmacro()
 
