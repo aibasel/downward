@@ -52,9 +52,10 @@ vector<int> AbstractSearch::get_needed_costs(AbstractState *init, int num_ops) {
 }
 
 int AbstractSearch::get_g_value(AbstractState *state) const {
-    if (g_values.count(state) == 0)
+    auto it = g_values.find(state);
+    if (it == g_values.end())
         return INF;
-    return g_values.at(state);
+    return it->second;
 }
 
 AbstractState *AbstractSearch::astar_search(
