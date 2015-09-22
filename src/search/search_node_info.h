@@ -25,12 +25,4 @@ struct SearchNodeInfo {
     }
 };
 
-/*
-  TODO: The C++ standard does not guarantee that bitfields with mixed
-        types (unsigned int, int, bool) are stored in the compact way
-        we desire. However, g++ does do what we want. To be safe for
-        the future, we should add a static assertion that verifies
-        that SearchNodeInfo has the desired size.
- */
-
 #endif
