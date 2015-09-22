@@ -3,8 +3,6 @@
 
 #include "potential_optimizer.h"
 
-#include "../task_proxy.h"
-
 #include <memory>
 #include <unordered_map>
 #include <vector>
