@@ -338,3 +338,11 @@ fast_downward_plugin(
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
 
+# The order in PLANNER_SOURCES influences the order in which object
+# files are given to the linker, which can have a significant influence
+# on performance (see issue67). The general recommendation seems to be
+# to list files that define functions after files that use them.
+# We approximate this by reversing the list, which will put the plugins
+# first, followed by the core files, followed by the main file.
+# This is certainly not optimal, but works well enough in practice.
+list(REVERSE PLANNER_SOURCES)
