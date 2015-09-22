@@ -55,11 +55,8 @@ Some experiments don't run the whole planner or planner components, but
 just contain small microbenchmarks for particular functionality. These
 may be a good starting point for similar microbenchmarks. Examples:
 
-* Benchmarking of random number generation (self-contained):
+* Benchmarking of random number generation:
   * issue269/rng-microbenchmark
-
-* Benchmarking of range-based for loops (uses planner code):
-  * issue510/iterator-microbenchmark
 
 If you add your own microbenchmark, it is recommended to start from a
 copy of an existing example and follow the naming convention

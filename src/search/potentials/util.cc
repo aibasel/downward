@@ -27,6 +27,17 @@ vector<State> sample_without_dead_end_detection(
                get_average_operator_cost(task_proxy));
 }
 
+string get_admissible_potentials_reference() {
+    return "The algorithm is based on\n\n"
+           " * Jendrik Seipp, Florian Pommerening and Malte Helmert.<<BR>>\n"
+           " [New Optimization Functions for Potential Heuristics "
+           "http://ai.cs.unibas.ch/papers/seipp-et-al-icaps2015.pdf]."
+           "<<BR>>\n "
+           "In //Proceedings of the 25th International Conference on "
+           "Automated Planning and Scheduling (ICAPS 2015)//, pp. 193-201. "
+           "AAAI Press 2015.\n\n\n";
+}
+
 void prepare_parser_for_admissible_potentials(OptionParser &parser) {
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
