@@ -12,13 +12,11 @@ macro(fast_downward_set_compiler_flags)
 
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
 
         ## Configuration-specific flags
         set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
         set(CMAKE_CXX_FLAGS_DEBUG "-O3")
         set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
-        set(CMAKE_EXE_LINKER_FLAGS_PROFILE "-pg")
     elseif(MSVC)
         # enable exceptions
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
@@ -41,30 +39,55 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4456") # declaration hides previous local declaration
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
 
-        # Force dynamic build
-        set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_PROFILE} /MD")
-
         # TODO: Configuration-specific flags (we currently rely on the fact that
         # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
-        # from cmake). This isthe case for most build environments, but we have less
+        # from cmake). This is the case for most build environments, but we have less
         # control over the way the binary is created.
-
-        # We don't offer a specific PROFILE build on Windows and use the settings from the DEBUG build.
-        set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
-        set(CMAKE_EXE_LINKER_FLAGS_PROFILE ${CMAKE_EXE_LINKER_FLAGS_PROFILE})
     else()
         message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER}")
     endif()
 endmacro()
 
+macro(fast_downward_set_linker_flags)
+    # We force linking to be static because the dynamicly linked code is
+    # about 10% slower (see issue67).
+
+    # Any libs we build, should be static
+    set(BUILD_SHARED_LIBS FALSE)
+
+    # Any libraries that are implicitly added to the end of the linker
+    # command should be linked statically.
+    set(LINK_SEARCH_END_STATIC TRUE)
+
+    # Do not add "-rdynamic" flag.
+    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+    # Only look for static libraries (Windows does not support this).
+    if(UNIX)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+    endif()
+
+    # Set linker flags to link statically.
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libgcc")
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libstdc++")
+    elseif(MSVC)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MT")
+    endif()
+endmacro()
 
 macro(fast_downward_add_profile_build)
-    if(NOT CMAKE_CONFIGURATION_TYPES)
-        set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
-        set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;Profile")
+    # We don't offer a specific PROFILE build on Windows.
+    if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        if(NOT CMAKE_CONFIGURATION_TYPES)
+            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
+            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;Profile")
+        endif()
+        set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
+        set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -pg")
     endif()
-    set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
-    set(CMAKE_EXE_LINKER_FLAGS_PROFILE ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
 endmacro()
 
 macro(fast_downward_default_to_release_build)

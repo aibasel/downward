@@ -10,6 +10,7 @@ endif()
 
 project(preprocess)
 fast_downward_set_compiler_flags()
+fast_downward_set_linker_flags()
 
 set(PREPROCESS_SOURCES
     planner
