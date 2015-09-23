@@ -3,6 +3,7 @@
 
 from downward import suites
 import common_setup
+from relativescatter import RelativeScatterPlotReport
 
 
 REVS = ["issue67-v4-base", "issue67-v4"]
@@ -26,5 +27,13 @@ exp = common_setup.IssueExperiment(
     suite=SUITE,
     )
 exp.add_comparison_table_step()
+
+exp.add_report(
+    RelativeScatterPlotReport(
+        attributes=["total_time"],
+        get_category=lambda run1, run2: run1.get("domain"),
+    ),
+    outfile='issue67-v4-total-time.png'
+)
 
 exp()
