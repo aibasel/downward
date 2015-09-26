@@ -11,6 +11,7 @@ CONFIGS = {
     "release64": ["-DCMAKE_BUILD_TYPE=Release", "-DALLOW_64_BIT=True", "-DCMAKE_CXX_FLAGS='-m64'"],
     "debug64":   ["-DCMAKE_BUILD_TYPE=Debug",   "-DALLOW_64_BIT=True", "-DCMAKE_CXX_FLAGS='-m64'"],
 }
+DEFAULT_CONFIG = "release32"
 
 CMAKE = "cmake"
 if os.name == "posix":
@@ -23,14 +24,13 @@ else:
     print("Unsupported OS: " + os.name)
     sys.exit(1)
 
-DEFAULT_CONFIG = "release32"
 
 def print_usage():
     script_name = os.path.basename(__file__)
     configs = []
     for name, args in sorted(CONFIGS.items()):
         if name == DEFAULT_CONFIG:
-            name = name + " (default)"
+            name += " (default)"
         configs.append(name + "\n    " + " ".join(args))
     configs_string = "\n  ".join(configs)
     cmake_name = os.path.basename(CMAKE)
@@ -39,9 +39,9 @@ def print_usage():
     default_config_name = DEFAULT_CONFIG
     print("""Usage: {script_name} [BUILD [BUILD ...]] [--all] [MAKE_OPTIONS]
 
-Build one or more predefined build configuration of Fast Downward. The build
+Build one or more predefined build configurations of Fast Downward. Each build
 uses {cmake_name} to generate {generator_name} and then uses {make_name} to compile the
-code. Build configurations differ in what parameters they pass to {cmake_name}.
+code. Build configurations differ in the parameters they pass to {cmake_name}.
 
 Build configurations
   {configs_string}
@@ -59,6 +59,7 @@ Example usage:
   ./{script_name} release64 debug64   # build both 64-bit build configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
 """.format(**locals()))
+
 
 def get_project_root_path():
     import __main__
@@ -95,6 +96,7 @@ def build(config_name, cmake_parameters, make_parameters):
                           cwd=build_path)
     subprocess.check_call([MAKE] + make_parameters, cwd=build_path)
     print("Built configuration " + config_name + " successfully")
+
 
 def main():
     config_names = set()

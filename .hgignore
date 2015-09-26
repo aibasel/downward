@@ -4,4 +4,4 @@
 ^experiments/issue[0-9]*/.*.-microbenchmark/benchmark$
 ^experiments/issue[0-9]*/.*.-microbenchmark/Makefile\.depend$
 ^misc/autodoc/downward-xmlrpc\.secret$
-^builds/.*$
+^builds/
