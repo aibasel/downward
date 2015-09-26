@@ -5,7 +5,7 @@ import os.path
 
 from . import aliases
 from . import limits
-from .util import PLANNER_ROOT_DIR
+from .util import REPO_ROOT_DIR
 
 
 DESCRIPTION = """Fast Downward driver script.
@@ -43,7 +43,7 @@ that exceed their time or memory limit are aborted, and the next
 configuration is run."""
 
 EXAMPLE_PORTFOLIO = os.path.relpath(
-    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=PLANNER_ROOT_DIR)
+    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=REPO_ROOT_DIR)
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
@@ -304,12 +304,14 @@ def parse_args():
         "--alias",
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
     driver_other.add_argument(
-        "--build", default=None,
-        help="use build name like release32 (default), debug32, release64, debug32, "
-             "a custom build name, or a path to the planner binaries. "
-             "The driver first looks for the planner binaries in the path 'BUILD'. "
-             "If this path does not exist, it tries the subdirectory 'builds/BUILD/bin' "
-             "of the repository's root directory, where the build script creates them by default.")
+        "--build",
+        help="BUILD can be a predefined build name like release32 "
+            "(default), debug32, release64 and debug64, a custom build "
+            "name, or the path to a directory holding the planner "
+            "binaries. The driver first looks for the planner binaries "
+            "under 'BUILD'. If this path does not exist, it tries the "
+            "directory '<repo>/builds/BUILD/bin', where the build "
+            "script creates them by default.")
     driver_other.add_argument(
         "--debug", action="store_true",
         help="alias for --build=debug32")

@@ -13,11 +13,11 @@ from .util import BUILDS_DIR
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
-    REL_PREPROCESS_PATH = os.path.join("preprocess")
-    REL_SEARCH_PATH = os.path.join("downward")
+    REL_PREPROCESS_PATH = "preprocess"
+    REL_SEARCH_PATH = "downward"
 elif os.name == "nt":
-    REL_PREPROCESS_PATH = os.path.join("preprocess.exe")
-    REL_SEARCH_PATH = os.path.join("downward.exe")
+    REL_PREPROCESS_PATH = "preprocess.exe"
+    REL_SEARCH_PATH = "downward.exe"
 else:
     print("Unsupported OS: " + os.name)
     sys.exit(1)
@@ -31,7 +31,7 @@ def get_executable(build, rel_path):
         # If build is not a full path to the binaries, it might be the
         # name of a build in our standard directory structure.
         # in this case, the binaries are in
-        #   '<planner-root>/builds/<buildname>/bin'.
+        #   '<repo-root>/builds/<buildname>/bin'.
         build_dir = os.path.join(BUILDS_DIR, build, "bin")
         if not os.path.exists(build_dir):
             raise IOError(
