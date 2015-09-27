@@ -11,6 +11,7 @@ CONFIGS = {
     "release64": ["-DCMAKE_BUILD_TYPE=Release", "-DALLOW_64_BIT=True", "-DCMAKE_CXX_FLAGS='-m64'"],
     "debug64":   ["-DCMAKE_BUILD_TYPE=Debug",   "-DALLOW_64_BIT=True", "-DCMAKE_CXX_FLAGS='-m64'"],
 }
+DEFAULT_DEBUG_CONFIG = "debug32"
 DEFAULT_CONFIG = "release32"
 
 CMAKE = "cmake"
@@ -31,13 +32,15 @@ def print_usage():
     for name, args in sorted(CONFIGS.items()):
         if name == DEFAULT_CONFIG:
             name += " (default)"
+        if name == DEFAULT_DEBUG_CONFIG:
+            name += " (default with --debug)"
         configs.append(name + "\n    " + " ".join(args))
     configs_string = "\n  ".join(configs)
     cmake_name = os.path.basename(CMAKE)
     make_name = os.path.basename(MAKE)
     generator_name = CMAKE_GENERATOR.lower()
     default_config_name = DEFAULT_CONFIG
-    print("""Usage: {script_name} [BUILD [BUILD ...]] [--all] [MAKE_OPTIONS]
+    print("""Usage: {script_name} [BUILD [BUILD ...]] [--all] [--debug] [MAKE_OPTIONS]
 
 Build one or more predefined build configurations of Fast Downward. Each build
 uses {cmake_name} to generate {generator_name} and then uses {make_name} to compile the
@@ -47,6 +50,7 @@ Build configurations
   {configs_string}
 
 --all         Alias to build all build configurations.
+--debug       Alias to build the default debug build configuration.
 --help        Print this message and exit.
 
 Make options
@@ -56,6 +60,7 @@ Example usage:
   ./{script_name} -j4                 # build {default_config_name} in 4 threads
   ./{script_name} -j4 downward        # as above, but only build the planner
   ./{script_name} debug32 -j4         # build debug32 in 4 threads
+  ./{script_name} --debug -j4         # build debug32 in 4 threads
   ./{script_name} release64 debug64   # build both 64-bit build configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
 """.format(**locals()))
@@ -102,9 +107,11 @@ def main():
     config_names = set()
     make_parameters = []
     for arg in sys.argv[1:]:
-        if arg == "--help":
+        if arg == "--help" or arg == "-h":
             print_usage()
             sys.exit(0)
+        elif arg == "--debug":
+            config_names |= set([DEFAULT_DEBUG_CONFIG])
         elif arg == "--all":
             config_names |= set(CONFIGS.keys())
         elif arg in CONFIGS:
