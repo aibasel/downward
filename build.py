@@ -111,7 +111,7 @@ def main():
             print_usage()
             sys.exit(0)
         elif arg == "--debug":
-            config_names |= set([DEFAULT_DEBUG_CONFIG])
+            config_names.add(DEFAULT_DEBUG_CONFIG)
         elif arg == "--all":
             config_names |= set(CONFIGS.keys())
         elif arg in CONFIGS:
