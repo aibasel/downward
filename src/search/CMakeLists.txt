@@ -32,12 +32,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 
 ## == Libraries ==
 
-# On Linux, find the rt library for the exact timer
+# On Linux, find the rt library for clock_gettime().
 if(UNIX AND NOT APPLE)
     target_link_libraries(downward rt)
 endif()
 
-# On Windows, find the psapi library for determining peak memory
+# On Windows, find the psapi library for determining peak memory.
 if(WIN32)
     target_link_libraries(downward psapi)
 endif()
@@ -55,7 +55,7 @@ if(USE_LP)
             endif()
         endforeach()
 
-        # Note that basic Osi libs must be added after (!) all osi solver libs.
+        # Note that basic OSI libs must be added after (!) all OSI solver libs.
         add_definitions("-D USE_LP")
         include_directories(${OSI_INCLUDE_DIRS})
         target_link_libraries(downward ${OSI_LIBRARIES})

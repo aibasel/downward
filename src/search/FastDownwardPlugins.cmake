@@ -1,8 +1,8 @@
-## == Details of the core source files ==
-##
-## If you're adding another file to the codebase which *isn't* a plugin, add
-## it to the following list. We assume that every *.cc file has a corresponding
-## *.h file and add headers to the project automatically.
+## Details of the core source files
+#
+# If you're adding a file to the codebase which *isn't* a plugin, add
+# it to the following list. We assume that every *.cc file has a corresponding
+# *.h file and add headers to the project automatically.
 
 set(PLANNER_SOURCES
         planner.cc
@@ -79,8 +79,8 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 #        [ DISPLAY_NAME <DISPLAY_NAME> ]
 #        [ HELP <HELP> ]
 #        SOURCES
-#            <FILE 1> [ <FILE 2> ... ]
-#        [ DEPENDS <PLUGIN_NAME 1> [ <PLUGIN_NAME 2> ... ] ]
+#            <FILE_1> [ <FILE_2> ... ]
+#        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
 #        [ DEACTIVATED ]
 #    )
 #
@@ -89,7 +89,7 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
 # DEPENDS lists plugins that will be automatically enabled if this plugin
 # is enabled. If the dependency was not enabled before, this will be logged.
-# DEACTIVATED sets the default value of the generated cmake option to false.
+# DEACTIVATED sets the default value of the generated CMake option to false.
 
 fast_downward_plugin(
     NAME G_EVALUATOR
@@ -153,7 +153,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME EHC_SEARCH
-    HELP "Enforced hill-climbing search algorithm"
+    HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
         enforced_hill_climbing_search.cc
     DEPENDS PREF_EVALUATOR G_EVALUATOR

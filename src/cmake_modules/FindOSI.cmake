@@ -26,7 +26,7 @@
 # specified with DOWNWARD_COIN_ROOT_RELEASE and DOWNWARD_COIN_ROOT_DEBUG.
 #
 # Note that the standard FIND_PACKAGE features are supported
-# (i.e., QUIET, REQUIRED, etc.).
+# (QUIET, REQUIRED, etc.).
 
 set(COIN_HINT_PATHS_RELEASE
     ${DOWNWARD_COIN_ROOT_RELEASE}
