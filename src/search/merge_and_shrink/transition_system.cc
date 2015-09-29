@@ -479,8 +479,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     release_vector_memory(old_transitions);
                 }
             }
-            int group_id = label_equivalence_relation->add_label_group({new_label_no}
-                                                                       );
+            int group_id = label_equivalence_relation->add_label_group({new_label_no});
             transitions_by_group_id[group_id].assign(
                 collected_transitions.begin(), collected_transitions.end());
         }
