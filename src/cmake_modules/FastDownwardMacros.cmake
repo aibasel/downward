@@ -1,7 +1,7 @@
 include(CMakeParseArguments)
 
 macro(fast_downward_set_compiler_flags)
-    # Note: on CMake >= 3.0 the compiler ID of clang on apple is AppleClang.
+    # Note: on CMake >= 3.0 the compiler ID of Apple-provided clang is AppleClang.
     # If we change the required CMake version from 2.8.3 to 3.0 or greater,
     # we have to fix this.
     if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -116,30 +116,30 @@ macro(fast_downward_set_configuration_types)
     endif()
 endmacro()
 
-macro(fast_downward_add_64_bit_option)
-    # Allow to compile a 64-bit version.
+macro(fast_downward_set_bitwidth)
+    # Add -m32 to the compiler flags on Unix, unless ALLOW_64_BIT is set to true.
+    # This has to be done before defining the project.
+
     # Since compiling for 32-bit works differently on each platform, we let
     # users set up their own build environment and only check which one is
     # used. Compiling a 64-bit version of the planner without explicitly
     # settig ALLOW_64_BIT to true results in an error.
     option(ALLOW_64_BIT "Allow to compile a 64-bit version." FALSE)
 
-    # On Unix, we explicitly force compilation to 32-bit unless ALLOW_64_BIT is set.
-    # This has to be done before defining the project.
     if(UNIX AND NOT ALLOW_64_BIT)
         set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
 
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" CACHE STRING "c++ flags")
-        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -m32" CACHE STRING "c flags")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32" CACHE STRING "c flags")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32" CACHE STRING "linker flags")
     endif()
 endmacro()
 
 macro(fast_downward_check_64_bit_option)
-    # The macro fast_downward_add_64_bit_option adds -m32 to the compiler
-    # flags on Unix, unless ALLOW_64_BIT is set to true. If this done
-    # before defining a project, the tool chain will be set up for 32-bit
-    # and CMAKE_SIZEOF_VOID_P should be 4.
+    # The macro fast_downward_set_bitwidth
+    # adds -m32 to the compiler flags on Unix, unless ALLOW_64_BIT is
+    # set to true. If this done before defining a project, the tool
+    # chain will be set up for 32-bit and CMAKE_SIZEOF_VOID_P should be 4.
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
         if(ALLOW_64_BIT)
             message(WARNING "Building for 32-bit but ALLOW_64_BIT is set. "
