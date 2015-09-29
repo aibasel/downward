@@ -117,7 +117,7 @@ if(CPLEX_RUNTIME_LIBRARY_PATH)
     set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex1262.dll")
 endif()
 
-# Check if everything was found successfully and set CPLEX_FOUND
+# Check if everything was found and set CPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     Cplex

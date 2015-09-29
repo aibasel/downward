@@ -30,7 +30,7 @@ find_library(CLP_LIBRARIES
     HINTS ${_COIN_ROOT_OPTS}
 )
 
-# Check if everything was found successfully and set CLP_FOUND
+# Check if everything was found and set CLP_FOUND.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     Clp
