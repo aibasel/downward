@@ -26,10 +26,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
 
 fast_downward_default_to_release_build()
+# We need to allow compiling a 64-bit version before we can define the project.
 fast_downward_add_64_bit_option()
 project(fast-downward)
 fast_downward_check_64_bit_option()
-# Due to a bug in cmake configuration types are only set up correctly on the second cmake run.
+# Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
 # This means that cmake has to be called twice for multi-config generators like Visual Studio.
 fast_downward_set_configuration_types()
 fast_downward_add_profile_build()
@@ -39,7 +40,18 @@ set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 
-## == Planner components as subprojects ==
+# Add planner components as subprojects.
+
+# Copy the translator into the output directory.
+add_custom_target(translate ALL)
+add_custom_command(TARGET translate POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/translate
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/translate
+    COMMENT "Copying translator module into output directory")
+
+add_subdirectory(preprocess)
+add_subdirectory(search)
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VAL/")
     add_subdirectory(VAL)
@@ -47,14 +59,3 @@ else()
     # This can happen for IPC submissions that should just include the planner code.
     message("Skipping VAL because it is not present.")
 endif()
-
-# Copy the translator in the output directory
-add_custom_target(translate ALL)
-add_custom_command(TARGET translate POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/translate
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/translate
-    COMMENT "Copying translator module to output directory")
-
-add_subdirectory(preprocess)
-add_subdirectory(search)

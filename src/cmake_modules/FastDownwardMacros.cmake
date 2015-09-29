@@ -26,7 +26,7 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
         string(REPLACE "/MDd" "/MTd" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
-        # enable exceptions
+        # Enable exceptions.
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 
         # Use warning level 4 (/W4) and treat warnings as errors (/WX)
@@ -47,9 +47,9 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4456") # declaration hides previous local declaration
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
 
-        # TODO: Configuration-specific flags (we currently rely on the fact that
+        # TODO: Configuration-specific flags. We currently rely on the fact that
         # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
-        # from cmake). This is the case for most build environments, but we have less
+        # from cmake. This is the case for most build environments, but we have less
         # control over the way the binary is created.
     else()
         message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER}")
@@ -60,7 +60,7 @@ macro(fast_downward_set_linker_flags)
     # We force linking to be static because the dynamically linked code is
     # about 10% slower on Linux (see issue67).
 
-    # Any libs we build, should be static
+    # Any libs we build should be static.
     set(BUILD_SHARED_LIBS FALSE)
 
     # Any libraries that are implicitly added to the end of the linker
@@ -85,7 +85,7 @@ macro(fast_downward_set_linker_flags)
 endmacro()
 
 macro(fast_downward_add_profile_build)
-    # We don't offer a specific PROFILE build on Windows.
+    # We don't offer a dedicated PROFILE build on Windows.
     if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         if(NOT CMAKE_CONFIGURATION_TYPES)
             set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
@@ -116,13 +116,13 @@ endmacro()
 macro(fast_downward_add_64_bit_option)
     # Allow to compile a 64-bit version.
     # Since compiling for 32-bit works differently on each platform, we let
-    # the users set up their own build environment and only check which one
-    # is used. Compiling a 64-bit version of the planner without explicitly
+    # users set up their own build environment and only check which one is
+    # used. Compiling a 64-bit version of the planner without explicitly
     # settig ALLOW_64_BIT to true results in an error.
     option(ALLOW_64_BIT "Allow to compile a 64-bit version." FALSE)
 
     # On Unix, we explicitly force compilation to 32-bit unless ALLOW_64_BIT is set.
-    # Has to be done before defining the project.
+    # This has to be done before defining the project.
     if(UNIX AND NOT ALLOW_64_BIT)
         set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
 
@@ -174,13 +174,12 @@ function(fast_downward_add_headers_to_sources_list _SOURCES_LIST_VAR)
     set(${_SOURCES_LIST_VAR} ${_ALL_FILES} PARENT_SCOPE)
 endfunction()
 
-
 function(fast_downward_plugin)
     set(_OPTIONS DEACTIVATED)
     set(_ONE_VALUE_ARGS NAME DISPLAY_NAME HELP)
     set(_MULTI_VALUE_ARGS SOURCES DEPENDS)
     cmake_parse_arguments(_PLUGIN "${_OPTIONS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
-    # Mandatory
+    # Check mandatory arguments.
     if(NOT _PLUGIN_NAME)
         message( FATAL_ERROR "fast_downward_plugin: 'NAME' argument required." )
     endif()
@@ -188,7 +187,7 @@ function(fast_downward_plugin)
         message( FATAL_ERROR "fast_downward_plugin: 'SOURCES' argument required." )
     endif()
     fast_downward_add_headers_to_sources_list(_PLUGIN_SOURCES)
-    # Optional
+    # Check optional arguments.
     if(NOT _PLUGIN_DISPLAY_NAME)
         string(TOLOWER ${_PLUGIN_NAME} _PLUGIN_DISPLAY_NAME)
     endif()

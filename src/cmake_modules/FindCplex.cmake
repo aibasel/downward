@@ -1,7 +1,7 @@
-# - Find the CPlex LP solver.
+# - Find the CPLEX LP solver.
 # This code defines the following variables:
 #
-#  CPLEX_FOUND                 - TRUE if Cplex was found.
+#  CPLEX_FOUND                 - TRUE if CPLEX was found.
 #  CPLEX_INCLUDE_DIRS          - Full paths to all include dirs.
 #  CPLEX_LIBRARIES             - Full paths to all libraries.
 #  CPLEX_RUNTIME_LIBRARY       - Full path to the dll file on windows
@@ -9,11 +9,11 @@
 # Usage:
 #  find_package(cplex)
 #
-# The location of Cplex can be specified using the environment variable
+# The location of CPLEX can be specified using the environment variable
 # or cmake parameter DOWNWARD_CPLEX_ROOT.
 #
 # Note that the standard FIND_PACKAGE features are supported
-# (i.e., QUIET, REQUIRED, etc.).
+# (QUIET, REQUIRED, etc.).
 
 find_path(CPLEX_INCLUDE_DIRS
     NAMES
@@ -35,7 +35,7 @@ if(UNIX)
         "lib/x86-64_linux/static_pic")
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
 elseif(MSVC)
-    # Note that the numbers are correct: Visual Studio 2011 is version 10
+    # Note that the numbers are correct: Visual Studio 2011 is version 10.
     if (MSVC10)
         set(CPLEX_COMPILER_HINT "vs2011")
     elseif(MSVC11)
@@ -62,7 +62,7 @@ elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
     set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64})
 else()
-    message(WARNING "Bitwidth could not be detected, preferring 32bit version of Cplex")
+    message(WARNING "Bitwidth could not be detected, preferring 32bit version of CPLEX")
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE
         ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32}
         ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64}
@@ -103,7 +103,7 @@ if(CPLEX_LIBRARY_RELEASE OR CPLEX_LIBRARY_DEBUG)
     )
 endif()
 
-# HACK: there must be a better way to find the dll file
+# HACK: there must be a better way to find the dll file.
 find_path(CPLEX_RUNTIME_LIBRARY_PATH
     NAMES
     cplex1262.dll
