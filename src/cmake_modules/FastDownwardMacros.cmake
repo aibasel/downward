@@ -1,6 +1,9 @@
 include(CMakeParseArguments)
 
 macro(fast_downward_set_compiler_flags)
+    # Note: on CMake >= 3.0 the compiler ID of clang on apple is AppleClang.
+    # If we change the required CMake version from 2.8.3 to 3.0 or greater,
+    # we have to fix this.
     if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         include(CheckCXXCompilerFlag)
         check_cxx_compiler_flag( "-std=c++11" CXX11_FOUND )
@@ -133,9 +136,13 @@ macro(fast_downward_add_64_bit_option)
 endmacro()
 
 macro(fast_downward_check_64_bit_option)
+    # The macro fast_downward_add_64_bit_option adds -m32 to the compiler
+    # flags on Unix, unless ALLOW_64_BIT is set to true. If this done
+    # before defining a project, the tool chain will be set up for 32-bit
+    # and CMAKE_SIZEOF_VOID_P should be 4.
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
         if(ALLOW_64_BIT)
-            message(WARNING "Bitwidth is 32-bit but ALLOW_64_BIT is set. "
+            message(WARNING "Building for 32-bit but ALLOW_64_BIT is set. "
             "Do not set ALLOW_64_BIT unless you are sure you want a 64-bit build. "
             "See http://www.fast-downward.org/PlannerUsage#A64bit for details.")
         else()

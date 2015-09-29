@@ -1,22 +1,31 @@
-###   * Usage:
+### Usage:
 ###         mkdir -p builds/release32
 ###         cd builds/release32
 ###         cmake path/to/src
 ###         make [-j4]
-###   * The call to cmake creates and stores options in the file CMakeCache.txt.
-###     Changing the default values for the options here has no effect, you need
-###     to change them in CMakeCache.txt, pass -DMY_OPTION to cmake, or use a
-###     cmake GUI like ccmake to edit the cache.
+### The call to cmake caches settings in the build directory and reads
+### them from the cache on subsequent builds. If you want to change the
+### settings of some options, do _not_ change the CMakeLIsts.txt files.
+### Instead, create a new build directory, pass -DMY_OPTION=my_value to
+### cmake. Alternatively, you can use a cmake GUI like ccmake to edit
+### the cache.
 ###
-### You probably won't need to change this system, unless you want to tweak it for a specific
-### platform. By default, three build targets are defined:
+### Three build targets are defined:
 ###
-### * -DCMAKE_BUILD_TYPE=Release        - -O3 optimisation, debugging symbols, assertions inactive
-### * -DCMAKE_BUILD_TYPE=Debug          - -O3 optimisation, full debugging information, assertions active
-### * -DCMAKE_BUILD_TYPE=Profile        - like Debug but with profile information linked in
+### * release (default)
+###      -O3 optimisation, debugging symbols, assertions inactive
+### * debug
+###      -O3 optimisation, full debugging information, assertions active
+### * profile
+###      like Debug but with profile information linked in
 ###
-### We overwrite the default configuration to include "-g", allow cross
-### compilation and switch to pedantic error reporting.
+### In all build targets, we overwrite the default configuration to
+### include "-g", allow cross compilation and switch to pedantic error
+### reporting.
+###
+### You can change the build target, by adding the parameter
+###   -DCMAKE_BUILD_TYPE=type
+### to the cmake call.
 
 # Version 2.8.3 introduces CMakeParseArguments.
 cmake_minimum_required(VERSION 2.8.3)
