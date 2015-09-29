@@ -1,12 +1,11 @@
-## Details of the core source files
-#
-# If you're adding a file to the codebase which *isn't* a plugin, add
-# it to the following list. We assume that every *.cc file has a corresponding
-# *.h file and add headers to the project automatically.
-
 set(PLANNER_SOURCES
         planner.cc
 )
+
+# If you're adding a file to the codebase which *isn't* a plugin, add
+# it to the following list. We assume that every *.cc file has a
+# corresponding *.h file and add headers to the project automatically.
+# For plugin files, see below.
 
 set(CORE_SOURCES
         abstract_task.cc
