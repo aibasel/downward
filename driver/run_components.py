@@ -8,21 +8,43 @@ from . import call
 from . import limits
 from . import portfolio_runner
 from .plan_manager import PlanManager
-from .util import SRC_DIR
+from .util import BUILDS_DIR
 
+#TODO: We might want to turn translate into a module and call it with "python -m translate".
+REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
+if os.name == "posix":
+    REL_PREPROCESS_PATH = "preprocess"
+    REL_SEARCH_PATH = "downward"
+elif os.name == "nt":
+    REL_PREPROCESS_PATH = "preprocess.exe"
+    REL_SEARCH_PATH = "downward.exe"
+else:
+    print("Unsupported OS: " + os.name)
+    sys.exit(1)
 
-TRANSLATE = os.path.join(SRC_DIR, "translate", "translate.py")
-PREPROCESS = os.path.join(SRC_DIR, "preprocess", "preprocess")
-SEARCH_DIR = os.path.join(SRC_DIR, "search")
+def get_executable(build, rel_path):
+    # First, consider 'build' to be a path directly to the binaries.
+    # The path can be absolute or relative to the current working
+    # directory.
+    build_dir = build
+    if not os.path.exists(build_dir):
+        # If build is not a full path to the binaries, it might be the
+        # name of a build in our standard directory structure.
+        # in this case, the binaries are in
+        #   '<repo-root>/builds/<buildname>/bin'.
+        build_dir = os.path.join(BUILDS_DIR, build, "bin")
+        if not os.path.exists(build_dir):
+            raise IOError(
+                "Could not find build '{build}' at {build_dir}. "
+                "Please run './build.py {build}'.".format(**locals()))
 
-
-def check_for_executable(executable, debug):
-    if not os.path.exists(executable):
-        target = " debug" if debug else ""
+    abs_path = os.path.join(build_dir, rel_path)
+    if not os.path.exists(abs_path):
         raise IOError(
-            "Could not find {executable}. "
-            "Please run './build_all{target}'.".format(**locals()))
+            "Could not find '{rel_path}' in build '{build}'. "
+            "Please run './build.py {build}'.".format(**locals()))
 
+    return abs_path
 
 def print_component_settings(nick, inputs, options, time_limit, memory):
     logging.info("{} input: {}".format(nick, inputs))
@@ -54,13 +76,14 @@ def run_translate(args):
     print_component_settings(
         "translator", args.translate_inputs, args.translate_options,
         time_limit, memory_limit)
+    translate = get_executable(args.build, REL_TRANSLATE_PATH)
     call_component(
-        TRANSLATE, args.translate_inputs + args.translate_options,
+        translate, args.translate_inputs + args.translate_options,
         time_limit=time_limit, memory_limit=memory_limit)
 
 
 def run_preprocess(args):
-    logging.info("Running preprocessor.")
+    logging.info("Running preprocessor (%s)." % args.build)
     time_limit = limits.get_time_limit(
         args.preprocess_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
@@ -68,15 +91,15 @@ def run_preprocess(args):
     print_component_settings(
         "preprocessor", args.preprocess_input, args.preprocess_options,
         time_limit, memory_limit)
-    check_for_executable(PREPROCESS, args.debug)
+    preprocess = get_executable(args.build, REL_PREPROCESS_PATH)
     call_component(
-        PREPROCESS, args.preprocess_options,
+        preprocess, args.preprocess_options,
         stdin=args.preprocess_input,
         time_limit=time_limit, memory_limit=memory_limit)
 
 
 def run_search(args):
-    logging.info("Running search.")
+    logging.info("Running search (%s)." % args.build)
     time_limit = limits.get_time_limit(
         args.search_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
@@ -88,18 +111,14 @@ def run_search(args):
     plan_manager = PlanManager(args.plan_file)
     plan_manager.delete_existing_plans()
 
-    if args.debug:
-        executable = os.path.join(SEARCH_DIR, "downward-debug")
-    else:
-        executable = os.path.join(SEARCH_DIR, "downward-release")
-    logging.info("search executable: %s" % executable)
-    check_for_executable(executable, args.debug)
+    search = get_executable(args.build, REL_SEARCH_PATH)
+    logging.info("search executable: %s" % search)
 
     if args.portfolio:
         assert not args.search_options
         logging.info("search portfolio: %s" % args.portfolio)
         portfolio_runner.run(
-            args.portfolio, executable, args.search_input, plan_manager,
+            args.portfolio, search, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
         if not args.search_options:
@@ -108,6 +127,6 @@ def run_search(args):
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
         call_component(
-            executable, args.search_options,
+            search, args.search_options,
             stdin=args.search_input,
             time_limit=time_limit, memory_limit=memory_limit)
