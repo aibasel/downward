@@ -75,6 +75,9 @@ LPVariable::LPVariable(double lower_bound_, double upper_bound_,
 LPVariable::~LPVariable() {
 }
 
+LPSolver::~LPSolver() {
+}
+
 #ifdef USE_LP
 
 LPSolver::LPSolver(LPSolverType solver_type)
@@ -83,9 +86,6 @@ LPSolver::LPSolver(LPSolverType solver_type)
       num_permanent_constraints(0),
       has_temporary_constraints(false) {
     lp_solver = create_lp_solver(solver_type);
-}
-
-LPSolver::~LPSolver() {
 }
 
 void LPSolver::clear_temporary_data() {
