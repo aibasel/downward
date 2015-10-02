@@ -2,11 +2,9 @@
 
 import logging
 import os.path
-import subprocess
 import sys
 
 from . import call
-from . import exitcodes
 from . import limits
 from . import portfolio_runner
 from . import util
@@ -130,14 +128,10 @@ def run_search(args):
                 "search needs --alias, --portfolio, or search options")
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
-        try:
-            call_component(
-                search, args.search_options,
-                stdin=args.search_input,
-                time_limit=time_limit, memory_limit=memory_limit)
-        except subprocess.CalledProcessError as err:
-            if err.returncode not in exitcodes.EXPECTED_EXITCODES:
-                raise
+        call_component(
+            search, args.search_options,
+            stdin=args.search_input,
+            time_limit=time_limit, memory_limit=memory_limit)
 
 
 def run_validate(args):
@@ -155,7 +149,9 @@ def run_validate(args):
     elif num_files == 2:
         args.validate_inputs = args.filenames + list(plan_files)
     else:
-        parser.error("validate needs one or two input files")
+        # TODO: parser unknown here.
+        # parser.error("validate needs one or two input files")
+        assert False
     print_component_settings(
         "validate", args.validate_inputs, args.validate_options,
         time_limit=None, memory_limit=None)
