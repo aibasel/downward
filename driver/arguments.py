@@ -304,7 +304,7 @@ def parse_args():
         help="run search component")
     components.add_argument(
         "--validate", action="store_true",
-        help="validate all plans")
+        help="validate plans")
 
     limits = parser.add_argument_group(
         title="time and memory limits", description=LIMITS_HELP)

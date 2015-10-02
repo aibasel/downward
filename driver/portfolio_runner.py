@@ -20,7 +20,6 @@ the process is started.
 __all__ = ["run"]
 
 import os
-import signal
 import subprocess
 import sys
 import traceback
