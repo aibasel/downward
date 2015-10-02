@@ -11,9 +11,10 @@ from .util import REPO_ROOT_DIR
 DESCRIPTION = """Fast Downward driver script.
 
 Input files can be either a PDDL problem file (with an optional PDDL domain
-file), in which case the driver runs all three planner components,  or a SAS+
-preprocessor output file, in which case the driver runs just the search
-component. This default behaviour can be overridden with the options below.
+file), in which case the driver runs all three planner components and
+validates the found plans, or a SAS+ preprocessor output file, in which case
+the driver runs just the search component. This default behaviour can be
+overridden with the options below.
 
 Arguments given before the specified input files are interpreted by the driver
 script ("driver options"). Arguments given after the input files are passed on
@@ -24,10 +25,11 @@ separate driver options from input files and also to separate input files from
 component options.
 
 By default, component options are passed to the search component. Use
-"--translate-options", "--preprocess-options" or "--search-options" within the
-component options to override the default for the following options, until
-overridden again. (See below for examples.)"""
+"--translate-options", "--preprocess-options", "--search-options" or
+"--validate-options" within the component options to override the default for
+the following options, until overridden again. (See below for examples.)"""
 
+# TODO: Add limits for validation?
 LIMITS_HELP = """You can limit the time or memory for individual components
 or the whole planner. The effective limit for each component is the minimum
 of the component, overall, external soft, and external hard limits.
