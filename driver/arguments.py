@@ -61,7 +61,7 @@ EXAMPLES = [
      ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
      ["./fast-downward.py", "benchmarks/gripper/prob01.pddl",
-      "--translate-options", "--relaxed",
+      "--translate-options", "--full-encoding",
       "--search-options", "--search", '"astar(lmcut())"']),
 ]
 
@@ -186,7 +186,7 @@ def _set_components_automatically(parser, args):
     2. Otherwise, run all components."""
 
     if len(args.filenames) == 1 and _looks_like_search_input(args.filenames[0]):
-        args.components = ["search", "validate"]
+        args.components = ["search"]
     else:
         args.components = ["translate", "preprocess", "search", "validate"]
 
@@ -217,8 +217,10 @@ def _set_components_and_inputs(parser, args):
     if args.components == ["translate", "search"]:
         parser.error("cannot run translator and search without preprocessor")
     components = set(args.components)
-    if "validate" in components and "search" not in components:
-        parser.error("cannot run validate without search")
+    if ("validate" in components and
+            any(component not in components
+            for component in ["translate", "preprocess", "search"])):
+        parser.error("can only validate whole-planner runs")
 
     if not args.components:
         _set_components_automatically(parser, args)

@@ -159,8 +159,8 @@ def run_validate(args):
     elif num_files == 2:
         args.validate_inputs = args.filenames + list(plan_files)
     else:
-        # TODO: parser unknown here.
-        # parser.error("validate needs one or two input files")
+        # Validation needs one or two PDDL input files. This is ensured
+        # by the translator component.
         assert False
     print_component_settings(
         "validate", args.validate_inputs, args.validate_options,
