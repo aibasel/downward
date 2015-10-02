@@ -27,6 +27,8 @@ def main():
         cleanup.cleanup_temporary_files(args)
         sys.exit()
 
+    # If validation succeeds, exit with the search component's exitcode.
+    search_exitcode = None
     for component in args.components:
         try:
             if component == "translate":
@@ -34,19 +36,21 @@ def main():
             elif component == "preprocess":
                 run_components.run_preprocess(args)
             elif component == "search":
-                run_components.run_search(args)
+                try:
+                    run_components.run_search(args)
+                except subprocess.CalledProcessError as err:
+                    search_exitcode = err.returncode
+                    if search_exitcode not in exitcodes.EXPECTED_EXITCODES:
+                        raise
             elif component == "validate":
                 run_components.run_validate(args)
             else:
                 assert False
         except subprocess.CalledProcessError as err:
-            if (component == "search" and
-                    err.returncode in exitcodes.EXPECTED_EXITCODES):
-                if "validate" not in args.components:
-                    sys.exit(err.returncode)
-            else:
-                print(err)
-                sys.exit(err.returncode)
+            print(err)
+            sys.exit(err.returncode)
+    if search_exitcode is not None:
+        sys.exit(search_exitcode)
 
 
 if __name__ == "__main__":
