@@ -182,7 +182,7 @@ def _set_components_automatically(parser, args):
     implements some simple heuristics:
 
     1. If there is exactly one input file and it looks like a
-       Fast-Downward-generated file, run search and validate only.
+       Fast-Downward-generated file, run search only.
     2. Otherwise, run all components."""
 
     if len(args.filenames) == 1 and _looks_like_search_input(args.filenames[0]):
