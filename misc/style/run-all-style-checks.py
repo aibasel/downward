@@ -44,7 +44,7 @@ def check_translator_pyflakes():
     return _run_pyflakes(os.path.join(SRC_DIR, "translate"))
 
 def check_driver_pyflakes():
-    return _run_pyflakes(os.path.join(SRC_DIR, "driver"))
+    return _run_pyflakes(os.path.join(REPO, "driver"))
 
 
 def check_include_guard_convention():

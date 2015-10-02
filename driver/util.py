@@ -3,7 +3,8 @@
 import os
 
 DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
-SRC_DIR = os.path.dirname(DRIVER_DIR)
+REPO_ROOT_DIR = os.path.dirname(DRIVER_DIR)
+BUILDS_DIR = os.path.join(REPO_ROOT_DIR, "builds")
 
 
 def get_elapsed_time():
