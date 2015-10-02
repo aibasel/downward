@@ -18,7 +18,6 @@ set(CORE_SOURCES
         equivalence_relation.cc
         evaluation_context.cc
         evaluation_result.cc
-        exact_timer.cc
         global_operator.cc
         globals.cc
         global_state.cc
