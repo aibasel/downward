@@ -8,7 +8,6 @@ import sys
 from . import aliases
 from . import arguments
 from . import cleanup
-from . import exitcodes
 from . import run_components
 
 
@@ -36,12 +35,7 @@ def main():
             elif component == "preprocess":
                 run_components.run_preprocess(args)
             elif component == "search":
-                try:
-                    run_components.run_search(args)
-                except subprocess.CalledProcessError as err:
-                    search_exitcode = err.returncode
-                    if search_exitcode not in exitcodes.EXPECTED_EXITCODES:
-                        raise
+                search_exitcode = run_components.run_search(args)
             elif component == "validate":
                 run_components.run_validate(args)
             else:

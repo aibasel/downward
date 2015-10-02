@@ -2,9 +2,11 @@
 
 import logging
 import os.path
+import subprocess
 import sys
 
 from . import call
+from . import exitcodes
 from . import limits
 from . import portfolio_runner
 from . import util
@@ -128,10 +130,18 @@ def run_search(args):
                 "search needs --alias, --portfolio, or search options")
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
-        call_component(
-            search, args.search_options,
-            stdin=args.search_input,
-            time_limit=time_limit, memory_limit=memory_limit)
+        try:
+            call_component(
+                search, args.search_options,
+                stdin=args.search_input,
+                time_limit=time_limit, memory_limit=memory_limit)
+        except subprocess.CalledProcessError as err:
+            if err.returncode in exitcodes.EXPECTED_EXITCODES:
+                return err.returncode
+            else:
+                raise
+        else:
+            return 0
 
 
 def run_validate(args):
