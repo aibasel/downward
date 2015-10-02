@@ -10,8 +10,8 @@ import subprocess
 
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
+from .exitcodes import EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE
 from . import limits
-from .portfolio_runner import EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE
 from .util import REPO_ROOT_DIR
 
 
