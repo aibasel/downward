@@ -4,10 +4,10 @@
 #include "../heuristic.h"
 #include "../globals.h"
 #include "../priority_queue.h"
-#include "landmark_types.h"
 
 #include <cassert>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class GlobalOperator;

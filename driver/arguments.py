@@ -5,7 +5,7 @@ import os.path
 
 from . import aliases
 from . import limits
-from .util import SRC_DIR
+from .util import REPO_ROOT_DIR
 
 
 DESCRIPTION = """Fast Downward driver script.
@@ -43,15 +43,15 @@ that exceed their time or memory limit are aborted, and the next
 configuration is run."""
 
 EXAMPLE_PORTFOLIO = os.path.relpath(
-    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=SRC_DIR)
+    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=REPO_ROOT_DIR)
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
-     ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
+     ["./fast-downward.py", "benchmarks/gripper/prob01.pddl",
       "--search", '"astar(lmcut())"']),
     ("Translate and preprocess, run no search:",
      ["./fast-downward.py", "--translate", "--preprocess",
-      "../benchmarks/gripper/prob01.pddl"]),
+      "benchmarks/gripper/prob01.pddl"]),
     ("Run predefined configuration (LAMA-2011) on preprocessed task:",
      ["./fast-downward.py", "--alias", "seq-sat-lama-2011", "output"]),
     ("Run a portfolio on a preprocessed task:",
@@ -60,7 +60,7 @@ EXAMPLES = [
     ("Run the search component in debug mode (with assertions enabled):",
      ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
-     ["./fast-downward.py", "../benchmarks/gripper/prob01.pddl",
+     ["./fast-downward.py", "benchmarks/gripper/prob01.pddl",
       "--translate-options", "--relaxed",
       "--search-options", "--search", '"astar(lmcut())"']),
 ]
@@ -304,8 +304,17 @@ def parse_args():
         "--alias",
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
     driver_other.add_argument(
+        "--build",
+        help="BUILD can be a predefined build name like release32 "
+            "(default), debug32, release64 and debug64, a custom build "
+            "name, or the path to a directory holding the planner "
+            "binaries. The driver first looks for the planner binaries "
+            "under 'BUILD'. If this path does not exist, it tries the "
+            "directory '<repo>/builds/BUILD/bin', where the build "
+            "script creates them by default.")
+    driver_other.add_argument(
         "--debug", action="store_true",
-        help="use debug mode for search component")
+        help="alias for --build=debug32")
     driver_other.add_argument(
         "--log-level", choices=["debug", "info", "warning"],
         default="info",
@@ -317,6 +326,11 @@ def parse_args():
     driver_other.add_argument(
         "--portfolio", metavar="FILE",
         help="run a portfolio specified in FILE")
+
+    driver_other.add_argument(
+        "--cleanup", action="store_true",
+        help="clean up temporary files (output, output.sas, sas_plan, sas_plan.*) and exit")
+
 
     parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,
@@ -330,6 +344,15 @@ def parse_args():
     # --help" passes "--help" to the search code.
 
     args = parser.parse_args()
+
+    if args.build and args.debug:
+        parser.error("The option --debug is an alias for --build=debug32. "
+                     "Do no specify both --debug and --build.")
+    if not args.build:
+        if args.debug:
+            args.build = "debug32"
+        else:
+            args.build = "release32"
 
     _split_planner_args(parser, args)
 
@@ -346,7 +369,7 @@ def parse_args():
         except KeyError:
             parser.error("unknown alias: %r" % args.alias)
 
-    if not args.show_aliases:
+    if not args.show_aliases and not args.cleanup:
         _set_components_and_inputs(parser, args)
 
     return args

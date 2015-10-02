@@ -12,24 +12,25 @@ from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
 from . import limits
 from .portfolio_runner import EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE
-from .util import SRC_DIR
+from .util import REPO_ROOT_DIR
 
 
 def preprocess():
     """Create preprocessed task."""
     cmd = ["./fast-downward.py", "--translate", "--preprocess",
-           "../benchmarks/gripper/prob01.pddl"]
-    assert subprocess.check_call(cmd, cwd=SRC_DIR) == 0
+           "benchmarks/gripper/prob01.pddl"]
+    assert subprocess.check_call(cmd, cwd=REPO_ROOT_DIR) == 0
 
 
 def cleanup():
-    subprocess.check_call("./cleanup.py", cwd=SRC_DIR)
+    subprocess.check_call(["./fast-downward.py", "--cleanup"],
+                          cwd=REPO_ROOT_DIR)
 
 
 def run_driver(cmd):
     cleanup()
     preprocess()
-    return subprocess.call(cmd, cwd=SRC_DIR)
+    return subprocess.call(cmd, cwd=REPO_ROOT_DIR)
 
 
 def test_commandline_args():
