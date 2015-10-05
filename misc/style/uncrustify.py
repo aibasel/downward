@@ -61,7 +61,9 @@ def _run_uncrustify(config_file, filenames):
             raise util.Abort(
                 "uncrustify exited with {returncode}. Are you using an "
                 "outdated version? We require uncrustify 0.61, you "
-                "have {uncrustify_version}.".format(**locals()))
+                "have {uncrustify_version}. Please consult "
+                "www.fast-downward.org/ForDevelopers/Uncrustify".format(
+                **locals()))
 
 
 def _run_diff(oldfile, newfile):
