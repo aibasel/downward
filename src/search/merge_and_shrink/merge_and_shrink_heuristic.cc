@@ -23,9 +23,9 @@ using namespace std;
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      merge_strategy(opts.get<shared_ptr<MergeStrategy> >("merge_strategy")),
-      shrink_strategy(opts.get<shared_ptr<ShrinkStrategy> >("shrink_strategy")),
-      labels(opts.get<shared_ptr<Labels> >("label_reduction")),
+      merge_strategy(opts.get<shared_ptr<MergeStrategy>>("merge_strategy")),
+      shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
+      labels(opts.get<shared_ptr<Labels>>("label_reduction")),
       starting_peak_memory(-1),
       final_transition_system(nullptr) {
     /*
@@ -56,32 +56,32 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     if (!labels->reduce_before_merging() && !labels->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You did not enable label reduction. This may "
-        "drastically reduce the performance of merge-and-shrink!"
+            "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
     } else if (labels->reduce_before_merging() && labels->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You set label reduction to be applied twice in "
-        "each merge-and-shrink iteration, both before shrinking and\n"
-        "merging. This double computation effort does not pay off "
-        "for most configurations!"
-        << endl << dashes << endl;
+            "each merge-and-shrink iteration, both before shrinking and\n"
+            "merging. This double computation effort does not pay off "
+            "for most configurations!"
+             << endl << dashes << endl;
     } else {
         if (labels->reduce_before_shrinking() &&
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
             cerr << dashes << endl
                  << "WARNING! Bucket-based shrink strategies such as "
-            "f-preserving random perform best if used with label\n"
-            "reduction before merging, not before shrinking!"
-            << endl << dashes << endl;
+                "f-preserving random perform best if used with label\n"
+                "reduction before merging, not before shrinking!"
+                 << endl << dashes << endl;
         }
         if (labels->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
             cerr << dashes << endl
                  << "WARNING! Shrinking based on bisimulation performs best "
-            "if used with label reduction before shrinking, not\n"
-            "before merging!"
-            << endl << dashes << endl;
+                "if used with label reduction before shrinking, not\n"
+                "before merging!"
+                 << endl << dashes << endl;
         }
     }
 }
@@ -260,19 +260,19 @@ static Heuristic *_parse(OptionParser &parser) {
         "label_reduction=label_reduction(before_shrinking=true, before_merging=false))");
 
     // Merge strategy option.
-    parser.add_option<shared_ptr<MergeStrategy> >(
+    parser.add_option<shared_ptr<MergeStrategy>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
         "We currently recommend merge_dfp.");
 
     // Shrink strategy option.
-    parser.add_option<shared_ptr<ShrinkStrategy> >(
+    parser.add_option<shared_ptr<ShrinkStrategy>>(
         "shrink_strategy",
         "See detailed documentation for shrink strategies. "
         "We currently recommend shrink_bisimulation.");
 
     // Label reduction option.
-    parser.add_option<shared_ptr<Labels> >(
+    parser.add_option<shared_ptr<Labels>>(
         "label_reduction",
         "See detailed documentation for labels. There is currently only "
         "one 'option' to use label_reduction. Also note the interaction "

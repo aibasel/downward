@@ -23,7 +23,7 @@ using namespace std;
    successor). The bisimulation algorithm requires that the vector is
    sorted and uniquified. */
 
-typedef vector<pair<int, int> > SuccessorSignature;
+typedef vector<pair<int, int>> SuccessorSignature;
 
 /*
   The following class encodes all we need to know about a state for

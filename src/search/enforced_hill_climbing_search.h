@@ -14,7 +14,7 @@
 class GEvaluator;
 class Options;
 
-typedef std::pair<StateID, std::pair<int, const GlobalOperator * > > OpenListEntryEHC;
+typedef std::pair<StateID, std::pair<int, const GlobalOperator * >> OpenListEntryEHC;
 
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
@@ -49,7 +49,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     EvaluationContext current_eval_context;
 
     // Statistics
-    std::map<int, std::pair<int, int> > d_counts;
+    std::map<int, std::pair<int, int>> d_counts;
     int num_ehc_phases;
     int last_num_expanded;
 

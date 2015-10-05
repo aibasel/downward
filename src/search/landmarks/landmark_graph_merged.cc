@@ -20,7 +20,7 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
         else
             return 0;
     } else if (lm.disjunctive) {
-        set<pair<int, int> > lm_facts;
+        set<pair<int, int>> lm_facts;
         for (size_t i = 0; i < lm.vars.size(); ++i) {
             lm_facts.insert(make_pair(lm.vars[i], lm.vals[i]));
         }
@@ -59,7 +59,7 @@ void LandmarkGraphMerged::generate_landmarks() {
         for (it = nodes.begin(); it != nodes.end(); ++it) {
             const LandmarkNode &node = **it;
             if (node.disjunctive) {
-                set<pair<int, int> > lm_facts;
+                set<pair<int, int>> lm_facts;
                 bool exists = false;
                 for (size_t j = 0; j < node.vars.size(); ++j) {
                     pair<int, int> lm_fact = make_pair(node.vars[j], node.vals[j]);

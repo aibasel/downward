@@ -42,7 +42,7 @@ static Heuristic *_parse(OptionParser &parser, OptimizeFor opt_func) {
         return nullptr;
 
     return new PotentialHeuristic(
-               opts, create_potential_function(opts, opt_func));
+        opts, create_potential_function(opts, opt_func));
 }
 
 static Heuristic *_parse_initial_state_potential(OptionParser &parser) {

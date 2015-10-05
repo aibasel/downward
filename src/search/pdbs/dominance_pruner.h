@@ -12,11 +12,11 @@
 class DominancePruner {
 private:
     std::vector<PatternDatabase *> &pattern_databases;
-    std::vector<std::vector<PatternDatabase *> > &max_cliques;
+    std::vector<std::vector<PatternDatabase *>> &max_cliques;
 
     // Precomputed superset relation of patterns.
     typedef std::unordered_set<
-        std::pair<PatternDatabase *, PatternDatabase *> > PDBRelation;
+            std::pair<PatternDatabase *, PatternDatabase *>> PDBRelation;
     PDBRelation superset_relation;
     void compute_superset_relation();
 
@@ -26,7 +26,7 @@ private:
 
 public:
     DominancePruner(std::vector<PatternDatabase *> &pattern_databases_,
-                    std::vector<std::vector<PatternDatabase *> > &max_cliques_);
+                    std::vector<std::vector<PatternDatabase *>> &max_cliques_);
     void prune();
 };
 

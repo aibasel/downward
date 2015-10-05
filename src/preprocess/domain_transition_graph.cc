@@ -205,7 +205,7 @@ bool are_DTGs_strongly_connected(const vector<DomainTransitionGraph> &transition
     return connected;
 }
 bool DomainTransitionGraph::is_strongly_connected() const {
-    vector<vector<int> > easy_graph;
+    vector<vector<int>> easy_graph;
     int num_vertices = vertices.size();
     for (int i = 0; i < num_vertices; i++) {
         vector<int> empty_vector;
@@ -214,7 +214,7 @@ bool DomainTransitionGraph::is_strongly_connected() const {
             easy_graph[i].push_back(trans.target);
         }
     }
-    vector<vector<int> > sccs = SCC(easy_graph).get_result();
+    vector<vector<int>> sccs = SCC(easy_graph).get_result();
     //  cout << "easy graph sccs for var " << level << endl;
 //   for(int i = 0; i < sccs.size(); i++) {
 //     for(int j = 0; j < sccs[i].size(); j++)
@@ -259,7 +259,7 @@ void DomainTransitionGraph::generate_cpp_input(ofstream &outfile) const {
             for (const auto &cond : trans.condition)
                 if (cond.first->get_level() != -1)
                     outfile << cond.first->get_level() <<
-                    " " << cond.second << endl;  // condition: var, val
+                        " " << cond.second << endl; // condition: var, val
         }
     }
 }
