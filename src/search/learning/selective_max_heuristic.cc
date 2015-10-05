@@ -261,8 +261,8 @@ void SelectiveMaxHeuristic::train() {
             threshold[classifier_index] = thr;
 
             cout << expensive[classifier_index] /*heuristics[expensive[classifier_index]]->get_name()*/ <<
-            " <=> " << expensive[classifier_index] /*heuristics[expensive[classifier_index]]->get_name()*/ << " - " <<
-            cheap[classifier_index] /*heuristics[cheap[classifier_index]]->get_name()*/ << " > " << thr << endl;
+                " <=> " << expensive[classifier_index] /*heuristics[expensive[classifier_index]]->get_name()*/ << " - " <<
+                cheap[classifier_index] /*heuristics[cheap[classifier_index]]->get_name()*/ << " > " << thr << endl;
             //training_set.reset_iterator();
 
             sample_t::const_iterator it;
@@ -545,10 +545,10 @@ void SelectiveMaxHeuristic::print_statistics() const {
     cout << "heuristic,  evaluated, winner,   only winner, total time, average time" << endl;
     for (size_t i = 0; i < heuristics.size(); ++i) {
         cout << i /*heuristics[i]->get_name()*/ << " , " <<
-        num_evaluated[i] << " , " <<
-        num_winner[i] << " , " <<
-        num_only_winner[i] << " , " <<
-        total_computation_time[i] << " , " <<
+            num_evaluated[i] << " , " <<
+            num_winner[i] << " , " <<
+            num_only_winner[i] << " , " <<
+            total_computation_time[i] << " , " <<
         ((double)total_computation_time[i] / (double)num_evaluated[i]) << endl;
         eval_time = eval_time + (num_evaluated[i] * avg_time[i]);
     }

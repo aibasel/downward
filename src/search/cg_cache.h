@@ -7,9 +7,9 @@ class GlobalState;
 struct ValueTransitionLabel;
 
 class CGCache {
-    std::vector<std::vector<int> > cache;
-    std::vector<std::vector<ValueTransitionLabel *> > helpful_transition_cache;
-    std::vector<std::vector<int> > depends_on;
+    std::vector<std::vector<int>> cache;
+    std::vector<std::vector<ValueTransitionLabel *>> helpful_transition_cache;
+    std::vector<std::vector<int>> depends_on;
 
     int get_index(int var, const GlobalState &state, int from_val, int to_val) const;
     int compute_required_cache_size(int var,

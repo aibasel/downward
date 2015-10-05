@@ -23,8 +23,8 @@ vector<State> sample_without_dead_end_detection(
     SuccessorGenerator successor_generator(task);
     int init_h = optimizer.get_potential_function()->get_value(initial_state);
     return sample_states_with_random_walks(
-               task_proxy, successor_generator, num_samples, init_h,
-               get_average_operator_cost(task_proxy));
+        task_proxy, successor_generator, num_samples, init_h,
+        get_average_operator_cost(task_proxy));
 }
 
 string get_admissible_potentials_reference() {

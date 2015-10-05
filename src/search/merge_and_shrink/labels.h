@@ -60,12 +60,12 @@ class Labels {
     void notify_transition_systems(
         int ts_index,
         const std::vector<TransitionSystem *> &all_transition_systems,
-        const std::vector<std::pair<int, std::vector<int> > > &label_mapping) const;
+        const std::vector<std::pair<int, std::vector<int>>> &label_mapping) const;
     // Apply the given label equivalence relation to the set of labels and compute
     // the resulting label mapping.
     bool apply_label_reduction(
         const EquivalenceRelation *relation,
-        std::vector<std::pair<int, std::vector<int> > > &label_mapping);
+        std::vector<std::pair<int, std::vector<int>>> &label_mapping);
     EquivalenceRelation *compute_combinable_equivalence_relation(
         int ts_index,
         const std::vector<TransitionSystem *> &all_transition_systems) const;

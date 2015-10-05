@@ -40,7 +40,7 @@ public:
 class HeuristicRepresentationMerge : public HeuristicRepresentation {
     std::unique_ptr<HeuristicRepresentation> left_child;
     std::unique_ptr<HeuristicRepresentation> right_child;
-    std::vector<std::vector<int> > lookup_table;
+    std::vector<std::vector<int>> lookup_table;
 public:
     HeuristicRepresentationMerge(
         std::unique_ptr<HeuristicRepresentation> left_child,
