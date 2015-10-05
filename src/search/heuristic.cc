@@ -94,11 +94,11 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
           preferred operators.
         */
         preferred_operators.clear();
-        heuristic = EvaluationResult::INFINITE;
+        heuristic = EvaluationResult::INFTY;
     }
 
 #ifndef NDEBUG
-    if (heuristic != EvaluationResult::INFINITE) {
+    if (heuristic != EvaluationResult::INFTY) {
         for (size_t i = 0; i < preferred_operators.size(); ++i)
             assert(preferred_operators[i]->is_applicable(state));
     }
