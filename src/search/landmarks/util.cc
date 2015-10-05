@@ -7,7 +7,7 @@
 
 using namespace std;
 
-bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int> > &lvl_var) {
+bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int>> &lvl_var) {
     for (size_t i = 0; i < conditions.size(); ++i)
         if (lvl_var[conditions[i].var][conditions[i].val] ==
             numeric_limits<int>::max())
@@ -27,7 +27,7 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     return result;
 }
 
-bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int> > &lvl_var, const LandmarkNode *lmp) {
+bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int>> &lvl_var, const LandmarkNode *lmp) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in lvl_var) */
 

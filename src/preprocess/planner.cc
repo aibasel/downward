@@ -23,7 +23,7 @@ int main(int argc, const char **) {
     vector<Variable *> variables;
     vector<Variable> internal_variables;
     State initial_state;
-    vector<pair<Variable *, int> > goals;
+    vector<pair<Variable *, int>> goals;
     vector<MutexGroup> mutexes;
     vector<Operator> operators;
     vector<Axiom> axioms;

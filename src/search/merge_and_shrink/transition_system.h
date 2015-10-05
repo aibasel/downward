@@ -63,12 +63,12 @@ class TSConstIterator {
     // we could easily change the following to be the TransitionSystem, rather
     // than the underlying data structure. Then we could also move this
     // iterator class in its own file.
-    const std::vector<std::vector<Transition> > &transitions_by_group_id;
+    const std::vector<std::vector<Transition>> &transitions_by_group_id;
     // current is the actual iterator, representing the label group's id.
     int current;
 public:
     TSConstIterator(const std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
-                    const std::vector<std::vector<Transition> > &transitions_by_group_id,
+                    const std::vector<std::vector<Transition>> &transitions_by_group_id,
                     bool end);
     void operator++();
     bool operator==(const TSConstIterator &rhs) const {
@@ -122,7 +122,7 @@ private:
       new label group is added also increases runtime. See also issue492 and
       issue521.
     */
-    std::vector<std::vector<Transition> > transitions_by_group_id;
+    std::vector<std::vector<Transition>> transitions_by_group_id;
 
     int num_states;
 
@@ -176,7 +176,7 @@ public:
         const TaskProxy &task_proxy,
         const std::shared_ptr<Labels> labels,
         int var_id,
-        std::vector<std::vector<Transition> > && transitions_by_label);
+        std::vector<std::vector<Transition>> &&transitions_by_label);
 
     /*
       Constructor that merges two transition systems.
@@ -190,18 +190,18 @@ public:
                      TransitionSystem *ts2);
     ~TransitionSystem();
 
-    bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
-    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
+    bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef>> &collapsed_groups);
+    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
                                bool only_equivalent_labels);
     void release_memory();
 
     TSConstIterator begin() const {
         return TSConstIterator(
-                   label_equivalence_relation, transitions_by_group_id, false);
+            label_equivalence_relation, transitions_by_group_id, false);
     }
     TSConstIterator end() const {
         return TSConstIterator(
-                   label_equivalence_relation, transitions_by_group_id, true);
+            label_equivalence_relation, transitions_by_group_id, true);
     }
     /*
       Method to identify the transition system in output.

@@ -12,7 +12,7 @@ class Variable;
 
 class DomainTransitionGraph {
 public:
-    typedef vector<pair<const Variable *, int> > Condition;
+    typedef vector<pair<const Variable *, int>> Condition;
 private:
     struct Transition {
         Transition(int theTarget, int theOp) : target(theTarget), op(theOp) {}

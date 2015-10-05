@@ -495,19 +495,19 @@ class State {
     std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    State(const AbstractTask &task, std::vector<int> && values)
+    State(const AbstractTask &task, std::vector<int> &&values)
         : task(&task), values(std::move(values)) {
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
     State(const State &) = default;
 
-    State(State && other)
+    State(State &&other)
         : task(other.task), values(std::move(other.values)) {
         other.task = nullptr;
     }
 
-    State &operator=(const State && other) {
+    State &operator=(const State &&other) {
         if (this != &other) {
             values = std::move(other.values);
         }
@@ -524,7 +524,7 @@ public:
     }
 
     std::size_t hash() const {
-        std::hash<std::vector<int> > hasher;
+        std::hash<std::vector<int>> hasher;
         return hasher(values);
     }
 
