@@ -32,7 +32,7 @@ EvaluationResult CombiningEvaluator::compute_result(
     // Collect component values. Return infinity if any is infinite.
     for (ScalarEvaluator *subevaluator : subevaluators) {
         int h_val = eval_context.get_heuristic_value_or_infinity(subevaluator);
-        if (h_val == EvaluationResult::INFINITE) {
+        if (h_val == EvaluationResult::INFTY) {
             result.set_h_value(h_val);
             return result;
         } else {

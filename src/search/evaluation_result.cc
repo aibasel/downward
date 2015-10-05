@@ -4,7 +4,7 @@
 
 using namespace std;
 
-const int EvaluationResult::INFINITE = numeric_limits<int>::max();
+const int EvaluationResult::INFTY = numeric_limits<int>::max();
 
 EvaluationResult::EvaluationResult() : h_value(UNINITIALIZED) {
 }
@@ -14,7 +14,7 @@ bool EvaluationResult::is_uninitialized() const {
 }
 
 bool EvaluationResult::is_infinite() const {
-    return h_value == INFINITE;
+    return h_value == INFTY;
 }
 
 int EvaluationResult::get_h_value() const {

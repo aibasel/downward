@@ -67,7 +67,7 @@ bool EvaluationContext::is_heuristic_infinite(ScalarEvaluator *heur) {
 
 int EvaluationContext::get_heuristic_value(ScalarEvaluator *heur) {
     int h = get_result(heur).get_h_value();
-    assert(h != EvaluationResult::INFINITE);
+    assert(h != EvaluationResult::INFTY);
     return h;
 }
 
