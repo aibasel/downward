@@ -35,7 +35,7 @@ public:
 
     void set_h_value(int value);
     void set_preferred_operators(
-        std::vector<const GlobalOperator *> && preferred_operators);
+        std::vector<const GlobalOperator *> &&preferred_operators);
 };
 
 #endif

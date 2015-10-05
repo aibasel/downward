@@ -82,7 +82,7 @@ void MatchTree::insert_recursive(
         *edge_from_parent = new Node();
     }
 
-    const vector<pair<int, int> > &regression_preconditions =
+    const vector<pair<int, int>> &regression_preconditions =
         op.get_regression_preconditions();
     Node *node = *edge_from_parent;
     if (pre_index == static_cast<int>(regression_preconditions.size())) {
