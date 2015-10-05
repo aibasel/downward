@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-#include "../exact_timer.h"
+#include "../timer.h"
 
 #include <fstream>
 #include <limits>
@@ -14,7 +14,7 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
-    ExactTimer lm_generation_timer;
+    Timer lm_generation_timer;
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"
