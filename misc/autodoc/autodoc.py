@@ -21,6 +21,9 @@ BOT_USERNAME = "XmlRpcBot"
 PASSWORD_FILE = ".downward-xmlrpc.secret" # relative to this source file or in the home directory
 WIKI_URL = "http://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
+SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
+REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+
 
 def read_password():
     path = join(dirname(__file__), PASSWORD_FILE)
@@ -115,15 +118,11 @@ def insert_wiki_links(text, titles):
     return text
 
 def build_planner():
-    build_dir = "../../src/search"
-    cwd = os.getcwd()
-    os.chdir(build_dir)
-    os.system("make")
-    os.chdir(cwd)
+    subprocess.check_call(["./build.py", "release32", "downward"], cwd=REPO_ROOT_DIR)
 
 def get_pages_from_planner():
-    p = subprocess.Popen(["../../src/search/downward-release", "--help", "--txt2tags"], stdout=subprocess.PIPE)
-    out = p.communicate()[0]
+    planner = os.path.join(REPO_ROOT_DIR, "builds", "release32", "bin", "downward")
+    out = subprocess.check_output([planner, "--help", "--txt2tags"])
     #split the output into tuples (title, markup_text)
     pagesplitter = re.compile(r'>>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<', re.DOTALL)
     pages = dict()
