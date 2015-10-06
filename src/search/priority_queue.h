@@ -213,7 +213,7 @@ public:
             std::vector<Entry> entries;
             extract_sorted_entries(entries);
             return HeapQueue<Value>::create_from_sorted_entries_destructively(
-                       entries);
+                entries);
         }
         return this;
     }

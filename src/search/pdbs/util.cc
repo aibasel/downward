@@ -33,7 +33,7 @@ static void validate_and_normalize_pattern(
 
 static void validate_and_normalize_patterns(
     TaskProxy task_proxy, OptionParser &parser,
-    vector<vector<int> > &pattern_collection) {
+    vector<vector<int>> &pattern_collection) {
     /*
       - Validate and normalize each pattern (see there).
       - Sort collection lexicographically and remove duplicate patterns.
@@ -43,7 +43,7 @@ static void validate_and_normalize_patterns(
         validate_and_normalize_pattern(task_proxy, parser,
                                        pattern_collection[i]);
     sort(pattern_collection.begin(), pattern_collection.end());
-    vector<vector<int> >::iterator it = unique(
+    vector<vector<int>>::iterator it = unique(
         pattern_collection.begin(), pattern_collection.end());
     if (it != pattern_collection.end()) {
         pattern_collection.erase(it, pattern_collection.end());
@@ -83,7 +83,7 @@ static void build_pattern_for_size_limit(
 
 static void build_combo_patterns(
     const shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
-    vector<vector<int> > &pattern_collection) {
+    vector<vector<int>> &pattern_collection) {
     // Take one large pattern and then single-variable patterns for
     // all goal variables that are not in the large pattern.
     assert(pattern_collection.empty());
@@ -100,7 +100,7 @@ static void build_combo_patterns(
 }
 
 static void build_singleton_patterns(
-    TaskProxy task_proxy, vector<vector<int> > &pattern_collection) {
+    TaskProxy task_proxy, vector<vector<int>> &pattern_collection) {
     // Build singleton pattern from each goal variable.
     assert(pattern_collection.empty());
     for (FactProxy goal : task_proxy.get_goals()) {
@@ -148,7 +148,7 @@ void parse_pattern(OptionParser &parser, Options &opts) {
 void parse_patterns(OptionParser &parser, Options &opts) {
     if (!parser.help_mode())
         assert(parser.is_valid_option("transform"));
-    parser.add_list_option<vector<int> >(
+    parser.add_list_option<vector<int>>(
         "patterns",
         "list of patterns (which are lists of variable numbers of the planning "
         "task). Default: each goal variable is used as a single-variable "
@@ -169,9 +169,9 @@ void parse_patterns(OptionParser &parser, Options &opts) {
     const shared_ptr<AbstractTask> task = get_task_from_options(opts);
     TaskProxy task_proxy(*task);
 
-    vector<vector<int> > pattern_collection;
+    vector<vector<int>> pattern_collection;
     if (opts.contains("patterns")) {
-        pattern_collection = opts.get_list<vector<int> >("patterns");
+        pattern_collection = opts.get_list<vector<int>>("patterns");
     } else if (opts.get<bool>("combo")) {
         build_combo_patterns(
             task, parser, opts.get<int>("max_states"), pattern_collection);

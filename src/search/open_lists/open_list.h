@@ -5,6 +5,7 @@
 #include <vector>
 
 class EvaluationContext;
+class Heuristic;
 
 
 template<class Entry>

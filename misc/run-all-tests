@@ -3,6 +3,14 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
+cd ..
 
-./style/run-all-style-checks.py
-./tests/run-all-code-tests
+# Build Fast Downward with all CPUs.
+CPUS=$(python -c "import multiprocessing as m; print(m.cpu_count())")
+set -x
+./build.py -j${CPUS}
+./build.py --debug -j${CPUS}
+
+# Run tests.
+./misc/style/run-all-style-checks.py
+./misc/tests/run-all-code-tests

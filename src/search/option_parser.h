@@ -121,31 +121,31 @@ public:
 };
 
 template <>
-class TokenParser<std::shared_ptr<MergeStrategy> > {
+class TokenParser<std::shared_ptr<MergeStrategy>> {
 public:
     static inline std::shared_ptr<MergeStrategy>parse(OptionParser &p);
 };
 
 template <>
-class TokenParser<std::shared_ptr<ShrinkStrategy> > {
+class TokenParser<std::shared_ptr<ShrinkStrategy>> {
 public:
     static inline std::shared_ptr<ShrinkStrategy>parse(OptionParser &p);
 };
 
 template <>
-class TokenParser<std::shared_ptr<Labels> > {
+class TokenParser<std::shared_ptr<Labels>> {
 public:
     static inline std::shared_ptr<Labels>parse(OptionParser &p);
 };
 
 template <>
-class TokenParser<std::shared_ptr<AbstractTask> > {
+class TokenParser<std::shared_ptr<AbstractTask>> {
 public:
     static inline std::shared_ptr<AbstractTask> parse(OptionParser &p);
 };
 
 template <class T>
-class TokenParser<std::vector<T > > {
+class TokenParser<std::vector<T >> {
 public:
     static inline std::vector<T> parse(OptionParser &p);
 };
@@ -323,7 +323,7 @@ void OptionParser::add_option(
 template <class T>
 void OptionParser::add_list_option(
     std::string k, std::string h, std::string def_val) {
-    add_option<std::vector<T> >(k, h, def_val);
+    add_option<std::vector<T>>(k, h, def_val);
 }
 
 //Definitions of TokenParser<T>:
@@ -381,10 +381,10 @@ static T *lookup_in_registry(OptionParser &p) {
 template <class T>
 static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Registry<std::shared_ptr<T> >::instance()->contains(pt->value)) {
-        return Registry<std::shared_ptr<T> >::instance()->get(pt->value) (p);
+    if (Registry<std::shared_ptr<T>>::instance()->contains(pt->value)) {
+        return Registry<std::shared_ptr<T>>::instance()->get(pt->value) (p);
     }
-    p.error(TypeNamer<std::shared_ptr<T> >::name() + " " + pt->value + " not found");
+    p.error(TypeNamer<std::shared_ptr<T>>::name() + " " + pt->value + " not found");
     return 0;
 }
 
@@ -401,7 +401,7 @@ static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
 
 template <class Entry>
 OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
-    return lookup_in_registry<OpenList<Entry > >(p);
+    return lookup_in_registry<OpenList<Entry >>(p);
 }
 
 
@@ -442,15 +442,15 @@ SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
     return lookup_in_registry<SearchEngine>(p);
 }
 
-std::shared_ptr<MergeStrategy>TokenParser<std::shared_ptr<MergeStrategy> >::parse(OptionParser &p) {
+std::shared_ptr<MergeStrategy>TokenParser<std::shared_ptr<MergeStrategy>>::parse(OptionParser &p) {
     return lookup_in_registry_shared<MergeStrategy>(p);
 }
 
-std::shared_ptr<ShrinkStrategy>TokenParser<std::shared_ptr<ShrinkStrategy> >::parse(OptionParser &p) {
+std::shared_ptr<ShrinkStrategy>TokenParser<std::shared_ptr<ShrinkStrategy>>::parse(OptionParser &p) {
     return lookup_in_registry_shared<ShrinkStrategy>(p);
 }
 
-std::shared_ptr<Labels>TokenParser<std::shared_ptr<Labels> >::parse(OptionParser &p) {
+std::shared_ptr<Labels>TokenParser<std::shared_ptr<Labels>>::parse(OptionParser &p) {
     return lookup_in_registry_shared<Labels>(p);
 }
 
@@ -459,7 +459,7 @@ Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
     return lookup_in_registry<Synergy>(p);
 }
 
-std::shared_ptr<AbstractTask> TokenParser<std::shared_ptr<AbstractTask> >::parse(OptionParser &p) {
+std::shared_ptr<AbstractTask> TokenParser<std::shared_ptr<AbstractTask>>::parse(OptionParser &p) {
     return lookup_in_registry_shared<AbstractTask>(p);
 }
 
@@ -468,7 +468,7 @@ ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
 }
 
 template <class T>
-std::vector<T > TokenParser<std::vector<T > >::parse(OptionParser &p) {
+std::vector<T > TokenParser<std::vector<T >>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     std::vector<T> results;
     if (pt->value.compare("list") != 0) {

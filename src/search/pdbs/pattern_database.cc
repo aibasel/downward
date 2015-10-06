@@ -16,9 +16,9 @@
 
 using namespace std;
 
-AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
-                                   const vector<pair<int, int> > &pre_pairs,
-                                   const vector<pair<int, int> > &eff_pairs,
+AbstractOperator::AbstractOperator(const vector<pair<int, int>> &prev_pairs,
+                                   const vector<pair<int, int>> &pre_pairs,
+                                   const vector<pair<int, int>> &eff_pairs,
                                    int cost,
                                    const vector<size_t> &hash_multipliers)
     : cost(cost),
@@ -90,10 +90,10 @@ PatternDatabase::PatternDatabase(
 }
 
 void PatternDatabase::multiply_out(
-    int pos, int cost, vector<pair<int, int> > &prev_pairs,
-    vector<pair<int, int> > &pre_pairs,
-    vector<pair<int, int> > &eff_pairs,
-    const vector<pair<int, int> > &effects_without_pre,
+    int pos, int cost, vector<pair<int, int>> &prev_pairs,
+    vector<pair<int, int>> &pre_pairs,
+    vector<pair<int, int>> &eff_pairs,
+    const vector<pair<int, int>> &effects_without_pre,
     vector<AbstractOperator> &operators) {
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
@@ -132,13 +132,13 @@ void PatternDatabase::build_abstract_operators(
     const std::vector<int> &variable_to_index,
     vector<AbstractOperator> &operators) {
     // All variable value pairs that are a prevail condition
-    vector<pair<int, int> > prev_pairs;
+    vector<pair<int, int>> prev_pairs;
     // All variable value pairs that are a precondition (value != -1)
-    vector<pair<int, int> > pre_pairs;
+    vector<pair<int, int>> pre_pairs;
     // All variable value pairs that are an effect
-    vector<pair<int, int> > eff_pairs;
+    vector<pair<int, int>> eff_pairs;
     // All variable value pairs that are a precondition (value = -1)
-    vector<pair<int, int> > effects_without_pre;
+    vector<pair<int, int>> effects_without_pre;
 
     size_t num_vars = task_proxy.get_variables().size();
     vector<bool> has_precond_and_effect_on_var(num_vars, false);
@@ -202,7 +202,7 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
     }
 
     // compute abstract goal var-val pairs
-    vector<pair<int, int> > abstract_goals;
+    vector<pair<int, int>> abstract_goals;
     for (FactProxy goal : task_proxy.get_goals()) {
         int var_id = goal.get_variable().get_id();
         int val = goal.get_value();
@@ -250,7 +250,7 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
 
 bool PatternDatabase::is_goal_state(
     const size_t state_index,
-    const vector<pair<int, int> > &abstract_goals) const {
+    const vector<pair<int, int>> &abstract_goals) const {
     for (pair<int, int> abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.first;
         int var_id = pattern[pattern_var_id];
