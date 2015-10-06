@@ -45,25 +45,11 @@ const int TransitionSystem::PRUNED_STATE;
 
 TSConstIterator::TSConstIterator(
     const shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
-    const vector<vector<Transition> > &transitions_by_group_id,
+    const vector<vector<Transition>> &transitions_by_group_id,
     bool end)
     : label_equivalence_relation(label_equivalence_relation),
       transitions_by_group_id(transitions_by_group_id),
       current((end ? label_equivalence_relation->get_size() : 0)) {
-    while (current < label_equivalence_relation->get_size()
-           && (*label_equivalence_relation)[current].empty()) {
-        ++current;
-    }
-}
-
-TSConstIterator::TSConstIterator(const TSConstIterator &other)
-    : label_equivalence_relation(other.label_equivalence_relation),
-      transitions_by_group_id(other.transitions_by_group_id),
-      current(other.current) {
-    if (current < label_equivalence_relation->get_size()) {
-        // guard against creating an iterator from an end-iterator.
-        ++current;
-    }
     while (current < label_equivalence_relation->get_size()
            && (*label_equivalence_relation)[current].empty()) {
         ++current;
@@ -106,7 +92,7 @@ TransitionSystem::TransitionSystem(
     const TaskProxy &task_proxy,
     const shared_ptr<Labels> labels,
     int var_id,
-    vector<vector<Transition> > && transitions_by_label)
+    vector<vector<Transition>> &&transitions_by_label)
     : TransitionSystem(task_proxy, labels) {
     /*
       TODO: Once we no longer delegate to another constructor,
@@ -231,7 +217,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
          group1_it != ts1->end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
-        unordered_map<int, vector<int> > buckets;
+        unordered_map<int, vector<int>> buckets;
         for (LabelConstIter label_it = group1_it.begin();
              label_it != group1_it.end(); ++label_it) {
             int label_no = *label_it;
@@ -304,7 +290,7 @@ bool TransitionSystem::is_valid() const {
 
 void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
     assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
-    vector<forward_list<AbstractStateRef> > equivalence_relation;
+    vector<forward_list<AbstractStateRef>> equivalence_relation;
     equivalence_relation.reserve(num_states);
     for (int state = 0; state < num_states; ++state) {
         if (!to_be_pruned_states[state]) {
@@ -348,22 +334,23 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     for (TSConstIterator group1_it = begin();
          group1_it != end(); ++group1_it) {
         const vector<Transition> &transitions1 = group1_it.get_transitions();
-        for (TSConstIterator group2_it = TSConstIterator(group1_it);
+        for (TSConstIterator group2_it = group1_it;
              group2_it != end(); ++group2_it) {
-            assert(group2_it != group1_it);
-            int group2_id = group2_it.get_id();
-            vector<Transition> &transitions2 = get_transitions_for_group_id(group2_id);
-            if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
-                label_equivalence_relation->move_group_into_group(
-                    group2_id, group1_it.get_id());
-                release_vector_memory(transitions2);
+            if (group2_it != group1_it) {
+                int group2_id = group2_it.get_id();
+                vector<Transition> &transitions2 = get_transitions_for_group_id(group2_id);
+                if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
+                    label_equivalence_relation->move_group_into_group(
+                        group2_id, group1_it.get_id());
+                    release_vector_memory(transitions2);
+                }
             }
         }
     }
 }
 
 bool TransitionSystem::apply_abstraction(
-    const vector<forward_list<AbstractStateRef> > &collapsed_groups) {
+    const vector<forward_list<AbstractStateRef>> &collapsed_groups) {
     assert(is_valid());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
@@ -437,7 +424,7 @@ bool TransitionSystem::apply_abstraction(
     return true;
 }
 
-void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> > > &label_mapping,
+void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>> &label_mapping,
                                              bool only_equivalent_labels) {
     assert(distances->are_distances_computed());
     assert(are_transitions_sorted_unique());
@@ -492,8 +479,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int> 
                     release_vector_memory(old_transitions);
                 }
             }
-            int group_id = label_equivalence_relation->add_label_group({new_label_no}
-                                                                       );
+            int group_id = label_equivalence_relation->add_label_group({new_label_no});
             transitions_by_group_id[group_id].assign(
                 collected_transitions.begin(), collected_transitions.end());
         }
@@ -624,6 +610,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
     cout << tag() << "transitions" << endl;
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
+        cout << "group id: " << group_it.get_id() << endl;
         cout << "labels: ";
         for (LabelConstIter label_it = group_it.begin();
              label_it != group_it.end(); ++label_it) {

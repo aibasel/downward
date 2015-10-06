@@ -75,7 +75,7 @@ void read_mutexes(istream &in, vector<MutexGroup> &mutexes,
 }
 
 void read_goal(istream &in, const vector<Variable *> &variables,
-               vector<pair<Variable *, int> > &goals) {
+               vector<pair<Variable *, int>> &goals) {
     check_magic(in, "begin_goal");
     int count;
     in >> count;
@@ -87,7 +87,7 @@ void read_goal(istream &in, const vector<Variable *> &variables,
     check_magic(in, "end_goal");
 }
 
-void dump_goal(const vector<pair<Variable *, int> > &goals) {
+void dump_goal(const vector<pair<Variable *, int>> &goals) {
     cout << "Goal Conditions:" << endl;
     for (const auto &goal : goals)
         cout << "  " << goal.first->get_name() << ": "
@@ -116,7 +116,7 @@ void read_preprocessed_problem_description(istream &in,
                                            vector<Variable *> &variables,
                                            vector<MutexGroup> &mutexes,
                                            State &initial_state,
-                                           vector<pair<Variable *, int> > &goals,
+                                           vector<pair<Variable *, int>> &goals,
                                            vector<Operator> &operators,
                                            vector<Axiom> &axioms) {
     read_and_verify_version(in);
@@ -131,7 +131,7 @@ void read_preprocessed_problem_description(istream &in,
 
 void dump_preprocessed_problem_description(const vector<Variable *> &variables,
                                            const State &initial_state,
-                                           const vector<pair<Variable *, int> > &goals,
+                                           const vector<pair<Variable *, int>> &goals,
                                            const vector<Operator> &operators,
                                            const vector<Axiom> &axioms) {
     cout << "Variables (" << variables.size() << "):" << endl;
@@ -162,7 +162,7 @@ void generate_cpp_input(bool /*solvable_in_poly_time*/,
                         const bool &metric,
                         const vector<MutexGroup> &mutexes,
                         const State &initial_state,
-                        const vector<pair<Variable *, int> > &goals,
+                        const vector<pair<Variable *, int>> &goals,
                         const vector<Operator> &operators,
                         const vector<Axiom> &axioms,
                         const SuccessorGenerator &sg,

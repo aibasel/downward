@@ -18,7 +18,7 @@
 #endif
 
 #include <cassert>
-#include <limits>
+#include <numeric>
 
 using namespace std;
 
@@ -75,6 +75,9 @@ LPVariable::LPVariable(double lower_bound_, double upper_bound_,
 LPVariable::~LPVariable() {
 }
 
+LPSolver::~LPSolver() {
+}
+
 #ifdef USE_LP
 
 LPSolver::LPSolver(LPSolverType solver_type)
@@ -83,9 +86,6 @@ LPSolver::LPSolver(LPSolverType solver_type)
       num_permanent_constraints(0),
       has_temporary_constraints(false) {
     lp_solver = create_lp_solver(solver_type);
-}
-
-LPSolver::~LPSolver() {
 }
 
 void LPSolver::clear_temporary_data() {
@@ -212,6 +212,20 @@ double LPSolver::get_infinity() const {
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
+}
+
+void LPSolver::set_objective_coefficients(const vector<double> &coefficients) {
+    assert(static_cast<int>(coefficients.size()) == get_num_variables());
+    vector<int> indices(coefficients.size());
+    iota(indices.begin(), indices.end(), 0);
+    try {
+        lp_solver->setObjCoeffSet(indices.data(),
+                                  indices.data() + indices.size(),
+                                  coefficients.data());
+    } catch (CoinError &error) {
+        handle_coin_error(error);
+    }
+    is_solved = false;
 }
 
 void LPSolver::set_objective_coefficient(int index, double coefficient) {

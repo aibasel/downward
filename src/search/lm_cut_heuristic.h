@@ -66,8 +66,8 @@ struct RelaxedOperator {
     int unsatisfied_preconditions;
     int h_max_supporter_cost; // h_max_cost of h_max_supporter
     RelaxedProposition *h_max_supporter;
-    RelaxedOperator(std::vector<RelaxedProposition *> && pre,
-                    std::vector<RelaxedProposition *> && eff,
+    RelaxedOperator(std::vector<RelaxedProposition *> &&pre,
+                    std::vector<RelaxedProposition *> &&eff,
                     int op_id, int base)
         : original_op_id(op_id), preconditions(pre), effects(eff), base_cost(base) {
     }
@@ -102,7 +102,7 @@ struct RelaxedProposition {
 
 class LandmarkCutHeuristic : public Heuristic {
     std::vector<RelaxedOperator> relaxed_operators;
-    std::vector<std::vector<RelaxedProposition> > propositions;
+    std::vector<std::vector<RelaxedProposition>> propositions;
     RelaxedProposition artificial_precondition;
     RelaxedProposition artificial_goal;
     int num_propositions;
@@ -111,8 +111,8 @@ class LandmarkCutHeuristic : public Heuristic {
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
     void build_relaxed_operator(const OperatorProxy &op);
-    void add_relaxed_operator(std::vector<RelaxedProposition *> && precondition,
-                              std::vector<RelaxedProposition *> && effects,
+    void add_relaxed_operator(std::vector<RelaxedProposition *> &&precondition,
+                              std::vector<RelaxedProposition *> &&effects,
                               int op_id, int base_cost);
     RelaxedProposition *get_proposition(const FactProxy &fact);
     void setup_exploration_queue();

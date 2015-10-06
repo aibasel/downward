@@ -25,14 +25,14 @@ void read_preprocessed_problem_description(istream &in,
                                            vector<Variable *> &variables,
                                            vector<MutexGroup> &mutexes,
                                            State &initial_state,
-                                           vector<pair<Variable *, int> > &goals,
+                                           vector<pair<Variable *, int>> &goals,
                                            vector<Operator> &operators,
                                            vector<Axiom> &axioms);
 
 //void dump_everything
 void dump_preprocessed_problem_description(const vector<Variable *> &variables,
                                            const State &initial_state,
-                                           const vector<pair<Variable *, int> > &goals,
+                                           const vector<pair<Variable *, int>> &goals,
                                            const vector<Operator> &operators,
                                            const vector<Axiom> &axioms);
 
@@ -43,7 +43,7 @@ void generate_cpp_input(bool causal_graph_acyclic,
                         const bool &metric,
                         const vector<MutexGroup> &mutexes,
                         const State &initial_state,
-                        const vector<pair<Variable *, int> > &goals,
+                        const vector<pair<Variable *, int>> &goals,
                         const vector<Operator> &operators,
                         const vector<Axiom> &axioms,
                         const SuccessorGenerator &sg,

@@ -13,7 +13,8 @@ class EvaluationResult {
     std::vector<const GlobalOperator *> preferred_operators;
     bool count_evaluation;
 public:
-    static const int INFINITE;
+    // "INFINITY" is an ISO C99 macro and "INFINITE" is a macro in windows.h.
+    static const int INFTY;
 
     EvaluationResult();
 
@@ -37,7 +38,7 @@ public:
 
     void set_h_value(int value);
     void set_preferred_operators(
-        std::vector<const GlobalOperator *> && preferred_operators);
+        std::vector<const GlobalOperator *> &&preferred_operators);
     void set_count_evaluation(bool count_eval);
 };
 

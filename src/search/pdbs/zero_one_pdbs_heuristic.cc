@@ -29,8 +29,8 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         operator_costs = op_costs;
     }
 
-    const vector<vector<int> > &pattern_collection(
-        opts.get_list<vector<int> >("patterns"));
+    const vector<vector<int>> &pattern_collection(
+        opts.get_list<vector<int>>("patterns"));
 
     //Timer timer;
     approx_mean_finite_h = 0;
