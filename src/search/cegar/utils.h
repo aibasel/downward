@@ -44,10 +44,6 @@ std::vector<int> get_domain_sizes(TaskProxy task);
 int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
-
-void reserve_memory_padding();
-void release_memory_padding();
-bool memory_padding_is_reserved();
 }
 
 #endif

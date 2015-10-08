@@ -9,7 +9,7 @@
   MB seem to be unnecessarily large. Reserving around 75 MB seems to be
   a good compromise.
 */
-void reserve_continuing_memory_padding(int memory_in_mb);
+void reserve_continuing_memory_padding(int memory_in_mb = 75);
 void release_continuing_memory_padding();
 bool continuing_memory_padding_is_reserved();
 

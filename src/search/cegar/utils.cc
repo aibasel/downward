@@ -4,30 +4,16 @@
 #include "../option_parser.h"
 #include "../task_proxy.h"
 #include "../task_tools.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
 #include <unordered_map>
-#include <vector>
 
 using namespace std;
 
+
 namespace cegar {
 bool DEBUG = false;
-
-/*
-  Reserve some memory that we can release once we hit the memory limit. Due to
-  memory fragmentation the planner is often killed during the search if we
-  reserve <= 50 MB. Amounts >= 100 MB are not necessary and only limit the size
-  of the abstractions. Reserving 75 MB seems to be a good compromise.
-*/
-static const int MEMORY_PADDING_MB = 75;
-
-static char *cegar_memory_padding = nullptr;
-
-// Save previous out-of-memory handler.
-static void (*global_out_of_memory_handler)(void) = nullptr;
 
 shared_ptr<AdditiveHeuristic> get_additive_heuristic(shared_ptr<AbstractTask> task) {
     Options opts;
@@ -117,31 +103,5 @@ int get_post(OperatorProxy op, int var_id) {
     if (eff != UNDEFINED)
         return eff;
     return get_pre(op, var_id);
-}
-
-void continuing_out_of_memory_handler() {
-    release_memory_padding();
-    cout << "Failed to allocate memory for CEGAR abstraction. "
-         << "Released memory padding and will stop refinement now." << endl;
-}
-
-void reserve_memory_padding() {
-    assert(!cegar_memory_padding);
-    if (DEBUG)
-        cout << "Reserving " << MEMORY_PADDING_MB << " MB of memory padding." << endl;
-    cegar_memory_padding = new char[MEMORY_PADDING_MB * 1024 * 1024];
-    global_out_of_memory_handler = set_new_handler(continuing_out_of_memory_handler);
-}
-
-void release_memory_padding() {
-    assert(cegar_memory_padding);
-    delete[] cegar_memory_padding;
-    cegar_memory_padding = nullptr;
-    assert(global_out_of_memory_handler);
-    set_new_handler(global_out_of_memory_handler);
-}
-
-bool memory_padding_is_reserved() {
-    return cegar_memory_padding;
 }
 }
