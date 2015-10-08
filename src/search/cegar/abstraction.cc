@@ -114,7 +114,7 @@ void Abstraction::create_trivial_abstraction() {
 }
 
 bool Abstraction::may_keep_refining() const {
-    return continuing_memory_padding_is_reserved() &&
+    return extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
            !timer.is_expired();
 }
@@ -187,7 +187,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         cout << "  Initial abstract state: " << *abs_state << endl;
 
     for (auto &step : solution) {
-        if (!continuing_memory_padding_is_reserved())
+        if (!extra_memory_padding_is_reserved())
             break;
         const OperatorProxy op = step.first;
         AbstractState *next_abs_state = step.second;
