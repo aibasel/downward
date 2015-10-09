@@ -54,7 +54,7 @@ set(CORE_SOURCES
 
         open_lists/alternation_open_list.cc
         open_lists/bucket_open_list.cc
-        open_lists/epsilon_greedy_open_list.h
+        open_lists/epsilon_greedy_open_list.cc
         open_lists/open_list.cc
         open_lists/pareto_open_list.cc
         open_lists/standard_scalar_open_list.cc
