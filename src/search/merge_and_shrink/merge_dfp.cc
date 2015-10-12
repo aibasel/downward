@@ -51,12 +51,11 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     label_ranks.resize(num_labels, -1);
 
-    const list<LabelGroup> &grouped_labels = transition_system->get_grouped_labels();
-    for (LabelGroupConstIter group_it = grouped_labels.begin();
-         group_it != grouped_labels.end(); ++group_it) {
+    for (TSConstIterator group_it = transition_system->begin();
+         group_it != transition_system->end(); ++group_it) {
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
-        const vector<Transition> &transitions = group_it->get_transitions();
+        const vector<Transition> &transitions = group_it.get_transitions();
         bool group_relevant = false;
         if (static_cast<int>(transitions.size()) == transition_system->get_size()) {
             /*
@@ -80,8 +79,8 @@ void MergeDFP::compute_label_ranks(const TransitionSystem *transition_system,
                 label_rank = min(label_rank, transition_system->get_goal_distance(t.target));
             }
         }
-        for (LabelConstIter label_it = group_it->begin();
-             label_it != group_it->end(); ++label_it) {
+        for (LabelConstIter label_it = group_it.begin();
+             label_it != group_it.end(); ++label_it) {
             int label_no = *label_it;
             label_ranks[label_no] = label_rank;
         }
@@ -94,7 +93,7 @@ pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transiti
 
     vector<const TransitionSystem *> sorted_transition_systems;
     vector<int> indices_mapping;
-    vector<vector<int> > transition_system_label_ranks;
+    vector<vector<int>> transition_system_label_ranks;
     /*
       Precompute a vector sorted_transition_systems which contains all exisiting
       transition systems from all_transition_systems in the desired order and

@@ -32,14 +32,14 @@ size_t hash_sequence(const Sequence &data, size_t length) {
 
 namespace std {
 template<typename T>
-struct hash<std::vector<T> > {
+struct hash<std::vector<T>> {
     size_t operator()(const std::vector<T> &vec) const {
         return ::hash_sequence(vec, vec.size());
     }
 };
 
 template<typename TA, typename TB>
-struct hash<std::pair<TA, TB> > {
+struct hash<std::pair<TA, TB>> {
     size_t operator()(const std::pair<TA, TB> &pair) const {
         size_t hash = 0;
         hash_combine(hash, pair.first);

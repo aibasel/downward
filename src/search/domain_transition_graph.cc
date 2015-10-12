@@ -86,7 +86,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             int precond_count;
             in >> precond_count;
 
-            vector<pair<int, int> > precond_pairs; // Needed to build up cea_effect.
+            vector<pair<int, int>> precond_pairs;  // Needed to build up cea_effect.
             for (int j = 0; j < precond_count; ++j) {
                 int global_var, val;
                 in >> global_var >> val;
@@ -146,7 +146,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                     continue;
                 }
 
-                vector<pair<int, int> > triggercond_pairs;
+                vector<pair<int, int>> triggercond_pairs;
                 if (pre != -1)
                     triggercond_pairs.push_back(make_pair(var_no, pre));
 
@@ -209,7 +209,7 @@ void ValueTransition::simplify_labels(
       Put the element into the new labels list iff this is the case.
      */
 
-    typedef vector<pair<int, int> > HashKey;
+    typedef vector<pair<int, int>> HashKey;
     typedef unordered_map<HashKey, int> HashMap;
     HashMap label_index;
     label_index.reserve(label_vec.size());

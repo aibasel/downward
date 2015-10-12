@@ -10,7 +10,7 @@
 using namespace std;
 
 enum state_space_sample_t {Probe = 0, ProbAStar = 1, PDB = 2};
-typedef map<GlobalState, vector<int> > sample_t;
+typedef map<GlobalState, vector<int>> sample_t;
 
 class StateSpaceSample {
 protected:

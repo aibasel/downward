@@ -8,6 +8,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
+#include "../sampling.h"
 #include "../task_tools.h"
 #include "../timer.h"
 #include "../utilities.h"
@@ -19,7 +20,6 @@
 #include <exception>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -49,7 +49,7 @@ PatternGenerationHaslum::~PatternGenerationHaslum() {
 }
 
 void PatternGenerationHaslum::generate_candidate_patterns(
-    const PatternDatabase *pdb, vector<vector<int> > &candidate_patterns) {
+    const PatternDatabase *pdb, vector<vector<int>> &candidate_patterns) {
     const CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const vector<int> &pattern = pdb->get_pattern();
     int pdb_size = pdb->get_size();
@@ -80,7 +80,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(
 }
 
 size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
-    set<vector<int> > &generated_patterns, vector<vector<int> > &new_candidates,
+    set<vector<int>> &generated_patterns, vector<vector<int>> &new_candidates,
     vector<PatternDatabase *> &candidate_pdbs) const {
     /*
       For the new candidate patterns check whether they already have been
@@ -99,62 +99,20 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
     return max_pdb_size;
 }
 
-void PatternGenerationHaslum::sample_states(vector<State> &samples,
-                                            double average_operator_cost) {
-    const State &initial_state = task_proxy.get_initial_state();
-    int h = current_heuristic->compute_heuristic(initial_state);
-    int n;
-    if (h == 0) {
-        n = 10;
-    } else {
-        /*
-          Convert heuristic value into an approximate number of actions
-          (does nothing on unit-cost problems).
-          average_operator_cost cannot equal 0, as in this case, all operators
-          must have costs of 0 and in this case the if-clause triggers.
-        */
-        int solution_steps_estimate = int((h / average_operator_cost) + 0.5);
-        n = 4 * solution_steps_estimate;
-    }
-    double p = 0.5;
-    /* The expected walk length is np = 2 * estimated number of solution steps.
-       (We multiply by 2 because the heuristic is underestimating.) */
+void PatternGenerationHaslum::sample_states(
+    vector<State> &samples, double average_operator_cost) {
+    int init_h = current_heuristic->compute_heuristic(
+        task_proxy.get_initial_state());
 
-    samples.reserve(num_samples);
-    for (int i = 0; i < num_samples; ++i) {
-        if (hill_climbing_timer->is_expired())
-            throw HillClimbingTimeout();
-
-        // Calculate length of random walk according to a binomial distribution.
-        int length = 0;
-        for (int j = 0; j < n; ++j) {
-            double random = g_rng(); // [0..1)
-            if (random < p)
-                ++length;
-        }
-
-        // Sample one state with a random walk of length length.
-        State current_state(initial_state);
-        vector<OperatorProxy> applicable_ops;
-        for (int j = 0; j < length; ++j) {
-            applicable_ops.clear();
-            successor_generator.generate_applicable_ops(current_state,
-                                                        applicable_ops);
-            // If there are no applicable operators, do not walk further.
-            if (applicable_ops.empty()) {
-                break;
-            } else {
-                const OperatorProxy &random_op = *g_rng.choose(applicable_ops);
-                assert(is_applicable(random_op, current_state));
-                current_state = current_state.get_successor(random_op);
-                /* If current state is a dead end, then restart the random walk
-                   with the initial state. */
-                if (current_heuristic->is_dead_end(current_state))
-                    current_state = State(initial_state);
-            }
-        }
-        // The last state of the random walk is used as a sample.
-        samples.push_back(current_state);
+    try {
+        samples = sample_states_with_random_walks(
+            task_proxy, successor_generator, num_samples, init_h, average_operator_cost,
+            [this](const State &state) {
+            return current_heuristic->is_dead_end(state);
+        },
+            hill_climbing_timer);
+    } catch (SamplingTimeout &) {
+        throw HillClimbingTimeout();
     }
 }
 
@@ -205,7 +163,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
           see above) earlier.
         */
         int count = 0;
-        vector<vector<PatternDatabase *> > max_additive_subsets;
+        vector<vector<PatternDatabase *>> max_additive_subsets;
         current_heuristic->get_max_additive_subsets(
             pdb->get_pattern(), max_additive_subsets);
         for (State &sample : samples) {
@@ -227,7 +185,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
 bool PatternGenerationHaslum::is_heuristic_improved(
     PatternDatabase *pdb, const State &sample,
-    const vector<vector<PatternDatabase *> > &max_additive_subsets) {
+    const vector<vector<PatternDatabase *>> &max_additive_subsets) {
     // h_pattern: h-value of the new pattern
     int h_pattern = pdb->get_value(sample);
 
@@ -235,21 +193,20 @@ bool PatternGenerationHaslum::is_heuristic_improved(
         return true;
     }
 
-    /*
-      TODO: we still compute the value of each pdb twice:
-      once inside current_heuristic and once as part of max_additive_subsets.
-    */
-    unordered_map<PatternDatabase *, int> pdb_h_values;
-    pdb_h_values.reserve(current_heuristic->get_pattern_databases().size());
-
     // h_collection: h-value of the current collection heuristic
     int h_collection = current_heuristic->compute_heuristic(sample);
+    if (h_collection == -1)
+        return false;
+
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
         for (PatternDatabase *additive_pdb : subset) {
-            if (!pdb_h_values.count(additive_pdb))
-                pdb_h_values[additive_pdb] = additive_pdb->get_value(sample);
-            h_subset += pdb_h_values[additive_pdb];
+            /* Experiments showed that it is faster to recompute the
+               h values than to cache them in an unordered_map. */
+            int h = additive_pdb->get_value(sample);
+            if (h == numeric_limits<int>::max())
+                return false;
+            h_subset += h;
         }
         if (h_pattern + h_subset > h_collection) {
             /*
@@ -264,13 +221,13 @@ bool PatternGenerationHaslum::is_heuristic_improved(
 
 void PatternGenerationHaslum::hill_climbing(
     double average_operator_cost,
-    vector<vector<int> > &initial_candidate_patterns) {
+    vector<vector<int>> &initial_candidate_patterns) {
     hill_climbing_timer = new CountdownTimer(max_time);
     // Candidate patterns generated so far (used to avoid duplicates).
-    set<vector<int> > generated_patterns;
+    set<vector<int>> generated_patterns;
     /* Set of new pattern candidates from the last call to
        generate_candidate_patterns */
-    vector<vector<int> > &new_candidates = initial_candidate_patterns;
+    vector<vector<int>> &new_candidates = initial_candidate_patterns;
     // All candidate patterns are converted into pdbs once and stored
     vector<PatternDatabase *> candidate_pdbs;
     int num_iterations = 0;
@@ -357,24 +314,20 @@ void PatternGenerationHaslum::hill_climbing(
 }
 
 void PatternGenerationHaslum::initialize() {
-    // Calculate average operator costs.
-    double average_operator_cost = 0;
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        average_operator_cost += op.get_cost();
-    }
-    average_operator_cost /= task_proxy.get_operators().size();
+    double average_operator_cost = get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
     // Generate initial collection: a pdb for each goal variable.
-    vector<vector<int> > initial_pattern_collection;
+    vector<vector<int>> initial_pattern_collection;
     for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }
     Options opts;
-    opts.set<shared_ptr<AbstractTask> >("transform", task);
-    opts.set<int>("cost_type", cost_type);
-    opts.set<vector<vector<int> > >("patterns", initial_pattern_collection);
+    opts.set<shared_ptr<AbstractTask>>("transform", task);
+    // Since we pass a task transformation, cost_type won't be used.
+    opts.set<int>("cost_type", NORMAL);
+    opts.set<vector<vector<int>>>("patterns", initial_pattern_collection);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
 
     State initial_state = task_proxy.get_initial_state();
@@ -383,7 +336,7 @@ void PatternGenerationHaslum::initialize() {
 
     /* Generate initial candidate patterns (based on each pattern from
        the initial collection). */
-    vector<vector<int> > initial_candidate_patterns;
+    vector<vector<int>> initial_candidate_patterns;
     for (const PatternDatabase *current_pdb :
          current_heuristic->get_pattern_databases()) {
         generate_candidate_patterns(current_pdb, initial_candidate_patterns);

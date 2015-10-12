@@ -5,7 +5,6 @@
 #include "pattern_database.h"
 #include "util.h"
 
-#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../timer.h"
@@ -13,15 +12,14 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <unordered_map>
 #include <vector>
 
 using namespace std;
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
     : Heuristic(opts) {
-    const vector<vector<int> > &pattern_collection(
-        opts.get_list<vector<int> >("patterns"));
+    const vector<vector<int>> &pattern_collection(
+        opts.get_list<vector<int>>("patterns"));
     Timer timer;
     size = 0;
     pattern_databases.reserve(pattern_collection.size());
@@ -58,7 +56,7 @@ bool CanonicalPDBsHeuristic::are_patterns_additive(
 void CanonicalPDBsHeuristic::compute_max_cliques() {
     // Initialize compatibility graph.
     max_cliques.clear();
-    vector<vector<int> > cgraph;
+    vector<vector<int>> cgraph;
     cgraph.resize(pattern_databases.size());
 
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
@@ -73,7 +71,7 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
         }
     }
 
-    vector<vector<int> > cgraph_max_cliques;
+    vector<vector<int>> cgraph_max_cliques;
     ::compute_max_cliques(cgraph, cgraph_max_cliques);
     max_cliques.reserve(cgraph_max_cliques.size());
 
@@ -116,9 +114,9 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
     }
 
     cout << "Pruned " << num_cliques - max_cliques.size() <<
-    " of " << num_cliques << " cliques" << endl;
+        " of " << num_cliques << " cliques" << endl;
     cout << "Pruned " << num_patterns - pattern_databases.size() <<
-    " of " << num_patterns << " PDBs" << endl;
+        " of " << num_patterns << " PDBs" << endl;
 
     cout << "Dominance pruning took " << timer << endl;
 }
@@ -132,24 +130,19 @@ int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
-    int max_h = 0;
-    assert(!max_cliques.empty());
     // If we have an empty collection, then max_cliques = { \emptyset }.
-
-    unordered_map<PatternDatabase *, int> pdb_h_values;
-    pdb_h_values.reserve(pattern_databases.size());
-
-    for (PatternDatabase *pdb : pattern_databases) {
-        int h = pdb->get_value(state);
-        if (h == numeric_limits<int>::max())
-            return DEAD_END;
-        pdb_h_values[pdb] = h;
-    }
-
+    assert(!max_cliques.empty());
+    int max_h = 0;
     for (const vector<PatternDatabase *> &clique : max_cliques) {
         int clique_h = 0;
-        for (PatternDatabase *pdb : clique)
-            clique_h += pdb_h_values[pdb];
+        for (PatternDatabase *pdb : clique) {
+            /* Experiments showed that it is faster to recompute the
+               h values than to cache them in an unordered_map. */
+            int h = pdb->get_value(state);
+            if (h == numeric_limits<int>::max())
+                return DEAD_END;
+            clique_h += h;
+        }
         max_h = max(max_h, clique_h);
     }
     return max_h;
@@ -163,7 +156,7 @@ void CanonicalPDBsHeuristic::add_pattern(const vector<int> &pattern) {
 
 void CanonicalPDBsHeuristic::get_max_additive_subsets(
     const vector<int> &new_pattern,
-    vector<vector<PatternDatabase *> > &max_additive_subsets) {
+    vector<vector<PatternDatabase *>> &max_additive_subsets) {
     /*
       We compute additive pattern sets S with the property that we could
       add the new pattern P to S and still have an additive pattern set.
@@ -238,7 +231,7 @@ bool CanonicalPDBsHeuristic::is_dead_end(const State &state) const {
 }
 
 void CanonicalPDBsHeuristic::dump_cgraph(
-    const vector<vector<int> > &cgraph) const {
+    const vector<vector<int>> &cgraph) const {
     cout << "Compatibility graph" << endl;
     for (size_t i = 0; i < cgraph.size(); ++i) {
         cout << i << " adjacent to: " << cgraph[i] << endl;

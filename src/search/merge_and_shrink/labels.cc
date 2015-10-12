@@ -36,7 +36,8 @@ public:
 };
 
 Labels::Labels(const Options &options)
-    : lr_before_shrinking(options.get<bool>("before_shrinking")),
+    : max_size(-1),
+      lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(LabelReductionMethod(options.get_enum("method"))),
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
@@ -50,8 +51,11 @@ void Labels::initialize(const TaskProxy &task_proxy) {
     assert(!initialized());
 
     // Reserve memory for labels
-    if (!task_proxy.get_operators().empty()) {
-        labels.reserve(task_proxy.get_operators().size() * 2 - 1);
+    size_t num_ops = task_proxy.get_operators().size();
+    max_size = 0;
+    if (num_ops > 0) {
+        max_size = num_ops * 2 - 1;
+        labels.reserve(max_size);
     }
 
     // Compute the transition system order
@@ -79,7 +83,7 @@ void Labels::add_label(int cost) {
 void Labels::notify_transition_systems(
     int ts_index,
     const vector<TransitionSystem *> &all_transition_systems,
-    const vector<pair<int, vector<int> > > &label_mapping) const {
+    const vector<pair<int, vector<int>>> &label_mapping) const {
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         if (all_transition_systems[i]) {
             all_transition_systems[i]->apply_label_reduction(label_mapping,
@@ -89,13 +93,13 @@ void Labels::notify_transition_systems(
 }
 
 bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
-                                   vector<pair<int, vector<int> > > &label_mapping) {
+                                   vector<pair<int, vector<int>>> &label_mapping) {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (BlockListConstIter group_it = relation->begin();
          group_it != relation->end(); ++group_it) {
         const Block &block = *group_it;
-        unordered_map<int, vector<int> > equivalent_label_nos;
+        unordered_map<int, vector<int>> equivalent_label_nos;
         for (ElementListConstIter label_it = block.begin();
              label_it != block.end(); ++label_it) {
             assert(*label_it < static_cast<int>(labels.size()));
@@ -145,13 +149,13 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
       iff l and l' are locally equivalent in all transition systems
       T' \neq T. (They may or may not be locally equivalent in T.)
     */
-    TransitionSystem *transition_system = all_transition_systems[ts_index];
-    assert(transition_system);
+    TransitionSystem *fixed_transition_system = all_transition_systems[ts_index];
+    assert(fixed_transition_system);
     //cout << transition_system->tag() << "compute combinable labels" << endl;
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
-    vector<pair<int, int> > annotated_labels;
+    vector<pair<int, int>> annotated_labels;
     annotated_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
         if (labels[label_no]) {
@@ -163,13 +167,12 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
 
     for (size_t i = 0; i < all_transition_systems.size(); ++i) {
         TransitionSystem *ts = all_transition_systems[i];
-        if (!ts || ts == transition_system) {
+        if (!ts || ts == fixed_transition_system) {
             continue;
         }
-        const list<LabelGroup> &grouped_labels = ts->get_grouped_labels();
-        for (LabelGroupConstIter group_it = grouped_labels.begin();
-             group_it != grouped_labels.end(); ++group_it) {
-            relation->refine(group_it->begin(), group_it->end());
+        for (TSConstIterator group_it = ts->begin();
+             group_it != ts->end(); ++group_it) {
+            relation->refine(group_it.begin(), group_it.end());
         }
     }
     return relation;
@@ -195,7 +198,7 @@ void Labels::reduce(pair<int, int> next_merge,
         EquivalenceRelation *relation = compute_combinable_equivalence_relation(
             next_merge.first,
             all_transition_systems);
-        vector<pair<int, vector<int> > > label_mapping;
+        vector<pair<int, vector<int>>> label_mapping;
         bool have_reduced = apply_label_reduction(relation, label_mapping);
         if (have_reduced) {
             notify_transition_systems(next_merge.first,
@@ -244,7 +247,7 @@ void Labels::reduce(pair<int, int> next_merge,
         TransitionSystem *current_transition_system = all_transition_systems[ts_index];
 
         bool have_reduced = false;
-        vector<pair<int, vector<int> > > label_mapping;
+        vector<pair<int, vector<int>>> label_mapping;
         if (current_transition_system != 0) {
             EquivalenceRelation *relation =
                 compute_combinable_equivalence_relation(ts_index,

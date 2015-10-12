@@ -56,7 +56,14 @@ def _run_uncrustify(config_file, filenames):
                "--suffix", SUFFIX] + inputs
         returncode = _call_subprocesses("uncrustify", cmd)
         if returncode:
-            raise util.Abort("uncrustify error: %d" % returncode)
+            uncrustify_version = subprocess.check_output(
+                ["uncrustify", "--version"]).strip()
+            raise util.Abort(
+                "uncrustify exited with {returncode}. Are you using an "
+                "outdated version? We require uncrustify 0.61, you "
+                "have {uncrustify_version}. Please consult "
+                "www.fast-downward.org/ForDevelopers/Uncrustify".format(
+                **locals()))
 
 
 def _run_diff(oldfile, newfile):

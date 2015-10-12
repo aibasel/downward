@@ -172,7 +172,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(int switch_var_no,
         Variable *switch_var = varOrder[switch_var_no];
         int number_of_children = switch_var->get_range();
 
-        vector<list<int> > ops_for_val_indices(number_of_children);
+        vector<list<int>> ops_for_val_indices(number_of_children);
         list<int> default_ops_indices;
         list<int> applicable_ops_indices;
 
