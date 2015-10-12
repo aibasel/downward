@@ -9,8 +9,9 @@ class Options;
 
 #include "global_operator.h"
 #include "operator_cost.h"
-#include "search_space.h"
 #include "search_progress.h"
+#include "search_space.h"
+#include "search_statistics.h"
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
@@ -24,6 +25,7 @@ private:
 protected:
     SearchSpace search_space;
     SearchProgress search_progress;
+    SearchStatistics statistics;
     int bound;
     OperatorCost cost_type;
     double max_time;
@@ -37,17 +39,21 @@ protected:
 public:
     SearchEngine(const Options &opts);
     virtual ~SearchEngine();
-    virtual void statistics() const;
-    virtual void heuristic_statistics() const {}
+    virtual void print_statistics() const;
     virtual void save_plan_if_necessary() const;
     bool found_solution() const;
     SearchStatus get_status() const;
     const Plan &get_plan() const;
     void search();
-    SearchProgress get_search_progress() const {return search_progress; }
+    const SearchStatistics &get_statistics() const {return statistics; }
     void set_bound(int b) {bound = b; }
     int get_bound() {return bound; }
     static void add_options_to_parser(OptionParser &parser);
 };
+
+/*
+  Print heuristic values of all heuristics evaluated in the evaluation context.
+*/
+void print_initial_h_values(const EvaluationContext &eval_context);
 
 #endif

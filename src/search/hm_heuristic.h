@@ -1,8 +1,9 @@
 #ifndef HM_HEURISTIC_H
 #define HM_HEURISTIC_H
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,7 @@
 #include "heuristic.h"
 
 
-typedef std::vector<std::pair<int, int> > Tuple;
+typedef std::vector<std::pair<int, int>> Tuple;
 
 class Options;
 

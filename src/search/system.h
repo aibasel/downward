@@ -8,18 +8,21 @@
 
 #if defined(__CYGWIN32__)
 #define OPERATING_SYSTEM CYGWIN
-#elif defined(__WINNT__)
+#include "system_windows.h"
+#elif defined(_WIN32)
 #define OPERATING_SYSTEM WINDOWS
+#include "system_windows.h"
 #elif defined(__APPLE__)
 #define OPERATING_SYSTEM OSX
+#include "system_unix.h"
 #else
 #define OPERATING_SYSTEM LINUX
+#include "system_unix.h"
 #endif
 
-double current_system_clock();
-double current_system_clock_exact();
 int get_peak_memory_in_kb();
 extern void register_event_handlers();
 void report_exit_code_reentrant(int exitcode);
+int get_process_id();
 
 #endif

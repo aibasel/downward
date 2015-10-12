@@ -9,11 +9,11 @@ class Options;
 
 class SumEvaluator : public CombiningEvaluator {
 protected:
-    virtual int combine_values(const std::vector<int> &values);
+    virtual int combine_values(const std::vector<int> &values) override;
 public:
-    SumEvaluator(const Options &opts);
-    SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
-    ~SumEvaluator();
+    explicit SumEvaluator(const Options &opts);
+    explicit SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
+    virtual ~SumEvaluator() override;
 };
 
 #endif

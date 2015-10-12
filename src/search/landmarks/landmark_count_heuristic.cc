@@ -1,14 +1,14 @@
 #include "landmark_count_heuristic.h"
 
+#include "../lp_solver.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 
 #include <cmath>
-#include <ext/hash_map>
 #include <limits>
+#include <unordered_map>
 
 using namespace std;
-using namespace __gnu_cxx;
 
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
@@ -35,16 +35,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             exit_with(EXIT_UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
-#ifdef USE_LP
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
                 lgraph,
                 OperatorCost(opts.get_enum("cost_type")),
                 LPSolverType(opts.get_enum("lpsolver")));
-#else
-            cerr << "You must build the planner with the USE_LP symbol defined." << endl
-                 << "If you already did, try \"make clean\" before rebuilding with USE_LP=1." << endl;
-            exit_with(EXIT_INPUT_ERROR);
-#endif
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(
                 lgraph, opts.get<bool>("alm"),
@@ -61,7 +55,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
     assert(exploration != 0);
     // Set additional goals for FF exploration
-    vector<pair<int, int> > lm_leaves;
+    vector<pair<int, int>> lm_leaves;
     LandmarkSet result;
     const vector<bool> &reached_lms_v = lm_status_manager.get_reached_landmarks(state);
     convert_lms(result, reached_lms_v);
@@ -88,7 +82,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
 
     if (use_cost_sharing) {
         double h_val = lm_cost_assignment->cost_sharing_h_value();
-        h = ceil(h_val - epsilon);
+        h = static_cast<int>(ceil(h_val - epsilon));
     } else {
         lgraph.count_costs();
 
@@ -133,7 +127,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
         set_exploration_goals(state);
 
         // Use FF to plan to a landmark leaf
-        vector<pair<int, int> > leaves;
+        vector<pair<int, int>> leaves;
         collect_lm_leaves(ff_search_disjunctive_lms, reached_lms, leaves);
         if (!exploration->plan_for_disj(leaves, state)) {
             exploration->exported_ops.clear();
@@ -149,7 +143,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
 }
 
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
-                                               LandmarkSet &reached_lms, vector<pair<int, int> > &leaves) {
+                                               LandmarkSet &reached_lms, vector<pair<int, int>> &leaves) {
     set<LandmarkNode *>::const_iterator it;
     for (it = lgraph.get_nodes().begin(); it != lgraph.get_nodes().end(); ++it) {
         LandmarkNode *node_p = *it;
@@ -170,12 +164,8 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
                                                          const LandmarkSet &reached) const {
-    const hash_map<LandmarkNode *, edge_type, hash_pointer> &parents =
-        node.parents;
-    for (hash_map<LandmarkNode *, edge_type, hash_pointer>::const_iterator
-         parent_it = parents.begin(); parent_it != parents.end(); ++parent_it) {
-        LandmarkNode &parent = *(parent_it->first);
-        if (reached.find(&parent) == reached.end()) {
+    for (const auto &parent : node.parents) {
+        if (reached.count(parent.first) == 0) {
             return true;
         }
     }

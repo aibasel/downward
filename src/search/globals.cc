@@ -8,23 +8,22 @@
 #include "heuristic.h"
 #include "int_packer.h"
 #include "rng.h"
+#include "root_task.h"
 #include "state_registry.h"
 #include "successor_generator.h"
 #include "timer.h"
 #include "utilities.h"
 
 #include <cstdlib>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <limits>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-using namespace std;
 
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+using namespace std;
 
 static const int PRE_FILE_VERSION = 3;
 
@@ -35,7 +34,7 @@ static const int PRE_FILE_VERSION = 3;
 //       are_mutex, which is at least better than exposing the data
 //       structure globally.)
 
-static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
+static vector<vector<set<pair<int, int>>>> g_inconsistent_facts;
 
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -57,13 +56,18 @@ int calculate_plan_cost(const vector<const GlobalOperator *> &plan) {
     return plan_cost;
 }
 
-void save_plan(const vector<const GlobalOperator *> &plan) {
+void save_plan(const vector<const GlobalOperator *> &plan,
+               bool generates_multiple_plan_files) {
     // TODO: Refactor: this is only used by the SearchEngine classes
     //       and hence should maybe be moved into the SearchEngine.
     ostringstream filename;
     filename << g_plan_filename;
-    if (g_plan_counter != 0)
-        filename << "." << g_plan_counter;
+    int plan_number = g_num_previously_generated_plans + 1;
+    if (generates_multiple_plan_files || g_is_part_of_anytime_portfolio) {
+        filename << "." << plan_number;
+    } else {
+        assert(plan_number == 1);
+    }
     ofstream outfile(filename.str());
     for (size_t i = 0; i < plan.size(); ++i) {
         cout << plan[i]->get_name() << " (" << plan[i]->get_cost() << ")" << endl;
@@ -75,16 +79,7 @@ void save_plan(const vector<const GlobalOperator *> &plan) {
     outfile.close();
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
-    ++g_plan_counter;
-}
-
-bool peek_magic(istream &in, string magic) {
-    string word;
-    in >> word;
-    bool result = (word == magic);
-    for (int i = word.size() - 1; i >= 0; --i)
-        in.putback(word[i]);
-    return result;
+    ++g_num_previously_generated_plans;
 }
 
 void check_magic(istream &in, string magic) {
@@ -162,7 +157,7 @@ void read_mutexes(istream &in) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
         in >> num_facts;
-        vector<pair<int, int> > invariant_group;
+        vector<pair<int, int>> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
             int var, val;
@@ -250,33 +245,42 @@ void read_everything(istream &in) {
     read_goal(in);
     read_operators(in);
     read_axioms(in);
+
+    // Ignore successor generator from preprocessor output.
     check_magic(in, "begin_SG");
-    g_successor_generator = read_successor_generator(in);
-    check_magic(in, "end_SG");
+    string dummy_string = "";
+    while (dummy_string != "end_SG") {
+        getline(in, dummy_string);
+    }
+
     DomainTransitionGraph::read_all(in);
     check_magic(in, "begin_CG"); // ignore everything from here
 
     cout << "done reading input! [t=" << g_timer << "]" << endl;
 
-    // NOTE: causal graph is computed from the problem specification,
-    // so must be built after the problem has been read in.
-
-    cout << "building causal graph..." << flush;
-    g_causal_graph = new CausalGraph;
-    cout << "done! [t=" << g_timer << "]" << endl;
-
     cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
-    cout << "Variables: " << g_variable_domain.size() << endl;
-    cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() *
-    g_state_packer->get_bin_size_in_bytes() << endl;
     cout << "done! [t=" << g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
     g_state_registry = new StateRegistry;
+
+    int num_vars = g_variable_domain.size();
+    int num_facts = 0;
+    for (int var = 0; var < num_vars; ++var)
+        num_facts += g_variable_domain[var];
+
+    cout << "Variables: " << num_vars << endl;
+    cout << "Facts: " << num_facts << endl;
+    cout << "Bytes per state: "
+         << g_state_packer->get_num_bins() *
+        g_state_packer->get_bin_size_in_bytes() << endl;
+
+    cout << "Building successor generator..." << flush;
+    g_successor_generator = new SuccessorGenerator(g_root_task());
+    cout << "done! [t=" << g_timer << "]" << endl;
 
     cout << "done initalizing global data [t=" << g_timer << "]" << endl;
 }
@@ -297,8 +301,6 @@ void dump_everything() {
     initial_state.dump_fdr();
     dump_goal();
     /*
-    cout << "Successor Generator:" << endl;
-    g_successor_generator->dump();
     for(int i = 0; i < g_variable_domain.size(); ++i)
       g_transition_graphs[i]->dump();
     */
@@ -361,26 +363,31 @@ const GlobalState &g_initial_state() {
     return g_state_registry->get_initial_state();
 }
 
+const shared_ptr<AbstractTask> g_root_task() {
+    static shared_ptr<AbstractTask> root_task = make_shared<RootTask>();
+    return root_task;
+}
+
 bool g_use_metric;
 int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
 vector<string> g_variable_name;
 vector<int> g_variable_domain;
-vector<vector<string> > g_fact_names;
+vector<vector<string>> g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
 IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
-vector<pair<int, int> > g_goal;
+vector<pair<int, int>> g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 vector<DomainTransitionGraph *> g_transition_graphs;
-CausalGraph *g_causal_graph;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
-int g_plan_counter = 0;
+int g_num_previously_generated_plans = 0;
+bool g_is_part_of_anytime_portfolio = false;
 RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;

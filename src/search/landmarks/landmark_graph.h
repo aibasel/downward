@@ -1,18 +1,18 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
-#include <vector>
-#include <set>
-#include <map>
-#include <ext/hash_map>
-#include <list>
-#include <ext/hash_set>
 #include <cassert>
+#include <list>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "exploration.h"
-#include "landmark_types.h"
 #include "../global_operator.h"
 #include "../option_parser.h"
+#include "../utilities_hash.h"
 
 enum edge_type {
     /* NOTE: The code relies on the fact that larger numbers are
@@ -44,8 +44,8 @@ public:
     std::vector<int> vals;
     bool disjunctive;
     bool conjunctive;
-    __gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer> parents;
-    __gnu_cxx::hash_map<LandmarkNode *, edge_type, hash_pointer> children;
+    std::unordered_map<LandmarkNode *, edge_type> parents;
+    std::unordered_map<LandmarkNode *, edge_type> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;
@@ -53,7 +53,7 @@ public:
     landmark_status status;
     bool is_derived;
 
-    __gnu_cxx::hash_set<std::pair<int, int>, hash_int_pair> forward_orders;
+    std::unordered_set<std::pair<int, int>> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
@@ -118,7 +118,7 @@ struct LandmarkNodeComparer {
 };
 
 
-typedef __gnu_cxx::hash_set<LandmarkNode *, hash_pointer> LandmarkSet;
+typedef std::unordered_set<LandmarkNode *> LandmarkSet;
 
 class LandmarkGraph {
 public:
@@ -197,13 +197,13 @@ public:
     }
 
     bool simple_landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
-    bool disj_landmark_exists(const std::set<std::pair<int, int> > &lm) const; // not needed by HMLandmark
+    bool disj_landmark_exists(const std::set<std::pair<int, int>> &lm) const;  // not needed by HMLandmark
     bool landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
-    bool exact_same_disj_landmark_exists(const std::set<std::pair<int, int> > &lm) const;
+    bool exact_same_disj_landmark_exists(const std::set<std::pair<int, int>> &lm) const;
 
     LandmarkNode &landmark_add_simple(const std::pair<int, int> &lm);
-    LandmarkNode &landmark_add_disjunctive(const std::set<std::pair<int, int> > &lm);
-    LandmarkNode &landmark_add_conjunctive(const std::set<std::pair<int, int> > &lm);
+    LandmarkNode &landmark_add_disjunctive(const std::set<std::pair<int, int>> &lm);
+    LandmarkNode &landmark_add_conjunctive(const std::set<std::pair<int, int>> &lm);
     void rm_landmark_node(LandmarkNode *node);
     LandmarkNode &make_disj_node_simple(std::pair<int, int> lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
@@ -227,11 +227,11 @@ private:
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
-    __gnu_cxx::hash_map<std::pair<int, int>, LandmarkNode *, hash_int_pair> simple_lms_to_nodes;
-    __gnu_cxx::hash_map<std::pair<int, int>, LandmarkNode *, hash_int_pair> disj_lms_to_nodes;
+    std::unordered_map<std::pair<int, int>, LandmarkNode *> simple_lms_to_nodes;
+    std::unordered_map<std::pair<int, int>, LandmarkNode *> disj_lms_to_nodes;
     std::set<LandmarkNode *> nodes;
     std::vector<LandmarkNode *> ordered_nodes;
-    std::vector<std::vector<std::vector<int> > > operators_eff_lookup;
+    std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 };
 
 #endif

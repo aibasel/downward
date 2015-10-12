@@ -159,42 +159,6 @@ void signal_handler(int signal_number) {
     raise(signal_number);
 }
 
-#if OPERATING_SYSTEM == OSX
-void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
-    uint64_t difference = end - start;
-    static mach_timebase_info_data_t info = {
-        0, 0
-    };
-
-    if (info.denom == 0)
-        mach_timebase_info(&info);
-
-    uint64_t elapsednano = difference * (info.numer / info.denom);
-
-    tp->tv_sec = elapsednano * 1e-9;
-    tp->tv_nsec = elapsednano - (tp->tv_sec * 1e9);
-}
-#endif
-
-double current_system_clock() {
-    struct tms the_tms;
-    times(&the_tms);
-    clock_t clocks = the_tms.tms_utime + the_tms.tms_stime;
-    return double(clocks) / sysconf(_SC_CLK_TCK);
-}
-
-double current_system_clock_exact() {
-    timespec tp;
-#if OPERATING_SYSTEM == OSX
-    static uint64_t start = mach_absolute_time();
-    uint64_t end = mach_absolute_time();
-    mach_absolute_difference(end, start, &tp);
-#else
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp);
-#endif
-    return (tp.tv_sec * 1e9) + tp.tv_nsec;
-}
-
 /*
   NOTE: we have two variants of this method
         get_peak_memory_in_kb() is used during the regular execution.
@@ -295,9 +259,6 @@ void report_exit_code_reentrant(int exitcode) {
     case EXIT_OUT_OF_MEMORY:
         message = "Memory limit has been reached.";
         break;
-    case EXIT_TIMEOUT:
-        message = "Time limit has been reached.";
-        break;
     default:
         write_reentrant_str(STDERR_FILENO, "Exitcode: ");
         write_reentrant_int(STDERR_FILENO, exitcode);
@@ -307,5 +268,9 @@ void report_exit_code_reentrant(int exitcode) {
     int filedescr = is_error ? STDERR_FILENO : STDOUT_FILENO;
     write_reentrant_str(filedescr, message);
     write_reentrant_char(filedescr, '\n');
+}
+
+int get_process_id() {
+    return getpid();
 }
 #endif
