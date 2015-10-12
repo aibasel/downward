@@ -90,7 +90,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     if(!calculate_preferred && cache_h_values &&
             heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
-       heuristic = heuristic_cache[state].h;
+       heuristic = (int) heuristic_cache[state].h;
        result.set_count_evaluation(false);
     } else {
        heuristic = compute_heuristic(state);

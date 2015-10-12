@@ -19,8 +19,8 @@ class Heuristic : public ScalarEvaluator {
 
 
     struct HEntry {
-        int h;
-        bool dirty;
+        int h : 31;
+        bool dirty : 1;
         HEntry(int h_, bool dirty_) : h(h_), dirty(dirty_) {}
     };
 
