@@ -2,12 +2,10 @@
 
 #include "option_parser.h"
 #include "search_engine.h"
-#include "system.h"
 #include "timer.h"
 #include "utilities.h"
 
 #include <iostream>
-#include <new>
 
 using namespace std;
 

@@ -1,7 +1,5 @@
 #include "system.h"
 
-#include "utilities.h"
-
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
 /*
   NOTE:
@@ -22,22 +20,26 @@
   See also: issue479
 */
 
+#include "system_unix.h"
+#include "utilities.h"
+
 #include <csignal>
 #include <cstdio>
 #include <cstring>
-#include <ctime>
-#include <errno.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>
 #include <limits>
-#include <sys/times.h>
+#include <new>
+#include <stdlib.h>
 #include <unistd.h>
 
 #if OPERATING_SYSTEM == OSX
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #endif
+
 using namespace std;
 
 

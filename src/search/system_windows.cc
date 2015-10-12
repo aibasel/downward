@@ -1,11 +1,10 @@
 #include "system.h"
 
-#include "utilities.h"
-
 #if OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
 // TODO: find re-entrant alternatives on Windows/Cygwin.
 
 #include "system_windows.h"
+#include "utilities.h"
 
 #include <csignal>
 #include <ctime>

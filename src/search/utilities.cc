@@ -3,6 +3,7 @@
 #include "system.h"
 
 #include <cassert>
+#include <cstdlib>
 
 using namespace std;
 
