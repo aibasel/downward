@@ -3,8 +3,6 @@
 
 #include "system.h"
 
-#include <cstdlib>
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -32,8 +30,6 @@ enum ExitCode {
 };
 
 NO_RETURN extern void exit_with(ExitCode returncode);
-
-extern int get_peak_memory_in_kb();
 
 /* Test if the product of two numbers is bounded by a third number.
    Safe against overflow. The caller must guarantee
