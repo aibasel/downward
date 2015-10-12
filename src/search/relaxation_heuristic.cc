@@ -170,21 +170,21 @@ void RelaxationHeuristic::simplify() {
             unary_operators.push_back(old_unary_operators[unary_operator_no]);
     }
 
-    sort(unary_operators.begin(),unary_operators.end(),
-            [&] (const UnaryOperator &o1, const UnaryOperator &o2) {
-                if (o1.operator_no != o2.operator_no)
-                    return o1.operator_no < o2.operator_no;
-                if (o1.effect != o2.effect)
-                    return o1.effect->id < o2.effect->id;
-                if (o1.base_cost != o2.base_cost)
-                    return o1.base_cost < o2.base_cost;
-                return lexicographical_compare(o1.precondition.begin(), o1.precondition.end(),
-                    o2.precondition.begin(), o2.precondition.end(),
-                    [] (const Proposition * p1, const Proposition * p2) {
-                        return p1->id < p2->id;
-                    }
-                    );
-             });
+    sort(unary_operators.begin(), unary_operators.end(),
+         [&] (const UnaryOperator &o1, const UnaryOperator &o2) {
+        if (o1.operator_no != o2.operator_no)
+            return o1.operator_no < o2.operator_no;
+        if (o1.effect != o2.effect)
+            return o1.effect->id < o2.effect->id;
+        if (o1.base_cost != o2.base_cost)
+            return o1.base_cost < o2.base_cost;
+        return lexicographical_compare(o1.precondition.begin(), o1.precondition.end(),
+                                       o2.precondition.begin(), o2.precondition.end(),
+                                       [] (const Proposition *p1, const Proposition *p2) {
+            return p1->id < p2->id;
+        }
+                                       );
+    });
 
     cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
 }
