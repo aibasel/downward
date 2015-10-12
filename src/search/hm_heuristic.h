@@ -13,7 +13,7 @@
 #include "heuristic.h"
 
 
-typedef std::vector<std::pair<int, int> > Tuple;
+typedef std::vector<std::pair<int, int>> Tuple;
 
 class Options;
 

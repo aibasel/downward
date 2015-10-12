@@ -7,6 +7,7 @@ import sys
 
 from . import aliases
 from . import arguments
+from . import cleanup
 from . import run_components
 
 
@@ -19,6 +20,10 @@ def main():
 
     if args.show_aliases:
         aliases.show_aliases()
+        sys.exit()
+
+    if args.cleanup:
+        cleanup.cleanup_temporary_files(args)
         sys.exit()
 
     try:

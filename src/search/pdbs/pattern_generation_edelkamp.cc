@@ -45,7 +45,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
     }
     // total_so_far is now sum over all fitness values.
 
-    vector<vector<vector<bool> > > new_pattern_collections;
+    vector<vector<vector<bool>>> new_pattern_collections;
     new_pattern_collections.reserve(num_collections);
     for (int i = 0; i < num_collections; ++i) {
         int selected;
@@ -160,7 +160,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
         double fitness = 0;
         bool pattern_valid = true;
         vector<bool> variables_used(task_proxy.get_variables().size(), false);
-        vector<vector<int> > pattern_collection;
+        vector<vector<int>> pattern_collection;
         pattern_collection.reserve(collection.size());
         for (const vector<bool> &bitvector : collection) {
             vector<int> pattern;
@@ -191,9 +191,10 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             /* Generate the pattern collection heuristic and get its fitness
                value. */
             Options opts;
-            opts.set<shared_ptr<AbstractTask> >("transform", task);
-            opts.set<int>("cost_type", cost_type);
-            opts.set<vector<vector<int> > >("patterns", pattern_collection);
+            opts.set<shared_ptr<AbstractTask>>("transform", task);
+            // Since we pass a task transformation, cost_type won't be used.
+            opts.set<int>("cost_type", NORMAL);
+            opts.set<vector<vector<int>>>("patterns", pattern_collection);
             ZeroOnePDBsHeuristic *pattern_collection_heuristic =
                 new ZeroOnePDBsHeuristic(opts);
             fitness = pattern_collection_heuristic->get_approx_mean_finite_h();
@@ -223,7 +224,7 @@ void PatternGenerationEdelkamp::bin_packing() {
     for (int i = 0; i < num_collections; ++i) {
         // Use random variable ordering for all pattern collections.
         g_rng.shuffle(variable_ids);
-        vector<vector<bool> > pattern_collection;
+        vector<vector<bool>> pattern_collection;
         vector<bool> pattern(variables.size(), false);
         int current_size = 1;
         for (size_t j = 0; j < variable_ids.size(); ++j) {

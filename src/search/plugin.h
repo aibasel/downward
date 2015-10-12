@@ -3,6 +3,7 @@
 
 #include "open_lists/alternation_open_list.h"
 #include "open_lists/bucket_open_list.h"
+#include "open_lists/epsilon_greedy_open_list.h"
 #include "open_lists/pareto_open_list.h"
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/tiebreaking_open_list.h"
@@ -28,16 +29,16 @@ public:
 template <class T>
 class PluginShared {
 public:
-    PluginShared(const std::string &key, typename Registry<std::shared_ptr<T> >::Factory factory) {
-        Registry<std::shared_ptr<T> >::instance()->register_object(key, factory);
+    PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
+        Registry<std::shared_ptr<T>>::instance()->register_object(key, factory);
     }
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;
 };
 
 template <class Entry>
-class Plugin<OpenList<Entry > > {
-    Plugin(const Plugin<OpenList<Entry > > &copy);
+class Plugin<OpenList<Entry >> {
+    Plugin(const Plugin<OpenList<Entry >> &copy);
 public:
     ~Plugin();
 
@@ -52,6 +53,8 @@ public:
             "alt", AlternationOpenList<Entry>::_parse);
         Registry<OpenList<Entry > *>::instance()->register_object(
             "pareto", ParetoOpenList<Entry>::_parse);
+        Registry<OpenList<Entry > *>::instance()->register_object(
+            "epsilon_greedy", EpsilonGreedyOpenList<Entry>::_parse);
     }
 };
 

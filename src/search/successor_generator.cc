@@ -46,8 +46,8 @@ class GeneratorSwitch : public GeneratorBase {
 public:
     ~GeneratorSwitch();
     GeneratorSwitch(const VariableProxy &switch_var,
-                    list<OperatorProxy> && immediate_operators,
-                    const vector<GeneratorBase *> && generator_for_value,
+                    list<OperatorProxy> &&immediate_operators,
+                    const vector<GeneratorBase *> &&generator_for_value,
                     GeneratorBase *default_generator);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
@@ -59,7 +59,7 @@ public:
 class GeneratorLeaf : public GeneratorBase {
     list<OperatorProxy> applicable_operators;
 public:
-    GeneratorLeaf(list<OperatorProxy> && applicable_operators);
+    GeneratorLeaf(list<OperatorProxy> &&applicable_operators);
     virtual void generate_applicable_ops(
         const State &state, vector<OperatorProxy> &applicable_ops) const;
     // Transitional method, used until the search is switched to the new task interface.
@@ -77,8 +77,8 @@ public:
 };
 
 GeneratorSwitch::GeneratorSwitch(
-    const VariableProxy &switch_var, list<OperatorProxy> && immediate_operators,
-    const vector<GeneratorBase *> && generator_for_value,
+    const VariableProxy &switch_var, list<OperatorProxy> &&immediate_operators,
+    const vector<GeneratorBase *> &&generator_for_value,
     GeneratorBase *default_generator)
     : switch_var(switch_var),
       immediate_operators(move(immediate_operators)),
@@ -112,7 +112,7 @@ void GeneratorSwitch::generate_applicable_ops(
     default_generator->generate_applicable_ops(state, applicable_ops);
 }
 
-GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> && applicable_operators)
+GeneratorLeaf::GeneratorLeaf(list<OperatorProxy> &&applicable_operators)
     : applicable_operators(move(applicable_operators)) {
 }
 
@@ -182,7 +182,7 @@ GeneratorBase *SuccessorGenerator::construct_recursive(
         VariableProxy switch_var = variables[switch_var_id];
         int number_of_children = switch_var.get_domain_size();
 
-        vector<list<OperatorProxy> > operators_for_val(number_of_children);
+        vector<list<OperatorProxy>> operators_for_val(number_of_children);
         list<OperatorProxy> default_operators;
         list<OperatorProxy> applicable_operators;
 

@@ -11,8 +11,8 @@ class FactoredTransitionSystem {
     std::vector<TransitionSystem *> transition_systems;
 public:
     explicit FactoredTransitionSystem(
-        std::vector<TransitionSystem *> && transition_systems);
-    FactoredTransitionSystem(FactoredTransitionSystem && other);
+        std::vector<TransitionSystem *> &&transition_systems);
+    FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
     // No copying or assignment.

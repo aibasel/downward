@@ -11,7 +11,7 @@ using namespace std;
 
 
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
-    : DelegatingTask(opts.get<shared_ptr<AbstractTask> >("transform")),
+    : DelegatingTask(opts.get<shared_ptr<AbstractTask>>("transform")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
       is_unit_cost(compute_is_unit_cost()) {
 }
@@ -50,7 +50,7 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
 
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
-    parser.add_option<shared_ptr<AbstractTask> >(
+    parser.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Parent task transformation",
         "no_transform");

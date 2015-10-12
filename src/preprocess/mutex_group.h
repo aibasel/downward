@@ -8,7 +8,7 @@ using namespace std;
 class Variable;
 
 class MutexGroup {
-    vector<pair<const Variable *, int> > facts;
+    vector<pair<const Variable *, int>> facts;
 public:
     MutexGroup(istream &in, const vector<Variable *> &variables);
 
