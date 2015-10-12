@@ -8,8 +8,6 @@
 #include "search_node_info.h"
 
 using namespace std;
-using namespace __gnu_cxx;
-
 
 SearchNode::SearchNode(StateID state_id_, SearchNodeInfo &info_,
                        OperatorCost cost_type_)
@@ -38,6 +36,7 @@ bool SearchNode::is_new() const {
 }
 
 int SearchNode::get_g() const {
+    assert(info.g >= 0);
     return info.g;
 }
 
@@ -177,6 +176,7 @@ void SearchSpace::dump() const {
     }
 }
 
-void SearchSpace::statistics() const {
-    cout << "Number of registered states: " << g_state_registry->size() << endl;
+void SearchSpace::print_statistics() const {
+    cout << "Number of registered states: "
+         << g_state_registry->size() << endl;
 }

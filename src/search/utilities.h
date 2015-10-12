@@ -1,16 +1,20 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include "system.h"
+
 #include <cstdlib>
-#include <ostream>
+#include <functional>
+#include <iostream>
+#include <memory>
 #include <utility>
 #include <vector>
-#include <tr1/functional>
 
 #define ABORT(msg) \
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \
-                   << ", line " << __LINE__ << ": " << msg << std::endl), \
+                   << ", line " << __LINE__ << ": " << std::endl \
+                   << (msg) << std::endl), \
         (abort()), \
         (void)0 \
     )
@@ -24,12 +28,10 @@ enum ExitCode {
     EXIT_UNSOLVABLE = 4,
     // Search ended without finding a solution.
     EXIT_UNSOLVED_INCOMPLETE = 5,
-    EXIT_OUT_OF_MEMORY = 6,
-    // Currently unused.
-    EXIT_TIMEOUT = 7
+    EXIT_OUT_OF_MEMORY = 6
 };
 
-extern void exit_with(ExitCode returncode) __attribute__((noreturn));
+NO_RETURN extern void exit_with(ExitCode returncode);
 
 extern int get_peak_memory_in_kb();
 
@@ -61,40 +63,6 @@ ostream &operator<<(ostream &stream, const vector<T> &vec) {
 }
 }
 
-template<class Sequence>
-size_t hash_number_sequence(const Sequence &data, size_t length) {
-    // hash function adapted from Python's hash function for tuples.
-    size_t hash_value = 0x345678;
-    size_t mult = 1000003;
-    for (int i = length - 1; i >= 0; --i) {
-        hash_value = (hash_value ^ data[i]) * mult;
-        mult += 82520 + i + i;
-    }
-    hash_value += 97531;
-    return hash_value;
-}
-
-struct hash_int_pair {
-    size_t operator()(const std::pair<int, int> &key) const {
-        return size_t(key.first * 1337 + key.second);
-    }
-};
-
-struct hash_pointer_pair {
-    size_t operator()(const std::pair<void *, void *> &key) const {
-        return size_t(size_t(key.first) * 1337 + size_t(key.second));
-    }
-};
-
-class hash_pointer {
-public:
-    size_t operator()(const void *p) const {
-        //return size_t(reinterpret_cast<int>(p));
-        std::tr1::hash<const void *> my_hash_class;
-        return my_hash_class(p);
-    }
-};
-
 template<class T>
 bool in_bounds(int index, const T &container) {
     return index >= 0 && static_cast<size_t>(index) < container.size();
@@ -107,6 +75,22 @@ bool in_bounds(size_t index, const T &container) {
 
 template<typename T>
 void unused_parameter(const T &) {
+}
+
+template<class T>
+void release_vector_memory(std::vector<T> &vec) {
+    std::vector<T>().swap(vec);
+}
+
+/*
+  make_unique_ptr is a poor man's version of make_unique. Once we
+  require C++14, we should change all occurrences of make_unique_ptr
+  to make_unique.
+*/
+
+template<typename T, typename ... Args>
+std::unique_ptr<T> make_unique_ptr(Args && ... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
 }
 
 #endif

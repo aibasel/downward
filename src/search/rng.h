@@ -1,53 +1,51 @@
 #ifndef RNG_H
 #define RNG_H
 
+#include <algorithm>
+#include <cassert>
+#include <random>
+#include <vector>
+
 class RandomNumberGenerator {
-    static const int N = 624;
-    unsigned int mt[N];
-    int mti;
+    // Mersenne Twister random number generator.
+    std::mt19937 rng;
+
 public:
-    RandomNumberGenerator();         // seed with time-dependent value
-    RandomNumberGenerator(int seed); // seed with int; see comments for seed()
-    RandomNumberGenerator(unsigned int *array, int count); // seed with array
-    RandomNumberGenerator(const RandomNumberGenerator &copy);
-    RandomNumberGenerator &operator=(const RandomNumberGenerator &copy);
+    RandomNumberGenerator(); // Seed with a value depending on time and process ID.
+    explicit RandomNumberGenerator(int seed);
+    RandomNumberGenerator(const RandomNumberGenerator &) = delete;
+    RandomNumberGenerator &operator=(const RandomNumberGenerator &) = delete;
+    ~RandomNumberGenerator();
 
-    void seed(int s);
-    void seed(unsigned int *array, int len);
+    void seed(int seed);
 
-    unsigned int next32();      // random integer in [0..2^32-1]
-    int next31();               // random integer in [0..2^31-1]
-    double next_half_open();    // random float in [0..1), 2^53 possible values
-    double next_closed();       // random float in [0..1], 2^53 possible values
-    double next_open();         // random float in (0..1), 2^53 possible values
-    int next(int bound);        // random integer in [0..bound), bound < 2^31
-    int operator()(int bound) { // same as next()
-        return next(bound);
+    // Return random double in [0..1).
+    double operator()() {
+        std::uniform_real_distribution<double> distribution(0.0, 1.0);
+        return distribution(rng);
     }
-    double next();              // same as next_half_open()
-    double operator()() {       // same as next_half_open()
-        return next_half_open();
+
+    // Return random integer in [0..bound).
+    int operator()(int bound) {
+        assert(bound > 0);
+        std::uniform_int_distribution<int> distribution(0, bound - 1);
+        return distribution(rng);
+    }
+
+    template <class T>
+    typename std::vector<T>::const_iterator choose(const std::vector<T> &vec) {
+        return vec.begin() + operator()(vec.size());
+    }
+
+    template <class T>
+    typename std::vector<T>::iterator choose(std::vector<T> &vec) {
+        return vec.begin() + operator()(vec.size());
+    }
+
+    template <class T>
+    void shuffle(std::vector<T> &vec) {
+        std::shuffle(vec.begin(), vec.end(), rng);
     }
 };
-
-/*
-  TODO: Add a static assertion that guarantees that ints are 32 bit.
-        In cases where they are not, need to adapt the code.
- */
-
-/*
-  Notes on seeding
-
-  1. Seeding with an integer
-  To avoid different seeds mapping to the same sequence, follow one of
-  the following two conventions:
-  a) Only use seeds in 0..2^31-1     (preferred)
-  b) Only use seeds in -2^30..2^30-1 (2-complement machines only)
-
-  2. Seeding with an array (die-hard seed method)
-  The length of the array, len, can be arbitrarily high, but for lengths greater
-  than N, collisions are common. If the seed is of high quality, using more than
-  N values does not make sense.
-*/
 
 #endif

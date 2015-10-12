@@ -1,6 +1,8 @@
 #include "probe_state_space_sample.h"
-#include "../successor_generator.h"
+
 #include "../heuristic.h"
+#include "../successor_generator.h"
+
 #include <limits>
 #include <cassert>
 
