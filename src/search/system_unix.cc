@@ -35,11 +35,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if OPERATING_SYSTEM == OSX
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#endif
-
 using namespace std;
 
 
@@ -203,8 +198,7 @@ int get_peak_memory_in_kb() {
 }
 
 void register_event_handlers() {
-    // When running out of memory, release some emergency memory and
-    // terminate.
+    // Terminate when running out of memory.
     set_new_handler(out_of_memory_handler);
 
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
