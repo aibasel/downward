@@ -29,9 +29,11 @@ void signal_handler(int signal_number) {
 }
 
 int get_peak_memory_in_kb() {
-    // The file /proc/self/status is present under Cygwin, but contains no peak memory info.
+    // The file /proc/self/status is present under Cygwin, but contains no peak
+    // memory info.
     PROCESS_MEMORY_COUNTERS_EX pmc;
-    bool success = GetProcessMemoryInfo(GetCurrentProcess(),
+    bool success = GetProcessMemoryInfo(
+        GetCurrentProcess(),
         reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc),
         sizeof(pmc));
     if (!success) {
@@ -45,11 +47,13 @@ void register_event_handlers() {
     // Terminate when running out of memory.
     set_new_handler(out_of_memory_handler);
 
-    // On Windows, sigaction() is not available, so we use the deprecated
-    // alternative signal(). The main difference is that signal() does not
-    // block other signals while the signal handler is running. This can lead
-    // to race conditions and undefined behaviour. For details, see
-    // http://stackoverflow.com/questions/231912/what-is-the-difference-between-sigaction-and-signal
+    /*
+      On Windows, sigaction() is not available, so we use the deprecated
+      alternative signal(). The main difference is that signal() does not block
+      other signals while the signal handler is running. This can lead to race
+      conditions and undefined behaviour. For details, see
+      http://stackoverflow.com/questions/231912
+    */
     signal(SIGABRT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGSEGV, signal_handler);
