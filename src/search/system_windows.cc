@@ -12,11 +12,6 @@
 #include <process.h>
 #include <psapi.h>
 
-#if OPERATING_SYSTEM == CYGWIN
-#ifndef CLOCK_PROCESS_CPUTIME_ID
-#define CLOCK_PROCESS_CPUTIME_ID (clockid_t(2))
-#endif
-#endif
 using namespace std;
 
 
@@ -36,8 +31,10 @@ void signal_handler(int signal_number) {
 int get_peak_memory_in_kb() {
     // The file /proc/self/status is present under Cygwin, but contains no peak memory info.
     PROCESS_MEMORY_COUNTERS_EX pmc;
-    GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc), sizeof(pmc));
-    if (memory_in_kb == -1) {
+    bool success = GetProcessMemoryInfo(GetCurrentProcess(),
+        reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc),
+        sizeof(pmc));
+    if (!success) {
         cerr << "warning: could not determine peak memory" << endl;
         return -1;
     }
@@ -45,27 +42,19 @@ int get_peak_memory_in_kb() {
 }
 
 void register_event_handlers() {
-    // When running out of memory, release some emergency memory and
-    // terminate.
+    // Terminate when running out of memory.
     set_new_handler(out_of_memory_handler);
 
-    struct sigaction default_signal_action;
-    default_signal_action.sa_handler = signal_handler;
-    // Block all signals we handle while one of them is handled.
-    sigemptyset(&default_signal_action.sa_mask);
-    sigaddset(&default_signal_action.sa_mask, SIGABRT);
-    sigaddset(&default_signal_action.sa_mask, SIGTERM);
-    sigaddset(&default_signal_action.sa_mask, SIGSEGV);
-    sigaddset(&default_signal_action.sa_mask, SIGINT);
-    sigaddset(&default_signal_action.sa_mask, SIGXCPU);
-    // Reset handler to default action after completion.
-    default_signal_action.sa_flags = SA_RESETHAND;
-
-    sigaction(SIGABRT, &default_signal_action, 0);
-    sigaction(SIGTERM, &default_signal_action, 0);
-    sigaction(SIGSEGV, &default_signal_action, 0);
-    sigaction(SIGINT, &default_signal_action, 0);
-    sigaction(SIGXCPU, &default_signal_action, 0);
+    // On Windows, sigaction() is not available, so we use the deprecated
+    // alternative signal(). The main difference is that signal() does not
+    // block other signals while the signal handler is running. This can lead
+    // to race conditions and undefined behaviour. For details, see
+    // http://stackoverflow.com/questions/231912/what-is-the-difference-between-sigaction-and-signal
+    signal(SIGABRT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGSEGV, signal_handler);
+    signal(SIGINT, signal_handler);
+    // SIGXCPU is not supported on Windows.
 }
 
 void report_exit_code_reentrant(int exitcode) {
@@ -95,9 +84,6 @@ void report_exit_code_reentrant(int exitcode) {
         break;
     case EXIT_OUT_OF_MEMORY:
         message = "Memory limit has been reached.";
-        break;
-    case EXIT_TIMEOUT:
-        message = "Time limit has been reached.";
         break;
     default:
         cerr << "Exitcode: " << exitcode << endl
