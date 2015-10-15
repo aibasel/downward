@@ -43,13 +43,15 @@ set(CORE_SOURCES
         state_id.cc
         state_registry.cc
         successor_generator.cc
+        system.cc
+        system_unix.cc
+        system_windows.cc
         task_proxy.cc
         task_tools.cc
         timer.cc
         tracer.cc
         utilities.cc
         utilities_hash.cc
-        utilities_windows.cc
         variable_order_finder.cc
 
         open_lists/alternation_open_list.cc
