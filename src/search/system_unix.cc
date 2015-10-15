@@ -73,7 +73,7 @@ bool read_char_reentrant(int filedescr, char *c) {
     int result = TEMP_FAILURE_RETRY(read(filedescr, c, 1));
     /*
       We could check the value of errno here but all errors except EINTR
-      are catastrophic enough to abort, so we do not need the distintion.
+      are catastrophic enough to abort, so we do not need the distinction.
       The error EINTR is handled by the macro TEMP_FAILURE_RETRY.
     */
     if (result == -1)
@@ -142,7 +142,7 @@ void out_of_memory_handler() {
       We do not use any memory padding currently. The methods below should
       only use stack memory. If we ever run into situations where the stack
       memory is not sufficient, we can consider using sigaltstack to reserve
-      memoy for the stack of the signal handler and raising a signal here.
+      memory for the stack of the signal handler and raising a signal here.
     */
     write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
     exit_with(EXIT_OUT_OF_MEMORY);
@@ -167,7 +167,7 @@ int get_peak_memory_in_kb() {
     int memory_in_kb = -1;
 
 #if OPERATING_SYSTEM == OSX
-    // Based on http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+    // Based on http://stackoverflow.com/questions/63166
     task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
 
@@ -228,42 +228,18 @@ void register_event_handlers() {
 }
 
 void report_exit_code_reentrant(int exitcode) {
-    const char *message;
-    bool is_error = false;
-    switch (exitcode) {
-    case EXIT_PLAN_FOUND:
-        message = "Solution found.";
-        break;
-    case EXIT_CRITICAL_ERROR:
-        message = "Unexplained error occurred.";
-        is_error = true;
-        break;
-    case EXIT_INPUT_ERROR:
-        message = "Usage error occurred.";
-        is_error = true;
-        break;
-    case EXIT_UNSUPPORTED:
-        message = "Tried to use unsupported feature.";
-        is_error = true;
-        break;
-    case EXIT_UNSOLVABLE:
-        message = "Task is provably unsolvable.";
-        break;
-    case EXIT_UNSOLVED_INCOMPLETE:
-        message = "Search stopped without finding a solution.";
-        break;
-    case EXIT_OUT_OF_MEMORY:
-        message = "Memory limit has been reached.";
-        break;
-    default:
+    const char *message = get_exit_code_message_reentrant(exitcode);
+    bool is_error = is_exit_code_error_reentrant(exitcode);
+    if (message) {
+        int filedescr = is_error ? STDERR_FILENO : STDOUT_FILENO;
+        write_reentrant_str(filedescr, message);
+        write_reentrant_char(filedescr, '\n');
+    } else {
         write_reentrant_str(STDERR_FILENO, "Exitcode: ");
         write_reentrant_int(STDERR_FILENO, exitcode);
         write_reentrant_str(STDERR_FILENO, "\nUnknown exitcode.\n");
         abort();
     }
-    int filedescr = is_error ? STDERR_FILENO : STDOUT_FILENO;
-    write_reentrant_str(filedescr, message);
-    write_reentrant_char(filedescr, '\n');
 }
 
 int get_process_id() {

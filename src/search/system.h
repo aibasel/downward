@@ -21,7 +21,9 @@
 #endif
 
 int get_peak_memory_in_kb();
-extern void register_event_handlers();
+const char *get_exit_code_message_reentrant(int exitcode);
+bool is_exit_code_error_reentrant(int exitcode);
+void register_event_handlers();
 void report_exit_code_reentrant(int exitcode);
 int get_process_id();
 

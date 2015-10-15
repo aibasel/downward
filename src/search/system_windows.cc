@@ -62,40 +62,16 @@ void register_event_handlers() {
 }
 
 void report_exit_code_reentrant(int exitcode) {
-    const char *message;
-    bool is_error = false;
-    switch (exitcode) {
-    case EXIT_PLAN_FOUND:
-        message = "Solution found.";
-        break;
-    case EXIT_CRITICAL_ERROR:
-        message = "Unexplained error occurred.";
-        is_error = true;
-        break;
-    case EXIT_INPUT_ERROR:
-        message = "Usage error occurred.";
-        is_error = true;
-        break;
-    case EXIT_UNSUPPORTED:
-        message = "Tried to use unsupported feature.";
-        is_error = true;
-        break;
-    case EXIT_UNSOLVABLE:
-        message = "Task is provably unsolvable.";
-        break;
-    case EXIT_UNSOLVED_INCOMPLETE:
-        message = "Search stopped without finding a solution.";
-        break;
-    case EXIT_OUT_OF_MEMORY:
-        message = "Memory limit has been reached.";
-        break;
-    default:
+    const char *message = get_exit_code_message_reentrant(exitcode);
+    bool is_error = is_exit_code_error_reentrant(exitcode);
+    if (message) {
+        ostream &stream = is_error ? cerr : cout;
+        stream << message << endl;
+    } else {
         cerr << "Exitcode: " << exitcode << endl
              << "Unknown exitcode." << endl;
         abort();
     }
-    ostream &stream = is_error ? cerr : cout;
-    stream << message << endl;
 }
 
 int get_process_id() {
