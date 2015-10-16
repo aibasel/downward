@@ -21,7 +21,7 @@ EXPECTED_EXITCODES = set([
     EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT, EXIT_SIGXCPU])
 
 
-def generate_exitcode(exitcodes):
+def generate_portfolio_exitcode(exitcodes):
     """A portfolio's exitcode is determined as follows:
 
     There is exactly one type of unexpected exit code -> use it.
