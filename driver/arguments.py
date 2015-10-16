@@ -29,7 +29,6 @@ By default, component options are passed to the search component. Use
 "--validate-options" within the component options to override the default for
 the following options, until overridden again. (See below for examples.)"""
 
-# TODO: Add limits for validation?
 LIMITS_HELP = """You can limit the time or memory for individual components
 or the whole planner. The effective limit for each component is the minimum
 of the component, overall, external soft, and external hard limits.
