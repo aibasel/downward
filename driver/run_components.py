@@ -148,10 +148,7 @@ def run_validate(args):
     logging.info("Running validate.")
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     num_files = len(args.filenames)
-    if "-h" in args.validate_options:
-        # Silently swallow input filenames.
-        args.validate_inputs = []
-    elif num_files == 0:
+    if num_files == 0:
         raise ValueError("Validation needs one or two PDDL input files.")
     elif num_files == 1:
         task, = args.filenames
