@@ -3,6 +3,10 @@
 #include <ctime>
 #include <ostream>
 
+#if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
+#include <sys/time.h>
+#endif
+
 #if OPERATING_SYSTEM == OSX
 #include <mach/mach_time.h>
 #endif

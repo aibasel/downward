@@ -30,6 +30,10 @@
 # Version 2.8.3 introduces CMakeParseArguments.
 cmake_minimum_required(VERSION 2.8.3)
 
+# Respect the PATH environment variable when searching for compilers.
+find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
+find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
+
 # Path containing custom CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
@@ -66,5 +70,5 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VAL/")
     add_subdirectory(VAL)
 else()
     # This can happen for IPC submissions that should just include the planner code.
-    message("Skipping VAL because it is not present.")
+    message(WARNING "Skipping VAL because it is not present.")
 endif()

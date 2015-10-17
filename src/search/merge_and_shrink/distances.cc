@@ -43,7 +43,7 @@ bool Distances::is_unit_cost() const {
 }
 
 static void breadth_first_search(
-    const vector<vector<int> > &graph, deque<int> &queue,
+    const vector<vector<int>> &graph, deque<int> &queue,
     vector<int> &distances) {
     while (!queue.empty()) {
         int state = queue.front();
@@ -59,7 +59,7 @@ static void breadth_first_search(
 }
 
 void Distances::compute_init_distances_unit_cost() {
-    vector<vector<int> > forward_graph(get_num_states());
+    vector<vector<int>> forward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions = group_it.get_transitions();
@@ -81,7 +81,7 @@ void Distances::compute_init_distances_unit_cost() {
 }
 
 void Distances::compute_goal_distances_unit_cost() {
-    vector<vector<int> > backward_graph(get_num_states());
+    vector<vector<int>> backward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions = group_it.get_transitions();
@@ -102,7 +102,7 @@ void Distances::compute_goal_distances_unit_cost() {
 }
 
 static void dijkstra_search(
-    const vector<vector<pair<int, int> > > &graph,
+    const vector<vector<pair<int, int>>> &graph,
     AdaptiveQueue<int> &queue,
     vector<int> &distances) {
     while (!queue.empty()) {
@@ -127,7 +127,7 @@ static void dijkstra_search(
 }
 
 void Distances::compute_init_distances_general_cost() {
-    vector<vector<pair<int, int> > > forward_graph(get_num_states());
+    vector<vector<pair<int, int>>> forward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions = group_it.get_transitions();
@@ -153,7 +153,7 @@ void Distances::compute_init_distances_general_cost() {
 }
 
 void Distances::compute_goal_distances_general_cost() {
-    vector<vector<pair<int, int> > > backward_graph(get_num_states());
+    vector<vector<pair<int, int>>> backward_graph(get_num_states());
     for (TSConstIterator group_it = transition_system.begin();
          group_it != transition_system.end(); ++group_it) {
         const vector<Transition> &transitions = group_it.get_transitions();
@@ -268,7 +268,7 @@ std::vector<bool> Distances::compute_distances() {
 }
 
 bool Distances::apply_abstraction(
-    const vector<forward_list<int> > &collapsed_groups) {
+    const vector<forward_list<int>> &collapsed_groups) {
     assert(are_distances_computed());
 
     /*

@@ -50,7 +50,7 @@ class RelaxationHeuristic : public Heuristic {
     void simplify();
 protected:
     std::vector<UnaryOperator> unary_operators;
-    std::vector<std::vector<Proposition> > propositions;
+    std::vector<std::vector<Proposition>> propositions;
     std::vector<Proposition *> goal_propositions;
 
     Proposition *get_proposition(const FactProxy &fact);

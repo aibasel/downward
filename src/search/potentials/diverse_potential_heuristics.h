@@ -10,7 +10,7 @@
 
 namespace potentials {
 using SamplesToFunctionsMap =
-          std::unordered_map<State, std::unique_ptr<PotentialFunction> >;
+          std::unordered_map<State, std::unique_ptr<PotentialFunction>>;
 
 /*
   Factory class that finds diverse potential functions.
@@ -21,7 +21,7 @@ class DiversePotentialHeuristics {
     // with num_samples parameter?
     const int max_num_heuristics;
     const int num_samples;
-    std::vector<std::unique_ptr<PotentialFunction> > diverse_functions;
+    std::vector<std::unique_ptr<PotentialFunction>> diverse_functions;
 
     /* Filter dead end samples and duplicates. Store potential heuristics
        for remaining samples. */
@@ -47,7 +47,7 @@ public:
     ~DiversePotentialHeuristics() = default;
 
     // Sample states, then cover them.
-    std::vector<std::unique_ptr<PotentialFunction> > && find_functions();
+    std::vector<std::unique_ptr<PotentialFunction>> && find_functions();
 };
 }
 #endif

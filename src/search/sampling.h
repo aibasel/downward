@@ -29,8 +29,8 @@ std::vector<State> sample_states_with_random_walks(
     int init_h,
     double average_operator_cost,
     std::function<bool(State)> is_dead_end = [] (const State &) {
-        return false;
-    },
+                                                 return false;
+                                             },
     const CountdownTimer *timer = nullptr);
 
 #endif

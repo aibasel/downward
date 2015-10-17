@@ -243,7 +243,7 @@ static void _add_succ_order_options(OptionParser &parser) {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
-    Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
+    Plugin<OpenList<OpenListEntryLazy >>::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(

@@ -93,7 +93,7 @@ pair<int, int> MergeDFP::get_next(const vector<TransitionSystem *> &all_transiti
 
     vector<const TransitionSystem *> sorted_transition_systems;
     vector<int> indices_mapping;
-    vector<vector<int> > transition_system_label_ranks;
+    vector<vector<int>> transition_system_label_ranks;
     /*
       Precompute a vector sorted_transition_systems which contains all exisiting
       transition systems from all_transition_systems in the desired order and
