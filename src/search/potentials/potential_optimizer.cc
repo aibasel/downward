@@ -113,7 +113,7 @@ void PotentialOptimizer::construct_lp() {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }
         LPConstraint constraint(-lp_solver.get_infinity(), op.get_cost());
-        vector<pair<int, int> > coefficients;
+        vector<pair<int, int>> coefficients;
         for (EffectProxy effect : op.get_effects()) {
             VariableProxy var = effect.get_fact().get_variable();
             int var_id = var.get_id();

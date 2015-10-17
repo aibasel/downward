@@ -5,7 +5,7 @@
 using namespace std;
 
 DominancePruner::DominancePruner(vector<PatternDatabase *> &pattern_databases_,
-                                 vector<vector<PatternDatabase *> > &max_cliques_)
+                                 vector<vector<PatternDatabase *>> &max_cliques_)
     : pattern_databases(pattern_databases_),
       max_cliques(max_cliques_) {
 }
@@ -69,7 +69,7 @@ bool DominancePruner::clique_dominates(const vector<PatternDatabase *> &c_sup,
 
 
 void DominancePruner::prune() {
-    vector<vector<PatternDatabase *> > remaining_cliques;
+    vector<vector<PatternDatabase *>> remaining_cliques;
     /*
       Remember which cliques are already removed and don't use them to prune
       other cliques. This prevents removing both copies of a clique that occurs

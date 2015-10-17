@@ -10,7 +10,7 @@ using namespace std;
 
 
 void benchmark(const string &desc, int num_calls,
-               const function<void ()> &func) {
+               const function<void()> &func) {
     cout << "Running " << desc << " " << num_calls << " times:" << flush;
     clock_t start = clock();
     for (int i = 0; i < num_calls; ++i)
@@ -38,18 +38,13 @@ double get_time_with_clock_gettime() {
 int main(int, char **) {
     const int NUM_ITERATIONS = 10000000;
 
-    benchmark("nothing", NUM_ITERATIONS, [] (){}
-              );
+    benchmark("nothing", NUM_ITERATIONS, [] () {});
     cout << endl;
     benchmark("times()",
               NUM_ITERATIONS,
-              [&]() {get_time_with_times();
-              }
-              );
+              [&]() {get_time_with_times(); });
     benchmark("clock_gettime()",
               NUM_ITERATIONS,
-              [&]() {get_time_with_clock_gettime();
-              }
-              );
+              [&]() {get_time_with_clock_gettime(); });
     return 0;
 }

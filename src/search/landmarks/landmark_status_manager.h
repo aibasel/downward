@@ -6,7 +6,7 @@
 
 class LandmarkStatusManager {
 private:
-    PerStateInformation<std::vector<bool> > reached_lms;
+    PerStateInformation<std::vector<bool>> reached_lms;
 
     bool do_intersection;
     LandmarkGraph &lm_graph;

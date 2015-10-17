@@ -107,7 +107,7 @@ void DiversePotentialHeuristics::cover_samples(
     cout << "Time for covering samples: " << covering_timer << endl;
 }
 
-vector<unique_ptr<PotentialFunction> > && DiversePotentialHeuristics::find_functions() {
+vector<unique_ptr<PotentialFunction>> && DiversePotentialHeuristics::find_functions() {
     assert(diverse_functions.empty());
     Timer init_timer;
 

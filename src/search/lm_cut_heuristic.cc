@@ -81,8 +81,8 @@ void LandmarkCutHeuristic::build_relaxed_operator(const OperatorProxy &op) {
 }
 
 void LandmarkCutHeuristic::add_relaxed_operator(
-    vector<RelaxedProposition *> && precondition,
-    vector<RelaxedProposition *> && effects,
+    vector<RelaxedProposition *> &&precondition,
+    vector<RelaxedProposition *> &&effects,
     int op_id, int base_cost) {
     RelaxedOperator relaxed_op(
         move(precondition), move(effects), op_id, base_cost);

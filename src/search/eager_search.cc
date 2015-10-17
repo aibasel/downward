@@ -318,7 +318,7 @@ static SearchEngine *_parse(OptionParser &parser) {
     //open lists are currently registered with the parser on demand,
     //because for templated classes the usual method of registering
     //does not work:
-    Plugin<OpenList<StateID> >::register_open_lists();
+    Plugin<OpenList<StateID>>::register_open_lists();
 
     parser.document_synopsis("Eager best-first search", "");
 

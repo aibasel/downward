@@ -71,7 +71,7 @@ static void collect_f_h_buckets(
 void ShrinkFH::ordered_buckets_use_map(
     const TransitionSystem &ts,
     vector<Bucket> &buckets) const {
-    map<int, map<int, Bucket > > states_by_f_and_h;
+    map<int, map<int, Bucket>> states_by_f_and_h;
     int bucket_count = 0;
     int num_states = ts.get_size();
     for (AbstractStateRef state = 0; state < num_states; ++state) {
@@ -102,7 +102,7 @@ void ShrinkFH::ordered_buckets_use_map(
 void ShrinkFH::ordered_buckets_use_vector(
     const TransitionSystem &ts,
     vector<Bucket> &buckets) const {
-    vector<vector<Bucket > > states_by_f_and_h;
+    vector<vector<Bucket>> states_by_f_and_h;
     states_by_f_and_h.resize(ts.get_max_f() + 1);
     for (int f = 0; f <= ts.get_max_f(); ++f)
         states_by_f_and_h[f].resize(min(f, ts.get_max_h()) + 1);

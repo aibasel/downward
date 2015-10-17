@@ -2,10 +2,8 @@
 #define TIMER_H
 
 #include "utilities.h"
-#if OPERATING_SYSTEM == WINDOWS
-#include "utilities_windows.h"
-#endif
 
+#include <ostream>
 
 class Timer {
     double last_start_clock;

@@ -18,8 +18,8 @@ using namespace std;
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
     : Heuristic(opts) {
-    const vector<vector<int> > &pattern_collection(
-        opts.get_list<vector<int> >("patterns"));
+    const vector<vector<int>> &pattern_collection(
+        opts.get_list<vector<int>>("patterns"));
     Timer timer;
     size = 0;
     pattern_databases.reserve(pattern_collection.size());
@@ -56,7 +56,7 @@ bool CanonicalPDBsHeuristic::are_patterns_additive(
 void CanonicalPDBsHeuristic::compute_max_cliques() {
     // Initialize compatibility graph.
     max_cliques.clear();
-    vector<vector<int> > cgraph;
+    vector<vector<int>> cgraph;
     cgraph.resize(pattern_databases.size());
 
     for (size_t i = 0; i < pattern_databases.size(); ++i) {
@@ -71,7 +71,7 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
         }
     }
 
-    vector<vector<int> > cgraph_max_cliques;
+    vector<vector<int>> cgraph_max_cliques;
     ::compute_max_cliques(cgraph, cgraph_max_cliques);
     max_cliques.reserve(cgraph_max_cliques.size());
 
@@ -114,9 +114,9 @@ void CanonicalPDBsHeuristic::dominance_pruning() {
     }
 
     cout << "Pruned " << num_cliques - max_cliques.size() <<
-    " of " << num_cliques << " cliques" << endl;
+        " of " << num_cliques << " cliques" << endl;
     cout << "Pruned " << num_patterns - pattern_databases.size() <<
-    " of " << num_patterns << " PDBs" << endl;
+        " of " << num_patterns << " PDBs" << endl;
 
     cout << "Dominance pruning took " << timer << endl;
 }
@@ -156,7 +156,7 @@ void CanonicalPDBsHeuristic::add_pattern(const vector<int> &pattern) {
 
 void CanonicalPDBsHeuristic::get_max_additive_subsets(
     const vector<int> &new_pattern,
-    vector<vector<PatternDatabase *> > &max_additive_subsets) {
+    vector<vector<PatternDatabase *>> &max_additive_subsets) {
     /*
       We compute additive pattern sets S with the property that we could
       add the new pattern P to S and still have an additive pattern set.
@@ -231,7 +231,7 @@ bool CanonicalPDBsHeuristic::is_dead_end(const State &state) const {
 }
 
 void CanonicalPDBsHeuristic::dump_cgraph(
-    const vector<vector<int> > &cgraph) const {
+    const vector<vector<int>> &cgraph) const {
     cout << "Compatibility graph" << endl;
     for (size_t i = 0; i < cgraph.size(); ++i) {
         cout << i << " adjacent to: " << cgraph[i] << endl;

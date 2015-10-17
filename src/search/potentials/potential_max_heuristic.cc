@@ -10,7 +10,7 @@ using namespace std;
 namespace potentials {
 PotentialMaxHeuristic::PotentialMaxHeuristic(
     const Options &opts,
-    vector<unique_ptr<PotentialFunction> > && functions)
+    vector<unique_ptr<PotentialFunction>> &&functions)
     : Heuristic(opts),
       functions(move(functions)) {
 }

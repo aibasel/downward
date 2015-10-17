@@ -22,7 +22,7 @@ class AbstractOperator {
       Preconditions for the regression search, corresponds to normal
       effects and prevail of concrete operators.
     */
-    std::vector<std::pair<int, int> > regression_preconditions;
+    std::vector<std::pair<int, int>> regression_preconditions;
 
     /*
       Effect of the operator during regression search on a given
@@ -36,9 +36,9 @@ public:
       meaning prevail, preconditions and effects are all related to
       progression search.
     */
-    AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
-                     const std::vector<std::pair<int, int> > &preconditions,
-                     const std::vector<std::pair<int, int> > &effects,
+    AbstractOperator(const std::vector<std::pair<int, int>> &prevail,
+                     const std::vector<std::pair<int, int>> &preconditions,
+                     const std::vector<std::pair<int, int>> &effects,
                      int cost,
                      const std::vector<std::size_t> &hash_multipliers);
     ~AbstractOperator();
@@ -47,7 +47,7 @@ public:
       Returns variable value pairs which represent the preconditions of
       the abstract operator in a regression search
     */
-    const std::vector<std::pair<int, int> > &get_regression_preconditions() const {
+    const std::vector<std::pair<int, int>> &get_regression_preconditions() const {
         return regression_preconditions;
     }
 
@@ -97,10 +97,10 @@ class PatternDatabase {
     */
     void multiply_out(
         int pos, int cost,
-        std::vector<std::pair<int, int> > &prev_pairs,
-        std::vector<std::pair<int, int> > &pre_pairs,
-        std::vector<std::pair<int, int> > &eff_pairs,
-        const std::vector<std::pair<int, int> > &effects_without_pre,
+        std::vector<std::pair<int, int>> &prev_pairs,
+        std::vector<std::pair<int, int>> &pre_pairs,
+        std::vector<std::pair<int, int>> &eff_pairs,
+        const std::vector<std::pair<int, int>> &effects_without_pre,
         std::vector<AbstractOperator> &operators);
 
     /*
@@ -142,7 +142,7 @@ class PatternDatabase {
     */
     bool is_goal_state(
         const std::size_t state_index,
-        const std::vector<std::pair<int, int> > &abstract_goals) const;
+        const std::vector<std::pair<int, int>> &abstract_goals) const;
 
     /*
       The given concrete state is used to calculate the index of the

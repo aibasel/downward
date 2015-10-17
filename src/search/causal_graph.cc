@@ -27,7 +27,7 @@ using namespace std;
   maybe deal with all of them in the same way.
 */
 static unordered_map<const AbstractTask *,
-                     unique_ptr<CausalGraph> > causal_graph_cache;
+                     unique_ptr<CausalGraph>> causal_graph_cache;
 
 /*
   An IntRelationBuilder constructs an IntRelation by adding one pair

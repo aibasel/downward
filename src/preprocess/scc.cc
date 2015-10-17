@@ -3,7 +3,7 @@
 #include <vector>
 using namespace std;
 
-vector<vector<int> > SCC::get_result() {
+vector<vector<int>> SCC::get_result() {
     int node_count = graph.size();
     dfs_numbers.resize(node_count, -1);
     dfs_minima.resize(node_count, -1);
