@@ -27,7 +27,7 @@ def main():
         sys.exit()
 
     # If validation succeeds, exit with the search component's exitcode.
-    exitcode = 0
+    exitcode = None
     for component in args.components:
         try:
             if component == "translate":
