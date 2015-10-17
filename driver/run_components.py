@@ -158,13 +158,8 @@ def run_validate(args):
         domain = util.find_domain_filename(task)
         args.validate_inputs = [domain, task] + plan_files
     elif num_files == 2:
-        if plan_files:
-            domain, task = args.filenames
-            args.validate_inputs = [domain, task] + plan_files
-        else:
-            task, solution = args.filenames
-            domain = util.find_domain_filename(task)
-            args.validate_inputs = [domain, task, solution]
+        domain, task = args.filenames
+        args.validate_inputs = [domain, task] + plan_files
     else:
         domain, task = args.filenames[:2]
         solutions = args.filenames[2:]
