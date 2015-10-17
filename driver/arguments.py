@@ -217,11 +217,6 @@ def _set_components_and_inputs(parser, args):
 
     if args.components == ["translate", "search"]:
         parser.error("cannot run translator and search without preprocessor")
-    components = set(args.components)
-    if ("validate" in components and
-            any(component not in components
-            for component in ["translate", "preprocess", "search"])):
-        parser.error("can only validate whole-planner runs")
 
     if not args.components:
         _set_components_automatically(parser, args)
