@@ -146,22 +146,29 @@ def run_search(args):
 
 def run_validate(args):
     logging.info("Running validate.")
-    plan_files = PlanManager(args.plan_file).get_existing_plans()
+    plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     num_files = len(args.filenames)
     if "-h" in args.validate_options:
         # Silently swallow input filenames.
         args.validate_inputs = []
+    elif num_files == 0:
+        raise ValueError("Validation needs one or two PDDL input files.")
     elif num_files == 1:
-        task_filename, = args.filenames
-        domain_filename = util.find_domain_filename(task_filename)
-        args.validate_inputs = (
-            [domain_filename, task_filename] + list(plan_files))
+        task, = args.filenames
+        domain = util.find_domain_filename(task)
+        args.validate_inputs = [domain, task] + plan_files
     elif num_files == 2:
-        args.validate_inputs = args.filenames + list(plan_files)
+        if plan_files:
+            domain, task = args.filenames
+            args.validate_inputs = [domain, task] + plan_files
+        else:
+            task, solution = args.filenames
+            domain = util.find_domain_filename(task)
+            args.validate_inputs = [domain, task, solution]
     else:
-        # Validation needs one or two PDDL input files. This is ensured
-        # by the translator component.
-        assert False
+        domain, task = args.filenames[:2]
+        solutions = args.filenames[2:]
+        args.validate_inputs = [domain, task] + solutions
     print_component_settings(
         "validate", args.validate_inputs, args.validate_options,
         time_limit=None, memory_limit=None)
