@@ -64,6 +64,9 @@ EXAMPLES = [
      ["./fast-downward.py", "benchmarks/gripper/prob01.pddl",
       "--translate-options", "--full-encoding",
       "--search-options", "--search", '"astar(lmcut())"']),
+    ("Validate existing plan:",
+     ["./fast-downward.py", "--validate",
+      "benchmarks/gripper/prob01.pddl", "sas_plan"]),
 ]
 
 EPILOG = """component options:
