@@ -25,8 +25,8 @@ import sys
 import traceback
 
 from . import call
-from . import exitcodes
 from . import limits
+from . import returncodes
 from . import util
 
 
@@ -121,10 +121,10 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 return
 
             yield exitcode
-            if exitcode == exitcodes.EXIT_UNSOLVABLE:
+            if exitcode == returncodes.EXIT_UNSOLVABLE:
                 return
 
-            if exitcode == exitcodes.EXIT_PLAN_FOUND:
+            if exitcode == returncodes.EXIT_PLAN_FOUND:
                 configs_next_round.append(args)
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
@@ -139,7 +139,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                         return
 
                     yield exitcode
-                    if exitcode == exitcodes.EXIT_UNSOLVABLE:
+                    if exitcode == returncodes.EXIT_UNSOLVABLE:
                         return
                 if final_config_builder:
                     print("Build final config.")
@@ -169,7 +169,7 @@ def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
                               run_time, memory)
         yield exitcode
 
-        if exitcode in [exitcodes.EXIT_PLAN_FOUND, exitcodes.EXIT_UNSOLVABLE]:
+        if exitcode in [returncodes.EXIT_PLAN_FOUND, returncodes.EXIT_UNSOLVABLE]:
             break
 
 
@@ -213,7 +213,6 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
             "The TIMEOUT attribute in portfolios has been removed. "
             "Please pass a time limit to fast-downward.py.")
 
-
     if time is None:
         if os.name == "nt":
             sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
@@ -225,12 +224,12 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     timeout = util.get_elapsed_time() + time
 
     if optimal:
-        returncodes = run_opt(
+        exitcodes = run_opt(
             configs, executable, sas_file, plan_manager, timeout, memory)
     else:
-        returncodes = run_sat(
+        exitcodes = run_sat(
             configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory)
-    exitcode = exitcodes.generate_portfolio_exitcode(returncodes)
+    exitcode = returncodes.generate_portfolio_exitcode(exitcodes)
     if exitcode != 0:
         raise subprocess.CalledProcessError(exitcode, ["run-portfolio", portfolio])
