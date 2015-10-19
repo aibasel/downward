@@ -316,7 +316,7 @@ struct TypeDocumenter<Heuristic *> {
                "For re-using heuristics, see OptionSyntax#Heuristic_Predefinitions.\n\n"
                "Definitions of //properties// in the descriptions below:\n\n"
                " * **admissible:** h(s) <= h*(s) for all states s\n"
-               " * **consistent:** h(s) + c(s, s') >= h(s') for all states s "
+               " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
                "connected to states s' by an action with cost c(s, s')\n"
                " * **safe:** h(s) = infinity is only true for states "
                "with h*(s) = infinity\n"
