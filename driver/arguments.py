@@ -5,7 +5,7 @@ import os.path
 
 from . import aliases
 from . import limits
-from .util import REPO_ROOT_DIR
+from . import util
 
 
 DESCRIPTION = """Fast Downward driver script.
@@ -44,7 +44,7 @@ that exceed their time or memory limit are aborted, and the next
 configuration is run."""
 
 EXAMPLE_PORTFOLIO = os.path.relpath(
-    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=REPO_ROOT_DIR)
+    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=util.REPO_ROOT_DIR)
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
@@ -224,6 +224,7 @@ def _set_components_and_inputs(parser, args):
     args.translate_inputs = []
     args.preprocess_input = "output.sas"
     args.search_input = "output"
+    args.validate_inputs = None
 
     assert args.components
     first = args.components[0]
@@ -254,8 +255,16 @@ def _set_components_and_inputs(parser, args):
         else:
             parser.error("search needs exactly one input file")
     elif first == "validate":
-        # We set the validator input files after the search finishes.
-        pass
+        if "-h" in args.validate_options:
+            args.validate_inputs = []
+        elif num_files == 2:
+            task_file, plan_file = args.filenames
+            domain_file = util.find_domain_filename(task_file)
+            args.validate_inputs = [domain_file, task_file, plan_file]
+        elif num_files == 3:
+            args.validate_inputs = args.filenames
+        else:
+            parser.error("validate needs two or three input files: TASK [DOMAIN] PLAN")
     else:
         assert False, first
 
