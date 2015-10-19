@@ -13,8 +13,14 @@ DESCRIPTION = """Fast Downward driver script.
 Input files can be either a PDDL problem file (with an optional PDDL domain
 file), in which case the driver runs all three planner components and
 validates the found plans, or a SAS+ preprocessor output file, in which case
-the driver runs just the search component. This default behaviour can be
-overridden with the options below.
+the driver runs just the search component. You can override this default
+behaviour by selecting components manually with the flags below. The first
+component to be run determines the required input files:
+
+--translate: [DOMAIN] PROBLEM
+--preprocess: TRANSLATE_OUTPUT
+--search: PREPROCESS_OUTPUT
+--validate: [DOMAIN] PROBLEM PLAN
 
 Arguments given before the specified input files are interpreted by the driver
 script ("driver options"). Arguments given after the input files are passed on
@@ -267,7 +273,7 @@ def _set_components_and_inputs(parser, args):
         elif num_files == 3:
             args.validate_inputs = args.filenames
         else:
-            parser.error("validate needs two or three input files: TASK [DOMAIN] PLAN")
+            parser.error("validate needs two or three input files: [DOMAIN] PROBLEM PLAN")
     else:
         assert False, first
 
