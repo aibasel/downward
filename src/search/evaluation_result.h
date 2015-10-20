@@ -30,6 +30,14 @@ public:
        default-constructed.
     */
 
+    /*
+      TODO: Can we get rid of count_evaluation?
+      The EvaluationContext needs to know (for statistics) if the
+      heuristic actually computed the heuristic value or just looked it
+      up in a cache. Currently this information is passed over the
+      count_evaluation flag, which is somewhat awkward.
+    */
+
     bool is_uninitialized() const;
     bool is_infinite() const;
     int get_h_value() const;

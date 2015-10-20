@@ -17,7 +17,7 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : description(opts.get_unparsed_config()),
       initialized(false),
-      heuristic_cache(HEntry(NO_VALUE,true)), //TODO: is true really a good idea here?
+      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_h")),
       task(get_task_from_options(opts)),
       task_proxy(*task),
@@ -88,18 +88,18 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     int heuristic = NO_VALUE;
 
-    if(!calculate_preferred && cache_h_values &&
-            heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
-       heuristic = (int) heuristic_cache[state].h;
-       result.set_count_evaluation(false);
+    if (!calculate_preferred && cache_h_values &&
+        heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
+        heuristic = (int)heuristic_cache[state].h;
+        result.set_count_evaluation(false);
     } else {
-       heuristic = compute_heuristic(state);
-       if(cache_h_values) {
-           heuristic_cache[state] = HEntry(heuristic, false);
-       }
-       for (const GlobalOperator *preferred_operator : preferred_operators)
-           preferred_operator->unmark();
-       result.set_count_evaluation(true);
+        heuristic = compute_heuristic(state);
+        if (cache_h_values) {
+            heuristic_cache[state] = HEntry(heuristic, false);
+        }
+        for (const GlobalOperator *preferred_operator : preferred_operators)
+            preferred_operator->unmark();
+        result.set_count_evaluation(true);
     }
 
     assert(heuristic == DEAD_END || heuristic >= 0);

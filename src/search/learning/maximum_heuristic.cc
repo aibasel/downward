@@ -133,7 +133,7 @@ bool MaxHeuristic::reach_state(const GlobalState &parent_state, const GlobalOper
         val = heuristics[i]->reach_state(parent_state, op, state);
         ret = ret || val;
     }
-    if(cache_h_values && ret) {
+    if (cache_h_values && ret) {
         heuristic_cache[state].dirty = true;
     }
     return ret;

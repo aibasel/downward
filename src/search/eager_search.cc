@@ -245,11 +245,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                 continue;
             int pushed_h = last_key_removed[1];
 
-            /* TODO: old mpd distincted also if pushed h is smaller than
-             * stored h (without recomputing);
-             * --> run tests if we loose performance
-             */
-            if(!node.is_closed()) {
+            if (!node.is_closed()) {
                 EvaluationContext eval_context(
                     node.get_state(), node.get_g(), false, &statistics);
 
@@ -258,7 +254,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
                     statistics.inc_dead_ends();
                     continue;
                 }
-                if(pushed_h < eval_context.get_result(heuristics[0]).get_h_value()) {
+                if (pushed_h < eval_context.get_result(heuristics[0]).get_h_value()) {
                     assert(node.is_open());
                     open_list->insert(eval_context, node.get_state_id());
                     continue;
@@ -291,10 +287,8 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-/*
- * TODO: HACK! This is brutally inefficient for simply looking up an h value
- * furthermore it would recompute h for each and every state if h values are not saved
- */
+ /* TODO: HACK! This is very inefficient for simply looking up an h value.
+    Also, if h values are not saved it would recompute h for each and every state. */
 void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     if (f_evaluator) {
         /*
