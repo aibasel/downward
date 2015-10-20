@@ -5,15 +5,22 @@ import os.path
 
 from . import aliases
 from . import limits
-from .util import REPO_ROOT_DIR
+from . import util
 
 
 DESCRIPTION = """Fast Downward driver script.
 
 Input files can be either a PDDL problem file (with an optional PDDL domain
-file), in which case the driver runs all three planner components,  or a SAS+
-preprocessor output file, in which case the driver runs just the search
-component. This default behaviour can be overridden with the options below.
+file), in which case the driver runs all three planner components and
+validates the found plans, or a SAS+ preprocessor output file, in which case
+the driver runs just the search component. You can override this default
+behaviour by selecting components manually with the flags below. The first
+component to be run determines the required input files:
+
+--translate: [DOMAIN] PROBLEM
+--preprocess: TRANSLATE_OUTPUT
+--search: PREPROCESS_OUTPUT
+--validate: [DOMAIN] PROBLEM PLAN
 
 Arguments given before the specified input files are interpreted by the driver
 script ("driver options"). Arguments given after the input files are passed on
@@ -24,9 +31,9 @@ separate driver options from input files and also to separate input files from
 component options.
 
 By default, component options are passed to the search component. Use
-"--translate-options", "--preprocess-options" or "--search-options" within the
-component options to override the default for the following options, until
-overridden again. (See below for examples.)"""
+"--translate-options", "--preprocess-options", "--search-options" or
+"--validate-options" within the component options to override the default for
+the following options, until overridden again. (See below for examples.)"""
 
 LIMITS_HELP = """You can limit the time or memory for individual components
 or the whole planner. The effective limit for each component is the minimum
@@ -43,7 +50,7 @@ that exceed their time or memory limit are aborted, and the next
 configuration is run."""
 
 EXAMPLE_PORTFOLIO = os.path.relpath(
-    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=REPO_ROOT_DIR)
+    aliases.PORTFOLIOS["seq-opt-fdss-1"], start=util.REPO_ROOT_DIR)
 
 EXAMPLES = [
     ("Translate and preprocess, then find a plan with A* + LM-Cut:",
@@ -61,8 +68,11 @@ EXAMPLES = [
      ["./fast-downward.py", "--debug", "output", "--search", '"astar(ipdb())"']),
     ("Pass options to translator and search components:",
      ["./fast-downward.py", "benchmarks/gripper/prob01.pddl",
-      "--translate-options", "--relaxed",
+      "--translate-options", "--full-encoding",
       "--search-options", "--search", '"astar(lmcut())"']),
+    ("Validate existing plan:",
+     ["./fast-downward.py", "--validate",
+      "benchmarks/gripper/prob01.pddl", "sas_plan"]),
 ]
 
 EPILOG = """component options:
@@ -141,6 +151,7 @@ def _split_planner_args(parser, args):
     args.translate_options = []
     args.preprocess_options = []
     args.search_options = []
+    args.validate_options = []
 
     curr_options = args.search_options
     for option in options:
@@ -150,6 +161,8 @@ def _split_planner_args(parser, args):
             curr_options = args.preprocess_options
         elif option == "--search-options":
             curr_options = args.search_options
+        elif option == "--validate-options":
+            curr_options = args.validate_options
         else:
             curr_options.append(option)
 
@@ -185,7 +198,7 @@ def _set_components_automatically(parser, args):
     if len(args.filenames) == 1 and _looks_like_search_input(args.filenames[0]):
         args.components = ["search"]
     else:
-        args.components = ["translate", "preprocess", "search"]
+        args.components = ["translate", "preprocess", "search", "validate"]
 
 
 def _set_components_and_inputs(parser, args):
@@ -208,6 +221,8 @@ def _set_components_and_inputs(parser, args):
         args.components.append("preprocess")
     if args.search or args.run_all:
         args.components.append("search")
+    if args.validate or args.run_all:
+        args.components.append("validate")
 
     if args.components == ["translate", "search"]:
         parser.error("cannot run translator and search without preprocessor")
@@ -218,6 +233,7 @@ def _set_components_and_inputs(parser, args):
     args.translate_inputs = []
     args.preprocess_input = "output.sas"
     args.search_input = "output"
+    args.validate_inputs = None
 
     assert args.components
     first = args.components[0]
@@ -247,6 +263,17 @@ def _set_components_and_inputs(parser, args):
             args.search_input, = args.filenames
         else:
             parser.error("search needs exactly one input file")
+    elif first == "validate":
+        if "-h" in args.validate_options:
+            args.validate_inputs = []
+        elif num_files == 2:
+            task_file, plan_file = args.filenames
+            domain_file = util.find_domain_filename(task_file)
+            args.validate_inputs = [domain_file, task_file, plan_file]
+        elif num_files == 3:
+            args.validate_inputs = args.filenames
+        else:
+            parser.error("validate needs two or three input files: [DOMAIN] PROBLEM PLAN")
     else:
         assert False, first
 
@@ -291,6 +318,9 @@ def parse_args():
     components.add_argument(
         "--search", action="store_true",
         help="run search component")
+    components.add_argument(
+        "--validate", action="store_true",
+        help="validate plans")
 
     limits = parser.add_argument_group(
         title="time and memory limits", description=LIMITS_HELP)
