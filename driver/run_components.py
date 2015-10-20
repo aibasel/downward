@@ -2,22 +2,26 @@
 
 import logging
 import os.path
+import subprocess
 import sys
 
 from . import call
 from . import limits
 from . import portfolio_runner
+from . import returncodes
+from . import util
 from .plan_manager import PlanManager
-from .util import BUILDS_DIR
 
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
     REL_PREPROCESS_PATH = "preprocess"
     REL_SEARCH_PATH = "downward"
+    REL_VALIDATE_PATH = "validate"
 elif os.name == "nt":
     REL_PREPROCESS_PATH = "preprocess.exe"
     REL_SEARCH_PATH = "downward.exe"
+    REL_VALIDATE_PATH = "validate.exe"
 else:
     print("Unsupported OS: " + os.name)
     sys.exit(1)
@@ -32,7 +36,7 @@ def get_executable(build, rel_path):
         # name of a build in our standard directory structure.
         # in this case, the binaries are in
         #   '<repo-root>/builds/<buildname>/bin'.
-        build_dir = os.path.join(BUILDS_DIR, build, "bin")
+        build_dir = os.path.join(util.BUILDS_DIR, build, "bin")
         if not os.path.exists(build_dir):
             raise IOError(
                 "Could not find build '{build}' at {build_dir}. "
@@ -46,15 +50,15 @@ def get_executable(build, rel_path):
 
     return abs_path
 
-def print_component_settings(nick, inputs, options, time_limit, memory):
+def print_component_settings(nick, inputs, options, time_limit, memory_limit):
     logging.info("{} input: {}".format(nick, inputs))
     logging.info("{} arguments: {}".format(nick, options))
     if time_limit is not None:
         time_limit = str(time_limit) + "s"
     logging.info("{} time_limit: {}".format(nick, time_limit))
-    if memory is not None:
-        memory = "{:.2} MB".format(limits.convert_to_mb(memory))
-    logging.info("{} memory limit: {}".format(nick, memory))
+    if memory_limit is not None:
+        memory_limit = "{:.2} MB".format(limits.convert_to_mb(memory_limit))
+    logging.info("{} memory limit: {}".format(nick, memory_limit))
 
 
 def call_component(executable, options, stdin=None,
@@ -126,7 +130,42 @@ def run_search(args):
                 "search needs --alias, --portfolio, or search options")
         if "--help" not in args.search_options:
             args.search_options.extend(["--internal-plan-file", args.plan_file])
-        call_component(
-            search, args.search_options,
-            stdin=args.search_input,
-            time_limit=time_limit, memory_limit=memory_limit)
+        try:
+            call_component(
+                search, args.search_options,
+                stdin=args.search_input,
+                time_limit=time_limit, memory_limit=memory_limit)
+        except subprocess.CalledProcessError as err:
+            if err.returncode in returncodes.EXPECTED_EXITCODES:
+                return err.returncode
+            else:
+                raise
+        else:
+            return 0
+
+
+def run_validate(args):
+    logging.info("Running validate.")
+
+    if args.validate_inputs is None:
+        num_files = len(args.filenames)
+        if num_files in [1, 2]:
+            if num_files == 1:
+                task, = args.filenames
+                domain = util.find_domain_filename(task)
+            elif num_files == 2:
+                domain, task = args.filenames
+            plan_files = list(PlanManager(args.plan_file).get_existing_plans())
+            args.validate_inputs = [domain, task] + plan_files
+        else:
+            raise ValueError("validate needs one or two PDDL input files.")
+
+    print_component_settings(
+        "validate", args.validate_inputs, args.validate_options,
+        time_limit=None, memory_limit=None)
+
+    validate = get_executable(args.build, REL_VALIDATE_PATH)
+    logging.info("validate executable: %s" % validate)
+
+    call_component(
+        validate, args.validate_options + args.validate_inputs)

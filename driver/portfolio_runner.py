@@ -20,43 +20,17 @@ the process is started.
 __all__ = ["run"]
 
 import os
-import signal
 import subprocess
 import sys
 import traceback
 
 from . import call
 from . import limits
+from . import returncodes
 from . import util
 
 
 DEFAULT_TIMEOUT = 1800
-
-# Exit codes.
-EXIT_PLAN_FOUND = 0
-EXIT_CRITICAL_ERROR = 1
-EXIT_INPUT_ERROR = 2
-EXIT_UNSUPPORTED = 3
-EXIT_UNSOLVABLE = 4
-EXIT_UNSOLVED_INCOMPLETE = 5
-EXIT_OUT_OF_MEMORY = 6
-EXIT_TIMEOUT = 7
-EXIT_TIMEOUT_AND_MEMORY = 8
-EXIT_SIGXCPU = -signal.SIGXCPU if hasattr(signal, 'SIGXCPU') else None
-
-EXPECTED_EXITCODES = set([
-    EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE,
-    EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT])
-
-# The portfolio's exitcode is determined as follows:
-# There is exactly one type of unexpected exit code -> use it.
-# There are multiple types of unexpected exit codes -> EXIT_CRITICAL_ERROR.
-# [..., EXIT_PLAN_FOUND, ...] -> EXIT_PLAN_FOUND
-# [..., EXIT_UNSOLVABLE, ...] -> EXIT_UNSOLVABLE
-# [..., EXIT_UNSOLVED_INCOMPLETE, ...] -> EXIT_UNSOLVED_INCOMPLETE
-# [..., EXIT_OUT_OF_MEMORY, ..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT_AND_MEMORY
-# [..., EXIT_TIMEOUT, ...] -> EXIT_TIMEOUT
-# [..., EXIT_OUT_OF_MEMORY, ...] -> EXIT_OUT_OF_MEMORY
 
 
 def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
@@ -92,14 +66,14 @@ def run_search(executable, args, sas_file, plan_manager, time, memory):
     print("args: %s" % complete_args)
 
     try:
-        returncode = call.check_call(
+        exitcode = call.check_call(
             complete_args, stdin=sas_file,
             time_limit=time, memory_limit=memory)
     except subprocess.CalledProcessError as err:
-        returncode = err.returncode
-    print("returncode: %d" % returncode)
+        exitcode = err.returncode
+    print("exitcode: %d" % exitcode)
     print()
-    return returncode
+    return exitcode
 
 
 def compute_run_time(timeout, configs, pos):
@@ -131,7 +105,6 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
 
 def run_sat(configs, executable, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory):
-    exitcodes = []
     # If the configuration contains S_COST_TYPE or H_COST_TYPE and the task
     # has non-unit costs, we start by treating all costs as one. When we find
     # a solution, we rerun the successful config with real costs.
@@ -145,13 +118,13 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 configs, pos, search_cost_type, heuristic_cost_type,
                 executable, sas_file, plan_manager, timeout, memory)
             if exitcode is None:
-                return exitcodes
+                return
 
-            exitcodes.append(exitcode)
-            if exitcode == EXIT_UNSOLVABLE:
-                return exitcodes
+            yield exitcode
+            if exitcode == returncodes.EXIT_UNSOLVABLE:
+                return
 
-            if exitcode == EXIT_PLAN_FOUND:
+            if exitcode == returncodes.EXIT_PLAN_FOUND:
                 configs_next_round.append(args)
                 if (not changed_cost_types and can_change_cost_type(args) and
                     plan_manager.get_problem_type() == "general cost"):
@@ -163,11 +136,11 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                         configs, pos, search_cost_type, heuristic_cost_type,
                         executable, sas_file, plan_manager, timeout, memory)
                     if exitcode is None:
-                        return exitcodes
+                        return
 
-                    exitcodes.append(exitcode)
-                    if exitcode == EXIT_UNSOLVABLE:
-                        return exitcodes
+                    yield exitcode
+                    if exitcode == returncodes.EXIT_UNSOLVABLE:
+                        return
                 if final_config_builder:
                     print("Build final config.")
                     final_config = final_config_builder(args)
@@ -186,46 +159,18 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
             heuristic_cost_type, executable, sas_file, plan_manager,
             timeout, memory)
         if exitcode is not None:
-            exitcodes.append(exitcode)
-    return exitcodes
+            yield exitcode
 
 
 def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
-    exitcodes = []
     for pos, (relative_time, args) in enumerate(configs):
         run_time = compute_run_time(timeout, configs, pos)
         exitcode = run_search(executable, args, sas_file, plan_manager,
                               run_time, memory)
-        exitcodes.append(exitcode)
+        yield exitcode
 
-        if exitcode in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE]:
+        if exitcode in [returncodes.EXIT_PLAN_FOUND, returncodes.EXIT_UNSOLVABLE]:
             break
-    return exitcodes
-
-
-def generate_exitcode(exitcodes):
-    print("Exit codes: %s" % exitcodes)
-    exitcodes = set(exitcodes)
-    if EXIT_SIGXCPU in exitcodes:
-        exitcodes.remove(EXIT_SIGXCPU)
-        exitcodes.add(EXIT_TIMEOUT)
-    unexpected_codes = exitcodes - EXPECTED_EXITCODES
-    if unexpected_codes:
-        print("Error: Unexpected exit codes: %s" % list(unexpected_codes))
-        if len(unexpected_codes) == 1:
-            return unexpected_codes.pop()
-        else:
-            return EXIT_CRITICAL_ERROR
-    for code in [EXIT_PLAN_FOUND, EXIT_UNSOLVABLE, EXIT_UNSOLVED_INCOMPLETE]:
-        if code in exitcodes:
-            return code
-    for code in [EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]:
-        if exitcodes == set([code]):
-            return code
-    if exitcodes == set([EXIT_OUT_OF_MEMORY, EXIT_TIMEOUT]):
-        return EXIT_TIMEOUT_AND_MEMORY
-    print("Error: Unhandled exit codes: %s" % exitcodes)
-    return EXIT_CRITICAL_ERROR
 
 
 def can_change_cost_type(args):
@@ -268,7 +213,6 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
             "The TIMEOUT attribute in portfolios has been removed. "
             "Please pass a time limit to fast-downward.py.")
 
-
     if time is None:
         if os.name == "nt":
             sys.exit(limits.RESOURCE_MODULE_MISSING_MSG)
@@ -280,12 +224,12 @@ def run(portfolio, executable, sas_file, plan_manager, time, memory):
     timeout = util.get_elapsed_time() + time
 
     if optimal:
-        exitcodes = run_opt(configs, executable, sas_file, plan_manager,
-                            timeout, memory)
+        exitcodes = run_opt(
+            configs, executable, sas_file, plan_manager, timeout, memory)
     else:
-        exitcodes = run_sat(configs, executable, sas_file, plan_manager,
-                            final_config, final_config_builder,
-                            timeout, memory)
-    exitcode = generate_exitcode(exitcodes)
+        exitcodes = run_sat(
+            configs, executable, sas_file, plan_manager, final_config,
+            final_config_builder, timeout, memory)
+    exitcode = returncodes.generate_portfolio_exitcode(exitcodes)
     if exitcode != 0:
         raise subprocess.CalledProcessError(exitcode, ["run-portfolio", portfolio])
