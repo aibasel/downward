@@ -26,7 +26,8 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
       num_episodes(opts.get<int>("num_episodes")),
       mutation_probability(opts.get<double>("mutation_probability")),
       disjoint_patterns(opts.get<bool>("disjoint")),
-      cost_type(OperatorCost(opts.get<int>("cost_type"))) {
+      cost_type(OperatorCost(opts.get<int>("cost_type"))),
+      cache_h(opts.get<bool>("cache_h")) {
     Timer timer;
     genetic_algorithm();
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
@@ -195,7 +196,7 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
             // Since we pass a task transformation, cost_type won't be used.
             opts.set<int>("cost_type", NORMAL);
             opts.set<vector<vector<int>>>("patterns", pattern_collection);
-            opts.set<bool>("cache_h", false);
+            opts.set<bool>("cache_h", cache_h);
             ZeroOnePDBsHeuristic *pattern_collection_heuristic =
                 new ZeroOnePDBsHeuristic(opts);
             fitness = pattern_collection_heuristic->get_approx_mean_finite_h();
