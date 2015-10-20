@@ -2,9 +2,9 @@
 #define HEURISTIC_H
 
 #include "operator_cost.h"
+#include "per_state_information.h"
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
-#include "per_state_information.h"
 
 #include <memory>
 #include <vector>
@@ -16,12 +16,10 @@ class Options;
 class TaskProxy;
 
 class Heuristic : public ScalarEvaluator {
-
-
     struct HEntry {
         int h : 31;
         bool dirty : 1;
-        HEntry(int h_, bool dirty_) : h(h_), dirty(dirty_) {}
+        HEntry(int h, bool dirty) : h(h), dirty(dirty) {}
     };
 
     std::string description;
@@ -41,11 +39,11 @@ class Heuristic : public ScalarEvaluator {
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
     /*
-     * Cache for saving h values
-     * Before accessing this cache always make sure that the cache_h_values
-     * flag is set to true - as soon as the cache is acessed it will create
-     * entries for all existing states
-     */
+      Cache for saving h values
+      Before accessing this cache always make sure that the cache_h_values
+      flag is set to true - as soon as the cache is accessed it will create
+      entries for all existing states
+    */
     PerStateInformation<HEntry> heuristic_cache;
     bool cache_h_values;
 
@@ -90,7 +88,7 @@ public:
         EvaluationContext &eval_context) override;
 
     std::string get_description() const;
-    bool is_h_dirty(GlobalState& state) {
+    bool is_h_dirty(GlobalState &state) {
         return heuristic_cache[state].dirty;
     }
 };

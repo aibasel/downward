@@ -31,10 +31,6 @@ EvaluationContext::EvaluationContext(
     : EvaluationContext(HeuristicCache(state), INVALID, false, statistics, calculate_preferred) {
 }
 
-/*
- * TODO: information whether the heuristic actually evaluated the state or just looked up a cache
- * is stored in the EvaluationResult currently. Maybe there are also better ways...
- */
 const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
     EvaluationResult &result = cache[heur];
     if (result.is_uninitialized()) {
@@ -42,7 +38,7 @@ const EvaluationResult &EvaluationContext::get_result(ScalarEvaluator *heur) {
         if (statistics && dynamic_cast<const Heuristic *>(heur)) {
             /* Only count evaluations of actual Heuristics, not arbitrary
                scalar evaluators. */
-            if(result.get_count_evaluation()) {
+            if (result.get_count_evaluation()) {
                 statistics->inc_evaluations();
             }
         }

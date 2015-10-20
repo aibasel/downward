@@ -31,7 +31,7 @@ bool IPCMaxHeuristic::reach_state(const GlobalState &parent_state,
             // Don't break: we must call reached_state everywhere.
         }
     }
-    if(h_dirty && cache_h_values) {
+    if (h_dirty && cache_h_values) {
         heuristic_cache[state].dirty = true;
     }
     return h_dirty;
