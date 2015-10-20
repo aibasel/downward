@@ -30,6 +30,7 @@ class PatternGenerationHaslum {
     const int min_improvement;
     const double max_time;
     const OperatorCost cost_type;
+    const bool cache_h;
     CanonicalPDBsHeuristic *current_heuristic;
     SuccessorGenerator successor_generator;
 
