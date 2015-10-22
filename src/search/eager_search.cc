@@ -287,8 +287,8 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
- /* TODO: HACK! This is very inefficient for simply looking up an h value.
-    Also, if h values are not saved it would recompute h for each and every state. */
+/* TODO: HACK! This is very inefficient for simply looking up an h value.
+   Also, if h values are not saved it would recompute h for each and every state. */
 void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     if (f_evaluator) {
         /*
