@@ -59,7 +59,13 @@ public:
     virtual bool reach_state(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state) override {
-        return synergy->lama_reach_state(parent_state, op, state);
+        if (synergy->lama_reach_state(parent_state, op, state)) {
+            if (cache_h_values) {
+                heuristic_cache[state].dirty = true;
+            }
+            return true;
+        }
+        return false;
     }
 };
 

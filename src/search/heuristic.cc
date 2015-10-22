@@ -17,6 +17,8 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : description(opts.get_unparsed_config()),
       initialized(false),
+      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
+      cache_h_values(opts.get<bool>("cache_h")),
       task(get_task_from_options(opts)),
       task_proxy(*task),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
@@ -59,6 +61,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
         OptionParser::NONE);
+    parser.add_option<bool>("cache_h", "chache heuristic estimates", "true");
 }
 
 //this solution to get default values seems not optimal:
@@ -66,6 +69,7 @@ Options Heuristic::default_options() {
     Options opts = Options();
     opts.set<shared_ptr<AbstractTask>>("transform", g_root_task());
     opts.set<int>("cost_type", NORMAL);
+    opts.set<bool>("cache_h", false);
     return opts;
 }
 
@@ -80,9 +84,24 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     assert(preferred_operators.empty());
 
     const GlobalState &state = eval_context.get_state();
-    int heuristic = compute_heuristic(state);
-    for (const GlobalOperator *preferred_operator : preferred_operators)
-        preferred_operator->unmark();
+    bool calculate_preferred = eval_context.get_calculate_preferred();
+
+    int heuristic = NO_VALUE;
+
+    if (!calculate_preferred && cache_h_values &&
+        heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
+        heuristic = (int)heuristic_cache[state].h;
+        result.set_count_evaluation(false);
+    } else {
+        heuristic = compute_heuristic(state);
+        if (cache_h_values) {
+            heuristic_cache[state] = HEntry(heuristic, false);
+        }
+        for (const GlobalOperator *preferred_operator : preferred_operators)
+            preferred_operator->unmark();
+        result.set_count_evaluation(true);
+    }
+
     assert(heuristic == DEAD_END || heuristic >= 0);
 
     if (heuristic == DEAD_END) {
