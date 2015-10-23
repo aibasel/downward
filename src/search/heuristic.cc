@@ -18,7 +18,7 @@ Heuristic::Heuristic(const Options &opts)
     : description(opts.get_unparsed_config()),
       initialized(false),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
-      cache_h_values(opts.get<bool>("cache_h")),
+      cache_h_values(opts.get<bool>("cache_estimates")),
       task(get_task_from_options(opts)),
       task_proxy(*task),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
@@ -61,7 +61,7 @@ void Heuristic::add_options_to_parser(OptionParser &parser) {
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
         OptionParser::NONE);
-    parser.add_option<bool>("cache_h", "chache heuristic estimates", "true");
+    parser.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
 //this solution to get default values seems not optimal:
@@ -69,7 +69,7 @@ Options Heuristic::default_options() {
     Options opts = Options();
     opts.set<shared_ptr<AbstractTask>>("transform", g_root_task());
     opts.set<int>("cost_type", NORMAL);
-    opts.set<bool>("cache_h", false);
+    opts.set<bool>("cache_estimates", false);
     return opts;
 }
 
@@ -90,7 +90,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
 
     if (!calculate_preferred && cache_h_values &&
         heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
-        heuristic = (int)heuristic_cache[state].h;
+        heuristic = heuristic_cache[state].h;
         result.set_count_evaluation(false);
     } else {
         heuristic = compute_heuristic(state);

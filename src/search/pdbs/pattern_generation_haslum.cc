@@ -37,7 +37,7 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
-      cache_h(opts.get<bool>("cache_h")),
+      cache_h(opts.get<bool>("cache_estimates")),
       successor_generator(task),
       num_rejected(0),
       hill_climbing_timer(0) {
@@ -329,7 +329,7 @@ void PatternGenerationHaslum::initialize() {
     // Since we pass a task transformation, cost_type won't be used.
     opts.set<int>("cost_type", NORMAL);
     opts.set<vector<vector<int>>>("patterns", initial_pattern_collection);
-    opts.set<bool>("cache_h", cache_h);
+    opts.set<bool>("cache_estimates", cache_h);
     current_heuristic = new CanonicalPDBsHeuristic(opts);
 
     State initial_state = task_proxy.get_initial_state();
