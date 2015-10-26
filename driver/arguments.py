@@ -245,7 +245,11 @@ def _set_components_and_inputs(parser, args):
     if first == "translate":
         if "--help" in args.translate_options or "-h" in args.translate_options:
             args.translate_inputs = []
-        elif num_files in [1, 2]:
+        elif num_files == 1:
+            task_file, = args.filenames
+            domain_file = util.find_domain_filename(task_file)
+            args.translate_inputs = [domain_file, task_file]
+        elif num_files == 2:
             args.translate_inputs = args.filenames
         else:
             parser.error("translator needs one or two input files")
