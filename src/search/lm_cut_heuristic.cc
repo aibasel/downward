@@ -41,18 +41,8 @@ int LandmarkCutHeuristic::compute_heuristic(const State &state) {
 
     if (dead_end)
         return DEAD_END;
-    return (total_cost + COST_MULTIPLIER - 1) / COST_MULTIPLIER;
+    return total_cost;
 }
-
-/* TODO:
-   It looks like the change in r3638 reduced the quality of the heuristic
-   a bit (at least a preliminary glance at Elevators-03 suggests that).
-   The only arbitrary aspect is the tie-breaking policy in choosing h_max
-   supporters, so maybe that is adversely affected by the incremental
-   procedure? In that case, maybe we should play around with this a bit,
-   e.g. use a different tie-breaking rule in every round to spread out the
-   values a bit.
- */
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis("Landmark-cut heuristic", "");
