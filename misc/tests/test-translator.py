@@ -34,6 +34,9 @@ REPO = os.path.dirname(os.path.dirname(DIR))
 TRANSLATOR = os.path.abspath(os.path.join(REPO, "src/translate/translate.py"))
 BENCHMARKS = os.path.abspath(os.path.join(REPO, "benchmarks"))
 
+sys.path.insert(0, REPO)
+from driver import util
+
 # Translating these problems covers 84% of the translator code. Translating all
 # first problems covers 85%.
 TASKS = [
@@ -55,7 +58,8 @@ def get_task_name(path):
 def translate_task(python, task_file):
     print("Translate {} with {}".format(get_task_name(task_file), python))
     sys.stdout.flush()
-    cmd = [python, TRANSLATOR, task_file]
+    domain_file = util.find_domain_filename(task_file)
+    cmd = [python, TRANSLATOR, domain_file, task_file]
     try:
         output = subprocess.check_output(cmd, env={"PYTHONHASHSEED": "random"})
     except OSError as err:

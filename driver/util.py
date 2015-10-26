@@ -22,7 +22,6 @@ def get_elapsed_time():
     return sum(os.times()[:4])
 
 
-# TODO: Fix code duplication with translator.
 def find_domain_filename(task_filename):
     """
     Find domain filename for the given task using automatic naming rules.

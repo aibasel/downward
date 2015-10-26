@@ -643,7 +643,8 @@ def dump_statistics(sas_task):
 def main():
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl_parser.open(task_filename=options.task, domain_filename=options.domain)
+        task = pddl_parser.open(
+            domain_filename=options.domain, task_filename=options.task)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
