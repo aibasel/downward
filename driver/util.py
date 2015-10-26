@@ -40,3 +40,18 @@ def find_domain_filename(task_filename):
         raise SystemExit(
             "Error: Could not find domain file using automatic naming rules.")
     return domain_filename
+
+
+# Shell-escaping code taken from Python's shlex.quote (missing in Python < 3.3).
+_find_unsafe = re.compile(r'[^\w@%+=:,./-]').search
+
+def shell_escape(s):
+    """Return a shell-escaped version of the string *s*."""
+    if not s:
+        return "''"
+    if _find_unsafe(s) is None:
+        return s
+
+    # Use single quotes, and put single quotes into double quotes.
+    # The string $'b is then quoted as '$'"'"'b'.
+    return "'" + s.replace("'", "'\"'\"'") + "'"
