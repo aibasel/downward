@@ -74,6 +74,7 @@ def call_component(executable, options, stdin=None,
     if executable.endswith(".py"):
         options.insert(0, executable)
         executable = sys.executable
+        assert executable, "Path to interpreter could not be found"
     print_callstring(executable, options, stdin)
     call.check_call(
         [executable] + options,
