@@ -41,17 +41,12 @@ def test_commandline_args():
 
 def test_aliases():
     for alias, config in ALIASES.items():
-        # selmax is currently not supported.
-        if alias in ["seq-opt-fd-autotune", "seq-opt-selmax"]:
-            continue
         cmd = ["./fast-downward.py", "--alias", alias, "output"]
         assert run_driver(cmd) == 0
 
 
 def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
-        if name in ["seq-opt-fd-autotune", "seq-opt-selmax"]:
-            continue
         cmd = ["./fast-downward.py", "--portfolio", portfolio,
                "--search-time-limit", "30m", "output"]
         assert run_driver(cmd) in [

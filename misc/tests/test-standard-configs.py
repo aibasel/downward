@@ -24,9 +24,6 @@ CONFIGS.update(configs.default_configs_satisficing(core=True, ipc=True, extended
 CONFIGS.update(configs.task_transformation_test_configs())
 CONFIGS.update(configs.regression_test_configs())
 
-if "astar_selmax_lmcut_lmcount" in CONFIGS:
-    del CONFIGS["astar_selmax_lmcut_lmcount"]
-
 if os.name == "nt":
     # No support for portfolios on Windows
     del CONFIGS["seq_opt_merge_and_shrink"]
