@@ -13,7 +13,8 @@ class LandmarkCutHeuristic : public Heuristic {
     std::unique_ptr<LandmarkCutLandmarks> landmark_generator;
 
     virtual void initialize() override;
-    virtual int compute_heuristic(const GlobalState &state) override;
+    virtual int compute_heuristic(const GlobalState &global_state) override;
+    int compute_heuristic(const State &state);
 public:
     LandmarkCutHeuristic(const Options &opts);
     virtual ~LandmarkCutHeuristic() override;
