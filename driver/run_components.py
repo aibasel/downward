@@ -61,11 +61,20 @@ def print_component_settings(nick, inputs, options, time_limit, memory_limit):
     logging.info("{} memory limit: {}".format(nick, memory_limit))
 
 
+def print_callstring(executable, options, stdin):
+    parts = [executable] + options
+    parts = [util.shell_escape(x) for x in parts]
+    if stdin is not None:
+        parts.extend(["<", util.shell_escape(stdin)])
+    logging.info("callstring: %s" % " ".join(parts))
+
+
 def call_component(executable, options, stdin=None,
                    time_limit=None, memory_limit=None):
     if executable.endswith(".py"):
         options.insert(0, executable)
         executable = sys.executable
+    print_callstring(executable, options, stdin)
     call.check_call(
         [executable] + options,
         stdin=stdin, time_limit=time_limit, memory_limit=memory_limit)
