@@ -3,13 +3,9 @@
 
 #define LINUX 0
 #define OSX 1
-#define CYGWIN 2
-#define WINDOWS 3
+#define WINDOWS 2
 
-#if defined(__CYGWIN32__)
-#define OPERATING_SYSTEM CYGWIN
-#include "system_windows.h"
-#elif defined(_WIN32)
+#if defined(_WIN32)
 #define OPERATING_SYSTEM WINDOWS
 #include "system_windows.h"
 #elif defined(__APPLE__)

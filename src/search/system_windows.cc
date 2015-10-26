@@ -1,7 +1,7 @@
 #include "system.h"
 
-#if OPERATING_SYSTEM == WINDOWS || OPERATING_SYSTEM == CYGWIN
-// TODO: find re-entrant alternatives on Windows/Cygwin.
+#if OPERATING_SYSTEM == WINDOWS
+// TODO: find re-entrant alternatives on Windows.
 
 #include "system_windows.h"
 #include "utilities.h"
@@ -29,8 +29,6 @@ void signal_handler(int signal_number) {
 }
 
 int get_peak_memory_in_kb() {
-    // The file /proc/self/status is present under Cygwin, but contains no peak
-    // memory info.
     PROCESS_MEMORY_COUNTERS_EX pmc;
     bool success = GetProcessMemoryInfo(
         GetCurrentProcess(),
