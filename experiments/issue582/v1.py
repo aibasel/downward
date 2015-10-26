@@ -7,7 +7,7 @@ import common_setup
 
 
 REVS = ["issue582-base", "issue582-v1"]
-SUITE = suites.suite_all()
+SUITE = suites.suite_optimal_with_ipc11()
 
 CONFIGS = {
     "astar_lmcut": [
