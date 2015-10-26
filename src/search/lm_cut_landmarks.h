@@ -135,8 +135,8 @@ class LandmarkCutLandmarks {
     void validate_h_max() const;
 public:
     typedef std::vector<OperatorProxy> Landmark;
-    typedef std::function<void(int)> CostCallback;
-    typedef std::function<void(Landmark, int)> LandmarkCallback;
+    typedef std::function<void (int)> CostCallback;
+    typedef std::function<void (Landmark, int)> LandmarkCallback;
 
     LandmarkCutLandmarks(const std::shared_ptr<AbstractTask> task);
     virtual ~LandmarkCutLandmarks();
