@@ -59,11 +59,11 @@ void HSPMaxHeuristic::setup_exploration_queue() {
     }
 }
 
-void HSPMaxHeuristic::setup_exploration_queue_state(State const& state) {
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        FactProxy const fact = state[var];
-        assert(fact.var_id == var);
-        Proposition* init_prop = &propositions[var][fact.get_value()];
+void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
+    for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
+        FactProxy fact = state[var_id];
+        assert(fact.var_id == var_id);
+        Proposition *init_prop = get_proposition(fact);
         enqueue_if_necessary(init_prop, 0);
     }
 }
@@ -94,8 +94,8 @@ void HSPMaxHeuristic::relaxed_exploration() {
     }
 }
 
-int HSPMaxHeuristic::compute_heuristic(GlobalState const& global_state) {
-    State state = convert_global_state(global_state);
+int HSPMaxHeuristic::compute_heuristic(const GlobalState &global_state) {
+    const State state = convert_global_state(global_state);
 
     setup_exploration_queue();
     setup_exploration_queue_state(state);
