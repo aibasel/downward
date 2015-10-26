@@ -40,10 +40,6 @@ def configs_optimal_core():
             "greedy=true),"
             "label_reduction=label_reduction(before_shrinking=true,"
             "before_merging=false)))"],
-        "astar_selmax_lmcut_lmcount": [
-            "--search",
-            "astar(selmax([lmcut(),lmcount(lm_merged([lm_hm(m=1),lm_rhw()]),"
-            "admissible=true)],training_set=1000),mpd=true)"],
     }
 
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
