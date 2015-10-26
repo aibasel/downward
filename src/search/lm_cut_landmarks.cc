@@ -278,7 +278,6 @@ bool LandmarkCutLandmarks::compute_landmarks(
     for (RelaxedOperator &op : relaxed_operators) {
         op.cost = op.base_cost;
     }
-    OperatorsProxy operators = task_proxy.get_operators();
     // The following three variables could be declared inside the loop
     // ("second_exploration_queue" even inside second_exploration),
     // but having them here saves reallocations and hence provides a
@@ -310,7 +309,7 @@ bool LandmarkCutLandmarks::compute_landmarks(
         if (landmark_callback) {
             landmark.clear();
             for (RelaxedOperator *op : cut) {
-                landmark.push_back(operators[op->original_op_id]);
+                landmark.push_back(op->original_op_id);
             }
             landmark_callback(landmark, cut_cost);
         }
