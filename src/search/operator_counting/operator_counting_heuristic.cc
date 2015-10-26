@@ -1,0 +1,84 @@
+#include "operator_counting_heuristic.h"
+
+#include "constraint_generator.h"
+
+#include "../option_parser.h"
+#include "../plugin.h"
+
+using namespace std;
+
+namespace operator_counting {
+OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
+    : Heuristic(opts),
+      constraint_generators(opts.get_list<ConstraintGenerator *>(
+                                "constraint_generators")),
+      lp_solver(LPSolverType(opts.get_enum("lpsolver"))) {
+}
+
+OperatorCountingHeuristic::~OperatorCountingHeuristic() {
+}
+
+void OperatorCountingHeuristic::initialize() {
+    vector<LPVariable> variables;
+    double infinity = lp_solver.get_infinity();
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        int op_cost = op.get_cost();
+        variables.push_back(LPVariable(0, infinity, op_cost));
+    }
+    vector<LPConstraint> constraints;
+    for (ConstraintGenerator *generator : constraint_generators) {
+        generator->initialize_constraints(constraints);
+    }
+    lp_solver.load_problem(LPObjectiveSense::MINIMIZE, variables, constraints);
+}
+
+bool OperatorCountingHeuristic::reach_state(const GlobalState &parent_state,
+                                            const GlobalOperator &op,
+                                            const GlobalState &state) {
+    bool h_dirty = false;
+    for (ConstraintGenerator *generator : constraint_generators) {
+        if (generator->reach_state(parent_state, op, state)) {
+            h_dirty = true;
+        }
+    }
+    return h_dirty;
+}
+
+int OperatorCountingHeuristic::compute_heuristic(const GlobalState &state) {
+    // Make sure there are no leftover temporary constraints
+    lp_solver.clear_temporary_constraints();
+    for (ConstraintGenerator *generator : constraint_generators) {
+        bool dead_end = generator->update_constraints(state, lp_solver);
+        if (dead_end) {
+            return DEAD_END;
+        }
+    }
+    int result;
+    lp_solver.solve();
+    if (lp_solver.has_optimal_solution()) {
+        result = lp_solver.get_objective_value();
+    } else {
+        result = DEAD_END;
+    }
+    lp_solver.clear_temporary_constraints();
+    return result;
+}
+
+static Heuristic *_parse(OptionParser &parser) {
+    parser.add_list_option<ConstraintGenerator *>(
+        "constraint_generators",
+        "methods that generate constraints over LP variables "
+        "representing the number of operator applications");
+    add_lp_solver_option_to_parser(parser);
+    Heuristic::add_options_to_parser(parser);
+    Options opts = parser.parse();
+    if (parser.help_mode())
+        return 0;
+    opts.verify_list_non_empty<ConstraintGenerator *>("constraint_generators");
+    if (parser.dry_run())
+        return 0;
+    return new OperatorCountingHeuristic(opts);
+}
+
+static Plugin<Heuristic> _plugin("operatorcounting", _parse);
+}
