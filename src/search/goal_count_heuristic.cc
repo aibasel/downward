@@ -15,13 +15,12 @@ void GoalCountHeuristic::initialize() {
     cout << "Initializing goal count heuristic..." << endl;
 }
 
-int GoalCountHeuristic::compute_heuristic(GlobalState const& global_state) {
-    State const state = convert_global_state(global_state);
+int GoalCountHeuristic::compute_heuristic(const GlobalState &global_state) {
+    const State state = convert_global_state(global_state);
     int unsatisfied_goal_count = 0;
 
-    GoalsProxy const goals =  task_proxy.get_goals();
-    for (FactProxy const& goal : goals) {
-        VariableProxy const var = goal.get_variable();
+    for (FactProxy goal : task_proxy.get_goals()) {
+        const VariableProxy var = goal.get_variable();
         if (state[var] != goal) {
             ++unsatisfied_goal_count;
         }

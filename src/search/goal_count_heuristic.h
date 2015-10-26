@@ -6,7 +6,7 @@
 class GoalCountHeuristic : public Heuristic {
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(GlobalState const& state);
+    virtual int compute_heuristic(const GlobalState &state);
 public:
     GoalCountHeuristic(const Options &options);
     ~GoalCountHeuristic();
