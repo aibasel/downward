@@ -21,7 +21,6 @@ enum PropositionStatus {
     BEFORE_GOAL_ZONE = 3
 };
 
-
 struct RelaxedOperator {
     int original_op_id;
     std::vector<RelaxedProposition *> preconditions;
@@ -88,7 +87,7 @@ class LandmarkCutLandmarks {
 public:
     using Landmark = std::vector<int>;
     using CostCallback = std::function<void (int)>;
-    using LandmarkCallback = std::function<void (const Landmark&, int)>;
+    using LandmarkCallback = std::function<void (const Landmark &, int)>;
 
     LandmarkCutLandmarks(const std::shared_ptr<AbstractTask> task);
     virtual ~LandmarkCutLandmarks();

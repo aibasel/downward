@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 // construction and destruction
 LandmarkCutLandmarks::LandmarkCutLandmarks(const shared_ptr<AbstractTask> task)
     : task(task),
