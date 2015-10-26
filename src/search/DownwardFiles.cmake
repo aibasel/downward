@@ -236,7 +236,9 @@ fast_downward_plugin(
 fast_downward_plugin(
     NAME LM_CUT_HEURISTIC
     HELP "The LM-cut heuristic"
-    SOURCES lm_cut_heuristic.cc
+    SOURCES
+        lm_cut_heuristic.cc
+        lm_cut_landmarks.cc
 )
 
 fast_downward_plugin(
