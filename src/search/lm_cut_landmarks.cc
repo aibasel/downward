@@ -1,8 +1,8 @@
 #include "lm_cut_landmarks.h"
 
-#include<algorithm>
-#include<limits>
-#include<utility>
+#include <algorithm>
+#include <limits>
+#include <utility>
 
 using namespace std;
 
@@ -272,8 +272,9 @@ void LandmarkCutLandmarks::validate_h_max() const {
 #endif
 }
 
-bool LandmarkCutLandmarks::compute_landmarks(State state,
-    CostCallback cost_callback, LandmarkCallback landmark_callback) {
+bool LandmarkCutLandmarks::compute_landmarks(
+    State state, CostCallback cost_callback,
+    LandmarkCallback landmark_callback) {
     //cout << "*" << flush;
     // TODO: Possibly put back in some kind of preferred operator mechanism.
     for (RelaxedOperator &op : relaxed_operators) {

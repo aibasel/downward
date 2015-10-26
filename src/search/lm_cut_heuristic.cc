@@ -14,7 +14,7 @@ using namespace std;
 // construction and destruction
 LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
     : Heuristic(opts),
-    landmark_generator(nullptr) {
+      landmark_generator(nullptr) {
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -34,11 +34,8 @@ int LandmarkCutHeuristic::compute_heuristic(const GlobalState &global_state) {
 
     bool dead_end = landmark_generator->compute_landmarks(
         state,
-        [&total_cost](int cut_cost) {
-            total_cost += cut_cost;
-        },
-        nullptr
-    );
+        [&total_cost](int cut_cost) {total_cost += cut_cost; },
+        nullptr);
 
     if (dead_end)
         return DEAD_END;
