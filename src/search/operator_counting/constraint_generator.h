@@ -11,14 +11,13 @@ class LPSolver;
 class Options;
 
 namespace operator_counting {
-
 class ConstraintGenerator {
 public:
     /*
       Add permanent constraints.
     */
     virtual void initialize_constraints(
-        std::vector<LPConstraint> &/*constraints*/) {
+        std::vector<LPConstraint> & /*constraints*/) {
     }
 
     /*
