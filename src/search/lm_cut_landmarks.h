@@ -86,9 +86,9 @@ class LandmarkCutLandmarks {
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
-    typedef std::vector<OperatorProxy> Landmark;
-    typedef std::function<void (int)> CostCallback;
-    typedef std::function<void (Landmark, int)> LandmarkCallback;
+    using Landmark = std::vector<int>;
+    using CostCallback = std::function<void (int)>;
+    using LandmarkCallback = std::function<void (const Landmark&, int)>;
 
     LandmarkCutLandmarks(const std::shared_ptr<AbstractTask> task);
     virtual ~LandmarkCutLandmarks();
