@@ -62,7 +62,6 @@ void HSPMaxHeuristic::setup_exploration_queue() {
 void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
         FactProxy fact = state[var_id];
-        assert(fact.var_id == var_id);
         Proposition *init_prop = get_proposition(fact);
         enqueue_if_necessary(init_prop, 0);
     }
