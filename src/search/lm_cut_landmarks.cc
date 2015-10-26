@@ -275,10 +275,8 @@ void LandmarkCutLandmarks::validate_h_max() const {
 bool LandmarkCutLandmarks::compute_landmarks(
     State state, CostCallback cost_callback,
     LandmarkCallback landmark_callback) {
-    //cout << "*" << flush;
-    // TODO: Possibly put back in some kind of preferred operator mechanism.
     for (RelaxedOperator &op : relaxed_operators) {
-        op.cost = op.base_cost * COST_MULTIPLIER;
+        op.cost = op.base_cost;
     }
     OperatorsProxy operators = task_proxy.get_operators();
     // The following three variables could be declared inside the loop
@@ -296,43 +294,15 @@ bool LandmarkCutLandmarks::compute_landmarks(
     int num_iterations = 0;
     while (artificial_goal.h_max_cost != 0) {
         ++num_iterations;
-        //cout << "h_max = " << artificial_goal.h_max_cost << "..." << endl;
-        //cout << "total_cost = " << total_cost << "..." << endl;
         mark_goal_plateau(&artificial_goal);
         assert(cut.empty());
         second_exploration(state, second_exploration_queue, cut);
         assert(!cut.empty());
         int cut_cost = numeric_limits<int>::max();
-        for (RelaxedOperator *op : cut) {
+        for (RelaxedOperator *op : cut)
             cut_cost = min(cut_cost, op->cost);
-            if (COST_MULTIPLIER > 1) {
-                /* We're using this "if" here because COST_MULTIPLIER
-                   is currently a global constant and usually 1, which
-                   allows the optimizer to get rid of this additional
-                   minimization (which is always correct, but not
-                   necessary if COST_MULTIPLIER == 1.
-
-                   If COST_MULTIPLIER turns into an option, this code
-                   should be changed. I would assume that the savings
-                   by the "if" are negligible anyway, but this should
-                   be tested.
-
-                   The whole cut cost computation could also be made
-                   more efficient in the unit-cost case, where all
-                   cuts have cost 1 and the cost decrement could be
-                   moved directly to the place where the actions for
-                   the cut are collected; indeed, we would not need to
-                   collect the cut in a vector at all. But again, I
-                   doubt this would have a huge impact, and it would
-                   only be applicable in the unit-cost (or zero- and
-                   unit-cost) case.
-                */
-                cut_cost = min(cut_cost, op->base_cost);
-            }
-        }
         for (RelaxedOperator *op : cut)
             op->cost -= cut_cost;
-        //cout << "{" << cut_cost << "}" << flush;
 
         if (cost_callback) {
             cost_callback(cut_cost);
@@ -347,15 +317,14 @@ bool LandmarkCutLandmarks::compute_landmarks(
 
         first_exploration_incremental(cut);
         // validate_h_max();  // too expensive to use even in regular debug mode
-        // TODO: Need better name for all explorations; e.g. this could
-        //       be "recompute_h_max"; second_exploration could be
-        //       "mark_zones" or whatever.
         cut.clear();
 
-        // TODO: Make this more efficient. For example, we can use
-        //       a round-dependent counter for GOAL_ZONE and BEFORE_GOAL_ZONE,
-        //       or something based on total_cost, in which case we don't
-        //       need a per-round reinitialization.
+        /*
+          Note: This could perhaps be made more efficient, for example by
+          using a round-dependent counter for GOAL_ZONE and BEFORE_GOAL_ZONE,
+          or something based on total_cost, so that we don't need a per-round
+          reinitialization.
+        */
         for (auto &var_props : propositions) {
             for (RelaxedProposition &prop : var_props) {
                 if (prop.status == GOAL_ZONE || prop.status == BEFORE_GOAL_ZONE)
@@ -365,7 +334,5 @@ bool LandmarkCutLandmarks::compute_landmarks(
         artificial_goal.status = REACHED;
         artificial_precondition.status = REACHED;
     }
-    //cout << "[" << total_cost << "]" << flush;
-    //cout << "**************************" << endl;
     return false;
 }
