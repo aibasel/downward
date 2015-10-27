@@ -152,8 +152,8 @@ public:
     }
 
     bool is_mutex(const FactProxy &other) const {
-        std::pair<int, int> fact1 = {var_id, value};
-        std::pair<int, int> fact2 = {other.var_id, other.value};
+        std::pair<int, int> fact1(var_id, value);
+        std::pair<int, int> fact2(other.var_id, other.value);
         return task->are_facts_mutex(fact1, fact2);
     }
 };
