@@ -63,12 +63,11 @@ void AbstractOperator::dump(const vector<int> &pattern,
 }
 
 PatternDatabase::PatternDatabase(
-    const std::shared_ptr<AbstractTask> task,
+    const TaskProxy &task_proxy,
     const vector<int> &pattern,
     bool dump,
     const vector<int> &operator_costs)
-    : task(task),
-      task_proxy(*task),
+    : task_proxy(task_proxy),
       pattern(pattern) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
@@ -196,7 +195,7 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
     }
 
     // build the match tree
-    MatchTree match_tree(task, pattern, hash_multipliers);
+    MatchTree match_tree(task_proxy, pattern, hash_multipliers);
     for (const AbstractOperator &op : operators) {
         match_tree.insert(op);
     }

@@ -4,14 +4,12 @@
 #include "../task_proxy.h"
 
 #include <cstddef>
-#include <memory>
 #include <vector>
 
 class AbstractOperator;
 
 // Successor Generator for abstract operators.
 class MatchTree {
-    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
     struct Node;
     // See PatternDatabase for documentation on pattern and hash_multipliers.
@@ -27,7 +25,7 @@ class MatchTree {
     void dump_recursive(Node *node) const;
 public:
     // Initialize an empty match tree.
-    MatchTree(const std::shared_ptr<AbstractTask> task,
+    MatchTree(const TaskProxy &task_proxy,
               const std::vector<int> &pattern,
               const std::vector<size_t> &hash_multipliers);
     ~MatchTree();
