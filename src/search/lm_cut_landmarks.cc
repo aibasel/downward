@@ -8,9 +8,7 @@ using namespace std;
 
 
 // construction and destruction
-LandmarkCutLandmarks::LandmarkCutLandmarks(const shared_ptr<AbstractTask> task)
-    : task(task),
-      task_proxy(*task) {
+LandmarkCutLandmarks::LandmarkCutLandmarks(const TaskProxy &task_proxy) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
 
