@@ -12,7 +12,7 @@ using namespace std;
 PDBHeuristic::PDBHeuristic(const Options &opts,
                            const vector<int> &operator_costs)
     : Heuristic(opts),
-      pdb(task, opts.get_list<int>("pattern"), true, operator_costs) {
+      pdb(task_proxy, opts.get_list<int>("pattern"), true, operator_costs) {
 }
 
 PDBHeuristic::~PDBHeuristic() {
