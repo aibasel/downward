@@ -37,7 +37,7 @@ CanonicalPDBsHeuristic::~CanonicalPDBsHeuristic() {
 }
 
 void CanonicalPDBsHeuristic::add_pdb_for_pattern(const vector<int> &pattern) {
-    pattern_databases.push_back(new PatternDatabase(task, pattern));
+    pattern_databases.push_back(new PatternDatabase(task_proxy, pattern));
     size += pattern_databases.back()->get_size();
 }
 
