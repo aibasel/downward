@@ -23,6 +23,10 @@ const string &DelegatingTask::get_fact_name(int var, int value) const {
     return parent->get_fact_name(var, value);
 }
 
+bool DelegatingTask::are_facts_mutex(const std::pair<int, int> &fact1, const std::pair<int, int> &fact2) const {
+    return parent->are_facts_mutex(fact1, fact2);
+}
+
 int DelegatingTask::get_operator_cost(int index, bool is_axiom) const {
     return parent->get_operator_cost(index, is_axiom);
 }
