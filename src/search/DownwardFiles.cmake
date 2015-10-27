@@ -291,6 +291,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME OPERATOR_COUNTING
+    HELP "Plugin containing the code for operator counting heuristics"
+    SOURCES
+        operator_counting/constraint_generator.cc
+    DEPENDS LP_SOLVER LM_CUT_HEURISTIC PDBS
+)
+
+fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES

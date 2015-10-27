@@ -73,6 +73,7 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<MergeStrategy>>(pt);
     get_help_templ<shared_ptr<ShrinkStrategy>>(pt);
     get_help_templ<shared_ptr<Labels>>(pt);
+    get_help_templ<operator_counting::ConstraintGenerator *>(pt);
 }
 
 template <class T>
@@ -99,6 +100,7 @@ static void get_full_help() {
     get_full_help_templ<shared_ptr<MergeStrategy>>();
     get_full_help_templ<shared_ptr<ShrinkStrategy>>();
     get_full_help_templ<shared_ptr<Labels>>();
+    get_full_help_templ<operator_counting::ConstraintGenerator *>();
 }
 
 
