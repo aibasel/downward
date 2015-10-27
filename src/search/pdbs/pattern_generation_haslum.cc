@@ -91,7 +91,7 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
     size_t max_pdb_size = 0;
     for (const vector<int> &new_candidate : new_candidates) {
         if (generated_patterns.count(new_candidate) == 0) {
-            candidate_pdbs.push_back(new PatternDatabase(task, new_candidate));
+            candidate_pdbs.push_back(new PatternDatabase(task_proxy, new_candidate));
             max_pdb_size = max(max_pdb_size,
                                candidate_pdbs.back()->get_size());
             generated_patterns.insert(new_candidate);
