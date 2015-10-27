@@ -49,6 +49,10 @@ class SearchEngine;
 class ShrinkStrategy;
 class Labels;
 
+namespace operator_counting {
+class ConstraintGenerator;
+}
+
 /*
 The TokenParser<T> wraps functions to parse supported types T.
  */
@@ -76,6 +80,11 @@ public:
     static inline double parse(OptionParser &p);
 };
 
+template <>
+class TokenParser<operator_counting::ConstraintGenerator *> {
+public:
+    static inline operator_counting::ConstraintGenerator *parse(OptionParser &p);
+};
 
 template <class Entry>
 class TokenParser<OpenList<Entry > *> {
@@ -364,6 +373,18 @@ double TokenParser<double>::parse(OptionParser &p) {
         }
         return x;
     }
+}
+
+operator_counting::ConstraintGenerator *TokenParser<operator_counting::ConstraintGenerator *>::parse(OptionParser &p) {
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Predefinitions<operator_counting::ConstraintGenerator *>::instance()->contains(pt->value)) {
+        return (operator_counting::ConstraintGenerator *)
+               Predefinitions<operator_counting::ConstraintGenerator *>::instance()->get(pt->value);
+    } else if (Registry<operator_counting::ConstraintGenerator *>::instance()->contains(pt->value)) {
+        return Registry<operator_counting::ConstraintGenerator *>::instance()->get(pt->value) (p);
+    }
+    p.error("constraint generator " + pt->value + " not found");
+    return 0;
 }
 
 //helper functions for the TokenParser-specializations

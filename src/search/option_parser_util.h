@@ -28,6 +28,9 @@ template<class Entry>
 class OpenList;
 class AbstractTask;
 
+namespace operator_counting {
+class ConstraintGenerator;
+}
 
 struct ParseNode {
     ParseNode()
@@ -210,6 +213,13 @@ template <>
 struct TypeNamer<std::string> {
     static std::string name() {
         return "string";
+    }
+};
+
+template <>
+struct TypeNamer<operator_counting::ConstraintGenerator *> {
+    static std::string name() {
+        return "constraint generator";
     }
 };
 
