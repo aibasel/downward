@@ -68,10 +68,9 @@ void StateEquationConstraints::add_constraints(
 }
 
 void StateEquationConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
+    const TaskProxy &task_proxy, vector<LPConstraint> &constraints,
     double infinity) {
     cout << "Initializing constraints from state equation." << endl;
-    TaskProxy task_proxy(*task);
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
     build_propositions(task_proxy);

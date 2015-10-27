@@ -4,10 +4,10 @@
 #include <memory>
 #include <vector>
 
-class AbstractTask;
 class LPConstraint;
 class LPSolver;
 class State;
+class TaskProxy;
 
 namespace operator_counting {
 class ConstraintGenerator {
@@ -16,7 +16,7 @@ public:
       Add permanent constraints.
     */
     virtual void initialize_constraints(
-        const std::shared_ptr<AbstractTask> /*task*/,
+        const TaskProxy &/*task_proxy*/,
         std::vector<LPConstraint> & /*constraints*/,
         double /*infinity*/) {
     }
