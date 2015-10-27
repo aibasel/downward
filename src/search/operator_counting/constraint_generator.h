@@ -17,7 +17,8 @@ public:
     */
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> /*task*/,
-        std::vector<LPConstraint> & /*constraints*/) {
+        std::vector<LPConstraint> & /*constraints*/,
+        double /*infinity*/) {
     }
 
     /*
