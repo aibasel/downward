@@ -27,24 +27,17 @@ void OperatorCountingHeuristic::initialize() {
     }
     vector<LPConstraint> constraints;
     for (ConstraintGenerator *generator : constraint_generators) {
-        generator->initialize_constraints(constraints);
+        generator->initialize_constraints(task, constraints);
     }
     lp_solver.load_problem(LPObjectiveSense::MINIMIZE, variables, constraints);
 }
 
-bool OperatorCountingHeuristic::reach_state(const GlobalState &parent_state,
-                                            const GlobalOperator &op,
-                                            const GlobalState &state) {
-    bool h_dirty = false;
-    for (ConstraintGenerator *generator : constraint_generators) {
-        if (generator->reach_state(parent_state, op, state)) {
-            h_dirty = true;
-        }
-    }
-    return h_dirty;
+int OperatorCountingHeuristic::compute_heuristic(const GlobalState &global_state) {
+    State state = convert_global_state(global_state);
+    return compute_heuristic(state);
 }
 
-int OperatorCountingHeuristic::compute_heuristic(const GlobalState &state) {
+int OperatorCountingHeuristic::compute_heuristic(const State &state) {
     // Make sure there are no leftover temporary constraints
     lp_solver.clear_temporary_constraints();
     for (ConstraintGenerator *generator : constraint_generators) {
