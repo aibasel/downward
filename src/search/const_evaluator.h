@@ -3,6 +3,8 @@
 
 #include "heuristic.h"
 
+namespace ConstEvaluator {
+
 // TODO: When the searches don't need at least one heuristic anymore,
 //       ConstEvaluator should inherit from ScalarEvaluator.
 class ConstEvaluator : public Heuristic {
@@ -15,5 +17,7 @@ public:
     explicit ConstEvaluator(const Options &opts);
     virtual ~ConstEvaluator() override = default;
 };
+
+}
 
 #endif
