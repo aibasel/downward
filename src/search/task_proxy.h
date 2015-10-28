@@ -142,13 +142,19 @@ public:
         return task->get_fact_name(var_id, value);
     }
 
-    bool operator==(FactProxy const &other) const {
+    bool operator==(const FactProxy &other) const {
         assert(task == other.task);
         return var_id == other.var_id && value == other.value;
     }
 
-    bool operator!=(FactProxy other) const {
+    bool operator!=(const FactProxy &other) const {
         return !(*this == other);
+    }
+
+    bool is_mutex(const FactProxy &other) const {
+        std::pair<int, int> fact1(var_id, value);
+        std::pair<int, int> fact2(other.var_id, other.value);
+        return task->are_facts_mutex(fact1, fact2);
     }
 };
 
@@ -495,19 +501,19 @@ class State {
     std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    State(const AbstractTask &task, std::vector<int> && values)
+    State(const AbstractTask &task, std::vector<int> &&values)
         : task(&task), values(std::move(values)) {
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
     State(const State &) = default;
 
-    State(State && other)
+    State(State &&other)
         : task(other.task), values(std::move(other.values)) {
         other.task = nullptr;
     }
 
-    State &operator=(const State && other) {
+    State &operator=(const State &&other) {
         if (this != &other) {
             values = std::move(other.values);
         }
@@ -524,7 +530,7 @@ public:
     }
 
     std::size_t hash() const {
-        std::hash<std::vector<int> > hasher;
+        std::hash<std::vector<int>> hasher;
         return hasher(values);
     }
 

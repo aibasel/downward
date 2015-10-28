@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-#include "../exact_timer.h"
+#include "../timer.h"
 
 #include <fstream>
 #include <limits>
@@ -14,7 +14,7 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
-    ExactTimer lm_generation_timer;
+    Timer lm_generation_timer;
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"
@@ -87,8 +87,8 @@ bool LandmarkFactory::is_landmark_precondition(const GlobalOperator &o,
     return false;
 }
 
-bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
-                                            vector<unordered_map<pair<int, int>, int> > &lvl_op,
+bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
+                                            vector<unordered_map<pair<int, int>, int>> &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
      "exclude" (do not apply operators that would add a proposition from "exclude").
@@ -116,7 +116,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int> > &lvl_var,
     }
     // Extract propositions from "exclude"
     unordered_set<const GlobalOperator *> exclude_ops;
-    vector<pair<int, int> > exclude_props;
+    vector<pair<int, int>> exclude_props;
     if (exclude != NULL) {
         for (size_t op = 0; op < g_operators.size(); ++op) {
             if (achieves_non_conditional(g_operators[op], exclude))
@@ -148,8 +148,8 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
 
     if (landmark.in_goal)
         return true;
-    vector<vector<int> > lvl_var;
-    vector<unordered_map<pair<int, int>, int> > lvl_op;
+    vector<vector<int>> lvl_var;
+    vector<unordered_map<pair<int, int>, int>> lvl_op;
     // Initialize lvl_var to numeric_limits<int>::max()
     lvl_var.resize(g_variable_name.size());
     for (size_t var = 0; var < g_variable_name.size(); ++var) {
@@ -157,7 +157,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
                             numeric_limits<int>::max());
     }
     unordered_set<const GlobalOperator *> exclude_ops;
-    vector<pair<int, int> > exclude_props;
+    vector<pair<int, int>> exclude_props;
     for (size_t op = 0; op < g_operators.size(); ++op) {
         if (is_landmark_precondition(g_operators[op], &landmark)) {
             exclude_ops.insert(&g_operators[op]);
@@ -177,7 +177,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
 }
 
 bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects, set<
-                                                pair<int, int> > &eff) const {
+                                                pair<int, int>> &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
      a set of conditions of which one will always be true. This is e.g. the case in
@@ -195,7 +195,7 @@ bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects,
     // - a mapping from cond. effect propositions to all the conditions that they appear with
     set<int> effect_vars;
     set<int> nogood_effect_vars;
-    map<int, pair<int, vector<pair<int, int> > > > effect_conditions;
+    map<int, pair<int, vector<pair<int, int>>>> effect_conditions;
     for (size_t i = 0; i < effects.size(); ++i) {
         if (effects[i].conditions.empty() ||
             nogood_effect_vars.find(effects[i].var) != nogood_effect_vars.end()) {
@@ -220,14 +220,14 @@ bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects,
             == effects[i].val) {
             // We have seen this effect before, adding conditions
             for (size_t j = 0; j < effects[i].conditions.size(); ++j) {
-                vector<pair<int, int> > &vec = effect_conditions.find(effects[i].var)->second.second;
+                vector<pair<int, int>> &vec = effect_conditions.find(effects[i].var)->second.second;
                 vec.push_back(make_pair(effects[i].conditions[j].var, effects[i].conditions[j].val));
             }
         } else {
             // We have not seen this effect before, making new effect entry
-            vector<pair<int, int> > &vec = effect_conditions.insert(
+            vector<pair<int, int>> &vec = effect_conditions.insert(
                 make_pair(effects[i].var, make_pair(
-                              effects[i].val, vector<pair<int, int> > ()))).first->second.second;
+                              effects[i].val, vector<pair<int, int>> ()))).first->second.second;
             for (size_t j = 0; j < effects[i].conditions.size(); ++j) {
                 vec.push_back(make_pair(effects[i].conditions[j].var, effects[i].conditions[j].val));
             }
@@ -235,7 +235,7 @@ bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects,
     }
 
     // For all those effect propositions whose variables do not take on different values...
-    map<int, pair<int, vector<pair<int, int> > > >::iterator it =
+    map<int, pair<int, vector<pair<int, int>>>>::iterator it =
         effect_conditions.begin();
     for (; it != effect_conditions.end(); ++it) {
         if (nogood_effect_vars.find(it->first) != nogood_effect_vars.end()) {
@@ -243,8 +243,8 @@ bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects,
         }
         // ...go through all the conditions that the effect has, and map condition
         // variables to the set of values they take on (in unique_conds)
-        map<int, set<int> > unique_conds;
-        vector<pair<int, int> > &conds = it->second.second;
+        map<int, set<int>> unique_conds;
+        vector<pair<int, int>> &conds = it->second.second;
         for (size_t i = 0; i < conds.size(); ++i) {
             if (unique_conds.find(conds[i].first) != unique_conds.end()) {
                 unique_conds.find(conds[i].first)->second.insert(
@@ -259,7 +259,7 @@ bool LandmarkFactory::effect_always_happens(const vector<GlobalEffect> &effects,
         // equal to the domain of that variable...
         pair<int, int> effect = make_pair(it->first, it->second.first);
         bool is_always_reached = true;
-        map<int, set<int> >::iterator it2 = unique_conds.begin();
+        map<int, set<int>>::iterator it2 = unique_conds.begin();
         for (; it2 != unique_conds.end(); ++it2) {
             bool is_surely_reached_by_var = false;
             int num_values_for_cond = it2->second.size();
@@ -343,7 +343,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
                 const vector<GlobalEffect> &effects = op.get_effects();
-                set<pair<int, int> > trivially_conditioned_effects;
+                set<pair<int, int>> trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(effects,
                                                                                trivially_conditioned_effects);
                 unordered_map<int, int> next_eff;
@@ -639,11 +639,11 @@ void LandmarkFactory::mk_acyclic_graph() {
 }
 
 bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                                      list<pair<LandmarkNode *, edge_type> > &path, list<pair<LandmarkNode *,
-                                                                                                              edge_type> >::iterator it) {
+                                                      list<pair<LandmarkNode *, edge_type>> &path, list<pair<LandmarkNode *,
+                                                                                                             edge_type>>::iterator it) {
     LandmarkNode *parent_p = 0;
     LandmarkNode *child_p = 0;
-    for (list<pair<LandmarkNode *, edge_type> >::iterator it2 = it; it2
+    for (list<pair<LandmarkNode *, edge_type>>::iterator it2 = it; it2
          != path.end(); ++it2) {
         edge_type edge = it2->second;
         if (edge == reasonable || edge == obedient_reasonable) {
@@ -652,7 +652,7 @@ bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
                 child_p = cur;
                 break;
             } else {
-                list<pair<LandmarkNode *, edge_type> >::iterator child_it = it2;
+                list<pair<LandmarkNode *, edge_type>>::iterator child_it = it2;
                 ++child_it;
                 child_p = child_it->first;
             }
@@ -673,14 +673,14 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
                                         unordered_set<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
-    list<pair<LandmarkNode *, edge_type> > path;
+    list<pair<LandmarkNode *, edge_type>> path;
     unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
         if (visited.find(cur) != visited.end()) { // cycle
             // find other occurrence of cur node in path
-            list<pair<LandmarkNode *, edge_type> >::iterator it;
+            list<pair<LandmarkNode *, edge_type>>::iterator it;
             for (it = path.begin(); it != path.end(); ++it) {
                 if (it->first == cur)
                     break;
@@ -736,8 +736,8 @@ int LandmarkFactory::calculate_lms_cost() const {
 
 void LandmarkFactory::compute_predecessor_information(
     LandmarkNode *bp,
-    vector<vector<int> > &lvl_var,
-    std::vector<std::unordered_map<std::pair<int, int>, int> > &lvl_op) {
+    vector<vector<int>> &lvl_var,
+    std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
@@ -759,8 +759,8 @@ void LandmarkFactory::calc_achievers() {
                 lmn.is_derived = true;
         }
 
-        vector<vector<int> > lvl_var;
-        vector<unordered_map<pair<int, int>, int> > lvl_op;
+        vector<vector<int>> lvl_var;
+        vector<unordered_map<pair<int, int>, int>> lvl_op;
         compute_predecessor_information(&lmn, lvl_var, lvl_op);
 
         set<int>::iterator ach_it;

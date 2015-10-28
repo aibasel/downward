@@ -190,10 +190,10 @@ void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
                     arg.value_explanations[j];
                 if (is_call(explanation.first)) {
                     os << endl << "```" << endl << explanation.first << endl << "```" << endl
-                    << " " << explanation.second << endl;
+                       << " " << explanation.second << endl;
                 } else {
                     os << " - ``" << explanation.first << "``: "
-                    << explanation.second << endl;
+                       << explanation.second << endl;
                 }
             }
         }
@@ -205,7 +205,7 @@ void Txt2TagsPrinter::print_notes(const DocStruct &info) {
         NoteInfo note = info.notes[i];
         if (note.long_text) {
             os << "=== " << note.name << " ===" << endl
-            << note.description << endl << endl;
+               << note.description << endl << endl;
         } else {
             os << "**" << note.name << ":** " << note.description << endl << endl;
         }
@@ -239,7 +239,7 @@ void Txt2TagsPrinter::print_category_header(string category_name) {
 
 void Txt2TagsPrinter::print_category_footer() {
     os << endl
-    << ">>>>CATEGORYEND<<<<" << endl;
+       << ">>>>CATEGORYEND<<<<" << endl;
 }
 
 PlainPrinter::PlainPrinter(ostream &out, bool pa)
@@ -289,7 +289,7 @@ void PlainPrinter::print_notes(const DocStruct &info) {
             NoteInfo note = info.notes[i];
             if (note.long_text) {
                 os << "=== " << note.name << " ===" << endl
-                << note.description << endl << endl;
+                   << note.description << endl << endl;
             } else {
                 os << " * " << note.name << ": " << note.description << endl << endl;
             }

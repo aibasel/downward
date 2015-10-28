@@ -177,16 +177,15 @@ SearchStatus LazySearch::step() {
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
             // TODO: Generalize code for using multiple heuristics.
-            int h = current_eval_context.get_heuristic_value(heuristics[0]);
             if (reopen) {
                 node.reopen(parent_node, current_operator);
                 statistics.inc_reopened();
             } else if (current_predecessor_id == StateID::no_state) {
-                node.open_initial(h);
+                node.open_initial();
                 if (search_progress.check_progress(current_eval_context))
                     print_checkpoint_line(current_g);
             } else {
-                node.open(h, parent_node, current_operator);
+                node.open(parent_node, current_operator);
             }
             node.close();
             if (check_goal_and_set_plan(current_state))
@@ -243,7 +242,7 @@ static void _add_succ_order_options(OptionParser &parser) {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
-    Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
+    Plugin<OpenList<OpenListEntryLazy >>::register_open_lists();
     parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(

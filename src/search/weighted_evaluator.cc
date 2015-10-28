@@ -30,7 +30,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     // Note that this produces no preferred operators.
     EvaluationResult result;
     int h_val = eval_context.get_heuristic_value_or_infinity(evaluator);
-    if (h_val != EvaluationResult::INFINITE) {
+    if (h_val != EvaluationResult::INFTY) {
         // TODO: Check for overflow?
         h_val *= w;
     }

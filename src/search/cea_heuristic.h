@@ -14,7 +14,7 @@ struct LocalTransition;
 
 class ContextEnhancedAdditiveHeuristic : public Heuristic {
     std::vector<LocalProblem *> local_problems;
-    std::vector<std::vector<LocalProblem *> > local_problem_index;
+    std::vector<std::vector<LocalProblem *>> local_problem_index;
     LocalProblem *goal_problem;
     LocalProblemNode *goal_node;
 

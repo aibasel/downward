@@ -17,6 +17,8 @@ using namespace std;
 Heuristic::Heuristic(const Options &opts)
     : description(opts.get_unparsed_config()),
       initialized(false),
+      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
+      cache_h_values(opts.get<bool>("cache_estimates")),
       task(get_task_from_options(opts)),
       task_proxy(*task),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
@@ -54,18 +56,20 @@ State Heuristic::convert_global_state(const GlobalState &global_state) const {
 void Heuristic::add_options_to_parser(OptionParser &parser) {
     ::add_cost_type_option_to_parser(parser);
     // TODO: When the cost_type option is gone, use "no_transform" as default.
-    parser.add_option<shared_ptr<AbstractTask> >(
+    parser.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic. "
         "Currently only adapt_costs is available.",
         OptionParser::NONE);
+    parser.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
 //this solution to get default values seems not optimal:
 Options Heuristic::default_options() {
     Options opts = Options();
-    opts.set<shared_ptr<AbstractTask> >("transform", g_root_task());
+    opts.set<shared_ptr<AbstractTask>>("transform", g_root_task());
     opts.set<int>("cost_type", NORMAL);
+    opts.set<bool>("cache_estimates", false);
     return opts;
 }
 
@@ -80,9 +84,24 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     assert(preferred_operators.empty());
 
     const GlobalState &state = eval_context.get_state();
-    int heuristic = compute_heuristic(state);
-    for (const GlobalOperator *preferred_operator : preferred_operators)
-        preferred_operator->unmark();
+    bool calculate_preferred = eval_context.get_calculate_preferred();
+
+    int heuristic = NO_VALUE;
+
+    if (!calculate_preferred && cache_h_values &&
+        heuristic_cache[state].h != NO_VALUE && !heuristic_cache[state].dirty) {
+        heuristic = heuristic_cache[state].h;
+        result.set_count_evaluation(false);
+    } else {
+        heuristic = compute_heuristic(state);
+        if (cache_h_values) {
+            heuristic_cache[state] = HEntry(heuristic, false);
+        }
+        for (const GlobalOperator *preferred_operator : preferred_operators)
+            preferred_operator->unmark();
+        result.set_count_evaluation(true);
+    }
+
     assert(heuristic == DEAD_END || heuristic >= 0);
 
     if (heuristic == DEAD_END) {
@@ -94,11 +113,11 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
           preferred operators.
         */
         preferred_operators.clear();
-        heuristic = EvaluationResult::INFINITE;
+        heuristic = EvaluationResult::INFTY;
     }
 
 #ifndef NDEBUG
-    if (heuristic != EvaluationResult::INFINITE) {
+    if (heuristic != EvaluationResult::INFTY) {
         for (size_t i = 0; i < preferred_operators.size(); ++i)
             assert(preferred_operators[i]->is_applicable(state));
     }

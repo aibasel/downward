@@ -72,7 +72,7 @@ struct ParseError {
 
     friend std::ostream &operator<<(std::ostream &out, const ParseError &pe) {
         out << "parse error: " << std::endl
-        << pe.msg << " at: " << std::endl;
+            << pe.msg << " at: " << std::endl;
         kptree::print_tree_bracketed<ParseNode>(pe.parse_tree, out);
         if (pe.substr.size() > 0) {
             out << " (cannot continue parsing after \"" << pe.substr << "\")" << std::endl;
@@ -256,28 +256,28 @@ struct TypeNamer<Synergy *> {
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<MergeStrategy> > {
+struct TypeNamer<std::shared_ptr<MergeStrategy>> {
     static std::string name() {
         return "MergeStrategy";
     }
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<ShrinkStrategy> > {
+struct TypeNamer<std::shared_ptr<ShrinkStrategy>> {
     static std::string name() {
         return "ShrinkStrategy";
     }
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<Labels> > {
+struct TypeNamer<std::shared_ptr<Labels>> {
     static std::string name() {
         return "Labels";
     }
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<AbstractTask> > {
+struct TypeNamer<std::shared_ptr<AbstractTask>> {
     static std::string name() {
         return "AbstractTask";
     }
@@ -291,7 +291,7 @@ struct TypeNamer<OpenList<Entry> *> {
 };
 
 template <class T>
-struct TypeNamer<std::vector<T> > {
+struct TypeNamer<std::vector<T>> {
     static std::string name() {
         return "list of " + TypeNamer<T>::name();
     }
@@ -316,7 +316,7 @@ struct TypeDocumenter<Heuristic *> {
                "For re-using heuristics, see OptionSyntax#Heuristic_Predefinitions.\n\n"
                "Definitions of //properties// in the descriptions below:\n\n"
                " * **admissible:** h(s) <= h*(s) for all states s\n"
-               " * **consistent:** h(s) + c(s, s') >= h(s') for all states s "
+               " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
                "connected to states s' by an action with cost c(s, s')\n"
                " * **safe:** h(s) = infinity is only true for states "
                "with h*(s) = infinity\n"
@@ -433,7 +433,7 @@ public:
     template <class T>
     void verify_list_non_empty(std::string key) const {
         if (!help_mode) {
-            std::vector<T> temp_vec = get<std::vector<T> >(key);
+            std::vector<T> temp_vec = get<std::vector<T>>(key);
             if (temp_vec.empty()) {
                 std::cout << "Error: unexpected empty list!"
                           << std::endl
@@ -446,7 +446,7 @@ public:
 
     template <class T>
     std::vector<T> get_list(std::string key) const {
-        return get<std::vector<T> >(key);
+        return get<std::vector<T>>(key);
     }
 
     int get_enum(std::string key) const {
@@ -469,7 +469,7 @@ private:
     bool help_mode;
 };
 
-typedef std::vector<std::pair<std::string, std::string> > ValueExplanations;
+typedef std::vector<std::pair<std::string, std::string>> ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
         std::string k, std::string h, std::string t_n, std::string def_val,
@@ -486,7 +486,7 @@ struct ArgumentInfo {
     std::string type_name;
     std::string default_value;
     Bounds bounds;
-    std::vector<std::pair<std::string, std::string> > value_explanations;
+    std::vector<std::pair<std::string, std::string>> value_explanations;
 };
 
 struct PropertyInfo {
