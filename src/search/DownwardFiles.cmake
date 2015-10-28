@@ -11,6 +11,7 @@ set(CORE_SOURCES
         abstract_task.cc
         axioms.cc
         causal_graph.cc
+        const_evaluator.cc
         cost_adapted_task.cc
         countdown_timer.cc
         delegating_task.cc
