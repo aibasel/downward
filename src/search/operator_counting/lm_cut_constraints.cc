@@ -16,7 +16,8 @@ void LMCutConstraints::initialize_constraints(
     double infinity) {
     unused_parameter(constraints);
     unused_parameter(infinity);
-    landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task);
+    TaskProxy task_proxy(*task);
+    landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
 }
 
 
