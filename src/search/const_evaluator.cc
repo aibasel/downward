@@ -13,24 +13,22 @@ int ConstEvaluator::compute_heuristic(const GlobalState &) {
     return value;
 }
 
-bool ConstEvaluator::is_dead_end() const {
-    return false;
-}
-
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Constant evaluator",
-                             "Returns a constant value.");
-    parser.add_option<int>("value", "the constant value", "1");
+    parser.document_synopsis(
+        "Constant evaluator",
+        "Returns a constant value.");
+    parser.add_option<int>(
+        "value",
+        "the constant value",
+        "1",
+        Bounds("0", "infinity"));
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (opts.get<int>("value") < 0) {
-        parser.error("value must be >= 0");
-    }
-    if (parser.dry_run()) {
-        return 0;
-    } else {
+
+    if (parser.dry_run())
+        return nullptr;
+    else
         return new ConstEvaluator(opts);
-    }
 }
 
 static Plugin<Heuristic> _plugin("const", _parse);
