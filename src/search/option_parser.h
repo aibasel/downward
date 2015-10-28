@@ -27,7 +27,6 @@ If NT shall be predefinable:
   should add an explanation to OptionParser::usage().
 */
 
-#include "heuristic.h"
 #include "option_parser_util.h"
 
 #include <algorithm>
@@ -39,15 +38,12 @@ If NT shall be predefinable:
 #include <string>
 #include <vector>
 
-class AbstractTask;
+class Heuristic;
 class LandmarkGraph;
-class MergeStrategy;
 template<class Entry>
 class OpenList;
 class OptionParser;
-class SearchEngine;
-class ShrinkStrategy;
-class Labels;
+class ScalarEvaluator;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.
@@ -56,11 +52,16 @@ The TokenParser<T> wraps functions to parse supported types T.
 template<typename T>
 class TokenParser {
 public:
-    //if T has no template specialization,
-    //try to parse it directly from the input string
     static inline T parse(OptionParser &p);
 };
 
+/*
+  We need to give specializations of the class for the cases we want
+  to *partially* specialize, i.e., give a specialization that is still
+  templated. For fully specialized cases (e.g. parsing "int"), it is
+  not necessary to specialize the class; we just need to specialize
+  the method.
+*/
 
 template<typename Entry>
 class TokenParser<OpenList<Entry > *> {
@@ -69,15 +70,28 @@ public:
 };
 
 template<typename T>
-class TokenParser<std::vector<T >> {
+class TokenParser<T *> {
+public:
+    static inline T *parse(OptionParser &p);
+};
+
+template<typename T>
+class TokenParser<std::shared_ptr<T>> {
+public:
+    static inline std::shared_ptr<T> parse(OptionParser &p);
+};
+
+template<typename T>
+class TokenParser<std::vector<T>> {
 public:
     static inline std::vector<T> parse(OptionParser &p);
 };
 
-/*The OptionParser stores a parse tree, and a Options.
-By calling addArgument, the parse tree is partially parsed,
-and the result is added to the Options.
- */
+/*
+  The OptionParser stores a parse tree and an Options object. By
+  calling addArgument, the parse tree is partially parsed, and the
+  result is added to the Options.
+*/
 class OptionParser {
     static int parse_int_arg(const std::string &name, const std::string &value);
     static SearchEngine *parse_cmd_line_aux(
@@ -250,7 +264,11 @@ void OptionParser::add_list_option(
 
 //Definitions of TokenParser<T>:
 
-// This default implementation is used for string and bool.
+/*
+  If T has no template specialization, try to parse it directly from
+  the input string. As of this writing, this default implementation is
+  used only for string and bool.
+*/
 template<typename T>
 inline T TokenParser<T>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
@@ -369,34 +387,14 @@ inline ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
 }
 
 
-template<>
-inline SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
-    return lookup_in_registry<SearchEngine>(p);
+template<typename T>
+inline T *TokenParser<T *>::parse(OptionParser &p) {
+    return lookup_in_registry<T>(p);
 }
 
-template<>
-inline std::shared_ptr<MergeStrategy>TokenParser<std::shared_ptr<MergeStrategy>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<MergeStrategy>(p);
-}
-
-template<>
-inline std::shared_ptr<ShrinkStrategy>TokenParser<std::shared_ptr<ShrinkStrategy>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<ShrinkStrategy>(p);
-}
-
-template<>
-inline std::shared_ptr<Labels>TokenParser<std::shared_ptr<Labels>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<Labels>(p);
-}
-
-template<>
-inline Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
-    return lookup_in_registry<Synergy>(p);
-}
-
-template<>
-inline std::shared_ptr<AbstractTask> TokenParser<std::shared_ptr<AbstractTask>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<AbstractTask>(p);
+template<typename T>
+inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &p) {
+    return lookup_in_registry_shared<T>(p);
 }
 
 template<>
@@ -405,7 +403,7 @@ inline ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
 }
 
 template<typename T>
-inline std::vector<T > TokenParser<std::vector<T >>::parse(OptionParser &p) {
+inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     std::vector<T> results;
     if (pt->value.compare("list") != 0) {
