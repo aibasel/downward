@@ -41,54 +41,16 @@ static void compute_union_pattern(
 }
 
 
-PatternGenerationSystematicNaive::PatternGenerationSystematicNaive(
-        const Options &opts)
-        : task(get_task_from_options(opts)),
-          task_proxy(*task) {
-    int pattern_max_size = opts.get<int>("pattern_max_size");
-    int num_variables = task_proxy.get_variables().size();
-    vector<vector<int> > current_patterns(1);
-    vector<vector<int> > next_patterns;
-    for (int i = 0; i < pattern_max_size; ++i) {
-        for (const vector<int> &current_pattern : current_patterns) {
-            int max_var = -1;
-            if (i > 0)
-                max_var = current_pattern.back();
-            for (int var = max_var + 1; var < num_variables; ++var) {
-                vector<int> pattern = current_pattern;
-                pattern.push_back(var);
-                next_patterns.push_back(pattern);
-                patterns.push_back(pattern);
-            }
-        }
-        next_patterns.swap(current_patterns);
-        next_patterns.clear();
-    }
-
-    cout << "Found " << patterns.size() << " patterns." << endl;
-}
-
-PatternGenerationSystematicNaive::~PatternGenerationSystematicNaive() {
-}
-
-CanonicalPDBsHeuristic *PatternGenerationSystematicNaive::get_pattern_collection_heuristic(const Options &opts) const {
-    Options canonical_opts;
-    canonical_opts.set<int>("cost_type", OperatorCost(opts.get<int>("cost_type")));
-    canonical_opts.set("patterns", patterns);
-    CanonicalPDBsHeuristic *h = new CanonicalPDBsHeuristic(canonical_opts);
-    if (opts.get<bool>("dominance_pruning")) {
-        h->dominance_pruning();
-    }
-    return h;
-}
-
-
 PatternGenerationSystematic::PatternGenerationSystematic(
     const Options &opts)
     : task(get_task_from_options(opts)),
       task_proxy(*task),
       max_pattern_size(opts.get<int>("pattern_max_size")) {
-    build_patterns();
+    if (opts.get<bool>("only_interesting_patterns")) {
+        build_patterns();
+    } else {
+        build_patterns_naive();
+    }
 }
 
 PatternGenerationSystematic::~PatternGenerationSystematic() {
@@ -273,12 +235,29 @@ void PatternGenerationSystematic::build_patterns() {
 
     pattern_set.clear();
     cout << "Found " << patterns.size() << " interesting patterns." << endl;
+}
 
-    /*
-    cout << "list of patterns:" << endl;
-    for (size_t i = 0; i < patterns.size(); ++i)
-        cout << patterns[i] << endl;
-    */
+void PatternGenerationSystematic::build_patterns_naive() {
+    int num_variables = task_proxy.get_variables().size();
+    vector<vector<int> > current_patterns(1);
+    vector<vector<int> > next_patterns;
+    for (size_t i = 0; i < max_pattern_size; ++i) {
+        for (const vector<int> &current_pattern : current_patterns) {
+            int max_var = -1;
+            if (i > 0)
+                max_var = current_pattern.back();
+            for (int var = max_var + 1; var < num_variables; ++var) {
+                vector<int> pattern = current_pattern;
+                pattern.push_back(var);
+                next_patterns.push_back(pattern);
+                patterns.push_back(pattern);
+            }
+        }
+        next_patterns.swap(current_patterns);
+        next_patterns.clear();
+    }
+
+    cout << "Found " << patterns.size() << " patterns." << endl;
 }
 
 const vector<Pattern> &PatternGenerationSystematic::get_patterns() const {
@@ -324,20 +303,14 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
         "Use dominance pruning to reduce number of patterns.",
         "true");
     Heuristic::add_options_to_parser(parser);
-
     Options opts = parser.parse();
 
     PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
     if (parser.dry_run())
-        return 0;
+        return nullptr;
 
-    if (opts.get<bool>("only_interesting_patterns")) {
-        PatternGenerationSystematic pattern_generator(opts);
-        return pattern_generator.get_pattern_collection_heuristic(opts);
-    } else {
-        PatternGenerationSystematicNaive pattern_generator(opts);
-        return pattern_generator.get_pattern_collection_heuristic(opts);
-    }
+    PatternGenerationSystematic pattern_generator(opts);
+    return pattern_generator.get_pattern_collection_heuristic(opts);
 }
 
 static Plugin<ScalarEvaluator> _plugin("cpdbs_systematic", _parse);

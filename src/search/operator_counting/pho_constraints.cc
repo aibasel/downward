@@ -42,13 +42,8 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
             patterns = options.get<vector<vector<int> > >("patterns");
         } else {
             // Systematically generated patterns
-            if (options.get<bool>("only_interesting_patterns")) {
-                PatternGenerationSystematic pattern_generator(options);
-                patterns = pattern_generator.get_patterns();
-            } else {
-                PatternGenerationSystematicNaive pattern_generator(options);
-                patterns = pattern_generator.get_patterns();
-            }
+            PatternGenerationSystematic pattern_generator(options);
+            patterns = pattern_generator.get_patterns();
         }
         for (const vector<int> &pattern : patterns) {
             if (pdbs.size() % 1000 == 0) {

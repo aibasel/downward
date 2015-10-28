@@ -16,17 +16,6 @@ class Options;
 // Invariant: patterns are always sorted.
 typedef std::vector<int> Pattern;
 
-class PatternGenerationSystematicNaive {
-    const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
-    std::vector<Pattern> patterns;
-public:
-    explicit PatternGenerationSystematicNaive(const Options &opts);
-    ~PatternGenerationSystematicNaive();
-    const std::vector<Pattern> &get_patterns() const {return patterns; }
-    CanonicalPDBsHeuristic *get_pattern_collection_heuristic(const Options &opts) const;
-};
-
 class PatternGenerationSystematic {
     typedef std::unordered_set<Pattern> PatternSet;
 
@@ -46,6 +35,7 @@ class PatternGenerationSystematic {
 
     void build_sga_patterns(const CausalGraph &cg);
     void build_patterns();
+    void build_patterns_naive();
 public:
     explicit PatternGenerationSystematic(const Options &opts);
     ~PatternGenerationSystematic();
