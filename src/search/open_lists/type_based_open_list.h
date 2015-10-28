@@ -69,10 +69,9 @@ public:
 
         if (bucket.empty()) {
             // Swap the empty bucket with the last bucket, then delete it.
-            Key key_copy = key_and_bucket.first;
             key_to_bucket_index[keys_and_buckets.back().first] = bucket_id;
+            key_to_bucket_index.erase(key_and_bucket.first);
             swap_and_pop_from_vector(keys_and_buckets, bucket_id);
-            key_to_bucket_index.erase(key_copy);
         }
         return result;
     }
