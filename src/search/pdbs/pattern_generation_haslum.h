@@ -113,7 +113,7 @@ class PatternGenerationHaslum {
     */
     void initialize();
 public:
-    PatternGenerationHaslum(const Options &opts);
+    explicit PatternGenerationHaslum(const Options &opts);
     virtual ~PatternGenerationHaslum();
 
     /*

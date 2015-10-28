@@ -192,7 +192,7 @@ void PatternGenerationSystematic::build_patterns() {
        This is guaranteed because build_sga_patterns generates
        patterns ordered by size.
     */
-    vector<vector<const Pattern *> > sga_patterns_by_var(num_variables);
+    vector<vector<const Pattern *>> sga_patterns_by_var(num_variables);
     for (const Pattern &pattern : sga_patterns) {
         for (int var : pattern) {
             sga_patterns_by_var[var].push_back(&pattern);
@@ -239,8 +239,8 @@ void PatternGenerationSystematic::build_patterns() {
 
 void PatternGenerationSystematic::build_patterns_naive() {
     int num_variables = task_proxy.get_variables().size();
-    vector<vector<int> > current_patterns(1);
-    vector<vector<int> > next_patterns;
+    vector<vector<int>> current_patterns(1);
+    vector<vector<int>> next_patterns;
     for (size_t i = 0; i < max_pattern_size; ++i) {
         for (const vector<int> &current_pattern : current_patterns) {
             int max_var = -1;
@@ -298,7 +298,7 @@ void PatternGenerationSystematic::check_systematic_pattern_options(
 }
 
 
-static ScalarEvaluator *_parse(OptionParser &parser) {
+static Heuristic *_parse(OptionParser &parser) {
     PatternGenerationSystematic::add_systematic_pattern_options(parser);
     parser.add_option<bool>(
         "dominance_pruning",
@@ -315,4 +315,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
     return pattern_generator.get_pattern_collection_heuristic(opts);
 }
 
-static Plugin<ScalarEvaluator> _plugin("cpdbs_systematic", _parse);
+static Plugin<Heuristic> _plugin("cpdbs_systematic", _parse);

@@ -5,6 +5,7 @@
 #include "../heuristic.h"
 #include "../lp_solver.h"
 
+#include <memory>
 #include <vector>
 
 class Options;
@@ -21,7 +22,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
     int compute_heuristic(const State &state);
 public:
-    OperatorCountingHeuristic(const Options &opts);
+    explicit OperatorCountingHeuristic(const Options &opts);
     ~OperatorCountingHeuristic();
 };
 }
