@@ -29,10 +29,9 @@ template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
     std::vector<ScalarEvaluator *> evaluators;
 
-    typedef std::vector<int> Key;
-    typedef std::vector<Entry> Bucket;
+    using Key = std::vector<int>;
+    using Bucket = std::vector<Entry>;
     std::vector<std::pair<Key, Bucket>> keys_and_buckets;
-
     std::unordered_map<Key, int> key_to_bucket_index;
 
 protected:
@@ -41,16 +40,17 @@ protected:
         std::vector<int> key;
         key.reserve(evaluators.size());
         for (ScalarEvaluator *evaluator : evaluators) {
-            key.push_back(eval_context.get_heuristic_value(evaluator));
+            key.push_back(
+                eval_context.get_heuristic_value_or_infinity(evaluator));
         }
 
         auto it = key_to_bucket_index.find(key);
         if (it == key_to_bucket_index.end()) {
-            keys_and_buckets.push_back(make_pair(key, Bucket {entry}));
-            key_to_bucket_index[key] = keys_and_buckets.size() - 1;
+            key_to_bucket_index[key] = keys_and_buckets.size();
+            keys_and_buckets.push_back({move(key), {entry}});
         } else {
             size_t bucket_index = it->second;
-            assert(bucket_index < keys_and_buckets.size());
+            assert(in_bounds(bucket_index, keys_and_buckets));
             keys_and_buckets[bucket_index].second.push_back(entry);
         }
     }
@@ -140,11 +140,11 @@ public:
 
         Options opts = parser.parse();
         if (parser.help_mode())
-            return 0;
+            return nullptr;
 
         opts.verify_list_non_empty<ScalarEvaluator *>("evaluators");
         if (parser.dry_run())
-            return 0;
+            return nullptr;
         else
             return new TypeBasedOpenList<Entry>(opts);
     }
