@@ -11,7 +11,6 @@ set(CORE_SOURCES
         abstract_task.cc
         axioms.cc
         causal_graph.cc
-        const_evaluator.cc
         cost_adapted_task.cc
         countdown_timer.cc
         delegating_task.cc
@@ -92,6 +91,13 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # DEPENDS lists plugins that will be automatically enabled if this plugin
 # is enabled. If the dependency was not enabled before, this will be logged.
 # DEACTIVATED sets the default value of the generated CMake option to false.
+
+fast_downward_plugin(
+    NAME CONST_EVALUATOR
+    HELP "The constant evaluator"
+    SOURCES
+        const_evaluator.cc
+)
 
 fast_downward_plugin(
     NAME G_EVALUATOR
