@@ -15,6 +15,20 @@
 
 /*
   Type-based open list based on Xie et al. (AAAI 2014), see below.
+
+  The original implementation uses a std::map for storing and looking
+  up buckets. Our implementation stores the Buckets in a std::vector
+  and uses a std::unordered_map for looking up indexes in the vector.
+
+  In the table below we list the amortized worst-case time complexities
+  for the original implementation and the version below.
+
+    n = number of entries
+    m = number of buckets
+
+                            Original    Code below
+    Insert entry            O(log(m))   O(1)
+    Remove entry            O(m)        O(1)        # both use swap+pop
 */
 
 template<class Entry>
