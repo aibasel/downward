@@ -330,7 +330,7 @@ void PatternGenerationHaslum::initialize() {
     opts.set<int>("cost_type", NORMAL);
     opts.set<vector<vector<int>>>("patterns", initial_pattern_collection);
     opts.set<bool>("cache_estimates", cache_h);
-    current_heuristic = new CanonicalPDBsHeuristic(opts);
+    current_heuristic = make_unique_ptr<CanonicalPDBsHeuristic>(opts);
 
     State initial_state = task_proxy.get_initial_state();
     if (current_heuristic->is_dead_end(initial_state))
@@ -494,7 +494,8 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     PatternGenerationHaslum pgh(opts);
-    return pgh.get_pattern_collection_heuristic();
+    // Note: in the long run, this should return a shared pointer.
+    return pgh.extract_pattern_collection_heuristic().release();
 }
 
 static Plugin<Heuristic> _plugin("ipdb", _parse);
