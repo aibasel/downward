@@ -6,7 +6,6 @@
 #include "labels.h"
 
 #include "../task_proxy.h"
-#include "../timer.h"
 #include "../utilities.h"
 
 #include <algorithm>
@@ -81,9 +80,7 @@ LabelConstIter TSConstIterator::end() const {
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                                    const shared_ptr<Labels> labels)
     : num_variables(task_proxy.get_variables().size()),
-      label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)),
-      heuristic_representation(nullptr),
-      distances(make_unique_ptr<Distances>(*this)) {
+      label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)) {
     transitions_by_group_id.resize(labels->get_max_size());
 }
 
@@ -145,9 +142,6 @@ TransitionSystem::TransitionSystem(
             init_state = value;
     }
 
-    heuristic_representation = make_unique_ptr<HeuristicRepresentationLeaf>(
-        var_id, range);
-
     /*
       Prepare label_equivalence_relation data structure: add one single-element
       group for every operator.
@@ -161,8 +155,7 @@ TransitionSystem::TransitionSystem(
     }
 
     compute_locally_equivalent_labels();
-    compute_distances_and_prune();
-    assert(is_valid());
+    assert(are_transitions_sorted_unique());
 }
 
 // constructor for merges
@@ -175,7 +168,7 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
          << ts2->description() << endl;
 
     assert(ts1->is_solvable() && ts2->is_solvable());
-    assert(ts1->is_valid() && ts2->is_valid());
+    assert(ts1->are_transitions_sorted_unique() && ts2->are_transitions_sorted_unique());
 
     ::set_union(
         ts1->incorporated_variables.begin(), ts1->incorporated_variables.end(),
@@ -197,10 +190,6 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
                 init_state = state;
         }
     }
-
-    heuristic_representation = make_unique_ptr<HeuristicRepresentationMerge>(
-        move(ts1->heuristic_representation),
-        move(ts2->heuristic_representation));
 
     /*
       We can compute the local equivalence relation of a composite T
@@ -276,54 +265,14 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
     }
 
     assert(are_transitions_sorted_unique());
-    compute_distances_and_prune();
-    assert(is_valid());
 }
 
 TransitionSystem::~TransitionSystem() {
 }
 
-bool TransitionSystem::is_valid() const {
-    return distances->are_distances_computed()
-           && are_transitions_sorted_unique();
-}
-
-void TransitionSystem::discard_states(const vector<bool> &to_be_pruned_states) {
-    assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
-    vector<forward_list<AbstractStateRef>> equivalence_relation;
-    equivalence_relation.reserve(num_states);
-    for (int state = 0; state < num_states; ++state) {
-        if (!to_be_pruned_states[state]) {
-            forward_list<AbstractStateRef> group;
-            group.push_front(state);
-            equivalence_relation.push_back(group);
-        }
-    }
-    apply_abstraction(equivalence_relation);
-}
-
-void TransitionSystem::compute_distances_and_prune() {
-    /*
-      This method does all that compute_distances does and
-      additionally prunes all states that are unreachable (abstract g
-      is infinite) or irrelevant (abstract h is infinite).
-    */
-    assert(are_transitions_sorted_unique());
-    discard_states(distances->compute_distances());
-}
-
 void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
     sort(transitions.begin(), transitions.end());
     transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
-}
-
-bool TransitionSystem::are_transitions_sorted_unique() const {
-    for (TSConstIterator group_it = begin();
-         group_it != end(); ++group_it) {
-        if (!is_sorted_unique(group_it.get_transitions()))
-            return false;
-    }
-    return true;
 }
 
 void TransitionSystem::compute_locally_equivalent_labels() {
@@ -350,8 +299,9 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 }
 
 bool TransitionSystem::apply_abstraction(
-    const vector<forward_list<AbstractStateRef>> &collapsed_groups) {
-    assert(is_valid());
+    const vector<forward_list<AbstractStateRef>> &collapsed_groups,
+    const vector<int> &abstraction_mapping) {
+    assert(are_transitions_sorted_unique());
 
     if (static_cast<int>(collapsed_groups.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
@@ -362,17 +312,6 @@ bool TransitionSystem::apply_abstraction(
          << " to " << collapsed_groups.size() << " states)" << endl;
 
     typedef forward_list<AbstractStateRef> Group;
-
-    vector<int> abstraction_mapping(num_states, PRUNED_STATE);
-
-    for (size_t group_no = 0; group_no < collapsed_groups.size(); ++group_no) {
-        const Group &group = collapsed_groups[group_no];
-        for (Group::const_iterator pos = group.begin(); pos != group.end(); ++pos) {
-            AbstractStateRef state = *pos;
-            assert(abstraction_mapping[state] == PRUNED_STATE);
-            abstraction_mapping[state] = group_no;
-        }
-    }
 
     int new_num_states = collapsed_groups.size();
     vector<bool> new_goal_states(new_num_states, false);
@@ -415,18 +354,12 @@ bool TransitionSystem::apply_abstraction(
     if (init_state == PRUNED_STATE)
         cout << tag() << "initial state pruned; task unsolvable" << endl;
 
-    if (!distances->apply_abstraction(collapsed_groups))
-        cout << tag() << "simplification was not f-preserving!" << endl;
-    heuristic_representation->apply_abstraction_to_lookup_table(
-        abstraction_mapping);
-
-    assert(is_valid());
+    assert(are_transitions_sorted_unique());
     return true;
 }
 
 void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>> &label_mapping,
                                              bool only_equivalent_labels) {
-    assert(distances->are_distances_computed());
     assert(are_transitions_sorted_unique());
 
     /*
@@ -491,12 +424,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>
         compute_locally_equivalent_labels();
     }
 
-    assert(is_valid());
-}
-
-void TransitionSystem::release_memory() {
-    label_equivalence_relation.reset();
-    release_vector_memory(transitions_by_group_id);
+    assert(are_transitions_sorted_unique());
 }
 
 string TransitionSystem::tag() const {
@@ -505,20 +433,17 @@ string TransitionSystem::tag() const {
     return desc + ": ";
 }
 
-bool TransitionSystem::is_solvable() const {
-    assert(distances->are_distances_computed());
-    return init_state != PRUNED_STATE;
+bool TransitionSystem::are_transitions_sorted_unique() const {
+    for (TSConstIterator group_it = begin();
+         group_it != end(); ++group_it) {
+        if (!is_sorted_unique(group_it.get_transitions()))
+            return false;
+    }
+    return true;
 }
 
-int TransitionSystem::get_cost(const State &state) const {
-    assert(distances->are_distances_computed());
-    int abs_state = heuristic_representation->get_abstract_state(state);
-
-    if (abs_state == PRUNED_STATE)
-        return -1;
-    int cost = distances->get_goal_distance(abs_state);
-    assert(cost != INF);
-    return cost;
+bool TransitionSystem::is_solvable() const {
+    return init_state != PRUNED_STATE;
 }
 
 int TransitionSystem::total_transitions() const {
@@ -528,19 +453,6 @@ int TransitionSystem::total_transitions() const {
         total += group_it.get_transitions().size();
     }
     return total;
-}
-
-int TransitionSystem::unique_unlabeled_transitions() const {
-    vector<Transition> unique_transitions;
-    for (TSConstIterator group_it = begin();
-         group_it != end(); ++group_it) {
-        const vector<Transition> &transitions = group_it.get_transitions();
-        unique_transitions.insert(unique_transitions.end(), transitions.begin(),
-                                  transitions.end());
-    }
-    ::sort(unique_transitions.begin(), unique_transitions.end());
-    return unique(unique_transitions.begin(), unique_transitions.end())
-           - unique_transitions.begin();
 }
 
 string TransitionSystem::description() const {
@@ -554,26 +466,8 @@ string TransitionSystem::description() const {
     return s.str();
 }
 
-void TransitionSystem::statistics(const Timer &timer) const {
-    cout << tag() << get_size() << " states, "
-         << total_transitions() << " arcs " << endl;
-    // TODO: Turn the following block into Distances::statistics()?
-    cout << tag();
-    if (!distances->are_distances_computed()) {
-        cout << "distances not computed";
-    } else if (is_solvable()) {
-        cout << "init h=" << distances->get_goal_distance(init_state)
-             << ", max f=" << distances->get_max_f()
-             << ", max g=" << distances->get_max_g()
-             << ", max h=" << distances->get_max_h();
-    } else {
-        cout << "transition system is unsolvable";
-    }
-    cout << " [t=" << timer << "]" << endl;
-}
-
 void TransitionSystem::dump_dot_graph() const {
-    assert(is_valid());
+    assert(are_transitions_sorted_unique());
     cout << "digraph transition_system";
     for (size_t i = 0; i < incorporated_variables.size(); ++i)
         cout << "_" << incorporated_variables[i];
@@ -633,26 +527,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
     }
 }
 
-int TransitionSystem::get_max_f() const {
-    return distances->get_max_f();
-}
-
-int TransitionSystem::get_max_g() const {
-    return distances->get_max_g();
-}
-
-int TransitionSystem::get_max_h() const {
-    return distances->get_max_h();
-}
-
-int TransitionSystem::get_init_distance(int state) const {
-    return distances->get_init_distance(state);
-}
-
-int TransitionSystem::get_goal_distance(int state) const {
-    return distances->get_goal_distance(state);
-}
-
-int TransitionSystem::get_num_labels() const {
-    return label_equivalence_relation->get_num_labels();
+void TransitionSystem::statistics() const {
+    cout << tag() << get_size() << " states, "
+         << total_transitions() << " arcs " << endl;
 }
