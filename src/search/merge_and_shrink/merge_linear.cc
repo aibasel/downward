@@ -1,5 +1,7 @@
 #include "merge_linear.h"
 
+#include "factored_transition_system.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../utilities.h"
@@ -21,7 +23,8 @@ void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
         task, variable_order_type);
 }
 
-pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {
+pair<int, int> MergeLinear::get_next(shared_ptr<FactoredTransitionSystem> fts) {
+    const vector<TransitionSystem *> all_transition_systems = fts->get_vector();
     assert(initialized());
     assert(!done());
     assert(!variable_order_finder->done());

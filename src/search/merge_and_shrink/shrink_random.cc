@@ -1,5 +1,6 @@
 #include "shrink_random.h"
 
+#include "factored_transition_system.h"
 #include "transition_system.h"
 
 #include "../option_parser.h"
@@ -19,7 +20,10 @@ ShrinkRandom::~ShrinkRandom() {
 }
 
 void ShrinkRandom::partition_into_buckets(
-    const TransitionSystem &ts, vector<Bucket> &buckets) const {
+    shared_ptr<FactoredTransitionSystem> fts,
+    int index,
+    vector<Bucket> &buckets) const {
+    const TransitionSystem &ts = fts->get_ts(index);
     assert(buckets.empty());
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();
