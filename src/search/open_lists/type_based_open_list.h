@@ -65,9 +65,8 @@ public:
         }
 
         int pos = g_rng(bucket.size());
-        Entry result = bucket[pos];
+        Entry result = swap_and_pop_from_vector(bucket, pos);
 
-        swap_and_pop_from_vector(bucket, pos);
         if (bucket.empty()) {
             // Swap the empty bucket with the last bucket, then delete it.
             Key key_copy = key_and_bucket.first;
