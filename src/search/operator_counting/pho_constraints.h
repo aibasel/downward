@@ -11,7 +11,8 @@
 class CanonicalPDBsHeuristic;
 class PatternDatabase;
 
-namespace operator_counting {
+namespace OperatorCounting {
+
 class PhOConstraints : public ConstraintGenerator {
     int constraint_offset;
 

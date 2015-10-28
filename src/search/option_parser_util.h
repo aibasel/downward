@@ -28,7 +28,7 @@ template<class Entry>
 class OpenList;
 class AbstractTask;
 
-namespace operator_counting {
+namespace OperatorCounting {
 class ConstraintGenerator;
 }
 
@@ -217,7 +217,7 @@ struct TypeNamer<std::string> {
 };
 
 template <>
-struct TypeNamer<operator_counting::ConstraintGenerator *> {
+struct TypeNamer<std::shared_ptr<OperatorCounting::ConstraintGenerator>> {
     static std::string name() {
         return "constraint generator";
     }
