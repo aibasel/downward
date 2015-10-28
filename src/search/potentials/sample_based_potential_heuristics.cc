@@ -39,9 +39,9 @@ void optimize_for_samples(PotentialOptimizer &optimizer, int num_samples) {
   Compute multiple potential functions that are optimized for different
   sets of samples.
 */
-static vector<unique_ptr<PotentialFunction> > create_sample_based_potential_functions(
+static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_functions(
     const Options &opts) {
-    vector<unique_ptr<PotentialFunction> > functions;
+    vector<unique_ptr<PotentialFunction>> functions;
     PotentialOptimizer optimizer(opts);
     for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
         optimize_for_samples(optimizer, opts.get<int>("num_samples"));
@@ -71,7 +71,7 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     return new PotentialMaxHeuristic(
-               opts, create_sample_based_potential_functions(opts));
+        opts, create_sample_based_potential_functions(opts));
 }
 
 static Plugin<Heuristic> _plugin("sample_based_potentials", _parse);

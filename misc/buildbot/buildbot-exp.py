@@ -44,7 +44,7 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 
-BASELINE = checkouts.get_global_rev(REPO, 'b82ff7dc99e6')
+BASELINE = checkouts.get_global_rev(REPO, '1e20b69c5f43')
 if not BASELINE:
     logging.critical('Baseline not set or not found in repo.')
 CONFIGS = {}

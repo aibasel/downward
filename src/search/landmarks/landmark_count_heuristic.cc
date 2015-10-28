@@ -55,7 +55,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
     assert(exploration != 0);
     // Set additional goals for FF exploration
-    vector<pair<int, int> > lm_leaves;
+    vector<pair<int, int>> lm_leaves;
     LandmarkSet result;
     const vector<bool> &reached_lms_v = lm_status_manager.get_reached_landmarks(state);
     convert_lms(result, reached_lms_v);
@@ -127,7 +127,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
         set_exploration_goals(state);
 
         // Use FF to plan to a landmark leaf
-        vector<pair<int, int> > leaves;
+        vector<pair<int, int>> leaves;
         collect_lm_leaves(ff_search_disjunctive_lms, reached_lms, leaves);
         if (!exploration->plan_for_disj(leaves, state)) {
             exploration->exported_ops.clear();
@@ -143,7 +143,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
 }
 
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
-                                               LandmarkSet &reached_lms, vector<pair<int, int> > &leaves) {
+                                               LandmarkSet &reached_lms, vector<pair<int, int>> &leaves) {
     set<LandmarkNode *>::const_iterator it;
     for (it = lgraph.get_nodes().begin(); it != lgraph.get_nodes().end(); ++it) {
         LandmarkNode *node_p = *it;
@@ -237,6 +237,9 @@ bool LandmarkCountHeuristic::reach_state(const GlobalState &parent_state,
              has changed and the h value should be recomputed. It's not
              wrong to always return true, but it may be more efficient to
              check that the LM set has actually changed. */
+    if (cache_h_values) {
+        heuristic_cache[state].dirty = true;
+    }
     return true;
 }
 

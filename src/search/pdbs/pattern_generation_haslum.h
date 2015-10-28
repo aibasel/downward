@@ -30,6 +30,7 @@ class PatternGenerationHaslum {
     const int min_improvement;
     const double max_time;
     const OperatorCost cost_type;
+    const bool cache_h;
     CanonicalPDBsHeuristic *current_heuristic;
     SuccessorGenerator successor_generator;
 
@@ -44,15 +45,15 @@ class PatternGenerationHaslum {
     */
     void generate_candidate_patterns(
         const PatternDatabase *pdb,
-        std::vector<std::vector<int> > &candidate_patterns);
+        std::vector<std::vector<int>> &candidate_patterns);
 
     /*
       Generates the PatternDatabase for patterns in new_candidates if they have
       not been generated already.
     */
     std::size_t generate_pdbs_for_candidates(
-        std::set<std::vector<int> > &generated_patterns,
-        std::vector<std::vector<int> > &new_candidates,
+        std::set<std::vector<int>> &generated_patterns,
+        std::vector<std::vector<int>> &new_candidates,
         std::vector<PatternDatabase *> &candidate_pdbs) const;
 
     /*
@@ -84,7 +85,7 @@ class PatternGenerationHaslum {
     */
     bool is_heuristic_improved(
         PatternDatabase *pdb, const State &sample,
-        const std::vector<std::vector<PatternDatabase *> > &max_additive_subsets);
+        const std::vector<std::vector<PatternDatabase *>> &max_additive_subsets);
 
     /*
       This is the core algorithm of this class. As soon as after an iteration,
@@ -102,7 +103,7 @@ class PatternGenerationHaslum {
     */
     void hill_climbing(
         double average_operator_costs,
-        std::vector<std::vector<int> > &initial_candidate_patterns);
+        std::vector<std::vector<int>> &initial_candidate_patterns);
 
     /*
       Initializes everything for the hill climbing algorithm. Note that the

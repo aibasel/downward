@@ -29,15 +29,15 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
         operator_costs = op_costs;
     }
 
-    const vector<vector<int> > &pattern_collection(
-        opts.get_list<vector<int> >("patterns"));
+    const vector<vector<int>> &pattern_collection(
+        opts.get_list<vector<int>>("patterns"));
 
     //Timer timer;
     approx_mean_finite_h = 0;
     pattern_databases.reserve(pattern_collection.size());
     for (const vector<int> &pattern : pattern_collection) {
-        PatternDatabase *pdb = new PatternDatabase(task, pattern, false,
-                                                   operator_costs);
+        PatternDatabase *pdb = new PatternDatabase(
+            task_proxy, pattern, false, operator_costs);
         pattern_databases.push_back(pdb);
 
         /* Set cost of relevant operators to 0 for further iterations

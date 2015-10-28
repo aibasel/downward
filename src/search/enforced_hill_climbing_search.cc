@@ -70,9 +70,8 @@ void EnforcedHillClimbingSearch::initialize() {
             exit_with(EXIT_UNSOLVED_INCOMPLETE);
     }
 
-    int current_h = current_eval_context.get_heuristic_value(heuristic);
     SearchNode node = search_space.get_node(current_eval_context.get_state());
-    node.open_initial(current_h);
+    node.open_initial();
 }
 
 vector<const GlobalOperator *> EnforcedHillClimbingSearch::get_successors(
@@ -169,7 +168,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = eval_context.get_heuristic_value(heuristic);
-            node.open(h, parent_node, last_op);
+            node.open(parent_node, last_op);
 
             if (h < current_eval_context.get_heuristic_value(heuristic)) {
                 ++num_ehc_phases;

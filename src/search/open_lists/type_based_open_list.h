@@ -31,53 +31,38 @@ class TypeBasedOpenList : public OpenList<Entry> {
 
     typedef std::vector<int> Key;
     typedef std::vector<Entry> Bucket;
-    std::vector<std::pair<Key, Bucket> > keys_and_buckets;
+    std::vector<std::pair<Key, Bucket>> keys_and_buckets;
 
     std::unordered_map<Key, int> key_to_bucket_index;
 
-    int size;
-    bool dead_end;
-    bool dead_end_reliable;
-
 protected:
-    virtual Evaluator *get_evaluator() override {
-        return this;
-    }
-
-public:
-    explicit TypeBasedOpenList(const Options &opts)
-        : evaluators(opts.get_list<ScalarEvaluator *>("evaluators")),
-          size(0),
-          dead_end(false),
-          dead_end_reliable(false) {
-    }
-
-    virtual ~TypeBasedOpenList() override = default;
-
-    virtual int insert(const Entry &entry) override {
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override {
         std::vector<int> key;
         key.reserve(evaluators.size());
         for (ScalarEvaluator *evaluator : evaluators) {
-            key.push_back(evaluator->get_value());
+            key.push_back(eval_context.get_heuristic_value(evaluator));
         }
 
         auto it = key_to_bucket_index.find(key);
         if (it == key_to_bucket_index.end()) {
-            keys_and_buckets.push_back(make_pair(key, Bucket {entry}
-                                                 ));
+            keys_and_buckets.push_back(make_pair(key, Bucket {entry}));
             key_to_bucket_index[key] = keys_and_buckets.size() - 1;
         } else {
             size_t bucket_index = it->second;
             assert(bucket_index < keys_and_buckets.size());
             keys_and_buckets[bucket_index].second.push_back(entry);
         }
-
-        ++size;
-        return 1;
     }
 
+public:
+    explicit TypeBasedOpenList(const Options &opts)
+        : evaluators(opts.get_list<ScalarEvaluator *>("evaluators")) {
+    }
+
+    virtual ~TypeBasedOpenList() override = default;
+
     virtual Entry remove_min(std::vector<int> *key = 0) override {
-        assert(size > 0);
         size_t bucket_id = g_rng(keys_and_buckets.size());
         std::pair<Key, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
         Bucket &bucket = key_and_bucket.second;
@@ -101,46 +86,38 @@ public:
             keys_and_buckets.pop_back();
             key_to_bucket_index.erase(key_copy);
         }
-        --size;
         return result;
     }
 
     virtual bool empty() const override {
-        return size == 0;
+        return keys_and_buckets.empty();
     }
 
     virtual void clear() override {
         keys_and_buckets.clear();
         key_to_bucket_index.clear();
-        size = 0;
     }
 
-    virtual void evaluate(int g, bool preferred) override {
-        // The code is taken from AlternationOpenList
-        // TODO: see issue494, common implementation of evaluate for multi evaluator open lists
-
-        dead_end = true;
-        dead_end_reliable = false;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override {
+        // If one evaluator is sure we have a dead end, return true.
+        if (is_reliable_dead_end(eval_context))
+            return true;
+        // Otherwise, return true if all evaluators agree this is a dead-end.
         for (ScalarEvaluator *evaluator : evaluators) {
-            evaluator->evaluate(g, preferred);
-            if (evaluator->is_dead_end()) {
-                if (evaluator->dead_end_is_reliable()) {
-                    dead_end = true; // Might have been set to false.
-                    dead_end_reliable = true;
-                    break;
-                }
-            } else {
-                dead_end = false;
-            }
+            if (!eval_context.is_heuristic_infinite(evaluator))
+                return false;
         }
+        return true;
     }
 
-    virtual bool is_dead_end() const override {
-        return dead_end;
-    }
-
-    virtual bool dead_end_is_reliable() const override {
-        return dead_end_reliable;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override {
+        for (ScalarEvaluator *evaluator : evaluators) {
+            if (evaluator->dead_ends_are_reliable() &&
+                eval_context.is_heuristic_infinite(evaluator))
+                return true;
+        }
+        return false;
     }
 
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override {

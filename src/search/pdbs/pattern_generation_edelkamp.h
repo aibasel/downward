@@ -28,8 +28,9 @@ class PatternGenerationEdelkamp {
        or not. */
     const bool disjoint_patterns;
     const OperatorCost cost_type;
+    const bool cache_h;
     // All current pattern collections.
-    std::vector<std::vector<std::vector<bool> > > pattern_collections;
+    std::vector<std::vector<std::vector<bool>>> pattern_collections;
 
     // Store the fitness value of the best pattern collection over all episodes.
     double best_fitness;
