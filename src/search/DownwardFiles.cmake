@@ -62,6 +62,7 @@ set(CORE_SOURCES
         open_lists/pareto_open_list.cc
         open_lists/standard_scalar_open_list.cc
         open_lists/tiebreaking_open_list.cc
+        open_lists/type_based_open_list.cc
 )
 
 fast_downward_add_headers_to_sources_list(CORE_SOURCES)
