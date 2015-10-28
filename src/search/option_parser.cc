@@ -52,7 +52,7 @@ void OptionParser::set_help_mode(bool m) {
     opts.set_help_mode(m);
 }
 
-template <class T>
+template<typename T>
 static void get_help_templ(const ParseTree &pt) {
     if (Registry<T>::instance()->contains(pt.begin()->value)) {
         OptionParser p(pt, true);
@@ -77,7 +77,7 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<Labels>>(pt);
 }
 
-template <class T>
+template<typename T>
 static void get_full_help_templ() {
     DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
                                        TypeDocumenter<T>::synopsis());

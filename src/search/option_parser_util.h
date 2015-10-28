@@ -104,7 +104,7 @@ public:
 
 
 //a registry<T> maps a string to a T-factory
-template <class T>
+template<typename T>
 class Registry {
 public:
     typedef T (*Factory)(OptionParser &);
@@ -143,7 +143,7 @@ private:
 
 //Predefinitions<T> maps strings to pointers to
 //already created Heuristics/LandmarkGraphs
-template <class T>
+template<typename T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
@@ -178,7 +178,7 @@ public:
 //TypeNamer prints out names of types.
 //There's something built in for this (typeid().name()), but the output is not always very readable
 
-template <class T>
+template<typename T>
 struct TypeNamer {
     static std::string name() {
         return typeid(T()).name();
@@ -283,14 +283,14 @@ struct TypeNamer<std::shared_ptr<AbstractTask>> {
     }
 };
 
-template <class Entry>
+template<typename Entry>
 struct TypeNamer<OpenList<Entry> *> {
     static std::string name() {
         return "OpenList";
     }
 };
 
-template <class T>
+template<typename T>
 struct TypeNamer<std::vector<T>> {
     static std::string name() {
         return "list of " + TypeNamer<T>::name();
@@ -300,7 +300,7 @@ struct TypeNamer<std::vector<T>> {
 // TypeDocumenter allows to add global documentation to the types.
 // This cannot be done during parsing, because types are not parsed.
 
-template <class T>
+template<typename T>
 struct TypeDocumenter {
     static std::string synopsis() {
         return "";
@@ -396,12 +396,12 @@ public:
 
     std::map<std::string, boost::any> storage;
 
-    template <class T>
+    template<typename T>
     void set(std::string key, T value) {
         storage[key] = value;
     }
 
-    template <class T>
+    template<typename T>
     T get(std::string key) const {
         std::map<std::string, boost::any>::const_iterator it;
         it = storage.find(key);
@@ -422,7 +422,7 @@ public:
         }
     }
 
-    template <class T>
+    template<typename T>
     T get(std::string key, const T &default_value) const {
         if (storage.count(key))
             return get<T>(key);
@@ -430,7 +430,7 @@ public:
             return default_value;
     }
 
-    template <class T>
+    template<typename T>
     void verify_list_non_empty(std::string key) const {
         if (!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T>>(key);
@@ -444,7 +444,7 @@ public:
         }
     }
 
-    template <class T>
+    template<typename T>
     std::vector<T> get_list(std::string key) const {
         return get<std::vector<T>>(key);
     }

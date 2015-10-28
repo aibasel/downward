@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-template <class T>
+template<typename T>
 class Plugin {
 public:
     Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
@@ -26,7 +26,7 @@ public:
 
 
 // TODO: This class will replace Plugin once we no longer need to support raw pointers.
-template <class T>
+template<typename T>
 class PluginShared {
 public:
     PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
@@ -36,7 +36,7 @@ public:
     PluginShared(const PluginShared<T> &other) = delete;
 };
 
-template <class Entry>
+template<typename Entry>
 class Plugin<OpenList<Entry >> {
     Plugin(const Plugin<OpenList<Entry >> &copy);
 public:
