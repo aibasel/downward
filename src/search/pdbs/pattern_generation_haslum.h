@@ -31,7 +31,7 @@ class PatternGenerationHaslum {
     const double max_time;
     const OperatorCost cost_type;
     const bool cache_h;
-    CanonicalPDBsHeuristic *current_heuristic;
+    std::unique_ptr<CanonicalPDBsHeuristic> current_heuristic;
     SuccessorGenerator successor_generator;
 
     // for stats only
@@ -121,8 +121,9 @@ public:
       Important: caller owns the returned pointer and has to take care of its
       deletion.
     */
-    CanonicalPDBsHeuristic *get_pattern_collection_heuristic() const {
-        return current_heuristic;
+    std::unique_ptr<CanonicalPDBsHeuristic>
+    extract_pattern_collection_heuristic() {
+        return std::move(current_heuristic);
     }
 
     static void add_hillclimbing_options(OptionParser &parser);

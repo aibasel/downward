@@ -33,7 +33,7 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
         options.set<bool>("cache_estimates", false);
         PatternGenerationHaslum pgh(options);
         pdb_source = unique_ptr<CanonicalPDBsHeuristic>(
-            pgh.get_pattern_collection_heuristic());
+            pgh.extract_pattern_collection_heuristic());
         pdbs = pdb_source->get_pattern_databases();
 
     } else {

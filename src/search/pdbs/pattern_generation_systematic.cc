@@ -264,14 +264,17 @@ const vector<Pattern> &PatternGenerationSystematic::get_patterns() const {
     return patterns;
 }
 
-CanonicalPDBsHeuristic *PatternGenerationSystematic::get_pattern_collection_heuristic(const Options &opts) const {
+unique_ptr<CanonicalPDBsHeuristic>
+PatternGenerationSystematic::get_pattern_collection_heuristic(
+    const Options &opts) const {
     Options canonical_opts;
     canonical_opts.set<shared_ptr<AbstractTask>>(
         "transform", get_task_from_options(opts));
     canonical_opts.set<int>("cost_type", NORMAL);
     canonical_opts.set<bool>("cache_estimates", opts.get<bool>("cache_estimates"));
     canonical_opts.set("patterns", patterns);
-    CanonicalPDBsHeuristic *h = new CanonicalPDBsHeuristic(canonical_opts);
+    unique_ptr<CanonicalPDBsHeuristic> h =
+        make_unique_ptr<CanonicalPDBsHeuristic>(canonical_opts);
     if (opts.get<bool>("dominance_pruning")) {
         h->dominance_pruning();
     }
@@ -312,7 +315,8 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     PatternGenerationSystematic pattern_generator(opts);
-    return pattern_generator.get_pattern_collection_heuristic(opts);
+    // Note: in the long run, this should return a shared pointer.
+    return pattern_generator.get_pattern_collection_heuristic(opts).release();
 }
 
 static Plugin<Heuristic> _plugin("cpdbs_systematic", _parse);

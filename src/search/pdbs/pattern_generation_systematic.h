@@ -4,8 +4,9 @@
 #include "../utilities.h"
 #include "../task_tools.h"
 
-#include <vector>
+#include <memory>
 #include <unordered_set>
+#include <vector>
 
 class CanonicalPDBsHeuristic;
 class CausalGraph;
@@ -43,7 +44,8 @@ public:
     // TODO: Something is wrong with the interface if we need both of
     // the following methods (see issue585):
     const std::vector<Pattern> &get_patterns() const;
-    CanonicalPDBsHeuristic *get_pattern_collection_heuristic(const Options &opts) const;
+    std::unique_ptr<CanonicalPDBsHeuristic> get_pattern_collection_heuristic(
+        const Options &opts) const;
 
     static void add_systematic_pattern_options(OptionParser &parser);
     static void check_systematic_pattern_options(OptionParser &parser,
