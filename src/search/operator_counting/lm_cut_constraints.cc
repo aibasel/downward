@@ -13,10 +13,8 @@ using namespace std;
 namespace OperatorCounting {
 
 void LMCutConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
-    double infinity) {
-    unused_parameter(constraints);
-    unused_parameter(infinity);
+    const shared_ptr<AbstractTask> task, vector<LPConstraint> &/*constraints*/,
+    double /*infinity*/) {
     TaskProxy task_proxy(*task);
     landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
 }
@@ -30,15 +28,13 @@ bool LMCutConstraints::update_constraints(const State &state,
 
     bool dead_end = landmark_generator->compute_landmarks(
         state, nullptr,
-        [&](const vector<int> &op_ids, int cost) {
-            unused_parameter(cost);
+        [&](const vector<int> &op_ids, int /*cost*/) {
             constraints.emplace_back(1.0, infinity);
             LPConstraint &landmark_constraint = constraints.back();
             for (int op_id : op_ids) {
                 landmark_constraint.insert(op_id, 1.0);
             }
-        }
-   );
+        });
 
     if (dead_end) {
         return true;
@@ -56,4 +52,3 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
 
 static PluginShared<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
 }
-
