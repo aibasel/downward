@@ -72,9 +72,7 @@ public:
             Key key_copy = key_and_bucket.first;
             Key moved_bucket_key = keys_and_buckets.back().first;
             key_to_bucket_index[moved_bucket_key] = bucket_id;
-            assert(bucket_id < keys_and_buckets.size());
-            swap(keys_and_buckets[bucket_id], keys_and_buckets.back());
-            keys_and_buckets.pop_back();
+            swap_and_pop_from_vector(keys_and_buckets, bucket_id);
             key_to_bucket_index.erase(key_copy);
         }
         return result;
