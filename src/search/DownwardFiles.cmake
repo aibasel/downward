@@ -297,6 +297,7 @@ fast_downward_plugin(
         operator_counting/constraint_generator.cc
         operator_counting/lm_cut_constraints.cc
         operator_counting/operator_counting_heuristic.cc
+        operator_counting/pho_constraints.cc
         operator_counting/state_equation_constraints.cc
     DEPENDS LP_SOLVER LM_CUT_HEURISTIC PDBS
 )
@@ -312,6 +313,7 @@ fast_downward_plugin(
         pdbs/pattern_database.cc
         pdbs/pattern_generation_edelkamp.cc
         pdbs/pattern_generation_haslum.cc
+        pdbs/pattern_generation_systematic.cc
         pdbs/pdb_heuristic.cc
         pdbs/util.cc
         pdbs/zero_one_pdbs_heuristic.cc
