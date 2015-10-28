@@ -31,11 +31,11 @@ class HMHeuristic : public Heuristic {
     bool was_updated;
 
     // auxiliary methods
-    void init_hm_table(Tuple &t);
+    void init_hm_table(const Tuple &t);
     void update_hm_table();
-    int eval(Tuple &t) const;
-    int update_hm_entry(Tuple &t, int val);
-    void extend_tuple(Tuple &t, const OperatorProxy &op);
+    int eval(const Tuple &t) const;
+    int update_hm_entry(const Tuple &t, int val);
+    void extend_tuple(const Tuple &t, const OperatorProxy &op);
 
     int check_tuple_in_tuple(const Tuple &tup, const Tuple &big_tuple) const;
     void state_to_tuple(const State &state, Tuple &t) const;
@@ -46,15 +46,15 @@ class HMHeuristic : public Heuristic {
     bool contradict_effect_of(const OperatorProxy &op, int var, int val) const;
 
     void generate_all_tuples();
-    void generate_all_tuples_aux(int var, int sz, Tuple &base);
+    void generate_all_tuples_aux(int var, int sz, const Tuple &base);
 
-    void generate_all_partial_tuples(Tuple &base_tuple,
+    void generate_all_partial_tuples(const Tuple &base_tuple,
                                      std::vector<Tuple> &res) const;
-    void generate_all_partial_tuples_aux(Tuple &base_tuple, Tuple &t, int index,
+    void generate_all_partial_tuples_aux(const Tuple &base_tuple, const Tuple &t, int index,
                                          int sz, std::vector<Tuple> &res) const;
 
     void dump_table() const;
-    void dump_tuple(Tuple &tup) const;
+    void dump_tuple(const Tuple &tup) const;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
