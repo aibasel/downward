@@ -13,7 +13,7 @@ namespace operator_counting {
 class ConstraintGenerator;
 
 class OperatorCountingHeuristic : public Heuristic {
-    std::vector<ConstraintGenerator *> constraint_generators;
+    std::vector<std::shared_ptr<ConstraintGenerator>> constraint_generators;
     LPSolver lp_solver;
 protected:
     virtual void initialize() override;

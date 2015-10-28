@@ -89,15 +89,15 @@ bool PhOConstraints::update_constraints(const State &state,
     return false;
 }
 
-static ConstraintGenerator *_parse_manual(OptionParser &parser) {
+static shared_ptr<ConstraintGenerator> _parse_manual(OptionParser &parser) {
     Options opts;
     parse_patterns(parser, opts);
     if (parser.dry_run())
         return nullptr;
-    return new PhOConstraints(opts);
+    return make_shared<PhOConstraints>(opts);
 }
 
-static ConstraintGenerator *_parse_systematic(OptionParser &parser) {
+static shared_ptr<ConstraintGenerator> _parse_systematic(OptionParser &parser) {
     parser.document_synopsis(
         "Posthoc optimization constraints for systematically generated patterns",
         "All (interesting) patterns with up to pattern_max_size variables are "
@@ -111,10 +111,10 @@ static ConstraintGenerator *_parse_systematic(OptionParser &parser) {
     PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
     if (parser.dry_run())
         return nullptr;
-    return new PhOConstraints(opts);
+    return make_shared<PhOConstraints>(opts);
 }
 
-static ConstraintGenerator *_parse_ipdb(OptionParser &parser) {
+static shared_ptr<ConstraintGenerator> _parse_ipdb(OptionParser &parser) {
     PatternGenerationHaslum::add_hillclimbing_options(parser);
     Options opts = parser.parse();
 
@@ -124,16 +124,16 @@ static ConstraintGenerator *_parse_ipdb(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return new PhOConstraints(opts);
+    return make_shared<PhOConstraints>(opts);
 }
 
 /* TODO: Once we have a common interface for pattern generation, we only need
          one plugin (see issue585). This will also undo the code duplication in
          the option parsers. */
-static Plugin<ConstraintGenerator> _plugin_manual(
+static PluginShared<ConstraintGenerator> _plugin_manual(
     "pho_constraints_manual", _parse_manual);
-static Plugin<ConstraintGenerator> _plugin_systematic(
+static PluginShared<ConstraintGenerator> _plugin_systematic(
     "pho_constraints_systematic", _parse_systematic);
-static Plugin<ConstraintGenerator> _plugin_ipdb(
+static PluginShared<ConstraintGenerator> _plugin_ipdb(
     "pho_constraints_ipdb", _parse_ipdb);
 }

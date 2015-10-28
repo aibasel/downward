@@ -10,7 +10,8 @@
 
 using namespace std;
 
-namespace operator_counting {
+namespace OperatorCounting {
+
 void LMCutConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
     double infinity) {
@@ -47,12 +48,12 @@ bool LMCutConstraints::update_constraints(const State &state,
     }
 }
 
-static ConstraintGenerator *_parse(OptionParser &parser) {
+static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
-        return 0;
-    return new LMCutConstraints();
+        return nullptr;
+    return make_shared<LMCutConstraints>();
 }
 
-static Plugin<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
+static PluginShared<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
 }
 
