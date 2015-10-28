@@ -10,8 +10,8 @@ using namespace std;
 namespace operator_counting {
 OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
     : Heuristic(opts),
-      constraint_generators(opts.get_list<ConstraintGenerator *>(
-                                "constraint_generators")),
+      constraint_generators(
+          opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),
       lp_solver(LPSolverType(opts.get_enum("lpsolver"))) {
 }
 
@@ -26,7 +26,7 @@ void OperatorCountingHeuristic::initialize() {
         variables.push_back(LPVariable(0, infinity, op_cost));
     }
     vector<LPConstraint> constraints;
-    for (ConstraintGenerator *generator : constraint_generators) {
+    for (auto generator : constraint_generators) {
         generator->initialize_constraints(task, constraints, infinity);
     }
     lp_solver.load_problem(LPObjectiveSense::MINIMIZE, variables, constraints);
@@ -66,10 +66,10 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
-        return 0;
+        return nullptr;
     opts.verify_list_non_empty<ConstraintGenerator *>("constraint_generators");
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     return new OperatorCountingHeuristic(opts);
 }
 

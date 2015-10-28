@@ -114,11 +114,11 @@ bool StateEquationConstraints::update_constraints(const State &state,
     return false;
 }
 
-ConstraintGenerator *_parse(OptionParser &parser) {
+static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
-        return 0;
-    return new StateEquationConstraints();
+        return nullptr;
+    return make_shared<StateEquationConstraints>();
 }
 
-Plugin<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
+PluginShared<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
 }
