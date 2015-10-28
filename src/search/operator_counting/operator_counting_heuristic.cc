@@ -38,11 +38,11 @@ int OperatorCountingHeuristic::compute_heuristic(const GlobalState &global_state
 }
 
 int OperatorCountingHeuristic::compute_heuristic(const State &state) {
-    // Make sure there are no leftover temporary constraints
-    lp_solver.clear_temporary_constraints();
-    for (ConstraintGenerator *generator : constraint_generators) {
+    assert(!lp_solver.has_temporary_constraints());
+    for (auto generator : constraint_generators) {
         bool dead_end = generator->update_constraints(state, lp_solver);
         if (dead_end) {
+            lp_solver.clear_temporary_constraints();
             return DEAD_END;
         }
     }
