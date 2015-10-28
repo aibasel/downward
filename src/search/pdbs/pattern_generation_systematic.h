@@ -9,6 +9,7 @@
 
 class CanonicalPDBsHeuristic;
 class CausalGraph;
+class OptionParser;
 class Options;
 
 
@@ -50,9 +51,13 @@ public:
     ~PatternGenerationSystematic();
 
     // TODO: Something is wrong with the interface if we need both of
-    // the following methods:
+    // the following methods (see issue585):
     const std::vector<Pattern> &get_patterns() const;
     CanonicalPDBsHeuristic *get_pattern_collection_heuristic(const Options &opts) const;
+
+    static void add_systematic_pattern_options(OptionParser &parser);
+    static void check_systematic_pattern_options(OptionParser &parser,
+                                                 const Options &opts);
 };
 
 #endif

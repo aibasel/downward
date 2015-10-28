@@ -124,6 +124,10 @@ public:
     CanonicalPDBsHeuristic *get_pattern_collection_heuristic() const {
         return current_heuristic;
     }
+
+    static void add_hillclimbing_options(OptionParser &parser);
+    static void check_hillclimbing_options(OptionParser &parser,
+                                           const Options &opts);
 };
 
 #endif

@@ -297,28 +297,40 @@ CanonicalPDBsHeuristic *PatternGenerationSystematic::get_pattern_collection_heur
     return h;
 }
 
-
-static ScalarEvaluator *_parse(OptionParser &parser) {
+void PatternGenerationSystematic::add_systematic_pattern_options(
+    OptionParser &parser) {
     parser.add_option<int>(
         "pattern_max_size",
         "max number of variables per pattern",
         "1");
     parser.add_option<bool>(
-        "dominance_pruning",
-        "Use dominance pruning to reduce number of patterns.",
-        "true");
-    parser.add_option<bool>(
         "only_interesting_patterns",
         "Only consider the union of two disjoint patterns if the union has "
         "more information than the individual patterns.",
         "true");
-    Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
+}
+
+void PatternGenerationSystematic::check_systematic_pattern_options(
+    OptionParser &parser, const Options &opts) {
     if (opts.get<int>("pattern_max_size") < 1)
         parser.error("number of variables per pattern must be at least 1");
+}
 
+
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    PatternGenerationSystematic::add_systematic_pattern_options(parser);
+    parser.add_option<bool>(
+        "dominance_pruning",
+        "Use dominance pruning to reduce number of patterns.",
+        "true");
+    Heuristic::add_options_to_parser(parser);
+
+    Options opts = parser.parse();
+
+    PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
     if (parser.dry_run())
         return 0;
+
     if (opts.get<bool>("only_interesting_patterns")) {
         PatternGenerationSystematic pattern_generator(opts);
         return pattern_generator.get_pattern_collection_heuristic(opts);
