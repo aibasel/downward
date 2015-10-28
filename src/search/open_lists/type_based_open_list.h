@@ -14,15 +14,7 @@
 #include <vector>
 
 /*
-  Type-based open list that uses multiple evaluators to put nodes into buckets.
-  A bucket contains all entries with the same evaluator results.
-  When retrieving a node, a bucket is chosen uniformly at random
-  and one of the contained nodes is selected uniformly randomly.
-  Based on:
-    Fan Xie, Martin Mueller, Robert C. Holte, and Tatsuya Imai.
-    Type-Based Exploration with Multiple Search Queues for Satisficing Planning.
-    In Proceedings of the Twenty-Eighth AAAI Conference on Artificial
-    Intelligence (AAAI 2014). AAAI Press, 2014.
+  Type-based open list based on Xie et al. (AAAI 2014), see below.
 */
 
 template<class Entry>
@@ -129,11 +121,20 @@ public:
     static OpenList<Entry> *_parse(OptionParser &parser) {
         parser.document_synopsis(
             "Type-based open list",
-            "Type-based open list that uses multiple evaluators to put nodes "
-            "into buckets. A bucket contains all entries with the same "
-            "evaluator results. When retrieving a node, a bucket is chosen "
-            "uniformly at random and one of the contained nodes is selected "
-            "uniformly randomly.");
+            "Uses multiple evaluators to assign entries to buckets. "
+            "All entries in a bucket have the same evaluator values. "
+            "When retrieving an entry, a bucket is chosen uniformly at "
+            "random and one of the contained entries is selected "
+            "uniformly randomly. "
+            "The algorithm is based on\n\n"
+            " * Fan Xie, Martin Mueller, Robert Holte, Tatsuya Imai.<<BR>>\n"
+            " [Type-Based Exploration with Multiple Search Queues for "
+            "Satisficing Planning "
+            "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705]."
+            "<<BR>>\n "
+            "In //Proceedings of the Twenty-Eigth AAAI Conference "
+            "Conference on Artificial Intelligence (AAAI "
+            "2014)//, pp. 2395-2401. AAAI Press 2014.\n\n\n");
         parser.add_list_option<ScalarEvaluator *>(
             "evaluators",
             "Evaluators used to determine the bucket for each entry.");
