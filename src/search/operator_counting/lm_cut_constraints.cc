@@ -12,11 +12,11 @@ using namespace std;
 
 namespace operator_counting {
 void LMCutConstraints::initialize_constraints(
-    const TaskProxy &task_proxy, vector<LPConstraint> &constraints,
+    const shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
     double infinity) {
     unused_parameter(constraints);
     unused_parameter(infinity);
-    landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
+    landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task);
 }
 
 

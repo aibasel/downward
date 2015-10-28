@@ -29,7 +29,7 @@ class StateEquationConstraints : public ConstraintGenerator {
     void build_propositions(const TaskProxy &task_proxy);
     void add_constraints(std::vector<LPConstraint> &constraints, double infinity);
 public:
-    virtual void initialize_constraints(const TaskProxy &task_proxy,
+    virtual void initialize_constraints(const std::shared_ptr<AbstractTask> task,
                                         std::vector<LPConstraint> &constraints,
                                         double infinity);
     virtual bool update_constraints(const State &state, LPSolver &lp_solver);
