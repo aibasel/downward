@@ -8,7 +8,8 @@
 class LPConstraint;
 class TaskProxy;
 
-namespace operator_counting {
+namespace OperatorCounting {
+
 /* A proposition is an atom of the form Var = Val. It stores the index of the
    constraint representing it in the LP */
 struct Proposition {
@@ -24,6 +25,7 @@ struct Proposition {
 
 class StateEquationConstraints : public ConstraintGenerator {
     std::vector<std::vector<Proposition> > propositions;
+    // Map goal variables to their goal value and other variables to max int.
     std::vector<int> goal_state;
 
     void build_propositions(const TaskProxy &task_proxy);

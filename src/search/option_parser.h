@@ -49,7 +49,7 @@ class SearchEngine;
 class ShrinkStrategy;
 class Labels;
 
-namespace operator_counting {
+namespace OperatorCounting {
 class ConstraintGenerator;
 }
 
@@ -81,9 +81,9 @@ public:
 };
 
 template <>
-class TokenParser<operator_counting::ConstraintGenerator *> {
+class TokenParser<std::shared_ptr<OperatorCounting::ConstraintGenerator>> {
 public:
-    static inline operator_counting::ConstraintGenerator *parse(OptionParser &p);
+    static inline std::shared_ptr<OperatorCounting::ConstraintGenerator> parse(OptionParser &p);
 };
 
 template <class Entry>
@@ -375,13 +375,11 @@ double TokenParser<double>::parse(OptionParser &p) {
     }
 }
 
-operator_counting::ConstraintGenerator *TokenParser<operator_counting::ConstraintGenerator *>::parse(OptionParser &p) {
+std::shared_ptr<OperatorCounting::ConstraintGenerator>
+TokenParser<std::shared_ptr<OperatorCounting::ConstraintGenerator>>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
-    if (Predefinitions<operator_counting::ConstraintGenerator *>::instance()->contains(pt->value)) {
-        return (operator_counting::ConstraintGenerator *)
-               Predefinitions<operator_counting::ConstraintGenerator *>::instance()->get(pt->value);
-    } else if (Registry<operator_counting::ConstraintGenerator *>::instance()->contains(pt->value)) {
-        return Registry<operator_counting::ConstraintGenerator *>::instance()->get(pt->value) (p);
+    if (Registry<std::shared_ptr<OperatorCounting::ConstraintGenerator>>::instance()->contains(pt->value)) {
+        return Registry<std::shared_ptr<OperatorCounting::ConstraintGenerator>>::instance()->get(pt->value) (p);
     }
     p.error("constraint generator " + pt->value + " not found");
     return 0;

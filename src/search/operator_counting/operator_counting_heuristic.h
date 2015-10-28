@@ -9,7 +9,8 @@
 
 class Options;
 
-namespace operator_counting {
+namespace OperatorCounting {
+
 class ConstraintGenerator;
 
 class OperatorCountingHeuristic : public Heuristic {

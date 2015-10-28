@@ -7,7 +7,8 @@
 
 using namespace std;
 
-namespace operator_counting {
+namespace OperatorCounting {
+
 OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
     : Heuristic(opts),
       constraint_generators(
