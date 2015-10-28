@@ -7,9 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "global_state.h"
-#include "global_operator.h"
-#include "globals.h"
 #include "heuristic.h"
 
 
@@ -27,6 +24,7 @@ class Options;
 class HMHeuristic : public Heuristic {
     // parameters
     int m;
+    bool has_cond_effects;
 
     // h^m table
     std::map<Tuple, int> hm_table;
@@ -45,8 +43,6 @@ class HMHeuristic : public Heuristic {
     int get_operator_pre_value(const OperatorProxy &op, int var) const;
     void get_operator_pre(const OperatorProxy &op, Tuple &t) const;
     void get_operator_eff(const OperatorProxy &op, Tuple &t) const;
-    bool is_pre_of(const OperatorProxy &op, int var) const;
-    bool is_effect_of(const OperatorProxy &op, int var) const;
     bool contradict_effect_of(const OperatorProxy &op, int var, int val) const;
 
     void generate_all_tuples();

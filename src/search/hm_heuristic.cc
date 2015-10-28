@@ -1,6 +1,5 @@
 #include "hm_heuristic.h"
 
-#include "global_state.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "task_tools.h"
@@ -24,7 +23,7 @@ HMHeuristic::~HMHeuristic() {
 
 bool HMHeuristic::dead_ends_are_reliable() const {
     return !has_axioms(task_proxy) 
-           && !has_conditional_effects(task_proxy);
+           && !has_cond_effects;
 }
 
 
@@ -34,6 +33,7 @@ void HMHeuristic::initialize() {
          << "It is SLOOOOOOOOOOOW." << endl
          << "Please do not use this for comparison!" << endl;
     generate_all_tuples();
+    has_cond_effects = has_conditional_effects(task_proxy);
 }
 
 
@@ -51,9 +51,9 @@ int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
 
         Tuple goals;
         for (FactProxy goal : task_proxy.get_goals()) {
-            goals.push_back(make_pair(
+            goals.emplace_back(
                 goal.get_variable().get_id(),
-                goal.get_value()));
+                goal.get_value());
         }
         int h = eval(goals);
 
@@ -65,9 +65,8 @@ int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
 
 
 void HMHeuristic::init_hm_table(Tuple &t) {
-    map<Tuple, int>::iterator it;
-    for (pair<Tuple, int> hm_ent : hm_table) {
-        Tuple &tuple = hm_ent.first;
+    for (auto &hm_ent : hm_table) {
+        Tuple tuple = hm_ent.first;
         int h_val = check_tuple_in_tuple(tuple, t);
         hm_table[tuple] = h_val;
     }
@@ -105,11 +104,10 @@ void HMHeuristic::update_hm_table() {
 
 
 void HMHeuristic::extend_tuple(Tuple &t, const OperatorProxy &op) {
-    map<Tuple, int>::const_iterator it;
-    for (pair<Tuple, int> hm_ent : hm_table) {
-        Tuple &tuple = hm_ent.first;
+    for (auto &hm_ent : hm_table) {
+        Tuple tuple = hm_ent.first;
         bool contradict = false;
-        for (pair<int,int> fact : tuple) {
+        for (auto &fact : tuple) {
             if (contradict_effect_of(op, fact.first, fact.second)) {
                 contradict = true;
                 break;
@@ -120,7 +118,7 @@ void HMHeuristic::extend_tuple(Tuple &t, const OperatorProxy &op) {
             get_operator_pre(op, pre);
 
             Tuple others;
-            for (pair<int, int> fact : tuple) {
+            for (auto &fact : tuple) {
                 if (find(t.begin(), t.end(), fact) == t.end()) {
                     others.push_back(fact);
                     if (find(pre.begin(), pre.end(), fact) == pre.end()) {
@@ -134,7 +132,7 @@ void HMHeuristic::extend_tuple(Tuple &t, const OperatorProxy &op) {
 
             set<int> vars;
             bool is_valid = true;
-            for (pair<int,int> fact : pre) {
+            for (auto &fact : pre) {
                 if (vars.count(fact.first) != 0) {
                     is_valid = false;
                     break;
@@ -181,9 +179,9 @@ int HMHeuristic::update_hm_entry(Tuple &t, int val) {
 
 int HMHeuristic::check_tuple_in_tuple(
     const Tuple &tup, const Tuple &big_tuple) const {
-    for (pair<int,int> fact0 : tup) {
+    for (auto &fact0 : tup) {
         bool found = false;
-        for (pair<int,int> fact1 : big_tuple) {
+        for (auto &fact1 : big_tuple) {
             if (fact0 == fact1) {
                 found = true;
                 break;
@@ -199,18 +197,18 @@ int HMHeuristic::check_tuple_in_tuple(
 
 void HMHeuristic::state_to_tuple(const State &state, Tuple &t) const {
     for (FactProxy fact : state) {
-        t.push_back(make_pair(
+        t.emplace_back(
             fact.get_variable().get_id(),
-            fact.get_value()));
+            fact.get_value());
     }
 }
 
 
 void HMHeuristic::get_operator_pre(const OperatorProxy &op, Tuple &t) const {
     for (FactProxy pre : op.get_preconditions()) {
-        t.push_back(make_pair(
+        t.emplace_back(
             pre.get_variable().get_id(),
-            pre.get_value()));
+            pre.get_value());
     }
     sort(t.begin(), t.end());
 }
@@ -219,34 +217,11 @@ void HMHeuristic::get_operator_pre(const OperatorProxy &op, Tuple &t) const {
 void HMHeuristic::get_operator_eff(const OperatorProxy &op, Tuple &t) const {
     for (EffectProxy eff : op.get_effects()) {
         FactProxy fact = eff.get_fact();
-        t.push_back(make_pair(
+        t.emplace_back(
             fact.get_variable().get_id(),
-            fact.get_value()));
+            fact.get_value());
     }
     sort(t.begin(), t.end());
-}
-
-
-bool HMHeuristic::is_pre_of(const OperatorProxy &op, int var) const {
-    // TODO if preconditions will be always sorted we should use a log-n
-    // search instead
-    for (FactProxy pre : op.get_preconditions()) {
-        if (pre.get_variable().get_id() == var) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-bool HMHeuristic::is_effect_of(const OperatorProxy &op, int var) const {
-    for (EffectProxy eff : op.get_effects()) {
-        FactProxy fact = eff.get_fact();
-        if (fact.get_variable().get_id() == var) {
-            return true;
-        }
-    }
-    return false;
 }
 
 
@@ -274,7 +249,7 @@ void HMHeuristic::generate_all_tuples_aux(int var, int sz, Tuple &base) {
         int domain_size = task_proxy.get_variables()[i].get_domain_size(); 
         for (int j = 0; j < domain_size; ++j) {
             Tuple tup(base);
-            tup.push_back(make_pair(i, j));
+            tup.emplace_back(i, j);
             hm_table[tup] = 0;
             if (sz > 1) {
                 generate_all_tuples_aux(i + 1, sz - 1, tup);
@@ -311,9 +286,10 @@ void HMHeuristic::generate_all_partial_tuples_aux(
 
 
 void HMHeuristic::dump_table() const {
-    for (pair<Tuple, int> hm_ent : hm_table) {
+    for (auto &hm_ent : hm_table) {
         cout << "h[";
-        dump_tuple(hm_ent.first);
+        Tuple tuple = hm_ent.first;
+        dump_tuple(tuple);
         cout << "] = " << hm_ent.second << endl;
     }
 }
