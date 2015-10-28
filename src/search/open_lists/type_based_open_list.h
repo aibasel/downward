@@ -56,12 +56,13 @@ public:
 
     virtual Entry remove_min(std::vector<int> *key = 0) override {
         size_t bucket_id = g_rng(keys_and_buckets.size());
-        std::pair<Key, Bucket> &key_and_bucket = keys_and_buckets[bucket_id];
+        auto &key_and_bucket = keys_and_buckets[bucket_id];
+        const Key &min_key = key_and_bucket.first;
         Bucket &bucket = key_and_bucket.second;
 
         if (key) {
             assert(key->empty());
-            *key = key_and_bucket.first;
+            *key = min_key;
         }
 
         int pos = g_rng(bucket.size());
@@ -70,7 +71,7 @@ public:
         if (bucket.empty()) {
             // Swap the empty bucket with the last bucket, then delete it.
             key_to_bucket_index[keys_and_buckets.back().first] = bucket_id;
-            key_to_bucket_index.erase(key_and_bucket.first);
+            key_to_bucket_index.erase(min_key);
             swap_and_pop_from_vector(keys_and_buckets, bucket_id);
         }
         return result;
