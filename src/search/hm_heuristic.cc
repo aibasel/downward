@@ -23,8 +23,7 @@ HMHeuristic::~HMHeuristic() {
 
 
 bool HMHeuristic::dead_ends_are_reliable() const {
-    return !has_axioms(task_proxy)
-           && !has_cond_effects;
+    return !has_axioms(task_proxy) && !has_cond_effects;
 }
 
 
