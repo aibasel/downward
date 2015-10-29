@@ -231,6 +231,7 @@ class IssueExperiment(FastDownwardExperiment):
         outfile = outfile[:len(outfile)-1]
         outfile += '.'
         outfile += report.output_format
+        outfile = os.path.join(self.eval_dir, outfile)
         self.add_report(report, outfile=outfile)
         self.add_step(Step('publish-absolute-report', subprocess.call, ['publish', outfile]))
 
