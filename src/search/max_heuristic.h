@@ -9,7 +9,7 @@ class HSPMaxHeuristic : public RelaxationHeuristic {
     AdaptiveQueue<Proposition *> queue;
 
     void setup_exploration_queue();
-    void setup_exploration_queue_state(const GlobalState &state);
+    void setup_exploration_queue_state(const State &state);
     void relaxed_exploration();
 
     void enqueue_if_necessary(Proposition *prop, int cost) {
@@ -22,7 +22,7 @@ class HSPMaxHeuristic : public RelaxationHeuristic {
     }
 protected:
     virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &global_state);
 public:
     HSPMaxHeuristic(const Options &options);
     ~HSPMaxHeuristic();
