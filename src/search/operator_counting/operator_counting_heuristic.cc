@@ -59,7 +59,7 @@ int OperatorCountingHeuristic::compute_heuristic(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
-    parser.add_list_option<ConstraintGenerator *>(
+    parser.add_list_option<shared_ptr<ConstraintGenerator>>(
         "constraint_generators",
         "methods that generate constraints over LP variables "
         "representing the number of operator applications");
@@ -68,7 +68,8 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
-    opts.verify_list_non_empty<ConstraintGenerator *>("constraint_generators");
+    opts.verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
+        "constraint_generators");
     if (parser.dry_run())
         return nullptr;
     return new OperatorCountingHeuristic(opts);
