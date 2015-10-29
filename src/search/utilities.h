@@ -70,6 +70,15 @@ bool in_bounds(size_t index, const T &container) {
 }
 
 template<typename T>
+T swap_and_pop_from_vector(std::vector<T> &vec, std::size_t pos) {
+    assert(in_bounds(pos, vec));
+    T element = vec[pos];
+    std::swap(vec[pos], vec.back());
+    vec.pop_back();
+    return element;
+}
+
+template<typename T>
 void unused_parameter(const T &) {
 }
 
