@@ -14,6 +14,33 @@
 #include <string>
 #include <vector>
 
+
+/*
+  The following function is not meant for users, but only for the
+  plugin implementation. We only declare it here because the template
+  implementations need it.
+*/
+extern void register_plugin_type_plugin(
+    const std::type_info &type,
+    const std::string &type_name,
+    const std::string &documentation);
+
+
+template<typename T>
+class PluginTypePlugin {
+public:
+    PluginTypePlugin(const std::string &type_name,
+                     const std::string &documentation) {
+        register_plugin_type_plugin(typeid(T), type_name, documentation);
+    }
+
+    ~PluginTypePlugin() = default;
+
+    PluginTypePlugin(const PluginTypePlugin &other) = delete;
+};
+
+
+
 template<typename T>
 class Plugin {
 public:

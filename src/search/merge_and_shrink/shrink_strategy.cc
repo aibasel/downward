@@ -3,6 +3,7 @@
 #include "transition_system.h"
 
 #include "../option_parser.h"
+#include "../plugin.h"
 #include "../utilities.h"
 
 #include <algorithm>
@@ -186,3 +187,14 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
     opts.set<int>("max_states_before_merge", max_states_before_merge);
     opts.set<int>("threshold", threshold);
 }
+
+
+static PluginTypePlugin<ShrinkStrategy> _plugin(
+    "ShrinkStrategy",
+    /*
+      TODO: Replace by better documentation. The text below is just
+      to test the plug-in feature.
+    */
+    "This page describes the various shrink strategies supported "
+    "by the planner. Shrink strategies are used by the merge-and-shrink "
+    "heuristic, documented on page [[Doc/Heuristic|Heuristic]].");

@@ -2,6 +2,9 @@
 #define OPTION_PARSER_H
 
 /*
+  TODO (issue586): This documentation describes the pre-issue586
+  situation and will need to be updated.
+
 How to add support for a new type NT to the option parser:
 In this file, tell the parser how to parse NT:
 - Create a template specialization TokenParser<NT> (or overload
