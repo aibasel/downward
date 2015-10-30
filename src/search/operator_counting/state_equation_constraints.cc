@@ -9,10 +9,9 @@
 using namespace std;
 
 namespace OperatorCounting {
-
 void add_indices_to_constraint(LPConstraint &constraint,
-                                const set<int> &indices,
-                                double coefficient) {
+                               const set<int> &indices,
+                               double coefficient) {
     for (int index : indices) {
         constraint.insert(index, coefficient);
     }
@@ -82,7 +81,6 @@ void StateEquationConstraints::initialize_constraints(
     goal_state = vector<int>(variables.size(), numeric_limits<int>::max());
     for (FactProxy goal : task_proxy.get_goals()) {
         goal_state[goal.get_variable().get_id()] = goal.get_value();
-
     }
 }
 

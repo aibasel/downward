@@ -10,7 +10,6 @@
 #include "../pdbs/util.h"
 
 namespace OperatorCounting {
-
 PhOConstraints::PhOConstraints(const Options &opts)
     : options(opts),
       pdb_source(nullptr) {
@@ -35,12 +34,11 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
         pdb_source = unique_ptr<CanonicalPDBsHeuristic>(
             pgh.extract_pattern_collection_heuristic());
         pdbs = pdb_source->get_pattern_databases();
-
     } else {
-        vector<vector<int> > patterns;
+        vector<vector<int>> patterns;
         if (options.contains("patterns")) {
             // Manually specified patterns
-            patterns = options.get<vector<vector<int> > >("patterns");
+            patterns = options.get<vector<vector<int>>>("patterns");
         } else {
             // Systematically generated patterns
             PatternGenerationSystematic pattern_generator(options);

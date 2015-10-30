@@ -11,7 +11,6 @@
 class Options;
 
 namespace OperatorCounting {
-
 class ConstraintGenerator;
 
 class OperatorCountingHeuristic : public Heuristic {
