@@ -372,7 +372,10 @@ inline LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
     return lookup_in_registry<LandmarkGraph>(p);
 }
 
-//TODO find a general way to handle parsing of superclasses (see also issue28)
+/*
+  TODO (issue586): We should decide how to handle subclasses more generally.
+  See http://issues.fast-downward.org/msg4686 (which is part of that issue).
+*/
 template<>
 inline ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
