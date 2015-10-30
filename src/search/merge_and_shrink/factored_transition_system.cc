@@ -194,11 +194,6 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
     return cost;
 }
 
-int FactoredTransitionSystem::get_size(int index) const {
-    assert(is_index_valid(index));
-    return transition_systems[index]->get_size();
-}
-
 void FactoredTransitionSystem::statistics(int index,
                                           const Timer &timer) const {
     assert(is_index_valid(index));
@@ -223,26 +218,6 @@ void FactoredTransitionSystem::dump(int index) const {
     assert(transition_systems[index]);
     transition_systems[index]->dump_labels_and_transitions();
     heuristic_representations[index]->dump();
-}
-
-int FactoredTransitionSystem::get_max_f(int index) const {
-    return distances[index]->get_max_f();
-}
-
-int FactoredTransitionSystem::get_max_g(int index) const {
-    return distances[index]->get_max_g();
-}
-
-int FactoredTransitionSystem::get_max_h(int index) const {
-    return distances[index]->get_max_h();
-}
-
-int FactoredTransitionSystem::get_init_distance(int index, int state) const {
-    return distances[index]->get_init_distance(state);
-}
-
-int FactoredTransitionSystem::get_goal_distance(int index, int state) const {
-    return distances[index]->get_goal_distance(state);
 }
 
 int FactoredTransitionSystem::get_num_labels() const {

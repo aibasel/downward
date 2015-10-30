@@ -80,7 +80,3 @@ int LabelEquivalenceRelation::add_label_group(const vector<int> &new_labels) {
     }
     return new_id;
 }
-
-int LabelEquivalenceRelation::get_num_labels() const {
-    return labels->get_size();
-}

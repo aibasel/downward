@@ -1,5 +1,6 @@
 #include "shrink_bisimulation.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
 #include "transition_system.h"
 
@@ -101,11 +102,12 @@ int ShrinkBisimulation::initialize_groups(shared_ptr<FactoredTransitionSystem> f
     */
 
     const TransitionSystem &ts = fts->get_ts(index);
+    const Distances &distances = fts->get_dist(index);
     typedef unordered_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
     for (int state = 0; state < ts.get_size(); ++state) {
-        int h = fts->get_goal_distance(index, state);
+        int h = distances.get_goal_distance(state);
         assert(h >= 0 && h != INF);
 
         if (ts.is_goal_state(state)) {
@@ -131,12 +133,13 @@ void ShrinkBisimulation::compute_signatures(
     const vector<int> &state_to_group) const {
     assert(signatures.empty());
     const TransitionSystem &ts = fts->get_ts(index);
+    const Distances &distances = fts->get_dist(index);
 
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
     for (int state = 0; state < ts.get_size(); ++state) {
-        int h = fts->get_goal_distance(index, state);
-        assert(h >= 0 && h <= fts->get_max_h(index));
+        int h = distances.get_goal_distance(state);
+        assert(h >= 0 && h <= distances.get_max_h());
         Signature signature(h, ts.is_goal_state(state),
                             state_to_group[state], SuccessorSignature(),
                             state);
@@ -169,8 +172,8 @@ void ShrinkBisimulation::compute_signatures(
             assert(signatures[trans.src + 1].state == trans.src);
             bool skip_transition = false;
             if (greedy) {
-                int src_h = fts->get_goal_distance(index, trans.src);
-                int target_h = fts->get_goal_distance(index, trans.target);
+                int src_h = distances.get_goal_distance(trans.src);
+                int target_h = distances.get_goal_distance(trans.target);
                 int cost = group_it.get_cost();
                 assert(target_h + cost >= src_h);
                 skip_transition = (target_h + cost != src_h);
@@ -214,6 +217,7 @@ void ShrinkBisimulation::compute_abstraction(shared_ptr<FactoredTransitionSystem
     int target_size,
     StateEquivalenceRelation &equivalence_relation) const {
     const TransitionSystem &ts = fts->get_ts(index);
+    const Distances &distances = fts->get_dist(index);
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
@@ -225,7 +229,7 @@ void ShrinkBisimulation::compute_abstraction(shared_ptr<FactoredTransitionSystem
 
     // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
 
-    int max_h = fts->get_max_h(index);
+    int max_h = distances.get_max_h();
     assert(max_h >= 0 && max_h != INF);
 
     bool stable = false;

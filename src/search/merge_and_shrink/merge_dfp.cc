@@ -1,5 +1,6 @@
 #include "merge_dfp.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
 #include "transition_system.h"
 
@@ -50,6 +51,7 @@ void MergeDFP::compute_label_ranks(shared_ptr<FactoredTransitionSystem> fts,
                                    int index,
                                    vector<int> &label_ranks) const {
     const TransitionSystem &ts = fts->get_ts(index);
+    const Distances &distances = fts->get_dist(index);
     int num_labels = fts->get_num_labels();
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     label_ranks.resize(num_labels, -1);
@@ -79,7 +81,7 @@ void MergeDFP::compute_label_ranks(shared_ptr<FactoredTransitionSystem> fts,
         } else {
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &t = transitions[i];
-                label_rank = min(label_rank, fts->get_goal_distance(index, t.target));
+                label_rank = min(label_rank, distances.get_goal_distance(t.target));
             }
         }
         for (LabelConstIter label_it = group_it.begin();
