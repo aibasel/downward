@@ -31,7 +31,8 @@ class PluginTypePlugin {
 public:
     PluginTypePlugin(const std::string &type_name,
                      const std::string &documentation) {
-        register_plugin_type_plugin(typeid(T), type_name, documentation);
+        using TPtr = std::shared_ptr<T>;
+        register_plugin_type_plugin(typeid(TPtr), type_name, documentation);
     }
 
     ~PluginTypePlugin() = default;

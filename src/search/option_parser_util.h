@@ -272,32 +272,44 @@ public:
     std::vector<Heuristic *> heuristics;
 };
 
-// TypeNamer prints out names of types.
-
 /*
-  The default implementation is intended to be used for plugin types.
-  It asks the plugin type registry for the type name.
+  TypeNamer prints out names of types.
+
+  There is no default implementation for Typenamer<T>::name(): the
+  template needs to be specialized for each type we want to support.
+  However, we have a generic version below for shared_ptr<...> types,
+  which are the ones we use for plugins.
 */
 template<typename T>
 struct TypeNamer {
+    static std::string name();
+};
+
+/*
+  Note: for plug-in types, we use TypeNamer<shared_ptr<T>>::name().
+  One might be tempted to strip away the shared_ptr<...> here and use
+  TypeNamer<T>::name() instead, but this has the disadvantage that
+  typeid(T) requires T to be a complete type, while
+  typeid(shared_ptr<T>) also accepts incomplete types.
+*/
+template<typename T>
+struct TypeNamer<std::shared_ptr<T>> {
     static std::string name() {
+        using TPtr = std::shared_ptr<T>;
         const PluginTypeInfo &type_info =
-            PluginTypeRegistry::instance()->get(std::type_index(typeid(T)));
+            PluginTypeRegistry::instance()->get(std::type_index(typeid(TPtr)));
         return type_info.get_type_name();
     }
 };
 
-template<typename T>
-struct TypeNamer<std::shared_ptr<T>> {
-    static std::string name() {
-        return TypeNamer<T>::name();
-    }
-};
-
+/*
+  The following partial specialization for raw pointers is legacy code.
+  This can go away once all plugins use shared_ptr.
+*/
 template<typename T>
 struct TypeNamer<T *> {
     static std::string name() {
-        return TypeNamer<T>::name();
+        return TypeNamer<std::shared_ptr<T>>::name();
     }
 };
 

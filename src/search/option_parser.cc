@@ -15,13 +15,6 @@
 
 using namespace std;
 
-/*
-  TODO (issue586): Get rid of these includes. For the moment, as an
-  intermediate measure, we need access to the full class definition
-  to compute the typeid. This will no longer be necessary once
-  get_help and get_full_help are pluginized.
-*/
-#include "merge_and_shrink/shrink_strategy.h"
 
 const string OptionParser::NONE = "<none>";
 
