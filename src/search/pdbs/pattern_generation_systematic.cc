@@ -307,7 +307,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "Computes a canonical PDB heuristic (see [#Canonical_PDB]) over a set "
         "of systematically generated patterns. "
         "For details, see\n"
-        " * Florian Pommerening, Gabriele Röger and Malte Helmert.<<BR>>\n"
+        " * Florian Pommerening, Gabriele Roeger and Malte Helmert.<<BR>>\n"
         " [Getting the Most Out of Pattern Databases for Classical Planning "
         "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf].<<BR>>\n "
         "In //Proceedings of the Twenty-Third International Joint "

@@ -70,7 +70,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "for every plan pi. Minimizing the total cost of operators subject to "
         "some operator counting constraints is an admissible heuristic. "
         "For details, see\n"
-        " * Florian Pommerening, Gabriele Röger, Malte Helmert and "
+        " * Florian Pommerening, Gabriele Roeger, Malte Helmert and "
         "Blai Bonet.<<BR>>\n"
         " [LP-based Heuristics for Cost-optimal Planning "
         "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031]."

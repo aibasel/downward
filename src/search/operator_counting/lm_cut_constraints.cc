@@ -51,7 +51,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "to the operator counting LP temporarily. After the heuristic value "
         "for the state is computed, all temporary constraints are removed "
         "again. For details, see\n"
-        " * Florian Pommerening, Gabriele Röger, Malte Helmert and "
+        " * Florian Pommerening, Gabriele Roeger, Malte Helmert and "
         "Blai Bonet.<<BR>>\n"
         " [LP-based Heuristics for Cost-optimal Planning "
         "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031]."
@@ -66,7 +66,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "<<BR>>\n "
         "In //Proceedings of the Twenty-Third International Joint "
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
-        "pp. 2268–2274. 2013.\n\n\n");
+        "pp. 2268-2274. 2013.\n\n\n");
 
     if (parser.dry_run())
         return nullptr;
