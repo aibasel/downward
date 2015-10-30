@@ -45,7 +45,7 @@ bool LMCutConstraints::update_constraints(const State &state,
 
 static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Landmark constraints for landmarks discovered with the LM-cut method",
+        "LM-cut landmark constraints",
         "Computes a set of landmarks in each state using the LM-cut method. "
         "For each landmark L the constraint sum_{o in L} Count_o >= 1 is added "
         "to the operator counting LP temporarily. After the heuristic value "
