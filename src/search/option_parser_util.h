@@ -116,8 +116,11 @@ public:
         return &instance_;
     }
 
-    void register_object(std::string k, Factory f) {
-        transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
+    void insert(const std::string &k, Factory f) {
+        if (registered.count(k)) {
+            std::cerr << "duplicate key in registry: " << k << std::endl;
+            exit_with(EXIT_CRITICAL_ERROR);
+        }
         registered[k] = f;
     }
 
@@ -199,6 +202,7 @@ public:
   Heuristic plugins.
 */
 
+// TODO: Reduce code duplication with Registry<T>.
 class PluginTypeRegistry {
     using Map = std::map<std::type_index, PluginTypeInfo>;
     PluginTypeRegistry() = default;
@@ -206,17 +210,7 @@ class PluginTypeRegistry {
     Map registry;
 public:
     static PluginTypeRegistry *instance();
-    /*
-      TODO (issue586): This should perhaps more appropriately be
-      called "insert".
-
-      TODO (issue586): This should guard against duplicate names.
-
-      TODO (issue586): Whatever we do about the previous two points
-      should be equally applied to "regular" plugins (i.e., non-type
-      plugins).
-    */
-    void add(const PluginTypeInfo &info);
+    void insert(const PluginTypeInfo &info);
     const PluginTypeInfo &get(const std::type_index &type) const;
 
     Map::const_iterator begin() const {
