@@ -1,5 +1,7 @@
 #include "option_parser_util.h"
 
+#include "utilities.h"
+
 #include <typeindex>
 #include <typeinfo>
 #include <vector>
@@ -338,7 +340,12 @@ PluginTypeRegistry *PluginTypeRegistry::instance() {
     return &the_instance;
 }
 
-void PluginTypeRegistry::add(const PluginTypeInfo &info) {
+void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
+    if (registry.count(info.get_type())) {
+        std::cerr << "duplicate type in registry: "
+                  << info.get_type().name() << std::endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
     registry.insert(make_pair(info.get_type(), info));
 }
 

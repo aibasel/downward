@@ -46,7 +46,7 @@ template<typename T>
 class Plugin {
 public:
     Plugin(const std::string &key, typename Registry<T *>::Factory factory) {
-        Registry<T *>::instance()->register_object(key, factory);
+        Registry<T *>::instance()->insert(key, factory);
     }
     ~Plugin() = default;
     Plugin(const Plugin<T> &other) = delete;
@@ -58,7 +58,7 @@ template<typename T>
 class PluginShared {
 public:
     PluginShared(const std::string &key, typename Registry<std::shared_ptr<T>>::Factory factory) {
-        Registry<std::shared_ptr<T>>::instance()->register_object(key, factory);
+        Registry<std::shared_ptr<T>>::instance()->insert(key, factory);
     }
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;
@@ -71,17 +71,17 @@ public:
     ~Plugin();
 
     static void register_open_lists() {
-        Registry<OpenList<Entry > *>::instance()->register_object(
+        Registry<OpenList<Entry > *>::instance()->insert(
             "single", StandardScalarOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->register_object(
+        Registry<OpenList<Entry > *>::instance()->insert(
             "single_buckets", BucketOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->register_object(
+        Registry<OpenList<Entry > *>::instance()->insert(
             "tiebreaking", TieBreakingOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->register_object(
+        Registry<OpenList<Entry > *>::instance()->insert(
             "alt", AlternationOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->register_object(
+        Registry<OpenList<Entry > *>::instance()->insert(
             "pareto", ParetoOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->register_object(
+        Registry<OpenList<Entry > *>::instance()->insert(
             "epsilon_greedy", EpsilonGreedyOpenList<Entry>::_parse);
     }
 };
