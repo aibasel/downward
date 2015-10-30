@@ -25,7 +25,6 @@ class State;
 */
 
 namespace OperatorCounting {
-
 class ConstraintGenerator {
 public:
     /*

@@ -11,9 +11,8 @@
 using namespace std;
 
 namespace OperatorCounting {
-
 void LMCutConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<LPConstraint> &/*constraints*/,
+    const shared_ptr<AbstractTask> task, vector<LPConstraint> & /*constraints*/,
     double /*infinity*/) {
     TaskProxy task_proxy(*task);
     landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
@@ -67,8 +66,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "<<BR>>\n "
         "In //Proceedings of the Twenty-Third International Joint "
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
-        "pp. 2268–2274. 2013.\n\n\n"
-);
+        "pp. 2268–2274. 2013.\n\n\n");
 
     if (parser.dry_run())
         return nullptr;

@@ -12,7 +12,6 @@ class CanonicalPDBsHeuristic;
 class PatternDatabase;
 
 namespace OperatorCounting {
-
 class PhOConstraints : public ConstraintGenerator {
     int constraint_offset;
 
@@ -20,7 +19,7 @@ class PhOConstraints : public ConstraintGenerator {
     Options options;
     // We can use the PDBs from a canonical heuristic.
     std::unique_ptr<CanonicalPDBsHeuristic> pdb_source;
-    std::vector<PatternDatabase*> pdbs;
+    std::vector<PatternDatabase *> pdbs;
     void generate_pdbs(const std::shared_ptr<AbstractTask> task);
 public:
     explicit PhOConstraints(const Options &opts);
@@ -28,7 +27,7 @@ public:
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,
-        std::vector<LPConstraint> & constraints,
+        std::vector<LPConstraint> &constraints,
         double infinity) override;
     virtual bool update_constraints(
         const State &state, LPSolver &lp_solver) override;
