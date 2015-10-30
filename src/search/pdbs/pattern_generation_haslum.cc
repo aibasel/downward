@@ -330,7 +330,7 @@ void PatternGenerationHaslum::initialize() {
     opts.set<int>("cost_type", NORMAL);
     opts.set<vector<vector<int>>>("patterns", initial_pattern_collection);
     opts.set<bool>("cache_estimates", cache_h);
-    current_heuristic = new CanonicalPDBsHeuristic(opts);
+    current_heuristic = make_unique_ptr<CanonicalPDBsHeuristic>(opts);
 
     State initial_state = task_proxy.get_initial_state();
     if (current_heuristic->is_dead_end(initial_state))
@@ -356,6 +356,46 @@ void PatternGenerationHaslum::initialize() {
            (contains the new_candidates after each call to
            generate_candidate_patterns) */
         hill_climbing(average_operator_cost, initial_candidate_patterns);
+}
+
+void PatternGenerationHaslum::add_hillclimbing_options(OptionParser &parser) {
+    parser.add_option<int>(
+        "pdb_max_size",
+        "maximal number of states per pattern database ",
+        "2000000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "collection_max_size",
+        "maximal number of states in the pattern collection",
+        "20000000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "num_samples",
+        "number of samples (random states) on which to evaluate each "
+        "candidate pattern collection",
+        "1000",
+        Bounds("1", "infinity"));
+    parser.add_option<int>(
+        "min_improvement",
+        "minimum number of samples on which a candidate pattern "
+        "collection must improve on the current one to be considered "
+        "as the next pattern collection ",
+        "10",
+        Bounds("1", "infinity"));
+    parser.add_option<double>(
+        "max_time",
+        "maximum time in seconds for improving the initial pattern "
+        "collection via hill climbing. If set to 0, no hill climbing "
+        "is performed at all.",
+        "infinity",
+        Bounds("0.0", "infinity"));
+}
+
+void PatternGenerationHaslum::check_hillclimbing_options(
+    OptionParser &parser, const Options &opts) {
+    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
+        parser.error("minimum improvement must not be higher than number of "
+                     "samples");
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -442,51 +482,20 @@ static Heuristic *_parse(OptionParser &parser) {
         "implementation as described in the paper.",
         true);
 
-    parser.add_option<int>(
-        "pdb_max_size",
-        "maximal number of states per pattern database ",
-        "2000000",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "collection_max_size",
-        "maximal number of states in the pattern collection",
-        "20000000",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "num_samples",
-        "number of samples (random states) on which to evaluate each "
-        "candidate pattern collection",
-        "1000",
-        Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "min_improvement",
-        "minimum number of samples on which a candidate pattern "
-        "collection must improve on the current one to be considered "
-        "as the next pattern collection ",
-        "10",
-        Bounds("1", "infinity"));
-    parser.add_option<double>(
-        "max_time",
-        "maximum time in seconds for improving the initial pattern "
-        "collection via hill climbing. If set to 0, no hill climbing "
-        "is performed at all.",
-        "infinity",
-        Bounds("0.0", "infinity"));
-
+    PatternGenerationHaslum::add_hillclimbing_options(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
-        return 0;
+        return nullptr;
 
-    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
-        parser.error("minimum improvement must not be higher than number of "
-                     "samples");
+    PatternGenerationHaslum::check_hillclimbing_options(parser, opts);
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
 
     PatternGenerationHaslum pgh(opts);
-    return pgh.get_pattern_collection_heuristic();
+    // Note: in the long run, this should return a shared pointer.
+    return pgh.extract_pattern_collection_heuristic().release();
 }
 
 static Plugin<Heuristic> _plugin("ipdb", _parse);
