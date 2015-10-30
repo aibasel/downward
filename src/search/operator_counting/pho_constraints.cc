@@ -91,6 +91,17 @@ bool PhOConstraints::update_constraints(const State &state,
 }
 
 static shared_ptr<ConstraintGenerator> _parse_manual(OptionParser &parser) {
+    parser.document_synopsis(
+        "Posthoc optimization constraints for manually specified patterns",
+        "The generator will compute a PDB for each pattern and add the "
+        "constraint h(s) <= sum_{o in relevant(h)} Count_o. For details, see\n"
+        " * Florian Pommerening, Gabriele Röger and Malte Helmert.<<BR>>\n"
+        " [Getting the Most Out of Pattern Databases for Classical Planning "
+        "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf].<<BR>>\n "
+        "In //Proceedings of the Twenty-Third International Joint "
+        "Conference on Artificial Intelligence (IJCAI 2013)//, "
+        "pp. 2357-2364. 2013.\n\n\n");
+
     Options opts;
     parse_patterns(parser, opts);
     if (parser.dry_run())
@@ -103,7 +114,15 @@ static shared_ptr<ConstraintGenerator> _parse_systematic(OptionParser &parser) {
         "Posthoc optimization constraints for systematically generated patterns",
         "All (interesting) patterns with up to pattern_max_size variables are "
         "generated. The generator will compute a PDB for each pattern and add "
-        "the constraint h(s) <= sum_{o in relevant(h)} Count_o.");
+        "the constraint h(s) <= sum_{o in relevant(h)} Count_o. For details, "
+        "see\n"
+        " * Florian Pommerening, Gabriele Röger and Malte Helmert.<<BR>>\n"
+        " [Getting the Most Out of Pattern Databases for Classical Planning "
+        "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf].<<BR>>\n "
+        "In //Proceedings of the Twenty-Third International Joint "
+        "Conference on Artificial Intelligence (IJCAI 2013)//, "
+        "pp. 2357-2364. 2013.\n\n\n");
+
     PatternGenerationSystematic::add_systematic_pattern_options(parser);
     Options opts = parser.parse();
 
@@ -116,6 +135,19 @@ static shared_ptr<ConstraintGenerator> _parse_systematic(OptionParser &parser) {
 }
 
 static shared_ptr<ConstraintGenerator> _parse_ipdb(OptionParser &parser) {
+    parser.document_synopsis(
+        "Posthoc optimization constraints for iPDB patterns",
+        "A pattern collection is discovered, using iPDB hillclimbing (see "
+        "[Doc/Heuristic#iPDB])."
+        "The generator will compute a PDB for each pattern and add the "
+        "constraint h(s) <= sum_{o in relevant(h)} Count_o. For details, see\n"
+        " * Florian Pommerening, Gabriele Röger and Malte Helmert.<<BR>>\n"
+        " [Getting the Most Out of Pattern Databases for Classical Planning "
+        "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf].<<BR>>\n "
+        "In //Proceedings of the Twenty-Third International Joint "
+        "Conference on Artificial Intelligence (IJCAI 2013)//, "
+        "pp. 2357-2364. 2013.\n\n\n");
+
     PatternGenerationHaslum::add_hillclimbing_options(parser);
     Options opts = parser.parse();
 

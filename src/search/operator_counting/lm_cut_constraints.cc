@@ -45,6 +45,31 @@ bool LMCutConstraints::update_constraints(const State &state,
 }
 
 static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Landmark constraints for landmarks discovered with the LM-cut method",
+        "Computes a set of landmarks in each state using the LM-cut method. "
+        "For each landmark L the constraint sum_{o in L} Count_o >= 1 is added "
+        "to the operator counting LP temporarily. After the heuristic value "
+        "for the state is computed, all temporary constraints are removed "
+        "again. For details, see\n"
+        " * Florian Pommerening, Gabriele Röger, Malte Helmert and "
+        "Blai Bonet.<<BR>>\n"
+        " [LP-based Heuristics for Cost-optimal Planning "
+        "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031]."
+        "<<BR>>\n "
+        "In //Proceedings of the Twenty-Fourth International "
+        "Conference on Automated Planning and Scheduling (ICAPS "
+        "2014)//, pp. 226-234. AAAI Press 2014.\n"
+        " * Blai Bonet.<<BR>>\n"
+        " [An admissible heuristic for SAS+ planning obtained from the "
+        "state equation "
+        "http://ijcai.org/papers13/Papers/IJCAI13-335.pdf]."
+        "<<BR>>\n "
+        "In //Proceedings of the Twenty-Third International Joint "
+        "Conference on Artificial Intelligence (IJCAI 2013)//, "
+        "pp. 2268–2274. 2013.\n\n\n"
+);
+
     if (parser.dry_run())
         return nullptr;
     return make_shared<LMCutConstraints>();

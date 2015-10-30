@@ -302,6 +302,27 @@ void PatternGenerationSystematic::check_systematic_pattern_options(
 
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Canonical heuristic for systematically generated patterns",
+        "Computes a canonical PDB heuristic (see [#Canonical_PDB]) over a set "
+        "of systematically generated patterns. "
+        "For details, see\n"
+        " * Florian Pommerening, Gabriele Röger and Malte Helmert.<<BR>>\n"
+        " [Getting the Most Out of Pattern Databases for Classical Planning "
+        "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf].<<BR>>\n "
+        "In //Proceedings of the Twenty-Third International Joint "
+        "Conference on Artificial Intelligence (IJCAI 2013)//, "
+        "pp. 2357-2364. 2013.\n\n\n");
+
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support("conditional effects", "not supported");
+    parser.document_language_support("axioms", "not supported");
+    parser.document_property("admissible", "yes");
+    parser.document_property("consistent", "yes");
+    parser.document_property("safe", "yes");
+    parser.document_property("preferred operators", "no");
+
+
     PatternGenerationSystematic::add_systematic_pattern_options(parser);
     parser.add_option<bool>(
         "dominance_pruning",

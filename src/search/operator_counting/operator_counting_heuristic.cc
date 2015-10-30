@@ -61,10 +61,46 @@ int OperatorCountingHeuristic::compute_heuristic(const State &state) {
 }
 
 static Heuristic *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Operator counting heuristic",
+        "An operator counting heuristic computes a linear program (LP) in each "
+        "state. The LP has one variable Count_o for each operator o that "
+        "represents how often the operator is used in a plan. Operator "
+        "counting constraints are linear constraints over these varaibles that "
+        "are guaranteed to have a solution with Count_o = occurrences(o, pi) "
+        "for every plan pi. Minimizing the total cost of operators subject to "
+        "some operator counting constraints is an admissible heuristic. "
+        "For details, see\n"
+        " * Florian Pommerening, Gabriele Röger, Malte Helmert and "
+        "Blai Bonet.<<BR>>\n"
+        " [LP-based Heuristics for Cost-optimal Planning "
+        "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031]."
+        "<<BR>>\n "
+        "In //Proceedings of the Twenty-Fourth International "
+        "Conference on Automated Planning and Scheduling (ICAPS "
+        "2014)//, pp. 226-234. AAAI Press 2014.\n\n\n");
+
+    parser.document_language_support("action costs", "supported");
+    parser.document_language_support(
+        "conditional effects",
+        "not supported (the heuristic supports them in theory, but none of "
+        "the currently implemented constraint generators do)");
+    parser.document_language_support(
+        "axioms",
+        "not supported (the heuristic supports them in theory, but none of "
+        "the currently implemented constraint generators do)");
+    parser.document_property("admissible", "yes");
+    parser.document_property(
+        "consistent",
+        "yes, if all constraint generators represent consistent heuristics");
+    parser.document_property("safe", "yes");
+    // TODO: prefer operators that are non-zero in the solution.
+    parser.document_property("preferred operators", "no");
+
+
     parser.add_list_option<shared_ptr<ConstraintGenerator>>(
         "constraint_generators",
-        "methods that generate constraints over LP variables "
-        "representing the number of operator applications");
+        "methods that generate constraints over operator counting variables");
     add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
