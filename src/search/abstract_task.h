@@ -18,6 +18,8 @@ public:
     virtual const std::string &get_variable_name(int var) const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
     virtual const std::string &get_fact_name(int var, int value) const = 0;
+    virtual bool are_facts_mutex(
+        const std::pair<int, int> &fact1, const std::pair<int, int> &fact2) const = 0;
 
     virtual int get_operator_cost(int index, bool is_axiom) const = 0;
     virtual const std::string &get_operator_name(int index, bool is_axiom) const = 0;

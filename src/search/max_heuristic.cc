@@ -41,16 +41,14 @@ void HSPMaxHeuristic::initialize() {
 void HSPMaxHeuristic::setup_exploration_queue() {
     queue.clear();
 
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        for (size_t value = 0; value < propositions[var].size(); ++value) {
-            Proposition &prop = propositions[var][value];
+    for (vector<Proposition> &props_of_var : propositions) {
+        for (Proposition &prop : props_of_var) {
             prop.cost = -1;
         }
     }
 
     // Deal with operators and axioms without preconditions.
-    for (size_t i = 0; i < unary_operators.size(); ++i) {
-        UnaryOperator &op = unary_operators[i];
+    for (UnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.precondition.size();
         op.cost = op.base_cost; // will be increased by precondition costs
 
@@ -59,9 +57,9 @@ void HSPMaxHeuristic::setup_exploration_queue() {
     }
 }
 
-void HSPMaxHeuristic::setup_exploration_queue_state(const GlobalState &state) {
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        Proposition *init_prop = &propositions[var][state[var]];
+void HSPMaxHeuristic::setup_exploration_queue_state(const State &state) {
+    for (FactProxy fact : state) {
+        Proposition *init_prop = get_proposition(fact);
         enqueue_if_necessary(init_prop, 0);
     }
 }
@@ -80,8 +78,7 @@ void HSPMaxHeuristic::relaxed_exploration() {
             return;
         const vector<UnaryOperator *> &triggered_operators =
             prop->precondition_of;
-        for (size_t i = 0; i < triggered_operators.size(); ++i) {
-            UnaryOperator *unary_op = triggered_operators[i];
+        for (UnaryOperator *unary_op : triggered_operators) {
             --unary_op->unsatisfied_preconditions;
             unary_op->cost = max(unary_op->cost,
                                  unary_op->base_cost + prop_cost);
@@ -92,16 +89,19 @@ void HSPMaxHeuristic::relaxed_exploration() {
     }
 }
 
-int HSPMaxHeuristic::compute_heuristic(const GlobalState &state) {
+int HSPMaxHeuristic::compute_heuristic(const GlobalState &global_state) {
+    const State state = convert_global_state(global_state);
+
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();
 
     int total_cost = 0;
-    for (size_t i = 0; i < goal_propositions.size(); ++i) {
-        int prop_cost = goal_propositions[i]->cost;
-        if (prop_cost == -1)
+    for (Proposition *prop : goal_propositions) {
+        int prop_cost = prop->cost;
+        if (prop_cost == -1) {
             return DEAD_END;
+        }
         total_cost = max(total_cost, prop_cost);
     }
 
