@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <type_info>
 #include <vector>
 
 
