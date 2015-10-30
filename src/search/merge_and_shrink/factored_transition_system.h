@@ -51,8 +51,11 @@ public:
     FactoredTransitionSystem &operator=(
         const FactoredTransitionSystem &) = delete;
 
-    TransitionSystem &get_ts(int index) {
+    const TransitionSystem &get_ts(int index) const {
         return *transition_systems[index];
+    }
+    const Distances &get_dist(int index) const {
+        return *distances[index];
     }
 
     // temporary method while we're transitioning from the old code;
@@ -61,6 +64,7 @@ public:
         return transition_systems;
     }
 
+    // Methods for the merge-and-shrink main loop
     void label_reduction(std::pair<int, int> merge_indices);
     bool apply_abstraction(int index, const std::vector<std::forward_list<int>> &collapsed_groups);
     int merge(const TaskProxy &task_proxy, int index1, int index2);
@@ -68,27 +72,10 @@ public:
     bool is_solvable() const {
         return solvable;
     }
-    int get_size(int index) const;
     int get_cost(const State &state) const;
-
     void statistics(int index, const Timer &timer) const;
     void dump(int index) const;
 
-    /*
-      TODO: We probably want to get rid of the methods below that just
-      forward to distances, by giving the users of these methods
-      access to the the distances object instead.
-
-      This might also help address a possible performance problem we
-      might have at the moment, now that these methods are no longer
-      inlined here. (To be able to inline them, we would need to
-      include distances.h here, which we would rather not.)
-    */
-    int get_max_f(int index) const; // used by shrink strategies
-    int get_max_g(int index) const; // unused
-    int get_max_h(int index) const; // used by shrink strategies
-    int get_init_distance(int index, int state) const; // used by shrink_fh
-    int get_goal_distance(int index, int state) const; // used by shrink strategies and merge_dfp
     int get_num_labels() const; // used by merge_dfp
 };
 

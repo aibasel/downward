@@ -87,7 +87,6 @@ public:
     int get_size() const {
         return grouped_labels.size();
     }
-    int get_num_labels() const;
     const LabelGroup &operator[](int group_id) {
         return grouped_labels[group_id];
     }

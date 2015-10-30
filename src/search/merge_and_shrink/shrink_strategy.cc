@@ -30,7 +30,7 @@ bool ShrinkStrategy::shrink_transition_system(
     std::shared_ptr<FactoredTransitionSystem> fts,
     int index,
     int new_size) const {
-    TransitionSystem &ts = fts->get_ts(index);
+    const TransitionSystem &ts = fts->get_ts(index);
     assert(ts.is_solvable());
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {

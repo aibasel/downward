@@ -140,7 +140,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
 
     if (fts->is_solvable()) {
         cout << "Final transition system size: "
-             << fts->get_size(final_index) << endl;
+             << fts->get_ts(final_index).get_size() << endl;
         // need to finalize before calling "get_cost"
         fts->finalize();
         // TODO: after adopting the task interface everywhere, change this
