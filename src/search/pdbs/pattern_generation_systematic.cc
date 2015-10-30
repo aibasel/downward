@@ -303,7 +303,7 @@ void PatternGenerationSystematic::check_systematic_pattern_options(
 
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Canonical heuristic for systematically generated patterns",
+        "Canonical PDB heuristic for systematically generated patterns",
         "Computes a canonical PDB heuristic (see [#Canonical_PDB]) over a set "
         "of systematically generated patterns. "
         "For details, see\n"

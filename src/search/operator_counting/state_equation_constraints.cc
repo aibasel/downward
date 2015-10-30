@@ -114,8 +114,7 @@ bool StateEquationConstraints::update_constraints(const State &state,
 
 static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "State equation constraints based on balancing producers and consumers "
-        "of each fact",
+        "State equation constraints",
         "For each fact, a permanent constraint is added that considers the net "
         "change of the fact, i.e., the total number of times the fact is added "
         "minus the total number of times is removed. The bounds of each "

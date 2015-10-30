@@ -219,7 +219,7 @@ struct TypeNamer<std::string> {
 template <>
 struct TypeNamer<std::shared_ptr<OperatorCounting::ConstraintGenerator>> {
     static std::string name() {
-        return "constraint generator";
+        return "ConstraintGenerator";
     }
 };
 
