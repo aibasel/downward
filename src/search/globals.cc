@@ -354,8 +354,10 @@ void verify_no_axioms_no_conditional_effects() {
 }
 
 bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
-    if (a.first == b.first) // same variable: mutex iff different value
+    if (a.first == b.first) {
+        // Same variable: mutex iff different value.
         return a.second != b.second;
+    }
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
