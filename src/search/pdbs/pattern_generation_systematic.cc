@@ -330,6 +330,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "true");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
+    if (parser.help_mode())
+        return nullptr;
 
     PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
     if (parser.dry_run())
