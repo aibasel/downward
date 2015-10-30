@@ -71,7 +71,6 @@ def main(revisions=None):
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
 
-    exp.add_absolute_report_step(attributes=attributes)
     exp.add_comparison_table_step(attributes=attributes)
 
     exp()
