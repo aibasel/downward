@@ -30,6 +30,9 @@ template<class Entry>
 class OpenList;
 class AbstractTask;
 
+namespace OperatorCounting {
+class ConstraintGenerator;
+}
 
 struct ParseNode {
     ParseNode()
@@ -335,6 +338,13 @@ struct TypeNamer<std::string> {
 };
 
 template <>
+struct TypeNamer<std::shared_ptr<OperatorCounting::ConstraintGenerator>> {
+    static std::string name() {
+        return "ConstraintGenerator";
+    }
+};
+
+template <>
 struct TypeNamer<std::shared_ptr<Heuristic>> {
     static std::string name() {
         return "Heuristic";
@@ -484,6 +494,13 @@ struct TypeDocumenter<std::shared_ptr<LandmarkGraph>> {
                "This page describes how one can specify a new landmark graph instance. "
                "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
                "**Warning:** See OptionCaveats for using cost types with Landmarks";
+    }
+};
+
+template <>
+struct TypeDocumenter<std::shared_ptr<OperatorCounting::ConstraintGenerator>> {
+    static std::string synopsis() {
+        return "";
     }
 };
 

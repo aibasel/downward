@@ -61,6 +61,7 @@ set(CORE_SOURCES
         open_lists/pareto_open_list.cc
         open_lists/standard_scalar_open_list.cc
         open_lists/tiebreaking_open_list.cc
+        open_lists/type_based_open_list.cc
 )
 
 fast_downward_add_headers_to_sources_list(CORE_SOURCES)
@@ -90,6 +91,13 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # DEPENDS lists plugins that will be automatically enabled if this plugin
 # is enabled. If the dependency was not enabled before, this will be logged.
 # DEACTIVATED sets the default value of the generated CMake option to false.
+
+fast_downward_plugin(
+    NAME CONST_EVALUATOR
+    HELP "The constant evaluator"
+    SOURCES
+        const_evaluator.cc
+)
 
 fast_downward_plugin(
     NAME G_EVALUATOR
@@ -291,6 +299,18 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME OPERATOR_COUNTING
+    HELP "Plugin containing the code for operator counting heuristics"
+    SOURCES
+        operator_counting/constraint_generator.cc
+        operator_counting/lm_cut_constraints.cc
+        operator_counting/operator_counting_heuristic.cc
+        operator_counting/pho_constraints.cc
+        operator_counting/state_equation_constraints.cc
+    DEPENDS LP_SOLVER LM_CUT_HEURISTIC PDBS
+)
+
+fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES
@@ -301,6 +321,7 @@ fast_downward_plugin(
         pdbs/pattern_database.cc
         pdbs/pattern_generation_edelkamp.cc
         pdbs/pattern_generation_haslum.cc
+        pdbs/pattern_generation_systematic.cc
         pdbs/pdb_heuristic.cc
         pdbs/util.cc
         pdbs/zero_one_pdbs_heuristic.cc
