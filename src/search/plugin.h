@@ -73,20 +73,25 @@ public:
     ~Plugin();
 
     static void register_open_lists() {
-        Registry<OpenList<Entry > *>::instance()->insert(
-            "single", StandardScalarOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->insert(
-            "single_buckets", BucketOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->insert(
-            "tiebreaking", TieBreakingOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->insert(
-            "alt", AlternationOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->insert(
-            "pareto", ParetoOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->insert(
-            "type_based", TypeBasedOpenList<Entry>::_parse);
-        Registry<OpenList<Entry > *>::instance()->insert(
-            "epsilon_greedy", EpsilonGreedyOpenList<Entry>::_parse);
+        static bool already_registered = false;
+
+        if (!already_registered) {
+            Registry<OpenList<Entry > *>::instance()->insert(
+                "single", StandardScalarOpenList<Entry>::_parse);
+            Registry<OpenList<Entry > *>::instance()->insert(
+                "single_buckets", BucketOpenList<Entry>::_parse);
+            Registry<OpenList<Entry > *>::instance()->insert(
+                "tiebreaking", TieBreakingOpenList<Entry>::_parse);
+            Registry<OpenList<Entry > *>::instance()->insert(
+                "alt", AlternationOpenList<Entry>::_parse);
+            Registry<OpenList<Entry > *>::instance()->insert(
+                "pareto", ParetoOpenList<Entry>::_parse);
+            Registry<OpenList<Entry > *>::instance()->insert(
+                "type_based", TypeBasedOpenList<Entry>::_parse);
+            Registry<OpenList<Entry > *>::instance()->insert(
+                "epsilon_greedy", EpsilonGreedyOpenList<Entry>::_parse);
+            already_registered = true;
+        }
     }
 };
 
