@@ -7,6 +7,7 @@
 #include "open_lists/pareto_open_list.h"
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/tiebreaking_open_list.h"
+#include "open_lists/type_based_open_list.h"
 
 #include <iostream>
 #include <map>
@@ -82,6 +83,8 @@ public:
             "alt", AlternationOpenList<Entry>::_parse);
         Registry<OpenList<Entry > *>::instance()->insert(
             "pareto", ParetoOpenList<Entry>::_parse);
+        Registry<OpenList<Entry > *>::instance()->insert(
+            "type_based", TypeBasedOpenList<Entry>::_parse);
         Registry<OpenList<Entry > *>::instance()->insert(
             "epsilon_greedy", EpsilonGreedyOpenList<Entry>::_parse);
     }

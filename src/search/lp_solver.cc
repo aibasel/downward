@@ -84,7 +84,7 @@ LPSolver::LPSolver(LPSolverType solver_type)
     : is_initialized(false),
       is_solved(false),
       num_permanent_constraints(0),
-      has_temporary_constraints(false) {
+      has_temporary_constraints_(false) {
     lp_solver = create_lp_solver(solver_type);
 }
 
@@ -189,19 +189,19 @@ void LPSolver::add_temporary_constraints(const std::vector<LPConstraint> &constr
             delete row;
         }
         clear_temporary_data();
-        has_temporary_constraints = true;
+        has_temporary_constraints_ = true;
         is_solved = false;
     }
 }
 
 void LPSolver::clear_temporary_constraints() {
-    if (has_temporary_constraints) {
+    if (has_temporary_constraints_) {
         try {
             lp_solver->restoreBaseModel(num_permanent_constraints);
         } catch (CoinError &error) {
             handle_coin_error(error);
         }
-        has_temporary_constraints = false;
+        has_temporary_constraints_ = false;
         is_solved = false;
     }
 }
@@ -343,6 +343,10 @@ int LPSolver::get_num_constraints() const {
     } catch (CoinError &error) {
         handle_coin_error(error);
     }
+}
+
+int LPSolver::has_temporary_constraints() const {
+    return has_temporary_constraints_;
 }
 
 void LPSolver::print_statistics() const {
