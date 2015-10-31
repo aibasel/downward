@@ -1,10 +1,13 @@
-#include "globals.h"
 #include "option_parser.h"
-#include "ext/tree_util.hh"
+
+#include "globals.h"
 #include "plugin.h"
 #include "rng.h"
 
+#include "ext/tree_util.hh"
+
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -13,6 +16,19 @@
 
 using namespace std;
 
+
+// TODO (post-issue586): Remove this once we no longer need it.
+class AbstractTask;
+class Labels;
+class LandmarkGraph;
+class MergeStrategy;
+class SearchEngine;
+class ShrinkStrategy;
+class Synergy;
+
+namespace OperatorCounting {
+class ConstraintGenerator;
+}
 
 const string OptionParser::NONE = "<none>";
 
@@ -50,7 +66,7 @@ void OptionParser::set_help_mode(bool m) {
     opts.set_help_mode(m);
 }
 
-template <class T>
+template<typename T>
 static void get_help_templ(const ParseTree &pt) {
     if (Registry<T>::instance()->contains(pt.begin()->value)) {
         OptionParser p(pt, true);
@@ -76,7 +92,7 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>(pt);
 }
 
-template <class T>
+template<typename T>
 static void get_full_help_templ() {
     DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
                                        TypeDocumenter<T>::synopsis());

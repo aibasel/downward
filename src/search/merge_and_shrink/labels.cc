@@ -416,4 +416,9 @@ static shared_ptr<Labels>_parse(OptionParser &parser) {
     }
 }
 
+static PluginTypePlugin<Labels> _type_plugin(
+    "Labels",
+    // TODO: Replace empty string by synopsis for the wiki page.
+    "");
+
 static PluginShared<Labels> _plugin("label_reduction", _parse);

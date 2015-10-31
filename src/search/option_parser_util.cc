@@ -1,5 +1,11 @@
 #include "option_parser_util.h"
 
+#include "utilities.h"
+
+#include <typeindex>
+#include <typeinfo>
+#include <vector>
+
 using namespace std;
 
 
@@ -321,11 +327,28 @@ void PlainPrinter::print_properties(const DocStruct &info) {
     }
 }
 
-
 void PlainPrinter::print_category_header(string category_name) {
     os << "Help for " << category_name << endl << endl;
 }
 
 void PlainPrinter::print_category_footer() {
     os << endl;
+}
+
+PluginTypeRegistry *PluginTypeRegistry::instance() {
+    static PluginTypeRegistry the_instance;
+    return &the_instance;
+}
+
+void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
+    if (registry.count(info.get_type())) {
+        std::cerr << "duplicate type in registry: "
+                  << info.get_type().name() << std::endl;
+        exit_with(EXIT_CRITICAL_ERROR);
+    }
+    registry.insert(make_pair(info.get_type(), info));
+}
+
+const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
+    return registry.at(type);
 }

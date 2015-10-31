@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "operator_cost.h"
 #include "option_parser.h"
+#include "plugin.h"
 
 #include <cassert>
 #include <iostream>
@@ -115,3 +116,9 @@ void print_initial_h_values(const EvaluationContext &eval_context) {
     }
         );
 }
+
+
+static PluginTypePlugin<SearchEngine> _type_plugin(
+    "SearchEngine",
+    // TODO: Replace empty string by synopsis for the wiki page.
+    "");

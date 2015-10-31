@@ -1,5 +1,6 @@
 #include "merge_strategy.h"
 
+#include "../plugin.h"
 #include "../task_proxy.h"
 
 #include <cassert>
@@ -36,3 +37,9 @@ void MergeStrategy::dump_options() const {
     cout << "Type: " << name() << endl;
     dump_strategy_specific_options();
 }
+
+
+static PluginTypePlugin<MergeStrategy> _type_plugin(
+    "MergeStrategy",
+    // TODO: Replace empty string by synopsis for the wiki page.
+    "");
