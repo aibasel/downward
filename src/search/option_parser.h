@@ -13,9 +13,6 @@
 #include <vector>
 
 class Heuristic;
-class LandmarkGraph;
-template<class Entry>
-class OpenList;
 class OptionParser;
 class ScalarEvaluator;
 
@@ -36,12 +33,6 @@ public:
   not necessary to specialize the class; we just need to specialize
   the method.
 */
-
-template<typename Entry>
-class TokenParser<OpenList<Entry > *> {
-public:
-    static inline OpenList<Entry> *parse(OptionParser &p);
-};
 
 template<typename T>
 class TokenParser<T *> {
@@ -319,29 +310,18 @@ static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
     return 0;
 }
 
-template<typename Entry>
-inline OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
-    return lookup_in_registry<OpenList<Entry >>(p);
+template<typename T>
+static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &p, bool &found) {
+    using TPtr = std::shared_ptr<T>;
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Predefinitions<TPtr>::instance()->contains(pt->value)) {
+        found = true;
+        return Predefinitions<TPtr>::instance()->get(pt->value);
+    }
+    found = false;
+    return nullptr;
 }
 
-
-template<>
-inline Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
-    bool predefined;
-    Heuristic *result = lookup_in_predefinitions<Heuristic>(p, predefined);
-    if (predefined)
-        return result;
-    return lookup_in_registry<Heuristic>(p);
-}
-
-template<>
-inline LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
-    bool predefined;
-    LandmarkGraph *result = lookup_in_predefinitions<LandmarkGraph>(p, predefined);
-    if (predefined)
-        return result;
-    return lookup_in_registry<LandmarkGraph>(p);
-}
 
 /*
   TODO (post-issue586): We should decide how to handle subclasses more generally.
@@ -363,14 +343,22 @@ inline ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     return 0;
 }
 
-
+// TODO: The following method can go away once we use shared pointers for all plugins.
 template<typename T>
 inline T *TokenParser<T *>::parse(OptionParser &p) {
+    bool predefined;
+    T *result = lookup_in_predefinitions<T>(p, predefined);
+    if (predefined)
+        return result;
     return lookup_in_registry<T>(p);
 }
 
 template<typename T>
 inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &p) {
+    bool predefined;
+    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(p, predefined);
+    if (predefined)
+        return result;
     return lookup_in_registry_shared<T>(p);
 }
 
