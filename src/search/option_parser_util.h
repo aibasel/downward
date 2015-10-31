@@ -335,28 +335,28 @@ struct TypeNamer<std::string> {
 };
 
 template <>
-struct TypeNamer<Heuristic *> {
+struct TypeNamer<std::shared_ptr<Heuristic>> {
     static std::string name() {
         return "Heuristic";
     }
 };
 
 template <>
-struct TypeNamer<LandmarkGraph *> {
+struct TypeNamer<std::shared_ptr<LandmarkGraph>> {
     static std::string name() {
         return "LandmarkGraph";
     }
 };
 
 template <>
-struct TypeNamer<ScalarEvaluator *> {
+struct TypeNamer<std::shared_ptr<ScalarEvaluator>> {
     static std::string name() {
         return "ScalarEvaluator";
     }
 };
 
 template <>
-struct TypeNamer<SearchEngine *> {
+struct TypeNamer<std::shared_ptr<SearchEngine>> {
     static std::string name() {
         return "SearchEngine";
     }
@@ -370,7 +370,7 @@ struct TypeNamer<ParseTree> {
 };
 
 template <>
-struct TypeNamer<Synergy *> {
+struct TypeNamer<std::shared_ptr<Synergy>> {
     static std::string name() {
         return "Synergy";
     }
@@ -407,7 +407,7 @@ struct TypeNamer<std::shared_ptr<AbstractTask>> {
 };
 
 template<typename Entry>
-struct TypeNamer<OpenList<Entry> *> {
+struct TypeNamer<std::shared_ptr<OpenList<Entry>>> {
     static std::string name() {
         return "OpenList";
     }
@@ -530,7 +530,7 @@ struct TypeDocumenter<std::shared_ptr<AbstractTask>> {
 };
 
 template<typename Entry>
-struct TypeDocumenter<OpenList<Entry> *> {
+struct TypeDocumenter<std::shared_ptr<OpenList<Entry>>> {
     static std::string synopsis() {
         return "";
     }
