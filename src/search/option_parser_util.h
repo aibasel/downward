@@ -217,7 +217,7 @@ public:
 
     Map::const_iterator begin() const {
         /*
-          TODO (issue586): We want plugin types sorted by name in
+          TODO (post-issue586): We want plugin types sorted by name in
           output. One way to achieve this is by defining the map's
           comparison function to sort first by the name and then by
           the type_index, but this is actually a bit difficult if the
@@ -393,15 +393,6 @@ struct TypeNamer<std::shared_ptr<MergeStrategy>> {
     }
 };
 
-/* TODO (issue586): Remove this.
-template <>
-struct TypeNamer<std::shared_ptr<ShrinkStrategy>> {
-    static std::string name() {
-        return "ShrinkStrategy";
-    }
-};
-*/
-
 template <>
 struct TypeNamer<std::shared_ptr<Labels>> {
     static std::string name() {
@@ -439,7 +430,7 @@ template<typename T>
 struct TypeDocumenter {
     static std::string synopsis() {
         /*
-          TODO (issue586): once all plugin types are pluginized, this
+          TODO (post-issue586): once all plugin types are pluginized, this
           default implementation can go away (as in TypeNamer).
         */
         return "";
