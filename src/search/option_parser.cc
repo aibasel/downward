@@ -17,7 +17,7 @@
 using namespace std;
 
 
-// TODO (issue586): Remove this once we no longer need it.
+// TODO (post-issue586): Remove this once we no longer need it.
 class ShrinkStrategy;
 
 const string OptionParser::NONE = "<none>";
