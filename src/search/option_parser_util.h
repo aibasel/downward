@@ -18,21 +18,15 @@
 #include <typeinfo>
 #include <utility>
 
-class MergeStrategy;
-class Labels;
-class LandmarkGraph;
+class OptionParser;
+
+// TODO: The following forward declarations can hopefully go away eventually.
 class Heuristic;
 class ScalarEvaluator;
-class Synergy;
-class SearchEngine;
-class OptionParser;
 template<class Entry>
 class OpenList;
-class AbstractTask;
 
-namespace OperatorCounting {
-class ConstraintGenerator;
-}
+
 
 struct ParseNode {
     ParseNode()
@@ -234,8 +228,10 @@ public:
 };
 
 
-//Predefinitions<T> maps strings to pointers to
-//already created Heuristics/LandmarkGraphs
+/*
+  Predefinitions<T> maps strings to pointers to already created
+  plug-in objects.
+*/
 template<typename T>
 class Predefinitions {
 public:
@@ -338,23 +334,9 @@ struct TypeNamer<std::string> {
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<OperatorCounting::ConstraintGenerator>> {
-    static std::string name() {
-        return "ConstraintGenerator";
-    }
-};
-
-template <>
 struct TypeNamer<std::shared_ptr<Heuristic>> {
     static std::string name() {
         return "Heuristic";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<LandmarkGraph>> {
-    static std::string name() {
-        return "LandmarkGraph";
     }
 };
 
@@ -366,44 +348,9 @@ struct TypeNamer<std::shared_ptr<ScalarEvaluator>> {
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<SearchEngine>> {
-    static std::string name() {
-        return "SearchEngine";
-    }
-};
-
-template <>
 struct TypeNamer<ParseTree> {
     static std::string name() {
         return "ParseTree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<Synergy>> {
-    static std::string name() {
-        return "Synergy";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<MergeStrategy>> {
-    static std::string name() {
-        return "MergeStrategy";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<Labels>> {
-    static std::string name() {
-        return "Labels";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<AbstractTask>> {
-    static std::string name() {
-        return "AbstractTask";
     }
 };
 
@@ -478,62 +425,9 @@ struct TypeDocumenter<std::shared_ptr<Heuristic>> {
 };
 
 template <>
-struct TypeDocumenter<std::shared_ptr<LandmarkGraph>> {
-    static std::string synopsis() {
-        return "A landmark graph specification is either a newly created "
-               "instance or a landmark graph that has been defined previously. "
-               "This page describes how one can specify a new landmark graph instance. "
-               "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
-               "**Warning:** See OptionCaveats for using cost types with Landmarks";
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<OperatorCounting::ConstraintGenerator>> {
-    static std::string synopsis() {
-        return "";
-    }
-};
-
-template <>
 struct TypeDocumenter<std::shared_ptr<ScalarEvaluator>> {
     static std::string synopsis() {
         return "XXX TODO: description of the role of scalar evaluators and the connection to Heuristic";
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<SearchEngine>> {
-    static std::string synopsis() {
-        return "";
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<Synergy>> {
-    static std::string synopsis() {
-        return "";
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<MergeStrategy>> {
-    static std::string synopsis() {
-        return "";
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<Labels>> {
-    static std::string synopsis() {
-        return "";
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<AbstractTask>> {
-    static std::string synopsis() {
-        return "";
     }
 };
 

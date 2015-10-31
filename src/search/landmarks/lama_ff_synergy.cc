@@ -178,4 +178,10 @@ static Synergy *_parse(OptionParser &parser) {
     return syn;
 }
 
+
+static PluginTypePlugin<Synergy> _type_plugin(
+    "Synergy",
+    // TODO: Replace empty string by synopsis for the wiki page.
+    "");
+
 static Plugin<Synergy> _plugin("lm_ff_syn", _parse);

@@ -18,7 +18,17 @@ using namespace std;
 
 
 // TODO (post-issue586): Remove this once we no longer need it.
+class AbstractTask;
+class Labels;
+class LandmarkGraph;
+class MergeStrategy;
+class SearchEngine;
 class ShrinkStrategy;
+class Synergy;
+
+namespace OperatorCounting {
+class ConstraintGenerator;
+}
 
 const string OptionParser::NONE = "<none>";
 
