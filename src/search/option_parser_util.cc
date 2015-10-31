@@ -353,4 +353,5 @@ const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
     // TODO (issue586): Remove debug output.
     // cout << "registry.at " << type.name() << endl;
     return registry.at(type);
+    // cout << "registry.at " << type.name() << " OK" << endl;
 }

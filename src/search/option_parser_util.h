@@ -19,7 +19,6 @@
 #include <utility>
 
 class MergeStrategy;
-class ShrinkStrategy;
 class Labels;
 class LandmarkGraph;
 class Heuristic;
@@ -421,18 +420,46 @@ struct TypeNamer<std::vector<T>> {
     }
 };
 
-// TypeDocumenter allows to add global documentation to the types.
-// This cannot be done during parsing, because types are not parsed.
+/*
+  TypeDocumenter prints out the documentation synopsis for plug-in types.
 
+  The same comments as for TypeNamer apply.
+*/
 template<typename T>
 struct TypeDocumenter {
     static std::string synopsis() {
+        /*
+          TODO (issue586): once all plugin types are pluginized, this
+          default implementation can go away (as in TypeNamer).
+        */
         return "";
     }
 };
 
+// See comments for TypeNamer.
+template<typename T>
+struct TypeDocumenter<std::shared_ptr<T>> {
+    static std::string synopsis() {
+        using TPtr = std::shared_ptr<T>;
+        const PluginTypeInfo &type_info =
+            PluginTypeRegistry::instance()->get(std::type_index(typeid(TPtr)));
+        return type_info.get_documentation();
+    }
+};
+
+/*
+  The following partial specialization for raw pointers is legacy code.
+  This can go away once all plugins use shared_ptr.
+*/
+template<typename T>
+struct TypeDocumenter<T *> {
+    static std::string synopsis() {
+        return TypeDocumenter<std::shared_ptr<T>>::synopsis();
+    }
+};
+
 template <>
-struct TypeDocumenter<Heuristic *> {
+struct TypeDocumenter<std::shared_ptr<Heuristic>> {
     static std::string synopsis() {
         return "A heuristic specification is either a newly created heuristic "
                "instance or a heuristic that has been defined previously. "
@@ -450,7 +477,7 @@ struct TypeDocumenter<Heuristic *> {
 };
 
 template <>
-struct TypeDocumenter<LandmarkGraph *> {
+struct TypeDocumenter<std::shared_ptr<LandmarkGraph>> {
     static std::string synopsis() {
         return "A landmark graph specification is either a newly created "
                "instance or a landmark graph that has been defined previously. "
@@ -461,9 +488,51 @@ struct TypeDocumenter<LandmarkGraph *> {
 };
 
 template <>
-struct TypeDocumenter<ScalarEvaluator *> {
+struct TypeDocumenter<std::shared_ptr<ScalarEvaluator>> {
     static std::string synopsis() {
         return "XXX TODO: description of the role of scalar evaluators and the connection to Heuristic";
+    }
+};
+
+template <>
+struct TypeDocumenter<std::shared_ptr<SearchEngine>> {
+    static std::string synopsis() {
+        return "";
+    }
+};
+
+template <>
+struct TypeDocumenter<std::shared_ptr<Synergy>> {
+    static std::string synopsis() {
+        return "";
+    }
+};
+
+template <>
+struct TypeDocumenter<std::shared_ptr<MergeStrategy>> {
+    static std::string synopsis() {
+        return "";
+    }
+};
+
+template <>
+struct TypeDocumenter<std::shared_ptr<Labels>> {
+    static std::string synopsis() {
+        return "";
+    }
+};
+
+template <>
+struct TypeDocumenter<std::shared_ptr<AbstractTask>> {
+    static std::string synopsis() {
+        return "";
+    }
+};
+
+template<typename Entry>
+struct TypeDocumenter<OpenList<Entry> *> {
+    static std::string synopsis() {
+        return "";
     }
 };
 
