@@ -197,4 +197,4 @@ static PluginTypePlugin<ShrinkStrategy> _type_plugin(
     */
     "This page describes the various shrink strategies supported "
     "by the planner. Shrink strategies are used by the merge-and-shrink "
-    "heuristic, documented on page [[Doc/Heuristic|Heuristic]].");
+    "heuristic, documented on page [[Doc/Heuristic]].");
