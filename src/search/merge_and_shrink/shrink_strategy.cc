@@ -189,7 +189,7 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
 }
 
 
-static PluginTypePlugin<ShrinkStrategy> _plugin(
+static PluginTypePlugin<ShrinkStrategy> _type_plugin(
     "ShrinkStrategy",
     /*
       TODO: Replace by better documentation. The text below is just

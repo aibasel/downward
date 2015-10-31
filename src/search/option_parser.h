@@ -15,6 +15,7 @@
 class Heuristic;
 class OptionParser;
 class ScalarEvaluator;
+class SearchEngine;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.

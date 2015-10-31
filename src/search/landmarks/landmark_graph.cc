@@ -3,6 +3,7 @@
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
+#include "../plugin.h"
 
 #include <cassert>
 #include <list>
@@ -341,3 +342,12 @@ void LandmarkGraph::add_options_to_parser(OptionParser &parser) {
                            "landmark action cost adjustment",
                            "NORMAL");
 }
+
+
+static PluginTypePlugin<LandmarkGraph> _type_plugin(
+    "LandmarkGraph",
+    "A landmark graph specification is either a newly created "
+    "instance or a landmark graph that has been defined previously. "
+    "This page describes how one can specify a new landmark graph instance. "
+    "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
+    "**Warning:** See OptionCaveats for using cost types with Landmarks");
