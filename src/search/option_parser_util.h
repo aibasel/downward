@@ -18,11 +18,10 @@
 #include <typeinfo>
 #include <utility>
 
+class Heuristic;
 class OptionParser;
 
-// TODO: The following forward declarations can hopefully go away eventually.
-class Heuristic;
-class ScalarEvaluator;
+// TODO: The following forward declaration can hopefully go away eventually.
 template<class Entry>
 class OpenList;
 
@@ -334,20 +333,6 @@ struct TypeNamer<std::string> {
 };
 
 template <>
-struct TypeNamer<std::shared_ptr<Heuristic>> {
-    static std::string name() {
-        return "Heuristic";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<ScalarEvaluator>> {
-    static std::string name() {
-        return "ScalarEvaluator";
-    }
-};
-
-template <>
 struct TypeNamer<ParseTree> {
     static std::string name() {
         return "ParseTree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
@@ -403,31 +388,6 @@ template<typename T>
 struct TypeDocumenter<T *> {
     static std::string synopsis() {
         return TypeDocumenter<std::shared_ptr<T>>::synopsis();
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<Heuristic>> {
-    static std::string synopsis() {
-        return "A heuristic specification is either a newly created heuristic "
-               "instance or a heuristic that has been defined previously. "
-               "This page describes how one can specify a new heuristic instance. "
-               "For re-using heuristics, see OptionSyntax#Heuristic_Predefinitions.\n\n"
-               "Definitions of //properties// in the descriptions below:\n\n"
-               " * **admissible:** h(s) <= h*(s) for all states s\n"
-               " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
-               "connected to states s' by an action with cost c(s, s')\n"
-               " * **safe:** h(s) = infinity is only true for states "
-               "with h*(s) = infinity\n"
-               " * **preferred operators:** this heuristic identifies "
-               "preferred operators ";
-    }
-};
-
-template <>
-struct TypeDocumenter<std::shared_ptr<ScalarEvaluator>> {
-    static std::string synopsis() {
-        return "XXX TODO: description of the role of scalar evaluators and the connection to Heuristic";
     }
 };
 
