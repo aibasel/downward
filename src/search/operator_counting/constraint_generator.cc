@@ -12,5 +12,4 @@ static PluginTypePlugin<ConstraintGenerator> _type_plugin(
     "ConstraintGenerator",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
-
 }
