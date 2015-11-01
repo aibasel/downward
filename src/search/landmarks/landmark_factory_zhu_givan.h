@@ -3,10 +3,17 @@
 
 #include "landmark_factory.h"
 #include "landmark_graph.h"
-#include "landmark_types.h"
-#include "../globals.h"
 
+#include "../globals.h"
+#include "../utilities.h"
+#include "../utilities_hash.h"
+
+#include <unordered_set>
+#include <utility>
 #include <vector>
+
+
+typedef std::unordered_set<std::pair<int, int>> lm_set;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactory {
 private:
@@ -21,11 +28,11 @@ public:
         }
     };
 
-    typedef std::vector<std::vector<plan_graph_node> > proposition_layer;
+    typedef std::vector<std::vector<plan_graph_node>> proposition_layer;
 
     // triggers[i][j] is a list of operators that could reach/change
     // labels on some proposition, after proposition (i,j) has changed
-    std::vector<std::vector<std::vector<int> > > triggers;
+    std::vector<std::vector<std::vector<int>>> triggers;
 
     void compute_triggers();
 

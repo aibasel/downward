@@ -12,6 +12,9 @@
 #include <utility>
 #include <vector>
 
+using namespace std;
+
+
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }

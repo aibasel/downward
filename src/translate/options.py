@@ -7,7 +7,7 @@ import sys
 def parse_args():
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
-        "domain", nargs="?", help="path to domain pddl file")
+        "domain", help="path to domain pddl file")
     argparser.add_argument(
         "task", help="path to task pddl file")
     argparser.add_argument(

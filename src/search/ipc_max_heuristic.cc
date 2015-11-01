@@ -24,14 +24,17 @@ int IPCMaxHeuristic::compute_heuristic(const GlobalState &state) {
 bool IPCMaxHeuristic::reach_state(const GlobalState &parent_state,
                                   const GlobalOperator &op,
                                   const GlobalState &state) {
-    bool result = false;
+    bool h_dirty = false;
     for (Heuristic *heuristic : heuristics) {
         if (heuristic->reach_state(parent_state, op, state)) {
-            result = true;
+            h_dirty = true;
             // Don't break: we must call reached_state everywhere.
         }
     }
-    return result;
+    if (h_dirty && cache_h_values) {
+        heuristic_cache[state].dirty = true;
+    }
+    return h_dirty;
 }
 
 static Heuristic *_parse(OptionParser &parser) {

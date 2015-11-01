@@ -51,7 +51,7 @@ extern int g_max_action_cost;
 // TODO: The following five belong into a new Variable class.
 extern std::vector<std::string> g_variable_name;
 extern std::vector<int> g_variable_domain;
-extern std::vector<std::vector<std::string> > g_fact_names;
+extern std::vector<std::vector<std::string>> g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
@@ -63,7 +63,7 @@ extern std::vector<int> g_initial_state_data;
 //      in g_state_registry. This is only a short-term solution. In the
 //      medium term, we should get rid of the global registry.
 extern const GlobalState &g_initial_state();
-extern std::vector<std::pair<int, int> > g_goal;
+extern std::vector<std::pair<int, int>> g_goal;
 
 extern std::vector<GlobalOperator> g_operators;
 extern std::vector<GlobalOperator> g_axioms;

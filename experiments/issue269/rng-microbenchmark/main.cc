@@ -12,7 +12,7 @@ using namespace std;
 
 
 void benchmark(const string &desc, int num_calls,
-               const function<void ()> &func) {
+               const function<void()> &func) {
     cout << "Running " << desc << " " << num_calls << " times:" << flush;
     clock_t start = clock();
     for (int i = 0; i < num_calls; ++i)
@@ -32,49 +32,32 @@ int main(int, char **) {
     InlinedRandomNumberGenerator inlined_rng(SEED);
     AltInlinedRandomNumberGenerator alt_inlined_rng(SEED);
 
-    benchmark("nothing", NUM_ITERATIONS, [] (){}
-              );
+    benchmark("nothing", NUM_ITERATIONS, [] () {});
     cout << endl;
     benchmark("random double (old RNG)",
               NUM_ITERATIONS,
-              [&]() {old_rng();
-              }
-              );
+              [&]() {old_rng(); });
     benchmark("random double (new RNG, old distribution)",
               NUM_ITERATIONS,
-              [&]() {new_rng.get_double_old();
-              }
-              );
+              [&]() {new_rng.get_double_old(); });
     benchmark("random double (new RNG)",
               NUM_ITERATIONS,
-              [&]() {new_rng();
-              }
-              );
+              [&]() {new_rng(); });
     benchmark("random double (inlined RNG)",
               NUM_ITERATIONS,
-              [&]() {inlined_rng();
-              }
-              );
+              [&]() {inlined_rng(); });
     benchmark("random double (alternative inlined RNG)",
               NUM_ITERATIONS,
-              [&]() {alt_inlined_rng();
-              }
-              );
+              [&]() {alt_inlined_rng(); });
     cout << endl;
     benchmark("random int in 0..999 (old RNG)",
               NUM_ITERATIONS,
-              [&]() {old_rng(1000);
-              }
-              );
+              [&]() {old_rng(1000); });
     benchmark("random int in 0..999 (new RNG, old distribution)",
               NUM_ITERATIONS,
-              [&]() {new_rng.get_int_old(1000);
-              }
-              );
+              [&]() {new_rng.get_int_old(1000); });
     benchmark("random int in 0..999 (inlined RNG)",
               NUM_ITERATIONS,
-              [&]() {inlined_rng(1000);
-              }
-              );
+              [&]() {inlined_rng(1000); });
     return 0;
 }

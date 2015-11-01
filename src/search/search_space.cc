@@ -44,39 +44,21 @@ int SearchNode::get_real_g() const {
     return info.real_g;
 }
 
-int SearchNode::get_h() const {
-    return info.h;
-}
-
-bool SearchNode::is_h_dirty() const {
-    return info.h_is_dirty;
-}
-
-void SearchNode::set_h_dirty() {
-    info.h_is_dirty = true;
-}
-
-void SearchNode::clear_h_dirty() {
-    info.h_is_dirty = false;
-}
-
-void SearchNode::open_initial(int h) {
+void SearchNode::open_initial() {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     info.g = 0;
     info.real_g = 0;
-    info.h = h;
     info.parent_state_id = StateID::no_state;
     info.creating_operator = 0;
 }
 
-void SearchNode::open(int h, const SearchNode &parent_node,
+void SearchNode::open(const SearchNode &parent_node,
                       const GlobalOperator *parent_op) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     info.g = parent_node.info.g + get_adjusted_action_cost(*parent_op, cost_type);
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
-    info.h = h;
     info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = parent_op;
 }
@@ -106,11 +88,6 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     info.real_g = parent_node.info.real_g + parent_op->get_cost();
     info.parent_state_id = parent_node.get_state_id();
     info.creating_operator = parent_op;
-}
-
-void SearchNode::increase_h(int h) {
-    assert(h >= info.h);
-    info.h = h;
 }
 
 void SearchNode::close() {

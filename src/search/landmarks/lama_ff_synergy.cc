@@ -59,7 +59,13 @@ public:
     virtual bool reach_state(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state) override {
-        return synergy->lama_reach_state(parent_state, op, state);
+        if (synergy->lama_reach_state(parent_state, op, state)) {
+            if (cache_h_values) {
+                heuristic_cache[state].dirty = true;
+            }
+            return true;
+        }
+        return false;
     }
 };
 
@@ -150,6 +156,7 @@ static Synergy *_parse(OptionParser &parser) {
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
+    add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
@@ -170,5 +177,11 @@ static Synergy *_parse(OptionParser &parser) {
     syn->heuristics.push_back(lama_ff_synergy->get_ff_heuristic_proxy());
     return syn;
 }
+
+
+static PluginTypePlugin<Synergy> _type_plugin(
+    "Synergy",
+    // TODO: Replace empty string by synopsis for the wiki page.
+    "");
 
 static Plugin<Synergy> _plugin("lm_ff_syn", _parse);

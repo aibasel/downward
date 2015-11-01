@@ -48,7 +48,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     int current_phase_start_g;
 
     // Statistics
-    std::map<int, std::pair<int, int> > d_counts;
+    std::map<int, std::pair<int, int>> d_counts;
     int num_ehc_phases;
     int last_num_expanded;
 

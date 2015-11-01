@@ -1,11 +1,10 @@
 #include "goal_count_heuristic.h"
 
-#include "global_state.h"
-#include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
 
-
+#include <iostream>
+using namespace std;
 
 
 GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
@@ -19,12 +18,15 @@ void GoalCountHeuristic::initialize() {
     cout << "Initializing goal count heuristic..." << endl;
 }
 
-int GoalCountHeuristic::compute_heuristic(const GlobalState &state) {
+int GoalCountHeuristic::compute_heuristic(const GlobalState &global_state) {
+    const State state = convert_global_state(global_state);
     int unsatisfied_goal_count = 0;
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int var = g_goal[i].first, value = g_goal[i].second;
-        if (state[var] != value)
+
+    for (FactProxy goal : task_proxy.get_goals()) {
+        const VariableProxy var = goal.get_variable();
+        if (state[var] != goal) {
             ++unsatisfied_goal_count;
+        }
     }
     return unsatisfied_goal_count;
 }

@@ -77,7 +77,7 @@ public:
       out of date.)
     */
     bool apply_abstraction(
-        const std::vector<std::forward_list<int> > &collapsed_groups);
+        const std::vector<std::forward_list<int>> &collapsed_groups);
 
     int get_max_f() const;
     int get_max_g() const;

@@ -32,17 +32,17 @@ public:
         return distribution(rng);
     }
 
-    template <class T>
+    template<typename T>
     typename std::vector<T>::const_iterator choose(const std::vector<T> &vec) {
         return vec.begin() + operator()(vec.size());
     }
 
-    template <class T>
+    template<typename T>
     typename std::vector<T>::iterator choose(std::vector<T> &vec) {
         return vec.begin() + operator()(vec.size());
     }
 
-    template <class T>
+    template<typename T>
     void shuffle(std::vector<T> &vec) {
         std::shuffle(vec.begin(), vec.end(), rng);
     }
