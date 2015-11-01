@@ -125,6 +125,13 @@ ALIASES["seq-sat-lama-2011"] = [
 # Append --always to be on the safe side if we want to append
 # additional options later.
 
+ALIASES["lama-first"] = [
+    "--heuristic",
+    "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,"
+    "                         lm_cost_type=one,cost_type=one))",
+    "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
+                               cost_type=one,reopen_closed=false)"""]
+
 ALIASES["seq-opt-bjolp"] = [
     "--search",
     "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),"
