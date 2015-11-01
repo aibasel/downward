@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "operator_cost.h"
 #include "option_parser.h"
+#include "plugin.h"
 
 #include <cassert>
 #include <iostream>
@@ -104,14 +105,20 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
 
 void print_initial_h_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_heuristic_value(
-        [] (const Heuristic * heur, const EvaluationResult &result) {
-            cout << "Initial heuristic value for "
-                 << heur->get_description() << ": ";
-            if (result.is_infinite())
-                cout << "infinity";
-            else
-                cout << result.get_h_value();
-            cout << endl;
-        }
+        [] (const Heuristic *heur, const EvaluationResult &result) {
+        cout << "Initial heuristic value for "
+             << heur->get_description() << ": ";
+        if (result.is_infinite())
+            cout << "infinity";
+        else
+            cout << result.get_h_value();
+        cout << endl;
+    }
         );
 }
+
+
+static PluginTypePlugin<SearchEngine> _type_plugin(
+    "SearchEngine",
+    // TODO: Replace empty string by synopsis for the wiki page.
+    "");

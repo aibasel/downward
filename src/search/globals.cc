@@ -34,7 +34,7 @@ static const int PRE_FILE_VERSION = 3;
 //       are_mutex, which is at least better than exposing the data
 //       structure globally.)
 
-static vector<vector<set<pair<int, int> > > > g_inconsistent_facts;
+static vector<vector<set<pair<int, int>>>> g_inconsistent_facts;
 
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -80,15 +80,6 @@ void save_plan(const vector<const GlobalOperator *> &plan,
     cout << "Plan length: " << plan.size() << " step(s)." << endl;
     cout << "Plan cost: " << plan_cost << endl;
     ++g_num_previously_generated_plans;
-}
-
-bool peek_magic(istream &in, string magic) {
-    string word;
-    in >> word;
-    bool result = (word == magic);
-    for (int i = word.size() - 1; i >= 0; --i)
-        in.putback(word[i]);
-    return result;
 }
 
 void check_magic(istream &in, string magic) {
@@ -166,7 +157,7 @@ void read_mutexes(istream &in) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
         in >> num_facts;
-        vector<pair<int, int> > invariant_group;
+        vector<pair<int, int>> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
             int var, val;
@@ -257,11 +248,10 @@ void read_everything(istream &in) {
 
     // Ignore successor generator from preprocessor output.
     check_magic(in, "begin_SG");
-    while (!peek_magic(in, "end_SG")) {
-        string dummy_string;
+    string dummy_string = "";
+    while (dummy_string != "end_SG") {
         getline(in, dummy_string);
     }
-    check_magic(in, "end_SG");
 
     DomainTransitionGraph::read_all(in);
     check_magic(in, "begin_CG"); // ignore everything from here
@@ -286,7 +276,7 @@ void read_everything(istream &in) {
     cout << "Facts: " << num_facts << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() *
-    g_state_packer->get_bin_size_in_bytes() << endl;
+        g_state_packer->get_bin_size_in_bytes() << endl;
 
     cout << "Building successor generator..." << flush;
     g_successor_generator = new SuccessorGenerator(g_root_task());
@@ -364,8 +354,10 @@ void verify_no_axioms_no_conditional_effects() {
 }
 
 bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
-    if (a.first == b.first) // same variable: mutex iff different value
+    if (a.first == b.first) {
+        // Same variable: mutex iff different value.
         return a.second != b.second;
+    }
     return bool(g_inconsistent_facts[a.first][a.second].count(b));
 }
 
@@ -383,12 +375,12 @@ int g_min_action_cost = numeric_limits<int>::max();
 int g_max_action_cost = 0;
 vector<string> g_variable_name;
 vector<int> g_variable_domain;
-vector<vector<string> > g_fact_names;
+vector<vector<string>> g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
 IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
-vector<pair<int, int> > g_goal;
+vector<pair<int, int>> g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;

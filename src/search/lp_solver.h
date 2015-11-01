@@ -78,7 +78,7 @@ class LPSolver {
     bool is_initialized;
     bool is_solved;
     int num_permanent_constraints;
-    bool has_temporary_constraints;
+    bool has_temporary_constraints_;
 #ifdef USE_LP
     std::unique_ptr<OsiSolverInterface> lp_solver;
 #endif
@@ -99,7 +99,13 @@ class LPSolver {
     void clear_temporary_data();
 public:
     LP_METHOD(explicit LPSolver(LPSolverType solver_type))
-    LP_METHOD(~LPSolver())
+    /*
+      Note that the destructor does not use LP_METHOD because it should not
+      have the attribute NO_RETURN. It also cannot be set to the default
+      destructor here (~LPSolver() = default;) because OsiSolverInterface
+      is a forward declaration and the incomplete type cannot be destroyed.
+    */
+    ~LPSolver();
 
     LP_METHOD(void load_problem(
                   LPObjectiveSense sense,
@@ -109,6 +115,7 @@ public:
     LP_METHOD(void clear_temporary_constraints())
     LP_METHOD(double get_infinity() const)
 
+    LP_METHOD(void set_objective_coefficients(const std::vector<double> &coefficients))
     LP_METHOD(void set_objective_coefficient(int index, double coefficient))
     LP_METHOD(void set_constraint_lower_bound(int index, double bound))
     LP_METHOD(void set_constraint_upper_bound(int index, double bound))
@@ -120,7 +127,7 @@ public:
     /*
       Return true if the solving the LP showed that it is bounded feasible and
       the discovered solution is guaranteed to be optimal. We test for
-      optimality explicitly because solving the LP sometime finds suboptimal
+      optimality explicitly because solving the LP sometimes finds suboptimal
       solutions due to numerical difficulties.
       The LP has to be solved with a call to solve() before calling this method.
     */
@@ -143,6 +150,7 @@ public:
 
     LP_METHOD(int get_num_variables() const)
     LP_METHOD(int get_num_constraints() const)
+    LP_METHOD(int has_temporary_constraints() const)
     LP_METHOD(void print_statistics() const)
 };
 #ifdef __GNUG__

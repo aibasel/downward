@@ -4,6 +4,7 @@
 
 #include "../task_proxy.h"
 
+#include <algorithm>
 #include <numeric>
 
 using namespace std;
@@ -31,8 +32,6 @@ HeuristicRepresentationLeaf::HeuristicRepresentationLeaf(
 
 void HeuristicRepresentationLeaf::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
-    cout << "leaf: applying abstraction to lookup table" << endl;
-
     int new_domain_size = 0;
     for (int &entry : lookup_table) {
         if (entry != TransitionSystem::PRUNED_STATE) {
@@ -50,13 +49,14 @@ int HeuristicRepresentationLeaf::get_abstract_state(const State &state) const {
 
 
 HeuristicRepresentationMerge::HeuristicRepresentationMerge(
-    unique_ptr<HeuristicRepresentation> child1,
-    unique_ptr<HeuristicRepresentation> child2)
-    : HeuristicRepresentation(child1->get_domain_size() *
-                              child2->get_domain_size()),
-      children {move(child1), move(child2)},
-lookup_table(children[0]->get_domain_size(),
-             vector<int>(children[1]->get_domain_size())) {
+    unique_ptr<HeuristicRepresentation> left_child_,
+    unique_ptr<HeuristicRepresentation> right_child_)
+    : HeuristicRepresentation(left_child_->get_domain_size() *
+                              right_child_->get_domain_size()),
+      left_child(move(left_child_)),
+      right_child(move(right_child_)),
+      lookup_table(left_child->get_domain_size(),
+                   vector<int>(right_child->get_domain_size())) {
     int counter = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
@@ -68,7 +68,6 @@ lookup_table(children[0]->get_domain_size(),
 
 void HeuristicRepresentationMerge::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
-    cout << "merge: applying abstraction to lookup table" << endl;
     int new_domain_size = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
@@ -83,8 +82,8 @@ void HeuristicRepresentationMerge::apply_abstraction_to_lookup_table(
 
 int HeuristicRepresentationMerge::get_abstract_state(
     const State &state) const {
-    int state1 = children[0]->get_abstract_state(state);
-    int state2 = children[1]->get_abstract_state(state);
+    int state1 = left_child->get_abstract_state(state);
+    int state2 = right_child->get_abstract_state(state);
     if (state1 == TransitionSystem::PRUNED_STATE ||
         state2 == TransitionSystem::PRUNED_STATE)
         return TransitionSystem::PRUNED_STATE;

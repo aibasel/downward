@@ -7,6 +7,7 @@
 #include "../task_proxy.h"
 #include "../utilities.h"
 
+#include <algorithm>
 #include <cassert>
 #include <unordered_map>
 #include <vector>
@@ -19,10 +20,12 @@ class FTSFactory {
     shared_ptr<Labels> labels;
 
     struct TransitionSystemData {
-        vector<vector<Transition> > transitions_by_label;
+        vector<vector<Transition>> transitions_by_label;
         vector<bool> relevant_labels;
     };
     vector<TransitionSystemData> transition_system_by_var;
+    // see TODO in build_transitions()
+    int task_has_conditional_effects;
 
     void build_labels();
     void initialize_transition_system_data();
@@ -55,7 +58,7 @@ public:
 
 
 FTSFactory::FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels)
-    : task_proxy(task_proxy), labels(labels) {
+    : task_proxy(task_proxy), labels(labels), task_has_conditional_effects(false) {
 }
 
 FTSFactory::~FTSFactory() {
@@ -167,6 +170,7 @@ void FTSFactory::handle_operator_effect(
             if (has_other_effect_cond || value != cond_effect_pre_value)
                 add_transition(var_no, label_no, value, value);
         }
+        task_has_conditional_effects = true;
     }
     mark_as_relevant(var_no, label_no);
 }
@@ -227,6 +231,28 @@ void FTSFactory::build_transitions() {
 
     for (VariableProxy variable : task_proxy.get_variables())
         build_transitions_for_irrelevant_ops(variable);
+
+    if (task_has_conditional_effects) {
+        /*
+          TODO: Our method for generating transitions is only guarantueed
+          to generate sorted and unique transitions if the task has no
+          conditional effects. We could replace the instance variable by
+          a call to has_conditional_effects(task_proxy).
+          Generally, the questions is whether we rely on sorted transitions
+          anyway.
+        */
+        int num_variables = task_proxy.get_variables().size();
+        for (int var_no = 0; var_no < num_variables; ++var_no) {
+            vector<vector<Transition>> &transitions_by_label =
+                transition_system_by_var[var_no].transitions_by_label;
+            for (vector<Transition> &transitions : transitions_by_label) {
+                sort(transitions.begin(), transitions.end());
+                transitions.erase(unique(transitions.begin(),
+                                         transitions.end()),
+                                  transitions.end());
+            }
+        }
+    }
 }
 
 vector<TransitionSystem *> FTSFactory::create_transition_systems() {
