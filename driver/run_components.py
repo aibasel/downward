@@ -55,9 +55,10 @@ def print_component_settings(nick, inputs, options, time_limit, memory_limit):
     logging.info("{} arguments: {}".format(nick, options))
     if time_limit is not None:
         time_limit = str(time_limit) + "s"
-    logging.info("{} time_limit: {}".format(nick, time_limit))
+    logging.info("{} time limit: {}".format(nick, time_limit))
     if memory_limit is not None:
-        memory_limit = "{:.2} MB".format(limits.convert_to_mb(memory_limit))
+        memory_limit = int(limits.convert_to_mb(memory_limit))
+        memory_limit = str(memory_limit) + " MB"
     logging.info("{} memory limit: {}".format(nick, memory_limit))
 
 
