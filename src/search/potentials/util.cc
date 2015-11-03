@@ -3,6 +3,7 @@
 #include "potential_function.h"
 #include "potential_optimizer.h"
 
+#include "../heuristic.h"
 #include "../option_parser.h"
 #include "../sampling.h"
 #include "../successor_generator.h"

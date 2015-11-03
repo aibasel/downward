@@ -24,7 +24,7 @@ LandmarkCutHeuristic::~LandmarkCutHeuristic() {
 void LandmarkCutHeuristic::initialize() {
     cout << "Initializing landmark cut heuristic..." << endl;
     // TODO we don't need a pointer if we initialize in the constructor.
-    landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task);
+    landmark_generator = make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
 }
 
 int LandmarkCutHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -57,7 +57,7 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return new LandmarkCutHeuristic(opts);
 }

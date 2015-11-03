@@ -17,7 +17,7 @@ typedef IntPacker::Bin PackedStateBin;
 // states see the file state_registry.h.
 class GlobalState {
     friend class StateRegistry;
-    template <class Entry>
+    template<typename Entry>
     friend class PerStateInformation;
     // Values for vars are maintained in a packed state and accessed on demand.
     const PackedStateBin *buffer;

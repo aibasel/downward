@@ -10,8 +10,8 @@
 #include <vector>
 
 // TODO: Fix duplication with the other relaxation heuristics.
-class AbstractTask;
 struct RelaxedProposition;
+class TaskProxy;
 
 
 enum PropositionStatus {
@@ -49,9 +49,6 @@ struct RelaxedProposition {
 };
 
 class LandmarkCutLandmarks {
-    const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
-
     std::vector<RelaxedOperator> relaxed_operators;
     std::vector<std::vector<RelaxedProposition>> propositions;
     RelaxedProposition artificial_precondition;
@@ -89,7 +86,7 @@ public:
     using CostCallback = std::function<void (int)>;
     using LandmarkCallback = std::function<void (const Landmark &, int)>;
 
-    LandmarkCutLandmarks(const std::shared_ptr<AbstractTask> task);
+    LandmarkCutLandmarks(const TaskProxy &task_proxy);
     virtual ~LandmarkCutLandmarks();
 
     /*

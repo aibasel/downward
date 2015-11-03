@@ -3,6 +3,7 @@
 
 #include "system.h"
 
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -67,6 +68,15 @@ bool in_bounds(int index, const T &container) {
 template<class T>
 bool in_bounds(size_t index, const T &container) {
     return index < container.size();
+}
+
+template<typename T>
+T swap_and_pop_from_vector(std::vector<T> &vec, std::size_t pos) {
+    assert(in_bounds(pos, vec));
+    T element = vec[pos];
+    std::swap(vec[pos], vec.back());
+    vec.pop_back();
+    return element;
 }
 
 template<typename T>
