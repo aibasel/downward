@@ -212,7 +212,8 @@ void ShrinkBisimulation::compute_signatures(
     ::sort(signatures.begin(), signatures.end());
 }
 
-void ShrinkBisimulation::compute_abstraction(shared_ptr<FactoredTransitionSystem> fts,
+void ShrinkBisimulation::compute_abstraction(
+    shared_ptr<FactoredTransitionSystem> fts,
     int index,
     int target_size,
     StateEquivalenceRelation &equivalence_relation) const {
