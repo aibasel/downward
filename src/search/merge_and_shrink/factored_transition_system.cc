@@ -68,8 +68,8 @@ void FactoredTransitionSystem::discard_states(int index,
 }
 
 bool FactoredTransitionSystem::is_index_valid(int index) const {
-    return (transition_systems[index] && heuristic_representations[index]
-            && distances[index]);
+    return transition_systems[index] && heuristic_representations[index]
+           && distances[index];
 }
 
 bool FactoredTransitionSystem::is_component_valid(int index) const {
