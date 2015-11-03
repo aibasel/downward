@@ -90,8 +90,15 @@ void FactoredTransitionSystem::compute_distances_and_prune(int index) {
     assert(is_component_valid(index));
 }
 
-void FactoredTransitionSystem::label_reduction(pair<int, int> merge_indices) {
-    labels->reduce(merge_indices, transition_systems);
+void FactoredTransitionSystem::apply_label_reduction(
+    const vector<pair<int, vector<int>>> &label_mapping,
+    int combinable_index) {
+    for (size_t i = 0; i < transition_systems.size(); ++i) {
+        if (transition_systems[i]) {
+            transition_systems[i]->apply_label_reduction(
+                label_mapping, static_cast<int>(i) != combinable_index);
+        }
+    }
 }
 
 bool FactoredTransitionSystem::apply_abstraction(
