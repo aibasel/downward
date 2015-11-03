@@ -1,33 +1,6 @@
 #ifndef OPTION_PARSER_H
 #define OPTION_PARSER_H
 
-/*
-How to add support for a new type NT to the option parser:
-In this file, tell the parser how to parse NT:
-- Create a template specialization TokenParser<NT> (or overload
-  the ">>"-operator for NT).
-  See the existing specializations for examples.
-
-If you want classes of type NT to be included in the help output:
-In option_parser_util.h:
-- Create a template specialization DefaultValueNamer<NT>, or overload
-  the "<<"-operator for NT. Not necessary if your type will never have
-  a default value.
-- (optional) Create a template specialization for TypeNamer<NT> - you
-   don't have to do this, but it might print the typename in a
-   more readable way.
-In option_parser.cc:
-- add NT to the functions static void get_help(string k) and
-  static void get_full_help()
-
-If NT shall be predefinable:
-- See the functions predefine_lmgraph() and predefine_heuristic()
-  in option parser.cc for examples.
-  You will also need to extend OptionParser::parse_cmd_line(), and
-  should add an explanation to OptionParser::usage().
-*/
-
-#include "heuristic.h"
 #include "option_parser_util.h"
 
 #include <algorithm>
@@ -39,123 +12,52 @@ If NT shall be predefinable:
 #include <string>
 #include <vector>
 
-class AbstractTask;
-class LandmarkGraph;
-class MergeStrategy;
-template<class Entry>
-class OpenList;
+class Heuristic;
 class OptionParser;
+class ScalarEvaluator;
 class SearchEngine;
-class ShrinkStrategy;
-class Labels;
 
 /*
 The TokenParser<T> wraps functions to parse supported types T.
  */
 
-template <class T>
+template<typename T>
 class TokenParser {
 public:
-    //if T has no template specialization,
-    //try to parse it directly from the input string
     static inline T parse(OptionParser &p);
 };
 
+/*
+  We need to give specializations of the class for the cases we want
+  to *partially* specialize, i.e., give a specialization that is still
+  templated. For fully specialized cases (e.g. parsing "int"), it is
+  not necessary to specialize the class; we just need to specialize
+  the method.
+*/
 
-// int needs a specialization to allow "infinity".
-template <>
-class TokenParser<int> {
+template<typename T>
+class TokenParser<T *> {
 public:
-    static inline int parse(OptionParser &p);
+    static inline T *parse(OptionParser &p);
 };
 
-// double needs a specialization to allow "infinity".
-template <>
-class TokenParser<double> {
+template<typename T>
+class TokenParser<std::shared_ptr<T>> {
 public:
-    static inline double parse(OptionParser &p);
+    static inline std::shared_ptr<T> parse(OptionParser &p);
 };
 
-
-template <class Entry>
-class TokenParser<OpenList<Entry > *> {
-public:
-    static inline OpenList<Entry> *parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<Heuristic *> {
-public:
-    static inline Heuristic *parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<LandmarkGraph *> {
-public:
-    static inline LandmarkGraph *parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<ScalarEvaluator *> {
-public:
-    static inline ScalarEvaluator *parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<SearchEngine *> {
-public:
-    static inline SearchEngine *parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<Synergy *> {
-public:
-    static inline Synergy *parse(OptionParser &p);
-};
-
-
-template <>
-class TokenParser<ParseTree> {
-public:
-    static inline ParseTree parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<std::shared_ptr<MergeStrategy>> {
-public:
-    static inline std::shared_ptr<MergeStrategy>parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<std::shared_ptr<ShrinkStrategy>> {
-public:
-    static inline std::shared_ptr<ShrinkStrategy>parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<std::shared_ptr<Labels>> {
-public:
-    static inline std::shared_ptr<Labels>parse(OptionParser &p);
-};
-
-template <>
-class TokenParser<std::shared_ptr<AbstractTask>> {
-public:
-    static inline std::shared_ptr<AbstractTask> parse(OptionParser &p);
-};
-
-template <class T>
-class TokenParser<std::vector<T >> {
+template<typename T>
+class TokenParser<std::vector<T>> {
 public:
     static inline std::vector<T> parse(OptionParser &p);
 };
 
-
-
-/*The OptionParser stores a parse tree, and a Options.
-By calling addArgument, the parse tree is partially parsed,
-and the result is added to the Options.
- */
+/*
+  The OptionParser stores a parse tree and an Options object. By
+  calling addArgument, the parse tree is partially parsed, and the
+  result is added to the Options.
+*/
 class OptionParser {
     static int parse_int_arg(const std::string &name, const std::string &value);
     static SearchEngine *parse_cmd_line_aux(
@@ -177,7 +79,7 @@ public:
 
     //this function initiates parsing of T (the root node of parse_tree
     //will be parsed as T). Usually T=SearchEngine*, ScalarEvaluator* or LandmarkGraph*
-    template <class T>
+    template<typename T>
     T start_parsing();
 
     template<class T>
@@ -186,7 +88,7 @@ public:
 
     /* Add option with default value. Use def_val=NONE for optional
        parameters without default values. */
-    template <class T>
+    template<typename T>
     void add_option(
         std::string k, std::string h = "", std::string def_val = "",
         Bounds bounds = Bounds::unlimited());
@@ -195,7 +97,7 @@ public:
                          std::vector<std::string > enumeration,
                          std::string h = "", std::string def_val = "",
                          std::vector<std::string> enum_doc = std::vector<std::string>());
-    template <class T>
+    template<typename T>
     void add_list_option(std::string k,
                          std::string h = "", std::string def_val = "");
 
@@ -220,7 +122,7 @@ public:
     bool dry_run() const;
     bool help_mode() const;
 
-    template <class T>
+    template<typename T>
     static std::string to_str(T in) {
         std::ostringstream out;
         out << std::boolalpha << in;
@@ -242,7 +144,7 @@ private:
 
 //Definitions of OptionParsers template functions:
 
-template <class T>
+template<typename T>
 T OptionParser::start_parsing() {
     if (help_mode()) {
         DocStore::instance()->register_object(parse_tree.begin()->value,
@@ -264,7 +166,7 @@ template<>
 void OptionParser::check_bounds<double>(
     const std::string &key, const double &value, const Bounds &bounds);
 
-template <class T>
+template<typename T>
 void OptionParser::add_option(
     std::string k, std::string h, std::string default_value, Bounds bounds) {
     if (help_mode()) {
@@ -320,15 +222,21 @@ void OptionParser::add_option(
     }
 }
 
-template <class T>
+template<typename T>
 void OptionParser::add_list_option(
     std::string k, std::string h, std::string def_val) {
     add_option<std::vector<T>>(k, h, def_val);
 }
 
 //Definitions of TokenParser<T>:
-template <class T>
-T TokenParser<T>::parse(OptionParser &p) {
+
+/*
+  If T has no template specialization, try to parse it directly from
+  the input string. As of this writing, this default implementation is
+  used only for string and bool.
+*/
+template<typename T>
+inline T TokenParser<T>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     std::stringstream str_stream(pt->value);
     T x;
@@ -338,7 +246,9 @@ T TokenParser<T>::parse(OptionParser &p) {
     return x;
 }
 
-int TokenParser<int>::parse(OptionParser &p) {
+// int needs a specialization to allow "infinity".
+template<>
+inline int TokenParser<int>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (pt->value.compare("infinity") == 0) {
         return std::numeric_limits<int>::max();
@@ -352,7 +262,9 @@ int TokenParser<int>::parse(OptionParser &p) {
     }
 }
 
-double TokenParser<double>::parse(OptionParser &p) {
+// double needs a specialization to allow "infinity".
+template<>
+inline double TokenParser<double>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (pt->value.compare("infinity") == 0) {
         return std::numeric_limits<double>::infinity();
@@ -367,7 +279,7 @@ double TokenParser<double>::parse(OptionParser &p) {
 }
 
 //helper functions for the TokenParser-specializations
-template <class T>
+template<typename T>
 static T *lookup_in_registry(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Registry<T *>::instance()->contains(pt->value)) {
@@ -378,7 +290,7 @@ static T *lookup_in_registry(OptionParser &p) {
 }
 
 // TODO: This function will replace lookup_in_registry() once we no longer need to support raw pointers.
-template <class T>
+template<typename T>
 static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Registry<std::shared_ptr<T>>::instance()->contains(pt->value)) {
@@ -388,7 +300,7 @@ static std::shared_ptr<T> lookup_in_registry_shared(OptionParser &p) {
     return 0;
 }
 
-template <class T>
+template<typename T>
 static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Predefinitions<T *>::instance()->contains(pt->value)) {
@@ -399,30 +311,25 @@ static T *lookup_in_predefinitions(OptionParser &p, bool &found) {
     return 0;
 }
 
-template <class Entry>
-OpenList<Entry > *TokenParser<OpenList<Entry > *>::parse(OptionParser &p) {
-    return lookup_in_registry<OpenList<Entry >>(p);
+template<typename T>
+static std::shared_ptr<T> lookup_in_predefinitions_shared(OptionParser &p, bool &found) {
+    using TPtr = std::shared_ptr<T>;
+    ParseTree::iterator pt = p.get_parse_tree()->begin();
+    if (Predefinitions<TPtr>::instance()->contains(pt->value)) {
+        found = true;
+        return Predefinitions<TPtr>::instance()->get(pt->value);
+    }
+    found = false;
+    return nullptr;
 }
 
 
-Heuristic *TokenParser<Heuristic *>::parse(OptionParser &p) {
-    bool predefined;
-    Heuristic *result = lookup_in_predefinitions<Heuristic>(p, predefined);
-    if (predefined)
-        return result;
-    return lookup_in_registry<Heuristic>(p);
-}
-
-LandmarkGraph *TokenParser<LandmarkGraph *>::parse(OptionParser &p) {
-    bool predefined;
-    LandmarkGraph *result = lookup_in_predefinitions<LandmarkGraph>(p, predefined);
-    if (predefined)
-        return result;
-    return lookup_in_registry<LandmarkGraph>(p);
-}
-
-//TODO find a general way to handle parsing of superclasses (see also issue28)
-ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
+/*
+  TODO (post-issue586): We should decide how to handle subclasses more generally.
+  See http://issues.fast-downward.org/msg4686 (which is part of that issue).
+*/
+template<>
+inline ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     if (Predefinitions<Heuristic *>::instance()->contains(pt->value)) {
         return (ScalarEvaluator *)
@@ -437,38 +344,32 @@ ScalarEvaluator *TokenParser<ScalarEvaluator *>::parse(OptionParser &p) {
     return 0;
 }
 
-
-SearchEngine *TokenParser<SearchEngine *>::parse(OptionParser &p) {
-    return lookup_in_registry<SearchEngine>(p);
+// TODO: The following method can go away once we use shared pointers for all plugins.
+template<typename T>
+inline T *TokenParser<T *>::parse(OptionParser &p) {
+    bool predefined;
+    T *result = lookup_in_predefinitions<T>(p, predefined);
+    if (predefined)
+        return result;
+    return lookup_in_registry<T>(p);
 }
 
-std::shared_ptr<MergeStrategy>TokenParser<std::shared_ptr<MergeStrategy>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<MergeStrategy>(p);
+template<typename T>
+inline std::shared_ptr<T> TokenParser<std::shared_ptr<T>>::parse(OptionParser &p) {
+    bool predefined;
+    std::shared_ptr<T> result = lookup_in_predefinitions_shared<T>(p, predefined);
+    if (predefined)
+        return result;
+    return lookup_in_registry_shared<T>(p);
 }
 
-std::shared_ptr<ShrinkStrategy>TokenParser<std::shared_ptr<ShrinkStrategy>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<ShrinkStrategy>(p);
-}
-
-std::shared_ptr<Labels>TokenParser<std::shared_ptr<Labels>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<Labels>(p);
-}
-
-
-Synergy *TokenParser<Synergy *>::parse(OptionParser &p) {
-    return lookup_in_registry<Synergy>(p);
-}
-
-std::shared_ptr<AbstractTask> TokenParser<std::shared_ptr<AbstractTask>>::parse(OptionParser &p) {
-    return lookup_in_registry_shared<AbstractTask>(p);
-}
-
-ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
+template<>
+inline ParseTree TokenParser<ParseTree>::parse(OptionParser &p) {
     return *p.get_parse_tree();
 }
 
-template <class T>
-std::vector<T > TokenParser<std::vector<T >>::parse(OptionParser &p) {
+template<typename T>
+inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &p) {
     ParseTree::iterator pt = p.get_parse_tree()->begin();
     std::vector<T> results;
     if (pt->value.compare("list") != 0) {

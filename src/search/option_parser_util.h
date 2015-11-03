@@ -2,6 +2,11 @@
 #define OPTION_PARSER_UTIL_H
 
 #include "utilities.h"
+
+#include <boost/any.hpp>
+#include <tree.hh>
+#include <tree_util.hh>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -9,24 +14,17 @@
 #include <ios>
 #include <iostream>
 #include <sstream>
-#include <tree.hh>
-#include <tree_util.hh>
+#include <typeindex>
+#include <typeinfo>
 #include <utility>
-#include <boost/any.hpp>
 
-
-class MergeStrategy;
-class ShrinkStrategy;
-class Labels;
-class LandmarkGraph;
 class Heuristic;
-class ScalarEvaluator;
-class Synergy;
-class SearchEngine;
 class OptionParser;
+
+// TODO: The following forward declaration can hopefully go away eventually.
 template<class Entry>
 class OpenList;
-class AbstractTask;
+
 
 
 struct ParseNode {
@@ -104,7 +102,7 @@ public:
 
 
 //a registry<T> maps a string to a T-factory
-template <class T>
+template<typename T>
 class Registry {
 public:
     typedef T (*Factory)(OptionParser &);
@@ -113,8 +111,11 @@ public:
         return &instance_;
     }
 
-    void register_object(std::string k, Factory f) {
-        transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
+    void insert(const std::string &k, Factory f) {
+        if (registered.count(k)) {
+            std::cerr << "duplicate key in registry: " << k << std::endl;
+            exit_with(EXIT_CRITICAL_ERROR);
+        }
         registered[k] = f;
     }
 
@@ -140,10 +141,97 @@ private:
 };
 
 
+/*
+  The plugin type info class contains meta-information for a given
+  type of plugins (e.g. "SearchEngine" or "MergeStrategy").
+*/
+class PluginTypeInfo {
+    std::type_index type;
 
-//Predefinitions<T> maps strings to pointers to
-//already created Heuristics/LandmarkGraphs
-template <class T>
+    /*
+      The type name should be "user-friendly". It is for example used
+      as the name of the wiki page that documents this plugin type.
+      It follows wiki conventions (e.g. "Heuristic", "SearchEngine",
+      "ShrinkStrategy").
+    */
+    std::string type_name;
+
+    /*
+      General documentation for the plugin type. This is included at
+      the top of the wiki page for this plugin type.
+    */
+    std::string documentation;
+public:
+    PluginTypeInfo(const std::type_index &type,
+                   const std::string &type_name,
+                   const std::string &documentation)
+        : type(type),
+          type_name(type_name),
+          documentation(documentation) {
+    }
+
+    ~PluginTypeInfo() {
+    }
+
+    const std::type_index &get_type() const {
+        return type;
+    }
+
+    const std::string &get_type_name() const {
+        return type_name;
+    }
+
+    const std::string &get_documentation() const {
+        return documentation;
+    }
+};
+
+/*
+  The plugin type registry collects information about all plugin types
+  in use and gives access to the underlying information. This is used,
+  for example, to generate the complete help output.
+
+  Note that the information for individual plugins (rather than plugin
+  types) is organized in separate registries, one for each plugin
+  type. For example, there is a Registry<Heuristic> that organizes the
+  Heuristic plugins.
+*/
+
+// TODO: Reduce code duplication with Registry<T>.
+class PluginTypeRegistry {
+    using Map = std::map<std::type_index, PluginTypeInfo>;
+    PluginTypeRegistry() = default;
+    ~PluginTypeRegistry() = default;
+    Map registry;
+public:
+    static PluginTypeRegistry *instance();
+    void insert(const PluginTypeInfo &info);
+    const PluginTypeInfo &get(const std::type_index &type) const;
+
+    Map::const_iterator begin() const {
+        /*
+          TODO (post-issue586): We want plugin types sorted by name in
+          output. One way to achieve this is by defining the map's
+          comparison function to sort first by the name and then by
+          the type_index, but this is actually a bit difficult if the
+          name isn't part of the key. One option to work around this
+          is to use a set instead of a map as the internal data
+          structure here.
+        */
+        return registry.cbegin();
+    }
+
+    Map::const_iterator end() const {
+        return registry.cend();
+    }
+};
+
+
+/*
+  Predefinitions<T> maps strings to pointers to already created
+  plug-in objects.
+*/
+template<typename T>
 class Predefinitions {
 public:
     static Predefinitions<T> *instance() {
@@ -175,13 +263,44 @@ public:
     std::vector<Heuristic *> heuristics;
 };
 
-//TypeNamer prints out names of types.
-//There's something built in for this (typeid().name()), but the output is not always very readable
+/*
+  TypeNamer prints out names of types.
 
-template <class T>
+  There is no default implementation for Typenamer<T>::name(): the
+  template needs to be specialized for each type we want to support.
+  However, we have a generic version below for shared_ptr<...> types,
+  which are the ones we use for plugins.
+*/
+template<typename T>
 struct TypeNamer {
+    static std::string name();
+};
+
+/*
+  Note: for plug-in types, we use TypeNamer<shared_ptr<T>>::name().
+  One might be tempted to strip away the shared_ptr<...> here and use
+  TypeNamer<T>::name() instead, but this has the disadvantage that
+  typeid(T) requires T to be a complete type, while
+  typeid(shared_ptr<T>) also accepts incomplete types.
+*/
+template<typename T>
+struct TypeNamer<std::shared_ptr<T>> {
     static std::string name() {
-        return typeid(T()).name();
+        using TPtr = std::shared_ptr<T>;
+        const PluginTypeInfo &type_info =
+            PluginTypeRegistry::instance()->get(std::type_index(typeid(TPtr)));
+        return type_info.get_type_name();
+    }
+};
+
+/*
+  The following partial specialization for raw pointers is legacy code.
+  This can go away once all plugins use shared_ptr.
+*/
+template<typename T>
+struct TypeNamer<T *> {
+    static std::string name() {
+        return TypeNamer<std::shared_ptr<T>>::name();
     }
 };
 
@@ -214,132 +333,68 @@ struct TypeNamer<std::string> {
 };
 
 template <>
-struct TypeNamer<Heuristic *> {
-    static std::string name() {
-        return "Heuristic";
-    }
-};
-
-template <>
-struct TypeNamer<LandmarkGraph *> {
-    static std::string name() {
-        return "LandmarkGraph";
-    }
-};
-
-template <>
-struct TypeNamer<ScalarEvaluator *> {
-    static std::string name() {
-        return "ScalarEvaluator";
-    }
-};
-
-template <>
-struct TypeNamer<SearchEngine *> {
-    static std::string name() {
-        return "SearchEngine";
-    }
-};
-
-template <>
 struct TypeNamer<ParseTree> {
     static std::string name() {
         return "ParseTree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
     }
 };
 
-template <>
-struct TypeNamer<Synergy *> {
-    static std::string name() {
-        return "Synergy";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<MergeStrategy>> {
-    static std::string name() {
-        return "MergeStrategy";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<ShrinkStrategy>> {
-    static std::string name() {
-        return "ShrinkStrategy";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<Labels>> {
-    static std::string name() {
-        return "Labels";
-    }
-};
-
-template <>
-struct TypeNamer<std::shared_ptr<AbstractTask>> {
-    static std::string name() {
-        return "AbstractTask";
-    }
-};
-
-template <class Entry>
-struct TypeNamer<OpenList<Entry> *> {
+template<typename Entry>
+struct TypeNamer<std::shared_ptr<OpenList<Entry>>> {
     static std::string name() {
         return "OpenList";
     }
 };
 
-template <class T>
+template<typename T>
 struct TypeNamer<std::vector<T>> {
     static std::string name() {
         return "list of " + TypeNamer<T>::name();
     }
 };
 
-// TypeDocumenter allows to add global documentation to the types.
-// This cannot be done during parsing, because types are not parsed.
+/*
+  TypeDocumenter prints out the documentation synopsis for plug-in types.
 
-template <class T>
+  The same comments as for TypeNamer apply.
+*/
+template<typename T>
 struct TypeDocumenter {
     static std::string synopsis() {
+        /*
+          TODO (post-issue586): once all plugin types are pluginized, this
+          default implementation can go away (as in TypeNamer).
+        */
         return "";
     }
 };
 
-template <>
-struct TypeDocumenter<Heuristic *> {
+// See comments for TypeNamer.
+template<typename T>
+struct TypeDocumenter<std::shared_ptr<T>> {
     static std::string synopsis() {
-        return "A heuristic specification is either a newly created heuristic "
-               "instance or a heuristic that has been defined previously. "
-               "This page describes how one can specify a new heuristic instance. "
-               "For re-using heuristics, see OptionSyntax#Heuristic_Predefinitions.\n\n"
-               "Definitions of //properties// in the descriptions below:\n\n"
-               " * **admissible:** h(s) <= h*(s) for all states s\n"
-               " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
-               "connected to states s' by an action with cost c(s, s')\n"
-               " * **safe:** h(s) = infinity is only true for states "
-               "with h*(s) = infinity\n"
-               " * **preferred operators:** this heuristic identifies "
-               "preferred operators ";
+        using TPtr = std::shared_ptr<T>;
+        const PluginTypeInfo &type_info =
+            PluginTypeRegistry::instance()->get(std::type_index(typeid(TPtr)));
+        return type_info.get_documentation();
     }
 };
 
-template <>
-struct TypeDocumenter<LandmarkGraph *> {
+/*
+  The following partial specialization for raw pointers is legacy code.
+  This can go away once all plugins use shared_ptr.
+*/
+template<typename T>
+struct TypeDocumenter<T *> {
     static std::string synopsis() {
-        return "A landmark graph specification is either a newly created "
-               "instance or a landmark graph that has been defined previously. "
-               "This page describes how one can specify a new landmark graph instance. "
-               "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
-               "**Warning:** See OptionCaveats for using cost types with Landmarks";
+        return TypeDocumenter<std::shared_ptr<T>>::synopsis();
     }
 };
 
-template <>
-struct TypeDocumenter<ScalarEvaluator *> {
+template<typename Entry>
+struct TypeDocumenter<std::shared_ptr<OpenList<Entry>>> {
     static std::string synopsis() {
-        return "XXX TODO: description of the role of scalar evaluators and the connection to Heuristic";
+        return "";
     }
 };
 
@@ -396,12 +451,12 @@ public:
 
     std::map<std::string, boost::any> storage;
 
-    template <class T>
+    template<typename T>
     void set(std::string key, T value) {
         storage[key] = value;
     }
 
-    template <class T>
+    template<typename T>
     T get(std::string key) const {
         std::map<std::string, boost::any>::const_iterator it;
         it = storage.find(key);
@@ -422,7 +477,7 @@ public:
         }
     }
 
-    template <class T>
+    template<typename T>
     T get(std::string key, const T &default_value) const {
         if (storage.count(key))
             return get<T>(key);
@@ -430,7 +485,7 @@ public:
             return default_value;
     }
 
-    template <class T>
+    template<typename T>
     void verify_list_non_empty(std::string key) const {
         if (!help_mode) {
             std::vector<T> temp_vec = get<std::vector<T>>(key);
@@ -444,7 +499,7 @@ public:
         }
     }
 
-    template <class T>
+    template<typename T>
     std::vector<T> get_list(std::string key) const {
         return get<std::vector<T>>(key);
     }

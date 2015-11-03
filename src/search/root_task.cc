@@ -36,6 +36,10 @@ const string &RootTask::get_fact_name(int var, int value) const {
     return g_fact_names[var][value];
 }
 
+bool RootTask::are_facts_mutex(const std::pair<int, int> &fact1, const std::pair<int, int> &fact2) const {
+    return are_mutex(fact1, fact2);
+}
+
 int RootTask::get_operator_cost(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_cost();
 }

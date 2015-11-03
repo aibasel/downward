@@ -78,7 +78,7 @@ class LPSolver {
     bool is_initialized;
     bool is_solved;
     int num_permanent_constraints;
-    bool has_temporary_constraints;
+    bool has_temporary_constraints_;
 #ifdef USE_LP
     std::unique_ptr<OsiSolverInterface> lp_solver;
 #endif
@@ -150,6 +150,7 @@ public:
 
     LP_METHOD(int get_num_variables() const)
     LP_METHOD(int get_num_constraints() const)
+    LP_METHOD(int has_temporary_constraints() const)
     LP_METHOD(void print_statistics() const)
 };
 #ifdef __GNUG__
