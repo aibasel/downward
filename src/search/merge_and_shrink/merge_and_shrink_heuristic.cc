@@ -123,8 +123,6 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
 
             // Merging
             final_index = fts->merge(task_proxy, merge_index1, merge_index2);
-            fts->statistics(final_index, timer);
-
             /*
               NOTE: both the shrinking strategy classes and the construction of
               the composite require input transition systems to be solvable.
@@ -132,6 +130,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             if (!fts->is_solvable()) {
                 break;
             }
+            fts->statistics(final_index, timer);
 
             report_peak_memory_delta();
             cout << endl;
