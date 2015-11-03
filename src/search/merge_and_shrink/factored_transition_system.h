@@ -66,6 +66,8 @@ public:
 
     // Methods for the merge-and-shrink main loop
     void label_reduction(std::pair<int, int> merge_indices);
+    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
+                               int combinable_index);
     bool apply_abstraction(int index, const std::vector<std::forward_list<int>> &collapsed_groups);
     int merge(const TaskProxy &task_proxy, int index1, int index2);
     void finalize(int index = -1);
@@ -76,6 +78,16 @@ public:
     void statistics(int index, const Timer &timer) const;
     void dump(int index) const;
 
+    // the following methods are used by merge strategies
+    // TODO: maybe we need a more convient way of iterating over all
+    // transition systems or even over all combined transition systems/
+    // heuristic representations/distances tuples?
+    int get_size() const {
+        return transition_systems.size();
+    }
+    bool is_active(int index) const {
+        return is_index_valid(index);
+    }
     int get_num_labels() const; // used by merge_dfp
 };
 

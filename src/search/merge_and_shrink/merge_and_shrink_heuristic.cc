@@ -106,7 +106,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             fts->statistics(merge_index2, timer);
 
             if (labels->reduce_before_shrinking()) {
-                fts->label_reduction(merge_indices);
+                labels->reduce(merge_indices, fts);
             }
 
             // Shrinking
@@ -118,7 +118,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
                 fts->statistics(merge_index2, timer);
 
             if (labels->reduce_before_merging()) {
-                fts->label_reduction(merge_indices);
+                labels->reduce(merge_indices, fts);
             }
 
             // Merging
