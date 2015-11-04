@@ -58,12 +58,6 @@ public:
         return *distances[index];
     }
 
-    // temporary method while we're transitioning from the old code;
-    // TODO: remove
-    const std::vector<TransitionSystem *> &get_vector() {
-        return transition_systems;
-    }
-
     // Methods for the merge-and-shrink main loop
     void label_reduction(std::pair<int, int> merge_indices);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
