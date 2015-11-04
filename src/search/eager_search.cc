@@ -4,9 +4,7 @@
 #include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
-#include "open_lists/alternation_open_list.h" // TODO: Remove this
 #include "open_lists/open_list_factory.h"
-#include "open_lists/standard_scalar_open_list.h" // TODO: Remove this
 #include "open_lists/tiebreaking_open_list.h" // TODO: Remove this?
 #include "option_parser.h"
 #include "plugin.h"
@@ -374,7 +372,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         std::vector<ScalarEvaluator *> evals;
         evals.push_back(f_eval);
         evals.push_back(eval);
-        OpenList<StateID> *open = \
+        StateOpenList *open =
             new TieBreakingOpenList<StateID>(evals, false, false);
 
         opts.set("open", open);
