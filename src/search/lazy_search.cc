@@ -4,8 +4,8 @@
 #include "globals.h"
 #include "heuristic_cache.h"
 #include "heuristic.h"
-#include "open_lists/alternation_open_list.h" // TODO: Remove
-#include "open_lists/standard_scalar_open_list.h" // TODO: Remove
+#include "open_lists/open_list_factory.h"
+#include "option_parser.h"
 #include "plugin.h"
 #include "rng.h"
 #include "search_common.h"

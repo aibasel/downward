@@ -2,7 +2,7 @@
 #define SEARCH_COMMON_H
 
 /*
-  This module contains functions for createn open list factories used
+  This module contains functions for creating open list factories used
   by the search engines.
 
   TODO: Think about where this code should ideally live. One possible
