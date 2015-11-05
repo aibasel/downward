@@ -1,9 +1,12 @@
 #include "search_common.h"
 
+#include "g_evaluator.h"
 #include "open_lists/alternation_open_list.h"
 #include "open_lists/open_list_factory.h"
 #include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
 #include "option_parser_util.h"
+#include "sum_evaluator.h"
 
 #include <memory>
 
@@ -50,4 +53,20 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
         }
         return create_alternation_open_list_factory(subfactories, boost);
     }
+}
+
+pair<shared_ptr<OpenListFactory>, ScalarEvaluator *>
+create_astar_open_list_factory_and_f_eval(const Options &opts) {
+    GEvaluator *g = new GEvaluator();
+    ScalarEvaluator *h = opts.get<ScalarEvaluator *>("eval");
+    ScalarEvaluator *f = new SumEvaluator({g, h});
+    vector<ScalarEvaluator *> evals {f, h};
+
+    Options options;
+    options.set("evals", evals);
+    options.set("pref_only", false);
+    options.set("unsafe_pruning", false);
+    shared_ptr<OpenListFactory> open =
+        make_shared<TieBreakingOpenListFactory>(options);
+    return make_pair(open, f);
 }

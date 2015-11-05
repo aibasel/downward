@@ -361,22 +361,9 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
-        GEvaluator *g = new GEvaluator();
-        vector<ScalarEvaluator *> sum_evals;
-        sum_evals.push_back(g);
-        ScalarEvaluator *eval = opts.get<ScalarEvaluator *>("eval");
-        sum_evals.push_back(eval);
-        ScalarEvaluator *f_eval = new SumEvaluator(sum_evals);
-
-        // use eval for tiebreaking
-        std::vector<ScalarEvaluator *> evals;
-        evals.push_back(f_eval);
-        evals.push_back(eval);
-        StateOpenList *open =
-            new TieBreakingOpenList<StateID>(evals, false, false);
-
-        opts.set("open", open);
-        opts.set("f_eval", f_eval);
+        auto temp = create_astar_open_list_factory_and_f_eval(opts);
+        opts.set("open", temp.first);
+        opts.set("f_eval", temp.second);
         opts.set("reopen_closed", true);
         vector<Heuristic *> preferred_list;
         opts.set("preferred", preferred_list);
