@@ -52,4 +52,15 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
 extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
     const Options &opts);
 
+/*
+  Create open list factory and f_evaluator (used for displaying progress
+  statistics) for A* search.
+
+  The resulting open list factory produces a tie-breaking open list
+  ordered primarily on g + h and secondarily on h. Uses "eval" from
+  the passed-in Options object as the h evaluator.
+*/
+extern std::pair<std::shared_ptr<OpenListFactory>, ScalarEvaluator *>
+create_astar_open_list_factory_and_f_eval(const Options &opts);
+
 #endif
