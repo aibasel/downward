@@ -273,18 +273,16 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
         implied_precondition = set()
         for fact in condition.items():
             implied_precondition.update(implied_facts[fact])
-
+    prevail_and_pre = dict(condition)
     pre_post = []
     for var in effects_by_variable:
         orig_pre = condition.get(var, -1)
+        added_effect = False
         for post, eff_conditions in effects_by_variable[var].items():
             pre = orig_pre
             # if the effect does not change the variable value, we ignore it
             if pre == post:
                 continue
-            # otherwise the condition on var is not a prevail condition but a
-            # precondition, so we remove it from the prevail condition
-            condition.pop(var, -1)
             eff_condition_lists = [sorted(eff_cond.items())
                                    for eff_cond in eff_conditions]
             if ranges[var] == 2:
@@ -300,9 +298,25 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                     pre = 1 - post
             for eff_condition in eff_condition_lists:
                 # we do not need to represent a precondition as effect condition
-                if (var, pre) in eff_condition:
-                    eff_condition.remove((var, pre))
-                pre_post.append((var, pre, post, eff_condition))
+                # and we do not want to keep an effect whose condition contradicts
+                # a pre- or prevail condition
+                filtered_eff_condition = []
+                eff_condition_contradicts_precondition = False
+                for variable, value in eff_condition:
+                    if variable in prevail_and_pre:
+                        if prevail_and_pre[variable] != value:
+                            eff_condition_contradicts_precondition = True
+                            break
+                    else:
+                        filtered_eff_condition.append((variable, value))
+                if eff_condition_contradicts_precondition:
+                    continue
+                pre_post.append((var, pre, post, filtered_eff_condition))
+                added_effect = True
+        if added_effect:
+            # the condition on var is not a prevail condition but a
+            # precondition, so we remove it from the prevail condition
+            condition.pop(var, -1)
     if not pre_post:  # operator is noop
         return None
     prevail = list(condition.items())
