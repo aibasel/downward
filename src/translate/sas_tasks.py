@@ -282,7 +282,8 @@ class SASOperator:
            all referring to different variables)
         2. The pre_post list is sorted by (var, pre, post, cond), and the
            same (var, pre, post, cond) 4-tuple is not repeated.
-        3. Effect conditions are valid conditions.
+        3. Effect conditions are valid conditions and do not contain variables
+           from the pre- or prevail conditions.
         4. Variables occurring in pre_post rules do not have a prevail
            condition.
         5. Preconditions in pre_post are -1 or valid facts.
@@ -294,8 +295,6 @@ class SASOperator:
         10. Costs are non-negative integers.
 
         Odd things that are *not* illegal:
-        - Effect conditions that contradict a precondition or prevail
-          condition are permitted.
         - The effect in a pre_post rule may be identical to the
           precondition or to an effect condition of that effect.
 
@@ -338,6 +337,10 @@ class SASOperator:
                 assert pre_values[var] == pre
             else:
                 pre_values[var] = pre
+        for var, pre, post, cond in self.pre_post:
+            for cvar, cval in cond:
+                assert(cvar not in pre_values)
+                assert(cvar not in prevail_vars)
         assert self.pre_post
         assert self.cost >= 0 and self.cost == int(self.cost)
 
