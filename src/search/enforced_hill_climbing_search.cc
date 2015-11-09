@@ -2,8 +2,8 @@
 
 #include "g_evaluator.h"
 #include "global_operator.h"
-#include "open_lists/standard_scalar_open_list.h" // TODO: Remove
-#include "open_lists/tiebreaking_open_list.h" // TODO: Remove
+#include "open_lists/standard_scalar_open_list.h"
+#include "open_lists/tiebreaking_open_list.h"
 #include "plugin.h"
 #include "pref_evaluator.h"
 #include "successor_generator.h"
@@ -11,10 +11,52 @@
 
 using namespace std;
 
+
+static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
+    bool use_preferred, PreferredUsage preferred_usage) {
+    /*
+      TODO: this g-evaluator should probably be set up to always
+      ignore costs since EHC is supposed to implement a breadth-first
+      search, not a uniform-cost search. So this seems to be a bug.
+    */
+    ScalarEvaluator *g_evaluator = new GEvaluator;
+
+    if (!use_preferred ||
+        preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
+        /*
+          TODO: Reduce code duplication with search_common.cc,
+          function create_standard_scalar_open_list_factory.
+
+          It would probably make sense to add a factory function or
+          constructor that encapsulates this work to the standard
+          scalar open list code.
+        */
+        Options options;
+        options.set("eval", g_evaluator);
+        options.set("pref_only", false);
+        return make_shared<StandardScalarOpenListFactory>(options);
+    } else {
+        /*
+          TODO: Reduce code duplication with search_common.cc,
+          function create_astar_open_list_factory_and_f_eval.
+
+          It would probably make sense to add a factory function or
+          constructor that encapsulates this work to the tie-breaking
+          open list code.
+        */
+        vector<ScalarEvaluator *> evals {g_evaluator, new PrefEvaluator};
+        Options options;
+        options.set("evals", evals);
+        options.set("pref_only", false);
+        options.set("unsafe_pruning", true);
+        return make_shared<TieBreakingOpenListFactory>(options);
+    }
+}
+
+
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const Options &opts)
     : SearchEngine(opts),
-      g_evaluator(new GEvaluator()),
       heuristic(opts.get<Heuristic *>("h")),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),
@@ -29,19 +71,11 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
                          preferred_operator_heuristics.end(), heuristic) !=
                     preferred_operator_heuristics.end();
 
-    if (!use_preferred || preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
-        open_list = new StandardScalarOpenList<EdgeOpenListEntry>(g_evaluator, false);
-    } else {
-        vector<ScalarEvaluator *> evals {
-            g_evaluator, new PrefEvaluator
-        };
-        open_list = new TieBreakingOpenList<EdgeOpenListEntry>(evals, false, true);
-    }
+    open_list = create_ehc_open_list_factory(
+        use_preferred, preferred_usage)->create_edge_open_list();
 }
 
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
-    delete g_evaluator;
-    delete open_list;
 }
 
 void EnforcedHillClimbingSearch::reach_state(

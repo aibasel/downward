@@ -7,11 +7,11 @@
 #include "open_lists/open_list.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
-class GEvaluator;
 class Options;
 
 enum class PreferredUsage {
@@ -35,8 +35,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
         const GlobalState &state);
     SearchStatus ehc();
 
-    EdgeOpenList *open_list;
-    GEvaluator *g_evaluator;
+    std::unique_ptr<EdgeOpenList> open_list;
 
     Heuristic *heuristic;
     std::vector<Heuristic *> preferred_operator_heuristics;
