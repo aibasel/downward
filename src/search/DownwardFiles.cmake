@@ -183,6 +183,7 @@ fast_downward_plugin(
     SOURCES
         lp_internals.cc
         lp_solver.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
