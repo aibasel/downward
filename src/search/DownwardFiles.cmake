@@ -187,6 +187,7 @@ fast_downward_plugin(
     HELP "The base class for relaxation heuristics"
     SOURCES
         relaxation_heuristic.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
