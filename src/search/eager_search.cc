@@ -1,16 +1,13 @@
 #include "eager_search.h"
 
 #include "evaluation_context.h"
-#include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
 #include "open_lists/open_list_factory.h"
-#include "open_lists/tiebreaking_open_list.h" // TODO: Remove this?
 #include "option_parser.h"
 #include "plugin.h"
 #include "search_common.h"
 #include "successor_generator.h"
-#include "sum_evaluator.h"
 #include "utilities.h"
 
 #include <cassert>
