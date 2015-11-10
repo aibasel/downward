@@ -262,8 +262,11 @@ static SearchEngine *_parse(OptionParser &parser) {
     LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
         engine = new LazySearch(opts);
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
+        /*
+          TODO: The following two lines look fishy. If they serve a
+          purpose, shouldn't the constructor take care of this?
+        */
+        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -327,13 +330,13 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     if (!parser.dry_run()) {
         opts.set("open", create_greedy_open_list_factory(opts));
         engine = new LazySearch(opts);
-        vector<Heuristic *> preferred_list = opts.get<vector<Heuristic *> >("preferred");
+        // TODO: The following two lines look fishy. See similar comment in _parse.
+        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
 }
 
-#if false
 static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
     parser.document_synopsis(
         "(Weighted) A* search (lazy)",
@@ -395,54 +398,17 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
-    LazySearch *engine = 0;
+    LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
-        vector<ScalarEvaluator *> evals = opts.get_list<ScalarEvaluator *>("evals");
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        vector<OpenList<EdgeOpenListEntry> *> inner_lists;
-        for (size_t i = 0; i < evals.size(); ++i) {
-            GEvaluator *g = new GEvaluator();
-            vector<ScalarEvaluator *> sum_evals;
-            sum_evals.push_back(g);
-            if (opts.get<int>("w") == 1) {
-                sum_evals.push_back(evals[i]);
-            } else {
-                WeightedEvaluator *w = new WeightedEvaluator(
-                    evals[i],
-                    opts.get<int>("w"));
-                sum_evals.push_back(w);
-            }
-            SumEvaluator *f_eval = new SumEvaluator(sum_evals);
-
-            inner_lists.push_back(
-                new StandardScalarOpenList<EdgeOpenListEntry>(f_eval, false));
-
-            if (!preferred_list.empty()) {
-                inner_lists.push_back(
-                    new StandardScalarOpenList<EdgeOpenListEntry>(f_eval,
-                                                                  true));
-            }
-        }
-        OpenList<EdgeOpenListEntry> *open;
-        if (inner_lists.size() == 1) {
-            open = inner_lists[0];
-        } else {
-            open = new AlternationOpenList<EdgeOpenListEntry>(
-                inner_lists, opts.get<int>("boost"));
-        }
-
-        opts.set("open", open);
-
+        opts.set("open", create_wastar_open_list_factory(opts));
         engine = new LazySearch(opts);
+        // TODO: The following two lines look fishy. See similar comment in _parse.
+        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
 }
-#endif
 
 static Plugin<SearchEngine> _plugin("lazy", _parse);
 static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_greedy);
-#if false
 static Plugin<SearchEngine> _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);
-#endif
