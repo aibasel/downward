@@ -1,8 +1,6 @@
 #include "lazy_search.h"
 
-#include "g_evaluator.h"
 #include "globals.h"
-#include "heuristic_cache.h"
 #include "heuristic.h"
 #include "open_lists/open_list_factory.h"
 #include "option_parser.h"
@@ -10,8 +8,6 @@
 #include "rng.h"
 #include "search_common.h"
 #include "successor_generator.h"
-#include "sum_evaluator.h"
-#include "weighted_evaluator.h"
 
 #include <algorithm>
 #include <limits>
