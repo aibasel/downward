@@ -188,7 +188,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         // d: distance from initial node in this EHC phase
         int d = parent_node.get_g() - current_phase_start_g +
-            get_adjusted_cost(*last_op);
+                get_adjusted_cost(*last_op);
 
         if (parent_node.get_real_g() + last_op->get_cost() >= bound)
             continue;

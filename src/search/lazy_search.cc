@@ -24,7 +24,7 @@ static const int DEFAULT_LAZY_BOOST = 1000;
 
 LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
-      open_list(opts.get<shared_ptr<OpenListFactory> >("open")->
+      open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_edge_open_list()),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       randomize_successors(opts.get<bool>("randomize_successors")),
@@ -250,7 +250,7 @@ static void _add_succ_order_options(OptionParser &parser) {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
-    parser.add_option<shared_ptr<OpenListFactory> >("open", "open list");
+    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(
         "preferred",

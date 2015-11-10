@@ -14,9 +14,8 @@ using namespace std;
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
     : boost_amount(opts.get<int>("boost")) {
-
-    vector<shared_ptr<OpenListFactory> > open_list_factories(
-        opts.get_list<shared_ptr<OpenListFactory> >("sublists"));
+    vector<shared_ptr<OpenListFactory>> open_list_factories(
+        opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
     open_lists.reserve(open_list_factories.size());
     for (const auto &factory : open_list_factories)
         open_lists.push_back(factory->create_open_list<Entry>());
@@ -123,18 +122,18 @@ AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
 
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<AlternationOpenList<StateOpenListEntry> >(options);
+    return make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<AlternationOpenList<EdgeOpenListEntry> >(options);
+    return make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis("Alternation open list",
                              "alternates between several open lists.");
-    parser.add_list_option<shared_ptr<OpenListFactory> >(
+    parser.add_list_option<shared_ptr<OpenListFactory>>(
         "sublists",
         "open lists between which this one alternates");
     parser.add_option<int>(
@@ -144,7 +143,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "0");
 
     Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<OpenListFactory> >("sublists");
+    opts.verify_list_non_empty<shared_ptr<OpenListFactory>>("sublists");
     if (parser.dry_run())
         return nullptr;
     else
