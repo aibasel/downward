@@ -24,7 +24,7 @@ public:
       AlternationOpenList.
     */
     template<typename T>
-    std::unique_ptr<OpenList<T> > create_open_list();
+    std::unique_ptr<OpenList<T>> create_open_list();
 };
 
 #endif

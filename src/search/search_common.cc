@@ -23,7 +23,7 @@ shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
 }
 
 static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
-    const vector<shared_ptr<OpenListFactory> > &subfactories, int boost) {
+    const vector<shared_ptr<OpenListFactory>> &subfactories, int boost) {
     Options options;
     options.set("sublists", subfactories);
     options.set("boost", boost);
@@ -41,7 +41,7 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
     if (evals.size() == 1 && preferred_heuristics.empty()) {
         return create_standard_scalar_open_list_factory(evals[0], false);
     } else {
-        vector<shared_ptr<OpenListFactory> > subfactories;
+        vector<shared_ptr<OpenListFactory>> subfactories;
         for (ScalarEvaluator *evaluator : evals) {
             subfactories.push_back(
                 create_standard_scalar_open_list_factory(

@@ -13,7 +13,7 @@
 
 template<class Entry>
 class AlternationOpenList : public OpenList<Entry> {
-    std::vector<std::unique_ptr<OpenList<Entry> > > open_lists;
+    std::vector<std::unique_ptr<OpenList<Entry>>> open_lists;
     std::vector<int> priorities;
 
     const int boost_amount;
