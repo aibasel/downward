@@ -7,6 +7,7 @@
 #include "open_lists/tiebreaking_open_list.h"
 #include "option_parser_util.h"
 #include "sum_evaluator.h"
+#include "weighted_evaluator.h"
 
 #include <memory>
 
@@ -29,15 +30,15 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
     return make_shared<AlternationOpenListFactory>(options);
 }
 
-shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-    const Options &options) {
-    vector<ScalarEvaluator *> evals =
-        options.get_list<ScalarEvaluator *>("evals");
-    vector<Heuristic *> preferred_list =
-        options.get_list<Heuristic *>("preferred");
-    int boost = options.get<int>("boost");
-
-    if (evals.size() == 1 && preferred_list.empty()) {
+/*
+  Helper function for common code of create_greedy_open_list_factory
+  and create_wastar_open_list_factory.
+*/
+static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
+    const vector<ScalarEvaluator *> &evals,
+    const vector<Heuristic *> &preferred_heuristics,
+    int boost) {
+    if (evals.size() == 1 && preferred_heuristics.empty()) {
         return create_standard_scalar_open_list_factory(evals[0], false);
     } else {
         vector<shared_ptr<OpenListFactory> > subfactories;
@@ -45,7 +46,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
             subfactories.push_back(
                 create_standard_scalar_open_list_factory(
                     evaluator, false));
-            if (!preferred_list.empty()) {
+            if (!preferred_heuristics.empty()) {
                 subfactories.push_back(
                     create_standard_scalar_open_list_factory(
                         evaluator, true));
@@ -53,6 +54,54 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
         }
         return create_alternation_open_list_factory(subfactories, boost);
     }
+}
+
+shared_ptr<OpenListFactory> create_greedy_open_list_factory(
+    const Options &options) {
+    return create_alternation_open_list_factory_aux(
+        options.get_list<ScalarEvaluator *>("evals"),
+        options.get_list<Heuristic *>("preferred"),
+        options.get<int>("boost"));
+}
+
+/*
+  Helper function for creating a single g + w * h evaluator
+  for weighted A*-style search.
+
+  If w = 1, we do not introduce an unnecessary weighted evaluator:
+  we use g + h instead of g + 1 * h.
+
+  If w = 0, we omit the heuristic altogether:
+  we use g instead of g + 0 * h.
+*/
+static ScalarEvaluator *create_wastar_eval(
+    GEvaluator *g_eval, int w, ScalarEvaluator *h_eval) {
+    if (w == 0)
+        return g_eval;
+    ScalarEvaluator *w_h_eval = nullptr;
+    if (w == 1)
+        w_h_eval = h_eval;
+    else
+        w_h_eval = new WeightedEvaluator(h_eval, w);
+    return new SumEvaluator({g_eval, w_h_eval});
+}
+
+shared_ptr<OpenListFactory> create_wastar_open_list_factory(
+    const Options &options) {
+    vector<ScalarEvaluator *> base_evals =
+        options.get_list<ScalarEvaluator *>("evals");
+    int w = options.get<int>("w");
+
+    GEvaluator *g_eval = new GEvaluator;
+    vector<ScalarEvaluator *> f_evals;
+    f_evals.reserve(base_evals.size());
+    for (ScalarEvaluator *eval : base_evals)
+        f_evals.push_back(create_wastar_eval(g_eval, w, eval));
+
+    return create_alternation_open_list_factory_aux(
+        f_evals,
+        options.get_list<Heuristic *>("preferred"),
+        options.get<int>("boost"));
 }
 
 pair<shared_ptr<OpenListFactory>, ScalarEvaluator *>

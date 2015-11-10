@@ -29,7 +29,6 @@ class ScalarEvaluator;
   Create a standard scalar open list factory with the given "eval" and
   "pref_only" options.
 */
-
 extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     ScalarEvaluator *eval, bool pref_only);
 
@@ -48,8 +47,21 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
   for the alternation open list, then that sublist is returned
   directly.
 */
-
 extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
+    const Options &opts);
+
+/*
+  Create open list factory for the lazy_wastar plugin.
+
+  Uses "evals", "preferred", "boost" and "w" from the passed-in
+  Options object to construct an open list factory of the appropriate
+  type.
+
+  This works essentially the same way as parse_greedy (see
+  documentation there), except that the open lists use evalators based
+  on g + w * h rather than using h directly.
+*/
+extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     const Options &opts);
 
 /*
