@@ -6,22 +6,22 @@ from downward import suites
 import common_setup
 
 
-REVS = ["issue546-base", "issue546-v1"]
-LIMITS = {"search_time": 1800}
+# Use the latest merged revision from "default" branch. The first
+# revision on issue481 branch doesn't use CMake.
+REVS = ["issue481-base", "issue481"]
 SUITE = suites.suite_satisficing_with_ipc11()
 
 CONFIGS = {
-    "seq_sat_fdss_1": ["--alias", "seq-sat-fdss-1"],
-    "seq_sat_fdss_2": ["--alias", "seq-sat-fdss-2"],
+    "ff": ["--search", "eager_greedy(ff())"],
 }
 
 exp = common_setup.IssueExperiment(
-    search_revisions=REVS,
+    revisions=REVS,
     configs=CONFIGS,
     suite=SUITE,
-    limits=LIMITS,
-    )
-exp.add_comparison_table_step(
-    attributes=common_setup.IssueExperiment.PORTFOLIO_ATTRIBUTES)
+)
+exp.add_absolute_report_step()
+exp.add_comparison_table_step()
+exp.add_scatter_plot_step()
 
 exp()
