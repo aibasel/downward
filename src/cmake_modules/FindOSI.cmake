@@ -101,7 +101,7 @@ endforeach()
 # Clp component
 if(OSI_Clp_LIBRARIES)
     find_package(Clp)
-    if (CPLEX_FOUND)
+    if (CLP_FOUND)
         list(APPEND OSI_Clp_LIBRARIES ${CLP_LIBRARIES})
         list(APPEND OSI_Clp_INCLUDE_DIRS ${CLP_INCLUDE_DIRS})
         set(OSI_Clp_FOUND TRUE)
