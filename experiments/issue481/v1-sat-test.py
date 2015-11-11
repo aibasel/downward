@@ -15,6 +15,11 @@ CONFIGS = [
     # IssueConfig("lama", [], driver_options=["--alias", "seq-sat-lama-2011"]),
 ]
 
+# TODO: Add email notification? Needs a change to common_setup.py
+# where the MaiaEnvironment is constructed. See:
+#
+# https://lab.readthedocs.org/en/latest/lab.experiment.html#lab.environments.MaiaEnvironment
+
 exp = IssueExperiment(
     revisions=REVS,
     configs=CONFIGS,
