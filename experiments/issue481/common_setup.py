@@ -8,11 +8,11 @@ import sys
 from lab.environments import LocalEnvironment, MaiaEnvironment
 from lab.experiment import ARGPARSER
 from lab.steps import Step
+from lab import tools
 
-from downward.experiments import DownwardExperiment, _get_rev_nick
-from downward.checkouts import Translator, Preprocessor, Planner
+from downward.experiment import FastDownwardExperiment
 from downward.reports.absolute import AbsoluteReport
-from downward.reports.compare import CompareRevisionsReport
+from downward.reports.compare import CompareConfigsReport
 from downward.reports.scatter import ScatterPlotReport
 
 
@@ -31,8 +31,7 @@ ARGS = parse_args()
 
 def get_script():
     """Get file name of main script."""
-    import __main__
-    return __main__.__file__
+    return tools.get_script_path()
 
 
 def get_script_dir():
@@ -78,18 +77,23 @@ def get_repo_base():
 
 def is_running_on_cluster():
     node = platform.node()
-    return ("cluster" in node or
-            node.startswith("gkigrid") or
-            node in ["habakuk", "turtur"])
+    return (
+        "cluster" in node
+        or node.startswith("gkigrid") or
+        node in ["habakuk", "turtur"])
 
 
 def is_test_run():
-    return ARGS.test_run == "yes" or (ARGS.test_run == "auto" and
-                                      not is_running_on_cluster())
+    return ARGS.test_run == "yes" or (
+        ARGS.test_run == "auto" and not is_running_on_cluster())
 
 
-class IssueExperiment(DownwardExperiment):
-    """Wrapper for DownwardExperiment with a few convenience features."""
+def get_algo_nick(revision, config_nick):
+    return "{revision}-{config_nick}".format(**locals())
+
+
+class IssueExperiment(FastDownwardExperiment):
+    """Wrapper for FastDownwardExperiment with a few convenience features."""
 
     DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
 
@@ -132,15 +136,21 @@ class IssueExperiment(DownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(self, configs, suite, grid_priority=None, path=None,
-                 repo=None, revisions=None, search_revisions=None,
-                 test_suite=None, **kwargs):
+    def __init__(self, revisions, configs, suite, grid_priority=None,
+                 path=None, test_suite=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
+
+        If *revisions* is specified, it should be a non-empty
+        list of revisions, which specify which planner versions to use
+        in the experiment. The same versions are used for translator,
+        preprocessor and search. ::
+
+            IssueExperiment(revisions=["issue123", "4b3d581643"], ...)
 
         *configs* must be a non-empty dict of {nick: cmdline} pairs
         that sets the planner configurations to test. ::
 
-            IssueExperiment(configs={
+            IssueExperiment(..., configs={
                 "lmcut": ["--search", "astar(lmcut())"],
                 "ipdb":  ["--search", "astar(ipdb())"]})
 
@@ -149,18 +159,18 @@ class IssueExperiment(DownwardExperiment):
         tasks. The downward.suites module has many predefined
         suites. ::
 
-            IssueExperiment(suite=["grid", "gripper:prob01.pddl"])
+            IssueExperiment(..., suite=["grid", "gripper:prob01.pddl"])
 
             from downward import suites
-            IssueExperiment(suite=suites.suite_all())
-            IssueExperiment(suite=suites.suite_satisficing_with_ipc11())
-            IssueExperiment(suite=suites.suite_optimal())
+            IssueExperiment(..., suite=suites.suite_all())
+            IssueExperiment(..., suite=suites.suite_satisficing_with_ipc11())
+            IssueExperiment(..., suite=suites.suite_optimal())
 
         Use *grid_priority* to set the job priority for cluster
         experiments. It must be in the range [-1023, 0] where 0 is the
         highest priority. By default the priority is 0. ::
 
-            IssueExperiment(grid_priority=-500)
+            IssueExperiment(..., grid_priority=-500)
 
         If *path* is specified, it must be the path to where the
         experiment should be built (e.g.
@@ -171,38 +181,10 @@ class IssueExperiment(DownwardExperiment):
             script = experiments/issue123/exp01.py -->
             path = experiments/issue123/data/issue123-exp01/
 
-        If *repo* is specified, it must be the path to the root of a
-        local Fast Downward repository. If omitted, the repository
-        is derived automatically from the main script's path. Example::
-
-            script = /path/to/fd-repo/experiments/issue123/exp01.py -->
-            repo = /path/to/fd-repo
-
-        If *revisions* is specified, it should be a non-empty
-        list of revisions, which specify which planner versions to use
-        in the experiment. The same versions are used for translator,
-        preprocessor and search. ::
-
-            IssueExperiment(revisions=["issue123", "4b3d581643"])
-
-        If *search_revisions* is specified, it should be a non-empty
-        list of revisions, which specify which search component
-        versions to use in the experiment. All runs use the
-        translator and preprocessor component of the first
-        revision. ::
-
-            IssueExperiment(search_revisions=["default", "issue123"])
-
-        If you really need to specify the (translator, preprocessor,
-        planner) triples manually, use the *combinations* parameter
-        from the base class (might be deprecated soon). The options
-        *revisions*, *search_revisions* and *combinations* can be
-        freely mixed, but at least one of them must be given.
-
         Specify *test_suite* to set the benchmarks for experiment test
         runs. By default the first gripper task is used.
 
-            IssueExperiment(test_suite=["depot:pfile1", "tpp:p01.pddl"])
+            IssueExperiment(..., test_suite=["depot:pfile1", "tpp:p01.pddl"])
 
         """
 
@@ -212,48 +194,20 @@ class IssueExperiment(DownwardExperiment):
         elif "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
 
-        if path is None:
-            path = get_data_dir()
+        path = path or get_data_dir()
 
-        if repo is None:
-            repo = get_repo_base()
+        FastDownwardExperiment.__init__(self, path=path, **kwargs)
 
-        kwargs.setdefault("combinations", [])
+        self._revisions = revisions
+        self._configs = configs
 
-        if not any([revisions, search_revisions, kwargs["combinations"]]):
-            raise ValueError('At least one of "revisions", "search_revisions" '
-                             'or "combinations" must be given')
+        repo = get_repo_base()
+        for rev in revisions:
+            for config_nick, config in sorted(configs.items()):
+                self.add_algorithm(
+                    get_algo_nick(rev, config_nick), repo, rev, config)
 
-        if revisions:
-            kwargs["combinations"].extend([
-                (Translator(repo, rev),
-                 Preprocessor(repo, rev),
-                 Planner(repo, rev))
-                for rev in revisions])
-
-        if search_revisions:
-            base_rev = search_revisions[0]
-            # Use the same nick for all parts to get short revision nick.
-            kwargs["combinations"].extend([
-                (Translator(repo, base_rev, nick=rev),
-                 Preprocessor(repo, base_rev, nick=rev),
-                 Planner(repo, rev, nick=rev))
-                for rev in search_revisions])
-
-        DownwardExperiment.__init__(self, path=path, repo=repo, **kwargs)
-
-        self._config_nicks = []
-        for nick, config in configs.items():
-            self.add_config(nick, config)
-
-        self.add_suite(suite)
-
-    @property
-    def revision_nicks(self):
-        # TODO: Once the add_algorithm() API is available we should get
-        # rid of the call to _get_rev_nick() and avoid inspecting the
-        # list of combinations by setting and saving the algorithm nicks.
-        return [_get_rev_nick(*combo) for combo in self.combinations]
+        self.add_suite(os.path.join(repo, "benchmarks"), suite)
 
     @classmethod
     def _is_portfolio(cls, config_nick):
@@ -265,10 +219,6 @@ class IssueExperiment(DownwardExperiment):
             return [attr for attr in attributes
                     if attr in cls.PORTFOLIO_ATTRIBUTES]
         return attributes
-
-    def add_config(self, nick, config, timeout=None):
-        DownwardExperiment.add_config(self, nick, config, timeout=timeout)
-        self._config_nicks.append(nick)
 
     def add_absolute_report_step(self, **kwargs):
         """Add step that makes an absolute report.
@@ -294,13 +244,13 @@ class IssueExperiment(DownwardExperiment):
         """Add a step that makes pairwise revision comparisons.
 
         Create comparative reports for all pairs of Fast Downward
-        revision triples. Each report pairs up the runs of the same
-        config and lists the two absolute attribute values and their
-        difference for all attributes in kwargs["attributes"].
+        revisions. Each report pairs up the runs of the same config and
+        lists the two absolute attribute values and their difference
+        for all attributes in kwargs["attributes"].
 
-        All *kwargs* will be passed to the CompareRevisionsReport
-        class. If the keyword argument *attributes* is not
-        specified, a default list of attributes is used. ::
+        All *kwargs* will be passed to the CompareConfigsReport class.
+        If the keyword argument *attributes* is not specified, a
+        default list of attributes is used. ::
 
             exp.add_comparison_table_step(attributes=["coverage"])
 
@@ -308,11 +258,17 @@ class IssueExperiment(DownwardExperiment):
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
 
         def make_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self.revision_nicks, 2):
-                report = CompareRevisionsReport(rev1, rev2, **kwargs)
-                outfile = os.path.join(self.eval_dir,
-                                       "%s-%s-%s-compare.html" %
-                                       (self.name, rev1, rev2))
+            for rev1, rev2 in itertools.combinations(self._revisions, 2):
+                compared_configs = []
+                for config_nick, config in sorted(self._configs.items()):
+                    compared_configs.append((
+                        "{rev1}-{config_nick}".format(**locals()),
+                        "{rev2}-{config_nick}".format(**locals()),
+                        "Diff ({config_nick})".format(**locals())))
+                report = CompareConfigsReport(compared_configs, **kwargs)
+                outfile = os.path.join(
+                    self.eval_dir, "%s-%s-%s-compare.html" %
+                        (self.name, rev1, rev2))
                 report(self.eval_dir, outfile)
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
@@ -321,7 +277,7 @@ class IssueExperiment(DownwardExperiment):
         """Add a step that creates scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
-        configuration and revision pair. If *attributes* is not
+        configuration and revisions pair. If *attributes* is not
         specified, a list of common scatter plot attributes is used.
         For portfolios all attributes except "cost", "coverage" and
         "plan_length" will be ignored. ::
@@ -343,13 +299,13 @@ class IssueExperiment(DownwardExperiment):
                 attributes=[attribute],
                 get_category=lambda run1, run2: run1["domain"],
                 legend_location=(1.3, 0.5))
-            report(self.eval_dir,
-                   os.path.join(scatter_dir, rev1 + "-" + rev2, name))
+            report(
+                self.eval_dir,
+                os.path.join(scatter_dir, rev1 + "-" + rev2, name))
 
         def make_scatter_plots():
-            for config_nick in self._config_nicks:
-                for rev1, rev2 in itertools.combinations(
-                        self.revision_nicks, 2):
+            for config_nick in sorted(self._configs):
+                for rev1, rev2 in itertools.combinations(self._revisions, 2):
                     for attribute in self.get_supported_attributes(
                             config_nick, attributes):
                         make_scatter_plot(config_nick, rev1, rev2, attribute)
