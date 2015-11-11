@@ -183,29 +183,6 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_suite(benchmarks_dir, suite)
         self.search_parsers = []
 
-    # TODO: this method adds all search parsers. See next method.
-    def _add_runs(self):
-        FastDownwardExperiment._add_runs(self)
-        for run in self.runs:
-            for parser in self.search_parsers:
-                run.add_command(parser, [parser])
-
-    # TODO: copied adapted from downward/experiment. This method should
-    # be removed when FastDownwardExperiment supports adding search parsers.
-    def add_search_parser(self, path_to_parser):
-        """
-        Invoke script at *path_to_parser* at the end of each search run. ::
-
-            exp.add_search_parser('path/to/parser')
-        """
-        if not os.path.isfile(path_to_parser):
-            logging.critical('Parser %s could not be found.' % path_to_parser)
-        if not os.access(path_to_parser, os.X_OK):
-            logging.critical('Parser %s is not executable.' % path_to_parser)
-        search_parser = 'search_parser%d' % len(self.search_parsers)
-        self.add_resource(search_parser, path_to_parser)
-        self.search_parsers.append(search_parser)
-
     def add_absolute_report_step(self, **kwargs):
         """Add step that makes an absolute report.
 
@@ -271,8 +248,11 @@ class IssueExperiment(FastDownwardExperiment):
 
         self.add_step(Step('publish-comparison-reports', publish_comparison_tables))
 
-    # TODO: test this!
+    # TODO: this is copied from the old common_setup, but not tested
+    # with the new FastDownwardExperiment class!
     def add_scatter_plot_step(self, attributes=None):
+        print 'This has not been tested with the new FastDownwardExperiment class!'
+        exit(0)
         """Add a step that creates scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,

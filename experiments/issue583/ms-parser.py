@@ -3,7 +3,6 @@
 from lab.parser import Parser
 
 parser = Parser()
-parser.add_pattern('initial_h_value', 'initial h value: (\d+)', required=False, type=int)
 parser.add_pattern('ms_final_size', 'Final transition system size: (\d+)', required=False, type=int)
 parser.add_pattern('ms_construction_time', 'Done initializing merge-and-shrink heuristic \[(.+)s\]', required=False, type=float)
 
@@ -54,11 +53,6 @@ def check_planner_exit_reason(content, props):
     props['ms_out_of_memory'] = ms_out_of_memory
     props['search_out_of_time'] = search_out_of_time
     props['search_out_of_memory'] = search_out_of_memory
-
-    # Compute actual search time
-    if ms_abstraction_constructed == True and props.get('search_time') is not None:
-        difference = props.get('search_time') - props.get('ms_construction_time')
-        props['actual_search_time'] = difference
 
 parser.add_function(check_planner_exit_reason)
 
