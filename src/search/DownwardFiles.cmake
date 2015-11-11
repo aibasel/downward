@@ -82,7 +82,7 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 #        SOURCES
 #            <FILE_1> [ <FILE_2> ... ]
 #        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
-#        [ DEACTIVATED ]
+#        [ DEPENDENCY_ONLY ]
 #    )
 #
 # <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
@@ -90,7 +90,8 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
 # DEPENDS lists plugins that will be automatically enabled if this plugin
 # is enabled. If the dependency was not enabled before, this will be logged.
-# DEACTIVATED sets the default value of the generated CMake option to false.
+# DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
+#     hides the option to enable the plugin in cmake GUIs like ccmake.
 
 fast_downward_plugin(
     NAME CONST_EVALUATOR
@@ -180,6 +181,7 @@ fast_downward_plugin(
     SOURCES
         lp_internals.cc
         lp_solver.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
@@ -187,6 +189,7 @@ fast_downward_plugin(
     HELP "The base class for relaxation heuristics"
     SOURCES
         relaxation_heuristic.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
