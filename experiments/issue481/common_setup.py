@@ -78,8 +78,8 @@ def get_repo_base():
 def is_running_on_cluster():
     node = platform.node()
     return (
-        "cluster" in node
-        or node.startswith("gkigrid") or
+        "cluster" in node or
+        node.startswith("gkigrid") or
         node in ["habakuk", "turtur"])
 
 
@@ -90,6 +90,21 @@ def is_test_run():
 
 def get_algo_nick(revision, config_nick):
     return "{revision}-{config_nick}".format(**locals())
+
+
+class IssueConfig(object):
+    """Hold information about a planner configuration.
+
+    See FastDownwardExperiment.add_algorithm() for documentation of the
+    constructor's options.
+
+    """
+    def __init__(self, nick, component_options,
+                 build_options=None, driver_options=None):
+        self.nick = nick
+        self.component_options = component_options
+        self.build_options = build_options
+        self.driver_options = driver_options
 
 
 class IssueExperiment(FastDownwardExperiment):
@@ -147,12 +162,14 @@ class IssueExperiment(FastDownwardExperiment):
 
             IssueExperiment(revisions=["issue123", "4b3d581643"], ...)
 
-        *configs* must be a non-empty dict of {nick: cmdline} pairs
-        that sets the planner configurations to test. ::
+        *configs* must be a non-empty list of IssueConfig objects. ::
 
-            IssueExperiment(..., configs={
-                "lmcut": ["--search", "astar(lmcut())"],
-                "ipdb":  ["--search", "astar(ipdb())"]})
+            IssueExperiment(..., configs=[
+                IssueConfig("ff", ["--search", "eager_greedy(ff())"]),
+                IssueConfig(
+                    "lama", [],
+                    driver_options=["--alias", "seq-sat-lama-2011"]),
+            ])
 
         *suite* sets the benchmarks for the experiment. It must be a
         single string or a list of strings specifying domains or
@@ -198,16 +215,21 @@ class IssueExperiment(FastDownwardExperiment):
 
         FastDownwardExperiment.__init__(self, path=path, **kwargs)
 
-        self._revisions = revisions
-        self._configs = configs
-
         repo = get_repo_base()
         for rev in revisions:
-            for config_nick, config in sorted(configs.items()):
+            for config in configs:
                 self.add_algorithm(
-                    get_algo_nick(rev, config_nick), repo, rev, config)
+                    get_algo_nick(rev, config.nick),
+                    repo,
+                    rev,
+                    config.component_options,
+                    build_options=config.build_options,
+                    driver_options=config.driver_options)
 
         self.add_suite(os.path.join(repo, "benchmarks"), suite)
+
+        self._revisions = revisions
+        self._configs = configs
 
     @classmethod
     def _is_portfolio(cls, config_nick):
@@ -260,15 +282,17 @@ class IssueExperiment(FastDownwardExperiment):
         def make_comparison_tables():
             for rev1, rev2 in itertools.combinations(self._revisions, 2):
                 compared_configs = []
-                for config_nick, config in sorted(self._configs.items()):
+                for config in self._configs:
+                    config_nick = config.nick
                     compared_configs.append((
                         "{rev1}-{config_nick}".format(**locals()),
                         "{rev2}-{config_nick}".format(**locals()),
                         "Diff ({config_nick})".format(**locals())))
                 report = CompareConfigsReport(compared_configs, **kwargs)
                 outfile = os.path.join(
-                    self.eval_dir, "%s-%s-%s-compare.html" %
-                        (self.name, rev1, rev2))
+                    self.eval_dir,
+                    "{name}-{rev1}-{rev2}-compare.html".format(
+                        name=self.name, **locals()))
                 report(self.eval_dir, outfile)
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
@@ -304,10 +328,10 @@ class IssueExperiment(FastDownwardExperiment):
                 os.path.join(scatter_dir, rev1 + "-" + rev2, name))
 
         def make_scatter_plots():
-            for config_nick in sorted(self._configs):
+            for config in self._configs:
                 for rev1, rev2 in itertools.combinations(self._revisions, 2):
                     for attribute in self.get_supported_attributes(
-                            config_nick, attributes):
-                        make_scatter_plot(config_nick, rev1, rev2, attribute)
+                            config.nick, attributes):
+                        make_scatter_plot(config.nick, rev1, rev2, attribute)
 
         self.add_step(Step("make-scatter-plots", make_scatter_plots))
