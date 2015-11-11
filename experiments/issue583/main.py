@@ -37,13 +37,12 @@ def main(revisions=None):
         processes=4,
         email='silvan.sievers@unibas.ch',
     )
-    exp.add_search_parser('ms-parser.py')
+    exp.add_command('ms-parser', ['ms-parser.py'])
 
     # planner outcome attributes
     perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False)
     proved_unsolvability = Attribute('proved_unsolvability', absolute=True, min_wins=False)
     actual_search_time = Attribute('actual_search_time', absolute=False, min_wins=True, functions=[gm])
-    initial_h_value = Attribute('initial_h_value', absolute=False, min_wins=False)
 
     # m&s attributes
     ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, functions=[gm])
