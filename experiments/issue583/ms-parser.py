@@ -3,6 +3,7 @@
 from lab.parser import Parser
 
 parser = Parser()
+parser.add_pattern('actual_search_time', 'Actual search time: (.+)s \[.+s\]', required=False, type=float)
 parser.add_pattern('ms_final_size', 'Final transition system size: (\d+)', required=False, type=int)
 parser.add_pattern('ms_construction_time', 'Done initializing merge-and-shrink heuristic \[(.+)s\]', required=False, type=float)
 
