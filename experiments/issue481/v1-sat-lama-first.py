@@ -3,7 +3,7 @@
 
 from downward import suites
 
-import common_setup
+from common_setup import IssueConfig, IssueExperiment
 
 
 # Use the latest merged revision from "default" branch. The first
@@ -11,11 +11,14 @@ import common_setup
 REVS = ["issue481-base", "issue481"]
 SUITE = suites.suite_satisficing_with_ipc11()
 
-CONFIGS = {
-    "ff": ["--search", "eager_greedy(ff())"],
-}
+CONFIGS = [
+    IssueConfig("ff", ["--search", "eager_greedy(ff())"]),
+    # This config shows how to pass driver options.
+    # It fails since lazy_wastar is currently missing.
+    IssueConfig("lama", [], driver_options=["--alias", "seq-sat-lama-2011"]),
+]
 
-exp = common_setup.IssueExperiment(
+exp = IssueExperiment(
     revisions=REVS,
     configs=CONFIGS,
     suite=SUITE,
