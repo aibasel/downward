@@ -152,7 +152,7 @@ class IssueExperiment(FastDownwardExperiment):
         ]
 
     def __init__(self, revisions, configs, suite, grid_priority=None,
-                 path=None, test_suite=None, **kwargs):
+                 path=None, test_suite=None, email=None, **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
         If *revisions* is specified, it should be a non-empty
@@ -203,13 +203,17 @@ class IssueExperiment(FastDownwardExperiment):
 
             IssueExperiment(..., test_suite=["depot:pfile1", "tpp:p01.pddl"])
 
+        If *email* is specified, it should be an email address. This
+        email address will be notified upon completion of the experiments
+        if it is run on the cluster.
         """
 
         if is_test_run():
             kwargs["environment"] = LocalEnvironment()
             suite = test_suite or self.DEFAULT_TEST_SUITE
         elif "environment" not in kwargs:
-            kwargs["environment"] = MaiaEnvironment(priority=grid_priority)
+            kwargs["environment"] = MaiaEnvironment(
+                priority=grid_priority, email=email)
 
         path = path or get_data_dir()
 
