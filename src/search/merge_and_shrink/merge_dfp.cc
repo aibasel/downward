@@ -142,10 +142,10 @@ pair<int, int> MergeDFP::get_next(shared_ptr<FactoredTransitionSystem> fts) {
                 // no finite pair weight could be found, actually took the last
                 // one, so we do the same here for the moment.
 //                if (first_valid_pair_index1 == -1) {
-                    // Remember the first such pair
+                // Remember the first such pair
 //                    assert(first_valid_pair_index2 == -1);
-                    first_valid_pair_index1 = ts_index1;
-                    first_valid_pair_index2 = ts_index2;
+                first_valid_pair_index1 = ts_index1;
+                first_valid_pair_index2 = ts_index2;
 //                }
 
                 // Compute the weight associated with this pair
