@@ -9,7 +9,8 @@ class MergeDFP : public MergeStrategy {
     // as argument to the get_next method.
     int border_atomics_composites;
     int get_corrected_index(int index) const;
-    void compute_label_ranks(const TransitionSystem *transition_system,
+    void compute_label_ranks(std::shared_ptr<FactoredTransitionSystem> fts,
+                             int index,
                              std::vector<int> &label_ranks) const;
 protected:
     virtual void dump_strategy_specific_options() const override {}
@@ -18,7 +19,7 @@ public:
     virtual ~MergeDFP() override = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> task) override;
 
-    virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems) override;
+    virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) override;
     virtual std::string name() const override;
 };
 

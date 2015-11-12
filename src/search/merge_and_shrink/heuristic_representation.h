@@ -20,6 +20,7 @@ public:
     virtual int get_abstract_state(const State &state) const = 0;
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<int> &abstraction_mapping) = 0;
+    virtual void dump() const = 0;
 };
 
 
@@ -34,6 +35,7 @@ public:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<int> &abstraction_mapping) override;
     virtual int get_abstract_state(const State &state) const override;
+    virtual void dump() const override;
 };
 
 
@@ -50,6 +52,7 @@ public:
     virtual void apply_abstraction_to_lookup_table(
         const std::vector<int> &abstraction_mapping) override;
     virtual int get_abstract_state(const State &state) const override;
+    virtual void dump() const override;
 };
 
 
