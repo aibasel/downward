@@ -157,10 +157,10 @@ void signal_handler(int signal_number) {
 }
 
 /*
-  NOTE: we have two variants of this method
+  NOTE: we have two variants of obtaining peak memory information.
         get_peak_memory_in_kb() is used during the regular execution.
-        get_peak_memory_in_kb_reentrant() is used in signal handlers.
-        The latter is slower but guarantees re-entrancy.
+        print_peak_memory_in_kb_reentrant() is used in signal handlers.
+        The latter is slower but guarantees reentrancy.
 */
 int get_peak_memory_in_kb() {
     // On error, produces a warning on cerr and returns -1.
