@@ -1,10 +1,12 @@
 #ifndef MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 #define MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 
+#include <forward_list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <forward_list>
+
 
 class FactoredTransitionSystem;
 class OptionParser;
