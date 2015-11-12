@@ -15,7 +15,7 @@ class TransitionSystem;
 
 
 class FactoredTransitionSystem {
-    static const int PRUNED_STATE = -1;
+    const int PRUNED_STATE = -1;
     std::shared_ptr<Labels> labels;
     // Entries with nullptr have been merged.
     /*
