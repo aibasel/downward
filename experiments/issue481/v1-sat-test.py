@@ -24,6 +24,7 @@ exp = IssueExperiment(
     revisions=REVS,
     configs=CONFIGS,
     suite=SUITE,
+    email="malte.helmert@unibas.ch"
 )
 
 ## TODO: Pick which steps we actually want; probably not all three.
