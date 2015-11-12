@@ -3,9 +3,10 @@ This directory archives Fast Downward experiments.
 Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
-the creation of experiments. We recommend using common_setup.py from
-issue546 for new experiments since it is the most polished version and
-provides the greatest flexibility.
+the creation of experiments. We recommend using common_setup.py (and
+related files for usage) from issue583 for new experiments since it is
+the most recent version that uses lab's new FastDownwardExperiment
+class.
 
 Previously, most experiments imported lab's downward/configs.py module.
 To make experiments more self-contained, the module has been deprecated
@@ -14,7 +15,7 @@ directory (see issue77 for an example) or manually specifying the
 configurations (see issue511).
 
 Below we list some experiments that show how certain tasks can be
-performed:
+performed. All of them use lab's deprecated DownwardExperiment:
 
 * Test changes that affect the whole planner:
   * issue422/issue422.py shows the general setup but tests only LM-cut.
