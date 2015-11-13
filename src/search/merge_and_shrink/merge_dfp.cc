@@ -124,12 +124,15 @@ pair<int, int> MergeDFP::get_next(shared_ptr<FactoredTransitionSystem> fts) {
                 || fts->get_ts(ts_index2).is_goal_relevant()) {
                 // Only consider pairs where at least one component is goal relevant.
 
-                if (first_valid_pair_index1 == -1) {
-                    // Remember the first such pair
-                    assert(first_valid_pair_index2 == -1);
-                    first_valid_pair_index1 = ts_index1;
-                    first_valid_pair_index2 = ts_index2;
-                }
+                // TODO: the 'old' code that took the 'first' pair in case of
+                // no finite pair weight could be found, actually took the last
+                // one, so we do the same here for the moment.
+//                if (first_valid_pair_index1 == -1) {
+                // Remember the first such pair
+//                    assert(first_valid_pair_index2 == -1);
+                first_valid_pair_index1 = ts_index1;
+                first_valid_pair_index2 = ts_index2;
+//                }
 
                 // Compute the weight associated with this pair
                 vector<int> &label_ranks2 = transition_system_label_ranks[j];
@@ -154,6 +157,9 @@ pair<int, int> MergeDFP::get_next(shared_ptr<FactoredTransitionSystem> fts) {
 
     if (next_index1 == -1) {
         /*
+          TODO: this is not correct (see above)! we take the *last* pair.
+          We should eventually change this to be a random ordering.
+
           No pair with finite weight has been found. In this case, we simply
           take the first pair according to our ordering consisting of at
           least one goal relevant transition system. (We computed that in the
