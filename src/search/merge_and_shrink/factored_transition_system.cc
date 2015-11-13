@@ -68,6 +68,11 @@ void FactoredTransitionSystem::discard_states(int index,
 }
 
 bool FactoredTransitionSystem::is_index_valid(int index) const {
+    if (index >= static_cast<int>(transition_systems.size())) {
+        assert(index >= static_cast<int>(heuristic_representations.size()));
+        assert(index >= static_cast<int>(distances.size()));
+        return false;
+    }
     return transition_systems[index] && heuristic_representations[index]
            && distances[index];
 }
