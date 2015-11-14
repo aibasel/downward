@@ -17,7 +17,6 @@ class State;
 class TaskProxy;
 class Timer;
 
-typedef int AbstractStateRef;
 // Duplicate from LabelEquivalenceRelation
 typedef std::list<int>::const_iterator LabelConstIter;
 
@@ -25,10 +24,10 @@ typedef std::list<int>::const_iterator LabelConstIter;
 extern const int INF;
 
 struct Transition {
-    AbstractStateRef src;
-    AbstractStateRef target;
+    int src;
+    int target;
 
-    Transition(AbstractStateRef src_, AbstractStateRef target_)
+    Transition(int src_, int target_)
         : src(src_), target(target_) {
     }
 
@@ -145,7 +144,7 @@ private:
     int total_transitions() const;
     std::string description() const;
 
-    TransitionSystem(const TaskProxy &task_proxy,
+    TransitionSystem(int num_variables,
                      const std::shared_ptr<Labels> labels);
 public:
     // Constructor for an atomic transition system.
@@ -161,14 +160,13 @@ public:
       Invariant: the children ts1 and ts2 must be solvable.
       (It is a bug to merge an unsolvable transition system.)
     */
-    TransitionSystem(const TaskProxy &task_proxy,
-                     const std::shared_ptr<Labels> labels,
+    TransitionSystem(const std::shared_ptr<Labels> labels,
                      TransitionSystem *ts1,
                      TransitionSystem *ts2);
     ~TransitionSystem();
 
     bool apply_abstraction(
-        const std::vector<std::forward_list<AbstractStateRef>> &collapsed_groups,
+        const std::vector<std::forward_list<int>> &collapsed_groups,
         const std::vector<int> &abstraction_mapping);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
                                bool only_equivalent_labels);

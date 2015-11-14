@@ -44,6 +44,12 @@ Labels::Labels(const Options &options)
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
 }
 
+Labels::~Labels() {
+    for (Label *label : labels) {
+        delete label;
+    }
+}
+
 bool Labels::initialized() const {
     return !transition_system_order.empty();
 }

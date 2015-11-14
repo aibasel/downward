@@ -28,7 +28,7 @@ ShrinkStrategy::~ShrinkStrategy() {
 }
 
 bool ShrinkStrategy::shrink_transition_system(
-    std::shared_ptr<FactoredTransitionSystem> fts,
+    shared_ptr<FactoredTransitionSystem> fts,
     int index,
     int new_size) const {
     const TransitionSystem &ts = fts->get_ts(index);
@@ -101,10 +101,12 @@ pair<bool, bool> ShrinkStrategy::shrink(shared_ptr<FactoredTransitionSystem> fts
     /*
       For both transition systems, possibly compute and apply an
       abstraction.
+      TODO: we could better use the given limit by increasing the size limit
+      for the second shrinking if the first shrinking was larger than
+      required.
     */
-    // TODO: swap
-    bool shrunk2 = shrink_transition_system(fts, index2, new_sizes.second);
     bool shrunk1 = shrink_transition_system(fts, index1, new_sizes.first);
+    bool shrunk2 = shrink_transition_system(fts, index2, new_sizes.second);
     return make_pair(shrunk1, shrunk2);
 }
 

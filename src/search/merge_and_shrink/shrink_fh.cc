@@ -83,7 +83,7 @@ void ShrinkFH::ordered_buckets_use_map(
     map<int, map<int, Bucket>> states_by_f_and_h;
     int bucket_count = 0;
     int num_states = ts.get_size();
-    for (AbstractStateRef state = 0; state < num_states; ++state) {
+    for (int state = 0; state < num_states; ++state) {
         int g = distances.get_init_distance(state);
         int h = distances.get_goal_distance(state);
         if (g != INF && h != INF) {
@@ -120,7 +120,7 @@ void ShrinkFH::ordered_buckets_use_vector(
         states_by_f_and_h[f].resize(min(f, distances.get_max_h()) + 1);
     int bucket_count = 0;
     int num_states = ts.get_size();
-    for (AbstractStateRef state = 0; state < num_states; ++state) {
+    for (int state = 0; state < num_states; ++state) {
         int g = distances.get_init_distance(state);
         int h = distances.get_goal_distance(state);
         if (g != INF && h != INF) {
