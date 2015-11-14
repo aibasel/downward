@@ -77,9 +77,9 @@ LabelConstIter TSConstIterator::end() const {
 
 
 // common case for both constructors
-TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
+TransitionSystem::TransitionSystem(int num_variables,
                                    const shared_ptr<Labels> labels)
-    : num_variables(task_proxy.get_variables().size()),
+    : num_variables(num_variables),
       label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)) {
     transitions_by_group_id.resize(labels->get_max_size());
 }
@@ -90,7 +90,7 @@ TransitionSystem::TransitionSystem(
     const shared_ptr<Labels> labels,
     int var_id,
     vector<vector<Transition>> &&transitions_by_label)
-    : TransitionSystem(task_proxy, labels) {
+    : TransitionSystem(task_proxy.get_variables().size(), labels) {
     /*
       TODO: Once we no longer delegate to another constructor,
       the following line can be changed to an initialization:
@@ -109,13 +109,9 @@ TransitionSystem::TransitionSystem(
       for free. A potential fix would be requiring the factory to
       already create transitions_of_groups with the appropriate size,
       but this would perhaps leak an implementation detail that the
-      factory should not care about. For now, let's leave
+      factory should not care about.
     */
-    int num_ops = task_proxy.get_operators().size();
-    if (num_ops > 0) {
-        int max_num_labels = num_ops * 2 - 1;
-        transitions_by_group_id.resize(max_num_labels);
-    }
+    transitions_by_group_id.resize(labels->get_max_size());
 
     incorporated_variables.push_back(var_id);
 
@@ -146,6 +142,7 @@ TransitionSystem::TransitionSystem(
       Prepare label_equivalence_relation data structure: add one single-element
       group for every operator.
     */
+    int num_ops = task_proxy.get_operators().size();
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
         label_equivalence_relation->add_label_group({label_no}
@@ -159,11 +156,10 @@ TransitionSystem::TransitionSystem(
 }
 
 // constructor for merges
-TransitionSystem::TransitionSystem(const TaskProxy &task_proxy,
-                                   const shared_ptr<Labels> labels,
+TransitionSystem::TransitionSystem(const shared_ptr<Labels> labels,
                                    TransitionSystem *ts1,
                                    TransitionSystem *ts2)
-    : TransitionSystem(task_proxy, labels) {
+    : TransitionSystem(ts1->num_variables, labels) {
     cout << "Merging " << ts1->description() << " and "
          << ts2->description() << endl;
 
@@ -299,7 +295,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 }
 
 bool TransitionSystem::apply_abstraction(
-    const vector<forward_list<AbstractStateRef>> &collapsed_groups,
+    const vector<forward_list<int>> &collapsed_groups,
     const vector<int> &abstraction_mapping) {
     assert(are_transitions_sorted_unique());
 
@@ -311,12 +307,12 @@ bool TransitionSystem::apply_abstraction(
     cout << tag() << "applying abstraction (" << get_size()
          << " to " << collapsed_groups.size() << " states)" << endl;
 
-    typedef forward_list<AbstractStateRef> Group;
+    typedef forward_list<int> Group;
 
     int new_num_states = collapsed_groups.size();
     vector<bool> new_goal_states(new_num_states, false);
 
-    for (AbstractStateRef new_state = 0; new_state < new_num_states; ++new_state) {
+    for (int new_state = 0; new_state < new_num_states; ++new_state) {
         const Group &group = collapsed_groups[new_state];
         assert(!group.empty());
 
@@ -366,8 +362,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>
       We iterate over the given label mapping, treating every new label and
       the reduced old labels separately. We further distinguish the case
       where we know that the reduced labels are all from the same equivalence
-      group from the case where we may combine arbitrary labels. We also
-      assume that only labels of the same cost are reduced.
+      group from the case where we may combine arbitrary labels.
 
       The case where only equivalent labels are combined is simple: remove all
       old labels from the label group and add the new one.
@@ -487,12 +482,12 @@ void TransitionSystem::dump_dot_graph() const {
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
-            cout << "    node" << src << " -> node" << target << " [labels = ";
+            cout << "    node" << src << " -> node" << target << " [label = ";
             for (LabelConstIter label_it = group_it.begin();
                  label_it != group_it.end(); ++label_it) {
                 if (label_it != group_it.begin())
-                    cout << ",";
-                cout << "l" << *label_it;
+                    cout << "_";
+                cout << "x" << *label_it;
             }
             cout << "];" << endl;
         }

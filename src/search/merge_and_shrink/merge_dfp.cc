@@ -180,7 +180,6 @@ pair<int, int> MergeDFP::get_next(shared_ptr<FactoredTransitionSystem> fts) {
     */
     assert(next_index1 != -1);
     assert(next_index2 != -1);
-    cout << "Next pair of indices: (" << next_index1 << ", " << next_index2 << ")" << endl;
     --remaining_merges;
     return make_pair(next_index1, next_index2);
 }

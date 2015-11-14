@@ -29,7 +29,7 @@ void ShrinkRandom::partition_into_buckets(
     Bucket &big_bucket = buckets.back();
     big_bucket.reserve(ts.get_size());
     int num_states = ts.get_size();
-    for (AbstractStateRef state = 0; state < num_states; ++state)
+    for (int state = 0; state < num_states; ++state)
         big_bucket.push_back(state);
     assert(!big_bucket.empty());
 }

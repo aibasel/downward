@@ -66,6 +66,12 @@ class LabelEquivalenceRelation {
     */
     const std::shared_ptr<Labels> labels;
 
+    /*
+      NOTE: it is somewhat dangerous to use lists inside vectors and storing
+      iterators to these lists, because whenever the vector needs to be
+      resized, these iterators may become invalid. In the constructor, we
+      make sure to reserve enough memory so reallocation is never needed.
+    */
     std::vector<LabelGroup> grouped_labels;
     // maps each label to its group's id and its iterator within the group.
     std::vector<std::pair<int, LabelIter>> label_to_positions;

@@ -110,12 +110,12 @@ bool FactoredTransitionSystem::apply_abstraction(
     int index, const vector<forward_list<int>> &collapsed_groups) {
     assert(is_index_valid(index));
 
-    vector<int> abstraction_mapping(transition_systems[index]->get_size(), PRUNED_STATE);
+    vector<int> abstraction_mapping(transition_systems[index]->get_size(), TransitionSystem::PRUNED_STATE);
     for (size_t group_no = 0; group_no < collapsed_groups.size(); ++group_no) {
         const auto &group = collapsed_groups[group_no];
         for (auto pos = group.begin(); pos != group.end(); ++pos) {
-            AbstractStateRef state = *pos;
-            assert(abstraction_mapping[state] == PRUNED_STATE);
+            int state = *pos;
+            assert(abstraction_mapping[state] == TransitionSystem::PRUNED_STATE);
             abstraction_mapping[state] = group_no;
         }
     }
@@ -131,13 +131,13 @@ bool FactoredTransitionSystem::apply_abstraction(
     return shrunk;
 }
 
-int FactoredTransitionSystem::merge(const TaskProxy &task_proxy, int index1, int index2) {
+int FactoredTransitionSystem::merge(int index1, int index2) {
     assert(is_index_valid(index1));
     assert(is_index_valid(index2));
     TransitionSystem *ts1 = transition_systems[index1];
     TransitionSystem *ts2 = transition_systems[index2];
     TransitionSystem *new_transition_system = new TransitionSystem(
-        task_proxy, labels, ts1, ts2);
+        labels, ts1, ts2);
     transition_systems.push_back(new_transition_system);
     delete ts1;
     delete ts2;
@@ -199,7 +199,7 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
     assert(distances[final_index]->are_distances_computed());
     int abs_state = heuristic_representations[final_index]->get_abstract_state(state);
 
-    if (abs_state == PRUNED_STATE)
+    if (abs_state == TransitionSystem::PRUNED_STATE)
         return -1;
     int cost = distances[final_index]->get_goal_distance(abs_state);
     assert(cost != INF);
