@@ -31,7 +31,8 @@ def main(revisions=None):
         processes=4,
         email='silvan.sievers@unibas.ch',
     )
-    exp.add_search_parser('ms-parser.py')
+    exp.add_resource('ms_parser', 'ms-parser.py', dest='ms-parser.py')
+    exp.add_command('ms-parser', ['ms_parser'])
 
     # planner outcome attributes
     perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False)
