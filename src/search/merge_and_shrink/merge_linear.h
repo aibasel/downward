@@ -5,8 +5,6 @@
 
 #include "../variable_order_finder.h"
 
-#include <memory>
-
 class Options;
 
 class MergeLinear : public MergeStrategy {

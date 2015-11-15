@@ -15,7 +15,6 @@ class TransitionSystem;
 
 
 class FactoredTransitionSystem {
-    const int PRUNED_STATE = -1;
     std::shared_ptr<Labels> labels;
     // Entries with nullptr have been merged.
     /*
@@ -63,7 +62,7 @@ public:
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
                                int combinable_index);
     bool apply_abstraction(int index, const std::vector<std::forward_list<int>> &collapsed_groups);
-    int merge(const TaskProxy &task_proxy, int index1, int index2);
+    int merge(int index1, int index2);
     void finalize(int index = -1);
     bool is_solvable() const {
         return solvable;

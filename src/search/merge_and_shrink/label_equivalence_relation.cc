@@ -7,7 +7,7 @@
 
 using namespace std;
 
-LabelEquivalenceRelation::LabelEquivalenceRelation(const std::shared_ptr<Labels> labels)
+LabelEquivalenceRelation::LabelEquivalenceRelation(const shared_ptr<Labels> labels)
     : labels(labels) {
     grouped_labels.reserve(labels->get_max_size());
     label_to_positions.resize(labels->get_max_size());

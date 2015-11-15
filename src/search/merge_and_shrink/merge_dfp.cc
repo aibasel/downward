@@ -6,6 +6,7 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_proxy.h"
 
 #include <algorithm>
 #include <cassert>
@@ -20,31 +21,24 @@ MergeDFP::MergeDFP()
 
 void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
     MergeStrategy::initialize(task);
+    TaskProxy task_proxy(*task);
+    int num_variables = task_proxy.get_variables().size();
+    int max_transition_system_count = num_variables * 2 - 1;
+    transition_system_order.reserve(max_transition_system_count);
     /*
-      n := remaining_merges + 1 is the number of variables of the planning task
-      and thus the number of atomic transition systems. These will be stored at
-      indices 0 to n-1 and thus n is the index at which the first composite
-      transition system will be stored at.
+      Precompute the order in which we consider transition systems:
+      first consider the non-atomic transition systems, going from the most
+      recent to the oldest one (located at index num_variables). Afterwards,
+      consider the atomic transition systems in the "regular" order, i.e.
+      in the Fast Downward order of variables.
     */
-    border_atomics_composites = remaining_merges + 1;
-}
-
-int MergeDFP::get_corrected_index(int index) const {
-    /*
-      This method assumes that we iterate over the vector of all
-      transition systems in inverted order (from back to front). It returns the
-      unmodified index as long as we are in the range of composite
-      transition systems (these are thus traversed in order from the last one
-      to the first one) and modifies the index otherwise so that the order
-      in which atomic transition systems are considered is from the first to the
-      last one (from front to back). This is to emulate the previous behavior
-      when new transition systems were not inserted after existing transition systems,
-      but rather replaced arbitrarily one of the two original transition systems.
-    */
-    assert(index >= 0);
-    if (index >= border_atomics_composites)
-        return index;
-    return border_atomics_composites - 1 - index;
+    for (int i = max_transition_system_count -1; i >= 0; --i) {
+        int corrected_index = i;
+        if (i < num_variables) {
+            corrected_index = num_variables - 1 - i;
+        }
+        transition_system_order.push_back(corrected_index);
+    }
 }
 
 void MergeDFP::compute_label_ranks(shared_ptr<FactoredTransitionSystem> fts,
@@ -98,21 +92,13 @@ pair<int, int> MergeDFP::get_next(shared_ptr<FactoredTransitionSystem> fts) {
 
     /*
       Precompute a vector sorted_active_ts_indices which contains all exisiting
-      transition systems in the desired order and compute label ranks.
+      transition systems in the given order and compute label ranks.
     */
+    assert(!transition_system_order.empty());
     vector<int> sorted_active_ts_indices;
     vector<vector<int>> transition_system_label_ranks;
-    int num_transition_systems = fts->get_size();
-    for (int i = num_transition_systems - 1; i >= 0; --i) {
-        /*
-          We iterate from back to front, considering the composite
-          transition systems in the order from "most recently added" (= at the back
-          of the vector) to "first added" (= at border_atomics_composites).
-          Afterwards, we consider the atomic transition systems in the "regular"
-          order from the first one until the last one. See also explanation
-          at get_corrected_index().
-        */
-        int ts_index = get_corrected_index(i);
+    for (size_t tso_index = 0; tso_index < transition_system_order.size(); ++tso_index) {
+        int ts_index = transition_system_order[tso_index];
         if (fts->is_active(ts_index)) {
             sorted_active_ts_indices.push_back(ts_index);
             transition_system_label_ranks.push_back(vector<int>());
@@ -194,7 +180,6 @@ pair<int, int> MergeDFP::get_next(shared_ptr<FactoredTransitionSystem> fts) {
     */
     assert(next_index1 != -1);
     assert(next_index2 != -1);
-    cout << "Next pair of indices: (" << next_index1 << ", " << next_index2 << ")" << endl;
     --remaining_merges;
     return make_pair(next_index1, next_index2);
 }
