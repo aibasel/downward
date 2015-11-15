@@ -89,7 +89,7 @@ public:
 
 class TransitionSystem {
 public:
-    static const int PRUNED_STATE = -1;
+    static const int PRUNED_STATE;
 
 private:
     /*

@@ -73,6 +73,8 @@ LabelConstIter TSConstIterator::end() const {
 }
 
 
+const int TransitionSystem::PRUNED_STATE = -1;
+
 // common case for both constructors
 TransitionSystem::TransitionSystem(int num_variables,
                                    const shared_ptr<Labels> labels)
