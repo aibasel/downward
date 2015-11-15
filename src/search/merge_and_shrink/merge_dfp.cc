@@ -32,7 +32,7 @@ void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
       consider the atomic transition systems in the "regular" order, i.e.
       in the Fast Downward order of variables.
     */
-    for (int i = max_transition_system_count -1; i >= 0; --i) {
+    for (int i = max_transition_system_count - 1; i >= 0; --i) {
         int corrected_index = i;
         if (i < num_variables) {
             corrected_index = num_variables - 1 - i;
