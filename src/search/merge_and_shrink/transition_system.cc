@@ -39,9 +39,6 @@ using namespace std;
 const int INF = numeric_limits<int>::max();
 
 
-const int TransitionSystem::PRUNED_STATE;
-
-
 TSConstIterator::TSConstIterator(
     const shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
     const vector<vector<Transition>> &transitions_by_group_id,
