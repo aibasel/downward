@@ -4,11 +4,8 @@
 #include "merge_strategy.h"
 
 class MergeDFP : public MergeStrategy {
-    // border_atomic_composites is the first index at which a composite
-    // transition system can be found in vector of all transition systems as passed
-    // as argument to the get_next method.
-    int border_atomics_composites;
-    int get_corrected_index(int index) const;
+    // Store the "DFP" ordering in which transition systems should be considered.
+    std::vector<int> transition_system_order;
     void compute_label_ranks(std::shared_ptr<FactoredTransitionSystem> fts,
                              int index,
                              std::vector<int> &label_ranks) const;

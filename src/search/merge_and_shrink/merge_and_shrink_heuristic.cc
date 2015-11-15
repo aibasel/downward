@@ -101,6 +101,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             pair<int, int> merge_indices = merge_strategy->get_next(fts);
             int merge_index1 = merge_indices.first;
             int merge_index2 = merge_indices.second;
+            cout << "Next pair of indices: (" << merge_index1 << ", " << merge_index2 << ")" << endl;
             assert(merge_index1 != merge_index2);
             fts->statistics(merge_index1, timer);
             fts->statistics(merge_index2, timer);
@@ -122,7 +123,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             }
 
             // Merging
-            final_index = fts->merge(task_proxy, merge_index1, merge_index2);
+            final_index = fts->merge(merge_index1, merge_index2);
             /*
               NOTE: both the shrinking strategy classes and the construction of
               the composite require input transition systems to be solvable.
