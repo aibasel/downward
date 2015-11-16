@@ -76,7 +76,6 @@ struct ValueTransitionLabel {
 struct ValueTransition {
     ValueNode *target;
     vector<ValueTransitionLabel> labels;
-    vector<ValueTransitionLabel> cea_labels; // labels for cea heuristic
 
     ValueTransition(ValueNode *targ)
         : target(targ) {}
@@ -125,8 +124,6 @@ class DomainTransitionGraph {
     vector<int> local_to_global_child;
     // used for mapping variables in conditions to their global index
     // (only needed for initializing child_state for the start node?)
-    vector<int> cea_parents;
-    // Same as local_to_global_child, but for cea heuristic.
 
     DomainTransitionGraph(const DomainTransitionGraph &other); // copying forbidden
 public:

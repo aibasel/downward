@@ -167,6 +167,7 @@ DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
     last_helpful_transition_extraction_time = -1;
 }
 
+// only used for cea heuristic
 void DomainTransitionGraph::read_data(istream &in) {
     check_magic(in, "begin_DTG");
 
@@ -194,9 +195,7 @@ void DomainTransitionGraph::read_data(istream &in) {
             assert(transition_index.count(arc));
             ValueTransition *transition = &nodes[origin].transitions[transition_index[arc]];
 
-            vector<LocalAssignment> precond;
             vector<LocalAssignment> cea_precond;
-            vector<LocalAssignment> no_effect;
             vector<LocalAssignment> cea_effect;
             int precond_count;
             in >> precond_count;
@@ -207,20 +206,10 @@ void DomainTransitionGraph::read_data(istream &in) {
                 in >> global_var >> val;
                 precond_pairs.push_back(make_pair(global_var, val));
 
-                // Processing for pruned DTG.
-                if (global_var < var) { // [ignore cycles]
-                    if (!global_to_local_child.count(global_var)) {
-                        global_to_local_child[global_var] = local_to_global_child.size();
-                        local_to_global_child.push_back(global_var);
-                    }
-                    int local_var = global_to_local_child[global_var];
-                    precond.push_back(LocalAssignment(local_var, val));
-                }
-
                 // Processing for full DTG (cea CG).
                 if (!global_to_cea_parent.count(global_var)) {
-                    global_to_cea_parent[global_var] = cea_parents.size();
-                    cea_parents.push_back(global_var);
+                    global_to_cea_parent[global_var] = local_to_global_child.size();
+                    local_to_global_child.push_back(global_var);
                 }
                 int cea_parent = global_to_cea_parent[global_var];
                 cea_precond.push_back(LocalAssignment(cea_parent, val));
@@ -276,15 +265,7 @@ void DomainTransitionGraph::read_data(istream &in) {
                     cea_effect.push_back(LocalAssignment(cea_parent, post));
                 }
             }
-
-#define TRACK_SIDE_EFFECTS 1
-#if !TRACK_SIDE_EFFECTS
-            cea_effect.clear();
-#endif
-
             transition->labels.push_back(
-                ValueTransitionLabel(the_operator, precond, no_effect));
-            transition->cea_labels.push_back(
                 ValueTransitionLabel(the_operator, cea_precond, cea_effect));
         }
     }
@@ -293,7 +274,6 @@ void DomainTransitionGraph::read_data(istream &in) {
 
 void ValueTransition::simplify() {
     simplify_labels(labels);
-    simplify_labels(cea_labels);
 }
 
 void ValueTransition::simplify_labels(

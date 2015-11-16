@@ -135,7 +135,7 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
 
     DomainTransitionGraph *dtg = g_transition_graphs[var_no];
 
-    problem->context_variables = &dtg->cea_parents;
+    problem->context_variables = &dtg->local_to_global_child;
 
     int num_parents = problem->context_variables->size();
     size_t num_values = g_variable_domain[var_no];
@@ -151,8 +151,8 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
             const ValueTransition &dtg_trans = dtg_node.transitions[i];
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = problem->nodes[target_value];
-            for (size_t j = 0; j < dtg_trans.cea_labels.size(); ++j) {
-                const ValueTransitionLabel &label = dtg_trans.cea_labels[j];
+            for (size_t j = 0; j < dtg_trans.labels.size(); ++j) {
+                const ValueTransitionLabel &label = dtg_trans.labels[j];
                 int action_cost = get_adjusted_cost(*label.op);
                 LocalTransition trans(&node, &target, &label, action_cost);
                 node.outgoing_transitions.push_back(trans);
