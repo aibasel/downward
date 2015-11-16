@@ -133,11 +133,6 @@ public:
     DomainTransitionGraph(int var_index, int node_count);
     void read_data(istream &in);
 
-    void dump() const;
-
-    void get_successors(int value, vector<int> &result) const;
-    // Build vector of values v' such that there is a transition from value to v'.
-
     static void read_all(istream &in);
 };
 

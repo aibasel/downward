@@ -291,20 +291,6 @@ void DomainTransitionGraph::read_data(istream &in) {
     check_magic(in, "end_DTG");
 }
 
-void DomainTransitionGraph::dump() const {
-    cout << "DomainTransitionGraph::dump() not implemented." << endl;
-    assert(false);
-}
-
-void DomainTransitionGraph::get_successors(int value, vector<int> &result) const {
-    assert(result.empty());
-    assert(in_bounds(value, nodes));
-    const vector<ValueTransition> &transitions = nodes[value].transitions;
-    result.reserve(transitions.size());
-    for (size_t i = 0; i < transitions.size(); ++i)
-        result.push_back(transitions[i].target->value);
-}
-
 void ValueTransition::simplify() {
     simplify_labels(labels);
     simplify_labels(cea_labels);
