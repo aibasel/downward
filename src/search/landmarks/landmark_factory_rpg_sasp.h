@@ -7,13 +7,20 @@
 #include "../globals.h"
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
+    
+    // dtg_successors[var_id][val] contains all successor values of val in the
+    // domain transition graph for the variable
+    std::vector<std::vector<std::unordered_set<int>>> dtg_successors; 
 
+    void build_dtg_successors();
+    void add_dtg_successor(int var_id, int pre, int post);
     void find_forward_orders(const std::vector<std::vector<int>> &lvl_var,
                              LandmarkNode *lmp);
     void add_lm_forward_orders();
@@ -35,7 +42,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
                                  edge_type t);
     void approximate_lookahead_orders(const std::vector<std::vector<int>> &lvl_var,
                                       LandmarkNode *lmp);
-    static bool domain_connectivity(const std::pair<int, int> &landmark,
+    bool domain_connectivity(const std::pair<int, int> &landmark,
                                     const std::unordered_set<int> &exclude);
 
     void build_disjunction_classes();
