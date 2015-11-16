@@ -12,6 +12,121 @@ using namespace std;
 #include "utilities.h"
 #include "utilities_hash.h"
 
+DTGFactory::DTGFactory(const TaskProxy& task_proxy,
+    bool collect_transition_side_effects,
+    const function<bool(int, int)>& pruning_condition)
+    : task_proxy(task_proxy),
+        collect_transition_side_effects(collect_transition_side_effects),
+        pruning_condition(pruning_condition) {
+    }
+
+void DTGFactory::build_dtgs(vector<DomainTransitionGraph *>& location) {
+    assert(location.empty()); // TODO use local location and move
+
+    allocate_graphs_and_nodes(location);
+    transition_index.clear();
+    transition_index.resize(location.size());
+    global_to_local_var.clear();
+    global_to_local_var.resize(location.size());
+    for (OperatorProxy op : task_proxy.get_operators())
+        for (EffectProxy eff : op.get_effects())
+            process_effect(eff, op, location);
+
+    cout << "Simplifying transitions..." << flush;
+    for (auto *dtg : location) {
+        vector<ValueNode> &nodes = dtg->nodes;
+        for (size_t value = 0; value < nodes.size(); ++value)
+            for (size_t i = 0; i < nodes[value].transitions.size(); ++i)
+                nodes[value].transitions[i].simplify();
+    }
+}
+
+void DTGFactory::allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& location) {
+    VariablesProxy variables = task_proxy.get_variables();
+    location.resize(variables.size());
+    for (VariableProxy var : variables) {
+        int var_id = var.get_id();
+        int range = var.get_domain_size();
+        location[var_id] = new DomainTransitionGraph(var_id, range);
+    }
+}
+
+void DTGFactory::process_effect(const EffectProxy& eff, const OperatorProxy& op,
+    vector<DomainTransitionGraph *>& dtgs) {
+    FactProxy fact = eff.get_fact();
+    int var_id = fact.get_variable().get_id();
+    DomainTransitionGraph *dtg = dtgs[var_id];
+    int origin = -1;
+    int target = fact.get_value();
+    vector<LocalAssignment> transition_condition;
+    vector<LocalAssignment> side_effect;
+    for (FactProxy fact : op.get_preconditions()) {
+        if (fact.get_variable() == eff.get_fact().get_variable())
+            origin = fact.get_value();
+        else {
+            update_transition_condition(fact, dtg, transition_condition);
+        }
+    }
+    for (FactProxy fact : eff.get_conditions()) {
+        if (fact.get_variable() == eff.get_fact().get_variable()) {
+            if (origin != -1 && fact.get_value() != origin)
+                return; // conflicting condition on effect variable
+            origin = fact.get_value();
+        } else {
+            update_transition_condition(fact, dtg, transition_condition);
+        }
+    }
+    if (origin != -1 && target == origin)
+        return;
+    // TODO change this once the heuristics get adapted?
+    const GlobalOperator *global_op = op.get_global_operator();
+    if (origin != -1) {
+        ValueTransition *trans = get_transition(origin, target, dtg);
+        trans->labels.push_back(
+            ValueTransitionLabel(global_op, transition_condition, side_effect));
+    } else {
+        int domain_size = fact.get_variable().get_domain_size();
+        for (int origin = 0; origin < domain_size; ++origin) {
+            if (origin == target)
+                continue;
+            ValueTransition *trans = get_transition(origin, target, dtg);
+            trans->labels.push_back(
+                ValueTransitionLabel(global_op, transition_condition, side_effect));
+        }
+    }
+}
+
+void DTGFactory::update_transition_condition(const FactProxy& fact,
+    DomainTransitionGraph* dtg, vector<LocalAssignment>& condition) {
+    int fact_var = fact.get_variable().get_id();
+    if (!pruning_condition(dtg->var, fact_var)) {
+        extend_global_to_local_mapping_if_necessary(dtg, fact_var);
+        int local_var = global_to_local_var[dtg->var][fact_var];
+        condition.push_back(LocalAssignment(local_var, fact.get_value()));
+    }
+}
+
+void DTGFactory::extend_global_to_local_mapping_if_necessary(
+    DomainTransitionGraph *dtg, int global_var) {
+    if (!global_to_local_var[dtg->var].count(global_var)) {
+        global_to_local_var[dtg->var][global_var] = dtg->local_to_global_child.size();
+        dtg->local_to_global_child.push_back(global_var);
+    }
+}
+
+ValueTransition* DTGFactory::get_transition(int origin, int target,
+    DomainTransitionGraph* dtg) {
+    map<pair<int,int>, int>& trans_map = transition_index[dtg->var];
+    pair<int,int> arc = make_pair(origin, target);
+    ValueNode& origin_node = dtg->nodes[origin];
+    // create new transition if necessary
+    if (!trans_map.count(arc)) {
+        trans_map[arc] = origin_node.transitions.size();
+        ValueNode& target_node = dtg->nodes[target];
+        origin_node.transitions.push_back(ValueTransition(&target_node));
+    }
+    return &origin_node.transitions[trans_map[arc]];
+}
 
 void DomainTransitionGraph::read_all(istream &in) {
     int var_count = g_variable_domain.size();

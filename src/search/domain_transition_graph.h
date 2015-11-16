@@ -1,6 +1,8 @@
 #ifndef DOMAIN_TRANSITION_GRAPH_H
 #define DOMAIN_TRANSITION_GRAPH_H
 
+#include "task_proxy.h"
+
 #include <cassert>
 #include <iostream>
 #include <map>
@@ -11,6 +13,7 @@ class CGHeuristic;
 class GlobalOperator;
 class GlobalState;
 
+struct LocalAssignment;
 struct ValueNode;
 struct ValueTransition;
 struct ValueTransitionLabel;
@@ -20,6 +23,32 @@ class DomainTransitionGraph;
 // transitions and nodes. This is because these structures could not be
 // put into vectors otherwise.
 
+class DTGFactory {
+    const TaskProxy& task_proxy;
+    bool collect_transition_side_effects;
+    const function<bool(int, int)>& pruning_condition;
+
+    // TODO: map or unordered_map?
+    std::vector<std::map<std::pair<int,int>, int>> transition_index;
+    std::vector<std::map<int, int>> global_to_local_var;
+
+    void allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& location);
+    void process_effect(const EffectProxy& eff, const OperatorProxy& op,
+        std::vector<DomainTransitionGraph *>& dtgs);
+    void update_transition_condition(const FactProxy& fact,
+        DomainTransitionGraph* dtg, std::vector<LocalAssignment>& condition);
+    void extend_global_to_local_mapping_if_necessary(
+        DomainTransitionGraph *dtg, int global_var); 
+    ValueTransition* get_transition(int origin, int target,
+        DomainTransitionGraph* dtg);
+
+public:
+    DTGFactory(const TaskProxy& task_proxy,
+        bool collect_transition_side_effects,
+        const function<bool(int, int)>& pruning_condition);
+
+    void build_dtgs(std::vector<DomainTransitionGraph *>& location);
+};
 
 struct LocalAssignment {
     short local_var;
@@ -34,11 +63,11 @@ struct LocalAssignment {
 };
 
 struct ValueTransitionLabel {
-    GlobalOperator *op;
+    const GlobalOperator *op;
     vector<LocalAssignment> precond;
     vector<LocalAssignment> effect;
 
-    ValueTransitionLabel(GlobalOperator *theOp, const vector<LocalAssignment> &precond_,
+    ValueTransitionLabel(const GlobalOperator *theOp, const vector<LocalAssignment> &precond_,
                          const vector<LocalAssignment> &effect_)
         : op(theOp), precond(precond_), effect(effect_) {}
     void dump() const;
@@ -82,6 +111,7 @@ class ContextEnhancedAdditiveHeuristic;
 class DomainTransitionGraph {
     friend class CGHeuristic;
     friend class cea_heuristic::ContextEnhancedAdditiveHeuristic;
+    friend class DTGFactory;
     friend struct ValueNode;
     friend struct ValueTransition;
     friend struct LocalAssignment;

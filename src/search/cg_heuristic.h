@@ -14,6 +14,7 @@ struct ValueNode;
 
 class CGHeuristic : public Heuristic {
     std::vector<AdaptiveQueue<ValueNode *> *> prio_queues;
+    std::vector<DomainTransitionGraph *> transition_graphs;
 
     CGCache *cache;
     int cache_hits;
