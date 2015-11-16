@@ -94,6 +94,7 @@ public:
     int get_goal_distance(int state) const { // used by shrink strategies and merge_dfp
         return goal_distances[state];
     }
+    void dump() const;
 };
 
 #endif
