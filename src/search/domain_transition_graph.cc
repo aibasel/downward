@@ -60,6 +60,7 @@ void DTGFactory::process_effect(const EffectProxy& eff, const OperatorProxy& op,
     int target = fact.get_value();
     vector<LocalAssignment> transition_condition;
     vector<LocalAssignment> side_effect;
+    int first_new_local_var = dtg->local_to_global_child.size()
     for (FactProxy fact : op.get_preconditions()) {
         if (fact.get_variable() == eff.get_fact().get_variable())
             origin = fact.get_value();
@@ -69,15 +70,19 @@ void DTGFactory::process_effect(const EffectProxy& eff, const OperatorProxy& op,
     }
     for (FactProxy fact : eff.get_conditions()) {
         if (fact.get_variable() == eff.get_fact().get_variable()) {
-            if (origin != -1 && fact.get_value() != origin)
+            if (origin != -1 && fact.get_value() != origin) {
+                revert_new_local_vars(dtg, first_new_local_var);
                 return; // conflicting condition on effect variable
+            }
             origin = fact.get_value();
         } else {
             update_transition_condition(fact, dtg, transition_condition);
         }
     }
-    if (origin != -1 && target == origin)
+    if (origin != -1 && target == origin) {
+        revert_new_local_vars(dtg, first_new_local_var);
         return;
+    }
     // TODO change this once the heuristics get adapted?
     const GlobalOperator *global_op = op.get_global_operator();
     if (origin != -1) {
@@ -112,6 +117,16 @@ void DTGFactory::extend_global_to_local_mapping_if_necessary(
         global_to_local_var[dtg->var][global_var] = dtg->local_to_global_child.size();
         dtg->local_to_global_child.push_back(global_var);
     }
+}
+
+void DTGFactory::revert_new_local_vars(DomainTransitionGraph* dtg,
+    int first_local_var) {
+    vector<int> &loc_to_glob = dtg->local_to_global_child;
+    for (int l = first_local_var; l < loc_to_glob.size(); ++l)
+        global_to_local_var[dtg->var].erase(loc_to_glob[l]);
+    if (loc_to_glob.size() > first_local_var)
+        loc_to_glob.erase(loc_to_glob.begin() + first_local_var,
+                          loc_to_glob.end());
 }
 
 ValueTransition* DTGFactory::get_transition(int origin, int target,

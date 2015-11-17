@@ -39,6 +39,7 @@ class DTGFactory {
         DomainTransitionGraph* dtg, std::vector<LocalAssignment>& condition);
     void extend_global_to_local_mapping_if_necessary(
         DomainTransitionGraph *dtg, int global_var); 
+    void revert_new_local_vars(DomainTransitionGraph* dtg, int first_local_var);
     ValueTransition* get_transition(int origin, int target,
         DomainTransitionGraph* dtg);
 
