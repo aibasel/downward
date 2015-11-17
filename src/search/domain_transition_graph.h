@@ -65,13 +65,18 @@ struct LocalAssignment {
 };
 
 struct ValueTransitionLabel {
-    const GlobalOperator *op;
+    const GlobalOperator *op; //cea
+    int op_id; // cg (new)
     vector<LocalAssignment> precond;
     vector<LocalAssignment> effect;
 
     ValueTransitionLabel(const GlobalOperator *theOp, const vector<LocalAssignment> &precond_,
                          const vector<LocalAssignment> &effect_)
-        : op(theOp), precond(precond_), effect(effect_) {}
+        : op(theOp), op_id(0), precond(precond_), effect(effect_) {}
+    
+    ValueTransitionLabel(int op_id, const vector<LocalAssignment> &precond_,
+                         const vector<LocalAssignment> &effect_)
+        : op(NULL), op_id(op_id), precond(precond_), effect(effect_) {}
 };
 
 struct ValueTransition {
