@@ -23,6 +23,7 @@ DTGFactory::DTGFactory(const TaskProxy& task_proxy,
 void DTGFactory::build_dtgs(vector<DomainTransitionGraph *>& location) {
     assert(location.empty()); // TODO use local location and move
 
+    cout << "Building DTGs..." << flush;
     allocate_graphs_and_nodes(location);
     transition_index.clear();
     transition_index.resize(location.size());
@@ -83,12 +84,10 @@ void DTGFactory::process_effect(const EffectProxy& eff, const OperatorProxy& op,
         revert_new_local_vars(dtg, first_new_local_var);
         return;
     }
-    // TODO change this once the heuristics get adapted?
-    const GlobalOperator *global_op = op.get_global_operator();
     if (origin != -1) {
         ValueTransition *trans = get_transition(origin, target, dtg);
         trans->labels.push_back(
-            ValueTransitionLabel(global_op, transition_condition, side_effect));
+            ValueTransitionLabel(op.get_id(), transition_condition, side_effect));
     } else {
         int domain_size = fact.get_variable().get_domain_size();
         for (int origin = 0; origin < domain_size; ++origin) {
@@ -96,7 +95,7 @@ void DTGFactory::process_effect(const EffectProxy& eff, const OperatorProxy& op,
                 continue;
             ValueTransition *trans = get_transition(origin, target, dtg);
             trans->labels.push_back(
-                ValueTransitionLabel(global_op, transition_condition, side_effect));
+                ValueTransitionLabel(op.get_id(), transition_condition, side_effect));
         }
     }
 }
@@ -142,6 +141,30 @@ ValueTransition* DTGFactory::get_transition(int origin, int target,
     }
     return &origin_node.transitions[trans_map[arc]];
 }
+
+//void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
+//    vector<ValueTransitionLabel> &labels) {
+//    const vector<int> &loc_to_glob = dtg->local_to_global_child;
+//    const map<int, int> &glob_to_loc = global_to_local_var[dtg->var];
+//    
+//    vector<ValueTransitionLabel> old_labels;
+//    old_labels.swap(labels);
+//    for (auto &label : old_labels) {
+//        // create global condition for label
+//        vector<pair<int, int>> precond_pairs;
+//        for (auto &assignment : label.precond) {
+//            int var = loc_to_glob[assignment.local_var];
+//            precond_pairs.push_back(make_pair(var, assignment.value));
+//        }
+//        sort(precond_pairs.begin(), precond_pairs.end());
+//
+//        // collect operator precondition
+//        
+//
+//        // collect side effect from each operator effect
+//
+//    }
+//}
 
 void DomainTransitionGraph::read_all(istream &in) {
     int var_count = g_variable_domain.size();

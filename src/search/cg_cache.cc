@@ -1,7 +1,6 @@
 #include "cg_cache.h"
 
 #include "causal_graph.h"
-#include "global_state.h"
 #include "globals.h"
 #include "task_proxy.h"
 #include "utilities.h"
@@ -14,13 +13,10 @@ using namespace std;
 
 const int CGCache::NOT_COMPUTED;
 
-CGCache::CGCache() {
+CGCache::CGCache(TaskProxy &task_proxy) {
     cout << "Initializing heuristic cache... " << flush;
 
-    int var_count = g_variable_domain.size();
-    /* TODO when switching merge and shrink to new task interface, use a
-       task passed as a parameter instead of g_root_task(). */
-    TaskProxy task_proxy(*g_root_task());
+    int var_count = task_proxy.get_variables().size();
     const CausalGraph &cg = task_proxy.get_causal_graph();
 
     // Compute inverted causal graph.
@@ -39,9 +35,7 @@ CGCache::CGCache() {
     // This is made easier because it is acyclic and the variables
     // are in topological order.
     for (int var = 0; var < var_count; ++var) {
-        int direct_depend_count = depends_on[var].size();
-        for (int i = 0; i < direct_depend_count; ++i) {
-            int affector = depends_on[var][i];
+        for (int affector : depends_on[var]) {
             assert(affector < var);
             depends_on[var].insert(depends_on[var].end(),
                                    depends_on[affector].begin(),
@@ -114,7 +108,7 @@ int CGCache::compute_required_cache_size(
     return required_size;
 }
 
-int CGCache::get_index(int var, const GlobalState &state,
+int CGCache::get_index(int var, const State &state,
                        int from_val, int to_val) const {
     assert(is_cached(var));
     assert(from_val != to_val);
@@ -122,7 +116,7 @@ int CGCache::get_index(int var, const GlobalState &state,
     int multiplier = g_variable_domain[var];
     for (size_t i = 0; i < depends_on[var].size(); ++i) {
         int dep_var = depends_on[var][i];
-        index += state[dep_var] * multiplier;
+        index += state[dep_var].get_value() * multiplier;
         multiplier *= g_variable_domain[dep_var];
     }
     if (to_val > from_val)
