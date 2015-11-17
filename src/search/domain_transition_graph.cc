@@ -288,11 +288,6 @@ void DomainTransitionGraph::read_data(istream &in) {
 }
 
 void ValueTransition::simplify() {
-    simplify_labels(labels);
-}
-
-void ValueTransition::simplify_labels(
-    vector<ValueTransitionLabel> &label_vec) {
     // Remove labels with duplicate or dominated conditions.
 
     /*
@@ -308,11 +303,11 @@ void ValueTransition::simplify_labels(
     typedef vector<pair<int, int>> HashKey;
     typedef unordered_map<HashKey, int> HashMap;
     HashMap label_index;
-    label_index.reserve(label_vec.size());
+    label_index.reserve(labels.size());
 
-    for (size_t i = 0; i < label_vec.size(); ++i) {
+    for (size_t i = 0; i < labels.size(); ++i) {
         HashKey key;
-        const vector<LocalAssignment> &conditions = label_vec[i].precond;
+        const vector<LocalAssignment> &conditions = labels[i].precond;
         for (size_t j = 0; j < conditions.size(); ++j)
             key.push_back(make_pair(conditions[j].local_var, conditions[j].value));
         sort(key.begin(), key.end());
@@ -320,7 +315,7 @@ void ValueTransition::simplify_labels(
     }
 
     vector<ValueTransitionLabel> old_labels;
-    old_labels.swap(label_vec);
+    old_labels.swap(labels);
 
     for (HashMap::iterator it = label_index.begin(); it != label_index.end(); ++it) {
         const HashKey &key = it->first;
@@ -350,6 +345,6 @@ void ValueTransition::simplify_labels(
             }
         }
         if (!match)
-            label_vec.push_back(old_labels[label_no]);
+            labels.push_back(old_labels[label_no]);
     }
 }
