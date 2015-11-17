@@ -60,7 +60,7 @@ void DTGFactory::process_effect(const EffectProxy& eff, const OperatorProxy& op,
     int target = fact.get_value();
     vector<LocalAssignment> transition_condition;
     vector<LocalAssignment> side_effect;
-    int first_new_local_var = dtg->local_to_global_child.size()
+    unsigned int first_new_local_var = dtg->local_to_global_child.size();
     for (FactProxy fact : op.get_preconditions()) {
         if (fact.get_variable() == eff.get_fact().get_variable())
             origin = fact.get_value();
@@ -120,9 +120,9 @@ void DTGFactory::extend_global_to_local_mapping_if_necessary(
 }
 
 void DTGFactory::revert_new_local_vars(DomainTransitionGraph* dtg,
-    int first_local_var) {
+    unsigned int first_local_var) {
     vector<int> &loc_to_glob = dtg->local_to_global_child;
-    for (int l = first_local_var; l < loc_to_glob.size(); ++l)
+    for (unsigned int l = first_local_var; l < loc_to_glob.size(); ++l)
         global_to_local_var[dtg->var].erase(loc_to_glob[l]);
     if (loc_to_glob.size() > first_local_var)
         loc_to_glob.erase(loc_to_glob.begin() + first_local_var,
