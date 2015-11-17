@@ -72,7 +72,6 @@ struct ValueTransitionLabel {
     ValueTransitionLabel(const GlobalOperator *theOp, const vector<LocalAssignment> &precond_,
                          const vector<LocalAssignment> &effect_)
         : op(theOp), precond(precond_), effect(effect_) {}
-    void dump() const;
 };
 
 struct ValueTransition {
@@ -83,9 +82,6 @@ struct ValueTransition {
         : target(targ) {}
 
     void simplify();
-    void dump() const;
-private:
-    void simplify_labels(vector<ValueTransitionLabel> &label_vec);
 };
 
 struct ValueNode {
@@ -102,7 +98,6 @@ struct ValueNode {
 
     ValueNode(DomainTransitionGraph *parent, int val)
         : parent_graph(parent), value(val), reached_from(0), reached_by(0) {}
-    void dump() const;
 };
 
 namespace cea_heuristic {
