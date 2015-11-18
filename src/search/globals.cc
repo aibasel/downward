@@ -253,8 +253,7 @@ void read_everything(istream &in) {
         getline(in, dummy_string);
     }
 
-    DomainTransitionGraph::read_all(in);
-    check_magic(in, "begin_CG"); // ignore everything from here
+    check_magic(in, "begin_DTG"); // ignore everything from here
 
     cout << "done reading input! [t=" << g_timer << "]" << endl;
 

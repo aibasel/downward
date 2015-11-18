@@ -132,9 +132,6 @@ class DomainTransitionGraph {
     DomainTransitionGraph(const DomainTransitionGraph &other); // copying forbidden
 public:
     DomainTransitionGraph(int var_index, int node_count);
-    void read_data(istream &in);
-
-    static void read_all(istream &in);
 };
 
 #endif
