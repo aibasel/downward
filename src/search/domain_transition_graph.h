@@ -43,6 +43,8 @@ class DTGFactory {
         unsigned int first_local_var);
     ValueTransition* get_transition(int origin, int target,
         DomainTransitionGraph* dtg);
+    void collect_side_effects(DomainTransitionGraph *dtg,
+        std::vector<ValueTransitionLabel> &labels);
 
 public:
     DTGFactory(const TaskProxy& task_proxy,
