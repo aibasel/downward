@@ -271,12 +271,11 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
         set_preferred(op);
     } else {
         // Recursively compute helpful transitions for the precondition variables.
-        const vector<LocalAssignment> &precond = helpful->precond;
-        for (size_t i = 0; i < precond.size(); ++i) {
-            int local_var = precond[i].local_var;
+        for (const LocalAssignment &assignment : helpful->precond) {
+            int local_var = assignment.local_var;
             int global_var = dtg->local_to_global_child[local_var];
             DomainTransitionGraph *precond_dtg = transition_graphs[global_var];
-            mark_helpful_transitions(state, precond_dtg, precond[i].value);
+            mark_helpful_transitions(state, precond_dtg, assignment.value);
         }
     }
 }
