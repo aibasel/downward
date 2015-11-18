@@ -133,7 +133,7 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
     int var_no) const {
     LocalProblem *problem = new LocalProblem;
 
-    DomainTransitionGraph *dtg = g_transition_graphs[var_no];
+    DomainTransitionGraph *dtg = transition_graphs[var_no];
 
     problem->context_variables = &dtg->local_to_global_child;
 
@@ -390,6 +390,10 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
 void ContextEnhancedAdditiveHeuristic::initialize() {
     assert(goal_problem == 0);
     cout << "Initializing context-enhanced additive heuristic..." << endl;
+
+    TaskProxy task_proxy(*g_root_task()); 
+    DTGFactory factory(task_proxy, true, [](int, int) { return false; });
+    factory.build_dtgs(transition_graphs);
 
     int num_variables = g_variable_domain.size();
 
