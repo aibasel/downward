@@ -1,8 +1,6 @@
 #include "cg_cache.h"
 
 #include "causal_graph.h"
-#include "globals.h"
-#include "task_proxy.h"
 #include "utilities.h"
 
 #include <algorithm>
@@ -13,7 +11,7 @@ using namespace std;
 
 const int CGCache::NOT_COMPUTED;
 
-CGCache::CGCache(TaskProxy &task_proxy) {
+CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = task_proxy.get_variables().size();
@@ -22,12 +20,11 @@ CGCache::CGCache(TaskProxy &task_proxy) {
     // Compute inverted causal graph.
     depends_on.resize(var_count);
     for (int var = 0; var < var_count; ++var) {
-        const vector<int> &succ = cg.get_pre_to_eff(var);
-        for (size_t i = 0; i < succ.size(); ++i) {
+        for (auto succ_var : cg.get_pre_to_eff(var)) {
             // Ignore arcs that are not part of the reduced CG:
             // These are ignored by the CG heuristic.
-            if (succ[i] > var)
-                depends_on[succ[i]].push_back(var);
+            if (succ_var > var)
+                depends_on[succ_var].push_back(var);
         }
     }
 
@@ -67,26 +64,26 @@ CGCache::~CGCache() {
 }
 
 int CGCache::compute_required_cache_size(
-    int var, const vector<int> &depends_on) const {
+    int var_id, const vector<int> &depends_on) const {
     /*
-      Compute the size of the cache required for variable "var", which
-      depends on the variables in "depends_on". Requires that the
-      caches for all variables in "depends_on" have already been
-      allocated. Returns -1 if the variable cannot be cached because
-      the required cache size would be too large.
+      Compute the size of the cache required for variable with id "var_id",
+      which depends on the variables in "depends_on". Requires that the caches
+      for all variables in "depends_on" have already been allocated. Returns -1
+      if the variable cannot be cached because the required cache size would be
+      too large.
     */
 
     const int MAX_CACHE_SIZE = 1000000;
 
-    int var_domain = g_variable_domain[var];
+    VariablesProxy variables = task_proxy.get_variables(); 
+    int var_domain = variables[var_id].get_domain_size();
     if (!is_product_within_limit(var_domain, var_domain - 1, MAX_CACHE_SIZE))
         return -1;
 
     int required_size = var_domain * (var_domain - 1);
 
-    for (size_t i = 0; i < depends_on.size(); ++i) {
-        int depend_var = depends_on[i];
-        int depend_var_domain = g_variable_domain[depend_var];
+    for (int depend_var_id : depends_on) {
+        int depend_var_domain = variables[depend_var_id].get_domain_size();
 
         /*
           If var depends on a variable var_i that is not cached, then
@@ -95,7 +92,7 @@ int CGCache::compute_required_cache_size(
           contributes quadratically to its own cache size but only
           linearly to the cache size of var.
         */
-        if (cache[depend_var].empty())
+        if (cache[depend_var_id].empty())
             return -1;
 
         if (!is_product_within_limit(required_size, depend_var_domain,
@@ -113,11 +110,10 @@ int CGCache::get_index(int var, const State &state,
     assert(is_cached(var));
     assert(from_val != to_val);
     int index = from_val;
-    int multiplier = g_variable_domain[var];
-    for (size_t i = 0; i < depends_on[var].size(); ++i) {
-        int dep_var = depends_on[var][i];
+    int multiplier = task_proxy.get_variables()[var].get_domain_size();
+    for (int dep_var : depends_on[var]) {
         index += state[dep_var].get_value() * multiplier;
-        multiplier *= g_variable_domain[dep_var];
+        multiplier *= task_proxy.get_variables()[dep_var].get_domain_size();
     }
     if (to_val > from_val)
         --to_val;
