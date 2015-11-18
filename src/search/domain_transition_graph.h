@@ -86,7 +86,7 @@ struct ValueTransition {
     ValueTransition(ValueNode *targ)
         : target(targ) {}
 
-    void simplify();
+    void simplify(const TaskProxy &task_proxy);
 };
 
 struct ValueNode {

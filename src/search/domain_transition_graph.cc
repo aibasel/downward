@@ -38,7 +38,7 @@ void DTGFactory::build_dtgs(vector<DomainTransitionGraph *>& location) {
         vector<ValueNode> &nodes = dtg->nodes;
         for (size_t value = 0; value < nodes.size(); ++value)
             for (size_t i = 0; i < nodes[value].transitions.size(); ++i)
-                nodes[value].transitions[i].simplify();
+                nodes[value].transitions[i].simplify(task_proxy);
     }
 }
 
@@ -187,11 +187,12 @@ void DomainTransitionGraph::read_all(istream &in) {
     // domains, but not for ADL domains.
 
     cout << "Simplifying transitions..." << flush;
+    TaskProxy task_proxy(*g_root_task());
     for (int var = 0; var < var_count; ++var) {
         vector<ValueNode> &nodes = g_transition_graphs[var]->nodes;
         for (size_t value = 0; value < nodes.size(); ++value)
             for (size_t i = 0; i < nodes[value].transitions.size(); ++i)
-                nodes[value].transitions[i].simplify();
+                nodes[value].transitions[i].simplify(task_proxy);
     }
     cout << " done!" << endl;
 }
@@ -310,7 +311,9 @@ void DomainTransitionGraph::read_data(istream &in) {
     check_magic(in, "end_DTG");
 }
 
-void ValueTransition::simplify() {
+// TODO after the read_all method has gone, this should maybe belong to the
+// factory (the current flow of the task proxy is somewhat awkward)
+void ValueTransition::simplify(const TaskProxy &task_proxy) {
     // Remove labels with duplicate or dominated conditions.
 
     /*
@@ -327,12 +330,12 @@ void ValueTransition::simplify() {
     typedef unordered_map<HashKey, int> HashMap;
     HashMap label_index;
     label_index.reserve(labels.size());
+    OperatorsProxy operators = task_proxy.get_operators();
 
     for (size_t i = 0; i < labels.size(); ++i) {
         HashKey key;
-        const vector<LocalAssignment> &conditions = labels[i].precond;
-        for (size_t j = 0; j < conditions.size(); ++j)
-            key.push_back(make_pair(conditions[j].local_var, conditions[j].value));
+        for (LocalAssignment &assign : labels[i].precond)
+            key.push_back(make_pair(assign.local_var, assign.value));
         sort(key.begin(), key.end());
         label_index[key] = i;
     }
@@ -340,12 +343,14 @@ void ValueTransition::simplify() {
     vector<ValueTransitionLabel> old_labels;
     old_labels.swap(labels);
 
-    for (HashMap::iterator it = label_index.begin(); it != label_index.end(); ++it) {
-        const HashKey &key = it->first;
-        int label_no = it->second;
+    for (auto &entry : label_index) {
+        const HashKey &key = entry.first;
+        int label_no = entry.second;
         int powerset_size = (1 << key.size()) - 1; // -1: only consider proper subsets
         bool match = false;
         if (powerset_size <= 31) { // HACK! Don't spend too much time here...
+            int label_op_id = old_labels[label_no].op_id;
+            int label_cost = operators[label_op_id].get_cost();
             for (int mask = 0; mask < powerset_size; ++mask) {
                 HashKey subset;
                 for (size_t i = 0; i < key.size(); ++i)
@@ -353,7 +358,8 @@ void ValueTransition::simplify() {
                         subset.push_back(key[i]);
                 HashMap::iterator found = label_index.find(subset);
                 if (found != label_index.end()) {
-                    if (old_labels[label_no].op->get_cost() >= old_labels[found->second].op->get_cost()) {
+                    const ValueTransitionLabel &f_label = old_labels[found->second];
+                    if (label_cost >= operators[f_label.op_id].get_cost()) {
                         /* TODO: Depending on how clever we want to
                            be, we could prune based on the *adjusted*
                            cost for the respective heuristic instead.
