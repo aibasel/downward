@@ -181,19 +181,6 @@ void DomainTransitionGraph::read_all(istream &in) {
     for (int var = 0; var < var_count; ++var)
         g_transition_graphs[var]->read_data(in);
 
-    // Third step: Simplify transitions.
-    // Don't do this for ADL domains, because the algorithm is exponential
-    // in the number of conditions of a transition, which is a constant for STRIPS
-    // domains, but not for ADL domains.
-
-    cout << "Simplifying transitions..." << flush;
-    TaskProxy task_proxy(*g_root_task());
-    for (int var = 0; var < var_count; ++var) {
-        vector<ValueNode> &nodes = g_transition_graphs[var]->nodes;
-        for (size_t value = 0; value < nodes.size(); ++value)
-            for (size_t i = 0; i < nodes[value].transitions.size(); ++i)
-                nodes[value].transitions[i].simplify(task_proxy);
-    }
     cout << " done!" << endl;
 }
 
