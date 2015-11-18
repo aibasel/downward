@@ -210,30 +210,13 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
             }
         }
         // TODO remove once cea heuristic uses task interface
-        const GlobalOperator *g_op = op.get_global_operator(); 
+        const GlobalOperator *g_op = op.get_global_operator();
+        // TODO Can we modify the existing labels instead?
         labels.push_back(
             ValueTransitionLabel(g_op, label.precond, side_effects));
     }
 }
 
-void DomainTransitionGraph::read_all(istream &in) {
-
-    int var_count = g_variable_domain.size();
-
-    // First step: Allocate graphs and nodes.
-    g_transition_graphs.reserve(var_count);
-    for (int var = 0; var < var_count; ++var) {
-        int range = g_variable_domain[var];
-        DomainTransitionGraph *dtg = new DomainTransitionGraph(var, range);
-        g_transition_graphs.push_back(dtg);
-    }
-
-    // Second step: Read transitions from file.
-    for (int var = 0; var < var_count; ++var)
-        g_transition_graphs[var]->read_data(in);
-
-    cout << " done!" << endl;
-}
 
 DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
     is_axiom = g_axiom_layers[var_index] != -1;
@@ -242,111 +225,6 @@ DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
     for (int value = 0; value < node_count; ++value)
         nodes.push_back(ValueNode(this, value));
     last_helpful_transition_extraction_time = -1;
-}
-
-// only used for cea heuristic
-void DomainTransitionGraph::read_data(istream &in) {
-    check_magic(in, "begin_DTG");
-
-    map<int, int> global_to_local_child;
-    map<int, int> global_to_cea_parent;
-    map<pair<int, int>, int> transition_index;
-    // TODO: This transition index business is caused by the fact
-    //       that transitions in the input are not grouped by target
-    //       like they should be. Change this.
-
-    for (size_t origin = 0; origin < nodes.size(); ++origin) {
-        int trans_count;
-        in >> trans_count;
-        for (int i = 0; i < trans_count; ++i) {
-            int target, operator_index;
-            in >> target;
-            in >> operator_index;
-
-            pair<int, int> arc = make_pair(origin, target);
-            if (!transition_index.count(arc)) {
-                transition_index[arc] = nodes[origin].transitions.size();
-                nodes[origin].transitions.push_back(ValueTransition(&nodes[target]));
-            }
-
-            assert(transition_index.count(arc));
-            ValueTransition *transition = &nodes[origin].transitions[transition_index[arc]];
-
-            vector<LocalAssignment> cea_precond;
-            vector<LocalAssignment> cea_effect;
-            int precond_count;
-            in >> precond_count;
-
-            vector<pair<int, int>> precond_pairs;  // Needed to build up cea_effect.
-            for (int j = 0; j < precond_count; ++j) {
-                int global_var, val;
-                in >> global_var >> val;
-                precond_pairs.push_back(make_pair(global_var, val));
-
-                // Processing for full DTG (cea CG).
-                if (!global_to_cea_parent.count(global_var)) {
-                    global_to_cea_parent[global_var] = local_to_global_child.size();
-                    local_to_global_child.push_back(global_var);
-                }
-                int cea_parent = global_to_cea_parent[global_var];
-                cea_precond.push_back(LocalAssignment(cea_parent, val));
-            }
-            GlobalOperator *the_operator;
-            if (is_axiom) {
-                assert(in_bounds(operator_index, g_axioms));
-                the_operator = &g_axioms[operator_index];
-            } else {
-                assert(in_bounds(operator_index, g_operators));
-                the_operator = &g_operators[operator_index];
-            }
-
-            // Build up cea_effect. This is messy because this isn't
-            // really the place to do this, and it was added very much as an
-            // afterthought.
-            sort(precond_pairs.begin(), precond_pairs.end());
-
-            unordered_map<int, int> pre_map;
-            const vector<GlobalCondition> &preconditions = the_operator->get_preconditions();
-            for (size_t j = 0; j < preconditions.size(); ++j)
-                pre_map[preconditions[j].var] = preconditions[j].val;
-
-            const vector<GlobalEffect> &effects = the_operator->get_effects();
-            for (size_t j = 0; j < effects.size(); ++j) {
-                int var_no = effects[j].var;
-                int pre = -1;
-                auto pre_it = pre_map.find(var_no);
-                if (pre_it != pre_map.end())
-                    pre = pre_it->second;
-                int post = effects[j].val;
-
-                if (var_no == var || !global_to_cea_parent.count(var_no)) {
-                    // This is either an effect on the variable we're
-                    // building the DTG for, or an effect on a variable we
-                    // don't need to track because it doesn't appear in
-                    // conditions of this DTG. Ignore it.
-                    continue;
-                }
-
-                vector<pair<int, int>> triggercond_pairs;
-                if (pre != -1)
-                    triggercond_pairs.push_back(make_pair(var_no, pre));
-
-                const vector<GlobalCondition> &cond = effects[j].conditions;
-                for (size_t k = 0; k < cond.size(); ++k)
-                    triggercond_pairs.push_back(make_pair(cond[k].var, cond[k].val));
-                sort(triggercond_pairs.begin(), triggercond_pairs.end());
-
-                if (includes(precond_pairs.begin(), precond_pairs.end(),
-                             triggercond_pairs.begin(), triggercond_pairs.end())) {
-                    int cea_parent = global_to_cea_parent[var_no];
-                    cea_effect.push_back(LocalAssignment(cea_parent, post));
-                }
-            }
-            transition->labels.push_back(
-                ValueTransitionLabel(the_operator, cea_precond, cea_effect));
-        }
-    }
-    check_magic(in, "end_DTG");
 }
 
 // TODO after the read_all method has gone, this should maybe belong to the
