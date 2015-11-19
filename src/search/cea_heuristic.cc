@@ -392,7 +392,7 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     assert(goal_problem == 0);
     cout << "Initializing context-enhanced additive heuristic..." << endl;
 
-    DTGFactory factory(task_proxy, true, [](int, int) { return false; });
+    DTGFactory factory(task_proxy, true, [](int, int) {return false; });
     factory.build_dtgs(transition_graphs);
 
     goal_problem = build_problem_for_goal();
@@ -402,7 +402,6 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     local_problem_index.resize(vars.size());
     for (VariableProxy var : vars)
         local_problem_index[var.get_id()].resize(var.get_domain_size(), 0);
-    
     min_action_cost = numeric_limits<int>::max();
     for (OperatorProxy op : task_proxy.get_operators())
         if (!op.is_axiom() && min_action_cost > op.get_cost())

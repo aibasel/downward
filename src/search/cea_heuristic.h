@@ -20,14 +20,14 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     std::vector<std::vector<LocalProblem *>> local_problem_index;
     LocalProblem *goal_problem;
     LocalProblemNode *goal_node;
+    int min_action_cost;
 
     AdaptiveQueue<LocalProblemNode *> node_queue;
 
     LocalProblem *get_local_problem(int var_no, int value);
     LocalProblem *build_problem_for_variable(int var_no) const;
     LocalProblem *build_problem_for_goal() const;
-    
-    int min_action_cost;
+
 
     int get_priority(LocalProblemNode *node) const;
     void initialize_heap();
