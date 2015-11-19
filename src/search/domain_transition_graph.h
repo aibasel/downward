@@ -21,38 +21,39 @@ class DomainTransitionGraph;
 // put into vectors otherwise.
 
 class DTGFactory {
-    const TaskProxy& task_proxy;
+    const TaskProxy &task_proxy;
     bool collect_transition_side_effects;
-    const function<bool(int, int)>& pruning_condition;
+    const function<bool(int, int)> &pruning_condition;
 
-    std::vector<std::unordered_map<std::pair<int,int>, int>> transition_index;
+    std::vector<std::unordered_map<std::pair<int, int>, int>> transition_index;
     std::vector<std::unordered_map<int, int>> global_to_local_var;
 
-    void allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& dtgs);
+    void allocate_graphs_and_nodes(vector<DomainTransitionGraph *> &dtgs);
     void initialize_index_structures(int num_dtgs);
-    void create_transitions(vector<DomainTransitionGraph *>& dtgs);
-    void process_effect(const EffectProxy& eff, const OperatorProxy& op,
-        std::vector<DomainTransitionGraph *>& dtgs);
-    void update_transition_condition(const FactProxy& fact,
-        DomainTransitionGraph* dtg, std::vector<LocalAssignment>& condition);
+    void create_transitions(vector<DomainTransitionGraph *> &dtgs);
+    void process_effect(const EffectProxy &eff, const OperatorProxy &op,
+                        std::vector<DomainTransitionGraph *> &dtgs);
+    void update_transition_condition(const FactProxy &fact,
+                                     DomainTransitionGraph *dtg,
+                                     vector<LocalAssignment> &condition);
     void extend_global_to_local_mapping_if_necessary(
-        DomainTransitionGraph *dtg, int global_var); 
-    void revert_new_local_vars(DomainTransitionGraph* dtg,
-        unsigned int first_local_var);
-    ValueTransition* get_transition(int origin, int target,
-        DomainTransitionGraph* dtg);
-    void simplify_transitions(vector<DomainTransitionGraph *>& dtgs);
+        DomainTransitionGraph *dtg, int global_var);
+    void revert_new_local_vars(DomainTransitionGraph *dtg,
+                               unsigned int first_local_var);
+    ValueTransition *get_transition(int origin, int target,
+                                    DomainTransitionGraph *dtg);
+    void simplify_transitions(vector<DomainTransitionGraph *> &dtgs);
     void simplify_labels(vector<ValueTransitionLabel> &labels);
-    void collect_all_side_effects(vector<DomainTransitionGraph *>& dtgs);
+    void collect_all_side_effects(vector<DomainTransitionGraph *> &dtgs);
     void collect_side_effects(DomainTransitionGraph *dtg,
-        std::vector<ValueTransitionLabel> &labels);
+                              std::vector<ValueTransitionLabel> &labels);
 
 public:
-    DTGFactory(const TaskProxy& task_proxy,
-        bool collect_transition_side_effects,
-        const function<bool(int, int)>& pruning_condition);
+    DTGFactory(const TaskProxy &task_proxy,
+               bool collect_transition_side_effects,
+               const function<bool(int, int)> &pruning_condition);
 
-    void build_dtgs(std::vector<DomainTransitionGraph *>& dtgs);
+    void build_dtgs(std::vector<DomainTransitionGraph *> &dtgs);
 };
 
 struct LocalAssignment {

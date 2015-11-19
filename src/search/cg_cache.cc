@@ -75,7 +75,7 @@ int CGCache::compute_required_cache_size(
 
     const int MAX_CACHE_SIZE = 1000000;
 
-    VariablesProxy variables = task_proxy.get_variables(); 
+    VariablesProxy variables = task_proxy.get_variables();
     int var_domain = variables[var_id].get_domain_size();
     if (!is_product_within_limit(var_domain, var_domain - 1, MAX_CACHE_SIZE))
         return -1;
