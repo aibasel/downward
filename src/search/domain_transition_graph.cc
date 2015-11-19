@@ -131,7 +131,7 @@ void DTGFactory::revert_new_local_vars(DomainTransitionGraph* dtg,
 
 ValueTransition* DTGFactory::get_transition(int origin, int target,
     DomainTransitionGraph* dtg) {
-    map<pair<int,int>, int>& trans_map = transition_index[dtg->var];
+    unordered_map<pair<int,int>, int>& trans_map = transition_index[dtg->var];
     pair<int,int> arc = make_pair(origin, target);
     ValueNode& origin_node = dtg->nodes[origin];
     // create new transition if necessary
@@ -146,7 +146,7 @@ ValueTransition* DTGFactory::get_transition(int origin, int target,
 void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
     vector<ValueTransitionLabel> &labels) {
     const vector<int> &loc_to_glob = dtg->local_to_global_child;
-    const map<int, int> &glob_to_loc = global_to_local_var[dtg->var];
+    const unordered_map<int, int> &glob_to_loc = global_to_local_var[dtg->var];
     
     for (auto &label : labels) {
         // create global condition for label
