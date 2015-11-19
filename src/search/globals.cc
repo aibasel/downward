@@ -2,7 +2,6 @@
 
 #include "axioms.h"
 #include "causal_graph.h"
-#include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
 #include "heuristic.h"
@@ -384,7 +383,6 @@ vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
-vector<DomainTransitionGraph *> g_transition_graphs;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";
