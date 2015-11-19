@@ -108,9 +108,6 @@ class DomainTransitionGraph {
     friend class CGHeuristic;
     friend class cea_heuristic::ContextEnhancedAdditiveHeuristic;
     friend class DTGFactory;
-    friend struct ValueNode;
-    friend struct ValueTransition;
-    friend struct LocalAssignment;
 
     int var;
     vector<ValueNode> nodes;
