@@ -10,8 +10,6 @@
 using namespace std;
 
 class CGHeuristic;
-class GlobalOperator;
-class GlobalState;
 
 struct LocalAssignment;
 struct ValueNode;
@@ -67,18 +65,13 @@ struct LocalAssignment {
 };
 
 struct ValueTransitionLabel {
-    const GlobalOperator *op; //cea
-    int op_id; // cg (new)
+    int op_id;
     vector<LocalAssignment> precond;
     vector<LocalAssignment> effect;
 
-    ValueTransitionLabel(const GlobalOperator *theOp, const vector<LocalAssignment> &precond_,
-                         const vector<LocalAssignment> &effect_)
-        : op(theOp), op_id(0), precond(precond_), effect(effect_) {}
-    
     ValueTransitionLabel(int op_id, const vector<LocalAssignment> &precond_,
                          const vector<LocalAssignment> &effect_)
-        : op(NULL), op_id(op_id), precond(precond_), effect(effect_) {}
+        : op_id(op_id), precond(precond_), effect(effect_) {}
 };
 
 struct ValueTransition {
@@ -120,7 +113,6 @@ class DomainTransitionGraph {
     friend struct LocalAssignment;
 
     int var;
-    bool is_axiom;
     vector<ValueNode> nodes;
 
     int last_helpful_transition_extraction_time; // cg heuristic; "dirty bit"

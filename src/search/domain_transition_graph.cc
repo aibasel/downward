@@ -7,8 +7,6 @@
 using namespace std;
 
 #include "domain_transition_graph.h"
-#include "global_operator.h"
-#include "globals.h"
 #include "utilities.h"
 #include "utilities_hash.h"
 
@@ -213,7 +211,6 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
 
 
 DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
-    is_axiom = g_axiom_layers[var_index] != -1;
     var = var_index;
     nodes.reserve(node_count);
     for (int value = 0; value < node_count; ++value)
