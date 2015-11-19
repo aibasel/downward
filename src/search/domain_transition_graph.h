@@ -4,7 +4,6 @@
 #include "task_proxy.h"
 
 #include <cassert>
-#include <iostream>
 #include <unordered_map>
 #include <vector>
 using namespace std;
@@ -30,6 +29,8 @@ class DTGFactory {
     std::vector<std::unordered_map<int, int>> global_to_local_var;
 
     void allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& location);
+    void initialize_index_structures(int num_dtgs);
+    void create_transitions(vector<DomainTransitionGraph *>& location);
     void process_effect(const EffectProxy& eff, const OperatorProxy& op,
         std::vector<DomainTransitionGraph *>& dtgs);
     void update_transition_condition(const FactProxy& fact,
@@ -42,6 +43,7 @@ class DTGFactory {
         DomainTransitionGraph* dtg);
     void simplify_transitions(vector<DomainTransitionGraph *>& location);
     void simplify_labels(vector<ValueTransitionLabel> &labels);
+    void collect_all_side_effects(vector<DomainTransitionGraph *>& location);
     void collect_side_effects(DomainTransitionGraph *dtg,
         std::vector<ValueTransitionLabel> &labels);
 
