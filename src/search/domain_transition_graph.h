@@ -5,7 +5,7 @@
 
 #include <cassert>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 using namespace std;
 
@@ -26,9 +26,8 @@ class DTGFactory {
     bool collect_transition_side_effects;
     const function<bool(int, int)>& pruning_condition;
 
-    // TODO: map or unordered_map?
-    std::vector<std::map<std::pair<int,int>, int>> transition_index;
-    std::vector<std::map<int, int>> global_to_local_var;
+    std::vector<std::unordered_map<std::pair<int,int>, int>> transition_index;
+    std::vector<std::unordered_map<int, int>> global_to_local_var;
 
     void allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& location);
     void process_effect(const EffectProxy& eff, const OperatorProxy& op,
