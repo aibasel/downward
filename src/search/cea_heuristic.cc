@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "task_tools.h"
 
 #include <cassert>
 #include <limits>
@@ -138,7 +139,7 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
     problem->context_variables = &dtg->local_to_global_child;
 
     int num_parents = problem->context_variables->size();
-    size_t num_values = g_variable_domain[var_no];
+    size_t num_values = task_proxy.get_variables()[var_no].get_domain_size();
     problem->nodes.reserve(num_values);
     for (size_t value = 0; value < num_values; ++value)
         problem->nodes.push_back(LocalProblemNode(problem, num_parents));
@@ -151,10 +152,9 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
             const ValueTransition &dtg_trans = dtg_node.transitions[i];
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = problem->nodes[target_value];
-            for (size_t j = 0; j < dtg_trans.labels.size(); ++j) {
-                const ValueTransitionLabel &label = dtg_trans.labels[j];
-                int action_cost = get_adjusted_cost(*label.op);
-                LocalTransition trans(&node, &target, &label, action_cost);
+            for (const ValueTransitionLabel &label : dtg_trans.labels) {
+                int cost = task_proxy.get_operators()[label.op_id].get_cost();
+                LocalTransition trans(&node, &target, &label, cost);
                 node.outgoing_transitions.push_back(trans);
             }
         }
@@ -165,16 +165,18 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
 LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
     LocalProblem *problem = new LocalProblem;
 
+    GoalsProxy goals_proxy = task_proxy.get_goals();
+
     problem->context_variables = new vector<int>;
-    for (size_t i = 0; i < g_goal.size(); ++i)
-        problem->context_variables->push_back(g_goal[i].first);
+    for (FactProxy goal : goals_proxy)
+        problem->context_variables->push_back(goal.get_variable().get_id());
 
     for (size_t value = 0; value < 2; ++value)
-        problem->nodes.push_back(LocalProblemNode(problem, g_goal.size()));
+        problem->nodes.push_back(LocalProblemNode(problem, goals_proxy.size()));
 
     vector<LocalAssignment> goals;
-    for (size_t goal_no = 0; goal_no < g_goal.size(); ++goal_no) {
-        int goal_value = g_goal[goal_no].second;
+    for (size_t goal_no = 0; goal_no < goals_proxy.size(); ++goal_no) {
+        int goal_value = goals_proxy[goal_no].get_value();
         goals.push_back(LocalAssignment(goal_no, goal_value));
     }
     vector<LocalAssignment> no_effects;
@@ -212,22 +214,21 @@ bool ContextEnhancedAdditiveHeuristic::is_local_problem_set_up(
 
 void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
     LocalProblem *problem, int base_priority,
-    int start_value, const GlobalState &state) {
+    int start_value, const State &state) {
     assert(problem->base_priority == -1);
     problem->base_priority = base_priority;
 
-    vector<LocalProblemNode> &nodes = problem->nodes;
-    for (size_t to_value = 0; to_value < nodes.size(); ++to_value) {
-        nodes[to_value].expanded = false;
-        nodes[to_value].cost = numeric_limits<int>::max();
-        nodes[to_value].waiting_list.clear();
-        nodes[to_value].reached_by = 0;
+    for (auto &to_node : problem->nodes) {
+        to_node.expanded = false;
+        to_node.cost = numeric_limits<int>::max();
+        to_node.waiting_list.clear();
+        to_node.reached_by = 0;
     }
 
-    LocalProblemNode *start = &nodes[start_value];
+    LocalProblemNode *start = &problem->nodes[start_value];
     start->cost = 0;
     for (size_t i = 0; i < problem->context_variables->size(); ++i)
-        start->context[i] = state[(*problem->context_variables)[i]];
+        start->context[i] = state[(*problem->context_variables)[i]].get_value();
 
     add_to_heap(start);
 }
@@ -272,7 +273,7 @@ void ContextEnhancedAdditiveHeuristic::expand_node(LocalProblemNode *node) {
 }
 
 void ContextEnhancedAdditiveHeuristic::expand_transition(
-    LocalTransition *trans, const GlobalState &state) {
+    LocalTransition *trans, const State &state) {
     /* Called when the source of trans is reached by Dijkstra
        exploration. Try to compute cost for the target of the
        transition from the source cost, action cost, and set-up costs
@@ -333,7 +334,7 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
     try_to_fire_transition(trans);
 }
 
-int ContextEnhancedAdditiveHeuristic::compute_costs(const GlobalState &state) {
+int ContextEnhancedAdditiveHeuristic::compute_costs(const State &state) {
     while (!node_queue.empty()) {
         pair<int, LocalProblemNode *> top_pair = node_queue.pop();
         int curr_priority = top_pair.first;
@@ -347,39 +348,39 @@ int ContextEnhancedAdditiveHeuristic::compute_costs(const GlobalState &state) {
 
         assert(get_priority(node) == curr_priority);
         expand_node(node);
-        for (size_t i = 0; i < node->outgoing_transitions.size(); ++i)
-            expand_transition(&node->outgoing_transitions[i], state);
+        for (auto &transition : node->outgoing_transitions)
+            expand_transition(&transition, state);
     }
     return DEAD_END;
 }
 
 void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
-    LocalProblem *problem, LocalProblemNode *node, const GlobalState &state) {
+    LocalProblem *problem, LocalProblemNode *node, const State &state) {
     assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
     LocalTransition *first_on_path = node->reached_by;
+    OperatorsProxy ops = task_proxy.get_operators();
     if (first_on_path) {
         node->reached_by = 0; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
-            const GlobalOperator *op = first_on_path->label->op;
-            if (g_min_action_cost != 0 || op->is_applicable(state)) {
+            OperatorProxy op = ops[first_on_path->label->op_id];
+            if (min_action_cost != 0 || is_applicable(op, state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
-                assert(!op->is_axiom());
+                assert(!op.is_axiom());
                 set_preferred(op);
             }
         } else {
             // Recursively compute helpful transitions for preconditions.
-            const vector<LocalAssignment> &precond = first_on_path->label->precond;
             int *context_vars = &*problem->context_variables->begin();
-            for (size_t i = 0; i < precond.size(); ++i) {
-                int precond_value = precond[i].value;
-                int local_var = precond[i].local_var;
+            for (const auto &assignment : first_on_path->label->precond) {
+                int precond_value = assignment.value;
+                int local_var = assignment.local_var;
                 int precond_var_no = context_vars[local_var];
-                if (state[precond_var_no] == precond_value)
+                if (state[precond_var_no].get_value() == precond_value)
                     continue;
                 LocalProblem *subproblem = get_local_problem(
-                    precond_var_no, state[precond_var_no]);
+                    precond_var_no, state[precond_var_no].get_value());
                 LocalProblemNode *subnode = &subproblem->nodes[precond_value];
                 mark_helpful_transitions(subproblem, subnode, state);
             }
@@ -391,27 +392,29 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     assert(goal_problem == 0);
     cout << "Initializing context-enhanced additive heuristic..." << endl;
 
-    TaskProxy task_proxy(*g_root_task()); 
     DTGFactory factory(task_proxy, true, [](int, int) { return false; });
     factory.build_dtgs(transition_graphs);
-
-    int num_variables = g_variable_domain.size();
 
     goal_problem = build_problem_for_goal();
     goal_node = &goal_problem->nodes[1];
 
-    local_problem_index.resize(num_variables);
-    for (int var_no = 0; var_no < num_variables; ++var_no) {
-        int num_values = g_variable_domain[var_no];
-        local_problem_index[var_no].resize(num_values, 0);
-    }
+    VariablesProxy vars = task_proxy.get_variables();
+    local_problem_index.resize(vars.size());
+    for (VariableProxy var : vars)
+        local_problem_index[var.get_id()].resize(var.get_domain_size(), 0);
+    
+    min_action_cost = numeric_limits<int>::max();
+    for (OperatorProxy op : task_proxy.get_operators())
+        if (!op.is_axiom() && min_action_cost > op.get_cost())
+            min_action_cost = op.get_cost();
 }
 
-int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &state) {
+int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &g_state) {
+    const State state = convert_global_state(g_state);
     initialize_heap();
     goal_problem->base_priority = -1;
-    for (size_t i = 0; i < local_problems.size(); ++i)
-        local_problems[i]->base_priority = -1;
+    for (LocalProblem *problem : local_problems)
+        problem->base_priority = -1;
 
     set_up_local_problem(goal_problem, 0, 0, state);
 
@@ -436,8 +439,10 @@ ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
     }
     delete goal_problem;
 
-    for (size_t i = 0; i < local_problems.size(); ++i)
-        delete local_problems[i];
+    for (LocalProblem *problem : local_problems)
+        delete problem;
+    for (DomainTransitionGraph *dtg : transition_graphs)
+        delete dtg;
 }
 
 bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {

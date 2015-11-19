@@ -209,11 +209,9 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
                 side_effects.push_back(LocalAssignment(local_var, post));
             }
         }
-        // TODO remove once cea heuristic uses task interface
-        const GlobalOperator *g_op = op.get_global_operator();
         // TODO Can we modify the existing labels instead?
         labels.push_back(
-            ValueTransitionLabel(g_op, label.precond, side_effects));
+            ValueTransitionLabel(op.get_id(), label.precond, side_effects));
     }
 }
 
