@@ -53,7 +53,7 @@ public:
                bool collect_transition_side_effects,
                const function<bool(int, int)> &pruning_condition);
 
-    void build_dtgs(std::vector<DomainTransitionGraph *> &dtgs);
+    vector<DomainTransitionGraph *> build_dtgs();
 };
 
 struct LocalAssignment {

@@ -42,7 +42,7 @@ void CGHeuristic::initialize() {
     function<bool(int, int)> pruning_condition =
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
     DTGFactory factory(task_proxy, false, pruning_condition);
-    factory.build_dtgs(transition_graphs);
+    transition_graphs = factory.build_dtgs();
 
     min_action_cost = numeric_limits<int>::max();
     for (OperatorProxy op : task_proxy.get_operators())

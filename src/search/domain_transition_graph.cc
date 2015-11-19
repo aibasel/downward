@@ -16,8 +16,8 @@ DTGFactory::DTGFactory(const TaskProxy &task_proxy,
       pruning_condition(pruning_condition) {
 }
 
-void DTGFactory::build_dtgs(vector<DomainTransitionGraph *> &dtgs) {
-    assert(dtgs.empty()); // TODO use local location and move
+vector<DomainTransitionGraph *> DTGFactory::build_dtgs() {
+    vector<DomainTransitionGraph *> dtgs;
 
     allocate_graphs_and_nodes(dtgs);
     initialize_index_structures(dtgs.size());
@@ -25,6 +25,7 @@ void DTGFactory::build_dtgs(vector<DomainTransitionGraph *> &dtgs) {
     simplify_transitions(dtgs);
     if (collect_transition_side_effects)
         collect_all_side_effects(dtgs);
+    return dtgs;
 }
 
 void DTGFactory::allocate_graphs_and_nodes(vector<DomainTransitionGraph *> &dtgs) {
