@@ -157,9 +157,7 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
     const vector<int> &loc_to_glob = dtg->local_to_global_child;
     const map<int, int> &glob_to_loc = global_to_local_var[dtg->var];
     
-    vector<ValueTransitionLabel> old_labels;
-    old_labels.swap(labels);
-    for (auto &label : old_labels) {
+    for (auto &label : labels) {
         // create global condition for label
         vector<pair<int, int>> precond_pairs;
         for (auto &assignment : label.precond) {
@@ -209,9 +207,7 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
                 side_effects.push_back(LocalAssignment(local_var, post));
             }
         }
-        // TODO Can we modify the existing labels instead?
-        labels.push_back(
-            ValueTransitionLabel(op.get_id(), label.precond, side_effects));
+        label.effect = side_effects;
     }
 }
 
