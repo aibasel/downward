@@ -31,14 +31,7 @@ void DTGFactory::build_dtgs(vector<DomainTransitionGraph *>& location) {
         for (EffectProxy eff : op.get_effects())
             process_effect(eff, op, location);
 
-    cout << "Simplifying transitions..." << flush;
-    for (auto *dtg : location) {
-        vector<ValueNode> &nodes = dtg->nodes;
-        for (size_t value = 0; value < nodes.size(); ++value)
-            for (size_t i = 0; i < nodes[value].transitions.size(); ++i)
-                nodes[value].transitions[i].simplify(task_proxy);
-    }
-
+    simplify_transitions(location);
     if (collect_transition_side_effects) {
         cout << "Collecting transition side effects..." << flush;
         for (auto *dtg : location) {
@@ -218,9 +211,14 @@ DomainTransitionGraph::DomainTransitionGraph(int var_index, int node_count) {
     last_helpful_transition_extraction_time = -1;
 }
 
-// TODO after the read_all method has gone, this should maybe belong to the
-// factory (the current flow of the task proxy is somewhat awkward)
-void ValueTransition::simplify(const TaskProxy &task_proxy) {
+void DTGFactory::simplify_transitions(vector<DomainTransitionGraph *>& location) {
+    for (auto *dtg : location)
+        for (ValueNode &node : dtg->nodes) 
+            for (ValueTransition &transition : node.transitions)
+                simplify_labels(transition.labels);
+}
+
+void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
     // Remove labels with duplicate or dominated conditions.
 
     /*
