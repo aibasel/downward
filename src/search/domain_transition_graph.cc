@@ -16,25 +16,24 @@ DTGFactory::DTGFactory(const TaskProxy& task_proxy,
         pruning_condition(pruning_condition) {
     }
 
-void DTGFactory::build_dtgs(vector<DomainTransitionGraph *>& location) {
-    assert(location.empty()); // TODO use local location and move
+void DTGFactory::build_dtgs(vector<DomainTransitionGraph *>& dtgs) {
+    assert(dtgs.empty()); // TODO use local location and move
 
-    cout << "Building DTGs..." << flush;
-    allocate_graphs_and_nodes(location);
-    initialize_index_structures(location.size());
-    create_transitions(location);
-    simplify_transitions(location);
+    allocate_graphs_and_nodes(dtgs);
+    initialize_index_structures(dtgs.size());
+    create_transitions(dtgs);
+    simplify_transitions(dtgs);
     if (collect_transition_side_effects)
-        collect_all_side_effects(location);
+        collect_all_side_effects(dtgs);
 }
 
-void DTGFactory::allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& location) {
+void DTGFactory::allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& dtgs) {
     VariablesProxy variables = task_proxy.get_variables();
-    location.resize(variables.size());
+    dtgs.resize(variables.size());
     for (VariableProxy var : variables) {
         int var_id = var.get_id();
         int range = var.get_domain_size();
-        location[var_id] = new DomainTransitionGraph(var_id, range);
+        dtgs[var_id] = new DomainTransitionGraph(var_id, range);
     }
 }
 
@@ -45,10 +44,10 @@ void DTGFactory::initialize_index_structures(int num_dtgs) {
     global_to_local_var.resize(num_dtgs);
 }
 
-void DTGFactory::create_transitions(vector<DomainTransitionGraph *>& location) {
+void DTGFactory::create_transitions(vector<DomainTransitionGraph *>& dtgs) {
     for (OperatorProxy op : task_proxy.get_operators())
         for (EffectProxy eff : op.get_effects())
-            process_effect(eff, op, location);
+            process_effect(eff, op, dtgs);
 }
 
 void DTGFactory::process_effect(const EffectProxy& eff, const OperatorProxy& op,
@@ -141,8 +140,8 @@ ValueTransition* DTGFactory::get_transition(int origin, int target,
     return &origin_node.transitions[trans_map[arc]];
 }
 
-void DTGFactory::collect_all_side_effects(vector<DomainTransitionGraph *>& location) {
-    for (auto *dtg : location) {
+void DTGFactory::collect_all_side_effects(vector<DomainTransitionGraph *>& dtgs) {
+    for (auto *dtg : dtgs) {
         for (auto &node : dtg->nodes)
             for (auto &transition: node.transitions)
                 collect_side_effects(dtg, transition.labels);
@@ -208,8 +207,8 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
     }
 }
 
-void DTGFactory::simplify_transitions(vector<DomainTransitionGraph *>& location) {
-    for (auto *dtg : location)
+void DTGFactory::simplify_transitions(vector<DomainTransitionGraph *>& dtgs) {
+    for (auto *dtg : dtgs)
         for (ValueNode &node : dtg->nodes) 
             for (ValueTransition &transition : node.transitions)
                 simplify_labels(transition.labels);

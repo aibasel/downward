@@ -28,9 +28,9 @@ class DTGFactory {
     std::vector<std::unordered_map<std::pair<int,int>, int>> transition_index;
     std::vector<std::unordered_map<int, int>> global_to_local_var;
 
-    void allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& location);
+    void allocate_graphs_and_nodes(vector<DomainTransitionGraph *>& dtgs);
     void initialize_index_structures(int num_dtgs);
-    void create_transitions(vector<DomainTransitionGraph *>& location);
+    void create_transitions(vector<DomainTransitionGraph *>& dtgs);
     void process_effect(const EffectProxy& eff, const OperatorProxy& op,
         std::vector<DomainTransitionGraph *>& dtgs);
     void update_transition_condition(const FactProxy& fact,
@@ -41,9 +41,9 @@ class DTGFactory {
         unsigned int first_local_var);
     ValueTransition* get_transition(int origin, int target,
         DomainTransitionGraph* dtg);
-    void simplify_transitions(vector<DomainTransitionGraph *>& location);
+    void simplify_transitions(vector<DomainTransitionGraph *>& dtgs);
     void simplify_labels(vector<ValueTransitionLabel> &labels);
-    void collect_all_side_effects(vector<DomainTransitionGraph *>& location);
+    void collect_all_side_effects(vector<DomainTransitionGraph *>& dtgs);
     void collect_side_effects(DomainTransitionGraph *dtg,
         std::vector<ValueTransitionLabel> &labels);
 
@@ -52,7 +52,7 @@ public:
         bool collect_transition_side_effects,
         const function<bool(int, int)>& pruning_condition);
 
-    void build_dtgs(std::vector<DomainTransitionGraph *>& location);
+    void build_dtgs(std::vector<DomainTransitionGraph *>& dtgs);
 };
 
 struct LocalAssignment {
