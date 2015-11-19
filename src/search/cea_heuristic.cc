@@ -393,7 +393,7 @@ void ContextEnhancedAdditiveHeuristic::initialize() {
     cout << "Initializing context-enhanced additive heuristic..." << endl;
 
     DTGFactory factory(task_proxy, true, [](int, int) {return false; });
-    factory.build_dtgs(transition_graphs);
+    transition_graphs = factory.build_dtgs();
 
     goal_problem = build_problem_for_goal();
     goal_node = &goal_problem->nodes[1];
