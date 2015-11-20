@@ -271,7 +271,7 @@ static Heuristic *_parse(OptionParser &parser) {
                              "See also Synergy");
     parser.document_note(
         "Note",
-        "to use ``optimal=true``, you must build the planner with USE_LP=1. "
+        "to use ``optimal=true``, you must build the planner with LP support. "
         "See LPBuildInstructions.");
     parser.document_note(
         "Optimal search",
