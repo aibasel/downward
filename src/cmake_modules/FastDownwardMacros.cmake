@@ -234,6 +234,7 @@ function(fast_downward_add_plugin_sources _SOURCES_LIST_VAR)
                 message(STATUS "Enabling plugin ${PLUGIN_${DEPENDENCY}_DISPLAY_NAME} "
                         "because plugin ${PLUGIN_${PLUGIN}_DISPLAY_NAME} is enabled and depends on it.")
                 set(PLUGIN_${DEPENDENCY}_ENABLED TRUE)
+                set(PLUGIN_${DEPENDENCY}_ENABLED TRUE PARENT_SCOPE)
                 list(APPEND _UNCHECKED_PLUGINS ${DEPENDENCY})
             endif()
         endforeach()
