@@ -1,6 +1,8 @@
 #include "pattern_generation_haslum.h"
 
 #include "canonical_pdbs_heuristic.h"
+#include "canonical_pdbs_heuristic.h"
+#include "incremental_canonical_pdbs.h"
 #include "pattern_database.h"
 
 #include "../causal_graph.h"
@@ -330,7 +332,7 @@ void PatternGenerationHaslum::initialize() {
     opts.set<int>("cost_type", NORMAL);
     opts.set<vector<vector<int>>>("patterns", initial_pattern_collection);
     opts.set<bool>("cache_estimates", cache_h);
-    current_heuristic = make_unique_ptr<CanonicalPDBsHeuristic>(opts);
+    current_heuristic = make_unique_ptr<IncrementalCanonicalPDBs>(opts);
 
     State initial_state = task_proxy.get_initial_state();
     if (current_heuristic->is_dead_end(initial_state))
