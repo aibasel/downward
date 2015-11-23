@@ -1,8 +1,10 @@
 #ifndef MAX_HEURISTIC_H
 #define MAX_HEURISTIC_H
 
-#include "priority_queue.h"
 #include "relaxation_heuristic.h"
+
+#include "../priority_queue.h"
+
 #include <cassert>
 
 class HSPMaxHeuristic : public RelaxationHeuristic {

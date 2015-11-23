@@ -1,7 +1,7 @@
 #ifndef BLIND_SEARCH_HEURISTIC_H
 #define BLIND_SEARCH_HEURISTIC_H
 
-#include "heuristic.h"
+#include "../heuristic.h"
 
 class BlindSearchHeuristic : public Heuristic {
     int min_operator_cost;

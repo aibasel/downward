@@ -1,10 +1,11 @@
 #include "lm_cut_constraints.h"
 
-#include "../lm_cut_landmarks.h"
 #include "../lp_solver.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../utilities.h"
+
+#include "../heuristics/lm_cut_landmarks.h"
 
 #include <cassert>
 

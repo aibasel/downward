@@ -1,8 +1,8 @@
 #include "ipc_max_heuristic.h"
 
-#include "evaluation_context.h"
-#include "option_parser.h"
-#include "plugin.h"
+#include "../evaluation_context.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 using namespace std;
 

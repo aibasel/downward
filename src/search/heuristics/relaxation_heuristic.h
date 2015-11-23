@@ -1,7 +1,7 @@
 #ifndef RELAXATION_HEURISTIC_H
 #define RELAXATION_HEURISTIC_H
 
-#include "heuristic.h"
+#include "../heuristic.h"
 
 #include <vector>
 

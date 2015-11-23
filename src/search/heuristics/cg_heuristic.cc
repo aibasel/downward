@@ -1,17 +1,19 @@
 #include "cg_heuristic.h"
 
 #include "cg_cache.h"
-#include "domain_transition_graph.h"
-#include "global_operator.h"
-#include "global_state.h"
-#include "globals.h"
-#include "option_parser.h"
-#include "plugin.h"
+
+#include "../domain_transition_graph.h"
+#include "../global_operator.h"
+#include "../global_state.h"
+#include "../globals.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 #include <algorithm>
 #include <cassert>
 #include <limits>
 #include <vector>
+
 using namespace std;
 
 // TODO: Turn this into an option and check its impact.

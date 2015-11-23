@@ -1,10 +1,11 @@
 #include "lm_cut_heuristic.h"
 
 #include "lm_cut_landmarks.h"
-#include "option_parser.h"
-#include "plugin.h"
-#include "task_proxy.h"
-#include "task_tools.h"
+
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../task_proxy.h"
+#include "../task_tools.h"
 
 #include <iostream>
 

@@ -1,8 +1,8 @@
 #ifndef CG_HEURISTIC_H
 #define CG_HEURISTIC_H
 
-#include "heuristic.h"
-#include "priority_queue.h"
+#include "../heuristic.h"
+#include "../priority_queue.h"
 
 #include <string>
 #include <vector>

@@ -1,14 +1,13 @@
 #ifndef HM_HEURISTIC_H
 #define HM_HEURISTIC_H
 
+#include "../heuristic.h"
+
 #include <algorithm>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
-#include "heuristic.h"
-
 
 typedef std::vector<std::pair<int, int>> Tuple;
 
