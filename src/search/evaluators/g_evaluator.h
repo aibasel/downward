@@ -5,6 +5,8 @@
 
 class Heuristic;
 
+
+namespace GEvaluator {
 class GEvaluator : public ScalarEvaluator {
 public:
     GEvaluator() = default;
@@ -15,5 +17,6 @@ public:
 
     virtual void get_involved_heuristics(std::set<Heuristic *> &) override {}
 };
+}
 
 #endif

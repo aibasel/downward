@@ -13,7 +13,7 @@ using namespace std;
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const Options &opts)
     : SearchEngine(opts),
-      g_evaluator(new GEvaluator()),
+      g_evaluator(new GEvaluator::GEvaluator()),
       heuristic(opts.get<Heuristic *>("h")),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       preferred_usage(PreferredUsage(opts.get_enum("preferred_usage"))),

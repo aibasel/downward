@@ -361,7 +361,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
-        GEvaluator *g = new GEvaluator();
+        GEvaluator::GEvaluator *g = new GEvaluator::GEvaluator();
         vector<ScalarEvaluator *> sum_evals;
         sum_evals.push_back(g);
         ScalarEvaluator *eval = opts.get<ScalarEvaluator *>("eval");

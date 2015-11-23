@@ -11,10 +11,13 @@
 #include <utility>
 #include <vector>
 
-class GEvaluator;
 class Options;
 
-typedef std::pair<StateID, std::pair<int, const GlobalOperator * >> OpenListEntryEHC;
+namespace GEvaluator {
+class GEvaluator;
+}
+
+using OpenListEntryEHC = std::pair<StateID, std::pair<int, const GlobalOperator * >>;
 
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
@@ -38,7 +41,7 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     SearchStatus ehc();
 
     OpenList<OpenListEntryEHC> *open_list;
-    GEvaluator *g_evaluator;
+    GEvaluator::GEvaluator *g_evaluator;
 
     Heuristic *heuristic;
     std::vector<Heuristic *> preferred_operator_heuristics;
