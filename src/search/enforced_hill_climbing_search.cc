@@ -31,7 +31,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
         open_list = new StandardScalarOpenList<OpenListEntryEHC>(g_evaluator, false);
     } else {
         vector<ScalarEvaluator *> evals {
-            g_evaluator, new PrefEvaluator
+            g_evaluator, new PrefEvaluator::PrefEvaluator
         };
         open_list = new TieBreakingOpenList<OpenListEntryEHC>(evals, false, true);
     }

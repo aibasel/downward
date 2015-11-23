@@ -6,6 +6,7 @@
 #include "../plugin.h"
 
 
+namespace PrefEvaluator {
 PrefEvaluator::PrefEvaluator() {
 }
 
@@ -33,3 +34,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 static Plugin<ScalarEvaluator> _plugin("pref", _parse);
+}
