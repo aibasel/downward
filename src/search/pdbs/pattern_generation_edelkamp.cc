@@ -18,6 +18,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
     : task(get_task_from_options(opts)),
       task_proxy(*task),
@@ -389,3 +391,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("gapdb", _parse);
+}

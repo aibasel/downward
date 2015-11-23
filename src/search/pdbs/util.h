@@ -4,6 +4,7 @@
 class OptionParser;
 class Options;
 
+namespace PDBs {
 /*
   NOTE that both of the following methods expect that the parser already has
   an option named "transform" to parse a task transformation.
@@ -13,5 +14,5 @@ class Options;
 */
 extern void parse_pattern(OptionParser &parser, Options &opts);
 extern void parse_patterns(OptionParser &parser, Options &opts);
-
+}
 #endif

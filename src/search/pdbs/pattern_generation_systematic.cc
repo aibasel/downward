@@ -13,6 +13,7 @@
 using namespace std;
 
 
+namespace PDBs {
 static bool patterns_are_disjoint(
     const Pattern &pattern1, const Pattern &pattern2) {
     size_t i = 0;
@@ -343,3 +344,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("cpdbs_systematic", _parse);
+}

@@ -8,9 +8,10 @@
 #include <memory>
 #include <vector>
 
+namespace PDBs {
 class CanonicalPDBsHeuristic;
 class PatternDatabase;
-
+}
 
 namespace OperatorCounting {
 class PhOConstraints : public ConstraintGenerator {
@@ -19,8 +20,8 @@ class PhOConstraints : public ConstraintGenerator {
     // We store the options until we get the task in the initialize function.
     Options options;
     // We can use the PDBs from a canonical heuristic.
-    std::unique_ptr<CanonicalPDBsHeuristic> pdb_source;
-    std::vector<PatternDatabase *> pdbs;
+    std::unique_ptr<PDBs::CanonicalPDBsHeuristic> pdb_source;
+    std::vector<PDBs::PatternDatabase *> pdbs;
     void generate_pdbs(const std::shared_ptr<AbstractTask> task);
 public:
     explicit PhOConstraints(const Options &opts);

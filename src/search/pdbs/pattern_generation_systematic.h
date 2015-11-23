@@ -8,11 +8,13 @@
 #include <unordered_set>
 #include <vector>
 
-class CanonicalPDBsHeuristic;
 class CausalGraph;
 class OptionParser;
 class Options;
 
+
+namespace PDBs {
+class CanonicalPDBsHeuristic;
 
 // Invariant: patterns are always sorted.
 typedef std::vector<int> Pattern;
@@ -51,5 +53,6 @@ public:
     static void check_systematic_pattern_options(OptionParser &parser,
                                                  const Options &opts);
 };
+}
 
 #endif

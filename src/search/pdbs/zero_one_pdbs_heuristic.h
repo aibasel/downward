@@ -5,6 +5,7 @@
 
 #include <vector>
 
+namespace PDBs {
 class PatternDatabase;
 
 class ZeroOnePDBsHeuristic : public Heuristic {
@@ -31,5 +32,6 @@ public:
     double get_approx_mean_finite_h() const {return approx_mean_finite_h; }
     void dump() const;
 };
+}
 
 #endif

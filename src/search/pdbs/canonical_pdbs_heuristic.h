@@ -5,6 +5,8 @@
 
 #include <vector>
 
+
+namespace PDBs {
 class PatternDatabase;
 
 // Implements the canonical heuristic function.
@@ -75,5 +77,6 @@ public:
     }
     void dump() const;
 };
+}
 
 #endif

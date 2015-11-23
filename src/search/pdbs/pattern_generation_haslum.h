@@ -11,10 +11,13 @@
 #include <set>
 #include <vector>
 
-class CanonicalPDBsHeuristic;
 class CountdownTimer;
 class GlobalState;
 class Options;
+
+
+namespace PDBs {
+class CanonicalPDBsHeuristic;
 class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
@@ -130,5 +133,6 @@ public:
     static void check_hillclimbing_options(OptionParser &parser,
                                            const Options &opts);
 };
+}
 
 #endif

@@ -19,7 +19,7 @@ PhOConstraints::PhOConstraints(const Options &opts)
 
 PhOConstraints::~PhOConstraints() {
     if (!pdb_source) {
-        for (PatternDatabase *pdb : pdbs) {
+        for (PDBs::PatternDatabase *pdb : pdbs) {
             delete pdb;
         }
     }
@@ -32,8 +32,8 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
     if (options.contains("min_improvement")) {
         // iPDB patterns
         options.set<bool>("cache_estimates", false);
-        PatternGenerationHaslum pgh(options);
-        pdb_source = unique_ptr<CanonicalPDBsHeuristic>(
+        PDBs::PatternGenerationHaslum pgh(options);
+        pdb_source = unique_ptr<PDBs::CanonicalPDBsHeuristic>(
             pgh.extract_pattern_collection_heuristic());
         pdbs = pdb_source->get_pattern_databases();
     } else {
@@ -43,7 +43,7 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
             patterns = options.get<vector<vector<int>>>("patterns");
         } else {
             // Systematically generated patterns
-            PatternGenerationSystematic pattern_generator(options);
+            PDBs::PatternGenerationSystematic pattern_generator(options);
             patterns = pattern_generator.get_patterns();
         }
         for (const vector<int> &pattern : patterns) {
@@ -51,7 +51,7 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
                 cout << "Generated " << pdbs.size() << "/"
                      << patterns.size() << " PDBs" << endl;
             }
-            PatternDatabase *pdb = new PatternDatabase(task_proxy, pattern);
+            PDBs::PatternDatabase *pdb = new PDBs::PatternDatabase(task_proxy, pattern);
             pdbs.push_back(pdb);
         }
         cout << "Generated " << pdbs.size() << "/"
@@ -65,7 +65,7 @@ void PhOConstraints::initialize_constraints(
     generate_pdbs(task);
     TaskProxy task_proxy(*task);
     constraint_offset = constraints.size();
-    for (PatternDatabase *pdb : pdbs) {
+    for (PDBs::PatternDatabase *pdb : pdbs) {
         constraints.emplace_back(0, infinity);
         LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
@@ -80,7 +80,7 @@ bool PhOConstraints::update_constraints(const State &state,
                                         LPSolver &lp_solver) {
     for (size_t i = 0; i < pdbs.size(); ++i) {
         int constraint_id = constraint_offset + i;
-        PatternDatabase *pdb = pdbs[i];
+        PDBs::PatternDatabase *pdb = pdbs[i];
         int h = pdb->get_value(state);
         if (h == numeric_limits<int>::max()) {
             return true;
@@ -103,7 +103,7 @@ static shared_ptr<ConstraintGenerator> _parse_manual(OptionParser &parser) {
         "pp. 2357-2364. 2013.\n\n\n");
 
     Options opts;
-    parse_patterns(parser, opts);
+    PDBs::parse_patterns(parser, opts);
     if (parser.dry_run())
         return nullptr;
     return make_shared<PhOConstraints>(opts);
@@ -123,12 +123,12 @@ static shared_ptr<ConstraintGenerator> _parse_systematic(OptionParser &parser) {
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
         "pp. 2357-2364. 2013.\n\n\n");
 
-    PatternGenerationSystematic::add_systematic_pattern_options(parser);
+    PDBs::PatternGenerationSystematic::add_systematic_pattern_options(parser);
     Options opts = parser.parse();
 
     if (parser.help_mode())
         return nullptr;
-    PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
+    PDBs::PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
     if (parser.dry_run())
         return nullptr;
     return make_shared<PhOConstraints>(opts);
@@ -148,12 +148,12 @@ static shared_ptr<ConstraintGenerator> _parse_ipdb(OptionParser &parser) {
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
         "pp. 2357-2364. 2013.\n\n\n");
 
-    PatternGenerationHaslum::add_hillclimbing_options(parser);
+    PDBs::PatternGenerationHaslum::add_hillclimbing_options(parser);
     Options opts = parser.parse();
 
     if (parser.help_mode())
         return nullptr;
-    PatternGenerationHaslum::check_hillclimbing_options(parser, opts);
+    PDBs::PatternGenerationHaslum::check_hillclimbing_options(parser, opts);
     if (parser.dry_run())
         return nullptr;
 

@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <vector>
 
+
+namespace PDBs {
 class DominancePruner {
 private:
     std::vector<PatternDatabase *> &pattern_databases;
@@ -29,5 +31,6 @@ public:
                     std::vector<std::vector<PatternDatabase *>> &max_cliques_);
     void prune();
 };
+}
 
 #endif

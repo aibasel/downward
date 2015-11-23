@@ -25,8 +25,9 @@
 
 using namespace std;
 
-struct HillClimbingTimeout : public exception {};
 
+namespace PDBs {
+struct HillClimbingTimeout : public exception {};
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
     : task(get_task_from_options(opts)),
@@ -499,3 +500,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("ipdb", _parse);
+}

@@ -8,6 +8,8 @@
 class GlobalState;
 class OperatorProxy;
 
+
+namespace PDBs {
 // Implements a heuristic for a single PDB.
 class PDBHeuristic : public Heuristic {
     PatternDatabase pdb;
@@ -28,5 +30,6 @@ public:
                  const std::vector<int> &operator_costs = std::vector<int>());
     virtual ~PDBHeuristic() override;
 };
+}
 
 #endif

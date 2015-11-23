@@ -12,6 +12,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const Options &opts,
     const vector<int> &op_costs)
@@ -115,3 +117,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("zopdbs", _parse);
+}
