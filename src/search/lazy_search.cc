@@ -426,7 +426,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
                     opts.get<int>("w"));
                 sum_evals.push_back(w);
             }
-            SumEvaluator *f_eval = new SumEvaluator(sum_evals);
+            SumEvaluator::SumEvaluator *f_eval = new SumEvaluator::SumEvaluator(sum_evals);
 
             inner_lists.push_back(
                 new StandardScalarOpenList<OpenListEntryLazy>(f_eval, false));
