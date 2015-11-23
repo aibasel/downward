@@ -3,6 +3,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+
+namespace GoalCountHeuristic {
 GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
     : Heuristic(opts) {
 }
@@ -47,3 +49,4 @@ static Heuristic *_parse(OptionParser &parser) {
 
 
 static Plugin<Heuristic> _plugin("goalcount", _parse);
+}

@@ -3,6 +3,8 @@
 
 #include "../heuristic.h"
 
+
+namespace GoalCountHeuristic {
 class GoalCountHeuristic : public Heuristic {
 protected:
     virtual void initialize();
@@ -11,5 +13,6 @@ public:
     GoalCountHeuristic(const Options &options);
     ~GoalCountHeuristic();
 };
+}
 
 #endif
