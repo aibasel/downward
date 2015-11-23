@@ -9,8 +9,7 @@
 using namespace std;
 
 
-
-
+namespace MaxHeuristic {
 /*
   TODO: At the time of this writing, this shares huge amounts of code
         with h^add, and the two should be refactored so that the
@@ -133,3 +132,4 @@ static Heuristic *_parse(OptionParser &parser) {
 
 
 static Plugin<Heuristic> _plugin("hmax", _parse);
+}
