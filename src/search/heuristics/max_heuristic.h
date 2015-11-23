@@ -9,7 +9,10 @@
 
 
 namespace MaxHeuristic {
-class HSPMaxHeuristic : public RelaxationHeuristic {
+using Proposition = RelaxationHeuristic::Proposition;
+using UnaryOperator = RelaxationHeuristic::UnaryOperator;
+
+class HSPMaxHeuristic : public RelaxationHeuristic::RelaxationHeuristic {
     AdaptiveQueue<Proposition *> queue;
 
     void setup_exploration_queue();
