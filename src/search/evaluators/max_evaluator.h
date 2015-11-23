@@ -7,7 +7,7 @@
 
 
 namespace MaxEvaluator {
-class MaxEvaluator : public CombiningEvaluator {
+class MaxEvaluator : public CombiningEvaluator::CombiningEvaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) override;
 public:
