@@ -7,10 +7,13 @@
 #include <string>
 #include <vector>
 
-class CGCache;
 class DomainTransitionGraph;
 class GlobalState;
 struct ValueNode;
+
+
+namespace CGHeuristic {
+class CGCache;
 
 class CGHeuristic : public Heuristic {
     std::vector<AdaptiveQueue<ValueNode *> *> prio_queues;
@@ -32,5 +35,6 @@ public:
     ~CGHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };
+}
 
 #endif

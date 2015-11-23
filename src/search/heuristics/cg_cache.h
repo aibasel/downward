@@ -6,6 +6,8 @@
 class GlobalState;
 struct ValueTransitionLabel;
 
+
+namespace CGHeuristic {
 class CGCache {
     std::vector<std::vector<int>> cache;
     std::vector<std::vector<ValueTransitionLabel *>> helpful_transition_cache;
@@ -46,5 +48,6 @@ public:
         helpful_transition_cache[var][index] = helpful_transition;
     }
 };
+}
 
 #endif
