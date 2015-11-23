@@ -1,9 +1,9 @@
 #include "weighted_evaluator.h"
 
-#include "evaluation_context.h"
-#include "evaluation_result.h"
-#include "option_parser.h"
-#include "plugin.h"
+#include "../evaluation_context.h"
+#include "../evaluation_result.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 #include <cstdlib>
 #include <sstream>

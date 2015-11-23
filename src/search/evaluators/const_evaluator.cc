@@ -1,7 +1,7 @@
 #include "const_evaluator.h"
 
-#include "option_parser.h"
-#include "plugin.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 
 namespace ConstEvaluator {

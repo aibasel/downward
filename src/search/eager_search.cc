@@ -1,13 +1,14 @@
 #include "eager_search.h"
 
 #include "evaluation_context.h"
-#include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "successor_generator.h"
-#include "sum_evaluator.h"
+
+#include "evaluators/g_evaluator.h"
+#include "evaluators/sum_evaluator.h"
 
 #include <cassert>
 #include <cstdlib>

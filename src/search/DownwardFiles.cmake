@@ -97,28 +97,28 @@ fast_downward_plugin(
     NAME CONST_EVALUATOR
     HELP "The constant evaluator"
     SOURCES
-        const_evaluator.cc
+        evaluators/const_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME G_EVALUATOR
     HELP "The g-evaluator"
     SOURCES
-        g_evaluator.cc
+        evaluators/g_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME COMBINING_EVALUATOR
     HELP "The combining evaluator"
     SOURCES
-        combining_evaluator.cc
+        evaluators/combining_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME MAX_EVALUATOR
     HELP "The max evaluator"
     SOURCES
-        max_evaluator.cc
+        evaluators/max_evaluator.cc
     DEPENDS COMBINING_EVALUATOR
 )
 
@@ -126,21 +126,21 @@ fast_downward_plugin(
     NAME PREF_EVALUATOR
     HELP "The pref evaluator"
     SOURCES
-        pref_evaluator.cc
+        evaluators/pref_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME WEIGHTED_EVALUATOR
     HELP "The weighted evaluator"
     SOURCES
-        weighted_evaluator.cc
+        evaluators/weighted_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME SUM_EVALUATOR
     HELP "The sum evaluator"
     SOURCES
-        sum_evaluator.cc
+        evaluators/sum_evaluator.cc
     DEPENDS COMBINING_EVALUATOR
 )
 

@@ -1,7 +1,7 @@
 #ifndef CONST_EVALUATOR_H
 #define CONST_EVALUATOR_H
 
-#include "heuristic.h"
+#include "../heuristic.h"
 
 namespace ConstEvaluator {
 // TODO: When the searches don't need at least one heuristic anymore,

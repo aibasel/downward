@@ -1,14 +1,15 @@
 #include "lazy_search.h"
 
-#include "g_evaluator.h"
 #include "globals.h"
 #include "heuristic_cache.h"
 #include "heuristic.h"
 #include "plugin.h"
 #include "rng.h"
 #include "successor_generator.h"
-#include "sum_evaluator.h"
-#include "weighted_evaluator.h"
+
+#include "evaluators/g_evaluator.h"
+#include "evaluators/sum_evaluator.h"
+#include "evaluators/weighted_evaluator.h"
 
 #include <algorithm>
 #include <limits>

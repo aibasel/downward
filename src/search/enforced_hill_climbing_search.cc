@@ -1,11 +1,12 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "g_evaluator.h"
 #include "global_operator.h"
 #include "plugin.h"
-#include "pref_evaluator.h"
 #include "successor_generator.h"
 #include "utilities.h"
+
+#include "evaluators/g_evaluator.h"
+#include "evaluators/pref_evaluator.h"
 
 using namespace std;
 
