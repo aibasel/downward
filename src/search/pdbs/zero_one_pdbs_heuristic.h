@@ -3,6 +3,7 @@
 
 #include "../heuristic.h"
 
+#include <memory>
 #include <vector>
 
 class PatternDatabase;
@@ -12,9 +13,8 @@ class ZeroOnePDBsHeuristic : public Heuristic {
        This is an approximation only, see get-method. */
     double approx_mean_finite_h;
     // Final pattern databases.
-    std::vector<PatternDatabase *> pattern_databases;
+    std::vector<std::unique_ptr<PatternDatabase>> pattern_databases;
 protected:
-    virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
 public:
     ZeroOnePDBsHeuristic(const Options &opts,

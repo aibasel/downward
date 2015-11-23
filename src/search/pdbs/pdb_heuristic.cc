@@ -1,5 +1,6 @@
 #include "pdb_heuristic.h"
 
+#include "pattern_generator.h"
 #include "util.h"
 
 #include "../plugin.h"
@@ -9,16 +10,23 @@
 
 using namespace std;
 
+PatternDatabase get_pdb_from_options(const shared_ptr<AbstractTask> task,
+                                     const Options &opts,
+                                     const vector<int> &operator_costs) {
+    shared_ptr<PatternGenerator> pattern_generator =
+        opts.get<shared_ptr<PatternGenerator>>("pattern");
+    Pattern pattern = pattern_generator->generate(task);
+    TaskProxy task_proxy(*task);
+    return PatternDatabase(task_proxy, pattern, true, operator_costs);
+}
+
 PDBHeuristic::PDBHeuristic(const Options &opts,
                            const vector<int> &operator_costs)
     : Heuristic(opts),
-      pdb(task_proxy, opts.get_list<int>("pattern"), true, operator_costs) {
+      pdb(get_pdb_from_options(task, opts, operator_costs)) {
 }
 
 PDBHeuristic::~PDBHeuristic() {
-}
-
-void PDBHeuristic::initialize() {
 }
 
 int PDBHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -39,12 +47,15 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
 
+    parser.add_option<shared_ptr<PatternGenerator>>(
+        "pattern",
+        "pattern generation method",
+        "greedy()");
     Heuristic::add_options_to_parser(parser);
-    Options opts;
-    parse_pattern(parser, opts);
 
+    Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
 
     return new PDBHeuristic(opts);
 }
