@@ -14,6 +14,7 @@
 class CanonicalPDBsHeuristic;
 class CountdownTimer;
 class GlobalState;
+class IncrementalCanonicalPDBs;
 class Options;
 class PatternDatabase;
 
@@ -31,7 +32,7 @@ class PatternGenerationHaslum {
     const double max_time;
     const OperatorCost cost_type;
     const bool cache_h;
-    std::unique_ptr<CanonicalPDBsHeuristic> current_heuristic;
+    std::unique_ptr<IncrementalCanonicalPDBs> current_heuristic;
     SuccessorGenerator successor_generator;
 
     // for stats only
@@ -123,7 +124,9 @@ public:
     */
     std::unique_ptr<CanonicalPDBsHeuristic>
     extract_pattern_collection_heuristic() {
-        return std::move(current_heuristic);
+        //std::unique_ptr<CanonicalPDBsHeuristic> heuristic = make_unique_ptr(current_heuristic...);
+        //return std::move(heuristic);
+        return nullptr;
     }
 
     static void add_hillclimbing_options(OptionParser &parser);

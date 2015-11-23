@@ -319,6 +319,7 @@ fast_downward_plugin(
     SOURCES
         pdbs/canonical_pdbs_heuristic.cc
         pdbs/dominance_pruner.cc
+        pdbs/incremental_canonical_pdbs.cc
         pdbs/match_tree.cc
         pdbs/max_cliques.cc
         pdbs/pattern_database.cc
