@@ -9,10 +9,12 @@
 #include <memory>
 #include <vector>
 
-// TODO: Fix duplication with the other relaxation heuristics.
-struct RelaxedProposition;
 class TaskProxy;
 
+
+namespace LMcutHeuristic {
+// TODO: Fix duplication with the other relaxation heuristics.
+struct RelaxedProposition;
 
 enum PropositionStatus {
     UNREACHED = 0,
@@ -112,6 +114,7 @@ inline void RelaxedOperator::update_h_max_supporter() {
         if (preconditions[i]->h_max_cost > h_max_supporter->h_max_cost)
             h_max_supporter = preconditions[i];
     h_max_supporter_cost = h_max_supporter->h_max_cost;
+}
 }
 
 #endif

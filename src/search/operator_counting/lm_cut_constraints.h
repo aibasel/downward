@@ -5,12 +5,14 @@
 
 #include <memory>
 
+namespace LMcutHeuristic {
 class LandmarkCutLandmarks;
+}
 
 
 namespace OperatorCounting {
 class LMCutConstraints : public ConstraintGenerator {
-    std::unique_ptr<LandmarkCutLandmarks> landmark_generator;
+    std::unique_ptr<LMcutHeuristic::LandmarkCutLandmarks> landmark_generator;
 public:
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,
