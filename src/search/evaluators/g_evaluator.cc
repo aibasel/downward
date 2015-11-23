@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+
+namespace GEvaluator {
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
     result.set_h_value(eval_context.get_g_value());
@@ -23,3 +25,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 static Plugin<ScalarEvaluator> _plugin("g", _parse);
+}

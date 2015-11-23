@@ -415,7 +415,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
             opts.get_list<Heuristic *>("preferred");
         vector<OpenList<OpenListEntryLazy> *> inner_lists;
         for (size_t i = 0; i < evals.size(); ++i) {
-            GEvaluator *g = new GEvaluator();
+            GEvaluator::GEvaluator *g = new GEvaluator::GEvaluator();
             vector<ScalarEvaluator *> sum_evals;
             sum_evals.push_back(g);
             if (opts.get<int>("w") == 1) {
