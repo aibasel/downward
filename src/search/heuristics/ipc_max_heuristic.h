@@ -1,7 +1,7 @@
 #ifndef IPC_MAX_HEURISTIC_H
 #define IPC_MAX_HEURISTIC_H
 
-#include "heuristic.h"
+#include "../heuristic.h"
 
 #include <vector>
 

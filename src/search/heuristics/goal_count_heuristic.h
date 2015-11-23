@@ -1,7 +1,7 @@
 #ifndef GOAL_COUNT_HEURISTIC_H
 #define GOAL_COUNT_HEURISTIC_H
 
-#include "heuristic.h"
+#include "../heuristic.h"
 
 class GoalCountHeuristic : public Heuristic {
 protected:

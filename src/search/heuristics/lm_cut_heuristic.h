@@ -1,8 +1,9 @@
 #ifndef LM_CUT_HEURISTIC_H
 #define LM_CUT_HEURISTIC_H
 
-#include "heuristic.h"
 #include "lm_cut_landmarks.h"
+
+#include "../heuristic.h"
 
 #include <memory>
 

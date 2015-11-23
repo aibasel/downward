@@ -1,7 +1,7 @@
 #include "goal_count_heuristic.h"
 
-#include "option_parser.h"
-#include "plugin.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
     : Heuristic(opts) {

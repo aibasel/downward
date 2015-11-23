@@ -1,8 +1,8 @@
 #ifndef LM_CUT_LANDMARKS_H
 #define LM_CUT_LANDMARKS_H
 
-#include "priority_queue.h"
-#include "task_tools.h"
+#include "../priority_queue.h"
+#include "../task_tools.h"
 
 #include <cassert>
 #include <functional>

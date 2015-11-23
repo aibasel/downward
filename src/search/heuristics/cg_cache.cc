@@ -1,10 +1,10 @@
 #include "cg_cache.h"
 
-#include "causal_graph.h"
-#include "global_state.h"
-#include "globals.h"
-#include "task_proxy.h"
-#include "utilities.h"
+#include "../causal_graph.h"
+#include "../global_state.h"
+#include "../globals.h"
+#include "../task_proxy.h"
+#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
