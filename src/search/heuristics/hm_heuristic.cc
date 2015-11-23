@@ -11,6 +11,7 @@
 using namespace std;
 
 
+namespace HMHeuristic {
 HMHeuristic::HMHeuristic(const Options &opts)
     : Heuristic(opts),
       m(opts.get<int>("m")),
@@ -318,5 +319,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new HMHeuristic(opts);
 }
 
-
 static Plugin<Heuristic> _plugin("hm", _parse);
+}

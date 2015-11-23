@@ -13,6 +13,7 @@ typedef std::vector<std::pair<int, int>> Tuple;
 
 class Options;
 
+namespace HMHeuristic {
 /*
   Haslum's h^m heuristic family ("critical path heuristics").
 
@@ -64,5 +65,6 @@ public:
     virtual ~HMHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };
+}
 
 #endif
