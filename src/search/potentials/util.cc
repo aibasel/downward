@@ -52,7 +52,7 @@ void prepare_parser_for_admissible_potentials(OptionParser &parser) {
         "Bound potentials by this number",
         "1e8",
         Bounds("0.0", "infinity"));
-    add_lp_solver_option_to_parser(parser);
+    LP::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 }
 }

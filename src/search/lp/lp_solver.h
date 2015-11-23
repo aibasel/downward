@@ -22,6 +22,12 @@
 }
 #endif
 
+class CoinPackedVectorBase;
+class OptionParser;
+class OsiSolverInterface;
+
+
+namespace LP {
 enum class LPSolverType {
     CLP, CPLEX, GUROBI
 };
@@ -29,10 +35,6 @@ enum class LPSolverType {
 enum class LPObjectiveSense {
     MAXIMIZE, MINIMIZE
 };
-
-class CoinPackedVectorBase;
-class OptionParser;
-class OsiSolverInterface;
 
 void add_lp_solver_option_to_parser(OptionParser &parser);
 
@@ -156,5 +158,6 @@ public:
 #ifdef __GNUG__
 #pragma GCC diagnostic pop
 #endif
+}
 
 #endif
