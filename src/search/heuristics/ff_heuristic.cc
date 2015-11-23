@@ -9,6 +9,8 @@
 
 using namespace std;
 
+
+namespace FFHeuristic {
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)
     : AdditiveHeuristic(opts) {
@@ -96,3 +98,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("ff", _parse);
+}

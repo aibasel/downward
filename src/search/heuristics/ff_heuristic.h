@@ -5,6 +5,8 @@
 
 #include <vector>
 
+namespace FFHeuristic {
+
 /*
   TODO: In a better world, this should not derive from
         AdditiveHeuristic. Rather, the common parts should be
@@ -13,8 +15,6 @@
         other relaxation heuristics and the additional FF heuristic
         implementation in the landmark code.
 */
-
-
 class FFHeuristic : public AdditiveHeuristic {
     // Relaxed plans are represented as a set of operators implemented
     // as a bit vector.
@@ -29,5 +29,6 @@ public:
     FFHeuristic(const Options &options);
     ~FFHeuristic();
 };
+}
 
 #endif
