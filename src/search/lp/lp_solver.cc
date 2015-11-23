@@ -23,6 +23,8 @@
 
 using namespace std;
 
+
+namespace LP {
 void add_lp_solver_option_to_parser(OptionParser &parser) {
     parser.document_note(
         "Note",
@@ -357,3 +359,4 @@ void LPSolver::print_statistics() const {
 }
 
 #endif
+}

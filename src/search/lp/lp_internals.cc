@@ -31,6 +31,8 @@
 #endif
 using namespace std;
 
+
+namespace LP {
 // CPLEX warning that is misleadingly reported with the severity of a critical error.
 static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
 // CPLEX warning from writeMps if no column names are defined.
@@ -121,6 +123,7 @@ void handle_coin_error(const CoinError &error) {
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
     exit_with(EXIT_CRITICAL_ERROR);
+}
 }
 
 #endif

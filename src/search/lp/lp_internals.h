@@ -15,6 +15,9 @@
 
 class CoinError;
 class OsiSolverInterface;
+
+
+namespace LP {
 enum class LPSolverType;
 
 std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
@@ -28,5 +31,6 @@ std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
 */
 NO_RETURN
 void handle_coin_error(const CoinError &error);
+}
 
 #endif

@@ -5,9 +5,12 @@
 #include <vector>
 
 class AbstractTask;
+class State;
+
+namespace LP {
 class LPConstraint;
 class LPSolver;
-class State;
+}
 
 
 namespace OperatorCounting {
@@ -35,7 +38,7 @@ public:
     */
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,
-        std::vector<LPConstraint> &constraints,
+        std::vector<LP::LPConstraint> &constraints,
         double infinity);
 
     /*
@@ -46,7 +49,7 @@ public:
       Returns true if a dead end was detected and false otherwise.
     */
     virtual bool update_constraints(const State &state,
-                                    LPSolver &lp_solver) = 0;
+                                    LP::LPSolver &lp_solver) = 0;
 };
 }
 

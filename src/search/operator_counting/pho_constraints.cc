@@ -60,14 +60,14 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
 }
 
 void PhOConstraints::initialize_constraints(
-    const std::shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
+    const std::shared_ptr<AbstractTask> task, vector<LP::LPConstraint> &constraints,
     double infinity) {
     generate_pdbs(task);
     TaskProxy task_proxy(*task);
     constraint_offset = constraints.size();
     for (PDBs::PatternDatabase *pdb : pdbs) {
         constraints.emplace_back(0, infinity);
-        LPConstraint &constraint = constraints.back();
+        LP::LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
             if (pdb->is_operator_relevant(op)) {
                 constraint.insert(op.get_id(), op.get_cost());
@@ -77,7 +77,7 @@ void PhOConstraints::initialize_constraints(
 }
 
 bool PhOConstraints::update_constraints(const State &state,
-                                        LPSolver &lp_solver) {
+                                        LP::LPSolver &lp_solver) {
     for (size_t i = 0; i < pdbs.size(); ++i) {
         int constraint_id = constraint_offset + i;
         PDBs::PatternDatabase *pdb = pdbs[i];
