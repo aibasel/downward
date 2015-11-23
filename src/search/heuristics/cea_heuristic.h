@@ -7,7 +7,7 @@
 #include <vector>
 
 
-namespace cea_heuristic {
+namespace CEAHeuristic {
 struct LocalProblem;
 struct LocalProblemNode;
 struct LocalTransition;
