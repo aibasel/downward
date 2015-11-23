@@ -12,6 +12,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 ShrinkRandom::ShrinkRandom(const Options &opts)
     : ShrinkBucketBased(opts) {
 }
@@ -54,3 +55,4 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_random", _parse);
+}

@@ -7,6 +7,9 @@
 #include <vector>
 
 class AbstractTask;
+
+
+namespace MergeAndShrink {
 class FactoredTransitionSystem;
 
 class MergeStrategy {
@@ -26,5 +29,6 @@ public:
     virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) = 0;
     virtual std::string name() const = 0;
 };
+}
 
 #endif

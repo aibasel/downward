@@ -8,6 +8,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 MergeStrategy::MergeStrategy() : remaining_merges(UNINITIALIZED) {
 }
 
@@ -43,3 +45,4 @@ static PluginTypePlugin<MergeStrategy> _type_plugin(
     "MergeStrategy",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
+}
