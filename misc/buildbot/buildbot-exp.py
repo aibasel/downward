@@ -5,11 +5,13 @@ Update baseline:
   * change BASELINE variable below
   * push the change
   * login to buildbot server and become the buildslave user
+      sudo -u buildslave -H bash
   * remove ~/experiments dir
   * run in an updated repo (e.g. in ~/lib/downward):
     export PYTHONPATH=~/lib/python/lab
     export DOWNWARD_COIN_ROOT=~/lib/coin
     export DOWNWARD_DOWNWARD_CPLEX_ROOT=~/lib/cplex/cplex
+    cd misc/buildbot
     ./buildbot-exp.py --test nightly --rev baseline --all
     ./buildbot-exp.py --test weekly --rev baseline --all
 
