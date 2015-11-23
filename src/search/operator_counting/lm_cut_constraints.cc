@@ -12,6 +12,7 @@
 
 using namespace std;
 
+
 namespace OperatorCounting {
 void LMCutConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> task, vector<LPConstraint> & /*constraints*/,

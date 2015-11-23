@@ -10,6 +10,7 @@
 
 class Options;
 
+
 namespace OperatorCounting {
 class ConstraintGenerator;
 

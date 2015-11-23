@@ -9,6 +9,8 @@ class LPConstraint;
 class LPSolver;
 class State;
 
+
+namespace OperatorCounting {
 /*
   Derive from this class to add new operator-counting constraints. We support
   two types of constraints:
@@ -23,8 +25,6 @@ class State;
       Example: constraints from landmarks generated for a given state, e.g.
       using the LM-Cut method.
 */
-
-namespace OperatorCounting {
 class ConstraintGenerator {
 public:
     /*

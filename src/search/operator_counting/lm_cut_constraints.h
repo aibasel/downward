@@ -7,6 +7,7 @@
 
 class LandmarkCutLandmarks;
 
+
 namespace OperatorCounting {
 class LMCutConstraints : public ConstraintGenerator {
     std::unique_ptr<LandmarkCutLandmarks> landmark_generator;

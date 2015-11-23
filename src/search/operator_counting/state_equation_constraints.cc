@@ -9,6 +9,7 @@
 
 using namespace std;
 
+
 namespace OperatorCounting {
 void add_indices_to_constraint(LPConstraint &constraint,
                                const set<int> &indices,
