@@ -8,7 +8,7 @@
 class Options;
 
 namespace SumEvaluator {
-class SumEvaluator : public CombiningEvaluator {
+class SumEvaluator : public CombiningEvaluator::CombiningEvaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) override;
 public:

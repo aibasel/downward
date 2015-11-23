@@ -7,11 +7,12 @@
 #include <string>
 #include <vector>
 
+
+namespace CombiningEvaluator {
 /*
   CombiningEvaluator is the base class for SumEvaluator and
   MaxEvaluator, which captures the common aspects of their behaviour.
 */
-
 class CombiningEvaluator : public ScalarEvaluator {
     std::vector<ScalarEvaluator *> subevaluators;
     bool all_dead_ends_are_reliable;
@@ -40,5 +41,6 @@ public:
         EvaluationContext &eval_context) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 };
+}
 
 #endif
