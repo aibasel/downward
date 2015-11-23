@@ -1,9 +1,9 @@
 #ifndef OPERATOR_COUNTING_OPERATOR_COUNTING_HEURISTIC_H
 #define OPERATOR_COUNTING_OPERATOR_COUNTING_HEURISTIC_H
 
-
 #include "../heuristic.h"
-#include "../lp_solver.h"
+
+#include "../lp/lp_solver.h"
 
 #include <memory>
 #include <vector>

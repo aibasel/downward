@@ -1,8 +1,9 @@
 #ifndef POTENTIALS_POTENTIAL_OPTIMIZER_H
 #define POTENTIALS_POTENTIAL_OPTIMIZER_H
 
-#include "../lp_solver.h"
 #include "../task_proxy.h"
+
+#include "../lp/lp_solver.h"
 
 #include <memory>
 #include <vector>

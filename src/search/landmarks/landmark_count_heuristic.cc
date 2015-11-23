@@ -1,8 +1,9 @@
 #include "landmark_count_heuristic.h"
 
-#include "../lp_solver.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
+
+#include "../lp/lp_solver.h"
 
 #include <cmath>
 #include <limits>

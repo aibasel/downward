@@ -179,8 +179,8 @@ fast_downward_plugin(
     NAME LP_SOLVER
     HELP "Interface to an LP solver"
     SOURCES
-        lp_internals.cc
-        lp_solver.cc
+        lp/lp_internals.cc
+        lp/lp_solver.cc
     DEPENDENCY_ONLY
 )
 

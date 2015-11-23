@@ -1,7 +1,8 @@
 #include "pho_constraints.h"
 
-#include "../lp_solver.h"
 #include "../plugin.h"
+
+#include "../lp/lp_solver.h"
 
 #include "../pdbs/canonical_pdbs_heuristic.h"
 #include "../pdbs/pattern_generation_haslum.h"
