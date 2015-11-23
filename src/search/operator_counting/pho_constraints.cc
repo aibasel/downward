@@ -31,9 +31,9 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
         // iPDB patterns
         options.set<bool>("cache_estimates", false);
         PatternGenerationHaslum pgh(options);
-        pdb_source = unique_ptr<CanonicalPDBsHeuristic>(
-            pgh.extract_pattern_collection_heuristic());
-            // TODO issue585: fix this
+        // TODO issue585: fix this
+//        pdb_source = unique_ptr<CanonicalPDBsHeuristic>(
+//            pgh.extract_pattern_collection_heuristic());
 //        pdbs = pdb_source->get_pattern_databases();
     } else {
         vector<vector<int>> patterns;

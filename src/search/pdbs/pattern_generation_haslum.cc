@@ -4,6 +4,7 @@
 #include "canonical_pdbs_heuristic.h"
 #include "incremental_canonical_pdbs.h"
 #include "pattern_database.h"
+#include "util.h"
 
 #include "../causal_graph.h"
 #include "../countdown_timer.h"
@@ -52,16 +53,16 @@ PatternGenerationHaslum::~PatternGenerationHaslum() {
 }
 
 void PatternGenerationHaslum::generate_candidate_patterns(
-    const PatternDatabase *pdb, vector<vector<int>> &candidate_patterns) {
+    const PatternDatabase *pdb, Patterns &candidate_patterns) {
     const CausalGraph &causal_graph = task_proxy.get_causal_graph();
-    const vector<int> &pattern = pdb->get_pattern();
+    const Pattern &pattern = pdb->get_pattern();
     int pdb_size = pdb->get_size();
-    for (size_t i = 0; i < pattern.size(); ++i) {
+    for (int pattern_var : pattern) {
         /* Only consider variables used in preconditions for current
            variable from pattern. It would also make sense to consider
            *goal* variables connected by effect-effect arcs, but we
            don't. This may be worth experimenting with. */
-        const vector<int> &rel_vars = causal_graph.get_eff_to_pre(pattern[i]);
+        const vector<int> &rel_vars = causal_graph.get_eff_to_pre(pattern_var);
         vector<int> relevant_vars;
         // Only use relevant variables which are not already in pattern.
         set_difference(rel_vars.begin(), rel_vars.end(),
@@ -83,7 +84,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(
 }
 
 size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
-    set<vector<int>> &generated_patterns, vector<vector<int>> &new_candidates,
+    set<Pattern> &generated_patterns, Patterns &new_candidates,
     vector<PatternDatabase *> &candidate_pdbs) const {
     /*
       For the new candidate patterns check whether they already have been
@@ -166,7 +167,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
           see above) earlier.
         */
         int count = 0;
-        vector<vector<PatternDatabase *>> max_additive_subsets;
+        PDBCliques max_additive_subsets;
         current_heuristic->get_max_additive_subsets(
             pdb->get_pattern(), max_additive_subsets);
         for (State &sample : samples) {
@@ -188,7 +189,7 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
 
 bool PatternGenerationHaslum::is_heuristic_improved(
     PatternDatabase *pdb, const State &sample,
-    const vector<vector<PatternDatabase *>> &max_additive_subsets) {
+    const PDBCliques &max_additive_subsets) {
     // h_pattern: h-value of the new pattern
     int h_pattern = pdb->get_value(sample);
 
@@ -198,12 +199,12 @@ bool PatternGenerationHaslum::is_heuristic_improved(
 
     // h_collection: h-value of the current collection heuristic
     int h_collection = current_heuristic->compute_heuristic(sample);
-    if (h_collection == -1)
+    if (h_collection == numeric_limits<int>::max())
         return false;
 
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
-        for (PatternDatabase *additive_pdb : subset) {
+        for (const auto &additive_pdb : subset) {
             /* Experiments showed that it is faster to recompute the
                h values than to cache them in an unordered_map. */
             int h = additive_pdb->get_value(sample);
@@ -224,13 +225,13 @@ bool PatternGenerationHaslum::is_heuristic_improved(
 
 void PatternGenerationHaslum::hill_climbing(
     double average_operator_cost,
-    vector<vector<int>> &initial_candidate_patterns) {
+    Patterns &initial_candidate_patterns) {
     hill_climbing_timer = new CountdownTimer(max_time);
     // Candidate patterns generated so far (used to avoid duplicates).
-    set<vector<int>> generated_patterns;
+    set<Pattern> generated_patterns;
     /* Set of new pattern candidates from the last call to
        generate_candidate_patterns */
-    vector<vector<int>> &new_candidates = initial_candidate_patterns;
+    Patterns &new_candidates = initial_candidate_patterns;
     // All candidate patterns are converted into pdbs once and stored
     vector<PatternDatabase *> candidate_pdbs;
     int num_iterations = 0;
@@ -271,7 +272,7 @@ void PatternGenerationHaslum::hill_climbing(
             // Add the best pattern to the CanonicalPDBsHeuristic.
             assert(best_pdb_index != -1);
             const PatternDatabase *best_pdb = candidate_pdbs[best_pdb_index];
-            const vector<int> &best_pattern = best_pdb->get_pattern();
+            const Pattern &best_pattern = best_pdb->get_pattern();
             cout << "found a better pattern with improvement " << improvement
                  << endl;
             cout << "pattern: " << best_pattern << endl;
@@ -301,16 +302,16 @@ void PatternGenerationHaslum::hill_climbing(
     //current_heuristic->dominance_pruning();
     cout << "iPDB: iterations = " << num_iterations << endl;
     cout << "iPDB: num_patterns = "
-         << current_heuristic->get_pattern_databases().size() << endl;
+         << current_heuristic->get_pattern_databases()->size() << endl;
     cout << "iPDB: size = " << current_heuristic->get_size() << endl;
     cout << "iPDB: generated = " << generated_patterns.size() << endl;
     cout << "iPDB: rejected = " << num_rejected << endl;
     cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
     cout << "iPDB: hill climbing time: " << *hill_climbing_timer << endl;
 
-    // delete all created PDB-pointer
-    for (size_t i = 0; i < candidate_pdbs.size(); ++i) {
-        delete candidate_pdbs[i];
+    // Delete all created PDBs.
+    for (PatternDatabase *pdb: candidate_pdbs) {
+        delete pdb;
     }
 
     delete hill_climbing_timer;
@@ -322,18 +323,13 @@ void PatternGenerationHaslum::initialize() {
     cout << "Average operator cost: " << average_operator_cost << endl;
 
     // Generate initial collection: a pdb for each goal variable.
-    vector<vector<int>> initial_pattern_collection;
+    Patterns initial_pattern_collection;
     for (FactProxy goal : task_proxy.get_goals()) {
         int goal_var_id = goal.get_variable().get_id();
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }
-    Options opts;
-    opts.set<shared_ptr<AbstractTask>>("transform", task);
-    // Since we pass a task transformation, cost_type won't be used.
-    opts.set<int>("cost_type", NORMAL);
-    opts.set<vector<vector<int>>>("patterns", initial_pattern_collection);
-    opts.set<bool>("cache_estimates", cache_h);
-    current_heuristic = make_unique_ptr<IncrementalCanonicalPDBs>(opts);
+    current_heuristic = make_unique_ptr<IncrementalCanonicalPDBs>(
+        task, initial_pattern_collection);
 
     State initial_state = task_proxy.get_initial_state();
     if (current_heuristic->is_dead_end(initial_state))
@@ -341,16 +337,12 @@ void PatternGenerationHaslum::initialize() {
 
     /* Generate initial candidate patterns (based on each pattern from
        the initial collection). */
-    vector<vector<int>> initial_candidate_patterns;
-    for (const PatternDatabase *current_pdb :
-         current_heuristic->get_pattern_databases()) {
-        generate_candidate_patterns(current_pdb, initial_candidate_patterns);
+    Patterns initial_candidate_patterns;
+    for (const auto &current_pdb :
+         *(current_heuristic->get_pattern_databases())) {
+        generate_candidate_patterns(current_pdb.get(), initial_candidate_patterns);
     }
-    // Remove duplicates in the candidate list.
-    sort(initial_candidate_patterns.begin(), initial_candidate_patterns.end());
-    initial_candidate_patterns.erase(unique(initial_candidate_patterns.begin(),
-                                            initial_candidate_patterns.end()),
-                                     initial_candidate_patterns.end());
+    validate_and_normalize_patterns(task_proxy, initial_candidate_patterns);
     cout << "done calculating initial pattern collection and "
          << "candidate patterns for the search" << endl;
 
@@ -497,8 +489,10 @@ static Heuristic *_parse(OptionParser &parser) {
         return nullptr;
 
     PatternGenerationHaslum pgh(opts);
+    // TODO issue585: fix this
+    return nullptr;
     // Note: in the long run, this should return a shared pointer.
-    return pgh.extract_pattern_collection_heuristic().release();
+//    return pgh.extract_pattern_collection_heuristic().release();
 }
 
 static Plugin<Heuristic> _plugin("ipdb", _parse);

@@ -1,6 +1,8 @@
 #ifndef PDBS_PATTERN_GENERATION_HASLUM_H
 #define PDBS_PATTERN_GENERATION_HASLUM_H
 
+#include "types.h"
+
 #include "../operator_cost.h"
 #include "../state_registry.h"
 #include "../successor_generator.h"
@@ -46,15 +48,15 @@ class PatternGenerationHaslum {
     */
     void generate_candidate_patterns(
         const PatternDatabase *pdb,
-        std::vector<std::vector<int>> &candidate_patterns);
+        Patterns &candidate_patterns);
 
     /*
       Generates the PatternDatabase for patterns in new_candidates if they have
       not been generated already.
     */
     std::size_t generate_pdbs_for_candidates(
-        std::set<std::vector<int>> &generated_patterns,
-        std::vector<std::vector<int>> &new_candidates,
+        std::set<Pattern> &generated_patterns,
+        Patterns &new_candidates,
         std::vector<PatternDatabase *> &candidate_pdbs) const;
 
     /*
@@ -86,7 +88,7 @@ class PatternGenerationHaslum {
     */
     bool is_heuristic_improved(
         PatternDatabase *pdb, const State &sample,
-        const std::vector<std::vector<PatternDatabase *>> &max_additive_subsets);
+        const PDBCliques &max_additive_subsets);
 
     /*
       This is the core algorithm of this class. As soon as after an iteration,
@@ -104,7 +106,7 @@ class PatternGenerationHaslum {
     */
     void hill_climbing(
         double average_operator_costs,
-        std::vector<std::vector<int>> &initial_candidate_patterns);
+        Patterns &initial_candidate_patterns);
 
     /*
       Initializes everything for the hill climbing algorithm. Note that the
@@ -116,18 +118,6 @@ class PatternGenerationHaslum {
 public:
     explicit PatternGenerationHaslum(const Options &opts);
     virtual ~PatternGenerationHaslum();
-
-    /*
-      Returns the CanonicalPDBsHeuristic created by PatternGenerationHaslum.
-      Important: caller owns the returned pointer and has to take care of its
-      deletion.
-    */
-    std::unique_ptr<CanonicalPDBsHeuristic>
-    extract_pattern_collection_heuristic() {
-        //std::unique_ptr<CanonicalPDBsHeuristic> heuristic = make_unique_ptr(current_heuristic...);
-        //return std::move(heuristic);
-        return nullptr;
-    }
 
     static void add_hillclimbing_options(OptionParser &parser);
     static void check_hillclimbing_options(OptionParser &parser,
