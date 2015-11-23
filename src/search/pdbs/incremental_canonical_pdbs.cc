@@ -100,30 +100,6 @@ void IncrementalCanonicalPDBs::compute_additive_vars() {
     }
 }
 
-void IncrementalCanonicalPDBs::dominance_pruning() {
-    Timer timer;
-    int num_patterns = pattern_databases.size();
-    int num_cliques = max_cliques.size();
-
-    DominancePruner(pattern_databases, max_cliques).prune();
-
-    // Recompute size (if patterns were pruned, the size is out of date).
-    size = 0;
-    for (PatternDatabase *pdb : pattern_databases) {
-        size += pdb->get_size();
-    }
-
-    cout << "Pruned " << num_cliques - max_cliques.size() <<
-        " of " << num_cliques << " cliques" << endl;
-    cout << "Pruned " << num_patterns - pattern_databases.size() <<
-        " of " << num_patterns << " PDBs" << endl;
-
-    cout << "Dominance pruning took " << timer << endl;
-}
-
-void IncrementalCanonicalPDBs::initialize() {
-}
-
 int IncrementalCanonicalPDBs::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
     return compute_heuristic(state);

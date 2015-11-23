@@ -35,7 +35,6 @@ class IncrementalCanonicalPDBs : public Heuristic {
     void dump_cgraph(const std::vector<std::vector<int>> &cgraph) const;
     void dump_cliques() const;
 protected:
-    virtual void initialize() override;
     virtual int compute_heuristic(const GlobalState &state) override;
 public:
     explicit IncrementalCanonicalPDBs(const Options &opts);
@@ -49,12 +48,6 @@ public:
 
     // Adds a new pattern to the collection and recomputes maximal cliques.
     void add_pattern(const std::vector<int> &pattern);
-
-    /* Prunes pattern set P = {P_1, ..., P_k} if there exists another
-       pattern set Q = {Q_1, ..., Q_l} where each P_i is a subset of some Q_j:
-       this implies h^P <= h^Q for all states. */
-    void dominance_pruning();
-
     // checks for all max cliques if they would be additive to this pattern
     void get_max_additive_subsets(
         const std::vector<int> &new_pattern,
