@@ -10,8 +10,11 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
+
+namespace CGHeuristic {
 const int CGCache::NOT_COMPUTED;
 
 CGCache::CGCache() {
@@ -130,4 +133,5 @@ int CGCache::get_index(int var, const GlobalState &state,
     index += to_val * multiplier;
     assert(in_bounds(index, cache[var]));
     return index;
+}
 }

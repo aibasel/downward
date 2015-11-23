@@ -20,6 +20,7 @@ using namespace std;
 #define USE_CACHE true
 
 
+namespace CGHeuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
       cache(new CGCache), cache_hits(0), cache_misses(0),
@@ -295,3 +296,4 @@ static Heuristic *_parse(OptionParser &parser) {
 
 
 static Plugin<Heuristic> _plugin("cg", _parse);
+}
