@@ -8,6 +8,7 @@
 class LPConstraint;
 class TaskProxy;
 
+
 namespace OperatorCounting {
 /* A proposition is an atom of the form Var = Val. It stores the index of the
    constraint representing it in the LP */
