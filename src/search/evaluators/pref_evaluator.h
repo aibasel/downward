@@ -7,6 +7,7 @@
 #include <vector>
 
 
+namespace PrefEvaluator {
 class PrefEvaluator : public ScalarEvaluator {
 public:
     PrefEvaluator();
@@ -16,5 +17,6 @@ public:
         EvaluationContext &eval_context) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &) override {}
 };
+}
 
 #endif
