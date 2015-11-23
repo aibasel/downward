@@ -7,6 +7,7 @@
 using namespace std;
 
 
+namespace LMcutHeuristic {
 // construction and destruction
 LandmarkCutLandmarks::LandmarkCutLandmarks(const TaskProxy &task_proxy) {
     verify_no_axioms(task_proxy);
@@ -333,4 +334,5 @@ bool LandmarkCutLandmarks::compute_landmarks(
         artificial_precondition.status = REACHED;
     }
     return false;
+}
 }

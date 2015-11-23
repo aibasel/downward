@@ -12,6 +12,7 @@
 using namespace std;
 
 
+namespace LMcutHeuristic {
 // construction and destruction
 LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
     : Heuristic(opts),
@@ -63,5 +64,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new LandmarkCutHeuristic(opts);
 }
 
-
 static Plugin<Heuristic> _plugin("lmcut", _parse);
+}
