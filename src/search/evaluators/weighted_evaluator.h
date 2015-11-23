@@ -5,6 +5,8 @@
 
 class Options;
 
+
+namespace WeightedEvaluator {
 class WeightedEvaluator : public ScalarEvaluator {
     ScalarEvaluator *evaluator;
     int w;
@@ -19,5 +21,6 @@ public:
         EvaluationContext &eval_context) override;
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) override;
 };
+}
 
 #endif

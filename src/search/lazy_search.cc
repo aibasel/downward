@@ -421,7 +421,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
             if (opts.get<int>("w") == 1) {
                 sum_evals.push_back(evals[i]);
             } else {
-                WeightedEvaluator *w = new WeightedEvaluator(
+                WeightedEvaluator::WeightedEvaluator *w = new WeightedEvaluator::WeightedEvaluator(
                     evals[i],
                     opts.get<int>("w"));
                 sum_evals.push_back(w);
