@@ -8,6 +8,7 @@
 using namespace std;
 
 
+namespace MaxEvaluator {
 MaxEvaluator::MaxEvaluator(const vector<ScalarEvaluator *> &subevaluators)
     : CombiningEvaluator(subevaluators) {
 }
@@ -55,3 +56,4 @@ static ScalarEvaluator *create(const vector<string> &config,
 //       For now, it's commented out to use the IPC implementation of
 //       max again, see issue181.
 // static Plugin<ScalarEvaluator> plugin("max", create);
+}
