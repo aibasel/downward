@@ -7,6 +7,7 @@
 using namespace std;
 
 
+namespace IPCMaxHeuristic {
 IPCMaxHeuristic::IPCMaxHeuristic(const Options &opts)
     : Heuristic(opts),
       heuristics(opts.get_list<Heuristic *>("heuristics")) {
@@ -54,3 +55,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> plugin("max", _parse);
+}

@@ -7,6 +7,8 @@
 
 class Options;
 
+
+namespace IPCMaxHeuristic {
 class IPCMaxHeuristic : public Heuristic {
     std::vector<Heuristic *> heuristics;
 
@@ -21,5 +23,6 @@ public:
                              const GlobalOperator &op,
                              const GlobalState &state) override;
 };
+}
 
 #endif
