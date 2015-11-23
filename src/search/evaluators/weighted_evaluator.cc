@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <sstream>
 
+
+namespace WeightedEvaluator {
 WeightedEvaluator::WeightedEvaluator(const Options &opts)
     : evaluator(opts.get<ScalarEvaluator *>("eval")),
       w(opts.get<int>("weight")) {
@@ -56,3 +58,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 static Plugin<ScalarEvaluator> _plugin("weight", _parse);
+}
