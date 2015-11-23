@@ -322,10 +322,16 @@ fast_downward_plugin(
         pdbs/match_tree.cc
         pdbs/max_cliques.cc
         pdbs/pattern_database.cc
+        pdbs/pattern_generator.cc
+        pdbs/pattern_generation_combo.cc
         pdbs/pattern_generation_edelkamp.cc
         pdbs/pattern_generation_haslum.cc
+        pdbs/pattern_generation_manual.cc
+        pdbs/pattern_generation_single_greedy.cc
+        pdbs/pattern_generation_single_manual.cc
         pdbs/pattern_generation_systematic.cc
         pdbs/pdb_heuristic.cc
+        pdbs/types.cc
         pdbs/util.cc
         pdbs/zero_one_pdbs_heuristic.cc
 )

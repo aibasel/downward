@@ -12,7 +12,6 @@ class OperatorProxy;
 class PDBHeuristic : public Heuristic {
     PatternDatabase pdb;
 protected:
-    virtual void initialize() override;
     virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
     /*

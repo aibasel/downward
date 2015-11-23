@@ -1,0 +1,53 @@
+#include "pattern_generation_combo.h"
+
+#include "pattern_generation_single_greedy.h"
+#include "util.h"
+
+#include "../option_parser.h"
+#include "../plugin.h"
+
+#include <vector>
+
+using namespace std;
+
+PatternGenerationCombo::PatternGenerationCombo(const Options &opts)
+    : max_states(opts.get<int>("max_states")) {
+}
+
+PatternCollection PatternGenerationCombo::generate(std::shared_ptr<AbstractTask> task) {
+    /* Take one large pattern and then single-variable patterns for
+       all goal variables that are not in the large pattern. */
+    TaskProxy task_proxy(*task);
+    shared_ptr<Patterns> patterns;
+
+    PatternGenerationSingleGreedy large_pattern_generator(max_states);
+    Pattern large_pattern = large_pattern_generator.generate(task);
+    patterns->push_back(large_pattern);
+
+    set<int> used_vars(large_pattern.begin(), large_pattern.end());
+    for (FactProxy goal : task_proxy.get_goals()) {
+        int goal_var_id = goal.get_variable().get_id();
+        if (used_vars.count(goal_var_id) == 0)
+            patterns->emplace_back(1, goal_var_id);
+    }
+
+    validate_and_normalize_patterns(task_proxy, *patterns);
+    cout << "Combo pattern collection: " << *patterns << endl;
+    return PatternCollection(task, patterns);
+}
+
+static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
+    parser.add_option<int>(
+        "max_states",
+        "maximum abstraction size for combo strategy",
+        "1000000",
+        Bounds("1", "infinity"));
+
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return nullptr;
+
+    return make_shared<PatternGenerationCombo>(opts);
+}
+
+static PluginShared<PatternCollectionGenerator> _plugin("combo", _parse);

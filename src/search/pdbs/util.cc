@@ -9,6 +9,49 @@
 using namespace std;
 
 
+void validate_and_normalize_pattern(const TaskProxy &task_proxy, vector<int> &pattern) {
+    /*
+      - Sort by variable number and remove duplicate variables.
+      - Warn if duplicate variables exist.
+      - Error if patterns contain out-of-range variable numbers.
+    */
+    sort(pattern.begin(), pattern.end());
+    vector<int>::iterator it = unique(pattern.begin(), pattern.end());
+    if (it != pattern.end()) {
+        pattern.erase(it, pattern.end());
+        cout << "Warning: duplicate variables in pattern have been removed" << endl;
+    }
+    if (!pattern.empty()) {
+        if (pattern.front() < 0) {
+            cerr << "Variable number too low in pattern" << endl;
+            exit_with(EXIT_CRITICAL_ERROR);
+        }
+        int num_variables = task_proxy.get_variables().size();
+        if (pattern.back() >= num_variables) {
+            cerr << "Variable number too high in pattern" << endl;
+            exit_with(EXIT_CRITICAL_ERROR);
+        }
+    }
+}
+
+void validate_and_normalize_patterns(const TaskProxy &task_proxy, vector<vector<int>> &patterns) {
+    /*
+      - Validate and normalize each pattern (see there).
+      - Sort collection lexicographically and remove duplicate patterns.
+      - Warn if duplicate patterns exist.
+    */
+    for (auto &pattern : patterns)
+        validate_and_normalize_pattern(task_proxy, pattern);
+    sort(patterns.begin(), patterns.end());
+    auto it = unique(patterns.begin(), patterns.end());
+    if (it != patterns.end()) {
+        patterns.erase(it, patterns.end());
+        cout << "Warning: duplicate patterns have been removed" << endl;
+    }
+}
+
+
+// TODO issue585: remove this function
 static void validate_and_normalize_pattern(
     TaskProxy task_proxy, OptionParser &parser, vector<int> &pattern) {
     /*
@@ -31,6 +74,7 @@ static void validate_and_normalize_pattern(
     }
 }
 
+// TODO issue585: remove this function
 static void validate_and_normalize_patterns(
     TaskProxy task_proxy, OptionParser &parser,
     vector<vector<int>> &pattern_collection) {
@@ -51,54 +95,6 @@ static void validate_and_normalize_patterns(
     }
 }
 
-static void build_pattern_for_size_limit(
-    const shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
-    vector<int> &pattern) {
-    /*
-       - Error if size_limit is invalid (< 1).
-       - Pattern is normalized, i.e., variable numbers are sorted.
-    */
-    assert(pattern.empty());
-    assert(size_limit >= 1);
-
-    VariableOrderFinder order(task, GOAL_CG_LEVEL);
-    TaskProxy task_proxy(*task);
-    int size = 1;
-    while (true) {
-        if (order.done())
-            break;
-        int next_var_id = order.next();
-        VariableProxy next_var = task_proxy.get_variables()[next_var_id];
-        int next_var_size = next_var.get_domain_size();
-
-        if (!is_product_within_limit(size, next_var_size, size_limit))
-            break;
-
-        pattern.push_back(next_var_id);
-        size *= next_var_size;
-    }
-
-    validate_and_normalize_pattern(task_proxy, parser, pattern);
-}
-
-static void build_combo_patterns(
-    const shared_ptr<AbstractTask> task, OptionParser &parser, int size_limit,
-    vector<vector<int>> &pattern_collection) {
-    // Take one large pattern and then single-variable patterns for
-    // all goal variables that are not in the large pattern.
-    assert(pattern_collection.empty());
-    vector<int> large_pattern;
-    build_pattern_for_size_limit(task, parser, size_limit, large_pattern);
-    pattern_collection.push_back(large_pattern);
-    set<int> used_vars(large_pattern.begin(), large_pattern.end());
-    TaskProxy task_proxy(*task);
-    for (FactProxy goal : task_proxy.get_goals()) {
-        int goal_var_id = goal.get_variable().get_id();
-        if (used_vars.count(goal_var_id) == 0)
-            pattern_collection.emplace_back(1, goal_var_id);
-    }
-}
-
 static void build_singleton_patterns(
     TaskProxy task_proxy, vector<vector<int>> &pattern_collection) {
     // Build singleton pattern from each goal variable.
@@ -107,42 +103,6 @@ static void build_singleton_patterns(
         int goal_var_id = goal.get_variable().get_id();
         pattern_collection.emplace_back(1, goal_var_id);
     }
-}
-
-void parse_pattern(OptionParser &parser, Options &opts) {
-    if (!parser.help_mode())
-        assert(parser.is_valid_option("transform"));
-    parser.add_option<int>(
-        "max_states",
-        "maximal number of abstract states in the pattern database",
-        "1000000",
-        Bounds("1", "infinity"));
-    parser.add_list_option<int>(
-        "pattern",
-        "list of variable numbers of the planning task that should be used as "
-        "pattern. Default: the variables are selected automatically based on a "
-        "simple greedy strategy.",
-        OptionParser::NONE);
-
-    opts = parser.parse();
-    if (parser.help_mode())
-        return;
-
-    const shared_ptr<AbstractTask> task = get_task_from_options(opts);
-    TaskProxy task_proxy(*task);
-
-    vector<int> pattern;
-    if (opts.contains("pattern")) {
-        pattern = opts.get_list<int>("pattern");
-    } else {
-        build_pattern_for_size_limit(
-            task, parser, opts.get<int>("max_states"), pattern);
-    }
-    validate_and_normalize_pattern(task_proxy, parser, pattern);
-    opts.set("pattern", pattern);
-
-    if (!parser.dry_run())
-        cout << "pattern: " << pattern << endl;
 }
 
 void parse_patterns(OptionParser &parser, Options &opts) {
@@ -173,8 +133,11 @@ void parse_patterns(OptionParser &parser, Options &opts) {
     if (opts.contains("patterns")) {
         pattern_collection = opts.get_list<vector<int>>("patterns");
     } else if (opts.get<bool>("combo")) {
+/*
+        // TODO issue585: remove the method parse_patterns
         build_combo_patterns(
             task, parser, opts.get<int>("max_states"), pattern_collection);
+*/
     } else {
         /*
           // TODO: We'd like to have a test like in the following lines,
