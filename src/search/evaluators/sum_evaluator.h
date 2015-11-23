@@ -7,6 +7,7 @@
 
 class Options;
 
+namespace SumEvaluator {
 class SumEvaluator : public CombiningEvaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) override;
@@ -15,5 +16,6 @@ public:
     explicit SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
     virtual ~SumEvaluator() override;
 };
+}
 
 #endif

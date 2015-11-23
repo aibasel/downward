@@ -6,6 +6,8 @@
 #include <cassert>
 #include <limits>
 
+
+namespace SumEvaluator {
 SumEvaluator::SumEvaluator(const Options &opts)
     : CombiningEvaluator(opts.get_list<ScalarEvaluator *>("evals")) {
 }
@@ -44,3 +46,4 @@ static ScalarEvaluator *_parse(OptionParser &parser) {
 }
 
 static Plugin<ScalarEvaluator> _plugin("sum", _parse);
+}
