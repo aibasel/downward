@@ -15,6 +15,8 @@
 
 using namespace std;
 
+
+namespace RelaxationHeuristic {
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
     : Heuristic(opts) {
@@ -187,4 +189,5 @@ void RelaxationHeuristic::simplify() {
     });
 
     cout << " done! [" << unary_operators.size() << " unary operators]" << endl;
+}
 }

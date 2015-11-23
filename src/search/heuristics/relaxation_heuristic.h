@@ -9,6 +9,8 @@ class FactProxy;
 class GlobalState;
 class OperatorProxy;
 
+
+namespace RelaxationHeuristic {
 struct Proposition;
 struct UnaryOperator;
 
@@ -61,5 +63,6 @@ public:
     virtual ~RelaxationHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };
+}
 
 #endif

@@ -6,6 +6,8 @@
 #include <vector>
 
 namespace FFHeuristic {
+using Proposition = RelaxationHeuristic::Proposition;
+using UnaryOperator = RelaxationHeuristic::UnaryOperator;
 
 /*
   TODO: In a better world, this should not derive from
