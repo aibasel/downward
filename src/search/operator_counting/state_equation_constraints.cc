@@ -1,10 +1,11 @@
 #include "state_equation_constraints.h"
 
 #include "../globals.h"
-#include "../lp_solver.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
+
+#include "../lp/lp_solver.h"
 
 using namespace std;
 
