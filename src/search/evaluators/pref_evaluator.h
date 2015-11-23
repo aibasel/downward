@@ -1,7 +1,7 @@
 #ifndef PREF_EVALUATOR_H
 #define PREF_EVALUATOR_H
 
-#include "scalar_evaluator.h"
+#include "../scalar_evaluator.h"
 
 #include <string>
 #include <vector>

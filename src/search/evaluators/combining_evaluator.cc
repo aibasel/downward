@@ -1,7 +1,7 @@
 #include "combining_evaluator.h"
 
-#include "evaluation_context.h"
-#include "evaluation_result.h"
+#include "../evaluation_context.h"
+#include "../evaluation_result.h"
 
 using namespace std;
 

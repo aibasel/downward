@@ -1,9 +1,9 @@
 #include "g_evaluator.h"
 
-#include "evaluation_context.h"
-#include "evaluation_result.h"
-#include "option_parser.h"
-#include "plugin.h"
+#include "../evaluation_context.h"
+#include "../evaluation_result.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
