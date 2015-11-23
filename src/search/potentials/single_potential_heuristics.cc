@@ -11,7 +11,7 @@
 using namespace std;
 
 
-namespace potentials {
+namespace Potentials {
 enum class OptimizeFor {
     INITIAL_STATE,
     ALL_STATES,

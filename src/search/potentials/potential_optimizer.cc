@@ -11,7 +11,7 @@
 using namespace std;
 
 
-namespace potentials {
+namespace Potentials {
 static int get_undefined_value(VariableProxy var) {
     return var.get_domain_size();
 }

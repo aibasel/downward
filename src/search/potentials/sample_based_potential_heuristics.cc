@@ -14,7 +14,7 @@
 using namespace std;
 
 
-namespace potentials {
+namespace Potentials {
 static void filter_dead_ends(PotentialOptimizer &optimizer, vector<State> &samples) {
     assert(!optimizer.potentials_are_bounded());
     vector<State> non_dead_end_samples;

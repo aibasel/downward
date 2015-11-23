@@ -12,7 +12,7 @@ class Options;
 class State;
 
 
-namespace potentials {
+namespace Potentials {
 class PotentialFunction;
 
 /*
