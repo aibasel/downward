@@ -6,7 +6,7 @@
 class State;
 
 
-namespace potentials {
+namespace Potentials {
 /*
   A potential function calculates the sum of potentials in a given state.
 

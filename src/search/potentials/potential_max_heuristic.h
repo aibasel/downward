@@ -7,7 +7,7 @@
 #include <vector>
 
 
-namespace potentials {
+namespace Potentials {
 class PotentialFunction;
 
 /*
