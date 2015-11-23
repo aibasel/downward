@@ -1,9 +1,11 @@
 #include "landmark_graph_merged.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
 
 #include <set>
 
+namespace Landmarks {
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
     : LandmarkFactory(opts),
       lm_graphs(opts.get_list<LandmarkGraph *>("lm_graphs")) {
@@ -150,3 +152,4 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 
 static Plugin<LandmarkGraph> _plugin(
     "lm_merged", _parse);
+}

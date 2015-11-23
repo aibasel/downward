@@ -9,10 +9,10 @@
 #include <iostream>
 #include <limits>
 
-
 using namespace std;
 
 
+namespace Landmarks {
 LandmarkCostAssignment::LandmarkCostAssignment(
     LandmarkGraph &graph, OperatorCost cost_type_)
     : lm_graph(graph), cost_type(cost_type_) {
@@ -239,4 +239,5 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     double h = lp_solver.get_objective_value();
 
     return h;
+}
 }

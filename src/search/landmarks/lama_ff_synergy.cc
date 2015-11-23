@@ -13,6 +13,7 @@
 using namespace std;
 
 
+namespace Landmarks {
 /*
   Implementation notes:
 
@@ -185,3 +186,4 @@ static PluginTypePlugin<Synergy> _type_plugin(
     "");
 
 static Plugin<Synergy> _plugin("lm_ff_syn", _parse);
+}

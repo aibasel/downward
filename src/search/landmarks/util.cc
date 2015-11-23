@@ -1,12 +1,15 @@
 #include "util.h"
 
 #include "landmark_graph.h"
+
 #include "../global_operator.h"
 
 #include <limits>
 
 using namespace std;
 
+
+namespace Landmarks {
 bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int>> &lvl_var) {
     for (size_t i = 0; i < conditions.size(); ++i)
         if (lvl_var[conditions[i].var][conditions[i].val] ==
@@ -56,4 +59,5 @@ bool _possibly_reaches_lm(const GlobalOperator &o, const vector<vector<int>> &lv
     }
 
     return false;
+}
 }

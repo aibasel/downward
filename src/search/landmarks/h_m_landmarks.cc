@@ -3,6 +3,7 @@
 #include "../plugin.h"
 
 
+namespace Landmarks {
 std::ostream & operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
@@ -1058,3 +1059,4 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 
 static Plugin<LandmarkGraph> _plugin(
     "lm_hm", _parse);
+}
