@@ -11,6 +11,8 @@
 
 using namespace std;
 
+
+namespace Landmarks {
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
    - Added-on functionality for excluding certain operators from the relaxed
@@ -466,4 +468,5 @@ bool Exploration::plan_for_disj(vector<pair<int, int>> &landmarks,
         }
     }
     return true;
+}
 }

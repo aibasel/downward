@@ -5,6 +5,8 @@
 
 #include <memory>
 
+
+namespace Landmarks {
 class Exploration;
 class LandmarkCountHeuristic;
 
@@ -50,5 +52,6 @@ public:
     Heuristic *get_lama_heuristic_proxy() const;
     Heuristic *get_ff_heuristic_proxy() const;
 };
+}
 
 #endif

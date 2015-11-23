@@ -9,6 +9,8 @@
 #include <set>
 #include <vector>
 
+
+namespace Landmarks {
 class LandmarkGraph;
 class LandmarkNode;
 
@@ -53,6 +55,6 @@ public:
 
     virtual double cost_sharing_h_value();
 };
-
+}
 
 #endif

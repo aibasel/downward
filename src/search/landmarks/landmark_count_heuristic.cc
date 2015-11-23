@@ -11,6 +11,8 @@
 
 using namespace std;
 
+
+namespace Landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
       lgraph(*opts.get<LandmarkGraph *>("lm_graph")),
@@ -331,3 +333,4 @@ static Heuristic *_parse(OptionParser &parser) {
 
 static Plugin<Heuristic> _plugin(
     "lmcount", _parse);
+}

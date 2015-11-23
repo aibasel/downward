@@ -9,6 +9,8 @@
 #include "../global_state.h"
 #include "../heuristic.h"
 
+
+namespace Landmarks {
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
     LandmarkGraph &lgraph;
@@ -53,5 +55,6 @@ public:
                              const GlobalState &state);
     virtual bool dead_ends_are_reliable() const;
 };
+}
 
 #endif
