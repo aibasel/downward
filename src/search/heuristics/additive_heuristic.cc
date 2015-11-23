@@ -7,11 +7,11 @@
 
 #include <cassert>
 #include <vector>
+
 using namespace std;
 
 
-
-
+namespace AdditiveHeuristic {
 // construction and destruction
 AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     : RelaxationHeuristic(opts),
@@ -167,3 +167,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("add", _parse);
+}

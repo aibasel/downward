@@ -15,7 +15,7 @@ namespace FFHeuristic {
         other relaxation heuristics and the additional FF heuristic
         implementation in the landmark code.
 */
-class FFHeuristic : public AdditiveHeuristic {
+class FFHeuristic : public AdditiveHeuristic::AdditiveHeuristic {
     // Relaxed plans are represented as a set of operators implemented
     // as a bit vector.
     typedef std::vector<bool> RelaxedPlan;

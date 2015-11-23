@@ -10,6 +10,7 @@
 class State;
 
 
+namespace AdditiveHeuristic {
 class AdditiveHeuristic : public RelaxationHeuristic {
     /* Costs larger than MAX_COST_VALUE are clamped to max_value. The
        precise value (100M) is a bit of a hack, since other parts of
@@ -59,5 +60,6 @@ public:
     AdditiveHeuristic(const Options &options);
     ~AdditiveHeuristic();
 };
+}
 
 #endif
