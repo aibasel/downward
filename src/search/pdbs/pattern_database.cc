@@ -16,6 +16,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 AbstractOperator::AbstractOperator(const vector<pair<int, int>> &prev_pairs,
                                    const vector<pair<int, int>> &pre_pairs,
                                    const vector<pair<int, int>> &eff_pairs,
@@ -299,4 +301,5 @@ bool PatternDatabase::is_operator_relevant(const OperatorProxy &op) const {
         }
     }
     return false;
+}
 }

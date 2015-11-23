@@ -16,6 +16,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
     : Heuristic(opts) {
     const vector<vector<int>> &pattern_collection(
@@ -72,7 +74,7 @@ void CanonicalPDBsHeuristic::compute_max_cliques() {
     }
 
     vector<vector<int>> cgraph_max_cliques;
-    ::compute_max_cliques(cgraph, cgraph_max_cliques);
+    PDBs::compute_max_cliques(cgraph, cgraph_max_cliques);
     max_cliques.reserve(cgraph_max_cliques.size());
 
     for (const vector<int> &cgraph_max_clique : cgraph_max_cliques) {
@@ -289,3 +291,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("cpdbs", _parse);
+}

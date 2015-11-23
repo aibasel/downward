@@ -4,6 +4,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 DominancePruner::DominancePruner(vector<PatternDatabase *> &pattern_databases_,
                                  vector<vector<PatternDatabase *>> &max_cliques_)
     : pattern_databases(pattern_databases_),
@@ -112,4 +114,5 @@ void DominancePruner::prune() {
     pattern_databases = vector<PatternDatabase *>(remaining_heuristics.begin(),
                                                   remaining_heuristics.end());
     max_cliques.swap(remaining_cliques);
+}
 }

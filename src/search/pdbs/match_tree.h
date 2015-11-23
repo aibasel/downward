@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <vector>
 
+
+namespace PDBs {
 class AbstractOperator;
 
 // Successor Generator for abstract operators.
@@ -42,5 +44,6 @@ public:
         std::vector<const AbstractOperator *> &applicable_operators) const;
     void dump() const;
 };
+}
 
 #endif

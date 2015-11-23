@@ -9,6 +9,7 @@
 using namespace std;
 
 
+namespace PDBs {
 static void validate_and_normalize_pattern(
     TaskProxy task_proxy, OptionParser &parser, vector<int> &pattern) {
     /*
@@ -196,4 +197,5 @@ void parse_patterns(OptionParser &parser, Options &opts) {
 
     if (!parser.dry_run())
         cout << "pattern collection: " << pattern_collection << endl;
+}
 }
