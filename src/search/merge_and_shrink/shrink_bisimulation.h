@@ -4,6 +4,9 @@
 #include "shrink_strategy.h"
 
 class Options;
+
+
+namespace MergeAndShrink {
 struct Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {
@@ -39,5 +42,6 @@ public:
     explicit ShrinkBisimulation(const Options &opts);
     virtual ~ShrinkBisimulation();
 };
+}
 
 #endif

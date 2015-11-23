@@ -3,6 +3,8 @@
 
 #include "merge_strategy.h"
 
+
+namespace MergeAndShrink {
 class MergeDFP : public MergeStrategy {
     // Store the "DFP" ordering in which transition systems should be considered.
     std::vector<int> transition_system_order;
@@ -19,5 +21,6 @@ public:
     virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) override;
     virtual std::string name() const override;
 };
+}
 
 #endif

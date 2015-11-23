@@ -11,6 +11,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 MergeLinear::MergeLinear(const Options &opts)
     : MergeStrategy(),
       variable_order_type(VariableOrderType(opts.get_enum("variable_order"))),
@@ -88,3 +90,4 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<MergeStrategy> _plugin("merge_linear", _parse);
+}

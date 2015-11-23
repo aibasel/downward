@@ -15,6 +15,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 MergeDFP::MergeDFP()
     : MergeStrategy() {
 }
@@ -207,3 +208,4 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<MergeStrategy> _plugin("merge_dfp", _parse);
+}

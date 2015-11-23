@@ -5,14 +5,16 @@
 #include <memory>
 #include <vector>
 
-class Distances;
-class HeuristicRepresentation;
-class Labels;
 class State;
 class TaskProxy;
 class Timer;
-class TransitionSystem;
 
+
+namespace MergeAndShrink {
+class Distances;
+class HeuristicRepresentation;
+class Labels;
+class TransitionSystem;
 
 class FactoredTransitionSystem {
     std::shared_ptr<Labels> labels;
@@ -83,5 +85,6 @@ public:
     }
     int get_num_labels() const; // used by merge_dfp
 };
+}
 
 #endif

@@ -21,6 +21,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 /*
   Implementation note: Transitions are grouped by their label groups,
   not by source state or any such thing. Such a grouping is beneficial
@@ -524,4 +526,5 @@ void TransitionSystem::dump_labels_and_transitions() const {
 void TransitionSystem::statistics() const {
     cout << tag() << get_size() << " states, "
          << total_transitions() << " arcs " << endl;
+}
 }
