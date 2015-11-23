@@ -11,6 +11,7 @@
 
 using namespace std;
 
+namespace BlindSearchHeuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();
@@ -55,3 +56,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("blind", _parse);
+}
