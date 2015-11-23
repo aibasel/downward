@@ -7,6 +7,8 @@
 
 #include <cassert>
 
+
+namespace MaxHeuristic {
 class HSPMaxHeuristic : public RelaxationHeuristic {
     AdaptiveQueue<Proposition *> queue;
 
@@ -29,5 +31,6 @@ public:
     HSPMaxHeuristic(const Options &options);
     ~HSPMaxHeuristic();
 };
+}
 
 #endif
