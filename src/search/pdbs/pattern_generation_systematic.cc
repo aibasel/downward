@@ -272,13 +272,9 @@ PatternGenerationSystematic::get_pattern_collection_heuristic(
         "transform", get_task_from_options(opts));
     canonical_opts.set<int>("cost_type", NORMAL);
     canonical_opts.set<bool>("cache_estimates", opts.get<bool>("cache_estimates"));
+    canonical_opts.set<bool>("dominance_pruning", opts.get<bool>("dominance_pruning"));
     canonical_opts.set("patterns", patterns);
-    unique_ptr<CanonicalPDBsHeuristic> h =
-        make_unique_ptr<CanonicalPDBsHeuristic>(canonical_opts);
-    if (opts.get<bool>("dominance_pruning")) {
-        h->dominance_pruning();
-    }
-    return h;
+    return make_unique_ptr<CanonicalPDBsHeuristic>(canonical_opts);
 }
 
 void PatternGenerationSystematic::add_systematic_pattern_options(

@@ -99,7 +99,7 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
 void PatternGenerationHaslum::sample_states(
     TaskProxy task_proxy, const SuccessorGenerator &successor_generator,
     vector<State> &samples, double average_operator_cost) {
-    int init_h = current_heuristic->compute_heuristic(
+    int init_h = current_heuristic->get_value(
         task_proxy.get_initial_state());
 
     try {
@@ -162,9 +162,8 @@ std::pair<int, int> PatternGenerationHaslum::find_best_improving_pdb(
           see above) earlier.
         */
         int count = 0;
-        PDBCliques max_additive_subsets;
-        current_heuristic->get_max_additive_subsets(
-            pdb->get_pattern(), max_additive_subsets);
+        PDBCliques max_additive_subsets =
+            current_heuristic->get_max_additive_subsets(pdb->get_pattern());
         for (State &sample : samples) {
             if (is_heuristic_improved(pdb, sample, max_additive_subsets))
                 ++count;
@@ -193,7 +192,7 @@ bool PatternGenerationHaslum::is_heuristic_improved(
     }
 
     // h_collection: h-value of the current collection heuristic
-    int h_collection = current_heuristic->compute_heuristic(sample);
+    int h_collection = current_heuristic->get_value(sample);
     if (h_collection == numeric_limits<int>::max())
         return false;
 
@@ -244,7 +243,7 @@ void PatternGenerationHaslum::hill_climbing(
                 cout << "infinite => stopping hill climbing" << endl;
                 break;
             } else {
-                cout << current_heuristic->compute_heuristic(initial_state)
+                cout << current_heuristic->get_value(initial_state)
                      << endl;
             }
 
@@ -357,10 +356,7 @@ PatternCollection PatternGenerationHaslum::generate(shared_ptr<AbstractTask> tas
                 initial_candidate_patterns);
         cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
     }
-    return PatternCollection(task,
-                             nullptr,
-                             current_heuristic->get_pattern_databases(),
-                             current_heuristic->get_cliques());
+    return PatternCollection(task, current_heuristic->get_cliques());
 }
 
 
@@ -504,6 +500,13 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
 
     PatternGenerationHaslum::add_hillclimbing_options(parser);
     Heuristic::add_options_to_parser(parser);
+    parser.add_option<bool>(
+        "dominance_pruning",
+        "Exclude patterns and cliques that will never contribute to the "
+        "heuristic value because there are dominating patterns in the "
+        "collection.",
+        "true");
+
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
@@ -520,6 +523,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     heuristic_opts.set<int>("cost_type", NORMAL);
     heuristic_opts.set<bool>("cache_estimates", opts.get<bool>("cache_estimates"));
     heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>("patterns", pgh);
+    heuristic_opts.set<bool>("dominance_pruning", opts.get<bool>("dominance_pruning"));
     // Note: in the long run, this should return a shared pointer.
     return new CanonicalPDBsHeuristic(heuristic_opts);
 }

@@ -1,43 +1,34 @@
 #include "canonical_pdbs_heuristic.h"
 
-#include "dominance_pruner.h"
-#include "pattern_database.h"
 #include "pattern_generator.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../timer.h"
 
-#include <cassert>
-#include <cstdlib>
-
 using namespace std;
 
-CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
-    : Heuristic(opts) {
 
+CanonicalPDBs get_canonical_pdbs_from_options(
+    const shared_ptr<AbstractTask> task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
     Timer timer;
     PatternCollection pattern_collection = pattern_generator->generate(task);
-    pattern_databases = pattern_collection.get_pdbs();
-    max_cliques = pattern_collection.get_cliques();
+    shared_ptr<PDBCollection> pattern_databases = pattern_collection.get_pdbs();
+    shared_ptr<PDBCliques> max_cliques = pattern_collection.get_cliques();
     cout << "PDB collection construction time: " << timer << endl;
+
+    CanonicalPDBs canonical_pdbs(pattern_databases, max_cliques);
+    if (opts.get<bool>("dominance_pruning")) {
+        canonical_pdbs.dominance_pruning();
+    }
+    return canonical_pdbs;
 }
 
-void CanonicalPDBsHeuristic::dominance_pruning() {
-    Timer timer;
-    int num_patterns = pattern_databases->size();
-    int num_cliques = max_cliques->size();
-
-    DominancePruner(*pattern_databases, *max_cliques).prune();
-
-    cout << "Pruned " << num_cliques - max_cliques->size() <<
-        " of " << num_cliques << " cliques" << endl;
-    cout << "Pruned " << num_patterns - pattern_databases->size() <<
-        " of " << num_patterns << " PDBs" << endl;
-
-    cout << "Dominance pruning took " << timer << endl;
+CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
+    : Heuristic(opts),
+      canonical_pdbs(get_canonical_pdbs_from_options(task, opts)) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -46,22 +37,12 @@ int CanonicalPDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &state) const {
-    // If we have an empty collection, then max_cliques = { \emptyset }.
-    assert(!max_cliques->empty());
-    int max_h = 0;
-    for (const auto &clique : *max_cliques) {
-        int clique_h = 0;
-        for (const auto &pdb : clique) {
-            /* Experiments showed that it is faster to recompute the
-               h values than to cache them in an unordered_map. */
-            int h = pdb->get_value(state);
-            if (h == numeric_limits<int>::max())
-                return DEAD_END;
-            clique_h += h;
-        }
-        max_h = max(max_h, clique_h);
+    int h = canonical_pdbs.get_value(state);
+    if (h == numeric_limits<int>::max()) {
+        return DEAD_END;
+    } else {
+        return h;
     }
-    return max_h;
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -85,6 +66,13 @@ static Heuristic *_parse(OptionParser &parser) {
         "patterns",
         "pattern generation method",
         "combo()");
+    parser.add_option<bool>(
+        "dominance_pruning",
+        "Exclude patterns and cliques that will never contribute to the "
+        "heuristic value because there are dominating patterns in the "
+        "collection.",
+        "true");
+
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();

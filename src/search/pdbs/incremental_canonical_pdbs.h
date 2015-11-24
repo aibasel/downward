@@ -1,6 +1,8 @@
 #ifndef PDBS_INCREMENTAL_CANONICAL_PDBS_H
 #define PDBS_INCREMENTAL_CANONICAL_PDBS_H
 
+#include "canonical_pdbs.h"
+#include "pdb_max_cliques.h"
 #include "types.h"
 
 #include "../task_proxy.h"
@@ -12,44 +14,34 @@ class IncrementalCanonicalPDBs {
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
 
-    // The sum of all abstract state sizes of all pdbs in the collection.
-    int size;
-    // A maximal clique represents a maximal additive subset of patterns.
-    std::shared_ptr<PDBCliques> max_cliques;
-    // A pair of variables is additive if no operatorhas an effect on both.
-    std::vector<std::vector<bool>> are_additive;
     std::shared_ptr<PDBCollection> pattern_databases;
 
-    /* Returns true iff the two patterns are additive i.e. there is no operator
-       which affects variables in pattern one as well as in pattern two. */
-    bool are_patterns_additive(const std::vector<int> &pattern1,
-                               const std::vector<int> &pattern2) const;
+    // A maximal clique represents a maximal additive subset of patterns.
+    std::shared_ptr<PDBCliques> max_cliques;
 
-    // Precomputes maximal additive subsets of patterns.
-    void compute_max_cliques();
+    // A pair of variables is additive if no operator has an effect on both.
+    VariableAdditivity are_additive;
 
-    /* Precomputes pairwise additive variables i.e. variables where
-       no operator affects both variables at the same time. */
-    void compute_additive_vars();
+    // The sum of all abstract state sizes of all pdbs in the collection.
+    int size;
 
     // Adds a PDB for pattern but does not recompute max_cliques.
     void add_pdb_for_pattern(const std::vector<int> &pattern);
 
+    void recompute_max_cliques();
 public:
     // TODO issue585: the old code supported heuristic caching. Do we need this?
     explicit IncrementalCanonicalPDBs(const std::shared_ptr<AbstractTask> task,
                                       const Patterns &intitial_patterns);
     virtual ~IncrementalCanonicalPDBs() = default;
 
-    /* TODO issue585: factor out the common code with CanonicalPDBsHeuristic. */
-    int compute_heuristic(const State &state) const;
-
     // Adds a new pattern to the collection and recomputes maximal cliques.
     void add_pattern(const std::vector<int> &pattern);
+
     // checks for all max cliques if they would be additive to this pattern
-    void get_max_additive_subsets(
-        const Pattern &new_pattern,
-        PDBCliques &max_additive_subsets);
+    PDBCliques get_max_additive_subsets(const Pattern &new_pattern);
+
+    int get_value(const State &state) const;
 
     /*
       The following method offers a quick dead-end check for the
