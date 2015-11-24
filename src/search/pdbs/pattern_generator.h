@@ -1,36 +1,12 @@
 #ifndef PDBS_PATTERN_GENERATOR_H
 #define PDBS_PATTERN_GENERATOR_H
 
+#include "pattern_collection.h"
 #include "types.h"
-
-#include "../task_proxy.h"
 
 #include <memory>
 
-
-class PatternCollection {
-    std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
-    std::shared_ptr<Patterns> patterns;
-    std::shared_ptr<PDBCollection> pdbs;
-    std::shared_ptr<PDBCliques> cliques;
-
-    void extract_patterns();
-    void construct_pdbs();
-    void construct_cliques();
-public:
-    PatternCollection(
-            std::shared_ptr<AbstractTask> task,
-            std::shared_ptr<Patterns> patterns = nullptr,
-            std::shared_ptr<PDBCollection> pdbs = nullptr,
-            std::shared_ptr<PDBCliques> cliques = nullptr);
-    ~PatternCollection();
-
-    std::shared_ptr<Patterns> get_patterns();
-    std::shared_ptr<PDBCollection> get_pdbs();
-    std::shared_ptr<PDBCliques> get_cliques();
-};
-
+class AbstractTask;
 
 class PatternCollectionGenerator {
 public:

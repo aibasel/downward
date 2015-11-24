@@ -322,6 +322,7 @@ fast_downward_plugin(
         pdbs/incremental_canonical_pdbs.cc
         pdbs/match_tree.cc
         pdbs/max_cliques.cc
+        pdbs/pattern_collection.cc
         pdbs/pattern_database.cc
         pdbs/pattern_generator.cc
         pdbs/pattern_generation_combo.cc
