@@ -20,7 +20,7 @@ class PatternCollection {
 public:
     PatternCollection(
             std::shared_ptr<AbstractTask> task,
-            std::shared_ptr<Patterns> patterns,
+            std::shared_ptr<Patterns> patterns = nullptr,
             std::shared_ptr<PDBCollection> pdbs = nullptr,
             std::shared_ptr<PDBCliques> cliques = nullptr);
     ~PatternCollection();
