@@ -317,6 +317,7 @@ fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES
+        pdbs/canonical_pdbs.cc
         pdbs/canonical_pdbs_heuristic.cc
         pdbs/dominance_pruner.cc
         pdbs/incremental_canonical_pdbs.cc
@@ -333,6 +334,7 @@ fast_downward_plugin(
         pdbs/pattern_generation_single_manual.cc
         pdbs/pattern_generation_systematic.cc
         pdbs/pdb_heuristic.cc
+        pdbs/pdb_max_cliques.cc
         pdbs/types.cc
         pdbs/util.cc
         pdbs/zero_one_pdbs_heuristic.cc
