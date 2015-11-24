@@ -32,28 +32,21 @@ struct HillClimbingTimeout : public exception {};
 
 
 PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
-    : task(get_task_from_options(opts)),
-      task_proxy(*task),
-      pdb_max_size(opts.get<int>("pdb_max_size")),
+    : pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),
       num_samples(opts.get<int>("num_samples")),
       min_improvement(opts.get<int>("min_improvement")),
       max_time(opts.get<double>("max_time")),
-      cost_type(OperatorCost(opts.get<int>("cost_type"))),
-      cache_h(opts.get<bool>("cache_estimates")),
-      successor_generator(task),
       num_rejected(0),
       hill_climbing_timer(0) {
-    Timer timer;
-    initialize();
-    cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
 }
 
 PatternGenerationHaslum::~PatternGenerationHaslum() {
 }
 
 void PatternGenerationHaslum::generate_candidate_patterns(
-    const PatternDatabase *pdb, Patterns &candidate_patterns) {
+    TaskProxy task_proxy, const PatternDatabase *pdb,
+    Patterns &candidate_patterns) {
     const CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const Pattern &pattern = pdb->get_pattern();
     int pdb_size = pdb->get_size();
@@ -84,8 +77,8 @@ void PatternGenerationHaslum::generate_candidate_patterns(
 }
 
 size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
-    set<Pattern> &generated_patterns, Patterns &new_candidates,
-    vector<PatternDatabase *> &candidate_pdbs) const {
+    TaskProxy task_proxy, set<Pattern> &generated_patterns,
+    Patterns &new_candidates, vector<PatternDatabase *> &candidate_pdbs) const {
     /*
       For the new candidate patterns check whether they already have been
       candidates before and thus already a PDB has been created an inserted into
@@ -104,13 +97,15 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
 }
 
 void PatternGenerationHaslum::sample_states(
+    TaskProxy task_proxy, const SuccessorGenerator &successor_generator,
     vector<State> &samples, double average_operator_cost) {
     int init_h = current_heuristic->compute_heuristic(
         task_proxy.get_initial_state());
 
     try {
         samples = sample_states_with_random_walks(
-            task_proxy, successor_generator, num_samples, init_h, average_operator_cost,
+            task_proxy, successor_generator, num_samples, init_h,
+            average_operator_cost,
             [this](const State &state) {
             return current_heuristic->is_dead_end(state);
         },
@@ -224,6 +219,8 @@ bool PatternGenerationHaslum::is_heuristic_improved(
 }
 
 void PatternGenerationHaslum::hill_climbing(
+    TaskProxy task_proxy,
+    const SuccessorGenerator &successor_generator,
     double average_operator_cost,
     Patterns &initial_candidate_patterns) {
     hill_climbing_timer = new CountdownTimer(max_time);
@@ -252,11 +249,12 @@ void PatternGenerationHaslum::hill_climbing(
             }
 
             size_t new_max_pdb_size = generate_pdbs_for_candidates(
-                generated_patterns, new_candidates, candidate_pdbs);
+                task_proxy, generated_patterns, new_candidates, candidate_pdbs);
             max_pdb_size = max(max_pdb_size, new_max_pdb_size);
 
             vector<State> samples;
-            sample_states(samples, average_operator_cost);
+            sample_states(
+                task_proxy, successor_generator, samples, average_operator_cost);
 
             pair<int, int> improvement_and_index =
                 find_best_improving_pdb(samples, candidate_pdbs);
@@ -281,7 +279,7 @@ void PatternGenerationHaslum::hill_climbing(
             /* Clear current new_candidates and get successors for next
                iteration. */
             new_candidates.clear();
-            generate_candidate_patterns(best_pdb, new_candidates);
+            generate_candidate_patterns(task_proxy, best_pdb, new_candidates);
 
             // remove from candidate_pdbs the added PDB
             delete candidate_pdbs[best_pdb_index];
@@ -318,7 +316,11 @@ void PatternGenerationHaslum::hill_climbing(
     hill_climbing_timer = nullptr;
 }
 
-void PatternGenerationHaslum::initialize() {
+PatternCollection PatternGenerationHaslum::generate(shared_ptr<AbstractTask> task) {
+    TaskProxy task_proxy(*task);
+    SuccessorGenerator successor_generator(task);
+
+    Timer timer;
     double average_operator_cost = get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
@@ -332,26 +334,35 @@ void PatternGenerationHaslum::initialize() {
         task, initial_pattern_collection);
 
     State initial_state = task_proxy.get_initial_state();
-    if (current_heuristic->is_dead_end(initial_state))
-        return;
+    if (!current_heuristic->is_dead_end(initial_state)) {
+        /* Generate initial candidate patterns (based on each pattern from
+           the initial collection). */
+        Patterns initial_candidate_patterns;
+        for (const auto &current_pdb :
+             *(current_heuristic->get_pattern_databases())) {
+            generate_candidate_patterns(
+                task_proxy, current_pdb.get(), initial_candidate_patterns);
+        }
+        validate_and_normalize_patterns(task_proxy, initial_candidate_patterns);
 
-    /* Generate initial candidate patterns (based on each pattern from
-       the initial collection). */
-    Patterns initial_candidate_patterns;
-    for (const auto &current_pdb :
-         *(current_heuristic->get_pattern_databases())) {
-        generate_candidate_patterns(current_pdb.get(), initial_candidate_patterns);
+        cout << "done calculating initial pattern collection and "
+             << "candidate patterns for the search" << endl;
+
+        if (max_time > 0)
+            /* A call to the following method modifies initial_candidate_patterns
+               (contains the new_candidates after each call to
+               generate_candidate_patterns) */
+            hill_climbing(
+                task_proxy, successor_generator, average_operator_cost,
+                initial_candidate_patterns);
+        cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
     }
-    validate_and_normalize_patterns(task_proxy, initial_candidate_patterns);
-    cout << "done calculating initial pattern collection and "
-         << "candidate patterns for the search" << endl;
-
-    if (max_time > 0)
-        /* A call to the following method modifies initial_candidate_patterns
-           (contains the new_candidates after each call to
-           generate_candidate_patterns) */
-        hill_climbing(average_operator_cost, initial_candidate_patterns);
+    return PatternCollection(task,
+                             nullptr,
+                             current_heuristic->get_pattern_databases(),
+                             current_heuristic->get_cliques());
 }
+
 
 void PatternGenerationHaslum::add_hillclimbing_options(OptionParser &parser) {
     parser.add_option<int>(
@@ -393,7 +404,21 @@ void PatternGenerationHaslum::check_hillclimbing_options(
                      "samples");
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
+    PatternGenerationHaslum::add_hillclimbing_options(parser);
+
+    Options opts = parser.parse();
+    if (parser.help_mode())
+        return nullptr;
+
+    PatternGenerationHaslum::check_hillclimbing_options(parser, opts);
+    if (parser.dry_run())
+        return nullptr;
+
+    return make_shared<PatternGenerationHaslum>(opts);
+}
+
+static Heuristic *_parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
         "This pattern generation method is an adaption of the algorithm "
@@ -488,11 +513,16 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    PatternGenerationHaslum pgh(opts);
-    // TODO issue585: fix this
-    return nullptr;
+    shared_ptr<PatternGenerationHaslum> pgh = make_shared<PatternGenerationHaslum>(opts);
+    shared_ptr<AbstractTask> task = get_task_from_options(opts);
+    Options heuristic_opts;
+    heuristic_opts.set<shared_ptr<AbstractTask>>("transform", task);
+    heuristic_opts.set<int>("cost_type", NORMAL);
+    heuristic_opts.set<bool>("cache_estimates", opts.get<bool>("cache_estimates"));
+    heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>("patterns", pgh);
     // Note: in the long run, this should return a shared pointer.
-//    return pgh.extract_pattern_collection_heuristic().release();
+    return new CanonicalPDBsHeuristic(heuristic_opts);
 }
 
-static Plugin<Heuristic> _plugin("ipdb", _parse);
+static Plugin<Heuristic> _plugin_ipdb("ipdb", _parse_ipdb);
+static PluginShared<PatternCollectionGenerator> _plugin("hillclimbing", _parse);

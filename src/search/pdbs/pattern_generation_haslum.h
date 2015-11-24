@@ -1,6 +1,7 @@
 #ifndef PDBS_PATTERN_GENERATION_HASLUM_H
 #define PDBS_PATTERN_GENERATION_HASLUM_H
 
+#include "pattern_generator.h"
 #include "types.h"
 
 #include "../operator_cost.h"
@@ -21,9 +22,7 @@ class Options;
 class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
-class PatternGenerationHaslum {
-    const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+class PatternGenerationHaslum : public PatternCollectionGenerator {
     // maximum number of states for each pdb
     const int pdb_max_size;
     // maximum added size of all pdbs
@@ -32,10 +31,8 @@ class PatternGenerationHaslum {
     // minimal improvement required for hill climbing to continue search
     const int min_improvement;
     const double max_time;
-    const OperatorCost cost_type;
-    const bool cache_h;
+
     std::unique_ptr<IncrementalCanonicalPDBs> current_heuristic;
-    SuccessorGenerator successor_generator;
 
     // for stats only
     int num_rejected;
@@ -47,6 +44,7 @@ class PatternGenerationHaslum {
       duplicated patterns.
     */
     void generate_candidate_patterns(
+        TaskProxy task_proxy,
         const PatternDatabase *pdb,
         Patterns &candidate_patterns);
 
@@ -55,6 +53,7 @@ class PatternGenerationHaslum {
       not been generated already.
     */
     std::size_t generate_pdbs_for_candidates(
+        TaskProxy task_proxy,
         std::set<Pattern> &generated_patterns,
         Patterns &new_candidates,
         std::vector<PatternDatabase *> &candidate_pdbs) const;
@@ -69,7 +68,11 @@ class PatternGenerationHaslum {
       state. At the end of each random walk, the last state visited is taken as
       a sample state, thus totalling exactly num_samples of sample states.
     */
-    void sample_states(std::vector<State> &samples, double average_operator_cost);
+    void sample_states(
+        TaskProxy task_proxy,
+        const SuccessorGenerator &successor_generator,
+        std::vector<State> &samples,
+        double average_operator_cost);
 
     /*
       Searches for the best improving pdb in candidate_pdbs according to the
@@ -105,19 +108,22 @@ class PatternGenerationHaslum {
       adapt CanonicalPDBsHeuristic accordingly.
     */
     void hill_climbing(
+        TaskProxy task_proxy,
+        const SuccessorGenerator &successor_generator,
         double average_operator_costs,
         Patterns &initial_candidate_patterns);
 
+public:
+    explicit PatternGenerationHaslum(const Options &opts);
+    virtual ~PatternGenerationHaslum();
+
     /*
-      Initializes everything for the hill climbing algorithm. Note that the
+      Runs the hill climbing algorithm. Note that the
       initial pattern collection (consisting of exactly one PDB for each goal
       variable) may break the maximum collection size limit, if the latter is
       set too small or if there are many goal variables with a large domain.
     */
-    void initialize();
-public:
-    explicit PatternGenerationHaslum(const Options &opts);
-    virtual ~PatternGenerationHaslum();
+    virtual PatternCollection generate(std::shared_ptr<AbstractTask> task) override;
 
     static void add_hillclimbing_options(OptionParser &parser);
     static void check_hillclimbing_options(OptionParser &parser,
