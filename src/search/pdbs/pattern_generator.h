@@ -15,6 +15,7 @@ class PatternCollection {
     std::shared_ptr<PDBCollection> pdbs;
     std::shared_ptr<PDBCliques> cliques;
 
+    void extract_patterns();
     void construct_pdbs();
     void construct_cliques();
 public:
