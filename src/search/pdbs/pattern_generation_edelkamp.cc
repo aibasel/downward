@@ -1,5 +1,6 @@
 #include "pattern_generation_edelkamp.h"
 
+#include "util.h"
 #include "zero_one_pdbs.h"
 
 #include "../causal_graph.h"
@@ -270,6 +271,8 @@ PatternCollection PatternGenerationEdelkamp::generate(shared_ptr<AbstractTask> t
     genetic_algorithm(task);
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
     assert(best_patterns);
+    TaskProxy task_proxy(*task);
+    validate_and_normalize_patterns(task_proxy, *best_patterns);
     return PatternCollection(task, best_patterns);
 }
 

@@ -1,6 +1,7 @@
 #include "pattern_generation_systematic.h"
 
 #include "canonical_pdbs_heuristic.h"
+#include "util.h"
 
 #include "../causal_graph.h"
 #include "../globals.h"
@@ -262,6 +263,7 @@ PatternCollection PatternGenerationSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
+    validate_and_normalize_patterns(task_proxy, *patterns);
     return PatternCollection(task, patterns);
 }
 
