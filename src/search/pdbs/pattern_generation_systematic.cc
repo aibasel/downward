@@ -43,17 +43,8 @@ static void compute_union_pattern(
 
 PatternGenerationSystematic::PatternGenerationSystematic(
     const Options &opts)
-    : task(get_task_from_options(opts)),
-      task_proxy(*task),
-      max_pattern_size(opts.get<int>("pattern_max_size")) {
-    if (opts.get<bool>("only_interesting_patterns")) {
-        build_patterns();
-    } else {
-        build_patterns_naive();
-    }
-}
-
-PatternGenerationSystematic::~PatternGenerationSystematic() {
+    : max_pattern_size(opts.get<int>("pattern_max_size")),
+      only_interesting_patterns(opts.get<bool>("only_interesting_patterns")) {
 }
 
 void PatternGenerationSystematic::compute_eff_pre_neighbors(
@@ -120,13 +111,14 @@ void PatternGenerationSystematic::compute_connection_points(
 
 void PatternGenerationSystematic::enqueue_pattern_if_new(const Pattern &pattern) {
     if (pattern_set.insert(pattern).second)
-        patterns.push_back(pattern);
+        patterns->push_back(pattern);
 }
 
-void PatternGenerationSystematic::build_sga_patterns(const CausalGraph &cg) {
+void PatternGenerationSystematic::build_sga_patterns(TaskProxy task_proxy,
+                                                     const CausalGraph &cg) {
     assert(max_pattern_size >= 1);
     assert(pattern_set.empty());
-    assert(patterns.empty());
+    assert(patterns && patterns->empty());
 
     /*
       SGA patterns are "single-goal ancestor" patterns, i.e., those
@@ -154,9 +146,9 @@ void PatternGenerationSystematic::build_sga_patterns(const CausalGraph &cg) {
       Grow SGA patterns untill all patterns are processed. Note that
       the patterns vectors grows during the computation.
     */
-    for (size_t pattern_no = 0; pattern_no < patterns.size(); ++pattern_no) {
+    for (size_t pattern_no = 0; pattern_no < patterns->size(); ++pattern_no) {
         // We must copy the pattern because references to patterns can be invalidated.
-        Pattern pattern = patterns[pattern_no];
+        Pattern pattern = (*patterns)[pattern_no];
         if (pattern.size() == max_pattern_size)
             break;
 
@@ -175,16 +167,16 @@ void PatternGenerationSystematic::build_sga_patterns(const CausalGraph &cg) {
     pattern_set.clear();
 }
 
-void PatternGenerationSystematic::build_patterns() {
+void PatternGenerationSystematic::build_patterns(TaskProxy task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     const CausalGraph &cg = task_proxy.get_causal_graph();
 
     // Generate SGA (single-goal-ancestor) patterns.
     // They are generated into the patterns variable,
     // so we swap them from there.
-    build_sga_patterns(cg);
-    vector<Pattern> sga_patterns;
-    patterns.swap(sga_patterns);
+    build_sga_patterns(task_proxy, cg);
+    Patterns sga_patterns;
+    patterns->swap(sga_patterns);
 
     /* Index the SGA patterns by variable.
 
@@ -211,9 +203,9 @@ void PatternGenerationSystematic::build_patterns() {
       patterns are processed. Note that the patterns vectors grows
       during the computation.
     */
-    for (size_t pattern_no = 0; pattern_no < patterns.size(); ++pattern_no) {
+    for (size_t pattern_no = 0; pattern_no < patterns->size(); ++pattern_no) {
         // We must copy the pattern because references to patterns can be invalidated.
-        Pattern pattern1 = patterns[pattern_no];
+        Pattern pattern1 = (*patterns)[pattern_no];
 
         vector<int> neighbors;
         compute_connection_points(cg, pattern1, neighbors);
@@ -234,10 +226,10 @@ void PatternGenerationSystematic::build_patterns() {
     }
 
     pattern_set.clear();
-    cout << "Found " << patterns.size() << " interesting patterns." << endl;
+    cout << "Found " << patterns->size() << " interesting patterns." << endl;
 }
 
-void PatternGenerationSystematic::build_patterns_naive() {
+void PatternGenerationSystematic::build_patterns_naive(TaskProxy task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     vector<vector<int>> current_patterns(1);
     vector<vector<int>> next_patterns;
@@ -250,58 +242,37 @@ void PatternGenerationSystematic::build_patterns_naive() {
                 vector<int> pattern = current_pattern;
                 pattern.push_back(var);
                 next_patterns.push_back(pattern);
-                patterns.push_back(pattern);
+                patterns->push_back(pattern);
             }
         }
         next_patterns.swap(current_patterns);
         next_patterns.clear();
     }
 
-    cout << "Found " << patterns.size() << " patterns." << endl;
-}
-
-const vector<Pattern> &PatternGenerationSystematic::get_patterns() const {
-    return patterns;
-}
-
-unique_ptr<CanonicalPDBsHeuristic>
-PatternGenerationSystematic::get_pattern_collection_heuristic(
-    const Options &opts) const {
-    Options canonical_opts;
-    canonical_opts.set<shared_ptr<AbstractTask>>(
-        "transform", get_task_from_options(opts));
-    canonical_opts.set<int>("cost_type", NORMAL);
-    canonical_opts.set<bool>("cache_estimates", opts.get<bool>("cache_estimates"));
-    canonical_opts.set<bool>("dominance_pruning", opts.get<bool>("dominance_pruning"));
-    canonical_opts.set("patterns", patterns);
-    return make_unique_ptr<CanonicalPDBsHeuristic>(canonical_opts);
-}
-
-void PatternGenerationSystematic::add_systematic_pattern_options(
-    OptionParser &parser) {
-    parser.add_option<int>(
-        "pattern_max_size",
-        "max number of variables per pattern",
-        "1");
-    parser.add_option<bool>(
-        "only_interesting_patterns",
-        "Only consider the union of two disjoint patterns if the union has "
-        "more information than the individual patterns.",
-        "true");
-}
-
-void PatternGenerationSystematic::check_systematic_pattern_options(
-    OptionParser &parser, const Options &opts) {
-    if (opts.get<int>("pattern_max_size") < 1)
-        parser.error("number of variables per pattern must be at least 1");
+    cout << "Found " << patterns->size() << " patterns." << endl;
 }
 
 
-static Heuristic *_parse(OptionParser &parser) {
+PatternCollection PatternGenerationSystematic::generate(
+        shared_ptr<AbstractTask> task) {
+    TaskProxy task_proxy(*task);
+    patterns = make_shared<Patterns>();
+    pattern_set.clear();
+    if (only_interesting_patterns) {
+        build_patterns(task_proxy);
+    } else {
+        build_patterns_naive(task_proxy);
+    }
+    return PatternCollection(task, patterns);
+}
+
+
+
+static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Canonical PDB heuristic for systematically generated patterns",
-        "Computes a canonical PDB heuristic (see [#Canonical_PDB]) over a set "
-        "of systematically generated patterns. "
+        "Systematically generated patterns",
+        "Generates all (interesting) patterns with up to pattern_max_size "
+        "variables. "
         "For details, see\n"
         " * Florian Pommerening, Gabriele Roeger and Malte Helmert.<<BR>>\n"
         " [Getting the Most Out of Pattern Databases for Classical Planning "
@@ -310,32 +281,22 @@ static Heuristic *_parse(OptionParser &parser) {
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
         "pp. 2357-2364. 2013.\n\n\n");
 
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
-
-
-    PatternGenerationSystematic::add_systematic_pattern_options(parser);
+    parser.add_option<int>(
+        "pattern_max_size",
+        "max number of variables per pattern",
+        "1",
+        Bounds("1", "infinity"));
     parser.add_option<bool>(
-        "dominance_pruning",
-        "Use dominance pruning to reduce number of patterns.",
+        "only_interesting_patterns",
+        "Only consider the union of two disjoint patterns if the union has "
+        "more information than the individual patterns.",
         "true");
-    Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
 
-    PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
+    Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
 
-    PatternGenerationSystematic pattern_generator(opts);
-    // Note: in the long run, this should return a shared pointer.
-    return pattern_generator.get_pattern_collection_heuristic(opts).release();
+    return make_shared<PatternGenerationSystematic>(opts);
 }
 
-static Plugin<Heuristic> _plugin("cpdbs_systematic", _parse);
+static PluginShared<PatternCollectionGenerator> _plugin("systematic", _parse);
