@@ -337,6 +337,7 @@ fast_downward_plugin(
         pdbs/pdb_max_cliques.cc
         pdbs/types.cc
         pdbs/util.cc
+        pdbs/zero_one_pdbs.cc
         pdbs/zero_one_pdbs_heuristic.cc
 )
 

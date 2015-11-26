@@ -13,73 +13,35 @@
 
 using namespace std;
 
-ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
-    const Options &opts,
-    const vector<int> &op_costs)
-    : Heuristic(opts) {
-    vector<int> operator_costs;
-    OperatorsProxy operators = task_proxy.get_operators();
-
-    // If no operator costs are specified, use default operator costs.
-    if (op_costs.empty()) {
-        operator_costs.reserve(operators.size());
-        for (OperatorProxy op : operators)
-            operator_costs.push_back(op.get_cost());
-    } else {
-        assert(op_costs.size() == operators.size());
-        operator_costs = op_costs;
-    }
-
+ZeroOnePDBs get_zero_one_pdbs_from_options(
+    const shared_ptr<AbstractTask> task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
     PatternCollection pattern_collection = pattern_generator->generate(task);
     shared_ptr<Patterns> patterns = pattern_collection.get_patterns();
+    TaskProxy task_proxy(*task);
+    return ZeroOnePDBs(task_proxy, *patterns);
+}
 
-    //Timer timer;
-    approx_mean_finite_h = 0;
-    pattern_databases.reserve(patterns->size());
-    for (const vector<int> &pattern : *patterns) {
-        unique_ptr<PatternDatabase> pdb = make_unique_ptr<PatternDatabase>(
-            task_proxy, pattern, false, operator_costs);
-
-        /* Set cost of relevant operators to 0 for further iterations
-           (action cost partitioning). */
-        for (OperatorProxy op : operators) {
-            if (pdb->is_operator_relevant(op))
-                operator_costs[op.get_id()] = 0;
-        }
-
-        approx_mean_finite_h += pdb->compute_mean_finite_h();
-
-        pattern_databases.push_back(move(pdb));
-    }
-    //cout << "All or nothing PDB collection construction time: " <<
-    //timer << endl;
+ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
+    const Options &opts)
+    : Heuristic(opts),
+      zero_one_pdbs(get_zero_one_pdbs_from_options(task, opts)) {
 }
 
 ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
 }
 
 int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
-    /*
-      Because we use cost partitioning, we can simply add up all
-      heuristic values of all patterns in the pattern collection.
-    */
     State state = convert_global_state(global_state);
-    int h_val = 0;
-    for (const auto &pdb : pattern_databases) {
-        int pdb_value = pdb->get_value(state);
-        if (pdb_value == numeric_limits<int>::max())
-            return DEAD_END;
-        h_val += pdb_value;
-    }
-    return h_val;
+    return compute_heuristic(state);
 }
 
-void ZeroOnePDBsHeuristic::dump() const {
-    for (const auto &pdb : pattern_databases) {
-        cout << pdb->get_pattern() << endl;
-    }
+int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) {
+    int h = zero_one_pdbs.get_value(state);
+    if (h == numeric_limits<int>::max())
+        return DEAD_END;
+    return h;
 }
 
 static Heuristic *_parse(OptionParser &parser) {
