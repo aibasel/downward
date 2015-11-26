@@ -291,12 +291,6 @@ void PatternGenerationHaslum::hill_climbing(
         cout << "Time limit reached. Abort hill climbing." << endl;
     }
 
-    // Note that using dominance pruning during hill climbing could lead to
-    // fewer discovered patterns and pattern collections.
-    // A dominated pattern (collection) might no longer be dominated
-    // after more patterns are added.
-    // TODO issue585: reintroduce dominance pruning for the resulting collection.
-    //current_heuristic->dominance_pruning();
     cout << "iPDB: iterations = " << num_iterations << endl;
     cout << "iPDB: num_patterns = "
          << current_heuristic->get_pattern_databases()->size() << endl;
@@ -499,13 +493,21 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         true);
 
     PatternGenerationHaslum::add_hillclimbing_options(parser);
-    Heuristic::add_options_to_parser(parser);
+
+    /*
+      Note that using dominance pruning during hill climbing could lead to fewer
+      discovered patterns and pattern collections. A dominated pattern
+      (or pattern collection) might no longer be dominated after more patterns
+      are added. We thus only use dominance pruning on the resulting collection.
+    */
     parser.add_option<bool>(
         "dominance_pruning",
         "Exclude patterns and cliques that will never contribute to the "
         "heuristic value because there are dominating patterns in the "
         "collection.",
         "true");
+
+    Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.help_mode())
