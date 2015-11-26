@@ -46,8 +46,7 @@ PatternCollection::PatternCollection(shared_ptr<AbstractTask> task,
     }
 
     sort(patterns_and_pdbs.begin(), patterns_and_pdbs.end(),
-         [](const PatternPDBPair &pair1, const PatternPDBPair &pair2) -> bool
-         {
+         [](const PatternPDBPair &pair1, const PatternPDBPair &pair2) {
              return pair1.first < pair2.first;
          });
 
