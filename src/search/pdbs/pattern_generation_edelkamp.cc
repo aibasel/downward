@@ -1,6 +1,6 @@
 #include "pattern_generation_edelkamp.h"
 
-#include "zero_one_pdbs_heuristic.h"
+#include "zero_one_pdbs.h"
 
 #include "../causal_graph.h"
 #include "../globals.h"
@@ -19,21 +19,11 @@
 using namespace std;
 
 PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
-    : task(get_task_from_options(opts)),
-      task_proxy(*task),
-      pdb_max_size(opts.get<int>("pdb_max_size")),
+    : pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
       mutation_probability(opts.get<double>("mutation_probability")),
-      disjoint_patterns(opts.get<bool>("disjoint")),
-      cost_type(OperatorCost(opts.get<int>("cost_type"))),
-      cache_h(opts.get<bool>("cache_estimates")) {
-    Timer timer;
-    genetic_algorithm();
-    cout << "Pattern generation (Edelkamp) time: " << timer << endl;
-}
-
-PatternGenerationEdelkamp::~PatternGenerationEdelkamp() {
+      disjoint_patterns(opts.get<bool>("disjoint")) {
 }
 
 void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
@@ -79,16 +69,18 @@ void PatternGenerationEdelkamp::mutate() {
     }
 }
 
-void PatternGenerationEdelkamp::transform_to_pattern_normal_form(
-    const vector<bool> &bitvector, vector<int> &pattern) const {
+Pattern PatternGenerationEdelkamp::transform_to_pattern_normal_form(
+    const vector<bool> &bitvector) const {
+    Pattern pattern;
     for (size_t i = 0; i < bitvector.size(); ++i) {
         if (bitvector[i])
             pattern.push_back(i);
     }
+    return pattern;
 }
 
 void PatternGenerationEdelkamp::remove_irrelevant_variables(
-    vector<int> &pattern) const {
+    TaskProxy task_proxy, Pattern &pattern) const {
     unordered_set<int> in_original_pattern(pattern.begin(), pattern.end());
     unordered_set<int> in_pruned_pattern;
 
@@ -129,12 +121,11 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
 }
 
 bool PatternGenerationEdelkamp::is_pattern_too_large(
-    const vector<int> &pattern) const {
+    VariablesProxy variables, const Pattern &pattern) const {
     // Test if the pattern respects the memory limit.
     int mem = 1;
-    VariablesProxy vars = task_proxy.get_variables();
     for (size_t i = 0; i < pattern.size(); ++i) {
-        VariableProxy var = vars[pattern[i]];
+        VariableProxy var = variables[pattern[i]];
         int domain_size = var.get_domain_size();
         if (!is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
@@ -144,7 +135,7 @@ bool PatternGenerationEdelkamp::is_pattern_too_large(
 }
 
 bool PatternGenerationEdelkamp::mark_used_variables(
-    const vector<int> &pattern, vector<bool> &variables_used) const {
+    const Pattern &pattern, vector<bool> &variables_used) const {
     for (size_t i = 0; i < pattern.size(); ++i) {
         int var_id = pattern[i];
         if (variables_used[var_id])
@@ -154,20 +145,21 @@ bool PatternGenerationEdelkamp::mark_used_variables(
     return false;
 }
 
-void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
+void PatternGenerationEdelkamp::evaluate(shared_ptr<AbstractTask> task,
+                                         vector<double> &fitness_values) {
+    TaskProxy task_proxy(*task);
     for (const auto &collection : pattern_collections) {
         //cout << "evaluate pattern collection " << (i + 1) << " of "
         //     << pattern_collections.size() << endl;
         double fitness = 0;
         bool pattern_valid = true;
         vector<bool> variables_used(task_proxy.get_variables().size(), false);
-        vector<vector<int>> pattern_collection;
-        pattern_collection.reserve(collection.size());
+        shared_ptr<Patterns> pattern_collection = make_shared<Patterns>();
+        pattern_collection->reserve(collection.size());
         for (const vector<bool> &bitvector : collection) {
-            vector<int> pattern;
-            transform_to_pattern_normal_form(bitvector, pattern);
+            Pattern pattern = transform_to_pattern_normal_form(bitvector);
 
-            if (is_pattern_too_large(pattern)) {
+            if (is_pattern_too_large(task_proxy.get_variables(), pattern)) {
                 cout << "pattern exceeds the memory limit!" << endl;
                 pattern_valid = false;
                 break;
@@ -181,8 +173,8 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
                 }
             }
 
-            remove_irrelevant_variables(pattern);
-            pattern_collection.push_back(pattern);
+            remove_irrelevant_variables(task_proxy, pattern);
+            pattern_collection->push_back(pattern);
         }
         if (!pattern_valid) {
             /* Set fitness to a very small value to cover cases in which all
@@ -191,32 +183,21 @@ void PatternGenerationEdelkamp::evaluate(vector<double> &fitness_values) {
         } else {
             /* Generate the pattern collection heuristic and get its fitness
                value. */
-            Options opts;
-            opts.set<shared_ptr<AbstractTask>>("transform", task);
-            // Since we pass a task transformation, cost_type won't be used.
-            opts.set<int>("cost_type", NORMAL);
-            opts.set<vector<vector<int>>>("patterns", pattern_collection);
-            opts.set<bool>("cache_estimates", cache_h);
-            ZeroOnePDBsHeuristic *pattern_collection_heuristic =
-                new ZeroOnePDBsHeuristic(opts);
-            fitness = pattern_collection_heuristic->get_approx_mean_finite_h();
+            ZeroOnePDBs zero_one_pdbs(task_proxy, *pattern_collection);
+            fitness = zero_one_pdbs.compute_approx_mean_finite_h();
             // Update the best heuristic found so far.
             if (fitness > best_fitness) {
                 best_fitness = fitness;
                 cout << "best_fitness = " << best_fitness << endl;
-                delete best_heuristic;
-                best_heuristic = pattern_collection_heuristic;
+                best_patterns = pattern_collection;
                 //best_heuristic->dump();
-            } else {
-                delete pattern_collection_heuristic;
             }
         }
         fitness_values.push_back(fitness);
     }
 }
 
-void PatternGenerationEdelkamp::bin_packing() {
-    VariablesProxy variables = task_proxy.get_variables();
+void PatternGenerationEdelkamp::bin_packing(VariablesProxy variables) {
     vector<int> variable_ids;
     variable_ids.reserve(variables.size());
     for (size_t i = 0; i < variables.size(); ++i) {
@@ -260,14 +241,15 @@ void PatternGenerationEdelkamp::bin_packing() {
     }
 }
 
-void PatternGenerationEdelkamp::genetic_algorithm() {
+void PatternGenerationEdelkamp::genetic_algorithm(shared_ptr<AbstractTask> task) {
+    TaskProxy task_proxy(*task);
     best_fitness = -1;
-    best_heuristic = 0;
-    bin_packing();
+    best_patterns = nullptr;
+    bin_packing(task_proxy.get_variables());
     //cout << "initial pattern collections:" << endl;
     //dump();
     vector<double> initial_fitness_values;
-    evaluate(initial_fitness_values);
+    evaluate(task, initial_fitness_values);
     for (int i = 0; i < num_episodes; ++i) {
         cout << endl;
         cout << "--------- episode no " << (i + 1) << " ---------" << endl;
@@ -275,7 +257,7 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
         //cout << "current pattern_collections after mutation" << endl;
         //dump();
         vector<double> fitness_values;
-        evaluate(fitness_values);
+        evaluate(task, fitness_values);
         // We allow to select invalid pattern collections.
         select(fitness_values);
         //cout << "current pattern collections (after selection):" << endl;
@@ -283,18 +265,17 @@ void PatternGenerationEdelkamp::genetic_algorithm() {
     }
 }
 
-void PatternGenerationEdelkamp::dump() const {
-    for (size_t i = 0; i < pattern_collections.size(); ++i) {
-        cout << "pattern collection no " << (i + 1) << endl;
-        for (size_t j = 0; j < pattern_collections[i].size(); ++j) {
-            cout << pattern_collections[i][j] << endl;
-        }
-    }
+PatternCollection PatternGenerationEdelkamp::generate(shared_ptr<AbstractTask> task) {
+    Timer timer;
+    genetic_algorithm(task);
+    cout << "Pattern generation (Edelkamp) time: " << timer << endl;
+    assert(best_patterns);
+    return PatternCollection(task, best_patterns);
 }
 
-static Heuristic *_parse(OptionParser &parser) {
+static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Genetic Algorithm PDB",
+        "Genetic Algorithm Patterns",
         "The following paper describes the automated creation of pattern "
         "databases with a genetic algorithm. Pattern collections are initially "
         "created with a bin-packing algorithm. The genetic algorithm is used to "
@@ -310,10 +291,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
     parser.document_note(
         "Note",
         "This pattern generation method uses the "
@@ -377,15 +354,11 @@ static Heuristic *_parse(OptionParser &parser) {
         "fitness) if its patterns are not disjoint",
         "false");
 
-    Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
-    if (parser.help_mode())
-        return 0;
-
     if (parser.dry_run())
         return 0;
-    PatternGenerationEdelkamp pge(opts);
-    return pge.get_pattern_collection_heuristic();
+
+    return make_shared<PatternGenerationEdelkamp>(opts);
 }
 
-static Plugin<Heuristic> _plugin("gapdb", _parse);
+static PluginShared<PatternCollectionGenerator> _plugin("genetic", _parse);

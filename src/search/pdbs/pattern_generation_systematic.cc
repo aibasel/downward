@@ -252,7 +252,6 @@ void PatternGenerationSystematic::build_patterns_naive(TaskProxy task_proxy) {
     cout << "Found " << patterns->size() << " patterns." << endl;
 }
 
-
 PatternCollection PatternGenerationSystematic::generate(
         shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
@@ -265,8 +264,6 @@ PatternCollection PatternGenerationSystematic::generate(
     }
     return PatternCollection(task, patterns);
 }
-
-
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
