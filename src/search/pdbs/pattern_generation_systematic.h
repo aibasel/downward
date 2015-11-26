@@ -1,6 +1,8 @@
 #ifndef PDBS_PATTERN_GENERATION_SYSTEMATIC_H
 #define PDBS_PATTERN_GENERATION_SYSTEMATIC_H
 
+#include "pattern_generator.h"
+
 #include "../utilities.h"
 #include "../task_tools.h"
 
@@ -15,15 +17,12 @@ class Options;
 
 
 // Invariant: patterns are always sorted.
-typedef std::vector<int> Pattern;
+class PatternGenerationSystematic : public PatternCollectionGenerator {
+    using PatternSet = std::unordered_set<Pattern>;
 
-class PatternGenerationSystematic {
-    typedef std::unordered_set<Pattern> PatternSet;
-
-    const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
     const size_t max_pattern_size;
-    std::vector<Pattern> patterns;
+    const bool only_interesting_patterns;
+    std::shared_ptr<Patterns> patterns;
     PatternSet pattern_set;  // Cleared after pattern computation.
 
     void enqueue_pattern_if_new(const Pattern &pattern);
@@ -34,22 +33,14 @@ class PatternGenerationSystematic {
                                    const Pattern &pattern,
                                    std::vector<int> &result) const;
 
-    void build_sga_patterns(const CausalGraph &cg);
-    void build_patterns();
-    void build_patterns_naive();
+    void build_sga_patterns(TaskProxy task_proxy, const CausalGraph &cg);
+    void build_patterns(TaskProxy task_proxy);
+    void build_patterns_naive(TaskProxy task_proxy);
 public:
     explicit PatternGenerationSystematic(const Options &opts);
-    ~PatternGenerationSystematic();
+    ~PatternGenerationSystematic() = default;
 
-    // TODO: Something is wrong with the interface if we need both of
-    // the following methods (see issue585):
-    const std::vector<Pattern> &get_patterns() const;
-    std::unique_ptr<CanonicalPDBsHeuristic> get_pattern_collection_heuristic(
-        const Options &opts) const;
-
-    static void add_systematic_pattern_options(OptionParser &parser);
-    static void check_systematic_pattern_options(OptionParser &parser,
-                                                 const Options &opts);
+    virtual PatternCollection generate(std::shared_ptr<AbstractTask> task) override;
 };
 
 #endif

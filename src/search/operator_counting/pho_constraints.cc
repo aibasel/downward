@@ -42,8 +42,9 @@ void PhOConstraints::generate_pdbs(const shared_ptr<AbstractTask> task) {
             patterns = options.get<vector<vector<int>>>("patterns");
         } else {
             // Systematically generated patterns
+            // TODO issue585: fix this
             PatternGenerationSystematic pattern_generator(options);
-            patterns = pattern_generator.get_patterns();
+            //patterns = pattern_generator.get_patterns();
         }
         for (const vector<int> &pattern : patterns) {
             if (pdbs.size() % 1000 == 0) {
@@ -122,12 +123,14 @@ static shared_ptr<ConstraintGenerator> _parse_systematic(OptionParser &parser) {
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
         "pp. 2357-2364. 2013.\n\n\n");
 
-    PatternGenerationSystematic::add_systematic_pattern_options(parser);
+    // TODO issue585: fix this
+    // PatternGenerationSystematic::add_systematic_pattern_options(parser);
     Options opts = parser.parse();
 
     if (parser.help_mode())
         return nullptr;
-    PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
+    // TODO issue585: fix this
+    //PatternGenerationSystematic::check_systematic_pattern_options(parser, opts);
     if (parser.dry_run())
         return nullptr;
     return make_shared<PhOConstraints>(opts);
