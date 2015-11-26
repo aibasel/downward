@@ -254,7 +254,7 @@ void PatternGenerationSystematic::build_patterns_naive(TaskProxy task_proxy) {
 }
 
 PatternCollection PatternGenerationSystematic::generate(
-        shared_ptr<AbstractTask> task) {
+    shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     patterns = make_shared<Patterns>();
     pattern_set.clear();

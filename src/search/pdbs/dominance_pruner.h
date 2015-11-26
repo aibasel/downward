@@ -17,7 +17,7 @@ private:
 
     // Precomputed superset relation of patterns.
     using PDBRelation = std::unordered_set<
-            std::pair<PatternDatabase *, PatternDatabase *>>;
+              std::pair<PatternDatabase *, PatternDatabase *>>;
     PDBRelation superset_relation;
     void compute_superset_relation();
 
