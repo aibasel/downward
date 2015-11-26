@@ -61,22 +61,21 @@ void DTGFactory::process_effect(const EffectProxy &eff, const OperatorProxy &op,
     vector<LocalAssignment> transition_condition;
     vector<LocalAssignment> side_effect;
     unsigned int first_new_local_var = dtg->local_to_global_child.size();
-    for (FactProxy fact : op.get_preconditions()) {
-        if (fact.get_variable() == eff.get_fact().get_variable())
-            origin = fact.get_value();
-        else {
-            update_transition_condition(fact, dtg, transition_condition);
-        }
+    for (FactProxy pre : op.get_preconditions()) {
+        if (pre.get_variable() == fact.get_variable())
+            origin = pre.get_value();
+        else
+            update_transition_condition(pre, dtg, transition_condition);
     }
-    for (FactProxy fact : eff.get_conditions()) {
-        if (fact.get_variable() == eff.get_fact().get_variable()) {
-            if (origin != -1 && fact.get_value() != origin) {
+    for (FactProxy cond : eff.get_conditions()) {
+        if (cond.get_variable() == fact.get_variable()) {
+            if (origin != -1 && cond.get_value() != origin) {
                 revert_new_local_vars(dtg, first_new_local_var);
                 return; // conflicting condition on effect variable
             }
-            origin = fact.get_value();
+            origin = cond.get_value();
         } else {
-            update_transition_condition(fact, dtg, transition_condition);
+            update_transition_condition(cond, dtg, transition_condition);
         }
     }
     if (origin != -1 && target == origin) {
