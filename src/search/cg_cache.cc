@@ -32,7 +32,9 @@ CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
     // This is made easier because it is acyclic and the variables
     // are in topological order.
     for (int var = 0; var < var_count; ++var) {
-        for (int affector : depends_on[var]) {
+        size_t num_affectors = depends_on[var].size();
+        for (size_t i = 0; i < num_affectors; ++i) {
+            int affector = depends_on[var][i];
             assert(affector < var);
             depends_on[var].insert(depends_on[var].end(),
                                    depends_on[affector].begin(),
