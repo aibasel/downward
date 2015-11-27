@@ -4,9 +4,7 @@
 #include "pattern_database.h"
 
 #include "../timer.h"
-#include "../utilities.h"
 
-#include <cstdlib>
 #include <iostream>
 #include <limits>
 

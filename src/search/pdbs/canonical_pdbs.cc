@@ -3,7 +3,6 @@
 #include "dominance_pruner.h"
 #include "pattern_database.h"
 
-#include "../task_proxy.h"
 #include "../timer.h"
 
 #include <algorithm>

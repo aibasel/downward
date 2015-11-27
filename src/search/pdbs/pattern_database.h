@@ -5,6 +5,7 @@
 
 #include "../task_proxy.h"
 
+#include <utility>
 #include <vector>
 
 class AbstractOperator {

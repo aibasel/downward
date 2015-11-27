@@ -4,6 +4,8 @@
 #include "pattern_generator.h"
 #include "types.h"
 
+class Options;
+
 class PatternGenerationSingleManual : public PatternGenerator {
     Pattern pattern;
 public:

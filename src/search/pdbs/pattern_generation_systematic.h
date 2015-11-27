@@ -4,18 +4,16 @@
 #include "pattern_generator.h"
 #include "types.h"
 
-#include "../utilities.h"
-#include "../task_tools.h"
+#include "../utilities_hash.h"
 
 #include <cstdlib>
 #include <memory>
 #include <unordered_set>
 #include <vector>
 
-class CanonicalPDBsHeuristic;
 class CausalGraph;
-class OptionParser;
 class Options;
+class TaskProxy;
 
 
 // Invariant: patterns are always sorted.

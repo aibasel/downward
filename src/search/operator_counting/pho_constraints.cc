@@ -8,6 +8,7 @@
 #include "../pdbs/pattern_generator.h"
 
 #include <cassert>
+#include <limits>
 #include <vector>
 
 

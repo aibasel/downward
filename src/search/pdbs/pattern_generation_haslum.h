@@ -7,8 +7,10 @@
 #include "../successor_generator.h"
 #include "../task_proxy.h"
 
+#include <cstdlib>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 class CountdownTimer;

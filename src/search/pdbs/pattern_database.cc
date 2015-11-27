@@ -5,7 +5,6 @@
 #include "../priority_queue.h"
 #include "../task_tools.h"
 #include "../timer.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>

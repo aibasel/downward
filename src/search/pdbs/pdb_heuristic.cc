@@ -6,6 +6,9 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include <limits>
+#include <memory>
+
 using namespace std;
 
 PatternDatabase get_pdb_from_options(const shared_ptr<AbstractTask> task,

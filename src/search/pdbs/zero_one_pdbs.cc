@@ -3,6 +3,7 @@
 #include "pattern_database.h"
 
 #include "../task_proxy.h"
+#include "../utilities.h"
 
 #include <iostream>
 #include <limits>

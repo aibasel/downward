@@ -8,6 +8,7 @@
 #include "../timer.h"
 
 #include <iostream>
+#include <limits>
 #include <memory>
 
 using namespace std;
