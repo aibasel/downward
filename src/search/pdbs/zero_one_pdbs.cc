@@ -4,7 +4,9 @@
 
 #include "../task_proxy.h"
 
+#include <iostream>
 #include <limits>
+#include <memory>
 #include <vector>
 
 using namespace std;
@@ -19,7 +21,7 @@ ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const Patterns &patterns) {
 
     //Timer timer;
     pattern_databases.reserve(patterns.size());
-    for (const vector<int> &pattern : patterns) {
+    for (const Pattern &pattern : patterns) {
         unique_ptr<PatternDatabase> pdb = make_unique_ptr<PatternDatabase>(
             task_proxy, pattern, false, operator_costs);
 
@@ -37,7 +39,7 @@ ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const Patterns &patterns) {
 }
 
 
-int ZeroOnePDBs::get_value(const State &state) {
+int ZeroOnePDBs::get_value(const State &state) const {
     /*
       Because we use cost partitioning, we can simply add up all
       heuristic values of all patterns in the pattern collection.

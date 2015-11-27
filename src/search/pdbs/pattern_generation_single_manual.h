@@ -2,6 +2,7 @@
 #define PDBS_PATTERN_GENERATION_SINGLE_MANUAL_H
 
 #include "pattern_generator.h"
+#include "types.h"
 
 class PatternGenerationSingleManual : public PatternGenerator {
     Pattern pattern;

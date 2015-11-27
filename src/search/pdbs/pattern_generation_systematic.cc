@@ -1,10 +1,9 @@
 #include "pattern_generation_systematic.h"
 
-#include "canonical_pdbs_heuristic.h"
 #include "util.h"
 
 #include "../causal_graph.h"
-#include "../globals.h"
+#include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
 
@@ -232,15 +231,15 @@ void PatternGenerationSystematic::build_patterns(TaskProxy task_proxy) {
 
 void PatternGenerationSystematic::build_patterns_naive(TaskProxy task_proxy) {
     int num_variables = task_proxy.get_variables().size();
-    vector<vector<int>> current_patterns(1);
-    vector<vector<int>> next_patterns;
+    Patterns current_patterns(1);
+    Patterns next_patterns;
     for (size_t i = 0; i < max_pattern_size; ++i) {
-        for (const vector<int> &current_pattern : current_patterns) {
+        for (const Pattern &current_pattern : current_patterns) {
             int max_var = -1;
             if (i > 0)
                 max_var = current_pattern.back();
             for (int var = max_var + 1; var < num_variables; ++var) {
-                vector<int> pattern = current_pattern;
+                Pattern pattern = current_pattern;
                 pattern.push_back(var);
                 next_patterns.push_back(pattern);
                 patterns->push_back(pattern);

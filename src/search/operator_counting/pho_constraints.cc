@@ -1,20 +1,34 @@
 #include "pho_constraints.h"
 
 #include "../lp_solver.h"
+#include "../option_parser.h"
 #include "../plugin.h"
 
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
 
+#include <cassert>
+#include <vector>
+
+
 namespace OperatorCounting {
 PhOConstraints::PhOConstraints(const Options &opts)
-    : pattern_generator(opts.get<shared_ptr<PatternCollectionGenerator>>("patterns")) {
+    : pattern_generator(
+          opts.get<shared_ptr<PatternCollectionGenerator>>("patterns")) {
 }
 
 void PhOConstraints::initialize_constraints(
     const std::shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
     double infinity) {
+    assert(pattern_generator);
     PatternCollection pattern_collection = pattern_generator->generate(task);
+    /*
+      TODO issue590: Currently initialize_constraints should only be called
+      once. When we separate constraint generators from constraints, we can
+      create pattern_generator locally and no longer need to explicitly reset
+      it.
+    */
+    pattern_generator = nullptr;
     pdbs = pattern_collection.get_pdbs();
     TaskProxy task_proxy(*task);
     constraint_offset = constraints.size();

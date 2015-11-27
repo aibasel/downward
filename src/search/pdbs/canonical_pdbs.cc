@@ -6,7 +6,9 @@
 #include "../task_proxy.h"
 #include "../timer.h"
 
+#include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <limits>
 
 using namespace std;

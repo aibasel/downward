@@ -62,7 +62,7 @@ bool MatchTree::Node::is_leaf_node() const {
 }
 
 MatchTree::MatchTree(const TaskProxy &task_proxy,
-                     const vector<int> &pattern,
+                     const Pattern &pattern,
                      const vector<size_t> &hash_multipliers)
     : task_proxy(task_proxy),
       pattern(pattern),

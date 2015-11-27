@@ -4,19 +4,14 @@
 #include "pattern_generator.h"
 #include "types.h"
 
-#include "../operator_cost.h"
-#include "../state_registry.h"
 #include "../successor_generator.h"
 #include "../task_proxy.h"
 
-#include <map>
 #include <memory>
 #include <set>
 #include <vector>
 
-class CanonicalPDBsHeuristic;
 class CountdownTimer;
-class GlobalState;
 class IncrementalCanonicalPDBs;
 class Options;
 class PatternDatabase;
@@ -90,7 +85,8 @@ class PatternGenerationHaslum : public PatternCollectionGenerator {
       the h-value of the current pattern collection.
     */
     bool is_heuristic_improved(
-        PatternDatabase *pdb, const State &sample,
+        PatternDatabase *pdb,
+        const State &sample,
         const PDBCliques &max_additive_subsets);
 
     /*
@@ -115,7 +111,7 @@ class PatternGenerationHaslum : public PatternCollectionGenerator {
 
 public:
     explicit PatternGenerationHaslum(const Options &opts);
-    virtual ~PatternGenerationHaslum();
+    virtual ~PatternGenerationHaslum() = default;
 
     /*
       Runs the hill climbing algorithm. Note that the
@@ -123,11 +119,8 @@ public:
       variable) may break the maximum collection size limit, if the latter is
       set too small or if there are many goal variables with a large domain.
     */
-    virtual PatternCollection generate(std::shared_ptr<AbstractTask> task) override;
-
-    static void add_hillclimbing_options(OptionParser &parser);
-    static void check_hillclimbing_options(OptionParser &parser,
-                                           const Options &opts);
+    virtual PatternCollection generate(
+        std::shared_ptr<AbstractTask> task) override;
 };
 
 #endif

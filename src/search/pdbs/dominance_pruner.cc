@@ -1,25 +1,29 @@
 #include "dominance_pruner.h"
 
+#include "pattern_database.h"
+
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
-DominancePruner::DominancePruner(PDBCollection &pattern_databases_,
-                                 PDBCliques &max_cliques_)
-    : pattern_databases(pattern_databases_),
-      max_cliques(max_cliques_) {
+
+DominancePruner::DominancePruner(PDBCollection &pattern_databases,
+                                 PDBCliques &max_cliques)
+    : pattern_databases(pattern_databases),
+      max_cliques(max_cliques) {
 }
 
 void DominancePruner::compute_superset_relation() {
     superset_relation.clear();
     for (const auto &pdb1 : pattern_databases) {
-        const vector<int> pattern1 = pdb1->get_pattern();
+        const Pattern &pattern1 = pdb1->get_pattern();
         for (const auto &pdb2 : pattern_databases) {
-            const vector<int> pattern2 = pdb2->get_pattern();
+            const Pattern &pattern2 = pdb2->get_pattern();
+            // Note that std::includes assumes that patterns are sorted.
             if (std::includes(pattern1.begin(), pattern1.end(),
                               pattern2.begin(), pattern2.end())) {
-                superset_relation.insert(make_pair(pdb1.get(),
-                                                   pdb2.get()));
+                superset_relation.insert(make_pair(pdb1.get(), pdb2.get()));
                 /*
                   If we already added the inverse tuple to the relation, the
                   PDBs use the same pattern and we only need one of them.
@@ -46,16 +50,14 @@ void DominancePruner::replace_pdb(shared_ptr<PatternDatabase> old_pdb,
     }
 }
 
-bool DominancePruner::clique_dominates(const PDBCollection &c_sup,
-                                       const PDBCollection &c_sub) {
-    /* c_sup dominates c_sub iff for every pattern p_sub in c_sub there is a
-       pattern p_sup in c_sup where p_sup is a superset of p_sub. */
-    for (const auto &p_sub : c_sub) {
+bool DominancePruner::clique_dominates(const PDBCollection &superset,
+                                       const PDBCollection &subset) {
+    for (const auto &p_subset : subset) {
         // Assume there is no superset until we found one.
         bool found_superset = false;
-        for (const auto &p_sup : c_sup) {
-            if (superset_relation.count(make_pair(p_sup.get(),
-                                                  p_sub.get()))) {
+        for (const auto &p_superset : superset) {
+            if (superset_relation.count(make_pair(p_superset.get(),
+                                                  p_subset.get()))) {
                 found_superset = true;
                 break;
             }
@@ -66,7 +68,6 @@ bool DominancePruner::clique_dominates(const PDBCollection &c_sup,
     }
     return true;
 }
-
 
 void DominancePruner::prune() {
     PDBCliques remaining_cliques;
@@ -101,14 +102,15 @@ void DominancePruner::prune() {
         }
         if (c1_is_useful) {
             remaining_cliques.push_back(c1);
-            for (size_t p_id = 0; p_id < c1.size(); ++p_id) {
-                shared_ptr<PatternDatabase> pdb = c1[p_id];
+            for (const auto &pdb : c1) {
                 remaining_heuristics.insert(pdb);
             }
         } else {
             clique_removed[c1_id] = true;
         }
     }
+    /* TODO issue585: this does not maintain the invariant that lists of
+       patterns are sorted. Should we sort the list before returning? */
     pattern_databases = PDBCollection(remaining_heuristics.begin(),
                                       remaining_heuristics.end());
     max_cliques.swap(remaining_cliques);

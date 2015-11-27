@@ -5,18 +5,21 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_proxy.h"
 
-#include <vector>
+#include <iostream>
+#include <memory>
+#include <set>
 
 using namespace std;
+
 
 PatternGenerationCombo::PatternGenerationCombo(const Options &opts)
     : max_states(opts.get<int>("max_states")) {
 }
 
-PatternCollection PatternGenerationCombo::generate(std::shared_ptr<AbstractTask> task) {
-    /* Take one large pattern and then single-variable patterns for
-       all goal variables that are not in the large pattern. */
+PatternCollection PatternGenerationCombo::generate(
+    shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     shared_ptr<Patterns> patterns;
 
