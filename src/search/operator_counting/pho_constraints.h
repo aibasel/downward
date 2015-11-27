@@ -7,7 +7,6 @@
 
 #include <memory>
 
-class CanonicalPDBsHeuristic;
 class Options;
 class PatternCollectionGenerator;
 

@@ -3,7 +3,6 @@
 
 #include "types.h"
 
-#include "../utilities.h"
 #include "../utilities_hash.h"
 
 #include <unordered_set>

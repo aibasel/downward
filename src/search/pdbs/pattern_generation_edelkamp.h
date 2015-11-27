@@ -11,7 +11,6 @@ class AbstractTask;
 class Options;
 class TaskProxy;
 class VariablesProxy;
-class ZeroOnePDBsHeuristic;
 
 /*
   Implementation of the pattern generation algorithm by Edelkamp. See:

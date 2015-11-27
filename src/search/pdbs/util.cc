@@ -4,7 +4,7 @@
 #include "../task_proxy.h"
 
 #include <algorithm>
-#include <memory>
+#include <iostream>
 
 using namespace std;
 

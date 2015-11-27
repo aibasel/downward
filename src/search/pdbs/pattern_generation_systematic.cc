@@ -5,9 +5,10 @@
 #include "../causal_graph.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
+#include "../task_proxy.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 
 using namespace std;
