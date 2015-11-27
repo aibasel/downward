@@ -1,19 +1,21 @@
 #include "pattern_generation_single_manual.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
 #include "util.h"
 
-#include <vector>
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../task_proxy.h"
+
+#include <iostream>
 
 using namespace std;
+
 
 PatternGenerationSingleManual::PatternGenerationSingleManual(const Options &opts)
     : pattern(opts.get_list<int>("pattern")) {
 }
 
-Pattern PatternGenerationSingleManual::generate(std::shared_ptr<AbstractTask> task) {
+Pattern PatternGenerationSingleManual::generate(shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     validate_and_normalize_pattern(task_proxy, pattern);
     cout << "Manual pattern: " << pattern << endl;

@@ -4,11 +4,13 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_proxy.h"
 #include "../variable_order_finder.h"
 
-#include <vector>
+#include <iostream>
 
 using namespace std;
+
 
 PatternGenerationSingleGreedy::PatternGenerationSingleGreedy(const Options &opts)
     : PatternGenerationSingleGreedy(opts.get<int>("max_states")) {
@@ -18,17 +20,18 @@ PatternGenerationSingleGreedy::PatternGenerationSingleGreedy(int max_states)
     : max_states(max_states) {
 }
 
-Pattern PatternGenerationSingleGreedy::generate(std::shared_ptr<AbstractTask> task) {
+Pattern PatternGenerationSingleGreedy::generate(shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     Pattern pattern;
     VariableOrderFinder order(task, GOAL_CG_LEVEL);
+    VariablesProxy variables = task_proxy.get_variables();
 
     int size = 1;
     while (true) {
         if (order.done())
             break;
         int next_var_id = order.next();
-        VariableProxy next_var = task_proxy.get_variables()[next_var_id];
+        VariableProxy next_var = variables[next_var_id];
         int next_var_size = next_var.get_domain_size();
 
         if (!is_product_within_limit(size, next_var_size, max_states))

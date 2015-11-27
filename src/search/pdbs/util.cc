@@ -9,17 +9,19 @@
 using namespace std;
 
 
-void validate_and_normalize_pattern(const TaskProxy &task_proxy, vector<int> &pattern) {
+void validate_and_normalize_pattern(const TaskProxy &task_proxy,
+                                    Pattern &pattern) {
     /*
       - Sort by variable number and remove duplicate variables.
       - Warn if duplicate variables exist.
       - Error if patterns contain out-of-range variable numbers.
     */
     sort(pattern.begin(), pattern.end());
-    vector<int>::iterator it = unique(pattern.begin(), pattern.end());
+    auto it = unique(pattern.begin(), pattern.end());
     if (it != pattern.end()) {
         pattern.erase(it, pattern.end());
-        cout << "Warning: duplicate variables in pattern have been removed" << endl;
+        cout << "Warning: duplicate variables in pattern have been removed"
+             << endl;
     }
     if (!pattern.empty()) {
         if (pattern.front() < 0) {
@@ -34,7 +36,8 @@ void validate_and_normalize_pattern(const TaskProxy &task_proxy, vector<int> &pa
     }
 }
 
-void validate_and_normalize_patterns(const TaskProxy &task_proxy, vector<vector<int>> &patterns) {
+void validate_and_normalize_patterns(const TaskProxy &task_proxy,
+                                     Patterns &patterns) {
     /*
       - Validate and normalize each pattern (see there).
       - Sort collection lexicographically and remove duplicate patterns.

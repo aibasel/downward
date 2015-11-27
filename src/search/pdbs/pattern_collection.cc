@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
+#include <utility>
 
 using namespace std;
 
@@ -39,6 +40,10 @@ PatternCollection::PatternCollection(shared_ptr<AbstractTask> task,
             // TODO issue585: should we test for the implicit assumption above?
             if (known_patterns.count(pattern) == 0) {
                 known_patterns.insert(pattern);
+                /* TODO issue585: Do we have to validate/normalize the pattern
+                   here? Since it comes from a PDB, it should already be
+                   normalized, but we don't know if it comes from the correct
+                   task. */
                 validate_and_normalize_pattern(task_proxy, pattern);
                 patterns_and_pdbs.push_back(make_pair(pattern, pdb));
             }
@@ -56,10 +61,8 @@ PatternCollection::PatternCollection(shared_ptr<AbstractTask> task,
     }
 }
 
-PatternCollection::~PatternCollection() {
-}
-
 void PatternCollection::create_pdbs_if_missing() {
+    assert(patterns);
     if (!pdbs) {
         pdbs = make_shared<PDBCollection>();
         for (const Pattern &pattern : *patterns) {
@@ -72,6 +75,7 @@ void PatternCollection::create_pdbs_if_missing() {
 
 void PatternCollection::create_cliques_if_missing() {
     create_pdbs_if_missing();
+    assert(pdbs);
     if (!cliques) {
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
         cliques = compute_max_pdb_cliques(*pdbs, are_additive);

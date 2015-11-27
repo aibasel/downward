@@ -1,36 +1,33 @@
 #include "pdb_heuristic.h"
 
 #include "pattern_generator.h"
-#include "util.h"
 
+#include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
-#include "../timer.h"
-#include "../utilities.h"
+#include "../task_proxy.h"
 
 using namespace std;
 
 PatternDatabase get_pdb_from_options(const shared_ptr<AbstractTask> task,
-                                     const Options &opts,
-                                     const vector<int> &operator_costs) {
+                                     const Options &opts) {
     shared_ptr<PatternGenerator> pattern_generator =
         opts.get<shared_ptr<PatternGenerator>>("pattern");
     Pattern pattern = pattern_generator->generate(task);
     TaskProxy task_proxy(*task);
-    return PatternDatabase(task_proxy, pattern, true, operator_costs);
+    return PatternDatabase(task_proxy, pattern, true);
 }
 
-PDBHeuristic::PDBHeuristic(const Options &opts,
-                           const vector<int> &operator_costs)
+PDBHeuristic::PDBHeuristic(const Options &opts)
     : Heuristic(opts),
-      pdb(get_pdb_from_options(task, opts, operator_costs)) {
-}
-
-PDBHeuristic::~PDBHeuristic() {
+      pdb(get_pdb_from_options(task, opts)) {
 }
 
 int PDBHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
+    return compute_heuristic(state);
+}
+
+int PDBHeuristic::compute_heuristic(const State &state) const {
     int h = pdb.get_value(state);
     if (h == numeric_limits<int>::max())
         return DEAD_END;

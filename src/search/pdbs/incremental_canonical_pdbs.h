@@ -1,14 +1,13 @@
 #ifndef PDBS_INCREMENTAL_CANONICAL_PDBS_H
 #define PDBS_INCREMENTAL_CANONICAL_PDBS_H
 
-#include "canonical_pdbs.h"
 #include "pdb_max_cliques.h"
 #include "types.h"
 
 #include "../task_proxy.h"
 
 #include <memory>
-#include <vector>
+
 
 class IncrementalCanonicalPDBs {
     const std::shared_ptr<AbstractTask> task;
@@ -26,26 +25,27 @@ class IncrementalCanonicalPDBs {
     int size;
 
     // Adds a PDB for pattern but does not recompute max_cliques.
-    void add_pdb_for_pattern(const std::vector<int> &pattern);
+    void add_pdb_for_pattern(const Pattern &pattern);
 
     void recompute_max_cliques();
 public:
-    // TODO issue585: the old code supported heuristic caching. Do we need this?
     explicit IncrementalCanonicalPDBs(const std::shared_ptr<AbstractTask> task,
                                       const Patterns &intitial_patterns);
     virtual ~IncrementalCanonicalPDBs() = default;
 
     // Adds a new pattern to the collection and recomputes maximal cliques.
-    void add_pattern(const std::vector<int> &pattern);
+    void add_pattern(const Pattern &pattern);
 
-    // checks for all max cliques if they would be additive to this pattern
+    /* Returns a set of cliques that would be additive to the new pattern.
+       Detailed documentation in pdb_max_cliques.h */
     PDBCliques get_max_additive_subsets(const Pattern &new_pattern);
 
+    // TODO issue585: the old code supported heuristic caching. Do we need this?
     int get_value(const State &state) const;
 
     /*
-      The following method offers a quick dead-end check for the
-      sampling procedure of iPDB. This exists because we can much more
+      The following method offers a quick dead-end check for the sampling
+      procedure of iPDB-hillclimbing. This exists because we can much more
       efficiently test if the canonical heuristic is infinite than
       computing the exact heuristic value.
     */

@@ -1,18 +1,19 @@
 #include "incremental_canonical_pdbs.h"
 
+#include "canonical_pdbs.h"
 #include "pattern_database.h"
 
 #include "../timer.h"
 #include "../utilities.h"
 
 #include <cstdlib>
+#include <iostream>
 #include <limits>
-#include <vector>
 
 using namespace std;
 
-IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(const std::shared_ptr<AbstractTask> task,
-                                                   const Patterns &intitial_patterns)
+IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
+    const shared_ptr<AbstractTask> task, const Patterns &intitial_patterns)
     : task(task),
       task_proxy(*task),
       pattern_databases(make_shared<PDBCollection>()),
@@ -28,11 +29,11 @@ IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(const std::shared_ptr<Abstrac
 }
 
 void IncrementalCanonicalPDBs::add_pdb_for_pattern(const Pattern &pattern) {
-    pattern_databases->push_back(make_shared<PatternDatabase>(task_proxy, pattern));
+    pattern_databases->emplace_back(new PatternDatabase(task_proxy, pattern));
     size += pattern_databases->back()->get_size();
 }
 
-void IncrementalCanonicalPDBs::add_pattern(const vector<int> &pattern) {
+void IncrementalCanonicalPDBs::add_pattern(const Pattern &pattern) {
     add_pdb_for_pattern(pattern);
     recompute_max_cliques();
 }

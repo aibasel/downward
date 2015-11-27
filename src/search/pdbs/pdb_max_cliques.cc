@@ -5,9 +5,8 @@
 
 #include "../task_proxy.h"
 
-#include <vector>
-
 using namespace std;
+
 
 bool are_patterns_additive(const Pattern &pattern1,
                            const Pattern &pattern2,

@@ -70,6 +70,7 @@ std::shared_ptr<PDBCliques> compute_max_pdb_cliques(
   */
 PDBCliques get_max_additive_subsets(
     const PDBCliques &max_cliques,
-    const Pattern &new_pattern, const VariableAdditivity &are_additive);
+    const Pattern &new_pattern,
+    const VariableAdditivity &are_additive);
 
 #endif

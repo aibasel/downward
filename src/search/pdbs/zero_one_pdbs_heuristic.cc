@@ -1,17 +1,12 @@
 #include "zero_one_pdbs_heuristic.h"
 
-#include "pattern_database.h"
 #include "pattern_generator.h"
-#include "util.h"
 
-#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
-
-#include <vector>
 
 using namespace std;
+
 
 ZeroOnePDBs get_zero_one_pdbs_from_options(
     const shared_ptr<AbstractTask> task, const Options &opts) {
@@ -29,15 +24,12 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
       zero_one_pdbs(get_zero_one_pdbs_from_options(task, opts)) {
 }
 
-ZeroOnePDBsHeuristic::~ZeroOnePDBsHeuristic() {
-}
-
 int ZeroOnePDBsHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
     return compute_heuristic(state);
 }
 
-int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) {
+int ZeroOnePDBsHeuristic::compute_heuristic(const State &state) const {
     int h = zero_one_pdbs.get_value(state);
     if (h == numeric_limits<int>::max())
         return DEAD_END;

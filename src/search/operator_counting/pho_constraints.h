@@ -3,14 +3,12 @@
 
 #include "constraint_generator.h"
 
-#include "../option_parser.h"
-
 #include "../pdbs/types.h"
 
 #include <memory>
-#include <vector>
 
 class CanonicalPDBsHeuristic;
+class Options;
 class PatternCollectionGenerator;
 
 namespace OperatorCounting {

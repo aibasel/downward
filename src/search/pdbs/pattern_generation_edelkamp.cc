@@ -4,9 +4,9 @@
 #include "zero_one_pdbs.h"
 
 #include "../causal_graph.h"
-#include "../globals.h"
 #include "../plugin.h"
 #include "../rng.h"
+#include "../task_proxy.h"
 #include "../timer.h"
 #include "../utilities.h"
 
@@ -266,7 +266,8 @@ void PatternGenerationEdelkamp::genetic_algorithm(shared_ptr<AbstractTask> task)
     }
 }
 
-PatternCollection PatternGenerationEdelkamp::generate(shared_ptr<AbstractTask> task) {
+PatternCollection PatternGenerationEdelkamp::generate(
+    shared_ptr<AbstractTask> task) {
     Timer timer;
     genetic_algorithm(task);
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
@@ -281,8 +282,8 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "Genetic Algorithm Patterns",
         "The following paper describes the automated creation of pattern "
         "databases with a genetic algorithm. Pattern collections are initially "
-        "created with a bin-packing algorithm. The genetic algorithm is used to "
-        "optimize the pattern collections with an objective function that "
+        "created with a bin-packing algorithm. The genetic algorithm is used "
+        "to optimize the pattern collections with an objective function that "
         "estimates the mean heuristic value of the the pattern collections. "
         "Pattern collections with higher mean heuristic estimates are more "
         "likely selected for the next generation.\n\n"

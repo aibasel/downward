@@ -19,6 +19,7 @@
     * If cliques is non-null, then pdbs is non-null.
     * The shared pointers used in cliques are shared with pdbs.
 */
+// TODO issue585: better name for this class?
 class PatternCollection {
     std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
@@ -35,7 +36,7 @@ public:
     PatternCollection(
         std::shared_ptr<AbstractTask> task,
         std::shared_ptr<PDBCliques> cliques);
-    ~PatternCollection();
+    ~PatternCollection() = default;
 
     std::shared_ptr<Patterns> get_patterns();
     std::shared_ptr<PDBCollection> get_pdbs();

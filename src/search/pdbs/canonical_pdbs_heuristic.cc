@@ -2,9 +2,13 @@
 
 #include "pattern_generator.h"
 
+#include "../abstract_task.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../timer.h"
+
+#include <iostream>
+#include <memory>
 
 using namespace std;
 

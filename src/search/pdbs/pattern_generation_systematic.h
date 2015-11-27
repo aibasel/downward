@@ -2,10 +2,12 @@
 #define PDBS_PATTERN_GENERATION_SYSTEMATIC_H
 
 #include "pattern_generator.h"
+#include "types.h"
 
 #include "../utilities.h"
 #include "../task_tools.h"
 
+#include <cstdlib>
 #include <memory>
 #include <unordered_set>
 #include <vector>
@@ -40,7 +42,8 @@ public:
     explicit PatternGenerationSystematic(const Options &opts);
     ~PatternGenerationSystematic() = default;
 
-    virtual PatternCollection generate(std::shared_ptr<AbstractTask> task) override;
+    virtual PatternCollection generate(
+        std::shared_ptr<AbstractTask> task) override;
 };
 
 #endif

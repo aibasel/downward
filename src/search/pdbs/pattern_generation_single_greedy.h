@@ -3,6 +3,8 @@
 
 #include "pattern_generator.h"
 
+class Options;
+
 class PatternGenerationSingleGreedy : public PatternGenerator {
     int max_states;
 public:

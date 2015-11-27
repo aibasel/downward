@@ -2,22 +2,23 @@
 #define PDBS_PATTERN_GENERATION_EDELKAMP_H
 
 #include "pattern_generator.h"
-
-#include "../operator_cost.h"
-#include "../task_proxy.h"
+#include "types.h"
 
 #include <memory>
 #include <vector>
 
 class AbstractTask;
 class Options;
+class TaskProxy;
+class VariablesProxy;
 class ZeroOnePDBsHeuristic;
 
-/* Implementation of the pattern generation algorithm by Edelkamp. See:
-   Stefan Edelkamp, Automated Creation of Pattern Database Search
-   Heuristics. Proceedings of the 4th Workshop on Model Checking and
-   Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007. */
-
+/*
+  Implementation of the pattern generation algorithm by Edelkamp. See:
+  Stefan Edelkamp, Automated Creation of Pattern Database Search
+  Heuristics. Proceedings of the 4th Workshop on Model Checking and
+  Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007.
+*/
 class PatternGenerationEdelkamp : public PatternCollectionGenerator {
     // Maximum number of states for each pdb
     const int pdb_max_size;
@@ -57,7 +58,8 @@ class PatternGenerationEdelkamp : public PatternCollectionGenerator {
       mainly for easy mutation) to the "normal" pattern form vector<int>, which
       we need for ZeroOnePDBsHeuristic.
     */
-    Pattern transform_to_pattern_normal_form(const std::vector<bool> &bitvector) const;
+    Pattern transform_to_pattern_normal_form(
+        const std::vector<bool> &bitvector) const;
 
     /*
       Calculates the mean h-value (fitness value) for each pattern collection.
@@ -72,14 +74,14 @@ class PatternGenerationEdelkamp : public PatternCollectionGenerator {
     void evaluate(std::shared_ptr<AbstractTask> task,
                   std::vector<double> &fitness_values);
     bool is_pattern_too_large(VariablesProxy variables,
-                              const std::vector<int> &pattern) const;
+                              const Pattern &pattern) const;
 
     /*
       Mark used variables in variables_used and return true iff
       anything was already used (in which case we do not mark the
       remaining variables).
     */
-    bool mark_used_variables(const std::vector<int> &pattern,
+    bool mark_used_variables(const Pattern &pattern,
                              std::vector<bool> &variables_used) const;
     void remove_irrelevant_variables(TaskProxy task_proxy,
                                      Pattern &pattern) const;
@@ -108,7 +110,8 @@ public:
     PatternGenerationEdelkamp(const Options &opts);
     virtual ~PatternGenerationEdelkamp() = default;
 
-    virtual PatternCollection generate(std::shared_ptr<AbstractTask> task) override;
+    virtual PatternCollection generate(
+        std::shared_ptr<AbstractTask> task) override;
 };
 
 #endif

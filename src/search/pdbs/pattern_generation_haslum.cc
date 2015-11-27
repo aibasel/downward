@@ -1,7 +1,6 @@
 #include "pattern_generation_haslum.h"
 
 #include "canonical_pdbs_heuristic.h"
-#include "canonical_pdbs_heuristic.h"
 #include "incremental_canonical_pdbs.h"
 #include "pattern_database.h"
 #include "util.h"
@@ -10,7 +9,6 @@
 #include "../countdown_timer.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
 #include "../sampling.h"
 #include "../task_tools.h"
 #include "../timer.h"
@@ -21,10 +19,9 @@
 #include <cmath>
 #include <cstdlib>
 #include <exception>
-#include <set>
+#include <iostream>
 #include <string>
 #include <utility>
-#include <vector>
 
 using namespace std;
 
@@ -39,9 +36,6 @@ PatternGenerationHaslum::PatternGenerationHaslum(const Options &opts)
       max_time(opts.get<double>("max_time")),
       num_rejected(0),
       hill_climbing_timer(0) {
-}
-
-PatternGenerationHaslum::~PatternGenerationHaslum() {
 }
 
 void PatternGenerationHaslum::generate_candidate_patterns(
@@ -65,7 +59,7 @@ void PatternGenerationHaslum::generate_candidate_patterns(
             VariableProxy rel_var = task_proxy.get_variables()[rel_var_id];
             int rel_var_size = rel_var.get_domain_size();
             if (is_product_within_limit(pdb_size, rel_var_size, pdb_max_size)) {
-                vector<int> new_pattern(pattern);
+                Pattern new_pattern(pattern);
                 new_pattern.push_back(rel_var_id);
                 sort(new_pattern.begin(), new_pattern.end());
                 candidate_patterns.push_back(new_pattern);
@@ -85,9 +79,10 @@ size_t PatternGenerationHaslum::generate_pdbs_for_candidates(
       candidate_pdbs.
     */
     size_t max_pdb_size = 0;
-    for (const vector<int> &new_candidate : new_candidates) {
+    for (const Pattern &new_candidate : new_candidates) {
         if (generated_patterns.count(new_candidate) == 0) {
-            candidate_pdbs.push_back(new PatternDatabase(task_proxy, new_candidate));
+            candidate_pdbs.push_back(
+                new PatternDatabase(task_proxy, new_candidate));
             max_pdb_size = max(max_pdb_size,
                                candidate_pdbs.back()->get_size());
             generated_patterns.insert(new_candidate);
@@ -354,7 +349,7 @@ PatternCollection PatternGenerationHaslum::generate(shared_ptr<AbstractTask> tas
 }
 
 
-void PatternGenerationHaslum::add_hillclimbing_options(OptionParser &parser) {
+void add_hillclimbing_options(OptionParser &parser) {
     parser.add_option<int>(
         "pdb_max_size",
         "maximal number of states per pattern database ",
@@ -387,7 +382,7 @@ void PatternGenerationHaslum::add_hillclimbing_options(OptionParser &parser) {
         Bounds("0.0", "infinity"));
 }
 
-void PatternGenerationHaslum::check_hillclimbing_options(
+void check_hillclimbing_options(
     OptionParser &parser, const Options &opts) {
     if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
         parser.error("minimum improvement must not be higher than number of "
@@ -395,13 +390,13 @@ void PatternGenerationHaslum::check_hillclimbing_options(
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    PatternGenerationHaslum::add_hillclimbing_options(parser);
+    add_hillclimbing_options(parser);
 
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
 
-    PatternGenerationHaslum::check_hillclimbing_options(parser, opts);
+    check_hillclimbing_options(parser, opts);
     if (parser.dry_run())
         return nullptr;
 
@@ -492,7 +487,7 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
         "implementation as described in the paper.",
         true);
 
-    PatternGenerationHaslum::add_hillclimbing_options(parser);
+    add_hillclimbing_options(parser);
 
     /*
       Note that using dominance pruning during hill climbing could lead to fewer
@@ -513,19 +508,27 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     if (parser.help_mode())
         return nullptr;
 
-    PatternGenerationHaslum::check_hillclimbing_options(parser, opts);
+    check_hillclimbing_options(parser, opts);
 
     if (parser.dry_run())
         return nullptr;
 
-    shared_ptr<PatternGenerationHaslum> pgh = make_shared<PatternGenerationHaslum>(opts);
+    shared_ptr<PatternGenerationHaslum> pgh =
+        make_shared<PatternGenerationHaslum>(opts);
     shared_ptr<AbstractTask> task = get_task_from_options(opts);
+
     Options heuristic_opts;
-    heuristic_opts.set<shared_ptr<AbstractTask>>("transform", task);
-    heuristic_opts.set<int>("cost_type", NORMAL);
-    heuristic_opts.set<bool>("cache_estimates", opts.get<bool>("cache_estimates"));
-    heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>("patterns", pgh);
-    heuristic_opts.set<bool>("dominance_pruning", opts.get<bool>("dominance_pruning"));
+    heuristic_opts.set<shared_ptr<AbstractTask>>(
+        "transform", task);
+    heuristic_opts.set<int>(
+        "cost_type", NORMAL);
+    heuristic_opts.set<bool>(
+        "cache_estimates", opts.get<bool>("cache_estimates"));
+    heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>(
+        "patterns", pgh);
+    heuristic_opts.set<bool>(
+        "dominance_pruning", opts.get<bool>("dominance_pruning"));
+
     // Note: in the long run, this should return a shared pointer.
     return new CanonicalPDBsHeuristic(heuristic_opts);
 }
