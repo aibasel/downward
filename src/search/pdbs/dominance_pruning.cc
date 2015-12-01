@@ -18,9 +18,9 @@ using PDBRelation = unordered_set<pair<PatternDatabase *, PatternDatabase *>>;
 
 PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {
     PDBRelation superset_relation;
-    for (const auto &pdb1 : pattern_databases) {
+    for (const shared_ptr<PatternDatabase> &pdb1 : pattern_databases) {
         const Pattern &pattern1 = pdb1->get_pattern();
-        for (const auto &pdb2 : pattern_databases) {
+        for (const shared_ptr<PatternDatabase> &pdb2 : pattern_databases) {
             const Pattern &pattern2 = pdb2->get_pattern();
             // Note that std::includes assumes that patterns are sorted.
             if (std::includes(pattern1.begin(), pattern1.end(),
@@ -43,10 +43,10 @@ PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {
 bool collection_dominates(const PDBCollection &superset,
                       const PDBCollection &subset,
                       const PDBRelation &superset_relation) {
-    for (const auto &p_subset : subset) {
+    for (const shared_ptr<PatternDatabase> &p_subset : subset) {
         // Assume there is no superset until we found one.
         bool found_superset = false;
-        for (const auto &p_superset : superset) {
+        for (const shared_ptr<PatternDatabase> &p_superset : superset) {
             if (superset_relation.count(make_pair(p_superset.get(),
                                                   p_subset.get()))) {
                 found_superset = true;
