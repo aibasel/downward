@@ -12,7 +12,7 @@
 class TaskProxy;
 
 
-namespace LMcutHeuristic {
+namespace LandmarkCutHeuristic {
 // TODO: Fix duplication with the other relaxation heuristics.
 struct RelaxedProposition;
 
