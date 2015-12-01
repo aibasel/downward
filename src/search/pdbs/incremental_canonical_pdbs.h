@@ -14,9 +14,7 @@ class IncrementalCanonicalPDBs {
     TaskProxy task_proxy;
 
     std::shared_ptr<PDBCollection> pattern_databases;
-
-    // A maximal clique represents a maximal additive subset of patterns.
-    std::shared_ptr<MaxAdditivePDBSubsets> max_cliques;
+    std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
 
     // A pair of variables is additive if no operator has an effect on both.
     VariableAdditivity are_additive;
@@ -24,19 +22,19 @@ class IncrementalCanonicalPDBs {
     // The sum of all abstract state sizes of all pdbs in the collection.
     int size;
 
-    // Adds a PDB for pattern but does not recompute max_cliques.
+    // Adds a PDB for pattern but does not recompute max_additive_subsets.
     void add_pdb_for_pattern(const Pattern &pattern);
 
-    void recompute_max_cliques();
+    void recompute_max_additive_subsets();
 public:
     explicit IncrementalCanonicalPDBs(const std::shared_ptr<AbstractTask> task,
                                       const PatternCollection &intitial_patterns);
     virtual ~IncrementalCanonicalPDBs() = default;
 
-    // Adds a new pattern to the collection and recomputes maximal cliques.
+    // Adds a new pattern to the collection and recomputes max_additive_subsets.
     void add_pattern(const Pattern &pattern);
 
-    /* Returns a set of cliques that would be additive to the new pattern.
+    /* Returns a set of subsets that would be additive to the new pattern.
        Detailed documentation in pdb_max_cliques.h */
     MaxAdditivePDBSubsets get_max_additive_subsets(const Pattern &new_pattern);
 
@@ -55,8 +53,8 @@ public:
         return pattern_databases;
     }
 
-    std::shared_ptr<MaxAdditivePDBSubsets> get_cliques() {
-        return max_cliques;
+    std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets() {
+        return max_additive_subsets;
     }
 
     int get_size() const {

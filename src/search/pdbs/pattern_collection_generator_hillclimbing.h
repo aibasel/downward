@@ -29,7 +29,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     const int min_improvement;
     const double max_time;
 
-    std::unique_ptr<IncrementalCanonicalPDBs> current_heuristic;
+    std::unique_ptr<IncrementalCanonicalPDBs> current_pdbs;
 
     // for stats only
     int num_rejected;
