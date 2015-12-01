@@ -36,11 +36,11 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
 }
 
 void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
-    TaskProxy task_proxy, const PatternDatabase *pdb,
+    TaskProxy task_proxy, const PatternDatabase &pdb,
     PatternCollection &candidate_patterns) {
     const CausalGraph &causal_graph = task_proxy.get_causal_graph();
-    const Pattern &pattern = pdb->get_pattern();
-    int pdb_size = pdb->get_size();
+    const Pattern &pattern = pdb.get_pattern();
+    int pdb_size = pdb.get_size();
     for (int pattern_var : pattern) {
         /* Only consider variables used in preconditions for current
            variable from pattern. It would also make sense to consider
@@ -69,7 +69,7 @@ void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
 
 size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
     TaskProxy task_proxy, set<Pattern> &generated_patterns,
-    PatternCollection &new_candidates, vector<PatternDatabase *> &candidate_pdbs) const {
+    PatternCollection &new_candidates, PDBCollection &candidate_pdbs) const {
     /*
       For the new candidate patterns check whether they already have been
       candidates before and thus already a PDB has been created an inserted into
@@ -79,7 +79,7 @@ size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
     for (const Pattern &new_candidate : new_candidates) {
         if (generated_patterns.count(new_candidate) == 0) {
             candidate_pdbs.push_back(
-                new PatternDatabase(task_proxy, new_candidate));
+                make_shared<PatternDatabase>(task_proxy, new_candidate));
             max_pdb_size = max(max_pdb_size,
                                candidate_pdbs.back()->get_size());
             generated_patterns.insert(new_candidate);
@@ -108,8 +108,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
 }
 
 std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
-    vector<State> &samples,
-    vector<PatternDatabase *> &candidate_pdbs) {
+    vector<State> &samples, PDBCollection &candidate_pdbs) {
     /*
       TODO: The original implementation by Haslum et al. uses A* to compute
       h values for the sample states only instead of generating all PDBs.
@@ -125,7 +124,7 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
         if (hill_climbing_timer->is_expired())
             throw HillClimbingTimeout();
 
-        PatternDatabase *pdb = candidate_pdbs[i];
+        const shared_ptr<PatternDatabase> &pdb = candidate_pdbs[i];
         if (!pdb) {
             /* candidate pattern is too large or has already been added to
                the canonical heuristic. */
@@ -133,12 +132,10 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
         }
         /*
           If a candidate's size added to the current collection's size exceeds
-          the maximum collection size, then delete the pdb and let the pdb's
-          entry point to a null reference
+          the maximum collection size, then forget the pdb.
         */
         int combined_size = current_heuristic->get_size() + pdb->get_size();
         if (combined_size > collection_max_size) {
-            delete pdb;
             candidate_pdbs[i] = nullptr;
             continue;
         }
@@ -157,7 +154,7 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
         MaxAdditivePDBSubsets max_additive_subsets =
             current_heuristic->get_max_additive_subsets(pdb->get_pattern());
         for (State &sample : samples) {
-            if (is_heuristic_improved(pdb, sample, max_additive_subsets))
+            if (is_heuristic_improved(*pdb, sample, max_additive_subsets))
                 ++count;
         }
         if (count > improvement) {
@@ -174,10 +171,10 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
 }
 
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
-    PatternDatabase *pdb, const State &sample,
+    const PatternDatabase &pdb, const State &sample,
     const MaxAdditivePDBSubsets &max_additive_subsets) {
     // h_pattern: h-value of the new pattern
-    int h_pattern = pdb->get_value(sample);
+    int h_pattern = pdb.get_value(sample);
 
     if (h_pattern == numeric_limits<int>::max()) {
         return true;
@@ -221,7 +218,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
        generate_candidate_patterns */
     PatternCollection &new_candidates = initial_candidate_patterns;
     // All candidate patterns are converted into pdbs once and stored
-    vector<PatternDatabase *> candidate_pdbs;
+    PDBCollection candidate_pdbs;
     int num_iterations = 0;
     size_t max_pdb_size = 0;
     State initial_state = task_proxy.get_initial_state();
@@ -260,7 +257,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
             // Add the best pattern to the CanonicalPDBsHeuristic.
             assert(best_pdb_index != -1);
-            const PatternDatabase *best_pdb = candidate_pdbs[best_pdb_index];
+            const shared_ptr<PatternDatabase> &best_pdb =
+                candidate_pdbs[best_pdb_index];
             const Pattern &best_pattern = best_pdb->get_pattern();
             cout << "found a better pattern with improvement " << improvement
                  << endl;
@@ -270,10 +268,9 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             /* Clear current new_candidates and get successors for next
                iteration. */
             new_candidates.clear();
-            generate_candidate_patterns(task_proxy, best_pdb, new_candidates);
+            generate_candidate_patterns(task_proxy, *best_pdb, new_candidates);
 
             // remove from candidate_pdbs the added PDB
-            delete candidate_pdbs[best_pdb_index];
             candidate_pdbs[best_pdb_index] = nullptr;
 
             cout << "Hill climbing time so far: " << *hill_climbing_timer
@@ -291,11 +288,6 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     cout << "iPDB: rejected = " << num_rejected << endl;
     cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
     cout << "iPDB: hill climbing time: " << *hill_climbing_timer << endl;
-
-    // Delete all created PDBs.
-    for (PatternDatabase *pdb: candidate_pdbs) {
-        delete pdb;
-    }
 
     delete hill_climbing_timer;
     hill_climbing_timer = nullptr;
@@ -326,7 +318,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
         for (const auto &current_pdb :
              *(current_heuristic->get_pattern_databases())) {
             generate_candidate_patterns(
-                task_proxy, current_pdb.get(), initial_candidate_patterns);
+                task_proxy, *current_pdb, initial_candidate_patterns);
         }
         validate_and_normalize_patterns(task_proxy, initial_candidate_patterns);
 
