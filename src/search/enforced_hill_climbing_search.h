@@ -17,7 +17,7 @@ namespace GEvaluator {
 class GEvaluator;
 }
 
-using OpenListEntryEHC = std::pair<StateID, std::pair<int, const GlobalOperator * >>;
+using OpenListEntryEHC = std::pair<StateID, std::pair<int, const GlobalOperator *>>;
 
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
