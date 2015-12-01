@@ -1,6 +1,6 @@
 #include "canonical_pdbs.h"
 
-#include "dominance_pruner.h"
+#include "dominance_pruning.h"
 #include "pattern_database.h"
 
 #include <algorithm>

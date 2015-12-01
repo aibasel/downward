@@ -1,5 +1,5 @@
-#ifndef PDBS_DOMINANCE_PRUNER_H
-#define PDBS_DOMINANCE_PRUNER_H
+#ifndef PDBS_DOMINANCE_PRUNING_H
+#define PDBS_DOMINANCE_PRUNING_H
 
 #include "types.h"
 

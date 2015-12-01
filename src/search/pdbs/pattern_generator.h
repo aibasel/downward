@@ -1,7 +1,7 @@
 #ifndef PDBS_PATTERN_GENERATOR_H
 #define PDBS_PATTERN_GENERATOR_H
 
-#include "pattern_collection.h"
+#include "pattern_collection_information.h"
 #include "types.h"
 
 #include <memory>

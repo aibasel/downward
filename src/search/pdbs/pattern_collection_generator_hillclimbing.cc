@@ -1,9 +1,9 @@
-#include "pattern_generation_haslum.h"
+#include "pattern_collection_generator_hillclimbing.h"
 
 #include "canonical_pdbs_heuristic.h"
 #include "incremental_canonical_pdbs.h"
 #include "pattern_database.h"
-#include "util.h"
+#include "validation.h"
 
 #include "../causal_graph.h"
 #include "../countdown_timer.h"

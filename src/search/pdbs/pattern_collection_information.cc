@@ -1,9 +1,8 @@
-#include "pattern_collection.h"
+#include "pattern_collection_information.h"
 
-#include "dominance_pruner.h"
 #include "pattern_database.h"
 #include "pdb_max_cliques.h"
-#include "util.h"
+#include "validation.h"
 
 #include <algorithm>
 #include <cassert>

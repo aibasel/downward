@@ -1,7 +1,7 @@
-#include "pattern_generation_combo.h"
+#include "pattern_collection_generator_combo.h"
 
-#include "pattern_generation_single_greedy.h"
-#include "util.h"
+#include "pattern_generator_greedy.h"
+#include "validation.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"

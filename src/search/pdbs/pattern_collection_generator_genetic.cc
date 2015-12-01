@@ -1,6 +1,6 @@
-#include "pattern_generation_edelkamp.h"
+#include "pattern_collection_generator_genetic.h"
 
-#include "util.h"
+#include "validation.h"
 #include "zero_one_pdbs.h"
 
 #include "../causal_graph.h"

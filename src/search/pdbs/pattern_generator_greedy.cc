@@ -1,6 +1,6 @@
-#include "pattern_generation_single_greedy.h"
+#include "pattern_generator_greedy.h"
 
-#include "util.h"
+#include "validation.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
