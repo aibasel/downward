@@ -12,7 +12,7 @@
 using namespace std;
 
 
-namespace LMcutHeuristic {
+namespace LandmarkCutHeuristic {
 // construction and destruction
 LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
     : Heuristic(opts),

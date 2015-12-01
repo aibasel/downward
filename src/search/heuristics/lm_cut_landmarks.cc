@@ -7,7 +7,7 @@
 using namespace std;
 
 
-namespace LMcutHeuristic {
+namespace LandmarkCutHeuristic {
 // construction and destruction
 LandmarkCutLandmarks::LandmarkCutLandmarks(const TaskProxy &task_proxy) {
     verify_no_axioms(task_proxy);
