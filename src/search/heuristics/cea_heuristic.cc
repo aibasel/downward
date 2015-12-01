@@ -48,7 +48,7 @@ using namespace std;
      is why we do not currently do it.
  */
 
-namespace CEAHeuristic {
+namespace ContextEnhancedAdditiveHeuristic {
 struct LocalTransition {
     LocalProblemNode *source;
     LocalProblemNode *target;

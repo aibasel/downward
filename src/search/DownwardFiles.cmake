@@ -215,7 +215,7 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME CEA_HEURISTIC
+    NAME CONTEXT_ENHANCED_ADDITIVE_HEURISTIC
     HELP "The context-enhanced additive heuristic"
     SOURCES
         heuristics/cea_heuristic.cc

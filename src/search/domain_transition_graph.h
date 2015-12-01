@@ -78,13 +78,13 @@ struct ValueNode {
     void dump() const;
 };
 
-namespace CEAHeuristic {
+namespace ContextEnhancedAdditiveHeuristic {
 class ContextEnhancedAdditiveHeuristic;
 }
 
 class DomainTransitionGraph {
     friend class CGHeuristic::CGHeuristic;
-    friend class CEAHeuristic::ContextEnhancedAdditiveHeuristic;
+    friend class ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic;
     friend struct ValueNode;
     friend struct ValueTransition;
     friend struct LocalAssignment;
