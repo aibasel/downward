@@ -1,7 +1,7 @@
 #ifndef PDBS_INCREMENTAL_CANONICAL_PDBS_H
 #define PDBS_INCREMENTAL_CANONICAL_PDBS_H
 
-#include "pdb_max_cliques.h"
+#include "max_additive_pdb_sets.h"
 #include "types.h"
 
 #include "../task_proxy.h"
@@ -35,10 +35,9 @@ public:
     void add_pattern(const Pattern &pattern);
 
     /* Returns a set of subsets that would be additive to the new pattern.
-       Detailed documentation in pdb_max_cliques.h */
+       Detailed documentation in max_additive_pdb_sets.h */
     MaxAdditivePDBSubsets get_max_additive_subsets(const Pattern &new_pattern);
 
-    // TODO issue585: the old code supported heuristic caching. Do we need this?
     int get_value(const State &state) const;
 
     /*

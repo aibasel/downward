@@ -1,7 +1,7 @@
 #include "pattern_collection_information.h"
 
 #include "pattern_database.h"
-#include "pdb_max_cliques.h"
+#include "max_additive_pdb_sets.h"
 #include "validation.h"
 
 #include <algorithm>
