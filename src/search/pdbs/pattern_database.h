@@ -5,9 +5,6 @@
 
 #include <vector>
 
-class State;
-class OperatorProxy;
-
 
 namespace PDBs {
 class AbstractOperator {
