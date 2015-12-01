@@ -42,7 +42,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     */
     void generate_candidate_patterns(
         TaskProxy task_proxy,
-        const PatternDatabase *pdb,
+        const PatternDatabase &pdb,
         PatternCollection &candidate_patterns);
 
     /*
@@ -53,7 +53,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
         TaskProxy task_proxy,
         std::set<Pattern> &generated_patterns,
         PatternCollection &new_candidates,
-        std::vector<PatternDatabase *> &candidate_pdbs) const;
+        PDBCollection &candidate_pdbs) const;
 
     /*
       Performs num_samples random walks with a length (different for each
@@ -78,7 +78,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     */
     std::pair<int, int> find_best_improving_pdb(
         std::vector<State> &samples,
-        std::vector<PatternDatabase *> &candidate_pdbs);
+        PDBCollection &candidate_pdbs);
 
     /*
       Returns true iff the h-value of the new pattern (from pdb) plus the
@@ -87,7 +87,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       the h-value of the current pattern collection.
     */
     bool is_heuristic_improved(
-        PatternDatabase *pdb,
+        const PatternDatabase &pdb,
         const State &sample,
         const MaxAdditivePDBSubsets &max_additive_subsets);
 
