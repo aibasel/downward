@@ -1,4 +1,4 @@
-#include "pdb_max_cliques.h"
+#include "max_additive_pdb_sets.h"
 
 #include "max_cliques.h"
 #include "pattern_database.h"

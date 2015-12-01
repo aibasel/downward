@@ -322,6 +322,7 @@ fast_downward_plugin(
         pdbs/dominance_pruning.cc
         pdbs/incremental_canonical_pdbs.cc
         pdbs/match_tree.cc
+        pdbs/max_additive_pdb_sets.cc
         pdbs/max_cliques.cc
         pdbs/pattern_collection_information.cc
         pdbs/pattern_database.cc
@@ -334,7 +335,6 @@ fast_downward_plugin(
         pdbs/pattern_generator_manual.cc
         pdbs/pattern_generator.cc
         pdbs/pdb_heuristic.cc
-        pdbs/pdb_max_cliques.cc
         pdbs/types.cc
         pdbs/validation.cc
         pdbs/zero_one_pdbs.cc
