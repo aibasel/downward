@@ -22,19 +22,20 @@ PatternCollectionInformation::PatternCollectionInformation(shared_ptr<AbstractTa
     validate_and_normalize_patterns(task_proxy, *patterns);
 }
 
-PatternCollectionInformation::PatternCollectionInformation(shared_ptr<AbstractTask> task,
-                                     shared_ptr<MaxAdditivePDBSubsets> cliques)
+PatternCollectionInformation::PatternCollectionInformation(
+    shared_ptr<AbstractTask> task,
+    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets)
     : task(task),
       task_proxy(*task),
       patterns(make_shared<PatternCollection>()),
       pdbs(make_shared<PDBCollection>()),
-      max_additive_subsets(cliques) {
-    assert(cliques);
+      max_additive_subsets(max_additive_subsets) {
+    assert(max_additive_subsets);
     using PatternPDBPair = pair<Pattern, shared_ptr<PatternDatabase>>;
     vector<PatternPDBPair> patterns_and_pdbs;
     unordered_set<Pattern> known_patterns;
-    for (const auto &clique : *cliques) {
-        for (const auto &pdb : clique) {
+    for (const PDBCollection &additive_subset : *max_additive_subsets) {
+        for (const shared_ptr<PatternDatabase> &pdb : additive_subset) {
             Pattern pattern = pdb->get_pattern();
             /*
               We use the invariant that there are no two different PDBs with
@@ -75,7 +76,7 @@ void PatternCollectionInformation::create_max_additive_subsets_if_missing() {
     assert(pdbs);
     if (!max_additive_subsets) {
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
-        max_additive_subsets = compute_max_pdb_cliques(*pdbs, are_additive);
+        max_additive_subsets = compute_max_additive_subsets(*pdbs, are_additive);
     }
 }
 

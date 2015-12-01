@@ -91,7 +91,7 @@ size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
 void PatternCollectionGeneratorHillclimbing::sample_states(
     TaskProxy task_proxy, const SuccessorGenerator &successor_generator,
     vector<State> &samples, double average_operator_cost) {
-    int init_h = current_heuristic->get_value(
+    int init_h = current_pdbs->get_value(
         task_proxy.get_initial_state());
 
     try {
@@ -99,7 +99,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
             task_proxy, successor_generator, num_samples, init_h,
             average_operator_cost,
             [this](const State &state) {
-            return current_heuristic->is_dead_end(state);
+            return current_pdbs->is_dead_end(state);
         },
             hill_climbing_timer);
     } catch (SamplingTimeout &) {
@@ -134,7 +134,7 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
           If a candidate's size added to the current collection's size exceeds
           the maximum collection size, then forget the pdb.
         */
-        int combined_size = current_heuristic->get_size() + pdb->get_size();
+        int combined_size = current_pdbs->get_size() + pdb->get_size();
         if (combined_size > collection_max_size) {
             candidate_pdbs[i] = nullptr;
             continue;
@@ -152,7 +152,7 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
         */
         int count = 0;
         MaxAdditivePDBSubsets max_additive_subsets =
-            current_heuristic->get_max_additive_subsets(pdb->get_pattern());
+            current_pdbs->get_max_additive_subsets(pdb->get_pattern());
         for (State &sample : samples) {
             if (is_heuristic_improved(*pdb, sample, max_additive_subsets))
                 ++count;
@@ -181,7 +181,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     }
 
     // h_collection: h-value of the current collection heuristic
-    int h_collection = current_heuristic->get_value(sample);
+    int h_collection = current_pdbs->get_value(sample);
     if (h_collection == numeric_limits<int>::max())
         return false;
 
@@ -226,13 +226,13 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
         while (true) {
             ++num_iterations;
             cout << "current collection size is "
-                 << current_heuristic->get_size() << endl;
+                 << current_pdbs->get_size() << endl;
             cout << "current initial h value: ";
-            if (current_heuristic->is_dead_end(initial_state)) {
+            if (current_pdbs->is_dead_end(initial_state)) {
                 cout << "infinite => stopping hill climbing" << endl;
                 break;
             } else {
-                cout << current_heuristic->get_value(initial_state)
+                cout << current_pdbs->get_value(initial_state)
                      << endl;
             }
 
@@ -263,7 +263,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             cout << "found a better pattern with improvement " << improvement
                  << endl;
             cout << "pattern: " << best_pattern << endl;
-            current_heuristic->add_pattern(best_pattern);
+            current_pdbs->add_pattern(best_pattern);
 
             /* Clear current new_candidates and get successors for next
                iteration. */
@@ -282,8 +282,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 
     cout << "iPDB: iterations = " << num_iterations << endl;
     cout << "iPDB: num_patterns = "
-         << current_heuristic->get_pattern_databases()->size() << endl;
-    cout << "iPDB: size = " << current_heuristic->get_size() << endl;
+         << current_pdbs->get_pattern_databases()->size() << endl;
+    cout << "iPDB: size = " << current_pdbs->get_size() << endl;
     cout << "iPDB: generated = " << generated_patterns.size() << endl;
     cout << "iPDB: rejected = " << num_rejected << endl;
     cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
@@ -307,16 +307,16 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
         int goal_var_id = goal.get_variable().get_id();
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }
-    current_heuristic = make_unique_ptr<IncrementalCanonicalPDBs>(
+    current_pdbs = make_unique_ptr<IncrementalCanonicalPDBs>(
         task, initial_pattern_collection);
 
     State initial_state = task_proxy.get_initial_state();
-    if (!current_heuristic->is_dead_end(initial_state)) {
+    if (!current_pdbs->is_dead_end(initial_state)) {
         /* Generate initial candidate patterns (based on each pattern from
            the initial collection). */
         PatternCollection initial_candidate_patterns;
         for (const auto &current_pdb :
-             *(current_heuristic->get_pattern_databases())) {
+             *(current_pdbs->get_pattern_databases())) {
             generate_candidate_patterns(
                 task_proxy, *current_pdb, initial_candidate_patterns);
         }
@@ -334,7 +334,8 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
                 initial_candidate_patterns);
         cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
     }
-    return PatternCollectionInformation(task, current_heuristic->get_cliques());
+    return PatternCollectionInformation(
+        task, current_pdbs->get_max_additive_subsets());
 }
 
 
@@ -486,8 +487,8 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     */
     parser.add_option<bool>(
         "dominance_pruning",
-        "Exclude patterns and cliques that will never contribute to the "
-        "heuristic value because there are dominating patterns in the "
+        "Exclude patterns and additive subsets that will never contribute to "
+        "the heuristic value because there are dominating patterns in the "
         "collection.",
         "true");
 

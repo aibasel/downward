@@ -22,12 +22,14 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     PatternCollectionInformation pattern_collection =
         pattern_generator->generate(task);
     shared_ptr<PDBCollection> pattern_databases = pattern_collection.get_pdbs();
-    shared_ptr<MaxAdditivePDBSubsets> max_cliques =
+    shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets =
         pattern_collection.get_max_additive_subsets();
     cout << "PDB collection construction time: " << timer << endl;
 
     bool dominance_pruning = opts.get<bool>("dominance_pruning");
-    return CanonicalPDBs(pattern_databases, max_cliques, dominance_pruning);
+    return CanonicalPDBs(pattern_databases,
+                         max_additive_subsets,
+                         dominance_pruning);
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)
@@ -72,8 +74,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "combo()");
     parser.add_option<bool>(
         "dominance_pruning",
-        "Exclude patterns and cliques that will never contribute to the "
-        "heuristic value because there are dominating patterns in the "
+        "Exclude patterns and pattern collections that will never contribute to "
+        "the heuristic value because there are dominating patterns in the "
         "collection.",
         "true");
 

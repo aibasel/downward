@@ -71,20 +71,20 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     shared_ptr<MaxAdditivePDBSubsets> nondominated_subsets =
         make_shared<MaxAdditivePDBSubsets>();
     /*
-      Remember which cliques are already removed and don't use them to prune
-      other cliques. This prevents removing both copies of a clique that occurs
-      twice.
+      Remember which collections are already removed and don't use them to prune
+      other collections. This prevents removing both copies of a collection that
+      occurs twice.
     */
     vector<bool> subset_removed(num_additive_subsets, false);
 
     PDBRelation superset_relation = compute_superset_relation(pattern_databases);
-    // Check all pairs of cliques for dominance.
+    // Check all pairs of collections for dominance.
     for (int c1_id = 0; c1_id < num_additive_subsets; ++c1_id) {
         const PDBCollection &c1 = max_additive_subsets[c1_id];
         /*
-          Clique c1 is useful if it is not dominated by any clique c2.
+          Collection c1 is useful if it is not dominated by any collection c2.
           Assume that it is useful and set it to false if any dominating
-          clique is found.
+          collection is found.
         */
         bool c1_is_useful = true;
         for (int c2_id = 0; c2_id < num_additive_subsets; ++c2_id) {
@@ -106,7 +106,7 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     }
 
     cout << "Pruned " << num_additive_subsets - nondominated_subsets->size() <<
-        " of " << num_additive_subsets << " cliques" << endl;
+        " of " << num_additive_subsets << " maximal additive subsets" << endl;
 
     unordered_set<PatternDatabase *> remaining_pdbs;
     for (const PDBCollection &collection : *nondominated_subsets) {

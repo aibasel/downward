@@ -15,14 +15,14 @@ IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
     : task(task),
       task_proxy(*task),
       pattern_databases(make_shared<PDBCollection>()),
-      max_cliques(nullptr),
+      max_additive_subsets(nullptr),
       size(0) {
     Timer timer;
     pattern_databases->reserve(intitial_patterns.size());
     for (const Pattern &pattern : intitial_patterns)
         add_pdb_for_pattern(pattern);
     are_additive = compute_additive_vars(task_proxy);
-    recompute_max_cliques();
+    recompute_max_additive_subsets();
     cout << "PDB collection construction time: " << timer << endl;
 }
 
@@ -33,20 +33,20 @@ void IncrementalCanonicalPDBs::add_pdb_for_pattern(const Pattern &pattern) {
 
 void IncrementalCanonicalPDBs::add_pattern(const Pattern &pattern) {
     add_pdb_for_pattern(pattern);
-    recompute_max_cliques();
+    recompute_max_additive_subsets();
 }
 
-void IncrementalCanonicalPDBs::recompute_max_cliques() {
-    max_cliques = compute_max_pdb_cliques(*pattern_databases, are_additive);
+void IncrementalCanonicalPDBs::recompute_max_additive_subsets() {
+    max_additive_subsets = compute_max_additive_subsets(*pattern_databases, are_additive);
 }
 
 MaxAdditivePDBSubsets IncrementalCanonicalPDBs::get_max_additive_subsets(
     const Pattern &new_pattern) {
-    return ::get_max_additive_subsets(*max_cliques, new_pattern, are_additive);
+    return ::compute_max_additive_subsets_with_pattern(*max_additive_subsets, new_pattern, are_additive);
 }
 
 int IncrementalCanonicalPDBs::get_value(const State &state) const {
-    CanonicalPDBs canonical_pdbs(pattern_databases, max_cliques, false);
+    CanonicalPDBs canonical_pdbs(pattern_databases, max_additive_subsets, false);
     return canonical_pdbs.get_value(state);
 }
 
