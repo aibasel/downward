@@ -8,17 +8,20 @@
 #include <memory>
 
 
-// TODO issue585: better documentation
 /*
-  The main goal of this class is to "transport" patterns, PDBs and PDB-cliques
-  from one class to another. It uses shared pointers, so its users can extract
-  the information they want, and then destroy the PatternCollection.
-  Missing information (PDBs, cliques) is computed on demand.
+  This class contains everything we know about a pattern collection. It will
+  always contain patterns, but can also contain the computed PDBs and maximal
+  additive subsets of the PDBs. If one of the latter is not available, then
+  this information is created when it is requested.
+  Ownership of the information is shared between the creators of this class
+  (usually PatternCollectionGenerators), the class itself, and its users
+  (consumers of pattern collections like heuristics).
+
   Class invariants:
     * All patterns are sorted.
     * The list of patterns is sorted and non-null.
-    * If cliques is non-null, then pdbs is non-null.
-    * The shared pointers used in cliques are shared with pdbs.
+    * If max_additive_subsets is non-null, then pdbs is non-null.
+    * The shared pointers used in max_additive_subsets are shared with pdbs.
 */
 class PatternCollectionInformation {
     std::shared_ptr<AbstractTask> task;
