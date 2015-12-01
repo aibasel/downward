@@ -319,24 +319,24 @@ fast_downward_plugin(
     SOURCES
         pdbs/canonical_pdbs.cc
         pdbs/canonical_pdbs_heuristic.cc
-        pdbs/dominance_pruner.cc
+        pdbs/dominance_pruning.cc
         pdbs/incremental_canonical_pdbs.cc
         pdbs/match_tree.cc
         pdbs/max_cliques.cc
-        pdbs/pattern_collection.cc
+        pdbs/pattern_collection_information.cc
         pdbs/pattern_database.cc
-        pdbs/pattern_generation_combo.cc
-        pdbs/pattern_generation_edelkamp.cc
-        pdbs/pattern_generation_haslum.cc
-        pdbs/pattern_generation_manual.cc
-        pdbs/pattern_generation_single_greedy.cc
-        pdbs/pattern_generation_single_manual.cc
-        pdbs/pattern_generation_systematic.cc
+        pdbs/pattern_collection_generator_combo.cc
+        pdbs/pattern_collection_generator_genetic.cc
+        pdbs/pattern_collection_generator_hillclimbing.cc
+        pdbs/pattern_collection_generator_manual.cc
+        pdbs/pattern_collection_generator_systematic.cc
+        pdbs/pattern_generator_greedy.cc
+        pdbs/pattern_generator_manual.cc
         pdbs/pattern_generator.cc
         pdbs/pdb_heuristic.cc
         pdbs/pdb_max_cliques.cc
         pdbs/types.cc
-        pdbs/util.cc
+        pdbs/validation.cc
         pdbs/zero_one_pdbs.cc
         pdbs/zero_one_pdbs_heuristic.cc
 )

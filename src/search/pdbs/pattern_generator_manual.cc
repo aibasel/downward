@@ -1,6 +1,6 @@
-#include "pattern_generation_single_manual.h"
+#include "pattern_generator_manual.h"
 
-#include "util.h"
+#include "validation.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"

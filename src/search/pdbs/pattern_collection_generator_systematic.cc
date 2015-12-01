@@ -1,6 +1,6 @@
-#include "pattern_generation_systematic.h"
+#include "pattern_collection_generator_systematic.h"
 
-#include "util.h"
+#include "validation.h"
 
 #include "../causal_graph.h"
 #include "../option_parser.h"
