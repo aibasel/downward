@@ -187,7 +187,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
 
     for (auto &subset : max_additive_subsets) {
         int h_subset = 0;
-        for (const auto &additive_pdb : subset) {
+        for (const shared_ptr<PatternDatabase> &additive_pdb : subset) {
             /* Experiments showed that it is faster to recompute the
                h values than to cache them in an unordered_map. */
             int h = additive_pdb->get_value(sample);
@@ -315,7 +315,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
         /* Generate initial candidate patterns (based on each pattern from
            the initial collection). */
         PatternCollection initial_candidate_patterns;
-        for (const auto &current_pdb :
+        for (const shared_ptr<PatternDatabase> &current_pdb :
              *(current_pdbs->get_pattern_databases())) {
             generate_candidate_patterns(
                 task_proxy, *current_pdb, initial_candidate_patterns);

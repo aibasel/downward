@@ -46,7 +46,7 @@ int ZeroOnePDBs::get_value(const State &state) const {
       heuristic values of all patterns in the pattern collection.
     */
     int h_val = 0;
-    for (const auto &pdb : pattern_databases) {
+    for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
         int pdb_value = pdb->get_value(state);
         if (pdb_value == numeric_limits<int>::max())
             return numeric_limits<int>::max();
@@ -57,14 +57,14 @@ int ZeroOnePDBs::get_value(const State &state) const {
 
 double ZeroOnePDBs::compute_approx_mean_finite_h() const {
     double approx_mean_finite_h = 0;
-    for (const auto &pdb : pattern_databases) {
+    for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
         approx_mean_finite_h += pdb->compute_mean_finite_h();
     }
     return approx_mean_finite_h;
 }
 
 void ZeroOnePDBs::dump() const {
-    for (const auto &pdb : pattern_databases) {
+    for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
         cout << pdb->get_pattern() << endl;
     }
 }

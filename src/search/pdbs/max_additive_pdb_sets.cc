@@ -82,7 +82,7 @@ MaxAdditivePDBSubsets compute_max_additive_subsets_with_pattern(
         // Take all patterns which are additive to new_pattern.
         PDBCollection new_subset;
         new_subset.reserve(known_subset.size());
-        for (const auto &pdb : known_subset) {
+        for (const shared_ptr<PatternDatabase> &pdb : known_subset) {
             if (are_patterns_additive(
                     new_pattern, pdb->get_pattern(), are_additive)) {
                 new_subset.push_back(pdb);

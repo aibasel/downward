@@ -29,7 +29,7 @@ int CanonicalPDBs::get_value(const State &state) const {
     int max_h = 0;
     for (const auto &subset : *max_additive_subsets) {
         int subset_h = 0;
-        for (const auto &pdb : subset) {
+        for (const shared_ptr<PatternDatabase> &pdb : subset) {
             /* Experiments showed that it is faster to recompute the
                h values than to cache them in an unordered_map. */
             int h = pdb->get_value(state);

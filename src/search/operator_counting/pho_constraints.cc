@@ -33,7 +33,7 @@ void PhOConstraints::initialize_constraints(
     pdbs = patterns.get_pdbs();
     TaskProxy task_proxy(*task);
     constraint_offset = constraints.size();
-    for (const auto &pdb : *pdbs) {
+    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
         constraints.emplace_back(0, infinity);
         LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {

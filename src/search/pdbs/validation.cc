@@ -43,7 +43,7 @@ void validate_and_normalize_patterns(const TaskProxy &task_proxy,
       - Sort collection lexicographically and remove duplicate patterns.
       - Warn if duplicate patterns exist.
     */
-    for (auto &pattern : patterns)
+    for (Pattern &pattern : patterns)
         validate_and_normalize_pattern(task_proxy, pattern);
     sort(patterns.begin(), patterns.end());
     auto it = unique(patterns.begin(), patterns.end());
