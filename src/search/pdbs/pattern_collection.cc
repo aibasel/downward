@@ -1,5 +1,6 @@
 #include "pattern_collection.h"
 
+#include "dominance_pruner.h"
 #include "pattern_database.h"
 #include "pdb_max_cliques.h"
 #include "util.h"
@@ -11,24 +12,24 @@
 
 using namespace std;
 
-PatternCollection::PatternCollection(shared_ptr<AbstractTask> task,
-                                     shared_ptr<Patterns> patterns)
+PatternCollectionInformation::PatternCollectionInformation(shared_ptr<AbstractTask> task,
+                                     shared_ptr<PatternCollection> patterns)
     : task(task),
       task_proxy(*task),
       patterns(patterns),
       pdbs(nullptr),
-      cliques(nullptr) {
+      max_additive_subsets(nullptr) {
     assert(patterns);
     validate_and_normalize_patterns(task_proxy, *patterns);
 }
 
-PatternCollection::PatternCollection(shared_ptr<AbstractTask> task,
-                                     shared_ptr<PDBCliques> cliques)
+PatternCollectionInformation::PatternCollectionInformation(shared_ptr<AbstractTask> task,
+                                     shared_ptr<MaxAdditivePDBSubsets> cliques)
     : task(task),
       task_proxy(*task),
-      patterns(make_shared<Patterns>()),
+      patterns(make_shared<PatternCollection>()),
       pdbs(make_shared<PDBCollection>()),
-      cliques(cliques) {
+      max_additive_subsets(cliques) {
     assert(cliques);
     using PatternPDBPair = pair<Pattern, shared_ptr<PatternDatabase>>;
     vector<PatternPDBPair> patterns_and_pdbs;
@@ -36,15 +37,12 @@ PatternCollection::PatternCollection(shared_ptr<AbstractTask> task,
     for (const auto &clique : *cliques) {
         for (const auto &pdb : clique) {
             Pattern pattern = pdb->get_pattern();
-            // We assume that there are no two different PDBs with the same Pattern.
-            // TODO issue585: should we test for the implicit assumption above?
+            /*
+              We use the invariant that there are no two different PDBs with
+              the same pattern (since lists of patterns are sorted and unique).
+            */
             if (known_patterns.count(pattern) == 0) {
                 known_patterns.insert(pattern);
-                /* TODO issue585: Do we have to validate/normalize the pattern
-                   here? Since it comes from a PDB, it should already be
-                   normalized, but we don't know if it comes from the correct
-                   task. */
-                validate_and_normalize_pattern(task_proxy, pattern);
                 patterns_and_pdbs.push_back(make_pair(pattern, pdb));
             }
         }
@@ -61,7 +59,7 @@ PatternCollection::PatternCollection(shared_ptr<AbstractTask> task,
     }
 }
 
-void PatternCollection::create_pdbs_if_missing() {
+void PatternCollectionInformation::create_pdbs_if_missing() {
     assert(patterns);
     if (!pdbs) {
         pdbs = make_shared<PDBCollection>();
@@ -73,25 +71,25 @@ void PatternCollection::create_pdbs_if_missing() {
     }
 }
 
-void PatternCollection::create_cliques_if_missing() {
+void PatternCollectionInformation::create_max_additive_subsets_if_missing() {
     create_pdbs_if_missing();
     assert(pdbs);
-    if (!cliques) {
+    if (!max_additive_subsets) {
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
-        cliques = compute_max_pdb_cliques(*pdbs, are_additive);
+        max_additive_subsets = compute_max_pdb_cliques(*pdbs, are_additive);
     }
 }
 
-shared_ptr<Patterns> PatternCollection::get_patterns() {
+shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() {
     return patterns;
 }
 
-shared_ptr<PDBCollection> PatternCollection::get_pdbs() {
+shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs() {
     create_pdbs_if_missing();
     return pdbs;
 }
 
-shared_ptr<PDBCliques> PatternCollection::get_cliques() {
-    create_cliques_if_missing();
-    return cliques;
+shared_ptr<MaxAdditivePDBSubsets> PatternCollectionInformation::get_max_additive_subsets() {
+    create_max_additive_subsets_if_missing();
+    return max_additive_subsets;
 }

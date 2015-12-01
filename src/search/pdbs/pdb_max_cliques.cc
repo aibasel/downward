@@ -37,7 +37,7 @@ VariableAdditivity compute_additive_vars(TaskProxy task_proxy) {
     return are_additive;
 }
 
-shared_ptr<PDBCliques> compute_max_pdb_cliques(
+shared_ptr<MaxAdditivePDBSubsets> compute_max_pdb_cliques(
     const PDBCollection &pdbs, const VariableAdditivity &are_additive) {
     // Initialize compatibility graph.
     vector<vector<int>> cgraph;
@@ -59,7 +59,7 @@ shared_ptr<PDBCliques> compute_max_pdb_cliques(
     vector<vector<int>> cgraph_max_cliques;
     compute_max_cliques(cgraph, cgraph_max_cliques);
 
-    shared_ptr<PDBCliques> max_cliques = make_shared<PDBCliques>();
+    shared_ptr<MaxAdditivePDBSubsets> max_cliques = make_shared<MaxAdditivePDBSubsets>();
     max_cliques->reserve(cgraph_max_cliques.size());
     for (const vector<int> &cgraph_max_clique : cgraph_max_cliques) {
         PDBCollection clique;
@@ -72,10 +72,10 @@ shared_ptr<PDBCliques> compute_max_pdb_cliques(
     return max_cliques;
 }
 
-PDBCliques get_max_additive_subsets(
-    const PDBCliques &max_cliques, const Pattern &new_pattern,
+MaxAdditivePDBSubsets get_max_additive_subsets(
+    const MaxAdditivePDBSubsets &max_cliques, const Pattern &new_pattern,
     const VariableAdditivity &are_additive) {
-    PDBCliques max_additive_subsets;
+    MaxAdditivePDBSubsets max_additive_subsets;
     for (const auto &clique : max_cliques) {
         // Take all patterns which are additive to new_pattern.
         PDBCollection subset;

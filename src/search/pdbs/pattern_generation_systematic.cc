@@ -42,13 +42,13 @@ static void compute_union_pattern(
 }
 
 
-PatternGenerationSystematic::PatternGenerationSystematic(
+PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
     const Options &opts)
     : max_pattern_size(opts.get<int>("pattern_max_size")),
       only_interesting_patterns(opts.get<bool>("only_interesting_patterns")) {
 }
 
-void PatternGenerationSystematic::compute_eff_pre_neighbors(
+void PatternCollectionGeneratorSystematic::compute_eff_pre_neighbors(
     const CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
     /*
       Compute all variables that are reachable from pattern by an
@@ -70,7 +70,7 @@ void PatternGenerationSystematic::compute_eff_pre_neighbors(
     result.assign(candidates.begin(), candidates.end());
 }
 
-void PatternGenerationSystematic::compute_connection_points(
+void PatternCollectionGeneratorSystematic::compute_connection_points(
     const CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
     /*
       The "connection points" of a pattern are those variables of which
@@ -110,12 +110,12 @@ void PatternGenerationSystematic::compute_connection_points(
     result.assign(candidates.begin(), candidates.end());
 }
 
-void PatternGenerationSystematic::enqueue_pattern_if_new(const Pattern &pattern) {
+void PatternCollectionGeneratorSystematic::enqueue_pattern_if_new(const Pattern &pattern) {
     if (pattern_set.insert(pattern).second)
         patterns->push_back(pattern);
 }
 
-void PatternGenerationSystematic::build_sga_patterns(TaskProxy task_proxy,
+void PatternCollectionGeneratorSystematic::build_sga_patterns(TaskProxy task_proxy,
                                                      const CausalGraph &cg) {
     assert(max_pattern_size >= 1);
     assert(pattern_set.empty());
@@ -168,7 +168,7 @@ void PatternGenerationSystematic::build_sga_patterns(TaskProxy task_proxy,
     pattern_set.clear();
 }
 
-void PatternGenerationSystematic::build_patterns(TaskProxy task_proxy) {
+void PatternCollectionGeneratorSystematic::build_patterns(TaskProxy task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     const CausalGraph &cg = task_proxy.get_causal_graph();
 
@@ -176,7 +176,7 @@ void PatternGenerationSystematic::build_patterns(TaskProxy task_proxy) {
     // They are generated into the patterns variable,
     // so we swap them from there.
     build_sga_patterns(task_proxy, cg);
-    Patterns sga_patterns;
+    PatternCollection sga_patterns;
     patterns->swap(sga_patterns);
 
     /* Index the SGA patterns by variable.
@@ -230,10 +230,10 @@ void PatternGenerationSystematic::build_patterns(TaskProxy task_proxy) {
     cout << "Found " << patterns->size() << " interesting patterns." << endl;
 }
 
-void PatternGenerationSystematic::build_patterns_naive(TaskProxy task_proxy) {
+void PatternCollectionGeneratorSystematic::build_patterns_naive(TaskProxy task_proxy) {
     int num_variables = task_proxy.get_variables().size();
-    Patterns current_patterns(1);
-    Patterns next_patterns;
+    PatternCollection current_patterns(1);
+    PatternCollection next_patterns;
     for (size_t i = 0; i < max_pattern_size; ++i) {
         for (const Pattern &current_pattern : current_patterns) {
             int max_var = -1;
@@ -253,10 +253,10 @@ void PatternGenerationSystematic::build_patterns_naive(TaskProxy task_proxy) {
     cout << "Found " << patterns->size() << " patterns." << endl;
 }
 
-PatternCollection PatternGenerationSystematic::generate(
+PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
-    patterns = make_shared<Patterns>();
+    patterns = make_shared<PatternCollection>();
     pattern_set.clear();
     if (only_interesting_patterns) {
         build_patterns(task_proxy);
@@ -264,7 +264,7 @@ PatternCollection PatternGenerationSystematic::generate(
         build_patterns_naive(task_proxy);
     }
     validate_and_normalize_patterns(task_proxy, *patterns);
-    return PatternCollection(task, patterns);
+    return PatternCollectionInformation(task, patterns);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
@@ -295,7 +295,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return make_shared<PatternGenerationSystematic>(opts);
+    return make_shared<PatternCollectionGeneratorSystematic>(opts);
 }
 
 static PluginShared<PatternCollectionGenerator> _plugin("systematic", _parse);

@@ -17,12 +17,12 @@ class TaskProxy;
 
 
 // Invariant: patterns are always sorted.
-class PatternGenerationSystematic : public PatternCollectionGenerator {
+class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
     using PatternSet = std::unordered_set<Pattern>;
 
     const size_t max_pattern_size;
     const bool only_interesting_patterns;
-    std::shared_ptr<Patterns> patterns;
+    std::shared_ptr<PatternCollection> patterns;
     PatternSet pattern_set;  // Cleared after pattern computation.
 
     void enqueue_pattern_if_new(const Pattern &pattern);
@@ -37,10 +37,10 @@ class PatternGenerationSystematic : public PatternCollectionGenerator {
     void build_patterns(TaskProxy task_proxy);
     void build_patterns_naive(TaskProxy task_proxy);
 public:
-    explicit PatternGenerationSystematic(const Options &opts);
-    ~PatternGenerationSystematic() = default;
+    explicit PatternCollectionGeneratorSystematic(const Options &opts);
+    ~PatternCollectionGeneratorSystematic() = default;
 
-    virtual PatternCollection generate(
+    virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
 

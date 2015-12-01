@@ -19,16 +19,15 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
     Timer timer;
-    PatternCollection pattern_collection = pattern_generator->generate(task);
+    PatternCollectionInformation pattern_collection =
+        pattern_generator->generate(task);
     shared_ptr<PDBCollection> pattern_databases = pattern_collection.get_pdbs();
-    shared_ptr<PDBCliques> max_cliques = pattern_collection.get_cliques();
+    shared_ptr<MaxAdditivePDBSubsets> max_cliques =
+        pattern_collection.get_max_additive_subsets();
     cout << "PDB collection construction time: " << timer << endl;
 
-    CanonicalPDBs canonical_pdbs(pattern_databases, max_cliques);
-    if (opts.get<bool>("dominance_pruning")) {
-        canonical_pdbs.dominance_pruning();
-    }
-    return canonical_pdbs;
+    bool dominance_pruning = opts.get<bool>("dominance_pruning");
+    return CanonicalPDBs(pattern_databases, max_cliques, dominance_pruning);
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const Options &opts)

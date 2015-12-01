@@ -2,20 +2,22 @@
 
 #include "pattern_database.h"
 
+#include "../timer.h"
+#include "../utilities_hash.h"
+
 #include <algorithm>
+#include <cassert>
+#include <unordered_set>
+#include <utility>
 #include <vector>
 
 using namespace std;
 
+using PDBRelation = unordered_set<pair<PatternDatabase *, PatternDatabase *>>;
 
-DominancePruner::DominancePruner(PDBCollection &pattern_databases,
-                                 PDBCliques &max_cliques)
-    : pattern_databases(pattern_databases),
-      max_cliques(max_cliques) {
-}
 
-void DominancePruner::compute_superset_relation() {
-    superset_relation.clear();
+PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {
+    PDBRelation superset_relation;
     for (const auto &pdb1 : pattern_databases) {
         const Pattern &pattern1 = pdb1->get_pattern();
         for (const auto &pdb2 : pattern_databases) {
@@ -26,32 +28,21 @@ void DominancePruner::compute_superset_relation() {
                 superset_relation.insert(make_pair(pdb1.get(), pdb2.get()));
                 /*
                   If we already added the inverse tuple to the relation, the
-                  PDBs use the same pattern and we only need one of them.
-                  This should not happen, but in case it does we can easily fix
-                  it by replacing one of the PDBs in all cliques that use it.
+                  PDBs use the same pattern, which violates the invariant that
+                  lists of patterns are sorted and unique.
                 */
-                if (superset_relation.count(make_pair(pdb2.get(),
-                                                      pdb1.get()))) {
-                    replace_pdb(pdb2, pdb1);
-                }
+                assert(pdb1 == pdb2 ||
+                       superset_relation.count(make_pair(pdb2.get(),
+                                                         pdb1.get())) == 0);
             }
         }
     }
+    return superset_relation;
 }
 
-void DominancePruner::replace_pdb(shared_ptr<PatternDatabase> old_pdb,
-                                  shared_ptr<PatternDatabase> new_pdb) {
-    for (auto &collection : max_cliques) {
-        for (size_t p_id = 0; p_id < collection.size(); ++p_id) {
-            if (collection[p_id] == old_pdb) {
-                collection[p_id] = new_pdb;
-            }
-        }
-    }
-}
-
-bool DominancePruner::clique_dominates(const PDBCollection &superset,
-                                       const PDBCollection &subset) {
+bool collection_dominates(const PDBCollection &superset,
+                      const PDBCollection &subset,
+                      const PDBRelation &superset_relation) {
     for (const auto &p_subset : subset) {
         // Assume there is no superset until we found one.
         bool found_superset = false;
@@ -69,49 +60,65 @@ bool DominancePruner::clique_dominates(const PDBCollection &superset,
     return true;
 }
 
-void DominancePruner::prune() {
-    PDBCliques remaining_cliques;
+shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
+    const PDBCollection &pattern_databases,
+    const MaxAdditivePDBSubsets &max_additive_subsets) {
+    Timer timer;
+    int num_patterns = pattern_databases.size();
+    int num_additive_subsets = max_additive_subsets.size();
+
+
+    shared_ptr<MaxAdditivePDBSubsets> nondominated_subsets =
+        make_shared<MaxAdditivePDBSubsets>();
     /*
       Remember which cliques are already removed and don't use them to prune
       other cliques. This prevents removing both copies of a clique that occurs
       twice.
     */
-    vector<bool> clique_removed(max_cliques.size(), false);
-    unordered_set<shared_ptr<PatternDatabase>> remaining_heuristics;
+    vector<bool> subset_removed(num_additive_subsets, false);
 
-    compute_superset_relation();
+    PDBRelation superset_relation = compute_superset_relation(pattern_databases);
     // Check all pairs of cliques for dominance.
-    for (size_t c1_id = 0; c1_id < max_cliques.size(); ++c1_id) {
-        PDBCollection &c1 = max_cliques[c1_id];
+    for (int c1_id = 0; c1_id < num_additive_subsets; ++c1_id) {
+        const PDBCollection &c1 = max_additive_subsets[c1_id];
         /*
           Clique c1 is useful if it is not dominated by any clique c2.
           Assume that it is useful and set it to false if any dominating
           clique is found.
         */
         bool c1_is_useful = true;
-        for (size_t c2_id = 0; c2_id < max_cliques.size(); ++c2_id) {
-            if (c1_id == c2_id || clique_removed[c2_id]) {
+        for (int c2_id = 0; c2_id < num_additive_subsets; ++c2_id) {
+            if (c1_id == c2_id || subset_removed[c2_id]) {
                 continue;
             }
-            PDBCollection &c2 = max_cliques[c2_id];
+            const PDBCollection &c2 = max_additive_subsets[c2_id];
 
-            if (clique_dominates(c2, c1)) {
+            if (collection_dominates(c2, c1, superset_relation)) {
                 c1_is_useful = false;
                 break;
             }
         }
         if (c1_is_useful) {
-            remaining_cliques.push_back(c1);
-            for (const auto &pdb : c1) {
-                remaining_heuristics.insert(pdb);
-            }
+            nondominated_subsets->push_back(c1);
         } else {
-            clique_removed[c1_id] = true;
+            subset_removed[c1_id] = true;
         }
     }
-    /* TODO issue585: this does not maintain the invariant that lists of
-       patterns are sorted. Should we sort the list before returning? */
-    pattern_databases = PDBCollection(remaining_heuristics.begin(),
-                                      remaining_heuristics.end());
-    max_cliques.swap(remaining_cliques);
+
+    cout << "Pruned " << num_additive_subsets - nondominated_subsets->size() <<
+        " of " << num_additive_subsets << " cliques" << endl;
+
+    unordered_set<PatternDatabase *> remaining_pdbs;
+    for (const PDBCollection &collection : *nondominated_subsets) {
+        for (const shared_ptr<PatternDatabase> &pdb : collection) {
+            remaining_pdbs.insert(pdb.get());
+        }
+    }
+    cout << "Pruned " << num_patterns - remaining_pdbs.size() <<
+        " of " << num_patterns << " PDBs" << endl;
+
+    cout << "Dominance pruning took " << timer << endl;
+
+    return nondominated_subsets;
 }
+

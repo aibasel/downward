@@ -9,18 +9,18 @@
 class TaskProxy;
 using VariableAdditivity = std::vector<std::vector<bool>>;
 
-VariableAdditivity compute_additive_vars(TaskProxy task_proxy);
+extern VariableAdditivity compute_additive_vars(TaskProxy task_proxy);
 
 /* Returns true iff the two patterns are additive i.e. there is no operator
    which affects variables in pattern one as well as in pattern two. */
-bool are_patterns_additive(const Pattern &pattern1,
+extern bool are_patterns_additive(const Pattern &pattern1,
                            const Pattern &pattern2,
                            const VariableAdditivity &are_additive);
 
 /*
   Computes maximal additive subsets of patterns.
 */
-std::shared_ptr<PDBCliques> compute_max_pdb_cliques(
+extern std::shared_ptr<MaxAdditivePDBSubsets> compute_max_pdb_cliques(
     const PDBCollection &pdbs, const VariableAdditivity &are_additive);
 
 /*
@@ -68,8 +68,8 @@ std::shared_ptr<PDBCliques> compute_max_pdb_cliques(
   (old_max_cliques \setminus G_N_cliques) and all
   "new" cliques including P.
   */
-PDBCliques get_max_additive_subsets(
-    const PDBCliques &max_cliques,
+extern MaxAdditivePDBSubsets get_max_additive_subsets(
+    const MaxAdditivePDBSubsets &max_cliques,
     const Pattern &new_pattern,
     const VariableAdditivity &are_additive);
 

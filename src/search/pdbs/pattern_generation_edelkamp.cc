@@ -18,7 +18,7 @@
 
 using namespace std;
 
-PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
+PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
@@ -26,7 +26,7 @@ PatternGenerationEdelkamp::PatternGenerationEdelkamp(const Options &opts)
       disjoint_patterns(opts.get<bool>("disjoint")) {
 }
 
-void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
+void PatternCollectionGeneratorGenetic::select(const vector<double> &fitness_values) {
     vector<double> cumulative_fitness;
     cumulative_fitness.reserve(fitness_values.size());
     double total_so_far = 0;
@@ -56,7 +56,7 @@ void PatternGenerationEdelkamp::select(const vector<double> &fitness_values) {
     pattern_collections.swap(new_pattern_collections);
 }
 
-void PatternGenerationEdelkamp::mutate() {
+void PatternCollectionGeneratorGenetic::mutate() {
     for (auto &collection : pattern_collections) {
         for (vector<bool> &pattern : collection) {
             for (size_t k = 0; k < pattern.size(); ++k) {
@@ -69,7 +69,7 @@ void PatternGenerationEdelkamp::mutate() {
     }
 }
 
-Pattern PatternGenerationEdelkamp::transform_to_pattern_normal_form(
+Pattern PatternCollectionGeneratorGenetic::transform_to_pattern_normal_form(
     const vector<bool> &bitvector) const {
     Pattern pattern;
     for (size_t i = 0; i < bitvector.size(); ++i) {
@@ -79,7 +79,7 @@ Pattern PatternGenerationEdelkamp::transform_to_pattern_normal_form(
     return pattern;
 }
 
-void PatternGenerationEdelkamp::remove_irrelevant_variables(
+void PatternCollectionGeneratorGenetic::remove_irrelevant_variables(
     TaskProxy task_proxy, Pattern &pattern) const {
     unordered_set<int> in_original_pattern(pattern.begin(), pattern.end());
     unordered_set<int> in_pruned_pattern;
@@ -120,7 +120,7 @@ void PatternGenerationEdelkamp::remove_irrelevant_variables(
     sort(pattern.begin(), pattern.end());
 }
 
-bool PatternGenerationEdelkamp::is_pattern_too_large(
+bool PatternCollectionGeneratorGenetic::is_pattern_too_large(
     VariablesProxy variables, const Pattern &pattern) const {
     // Test if the pattern respects the memory limit.
     int mem = 1;
@@ -134,7 +134,7 @@ bool PatternGenerationEdelkamp::is_pattern_too_large(
     return false;
 }
 
-bool PatternGenerationEdelkamp::mark_used_variables(
+bool PatternCollectionGeneratorGenetic::mark_used_variables(
     const Pattern &pattern, vector<bool> &variables_used) const {
     for (size_t i = 0; i < pattern.size(); ++i) {
         int var_id = pattern[i];
@@ -145,7 +145,7 @@ bool PatternGenerationEdelkamp::mark_used_variables(
     return false;
 }
 
-void PatternGenerationEdelkamp::evaluate(shared_ptr<AbstractTask> task,
+void PatternCollectionGeneratorGenetic::evaluate(shared_ptr<AbstractTask> task,
                                          vector<double> &fitness_values) {
     TaskProxy task_proxy(*task);
     for (const auto &collection : pattern_collections) {
@@ -154,7 +154,7 @@ void PatternGenerationEdelkamp::evaluate(shared_ptr<AbstractTask> task,
         double fitness = 0;
         bool pattern_valid = true;
         vector<bool> variables_used(task_proxy.get_variables().size(), false);
-        shared_ptr<Patterns> pattern_collection = make_shared<Patterns>();
+        shared_ptr<PatternCollection> pattern_collection = make_shared<PatternCollection>();
         pattern_collection->reserve(collection.size());
         for (const vector<bool> &bitvector : collection) {
             Pattern pattern = transform_to_pattern_normal_form(bitvector);
@@ -197,7 +197,7 @@ void PatternGenerationEdelkamp::evaluate(shared_ptr<AbstractTask> task,
     }
 }
 
-void PatternGenerationEdelkamp::bin_packing(VariablesProxy variables) {
+void PatternCollectionGeneratorGenetic::bin_packing(VariablesProxy variables) {
     vector<int> variable_ids;
     variable_ids.reserve(variables.size());
     for (size_t i = 0; i < variables.size(); ++i) {
@@ -241,7 +241,7 @@ void PatternGenerationEdelkamp::bin_packing(VariablesProxy variables) {
     }
 }
 
-void PatternGenerationEdelkamp::genetic_algorithm(shared_ptr<AbstractTask> task) {
+void PatternCollectionGeneratorGenetic::genetic_algorithm(shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     best_fitness = -1;
     best_patterns = nullptr;
@@ -265,7 +265,7 @@ void PatternGenerationEdelkamp::genetic_algorithm(shared_ptr<AbstractTask> task)
     }
 }
 
-PatternCollection PatternGenerationEdelkamp::generate(
+PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     shared_ptr<AbstractTask> task) {
     Timer timer;
     genetic_algorithm(task);
@@ -273,7 +273,7 @@ PatternCollection PatternGenerationEdelkamp::generate(
     assert(best_patterns);
     TaskProxy task_proxy(*task);
     validate_and_normalize_patterns(task_proxy, *best_patterns);
-    return PatternCollection(task, best_patterns);
+    return PatternCollectionInformation(task, best_patterns);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
@@ -361,7 +361,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return 0;
 
-    return make_shared<PatternGenerationEdelkamp>(opts);
+    return make_shared<PatternCollectionGeneratorGenetic>(opts);
 }
 
 static PluginShared<PatternCollectionGenerator> _plugin("genetic", _parse);

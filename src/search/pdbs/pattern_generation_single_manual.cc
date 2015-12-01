@@ -11,11 +11,11 @@
 using namespace std;
 
 
-PatternGenerationSingleManual::PatternGenerationSingleManual(const Options &opts)
+PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
     : pattern(opts.get_list<int>("pattern")) {
 }
 
-Pattern PatternGenerationSingleManual::generate(shared_ptr<AbstractTask> task) {
+Pattern PatternGeneratorManual::generate(shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     validate_and_normalize_pattern(task_proxy, pattern);
     cout << "Manual pattern: " << pattern << endl;
@@ -33,7 +33,7 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return make_shared<PatternGenerationSingleManual>(opts);
+    return make_shared<PatternGeneratorManual>(opts);
 }
 
 static PluginShared<PatternGenerator> _plugin("manual", _parse);

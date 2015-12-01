@@ -10,7 +10,7 @@ class AbstractTask;
 
 class PatternCollectionGenerator {
 public:
-    virtual PatternCollection generate(std::shared_ptr<AbstractTask> task) = 0;
+    virtual PatternCollectionInformation generate(std::shared_ptr<AbstractTask> task) = 0;
 };
 
 class PatternGenerator {

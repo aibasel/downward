@@ -18,7 +18,7 @@ class VariablesProxy;
   Heuristics. Proceedings of the 4th Workshop on Model Checking and
   Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007.
 */
-class PatternGenerationEdelkamp : public PatternCollectionGenerator {
+class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     // Maximum number of states for each pdb
     const int pdb_max_size;
     const int num_collections;
@@ -31,7 +31,7 @@ class PatternGenerationEdelkamp : public PatternCollectionGenerator {
     std::vector<std::vector<std::vector<bool>>> pattern_collections;
 
     // Store best pattern collection over all episodes and its fitness value.
-    std::shared_ptr<Patterns> best_patterns;
+    std::shared_ptr<PatternCollection> best_patterns;
     double best_fitness;
 
     /*
@@ -106,10 +106,10 @@ class PatternGenerationEdelkamp : public PatternCollectionGenerator {
     */
     void genetic_algorithm(std::shared_ptr<AbstractTask> task);
 public:
-    PatternGenerationEdelkamp(const Options &opts);
-    virtual ~PatternGenerationEdelkamp() = default;
+    PatternCollectionGeneratorGenetic(const Options &opts);
+    virtual ~PatternCollectionGeneratorGenetic() = default;
 
-    virtual PatternCollection generate(
+    virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
 

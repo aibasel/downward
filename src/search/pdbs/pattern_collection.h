@@ -8,6 +8,7 @@
 #include <memory>
 
 
+// TODO issue585: better documentation
 /*
   The main goal of this class is to "transport" patterns, PDBs and PDB-cliques
   from one class to another. It uses shared pointers, so its users can extract
@@ -19,28 +20,27 @@
     * If cliques is non-null, then pdbs is non-null.
     * The shared pointers used in cliques are shared with pdbs.
 */
-// TODO issue585: better name for this class?
-class PatternCollection {
+class PatternCollectionInformation {
     std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
-    std::shared_ptr<Patterns> patterns;
+    std::shared_ptr<PatternCollection> patterns;
     std::shared_ptr<PDBCollection> pdbs;
-    std::shared_ptr<PDBCliques> cliques;
+    std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
 
     void create_pdbs_if_missing();
-    void create_cliques_if_missing();
+    void create_max_additive_subsets_if_missing();
 public:
-    PatternCollection(
+    PatternCollectionInformation(
         std::shared_ptr<AbstractTask> task,
-        std::shared_ptr<Patterns> patterns);
-    PatternCollection(
+        std::shared_ptr<PatternCollection> patterns);
+    PatternCollectionInformation(
         std::shared_ptr<AbstractTask> task,
-        std::shared_ptr<PDBCliques> cliques);
-    ~PatternCollection() = default;
+        std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets);
+    ~PatternCollectionInformation() = default;
 
-    std::shared_ptr<Patterns> get_patterns();
+    std::shared_ptr<PatternCollection> get_patterns();
     std::shared_ptr<PDBCollection> get_pdbs();
-    std::shared_ptr<PDBCliques> get_cliques();
+    std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets();
 };
 
 #endif
