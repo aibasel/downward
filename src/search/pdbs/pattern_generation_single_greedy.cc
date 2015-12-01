@@ -12,15 +12,15 @@
 using namespace std;
 
 
-PatternGenerationSingleGreedy::PatternGenerationSingleGreedy(const Options &opts)
-    : PatternGenerationSingleGreedy(opts.get<int>("max_states")) {
+PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
+    : PatternGeneratorGreedy(opts.get<int>("max_states")) {
 }
 
-PatternGenerationSingleGreedy::PatternGenerationSingleGreedy(int max_states)
+PatternGeneratorGreedy::PatternGeneratorGreedy(int max_states)
     : max_states(max_states) {
 }
 
-Pattern PatternGenerationSingleGreedy::generate(shared_ptr<AbstractTask> task) {
+Pattern PatternGeneratorGreedy::generate(shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     Pattern pattern;
     VariableOrderFinder order(task, GOAL_CG_LEVEL);
@@ -57,7 +57,7 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return make_shared<PatternGenerationSingleGreedy>(opts);
+    return make_shared<PatternGeneratorGreedy>(opts);
 }
 
 static PluginShared<PatternGenerator> _plugin("greedy", _parse);

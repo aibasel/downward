@@ -19,7 +19,7 @@ class Options;
 class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
-class PatternGenerationHaslum : public PatternCollectionGenerator {
+class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator {
     // maximum number of states for each pdb
     const int pdb_max_size;
     // maximum added size of all pdbs
@@ -43,7 +43,7 @@ class PatternGenerationHaslum : public PatternCollectionGenerator {
     void generate_candidate_patterns(
         TaskProxy task_proxy,
         const PatternDatabase *pdb,
-        Patterns &candidate_patterns);
+        PatternCollection &candidate_patterns);
 
     /*
       Generates the PatternDatabase for patterns in new_candidates if they have
@@ -52,7 +52,7 @@ class PatternGenerationHaslum : public PatternCollectionGenerator {
     std::size_t generate_pdbs_for_candidates(
         TaskProxy task_proxy,
         std::set<Pattern> &generated_patterns,
-        Patterns &new_candidates,
+        PatternCollection &new_candidates,
         std::vector<PatternDatabase *> &candidate_pdbs) const;
 
     /*
@@ -89,7 +89,7 @@ class PatternGenerationHaslum : public PatternCollectionGenerator {
     bool is_heuristic_improved(
         PatternDatabase *pdb,
         const State &sample,
-        const PDBCliques &max_additive_subsets);
+        const MaxAdditivePDBSubsets &max_additive_subsets);
 
     /*
       This is the core algorithm of this class. As soon as after an iteration,
@@ -109,11 +109,11 @@ class PatternGenerationHaslum : public PatternCollectionGenerator {
         TaskProxy task_proxy,
         const SuccessorGenerator &successor_generator,
         double average_operator_costs,
-        Patterns &initial_candidate_patterns);
+        PatternCollection &initial_candidate_patterns);
 
 public:
-    explicit PatternGenerationHaslum(const Options &opts);
-    virtual ~PatternGenerationHaslum() = default;
+    explicit PatternCollectionGeneratorHillclimbing(const Options &opts);
+    virtual ~PatternCollectionGeneratorHillclimbing() = default;
 
     /*
       Runs the hill climbing algorithm. Note that the
@@ -121,7 +121,7 @@ public:
       variable) may break the maximum collection size limit, if the latter is
       set too small or if there are many goal variables with a large domain.
     */
-    virtual PatternCollection generate(
+    virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
 

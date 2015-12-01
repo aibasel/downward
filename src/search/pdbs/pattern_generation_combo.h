@@ -5,13 +5,13 @@
 
 /* Take one large pattern and then single-variable patterns for
    all goal variables that are not in the large pattern. */
-class PatternGenerationCombo : public PatternCollectionGenerator {
+class PatternCollectionGeneratorCombo : public PatternCollectionGenerator {
     int max_states;
 public:
-    explicit PatternGenerationCombo(const Options &opts);
-    virtual ~PatternGenerationCombo() = default;
+    explicit PatternCollectionGeneratorCombo(const Options &opts);
+    virtual ~PatternCollectionGeneratorCombo() = default;
 
-    virtual PatternCollection generate(
+    virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
 

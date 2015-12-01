@@ -8,13 +8,13 @@
 
 class Options;
 
-class PatternGenerationManual : public PatternCollectionGenerator {
-    std::shared_ptr<Patterns> patterns;
+class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
+    std::shared_ptr<PatternCollection> patterns;
 public:
-    explicit PatternGenerationManual(const Options &opts);
-    virtual ~PatternGenerationManual() = default;
+    explicit PatternCollectionGeneratorManual(const Options &opts);
+    virtual ~PatternCollectionGeneratorManual() = default;
 
-    virtual PatternCollection generate(
+    virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
 

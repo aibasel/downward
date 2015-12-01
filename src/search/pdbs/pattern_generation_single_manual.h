@@ -6,11 +6,11 @@
 
 class Options;
 
-class PatternGenerationSingleManual : public PatternGenerator {
+class PatternGeneratorManual : public PatternGenerator {
     Pattern pattern;
 public:
-    explicit PatternGenerationSingleManual(const Options &opts);
-    virtual ~PatternGenerationSingleManual() = default;
+    explicit PatternGeneratorManual(const Options &opts);
+    virtual ~PatternGeneratorManual() = default;
 
     virtual Pattern generate(std::shared_ptr<AbstractTask> task) override;
 };

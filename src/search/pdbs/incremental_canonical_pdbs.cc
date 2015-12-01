@@ -11,7 +11,7 @@
 using namespace std;
 
 IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
-    const shared_ptr<AbstractTask> task, const Patterns &intitial_patterns)
+    const shared_ptr<AbstractTask> task, const PatternCollection &intitial_patterns)
     : task(task),
       task_proxy(*task),
       pattern_databases(make_shared<PDBCollection>()),
@@ -40,13 +40,13 @@ void IncrementalCanonicalPDBs::recompute_max_cliques() {
     max_cliques = compute_max_pdb_cliques(*pattern_databases, are_additive);
 }
 
-PDBCliques IncrementalCanonicalPDBs::get_max_additive_subsets(
+MaxAdditivePDBSubsets IncrementalCanonicalPDBs::get_max_additive_subsets(
     const Pattern &new_pattern) {
     return ::get_max_additive_subsets(*max_cliques, new_pattern, are_additive);
 }
 
 int IncrementalCanonicalPDBs::get_value(const State &state) const {
-    CanonicalPDBs canonical_pdbs(pattern_databases, max_cliques);
+    CanonicalPDBs canonical_pdbs(pattern_databases, max_cliques, false);
     return canonical_pdbs.get_value(state);
 }
 

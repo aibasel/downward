@@ -37,7 +37,7 @@ void validate_and_normalize_pattern(const TaskProxy &task_proxy,
 }
 
 void validate_and_normalize_patterns(const TaskProxy &task_proxy,
-                                     Patterns &patterns) {
+                                     PatternCollection &patterns) {
     /*
       - Validate and normalize each pattern (see there).
       - Sort collection lexicographically and remove duplicate patterns.

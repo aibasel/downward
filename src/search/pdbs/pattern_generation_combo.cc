@@ -14,16 +14,16 @@
 using namespace std;
 
 
-PatternGenerationCombo::PatternGenerationCombo(const Options &opts)
+PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &opts)
     : max_states(opts.get<int>("max_states")) {
 }
 
-PatternCollection PatternGenerationCombo::generate(
+PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
-    shared_ptr<Patterns> patterns;
+    shared_ptr<PatternCollection> patterns;
 
-    PatternGenerationSingleGreedy large_pattern_generator(max_states);
+    PatternGeneratorGreedy large_pattern_generator(max_states);
     Pattern large_pattern = large_pattern_generator.generate(task);
     patterns->push_back(large_pattern);
 
@@ -36,7 +36,7 @@ PatternCollection PatternGenerationCombo::generate(
 
     validate_and_normalize_patterns(task_proxy, *patterns);
     cout << "Combo pattern collection: " << *patterns << endl;
-    return PatternCollection(task, patterns);
+    return PatternCollectionInformation(task, patterns);
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
@@ -50,7 +50,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    return make_shared<PatternGenerationCombo>(opts);
+    return make_shared<PatternCollectionGeneratorCombo>(opts);
 }
 
 static PluginShared<PatternCollectionGenerator> _plugin("combo", _parse);

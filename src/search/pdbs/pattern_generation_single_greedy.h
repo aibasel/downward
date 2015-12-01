@@ -5,12 +5,12 @@
 
 class Options;
 
-class PatternGenerationSingleGreedy : public PatternGenerator {
+class PatternGeneratorGreedy : public PatternGenerator {
     int max_states;
 public:
-    explicit PatternGenerationSingleGreedy(const Options &opts);
-    explicit PatternGenerationSingleGreedy(int max_states);
-    virtual ~PatternGenerationSingleGreedy() = default;
+    explicit PatternGeneratorGreedy(const Options &opts);
+    explicit PatternGeneratorGreedy(int max_states);
+    virtual ~PatternGeneratorGreedy() = default;
 
     virtual Pattern generate(std::shared_ptr<AbstractTask> task) override;
 };

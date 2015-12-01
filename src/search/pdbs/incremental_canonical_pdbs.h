@@ -16,7 +16,7 @@ class IncrementalCanonicalPDBs {
     std::shared_ptr<PDBCollection> pattern_databases;
 
     // A maximal clique represents a maximal additive subset of patterns.
-    std::shared_ptr<PDBCliques> max_cliques;
+    std::shared_ptr<MaxAdditivePDBSubsets> max_cliques;
 
     // A pair of variables is additive if no operator has an effect on both.
     VariableAdditivity are_additive;
@@ -30,7 +30,7 @@ class IncrementalCanonicalPDBs {
     void recompute_max_cliques();
 public:
     explicit IncrementalCanonicalPDBs(const std::shared_ptr<AbstractTask> task,
-                                      const Patterns &intitial_patterns);
+                                      const PatternCollection &intitial_patterns);
     virtual ~IncrementalCanonicalPDBs() = default;
 
     // Adds a new pattern to the collection and recomputes maximal cliques.
@@ -38,7 +38,7 @@ public:
 
     /* Returns a set of cliques that would be additive to the new pattern.
        Detailed documentation in pdb_max_cliques.h */
-    PDBCliques get_max_additive_subsets(const Pattern &new_pattern);
+    MaxAdditivePDBSubsets get_max_additive_subsets(const Pattern &new_pattern);
 
     // TODO issue585: the old code supported heuristic caching. Do we need this?
     int get_value(const State &state) const;
@@ -55,7 +55,7 @@ public:
         return pattern_databases;
     }
 
-    std::shared_ptr<PDBCliques> get_cliques() {
+    std::shared_ptr<MaxAdditivePDBSubsets> get_cliques() {
         return max_cliques;
     }
 
