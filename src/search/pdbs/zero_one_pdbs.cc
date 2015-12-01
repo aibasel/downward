@@ -23,7 +23,7 @@ ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns
     //Timer timer;
     pattern_databases.reserve(patterns.size());
     for (const Pattern &pattern : patterns) {
-        unique_ptr<PatternDatabase> pdb = make_unique_ptr<PatternDatabase>(
+        shared_ptr<PatternDatabase> pdb = make_shared<PatternDatabase>(
             task_proxy, pattern, false, operator_costs);
 
         /* Set cost of relevant operators to 0 for further iterations
