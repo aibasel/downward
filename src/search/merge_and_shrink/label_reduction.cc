@@ -351,5 +351,5 @@ static PluginTypePlugin<LabelReduction> _type_plugin(
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
 
-static PluginShared<LabelReduction> _plugin("exact_label_reduction", _parse);
+static PluginShared<LabelReduction> _plugin("exact", _parse);
 
