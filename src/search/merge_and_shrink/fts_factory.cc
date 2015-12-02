@@ -313,7 +313,6 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 FactoredTransitionSystem FTSFactory::create() {
     cout << "Building atomic transition systems... " << endl;
 
-    create_labels();
     initialize_transition_system_data();
     build_transitions();
 

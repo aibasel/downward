@@ -9,7 +9,10 @@ using namespace std;
 
 Labels::Labels(vector<Label *> &&labels_)
     : labels(move(labels_)),
-      max_size(labels.size() * 2 - 1) {
+      max_size(0) {
+    if (!labels.empty()) {
+        max_size = labels.size() * 2 - 1;
+    }
 }
 
 Labels::~Labels() {
