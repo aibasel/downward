@@ -50,11 +50,12 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
     }
 }
 
-bool LabelReduction::compute_label_mapping(
+void LabelReduction::compute_label_mapping(
     const EquivalenceRelation *relation,
     shared_ptr<FactoredTransitionSystem> fts,
     vector<pair<int, vector<int>>> &label_mapping) {
-    Labels &labels = fts->get_labels();
+    const Labels &labels = fts->get_labels();
+    int next_new_label_no = labels.get_size();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (BlockListConstIter group_it = relation->begin();
@@ -63,7 +64,7 @@ bool LabelReduction::compute_label_mapping(
         unordered_map<int, vector<int>> equivalent_label_nos;
         for (ElementListConstIter label_it = block.begin();
              label_it != block.end(); ++label_it) {
-            assert(*label_it < static_cast<int>(labels.get_size()));
+            assert(*label_it < next_new_label_no);
             int label_no = *label_it;
             if (labels.is_current_label(label_no)) {
                 // only consider non-reduced labels
@@ -76,9 +77,8 @@ bool LabelReduction::compute_label_mapping(
              it != equivalent_label_nos.end(); ++it) {
             const vector<int> &label_nos = it->second;
             if (label_nos.size() > 1) {
-                int new_label_no = labels.get_size();
-                labels.reduce_labels(label_nos);
-                label_mapping.push_back(make_pair(new_label_no, label_nos));
+                label_mapping.push_back(make_pair(next_new_label_no, label_nos));
+                ++next_new_label_no;
             }
             if (!label_nos.empty()) {
                 ++num_labels_after_reduction;
@@ -92,7 +92,6 @@ bool LabelReduction::compute_label_mapping(
              << num_labels_after_reduction << " after reduction"
              << endl;
     }
-    return number_reduced_labels > 0;
 }
 
 EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
@@ -151,8 +150,8 @@ void LabelReduction::reduce(pair<int, int> next_merge,
             next_merge.first,
             fts);
         vector<pair<int, vector<int>>> label_mapping;
-        bool have_reduced = compute_label_mapping(relation, fts, label_mapping);
-        if (have_reduced) {
+        compute_label_mapping(relation, fts, label_mapping);
+        if (!label_mapping.empty()) {
             fts->apply_label_reduction(label_mapping,
                                        next_merge.first);
         }
@@ -163,8 +162,8 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         relation = compute_combinable_equivalence_relation(
             next_merge.second,
             fts);
-        have_reduced = compute_label_mapping(relation, fts, label_mapping);
-        if (have_reduced) {
+        compute_label_mapping(relation, fts, label_mapping);
+        if (!label_mapping.empty()) {
             fts->apply_label_reduction(label_mapping,
                                        next_merge.second);
         }
@@ -195,24 +194,22 @@ void LabelReduction::reduce(pair<int, int> next_merge,
     for (int i = 0; i < max_iterations; ++i) {
         int ts_index = transition_system_order[tso_index];
 
-        bool have_reduced = false;
         vector<pair<int, vector<int>>> label_mapping;
         if (fts->is_active(ts_index)) {
             EquivalenceRelation *relation =
                 compute_combinable_equivalence_relation(ts_index,
                                                         fts);
-            have_reduced = compute_label_mapping(relation, fts, label_mapping);
+            compute_label_mapping(relation, fts, label_mapping);
             delete relation;
         }
 
-        if (have_reduced) {
-            num_unsuccessful_iterations = 0;
-            fts->apply_label_reduction(label_mapping, ts_index);
-        } else {
+        if (label_mapping.empty()) {
             // Even if the transition system has been removed, we need to count
             // it as unsuccessful iterations (the size of the vector matters).
             ++num_unsuccessful_iterations;
-            assert(label_mapping.empty());
+        } else {
+            num_unsuccessful_iterations = 0;
+            fts->apply_label_reduction(label_mapping, ts_index);
         }
         if (num_unsuccessful_iterations == num_transition_systems - 1)
             break;
