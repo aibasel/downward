@@ -9,8 +9,6 @@
 
 class AbstractTask;
 class Options;
-class TaskProxy;
-class VariablesProxy;
 
 /*
   Implementation of the pattern generation algorithm by Edelkamp. See:
@@ -24,6 +22,8 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     const int num_collections;
     const int num_episodes;
     const double mutation_probability;
+
+    std::shared_ptr<AbstractTask> task;
     /* Specifies whether patterns in each pattern collection need to be disjoint
        or not. */
     const bool disjoint_patterns;
@@ -70,10 +70,8 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
       collection) computed. The overall best heuristic is eventually updated and
       saved for further episodes.
     */
-    void evaluate(std::shared_ptr<AbstractTask> task,
-                  std::vector<double> &fitness_values);
-    bool is_pattern_too_large(VariablesProxy variables,
-                              const Pattern &pattern) const;
+    void evaluate(std::vector<double> &fitness_values);
+    bool is_pattern_too_large(const Pattern &pattern) const;
 
     /*
       Mark used variables in variables_used and return true iff
@@ -82,8 +80,7 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     */
     bool mark_used_variables(const Pattern &pattern,
                              std::vector<bool> &variables_used) const;
-    void remove_irrelevant_variables(TaskProxy task_proxy,
-                                     Pattern &pattern) const;
+    void remove_irrelevant_variables(Pattern &pattern) const;
 
     /*
       Calculates the initial pattern collections with a next-fit bin packing
@@ -95,7 +92,7 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
       initial patterns of each pattern collection are disjoint (regardless of
       the disjoint_patterns flag).
     */
-    void bin_packing(VariablesProxy variables);
+    void bin_packing();
 
     /*
       Main genetic algorithm loop. All pattern collections are initialized with

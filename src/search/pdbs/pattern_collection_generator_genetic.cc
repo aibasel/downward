@@ -18,7 +18,8 @@
 
 using namespace std;
 
-PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(const Options &opts)
+PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
+    const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),
       num_episodes(opts.get<int>("num_episodes")),
@@ -26,7 +27,8 @@ PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(const Optio
       disjoint_patterns(opts.get<bool>("disjoint")) {
 }
 
-void PatternCollectionGeneratorGenetic::select(const vector<double> &fitness_values) {
+void PatternCollectionGeneratorGenetic::select(
+    const vector<double> &fitness_values) {
     vector<double> cumulative_fitness;
     cumulative_fitness.reserve(fitness_values.size());
     double total_so_far = 0;
@@ -80,7 +82,9 @@ Pattern PatternCollectionGeneratorGenetic::transform_to_pattern_normal_form(
 }
 
 void PatternCollectionGeneratorGenetic::remove_irrelevant_variables(
-    TaskProxy task_proxy, Pattern &pattern) const {
+    Pattern &pattern) const {
+    TaskProxy task_proxy(*task);
+
     unordered_set<int> in_original_pattern(pattern.begin(), pattern.end());
     unordered_set<int> in_pruned_pattern;
 
@@ -121,8 +125,10 @@ void PatternCollectionGeneratorGenetic::remove_irrelevant_variables(
 }
 
 bool PatternCollectionGeneratorGenetic::is_pattern_too_large(
-    VariablesProxy variables, const Pattern &pattern) const {
+    const Pattern &pattern) const {
     // Test if the pattern respects the memory limit.
+    TaskProxy task_proxy(*task);
+    VariablesProxy variables = task_proxy.get_variables();
     int mem = 1;
     for (size_t i = 0; i < pattern.size(); ++i) {
         VariableProxy var = variables[pattern[i]];
@@ -145,8 +151,7 @@ bool PatternCollectionGeneratorGenetic::mark_used_variables(
     return false;
 }
 
-void PatternCollectionGeneratorGenetic::evaluate(
-    shared_ptr<AbstractTask> task, vector<double> &fitness_values) {
+void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values) {
     TaskProxy task_proxy(*task);
     for (const auto &collection : pattern_collections) {
         //cout << "evaluate pattern collection " << (i + 1) << " of "
@@ -159,7 +164,7 @@ void PatternCollectionGeneratorGenetic::evaluate(
         for (const vector<bool> &bitvector : collection) {
             Pattern pattern = transform_to_pattern_normal_form(bitvector);
 
-            if (is_pattern_too_large(task_proxy.get_variables(), pattern)) {
+            if (is_pattern_too_large(pattern)) {
                 cout << "pattern exceeds the memory limit!" << endl;
                 pattern_valid = false;
                 break;
@@ -173,7 +178,7 @@ void PatternCollectionGeneratorGenetic::evaluate(
                 }
             }
 
-            remove_irrelevant_variables(task_proxy, pattern);
+            remove_irrelevant_variables(pattern);
             pattern_collection->push_back(pattern);
         }
         if (!pattern_valid) {
@@ -197,7 +202,10 @@ void PatternCollectionGeneratorGenetic::evaluate(
     }
 }
 
-void PatternCollectionGeneratorGenetic::bin_packing(VariablesProxy variables) {
+void PatternCollectionGeneratorGenetic::bin_packing() {
+    TaskProxy task_proxy(*task);
+    VariablesProxy variables = task_proxy.get_variables();
+
     vector<int> variable_ids;
     variable_ids.reserve(variables.size());
     for (size_t i = 0; i < variables.size(); ++i) {
@@ -241,15 +249,16 @@ void PatternCollectionGeneratorGenetic::bin_packing(VariablesProxy variables) {
     }
 }
 
-void PatternCollectionGeneratorGenetic::genetic_algorithm(shared_ptr<AbstractTask> task) {
-    TaskProxy task_proxy(*task);
+void PatternCollectionGeneratorGenetic::genetic_algorithm(
+    shared_ptr<AbstractTask> task_) {
+    task = task_;
     best_fitness = -1;
     best_patterns = nullptr;
-    bin_packing(task_proxy.get_variables());
+    bin_packing();
     //cout << "initial pattern collections:" << endl;
     //dump();
     vector<double> initial_fitness_values;
-    evaluate(task, initial_fitness_values);
+    evaluate(initial_fitness_values);
     for (int i = 0; i < num_episodes; ++i) {
         cout << endl;
         cout << "--------- episode no " << (i + 1) << " ---------" << endl;
@@ -257,7 +266,7 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm(shared_ptr<AbstractTas
         //cout << "current pattern_collections after mutation" << endl;
         //dump();
         vector<double> fitness_values;
-        evaluate(task, fitness_values);
+        evaluate(fitness_values);
         // We allow to select invalid pattern collections.
         select(fitness_values);
         //cout << "current pattern collections (after selection):" << endl;
