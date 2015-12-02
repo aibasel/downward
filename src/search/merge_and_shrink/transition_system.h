@@ -161,8 +161,8 @@ public:
       (It is a bug to merge an unsolvable transition system.)
     */
     TransitionSystem(const Labels &labels,
-                     TransitionSystem *ts1,
-                     TransitionSystem *ts2);
+                     const TransitionSystem &ts1,
+                     const TransitionSystem &ts2);
     ~TransitionSystem();
 
     bool apply_abstraction(

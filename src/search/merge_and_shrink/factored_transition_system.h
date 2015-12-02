@@ -17,11 +17,7 @@ class TransitionSystem;
 class FactoredTransitionSystem {
     std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
-    /*
-      TODO: after splitting transition system into several parts, we may
-      want to change all transition system pointers into unique_ptr.
-    */
-    std::vector<TransitionSystem *> transition_systems;
+    std::vector<std::unique_ptr<TransitionSystem>> transition_systems;
     std::vector<std::unique_ptr<HeuristicRepresentation>> heuristic_representations;
     std::vector<std::unique_ptr<Distances>> distances;
     int final_index;
@@ -39,7 +35,7 @@ class FactoredTransitionSystem {
 public:
     FactoredTransitionSystem(
         std::unique_ptr<Labels> labels,
-        std::vector<TransitionSystem *> &&transition_systems,
+        std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
         std::vector<std::unique_ptr<Distances>> &&distances);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);

@@ -14,7 +14,7 @@ using namespace std;
 
 FactoredTransitionSystem::FactoredTransitionSystem(
     unique_ptr<Labels> labels,
-    vector<TransitionSystem *> &&transition_systems,
+    vector<unique_ptr<TransitionSystem>> &&transition_systems,
     vector<unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
     vector<unique_ptr<Distances>> &&distances)
     : labels(move(labels)),
@@ -83,7 +83,6 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
            && transition_systems[index]->are_transitions_sorted_unique();
 }
 
-
 void FactoredTransitionSystem::compute_distances_and_prune(int index) {
     /*
       This method does all that compute_distances does and
@@ -140,25 +139,24 @@ bool FactoredTransitionSystem::apply_abstraction(
 int FactoredTransitionSystem::merge(int index1, int index2) {
     assert(is_index_valid(index1));
     assert(is_index_valid(index2));
-    TransitionSystem *ts1 = transition_systems[index1];
-    TransitionSystem *ts2 = transition_systems[index2];
-    TransitionSystem *new_transition_system = new TransitionSystem(
-        *labels, ts1, ts2);
-    transition_systems.push_back(new_transition_system);
-    delete ts1;
-    delete ts2;
+    transition_systems.push_back(
+        make_unique_ptr<TransitionSystem>(*labels,
+                                          *transition_systems[index1],
+                                          *transition_systems[index2]));
     distances[index1] = nullptr;
     distances[index2] = nullptr;
     transition_systems[index1] = nullptr;
     transition_systems[index2] = nullptr;
-    heuristic_representations.push_back(make_unique_ptr<HeuristicRepresentationMerge>(
-                                            move(heuristic_representations[index1]),
-                                            move(heuristic_representations[index2])));
-    distances.push_back(make_unique_ptr<Distances>(*new_transition_system));
+    heuristic_representations.push_back(
+        make_unique_ptr<HeuristicRepresentationMerge>(
+            move(heuristic_representations[index1]),
+            move(heuristic_representations[index2])));
+    const TransitionSystem &new_ts = *transition_systems.back();
+    distances.push_back(make_unique_ptr<Distances>(new_ts));
     int new_index = transition_systems.size() - 1;
     compute_distances_and_prune(new_index);
     assert(is_component_valid(new_index));
-    if (!new_transition_system->is_solvable()) {
+    if (!new_ts.is_solvable()) {
         solvable = false;
         finalize(new_index);
     }
@@ -179,7 +177,6 @@ void FactoredTransitionSystem::finalize(int index) {
             assert(!transition_systems[i]);
             assert(!distances[i]);
         }
-        delete transition_systems[final_index];
         transition_systems[final_index] = nullptr;
     } else {
         /*
@@ -190,7 +187,6 @@ void FactoredTransitionSystem::finalize(int index) {
         assert(!solvable);
         final_index = index;
         for (size_t i = 0; i < transition_systems.size(); ++i) {
-            delete transition_systems[i];
             transition_systems[i] = nullptr;
             if (static_cast<int>(i) != index) {
                 distances[i] = nullptr;
@@ -215,17 +211,18 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
 void FactoredTransitionSystem::statistics(int index,
                                           const Timer &timer) const {
     assert(is_index_valid(index));
-    TransitionSystem *ts = transition_systems[index];
-    ts->statistics();
+    const TransitionSystem &ts = *transition_systems[index];
+    ts.statistics();
     // TODO: Turn the following block into Distances::statistics()?
-    cout << ts->tag();
-    if (!distances[index]->are_distances_computed()) {
+    cout << ts.tag();
+    const Distances &dist = *distances[index];
+    if (!dist.are_distances_computed()) {
         cout << "distances not computed";
     } else if (is_solvable()) {
-        cout << "init h=" << distances[index]->get_goal_distance(ts->get_init_state())
-             << ", max f=" << distances[index]->get_max_f()
-             << ", max g=" << distances[index]->get_max_g()
-             << ", max h=" << distances[index]->get_max_h();
+        cout << "init h=" << dist.get_goal_distance(ts.get_init_state())
+             << ", max f=" << dist.get_max_f()
+             << ", max g=" << dist.get_max_g()
+             << ", max h=" << dist.get_max_h();
     } else {
         cout << "transition system is unsolvable";
     }

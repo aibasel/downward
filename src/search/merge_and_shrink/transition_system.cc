@@ -156,32 +156,32 @@ TransitionSystem::TransitionSystem(
 
 // constructor for merges
 TransitionSystem::TransitionSystem(const Labels &labels,
-                                   TransitionSystem *ts1,
-                                   TransitionSystem *ts2)
-    : TransitionSystem(ts1->num_variables, labels) {
-    cout << "Merging " << ts1->description() << " and "
-         << ts2->description() << endl;
+                                   const TransitionSystem &ts1,
+                                   const TransitionSystem &ts2)
+    : TransitionSystem(ts1.num_variables, labels) {
+    cout << "Merging " << ts1.description() << " and "
+         << ts2.description() << endl;
 
-    assert(ts1->is_solvable() && ts2->is_solvable());
-    assert(ts1->are_transitions_sorted_unique() && ts2->are_transitions_sorted_unique());
+    assert(ts1.is_solvable() && ts2.is_solvable());
+    assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
 
     ::set_union(
-        ts1->incorporated_variables.begin(), ts1->incorporated_variables.end(),
-        ts2->incorporated_variables.begin(), ts2->incorporated_variables.end(),
+        ts1.incorporated_variables.begin(), ts1.incorporated_variables.end(),
+        ts2.incorporated_variables.begin(), ts2.incorporated_variables.end(),
         back_inserter(incorporated_variables));
 
-    int ts1_size = ts1->get_size();
-    int ts2_size = ts2->get_size();
+    int ts1_size = ts1.get_size();
+    int ts2_size = ts2.get_size();
     num_states = ts1_size * ts2_size;
     goal_states.resize(num_states, false);
-    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
+    goal_relevant = (ts1.goal_relevant || ts2.goal_relevant);
 
     for (int s1 = 0; s1 < ts1_size; ++s1) {
         for (int s2 = 0; s2 < ts2_size; ++s2) {
             int state = s1 * ts2_size + s2;
-            if (ts1->goal_states[s1] && ts2->goal_states[s2])
+            if (ts1.goal_states[s1] && ts2.goal_states[s2])
                 goal_states[state] = true;
-            if (s1 == ts1->init_state && s2 == ts2->init_state)
+            if (s1 == ts1.init_state && s2 == ts2.init_state)
                 init_state = state;
         }
     }
@@ -197,15 +197,15 @@ TransitionSystem::TransitionSystem(const Labels &labels,
     */
     int multiplier = ts2_size;
     vector<int> dead_labels;
-    for (TSConstIterator group1_it = ts1->begin();
-         group1_it != ts1->end(); ++group1_it) {
+    for (TSConstIterator group1_it = ts1.begin();
+         group1_it != ts1.end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
         unordered_map<int, vector<int>> buckets;
         for (LabelConstIter label_it = group1_it.begin();
              label_it != group1_it.end(); ++label_it) {
             int label_no = *label_it;
-            int group2_id = ts2->label_equivalence_relation->get_group_id(label_no);
+            int group2_id = ts2.label_equivalence_relation->get_group_id(label_no);
             buckets[group2_id].push_back(label_no);
         }
         // Now buckets contains all equivalence classes that are
@@ -215,7 +215,7 @@ TransitionSystem::TransitionSystem(const Labels &labels,
         const vector<Transition> &transitions1 = group1_it.get_transitions();
         for (const auto &bucket : buckets) {
             const vector<Transition> &transitions2 =
-                ts2->get_transitions_for_group_id(bucket.first);
+                ts2.get_transitions_for_group_id(bucket.first);
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
