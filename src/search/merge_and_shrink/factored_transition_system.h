@@ -15,7 +15,7 @@ class TransitionSystem;
 
 
 class FactoredTransitionSystem {
-    std::shared_ptr<Labels> labels;
+    std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
     /*
       TODO: after splitting transition system into several parts, we may
@@ -38,7 +38,7 @@ class FactoredTransitionSystem {
     }
 public:
     FactoredTransitionSystem(
-        std::shared_ptr<Labels> labels,
+        std::unique_ptr<Labels> labels,
         std::vector<TransitionSystem *> &&transition_systems,
         std::vector<std::unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
         std::vector<std::unique_ptr<Distances>> &&distances);
@@ -82,6 +82,8 @@ public:
         return is_index_valid(index);
     }
     int get_num_labels() const; // used by merge_dfp
+    // TODO: temporary HACK!
+    Labels &get_labels();
 };
 
 #endif

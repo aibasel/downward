@@ -7,10 +7,10 @@
 
 using namespace std;
 
-LabelEquivalenceRelation::LabelEquivalenceRelation(const shared_ptr<Labels> labels)
+LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
     : labels(labels) {
-    grouped_labels.reserve(labels->get_max_size());
-    label_to_positions.resize(labels->get_max_size());
+    grouped_labels.reserve(labels.get_max_size());
+    label_to_positions.resize(labels.get_max_size());
 }
 
 void LabelEquivalenceRelation::add_label_to_group(int group_id,
@@ -18,7 +18,7 @@ void LabelEquivalenceRelation::add_label_to_group(int group_id,
     LabelIter label_it = grouped_labels[group_id].insert(label_no);
     label_to_positions[label_no] = make_pair(group_id, label_it);
 
-    int label_cost = labels->get_label_cost(label_no);
+    int label_cost = labels.get_label_cost(label_no);
     if (label_cost < grouped_labels[group_id].get_cost())
         grouped_labels[group_id].set_cost(label_cost);
 }
@@ -30,7 +30,7 @@ void LabelEquivalenceRelation::recompute_group_cost() {
             label_group.set_cost(numeric_limits<int>::max());
             for (LabelConstIter label_it = label_group.begin();
                  label_it != label_group.end(); ++label_it) {
-                int cost = labels->get_label_cost(*label_it);
+                int cost = labels.get_label_cost(*label_it);
                 if (cost < label_group.get_cost()) {
                     label_group.set_cost(cost);
                 }

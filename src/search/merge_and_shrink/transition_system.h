@@ -145,12 +145,12 @@ private:
     std::string description() const;
 
     TransitionSystem(int num_variables,
-                     const std::shared_ptr<Labels> labels);
+                     const Labels &labels);
 public:
     // Constructor for an atomic transition system.
     TransitionSystem(
         const TaskProxy &task_proxy,
-        const std::shared_ptr<Labels> labels,
+        const Labels &labels,
         int var_id,
         std::vector<std::vector<Transition>> &&transitions_by_label);
 
@@ -160,7 +160,7 @@ public:
       Invariant: the children ts1 and ts2 must be solvable.
       (It is a bug to merge an unsolvable transition system.)
     */
-    TransitionSystem(const std::shared_ptr<Labels> labels,
+    TransitionSystem(const Labels &labels,
                      TransitionSystem *ts1,
                      TransitionSystem *ts2);
     ~TransitionSystem();

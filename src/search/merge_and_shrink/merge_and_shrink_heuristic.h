@@ -6,7 +6,7 @@
 #include <memory>
 
 class FactoredTransitionSystem;
-class Labels;
+class LabelReduction;
 class MergeStrategy;
 class ShrinkStrategy;
 class Timer;
@@ -15,7 +15,7 @@ class TransitionSystem;
 class MergeAndShrinkHeuristic : public Heuristic {
     std::shared_ptr<MergeStrategy> merge_strategy;
     std::shared_ptr<ShrinkStrategy> shrink_strategy;
-    std::shared_ptr<Labels> labels;
+    std::shared_ptr<LabelReduction> label_reduction;
     long starting_peak_memory;
 
     std::shared_ptr<FactoredTransitionSystem> fts;

@@ -64,7 +64,7 @@ class LabelEquivalenceRelation {
       There should only be one instance of Labels at runtime. It is created
       and managed by MergeAndShrinkHeuristic.
     */
-    const std::shared_ptr<Labels> labels;
+    const Labels &labels;
 
     /*
       NOTE: it is somewhat dangerous to use lists inside vectors and storing
@@ -78,7 +78,7 @@ class LabelEquivalenceRelation {
 
     void add_label_to_group(int group_id, int label_no);
 public:
-    explicit LabelEquivalenceRelation(const std::shared_ptr<Labels> labels);
+    explicit LabelEquivalenceRelation(const Labels &labels);
     virtual ~LabelEquivalenceRelation() = default;
 
     void recompute_group_cost();
