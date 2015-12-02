@@ -14,8 +14,6 @@
 
 #include <cassert>
 #include <iostream>
-//#include <limits>
-//#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -214,6 +212,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
             // Even if the transition system has been removed, we need to count
             // it as unsuccessful iterations (the size of the vector matters).
             ++num_unsuccessful_iterations;
+            assert(label_mapping.empty());
         }
         if (num_unsuccessful_iterations == num_transition_systems - 1)
             break;
@@ -337,6 +336,13 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     if (parser.dry_run()) {
+        bool lr_before_shrinking = opts.get<bool>("before_shrinking");
+        bool lr_before_merging = opts.get<bool>("before_merging");
+        if (!lr_before_shrinking && !lr_before_merging) {
+            cerr << "Please turn on at least one of the options "
+                 << "before_shrinking or before_merging!" << endl;
+            exit_with(EXIT_INPUT_ERROR);
+        }
         return 0;
     } else {
         return make_shared<LabelReduction>(opts);
@@ -348,5 +354,5 @@ static PluginTypePlugin<LabelReduction> _type_plugin(
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
 
-static PluginShared<LabelReduction> _plugin("label_reduction", _parse);
+static PluginShared<LabelReduction> _plugin("exact_label_reduction", _parse);
 

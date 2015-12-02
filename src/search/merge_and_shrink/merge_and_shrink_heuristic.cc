@@ -26,7 +26,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<shared_ptr<MergeStrategy>>("merge_strategy")),
       shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
-      label_reduction(opts.get<shared_ptr<LabelReduction>>("label_reduction")),
+      label_reduction(nullptr),
       starting_peak_memory(-1),
       fts(nullptr) {
     /*
@@ -34,7 +34,10 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       how to handle communication between different components? See issue559.
     */
     merge_strategy->initialize(task);
-    label_reduction->initialize(task_proxy);
+    if (opts.contains("label_reduction")) {
+        label_reduction = opts.get<shared_ptr<LabelReduction>>("label_reduction");
+        label_reduction->initialize(task_proxy);
+    }
 }
 
 void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
@@ -49,12 +52,16 @@ void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    label_reduction->dump_options();
+    if (label_reduction) {
+        label_reduction->dump_options();
+    } else {
+        cout << "Label reduction disabled" << endl;
+    }
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     string dashes(79, '=');
-    if (!label_reduction->reduce_before_merging() && !label_reduction->reduce_before_shrinking()) {
+    if (!label_reduction) {
         cerr << dashes << endl
              << "WARNING! You did not enable label reduction. This may "
             "drastically reduce the performance of merge-and-shrink!"
@@ -107,7 +114,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             fts->statistics(merge_index1, timer);
             fts->statistics(merge_index2, timer);
 
-            if (label_reduction->reduce_before_shrinking()) {
+            if (label_reduction && label_reduction->reduce_before_shrinking()) {
                 label_reduction->reduce(merge_indices, fts);
             }
 
@@ -119,7 +126,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             if (shrunk.second)
                 fts->statistics(merge_index2, timer);
 
-            if (label_reduction->reduce_before_merging()) {
+            if (label_reduction && label_reduction->reduce_before_merging()) {
                 label_reduction->reduce(merge_indices, fts);
             }
 
@@ -242,7 +249,8 @@ static Heuristic *_parse(OptionParser &parser) {
         "label_reduction",
         "See detailed documentation for labels. There is currently only "
         "one 'option' to use label_reduction. Also note the interaction "
-        "with shrink strategies.");
+        "with shrink strategies.",
+        OptionParser::NONE);
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
