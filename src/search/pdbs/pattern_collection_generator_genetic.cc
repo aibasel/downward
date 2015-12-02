@@ -145,8 +145,8 @@ bool PatternCollectionGeneratorGenetic::mark_used_variables(
     return false;
 }
 
-void PatternCollectionGeneratorGenetic::evaluate(shared_ptr<AbstractTask> task,
-                                         vector<double> &fitness_values) {
+void PatternCollectionGeneratorGenetic::evaluate(
+    shared_ptr<AbstractTask> task, vector<double> &fitness_values) {
     TaskProxy task_proxy(*task);
     for (const auto &collection : pattern_collections) {
         //cout << "evaluate pattern collection " << (i + 1) << " of "

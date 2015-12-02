@@ -12,8 +12,10 @@ ZeroOnePDBs get_zero_one_pdbs_from_options(
     const shared_ptr<AbstractTask> task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
-    PatternCollectionInformation pattern_collection = pattern_generator->generate(task);
-    shared_ptr<PatternCollection> patterns = pattern_collection.get_patterns();
+    PatternCollectionInformation pattern_collection_info =
+        pattern_generator->generate(task);
+    shared_ptr<PatternCollection> patterns =
+        pattern_collection_info.get_patterns();
     TaskProxy task_proxy(*task);
     return ZeroOnePDBs(task_proxy, *patterns);
 }

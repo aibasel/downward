@@ -41,8 +41,8 @@ PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {
 }
 
 bool collection_dominates(const PDBCollection &superset,
-                      const PDBCollection &subset,
-                      const PDBRelation &superset_relation) {
+                          const PDBCollection &subset,
+                          const PDBRelation &superset_relation) {
     for (const shared_ptr<PatternDatabase> &p_subset : subset) {
         // Assume there is no superset until we found one.
         bool found_superset = false;

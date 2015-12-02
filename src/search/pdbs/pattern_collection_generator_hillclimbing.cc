@@ -185,7 +185,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
     if (h_collection == numeric_limits<int>::max())
         return false;
 
-    for (auto &subset : max_additive_subsets) {
+    for (const auto &subset : max_additive_subsets) {
         int h_subset = 0;
         for (const shared_ptr<PatternDatabase> &additive_pdb : subset) {
             /* Experiments showed that it is faster to recompute the
