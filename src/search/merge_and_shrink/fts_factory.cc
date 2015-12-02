@@ -28,7 +28,7 @@ class FTSFactory {
     // see TODO in build_transitions()
     int task_has_conditional_effects;
 
-    vector<Label *> create_labels();
+    vector<unique_ptr<Label>> create_labels();
     void initialize_transition_system_data();
     void add_transition(int var_no, int label_no,
                         int src_value, int dest_value);
@@ -68,10 +68,10 @@ FTSFactory::FTSFactory(const TaskProxy &task_proxy)
 FTSFactory::~FTSFactory() {
 }
 
-vector<Label *> FTSFactory::create_labels() {
-    vector<Label *> result;
+vector<unique_ptr<Label>> FTSFactory::create_labels() {
+    vector<unique_ptr<Label>> result;
     for (OperatorProxy op : task_proxy.get_operators()) {
-        result.push_back(new Label(op.get_cost()));
+        result.push_back(make_unique_ptr<Label>(op.get_cost()));
     }
     return result;
 }

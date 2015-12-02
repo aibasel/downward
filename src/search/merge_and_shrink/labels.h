@@ -1,6 +1,7 @@
 #ifndef MERGE_AND_SHRINK_LABELS_H
 #define MERGE_AND_SHRINK_LABELS_H
 
+#include <memory>
 #include <vector>
 
 class Label {
@@ -24,11 +25,11 @@ public:
   and to perform label reduction on this set.
 */
 class Labels {
-    std::vector<Label *> labels;
+    std::vector<std::unique_ptr<Label>> labels;
     int max_size; // the maximum number of labels that can be created
 public:
-    explicit Labels(std::vector<Label *> &&labels);
-    ~Labels();
+    explicit Labels(std::vector<std::unique_ptr<Label>> &&labels);
+    ~Labels() = default;
     void reduce_labels(const std::vector<int> &old_label_nos);
     bool is_current_label(int label_no) const;
     int get_label_cost(int label_no) const;
