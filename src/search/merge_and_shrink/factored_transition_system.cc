@@ -13,11 +13,11 @@ using namespace std;
 
 
 FactoredTransitionSystem::FactoredTransitionSystem(
-    shared_ptr<Labels> labels,
+    unique_ptr<Labels> labels,
     vector<TransitionSystem *> &&transition_systems,
     vector<unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
     vector<unique_ptr<Distances>> &&distances)
-    : labels(labels),
+    : labels(move(labels)),
       transition_systems(move(transition_systems)),
       heuristic_representations(move(heuristic_representations)),
       distances(move(distances)),
@@ -139,7 +139,7 @@ int FactoredTransitionSystem::merge(int index1, int index2) {
     TransitionSystem *ts1 = transition_systems[index1];
     TransitionSystem *ts2 = transition_systems[index2];
     TransitionSystem *new_transition_system = new TransitionSystem(
-        labels, ts1, ts2);
+        *labels, ts1, ts2);
     transition_systems.push_back(new_transition_system);
     delete ts1;
     delete ts2;
@@ -236,4 +236,8 @@ void FactoredTransitionSystem::dump(int index) const {
 
 int FactoredTransitionSystem::get_num_labels() const {
     return labels->get_size();
+}
+
+Labels &FactoredTransitionSystem::get_labels() {
+    return *labels;
 }

@@ -77,16 +77,16 @@ const int TransitionSystem::PRUNED_STATE = -1;
 
 // common case for both constructors
 TransitionSystem::TransitionSystem(int num_variables,
-                                   const shared_ptr<Labels> labels)
+                                   const Labels &labels)
     : num_variables(num_variables),
       label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)) {
-    transitions_by_group_id.resize(labels->get_max_size());
+    transitions_by_group_id.resize(labels.get_max_size());
 }
 
 // atomic transition system constructor
 TransitionSystem::TransitionSystem(
     const TaskProxy &task_proxy,
-    const shared_ptr<Labels> labels,
+    const Labels &labels,
     int var_id,
     vector<vector<Transition>> &&transitions_by_label)
     : TransitionSystem(task_proxy.get_variables().size(), labels) {
@@ -110,7 +110,7 @@ TransitionSystem::TransitionSystem(
       but this would perhaps leak an implementation detail that the
       factory should not care about.
     */
-    transitions_by_group_id.resize(labels->get_max_size());
+    transitions_by_group_id.resize(labels.get_max_size());
 
     incorporated_variables.push_back(var_id);
 
@@ -155,7 +155,7 @@ TransitionSystem::TransitionSystem(
 }
 
 // constructor for merges
-TransitionSystem::TransitionSystem(const shared_ptr<Labels> labels,
+TransitionSystem::TransitionSystem(const Labels &labels,
                                    TransitionSystem *ts1,
                                    TransitionSystem *ts2)
     : TransitionSystem(ts1->num_variables, labels) {
