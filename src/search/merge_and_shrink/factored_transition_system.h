@@ -82,8 +82,7 @@ public:
         return is_index_valid(index);
     }
     int get_num_labels() const; // used by merge_dfp
-    // TODO: temporary HACK!
-    Labels &get_labels();
+    const Labels &get_labels() const; // used by label_reduction
 };
 
 #endif

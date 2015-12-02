@@ -50,10 +50,10 @@ class LabelReduction {
     bool initialized() const;
     // Apply the given label equivalence relation to the set of labels and compute
     // the resulting label mapping.
-    bool compute_label_mapping(
-        const EquivalenceRelation *relation,
-        std::shared_ptr<FactoredTransitionSystem> fts,
-        std::vector<std::pair<int, std::vector<int>>> &label_mapping);
+    void compute_label_mapping(
+         const EquivalenceRelation *relation,
+         std::shared_ptr<FactoredTransitionSystem> fts,
+         std::vector<std::pair<int, std::vector<int>>> &label_mapping);
     EquivalenceRelation *compute_combinable_equivalence_relation(
         int ts_index,
         std::shared_ptr<FactoredTransitionSystem> fts) const;

@@ -98,6 +98,10 @@ void FactoredTransitionSystem::compute_distances_and_prune(int index) {
 void FactoredTransitionSystem::apply_label_reduction(
     const vector<pair<int, vector<int>>> &label_mapping,
     int combinable_index) {
+    for (const auto &new_label_old_labels : label_mapping) {
+        assert(new_label_old_labels.first == labels->get_size());
+        labels->reduce_labels(new_label_old_labels.second);
+    }
     for (size_t i = 0; i < transition_systems.size(); ++i) {
         if (transition_systems[i]) {
             transition_systems[i]->apply_label_reduction(
@@ -238,6 +242,6 @@ int FactoredTransitionSystem::get_num_labels() const {
     return labels->get_size();
 }
 
-Labels &FactoredTransitionSystem::get_labels() {
+const Labels &FactoredTransitionSystem::get_labels() const {
     return *labels;
 }
