@@ -26,8 +26,7 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
     parser.add_list_option<int>(
         "pattern",
         "list of variable numbers of the planning task that should be used as "
-        "pattern.",
-        OptionParser::NONE);
+        "pattern.");
 
     Options opts = parser.parse();
     if (parser.dry_run())

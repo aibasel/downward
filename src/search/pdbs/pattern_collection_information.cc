@@ -81,6 +81,7 @@ void PatternCollectionInformation::create_max_additive_subsets_if_missing() {
 }
 
 shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() {
+    assert(patterns);
     return patterns;
 }
 

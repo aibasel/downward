@@ -22,7 +22,8 @@ void PhOConstraints::initialize_constraints(
     const std::shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
     double infinity) {
     assert(pattern_generator);
-    PatternCollectionInformation patterns = pattern_generator->generate(task);
+    PatternCollectionInformation pattern_collection_info =
+        pattern_generator->generate(task);
     /*
       TODO issue590: Currently initialize_constraints should only be called
       once. When we separate constraint generators from constraints, we can
@@ -30,7 +31,7 @@ void PhOConstraints::initialize_constraints(
       it.
     */
     pattern_generator = nullptr;
-    pdbs = patterns.get_pdbs();
+    pdbs = pattern_collection_info.get_pdbs();
     TaskProxy task_proxy(*task);
     constraint_offset = constraints.size();
     for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {

@@ -14,8 +14,8 @@ extern VariableAdditivity compute_additive_vars(TaskProxy task_proxy);
 /* Returns true iff the two patterns are additive i.e. there is no operator
    which affects variables in pattern one as well as in pattern two. */
 extern bool are_patterns_additive(const Pattern &pattern1,
-                           const Pattern &pattern2,
-                           const VariableAdditivity &are_additive);
+                                  const Pattern &pattern2,
+                                  const VariableAdditivity &are_additive);
 
 /*
   Computes maximal additive subsets of patterns.

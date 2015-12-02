@@ -33,7 +33,7 @@ ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns
                 operator_costs[op.get_id()] = 0;
         }
 
-        pattern_databases.push_back(move(pdb));
+        pattern_databases.push_back(pdb);
     }
     //cout << "All or nothing PDB collection construction time: " <<
     //timer << endl;
