@@ -46,7 +46,7 @@ private:
       system, but it may attempt to e.g. shrink the transition system in an
       information preserving way.
     */
-    bool shrink_transition_system(std::shared_ptr<FactoredTransitionSystem> fts,
+    bool shrink_transition_system(FactoredTransitionSystem &fts,
                                   int index, int new_size) const;
     /*
       If max_states_before_merge is violated by any of the two transition
@@ -63,7 +63,7 @@ protected:
       specified by concrete shrinking strategies.
     */
     virtual void compute_equivalence_relation(
-        std::shared_ptr<FactoredTransitionSystem> fts,
+        const FactoredTransitionSystem &fts,
         int index,
         int target,
         StateEquivalenceRelation &equivalence_relation) const = 0;
@@ -77,7 +77,7 @@ public:
       The given transition systems are guaranteed to be solvable by the
       merge-and-shrink computation.
     */
-    std::pair<bool, bool> shrink(std::shared_ptr<FactoredTransitionSystem> fts,
+    std::pair<bool, bool> shrink(FactoredTransitionSystem &fts,
                                  int index1,
                                  int index2) const;
 

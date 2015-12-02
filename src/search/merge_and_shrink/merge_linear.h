@@ -19,7 +19,7 @@ public:
     virtual ~MergeLinear() override = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> task) override;
 
-    virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) override;
+    virtual std::pair<int, int> get_next(FactoredTransitionSystem &fts) override;
     virtual std::string name() const override;
 };
 

@@ -88,7 +88,7 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
 ShrinkBisimulation::~ShrinkBisimulation() {
 }
 
-int ShrinkBisimulation::initialize_groups(shared_ptr<FactoredTransitionSystem> fts,
+int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
                                           int index,
                                           vector<int> &state_to_group) const {
     /* Group 0 holds all goal states.
@@ -101,8 +101,8 @@ int ShrinkBisimulation::initialize_groups(shared_ptr<FactoredTransitionSystem> f
        unsolvable.
     */
 
-    const TransitionSystem &ts = fts->get_ts(index);
-    const Distances &distances = fts->get_dist(index);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &distances = fts.get_dist(index);
     typedef unordered_map<int, int> GroupMap;
     GroupMap h_to_group;
     int num_groups = 1; // Group 0 is for goal states.
@@ -127,13 +127,13 @@ int ShrinkBisimulation::initialize_groups(shared_ptr<FactoredTransitionSystem> f
 }
 
 void ShrinkBisimulation::compute_signatures(
-    shared_ptr<FactoredTransitionSystem> fts,
+    const FactoredTransitionSystem &fts,
     int index,
     vector<Signature> &signatures,
     const vector<int> &state_to_group) const {
     assert(signatures.empty());
-    const TransitionSystem &ts = fts->get_ts(index);
-    const Distances &distances = fts->get_dist(index);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &distances = fts.get_dist(index);
 
     // Step 1: Compute bare state signatures (without transition information).
     signatures.push_back(Signature(-2, false, -1, SuccessorSignature(), -1));
@@ -213,12 +213,12 @@ void ShrinkBisimulation::compute_signatures(
 }
 
 void ShrinkBisimulation::compute_abstraction(
-    shared_ptr<FactoredTransitionSystem> fts,
+    const FactoredTransitionSystem &fts,
     int index,
     int target_size,
     StateEquivalenceRelation &equivalence_relation) const {
-    const TransitionSystem &ts = fts->get_ts(index);
-    const Distances &distances = fts->get_dist(index);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &distances = fts.get_dist(index);
     int num_states = ts.get_size();
 
     vector<int> state_to_group(num_states);
@@ -335,7 +335,7 @@ void ShrinkBisimulation::compute_abstraction(
 }
 
 void ShrinkBisimulation::compute_equivalence_relation(
-    shared_ptr<FactoredTransitionSystem> fts,
+    const FactoredTransitionSystem &fts,
     int index,
     int target,
     StateEquivalenceRelation &equivalence_relation) const {

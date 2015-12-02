@@ -99,14 +99,14 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    fts = make_shared<FactoredTransitionSystem>(create_factored_transition_system(task_proxy));
+    fts = make_unique_ptr<FactoredTransitionSystem>(create_factored_transition_system(task_proxy));
     cout << endl;
 
     int final_index = -1; // TODO: get rid of this
     if (fts->is_solvable()) { // All atomic transition system are solvable.
         while (!merge_strategy->done()) {
             // Choose next transition systems to merge
-            pair<int, int> merge_indices = merge_strategy->get_next(fts);
+            pair<int, int> merge_indices = merge_strategy->get_next(*fts);
             int merge_index1 = merge_indices.first;
             int merge_index2 = merge_indices.second;
             cout << "Next pair of indices: (" << merge_index1 << ", " << merge_index2 << ")" << endl;
@@ -115,19 +115,19 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             fts->statistics(merge_index2, timer);
 
             if (label_reduction && label_reduction->reduce_before_shrinking()) {
-                label_reduction->reduce(merge_indices, fts);
+                label_reduction->reduce(merge_indices, *fts);
             }
 
             // Shrinking
             pair<bool, bool> shrunk = shrink_strategy->shrink(
-                fts, merge_index1, merge_index2);
+                *fts, merge_index1, merge_index2);
             if (shrunk.first)
                 fts->statistics(merge_index1, timer);
             if (shrunk.second)
                 fts->statistics(merge_index2, timer);
 
             if (label_reduction && label_reduction->reduce_before_merging()) {
-                label_reduction->reduce(merge_indices, fts);
+                label_reduction->reduce(merge_indices, *fts);
             }
 
             // Merging
