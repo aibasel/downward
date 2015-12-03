@@ -105,11 +105,12 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
     //cout << transition_system.tag() << "compute combinable labels" << endl;
 
     // create the equivalence relation where all labels are equivalent
-    int num_labels = fts.get_num_labels();
+    const Labels &labels = fts.get_labels();
+    int num_labels = labels.get_size();
     vector<pair<int, int>> annotated_labels;
     annotated_labels.reserve(num_labels);
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (fts.get_labels().is_current_label(label_no)) {
+        if (labels.is_current_label(label_no)) {
             annotated_labels.push_back(make_pair(0, label_no));
         }
     }
