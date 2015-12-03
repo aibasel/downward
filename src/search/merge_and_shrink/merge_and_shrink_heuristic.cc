@@ -160,6 +160,8 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
         cout << "Abstract problem is unsolvable!" << endl;
     }
 
+    merge_strategy = nullptr;
+    shrink_strategy = nullptr;
     label_reduction = nullptr;
 }
 
