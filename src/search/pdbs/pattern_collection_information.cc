@@ -51,8 +51,8 @@ PatternCollectionInformation::PatternCollectionInformation(
 
     sort(patterns_and_pdbs.begin(), patterns_and_pdbs.end(),
          [](const PatternPDBPair &pair1, const PatternPDBPair &pair2) {
-             return pair1.first < pair2.first;
-         });
+        return pair1.first < pair2.first;
+    });
 
     for (const PatternPDBPair &pattern_and_pdb : patterns_and_pdbs) {
         patterns->push_back(pattern_and_pdb.first);

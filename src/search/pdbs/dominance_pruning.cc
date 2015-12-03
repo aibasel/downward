@@ -121,4 +121,3 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
 
     return nondominated_subsets;
 }
-
