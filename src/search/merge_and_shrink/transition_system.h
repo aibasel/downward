@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
+#include "types.h"
+
 #include <forward_list>
 #include <iostream>
 #include <list>
@@ -16,12 +18,6 @@ class Labels;
 class State;
 class TaskProxy;
 class Timer;
-
-// Duplicate from LabelEquivalenceRelation
-typedef std::list<int>::const_iterator LabelConstIter;
-
-// Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
-extern const int INF;
 
 struct Transition {
     int src;
@@ -163,10 +159,11 @@ public:
     ~TransitionSystem();
 
     bool apply_abstraction(
-        const std::vector<std::forward_list<int>> &collapsed_groups,
+        const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping);
-    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-                               bool only_equivalent_labels);
+    void apply_label_reduction(
+        const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
+        bool only_equivalent_labels);
 
     TSConstIterator begin() const {
         return TSConstIterator(*this, false);

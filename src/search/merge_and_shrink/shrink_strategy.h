@@ -1,8 +1,9 @@
 #ifndef MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 #define MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 
+#include "types.h"
+
 #include <forward_list>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,17 +15,6 @@ class Options;
 class TransitionSystem;
 
 class ShrinkStrategy {
-protected:
-    /* An equivalence class is a set of abstract states that shall be
-       mapped (shrunk) to the same abstract state.
-
-       An equivalence relation is a partitioning of states into
-       equivalence classes. It may omit certain states entirely; these
-       will be dropped completely and receive an h value of infinity.
-    */
-
-    typedef std::forward_list<int> StateEquivalenceClass;
-    typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
 private:
     // Hard limit: the maximum size of a transition system at any point.
     const int max_states;

@@ -55,16 +55,16 @@ void FactoredTransitionSystem::discard_states(
     assert(is_index_valid(index));
     int num_states = transition_systems[index]->get_size();
     assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
-    vector<forward_list<int>> equivalence_relation;
-    equivalence_relation.reserve(num_states);
+    StateEquivalenceRelation state_equivalence_relation;
+    state_equivalence_relation.reserve(num_states);
     for (int state = 0; state < num_states; ++state) {
         if (!to_be_pruned_states[state]) {
-            forward_list<int> group;
-            group.push_front(state);
-            equivalence_relation.push_back(group);
+            StateEquivalenceClass state_equivalence_class;
+            state_equivalence_class.push_front(state);
+            state_equivalence_relation.push_back(state_equivalence_class);
         }
     }
-    apply_abstraction(index, equivalence_relation);
+    apply_abstraction(index, state_equivalence_relation);
 }
 
 bool FactoredTransitionSystem::is_index_valid(int index) const {
@@ -110,24 +110,27 @@ void FactoredTransitionSystem::apply_label_reduction(
 }
 
 bool FactoredTransitionSystem::apply_abstraction(
-    int index, const vector<forward_list<int>> &collapsed_groups) {
+    int index, const StateEquivalenceRelation &state_equivalence_relation) {
     assert(is_index_valid(index));
 
     vector<int> abstraction_mapping(
         transition_systems[index]->get_size(), TransitionSystem::PRUNED_STATE);
-    for (size_t group_no = 0; group_no < collapsed_groups.size(); ++group_no) {
-        const auto &group = collapsed_groups[group_no];
-        for (auto pos = group.begin(); pos != group.end(); ++pos) {
+    for (size_t class_no = 0; class_no < state_equivalence_relation.size(); ++class_no) {
+        const StateEquivalenceClass &state_equivalence_class =
+            state_equivalence_relation[class_no];
+        for (auto pos = state_equivalence_class.begin();
+            pos != state_equivalence_class.end(); ++pos) {
             int state = *pos;
             assert(abstraction_mapping[state] == TransitionSystem::PRUNED_STATE);
-            abstraction_mapping[state] = group_no;
+            abstraction_mapping[state] = class_no;
         }
     }
 
     bool shrunk = transition_systems[index]->apply_abstraction(
-        collapsed_groups, abstraction_mapping);
+        state_equivalence_relation, abstraction_mapping);
     if (shrunk) {
-        bool f_preserving = distances[index]->apply_abstraction(collapsed_groups);
+        bool f_preserving = distances[index]->apply_abstraction(
+            state_equivalence_relation);
         if (!f_preserving) {
             cout << transition_systems[index]->tag()
                  << "simplification was not f-preserving!" << endl;

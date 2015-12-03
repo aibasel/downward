@@ -13,7 +13,6 @@
 #include <cctype>
 #include <iostream>
 #include <iterator>
-#include <limits>
 #include <set>
 #include <sstream>
 #include <string>
@@ -35,9 +34,6 @@ using namespace std;
   a graph representation permanently for the benefit of distance
   computation is not worth the overhead.
 */
-
-const int INF = numeric_limits<int>::max();
-
 
 TSConstIterator::TSConstIterator(const TransitionSystem &ts, bool end)
     : label_equivalence_relation(*ts.label_equivalence_relation),
@@ -290,32 +286,32 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 }
 
 bool TransitionSystem::apply_abstraction(
-    const vector<forward_list<int>> &collapsed_groups,
+    const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping) {
     assert(are_transitions_sorted_unique());
 
-    if (static_cast<int>(collapsed_groups.size()) == get_size()) {
+    if (static_cast<int>(state_equivalence_relation.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
         return false;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
-         << " to " << collapsed_groups.size() << " states)" << endl;
+         << " to " << state_equivalence_relation.size() << " states)" << endl;
 
-    typedef forward_list<int> Group;
-
-    int new_num_states = collapsed_groups.size();
+    int new_num_states = state_equivalence_relation.size();
     vector<bool> new_goal_states(new_num_states, false);
 
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
-        const Group &group = collapsed_groups[new_state];
-        assert(!group.empty());
+        const StateEquivalenceClass &state_equivalence_class =
+            state_equivalence_relation[new_state];
+        assert(!state_equivalence_class.empty());
 
-        Group::const_iterator pos = group.begin();
+        StateEquivalenceClass::const_iterator pos =
+            state_equivalence_class.begin();
         new_goal_states[new_state] = goal_states[*pos];
 
         ++pos;
-        for (; pos != group.end(); ++pos)
+        for (; pos != state_equivalence_class.end(); ++pos)
             if (goal_states[*pos])
                 new_goal_states[new_state] = true;
     }

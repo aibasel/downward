@@ -185,7 +185,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
     if (lr_method == ALL_TRANSITION_SYSTEMS) {
         max_iterations = num_transition_systems;
     } else if (lr_method == ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT) {
-        max_iterations = numeric_limits<int>::max();
+        max_iterations = INF;
     } else {
         ABORT("unknown label reduction method");
     }

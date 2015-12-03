@@ -1,16 +1,15 @@
 #ifndef MERGE_AND_SHRINK_LABEL_EQUIVALENCE_RELATION_H
 #define MERGE_AND_SHRINK_LABEL_EQUIVALENCE_RELATION_H
 
-#include <limits>
+#include "types.h"
+
 #include <list>
-#include <memory>
 #include <vector>
 
 
 class Labels;
 
 typedef std::list<int>::iterator LabelIter;
-typedef std::list<int>::const_iterator LabelConstIter;
 
 class LabelGroup {
     /*
@@ -20,9 +19,7 @@ class LabelGroup {
     std::list<int> labels;
     int cost;
 public:
-    LabelGroup()
-    // TODO: duplication of INF in transition_system.h
-        : cost(std::numeric_limits<int>::max()) {
+    LabelGroup() : cost(INF) {
     }
     void set_cost(int cost_) {
         cost = cost_;
