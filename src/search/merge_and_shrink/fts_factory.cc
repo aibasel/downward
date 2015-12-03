@@ -273,7 +273,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
         result.push_back(make_unique_ptr<TransitionSystem>(
-            task_proxy, labels, var_no, move(ts_data.transitions_by_label)));
+                             task_proxy, labels, var_no, move(ts_data.transitions_by_label)));
     }
     return result;
 }
