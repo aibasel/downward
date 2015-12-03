@@ -119,7 +119,7 @@ bool FactoredTransitionSystem::apply_abstraction(
         const StateEquivalenceClass &state_equivalence_class =
             state_equivalence_relation[class_no];
         for (auto pos = state_equivalence_class.begin();
-            pos != state_equivalence_class.end(); ++pos) {
+             pos != state_equivalence_class.end(); ++pos) {
             int state = *pos;
             assert(abstraction_mapping[state] == TransitionSystem::PRUNED_STATE);
             abstraction_mapping[state] = class_no;
