@@ -21,7 +21,7 @@ PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &
 PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
     shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
-    shared_ptr<PatternCollection> patterns;
+    shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
     PatternGeneratorGreedy large_pattern_generator(max_states);
     Pattern large_pattern = large_pattern_generator.generate(task);
