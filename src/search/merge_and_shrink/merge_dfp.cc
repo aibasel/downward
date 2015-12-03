@@ -3,6 +3,7 @@
 #include "distances.h"
 #include "factored_transition_system.h"
 #include "transition_system.h"
+#include "types.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
