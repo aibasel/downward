@@ -26,8 +26,7 @@ void LabelEquivalenceRelation::add_label_to_group(int group_id,
 void LabelEquivalenceRelation::recompute_group_cost() {
     for (LabelGroup &label_group : grouped_labels) {
         if (!label_group.empty()) {
-            // TODO: duplication of INF in transition_system.h
-            label_group.set_cost(numeric_limits<int>::max());
+            label_group.set_cost(INF);
             for (LabelConstIter label_it = label_group.begin();
                  label_it != label_group.end(); ++label_it) {
                 int cost = labels.get_label_cost(*label_it);

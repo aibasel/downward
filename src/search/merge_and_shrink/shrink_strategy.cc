@@ -11,7 +11,6 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <limits>
 
 using namespace std;
 
@@ -158,10 +157,10 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
         int n = max_states_before_merge;
-        if (is_product_within_limit(n, n, numeric_limits<int>::max())) {
+        if (is_product_within_limit(n, n, INF)) {
             max_states = n * n;
         } else {
-            max_states = numeric_limits<int>::max();
+            max_states = INF;
         }
     }
 

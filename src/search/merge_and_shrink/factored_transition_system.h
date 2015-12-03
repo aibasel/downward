@@ -1,7 +1,8 @@
 #ifndef MERGE_AND_SHRINK_FACTORED_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_FACTORED_TRANSITION_SYSTEM_H
 
-#include <forward_list>
+#include "types.h"
+
 #include <memory>
 #include <vector>
 
@@ -54,9 +55,12 @@ public:
     }
 
     // Methods for the merge-and-shrink main loop
-    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-                               int combinable_index);
-    bool apply_abstraction(int index, const std::vector<std::forward_list<int>> &collapsed_groups);
+    void apply_label_reduction(
+        const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
+        int combinable_index);
+    bool apply_abstraction(
+        int index,
+        const StateEquivalenceRelation &state_equivalence_relation);
     int merge(int index1, int index2);
     void finalize(int index = -1);
     bool is_solvable() const {
