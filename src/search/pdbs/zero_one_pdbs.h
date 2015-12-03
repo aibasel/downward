@@ -13,7 +13,7 @@ public:
     ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns);
     ~ZeroOnePDBs() = default;
 
-    int get_value(const State &state) const ;
+    int get_value(const State &state) const;
     /*
       Returns the sum of all mean finite h-values of every PDB.
       This is an approximation of the real mean finite h-value of the Heuristic,
