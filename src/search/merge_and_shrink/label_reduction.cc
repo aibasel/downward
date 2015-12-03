@@ -154,7 +154,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         compute_label_mapping(relation, fts, label_mapping);
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
-                                       next_merge.first);
+                                      next_merge.first);
         }
         delete relation;
         relation = 0;
@@ -166,7 +166,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         compute_label_mapping(relation, fts, label_mapping);
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
-                                       next_merge.second);
+                                      next_merge.second);
         }
         delete relation;
         return;
@@ -353,4 +353,3 @@ static PluginTypePlugin<LabelReduction> _type_plugin(
     "");
 
 static PluginShared<LabelReduction> _plugin("exact", _parse);
-
