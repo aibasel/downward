@@ -49,6 +49,8 @@ struct Transition {
     }
 };
 
+class TransitionSystem;
+
 class TSConstIterator {
     /*
       This class allows users to easily iterate over both label groups and
@@ -56,18 +58,12 @@ class TSConstIterator {
       the data structure used by LabelEquivalenceRelation, which could be
       easily exchanged.
     */
-    const std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation;
-    // TODO: when we move more data out of TransitionSystem, such as
-    // Distances, HeuristicRepresentation and LabelEquivalenceRelation,
-    // we could easily change the following to be the TransitionSystem, rather
-    // than the underlying data structure. Then we could also move this
-    // iterator class in its own file.
+    const LabelEquivalenceRelation &label_equivalence_relation;
     const std::vector<std::vector<Transition>> &transitions_by_group_id;
     // current is the actual iterator, representing the label group's id.
     int current;
 public:
-    TSConstIterator(const std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
-                    const std::vector<std::vector<Transition>> &transitions_by_group_id,
+    TSConstIterator(const TransitionSystem &ts,
                     bool end);
     void operator++();
     bool operator==(const TSConstIterator &rhs) const {
@@ -88,6 +84,7 @@ public:
 };
 
 class TransitionSystem {
+    friend class TSConstIterator;
 public:
     static const int PRUNED_STATE;
 
@@ -104,7 +101,7 @@ private:
     const int num_variables;
     std::vector<int> incorporated_variables;
 
-    std::shared_ptr<LabelEquivalenceRelation> label_equivalence_relation;
+    std::unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
     /*
       The transitions of a label group are indexed via its id. The id of a
       group does not change, and hence its transitions are never moved.
@@ -172,12 +169,10 @@ public:
                                bool only_equivalent_labels);
 
     TSConstIterator begin() const {
-        return TSConstIterator(
-            label_equivalence_relation, transitions_by_group_id, false);
+        return TSConstIterator(*this, false);
     }
     TSConstIterator end() const {
-        return TSConstIterator(
-            label_equivalence_relation, transitions_by_group_id, true);
+        return TSConstIterator(*this, true);
     }
     /*
       Method to identify the transition system in output.
