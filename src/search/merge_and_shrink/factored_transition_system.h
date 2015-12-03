@@ -76,8 +76,11 @@ public:
     bool is_active(int index) const {
         return is_index_valid(index);
     }
+    // TODO: remove the following method and let DFP use get_labels?
     int get_num_labels() const; // used by merge_dfp
-    const Labels &get_labels() const; // used by label_reduction
+    const Labels &get_labels() const { // used by label_reduction
+        return *labels;
+    }
 };
 
 #endif

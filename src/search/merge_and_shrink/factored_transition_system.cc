@@ -50,8 +50,8 @@ FactoredTransitionSystem::FactoredTransitionSystem(FactoredTransitionSystem &&ot
 FactoredTransitionSystem::~FactoredTransitionSystem() {
 }
 
-void FactoredTransitionSystem::discard_states(int index,
-                                              const vector<bool> &to_be_pruned_states) {
+void FactoredTransitionSystem::discard_states(
+    int index, const vector<bool> &to_be_pruned_states) {
     assert(is_index_valid(index));
     int num_states = transition_systems[index]->get_size();
     assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
@@ -113,7 +113,8 @@ bool FactoredTransitionSystem::apply_abstraction(
     int index, const vector<forward_list<int>> &collapsed_groups) {
     assert(is_index_valid(index));
 
-    vector<int> abstraction_mapping(transition_systems[index]->get_size(), TransitionSystem::PRUNED_STATE);
+    vector<int> abstraction_mapping(
+        transition_systems[index]->get_size(), TransitionSystem::PRUNED_STATE);
     for (size_t group_no = 0; group_no < collapsed_groups.size(); ++group_no) {
         const auto &group = collapsed_groups[group_no];
         for (auto pos = group.begin(); pos != group.end(); ++pos) {
@@ -123,11 +124,13 @@ bool FactoredTransitionSystem::apply_abstraction(
         }
     }
 
-    bool shrunk = transition_systems[index]->apply_abstraction(collapsed_groups, abstraction_mapping);
+    bool shrunk = transition_systems[index]->apply_abstraction(
+        collapsed_groups, abstraction_mapping);
     if (shrunk) {
         bool f_preserving = distances[index]->apply_abstraction(collapsed_groups);
         if (!f_preserving) {
-            cout << transition_systems[index]->tag() << "simplification was not f-preserving!" << endl;
+            cout << transition_systems[index]->tag()
+                 << "simplification was not f-preserving!" << endl;
         }
         heuristic_representations[index]->apply_abstraction_to_lookup_table(
             abstraction_mapping);
@@ -151,6 +154,8 @@ int FactoredTransitionSystem::merge(int index1, int index2) {
         make_unique_ptr<HeuristicRepresentationMerge>(
             move(heuristic_representations[index1]),
             move(heuristic_representations[index2])));
+    heuristic_representations[index1] = nullptr;
+    heuristic_representations[index2] = nullptr;
     const TransitionSystem &new_ts = *transition_systems.back();
     distances.push_back(make_unique_ptr<Distances>(new_ts));
     int new_index = transition_systems.size() - 1;
@@ -162,7 +167,6 @@ int FactoredTransitionSystem::merge(int index1, int index2) {
     }
     return new_index;
 }
-
 
 void FactoredTransitionSystem::finalize(int index) {
     if (index == -1) {
@@ -237,8 +241,4 @@ void FactoredTransitionSystem::dump(int index) const {
 
 int FactoredTransitionSystem::get_num_labels() const {
     return labels->get_size();
-}
-
-const Labels &FactoredTransitionSystem::get_labels() const {
-    return *labels;
 }
