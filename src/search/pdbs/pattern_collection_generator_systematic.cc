@@ -110,13 +110,14 @@ void PatternCollectionGeneratorSystematic::compute_connection_points(
     result.assign(candidates.begin(), candidates.end());
 }
 
-void PatternCollectionGeneratorSystematic::enqueue_pattern_if_new(const Pattern &pattern) {
+void PatternCollectionGeneratorSystematic::enqueue_pattern_if_new(
+    const Pattern &pattern) {
     if (pattern_set.insert(pattern).second)
         patterns->push_back(pattern);
 }
 
-void PatternCollectionGeneratorSystematic::build_sga_patterns(TaskProxy task_proxy,
-                                                     const CausalGraph &cg) {
+void PatternCollectionGeneratorSystematic::build_sga_patterns(
+    TaskProxy task_proxy, const CausalGraph &cg) {
     assert(max_pattern_size >= 1);
     assert(pattern_set.empty());
     assert(patterns && patterns->empty());
@@ -168,7 +169,8 @@ void PatternCollectionGeneratorSystematic::build_sga_patterns(TaskProxy task_pro
     pattern_set.clear();
 }
 
-void PatternCollectionGeneratorSystematic::build_patterns(TaskProxy task_proxy) {
+void PatternCollectionGeneratorSystematic::build_patterns(
+    TaskProxy task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     const CausalGraph &cg = task_proxy.get_causal_graph();
 
@@ -230,7 +232,8 @@ void PatternCollectionGeneratorSystematic::build_patterns(TaskProxy task_proxy) 
     cout << "Found " << patterns->size() << " interesting patterns." << endl;
 }
 
-void PatternCollectionGeneratorSystematic::build_patterns_naive(TaskProxy task_proxy) {
+void PatternCollectionGeneratorSystematic::build_patterns_naive(
+    TaskProxy task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     PatternCollection current_patterns(1);
     PatternCollection next_patterns;
