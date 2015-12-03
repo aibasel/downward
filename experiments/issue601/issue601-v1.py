@@ -3,6 +3,7 @@
 
 from downward import suites
 from lab.reports import Attribute, gm
+from downward.reports.compare import CompareConfigsReport
 
 import common_setup
 
@@ -69,5 +70,19 @@ def main(revisions=None):
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
 
+    exp.add_fetcher('data/issue601-base-eval')
+    exp.add_report(CompareConfigsReport(compared_configs=[
+        ('issue601-base-rl-b50k', 'issue601-v1-rl-b50k'),
+        ('issue601-base-cggl-b50k', 'issue601-v1-cggl-b50k'),
+        ('issue601-base-dfp-b50k', 'issue601-v1-dfp-b50k'),
+        ('issue601-base-rl-ginf', 'issue601-v1-rl-ginf'),
+        ('issue601-base-cggl-ginf', 'issue601-v1-cggl-ginf'),
+        ('issue601-base-dfp-ginf', 'issue601-v1-dfp-ginf'),
+        ('issue601-base-rl-f50k', 'issue601-v1-rl-f50k'),
+        ('issue601-base-cggl-f50k', 'issue601-v1-cggl-f50k'),
+        ('issue601-base-dfp-f50k', 'issue601-v1-dfp-f50k'),
+    ],attributes=attributes))
+
     exp()
+
 main(revisions=["issue601-v1"])
