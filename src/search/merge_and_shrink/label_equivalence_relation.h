@@ -62,7 +62,7 @@ public:
 class LabelEquivalenceRelation {
     /*
       There should only be one instance of Labels at runtime. It is created
-      and managed by MergeAndShrinkHeuristic.
+      and managed by FactoredTransitionSystem.
     */
     const Labels &labels;
 
@@ -93,8 +93,8 @@ public:
     int get_size() const {
         return grouped_labels.size();
     }
-    const LabelGroup &operator[](int group_id) {
-        return grouped_labels[group_id];
+    const LabelGroup &get_group(int group_id) const {
+        return grouped_labels.at(group_id);
     }
 };
 

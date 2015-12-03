@@ -39,37 +39,34 @@ using namespace std;
 const int INF = numeric_limits<int>::max();
 
 
-TSConstIterator::TSConstIterator(
-    const shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
-    const vector<vector<Transition>> &transitions_by_group_id,
-    bool end)
-    : label_equivalence_relation(label_equivalence_relation),
-      transitions_by_group_id(transitions_by_group_id),
-      current((end ? label_equivalence_relation->get_size() : 0)) {
-    while (current < label_equivalence_relation->get_size()
-           && (*label_equivalence_relation)[current].empty()) {
+TSConstIterator::TSConstIterator(const TransitionSystem &ts, bool end)
+    : label_equivalence_relation(*ts.label_equivalence_relation),
+      transitions_by_group_id(ts.transitions_by_group_id),
+      current((end ? label_equivalence_relation.get_size() : 0)) {
+    while (current < label_equivalence_relation.get_size()
+           && label_equivalence_relation.get_group(current).empty()) {
         ++current;
     }
 }
 
 void TSConstIterator::operator++() {
     ++current;
-    while (current < label_equivalence_relation->get_size()
-           && (*label_equivalence_relation)[current].empty()) {
+    while (current < label_equivalence_relation.get_size()
+           && label_equivalence_relation.get_group(current).empty()) {
         ++current;
     }
 }
 
 int TSConstIterator::get_cost() const {
-    return (*label_equivalence_relation)[current].get_cost();
+    return label_equivalence_relation.get_group(current).get_cost();
 }
 
 LabelConstIter TSConstIterator::begin() const {
-    return (*label_equivalence_relation)[current].begin();
+    return label_equivalence_relation.get_group(current).begin();
 }
 
 LabelConstIter TSConstIterator::end() const {
-    return (*label_equivalence_relation)[current].end();
+    return label_equivalence_relation.get_group(current).end();
 }
 
 
@@ -79,7 +76,7 @@ const int TransitionSystem::PRUNED_STATE = -1;
 TransitionSystem::TransitionSystem(int num_variables,
                                    const Labels &labels)
     : num_variables(num_variables),
-      label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)) {
+      label_equivalence_relation(make_unique_ptr<LabelEquivalenceRelation>(labels)) {
     transitions_by_group_id.resize(labels.get_max_size());
 }
 
@@ -144,8 +141,7 @@ TransitionSystem::TransitionSystem(
     int num_ops = task_proxy.get_operators().size();
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
-        label_equivalence_relation->add_label_group({label_no}
-                                                    );
+        label_equivalence_relation->add_label_group({label_no});
         // We could assert that the return value equals label_no, but not
         // easily in release mode without unused variable error.
     }
