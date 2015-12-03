@@ -69,7 +69,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<shared_ptr<PatternCollectionGenerator>>(
         "patterns",
         "pattern generation method",
-        "combo()");
+        "systematic(1)");
     parser.add_option<bool>(
         "dominance_pruning",
         "Exclude patterns and pattern collections that will never contribute to "
