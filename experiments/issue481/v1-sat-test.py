@@ -10,15 +10,66 @@ REVS = ["issue481-base", "issue481-v1"]
 SUITE = suites.suite_satisficing_with_ipc11()
 
 CONFIGS = [
-    IssueConfig("ff", ["--search", "eager_greedy(ff())"]),
-    # example using driver options:
-    # IssueConfig("lama", [], driver_options=["--alias", "seq-sat-lama-2011"]),
-]
+    # Greedy (tests single and alternating open lists)
+    IssueConfig("eager_greedy_ff", [
+        "--heuristic",
+            "h=ff()",
+        "--search",
+            "eager_greedy(h, preferred=h)"
+        ]),
+    IssueConfig("lazy_greedy_ff", [
+        "--heuristic",
+            "h=ff()",
+        "--search",
+            "lazy_greedy(h, preferred=h)"
+        ]),
+    # Epsilon Greedy
+    IssueConfig("lazy_epsilon_greedy_ff", [
+        "--heuristic",
+            "h=ff()",
+        "--search",
+            "lazy(epsilon_greedy(h))"
+        ]),
+    # Pareto
+    IssueConfig("lazy_pareto_ff_cea", [
+        "--heuristic",
+            "h1=ff()",
+        "--heuristic",
+            "h2=cea()",
+        "--search",
+            "lazy(pareto([h1, h2]))"
+        ]),
+    # Single Buckets
+    IssueConfig("lazy_single_buckets_ff", [
+        "--heuristic",
+            "h=ff()",
+        "--search",
+            "lazy(single_buckets(h))"
+        ]),
+    # Type based (from issue455)
+    IssueConfig("ff-type-const", [
+        "--heuristic",
+            "hff=ff(cost_type=one)",
+        "--search",
+            "lazy(alt([single(hff),single(hff, pref_only=true), type_based([const(1)])]),"
+            "preferred=[hff],cost_type=one)"
+        ]),
+    IssueConfig("lama-first", [
+        "--heuristic",
+            "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=one,cost_type=one))",
+        "--search",
+            "lazy(alt([single(hff),single(hff, pref_only=true), single(hlm), single(hlm, pref_only=true)]),"
+            "preferred=[hff,hlm],cost_type=one)"
+        ]),
+    IssueConfig("lama-first-types-ff-g", [
+        "--heuristic",
+            "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,lm_cost_type=one,cost_type=one))",
+        "--search",
+            "lazy(alt([single(hff),single(hff, pref_only=true), single(hlm), single(hlm, pref_only=true), type_based([hff, g()])]),"
+            "preferred=[hff,hlm],cost_type=one)"
+        ]),
 
-# TODO: Add email notification? Needs a change to common_setup.py
-# where the MaiaEnvironment is constructed. See:
-#
-# https://lab.readthedocs.org/en/latest/lab.experiment.html#lab.environments.MaiaEnvironment
+]
 
 exp = IssueExperiment(
     revisions=REVS,
