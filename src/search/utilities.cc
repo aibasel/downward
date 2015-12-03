@@ -182,5 +182,5 @@ int get_process_id() {
 Log::~Log() {
     cout << os.str()
          << " [t=" << g_timer << ", " << get_peak_memory_in_kb() << " KB]"
-         << std::endl;
+         << endl;
 }
