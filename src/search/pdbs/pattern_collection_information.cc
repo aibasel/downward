@@ -11,8 +11,9 @@
 
 using namespace std;
 
-PatternCollectionInformation::PatternCollectionInformation(shared_ptr<AbstractTask> task,
-                                     shared_ptr<PatternCollection> patterns)
+PatternCollectionInformation::PatternCollectionInformation(
+    shared_ptr<AbstractTask> task,
+    shared_ptr<PatternCollection> patterns)
     : task(task),
       task_proxy(*task),
       patterns(patterns),
