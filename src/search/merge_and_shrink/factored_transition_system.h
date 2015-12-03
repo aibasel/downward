@@ -54,7 +54,6 @@ public:
     }
 
     // Methods for the merge-and-shrink main loop
-    void label_reduction(std::pair<int, int> merge_indices);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
                                int combinable_index);
     bool apply_abstraction(int index, const std::vector<std::forward_list<int>> &collapsed_groups);
