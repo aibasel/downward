@@ -16,12 +16,6 @@
   Ownership of the information is shared between the creators of this class
   (usually PatternCollectionGenerators), the class itself, and its users
   (consumers of pattern collections like heuristics).
-
-  Class invariants:
-    * All patterns are sorted.
-    * The list of patterns is sorted and non-null.
-    * If max_additive_subsets is non-null, then pdbs is non-null.
-    * The shared pointers used in max_additive_subsets are shared with pdbs.
 */
 class PatternCollectionInformation {
     std::shared_ptr<AbstractTask> task;
@@ -32,14 +26,17 @@ class PatternCollectionInformation {
 
     void create_pdbs_if_missing();
     void create_max_additive_subsets_if_missing();
+
+    bool information_is_valid() const;
 public:
     PatternCollectionInformation(
         std::shared_ptr<AbstractTask> task,
         std::shared_ptr<PatternCollection> patterns);
-    PatternCollectionInformation(
-        std::shared_ptr<AbstractTask> task,
-        std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets);
     ~PatternCollectionInformation() = default;
+
+    void set_pdbs(std::shared_ptr<PDBCollection> pdbs);
+    void set_max_additive_subsets(
+        std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets);
 
     std::shared_ptr<PatternCollection> get_patterns();
     std::shared_ptr<PDBCollection> get_pdbs();

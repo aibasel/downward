@@ -2,6 +2,7 @@
 #define PDBS_INCREMENTAL_CANONICAL_PDBS_H
 
 #include "max_additive_pdb_sets.h"
+#include "pattern_collection_information.h"
 #include "types.h"
 
 #include "../task_proxy.h"
@@ -13,6 +14,7 @@ class IncrementalCanonicalPDBs {
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
 
+    std::shared_ptr<PatternCollection> patterns;
     std::shared_ptr<PDBCollection> pattern_databases;
     std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
 
@@ -48,12 +50,10 @@ public:
     */
     bool is_dead_end(const State &state) const;
 
+    PatternCollectionInformation get_pattern_collection_information() const;
+
     std::shared_ptr<PDBCollection> get_pattern_databases() const {
         return pattern_databases;
-    }
-
-    std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets() {
-        return max_additive_subsets;
     }
 
     int get_size() const {

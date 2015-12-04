@@ -33,8 +33,6 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
         if (used_vars.count(goal_var_id) == 0)
             patterns->emplace_back(1, goal_var_id);
     }
-
-    validate_and_normalize_patterns(task_proxy, *patterns);
     cout << "Combo pattern collection: " << *patterns << endl;
     return PatternCollectionInformation(task, patterns);
 }

@@ -266,7 +266,6 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
     } else {
         build_patterns_naive(task_proxy);
     }
-    validate_and_normalize_patterns(task_proxy, *patterns);
     return PatternCollectionInformation(task, patterns);
 }
 

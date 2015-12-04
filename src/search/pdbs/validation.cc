@@ -40,15 +40,14 @@ void validate_and_normalize_patterns(const TaskProxy &task_proxy,
                                      PatternCollection &patterns) {
     /*
       - Validate and normalize each pattern (see there).
-      - Sort collection lexicographically and remove duplicate patterns.
       - Warn if duplicate patterns exist.
     */
     for (Pattern &pattern : patterns)
         validate_and_normalize_pattern(task_proxy, pattern);
-    sort(patterns.begin(), patterns.end());
-    auto it = unique(patterns.begin(), patterns.end());
-    if (it != patterns.end()) {
-        patterns.erase(it, patterns.end());
+    PatternCollection sorted_patterns(patterns);
+    sort(sorted_patterns.begin(), sorted_patterns.end());
+    auto it = unique(sorted_patterns.begin(), sorted_patterns.end());
+    if (it != sorted_patterns.end()) {
         cout << "Warning: duplicate patterns have been removed" << endl;
     }
 }
