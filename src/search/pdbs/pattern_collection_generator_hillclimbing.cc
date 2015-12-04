@@ -334,8 +334,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
                 initial_candidate_patterns);
         cout << "Pattern generation (Haslum et al.) time: " << timer << endl;
     }
-    return PatternCollectionInformation(
-        task, current_pdbs->get_max_additive_subsets());
+    return current_pdbs->get_pattern_collection_information();
 }
 
 

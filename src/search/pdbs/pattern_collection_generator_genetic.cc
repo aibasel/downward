@@ -18,6 +18,7 @@
 
 using namespace std;
 
+
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
     const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
@@ -195,7 +196,6 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
                 best_fitness = fitness;
                 cout << "best_fitness = " << best_fitness << endl;
                 best_patterns = pattern_collection;
-                //best_heuristic->dump();
             }
         }
         fitness_values.push_back(fitness);
@@ -255,22 +255,16 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm(
     best_fitness = -1;
     best_patterns = nullptr;
     bin_packing();
-    //cout << "initial pattern collections:" << endl;
-    //dump();
     vector<double> initial_fitness_values;
     evaluate(initial_fitness_values);
     for (int i = 0; i < num_episodes; ++i) {
         cout << endl;
         cout << "--------- episode no " << (i + 1) << " ---------" << endl;
         mutate();
-        //cout << "current pattern_collections after mutation" << endl;
-        //dump();
         vector<double> fitness_values;
         evaluate(fitness_values);
         // We allow to select invalid pattern collections.
         select(fitness_values);
-        //cout << "current pattern collections (after selection):" << endl;
-        //dump();
     }
 }
 
@@ -280,8 +274,6 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     genetic_algorithm(task);
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
     assert(best_patterns);
-    TaskProxy task_proxy(*task);
-    validate_and_normalize_patterns(task_proxy, *best_patterns);
     return PatternCollectionInformation(task, best_patterns);
 }
 
