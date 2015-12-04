@@ -49,6 +49,9 @@ void DTGFactory::create_transitions(vector<DomainTransitionGraph *> &dtgs) {
     for (OperatorProxy op : task_proxy.get_operators())
         for (EffectProxy eff : op.get_effects())
             process_effect(eff, op, dtgs);
+    for (OperatorProxy ax : task_proxy.get_axioms())
+        for (EffectProxy eff : ax.get_effects())
+            process_effect(eff, ax, dtgs);
 }
 
 void DTGFactory::process_effect(const EffectProxy &eff, const OperatorProxy &op,
@@ -78,7 +81,7 @@ void DTGFactory::process_effect(const EffectProxy &eff, const OperatorProxy &op,
             update_transition_condition(cond, dtg, transition_condition);
         }
     }
-    if (origin != -1 && target == origin) {
+    if (target == origin) {
         revert_new_local_vars(dtg, first_new_local_var);
         return;
     }
