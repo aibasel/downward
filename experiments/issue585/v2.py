@@ -13,10 +13,10 @@ REV_V1 = 'issue585-v2'
 SUITE = suites.suite_optimal_with_ipc11()
 ALGORITHMS = {
     'astar_ipdb_base': (REV_BASE, ['--search', 'astar(ipdb())']),
-    'astar_ipdb_v1': (REV_V1, ['--search', 'astar(ipdb())']),
+    'astar_ipdb_v2': (REV_V1, ['--search', 'astar(ipdb())']),
 }
 COMPARED_ALGORITHMS = [
-    ('astar_ipdb_base', 'astar_ipdb_v1', 'Diff (ipdb)'),
+    ('astar_ipdb_base', 'astar_ipdb_v2', 'Diff (ipdb)'),
 ]
 
 exp = common_setup.IssueExperiment(
