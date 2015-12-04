@@ -10,30 +10,30 @@ import common_setup
 
 REPO = common_setup.get_repo_base()
 REV_BASE = 'issue585-base'
-REV_V1 = 'issue585-v1'
-SUITE = ['gripper:prob01.pddl'] # suites.suite_optimal_with_ipc11()
+REV_V3 = 'issue585-v3'
+SUITE = suites.suite_optimal_with_ipc11()
 ALGORITHMS = {
     'astar_pdb_base': (REV_BASE, ['--search', 'astar(pdb())']),
-    'astar_pdb_v1': (REV_V1, ['--search', 'astar(pdb())']),
+    'astar_pdb_v3': (REV_V3, ['--search', 'astar(pdb())']),
 
     'astar_cpdbs_base': (REV_BASE, ['--search', 'astar(cpdbs())']),
-    'astar_cpdbs_v1': (REV_V1, ['--search', 'astar(cpdbs())']),
+    'astar_cpdbs_v3': (REV_V3, ['--search', 'astar(cpdbs())']),
 
     'astar_cpdbs_systematic_base': (REV_BASE, ['--search', 'astar(cpdbs_systematic())']),
-    'astar_cpdbs_systematic_v1': (REV_V1, ['--search', 'astar(cpdbs(patterns=systematic()))']),
+    'astar_cpdbs_systematic_v3': (REV_V3, ['--search', 'astar(cpdbs(patterns=systematic()))']),
 
     'astar_zopdbs_base': (REV_BASE, ['--search', 'astar(zopdbs())']),
-    'astar_zopdbs_v1': (REV_V1, ['--search', 'astar(zopdbs())']),
+    'astar_zopdbs_v3': (REV_V3, ['--search', 'astar(zopdbs())']),
 
     'astar_pho_systematic_base': (REV_BASE, ['--search', 'astar(operatorcounting([pho_constraints_systematic()]))']),
-    'astar_pho_systematic_v1': (REV_V1, ['--search', 'astar(operatorcounting([pho_constraints(patterns=systematic())]))']),
+    'astar_pho_systematic_v3': (REV_V3, ['--search', 'astar(operatorcounting([pho_constraints(patterns=systematic())]))']),
 }
 COMPARED_ALGORITHMS = [
-    ('astar_pdb_base', 'astar_pdb_v1', 'Diff (pdb)'),
-    ('astar_cpdbs_base', 'astar_cpdbs_v1', 'Diff (cpdbs)'),
-    ('astar_cpdbs_systematic_base', 'astar_cpdbs_systematic_v1', 'Diff (cpdbs_systematic)'),
-    ('astar_zopdbs_base', 'astar_zopdbs_v1', 'Diff (zopdbs)'),
-    ('astar_pho_systematic_base', 'astar_pho_systematic_v1', 'Diff (pho_systematic)'),
+    ('astar_pdb_base', 'astar_pdb_v3', 'Diff (pdb)'),
+    ('astar_cpdbs_base', 'astar_cpdbs_v3', 'Diff (cpdbs)'),
+    ('astar_cpdbs_systematic_base', 'astar_cpdbs_systematic_v3', 'Diff (cpdbs_systematic)'),
+    ('astar_zopdbs_base', 'astar_zopdbs_v3', 'Diff (zopdbs)'),
+    ('astar_pho_systematic_base', 'astar_pho_systematic_v3', 'Diff (pho_systematic)'),
 ]
 
 exp = common_setup.IssueExperiment(
