@@ -5,6 +5,7 @@ from downward import suites
 from downward.experiment import FastDownwardExperiment
 from downward.reports.compare import CompareConfigsReport
 
+from relativescatter import RelativeScatterPlotReport
 import common_setup
 
 REPO = common_setup.get_repo_base()
@@ -36,5 +37,23 @@ exp.add_report(CompareConfigsReport(
     COMPARED_ALGORITHMS,
     attributes=common_setup.IssueExperiment.DEFAULT_TABLE_ATTRIBUTES
 ))
+
+exp.add_report(
+    RelativeScatterPlotReport(
+        attributes=["total_time"],
+        filter_config=["astar_ipdb_base", "astar_ipdb_v3"],
+        get_category=lambda run1, run2: run1.get("domain"),
+    ),
+    outfile='issue585_ipdb_base_v3_total_time.png'
+)
+
+exp.add_report(
+    RelativeScatterPlotReport(
+        attributes=["total_time"],
+        filter_config=["astar_gapdb_base", "astar_gapdb_v3"],
+        get_category=lambda run1, run2: run1.get("domain"),
+    ),
+    outfile='issue585_gapdb_base_v3_total_time.png'
+)
 
 exp()
