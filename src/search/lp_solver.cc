@@ -25,7 +25,7 @@ using namespace std;
 void add_lp_solver_option_to_parser(OptionParser &parser) {
     parser.document_note(
         "Note",
-        "to use an LP solver, you must build the planner with USE_LP=1. "
+        "to use an LP solver, you must build the planner with LP support. "
         "See LPBuildInstructions.");
     vector<string> lp_solvers;
     vector<string> lp_solvers_doc;
@@ -35,11 +35,12 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
     lp_solvers_doc.push_back("commercial solver by IBM");
     lp_solvers.push_back("GUROBI");
     lp_solvers_doc.push_back("commercial solver");
-    parser.add_enum_option("lpsolver",
-                           lp_solvers,
-                           "external solver that should be used to solve linear programs",
-                           "CPLEX",
-                           lp_solvers_doc);
+    parser.add_enum_option(
+        "lpsolver",
+        lp_solvers,
+        "external solver that should be used to solve linear programs",
+        "CPLEX",
+        lp_solvers_doc);
 }
 
 LPConstraint::LPConstraint(double lower_bound_, double upper_bound_)

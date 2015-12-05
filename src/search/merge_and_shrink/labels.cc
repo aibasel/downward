@@ -1,5 +1,6 @@
 #include "labels.h"
 
+#include "factored_transition_system.h"
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
@@ -43,6 +44,12 @@ Labels::Labels(const Options &options)
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
 }
 
+Labels::~Labels() {
+    for (Label *label : labels) {
+        delete label;
+    }
+}
+
 bool Labels::initialized() const {
     return !transition_system_order.empty();
 }
@@ -80,19 +87,7 @@ void Labels::add_label(int cost) {
     labels.push_back(new Label(cost));
 }
 
-void Labels::notify_transition_systems(
-    int ts_index,
-    const vector<TransitionSystem *> &all_transition_systems,
-    const vector<pair<int, vector<int>>> &label_mapping) const {
-    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-        if (all_transition_systems[i]) {
-            all_transition_systems[i]->apply_label_reduction(label_mapping,
-                                                             static_cast<int>(i) != ts_index);
-        }
-    }
-}
-
-bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
+bool Labels::compute_label_mapping(const EquivalenceRelation *relation,
                                    vector<pair<int, vector<int>>> &label_mapping) {
     int num_labels = 0;
     int num_labels_after_reduction = 0;
@@ -143,15 +138,13 @@ bool Labels::apply_label_reduction(const EquivalenceRelation *relation,
 
 EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
     int ts_index,
-    const vector<TransitionSystem *> &all_transition_systems) const {
+    std::shared_ptr<FactoredTransitionSystem> fts) const {
     /*
       Returns an equivalence relation over labels s.t. l ~ l'
       iff l and l' are locally equivalent in all transition systems
       T' \neq T. (They may or may not be locally equivalent in T.)
     */
-    TransitionSystem *fixed_transition_system = all_transition_systems[ts_index];
-    assert(fixed_transition_system);
-    //cout << transition_system->tag() << "compute combinable labels" << endl;
+    //cout << transition_system.tag() << "compute combinable labels" << endl;
 
     // create the equivalence relation where all labels are equivalent
     int num_labels = labels.size();
@@ -165,13 +158,13 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
     EquivalenceRelation *relation =
         EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
-    for (size_t i = 0; i < all_transition_systems.size(); ++i) {
-        TransitionSystem *ts = all_transition_systems[i];
-        if (!ts || ts == fixed_transition_system) {
+    for (int i = 0; i < fts->get_size(); ++i) {
+        if (!fts->is_active(i) || i == ts_index) {
             continue;
         }
-        for (TSConstIterator group_it = ts->begin();
-             group_it != ts->end(); ++group_it) {
+        const TransitionSystem &ts = fts->get_ts(i);
+        for (TSConstIterator group_it = ts.begin();
+             group_it != ts.end(); ++group_it) {
             relation->refine(group_it.begin(), group_it.end());
         }
     }
@@ -179,10 +172,10 @@ EquivalenceRelation *Labels::compute_combinable_equivalence_relation(
 }
 
 void Labels::reduce(pair<int, int> next_merge,
-                    const vector<TransitionSystem *> &all_transition_systems) {
+                    shared_ptr<FactoredTransitionSystem> fts) {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
-    int num_transition_systems = all_transition_systems.size();
+    int num_transition_systems = fts->get_size();
 
     if (lr_method == TWO_TRANSITION_SYSTEMS) {
         /* Note:
@@ -192,18 +185,17 @@ void Labels::reduce(pair<int, int> next_merge,
            (in terms of variables) or with the smaller transition system and found
            no significant differences.
          */
-        assert(all_transition_systems[next_merge.first]);
-        assert(all_transition_systems[next_merge.second]);
+        assert(fts->is_active(next_merge.first));
+        assert(fts->is_active(next_merge.second));
 
         EquivalenceRelation *relation = compute_combinable_equivalence_relation(
             next_merge.first,
-            all_transition_systems);
+            fts);
         vector<pair<int, vector<int>>> label_mapping;
-        bool have_reduced = apply_label_reduction(relation, label_mapping);
+        bool have_reduced = compute_label_mapping(relation, label_mapping);
         if (have_reduced) {
-            notify_transition_systems(next_merge.first,
-                                      all_transition_systems,
-                                      label_mapping);
+            fts->apply_label_reduction(label_mapping,
+                                       next_merge.first);
         }
         delete relation;
         relation = 0;
@@ -211,12 +203,11 @@ void Labels::reduce(pair<int, int> next_merge,
 
         relation = compute_combinable_equivalence_relation(
             next_merge.second,
-            all_transition_systems);
-        have_reduced = apply_label_reduction(relation, label_mapping);
+            fts);
+        have_reduced = compute_label_mapping(relation, label_mapping);
         if (have_reduced) {
-            notify_transition_systems(next_merge.second,
-                                      all_transition_systems,
-                                      label_mapping);
+            fts->apply_label_reduction(label_mapping,
+                                       next_merge.second);
         }
         delete relation;
         return;
@@ -244,23 +235,20 @@ void Labels::reduce(pair<int, int> next_merge,
 
     for (int i = 0; i < max_iterations; ++i) {
         int ts_index = transition_system_order[tso_index];
-        TransitionSystem *current_transition_system = all_transition_systems[ts_index];
 
         bool have_reduced = false;
         vector<pair<int, vector<int>>> label_mapping;
-        if (current_transition_system != 0) {
+        if (fts->is_active(ts_index)) {
             EquivalenceRelation *relation =
                 compute_combinable_equivalence_relation(ts_index,
-                                                        all_transition_systems);
-            have_reduced = apply_label_reduction(relation, label_mapping);
+                                                        fts);
+            have_reduced = compute_label_mapping(relation, label_mapping);
             delete relation;
         }
 
         if (have_reduced) {
             num_unsuccessful_iterations = 0;
-            notify_transition_systems(ts_index,
-                                      all_transition_systems,
-                                      label_mapping);
+            fts->apply_label_reduction(label_mapping, ts_index);
         } else {
             // Even if the transition system has been removed, we need to count
             // it as unsuccessful iterations (the size of the vector matters).

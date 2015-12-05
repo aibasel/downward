@@ -8,7 +8,8 @@ class Options;
 class ShrinkRandom : public ShrinkBucketBased {
 protected:
     virtual void partition_into_buckets(
-        const TransitionSystem &ts,
+        std::shared_ptr<FactoredTransitionSystem> fts,
+        int index,
         std::vector<Bucket> &buckets) const override;
 
     virtual std::string name() const override;

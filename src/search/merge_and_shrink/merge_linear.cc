@@ -1,5 +1,7 @@
 #include "merge_linear.h"
 
+#include "factored_transition_system.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../utilities.h"
@@ -21,7 +23,8 @@ void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
         task, variable_order_type);
 }
 
-pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_transition_systems) {
+pair<int, int> MergeLinear::get_next(shared_ptr<FactoredTransitionSystem> fts) {
+    int num_transition_systems = fts->get_size();
     assert(initialized());
     assert(!done());
     assert(!variable_order_finder->done());
@@ -34,12 +37,12 @@ pair<int, int> MergeLinear::get_next(const vector<TransitionSystem *> &all_trans
     } else {
         // The most recent composite transition system is appended at the end of
         // all_transition_systems in merge_and_shrink.cc
-        first = all_transition_systems.size() - 1;
+        first = num_transition_systems - 1;
     }
     int second = variable_order_finder->next();
     cout << "Next variable: " << second << endl;
-    assert(all_transition_systems[first]);
-    assert(all_transition_systems[second]);
+    assert(fts->is_active(first));
+    assert(fts->is_active(second));
     --remaining_merges;
     if (done() && !variable_order_finder->done()) {
         cerr << "Variable order finder not done, but no merges remaining" << endl;

@@ -1,6 +1,8 @@
 #include "fts_factory.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
+#include "heuristic_representation.h"
 #include "labels.h"
 #include "transition_system.h"
 
@@ -45,6 +47,8 @@ class FTSFactory {
     void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
     vector<TransitionSystem *> create_transition_systems();
+    vector<unique_ptr<HeuristicRepresentation>> create_heuristic_representations();
+    vector<unique_ptr<Distances>> create_distances(vector<TransitionSystem *> &transition_systems);
 public:
     FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels);
     ~FTSFactory();
@@ -273,6 +277,38 @@ vector<TransitionSystem *> FTSFactory::create_transition_systems() {
     return result;
 }
 
+vector<unique_ptr<HeuristicRepresentation>> FTSFactory::create_heuristic_representations() {
+    // Create the actual HeuristicRepresentation objects.
+    int num_variables = task_proxy.get_variables().size();
+
+    // We reserve space for the transition systems added later by merging.
+    vector<unique_ptr<HeuristicRepresentation>> result;
+    assert(num_variables >= 1);
+    result.reserve(num_variables * 2 - 1);
+
+    for (int var_no = 0; var_no < num_variables; ++var_no) {
+        int range = task_proxy.get_variables()[var_no].get_domain_size();
+        result.push_back(make_unique_ptr<HeuristicRepresentationLeaf>(var_no, range));
+    }
+    return result;
+}
+
+vector<unique_ptr<Distances>> FTSFactory::create_distances(
+    vector<TransitionSystem *> &transition_systems) {
+    // Create the actual Distances objects.
+    int num_variables = task_proxy.get_variables().size();
+
+    // We reserve space for the transition systems added later by merging.
+    vector<unique_ptr<Distances>> result;
+    assert(num_variables >= 1);
+    result.reserve(num_variables * 2 - 1);
+
+    for (int var_no = 0; var_no < num_variables; ++var_no) {
+        result.push_back(make_unique_ptr<Distances>(*transition_systems[var_no]));
+    }
+    return result;
+}
+
 FactoredTransitionSystem FTSFactory::create() {
     cout << "Building atomic transition systems... " << endl;
 
@@ -280,7 +316,18 @@ FactoredTransitionSystem FTSFactory::create() {
     initialize_transition_system_data();
     build_transitions();
 
-    return FactoredTransitionSystem(create_transition_systems());
+    vector<TransitionSystem *> transition_systems =
+        create_transition_systems();
+    vector<unique_ptr<HeuristicRepresentation>> heuristic_representations =
+        create_heuristic_representations();
+    vector<unique_ptr<Distances>> distances =
+        create_distances(transition_systems);
+
+    return FactoredTransitionSystem(
+        labels,
+        move(transition_systems),
+        move(heuristic_representations),
+        move(distances));
 }
 
 FactoredTransitionSystem create_factored_transition_system(

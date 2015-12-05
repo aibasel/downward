@@ -5,6 +5,7 @@
 
 #include <memory>
 
+class FactoredTransitionSystem;
 class Labels;
 class MergeStrategy;
 class ShrinkStrategy;
@@ -17,11 +18,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     std::shared_ptr<Labels> labels;
     long starting_peak_memory;
 
-    /*
-      TODO: after splitting transition system into several parts, we may
-      want to change all transition system pointers into unique_ptr.
-    */
-    TransitionSystem *final_transition_system;
+    std::shared_ptr<FactoredTransitionSystem> fts;
     void build_transition_system(const Timer &timer);
 
     void report_peak_memory_delta(bool final = false) const;

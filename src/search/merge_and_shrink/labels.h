@@ -1,6 +1,7 @@
 #ifndef MERGE_AND_SHRINK_LABELS_H
 #define MERGE_AND_SHRINK_LABELS_H
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -8,7 +9,7 @@ class EquivalenceRelation;
 class Label;
 class Options;
 class TaskProxy;
-class TransitionSystem;
+class FactoredTransitionSystem;
 
 /*
   This class serves both as a container class to handle the set of all labels
@@ -56,26 +57,21 @@ class Labels {
     LabelReductionSystemOrder lr_system_order;
 
     bool initialized() const;
-    // Apply the label mapping to all transition systems.
-    void notify_transition_systems(
-        int ts_index,
-        const std::vector<TransitionSystem *> &all_transition_systems,
-        const std::vector<std::pair<int, std::vector<int>>> &label_mapping) const;
     // Apply the given label equivalence relation to the set of labels and compute
     // the resulting label mapping.
-    bool apply_label_reduction(
+    bool compute_label_mapping(
         const EquivalenceRelation *relation,
         std::vector<std::pair<int, std::vector<int>>> &label_mapping);
     EquivalenceRelation *compute_combinable_equivalence_relation(
         int ts_index,
-        const std::vector<TransitionSystem *> &all_transition_systems) const;
+        std::shared_ptr<FactoredTransitionSystem> fts) const;
 public:
     explicit Labels(const Options &options);
-    ~Labels() {}
+    ~Labels();
     void initialize(const TaskProxy &task_proxy);
     void add_label(int cost);
     void reduce(std::pair<int, int> next_merge,
-                const std::vector<TransitionSystem *> &all_transition_systems);
+                std::shared_ptr<FactoredTransitionSystem> fts);
     bool is_current_label(int label_no) const;
     int get_label_cost(int label_no) const;
     void dump_labels() const;

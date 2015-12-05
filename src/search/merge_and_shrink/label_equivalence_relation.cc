@@ -7,7 +7,7 @@
 
 using namespace std;
 
-LabelEquivalenceRelation::LabelEquivalenceRelation(const std::shared_ptr<Labels> labels)
+LabelEquivalenceRelation::LabelEquivalenceRelation(const shared_ptr<Labels> labels)
     : labels(labels) {
     grouped_labels.reserve(labels->get_max_size());
     label_to_positions.resize(labels->get_max_size());
@@ -79,8 +79,4 @@ int LabelEquivalenceRelation::add_label_group(const vector<int> &new_labels) {
         add_label_to_group(new_id, label_no);
     }
     return new_id;
-}
-
-int LabelEquivalenceRelation::get_num_labels() const {
-    return labels->get_size();
 }
