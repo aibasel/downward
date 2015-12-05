@@ -5,8 +5,6 @@
 
 #include "../variable_order_finder.h"
 
-#include <memory>
-
 class Options;
 
 class MergeLinear : public MergeStrategy {
@@ -21,7 +19,7 @@ public:
     virtual ~MergeLinear() override = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> task) override;
 
-    virtual std::pair<int, int> get_next(const std::vector<TransitionSystem *> &all_transition_systems) override;
+    virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) override;
     virtual std::string name() const override;
 };
 

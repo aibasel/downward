@@ -52,6 +52,7 @@ class Distances {
     int max_g;
     int max_h;
 
+    void clear_distances();
     int get_num_states() const;
     bool is_unit_cost() const;
 
@@ -63,7 +64,6 @@ public:
     explicit Distances(const TransitionSystem &transition_system);
     ~Distances();
 
-    void clear_distances();
     bool are_distances_computed() const;
     std::vector<bool> compute_distances();
 
@@ -79,17 +79,22 @@ public:
     bool apply_abstraction(
         const std::vector<std::forward_list<int>> &collapsed_groups);
 
-    int get_max_f() const;
-    int get_max_g() const;
-    int get_max_h() const;
-
-    int get_init_distance(int state) const {
+    int get_max_f() const { // used by shrink_fh
+        return max_f;
+    }
+    int get_max_g() const { // unused
+        return max_g;
+    }
+    int get_max_h() const { // used by shrink strategies
+        return max_h;
+    }
+    int get_init_distance(int state) const { // used by shrink_fh
         return init_distances[state];
     }
-
-    int get_goal_distance(int state) const {
+    int get_goal_distance(int state) const { // used by shrink strategies and merge_dfp
         return goal_distances[state];
     }
+    void dump() const;
 };
 
 #endif

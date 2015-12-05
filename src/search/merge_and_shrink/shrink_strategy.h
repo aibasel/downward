@@ -1,14 +1,17 @@
 #ifndef MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 #define MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 
+#include <forward_list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <forward_list>
 
-class TransitionSystem;
+
+class FactoredTransitionSystem;
 class OptionParser;
 class Options;
+class TransitionSystem;
 
 class ShrinkStrategy {
 protected:
@@ -20,8 +23,7 @@ protected:
        will be dropped completely and receive an h value of infinity.
     */
 
-    typedef int AbstractStateRef;
-    typedef std::forward_list<AbstractStateRef> StateEquivalenceClass;
+    typedef std::forward_list<int> StateEquivalenceClass;
     typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
 private:
     // Hard limit: the maximum size of a transition system at any point.
@@ -44,7 +46,8 @@ private:
       system, but it may attempt to e.g. shrink the transition system in an
       information preserving way.
     */
-    bool shrink_transition_system(TransitionSystem &ts, int new_size) const;
+    bool shrink_transition_system(std::shared_ptr<FactoredTransitionSystem> fts,
+                                  int index, int new_size) const;
     /*
       If max_states_before_merge is violated by any of the two transition
       systems or if the product transition system would exceed max_states,
@@ -60,7 +63,8 @@ protected:
       specified by concrete shrinking strategies.
     */
     virtual void compute_equivalence_relation(
-        const TransitionSystem &ts,
+        std::shared_ptr<FactoredTransitionSystem> fts,
+        int index,
         int target,
         StateEquivalenceRelation &equivalence_relation) const = 0;
     virtual std::string name() const = 0;
@@ -73,8 +77,9 @@ public:
       The given transition systems are guaranteed to be solvable by the
       merge-and-shrink computation.
     */
-    std::pair<bool, bool> shrink(TransitionSystem &ts1,
-                                 TransitionSystem &ts2) const;
+    std::pair<bool, bool> shrink(std::shared_ptr<FactoredTransitionSystem> fts,
+                                 int index1,
+                                 int index2) const;
 
     void dump_options() const;
     std::string get_name() const;

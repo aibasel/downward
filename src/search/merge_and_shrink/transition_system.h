@@ -17,7 +17,6 @@ class State;
 class TaskProxy;
 class Timer;
 
-typedef int AbstractStateRef;
 // Duplicate from LabelEquivalenceRelation
 typedef std::list<int>::const_iterator LabelConstIter;
 
@@ -25,10 +24,10 @@ typedef std::list<int>::const_iterator LabelConstIter;
 extern const int INF;
 
 struct Transition {
-    AbstractStateRef src;
-    AbstractStateRef target;
+    int src;
+    int target;
 
-    Transition(AbstractStateRef src_, AbstractStateRef target_)
+    Transition(int src_, int target_)
         : src(src_), target(target_) {
     }
 
@@ -90,7 +89,7 @@ public:
 
 class TransitionSystem {
 public:
-    static const int PRUNED_STATE = -1;
+    static const int PRUNED_STATE;
 
 private:
     /*
@@ -126,35 +125,13 @@ private:
 
     int num_states;
 
-    std::unique_ptr<HeuristicRepresentation> heuristic_representation;
-    std::unique_ptr<Distances> distances;
-
     std::vector<bool> goal_states;
-    AbstractStateRef init_state;
+    int init_state;
 
     bool goal_relevant; // TODO: Get rid of this?
 
-    /*
-      Invariant of this class:
-      A transition system is in a valid state iff:
-       - The transitions for every group of locally equivalent labels are
-         sorted (by source, by target) and there are no duplicates
-         (are_transitions_sorted_unique() == true).
-       - Distances are computed and stored (are_distances_computed() == true).
-       - Locally equivalent labels are computed. This cannot explicitly be
-         tested because of labels and transitions being coupled in the data
-         structure representing transitions.
-      Note that those tests are expensive to compute and hence only used as
-      an assertion.
-    */
-    bool is_valid() const;
-
-    void compute_distances_and_prune();
-    void discard_states(const std::vector<bool> &to_be_pruned_states);
-
     // Methods related to the representation of transitions and labels
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
-    bool are_transitions_sorted_unique() const;
     void compute_locally_equivalent_labels();
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
         return transitions_by_group_id[group_id];
@@ -165,10 +142,9 @@ private:
 
     // Statistics and output
     int total_transitions() const;
-    int unique_unlabeled_transitions() const;
     std::string description() const;
 
-    TransitionSystem(const TaskProxy &task_proxy,
+    TransitionSystem(int num_variables,
                      const std::shared_ptr<Labels> labels);
 public:
     // Constructor for an atomic transition system.
@@ -184,16 +160,16 @@ public:
       Invariant: the children ts1 and ts2 must be solvable.
       (It is a bug to merge an unsolvable transition system.)
     */
-    TransitionSystem(const TaskProxy &task_proxy,
-                     const std::shared_ptr<Labels> labels,
+    TransitionSystem(const std::shared_ptr<Labels> labels,
                      TransitionSystem *ts1,
                      TransitionSystem *ts2);
     ~TransitionSystem();
 
-    bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef>> &collapsed_groups);
+    bool apply_abstraction(
+        const std::vector<std::forward_list<int>> &collapsed_groups,
+        const std::vector<int> &abstraction_mapping);
     void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
                                bool only_equivalent_labels);
-    void release_memory();
 
     TSConstIterator begin() const {
         return TSConstIterator(
@@ -211,40 +187,24 @@ public:
       out of y variables.
     */
     std::string tag() const;
+    /*
+      The transitions for every group of locally equivalent labels are
+      sorted (by source, by target) and there are no duplicates.
+    */
+    bool are_transitions_sorted_unique() const;
     bool is_solvable() const;
-    int get_cost(const State &state) const;
-    void statistics(const Timer &timer) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
+    void statistics() const;
     int get_size() const {
         return num_states;
     }
-
     int get_init_state() const {
         return init_state;
     }
-
     bool is_goal_state(int state) const {
         return goal_states[state];
     }
-
-    /*
-      TODO: We probably want to get rid of the methods below that just
-      forward to distances, by giving the users of these methods
-      access to the the distances object instead.
-
-      This might also help address a possible performance problem we
-      might have at the moment, now that these methods are no longer
-      inlined here. (To be able to inline them, we would need to
-      include distances.h here, which we would rather not.)
-    */
-    int get_max_f() const; // used by shrink strategies
-    int get_max_g() const; // unused
-    int get_max_h() const; // used by shrink strategies
-    int get_init_distance(int state) const; // used by shrink_fh
-    int get_goal_distance(int state) const; // used by shrink strategies and merge_dfp
-
-    int get_num_labels() const;      // used by merge_dfp
     bool is_goal_relevant() const {  // used by merge_dfp
         return goal_relevant;
     }
