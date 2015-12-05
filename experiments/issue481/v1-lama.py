@@ -20,7 +20,6 @@ exp = IssueExperiment(
     email="malte.helmert@unibas.ch"
 )
 
-exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 
 exp()
