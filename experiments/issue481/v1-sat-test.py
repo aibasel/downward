@@ -78,9 +78,10 @@ exp = IssueExperiment(
     email="malte.helmert@unibas.ch"
 )
 
-## TODO: Pick which steps we actually want; probably not all three.
-## scatter plots commented out for now while we don't have a usable matplotlib.
-exp.add_absolute_report_step()
+# Absolute report commented out because a comparison table is more useful for this issue.
+# (It's still in this file because someone might want to use it as a basis.)
+# Scatter plots commented out for now because I have no usable matplotlib available.
+# exp.add_absolute_report_step()
 exp.add_comparison_table_step()
 # exp.add_scatter_plot_step()
 
