@@ -10,6 +10,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 class MaxCliqueComputer {
     const vector<vector<int>> &graph;
     vector<vector<int>> &max_cliques;
@@ -112,4 +114,5 @@ void compute_max_cliques(
     vector<vector<int>> &max_cliques) {
     MaxCliqueComputer clique_computer(graph, max_cliques);
     clique_computer.compute();
+}
 }

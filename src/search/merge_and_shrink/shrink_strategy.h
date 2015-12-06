@@ -7,10 +7,12 @@
 #include <utility>
 #include <vector>
 
-
-class FactoredTransitionSystem;
 class OptionParser;
 class Options;
+
+
+namespace MergeAndShrink {
+class FactoredTransitionSystem;
 class TransitionSystem;
 
 class ShrinkStrategy {
@@ -87,5 +89,6 @@ public:
     static void add_options_to_parser(OptionParser &parser);
     static void handle_option_defaults(Options &opts);
 };
+}
 
 #endif

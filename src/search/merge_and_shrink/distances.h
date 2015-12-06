@@ -1,11 +1,12 @@
 #ifndef MERGE_AND_SHRINK_DISTANCES_H
 #define MERGE_AND_SHRINK_DISTANCES_H
 
-class TransitionSystem;
-
 #include <forward_list>
 #include <vector>
 
+
+namespace MergeAndShrink {
+class TransitionSystem;
 
 /*
   TODO: Possible interface improvements for this class:
@@ -96,5 +97,6 @@ public:
     }
     void dump() const;
 };
+}
 
 #endif

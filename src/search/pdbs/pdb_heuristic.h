@@ -9,6 +9,8 @@ class GlobalState;
 class Options;
 class State;
 
+
+namespace PDBs {
 // Implements a heuristic for a single PDB.
 class PDBHeuristic : public Heuristic {
     PatternDatabase pdb;
@@ -32,5 +34,6 @@ public:
     PDBHeuristic(const Options &opts);
     virtual ~PDBHeuristic() override = default;
 };
+}
 
 #endif

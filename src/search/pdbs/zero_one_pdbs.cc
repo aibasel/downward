@@ -13,6 +13,7 @@
 using namespace std;
 
 
+namespace PDBs {
 ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns) {
     vector<int> operator_costs;
     OperatorsProxy operators = task_proxy.get_operators();
@@ -67,4 +68,5 @@ void ZeroOnePDBs::dump() const {
     for (const shared_ptr<PatternDatabase> &pdb : pattern_databases) {
         cout << pdb->get_pattern() << endl;
     }
+}
 }

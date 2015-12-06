@@ -8,6 +8,8 @@
 
 class Options;
 
+
+namespace PDBs {
 class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
     std::shared_ptr<PatternCollection> patterns;
 public:
@@ -17,5 +19,6 @@ public:
     virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
+}
 
 #endif

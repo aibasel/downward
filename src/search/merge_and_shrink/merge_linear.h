@@ -7,6 +7,8 @@
 
 class Options;
 
+
+namespace MergeAndShrink {
 class MergeLinear : public MergeStrategy {
     // Only needed until variable order finder is initialized.
     VariableOrderType variable_order_type;
@@ -22,5 +24,6 @@ public:
     virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) override;
     virtual std::string name() const override;
 };
+}
 
 #endif

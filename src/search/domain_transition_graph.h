@@ -7,9 +7,12 @@
 #include <vector>
 using namespace std;
 
-class CGHeuristic;
 class GlobalOperator;
 class GlobalState;
+
+namespace CGHeuristic {
+class CGHeuristic;
+}
 
 struct ValueNode;
 struct ValueTransition;
@@ -75,13 +78,13 @@ struct ValueNode {
     void dump() const;
 };
 
-namespace cea_heuristic {
+namespace ContextEnhancedAdditiveHeuristic {
 class ContextEnhancedAdditiveHeuristic;
 }
 
 class DomainTransitionGraph {
-    friend class CGHeuristic;
-    friend class cea_heuristic::ContextEnhancedAdditiveHeuristic;
+    friend class CGHeuristic::CGHeuristic;
+    friend class ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic;
     friend struct ValueNode;
     friend struct ValueTransition;
     friend struct LocalAssignment;

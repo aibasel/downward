@@ -14,6 +14,7 @@
 using namespace std;
 
 
+namespace PDBs {
 static bool patterns_are_disjoint(
     const Pattern &pattern1, const Pattern &pattern2) {
     size_t i = 0;
@@ -301,3 +302,4 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 }
 
 static PluginShared<PatternCollectionGenerator> _plugin("systematic", _parse);
+}

@@ -8,6 +8,7 @@
 using namespace std;
 
 
+namespace PDBs {
 bool are_patterns_additive(const Pattern &pattern1,
                            const Pattern &pattern2,
                            const VariableAdditivity &are_additive) {
@@ -98,4 +99,5 @@ MaxAdditivePDBSubsets compute_max_additive_subsets_with_pattern(
         subsets_additive_with_pattern.emplace_back();
     }
     return subsets_additive_with_pattern;
+}
 }

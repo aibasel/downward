@@ -2,8 +2,10 @@
 #define LANDMARKS_LANDMARK_STATUS_MANAGER_H
 
 #include "landmark_graph.h"
+
 #include "../per_state_information.h"
 
+namespace Landmarks {
 class LandmarkStatusManager {
 private:
     PerStateInformation<std::vector<bool>> reached_lms;
@@ -24,5 +26,6 @@ public:
     void set_landmarks_for_initial_state();
     bool update_reached_lms(const GlobalState &parent_state, const GlobalOperator &op, const GlobalState &state);
 };
+}
 
 #endif

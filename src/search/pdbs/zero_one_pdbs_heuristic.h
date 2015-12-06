@@ -5,6 +5,7 @@
 
 #include "../heuristic.h"
 
+namespace PDBs {
 class PatternDatabase;
 
 class ZeroOnePDBsHeuristic : public Heuristic {
@@ -20,5 +21,6 @@ public:
     ZeroOnePDBsHeuristic(const Options &opts);
     virtual ~ZeroOnePDBsHeuristic() = default;
 };
+}
 
 #endif

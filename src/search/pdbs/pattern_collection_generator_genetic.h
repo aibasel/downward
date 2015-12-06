@@ -10,6 +10,9 @@
 class AbstractTask;
 class Options;
 
+
+namespace PDBs {
+
 /*
   Implementation of the pattern generation algorithm by Edelkamp. See:
   Stefan Edelkamp, Automated Creation of Pattern Database Search
@@ -109,5 +112,6 @@ public:
     virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
+}
 
 #endif

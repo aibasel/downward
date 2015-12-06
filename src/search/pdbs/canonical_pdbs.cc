@@ -11,6 +11,7 @@
 using namespace std;
 
 
+namespace PDBs {
 CanonicalPDBs::CanonicalPDBs(
     shared_ptr<PDBCollection> pattern_databases,
     shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets_,
@@ -40,4 +41,5 @@ int CanonicalPDBs::get_value(const State &state) const {
         max_h = max(max_h, subset_h);
     }
     return max_h;
+}
 }

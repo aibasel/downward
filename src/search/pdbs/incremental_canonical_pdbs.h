@@ -10,6 +10,7 @@
 #include <memory>
 
 
+namespace PDBs {
 class IncrementalCanonicalPDBs {
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
@@ -60,5 +61,6 @@ public:
         return size;
     }
 };
+}
 
 #endif

@@ -16,6 +16,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 /* A successor signature characterizes the behaviour of an abstract
    state in so far as bisimulation cares about it. States with
    identical successor signature are not distinguished by
@@ -24,8 +26,7 @@ using namespace std;
    Each entry in the vector is a pair of (label group id, equivalence class of
    successor). The bisimulation algorithm requires that the vector is
    sorted and uniquified. */
-
-typedef vector<pair<int, int>> SuccessorSignature;
+using SuccessorSignature = vector<pair<int, int>>;
 
 /*
   The following class encodes all we need to know about a state for
@@ -416,3 +417,4 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
+}

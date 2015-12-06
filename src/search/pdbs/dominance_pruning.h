@@ -5,6 +5,8 @@
 
 #include <memory>
 
+namespace PDBs {
+
 /*
   Collection superset dominates collection subset iff for every pattern
   p_subset in subset there is a pattern p_superset in superset where
@@ -13,5 +15,6 @@
 extern std::shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     const PDBCollection &pattern_databases,
     const MaxAdditivePDBSubsets &max_additive_subsets);
+}
 
 #endif

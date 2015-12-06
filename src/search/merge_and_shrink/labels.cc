@@ -20,6 +20,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 class Label {
     /*
       This class implements labels as used by merge-and-shrink transition systems.
@@ -410,3 +412,4 @@ static PluginTypePlugin<Labels> _type_plugin(
     "");
 
 static PluginShared<Labels> _plugin("label_reduction", _parse);
+}

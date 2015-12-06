@@ -14,6 +14,7 @@
 using namespace std;
 
 
+namespace PDBs {
 PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &opts)
     : max_states(opts.get<int>("max_states")) {
 }
@@ -52,3 +53,4 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 }
 
 static PluginShared<PatternCollectionGenerator> _plugin("combo", _parse);
+}

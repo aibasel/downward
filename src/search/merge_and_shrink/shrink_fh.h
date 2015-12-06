@@ -7,6 +7,8 @@
 
 class Options;
 
+
+namespace MergeAndShrink {
 /*
   NOTE: In case where we must merge across buckets (i.e. when
   the number of (f, h) pairs is larger than the number of
@@ -18,7 +20,6 @@ class Options;
   do not need to merge across buckets. Therefore the complication
   might not be worth the code maintenance cost.
 */
-
 class ShrinkFH : public ShrinkBucketBased {
 public:
     enum HighLow {HIGH, LOW};
@@ -46,5 +47,6 @@ public:
     explicit ShrinkFH(const Options &opts);
     virtual ~ShrinkFH();
 };
+}
 
 #endif

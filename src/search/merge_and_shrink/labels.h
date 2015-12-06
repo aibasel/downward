@@ -6,9 +6,12 @@
 #include <vector>
 
 class EquivalenceRelation;
-class Label;
 class Options;
 class TaskProxy;
+
+
+namespace MergeAndShrink {
+class Label;
 class FactoredTransitionSystem;
 
 /*
@@ -91,5 +94,6 @@ public:
         return max_size;
     }
 };
+}
 
 #endif

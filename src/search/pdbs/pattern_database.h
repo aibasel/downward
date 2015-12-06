@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+
+namespace PDBs {
 class AbstractOperator {
     /*
       This class represents an abstract operator how it is needed for
@@ -67,9 +69,6 @@ public:
     void dump(const Pattern &pattern,
               const TaskProxy &task_proxy) const;
 };
-
-class State;
-class OperatorProxy;
 
 // Implements a single pattern database
 class PatternDatabase {
@@ -194,5 +193,6 @@ public:
     // Returns true iff op has an effect on a variable in the pattern.
     bool is_operator_relevant(const OperatorProxy &op) const;
 };
+}
 
 #endif

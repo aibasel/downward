@@ -14,8 +14,12 @@
 #include <vector>
 
 class CountdownTimer;
-class IncrementalCanonicalPDBs;
 class Options;
+
+
+namespace PDBs {
+class CanonicalPDBsHeuristic;
+class IncrementalCanonicalPDBs;
 class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
@@ -124,5 +128,6 @@ public:
     virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
+}
 
 #endif
