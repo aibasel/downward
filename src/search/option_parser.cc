@@ -22,6 +22,8 @@ class AbstractTask;
 class Labels;
 class LandmarkGraph;
 class MergeStrategy;
+class PatternCollectionGenerator;
+class PatternGenerator;
 class SearchEngine;
 class ShrinkStrategy;
 class Synergy;
@@ -90,6 +92,8 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<ShrinkStrategy>>(pt);
     get_help_templ<shared_ptr<Labels>>(pt);
     get_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>(pt);
+    get_help_templ<shared_ptr<PatternCollectionGenerator>>(pt);
+    get_help_templ<shared_ptr<PatternGenerator>>(pt);
 }
 
 template<typename T>
@@ -117,6 +121,8 @@ static void get_full_help() {
     get_full_help_templ<shared_ptr<ShrinkStrategy>>();
     get_full_help_templ<shared_ptr<Labels>>();
     get_full_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>();
+    get_full_help_templ<shared_ptr<PatternCollectionGenerator>>();
+    get_full_help_templ<shared_ptr<PatternGenerator>>();
 }
 
 
