@@ -50,6 +50,11 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4456") # declaration hides previous local declaration
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
 
+        # The following are disabled because of what seems to be compiler bugs.
+        # "unreferenced local function has been removed";
+        # see http://stackoverflow.com/questions/3051992/compiler-warning-at-c-template-base-class
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4505")
+
         # TODO: Configuration-specific flags. We currently rely on the fact that
         # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
         # from cmake. This is the case for most build environments, but we have less
