@@ -1,9 +1,12 @@
-#include <vector>
-
 #include "landmark_factory_rpg_exhaust.h"
+
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+
+#include <vector>
+using namespace std;
+
 
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation

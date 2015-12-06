@@ -3,6 +3,10 @@
 #include "option_parser.h"
 #include "plugin.h"
 
+#include <iostream>
+using namespace std;
+
+
 GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
     : Heuristic(opts) {
 }

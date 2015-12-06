@@ -9,7 +9,10 @@
 
 #include <cassert>
 #include <limits>
+#include <memory>
 #include <vector>
+
+using namespace std;
 
 
 namespace OperatorCounting {
