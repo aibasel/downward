@@ -5,13 +5,15 @@
 #include "heuristic.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "search_common.h"
 #include "successor_generator.h"
+#include "utilities.h"
 
-#include "evaluators/g_evaluator.h"
-#include "evaluators/sum_evaluator.h"
+#include "open_lists/open_list_factory.h"
 
 #include <cassert>
 #include <cstdlib>
+#include <memory>
 #include <set>
 using namespace std;
 
@@ -19,7 +21,8 @@ EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       use_multi_path_dependence(opts.get<bool>("mpd")),
-      open_list(opts.get<OpenList<StateID> *>("open")),
+      open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
+                create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")) {
 }
@@ -303,14 +306,9 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
 }
 
 static SearchEngine *_parse(OptionParser &parser) {
-    //open lists are currently registered with the parser on demand,
-    //because for templated classes the usual method of registering
-    //does not work:
-    Plugin<OpenList<StateID>>::register_open_lists();
-
     parser.document_synopsis("Eager best-first search", "");
 
-    parser.add_option<OpenList<StateID> *>("open", "open list");
+    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
     parser.add_option<ScalarEvaluator *>(
@@ -361,22 +359,9 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
-        GEvaluator::GEvaluator *g = new GEvaluator::GEvaluator();
-        vector<ScalarEvaluator *> sum_evals;
-        sum_evals.push_back(g);
-        ScalarEvaluator *eval = opts.get<ScalarEvaluator *>("eval");
-        sum_evals.push_back(eval);
-        ScalarEvaluator *f_eval = new SumEvaluator::SumEvaluator(sum_evals);
-
-        // use eval for tiebreaking
-        std::vector<ScalarEvaluator *> evals;
-        evals.push_back(f_eval);
-        evals.push_back(eval);
-        OpenList<StateID> *open = \
-            new TieBreakingOpenList<StateID>(evals, false, false);
-
-        opts.set("open", open);
-        opts.set("f_eval", f_eval);
+        auto temp = create_astar_open_list_factory_and_f_eval(opts);
+        opts.set("open", temp.first);
+        opts.set("f_eval", temp.second);
         opts.set("reopen_closed", true);
         vector<Heuristic *> preferred_list;
         opts.set("preferred", preferred_list);
@@ -435,39 +420,16 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "boost value for preferred operator open lists", "0");
     SearchEngine::add_options_to_parser(parser);
 
-
     Options opts = parser.parse();
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
-        vector<ScalarEvaluator *> evals =
-            opts.get_list<ScalarEvaluator *>("evals");
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        OpenList<StateID> *open;
-        if ((evals.size() == 1) && preferred_list.empty()) {
-            open = new StandardScalarOpenList<StateID>(evals[0], false);
-        } else {
-            vector<OpenList<StateID> *> inner_lists;
-            for (ScalarEvaluator *evaluator : evals) {
-                inner_lists.push_back(
-                    new StandardScalarOpenList<StateID>(evaluator, false));
-                if (!preferred_list.empty()) {
-                    inner_lists.push_back(
-                        new StandardScalarOpenList<StateID>(evaluator, true));
-                }
-            }
-            open = new AlternationOpenList<StateID>(
-                inner_lists, opts.get<int>("boost"));
-        }
-
-        opts.set("open", open);
+        opts.set("open", create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
         opts.set("mpd", false);
         ScalarEvaluator *evaluator = nullptr;
         opts.set("f_eval", evaluator);
-        opts.set("preferred", preferred_list);
         engine = new EagerSearch(opts);
     }
     return engine;

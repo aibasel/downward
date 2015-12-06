@@ -1,8 +1,11 @@
 #ifndef PDBS_PATTERN_DATABASE_H
 #define PDBS_PATTERN_DATABASE_H
 
+#include "types.h"
+
 #include "../task_proxy.h"
 
+#include <utility>
 #include <vector>
 
 
@@ -63,7 +66,7 @@ public:
       the original concrete operator)
     */
     int get_cost() const {return cost; }
-    void dump(const std::vector<int> &pattern,
+    void dump(const Pattern &pattern,
               const TaskProxy &task_proxy) const;
 };
 
@@ -71,7 +74,7 @@ public:
 class PatternDatabase {
     TaskProxy task_proxy;
 
-    std::vector<int> pattern;
+    Pattern pattern;
 
     // size of the PDB
     std::size_t num_states;
@@ -128,7 +131,7 @@ class PatternDatabase {
       default operator costs are used.
     */
     void set_pattern(
-        const std::vector<int> &pattern,
+        const Pattern &pattern,
         const std::vector<int> &operator_costs = std::vector<int>());
 
     /*
@@ -160,7 +163,7 @@ public:
     */
     PatternDatabase(
         const TaskProxy &task_proxy,
-        const std::vector<int> &pattern,
+        const Pattern &pattern,
         bool dump = false,
         const std::vector<int> &operator_costs = std::vector<int>());
     ~PatternDatabase() = default;
@@ -168,7 +171,7 @@ public:
     int get_value(const State &state) const;
 
     // Returns the pattern (i.e. all variables used) of the PDB
-    const std::vector<int> &get_pattern() const {
+    const Pattern &get_pattern() const {
         return pattern;
     }
 

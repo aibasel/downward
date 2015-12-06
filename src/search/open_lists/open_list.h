@@ -5,7 +5,10 @@
 #include <vector>
 
 class EvaluationContext;
+class GlobalOperator;
 class Heuristic;
+class StateID;
+
 
 
 template<class Entry>
@@ -127,6 +130,14 @@ public:
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const = 0;
 };
+
+
+using StateOpenListEntry = StateID;
+using EdgeOpenListEntry = std::pair<StateID, const GlobalOperator *>;
+
+using StateOpenList = OpenList<StateOpenListEntry>;
+using EdgeOpenList = OpenList<EdgeOpenListEntry>;
+
 
 #include "open_list.cc"
 

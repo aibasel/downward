@@ -1,8 +1,8 @@
-#ifndef PDBS_PATTERN_GENERATION_EDELKAMP_H
-#define PDBS_PATTERN_GENERATION_EDELKAMP_H
+#ifndef PDBS_PATTERN_COLLECTION_GENERATOR_GENETIC_H
+#define PDBS_PATTERN_COLLECTION_GENERATOR_GENETIC_H
 
-#include "../operator_cost.h"
-#include "../task_proxy.h"
+#include "pattern_generator.h"
+#include "types.h"
 
 #include <memory>
 #include <vector>
@@ -12,34 +12,30 @@ class Options;
 
 
 namespace PDBs {
-class ZeroOnePDBsHeuristic;
 
-/* Implementation of the pattern generation algorithm by Edelkamp. See:
-   Stefan Edelkamp, Automated Creation of Pattern Database Search
-   Heuristics. Proceedings of the 4th Workshop on Model Checking and
-   Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007. */
-
-class PatternGenerationEdelkamp {
-    const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+/*
+  Implementation of the pattern generation algorithm by Edelkamp. See:
+  Stefan Edelkamp, Automated Creation of Pattern Database Search
+  Heuristics. Proceedings of the 4th Workshop on Model Checking and
+  Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007.
+*/
+class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     // Maximum number of states for each pdb
     const int pdb_max_size;
     const int num_collections;
     const int num_episodes;
     const double mutation_probability;
+
+    std::shared_ptr<AbstractTask> task;
     /* Specifies whether patterns in each pattern collection need to be disjoint
        or not. */
     const bool disjoint_patterns;
-    const OperatorCost cost_type;
-    const bool cache_h;
     // All current pattern collections.
     std::vector<std::vector<std::vector<bool>>> pattern_collections;
 
-    // Store the fitness value of the best pattern collection over all episodes.
+    // Store best pattern collection over all episodes and its fitness value.
+    std::shared_ptr<PatternCollection> best_patterns;
     double best_fitness;
-    /* Pointer to the heuristic in evaluate from the episode before.
-       Used to free memory. */
-    ZeroOnePDBsHeuristic *best_heuristic;
 
     /*
       The fitness values (from evaluate) are used as probabilities. Then
@@ -64,8 +60,8 @@ class PatternGenerationEdelkamp {
       mainly for easy mutation) to the "normal" pattern form vector<int>, which
       we need for ZeroOnePDBsHeuristic.
     */
-    void transform_to_pattern_normal_form(const std::vector<bool> &bitvector,
-                                          std::vector<int> &pattern) const;
+    Pattern transform_to_pattern_normal_form(
+        const std::vector<bool> &bitvector) const;
 
     /*
       Calculates the mean h-value (fitness value) for each pattern collection.
@@ -78,16 +74,16 @@ class PatternGenerationEdelkamp {
       saved for further episodes.
     */
     void evaluate(std::vector<double> &fitness_values);
-    bool is_pattern_too_large(const std::vector<int> &pattern) const;
+    bool is_pattern_too_large(const Pattern &pattern) const;
 
     /*
       Mark used variables in variables_used and return true iff
       anything was already used (in which case we do not mark the
       remaining variables).
     */
-    bool mark_used_variables(const std::vector<int> &pattern,
+    bool mark_used_variables(const Pattern &pattern,
                              std::vector<bool> &variables_used) const;
-    void remove_irrelevant_variables(std::vector<int> &pattern) const;
+    void remove_irrelevant_variables(Pattern &pattern) const;
 
     /*
       Calculates the initial pattern collections with a next-fit bin packing
@@ -108,20 +104,13 @@ class PatternGenerationEdelkamp {
       selected to be part of the next episode. Note that we do not do any kind
       of recombination.
     */
-    void genetic_algorithm();
+    void genetic_algorithm(std::shared_ptr<AbstractTask> task);
 public:
-    PatternGenerationEdelkamp(const Options &opts);
-    virtual ~PatternGenerationEdelkamp();
+    PatternCollectionGeneratorGenetic(const Options &opts);
+    virtual ~PatternCollectionGeneratorGenetic() = default;
 
-    /*
-      Returns the ZeroOnePDBsHeuristic created by PatternGenerationEdelkamp.
-      Important: caller owns the returned pointer and has to take care of its
-      deletion.
-    */
-    ZeroOnePDBsHeuristic *get_pattern_collection_heuristic() const {
-        return best_heuristic;
-    }
-    void dump() const;
+    virtual PatternCollectionInformation generate(
+        std::shared_ptr<AbstractTask> task) override;
 };
 }
 

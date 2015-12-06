@@ -3,29 +3,25 @@
 
 #include "constraint_generator.h"
 
-#include "../option_parser.h"
+#include "../pdbs/types.h"
 
 #include <memory>
-#include <vector>
+
+class Options;
 
 namespace PDBs {
-class CanonicalPDBsHeuristic;
-class PatternDatabase;
+class PatternCollectionGenerator;
 }
 
 namespace OperatorCounting {
 class PhOConstraints : public ConstraintGenerator {
-    int constraint_offset;
+    std::shared_ptr<PDBs::PatternCollectionGenerator> pattern_generator;
 
-    // We store the options until we get the task in the initialize function.
-    Options options;
-    // We can use the PDBs from a canonical heuristic.
-    std::unique_ptr<PDBs::CanonicalPDBsHeuristic> pdb_source;
-    std::vector<PDBs::PatternDatabase *> pdbs;
-    void generate_pdbs(const std::shared_ptr<AbstractTask> task);
+    int constraint_offset;
+    std::shared_ptr<PDBs::PDBCollection> pdbs;
 public:
     explicit PhOConstraints(const Options &opts);
-    ~PhOConstraints();
+    ~PhOConstraints() = default;
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,

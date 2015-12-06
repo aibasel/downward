@@ -1,6 +1,8 @@
 #ifndef PDBS_MATCH_TREE_H
 #define PDBS_MATCH_TREE_H
 
+#include "types.h"
+
 #include "../task_proxy.h"
 
 #include <cstddef>
@@ -15,7 +17,7 @@ class MatchTree {
     TaskProxy task_proxy;
     struct Node;
     // See PatternDatabase for documentation on pattern and hash_multipliers.
-    std::vector<int> pattern;
+    Pattern pattern;
     std::vector<size_t> hash_multipliers;
     Node *root;
     void insert_recursive(const AbstractOperator &op,
@@ -28,7 +30,7 @@ class MatchTree {
 public:
     // Initialize an empty match tree.
     MatchTree(const TaskProxy &task_proxy,
-              const std::vector<int> &pattern,
+              const Pattern &pattern,
               const std::vector<size_t> &hash_multipliers);
     ~MatchTree();
     /* Insert an abstract operator into the match tree, creating or
