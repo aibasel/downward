@@ -48,6 +48,6 @@ void validate_and_normalize_patterns(const TaskProxy &task_proxy,
     sort(sorted_patterns.begin(), sorted_patterns.end());
     auto it = unique(sorted_patterns.begin(), sorted_patterns.end());
     if (it != sorted_patterns.end()) {
-        cout << "Warning: duplicate patterns have been removed" << endl;
+        cout << "Warning: duplicate patterns have been detected" << endl;
     }
 }
