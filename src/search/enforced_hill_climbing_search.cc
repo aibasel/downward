@@ -44,7 +44,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<ScalarEvaluator *> evals {g_evaluator, new PrefEvaluator};
+        vector<ScalarEvaluator *> evals = {g_evaluator, new PrefEvaluator};
         Options options;
         options.set("evals", evals);
         options.set("pref_only", false);

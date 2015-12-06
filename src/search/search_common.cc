@@ -109,7 +109,7 @@ create_astar_open_list_factory_and_f_eval(const Options &opts) {
     GEvaluator *g = new GEvaluator();
     ScalarEvaluator *h = opts.get<ScalarEvaluator *>("eval");
     ScalarEvaluator *f = new SumEvaluator({g, h});
-    vector<ScalarEvaluator *> evals {f, h};
+    vector<ScalarEvaluator *> evals = {f, h};
 
     Options options;
     options.set("evals", evals);
