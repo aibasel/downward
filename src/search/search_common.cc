@@ -83,7 +83,7 @@ static ScalarEvaluator *create_wastar_eval(
         w_h_eval = h_eval;
     else
         w_h_eval = new WeightedEvaluator(h_eval, w);
-    return new SumEvaluator({g_eval, w_h_eval});
+    return new SumEvaluator(vector<ScalarEvaluator *>({g_eval, w_h_eval}));
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
@@ -108,7 +108,7 @@ pair<shared_ptr<OpenListFactory>, ScalarEvaluator *>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
     GEvaluator *g = new GEvaluator();
     ScalarEvaluator *h = opts.get<ScalarEvaluator *>("eval");
-    ScalarEvaluator *f = new SumEvaluator({g, h});
+    ScalarEvaluator *f = new SumEvaluator(vector<ScalarEvaluator *>({g, h}));
     vector<ScalarEvaluator *> evals = {f, h};
 
     Options options;
