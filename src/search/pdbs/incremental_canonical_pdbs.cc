@@ -63,7 +63,7 @@ bool IncrementalCanonicalPDBs::is_dead_end(const State &state) const {
 }
 
 PatternCollectionInformation
-    IncrementalCanonicalPDBs::get_pattern_collection_information() const {
+IncrementalCanonicalPDBs::get_pattern_collection_information() const {
     PatternCollectionInformation result(task, patterns);
     result.set_pdbs(pattern_databases);
     result.set_max_additive_subsets(max_additive_subsets);
