@@ -6,6 +6,7 @@
 #include <cassert>
 #include <limits>
 
+using namespace std;
 
 namespace SumEvaluator {
 SumEvaluator::SumEvaluator(const Options &opts)

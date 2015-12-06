@@ -2,9 +2,10 @@
 
 #include "../plugin.h"
 
+using namespace std;
 
 namespace Landmarks {
-std::ostream & operator<<(std::ostream &os, const Fluent &p) {
+std::ostream &operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 

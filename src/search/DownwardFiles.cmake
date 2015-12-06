@@ -34,6 +34,7 @@ set(CORE_SOURCES
         root_task.cc
         sampling.cc
         scalar_evaluator.cc
+        search_common.cc
         search_engine.cc
         search_node_info.cc
         search_progress.cc
@@ -58,6 +59,7 @@ set(CORE_SOURCES
         open_lists/bucket_open_list.cc
         open_lists/epsilon_greedy_open_list.cc
         open_lists/open_list.cc
+        open_lists/open_list_factory.cc
         open_lists/pareto_open_list.cc
         open_lists/standard_scalar_open_list.cc
         open_lists/tiebreaking_open_list.cc
@@ -325,16 +327,27 @@ fast_downward_plugin(
     NAME PDBS
     HELP "Plugin containing the code for PDBs"
     SOURCES
+        pdbs/canonical_pdbs.cc
         pdbs/canonical_pdbs_heuristic.cc
-        pdbs/dominance_pruner.cc
+        pdbs/dominance_pruning.cc
+        pdbs/incremental_canonical_pdbs.cc
         pdbs/match_tree.cc
+        pdbs/max_additive_pdb_sets.cc
         pdbs/max_cliques.cc
+        pdbs/pattern_collection_information.cc
         pdbs/pattern_database.cc
-        pdbs/pattern_generation_edelkamp.cc
-        pdbs/pattern_generation_haslum.cc
-        pdbs/pattern_generation_systematic.cc
+        pdbs/pattern_collection_generator_combo.cc
+        pdbs/pattern_collection_generator_genetic.cc
+        pdbs/pattern_collection_generator_hillclimbing.cc
+        pdbs/pattern_collection_generator_manual.cc
+        pdbs/pattern_collection_generator_systematic.cc
+        pdbs/pattern_generator_greedy.cc
+        pdbs/pattern_generator_manual.cc
+        pdbs/pattern_generator.cc
         pdbs/pdb_heuristic.cc
-        pdbs/util.cc
+        pdbs/types.cc
+        pdbs/validation.cc
+        pdbs/zero_one_pdbs.cc
         pdbs/zero_one_pdbs_heuristic.cc
 )
 

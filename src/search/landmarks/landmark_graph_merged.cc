@@ -4,6 +4,8 @@
 #include "../plugin.h"
 
 #include <set>
+using namespace std;
+
 
 namespace Landmarks {
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)

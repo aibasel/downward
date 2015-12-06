@@ -3,10 +3,13 @@
 
 #include "open_list.h"
 
+#include "open_list_factory.h"
+
+#include "../option_parser_util.h"
+
 #include <deque>
 #include <vector>
 
-class Options;
 class ScalarEvaluator;
 
 /*
@@ -40,9 +43,18 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-
-    static OpenList<Entry> *_parse(OptionParser &parser);
 };
+
+class BucketOpenListFactory : public OpenListFactory {
+    Options options;
+public:
+    explicit BucketOpenListFactory(const Options &options);
+    virtual ~BucketOpenListFactory() override = default;
+
+    virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
+    virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
+};
+
 
 #include "bucket_open_list.cc"
 

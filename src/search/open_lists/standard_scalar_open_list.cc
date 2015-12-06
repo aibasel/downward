@@ -82,8 +82,37 @@ bool StandardScalarOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-template<class Entry>
-OpenList<Entry> *StandardScalarOpenList<Entry>::_parse(OptionParser &parser) {
+#else
+
+// HACK: We're the top level target.
+
+#include "standard_scalar_open_list.h"
+
+#include "open_list_factory.h"
+
+#include "../plugin.h"
+
+#include <memory>
+
+using namespace std;
+
+
+StandardScalarOpenListFactory::StandardScalarOpenListFactory(
+    const Options &options)
+    : options(options) {
+}
+
+unique_ptr<StateOpenList>
+StandardScalarOpenListFactory::create_state_open_list() {
+    return make_unique_ptr<StandardScalarOpenList<StateOpenListEntry>>(options);
+}
+
+unique_ptr<EdgeOpenList>
+StandardScalarOpenListFactory::create_edge_open_list() {
+    return make_unique_ptr<StandardScalarOpenList<EdgeOpenListEntry>>(options);
+}
+
+static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Standard open list",
         "Standard open list that uses a single evaluator");
@@ -96,7 +125,9 @@ OpenList<Entry> *StandardScalarOpenList<Entry>::_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new StandardScalarOpenList<Entry>(opts);
+        return make_shared<StandardScalarOpenListFactory>(opts);
 }
+
+static PluginShared<OpenListFactory> _plugin("single", _parse);
 
 #endif

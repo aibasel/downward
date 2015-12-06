@@ -3,6 +3,10 @@
 
 #include "open_list.h"
 
+#include "open_list_factory.h"
+
+#include "../option_parser_util.h"
+
 #include <deque>
 #include <map>
 #include <utility>
@@ -15,7 +19,7 @@ class ScalarEvaluator;
 
 template<class Entry>
 class TieBreakingOpenList : public OpenList<Entry> {
-    typedef std::deque<Entry> Bucket;
+    using Bucket = std::deque<Entry>;
 
     std::map<const std::vector<int>, Bucket> buckets;
     int size;
@@ -36,8 +40,6 @@ protected:
 
 public:
     explicit TieBreakingOpenList(const Options &opts);
-    TieBreakingOpenList(const std::vector<ScalarEvaluator *> &evals,
-                        bool preferred_only, bool unsafe_pruning);
     virtual ~TieBreakingOpenList() override = default;
 
     virtual Entry remove_min(std::vector<int> *key = 0) override;
@@ -48,9 +50,20 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-
-    static OpenList<Entry> *_parse(OptionParser &parser);
 };
+
+
+
+class TieBreakingOpenListFactory : public OpenListFactory {
+    Options options;
+public:
+    explicit TieBreakingOpenListFactory(const Options &options);
+    virtual ~TieBreakingOpenListFactory() override = default;
+
+    virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
+    virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
+};
+
 
 #include "tiebreaking_open_list.cc"
 
