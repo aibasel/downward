@@ -34,6 +34,7 @@ set(CORE_SOURCES
         root_task.cc
         sampling.cc
         scalar_evaluator.cc
+        search_common.cc
         search_engine.cc
         search_node_info.cc
         search_progress.cc
@@ -58,6 +59,7 @@ set(CORE_SOURCES
         open_lists/bucket_open_list.cc
         open_lists/epsilon_greedy_open_list.cc
         open_lists/open_list.cc
+        open_lists/open_list_factory.cc
         open_lists/pareto_open_list.cc
         open_lists/standard_scalar_open_list.cc
         open_lists/tiebreaking_open_list.cc

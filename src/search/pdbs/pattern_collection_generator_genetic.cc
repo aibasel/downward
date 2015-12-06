@@ -4,6 +4,8 @@
 #include "zero_one_pdbs.h"
 
 #include "../causal_graph.h"
+#include "../globals.h"
+#include "../option_parser.h"
 #include "../plugin.h"
 #include "../rng.h"
 #include "../task_proxy.h"
