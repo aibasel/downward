@@ -9,8 +9,6 @@
 #include <memory>
 #include <vector>
 
-class TaskProxy;
-
 
 namespace LandmarkCutHeuristic {
 // TODO: Fix duplication with the other relaxation heuristics.

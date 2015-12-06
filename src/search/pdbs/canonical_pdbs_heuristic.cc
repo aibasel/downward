@@ -5,7 +5,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../timer.h"
-#include "../utilities.h"
 
 #include <iostream>
 #include <limits>
