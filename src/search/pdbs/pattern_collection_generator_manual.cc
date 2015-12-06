@@ -11,6 +11,7 @@
 using namespace std;
 
 
+namespace PDBs {
 PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(const Options &opts)
     : patterns(make_shared<PatternCollection>(opts.get_list<Pattern>("patterns"))) {
 }
@@ -35,3 +36,4 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 }
 
 static PluginShared<PatternCollectionGenerator> _plugin("manual", _parse);
+}

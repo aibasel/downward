@@ -9,13 +9,16 @@
 #include <utility>
 #include <vector>
 
+class State;
+class TaskProxy;
+class Timer;
+
+
+namespace MergeAndShrink {
 class Distances;
 class HeuristicRepresentation;
 class LabelEquivalenceRelation;
 class Labels;
-class State;
-class TaskProxy;
-class Timer;
 
 // Duplicate from LabelEquivalenceRelation
 typedef std::list<int>::const_iterator LabelConstIter;
@@ -209,5 +212,6 @@ public:
         return goal_relevant;
     }
 };
+}
 
 #endif

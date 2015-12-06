@@ -13,6 +13,7 @@
 using namespace std;
 
 
+namespace Landmarks {
 /*
   Implementation notes:
 
@@ -156,7 +157,7 @@ static Synergy *_parse(OptionParser &parser) {
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
-    add_lp_solver_option_to_parser(parser);
+    LP::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
     Options opts = parser.parse();
@@ -185,3 +186,4 @@ static PluginTypePlugin<Synergy> _type_plugin(
     "");
 
 static Plugin<Synergy> _plugin("lm_ff_syn", _parse);
+}

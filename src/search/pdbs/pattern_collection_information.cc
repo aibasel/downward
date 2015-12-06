@@ -11,6 +11,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 PatternCollectionInformation::PatternCollectionInformation(
     shared_ptr<AbstractTask> task,
     shared_ptr<PatternCollection> patterns)
@@ -112,4 +114,5 @@ shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs() {
 shared_ptr<MaxAdditivePDBSubsets> PatternCollectionInformation::get_max_additive_subsets() {
     create_max_additive_subsets_if_missing();
     return max_additive_subsets;
+}
 }

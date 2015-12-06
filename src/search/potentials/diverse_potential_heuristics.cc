@@ -13,7 +13,7 @@
 using namespace std;
 
 
-namespace potentials {
+namespace Potentials {
 DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),

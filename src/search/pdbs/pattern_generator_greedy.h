@@ -5,6 +5,8 @@
 
 class Options;
 
+
+namespace PDBs {
 class PatternGeneratorGreedy : public PatternGenerator {
     int max_states;
 public:
@@ -14,5 +16,6 @@ public:
 
     virtual Pattern generate(std::shared_ptr<AbstractTask> task) override;
 };
+}
 
 #endif

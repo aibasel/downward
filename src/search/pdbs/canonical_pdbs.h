@@ -7,6 +7,7 @@
 
 class State;
 
+namespace PDBs {
 class CanonicalPDBs {
     std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
 
@@ -18,5 +19,6 @@ public:
 
     int get_value(const State &state) const;
 };
+}
 
 #endif

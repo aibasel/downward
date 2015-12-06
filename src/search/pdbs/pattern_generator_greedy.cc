@@ -12,6 +12,7 @@
 using namespace std;
 
 
+namespace PDBs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
     : PatternGeneratorGreedy(opts.get<int>("max_states")) {
 }
@@ -61,3 +62,4 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
 }
 
 static PluginShared<PatternGenerator> _plugin("greedy", _parse);
+}

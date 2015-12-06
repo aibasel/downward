@@ -7,6 +7,9 @@
 #include <vector>
 
 class TaskProxy;
+
+
+namespace PDBs {
 using VariableAdditivity = std::vector<std::vector<bool>>;
 
 extern VariableAdditivity compute_additive_vars(TaskProxy task_proxy);
@@ -72,5 +75,6 @@ extern MaxAdditivePDBSubsets compute_max_additive_subsets_with_pattern(
     const MaxAdditivePDBSubsets &max_additive_subsets,
     const Pattern &new_pattern,
     const VariableAdditivity &are_additive);
+}
 
 #endif

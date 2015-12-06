@@ -8,6 +8,7 @@
 #include <memory>
 
 
+namespace PDBs {
 /*
   This class contains everything we know about a pattern collection. It will
   always contain patterns, but can also contain the computed PDBs and maximal
@@ -42,5 +43,6 @@ public:
     std::shared_ptr<PDBCollection> get_pdbs();
     std::shared_ptr<MaxAdditivePDBSubsets> get_max_additive_subsets();
 };
+}
 
 #endif

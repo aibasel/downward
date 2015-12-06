@@ -7,10 +7,11 @@
 #include <vector>
 
 
+namespace MergeAndShrink {
 class Labels;
 
-typedef std::list<int>::iterator LabelIter;
-typedef std::list<int>::const_iterator LabelConstIter;
+using LabelIter = std::list<int>::iterator;
+using LabelConstIter = std::list<int>::const_iterator;
 
 class LabelGroup {
     /*
@@ -97,5 +98,6 @@ public:
         return grouped_labels[group_id];
     }
 };
+}
 
 #endif

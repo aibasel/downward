@@ -9,6 +9,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
     : ShrinkStrategy(opts) {
 }
@@ -97,4 +99,5 @@ void ShrinkBucketBased::compute_equivalence_relation(
     vector<Bucket> buckets;
     partition_into_buckets(fts, index, buckets);
     compute_abstraction(buckets, target, equivalence_relation);
+}
 }

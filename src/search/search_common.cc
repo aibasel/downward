@@ -1,13 +1,15 @@
 #include "search_common.h"
 
-#include "g_evaluator.h"
+#include "option_parser_util.h"
+
+#include "evaluators/g_evaluator.h"
+#include "evaluators/sum_evaluator.h"
+#include "evaluators/weighted_evaluator.h"
+
 #include "open_lists/alternation_open_list.h"
 #include "open_lists/open_list_factory.h"
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/tiebreaking_open_list.h"
-#include "option_parser_util.h"
-#include "sum_evaluator.h"
-#include "weighted_evaluator.h"
 
 #include <memory>
 
@@ -75,15 +77,16 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   we use g instead of g + 0 * h.
 */
 static ScalarEvaluator *create_wastar_eval(
-    GEvaluator *g_eval, int w, ScalarEvaluator *h_eval) {
+    GEvaluator::GEvaluator *g_eval, int w, ScalarEvaluator *h_eval) {
     if (w == 0)
         return g_eval;
     ScalarEvaluator *w_h_eval = nullptr;
     if (w == 1)
         w_h_eval = h_eval;
     else
-        w_h_eval = new WeightedEvaluator(h_eval, w);
-    return new SumEvaluator(vector<ScalarEvaluator *>({g_eval, w_h_eval}));
+        w_h_eval = new WeightedEvaluator::WeightedEvaluator(h_eval, w);
+    return new SumEvaluator::SumEvaluator(vector<ScalarEvaluator *>(
+        {g_eval, w_h_eval}));
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
@@ -92,7 +95,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get_list<ScalarEvaluator *>("evals");
     int w = options.get<int>("w");
 
-    GEvaluator *g_eval = new GEvaluator;
+    GEvaluator::GEvaluator *g_eval = new GEvaluator::GEvaluator();
     vector<ScalarEvaluator *> f_evals;
     f_evals.reserve(base_evals.size());
     for (ScalarEvaluator *eval : base_evals)
@@ -106,9 +109,10 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, ScalarEvaluator *>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
-    GEvaluator *g = new GEvaluator();
+    GEvaluator::GEvaluator *g = new GEvaluator::GEvaluator();
     ScalarEvaluator *h = opts.get<ScalarEvaluator *>("eval");
-    ScalarEvaluator *f = new SumEvaluator(vector<ScalarEvaluator *>({g, h}));
+    ScalarEvaluator *f =
+        new SumEvaluator::SumEvaluator(vector<ScalarEvaluator *>({g, h}));
     vector<ScalarEvaluator *> evals = {f, h};
 
     Options options;

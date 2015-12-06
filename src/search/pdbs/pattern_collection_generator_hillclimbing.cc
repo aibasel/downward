@@ -22,8 +22,9 @@
 
 using namespace std;
 
-struct HillClimbingTimeout : public exception {};
 
+namespace PDBs {
+struct HillClimbingTimeout : public exception {};
 
 PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
@@ -524,3 +525,4 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
 
 static Plugin<Heuristic> _plugin_ipdb("ipdb", _parse_ipdb);
 static PluginShared<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
+}

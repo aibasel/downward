@@ -8,6 +8,7 @@
 using namespace std;
 
 
+namespace PDBs {
 ZeroOnePDBs get_zero_one_pdbs_from_options(
     const shared_ptr<AbstractTask> task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
@@ -72,3 +73,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("zopdbs", _parse);
+}

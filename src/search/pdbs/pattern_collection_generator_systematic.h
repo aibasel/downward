@@ -16,6 +16,9 @@ class Options;
 class TaskProxy;
 
 
+namespace PDBs {
+class CanonicalPDBsHeuristic;
+
 // Invariant: patterns are always sorted.
 class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
     using PatternSet = std::unordered_set<Pattern>;
@@ -43,5 +46,6 @@ public:
     virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
+}
 
 #endif

@@ -8,6 +8,8 @@
 
 using namespace std;
 
+
+namespace PDBs {
 struct MatchTree::Node {
     static const int LEAF_NODE = -1;
     Node();
@@ -214,4 +216,5 @@ void MatchTree::dump_recursive(Node *node) const {
 
 void MatchTree::dump() const {
     dump_recursive(root);
+}
 }

@@ -21,6 +21,7 @@
 using namespace std;
 
 
+namespace PDBs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
     const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
@@ -368,3 +369,4 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
 }
 
 static PluginShared<PatternCollectionGenerator> _plugin("genetic", _parse);
+}

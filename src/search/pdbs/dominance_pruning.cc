@@ -13,8 +13,9 @@
 
 using namespace std;
 
-using PDBRelation = unordered_set<pair<PatternDatabase *, PatternDatabase *>>;
 
+namespace PDBs {
+using PDBRelation = unordered_set<pair<PatternDatabase *, PatternDatabase *>>;
 
 PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {
     PDBRelation superset_relation;
@@ -120,4 +121,5 @@ shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     cout << "Dominance pruning took " << timer << endl;
 
     return nondominated_subsets;
+}
 }

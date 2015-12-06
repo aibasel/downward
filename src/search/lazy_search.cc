@@ -2,12 +2,13 @@
 
 #include "globals.h"
 #include "heuristic.h"
-#include "open_lists/open_list_factory.h"
 #include "option_parser.h"
 #include "plugin.h"
 #include "rng.h"
 #include "search_common.h"
 #include "successor_generator.h"
+
+#include "open_lists/open_list_factory.h"
 
 #include <algorithm>
 #include <limits>

@@ -5,6 +5,8 @@
 
 class Options;
 
+
+namespace MergeAndShrink {
 class ShrinkRandom : public ShrinkBucketBased {
 protected:
     virtual void partition_into_buckets(
@@ -18,5 +20,5 @@ public:
     explicit ShrinkRandom(const Options &opts);
     virtual ~ShrinkRandom();
 };
-
+}
 #endif

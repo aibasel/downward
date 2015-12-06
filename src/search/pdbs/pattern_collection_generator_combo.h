@@ -3,6 +3,8 @@
 
 #include "pattern_generator.h"
 
+
+namespace PDBs {
 /* Take one large pattern and then single-variable patterns for
    all goal variables that are not in the large pattern. */
 class PatternCollectionGeneratorCombo : public PatternCollectionGenerator {
@@ -14,6 +16,6 @@ public:
     virtual PatternCollectionInformation generate(
         std::shared_ptr<AbstractTask> task) override;
 };
-
+}
 
 #endif

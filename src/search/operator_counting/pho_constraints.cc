@@ -1,8 +1,9 @@
 #include "pho_constraints.h"
 
-#include "../lp_solver.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+
+#include "../lp/lp_solver.h"
 
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
@@ -18,14 +19,15 @@ using namespace std;
 namespace OperatorCounting {
 PhOConstraints::PhOConstraints(const Options &opts)
     : pattern_generator(
-          opts.get<shared_ptr<PatternCollectionGenerator>>("patterns")) {
+          opts.get<shared_ptr<PDBs::PatternCollectionGenerator>>("patterns")) {
 }
 
 void PhOConstraints::initialize_constraints(
-    const std::shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
+    const std::shared_ptr<AbstractTask> task,
+    vector<LP::LPConstraint> &constraints,
     double infinity) {
     assert(pattern_generator);
-    PatternCollectionInformation pattern_collection_info =
+    PDBs::PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
     /*
       TODO issue590: Currently initialize_constraints should only be called
@@ -37,9 +39,9 @@ void PhOConstraints::initialize_constraints(
     pdbs = pattern_collection_info.get_pdbs();
     TaskProxy task_proxy(*task);
     constraint_offset = constraints.size();
-    for (const shared_ptr<PatternDatabase> &pdb : *pdbs) {
+    for (const shared_ptr<PDBs::PatternDatabase> &pdb : *pdbs) {
         constraints.emplace_back(0, infinity);
-        LPConstraint &constraint = constraints.back();
+        LP::LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
             if (pdb->is_operator_relevant(op)) {
                 constraint.insert(op.get_id(), op.get_cost());
@@ -49,10 +51,10 @@ void PhOConstraints::initialize_constraints(
 }
 
 bool PhOConstraints::update_constraints(const State &state,
-                                        LPSolver &lp_solver) {
+                                        LP::LPSolver &lp_solver) {
     for (size_t i = 0; i < pdbs->size(); ++i) {
         int constraint_id = constraint_offset + i;
-        shared_ptr<PatternDatabase> pdb = (*pdbs)[i];
+        shared_ptr<PDBs::PatternDatabase> pdb = (*pdbs)[i];
         int h = pdb->get_value(state);
         if (h == numeric_limits<int>::max()) {
             return true;
@@ -74,7 +76,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
         "pp. 2357-2364. 2013.\n\n\n");
 
-    parser.add_option<shared_ptr<PatternCollectionGenerator>>(
+    parser.add_option<shared_ptr<PDBs::PatternCollectionGenerator>>(
         "patterns",
         "pattern generation method",
         "systematic(2)");

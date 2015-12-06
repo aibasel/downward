@@ -6,6 +6,8 @@
 
 class Options;
 
+
+namespace PDBs {
 class PatternGeneratorManual : public PatternGenerator {
     Pattern pattern;
 public:
@@ -14,6 +16,6 @@ public:
 
     virtual Pattern generate(std::shared_ptr<AbstractTask> task) override;
 };
-
+}
 
 #endif

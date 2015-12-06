@@ -9,6 +9,7 @@
 using namespace std;
 
 
+namespace PDBs {
 void validate_and_normalize_pattern(const TaskProxy &task_proxy,
                                     Pattern &pattern) {
     /*
@@ -50,4 +51,5 @@ void validate_and_normalize_patterns(const TaskProxy &task_proxy,
     if (it != sorted_patterns.end()) {
         cout << "Warning: duplicate patterns have been detected" << endl;
     }
+}
 }

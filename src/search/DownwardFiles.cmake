@@ -99,28 +99,28 @@ fast_downward_plugin(
     NAME CONST_EVALUATOR
     HELP "The constant evaluator"
     SOURCES
-        const_evaluator.cc
+        evaluators/const_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME G_EVALUATOR
     HELP "The g-evaluator"
     SOURCES
-        g_evaluator.cc
+        evaluators/g_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME COMBINING_EVALUATOR
     HELP "The combining evaluator"
     SOURCES
-        combining_evaluator.cc
+        evaluators/combining_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME MAX_EVALUATOR
     HELP "The max evaluator"
     SOURCES
-        max_evaluator.cc
+        evaluators/max_evaluator.cc
     DEPENDS COMBINING_EVALUATOR
 )
 
@@ -128,21 +128,21 @@ fast_downward_plugin(
     NAME PREF_EVALUATOR
     HELP "The pref evaluator"
     SOURCES
-        pref_evaluator.cc
+        evaluators/pref_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME WEIGHTED_EVALUATOR
     HELP "The weighted evaluator"
     SOURCES
-        weighted_evaluator.cc
+        evaluators/weighted_evaluator.cc
 )
 
 fast_downward_plugin(
     NAME SUM_EVALUATOR
     HELP "The sum evaluator"
     SOURCES
-        sum_evaluator.cc
+        evaluators/sum_evaluator.cc
     DEPENDS COMBINING_EVALUATOR
 )
 
@@ -181,8 +181,8 @@ fast_downward_plugin(
     NAME LP_SOLVER
     HELP "Interface to an LP solver"
     SOURCES
-        lp_internals.cc
-        lp_solver.cc
+        lp/lp_internals.cc
+        lp/lp_solver.cc
     DEPENDENCY_ONLY
 )
 
@@ -190,7 +190,7 @@ fast_downward_plugin(
     NAME RELAXATION_HEURISTIC
     HELP "The base class for relaxation heuristics"
     SOURCES
-        relaxation_heuristic.cc
+        heuristics/relaxation_heuristic.cc
     DEPENDENCY_ONLY
 )
 
@@ -198,66 +198,74 @@ fast_downward_plugin(
     NAME IPC_MAX_HEURISTIC
     HELP "The IPC max heuristic"
     SOURCES
-        ipc_max_heuristic.cc
+        heuristics/ipc_max_heuristic.cc
 )
 
 fast_downward_plugin(
     NAME ADDITIVE_HEURISTIC
     HELP "The additive heuristic"
-    SOURCES additive_heuristic.cc
+    SOURCES
+        heuristics/additive_heuristic.cc
     DEPENDS RELAXATION_HEURISTIC
 )
 
 fast_downward_plugin(
     NAME BLIND_SEARCH_HEURISTIC
     HELP "The 'blind search' heuristic"
-    SOURCES blind_search_heuristic.cc
+    SOURCES
+        heuristics/blind_search_heuristic.cc
 )
 
 fast_downward_plugin(
-    NAME CEA_HEURISTIC
+    NAME CONTEXT_ENHANCED_ADDITIVE_HEURISTIC
     HELP "The context-enhanced additive heuristic"
-    SOURCES cea_heuristic.cc
+    SOURCES
+        heuristics/cea_heuristic.cc
 )
 
 fast_downward_plugin(
     NAME CG_HEURISTIC
     HELP "The causal graph heuristic"
-    SOURCES cg_heuristic.cc
-            cg_cache.cc
+    SOURCES
+        heuristics/cg_heuristic.cc
+        heuristics/cg_cache.cc
 )
 
 fast_downward_plugin(
     NAME FF_HEURISTIC
     HELP "The FF heuristic (an implementation of the RPG heuristic)"
-    SOURCES ff_heuristic.cc
+    SOURCES
+        heuristics/ff_heuristic.cc
     DEPENDS ADDITIVE_HEURISTIC
 )
 
 fast_downward_plugin(
     NAME GOAL_COUNT_HEURISTIC
     HELP "The goal-counting heuristic"
-    SOURCES goal_count_heuristic.cc
+    SOURCES
+        heuristics/goal_count_heuristic.cc
 )
 
 fast_downward_plugin(
     NAME HM_HEURISTIC
     HELP "The h^m heuristic"
-    SOURCES hm_heuristic.cc
+    SOURCES
+        heuristics/hm_heuristic.cc
 )
 
 fast_downward_plugin(
-    NAME LM_CUT_HEURISTIC
+    NAME LANDMARK_CUT_HEURISTIC
     HELP "The LM-cut heuristic"
     SOURCES
-        lm_cut_heuristic.cc
-        lm_cut_landmarks.cc
+        heuristics/lm_cut_heuristic.cc
+        heuristics/lm_cut_landmarks.cc
 )
 
 fast_downward_plugin(
     NAME MAX_HEURISTIC
     HELP "The Max heuristic"
-    SOURCES max_heuristic.cc
+    SOURCES
+        heuristics/max_heuristic.cc
     DEPENDS RELAXATION_HEURISTIC
 )
 
