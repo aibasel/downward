@@ -3,13 +3,7 @@
 
 #include "stubborn_sets.h"
 
-#include "../globals.h"
-#include "../global_operator.h"
-#include "../successor_generator.h"
-
 #include <vector>
-
-class GlobalState;
 
 namespace SimpleStubbornSets {
 
