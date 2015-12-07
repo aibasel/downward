@@ -5,6 +5,7 @@
 #include <list>
 #include <vector>
 
+namespace MergeAndShrink {
 // Related to representation of grouped labels
 using LabelConstIter = std::list<int>::const_iterator;
 
@@ -21,5 +22,6 @@ extern const int INF;
 */
 using StateEquivalenceClass = std::forward_list<int>;
 using StateEquivalenceRelation = std::vector<StateEquivalenceClass>;
+}
 
 #endif
