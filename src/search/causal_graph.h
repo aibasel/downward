@@ -52,7 +52,7 @@
 
 #include <vector>
 
-typedef std::vector<std::vector<int> > IntRelation;
+typedef std::vector<std::vector<int>> IntRelation;
 
 class AbstractTask;
 class TaskProxy;

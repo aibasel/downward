@@ -15,8 +15,11 @@
 #include <utility>
 #include <vector>
 
-class AdditiveHeuristic;
 class Options;
+
+namespace AdditiveHeuristic {
+class AdditiveHeuristic;
+}
 
 namespace cegar {
 class AbstractState;

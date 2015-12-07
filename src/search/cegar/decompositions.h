@@ -1,13 +1,18 @@
 #ifndef CEGAR_DECOMPOSITIONS_H
 #define CEGAR_DECOMPOSITIONS_H
 
-#include "../additive_heuristic.h"
 #include "../option_parser.h"
 #include "../task_proxy.h"
+
+#include "../heuristics/additive_heuristic.h"
 
 #include <memory>
 #include <utility>
 #include <vector>
+
+namespace Landmarks {
+class LandmarkGraph;
+}
 
 namespace cegar {
 using Fact = std::pair<int, int>;
@@ -44,9 +49,9 @@ class FactDecomposition : public Decomposition {
     SubtaskOrder subtask_order;
 
     struct SortHaddValuesUp {
-        const std::shared_ptr<AdditiveHeuristic> hadd;
+        const std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd;
 
-        explicit SortHaddValuesUp(std::shared_ptr<AdditiveHeuristic> hadd)
+        explicit SortHaddValuesUp(std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd)
             : hadd(hadd) {
         }
 
@@ -86,7 +91,7 @@ public:
 
 
 class LandmarkDecomposition : public FactDecomposition {
-    const std::shared_ptr<LandmarkGraph> landmark_graph;
+    const std::shared_ptr<Landmarks::LandmarkGraph> landmark_graph;
     bool combine_facts;
 
     Task get_domain_abstracted_task(Task parent, Fact fact) const;

@@ -4,9 +4,12 @@
 
 #include <cassert>
 #include <iostream>
+#include <utility>
 
 using namespace std;
 
+
+namespace PDBs {
 struct MatchTree::Node {
     static const int LEAF_NODE = -1;
     Node();
@@ -61,11 +64,10 @@ bool MatchTree::Node::is_leaf_node() const {
     return var_id == LEAF_NODE;
 }
 
-MatchTree::MatchTree(const shared_ptr<AbstractTask> task,
-                     const vector<int> &pattern,
+MatchTree::MatchTree(const TaskProxy &task_proxy,
+                     const Pattern &pattern,
                      const vector<size_t> &hash_multipliers)
-    : task(task),
-      task_proxy(*task),
+    : task_proxy(task_proxy),
       pattern(pattern),
       hash_multipliers(hash_multipliers),
       root(nullptr) {
@@ -82,7 +84,7 @@ void MatchTree::insert_recursive(
         *edge_from_parent = new Node();
     }
 
-    const vector<pair<int, int> > &regression_preconditions =
+    const vector<pair<int, int>> &regression_preconditions =
         op.get_regression_preconditions();
     Node *node = *edge_from_parent;
     if (pre_index == static_cast<int>(regression_preconditions.size())) {
@@ -214,4 +216,5 @@ void MatchTree::dump_recursive(Node *node) const {
 
 void MatchTree::dump() const {
     dump_recursive(root);
+}
 }

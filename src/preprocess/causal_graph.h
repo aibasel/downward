@@ -14,7 +14,7 @@ class CausalGraph {
     const vector<Variable *> &variables;
     const vector<Operator> &operators;
     const vector<Axiom> &axioms;
-    const vector<pair<Variable *, int> > &goals;
+    const vector<pair<Variable *, int>> &goals;
 
     typedef map<Variable *, int> WeightedSuccessors;
     typedef map<Variable *, WeightedSuccessors> WeightedGraph;
@@ -24,17 +24,17 @@ class CausalGraph {
     // predecessor_graph is weighted_graph with edges turned around
     PredecessorGraph predecessor_graph;
 
-    typedef vector<vector<Variable *> > Partition;
+    typedef vector<vector<Variable *>> Partition;
     typedef vector<Variable *> Ordering;
     Ordering ordering;
     bool acyclic;
 
     void weigh_graph_from_ops(const vector<Variable *> &variables,
                               const vector<Operator> &operators,
-                              const vector<pair<Variable *, int> > &goals);
+                              const vector<pair<Variable *, int>> &goals);
     void weigh_graph_from_axioms(const vector<Variable *> &variables,
                                  const vector<Axiom> &axioms,
-                                 const vector<pair<Variable *, int> > &goals);
+                                 const vector<pair<Variable *, int>> &goals);
     void get_strongly_connected_components(Partition &sccs);
     void calculate_topological_pseudo_sort(const Partition &sccs);
     void calculate_important_vars();
@@ -43,7 +43,7 @@ public:
     CausalGraph(const vector<Variable *> &variables,
                 const vector<Operator> &operators,
                 const vector<Axiom> &axioms,
-                const vector<pair<Variable *, int> > &the_goals);
+                const vector<pair<Variable *, int>> &the_goals);
     ~CausalGraph() {}
     const vector<Variable *> &get_variable_ordering() const;
     bool is_acyclic() const;

@@ -6,14 +6,21 @@
 #include "../heuristic.h"
 
 class GlobalState;
-class OperatorProxy;
+class Options;
+class State;
 
+
+namespace PDBs {
 // Implements a heuristic for a single PDB.
 class PDBHeuristic : public Heuristic {
     PatternDatabase pdb;
 protected:
-    virtual void initialize() override;
     virtual int compute_heuristic(const GlobalState &global_state) override;
+    /* TODO: we want to get rid of compute_heuristic(const GlobalState &state)
+       and change the interface to only use State objects. While we are doing
+       this, the following method already allows to get the heuristic value
+       for a State object. */
+    int compute_heuristic(const State &state) const;
 public:
     /*
       Important: It is assumed that the pattern (passed via Options) is
@@ -24,9 +31,9 @@ public:
        operator. This is useful for action cost partitioning. If left
        empty, default operator costs are used.
     */
-    PDBHeuristic(const Options &opts,
-                 const std::vector<int> &operator_costs = std::vector<int>());
-    virtual ~PDBHeuristic() override;
+    PDBHeuristic(const Options &opts);
+    virtual ~PDBHeuristic() override = default;
 };
+}
 
 #endif

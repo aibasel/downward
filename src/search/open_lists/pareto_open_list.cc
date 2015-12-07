@@ -19,16 +19,6 @@ ParetoOpenList<Entry>::ParetoOpenList(const Options &opts)
 }
 
 template<class Entry>
-ParetoOpenList<Entry>::ParetoOpenList(
-    const std::vector<ScalarEvaluator *> &evals,
-    bool preferred_only,
-    bool state_uniform_selection)
-    : OpenList<Entry>(preferred_only),
-      state_uniform_selection(state_uniform_selection),
-      evaluators(evals) {
-}
-
-template<class Entry>
 bool ParetoOpenList<Entry>::dominates(
     const KeyType &v1, const KeyType &v2) const {
     assert(v1.size() == v2.size());
@@ -184,8 +174,37 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-template<class Entry>
-OpenList<Entry> *ParetoOpenList<Entry>::_parse(OptionParser &parser) {
+#else
+
+// HACK: We're the top level target.
+
+#include "pareto_open_list.h"
+
+#include "open_list_factory.h"
+
+#include "../plugin.h"
+
+#include <memory>
+
+using namespace std;
+
+
+ParetoOpenListFactory::ParetoOpenListFactory(
+    const Options &options)
+    : options(options) {
+}
+
+unique_ptr<StateOpenList>
+ParetoOpenListFactory::create_state_open_list() {
+    return make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(options);
+}
+
+unique_ptr<EdgeOpenList>
+ParetoOpenListFactory::create_edge_open_list() {
+    return make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(options);
+}
+
+static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Pareto open list",
         "Selects one of the Pareto-optimal (regarding the sub-evaluators) "
@@ -207,7 +226,9 @@ OpenList<Entry> *ParetoOpenList<Entry>::_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new ParetoOpenList<Entry>(opts);
+        return make_shared<ParetoOpenListFactory>(opts);
 }
+
+static PluginShared<OpenListFactory> _plugin("pareto", _parse);
 
 #endif

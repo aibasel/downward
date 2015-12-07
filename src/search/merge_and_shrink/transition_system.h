@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_TRANSITION_SYSTEM_H
 
+#include "types.h"
+
 #include <forward_list>
 #include <iostream>
 #include <list>
@@ -9,23 +11,22 @@
 #include <utility>
 #include <vector>
 
-class Distances;
-class HeuristicRepresentation;
-class Labels;
 class State;
 class TaskProxy;
 class Timer;
 
-typedef int AbstractStateRef;
 
-// Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
-extern const int INF;
+namespace MergeAndShrink {
+class Distances;
+class HeuristicRepresentation;
+class LabelEquivalenceRelation;
+class Labels;
 
 struct Transition {
-    AbstractStateRef src;
-    AbstractStateRef target;
+    int src;
+    int target;
 
-    Transition(AbstractStateRef src_, AbstractStateRef target_)
+    Transition(int src_, int target_)
         : src(src_), target(target_) {
     }
 
@@ -47,67 +48,44 @@ struct Transition {
     }
 };
 
-typedef std::list<int>::iterator LabelIter;
-typedef std::list<int>::const_iterator LabelConstIter;
+class TransitionSystem;
 
-class LabelGroup {
+class TSConstIterator {
     /*
-      A label group contains a set of locally equivalent labels, possibly of
-      different cost, stores the minimum cost of all labels of the group,
-      and has a pointer to the position in TransitionSystem::transitions_of_groups
-      where the transitions associated with this group live.
+      This class allows users to easily iterate over both label groups and
+      their transitions of a TransitionSystem. Most importantly, it hides
+      the data structure used by LabelEquivalenceRelation, which could be
+      easily exchanged.
     */
-    std::list<int> labels;
-    std::vector<Transition> *transitions;
-    int cost;
+    const LabelEquivalenceRelation &label_equivalence_relation;
+    const std::vector<std::vector<Transition>> &transitions_by_group_id;
+    // current is the actual iterator, representing the label group's id.
+    int current;
 public:
-    explicit LabelGroup(std::vector<Transition> *transitions_)
-        : transitions(transitions_), cost(INF) {
+    TSConstIterator(const TransitionSystem &ts,
+                    bool end);
+    void operator++();
+    bool operator==(const TSConstIterator &rhs) const {
+        return current == rhs.current;
     }
-    void set_cost(int cost_) {
-        cost = cost_;
+    bool operator!=(const TSConstIterator &rhs) const {
+        return current != rhs.current;
     }
-    LabelIter insert(int label) {
-        return labels.insert(labels.end(), label);
+    int get_id() const {
+        return current;
     }
-    void erase(LabelIter pos) {
-        labels.erase(pos);
-    }
-    LabelIter begin() {
-        return labels.begin();
-    }
-    LabelConstIter begin() const {
-        return labels.begin();
-    }
-    LabelIter end() {
-        return labels.end();
-    }
-    LabelConstIter end() const {
-        return labels.end();
-    }
-    std::vector<Transition> &get_transitions() {
-        return *transitions;
-    }
+    int get_cost() const;
+    LabelConstIter begin() const;
+    LabelConstIter end() const;
     const std::vector<Transition> &get_transitions() const {
-        return *transitions;
-    }
-    bool empty() const {
-        return labels.empty();
-    }
-    int size() const {
-        return labels.size();
-    }
-    int get_cost() const {
-        return cost;
+        return transitions_by_group_id[current];
     }
 };
 
-typedef std::list<LabelGroup>::iterator LabelGroupIter;
-typedef std::list<LabelGroup>::const_iterator LabelGroupConstIter;
-
 class TransitionSystem {
+    friend class TSConstIterator;
 public:
-    static const int PRUNED_STATE = -1;
+    static const int PRUNED_STATE;
 
 private:
     /*
@@ -122,16 +100,10 @@ private:
     const int num_variables;
     std::vector<int> incorporated_variables;
 
+    std::unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
     /*
-      There should only be one instance of Labels at runtime. It is created
-      and managed by MergeAndShrinkHeuristic. All transition system instances
-      have a pointer to this object to ease access to the set of labels.
-    */
-    const std::shared_ptr<Labels> labels;
-    std::list<LabelGroup> grouped_labels;
-    /*
-      The transitions of a label group are never moved once they are stored
-      at an index in transitions_of_groups.
+      The transitions of a label group are indexed via its id. The id of a
+      group does not change, and hence its transitions are never moved.
       Initially, every label is in a single label group, and its number is
       used to index transitions_of_groups. When adding new labels via label
       reduction, if a new label is not locally equivalent with any existing,
@@ -145,67 +117,38 @@ private:
       new label group is added also increases runtime. See also issue492 and
       issue521.
     */
-    std::vector<std::vector<Transition> > transitions_of_groups;
-    std::vector<std::pair<LabelGroupIter, LabelIter> > label_to_positions;
+    std::vector<std::vector<Transition>> transitions_by_group_id;
 
     int num_states;
 
-    std::unique_ptr<HeuristicRepresentation> heuristic_representation;
-    std::unique_ptr<Distances> distances;
-
     std::vector<bool> goal_states;
-    AbstractStateRef init_state;
+    int init_state;
 
     bool goal_relevant; // TODO: Get rid of this?
 
-    /*
-      Invariant of this class:
-      A transition system is in a valid state iff:
-       - The transitions for every group of locally equivalent labels are
-         sorted (by source, by target) and there are no duplicates
-         (are_transitions_sorted_unique() == true).
-       - Distances are computed and stored (are_distances_computed() == true).
-       - Locally equivalent labels are computed. This cannot explicitly be
-         tested because of labels and transitions being coupled in the data
-         structure representing transitions.
-      Note that those tests are expensive to compute and hence only used as
-      an assertion.
-    */
-    bool is_valid() const;
-
-    void compute_distances_and_prune();
-    void discard_states(const std::vector<bool> &to_be_pruned_states);
-
     // Methods related to the representation of transitions and labels
-    LabelGroupIter add_empty_label_group(std::vector<Transition> *transitions) {
-        return grouped_labels.insert(grouped_labels.end(), LabelGroup(transitions));
-    }
-    void add_label_to_group(LabelGroupIter group_it, int label_no);
-    int add_label_group(const std::vector<int> &new_labels);
-    LabelGroupIter get_group_it(int label_no) {
-        return label_to_positions[label_no].first;
-    }
-    LabelIter get_label_it(int label_no) {
-        return label_to_positions[label_no].second;
-    }
     void normalize_given_transitions(std::vector<Transition> &transitions) const;
-    bool are_transitions_sorted_unique() const;
     void compute_locally_equivalent_labels();
+    const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
+        return transitions_by_group_id[group_id];
+    }
+    std::vector<Transition> &get_transitions_for_group_id(int group_id) {
+        return transitions_by_group_id[group_id];
+    }
 
     // Statistics and output
     int total_transitions() const;
-    int unique_unlabeled_transitions() const;
     std::string description() const;
 
-    TransitionSystem(const TaskProxy &task_proxy,
-                     const std::shared_ptr<Labels> labels);
+    TransitionSystem(int num_variables,
+                     const Labels &labels);
 public:
     // Constructor for an atomic transition system.
     TransitionSystem(
         const TaskProxy &task_proxy,
-        const std::shared_ptr<Labels> labels,
+        const Labels &labels,
         int var_id,
-        std::vector<std::vector<Transition> > && transitions_by_label);
+        std::vector<std::vector<Transition>> &&transitions_by_label);
 
     /*
       Constructor that merges two transition systems.
@@ -213,19 +156,23 @@ public:
       Invariant: the children ts1 and ts2 must be solvable.
       (It is a bug to merge an unsolvable transition system.)
     */
-    TransitionSystem(const TaskProxy &task_proxy,
-                     const std::shared_ptr<Labels> labels,
-                     TransitionSystem *ts1,
-                     TransitionSystem *ts2);
+    TransitionSystem(const Labels &labels,
+                     const TransitionSystem &ts1,
+                     const TransitionSystem &ts2);
     ~TransitionSystem();
 
-    bool apply_abstraction(const std::vector<std::forward_list<AbstractStateRef> > &collapsed_groups);
-    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int> > > &label_mapping,
-                               bool only_equivalent_labels);
-    void release_memory();
+    bool apply_abstraction(
+        const StateEquivalenceRelation &state_equivalence_relation,
+        const std::vector<int> &abstraction_mapping);
+    void apply_label_reduction(
+        const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
+        bool only_equivalent_labels);
 
-    const std::list<LabelGroup> &get_grouped_labels() const {
-        return grouped_labels;
+    TSConstIterator begin() const {
+        return TSConstIterator(*this, false);
+    }
+    TSConstIterator end() const {
+        return TSConstIterator(*this, true);
     }
     /*
       Method to identify the transition system in output.
@@ -235,44 +182,28 @@ public:
       out of y variables.
     */
     std::string tag() const;
+    /*
+      The transitions for every group of locally equivalent labels are
+      sorted (by source, by target) and there are no duplicates.
+    */
+    bool are_transitions_sorted_unique() const;
     bool is_solvable() const;
-    int get_cost(const State &state) const;
-    void statistics(const Timer &timer,
-                    bool include_expensive_statistics) const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
+    void statistics() const;
     int get_size() const {
         return num_states;
     }
-
     int get_init_state() const {
         return init_state;
     }
-
     bool is_goal_state(int state) const {
         return goal_states[state];
     }
-
-    /*
-      TODO: We probably want to get rid of the methods below that just
-      forward to distances, by giving the users of these methods
-      access to the the distances object instead.
-
-      This might also help address a possible performance problem we
-      might have at the moment, now that these methods are no longer
-      inlined here. (To be able to inline them, we would need to
-      include distances.h here, which we would rather not.)
-    */
-    int get_max_f() const; // used by shrink strategies
-    int get_max_g() const; // unused
-    int get_max_h() const; // used by shrink strategies
-    int get_init_distance(int state) const; // used by shrink_fh
-    int get_goal_distance(int state) const; // used by shrink strategies and merge_dfp
-
-    int get_num_labels() const;      // used by merge_dfp
     bool is_goal_relevant() const {  // used by merge_dfp
         return goal_relevant;
     }
 };
+}
 
 #endif

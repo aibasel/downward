@@ -1,11 +1,15 @@
 #ifndef PDBS_PATTERN_DATABASE_H
 #define PDBS_PATTERN_DATABASE_H
 
+#include "types.h"
+
 #include "../task_proxy.h"
 
-#include <memory>
+#include <utility>
 #include <vector>
 
+
+namespace PDBs {
 class AbstractOperator {
     /*
       This class represents an abstract operator how it is needed for
@@ -22,7 +26,7 @@ class AbstractOperator {
       Preconditions for the regression search, corresponds to normal
       effects and prevail of concrete operators.
     */
-    std::vector<std::pair<int, int> > regression_preconditions;
+    std::vector<std::pair<int, int>> regression_preconditions;
 
     /*
       Effect of the operator during regression search on a given
@@ -36,9 +40,9 @@ public:
       meaning prevail, preconditions and effects are all related to
       progression search.
     */
-    AbstractOperator(const std::vector<std::pair<int, int> > &prevail,
-                     const std::vector<std::pair<int, int> > &preconditions,
-                     const std::vector<std::pair<int, int> > &effects,
+    AbstractOperator(const std::vector<std::pair<int, int>> &prevail,
+                     const std::vector<std::pair<int, int>> &preconditions,
+                     const std::vector<std::pair<int, int>> &effects,
                      int cost,
                      const std::vector<std::size_t> &hash_multipliers);
     ~AbstractOperator();
@@ -47,7 +51,7 @@ public:
       Returns variable value pairs which represent the preconditions of
       the abstract operator in a regression search
     */
-    const std::vector<std::pair<int, int> > &get_regression_preconditions() const {
+    const std::vector<std::pair<int, int>> &get_regression_preconditions() const {
         return regression_preconditions;
     }
 
@@ -62,19 +66,15 @@ public:
       the original concrete operator)
     */
     int get_cost() const {return cost; }
-    void dump(const std::vector<int> &pattern,
+    void dump(const Pattern &pattern,
               const TaskProxy &task_proxy) const;
 };
 
-class State;
-class OperatorProxy;
-
 // Implements a single pattern database
 class PatternDatabase {
-    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
 
-    std::vector<int> pattern;
+    Pattern pattern;
 
     // size of the PDB
     std::size_t num_states;
@@ -97,10 +97,10 @@ class PatternDatabase {
     */
     void multiply_out(
         int pos, int cost,
-        std::vector<std::pair<int, int> > &prev_pairs,
-        std::vector<std::pair<int, int> > &pre_pairs,
-        std::vector<std::pair<int, int> > &eff_pairs,
-        const std::vector<std::pair<int, int> > &effects_without_pre,
+        std::vector<std::pair<int, int>> &prev_pairs,
+        std::vector<std::pair<int, int>> &pre_pairs,
+        std::vector<std::pair<int, int>> &eff_pairs,
+        const std::vector<std::pair<int, int>> &effects_without_pre,
         std::vector<AbstractOperator> &operators);
 
     /*
@@ -131,7 +131,7 @@ class PatternDatabase {
       default operator costs are used.
     */
     void set_pattern(
-        const std::vector<int> &pattern,
+        const Pattern &pattern,
         const std::vector<int> &operator_costs = std::vector<int>());
 
     /*
@@ -142,7 +142,7 @@ class PatternDatabase {
     */
     bool is_goal_state(
         const std::size_t state_index,
-        const std::vector<std::pair<int, int> > &abstract_goals) const;
+        const std::vector<std::pair<int, int>> &abstract_goals) const;
 
     /*
       The given concrete state is used to calculate the index of the
@@ -162,8 +162,8 @@ public:
        empty, default operator costs are used.
     */
     PatternDatabase(
-        const std::shared_ptr<AbstractTask> task,
-        const std::vector<int> &pattern,
+        const TaskProxy &task_proxy,
+        const Pattern &pattern,
         bool dump = false,
         const std::vector<int> &operator_costs = std::vector<int>());
     ~PatternDatabase() = default;
@@ -171,7 +171,7 @@ public:
     int get_value(const State &state) const;
 
     // Returns the pattern (i.e. all variables used) of the PDB
-    const std::vector<int> &get_pattern() const {
+    const Pattern &get_pattern() const {
         return pattern;
     }
 
@@ -193,5 +193,6 @@ public:
     // Returns true iff op has an effect on a variable in the pattern.
     bool is_operator_relevant(const OperatorProxy &op) const;
 };
+}
 
 #endif

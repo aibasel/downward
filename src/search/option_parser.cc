@@ -1,10 +1,13 @@
-#include "globals.h"
 #include "option_parser.h"
-#include "ext/tree_util.hh"
+
+#include "globals.h"
 #include "plugin.h"
 #include "rng.h"
 
+#include "ext/tree_util.hh"
+
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -13,6 +16,35 @@
 
 using namespace std;
 
+
+// TODO (post-issue586): Remove this once we no longer need it.
+class AbstractTask;
+class OpenListFactory;
+class SearchEngine;
+class Synergy;
+
+namespace cegar {
+class Decomposition;
+}
+
+namespace Landmarks {
+class LandmarkGraph;
+}
+
+namespace MergeAndShrink {
+class Labels;
+class MergeStrategy;
+class ShrinkStrategy;
+}
+
+namespace OperatorCounting {
+class ConstraintGenerator;
+}
+
+namespace PDBs {
+class PatternCollectionGenerator;
+class PatternGenerator;
+}
 
 const string OptionParser::NONE = "<none>";
 
@@ -50,7 +82,7 @@ void OptionParser::set_help_mode(bool m) {
     opts.set_help_mode(m);
 }
 
-template <class T>
+template<typename T>
 static void get_help_templ(const ParseTree &pt) {
     if (Registry<T>::instance()->contains(pt.begin()->value)) {
         OptionParser p(pt, true);
@@ -64,19 +96,21 @@ static void get_help(string k) {
     pt.insert(pt.begin(), ParseNode(k));
     get_help_templ<SearchEngine *>(pt);
     get_help_templ<Heuristic *>(pt);
-    get_help_templ<shared_ptr<AbstractTask> >(pt);
-    get_help_templ<shared_ptr<cegar::Decomposition> >(pt);
+    get_help_templ<shared_ptr<AbstractTask>>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
-    get_help_templ<LandmarkGraph *>(pt);
-    Plugin<OpenList<int> >::register_open_lists();
-    get_help_templ<OpenList<int> *>(pt);
-    get_help_templ<shared_ptr<MergeStrategy> >(pt);
-    get_help_templ<shared_ptr<ShrinkStrategy> >(pt);
-    get_help_templ<shared_ptr<Labels> >(pt);
+    get_help_templ<Landmarks::LandmarkGraph *>(pt);
+    get_help_templ<shared_ptr<cegar::Decomposition>>(pt);
+    get_help_templ<shared_ptr<OpenListFactory>>(pt);
+    get_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>(pt);
+    get_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>(pt);
+    get_help_templ<shared_ptr<MergeAndShrink::Labels>>(pt);
+    get_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>(pt);
+    get_help_templ<shared_ptr<PDBs::PatternCollectionGenerator>>(pt);
+    get_help_templ<shared_ptr<PDBs::PatternGenerator>>(pt);
 }
 
-template <class T>
+template<typename T>
 static void get_full_help_templ() {
     DocStore::instance()->set_synopsis(TypeNamer<T>::name(), "",
                                        TypeDocumenter<T>::synopsis());
@@ -91,16 +125,18 @@ static void get_full_help_templ() {
 static void get_full_help() {
     get_full_help_templ<SearchEngine *>();
     get_full_help_templ<Heuristic *>();
-    get_full_help_templ<shared_ptr<AbstractTask> >();
-    get_full_help_templ<shared_ptr<cegar::Decomposition> >();
+    get_full_help_templ<shared_ptr<AbstractTask>>();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
-    get_full_help_templ<LandmarkGraph *>();
-    Plugin<OpenList<int> >::register_open_lists();
-    get_full_help_templ<OpenList<int> *>();
-    get_full_help_templ<shared_ptr<MergeStrategy> >();
-    get_full_help_templ<shared_ptr<ShrinkStrategy> >();
-    get_full_help_templ<shared_ptr<Labels> >();
+    get_full_help_templ<Landmarks::LandmarkGraph *>();
+    get_full_help_templ<shared_ptr<cegar::Decomposition>>();
+    get_full_help_templ<shared_ptr<OpenListFactory>>();
+    get_full_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>();
+    get_full_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>();
+    get_full_help_templ<shared_ptr<MergeAndShrink::Labels>>();
+    get_full_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>();
+    get_full_help_templ<shared_ptr<PDBs::PatternCollectionGenerator>>();
+    get_full_help_templ<shared_ptr<PDBs::PatternGenerator>>();
 }
 
 
@@ -170,8 +206,8 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<LandmarkGraph *>::instance()->predefine(
-            definees[0], op.start_parsing<LandmarkGraph *>());
+        Predefinitions<Landmarks::LandmarkGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<Landmarks::LandmarkGraph *>());
     } else {
         op.error("predefinition has invalid left side");
     }
@@ -346,7 +382,7 @@ string OptionParser::usage(string progname) {
         "* OUTPUT (filename): preprocessor output\n\n"
         "Options:\n"
         "--help [NAME]\n"
-        "    Prints help for all heuristics, openlists, etc. called NAME.\n"
+        "    Prints help for all heuristics, open lists, etc. called NAME.\n"
         "    Without parameter: prints help for everything available\n"
         "--landmarks LANDMARKS_PREDEFINITION\n"
         "    Predefines a set of landmarks that can afterwards be referenced\n"

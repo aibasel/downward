@@ -11,15 +11,13 @@
   merge-and-shrink should not need to know about planning task concepts.
 */
 
-#include <memory>
-
-class FactoredTransitionSystem;
-class Labels;
 class TaskProxy;
 
-// TODO: The labels should eventually be part of the FTS rather
-// than something created externally.
+namespace MergeAndShrink {
+class FactoredTransitionSystem;
+
 extern FactoredTransitionSystem create_factored_transition_system(
-    const TaskProxy &task_proxy, std::shared_ptr<Labels> labels);
+    const TaskProxy &task_proxy);
+}
 
 #endif

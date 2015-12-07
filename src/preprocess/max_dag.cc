@@ -45,7 +45,7 @@ vector<int> MaxDAG::get_result() {
         done[removed] = true;
         result.push_back(removed);
         heap.erase(heap.begin());
-        const vector<pair<int, int> > &succs = weighted_graph[removed];
+        const vector<pair<int, int>> &succs = weighted_graph[removed];
         for (const auto &succ : succs) {
             int target = succ.first;
             if (!done[target]) {

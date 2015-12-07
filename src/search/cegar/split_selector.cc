@@ -2,10 +2,11 @@
 
 #include "abstract_state.h"
 
-#include "../additive_heuristic.h"
 #include "../globals.h"
 #include "../rng.h"
 #include "../utilities.h"
+
+#include "../heuristics/additive_heuristic.h"
 
 #include <cassert>
 #include <iostream>

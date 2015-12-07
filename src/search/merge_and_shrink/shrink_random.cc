@@ -1,5 +1,6 @@
 #include "shrink_random.h"
 
+#include "factored_transition_system.h"
 #include "transition_system.h"
 
 #include "../option_parser.h"
@@ -11,6 +12,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 ShrinkRandom::ShrinkRandom(const Options &opts)
     : ShrinkBucketBased(opts) {
 }
@@ -19,13 +21,16 @@ ShrinkRandom::~ShrinkRandom() {
 }
 
 void ShrinkRandom::partition_into_buckets(
-    const TransitionSystem &ts, vector<Bucket> &buckets) const {
+    const FactoredTransitionSystem &fts,
+    int index,
+    vector<Bucket> &buckets) const {
+    const TransitionSystem &ts = fts.get_ts(index);
     assert(buckets.empty());
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();
     big_bucket.reserve(ts.get_size());
     int num_states = ts.get_size();
-    for (AbstractStateRef state = 0; state < num_states; ++state)
+    for (int state = 0; state < num_states; ++state)
         big_bucket.push_back(state);
     assert(!big_bucket.empty());
 }
@@ -50,3 +55,4 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_random", _parse);
+}

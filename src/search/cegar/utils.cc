@@ -1,9 +1,10 @@
 #include "utils.h"
 
-#include "../additive_heuristic.h"
 #include "../option_parser.h"
 #include "../task_proxy.h"
 #include "../task_tools.h"
+
+#include "../heuristics/additive_heuristic.h"
 
 #include <algorithm>
 #include <cassert>
@@ -15,11 +16,14 @@ using namespace std;
 namespace cegar {
 bool DEBUG = false;
 
-shared_ptr<AdditiveHeuristic> get_additive_heuristic(shared_ptr<AbstractTask> task) {
+shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
+    shared_ptr<AbstractTask> task) {
     Options opts;
     opts.set<shared_ptr<AbstractTask> >("transform", task);
     opts.set<int>("cost_type", 0);
-    shared_ptr<AdditiveHeuristic> additive_heuristic = make_shared<AdditiveHeuristic>(opts);
+    opts.set<bool>("cache_estimates", false);
+    shared_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic =
+        make_shared<AdditiveHeuristic::AdditiveHeuristic>(opts);
     TaskProxy task_proxy(*task);
     additive_heuristic->initialize_and_compute_heuristic(task_proxy.get_initial_state());
     return additive_heuristic;

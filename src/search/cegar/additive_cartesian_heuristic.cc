@@ -5,6 +5,7 @@
 #include "decompositions.h"
 #include "utils.h"
 
+#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
@@ -24,7 +25,7 @@ namespace cegar {
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
-      decompositions(opts.get_list<shared_ptr<Decomposition> >("decompositions")),
+      decompositions(opts.get_list<shared_ptr<Decomposition>>("decompositions")),
       max_states(options.get<int>("max_states")),
       timer(new CountdownTimer(options.get<double>("max_time"))),
       num_abstractions(0),
@@ -100,6 +101,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
             Options opts;
             opts.set<int>("cost_type", 0);
             opts.set<Task>("transform", subtask);
+            opts.set<bool>("cache_estimates", cache_h_values);
             heuristics.push_back(make_shared<CartesianHeuristic>(
                                      opts, abstraction.get_split_tree()));
         }

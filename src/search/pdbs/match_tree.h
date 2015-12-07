@@ -1,21 +1,23 @@
 #ifndef PDBS_MATCH_TREE_H
 #define PDBS_MATCH_TREE_H
 
+#include "types.h"
+
 #include "../task_proxy.h"
 
 #include <cstddef>
-#include <memory>
 #include <vector>
 
+
+namespace PDBs {
 class AbstractOperator;
 
 // Successor Generator for abstract operators.
 class MatchTree {
-    const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
     struct Node;
     // See PatternDatabase for documentation on pattern and hash_multipliers.
-    std::vector<int> pattern;
+    Pattern pattern;
     std::vector<size_t> hash_multipliers;
     Node *root;
     void insert_recursive(const AbstractOperator &op,
@@ -27,8 +29,8 @@ class MatchTree {
     void dump_recursive(Node *node) const;
 public:
     // Initialize an empty match tree.
-    MatchTree(const std::shared_ptr<AbstractTask> task,
-              const std::vector<int> &pattern,
+    MatchTree(const TaskProxy &task_proxy,
+              const Pattern &pattern,
               const std::vector<size_t> &hash_multipliers);
     ~MatchTree();
     /* Insert an abstract operator into the match tree, creating or
@@ -44,5 +46,6 @@ public:
         std::vector<const AbstractOperator *> &applicable_operators) const;
     void dump() const;
 };
+}
 
 #endif

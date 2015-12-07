@@ -46,6 +46,8 @@ bool has_conditional_effects(TaskProxy task);
 */
 void verify_no_conditional_effects(TaskProxy task);
 
+double get_average_operator_cost(TaskProxy task_proxy);
+
 void dump_state(const State &state);
 void dump_task(TaskProxy task);
 

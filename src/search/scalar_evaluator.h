@@ -25,6 +25,12 @@ public:
       get_involved_heuristics should insert all heuristics that this
       evaluator directly or indirectly depends on into the result set,
       including itself if it is a heuristic.
+
+      TODO: We wanted to get rid of this at some point, and perhaps we
+      still should try to do that. Currently, the only legitimate use
+      for this seems to be to call "reach_state" on all heuristics.
+      (There is also one "illegitimate" use, the remaining reference
+      to heuristics[0] in EagerSearch.)
     */
     virtual void get_involved_heuristics(std::set<Heuristic *> &hset) = 0;
 
