@@ -3,8 +3,6 @@
 
 #include "stubborn_sets.h"
 
-#include <vector>
-
 namespace SimpleStubbornSets {
 
 class SimpleStubbornSets : public StubbornSets::StubbornSets {

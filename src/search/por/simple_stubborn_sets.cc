@@ -4,12 +4,6 @@
 #include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../successor_generator.h"
-
-#include <cassert>
-#include <iostream>
-#include <vector>
-#include <algorithm>
 
 using namespace std;
 
