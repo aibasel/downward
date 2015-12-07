@@ -33,33 +33,6 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
     return make_pair(-1, -1);
 }
 
-void SSS_ExpansionCore::get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars) {
-    disabled_vars.clear();
-    size_t i = 0;
-    size_t j = 0;
-    while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
-        int read_var = op_preconds[op2_no][i].var;
-        int write_var = op_effects[op1_no][j].var;
-        if (read_var < write_var) {
-            i++;
-        } else {
-            if (read_var == write_var) {
-                int read_value = op_preconds[op2_no][i].val;
-                int write_value = op_effects[op1_no][j].val;
-                if (read_value != write_value) {
-                    disabled_vars.push_back(read_var);
-                }
-                i++;
-                j++;
-            } else {
-                // read_var > write_var
-                j++;
-            }
-        }
-    }
-}
-
-
 SSS_ExpansionCore::SSS_ExpansionCore() {
     verify_no_axioms_no_conditional_effects();
     compute_sorted_operators();
@@ -81,7 +54,6 @@ SSS_ExpansionCore::~SSS_ExpansionCore() {}
 void SSS_ExpansionCore::dump_options() const {
     cout << "partial order reduction method: sss_expansion core" << endl;
 }
-
 
 void SSS_ExpansionCore::build_dtgs() {
     /*
@@ -252,7 +224,7 @@ void SSS_ExpansionCore::compute_conflicts_and_disabling() {
 
 
 //Adapted from SimpleStubbornSets
-inline void SSS_ExpansionCore::mark_as_stubborn(int op_no, const GlobalState &state) {
+void SSS_ExpansionCore::mark_as_stubborn(int op_no, const GlobalState &state) {
     if (!stubborn_ec[op_no]) {
         stubborn_ec[op_no] = true;
         stubborn_ec_queue.push_back(op_no);
@@ -290,6 +262,31 @@ void SSS_ExpansionCore::add_conflicting_and_disabling(int op_no, const GlobalSta
     }
 }
 
+void SSS_ExpansionCore::get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars) {
+    disabled_vars.clear();
+    size_t i = 0;
+    size_t j = 0;
+    while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
+        int read_var = op_preconds[op2_no][i].var;
+        int write_var = op_effects[op1_no][j].var;
+        if (read_var < write_var) {
+            i++;
+        } else {
+            if (read_var == write_var) {
+                int read_value = op_preconds[op2_no][i].val;
+                int write_value = op_effects[op1_no][j].val;
+                if (read_value != write_value) {
+                    disabled_vars.push_back(read_var);
+                }
+                i++;
+                j++;
+            } else {
+                // read_var > write_var
+                j++;
+            }
+        }
+    }
+}
 
 void SSS_ExpansionCore::apply_s5(const GlobalOperator &op, const GlobalState &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.

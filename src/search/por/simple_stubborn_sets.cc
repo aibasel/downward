@@ -97,7 +97,7 @@ void SimpleStubbornSets::compute_interference_relation() {
     
 }
 
-inline void SimpleStubbornSets::mark_as_stubborn(int op_no) {
+void SimpleStubbornSets::mark_as_stubborn(int op_no) {
     if (!stubborn[op_no]) {
         stubborn[op_no] = true;
         stubborn_queue.push_back(op_no);
@@ -144,7 +144,6 @@ void SimpleStubbornSets::do_pruning(
             // => add all interfering operators
             add_interfering(op_no);
         } else {
-            //	if (fact.first != -1){
             // unsatisfied precondition found
             // => add an enabling set for it
             add_nes_for_fact(fact);
