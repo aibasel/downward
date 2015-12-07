@@ -3,8 +3,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../ext/tree_util.hh"
-
 #include <iostream>
 
 using namespace std;
