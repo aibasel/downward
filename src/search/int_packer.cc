@@ -92,7 +92,7 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
     // removed from this index.
     // Loop over the variables in reverse order to prefer variables with
     // low indices in case of ties. This might increase cache-locality.
-    vector<vector<int> > bits_to_vars(BITS_PER_BIN + 1);
+    vector<vector<int>> bits_to_vars(BITS_PER_BIN + 1);
     for (int var = num_vars - 1; var >= 0; --var) {
         int bits = get_bit_size_for_range(ranges[var]);
         assert(bits <= BITS_PER_BIN);
@@ -105,7 +105,7 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
 }
 
 int IntPacker::pack_one_bin(const vector<int> &ranges,
-                            vector<vector<int> > &bits_to_vars) {
+                            vector<vector<int>> &bits_to_vars) {
     // Returns the number of variables added to the bin. We pack each
     // bin with a greedy strategy, always adding the largest variable
     // that still fits.

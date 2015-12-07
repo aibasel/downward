@@ -1,16 +1,16 @@
 #include "shrink_bucket_based.h"
 
-#include "transition_system.h"
-
 #include "../globals.h"
 #include "../rng.h"
 
 #include <cassert>
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
 
+namespace MergeAndShrink {
 ShrinkBucketBased::ShrinkBucketBased(const Options &opts)
     : ShrinkStrategy(opts) {
 }
@@ -31,7 +31,7 @@ void ShrinkBucketBased::compute_abstraction(
         num_states_to_go += buckets[bucket_no].size();
 
     for (size_t bucket_no = 0; bucket_no < buckets.size(); ++bucket_no) {
-        const vector<AbstractStateRef> &bucket = buckets[bucket_no];
+        const vector<int> &bucket = buckets[bucket_no];
         int states_used_up = static_cast<int>(equiv_relation.size());
         int remaining_state_budget = target_size - states_used_up;
         num_states_to_go -= bucket.size();
@@ -91,10 +91,13 @@ void ShrinkBucketBased::compute_abstraction(
     }
 }
 
-void ShrinkBucketBased::shrink(const TransitionSystem &ts,
-                               int target,
-                               StateEquivalenceRelation &equiv_relation) {
+void ShrinkBucketBased::compute_equivalence_relation(
+    const FactoredTransitionSystem &fts,
+    int index,
+    int target,
+    StateEquivalenceRelation &equivalence_relation) const {
     vector<Bucket> buckets;
-    partition_into_buckets(ts, buckets);
-    compute_abstraction(buckets, target, equiv_relation);
+    partition_into_buckets(fts, index, buckets);
+    compute_abstraction(buckets, target, equivalence_relation);
+}
 }

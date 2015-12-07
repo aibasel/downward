@@ -29,41 +29,42 @@ echo "Making sure destination is clear..."
 mkdir $DIST
 
 echo "Exporting code..."
+hg archive -I 're:src\/CMakeLists.txt' $DIST
+hg archive -I 're:src\/cmake_modules\/' $DIST
 hg archive -I 're:src\/translate\/' $DIST
 hg archive -I 're:src\/preprocess\/' $DIST
 hg archive -I 're:src\/search\/' $DIST
-hg archive -I 're:src\/build_all' $DIST
-hg archive -I 're:src\/plan' $DIST
+hg archive -I 're:driver\/' $DIST
+hg archive -I 're:fast-downward.py' $DIST
+hg archive -I 're:build.py' $DIST
 hg id -i >> $DIST/src/VERSION
 echo "$WORDSIZE bit" >> $DIST/src/VERSION
 
-echo "Preparing distribution directory..."
-echo '#! /bin/bash' > $DIST/build
-echo 'cd src; ./build_all; cd ..' > $DIST/build
-chmod 755 $DIST/build
-echo '#! /bin/bash' > $DIST/plan
-echo 'DOMAIN="$1"' >> $DIST/plan
-echo 'PROBLEM="$2"' >> $DIST/plan
-echo 'PLAN_FILE="$3"' >> $DIST/plan
-echo '"$(dirname "$0")"/src/plan' '"$DOMAIN"' '"$PROBLEM"' \
-     "ipc" "$PLANNER_NAME" '--plan-file "$PLAN_FILE"' >> $DIST/plan
-chmod 755 $DIST/plan
-
-echo "Removing LP code..."
-rm -r $DIST/src/search/lp
 
 if [[ "$WORDSIZE" == "32" ]]; then
-    echo "Changing -m64 compiler option to -m32"
-    sed -i -e "s/-m64/-m32/g" $DIST/src/preprocess/Makefile
-    sed -i -e "s/-m64/-m32/g" $DIST/src/search/Makefile
+    BUILD="release32"
 elif [[ "$WORDSIZE" == "64" ]]; then
-    echo "Changing -m32 compiler option to -m64"
-    sed -i -e "s/-m32/-m64/g" $DIST/src/preprocess/Makefile
-    sed -i -e "s/-m32/-m64/g" $DIST/src/search/Makefile
+    BUILD="release64"
 else
     echo "Second parameter must be 32 or 64"
     exit 2
 fi
+
+echo "Preparing distribution directory..."
+echo '#! /bin/bash' > $DIST/build
+echo "./build.py $BUILD" > $DIST/build
+chmod 755 $DIST/build
+
+echo '#! /bin/bash' > $DIST/plan
+echo 'DOMAIN="$1"' >> $DIST/plan
+echo 'PROBLEM="$2"' >> $DIST/plan
+echo 'PLAN_FILE="$3"' >> $DIST/plan
+echo '"$(dirname "$0")"/fast-downward.py' \
+     "--build=$BUILD" \
+      '--plan-file "$PLAN_FILE"' \
+      '--alias' "$PLANNER_NAME" \
+      '"$DOMAIN"' '"$PROBLEM"' >> $DIST/plan
+chmod 755 $DIST/plan
 
 # Packaging
 echo "Packaging..."
@@ -74,6 +75,7 @@ rm -rf $DIST
 # Sanity tests
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
+echo $DIR
 BENCHMARKS="$DIR/../benchmarks"
 VALIDATOR="$DIR/../src/VAL/validate"
 

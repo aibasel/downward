@@ -12,6 +12,9 @@
 #include <utility>
 #include <vector>
 
+using namespace std;
+
+namespace Landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }
@@ -311,3 +314,4 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 }
 
 static Plugin<LandmarkGraph> _plugin("lm_zg", _parse);
+}

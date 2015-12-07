@@ -2,6 +2,8 @@
 #define TASK_PROXY_H
 
 #include "abstract_task.h"
+#include "utilities.h"
+#include "utilities_hash.h"
 
 #include <cassert>
 #include <cstddef>
@@ -11,6 +13,7 @@
 
 
 class AxiomsProxy;
+class CausalGraph;
 class ConditionsProxy;
 class EffectProxy;
 class EffectConditionsProxy;
@@ -139,13 +142,19 @@ public:
         return task->get_fact_name(var_id, value);
     }
 
-    bool operator==(FactProxy const &other) const {
+    bool operator==(const FactProxy &other) const {
         assert(task == other.task);
         return var_id == other.var_id && value == other.value;
     }
 
-    bool operator!=(FactProxy other) const {
+    bool operator!=(const FactProxy &other) const {
         return !(*this == other);
+    }
+
+    bool is_mutex(const FactProxy &other) const {
+        std::pair<int, int> fact1(var_id, value);
+        std::pair<int, int> fact2(other.var_id, other.value);
+        return task->are_facts_mutex(fact1, fact2);
     }
 };
 
@@ -233,6 +242,15 @@ public:
     VariableProxy(const AbstractTask &task, int id)
         : task(&task), id(id) {}
     ~VariableProxy() = default;
+
+    bool operator==(const VariableProxy &other) const {
+        assert(task == other.task);
+        return id == other.id;
+    }
+
+    bool operator!=(const VariableProxy &other) const {
+        return !(*this == other);
+    }
 
     int get_id() const {
         return id;
@@ -475,20 +493,45 @@ public:
 };
 
 
+bool does_fire(EffectProxy effect, const State &state);
+
+
 class State {
     const AbstractTask *task;
-    const std::vector<int> values;
+    std::vector<int> values;
 public:
     using ItemType = FactProxy;
-    State(const AbstractTask &task, std::vector<int> && values)
-        : task(&task), values(values) {
+    State(const AbstractTask &task, std::vector<int> &&values)
+        : task(&task), values(std::move(values)) {
         assert(static_cast<int>(size()) == this->task->get_num_variables());
     }
     ~State() = default;
+    State(const State &) = default;
 
-    State(State && other)
+    State(State &&other)
         : task(other.task), values(std::move(other.values)) {
         other.task = nullptr;
+    }
+
+    State &operator=(const State &&other) {
+        if (this != &other) {
+            values = std::move(other.values);
+        }
+        return *this;
+    }
+
+    bool operator==(const State &other) const {
+        assert(task == other.task);
+        return values == other.values;
+    }
+
+    bool operator!=(const State &other) const {
+        return !(*this == other);
+    }
+
+    std::size_t hash() const {
+        std::hash<std::vector<int>> hasher;
+        return hasher(values);
     }
 
     std::size_t size() const {
@@ -503,7 +546,33 @@ public:
     FactProxy operator[](VariableProxy var) const {
         return (*this)[var.get_id()];
     }
+
+    State get_successor(OperatorProxy op) const {
+        if (task->get_num_axioms() > 0) {
+            ABORT("State::apply currently does not support axioms.");
+        }
+        assert(!op.is_axiom());
+        //assert(is_applicable(op, state));
+        std::vector<int> new_values = values;
+        for (EffectProxy effect : op.get_effects()) {
+            if (does_fire(effect, *this)) {
+                FactProxy effect_fact = effect.get_fact();
+                new_values[effect_fact.get_variable().get_id()] = effect_fact.get_value();
+            }
+        }
+        return State(*task, std::move(new_values));
+    }
 };
+
+
+namespace std {
+template<>
+struct hash<State> {
+    size_t operator()(const State &state) const {
+        return state.hash();
+    }
+};
+}
 
 
 class TaskProxy {
@@ -536,6 +605,8 @@ public:
     State convert_global_state(const GlobalState &global_state) const {
         return State(*task, task->get_state_values(global_state));
     }
+
+    const CausalGraph &get_causal_graph() const;
 };
 
 
@@ -548,6 +619,14 @@ inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
 
 inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, var_id);
+}
+
+inline bool does_fire(EffectProxy effect, const State &state) {
+    for (FactProxy condition : effect.get_conditions()) {
+        if (state[condition.get_variable()] != condition)
+            return false;
+    }
+    return true;
 }
 
 #endif

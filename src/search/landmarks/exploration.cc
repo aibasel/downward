@@ -11,6 +11,8 @@
 
 using namespace std;
 
+
+namespace Landmarks {
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
    - Added-on functionality for excluding certain operators from the relaxed
@@ -94,7 +96,7 @@ void Exploration::write_overflow_warning() {
     }
 }
 
-void Exploration::set_additional_goals(const vector<pair<int, int> > &add_goals) {
+void Exploration::set_additional_goals(const vector<pair<int, int>> &add_goals) {
     //Clear previous additional goals.
     for (size_t i = 0; i < termination_propositions.size(); ++i) {
         int var = termination_propositions[i]->var, val = termination_propositions[i]->val;
@@ -123,7 +125,7 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
     const vector<GlobalCondition> &preconditions = op.get_preconditions();
     const vector<GlobalEffect> &effects = op.get_effects();
     vector<ExProposition *> precondition;
-    vector<pair<int, int> > precondition_var_vals1;
+    vector<pair<int, int>> precondition_var_vals1;
 
     for (size_t i = 0; i < preconditions.size(); ++i) {
         assert(in_bounds(preconditions[i].var, g_variable_domain));
@@ -131,7 +133,7 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
         precondition_var_vals1.push_back(make_pair(preconditions[i].var, preconditions[i].val));
     }
     for (size_t i = 0; i < effects.size(); ++i) {
-        vector<pair<int, int> > precondition_var_vals2(precondition_var_vals1);
+        vector<pair<int, int>> precondition_var_vals2(precondition_var_vals1);
         assert(in_bounds(effects[i].var, g_variable_domain));
         assert(effects[i].val >= 0 && effects[i].val < g_variable_domain[effects[i].var]);
         ExProposition *effect = &propositions[effects[i].var][effects[i].val];
@@ -156,7 +158,7 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
 
 // heuristic computation
 void Exploration::setup_exploration_queue(const GlobalState &state,
-                                          const vector<pair<int, int> > &excluded_props,
+                                          const vector<pair<int, int>> &excluded_props,
                                           const unordered_set<const GlobalOperator *> &excluded_ops,
                                           bool use_h_max = false) {
     prop_queue.clear();
@@ -324,10 +326,10 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
     }
 }
 
-void Exploration::compute_reachability_with_excludes(vector<vector<int> > &lvl_var,
-                                                     vector<unordered_map<pair<int, int>, int> > &lvl_op,
+void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
+                                                     vector<unordered_map<pair<int, int>, int>> &lvl_op,
                                                      bool level_out,
-                                                     const vector<pair<int, int> > &excluded_props,
+                                                     const vector<pair<int, int>> &excluded_props,
                                                      const unordered_set<const GlobalOperator *> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
@@ -420,7 +422,7 @@ void Exploration::collect_ha(ExProposition *goal,
 }
 
 // TODO: this should be in landmark class
-bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
+bool is_landmark(vector<pair<int, int>> &landmarks, int var, int val) {
     // TODO: change landmarks to set or unordered_set
     for (size_t i = 0; i < landmarks.size(); ++i)
         if (landmarks[i].first == var && landmarks[i].second == val)
@@ -428,7 +430,7 @@ bool is_landmark(vector<pair<int, int> > &landmarks, int var, int val) {
     return false;
 }
 
-bool Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
+bool Exploration::plan_for_disj(vector<pair<int, int>> &landmarks,
                                 const GlobalState &state) {
     relaxed_plan.clear();
     // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
@@ -466,4 +468,5 @@ bool Exploration::plan_for_disj(vector<pair<int, int> > &landmarks,
         }
     }
     return true;
+}
 }

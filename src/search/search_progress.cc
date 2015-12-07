@@ -11,9 +11,8 @@ using namespace std;
 bool SearchProgress::process_heuristic_value(const Heuristic *heuristic, int h) {
     /*
       Handle one heuristic value:
-      1. insert into initial_heuristic_values if necessary
-      2. insert into or update best_heuristic_values if necessary
-      3. return true if this is a new best heuristic value
+      1. insert into or update best_heuristic_values if necessary
+      2. return true if this is a new best heuristic value
          (includes case where we haven't seen this heuristic before)
     */
     auto insert_result = best_heuristic_values.insert(make_pair(heuristic, h));
@@ -21,7 +20,6 @@ bool SearchProgress::process_heuristic_value(const Heuristic *heuristic, int h) 
     bool was_inserted = insert_result.second;
     if (was_inserted) {
         // We haven't seen this heuristic before.
-        initial_heuristic_values[heuristic] = h;
         return true;
     } else {
         int &best_h = iter->second;
@@ -33,32 +31,17 @@ bool SearchProgress::process_heuristic_value(const Heuristic *heuristic, int h) 
     return false;
 }
 
-void SearchProgress::output_line(const string &description,
-                                 const Heuristic *heuristic, int h) const {
-    cout << description << " heuristic value for "
-         << heuristic->get_description() << ": " << h << endl;
-}
-
 bool SearchProgress::check_progress(const EvaluationContext &eval_context) {
-    bool result = false;
-    for (const auto &element : eval_context.get_cache().get_eval_results()) {
-        const ScalarEvaluator *evaluator = element.first;
-        int h = element.second.get_h_value();
-        const Heuristic *heur = dynamic_cast<const Heuristic *>(evaluator);
-        if (heur) {
-            if (process_heuristic_value(heur, h)) {
-                output_line("New best", heur, h);
-                result = true;
-            }
+    bool progress = false;
+    eval_context.get_cache().for_each_heuristic_value(
+        [this, &progress](const Heuristic *heur, const EvaluationResult &result) {
+        int h = result.get_h_value();
+        if (process_heuristic_value(heur, h)) {
+            cout << "New best heuristic value for "
+                 << heur->get_description() << ": " << h << endl;
+            progress = true;
         }
     }
-    return result;
-}
-
-void SearchProgress::print_initial_h_values() const {
-    for (const auto &entry : initial_heuristic_values) {
-        const Heuristic *heur = entry.first;
-        int h = entry.second;
-        output_line("Initial", heur, h);
-    }
+        );
+    return progress;
 }

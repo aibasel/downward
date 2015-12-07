@@ -25,7 +25,7 @@ class IntPacker {
     int num_bins;
 
     int pack_one_bin(const std::vector<int> &ranges,
-                     std::vector<std::vector<int> > &bits_to_vars);
+                     std::vector<std::vector<int>> &bits_to_vars);
     void pack_bins(const std::vector<int> &ranges);
 public:
     typedef unsigned int Bin;

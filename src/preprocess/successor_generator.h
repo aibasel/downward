@@ -14,7 +14,7 @@ class Variable;
 class SuccessorGenerator {
     GeneratorBase *root;
 
-    typedef vector<pair<Variable *, int> > Condition;
+    typedef vector<pair<Variable *, int>> Condition;
     GeneratorBase *construct_recursive(int switchVarNo, list<int> &ops);
     SuccessorGenerator(const SuccessorGenerator &copy);
 

@@ -273,18 +273,16 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
         implied_precondition = set()
         for fact in condition.items():
             implied_precondition.update(implied_facts[fact])
-
+    prevail_and_pre = dict(condition)
     pre_post = []
     for var in effects_by_variable:
         orig_pre = condition.get(var, -1)
+        added_effect = False
         for post, eff_conditions in effects_by_variable[var].items():
             pre = orig_pre
             # if the effect does not change the variable value, we ignore it
             if pre == post:
                 continue
-            # otherwise the condition on var is not a prevail condition but a
-            # precondition, so we remove it from the prevail condition
-            condition.pop(var, -1)
             eff_condition_lists = [sorted(eff_cond.items())
                                    for eff_cond in eff_conditions]
             if ranges[var] == 2:
@@ -300,9 +298,25 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                     pre = 1 - post
             for eff_condition in eff_condition_lists:
                 # we do not need to represent a precondition as effect condition
-                if (var, pre) in eff_condition:
-                    eff_condition.remove((var, pre))
-                pre_post.append((var, pre, post, eff_condition))
+                # and we do not want to keep an effect whose condition contradicts
+                # a pre- or prevail condition
+                filtered_eff_condition = []
+                eff_condition_contradicts_precondition = False
+                for variable, value in eff_condition:
+                    if variable in prevail_and_pre:
+                        if prevail_and_pre[variable] != value:
+                            eff_condition_contradicts_precondition = True
+                            break
+                    else:
+                        filtered_eff_condition.append((variable, value))
+                if eff_condition_contradicts_precondition:
+                    continue
+                pre_post.append((var, pre, post, filtered_eff_condition))
+                added_effect = True
+        if added_effect:
+            # the condition on var is not a prevail condition but a
+            # precondition, so we remove it from the prevail condition
+            condition.pop(var, -1)
     if not pre_post:  # operator is noop
         return None
     prevail = list(condition.items())
@@ -448,6 +462,8 @@ def translate_task(strips_to_sas, ranges, translation_key,
     ## values, which is most of the time the case, and hence refrain from
     ## introducing axioms (that are not supported by all heuristics)
     goal_pairs = list(goal_dict_list[0].items())
+    if not goal_pairs:
+        return solvable_sas_task("Empty goal")
     goal = sas_tasks.SASGoal(goal_pairs)
 
     operators = translate_strips_operators(actions, strips_to_sas, ranges,
@@ -467,8 +483,7 @@ def translate_task(strips_to_sas, ranges, translation_key,
                              operators, axioms, metric)
 
 
-def unsolvable_sas_task(msg):
-    print("%s! Generating unsolvable task..." % msg)
+def trivial_task(solvable):
     variables = sas_tasks.SASVariables(
         [2], [-1], [["Atom dummy(val1)", "Atom dummy(val2)"]])
     # We create no mutexes: the only possible mutex is between
@@ -477,13 +492,24 @@ def unsolvable_sas_task(msg):
     # finite-domain variable).
     mutexes = []
     init = sas_tasks.SASInit([0])
-    goal = sas_tasks.SASGoal([(0, 1)])
+    if solvable:
+        goal_fact = (0, 0)
+    else:
+        goal_fact = (0, 1)
+    goal = sas_tasks.SASGoal([goal_fact])
     operators = []
     axioms = []
     metric = True
     return sas_tasks.SASTask(variables, mutexes, init, goal,
                              operators, axioms, metric)
 
+def solvable_sas_task(msg):
+    print("%s! Generating solvable task..." % msg)
+    return trivial_task(solvable=True)
+
+def unsolvable_sas_task(msg):
+    print("%s! Generating unsolvable task..." % msg)
+    return trivial_task(solvable=False)
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
@@ -541,6 +567,8 @@ def pddl_to_sas(task):
                 simplify.filter_unreachable_propositions(sas_task)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
+            except simplify.TriviallySolvable:
+                return solvable_sas_task("Simplified to empty goal")
 
     return sas_task
 
@@ -629,7 +657,8 @@ def dump_statistics(sas_task):
 def main():
     timer = timers.Timer()
     with timers.timing("Parsing", True):
-        task = pddl_parser.open(task_filename=options.task, domain_filename=options.domain)
+        task = pddl_parser.open(
+            domain_filename=options.domain, task_filename=options.task)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)

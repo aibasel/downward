@@ -5,8 +5,10 @@
 #include "landmark_graph.h"
 #include "../globals.h"
 
-typedef std::pair<int, int> Fluent;
-typedef std::vector<Fluent> FluentSet;
+
+namespace Landmarks {
+using Fluent = std::pair<int, int>;
+using FluentSet = std::vector<Fluent>;
 
 std::ostream &
 operator<<(std::ostream &os, const Fluent &p);
@@ -37,7 +39,7 @@ struct PMOp {
     std::vector<int> pc;
     std::vector<int> eff;
     // pc separated from effect by a value of -1
-    std::vector<std::vector<int> > cond_noops;
+    std::vector<std::vector<int>> cond_noops;
     int index;
 };
 
@@ -56,7 +58,7 @@ struct HMEntry {
 
     // first int = op index, second int conditional noop effect
     // -1 for op itself
-    std::vector<std::pair<int, int> > pc_for;
+    std::vector<std::pair<int, int>> pc_for;
 
     HMEntry() {
         fluents.resize(0);
@@ -75,7 +77,7 @@ public:
     bool interesting(int var1, int val1, int var2, int val2);
 private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
-    typedef std::unordered_map<int, std::set<int> > TriggerSet;
+    typedef std::unordered_map<int, std::set<int>> TriggerSet;
 
     virtual void generate_landmarks();
 
@@ -113,9 +115,9 @@ private:
     FluentSetToIntMap set_indices_;
 // first is unsat pcs for operator
 // second is unsat pcs for conditional noops
-    std::vector<std::pair<int, std::vector<int> > > unsat_pc_count_;
+    std::vector<std::pair<int, std::vector<int>>> unsat_pc_count_;
 // variable pairs worth looking at
-    std::vector<std::vector<bool> > interesting_;
+    std::vector<std::vector<bool>> interesting_;
 
     void get_m_sets_(int m, int num_included, int current_var,
                      FluentSet &current,
@@ -144,5 +146,6 @@ private:
                           const FluentSet &superset1, const FluentSet &superset2);
     void print_proposition(const std::pair<int, int> &fluent) const;
 };
+}
 
 #endif
