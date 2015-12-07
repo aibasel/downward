@@ -1,15 +1,16 @@
 #include "eager_search.h"
 
-#include "evaluation_context.h"
-#include "globals.h"
-#include "heuristic.h"
-#include "option_parser.h"
-#include "plugin.h"
 #include "search_common.h"
-#include "successor_generator.h"
-#include "utilities.h"
 
-#include "open_lists/open_list_factory.h"
+#include "../evaluation_context.h"
+#include "../globals.h"
+#include "../heuristic.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../successor_generator.h"
+#include "../utilities.h"
+
+#include "../open_lists/open_list_factory.h"
 
 #include <cassert>
 #include <cstdlib>

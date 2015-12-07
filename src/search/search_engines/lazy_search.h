@@ -1,14 +1,14 @@
 #ifndef LAZY_SEARCH_H
 #define LAZY_SEARCH_H
 
-#include "evaluation_context.h"
-#include "global_state.h"
-#include "scalar_evaluator.h"
-#include "search_engine.h"
-#include "search_progress.h"
-#include "search_space.h"
+#include "../evaluation_context.h"
+#include "../global_state.h"
+#include "../scalar_evaluator.h"
+#include "../search_engine.h"
+#include "../search_progress.h"
+#include "../search_space.h"
 
-#include "open_lists/open_list.h"
+#include "../open_lists/open_list.h"
 
 #include <memory>
 #include <vector>

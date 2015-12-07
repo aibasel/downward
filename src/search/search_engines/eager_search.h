@@ -1,9 +1,9 @@
 #ifndef EAGER_SEARCH_H
 #define EAGER_SEARCH_H
 
-#include "search_engine.h"
+#include "../search_engine.h"
 
-#include "open_lists/open_list.h"
+#include "../open_lists/open_list.h"
 
 #include <memory>
 #include <vector>

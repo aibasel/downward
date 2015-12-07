@@ -34,7 +34,6 @@ set(CORE_SOURCES
         root_task.cc
         sampling.cc
         scalar_evaluator.cc
-        search_common.cc
         search_engine.cc
         search_node_info.cc
         search_progress.cc
@@ -147,34 +146,43 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME SEARCH_COMMON
+    HELP "Basic classes used for all search engines"
+    SOURCES
+        search_engines/search_common.cc
+    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
     NAME EAGER_SEARCH
     HELP "Eager search algorithm"
     SOURCES
-        eager_search.cc
-    DEPENDS G_EVALUATOR SUM_EVALUATOR
+        search_engines/eager_search.cc
+    DEPENDS SEARCH_COMMON
 )
 
 fast_downward_plugin(
     NAME LAZY_SEARCH
     HELP "Lazy search algorithm"
     SOURCES
-        lazy_search.cc
-    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+        search_engines/lazy_search.cc
+    DEPENDS SEARCH_COMMON
 )
 
 fast_downward_plugin(
     NAME EHC_SEARCH
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
-        enforced_hill_climbing_search.cc
-    DEPENDS PREF_EVALUATOR G_EVALUATOR
+        search_engines/enforced_hill_climbing_search.cc
+    DEPENDS SEARCH_COMMON PREF_EVALUATOR G_EVALUATOR
 )
 
 fast_downward_plugin(
     NAME ITERATED_SEARCH
     HELP "Iterated search algorithm"
     SOURCES
-        iterated_search.cc
+        search_engines/iterated_search.cc
 )
 
 fast_downward_plugin(
@@ -322,7 +330,7 @@ fast_downward_plugin(
         operator_counting/operator_counting_heuristic.cc
         operator_counting/pho_constraints.cc
         operator_counting/state_equation_constraints.cc
-    DEPENDS LP_SOLVER LM_CUT_HEURISTIC PDBS
+    DEPENDS LP_SOLVER LANDMARK_CUT_HEURISTIC PDBS
 )
 
 fast_downward_plugin(
