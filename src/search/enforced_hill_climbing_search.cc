@@ -11,6 +11,9 @@
 #include "open_lists/standard_scalar_open_list.h"
 #include "open_lists/tiebreaking_open_list.h"
 
+using GEval = GEvaluator::GEvaluator;
+using PrefEval = PrefEvaluator::PrefEvaluator;
+
 using namespace std;
 
 
@@ -21,7 +24,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    ScalarEvaluator *g_evaluator = new GEvaluator::GEvaluator();
+    ScalarEvaluator *g_evaluator = new GEval();
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -46,10 +49,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<ScalarEvaluator *> evals = {
-            g_evaluator,
-            new PrefEvaluator::PrefEvaluator()
-        };
+        vector<ScalarEvaluator *> evals = {g_evaluator, new PrefEval()};
         Options options;
         options.set("evals", evals);
         options.set("pref_only", false);

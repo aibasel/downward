@@ -13,6 +13,10 @@
 
 #include <memory>
 
+using GEval = GEvaluator::GEvaluator;
+using SumEval = SumEvaluator::SumEvaluator;
+using WeightedEval = WeightedEvaluator::WeightedEvaluator;
+
 using namespace std;
 
 
@@ -77,18 +81,15 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   we use g instead of g + 0 * h.
 */
 static ScalarEvaluator *create_wastar_eval(
-    GEvaluator::GEvaluator *g_eval, int w, ScalarEvaluator *h_eval) {
+    GEval *g_eval, int w, ScalarEvaluator *h_eval) {
     if (w == 0)
         return g_eval;
     ScalarEvaluator *w_h_eval = nullptr;
     if (w == 1)
         w_h_eval = h_eval;
     else
-        w_h_eval = new WeightedEvaluator::WeightedEvaluator(h_eval, w);
-    return new SumEvaluator::SumEvaluator(
-        vector<ScalarEvaluator *>({g_eval, w_h_eval}
-                                  )
-        );
+        w_h_eval = new WeightedEval(h_eval, w);
+    return new SumEval(vector<ScalarEvaluator *>({g_eval, w_h_eval}));
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
@@ -97,7 +98,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get_list<ScalarEvaluator *>("evals");
     int w = options.get<int>("w");
 
-    GEvaluator::GEvaluator *g_eval = new GEvaluator::GEvaluator();
+    GEval *g_eval = new GEval();
     vector<ScalarEvaluator *> f_evals;
     f_evals.reserve(base_evals.size());
     for (ScalarEvaluator *eval : base_evals)
@@ -111,11 +112,9 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, ScalarEvaluator *>
 create_astar_open_list_factory_and_f_eval(const Options &opts) {
-    GEvaluator::GEvaluator *g = new GEvaluator::GEvaluator();
+    GEval *g = new GEval();
     ScalarEvaluator *h = opts.get<ScalarEvaluator *>("eval");
-    ScalarEvaluator *f =
-        new SumEvaluator::SumEvaluator(vector<ScalarEvaluator *>({g, h}
-                                                                 ));
+    ScalarEvaluator *f = new SumEval(vector<ScalarEvaluator *>({g, h}));
     vector<ScalarEvaluator *> evals = {f, h};
 
     Options options;
