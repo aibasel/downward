@@ -25,8 +25,8 @@ void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
         task, variable_order_type);
 }
 
-pair<int, int> MergeLinear::get_next(shared_ptr<FactoredTransitionSystem> fts) {
-    int num_transition_systems = fts->get_size();
+pair<int, int> MergeLinear::get_next(FactoredTransitionSystem &fts) {
+    int num_transition_systems = fts.get_size();
     assert(initialized());
     assert(!done());
     assert(!variable_order_finder->done());
@@ -43,8 +43,8 @@ pair<int, int> MergeLinear::get_next(shared_ptr<FactoredTransitionSystem> fts) {
     }
     int second = variable_order_finder->next();
     cout << "Next variable: " << second << endl;
-    assert(fts->is_active(first));
-    assert(fts->is_active(second));
+    assert(fts.is_active(first));
+    assert(fts.is_active(second));
     --remaining_merges;
     if (done() && !variable_order_finder->done()) {
         cerr << "Variable order finder not done, but no merges remaining" << endl;

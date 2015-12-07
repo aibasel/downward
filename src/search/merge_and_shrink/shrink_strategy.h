@@ -1,8 +1,9 @@
 #ifndef MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 #define MERGE_AND_SHRINK_SHRINK_STRATEGY_H
 
+#include "types.h"
+
 #include <forward_list>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,17 +17,6 @@ class FactoredTransitionSystem;
 class TransitionSystem;
 
 class ShrinkStrategy {
-protected:
-    /* An equivalence class is a set of abstract states that shall be
-       mapped (shrunk) to the same abstract state.
-
-       An equivalence relation is a partitioning of states into
-       equivalence classes. It may omit certain states entirely; these
-       will be dropped completely and receive an h value of infinity.
-    */
-
-    typedef std::forward_list<int> StateEquivalenceClass;
-    typedef std::vector<StateEquivalenceClass> StateEquivalenceRelation;
 private:
     // Hard limit: the maximum size of a transition system at any point.
     const int max_states;
@@ -48,7 +38,7 @@ private:
       system, but it may attempt to e.g. shrink the transition system in an
       information preserving way.
     */
-    bool shrink_transition_system(std::shared_ptr<FactoredTransitionSystem> fts,
+    bool shrink_transition_system(FactoredTransitionSystem &fts,
                                   int index, int new_size) const;
     /*
       If max_states_before_merge is violated by any of the two transition
@@ -65,7 +55,7 @@ protected:
       specified by concrete shrinking strategies.
     */
     virtual void compute_equivalence_relation(
-        std::shared_ptr<FactoredTransitionSystem> fts,
+        const FactoredTransitionSystem &fts,
         int index,
         int target,
         StateEquivalenceRelation &equivalence_relation) const = 0;
@@ -79,7 +69,7 @@ public:
       The given transition systems are guaranteed to be solvable by the
       merge-and-shrink computation.
     */
-    std::pair<bool, bool> shrink(std::shared_ptr<FactoredTransitionSystem> fts,
+    std::pair<bool, bool> shrink(FactoredTransitionSystem &fts,
                                  int index1,
                                  int index2) const;
 

@@ -2,6 +2,7 @@
 
 #include "factored_transition_system.h"
 #include "fts_factory.h"
+#include "label_reduction.h"
 #include "labels.h"
 #include "merge_strategy.h"
 #include "shrink_strategy.h"
@@ -27,7 +28,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<shared_ptr<MergeStrategy>>("merge_strategy")),
       shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
-      labels(opts.get<shared_ptr<Labels>>("label_reduction")),
+      label_reduction(nullptr),
       starting_peak_memory(-1),
       fts(nullptr) {
     /*
@@ -35,7 +36,10 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       how to handle communication between different components? See issue559.
     */
     merge_strategy->initialize(task);
-    labels->initialize(task_proxy);
+    if (opts.contains("label_reduction")) {
+        label_reduction = opts.get<shared_ptr<LabelReduction>>("label_reduction");
+        label_reduction->initialize(task_proxy);
+    }
 }
 
 void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
@@ -50,17 +54,21 @@ void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
 void MergeAndShrinkHeuristic::dump_options() const {
     merge_strategy->dump_options();
     shrink_strategy->dump_options();
-    labels->dump_options();
+    if (label_reduction) {
+        label_reduction->dump_options();
+    } else {
+        cout << "Label reduction disabled" << endl;
+    }
 }
 
 void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     string dashes(79, '=');
-    if (!labels->reduce_before_merging() && !labels->reduce_before_shrinking()) {
+    if (!label_reduction) {
         cerr << dashes << endl
              << "WARNING! You did not enable label reduction. This may "
             "drastically reduce the performance of merge-and-shrink!"
              << endl << dashes << endl;
-    } else if (labels->reduce_before_merging() && labels->reduce_before_shrinking()) {
+    } else if (label_reduction->reduce_before_merging() && label_reduction->reduce_before_shrinking()) {
         cerr << dashes << endl
              << "WARNING! You set label reduction to be applied twice in "
             "each merge-and-shrink iteration, both before shrinking and\n"
@@ -68,7 +76,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
             "for most configurations!"
              << endl << dashes << endl;
     } else {
-        if (labels->reduce_before_shrinking() &&
+        if (label_reduction->reduce_before_shrinking() &&
             (shrink_strategy->get_name() == "f-preserving"
              || shrink_strategy->get_name() == "random")) {
             cerr << dashes << endl
@@ -77,7 +85,7 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
                 "reduction before merging, not before shrinking!"
                  << endl << dashes << endl;
         }
-        if (labels->reduce_before_merging() &&
+        if (label_reduction->reduce_before_merging() &&
             shrink_strategy->get_name() == "bisimulation") {
             cerr << dashes << endl
                  << "WARNING! Shrinking based on bisimulation performs best "
@@ -93,14 +101,14 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    fts = make_shared<FactoredTransitionSystem>(create_factored_transition_system(task_proxy, labels));
+    fts = make_unique_ptr<FactoredTransitionSystem>(create_factored_transition_system(task_proxy));
     cout << endl;
 
     int final_index = -1; // TODO: get rid of this
     if (fts->is_solvable()) { // All atomic transition system are solvable.
         while (!merge_strategy->done()) {
             // Choose next transition systems to merge
-            pair<int, int> merge_indices = merge_strategy->get_next(fts);
+            pair<int, int> merge_indices = merge_strategy->get_next(*fts);
             int merge_index1 = merge_indices.first;
             int merge_index2 = merge_indices.second;
             cout << "Next pair of indices: (" << merge_index1 << ", " << merge_index2 << ")" << endl;
@@ -108,20 +116,20 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
             fts->statistics(merge_index1, timer);
             fts->statistics(merge_index2, timer);
 
-            if (labels->reduce_before_shrinking()) {
-                labels->reduce(merge_indices, fts);
+            if (label_reduction && label_reduction->reduce_before_shrinking()) {
+                label_reduction->reduce(merge_indices, *fts);
             }
 
             // Shrinking
             pair<bool, bool> shrunk = shrink_strategy->shrink(
-                fts, merge_index1, merge_index2);
+                *fts, merge_index1, merge_index2);
             if (shrunk.first)
                 fts->statistics(merge_index1, timer);
             if (shrunk.second)
                 fts->statistics(merge_index2, timer);
 
-            if (labels->reduce_before_merging()) {
-                labels->reduce(merge_indices, fts);
+            if (label_reduction && label_reduction->reduce_before_merging()) {
+                label_reduction->reduce(merge_indices, *fts);
             }
 
             // Merging
@@ -154,7 +162,9 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
         cout << "Abstract problem is unsolvable!" << endl;
     }
 
-    labels = nullptr;
+    merge_strategy = nullptr;
+    shrink_strategy = nullptr;
+    label_reduction = nullptr;
 }
 
 void MergeAndShrinkHeuristic::initialize() {
@@ -239,11 +249,12 @@ static Heuristic *_parse(OptionParser &parser) {
         "We currently recommend shrink_bisimulation.");
 
     // Label reduction option.
-    parser.add_option<shared_ptr<Labels>>(
+    parser.add_option<shared_ptr<LabelReduction>>(
         "label_reduction",
         "See detailed documentation for labels. There is currently only "
         "one 'option' to use label_reduction. Also note the interaction "
-        "with shrink strategies.");
+        "with shrink strategies.",
+        OptionParser::NONE);
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
