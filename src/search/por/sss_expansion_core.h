@@ -2,10 +2,8 @@
 #define POR_SSS_EXPANSION_CORE_H
 
 #include "stubborn_sets.h"
-#include <vector>
 
-class GlobalOperator;
-class GlobalState;
+#include <vector>
 
 namespace SSSExpansionCore {
 
