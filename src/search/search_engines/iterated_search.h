@@ -1,8 +1,8 @@
 #ifndef ITERATED_SEARCH_H
 #define ITERATED_SEARCH_H
 
-#include "option_parser_util.h"
-#include "search_engine.h"
+#include "../option_parser_util.h"
+#include "../search_engine.h"
 
 class Options;
 

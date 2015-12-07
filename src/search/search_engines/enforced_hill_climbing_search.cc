@@ -1,15 +1,15 @@
 #include "enforced_hill_climbing_search.h"
 
-#include "global_operator.h"
-#include "plugin.h"
-#include "successor_generator.h"
-#include "utilities.h"
+#include "../global_operator.h"
+#include "../plugin.h"
+#include "../successor_generator.h"
+#include "../utilities.h"
 
-#include "evaluators/g_evaluator.h"
-#include "evaluators/pref_evaluator.h"
+#include "../evaluators/g_evaluator.h"
+#include "../evaluators/pref_evaluator.h"
 
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/tiebreaking_open_list.h"
+#include "../open_lists/standard_scalar_open_list.h"
+#include "../open_lists/tiebreaking_open_list.h"
 
 using GEval = GEvaluator::GEvaluator;
 using PrefEval = PrefEvaluator::PrefEvaluator;
