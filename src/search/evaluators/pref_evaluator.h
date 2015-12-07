@@ -1,5 +1,5 @@
-#ifndef PREF_EVALUATOR_H
-#define PREF_EVALUATOR_H
+#ifndef EVALUATORS_PREF_EVALUATOR_H
+#define EVALUATORS_PREF_EVALUATOR_H
 
 #include "../scalar_evaluator.h"
 

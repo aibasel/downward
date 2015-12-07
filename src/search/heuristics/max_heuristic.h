@@ -1,5 +1,5 @@
-#ifndef MAX_HEURISTIC_H
-#define MAX_HEURISTIC_H
+#ifndef HEURISTICS_MAX_HEURISTIC_H
+#define HEURISTICS_MAX_HEURISTIC_H
 
 #include "relaxation_heuristic.h"
 

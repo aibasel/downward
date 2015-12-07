@@ -1,5 +1,5 @@
-#ifndef COMBINING_EVALUATOR_H
-#define COMBINING_EVALUATOR_H
+#ifndef EVALUATORS_COMBINING_EVALUATOR_H
+#define EVALUATORS_COMBINING_EVALUATOR_H
 
 #include "../scalar_evaluator.h"
 

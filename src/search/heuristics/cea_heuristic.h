@@ -1,5 +1,5 @@
-#ifndef CEA_HEURISTIC_H
-#define CEA_HEURISTIC_H
+#ifndef HEURISTICS_CEA_HEURISTIC_H
+#define HEURISTICS_CEA_HEURISTIC_H
 
 #include "../heuristic.h"
 #include "../priority_queue.h"

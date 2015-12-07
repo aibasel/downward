@@ -1,5 +1,5 @@
-#ifndef LM_CUT_HEURISTIC_H
-#define LM_CUT_HEURISTIC_H
+#ifndef HEURISTICS_LM_CUT_HEURISTIC_H
+#define HEURISTICS_LM_CUT_HEURISTIC_H
 
 #include "lm_cut_landmarks.h"
 

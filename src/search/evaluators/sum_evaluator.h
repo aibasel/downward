@@ -1,5 +1,5 @@
-#ifndef SUM_EVALUATOR_H
-#define SUM_EVALUATOR_H
+#ifndef EVALUATORS_SUM_EVALUATOR_H
+#define EVALUATORS_SUM_EVALUATOR_H
 
 #include "combining_evaluator.h"
 
