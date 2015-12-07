@@ -1,5 +1,5 @@
-#ifndef HM_HEURISTIC_H
-#define HM_HEURISTIC_H
+#ifndef HEURISTICS_HM_HEURISTIC_H
+#define HEURISTICS_HM_HEURISTIC_H
 
 #include "../heuristic.h"
 

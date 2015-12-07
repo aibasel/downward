@@ -1,5 +1,5 @@
-#ifndef MAX_EVALUATOR_H
-#define MAX_EVALUATOR_H
+#ifndef EVALUATORS_MAX_EVALUATOR_H
+#define EVALUATORS_MAX_EVALUATOR_H
 
 #include "combining_evaluator.h"
 

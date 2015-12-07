@@ -1,5 +1,5 @@
-#ifndef LP_INTERNALS_H
-#define LP_INTERNALS_H
+#ifndef LP_LP_INTERNALS_H
+#define LP_LP_INTERNALS_H
 
 /*
   This file provides some internal functions for the LP solver code.

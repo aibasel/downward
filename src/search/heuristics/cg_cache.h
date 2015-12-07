@@ -1,5 +1,5 @@
-#ifndef CG_CACHE_H
-#define CG_CACHE_H
+#ifndef HEURISTICS_CG_CACHE_H
+#define HEURISTICS_CG_CACHE_H
 
 #include <vector>
 

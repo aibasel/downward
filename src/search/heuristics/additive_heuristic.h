@@ -1,5 +1,5 @@
-#ifndef ADDITIVE_HEURISTIC_H
-#define ADDITIVE_HEURISTIC_H
+#ifndef HEURISTICS_ADDITIVE_HEURISTIC_H
+#define HEURISTICS_ADDITIVE_HEURISTIC_H
 
 #include "relaxation_heuristic.h"
 

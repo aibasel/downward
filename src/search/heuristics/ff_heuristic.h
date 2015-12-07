@@ -1,5 +1,5 @@
-#ifndef FF_HEURISTIC_H
-#define FF_HEURISTIC_H
+#ifndef HEURISTICS_FF_HEURISTIC_H
+#define HEURISTICS_FF_HEURISTIC_H
 
 #include "additive_heuristic.h"
 

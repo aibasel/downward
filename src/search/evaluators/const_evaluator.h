@@ -1,5 +1,5 @@
-#ifndef CONST_EVALUATOR_H
-#define CONST_EVALUATOR_H
+#ifndef EVALUATORS_CONST_EVALUATOR_H
+#define EVALUATORS_CONST_EVALUATOR_H
 
 #include "../heuristic.h"
 

@@ -1,5 +1,5 @@
-#ifndef WEIGHTED_EVALUATOR_H
-#define WEIGHTED_EVALUATOR_H
+#ifndef EVALUATORS_WEIGHTED_EVALUATOR_H
+#define EVALUATORS_WEIGHTED_EVALUATOR_H
 
 #include "../scalar_evaluator.h"
 
