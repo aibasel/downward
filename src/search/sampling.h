@@ -24,7 +24,7 @@ struct SamplingTimeout : public std::exception {};
 */
 std::vector<State> sample_states_with_random_walks(
     TaskProxy task_proxy,
-    SuccessorGenerator &successor_generator,
+    const SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,
     double average_operator_cost,

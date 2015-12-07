@@ -10,6 +10,8 @@
 #include <unordered_set>
 #include <vector>
 
+
+namespace Landmarks {
 class LandmarkFactory {
 public:
     LandmarkFactory(const Options &opts);
@@ -65,5 +67,6 @@ private:
     bool is_causal_landmark(const LandmarkNode &landmark) const;
     virtual void calc_achievers(); // keep this virtual because HMLandmarks overrides it!
 };
+}
 
 #endif

@@ -11,13 +11,16 @@
 #include <utility>
 #include <vector>
 
+class State;
+class TaskProxy;
+class Timer;
+
+
+namespace MergeAndShrink {
 class Distances;
 class HeuristicRepresentation;
 class LabelEquivalenceRelation;
 class Labels;
-class State;
-class TaskProxy;
-class Timer;
 
 struct Transition {
     int src;
@@ -201,5 +204,6 @@ public:
         return goal_relevant;
     }
 };
+}
 
 #endif

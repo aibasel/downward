@@ -7,6 +7,7 @@
 
 using namespace std;
 
+namespace MergeAndShrink {
 Labels::Labels(vector<unique_ptr<Label>> &&labels)
     : labels(move(labels)),
       max_size(0) {
@@ -41,4 +42,5 @@ void Labels::dump_labels() const {
             cout << "label " << label_no << ", cost " << labels[label_no]->get_cost() << endl;
         }
     }
+}
 }

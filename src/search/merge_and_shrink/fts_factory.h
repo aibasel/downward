@@ -11,10 +11,13 @@
   merge-and-shrink should not need to know about planning task concepts.
 */
 
-class FactoredTransitionSystem;
 class TaskProxy;
+
+namespace MergeAndShrink {
+class FactoredTransitionSystem;
 
 extern FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy);
+}
 
 #endif

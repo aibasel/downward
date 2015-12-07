@@ -3,13 +3,17 @@
 
 #include "open_list.h"
 
+#include "open_list_factory.h"
+
 #include "../globals.h"
 #include "../option_parser.h"
+#include "../option_parser_util.h"
 #include "../rng.h"
 #include "../utilities.h"
 #include "../utilities_hash.h"
 
 #include <cstddef>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -128,38 +132,17 @@ public:
             evaluator->get_involved_heuristics(hset);
         }
     }
+};
 
-    static OpenList<Entry> *_parse(OptionParser &parser) {
-        parser.document_synopsis(
-            "Type-based open list",
-            "Uses multiple evaluators to assign entries to buckets. "
-            "All entries in a bucket have the same evaluator values. "
-            "When retrieving an entry, a bucket is chosen uniformly at "
-            "random and one of the contained entries is selected "
-            "uniformly randomly. "
-            "The algorithm is based on\n\n"
-            " * Fan Xie, Martin Mueller, Robert Holte, Tatsuya Imai.<<BR>>\n"
-            " [Type-Based Exploration with Multiple Search Queues for "
-            "Satisficing Planning "
-            "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705]."
-            "<<BR>>\n "
-            "In //Proceedings of the Twenty-Eigth AAAI Conference "
-            "Conference on Artificial Intelligence (AAAI "
-            "2014)//, pp. 2395-2401. AAAI Press 2014.\n\n\n");
-        parser.add_list_option<ScalarEvaluator *>(
-            "evaluators",
-            "Evaluators used to determine the bucket for each entry.");
 
-        Options opts = parser.parse();
-        if (parser.help_mode())
-            return nullptr;
+class TypeBasedOpenListFactory : public OpenListFactory {
+    Options options;
+public:
+    explicit TypeBasedOpenListFactory(const Options &options);
+    virtual ~TypeBasedOpenListFactory() override = default;
 
-        opts.verify_list_non_empty<ScalarEvaluator *>("evaluators");
-        if (parser.dry_run())
-            return nullptr;
-        else
-            return new TypeBasedOpenList<Entry>(opts);
-    }
+    virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
+    virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
 };
 
 #endif

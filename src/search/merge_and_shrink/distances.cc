@@ -10,8 +10,8 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 const int Distances::DISTANCE_UNKNOWN;
-
 
 Distances::Distances(const TransitionSystem &transition_system)
     : transition_system(transition_system) {
@@ -323,4 +323,5 @@ void Distances::dump() const {
         cout << i << ": " << goal_distances[i] << ", ";
     }
     cout << endl;
+}
 }

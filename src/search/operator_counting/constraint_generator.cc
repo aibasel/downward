@@ -5,7 +5,7 @@
 
 namespace OperatorCounting {
 void ConstraintGenerator::initialize_constraints(
-    const std::shared_ptr<AbstractTask>, std::vector<LPConstraint> &, double) {
+    const std::shared_ptr<AbstractTask>, std::vector<LP::LPConstraint> &, double) {
 }
 
 static PluginTypePlugin<ConstraintGenerator> _type_plugin(

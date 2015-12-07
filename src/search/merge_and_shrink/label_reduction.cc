@@ -19,6 +19,7 @@
 
 using namespace std;
 
+namespace MergeAndShrink {
 LabelReduction::LabelReduction(const Options &options)
     : lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),
@@ -353,3 +354,4 @@ static PluginTypePlugin<LabelReduction> _type_plugin(
     "");
 
 static PluginShared<LabelReduction> _plugin("exact", _parse);
+}

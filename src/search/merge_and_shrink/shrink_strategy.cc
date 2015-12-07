@@ -14,6 +14,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 ShrinkStrategy::ShrinkStrategy(const Options &opts)
     : max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),
@@ -207,3 +209,4 @@ static PluginTypePlugin<ShrinkStrategy> _type_plugin(
     */
     "This page describes the various shrink strategies supported "
     "by the planner.");
+}

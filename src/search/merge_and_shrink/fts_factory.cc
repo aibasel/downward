@@ -17,6 +17,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 class FTSFactory {
     const TaskProxy &task_proxy;
 
@@ -334,4 +335,5 @@ FactoredTransitionSystem FTSFactory::create() {
 FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy) {
     return FTSFactory(task_proxy).create();
+}
 }

@@ -13,7 +13,8 @@
 #include <vector>
 
 
-typedef std::unordered_set<std::pair<int, int>> lm_set;
+namespace Landmarks {
+using lm_set = std::unordered_set<std::pair<int, int>>;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactory {
 private:
@@ -78,5 +79,6 @@ public:
     LandmarkFactoryZhuGivan(const Options &opts);
     virtual ~LandmarkFactoryZhuGivan() {}
 };
+}
 
 #endif

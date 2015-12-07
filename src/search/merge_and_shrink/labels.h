@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+namespace MergeAndShrink {
 class Label {
     /*
       This class implements labels as used by merge-and-shrink transition systems.
@@ -41,5 +42,6 @@ public:
         return max_size;
     }
 };
+}
 
 #endif

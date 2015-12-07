@@ -22,6 +22,9 @@ class AbstractTask;
 class Labels;
 class LandmarkGraph;
 class MergeStrategy;
+class OpenListFactory;
+class PatternCollectionGenerator;
+class PatternGenerator;
 class SearchEngine;
 class ShrinkStrategy;
 class Synergy;
@@ -84,12 +87,13 @@ static void get_help(string k) {
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<LandmarkGraph *>(pt);
-    Plugin<OpenList<int>>::register_open_lists();
-    get_help_templ<OpenList<int> *>(pt);
+    get_help_templ<shared_ptr<OpenListFactory>>(pt);
     get_help_templ<shared_ptr<MergeStrategy>>(pt);
     get_help_templ<shared_ptr<ShrinkStrategy>>(pt);
     get_help_templ<shared_ptr<Labels>>(pt);
     get_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>(pt);
+    get_help_templ<shared_ptr<PatternCollectionGenerator>>(pt);
+    get_help_templ<shared_ptr<PatternGenerator>>(pt);
 }
 
 template<typename T>
@@ -111,12 +115,13 @@ static void get_full_help() {
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<LandmarkGraph *>();
-    Plugin<OpenList<int>>::register_open_lists();
-    get_full_help_templ<OpenList<int> *>();
+    get_full_help_templ<shared_ptr<OpenListFactory>>();
     get_full_help_templ<shared_ptr<MergeStrategy>>();
     get_full_help_templ<shared_ptr<ShrinkStrategy>>();
     get_full_help_templ<shared_ptr<Labels>>();
     get_full_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>();
+    get_full_help_templ<shared_ptr<PatternCollectionGenerator>>();
+    get_full_help_templ<shared_ptr<PatternGenerator>>();
 }
 
 
@@ -362,7 +367,7 @@ string OptionParser::usage(string progname) {
         "* OUTPUT (filename): preprocessor output\n\n"
         "Options:\n"
         "--help [NAME]\n"
-        "    Prints help for all heuristics, openlists, etc. called NAME.\n"
+        "    Prints help for all heuristics, open lists, etc. called NAME.\n"
         "    Without parameter: prints help for everything available\n"
         "--landmarks LANDMARKS_PREDEFINITION\n"
         "    Predefines a set of landmarks that can afterwards be referenced\n"

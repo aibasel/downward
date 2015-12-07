@@ -6,6 +6,8 @@
 class EquivalenceRelation;
 class Options;
 class TaskProxy;
+
+namespace MergeAndShrink {
 class FactoredTransitionSystem;
 
 class LabelReduction {
@@ -69,5 +71,6 @@ public:
         return lr_before_merging;
     }
 };
+}
 
 #endif

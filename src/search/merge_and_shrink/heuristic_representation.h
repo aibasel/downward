@@ -7,6 +7,7 @@
 class State;
 
 
+namespace MergeAndShrink {
 class HeuristicRepresentation {
 protected:
     int domain_size;
@@ -54,6 +55,6 @@ public:
     virtual int get_abstract_state(const State &state) const override;
     virtual void dump() const override;
 };
-
+}
 
 #endif

@@ -3,11 +3,14 @@
 
 #include "open_list.h"
 
+#include "open_list_factory.h"
+
+#include "../option_parser_util.h"
+
 #include <deque>
 #include <map>
 
 class OptionParser;
-class Options;
 class ScalarEvaluator;
 
 
@@ -44,8 +47,16 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+};
 
-    static OpenList<Entry> *_parse(OptionParser &parser);
+class StandardScalarOpenListFactory : public OpenListFactory {
+    Options options;
+public:
+    explicit StandardScalarOpenListFactory(const Options &options);
+    virtual ~StandardScalarOpenListFactory() override = default;
+
+    virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
+    virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
 };
 
 #include "standard_scalar_open_list.cc"

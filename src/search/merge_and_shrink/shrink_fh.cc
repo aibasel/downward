@@ -17,6 +17,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 ShrinkFH::ShrinkFH(const Options &opts)
     : ShrinkBucketBased(opts),
       f_start(HighLow(opts.get_enum("shrink_f"))),
@@ -210,3 +211,4 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_fh", _parse);
+}

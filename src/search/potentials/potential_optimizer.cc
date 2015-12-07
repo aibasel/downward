@@ -11,7 +11,7 @@
 using namespace std;
 
 
-namespace potentials {
+namespace Potentials {
 static int get_undefined_value(VariableProxy var) {
     return var.get_domain_size();
 }
@@ -19,7 +19,7 @@ static int get_undefined_value(VariableProxy var) {
 PotentialOptimizer::PotentialOptimizer(const Options &opts)
     : task(get_task_from_options(opts)),
       task_proxy(*task),
-      lp_solver(LPSolverType(opts.get_enum("lpsolver"))),
+      lp_solver(LP::LPSolverType(opts.get_enum("lpsolver"))),
       max_potential(opts.get<double>("max_potential")),
       num_lp_vars(0) {
     verify_no_axioms(task_proxy);
@@ -98,13 +98,13 @@ void PotentialOptimizer::construct_lp() {
     double upper_bound = (potentials_are_bounded() ? max_potential :
                           lp_solver.get_infinity());
 
-    vector<LPVariable> lp_variables;
+    vector<LP::LPVariable> lp_variables;
     for (int lp_var_id = 0; lp_var_id < num_lp_vars; ++lp_var_id) {
         // Use dummy coefficient for now. Adapt coefficient later.
         lp_variables.emplace_back(-lp_solver.get_infinity(), upper_bound, 1.0);
     }
 
-    vector<LPConstraint> lp_constraints;
+    vector<LP::LPConstraint> lp_constraints;
     for (OperatorProxy op : task_proxy.get_operators()) {
         // Create constraint:
         // Sum_{V in vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)
@@ -112,7 +112,7 @@ void PotentialOptimizer::construct_lp() {
         for (FactProxy pre : op.get_preconditions()) {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }
-        LPConstraint constraint(-lp_solver.get_infinity(), op.get_cost());
+        LP::LPConstraint constraint(-lp_solver.get_infinity(), op.get_cost());
         vector<pair<int, int>> coefficients;
         for (EffectProxy effect : op.get_effects()) {
             VariableProxy var = effect.get_fact().get_variable();
@@ -162,7 +162,7 @@ void PotentialOptimizer::construct_lp() {
           anyway.
         */
         int var_id = var.get_id();
-        LPVariable &lp_var = lp_variables[lp_var_ids[var_id][goal[var_id]]];
+        LP::LPVariable &lp_var = lp_variables[lp_var_ids[var_id][goal[var_id]]];
         lp_var.lower_bound = 0;
         lp_var.upper_bound = 0;
 
@@ -172,13 +172,13 @@ void PotentialOptimizer::construct_lp() {
             // Create constraint: P_{V=v} <= P_{V=u}
             // Note that we could eliminate variables P_{V=u} if V is
             // undefined in the goal.
-            LPConstraint constraint(-lp_solver.get_infinity(), 0);
+            LP::LPConstraint constraint(-lp_solver.get_infinity(), 0);
             constraint.insert(val_lp, 1);
             constraint.insert(undef_val_lp, -1);
             lp_constraints.push_back(constraint);
         }
     }
-    lp_solver.load_problem(LPObjectiveSense::MAXIMIZE, lp_variables, lp_constraints);
+    lp_solver.load_problem(LP::LPObjectiveSense::MAXIMIZE, lp_variables, lp_constraints);
 }
 
 void PotentialOptimizer::solve_and_extract() {
