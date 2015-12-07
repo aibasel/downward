@@ -147,11 +147,20 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME POR
+    HELP "Partial order reduction"
+    SOURCES
+        por/por_method.cc
+        por/simple_stubborn_sets.cc
+        por/sss_expansion_core.cc
+)
+
+fast_downward_plugin(
     NAME EAGER_SEARCH
     HELP "Eager search algorithm"
     SOURCES
         eager_search.cc
-    DEPENDS G_EVALUATOR SUM_EVALUATOR
+    DEPENDS G_EVALUATOR POR SUM_EVALUATOR
 )
 
 fast_downward_plugin(
