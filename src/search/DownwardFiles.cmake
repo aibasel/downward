@@ -163,15 +163,7 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME LAZY_SEARCH
-    HELP "Lazy search algorithm"
-    SOURCES
-        search_engines/lazy_search.cc
-    DEPENDS SEARCH_COMMON
-)
-
-fast_downward_plugin(
-    NAME EHC_SEARCH
+    NAME ENFORCED_HILL_CLIMBING_SEARCH
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
         search_engines/enforced_hill_climbing_search.cc
@@ -183,6 +175,14 @@ fast_downward_plugin(
     HELP "Iterated search algorithm"
     SOURCES
         search_engines/iterated_search.cc
+)
+
+fast_downward_plugin(
+    NAME LAZY_SEARCH
+    HELP "Lazy search algorithm"
+    SOURCES
+        search_engines/lazy_search.cc
+    DEPENDS SEARCH_COMMON
 )
 
 fast_downward_plugin(
