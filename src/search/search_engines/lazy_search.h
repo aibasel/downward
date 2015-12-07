@@ -1,14 +1,14 @@
-#ifndef LAZY_SEARCH_H
-#define LAZY_SEARCH_H
+#ifndef SEARCH_ENGINES_LAZY_SEARCH_H
+#define SEARCH_ENGINES_LAZY_SEARCH_H
 
-#include "evaluation_context.h"
-#include "global_state.h"
-#include "scalar_evaluator.h"
-#include "search_engine.h"
-#include "search_progress.h"
-#include "search_space.h"
+#include "../evaluation_context.h"
+#include "../global_state.h"
+#include "../scalar_evaluator.h"
+#include "../search_engine.h"
+#include "../search_progress.h"
+#include "../search_space.h"
 
-#include "open_lists/open_list.h"
+#include "../open_lists/open_list.h"
 
 #include <memory>
 #include <vector>
@@ -17,6 +17,7 @@ class GlobalOperator;
 class Heuristic;
 class Options;
 
+namespace LazySearch {
 class LazySearch : public SearchEngine {
 protected:
     std::unique_ptr<EdgeOpenList> open_list;
@@ -58,5 +59,6 @@ public:
 
     virtual void print_statistics() const override;
 };
+}
 
 #endif

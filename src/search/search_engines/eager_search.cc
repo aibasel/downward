@@ -1,22 +1,26 @@
 #include "eager_search.h"
 
-#include "evaluation_context.h"
-#include "globals.h"
-#include "heuristic.h"
-#include "option_parser.h"
-#include "plugin.h"
 #include "search_common.h"
-#include "successor_generator.h"
-#include "utilities.h"
 
-#include "open_lists/open_list_factory.h"
+#include "../evaluation_context.h"
+#include "../globals.h"
+#include "../heuristic.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../successor_generator.h"
+#include "../utilities.h"
+
+#include "../open_lists/open_list_factory.h"
 
 #include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <set>
+
 using namespace std;
 
+
+namespace EagerSearch {
 EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
@@ -359,7 +363,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
-        auto temp = create_astar_open_list_factory_and_f_eval(opts);
+        auto temp = SearchCommon::create_astar_open_list_factory_and_f_eval(opts);
         opts.set("open", temp.first);
         opts.set("f_eval", temp.second);
         opts.set("reopen_closed", true);
@@ -425,7 +429,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
     EagerSearch *engine = nullptr;
     if (!parser.dry_run()) {
-        opts.set("open", create_greedy_open_list_factory(opts));
+        opts.set("open", SearchCommon::create_greedy_open_list_factory(opts));
         opts.set("reopen_closed", false);
         opts.set("mpd", false);
         ScalarEvaluator *evaluator = nullptr;
@@ -438,3 +442,4 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 static Plugin<SearchEngine> _plugin("eager", _parse);
 static Plugin<SearchEngine> _plugin_astar("astar", _parse_astar);
 static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_greedy);
+}
