@@ -6,6 +6,8 @@
 
 class Options;
 
+
+namespace IteratedSearch {
 class IteratedSearch : public SearchEngine {
     const std::vector<ParseTree> engine_configs;
     bool pass_bound;
@@ -35,5 +37,6 @@ public:
     virtual void save_plan_if_necessary() const override;
     virtual void print_statistics() const override;
 };
+}
 
 #endif
