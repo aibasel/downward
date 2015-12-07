@@ -2,15 +2,18 @@
 
 #include "../globals.h"
 #include "../global_operator.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 #include "../successor_generator.h"
 
 #include <cassert>
 #include <iostream>
 #include <vector>
 #include <algorithm>
+
 using namespace std;
 
-namespace POR {
+namespace SimpleStubbornSets {
 // Implementation of simple instantiation of strong stubborn sets.
 // Disjunctive action landmarks are computed trivially.
 //
@@ -164,4 +167,12 @@ void SimpleStubbornSets::do_pruning(
         sort(applicable_ops.begin(), applicable_ops.end());
     }
 }
+
+static shared_ptr<PORMethod> _parse(OptionParser &parser) {
+    parser.document_synopsis("Simple stubborn sets", "applies simple stubborn sets");
+
+    return make_shared<SimpleStubbornSets>();
+}
+
+static PluginShared<PORMethod> _plugin("simple_stubborn_sets", _parse);
 }

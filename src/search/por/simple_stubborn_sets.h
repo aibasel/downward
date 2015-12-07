@@ -1,19 +1,19 @@
 #ifndef POR_SIMPLE_STUBBORN_SETS_H
 #define POR_SIMPLE_STUBBORN_SETS_H
 
-#include "por_method.h"
+#include "stubborn_sets.h"
+
 #include "../globals.h"
 #include "../global_operator.h"
 #include "../successor_generator.h"
+
 #include <vector>
-#include <cassert>
-#include <algorithm>
 
 class GlobalState;
 
-namespace POR {
+namespace SimpleStubbornSets {
 
-class SimpleStubbornSets : public PORMethodWithStatistics {
+class SimpleStubbornSets : public StubbornSets::StubbornSets {
 
     // interference_relation[op1_no] contains all operator indices
     // of operators that interfere with op1.
