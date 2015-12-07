@@ -78,73 +78,27 @@ TransitionSystem::TransitionSystem(int num_variables,
     transitions_by_group_id.resize(labels.get_max_size());
 }
 
-// atomic transition system constructor
 TransitionSystem::TransitionSystem(
-    const TaskProxy &task_proxy,
-    const Labels &labels,
-    int var_id,
-    vector<vector<Transition>> &&transitions_by_label)
-    : TransitionSystem(task_proxy.get_variables().size(), labels) {
-    /*
-      TODO: Once we no longer delegate to another constructor,
-      the following line can be changed to an initialization:
-      ": transitions_of_groups(transitions_by_label)"
-    */
-    transitions_by_group_id = move(transitions_by_label);
-    /*
-      TODO: The following if block and the interaction with the
-      constructor we delegate to are a hack and a bit of a performance
-      concern. The base constructor resizes transitions_of_groups to
-      size 2 * num_ops - 1, but then we discard it to move the
-      passed-in transitions into the object instead. Then we resize it
-      to size 2 * num_ops - 1 again.
-
-      So there are two unnecessary resizes, which of course don't come
-      for free. A potential fix would be requiring the factory to
-      already create transitions_of_groups with the appropriate size,
-      but this would perhaps leak an implementation detail that the
-      factory should not care about.
-    */
-    transitions_by_group_id.resize(labels.get_max_size());
-
-    incorporated_variables.push_back(var_id);
-
-    int range = task_proxy.get_variables()[var_id].get_domain_size();
-    int init_value = task_proxy.get_initial_state()[var_id].get_value();
-    int goal_value = -1;
-    goal_relevant = false;
-    GoalsProxy goals = task_proxy.get_goals();
-    for (FactProxy goal : goals) {
-        if (goal.get_variable().get_id() == var_id) {
-            goal_relevant = true;
-            assert(goal_value == -1);
-            goal_value = goal.get_value();
-        }
+    int num_variables,
+    vector<int> &&incorporated_variables,
+    unique_ptr<LabelEquivalenceRelation> &&label_equivalence_relation,
+    vector<vector<Transition>> &&transitions_by_label,
+    int num_states,
+    vector<bool> &&goal_states,
+    int init_state,
+    bool goal_relevant,
+    bool compute_label_equivalence_relation)
+    : num_variables(num_variables),
+      incorporated_variables(move(incorporated_variables)),
+      label_equivalence_relation(move(label_equivalence_relation)),
+      transitions_by_group_id(move(transitions_by_label)),
+      num_states(num_states),
+      goal_states(move(goal_states)),
+      init_state(init_state),
+      goal_relevant(goal_relevant) {
+    if (compute_label_equivalence_relation) {
+        compute_locally_equivalent_labels();
     }
-
-    num_states = range;
-    goal_states.resize(num_states, false);
-    for (int value = 0; value < range; ++value) {
-        if (value == goal_value || goal_value == -1) {
-            goal_states[value] = true;
-        }
-        if (value == init_value)
-            init_state = value;
-    }
-
-    /*
-      Prepare label_equivalence_relation data structure: add one single-element
-      group for every operator.
-    */
-    int num_ops = task_proxy.get_operators().size();
-    for (int label_no = 0; label_no < num_ops; ++label_no) {
-        // We use the label number as index for transitions of groups
-        label_equivalence_relation->add_label_group({label_no});
-        // We could assert that the return value equals label_no, but not
-        // easily in release mode without unused variable error.
-    }
-
-    compute_locally_equivalent_labels();
     assert(are_transitions_sorted_unique());
 }
 
