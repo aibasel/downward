@@ -9,12 +9,15 @@
 
 class AbstractState;
 class AbstractTask;
-class AdditiveHeuristic;
 class FactProxy;
 class GoalsProxy;
 class OperatorProxy;
 class State;
 class TaskProxy;
+
+namespace AdditiveHeuristic {
+class AdditiveHeuristic;
+}
 
 namespace cegar {
 extern bool DEBUG;
@@ -28,7 +31,7 @@ const int MAX_COST_VALUE = 100000000;
 
 using Fact = std::pair<int, int>;
 
-std::shared_ptr<AdditiveHeuristic> get_additive_heuristic(
+std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
     std::shared_ptr<AbstractTask> task);
 
 /*

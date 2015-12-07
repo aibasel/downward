@@ -8,7 +8,9 @@
 #include <memory>
 #include <vector>
 
+namespace AdditiveHeuristic {
 class AdditiveHeuristic;
+}
 
 namespace cegar {
 class AbstractState;
@@ -39,7 +41,7 @@ struct Split {
 class SplitSelector {
     const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
-    std::shared_ptr<AdditiveHeuristic> additive_heuristic;
+    std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic;
 
     const PickSplit pick;
 

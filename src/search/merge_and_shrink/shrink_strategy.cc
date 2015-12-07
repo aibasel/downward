@@ -1,18 +1,21 @@
 #include "shrink_strategy.h"
 
+#include "factored_transition_system.h"
 #include "transition_system.h"
 
 #include "../option_parser.h"
+#include "../plugin.h"
 #include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <limits>
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 ShrinkStrategy::ShrinkStrategy(const Options &opts)
     : max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),
@@ -25,7 +28,11 @@ ShrinkStrategy::ShrinkStrategy(const Options &opts)
 ShrinkStrategy::~ShrinkStrategy() {
 }
 
-bool ShrinkStrategy::shrink_transition_system(TransitionSystem &ts, int new_size) const {
+bool ShrinkStrategy::shrink_transition_system(
+    FactoredTransitionSystem &fts,
+    int index,
+    int new_size) const {
+    const TransitionSystem &ts = fts.get_ts(index);
     assert(ts.is_solvable());
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
@@ -36,10 +43,10 @@ bool ShrinkStrategy::shrink_transition_system(TransitionSystem &ts, int new_size
             cout << " (shrink threshold: " << shrink_threshold_before_merge;
         cout << ")" << endl;
         StateEquivalenceRelation equivalence_relation;
-        compute_equivalence_relation(ts, new_size, equivalence_relation);
+        compute_equivalence_relation(fts, index, new_size, equivalence_relation);
         // TODO: We currently violate this; see issue250
         //assert(equivalence_relation.size() <= new_size);
-        return ts.apply_abstraction(equivalence_relation);
+        return fts.apply_abstraction(index, equivalence_relation);
     }
     return false;
 }
@@ -80,8 +87,11 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-pair<bool, bool> ShrinkStrategy::shrink(TransitionSystem &ts1,
-                                        TransitionSystem &ts2) const {
+pair<bool, bool> ShrinkStrategy::shrink(FactoredTransitionSystem &fts,
+                                        int index1,
+                                        int index2) const {
+    const TransitionSystem &ts1 = fts.get_ts(index1);
+    const TransitionSystem &ts2 = fts.get_ts(index2);
     /*
       Compute the size limit for both transition systems as imposed by
       max_states and max_states_before_merge.
@@ -92,9 +102,12 @@ pair<bool, bool> ShrinkStrategy::shrink(TransitionSystem &ts1,
     /*
       For both transition systems, possibly compute and apply an
       abstraction.
+      TODO: we could better use the given limit by increasing the size limit
+      for the second shrinking if the first shrinking was larger than
+      required.
     */
-    bool shrunk2 = shrink_transition_system(ts2, new_sizes.second);
-    bool shrunk1 = shrink_transition_system(ts1, new_sizes.first);
+    bool shrunk1 = shrink_transition_system(fts, index1, new_sizes.first);
+    bool shrunk2 = shrink_transition_system(fts, index2, new_sizes.second);
     return make_pair(shrunk1, shrunk2);
 }
 
@@ -146,10 +159,10 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
         int n = max_states_before_merge;
-        if (is_product_within_limit(n, n, numeric_limits<int>::max())) {
+        if (is_product_within_limit(n, n, INF)) {
             max_states = n * n;
         } else {
-            max_states = numeric_limits<int>::max();
+            max_states = INF;
         }
     }
 
@@ -185,4 +198,15 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
     opts.set<int>("max_states", max_states);
     opts.set<int>("max_states_before_merge", max_states_before_merge);
     opts.set<int>("threshold", threshold);
+}
+
+
+static PluginTypePlugin<ShrinkStrategy> _type_plugin(
+    "ShrinkStrategy",
+    /*
+      TODO: Replace by better documentation. The text below is just
+      to test the plug-in feature.
+    */
+    "This page describes the various shrink strategies supported "
+    "by the planner.");
 }

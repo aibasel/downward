@@ -1,5 +1,6 @@
 #include "merge_strategy.h"
 
+#include "../plugin.h"
 #include "../task_proxy.h"
 
 #include <cassert>
@@ -7,6 +8,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 MergeStrategy::MergeStrategy() : remaining_merges(UNINITIALIZED) {
 }
 
@@ -35,4 +38,11 @@ void MergeStrategy::dump_options() const {
     cout << "Merge strategy options:" << endl;
     cout << "Type: " << name() << endl;
     dump_strategy_specific_options();
+}
+
+
+static PluginTypePlugin<MergeStrategy> _type_plugin(
+    "MergeStrategy",
+    // TODO: Replace empty string by synopsis for the wiki page.
+    "");
 }

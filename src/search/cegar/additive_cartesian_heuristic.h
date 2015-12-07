@@ -1,5 +1,5 @@
-#ifndef CEGAR_CEGAR_HEURISTIC_H
-#define CEGAR_CEGAR_HEURISTIC_H
+#ifndef CEGAR_ADDITIVE_CARTESIAN_HEURISTIC_H
+#define CEGAR_ADDITIVE_CARTESIAN_HEURISTIC_H
 
 #include "../heuristic.h"
 #include "../option_parser.h"
@@ -52,15 +52,14 @@
 */
 
 class CountdownTimer;
-class Decomposition;
-class GlobalState;
 
 namespace cegar {
 class CartesianHeuristic;
+class Decomposition;
 
 class AdditiveCartesianHeuristic : public Heuristic {
     const Options options;
-    std::vector<std::shared_ptr<Decomposition> > decompositions;
+    std::vector<std::shared_ptr<Decomposition>> decompositions;
     const int max_states;
     std::unique_ptr<CountdownTimer> timer;
     std::vector<int> remaining_costs;

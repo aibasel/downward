@@ -9,6 +9,7 @@
 #include <fstream>
 
 using namespace std;
+using namespace Landmarks;
 
 namespace cegar {
 static Fact get_fact(const LandmarkNode *node) {
@@ -21,6 +22,7 @@ static Fact get_fact(const LandmarkNode *node) {
 shared_ptr<LandmarkGraph> get_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
+    opts.set<bool>("cache_estimates", false);
     opts.set<int>("m", 1);
     // h^m doesn't produce reasonable orders anyway.
     opts.set<bool>("reasonable_orders", false);

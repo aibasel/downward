@@ -4,6 +4,7 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../rng.h"
 #include "../task_tools.h"
 
 #include "../tasks/domain_abstracted_task_factory.h"

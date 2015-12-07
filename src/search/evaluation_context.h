@@ -51,6 +51,7 @@ class EvaluationContext {
     int g_value;
     bool preferred;
     SearchStatistics *statistics;
+    bool calculate_preferred;
 
     static const int INVALID = -1;
 
@@ -63,14 +64,14 @@ public:
     */
     EvaluationContext(
         const HeuristicCache &cache, int g_value, bool is_preferred,
-        SearchStatistics *statistics);
+        SearchStatistics *statistics, bool calculate_preferred = false);
     /*
       Create new heuristic cache for caching heuristic values. Used for example
       by eager search.
     */
     EvaluationContext(
         const GlobalState &state, int g_value, bool is_preferred,
-        SearchStatistics *statistics);
+        SearchStatistics *statistics, bool calculate_preferred = false);
     /*
       Use the following constructor when you don't care about g values,
       preferredness (and statistics), e.g. when sampling states for heuristics.
@@ -85,7 +86,7 @@ public:
     */
     EvaluationContext(
         const GlobalState &state,
-        SearchStatistics *statistics = nullptr);
+        SearchStatistics *statistics = nullptr, bool calculate_preferred = false);
 
     ~EvaluationContext() = default;
 
@@ -111,6 +112,7 @@ public:
     int get_heuristic_value_or_infinity(ScalarEvaluator *heur);
     const std::vector<const GlobalOperator *> &get_preferred_operators(
         ScalarEvaluator *heur);
+    bool get_calculate_preferred() const;
 };
 
 #endif

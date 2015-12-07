@@ -76,8 +76,37 @@ bool BucketOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-template<class Entry>
-OpenList<Entry> *BucketOpenList<Entry>::_parse(OptionParser &parser) {
+#else
+
+// HACK: We're the top level target.
+
+#include "bucket_open_list.h"
+
+#include "open_list_factory.h"
+
+#include "../plugin.h"
+
+#include <memory>
+
+using namespace std;
+
+
+BucketOpenListFactory::BucketOpenListFactory(
+    const Options &options)
+    : options(options) {
+}
+
+unique_ptr<StateOpenList>
+BucketOpenListFactory::create_state_open_list() {
+    return make_unique_ptr<BucketOpenList<StateOpenListEntry>>(options);
+}
+
+unique_ptr<EdgeOpenList>
+BucketOpenListFactory::create_edge_open_list() {
+    return make_unique_ptr<BucketOpenList<EdgeOpenListEntry>>(options);
+}
+
+static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Bucket-based open list",
         "Bucket-based open list implementation that uses a single evaluator. "
@@ -90,9 +119,11 @@ OpenList<Entry> *BucketOpenList<Entry>::_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
-        return new BucketOpenList<Entry>(opts);
+        return make_shared<BucketOpenListFactory>(opts);
 }
+
+static PluginShared<OpenListFactory> _plugin("single_buckets", _parse);
 
 #endif

@@ -1,6 +1,8 @@
 #include "fts_factory.h"
 
+#include "distances.h"
 #include "factored_transition_system.h"
+#include "heuristic_representation.h"
 #include "labels.h"
 #include "transition_system.h"
 
@@ -15,19 +17,19 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 class FTSFactory {
     const TaskProxy &task_proxy;
-    shared_ptr<Labels> labels;
 
     struct TransitionSystemData {
-        vector<vector<Transition> > transitions_by_label;
+        vector<vector<Transition>> transitions_by_label;
         vector<bool> relevant_labels;
     };
     vector<TransitionSystemData> transition_system_by_var;
     // see TODO in build_transitions()
     int task_has_conditional_effects;
 
-    void build_labels();
+    vector<unique_ptr<Label>> create_labels();
     void initialize_transition_system_data();
     void add_transition(int var_no, int label_no,
                         int src_value, int dest_value);
@@ -44,9 +46,12 @@ class FTSFactory {
     void build_transitions_for_operator(OperatorProxy op);
     void build_transitions_for_irrelevant_ops(VariableProxy variable);
     void build_transitions();
-    vector<TransitionSystem *> create_transition_systems();
+    vector<unique_ptr<TransitionSystem>> create_transition_systems(const Labels &labels);
+    vector<unique_ptr<HeuristicRepresentation>> create_heuristic_representations();
+    vector<unique_ptr<Distances>> create_distances(
+        const vector<unique_ptr<TransitionSystem>> &transition_systems);
 public:
-    FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels);
+    explicit FTSFactory(const TaskProxy &task_proxy);
     ~FTSFactory();
 
     /*
@@ -57,22 +62,24 @@ public:
 };
 
 
-FTSFactory::FTSFactory(const TaskProxy &task_proxy, shared_ptr<Labels> labels)
-    : task_proxy(task_proxy), labels(labels), task_has_conditional_effects(false) {
+FTSFactory::FTSFactory(const TaskProxy &task_proxy)
+    : task_proxy(task_proxy), task_has_conditional_effects(false) {
 }
 
 FTSFactory::~FTSFactory() {
 }
 
-void FTSFactory::build_labels() {
-    // Add all operators to the labels object.
-    for (OperatorProxy op : task_proxy.get_operators())
-        labels->add_label(op.get_cost());
+vector<unique_ptr<Label>> FTSFactory::create_labels() {
+    vector<unique_ptr<Label>> result;
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        result.push_back(make_unique_ptr<Label>(op.get_cost()));
+    }
+    return result;
 }
 
 void FTSFactory::initialize_transition_system_data() {
     VariablesProxy variables = task_proxy.get_variables();
-    int num_labels = labels->get_size();
+    int num_labels = task_proxy.get_operators().size();
     transition_system_by_var.resize(variables.size());
     for (VariableProxy var : variables) {
         TransitionSystemData &ts_data = transition_system_by_var[var.get_id()];
@@ -210,7 +217,7 @@ void FTSFactory::build_transitions_for_operator(OperatorProxy op) {
 void FTSFactory::build_transitions_for_irrelevant_ops(VariableProxy variable) {
     int var_no = variable.get_id();
     int num_states = variable.get_domain_size();
-    int num_labels = labels->get_size();
+    int num_labels = task_proxy.get_operators().size();
 
     // Make all irrelevant labels explicit.
     for (int label_no = 0; label_no < num_labels; ++label_no) {
@@ -243,7 +250,7 @@ void FTSFactory::build_transitions() {
         */
         int num_variables = task_proxy.get_variables().size();
         for (int var_no = 0; var_no < num_variables; ++var_no) {
-            vector<vector<Transition> > &transitions_by_label =
+            vector<vector<Transition>> &transitions_by_label =
                 transition_system_by_var[var_no].transitions_by_label;
             for (vector<Transition> &transitions : transitions_by_label) {
                 sort(transitions.begin(), transitions.end());
@@ -255,20 +262,51 @@ void FTSFactory::build_transitions() {
     }
 }
 
-vector<TransitionSystem *> FTSFactory::create_transition_systems() {
+vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const Labels &labels) {
     // Create the actual TransitionSystem objects.
     int num_variables = task_proxy.get_variables().size();
 
     // We reserve space for the transition systems added later by merging.
-    vector<TransitionSystem *> result;
+    vector<unique_ptr<TransitionSystem>> result;
     assert(num_variables >= 1);
     result.reserve(num_variables * 2 - 1);
 
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
-        TransitionSystem *ts = new TransitionSystem(
-            task_proxy, labels, var_no, move(ts_data.transitions_by_label));
-        result.push_back(ts);
+        result.push_back(make_unique_ptr<TransitionSystem>(
+                             task_proxy, labels, var_no, move(ts_data.transitions_by_label)));
+    }
+    return result;
+}
+
+vector<unique_ptr<HeuristicRepresentation>> FTSFactory::create_heuristic_representations() {
+    // Create the actual HeuristicRepresentation objects.
+    int num_variables = task_proxy.get_variables().size();
+
+    // We reserve space for the transition systems added later by merging.
+    vector<unique_ptr<HeuristicRepresentation>> result;
+    assert(num_variables >= 1);
+    result.reserve(num_variables * 2 - 1);
+
+    for (int var_no = 0; var_no < num_variables; ++var_no) {
+        int range = task_proxy.get_variables()[var_no].get_domain_size();
+        result.push_back(make_unique_ptr<HeuristicRepresentationLeaf>(var_no, range));
+    }
+    return result;
+}
+
+vector<unique_ptr<Distances>> FTSFactory::create_distances(
+    const vector<unique_ptr<TransitionSystem>> &transition_systems) {
+    // Create the actual Distances objects.
+    int num_variables = task_proxy.get_variables().size();
+
+    // We reserve space for the transition systems added later by merging.
+    vector<unique_ptr<Distances>> result;
+    assert(num_variables >= 1);
+    result.reserve(num_variables * 2 - 1);
+
+    for (int var_no = 0; var_no < num_variables; ++var_no) {
+        result.push_back(make_unique_ptr<Distances>(*transition_systems[var_no]));
     }
     return result;
 }
@@ -276,14 +314,26 @@ vector<TransitionSystem *> FTSFactory::create_transition_systems() {
 FactoredTransitionSystem FTSFactory::create() {
     cout << "Building atomic transition systems... " << endl;
 
-    build_labels();
     initialize_transition_system_data();
     build_transitions();
 
-    return FactoredTransitionSystem(create_transition_systems());
+    unique_ptr<Labels> labels = make_unique_ptr<Labels>(create_labels());
+    vector<unique_ptr<TransitionSystem>> transition_systems =
+        create_transition_systems(*labels);
+    vector<unique_ptr<HeuristicRepresentation>> heuristic_representations =
+        create_heuristic_representations();
+    vector<unique_ptr<Distances>> distances =
+        create_distances(transition_systems);
+
+    return FactoredTransitionSystem(
+        move(labels),
+        move(transition_systems),
+        move(heuristic_representations),
+        move(distances));
 }
 
 FactoredTransitionSystem create_factored_transition_system(
-    const TaskProxy &task_proxy, shared_ptr<Labels> labels) {
-    return FTSFactory(task_proxy, labels).create();
+    const TaskProxy &task_proxy) {
+    return FTSFactory(task_proxy).create();
+}
 }

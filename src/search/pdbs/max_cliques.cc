@@ -10,9 +10,11 @@
 
 using namespace std;
 
+
+namespace PDBs {
 class MaxCliqueComputer {
-    const vector<vector<int> > &graph;
-    vector<vector<int> > &max_cliques;
+    const vector<vector<int>> &graph;
+    vector<vector<int>> &max_cliques;
     vector<int> current_max_clique;
 
     int get_maximizing_vertex(
@@ -89,8 +91,8 @@ class MaxCliqueComputer {
     }
 
 public:
-    MaxCliqueComputer(const vector<vector<int> > &graph_,
-                      vector<vector<int> > &max_cliques_)
+    MaxCliqueComputer(const vector<vector<int>> &graph_,
+                      vector<vector<int>> &max_cliques_)
         : graph(graph_), max_cliques(max_cliques_) {
     }
 
@@ -108,8 +110,9 @@ public:
 
 
 void compute_max_cliques(
-    const vector<vector<int> > &graph,
-    vector<vector<int> > &max_cliques) {
+    const vector<vector<int>> &graph,
+    vector<vector<int>> &max_cliques) {
     MaxCliqueComputer clique_computer(graph, max_cliques);
     clique_computer.compute();
+}
 }

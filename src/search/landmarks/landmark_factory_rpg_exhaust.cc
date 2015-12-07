@@ -1,10 +1,13 @@
-#include <vector>
-
 #include "landmark_factory_rpg_exhaust.h"
+
 #include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include <vector>
+using namespace std;
+
+namespace Landmarks {
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
@@ -70,3 +73,4 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 
 static Plugin<LandmarkGraph> _plugin(
     "lm_exhaust", _parse);
+}

@@ -7,6 +7,8 @@
 
 class Options;
 
+
+namespace MergeAndShrink {
 /*
   NOTE: In case where we must merge across buckets (i.e. when
   the number of (f, h) pairs is larger than the number of
@@ -18,7 +20,6 @@ class Options;
   do not need to merge across buckets. Therefore the complication
   might not be worth the code maintenance cost.
 */
-
 class ShrinkFH : public ShrinkBucketBased {
 public:
     enum HighLow {HIGH, LOW};
@@ -27,20 +28,25 @@ private:
     const HighLow f_start;
     const HighLow h_start;
 
-    void ordered_buckets_use_vector(const TransitionSystem &ts,
+    void ordered_buckets_use_vector(const FactoredTransitionSystem &fts,
+                                    int index,
                                     std::vector<Bucket> &buckets) const;
-    void ordered_buckets_use_map(const TransitionSystem &ts,
+    void ordered_buckets_use_map(const FactoredTransitionSystem &fts,
+                                 int index,
                                  std::vector<Bucket> &buckets) const;
 protected:
     virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 
     virtual void partition_into_buckets(
-        const TransitionSystem &ts, std::vector<Bucket> &buckets) const;
+        const FactoredTransitionSystem &fts,
+        int index,
+        std::vector<Bucket> &buckets) const;
 
 public:
     explicit ShrinkFH(const Options &opts);
     virtual ~ShrinkFH();
 };
+}
 
 #endif

@@ -20,6 +20,7 @@ and the output file are the same for all versions.
 from __future__ import print_function
 
 from collections import defaultdict
+from distutils.spawn import find_executable
 import itertools
 import os
 import re
@@ -31,8 +32,8 @@ VERSIONS = ["2.7", "3.2"]
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-TRANSLATOR = os.path.abspath(os.path.join(REPO, "src/translate/translate.py"))
-BENCHMARKS = os.path.abspath(os.path.join(REPO, "benchmarks"))
+DRIVER = os.path.join(REPO, "fast-downward.py")
+BENCHMARKS = os.path.join(REPO, "benchmarks")
 
 # Translating these problems covers 84% of the translator code. Translating all
 # first problems covers 85%.
@@ -55,14 +56,21 @@ def get_task_name(path):
 def translate_task(python, task_file):
     print("Translate {} with {}".format(get_task_name(task_file), python))
     sys.stdout.flush()
-    cmd = [python, TRANSLATOR, task_file]
+    # For some reason, the driver cannot find the Python executable
+    # (sys.executable return the empty string) if we don't pass the
+    # absolute path here.
+    python = find_executable(python)
+    cmd = [python, DRIVER, "--translate", task_file]
     try:
         output = subprocess.check_output(cmd, env={"PYTHONHASHSEED": "random"})
     except OSError as err:
         sys.exit("Call failed: {}\n{}".format(" ".join(cmd), err))
     output = str(output)
-    # Remove non-deterministic timing and memory information from the log.
-    for pattern in [r"\[.+s CPU, .+s wall-clock\]", r"\d+ KB"]:
+    # Remove information that may differ between calls.
+    for pattern in [
+            r"\[.+s CPU, .+s wall-clock\]",
+            r"\d+ KB",
+            r"callstring: .*/python\d.\d"]:
         output = re.sub(pattern, "", output)
     return output
 
@@ -97,6 +105,7 @@ def get_tasks():
 
 
 def cleanup():
+    # We can't use the driver's cleanup function since the files are renamed.
     for f in os.listdir("."):
         if f.endswith(".sas"):
             os.remove(f)

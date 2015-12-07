@@ -5,20 +5,22 @@
 #include "../priority_queue.h"
 #include "../task_tools.h"
 #include "../timer.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <limits>
 #include <string>
 #include <vector>
 
 using namespace std;
 
-AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
-                                   const vector<pair<int, int> > &pre_pairs,
-                                   const vector<pair<int, int> > &eff_pairs,
+
+namespace PDBs {
+AbstractOperator::AbstractOperator(const vector<pair<int, int>> &prev_pairs,
+                                   const vector<pair<int, int>> &pre_pairs,
+                                   const vector<pair<int, int>> &eff_pairs,
                                    int cost,
                                    const vector<size_t> &hash_multipliers)
     : cost(cost),
@@ -48,7 +50,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int> > &prev_pairs,
 AbstractOperator::~AbstractOperator() {
 }
 
-void AbstractOperator::dump(const vector<int> &pattern,
+void AbstractOperator::dump(const Pattern &pattern,
                             const TaskProxy &task_proxy) const {
     cout << "AbstractOperator:" << endl;
     cout << "Regression preconditions:" << endl;
@@ -63,12 +65,11 @@ void AbstractOperator::dump(const vector<int> &pattern,
 }
 
 PatternDatabase::PatternDatabase(
-    const std::shared_ptr<AbstractTask> task,
-    const vector<int> &pattern,
+    const TaskProxy &task_proxy,
+    const Pattern &pattern,
     bool dump,
     const vector<int> &operator_costs)
-    : task(task),
-      task_proxy(*task),
+    : task_proxy(task_proxy),
       pattern(pattern) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
@@ -90,10 +91,10 @@ PatternDatabase::PatternDatabase(
 }
 
 void PatternDatabase::multiply_out(
-    int pos, int cost, vector<pair<int, int> > &prev_pairs,
-    vector<pair<int, int> > &pre_pairs,
-    vector<pair<int, int> > &eff_pairs,
-    const vector<pair<int, int> > &effects_without_pre,
+    int pos, int cost, vector<pair<int, int>> &prev_pairs,
+    vector<pair<int, int>> &pre_pairs,
+    vector<pair<int, int>> &eff_pairs,
+    const vector<pair<int, int>> &effects_without_pre,
     vector<AbstractOperator> &operators) {
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
@@ -132,13 +133,13 @@ void PatternDatabase::build_abstract_operators(
     const std::vector<int> &variable_to_index,
     vector<AbstractOperator> &operators) {
     // All variable value pairs that are a prevail condition
-    vector<pair<int, int> > prev_pairs;
+    vector<pair<int, int>> prev_pairs;
     // All variable value pairs that are a precondition (value != -1)
-    vector<pair<int, int> > pre_pairs;
+    vector<pair<int, int>> pre_pairs;
     // All variable value pairs that are an effect
-    vector<pair<int, int> > eff_pairs;
+    vector<pair<int, int>> eff_pairs;
     // All variable value pairs that are a precondition (value = -1)
-    vector<pair<int, int> > effects_without_pre;
+    vector<pair<int, int>> effects_without_pre;
 
     size_t num_vars = task_proxy.get_variables().size();
     vector<bool> has_precond_and_effect_on_var(num_vars, false);
@@ -196,13 +197,13 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
     }
 
     // build the match tree
-    MatchTree match_tree(task, pattern, hash_multipliers);
+    MatchTree match_tree(task_proxy, pattern, hash_multipliers);
     for (const AbstractOperator &op : operators) {
         match_tree.insert(op);
     }
 
     // compute abstract goal var-val pairs
-    vector<pair<int, int> > abstract_goals;
+    vector<pair<int, int>> abstract_goals;
     for (FactProxy goal : task_proxy.get_goals()) {
         int var_id = goal.get_variable().get_id();
         int val = goal.get_value();
@@ -250,7 +251,7 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
 
 bool PatternDatabase::is_goal_state(
     const size_t state_index,
-    const vector<pair<int, int> > &abstract_goals) const {
+    const vector<pair<int, int>> &abstract_goals) const {
     for (pair<int, int> abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.first;
         int var_id = pattern[pattern_var_id];
@@ -300,4 +301,5 @@ bool PatternDatabase::is_operator_relevant(const OperatorProxy &op) const {
         }
     }
     return false;
+}
 }

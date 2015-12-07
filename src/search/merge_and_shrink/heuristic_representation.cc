@@ -10,6 +10,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 HeuristicRepresentation::HeuristicRepresentation(int domain_size)
     : domain_size(domain_size) {
 }
@@ -32,8 +33,6 @@ HeuristicRepresentationLeaf::HeuristicRepresentationLeaf(
 
 void HeuristicRepresentationLeaf::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
-    cout << "leaf: applying abstraction to lookup table" << endl;
-
     int new_domain_size = 0;
     for (int &entry : lookup_table) {
         if (entry != TransitionSystem::PRUNED_STATE) {
@@ -47,6 +46,13 @@ void HeuristicRepresentationLeaf::apply_abstraction_to_lookup_table(
 int HeuristicRepresentationLeaf::get_abstract_state(const State &state) const {
     int value = state[var_id].get_value();
     return lookup_table[value];
+}
+
+void HeuristicRepresentationLeaf::dump() const {
+    for (const auto &value : lookup_table) {
+        cout << value << ", ";
+    }
+    cout << endl;
 }
 
 
@@ -70,7 +76,6 @@ HeuristicRepresentationMerge::HeuristicRepresentationMerge(
 
 void HeuristicRepresentationMerge::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
-    cout << "merge: applying abstraction to lookup table" << endl;
     int new_domain_size = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
@@ -91,4 +96,18 @@ int HeuristicRepresentationMerge::get_abstract_state(
         state2 == TransitionSystem::PRUNED_STATE)
         return TransitionSystem::PRUNED_STATE;
     return lookup_table[state1][state2];
+}
+
+void HeuristicRepresentationMerge::dump() const {
+    for (const auto &row : lookup_table) {
+        for (const auto &value : row) {
+            cout << value << ", ";
+        }
+        cout << endl;
+    }
+    cout << "dump left child:" << endl;
+    left_child->dump();
+    cout << "dump right child:" << endl;
+    right_child->dump();
+}
 }

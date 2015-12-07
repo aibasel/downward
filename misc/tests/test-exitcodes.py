@@ -9,6 +9,7 @@ import sys
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
 BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
+DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
 TASKS = {
     "strips": "miconic/s1-0.pddl",
@@ -29,7 +30,7 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
          'max_states=50000,'
         'threshold=1,'
         'greedy=false),'
-    'label_reduction=label_reduction('
+    'label_reduction=exact('
         'before_shrinking=true,'
         'before_merging=false)'
 '))')
@@ -81,18 +82,20 @@ def run_plan_script(task_type, relpath, search):
     print("\nRun %(search)s on %(task_type)s task:" % locals())
     sys.stdout.flush()
     return subprocess.call(
-        [sys.executable, os.path.join(REPO_BASE, "src", "fast-downward.py"), problem, "--search", search])
+        [sys.executable, DRIVER, problem, "--search", search])
 
 
 def cleanup():
-    subprocess.check_call([sys.executable, os.path.join(REPO_BASE, "src", "cleanup.py")])
+    subprocess.check_call([sys.executable, DRIVER, "--cleanup"])
 
 
 def main():
-    # We cannot call bash scripts on Windows. After we switched to cmake,
-    # we want to replace build_all by a python script.
+    # On Windows, ./build.py has to be called from the correct environment.
+    # Since we want this script to work even when we are in a regular
+    # shell, we do not build on Windows. If the planner is not yet built,
+    # the driver script will complain about this.
     if os.name == "posix":
-        subprocess.check_call(["./build_all"], cwd=os.path.join(REPO_BASE, "src"))
+        subprocess.check_call(["./build.py"], cwd=REPO_BASE)
     failures = []
     for task_type, search, expected in TESTS:
         relpath = TASKS[task_type]
