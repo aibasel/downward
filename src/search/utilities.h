@@ -1,33 +1,13 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include "system.h"
 
-#define LINUX 0
-#define OSX 1
-#define CYGWIN 2
-#define WINDOWS 3
-
-#if defined(__CYGWIN32__)
-#define OPERATING_SYSTEM CYGWIN
-#elif defined(_WIN32)
-#define OPERATING_SYSTEM WINDOWS
-#elif defined(__APPLE__)
-#define OPERATING_SYSTEM OSX
-#else
-#define OPERATING_SYSTEM LINUX
-#endif
-
-#include <cstdlib>
-#include <functional>
+#include <cassert>
 #include <iostream>
+#include <memory>
 #include <utility>
 #include <vector>
-
-#if OPERATING_SYSTEM == WINDOWS
-#define NO_RETURN __declspec(noreturn)
-#else
-#define NO_RETURN __attribute__((noreturn))
-#endif
 
 #define ABORT(msg) \
     ( \
@@ -51,11 +31,6 @@ enum ExitCode {
 };
 
 NO_RETURN extern void exit_with(ExitCode returncode);
-
-extern void register_event_handlers();
-
-extern int get_peak_memory_in_kb(bool use_buffered_input = true);
-extern void print_peak_memory(bool use_buffered_input = true);
 
 /* Test if the product of two numbers is bounded by a third number.
    Safe against overflow. The caller must guarantee
@@ -96,14 +71,32 @@ bool in_bounds(size_t index, const T &container) {
 }
 
 template<typename T>
-void unused_parameter(const T &) {
+T swap_and_pop_from_vector(std::vector<T> &vec, std::size_t pos) {
+    assert(in_bounds(pos, vec));
+    T element = vec[pos];
+    std::swap(vec[pos], vec.back());
+    vec.pop_back();
+    return element;
 }
 
-int get_process_id();
+template<typename T>
+void unused_parameter(const T &) {
+}
 
 template<class T>
 void release_vector_memory(std::vector<T> &vec) {
     std::vector<T>().swap(vec);
+}
+
+/*
+  make_unique_ptr is a poor man's version of make_unique. Once we
+  require C++14, we should change all occurrences of make_unique_ptr
+  to make_unique.
+*/
+
+template<typename T, typename ... Args>
+std::unique_ptr<T> make_unique_ptr(Args && ... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
 }
 
 #endif

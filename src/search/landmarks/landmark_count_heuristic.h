@@ -9,6 +9,8 @@
 #include "../global_state.h"
 #include "../heuristic.h"
 
+
+namespace Landmarks {
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
     LandmarkGraph &lgraph;
@@ -25,7 +27,7 @@ class LandmarkCountHeuristic : public Heuristic {
     int get_heuristic_value(const GlobalState &state);
 
     void collect_lm_leaves(bool disjunctive_lms, LandmarkSet &result, std::vector<
-                               std::pair<int, int> > &leaves);
+                               std::pair<int, int>> &leaves);
     bool ff_search_lm_leaves(bool disjunctive_lms, const GlobalState &state,
                              LandmarkSet &result);
     // returns true iff relaxed reachable and marks relaxed operators
@@ -53,5 +55,6 @@ public:
                              const GlobalState &state);
     virtual bool dead_ends_are_reliable() const;
 };
+}
 
 #endif

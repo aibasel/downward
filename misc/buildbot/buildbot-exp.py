@@ -5,9 +5,13 @@ Update baseline:
   * change BASELINE variable below
   * push the change
   * login to buildbot server and become the buildslave user
+      sudo -u buildslave -H bash
   * remove ~/experiments dir
-  * run in an updated repo (e.g. the one for build-quick):
+  * run in an updated repo (e.g. in ~/lib/downward):
     export PYTHONPATH=~/lib/python/lab
+    export DOWNWARD_COIN_ROOT=~/lib/coin
+    export DOWNWARD_CPLEX_ROOT=~/lib/cplex/cplex
+    cd misc/buildbot
     ./buildbot-exp.py --test nightly --rev baseline --all
     ./buildbot-exp.py --test weekly --rev baseline --all
 
@@ -42,7 +46,7 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 
-BASELINE = checkouts.get_global_rev(REPO, '5c061af448cd')
+BASELINE = checkouts.get_global_rev(REPO, 'eb9f8c86918f')
 if not BASELINE:
     logging.critical('Baseline not set or not found in repo.')
 CONFIGS = {}
@@ -61,7 +65,7 @@ CONFIGS['nightly'] = [
                  'max_states=50000,'
                  'threshold=1,'
                  'greedy=false),'
-             'label_reduction=label_reduction('
+             'label_reduction=exact('
                  'before_shrinking=true,'
                  'before_merging=false)'
          '))']),
@@ -144,16 +148,24 @@ def main():
 
     # Only compare results if we are not running the baseline experiment.
     if rev != BASELINE:
-        exp.steps.insert(0, Step('rm-eval-dir', shutil.rmtree, exp.eval_dir, ignore_errors=True))
+        dirty_paths = [path for path in [exp.preprocess_exp_path, exp.path, exp.eval_dir]
+                       if os.path.exists(path)]
+        if dirty_paths:
+            logging.critical(
+                'The last run found a regression. Please inspect what '
+                'went wrong and then delete the following directories '
+                'manually: %s' % dirty_paths)
         exp.add_step(Step('fetch-baseline-results', Fetcher(),
                           get_exp_dir('baseline', args.test) + '-eval',
                           exp.eval_dir))
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
         exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_CHECKS),
                        name='regression-check')
+        # We abort if there is a regression and keep the directories.
         exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path))
         exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path))
         exp.add_step(Step('rm-preprocessed-tasks', shutil.rmtree, exp.preprocessed_tasks_dir))
+        exp.add_step(Step('rm-eval-dir', shutil.rmtree, exp.eval_dir))
 
     exp()
 

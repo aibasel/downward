@@ -1,23 +1,28 @@
 #include "lazy_search.h"
 
-#include "g_evaluator.h"
 #include "globals.h"
-#include "heuristic_cache.h"
 #include "heuristic.h"
+#include "option_parser.h"
 #include "plugin.h"
 #include "rng.h"
+#include "search_common.h"
 #include "successor_generator.h"
-#include "sum_evaluator.h"
-#include "weighted_evaluator.h"
+
+#include "open_lists/open_list_factory.h"
 
 #include <algorithm>
 #include <limits>
+#include <vector>
+
+using namespace std;
+
 
 static const int DEFAULT_LAZY_BOOST = 1000;
 
 LazySearch::LazySearch(const Options &opts)
     : SearchEngine(opts),
-      open_list(opts.get<OpenList<OpenListEntryLazy> *>("open")),
+      open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
+                create_edge_open_list()),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       randomize_successors(opts.get<bool>("randomize_successors")),
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
@@ -26,7 +31,11 @@ LazySearch::LazySearch(const Options &opts)
       current_operator(nullptr),
       current_g(0),
       current_real_g(0),
-      current_eval_context(current_state, &statistics) {
+      current_eval_context(current_state, 0, true, &statistics) {
+    /*
+      We initialize current_eval_context in such a way that the initial node
+      counts as "preferred".
+    */
 }
 
 void LazySearch::set_pref_operator_heuristics(
@@ -119,7 +128,7 @@ SearchStatus LazySearch::fetch_next_state() {
         return FAILED;
     }
 
-    OpenListEntryLazy next = open_list->remove_min();
+    EdgeOpenListEntry next = open_list->remove_min();
 
     current_predecessor_id = next.first;
     current_operator = next.second;
@@ -131,7 +140,15 @@ SearchStatus LazySearch::fetch_next_state() {
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
     current_real_g = pred_node.get_real_g() + current_operator->get_cost();
 
-    current_eval_context = EvaluationContext(current_state, &statistics);
+    /*
+      Note: We mark the node in current_eval_context as "preferred"
+      here. This probably doesn't matter much either way because the
+      node has already been selected for expansion, but eventually we
+      should think more deeply about which path information to
+      associate with the expanded vs. evaluated nodes in lazy search
+      and where to obtain it from.
+    */
+    current_eval_context = EvaluationContext(current_state, current_g, true, &statistics);
 
     return IN_PROGRESS;
 }
@@ -146,7 +163,8 @@ SearchStatus LazySearch::step() {
 
 
     SearchNode node = search_space.get_node(current_state);
-    bool reopen = reopen_closed_nodes && (current_g < node.get_g()) && !node.is_dead_end() && !node.is_new();
+    bool reopen = reopen_closed_nodes && !node.is_new() &&
+                  !node.is_dead_end() && (current_g < node.get_g());
 
     if (node.is_new() || reopen) {
         StateID dummy_id = current_predecessor_id;
@@ -164,16 +182,15 @@ SearchStatus LazySearch::step() {
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
             // TODO: Generalize code for using multiple heuristics.
-            int h = current_eval_context.get_heuristic_value(heuristics[0]);
             if (reopen) {
                 node.reopen(parent_node, current_operator);
                 statistics.inc_reopened();
             } else if (current_predecessor_id == StateID::no_state) {
-                node.open_initial(h);
+                node.open_initial();
                 if (search_progress.check_progress(current_eval_context))
                     print_checkpoint_line(current_g);
             } else {
-                node.open(h, parent_node, current_operator);
+                node.open(parent_node, current_operator);
             }
             node.close();
             if (check_goal_and_set_plan(current_state))
@@ -187,6 +204,9 @@ SearchStatus LazySearch::step() {
         } else {
             node.mark_as_dead_end();
             statistics.inc_dead_ends();
+        }
+        if (current_predecessor_id == StateID::no_state) {
+            print_initial_h_values(current_eval_context);
         }
     }
     return fetch_next_state();
@@ -203,7 +223,6 @@ void LazySearch::print_checkpoint_line(int g) const {
 }
 
 void LazySearch::print_statistics() const {
-    search_progress.print_initial_h_values();
     statistics.print_detailed_statistics();
     search_space.print_statistics();
 }
@@ -228,8 +247,7 @@ static void _add_succ_order_options(OptionParser &parser) {
 
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Lazy best-first search", "");
-    Plugin<OpenList<OpenListEntryLazy > >::register_open_lists();
-    parser.add_option<OpenList<OpenListEntryLazy> *>("open", "open list");
+    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
     parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
     parser.add_list_option<Heuristic *>(
         "preferred",
@@ -241,8 +259,11 @@ static SearchEngine *_parse(OptionParser &parser) {
     LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
         engine = new LazySearch(opts);
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
+        /*
+          TODO: The following two lines look fishy. If they serve a
+          purpose, shouldn't the constructor take care of this?
+        */
+        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
 
@@ -304,29 +325,10 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
     LazySearch *engine = 0;
     if (!parser.dry_run()) {
-        vector<ScalarEvaluator *> evals =
-            opts.get_list<ScalarEvaluator *>("evals");
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        OpenList<OpenListEntryLazy> *open;
-        if ((evals.size() == 1) && preferred_list.empty()) {
-            open = new StandardScalarOpenList<OpenListEntryLazy>(evals[0],
-                                                                 false);
-        } else {
-            vector<OpenList<OpenListEntryLazy> *> inner_lists;
-            for (ScalarEvaluator *eval : evals) {
-                inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(eval, false));
-                if (!preferred_list.empty()) {
-                    inner_lists.push_back(
-                        new StandardScalarOpenList<OpenListEntryLazy>(eval, true));
-                }
-            }
-            open = new AlternationOpenList<OpenListEntryLazy>(
-                inner_lists, opts.get<int>("boost"));
-        }
-        opts.set("open", open);
+        opts.set("open", create_greedy_open_list_factory(opts));
         engine = new LazySearch(opts);
+        // TODO: The following two lines look fishy. See similar comment in _parse.
+        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;
@@ -393,46 +395,12 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 
     opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
-    LazySearch *engine = 0;
+    LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
-        vector<ScalarEvaluator *> evals = opts.get_list<ScalarEvaluator *>("evals");
-        vector<Heuristic *> preferred_list =
-            opts.get_list<Heuristic *>("preferred");
-        vector<OpenList<OpenListEntryLazy> *> inner_lists;
-        for (size_t i = 0; i < evals.size(); ++i) {
-            GEvaluator *g = new GEvaluator();
-            vector<ScalarEvaluator *> sum_evals;
-            sum_evals.push_back(g);
-            if (opts.get<int>("w") == 1) {
-                sum_evals.push_back(evals[i]);
-            } else {
-                WeightedEvaluator *w = new WeightedEvaluator(
-                    evals[i],
-                    opts.get<int>("w"));
-                sum_evals.push_back(w);
-            }
-            SumEvaluator *f_eval = new SumEvaluator(sum_evals);
-
-            inner_lists.push_back(
-                new StandardScalarOpenList<OpenListEntryLazy>(f_eval, false));
-
-            if (!preferred_list.empty()) {
-                inner_lists.push_back(
-                    new StandardScalarOpenList<OpenListEntryLazy>(f_eval,
-                                                                  true));
-            }
-        }
-        OpenList<OpenListEntryLazy> *open;
-        if (inner_lists.size() == 1) {
-            open = inner_lists[0];
-        } else {
-            open = new AlternationOpenList<OpenListEntryLazy>(
-                inner_lists, opts.get<int>("boost"));
-        }
-
-        opts.set("open", open);
-
+        opts.set("open", create_wastar_open_list_factory(opts));
         engine = new LazySearch(opts);
+        // TODO: The following two lines look fishy. See similar comment in _parse.
+        vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
         engine->set_pref_operator_heuristics(preferred_list);
     }
     return engine;

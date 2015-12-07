@@ -10,19 +10,18 @@
 
 #include "open_lists/open_list.h"
 
+#include <memory>
 #include <vector>
 
 class GlobalOperator;
 class Heuristic;
 class Options;
 
-typedef std::pair<StateID, const GlobalOperator *> OpenListEntryLazy;
-
 class LazySearch : public SearchEngine {
 protected:
-    OpenList<OpenListEntryLazy> *open_list;
+    std::unique_ptr<EdgeOpenList> open_list;
 
-    // Search Behavior parameters
+    // Search behavior parameters
     bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
     bool randomize_successors;
     bool preferred_successors_first;
@@ -38,8 +37,8 @@ protected:
     int current_real_g;
     EvaluationContext current_eval_context;
 
-    virtual void initialize();
-    virtual SearchStatus step();
+    virtual void initialize() override;
+    virtual SearchStatus step() override;
 
     void generate_successors();
     SearchStatus fetch_next_state();

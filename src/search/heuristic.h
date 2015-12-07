@@ -2,6 +2,7 @@
 #define HEURISTIC_H
 
 #include "operator_cost.h"
+#include "per_state_information.h"
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
 
@@ -15,6 +16,12 @@ class Options;
 class TaskProxy;
 
 class Heuristic : public ScalarEvaluator {
+    struct HEntry {
+        int h : 31;
+        bool dirty : 1;
+        HEntry(int h, bool dirty) : h(h), dirty(dirty) {}
+    };
+
     std::string description;
     bool initialized;
 
@@ -31,12 +38,21 @@ class Heuristic : public ScalarEvaluator {
     */
     std::vector<const GlobalOperator *> preferred_operators;
 protected:
+    /*
+      Cache for saving h values
+      Before accessing this cache always make sure that the cache_h_values
+      flag is set to true - as soon as the cache is accessed it will create
+      entries for all existing states
+    */
+    PerStateInformation<HEntry> heuristic_cache;
+    bool cache_h_values;
+
     // Hold a reference to the task implementation and pass it to objects that need it.
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
     OperatorCost cost_type;
-    enum {DEAD_END = -1};
+    enum {DEAD_END = -1, NO_VALUE = -2};
     virtual void initialize() {}
     // TODO: Call with State directly once all heuristics support it.
     virtual int compute_heuristic(const GlobalState &state) = 0;
@@ -72,8 +88,9 @@ public:
         EvaluationContext &eval_context) override;
 
     std::string get_description() const;
+    bool is_h_dirty(GlobalState &state) {
+        return heuristic_cache[state].dirty;
+    }
 };
-
-std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts);
 
 #endif

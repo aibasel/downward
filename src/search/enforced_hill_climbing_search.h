@@ -7,14 +7,12 @@
 #include "open_lists/open_list.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
-class GEvaluator;
 class Options;
-
-typedef std::pair<StateID, std::pair<int, const GlobalOperator * > > OpenListEntryEHC;
 
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
@@ -31,14 +29,13 @@ enum class PreferredUsage {
 class EnforcedHillClimbingSearch : public SearchEngine {
     std::vector<const GlobalOperator *> get_successors(
         EvaluationContext &eval_context);
-    void expand(EvaluationContext &eval_context, int d);
+    void expand(EvaluationContext &eval_context);
     void reach_state(
         const GlobalState &parent, const GlobalOperator &op,
         const GlobalState &state);
     SearchStatus ehc();
 
-    OpenList<OpenListEntryEHC> *open_list;
-    GEvaluator *g_evaluator;
+    std::unique_ptr<EdgeOpenList> open_list;
 
     Heuristic *heuristic;
     std::vector<Heuristic *> preferred_operator_heuristics;
@@ -47,9 +44,10 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     PreferredUsage preferred_usage;
 
     EvaluationContext current_eval_context;
+    int current_phase_start_g;
 
     // Statistics
-    std::map<int, std::pair<int, int> > d_counts;
+    std::map<int, std::pair<int, int>> d_counts;
     int num_ehc_phases;
     int last_num_expanded;
 

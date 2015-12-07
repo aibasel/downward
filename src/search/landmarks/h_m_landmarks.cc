@@ -1,9 +1,11 @@
 #include "h_m_landmarks.h"
+
 #include "../plugin.h"
-#include "../exact_timer.h"
 
+using namespace std;
 
-std::ostream & operator<<(std::ostream &os, const Fluent &p) {
+namespace Landmarks {
+std::ostream &operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
@@ -313,8 +315,8 @@ void HMLandmarks::get_m_sets(int m,
 
 void HMLandmarks::print_proposition(const pair<int, int> &fluent) const {
     cout << g_fact_names[fluent.first][fluent.second]
-    << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
-    << "->" << fluent.second << ")";
+         << " (" << g_variable_name[fluent.first] << "(" << fluent.first << ")"
+         << "->" << fluent.second << ")";
 }
 
 void get_operator_precondition(int op_index, FluentSet &pc) {
@@ -352,7 +354,7 @@ void get_operator_postcondition(int op_index, FluentSet &post) {
 
 void HMLandmarks::print_pm_op(const PMOp &op) {
     std::set<Fluent> pcs, effs, cond_pc, cond_eff;
-    std::vector<std::pair<std::set<Fluent>, std::set<Fluent> > > conds;
+    std::vector<std::pair<std::set<Fluent>, std::set<Fluent>>> conds;
     std::set<Fluent>::iterator it;
 
     std::vector<int>::const_iterator v_it;
@@ -598,7 +600,7 @@ HMLandmarks::HMLandmarks(const Options &opts)
 
 void HMLandmarks::init() {
     // get all the m or less size subsets in the domain
-    std::vector<std::vector<Fluent> > msets;
+    std::vector<std::vector<Fluent>> msets;
     get_m_sets(m_, msets);
     //  std::cout << "P^m index\tP fluents" << std::endl;
 
@@ -614,7 +616,7 @@ void HMLandmarks::init() {
          */
     }
     std::cout << "Using " << h_m_table_.size() << " P^m fluents."
-    << std::endl;
+              << std::endl;
 
     // unsatisfied pc counts are now in build pm ops
 
@@ -918,7 +920,7 @@ void HMLandmarks::compute_noop_landmarks(
 }
 
 void HMLandmarks::add_lm_node(int set_index, bool goal) {
-    std::set<std::pair<int, int> > lm;
+    std::set<std::pair<int, int>> lm;
 
     std::map<int, LandmarkNode *>::iterator it = lm_node_table_.find(set_index);
 
@@ -1058,3 +1060,4 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 
 static Plugin<LandmarkGraph> _plugin(
     "lm_hm", _parse);
+}
