@@ -10,6 +10,7 @@
 using namespace std;
 
 
+namespace IteratedSearch {
 IteratedSearch::IteratedSearch(const Options &opts)
     : SearchEngine(opts),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
@@ -193,3 +194,4 @@ static SearchEngine *_parse(OptionParser &parser) {
 }
 
 static Plugin<SearchEngine> _plugin("iterated", _parse);
+}
