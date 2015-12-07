@@ -17,6 +17,7 @@ class GlobalOperator;
 class Heuristic;
 class Options;
 
+namespace LazySearch {
 class LazySearch : public SearchEngine {
 protected:
     std::unique_ptr<EdgeOpenList> open_list;
@@ -58,5 +59,6 @@ public:
 
     virtual void print_statistics() const override;
 };
+}
 
 #endif

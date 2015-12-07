@@ -18,6 +18,7 @@
 using namespace std;
 
 
+namespace LazySearch {
 static const int DEFAULT_LAZY_BOOST = 1000;
 
 LazySearch::LazySearch(const Options &opts)
@@ -410,3 +411,4 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 static Plugin<SearchEngine> _plugin("lazy", _parse);
 static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_greedy);
 static Plugin<SearchEngine> _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);
+}
