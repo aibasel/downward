@@ -1,5 +1,5 @@
-#ifndef ITERATED_SEARCH_H
-#define ITERATED_SEARCH_H
+#ifndef SEARCH_ENGINES_ITERATED_SEARCH_H
+#define SEARCH_ENGINES_ITERATED_SEARCH_H
 
 #include "../option_parser_util.h"
 #include "../search_engine.h"

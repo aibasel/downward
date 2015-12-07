@@ -1,5 +1,5 @@
-#ifndef SEARCH_COMMON_H
-#define SEARCH_COMMON_H
+#ifndef SEARCH_ENGINES_SEARCH_COMMON_H
+#define SEARCH_ENGINES_SEARCH_COMMON_H
 
 /*
   This module contains functions for creating open list factories used

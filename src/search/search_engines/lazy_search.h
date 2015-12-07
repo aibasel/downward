@@ -1,5 +1,5 @@
-#ifndef LAZY_SEARCH_H
-#define LAZY_SEARCH_H
+#ifndef SEARCH_ENGINES_LAZY_SEARCH_H
+#define SEARCH_ENGINES_LAZY_SEARCH_H
 
 #include "../evaluation_context.h"
 #include "../global_state.h"
