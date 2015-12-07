@@ -1,17 +1,16 @@
 #ifndef MERGE_AND_SHRINK_LABEL_EQUIVALENCE_RELATION_H
 #define MERGE_AND_SHRINK_LABEL_EQUIVALENCE_RELATION_H
 
-#include <limits>
+#include "types.h"
+
 #include <list>
-#include <memory>
 #include <vector>
 
 
 namespace MergeAndShrink {
 class Labels;
 
-using LabelIter = std::list<int>::iterator;
-using LabelConstIter = std::list<int>::const_iterator;
+typedef std::list<int>::iterator LabelIter;
 
 class LabelGroup {
     /*
@@ -21,9 +20,7 @@ class LabelGroup {
     std::list<int> labels;
     int cost;
 public:
-    LabelGroup()
-    // TODO: duplication of INF in transition_system.h
-        : cost(std::numeric_limits<int>::max()) {
+    LabelGroup() : cost(INF) {
     }
     void set_cost(int cost_) {
         cost = cost_;
@@ -63,9 +60,9 @@ public:
 class LabelEquivalenceRelation {
     /*
       There should only be one instance of Labels at runtime. It is created
-      and managed by MergeAndShrinkHeuristic.
+      and managed by FactoredTransitionSystem.
     */
-    const std::shared_ptr<Labels> labels;
+    const Labels &labels;
 
     /*
       NOTE: it is somewhat dangerous to use lists inside vectors and storing
@@ -79,7 +76,7 @@ class LabelEquivalenceRelation {
 
     void add_label_to_group(int group_id, int label_no);
 public:
-    explicit LabelEquivalenceRelation(const std::shared_ptr<Labels> labels);
+    explicit LabelEquivalenceRelation(const Labels &labels);
     virtual ~LabelEquivalenceRelation() = default;
 
     void recompute_group_cost();
@@ -94,8 +91,8 @@ public:
     int get_size() const {
         return grouped_labels.size();
     }
-    const LabelGroup &operator[](int group_id) {
-        return grouped_labels[group_id];
+    const LabelGroup &get_group(int group_id) const {
+        return grouped_labels.at(group_id);
     }
 };
 }
