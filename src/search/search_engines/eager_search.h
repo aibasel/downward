@@ -1,9 +1,9 @@
-#ifndef EAGER_SEARCH_H
-#define EAGER_SEARCH_H
+#ifndef SEARCH_ENGINES_EAGER_SEARCH_H
+#define SEARCH_ENGINES_EAGER_SEARCH_H
 
-#include "search_engine.h"
+#include "../search_engine.h"
 
-#include "open_lists/open_list.h"
+#include "../open_lists/open_list.h"
 
 #include <memory>
 #include <vector>
@@ -13,6 +13,7 @@ class Heuristic;
 class Options;
 class ScalarEvaluator;
 
+namespace EagerSearch {
 class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
     const bool use_multi_path_dependence;
@@ -41,5 +42,6 @@ public:
 
     void dump_search_space() const;
 };
+}
 
 #endif
