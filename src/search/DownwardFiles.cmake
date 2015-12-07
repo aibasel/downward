@@ -29,6 +29,7 @@ set(CORE_SOURCES
         option_parser_util.cc
         per_state_information.cc
         plugin.cc
+        por_method.cc
         priority_queue.cc
         rng.cc
         root_task.cc
@@ -147,12 +148,34 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME POR
-    HELP "Partial order reduction"
+    NAME NULL_POR_METHOD
+    HELP "Partial order reduction with no pruning"
     SOURCES
-        por/por_method.cc
+        por/null_por_method.cc
+)
+
+fast_downward_plugin(
+    NAME STUBBORN_SETS
+    HELP "Base class for all stubborn set partial order reduction methods"
+    SOURCES
+        por/stubborn_sets.cc
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME SIMPLE_STUBBORN_SETS
+    HELP "Simple stubborn sets"
+    SOURCES
         por/simple_stubborn_sets.cc
+    DEPENDS STUBBORN_SETS
+)
+
+fast_downward_plugin(
+    NAME SSS_EXPANSION_CORE
+    HELP "Stubborn set method that dominates expansion core"
+    SOURCES
         por/sss_expansion_core.cc
+    DEPENDS STUBBORN_SETS
 )
 
 fast_downward_plugin(

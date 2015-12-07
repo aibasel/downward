@@ -5,13 +5,12 @@
 #include "heuristic.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "por_method.h"
 #include "search_common.h"
 #include "successor_generator.h"
 #include "utilities.h"
 
 #include "open_lists/open_list_factory.h"
-
-#include "por/por_method.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -27,9 +26,7 @@ EagerSearch::EagerSearch(const Options &opts)
                 create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
-      partial_order_reduction_method(0)
-{
-    partial_order_reduction_method = POR::create(opts.get_enum("partial_order_reduction"));
+      partial_order_reduction_method(opts.get<shared_ptr<PORMethod>>("partial_order_reduction")) {
 }
 
 void EagerSearch::initialize() {
@@ -80,10 +77,6 @@ void EagerSearch::initialize() {
     
     partial_order_reduction_method->dump_options();
 	print_initial_h_values(eval_context);
-}
-
-EagerSearch::~EagerSearch() {
-    delete partial_order_reduction_method;
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -329,7 +322,10 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
 
-    POR::add_parser_option(parser, "partial_order_reduction");
+    parser.add_option<shared_ptr<PORMethod>>(
+	"partial_order_reduction",
+        "partial order reduction method",
+        "null()");
 
     parser.add_option<ScalarEvaluator *>(
         "f_eval",
@@ -375,7 +371,10 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<bool>("mpd",
                             "use multi-path dependence (LM-A*)", "false");
 
-    POR::add_parser_option(parser, "partial_order_reduction");
+    parser.add_option<shared_ptr<PORMethod>>(
+	"partial_order_reduction",
+        "partial order reduction method",
+        "null()");
 
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
@@ -441,9 +440,11 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
-    
-    POR::add_parser_option(parser, "partial_order_reduction");
-
+    parser.add_option<shared_ptr<PORMethod>>(
+	"partial_order_reduction",
+        "partial order reduction method",
+        "null()");
+					     
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();

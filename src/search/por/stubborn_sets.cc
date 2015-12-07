@@ -1,45 +1,24 @@
-#include "por_method.h"
+#include "stubborn_sets.h"
 
-// TODO: We can get rid of the following includes once we have the
-//       plugin mechanism in place for this.
-#include "simple_stubborn_sets.h"
-#include "sss_expansion_core.h"
-#include "../option_parser.h"
-
-#include <cstdlib>
 #include <iostream>
-#include <string>
-#include <vector>
 
 using namespace std;
 
-namespace POR {
+namespace StubbornSets {
 
-PORMethod::PORMethod() {}
-
-PORMethod::~PORMethod() {}
-
-NullPORMethod::NullPORMethod() {}
-
-NullPORMethod::~NullPORMethod() {}
-
-void NullPORMethod::dump_options() const {
-    cout << "partial order reduction method: none" << endl;
-}
-
-PORMethodWithStatistics::PORMethodWithStatistics()
+StubbornSets::StubbornSets()
     : unpruned_successors_generated(0),
       pruned_successors_generated(0) {
 }
 
-PORMethodWithStatistics::~PORMethodWithStatistics() {
+StubbornSets::~StubbornSets() {
 }
 
 inline bool operator<(const Fact &lhs, const Fact &rhs) {
     return lhs.var < rhs.var;
 }
 
-bool PORMethodWithStatistics::can_disable(int op1_no, int op2_no) {
+bool StubbornSets::can_disable(int op1_no, int op2_no) {
     size_t i = 0;
     size_t j = 0;
     while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
@@ -62,7 +41,7 @@ bool PORMethodWithStatistics::can_disable(int op1_no, int op2_no) {
     return false;
 }
 
-bool PORMethodWithStatistics::can_conflict(int op1_no, int op2_no) {
+bool StubbornSets::can_conflict(int op1_no, int op2_no) {
     size_t i = 0;
     size_t j = 0;
     while (i < op_effects[op1_no].size() && j < op_effects[op2_no].size()) {
@@ -86,11 +65,11 @@ bool PORMethodWithStatistics::can_conflict(int op1_no, int op2_no) {
 }
 
 
-bool PORMethodWithStatistics::interfere(int op1_no, int op2_no) {
+bool StubbornSets::interfere(int op1_no, int op2_no) {
     return can_disable(op1_no, op2_no) || can_conflict(op1_no, op2_no) || can_disable(op2_no, op1_no);
 }
 
-void PORMethodWithStatistics::compute_sorted_operators() {
+void StubbornSets::compute_sorted_operators() {
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         GlobalOperator *op = &g_operators[op_no];
 	
@@ -129,7 +108,7 @@ void PORMethodWithStatistics::compute_sorted_operators() {
     }
 }
 
-void PORMethodWithStatistics::compute_achievers() {
+void StubbornSets::compute_achievers() {
     size_t num_variables = g_variable_domain.size();
     achievers.resize(num_variables);
     for (uint var_no = 0; var_no < num_variables; ++var_no)
@@ -146,47 +125,18 @@ void PORMethodWithStatistics::compute_achievers() {
     }
 }
 
-void PORMethodWithStatistics::prune_operators(
+void StubbornSets::prune_operators(
     const GlobalState &state, std::vector<const GlobalOperator *> &ops) {
     unpruned_successors_generated += ops.size();
     do_pruning(state, ops);
     pruned_successors_generated += ops.size();
 }
 
-void PORMethodWithStatistics::dump_statistics() const {
+void StubbornSets::dump_statistics() const {
     cout << "total successors before partial-order reduction: "
          << unpruned_successors_generated << endl
          << "total successors after partial-order reduction: "
          << pruned_successors_generated << endl;
 }
 
-void add_parser_option(OptionParser &parser, const string &option_name) {
-    // TODO: Use the plug-in mechanism here.
-    vector<string> por_methods;
-    vector<string> por_methods_doc;
-    
-    por_methods.push_back("NONE");
-    por_methods_doc.push_back("no partial order reduction");
-    por_methods.push_back("SIMPLE_STUBBORN_SETS");
-    por_methods_doc.push_back("simple stubborn sets");
-    por_methods.push_back("SSS_EXPANSION_CORE");
-    por_methods_doc.push_back("strong stubborn sets that dominate expansion core");
-    parser.add_enum_option(option_name, por_methods, 
-			   "partial-order reduction method to be used", 
-			   "NONE", 
-			   por_methods_doc);
-}
-
-PORMethod *create(int option) {
-    if (option == NO_POR_METHOD) {
-        return new NullPORMethod;
-    } else if (option == SIMPLE_STUBBORN_SETS) {
-        return new SimpleStubbornSets;
-    } else if (option == SSS_EXPANSION_CORE) {
-        return new SSS_ExpansionCore;
-    } else {
-        cerr << "internal error: unknown POR method " << option << endl;
-        abort();
-    }
-}
 }
