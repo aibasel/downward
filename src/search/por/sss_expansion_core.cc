@@ -1,14 +1,19 @@
 #include "sss_expansion_core.h"
+
 #include "../globals.h"
 #include "../global_operator.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 #include "../successor_generator.h"
+
 #include <cassert>
 #include <algorithm>
 
 using namespace std;
+
 class GlobalState;
 
-namespace POR {
+namespace SSSExpansionCore {
 
 // TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
@@ -403,4 +408,12 @@ void SSS_ExpansionCore::do_pruning(const GlobalState &state, std::vector<const G
         sort(applicable_ops.begin(), applicable_ops.end());
     }
 }
+
+static shared_ptr<PORMethod> _parse(OptionParser &parser) {
+    parser.document_synopsis("SSS_ExpansionCore", "applies stubborn sets that dominate expansion core");
+
+    return make_shared<SSS_ExpansionCore>();
+}
+
+static PluginShared<PORMethod> _plugin("sss_expansion_core", _parse);
 }

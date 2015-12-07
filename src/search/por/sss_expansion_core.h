@@ -1,13 +1,13 @@
 #ifndef POR_SSS_EXPANSION_CORE_H
 #define POR_SSS_EXPANSION_CORE_H
 
-#include "por_method.h"
+#include "stubborn_sets.h"
 #include <vector>
 
 class GlobalOperator;
 class GlobalState;
 
-namespace POR {
+namespace SSSExpansionCore {
 
 struct ExpansionCoreDTG {
     struct Arc {
@@ -38,7 +38,7 @@ public:
     void backward_relevance_analysis(std::vector<bool> &relevant) const;
 };
 
-class SSS_ExpansionCore : public PORMethodWithStatistics {
+class SSS_ExpansionCore : public StubbornSets::StubbornSets {
 private:
     std::vector<ExpansionCoreDTG> dtgs;
     std::vector<std::vector<std::vector<bool> > > reachability_map;
