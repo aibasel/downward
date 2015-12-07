@@ -8,7 +8,7 @@ namespace MergeAndShrink {
 class MergeDFP : public MergeStrategy {
     // Store the "DFP" ordering in which transition systems should be considered.
     std::vector<int> transition_system_order;
-    void compute_label_ranks(std::shared_ptr<FactoredTransitionSystem> fts,
+    void compute_label_ranks(FactoredTransitionSystem &fts,
                              int index,
                              std::vector<int> &label_ranks) const;
 protected:
@@ -18,7 +18,7 @@ public:
     virtual ~MergeDFP() override = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> task) override;
 
-    virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) override;
+    virtual std::pair<int, int> get_next(FactoredTransitionSystem &fts) override;
     virtual std::string name() const override;
 };
 }

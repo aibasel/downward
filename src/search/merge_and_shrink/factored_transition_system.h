@@ -1,7 +1,8 @@
 #ifndef MERGE_AND_SHRINK_FACTORED_TRANSITION_SYSTEM_H
 #define MERGE_AND_SHRINK_FACTORED_TRANSITION_SYSTEM_H
 
-#include <forward_list>
+#include "types.h"
+
 #include <memory>
 #include <vector>
 
@@ -17,13 +18,9 @@ class Labels;
 class TransitionSystem;
 
 class FactoredTransitionSystem {
-    std::shared_ptr<Labels> labels;
+    std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
-    /*
-      TODO: after splitting transition system into several parts, we may
-      want to change all transition system pointers into unique_ptr.
-    */
-    std::vector<TransitionSystem *> transition_systems;
+    std::vector<std::unique_ptr<TransitionSystem>> transition_systems;
     std::vector<std::unique_ptr<HeuristicRepresentation>> heuristic_representations;
     std::vector<std::unique_ptr<Distances>> distances;
     int final_index;
@@ -40,8 +37,8 @@ class FactoredTransitionSystem {
     }
 public:
     FactoredTransitionSystem(
-        std::shared_ptr<Labels> labels,
-        std::vector<TransitionSystem *> &&transition_systems,
+        std::unique_ptr<Labels> labels,
+        std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
         std::vector<std::unique_ptr<Distances>> &&distances);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
@@ -60,10 +57,12 @@ public:
     }
 
     // Methods for the merge-and-shrink main loop
-    void label_reduction(std::pair<int, int> merge_indices);
-    void apply_label_reduction(const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-                               int combinable_index);
-    bool apply_abstraction(int index, const std::vector<std::forward_list<int>> &collapsed_groups);
+    void apply_label_reduction(
+        const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
+        int combinable_index);
+    bool apply_abstraction(
+        int index,
+        const StateEquivalenceRelation &state_equivalence_relation);
     int merge(int index1, int index2);
     void finalize(int index = -1);
     bool is_solvable() const {
@@ -83,7 +82,11 @@ public:
     bool is_active(int index) const {
         return is_index_valid(index);
     }
+    // TODO: remove the following method and let DFP use get_labels?
     int get_num_labels() const; // used by merge_dfp
+    const Labels &get_labels() const { // used by label_reduction
+        return *labels;
+    }
 };
 }
 

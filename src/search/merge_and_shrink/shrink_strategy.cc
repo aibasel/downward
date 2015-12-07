@@ -11,7 +11,6 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <limits>
 
 using namespace std;
 
@@ -30,10 +29,10 @@ ShrinkStrategy::~ShrinkStrategy() {
 }
 
 bool ShrinkStrategy::shrink_transition_system(
-    shared_ptr<FactoredTransitionSystem> fts,
+    FactoredTransitionSystem &fts,
     int index,
     int new_size) const {
-    const TransitionSystem &ts = fts->get_ts(index);
+    const TransitionSystem &ts = fts.get_ts(index);
     assert(ts.is_solvable());
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
@@ -47,7 +46,7 @@ bool ShrinkStrategy::shrink_transition_system(
         compute_equivalence_relation(fts, index, new_size, equivalence_relation);
         // TODO: We currently violate this; see issue250
         //assert(equivalence_relation.size() <= new_size);
-        return fts->apply_abstraction(index, equivalence_relation);
+        return fts.apply_abstraction(index, equivalence_relation);
     }
     return false;
 }
@@ -88,11 +87,11 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     return make_pair(new_size1, new_size2);
 }
 
-pair<bool, bool> ShrinkStrategy::shrink(shared_ptr<FactoredTransitionSystem> fts,
+pair<bool, bool> ShrinkStrategy::shrink(FactoredTransitionSystem &fts,
                                         int index1,
                                         int index2) const {
-    const TransitionSystem &ts1 = fts->get_ts(index1);
-    const TransitionSystem &ts2 = fts->get_ts(index2);
+    const TransitionSystem &ts1 = fts.get_ts(index1);
+    const TransitionSystem &ts2 = fts.get_ts(index2);
     /*
       Compute the size limit for both transition systems as imposed by
       max_states and max_states_before_merge.
@@ -160,10 +159,10 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
         int n = max_states_before_merge;
-        if (is_product_within_limit(n, n, numeric_limits<int>::max())) {
+        if (is_product_within_limit(n, n, INF)) {
             max_states = n * n;
         } else {
-            max_states = numeric_limits<int>::max();
+            max_states = INF;
         }
     }
 
