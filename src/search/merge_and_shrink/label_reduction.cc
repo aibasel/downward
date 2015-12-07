@@ -351,7 +351,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
 }
 
 static PluginTypePlugin<LabelReduction> _type_plugin(
-    "Label reduction",
+    "LabelReduction",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
 
