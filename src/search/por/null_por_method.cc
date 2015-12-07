@@ -3,8 +3,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include <iostream>
-
 using namespace std;
 
 namespace NullPORMethod {
