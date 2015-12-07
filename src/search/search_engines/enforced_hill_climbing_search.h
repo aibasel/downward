@@ -14,6 +14,7 @@
 
 class Options;
 
+namespace EnforcedHillClimbingSearch {
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
     RANK_PREFERRED_FIRST
@@ -61,5 +62,6 @@ public:
 
     virtual void print_statistics() const override;
 };
+}
 
 #endif
