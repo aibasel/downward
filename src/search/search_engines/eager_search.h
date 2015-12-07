@@ -1,5 +1,5 @@
-#ifndef EAGER_SEARCH_H
-#define EAGER_SEARCH_H
+#ifndef SEARCH_ENGINES_EAGER_SEARCH_H
+#define SEARCH_ENGINES_EAGER_SEARCH_H
 
 #include "../search_engine.h"
 
