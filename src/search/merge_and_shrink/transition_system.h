@@ -145,10 +145,15 @@ private:
 public:
     // Constructor for an atomic transition system.
     TransitionSystem(
-        const TaskProxy &task_proxy,
-        const Labels &labels,
-        int var_id,
-        std::vector<std::vector<Transition>> &&transitions_by_label);
+        int num_variables,
+        std::vector<int> &&incorporated_variables,
+        std::unique_ptr<LabelEquivalenceRelation> &&label_equivalence_relation,
+        std::vector<std::vector<Transition>> &&transitions_by_label,
+        int num_states,
+        std::vector<bool> &&goal_states,
+        int init_state,
+        bool goal_relevant,
+        bool compute_label_equivalence_relation);
 
     /*
       Constructor that merges two transition systems.
