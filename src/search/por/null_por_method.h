@@ -3,8 +3,6 @@
 
 #include "../por_method.h"
 
-#include <vector>
-
 class GlobalOperator;
 class GlobalState;
 
