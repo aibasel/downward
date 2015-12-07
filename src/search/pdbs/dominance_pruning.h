@@ -6,7 +6,6 @@
 #include <memory>
 
 namespace PDBs {
-
 /*
   Collection superset dominates collection subset iff for every pattern
   p_subset in subset there is a pattern p_superset in superset where
