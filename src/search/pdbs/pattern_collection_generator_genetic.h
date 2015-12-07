@@ -12,7 +12,6 @@ class Options;
 
 
 namespace PDBs {
-
 /*
   Implementation of the pattern generation algorithm by Edelkamp. See:
   Stefan Edelkamp, Automated Creation of Pattern Database Search
