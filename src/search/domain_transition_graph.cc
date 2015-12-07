@@ -88,7 +88,7 @@ void DTGFactory::process_effect(const EffectProxy &eff, const OperatorProxy &op,
     if (origin != -1) {
         ValueTransition *trans = get_transition(origin, target, dtg);
         trans->labels.push_back(
-            ValueTransitionLabel(op.get_id(), transition_condition, side_effect));
+            ValueTransitionLabel(op.get_id(), op.is_axiom(), transition_condition, side_effect));
     } else {
         int domain_size = fact.get_variable().get_domain_size();
         for (int origin = 0; origin < domain_size; ++origin) {
@@ -96,7 +96,7 @@ void DTGFactory::process_effect(const EffectProxy &eff, const OperatorProxy &op,
                 continue;
             ValueTransition *trans = get_transition(origin, target, dtg);
             trans->labels.push_back(
-                ValueTransitionLabel(op.get_id(), transition_condition, side_effect));
+                ValueTransitionLabel(op.get_id(), op.is_axiom(), transition_condition, side_effect));
         }
     }
 }
@@ -167,7 +167,7 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
         sort(precond_pairs.begin(), precond_pairs.end());
 
         // collect operator precondition
-        OperatorProxy op = task_proxy.get_operators()[label.op_id];
+        OperatorProxy op = get_op_for_label(label);
         unordered_map<int, int> pre_map;
         for (FactProxy pre : op.get_preconditions())
             pre_map[pre.get_variable().get_id()] = pre.get_value();
@@ -218,6 +218,12 @@ void DTGFactory::simplify_transitions(vector<DomainTransitionGraph *> &dtgs) {
                 simplify_labels(transition.labels);
 }
 
+OperatorProxy DTGFactory::get_op_for_label(const ValueTransitionLabel &label) {
+    if (label.is_axiom)
+        return task_proxy.get_axioms()[label.op_id];
+    return task_proxy.get_operators()[label.op_id];
+}
+
 void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
     // Remove labels with duplicate or dominated conditions.
 
@@ -235,7 +241,6 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
     typedef unordered_map<HashKey, int> HashMap;
     HashMap label_index;
     label_index.reserve(labels.size());
-    OperatorsProxy operators = task_proxy.get_operators();
 
     for (size_t i = 0; i < labels.size(); ++i) {
         HashKey key;
@@ -254,8 +259,7 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
         int powerset_size = (1 << key.size()) - 1; // -1: only consider proper subsets
         bool match = false;
         if (powerset_size <= 31) { // HACK! Don't spend too much time here...
-            int label_op_id = old_labels[label_no].op_id;
-            int label_cost = operators[label_op_id].get_cost();
+            OperatorProxy op = get_op_for_label(old_labels[label_no]);
             for (int mask = 0; mask < powerset_size; ++mask) {
                 HashKey subset;
                 for (size_t i = 0; i < key.size(); ++i)
@@ -264,7 +268,8 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
                 HashMap::iterator found = label_index.find(subset);
                 if (found != label_index.end()) {
                     const ValueTransitionLabel &f_label = old_labels[found->second];
-                    if (label_cost >= operators[f_label.op_id].get_cost()) {
+                    OperatorProxy f_op = get_op_for_label(f_label);
+                    if (op.get_cost() >= f_op.get_cost()) {
                         /* TODO: Depending on how clever we want to
                            be, we could prune based on the *adjusted*
                            cost for the respective heuristic instead.

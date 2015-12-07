@@ -47,6 +47,7 @@ class DTGFactory {
     void collect_all_side_effects(vector<DomainTransitionGraph *> &dtgs);
     void collect_side_effects(DomainTransitionGraph *dtg,
                               std::vector<ValueTransitionLabel> &labels);
+    OperatorProxy get_op_for_label(const ValueTransitionLabel &label);
 
 public:
     DTGFactory(const TaskProxy &task_proxy,
@@ -70,12 +71,14 @@ struct LocalAssignment {
 
 struct ValueTransitionLabel {
     int op_id;
+    bool is_axiom;
     vector<LocalAssignment> precond;
     vector<LocalAssignment> effect;
 
-    ValueTransitionLabel(int op_id, const vector<LocalAssignment> &precond_,
+    ValueTransitionLabel(int op_id, bool axiom,
+                         const vector<LocalAssignment> &precond_,
                          const vector<LocalAssignment> &effect_)
-        : op_id(op_id), precond(precond_), effect(effect_) {}
+        : op_id(op_id), is_axiom(axiom), precond(precond_), effect(effect_) {}
 };
 
 struct ValueTransition {

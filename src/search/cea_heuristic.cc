@@ -153,8 +153,10 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = problem->nodes[target_value];
             for (const ValueTransitionLabel &label : dtg_trans.labels) {
-                int cost = task_proxy.get_operators()[label.op_id].get_cost();
-                LocalTransition trans(&node, &target, &label, cost);
+                OperatorProxy op = label.is_axiom ?
+                                   task_proxy.get_axioms()[label.op_id] :
+                                   task_proxy.get_operators()[label.op_id];
+                LocalTransition trans(&node, &target, &label, op.get_cost());
                 node.outgoing_transitions.push_back(trans);
             }
         }
@@ -180,7 +182,7 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
         goals.push_back(LocalAssignment(goal_no, goal_value));
     }
     vector<LocalAssignment> no_effects;
-    ValueTransitionLabel *label = new ValueTransitionLabel(0, goals, no_effects);
+    ValueTransitionLabel *label = new ValueTransitionLabel(0, true, goals, no_effects);
     LocalTransition trans(&problem->nodes[0], &problem->nodes[1], label, 0);
     problem->nodes[0].outgoing_transitions.push_back(trans);
     return problem;
@@ -358,12 +360,14 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
     LocalProblem *problem, LocalProblemNode *node, const State &state) {
     assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
     LocalTransition *first_on_path = node->reached_by;
-    OperatorsProxy ops = task_proxy.get_operators();
     if (first_on_path) {
         node->reached_by = 0; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
-            OperatorProxy op = ops[first_on_path->label->op_id];
+            const ValueTransitionLabel &label = *first_on_path->label;
+            OperatorProxy op = label.is_axiom ?
+                               task_proxy.get_axioms()[label.op_id] :
+                               task_proxy.get_operators()[label.op_id];
             if (min_action_cost != 0 || is_applicable(op, state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
