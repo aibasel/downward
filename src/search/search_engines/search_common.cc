@@ -13,12 +13,13 @@
 
 #include <memory>
 
+using namespace std;
+
+
+namespace SearchCommon {
 using GEval = GEvaluator::GEvaluator;
 using SumEval = SumEvaluator::SumEvaluator;
 using WeightedEval = WeightedEvaluator::WeightedEvaluator;
-
-using namespace std;
-
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     ScalarEvaluator *eval, bool pref_only) {
@@ -124,4 +125,5 @@ create_astar_open_list_factory_and_f_eval(const Options &opts) {
     shared_ptr<OpenListFactory> open =
         make_shared<TieBreakingOpenListFactory>(options);
     return make_pair(open, f);
+}
 }
