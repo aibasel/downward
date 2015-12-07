@@ -13,6 +13,7 @@ class Heuristic;
 class Options;
 class ScalarEvaluator;
 
+namespace EagerSearch {
 class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
     const bool use_multi_path_dependence;
@@ -41,5 +42,6 @@ public:
 
     void dump_search_space() const;
 };
+}
 
 #endif
