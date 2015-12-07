@@ -3,8 +3,6 @@
 
 #include "stubborn_sets.h"
 
-#include <vector>
-
 namespace SSSExpansionCore {
 
 struct ExpansionCoreDTG {
