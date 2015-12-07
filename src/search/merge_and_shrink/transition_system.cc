@@ -37,9 +37,12 @@ namespace MergeAndShrink {
   computation is not worth the overhead.
 */
 
-TSConstIterator::TSConstIterator(const TransitionSystem &ts, bool end)
-    : label_equivalence_relation(*ts.label_equivalence_relation),
-      transitions_by_group_id(ts.transitions_by_group_id),
+TSConstIterator::TSConstIterator(
+    const LabelEquivalenceRelation &label_equivalence_relation,
+    const vector<vector<Transition>> &transitions_by_group_id,
+    bool end)
+    : label_equivalence_relation(label_equivalence_relation),
+      transitions_by_group_id(transitions_by_group_id),
       current((end ? label_equivalence_relation.get_size() : 0)) {
     while (current < label_equivalence_relation.get_size()
            && label_equivalence_relation.get_group(current).empty()) {

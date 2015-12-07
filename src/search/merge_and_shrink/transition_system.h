@@ -62,7 +62,8 @@ class TSConstIterator {
     // current is the actual iterator, representing the label group's id.
     int current;
 public:
-    TSConstIterator(const TransitionSystem &ts,
+    TSConstIterator(const LabelEquivalenceRelation &label_equivalence_relation,
+                    const std::vector<std::vector<Transition>> &transitions_by_group_id,
                     bool end);
     void operator++();
     bool operator==(const TSConstIterator &rhs) const {
@@ -83,7 +84,6 @@ public:
 };
 
 class TransitionSystem {
-    friend class TSConstIterator;
 public:
     static const int PRUNED_STATE;
 
@@ -169,16 +169,20 @@ public:
         bool only_equivalent_labels);
 
     TSConstIterator begin() const {
-        return TSConstIterator(*this, false);
+        return TSConstIterator(*label_equivalence_relation,
+                               transitions_by_group_id,
+                               false);
     }
     TSConstIterator end() const {
-        return TSConstIterator(*this, true);
+        return TSConstIterator(*label_equivalence_relation,
+                               transitions_by_group_id,
+                               true);
     }
     /*
       Method to identify the transition system in output.
       Print "Atomic transition system #x: " for atomic transition systems,
       where x is the variable. For composite transition systems, print
-      "Transition system (x/y): " for the transition system containing x
+      "Transition system (x/y): " for a transition system containing x
       out of y variables.
     */
     std::string tag() const;
