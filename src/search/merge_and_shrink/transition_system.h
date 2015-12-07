@@ -139,11 +139,7 @@ private:
     // Statistics and output
     int total_transitions() const;
     std::string description() const;
-
-    TransitionSystem(int num_variables,
-                     const Labels &labels);
 public:
-    // Constructor for an atomic transition system.
     TransitionSystem(
         int num_variables,
         std::vector<int> &&incorporated_variables,
@@ -154,17 +150,16 @@ public:
         int init_state,
         bool goal_relevant,
         bool compute_label_equivalence_relation);
-
+    ~TransitionSystem();
     /*
-      Constructor that merges two transition systems.
+      Factory method to construct the merge of two transition systems.
 
       Invariant: the children ts1 and ts2 must be solvable.
       (It is a bug to merge an unsolvable transition system.)
     */
-    TransitionSystem(const Labels &labels,
-                     const TransitionSystem &ts1,
-                     const TransitionSystem &ts2);
-    ~TransitionSystem();
+    static std::unique_ptr<TransitionSystem> merge(const Labels &labels,
+                                                   const TransitionSystem &ts1,
+                                                   const TransitionSystem &ts2);
 
     bool apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,

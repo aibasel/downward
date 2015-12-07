@@ -70,14 +70,6 @@ LabelConstIter TSConstIterator::end() const {
 
 const int TransitionSystem::PRUNED_STATE = -1;
 
-// common case for both constructors
-TransitionSystem::TransitionSystem(int num_variables,
-                                   const Labels &labels)
-    : num_variables(num_variables),
-      label_equivalence_relation(make_unique_ptr<LabelEquivalenceRelation>(labels)) {
-    transitions_by_group_id.resize(labels.get_max_size());
-}
-
 TransitionSystem::TransitionSystem(
     int num_variables,
     vector<int> &&incorporated_variables,
@@ -102,27 +94,35 @@ TransitionSystem::TransitionSystem(
     assert(are_transitions_sorted_unique());
 }
 
-// constructor for merges
-TransitionSystem::TransitionSystem(const Labels &labels,
-                                   const TransitionSystem &ts1,
-                                   const TransitionSystem &ts2)
-    : TransitionSystem(ts1.num_variables, labels) {
+TransitionSystem::~TransitionSystem() {
+}
+
+unique_ptr<TransitionSystem> TransitionSystem::merge(
+    const Labels &labels,
+    const TransitionSystem &ts1,
+    const TransitionSystem &ts2) {
     cout << "Merging " << ts1.description() << " and "
          << ts2.description() << endl;
 
     assert(ts1.is_solvable() && ts2.is_solvable());
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
 
+    int num_variables = ts1.num_variables;
+    vector<int> incorporated_variables;
     ::set_union(
         ts1.incorporated_variables.begin(), ts1.incorporated_variables.end(),
         ts2.incorporated_variables.begin(), ts2.incorporated_variables.end(),
         back_inserter(incorporated_variables));
+    unique_ptr<LabelEquivalenceRelation> label_equivalence_relation =
+        make_unique_ptr<LabelEquivalenceRelation>(labels);
+    vector<vector<Transition>> transitions_by_group_id(labels.get_max_size());
 
     int ts1_size = ts1.get_size();
     int ts2_size = ts2.get_size();
-    num_states = ts1_size * ts2_size;
-    goal_states.resize(num_states, false);
-    goal_relevant = (ts1.goal_relevant || ts2.goal_relevant);
+    int num_states = ts1_size * ts2_size;
+    vector<bool> goal_states(num_states, false);
+    bool goal_relevant = (ts1.goal_relevant || ts2.goal_relevant);
+    int init_state = -1;
 
     for (int s1 = 0; s1 < ts1_size; ++s1) {
         for (int s2 = 0; s2 < ts2_size; ++s2) {
@@ -133,6 +133,7 @@ TransitionSystem::TransitionSystem(const Labels &labels,
                 init_state = state;
         }
     }
+    assert(init_state != -1);
 
     /*
       We can compute the local equivalence relation of a composite T
@@ -207,10 +208,17 @@ TransitionSystem::TransitionSystem(const Labels &labels,
         label_equivalence_relation->add_label_group(dead_labels);
     }
 
-    assert(are_transitions_sorted_unique());
-}
-
-TransitionSystem::~TransitionSystem() {
+    return make_unique_ptr<TransitionSystem>(
+                num_variables,
+                move(incorporated_variables),
+                move(label_equivalence_relation),
+                move(transitions_by_group_id),
+                num_states,
+                move(goal_states),
+                init_state,
+                goal_relevant,
+                false
+            );
 }
 
 void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
