@@ -16,8 +16,11 @@
 #include <cstdlib>
 #include <memory>
 #include <set>
+
 using namespace std;
 
+
+namespace EagerSearch {
 EagerSearch::EagerSearch(const Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
@@ -439,3 +442,4 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 static Plugin<SearchEngine> _plugin("eager", _parse);
 static Plugin<SearchEngine> _plugin_astar("astar", _parse_astar);
 static Plugin<SearchEngine> _plugin_greedy("eager_greedy", _parse_greedy);
+}
