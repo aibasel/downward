@@ -1,6 +1,7 @@
 #ifndef EAGER_SEARCH_H
 #define EAGER_SEARCH_H
 
+#include "por_method.h"
 #include "search_engine.h"
 
 #include "open_lists/open_list.h"
@@ -13,10 +14,6 @@ class Heuristic;
 class Options;
 class ScalarEvaluator;
 
-namespace POR {
-class PORMethod;
-}
-
 class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
     const bool use_multi_path_dependence;
@@ -27,7 +24,7 @@ class EagerSearch : public SearchEngine {
     std::vector<Heuristic *> heuristics;
     std::vector<Heuristic *> preferred_operator_heuristics;
 
-    POR::PORMethod *partial_order_reduction_method;
+    std::shared_ptr<PORMethod> partial_order_reduction_method;
 
     std::pair<SearchNode, bool> fetch_next_node();
     void start_f_value_statistics(EvaluationContext &eval_context);
@@ -41,7 +38,7 @@ protected:
 
 public:
     explicit EagerSearch(const Options &opts);
-    virtual ~EagerSearch(); // = default;
+    virtual ~EagerSearch() = default;
 
     virtual void print_statistics() const override;
 
