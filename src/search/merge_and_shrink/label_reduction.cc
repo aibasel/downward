@@ -334,7 +334,9 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
-    if (parser.dry_run()) {
+    if (parser.help_mode()) {
+        return nullptr;
+    } else if (parser.dry_run()) {
         bool lr_before_shrinking = opts.get<bool>("before_shrinking");
         bool lr_before_merging = opts.get<bool>("before_merging");
         if (!lr_before_shrinking && !lr_before_merging) {
@@ -342,7 +344,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
                  << "before_shrinking or before_merging!" << endl;
             exit_with(EXIT_INPUT_ERROR);
         }
-        return 0;
+        return nullptr;
     } else {
         return make_shared<LabelReduction>(opts);
     }

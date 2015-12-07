@@ -28,7 +28,7 @@ class LandmarkGraph;
 }
 
 namespace MergeAndShrink {
-class Labels;
+class LabelReduction;
 class MergeStrategy;
 class ShrinkStrategy;
 }
@@ -99,7 +99,7 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<OpenListFactory>>(pt);
     get_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>(pt);
     get_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>(pt);
-    get_help_templ<shared_ptr<MergeAndShrink::Labels>>(pt);
+    get_help_templ<shared_ptr<MergeAndShrink::LabelReduction>>(pt);
     get_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>(pt);
     get_help_templ<shared_ptr<PDBs::PatternCollectionGenerator>>(pt);
     get_help_templ<shared_ptr<PDBs::PatternGenerator>>(pt);
@@ -127,7 +127,7 @@ static void get_full_help() {
     get_full_help_templ<shared_ptr<OpenListFactory>>();
     get_full_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>();
     get_full_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>();
-    get_full_help_templ<shared_ptr<MergeAndShrink::Labels>>();
+    get_full_help_templ<shared_ptr<MergeAndShrink::LabelReduction>>();
     get_full_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>();
     get_full_help_templ<shared_ptr<PDBs::PatternCollectionGenerator>>();
     get_full_help_templ<shared_ptr<PDBs::PatternGenerator>>();
