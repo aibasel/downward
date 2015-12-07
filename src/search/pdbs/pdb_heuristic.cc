@@ -1,28 +1,38 @@
 #include "pdb_heuristic.h"
 
-#include "util.h"
+#include "pattern_generator.h"
 
+#include "../option_parser.h"
 #include "../plugin.h"
-#include "../task_tools.h"
-#include "../timer.h"
-#include "../utilities.h"
+#include "../task_proxy.h"
+
+#include <limits>
+#include <memory>
 
 using namespace std;
 
-PDBHeuristic::PDBHeuristic(const Options &opts,
-                           const vector<int> &operator_costs)
+
+namespace PDBs {
+PatternDatabase get_pdb_from_options(const shared_ptr<AbstractTask> task,
+                                     const Options &opts) {
+    shared_ptr<PatternGenerator> pattern_generator =
+        opts.get<shared_ptr<PatternGenerator>>("pattern");
+    Pattern pattern = pattern_generator->generate(task);
+    TaskProxy task_proxy(*task);
+    return PatternDatabase(task_proxy, pattern, true);
+}
+
+PDBHeuristic::PDBHeuristic(const Options &opts)
     : Heuristic(opts),
-      pdb(task_proxy, opts.get_list<int>("pattern"), true, operator_costs) {
-}
-
-PDBHeuristic::~PDBHeuristic() {
-}
-
-void PDBHeuristic::initialize() {
+      pdb(get_pdb_from_options(task, opts)) {
 }
 
 int PDBHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
+    return compute_heuristic(state);
+}
+
+int PDBHeuristic::compute_heuristic(const State &state) const {
     int h = pdb.get_value(state);
     if (h == numeric_limits<int>::max())
         return DEAD_END;
@@ -39,14 +49,18 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
 
+    parser.add_option<shared_ptr<PatternGenerator>>(
+        "pattern",
+        "pattern generation method",
+        "greedy()");
     Heuristic::add_options_to_parser(parser);
-    Options opts;
-    parse_pattern(parser, opts);
 
+    Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
 
     return new PDBHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("pdb", _parse);
+}

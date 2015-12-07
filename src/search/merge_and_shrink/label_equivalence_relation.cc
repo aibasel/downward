@@ -7,6 +7,7 @@
 
 using namespace std;
 
+namespace MergeAndShrink {
 LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
     : labels(labels) {
     grouped_labels.reserve(labels.get_max_size());
@@ -78,4 +79,5 @@ int LabelEquivalenceRelation::add_label_group(const vector<int> &new_labels) {
         add_label_to_group(new_id, label_no);
     }
     return new_id;
+}
 }

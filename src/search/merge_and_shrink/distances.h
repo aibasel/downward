@@ -39,6 +39,7 @@
     then?)
 */
 
+namespace MergeAndShrink {
 class TransitionSystem;
 
 class Distances {
@@ -97,5 +98,6 @@ public:
     }
     void dump() const;
 };
+}
 
 #endif

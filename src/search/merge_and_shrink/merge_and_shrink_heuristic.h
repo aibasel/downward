@@ -5,11 +5,14 @@
 
 #include <memory>
 
+class Timer;
+
+
+namespace MergeAndShrink {
 class FactoredTransitionSystem;
 class LabelReduction;
 class MergeStrategy;
 class ShrinkStrategy;
-class Timer;
 class TransitionSystem;
 
 class MergeAndShrinkHeuristic : public Heuristic {
@@ -33,5 +36,6 @@ public:
     explicit MergeAndShrinkHeuristic(const Options &opts);
     ~MergeAndShrinkHeuristic() = default;
 };
+}
 
 #endif

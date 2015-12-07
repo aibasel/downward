@@ -22,6 +22,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<shared_ptr<MergeStrategy>>("merge_strategy")),
@@ -265,3 +267,4 @@ static Heuristic *_parse(OptionParser &parser) {
 }
 
 static Plugin<Heuristic> _plugin("merge_and_shrink", _parse);
+}

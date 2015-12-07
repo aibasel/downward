@@ -6,14 +6,16 @@
 #include <memory>
 #include <vector>
 
-class Distances;
-class HeuristicRepresentation;
-class Labels;
 class State;
 class TaskProxy;
 class Timer;
-class TransitionSystem;
 
+
+namespace MergeAndShrink {
+class Distances;
+class HeuristicRepresentation;
+class Labels;
+class TransitionSystem;
 
 class FactoredTransitionSystem {
     std::unique_ptr<Labels> labels;
@@ -86,5 +88,6 @@ public:
         return *labels;
     }
 };
+}
 
 #endif

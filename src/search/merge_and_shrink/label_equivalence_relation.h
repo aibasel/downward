@@ -7,6 +7,7 @@
 #include <vector>
 
 
+namespace MergeAndShrink {
 class Labels;
 
 typedef std::list<int>::iterator LabelIter;
@@ -94,5 +95,6 @@ public:
         return grouped_labels.at(group_id);
     }
 };
+}
 
 #endif

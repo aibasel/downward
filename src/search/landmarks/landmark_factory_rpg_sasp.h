@@ -10,6 +10,7 @@
 #include <vector>
 
 
+namespace Landmarks {
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
@@ -43,5 +44,6 @@ public:
     LandmarkFactoryRpgSasp(const Options &opts);
     virtual ~LandmarkFactoryRpgSasp() {}
 };
+}
 
 #endif

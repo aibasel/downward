@@ -12,6 +12,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 FactoredTransitionSystem::FactoredTransitionSystem(
     unique_ptr<Labels> labels,
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
@@ -244,4 +245,5 @@ void FactoredTransitionSystem::dump(int index) const {
 
 int FactoredTransitionSystem::get_num_labels() const {
     return labels->get_size();
+}
 }

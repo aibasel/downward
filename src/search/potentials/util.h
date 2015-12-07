@@ -7,7 +7,7 @@
 class State;
 class OptionParser;
 
-namespace potentials {
+namespace Potentials {
 class PotentialOptimizer;
 
 std::vector<State> sample_without_dead_end_detection(
