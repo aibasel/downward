@@ -40,12 +40,12 @@ private:
 
 protected:
     virtual void compute_equivalence_relation(
-        std::shared_ptr<FactoredTransitionSystem> fts,
+        const FactoredTransitionSystem &fts,
         int index,
         int target,
         StateEquivalenceRelation &equivalence_relation) const override;
     virtual void partition_into_buckets(
-        std::shared_ptr<FactoredTransitionSystem> fts,
+        const FactoredTransitionSystem &fts,
         int index,
         std::vector<Bucket> &buckets) const = 0;
 
