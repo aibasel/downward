@@ -19,18 +19,27 @@ using namespace std;
 
 // TODO (post-issue586): Remove this once we no longer need it.
 class AbstractTask;
-class Labels;
-class LandmarkGraph;
-class MergeStrategy;
 class OpenListFactory;
-class PatternCollectionGenerator;
-class PatternGenerator;
 class SearchEngine;
-class ShrinkStrategy;
 class Synergy;
+
+namespace Landmarks {
+class LandmarkGraph;
+}
+
+namespace MergeAndShrink {
+class Labels;
+class MergeStrategy;
+class ShrinkStrategy;
+}
 
 namespace OperatorCounting {
 class ConstraintGenerator;
+}
+
+namespace PDBs {
+class PatternCollectionGenerator;
+class PatternGenerator;
 }
 
 const string OptionParser::NONE = "<none>";
@@ -86,14 +95,14 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<AbstractTask>>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
-    get_help_templ<LandmarkGraph *>(pt);
+    get_help_templ<Landmarks::LandmarkGraph *>(pt);
     get_help_templ<shared_ptr<OpenListFactory>>(pt);
-    get_help_templ<shared_ptr<MergeStrategy>>(pt);
-    get_help_templ<shared_ptr<ShrinkStrategy>>(pt);
-    get_help_templ<shared_ptr<Labels>>(pt);
+    get_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>(pt);
+    get_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>(pt);
+    get_help_templ<shared_ptr<MergeAndShrink::Labels>>(pt);
     get_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>(pt);
-    get_help_templ<shared_ptr<PatternCollectionGenerator>>(pt);
-    get_help_templ<shared_ptr<PatternGenerator>>(pt);
+    get_help_templ<shared_ptr<PDBs::PatternCollectionGenerator>>(pt);
+    get_help_templ<shared_ptr<PDBs::PatternGenerator>>(pt);
 }
 
 template<typename T>
@@ -114,14 +123,14 @@ static void get_full_help() {
     get_full_help_templ<shared_ptr<AbstractTask>>();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
-    get_full_help_templ<LandmarkGraph *>();
+    get_full_help_templ<Landmarks::LandmarkGraph *>();
     get_full_help_templ<shared_ptr<OpenListFactory>>();
-    get_full_help_templ<shared_ptr<MergeStrategy>>();
-    get_full_help_templ<shared_ptr<ShrinkStrategy>>();
-    get_full_help_templ<shared_ptr<Labels>>();
+    get_full_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>();
+    get_full_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>();
+    get_full_help_templ<shared_ptr<MergeAndShrink::Labels>>();
     get_full_help_templ<shared_ptr<OperatorCounting::ConstraintGenerator>>();
-    get_full_help_templ<shared_ptr<PatternCollectionGenerator>>();
-    get_full_help_templ<shared_ptr<PatternGenerator>>();
+    get_full_help_templ<shared_ptr<PDBs::PatternCollectionGenerator>>();
+    get_full_help_templ<shared_ptr<PDBs::PatternGenerator>>();
 }
 
 
@@ -191,8 +200,8 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<LandmarkGraph *>::instance()->predefine(
-            definees[0], op.start_parsing<LandmarkGraph *>());
+        Predefinitions<Landmarks::LandmarkGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<Landmarks::LandmarkGraph *>());
     } else {
         op.error("predefinition has invalid left side");
     }
