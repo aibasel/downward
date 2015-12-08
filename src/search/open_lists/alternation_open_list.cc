@@ -1,14 +1,42 @@
-// HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LISTS_ALTERNATION_OPEN_LIST_H
+#include "alternation_open_list.h"
 
-#include "open_list_factory.h"
+#include "open_list.h"
 
-#include "../evaluation_context.h"
 #include "../option_parser.h"
+#include "../plugin.h"
+#include "../utilities.h"
 
 #include <cassert>
-#include <cstdlib>
+#include <memory>
+#include <vector>
+
 using namespace std;
+
+
+template<class Entry>
+class AlternationOpenList : public OpenList<Entry> {
+    vector<unique_ptr<OpenList<Entry>>> open_lists;
+    vector<int> priorities;
+
+    const int boost_amount;
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
+public:
+    explicit AlternationOpenList(const Options &opts);
+    virtual ~AlternationOpenList() override = default;
+
+    virtual Entry remove_min(vector<int> *key = 0) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
+    virtual void boost_preferred() override;
+    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override;
+};
 
 
 template<class Entry>
@@ -100,21 +128,6 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-#else
-
-// HACK: We're the top level target.
-
-#include "alternation_open_list.h"
-
-#include "open_list_factory.h"
-
-#include "../plugin.h"
-#include "../utilities.h"
-
-#include <memory>
-
-using namespace std;
-
 
 AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
     : options(options) {
@@ -151,5 +164,3 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("alt", _parse);
-
-#endif
