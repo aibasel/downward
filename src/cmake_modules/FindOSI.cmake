@@ -22,25 +22,51 @@
 #
 # The location of OSI can be specified using the environment variable
 # or cmake parameter DOWNWARD_COIN_ROOT. If different installations
-# for release and debug versions of osi are available, they can be
-# specified with DOWNWARD_COIN_ROOT_RELEASE and DOWNWARD_COIN_ROOT_DEBUG.
+# for 32-/64-bit versions and release/debug versions of OSI are available,
+# they can be specified with
+#   DOWNWARD_COIN_ROOT32
+#   DOWNWARD_COIN_ROOT64
+#   DOWNWARD_COIN_ROOT_RELEASE32
+#   DOWNWARD_COIN_ROOT_RELEASE64
+#   DOWNWARD_COIN_ROOT_DEBUG32
+#   DOWNWARD_COIN_ROOT_DEBUG64
+# More specific paths are prefered over less specific ones when searching
+# for libraries.
 #
 # Note that the standard FIND_PACKAGE features are supported
 # (QUIET, REQUIRED, etc.).
 
-set(COIN_HINT_PATHS_RELEASE
-    ${DOWNWARD_COIN_ROOT_RELEASE}
-    $ENV{DOWNWARD_COIN_ROOT_RELEASE}
-    ${DOWNWARD_COIN_ROOT}
-    $ENV{DOWNWARD_COIN_ROOT}
-)
+foreach(BITWIDTH 32 64)
+    foreach(BUILDMODE "RELEASE" "DEBUG")
+        set(COIN_HINT_PATHS_${BUILDMODE}${BITWIDTH}
+            ${DOWNWARD_COIN_ROOT_${BUILDMODE}${BITWIDTH}}
+            $ENV{DOWNWARD_COIN_ROOT_${BUILDMODE}${BITWIDTH}}
+            ${DOWNWARD_COIN_ROOT${BITWIDTH}}
+            $ENV{DOWNWARD_COIN_ROOT${BITWIDTH}}
+            ${DOWNWARD_COIN_ROOT}
+            $ENV{DOWNWARD_COIN_ROOT}
+        )
+    endforeach()
+endforeach()
 
-set(COIN_HINT_PATHS_DEBUG
-    ${DOWNWARD_COIN_ROOT_DEBUG}
-    $ENV{DOWNWARD_COIN_ROOT_DEBUG}
-    ${DOWNWARD_COIN_ROOT}
-    $ENV{DOWNWARD_COIN_ROOT}
-)
+if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+    set(COIN_HINT_PATHS_RELEASE ${COIN_HINT_PATHS_RELEASE32})
+    set(COIN_HINT_PATHS_DEBUG ${COIN_HINT_PATHS_DEBUG32})
+elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+    set(COIN_HINT_PATHS_RELEASE ${COIN_HINT_PATHS_RELEASE64})
+    set(COIN_HINT_PATHS_DEBUG ${COIN_HINT_PATHS_DEBUG64})
+else()
+    message(WARNING "Bitwidth could not be detected, preferring 32-bit version of COIN")
+    set(COIN_HINT_PATHS_RELEASE
+        ${COIN_HINT_PATHS_RELEASE32}
+        ${COIN_HINT_PATHS_RELEASE64}
+    )
+    set(COIN_HINT_PATHS_DEBUG
+        ${COIN_HINT_PATHS_DEBUG32}
+        ${COIN_HINT_PATHS_DEBUG64}
+    )
+endif()
+
 
 # Find include dirs.
 find_path(OSI_INCLUDE_DIRS
