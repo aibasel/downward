@@ -1,10 +1,11 @@
 #include "option_parser.h"
 
-#include "globals.h"
 #include "plugin.h"
-#include "rng.h"
 
-#include "ext/tree_util.hh"
+#include "../globals.h"
+#include "../rng.h"
+
+#include "../ext/tree_util.hh"
 
 #include <algorithm>
 #include <cassert>

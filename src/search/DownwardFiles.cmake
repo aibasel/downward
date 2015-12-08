@@ -95,6 +95,15 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 #     hides the option to enable the plugin in cmake GUIs like ccmake.
 
 fast_downward_plugin(
+    NAME OPTIONS
+    HELP "Option parsing and plugin definition"
+    SOURCES
+        options/option_parser.cc
+        options/option_parser_util.cc
+        options/plugin.cc
+)
+
+fast_downward_plugin(
     NAME CONST_EVALUATOR
     HELP "The constant evaluator"
     SOURCES

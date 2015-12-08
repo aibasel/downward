@@ -1,5 +1,5 @@
-#ifndef OPTION_PARSER_H
-#define OPTION_PARSER_H
+#ifndef OPTIONS_OPTION_PARSER_H
+#define OPTIONS_OPTION_PARSER_H
 
 #include "option_parser_util.h"
 

@@ -1,5 +1,5 @@
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#ifndef OPTIONS_PLUGIN_H
+#define OPTIONS_PLUGIN_H
 
 #include "option_parser_util.h"
 
