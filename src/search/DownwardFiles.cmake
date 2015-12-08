@@ -84,6 +84,7 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 #            <FILE_1> [ <FILE_2> ... ]
 #        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
 #        [ DEPENDENCY_ONLY ]
+#        [ CORE_PLUGIN ]
 #    )
 #
 # <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
@@ -93,6 +94,8 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # is enabled. If the dependency was not enabled before, this will be logged.
 # DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
 #     hides the option to enable the plugin in cmake GUIs like ccmake.
+# CORE_PLUGIN enables the plugin and hides the option to disable it in
+#     cmake GUIs like ccmake.
 
 fast_downward_plugin(
     NAME OPTIONS
@@ -101,6 +104,7 @@ fast_downward_plugin(
         options/option_parser.cc
         options/option_parser_util.cc
         options/plugin.cc
+    CORE_PLUGIN
 )
 
 fast_downward_plugin(
