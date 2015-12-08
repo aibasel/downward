@@ -30,7 +30,7 @@ foreach(BUILDMODE "RELEASE" "DEBUG")
         ${_COIN_ROOT_OPTS_${BUILDMODE}}
     )
     find_library(CLP_LIBRARY_${BUILDMODE}
-        NAMES Clp
+        NAMES Clp libClp
         HINTS ${_CMAKE_FIND_ROOT_PATH_${BUILDMODE}}
         PATH_SUFFIXES lib
         ${_COIN_ROOT_OPTS_${BUILDMODE}}
