@@ -188,7 +188,7 @@ function(fast_downward_add_headers_to_sources_list _SOURCES_LIST_VAR)
 endfunction()
 
 function(fast_downward_plugin)
-    set(_OPTIONS DEPENDENCY_ONLY)
+    set(_OPTIONS DEPENDENCY_ONLY CORE_PLUGIN)
     set(_ONE_VALUE_ARGS NAME DISPLAY_NAME HELP)
     set(_MULTI_VALUE_ARGS SOURCES DEPENDS)
     cmake_parse_arguments(_PLUGIN "${_OPTIONS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
@@ -213,7 +213,7 @@ function(fast_downward_plugin)
     endif()
 
     option(PLUGIN_${_PLUGIN_NAME}_ENABLED ${_PLUGIN_HELP} ${_OPTION_DEFAULT})
-    if(_PLUGIN_DEPENDENCY_ONLY)
+    if(_PLUGIN_DEPENDENCY_ONLY OR _PLUGIN_CORE_PLUGIN)
         mark_as_advanced(PLUGIN_${_PLUGIN_NAME}_ENABLED)
     endif()
 
