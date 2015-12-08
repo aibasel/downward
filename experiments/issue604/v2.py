@@ -35,7 +35,6 @@ def main(revisions=None):
     # planner outcome attributes
     perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False)
     proved_unsolvability = Attribute('proved_unsolvability', absolute=True, min_wins=False)
-    actual_search_time = Attribute('actual_search_time', absolute=False, min_wins=True, functions=[gm])
 
     # m&s attributes
     ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, functions=[gm])
@@ -45,11 +44,11 @@ def main(revisions=None):
     ms_out_of_time = Attribute('ms_out_of_time', absolute=True, min_wins=True)
     search_out_of_memory = Attribute('search_out_of_memory', absolute=True, min_wins=True)
     search_out_of_time = Attribute('search_out_of_time', absolute=True, min_wins=True)
+    ms_memory_delta = Attribute('ms_memory_delta', absolute=False, min_wins=True)
 
     extra_attributes = [
         perfect_heuristic,
         proved_unsolvability,
-        actual_search_time,
 
         ms_construction_time,
         ms_abstraction_constructed,
@@ -58,6 +57,7 @@ def main(revisions=None):
         ms_out_of_time,
         search_out_of_memory,
         search_out_of_time,
+        ms_memory_delta,
     ]
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)

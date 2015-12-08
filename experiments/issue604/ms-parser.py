@@ -3,9 +3,9 @@
 from lab.parser import Parser
 
 parser = Parser()
-parser.add_pattern('actual_search_time', 'Actual search time: (.+)s \[.+s\]', required=False, type=float)
 parser.add_pattern('ms_final_size', 'Final transition system size: (\d+)', required=False, type=int)
 parser.add_pattern('ms_construction_time', 'Done initializing merge-and-shrink heuristic \[(.+)s\]', required=False, type=float)
+parser.add_pattern('ms_memory_delta', 'Final peak memory increase of merge-and-shrink computation: (\d+) KB', required=False, type=int)
 
 def check_ms_constructed(content, props):
     ms_construction_time = props.get('ms_construction_time')
@@ -15,17 +15,6 @@ def check_ms_constructed(content, props):
     props['ms_abstraction_constructed'] = abstraction_constructed
 
 parser.add_function(check_ms_constructed)
-
-def check_proved_unsolvability(content, props):
-    proved_unsolvability = False
-    if props['coverage'] == 0:
-        for line in content.splitlines():
-            if line == 'Completely explored state space -- no solution!':
-                proved_unsolvability = True
-                break
-    props['proved_unsolvability'] = proved_unsolvability
-
-parser.add_function(check_proved_unsolvability)
 
 def check_planner_exit_reason(content, props):
     ms_abstraction_constructed = props.get('ms_abstraction_constructed')
@@ -67,5 +56,16 @@ def check_perfect_heuristic(content, props):
         props['perfect_heuristic'] = perfect_heuristic
 
 parser.add_function(check_perfect_heuristic)
+
+def check_proved_unsolvability(content, props):
+    proved_unsolvability = False
+    if props['coverage'] == 0:
+        for line in content.splitlines():
+            if line == 'Completely explored state space -- no solution!':
+                proved_unsolvability = True
+                break
+    props['proved_unsolvability'] = proved_unsolvability
+
+parser.add_function(check_proved_unsolvability)
 
 parser.parse()
