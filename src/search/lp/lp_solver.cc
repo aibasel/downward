@@ -64,7 +64,6 @@ bool LPConstraint::empty() const {
 }
 
 void LPConstraint::insert(int index, double coefficient) {
-    assert(variables.empty() || variables.back() < index);
     variables.push_back(index);
     coefficients.push_back(coefficient);
 }
