@@ -57,7 +57,7 @@ public:
 
     void clear();
     bool empty() const;
-    // Coefficients must be added ordered by index, without duplicate indices.
+    // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 };
 
