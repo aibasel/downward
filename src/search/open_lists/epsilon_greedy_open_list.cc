@@ -1,11 +1,136 @@
 #include "epsilon_greedy_open_list.h"
 
-#include "../plugin.h"
+#include "open_list.h"
 
+#include "../globals.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../rng.h"
+
+#include <functional>
 #include <memory>
 
 using namespace std;
 
+
+template<class Entry>
+class EpsilonGreedyOpenList : public OpenList<Entry> {
+    struct HeapNode {
+        int id;
+        int h;
+        Entry entry;
+        HeapNode(int id, int h, const Entry &entry)
+            : id(id), h(h), entry(entry) {
+        }
+
+        bool operator>(const HeapNode &other) const {
+            return make_pair(h, id) > make_pair(other.h, other.id);
+        }
+    };
+
+    vector<HeapNode> heap;
+    ScalarEvaluator *evaluator;
+
+    double epsilon;
+    int size;
+    int next_id;
+
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
+public:
+    explicit EpsilonGreedyOpenList(const Options &opts);
+    virtual ~EpsilonGreedyOpenList() override = default;
+
+    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
+};
+
+template<class HeapNode>
+static void adjust_heap_up(vector<HeapNode> &heap, size_t pos) {
+    assert(in_bounds(pos, heap));
+    while (pos != 0) {
+        size_t parent_pos = (pos - 1) / 2;
+        if (heap[pos] > heap[parent_pos]) {
+            break;
+        }
+        swap(heap[pos], heap[parent_pos]);
+        pos = parent_pos;
+    }
+}
+
+template<class Entry>
+void EpsilonGreedyOpenList<Entry>::do_insertion(
+    EvaluationContext &eval_context, const Entry &entry) {
+    heap.emplace_back(
+        next_id++, eval_context.get_heuristic_value(evaluator), entry);
+    push_heap(heap.begin(), heap.end(), greater<HeapNode>());
+    ++size;
+}
+
+template<class Entry>
+EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const Options &opts)
+    : OpenList<Entry>(opts.get<bool>("pref_only")),
+    evaluator(opts.get<ScalarEvaluator *>("eval")),
+    epsilon(opts.get<double>("epsilon")),
+    size(0),
+    next_id(0) {
+}
+
+template<class Entry>
+Entry EpsilonGreedyOpenList<Entry>::remove_min(vector<int> *key) {
+    assert(size > 0);
+    if (g_rng() < epsilon) {
+        int pos = g_rng(size);
+        heap[pos].h = numeric_limits<int>::min();
+        adjust_heap_up(heap, pos);
+    }
+    pop_heap(heap.begin(), heap.end(), greater<HeapNode>());
+    HeapNode heap_node = heap.back();
+    heap.pop_back();
+    if (key) {
+        assert(key->empty());
+        key->push_back(heap_node.h);
+    }
+    --size;
+    return heap_node.entry;
+}
+
+template<class Entry>
+bool EpsilonGreedyOpenList<Entry>::is_dead_end(
+    EvaluationContext &eval_context) const {
+    return eval_context.is_heuristic_infinite(evaluator);
+}
+
+template<class Entry>
+bool EpsilonGreedyOpenList<Entry>::is_reliable_dead_end(
+    EvaluationContext &eval_context) const {
+    return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
+}
+
+template<class Entry>
+void EpsilonGreedyOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
+    evaluator->get_involved_heuristics(hset);
+}
+
+template<class Entry>
+bool EpsilonGreedyOpenList<Entry>::empty() const {
+    return size == 0;
+}
+
+template<class Entry>
+void EpsilonGreedyOpenList<Entry>::clear() {
+    heap.clear();
+    size = 0;
+    next_id = 0;
+}
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
     const Options &options)
@@ -54,6 +179,5 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         return make_shared<EpsilonGreedyOpenListFactory>(opts);
     }
 }
-
 
 static PluginShared<OpenListFactory> _plugin("epsilon_greedy", _parse);
