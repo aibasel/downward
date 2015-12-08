@@ -1,6 +1,7 @@
 #include "enforced_hill_climbing_search.h"
 
 #include "../global_operator.h"
+#include "../option_parser.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 #include "../utilities.h"
