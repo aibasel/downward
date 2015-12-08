@@ -1,9 +1,9 @@
-#ifndef POR_SSS_EXPANSION_CORE_H
-#define POR_SSS_EXPANSION_CORE_H
+#ifndef POR_STUBBORN_SETS_EC_H
+#define POR_STUBBORN_SETS_EC_H
 
 #include "stubborn_sets.h"
 
-namespace SSSExpansionCore {
+namespace StubbornSetsEC {
 
 struct ExpansionCoreDTG {
     struct Arc {
@@ -34,7 +34,7 @@ public:
     void backward_relevance_analysis(std::vector<bool> &relevant) const;
 };
 
-class SSS_ExpansionCore : public StubbornSets::StubbornSets {
+class StubbornSetsEC : public StubbornSets::StubbornSets {
 private:
     std::vector<ExpansionCoreDTG> dtgs;
     std::vector<std::vector<std::vector<bool> > > reachability_map;
@@ -61,8 +61,8 @@ private:
 protected:
     void do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &ops);
 public:
-    SSS_ExpansionCore();
-    ~SSS_ExpansionCore();
+    StubbornSetsEC();
+    ~StubbornSetsEC();
     virtual void dump_options() const;
 };
 }

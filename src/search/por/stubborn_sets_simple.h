@@ -1,11 +1,11 @@
-#ifndef POR_SIMPLE_STUBBORN_SETS_H
-#define POR_SIMPLE_STUBBORN_SETS_H
+#ifndef POR_STUBBORN_SETS_SIMPLE_H
+#define POR_STUBBORN_SETS_SIMPLE_H
 
 #include "stubborn_sets.h"
 
-namespace SimpleStubbornSets {
+namespace StubbornSetsSimple {
 
-class SimpleStubbornSets : public StubbornSets::StubbornSets {
+class StubbornSetsSimple : public StubbornSets::StubbornSets {
 
     // interference_relation[op1_no] contains all operator indices
     // of operators that interfere with op1.
@@ -30,8 +30,8 @@ protected:
     virtual void do_pruning(const GlobalState &state,
                             std::vector<const GlobalOperator *> &ops);
 public:
-    SimpleStubbornSets();
-    ~SimpleStubbornSets();
+    StubbornSetsSimple();
+    ~StubbornSetsSimple();
 
     virtual void dump_options() const;
 };

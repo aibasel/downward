@@ -163,18 +163,18 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME SIMPLE_STUBBORN_SETS
-    HELP "Simple stubborn sets"
+    NAME STUBBORN_SETS_SIMPLE
+    HELP "Stubborn sets simple"
     SOURCES
-        por/simple_stubborn_sets.cc
+        por/stubborn_sets_simple.cc
     DEPENDS STUBBORN_SETS
 )
 
 fast_downward_plugin(
-    NAME SSS_EXPANSION_CORE
+    NAME StubbornSetsEC
     HELP "Stubborn set method that dominates expansion core"
     SOURCES
-        por/sss_expansion_core.cc
+        por/stubborn_sets_ec.cc
     DEPENDS STUBBORN_SETS
 )
 

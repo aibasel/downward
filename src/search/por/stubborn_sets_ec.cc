@@ -1,4 +1,4 @@
-#include "sss_expansion_core.h"
+#include "stubborn_sets_ec.h"
 
 #include "../globals.h"
 #include "../global_operator.h"
@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace SSSExpansionCore {
+namespace StubbornSetsEC {
 
 // TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
@@ -32,7 +32,7 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
     return make_pair(-1, -1);
 }
 
-SSS_ExpansionCore::SSS_ExpansionCore() {
+StubbornSetsEC::StubbornSetsEC() {
     verify_no_axioms_no_conditional_effects();
     compute_sorted_operators();
     compute_v_precond();
@@ -48,13 +48,13 @@ SSS_ExpansionCore::SSS_ExpansionCore() {
     }
 }
 
-SSS_ExpansionCore::~SSS_ExpansionCore() {}
+StubbornSetsEC::~StubbornSetsEC() {}
 
-void SSS_ExpansionCore::dump_options() const {
+void StubbornSetsEC::dump_options() const {
     cout << "partial order reduction method: sss_expansion core" << endl;
 }
 
-void SSS_ExpansionCore::build_dtgs() {
+void StubbornSetsEC::build_dtgs() {
     /*
   NOTE: Code lifted and adapted from M&S atomic abstraction code.
 
@@ -134,7 +134,7 @@ void SSS_ExpansionCore::build_dtgs() {
     cout << " done!" << endl;
 }
 
-void SSS_ExpansionCore::compute_v_precond() {
+void StubbornSetsEC::compute_v_precond() {
     v_precond.resize(g_operators.size());
     for (uint op_no = 0; op_no < g_operators.size(); op_no++) {
         v_precond[op_no].resize(g_variable_name.size(), -1);
@@ -150,7 +150,7 @@ void SSS_ExpansionCore::compute_v_precond() {
     }
 }
 
-void SSS_ExpansionCore::build_reachability_map() {
+void StubbornSetsEC::build_reachability_map() {
     size_t num_variables = g_variable_domain.size();
     for (uint var_no = 0; var_no < num_variables; ++var_no) {
         ExpansionCoreDTG &dtg = dtgs[var_no];
@@ -167,7 +167,7 @@ void SSS_ExpansionCore::build_reachability_map() {
 }
 
 
-void SSS_ExpansionCore::recurse_forwards(int var, int start_value, int current_value, std::vector<bool> &reachable) {
+void StubbornSetsEC::recurse_forwards(int var, int start_value, int current_value, std::vector<bool> &reachable) {
     ExpansionCoreDTG &dtg = dtgs[var];
     if (!reachable[current_value]) {
         reachable[current_value] = true;
@@ -177,7 +177,7 @@ void SSS_ExpansionCore::recurse_forwards(int var, int start_value, int current_v
     }
 }
 
-void SSS_ExpansionCore::compute_active_operators(const GlobalState &state) {
+void StubbornSetsEC::compute_active_operators(const GlobalState &state) {
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         GlobalOperator &op = g_operators[op_no];
         bool all_preconditions_are_active = true;
@@ -200,7 +200,7 @@ void SSS_ExpansionCore::compute_active_operators(const GlobalState &state) {
     }
 }
 
-void SSS_ExpansionCore::compute_conflicts_and_disabling() {
+void StubbornSetsEC::compute_conflicts_and_disabling() {
     size_t num_operators = g_operators.size();
     conflicting_and_disabling.resize(num_operators);
     disabled.resize(num_operators);
@@ -223,7 +223,7 @@ void SSS_ExpansionCore::compute_conflicts_and_disabling() {
 
 
 //Adapted from SimpleStubbornSets
-void SSS_ExpansionCore::mark_as_stubborn(int op_no, const GlobalState &state) {
+void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
     if (!stubborn_ec[op_no]) {
         stubborn_ec[op_no] = true;
         stubborn_ec_queue.push_back(op_no);
@@ -239,7 +239,7 @@ void SSS_ExpansionCore::mark_as_stubborn(int op_no, const GlobalState &state) {
     }
 }
 
-void SSS_ExpansionCore::add_nes_for_fact(pair<int, int> fact, const GlobalState &state) {
+void StubbornSetsEC::add_nes_for_fact(pair<int, int> fact, const GlobalState &state) {
     int var = fact.first;
     int value = fact.second;
     const vector<int> &op_nos = achievers[var][value];
@@ -252,7 +252,7 @@ void SSS_ExpansionCore::add_nes_for_fact(pair<int, int> fact, const GlobalState 
     nes_computed[var][value] = true;
 }
 
-void SSS_ExpansionCore::add_conflicting_and_disabling(int op_no, const GlobalState &state) {
+void StubbornSetsEC::add_conflicting_and_disabling(int op_no, const GlobalState &state) {
     const vector<int> &conflict_and_disable = conflicting_and_disabling[op_no];
 
     for (size_t i = 0; i < conflict_and_disable.size(); ++i) {
@@ -261,7 +261,7 @@ void SSS_ExpansionCore::add_conflicting_and_disabling(int op_no, const GlobalSta
     }
 }
 
-void SSS_ExpansionCore::get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars) {
+void StubbornSetsEC::get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars) {
     disabled_vars.clear();
     size_t i = 0;
     size_t j = 0;
@@ -287,7 +287,7 @@ void SSS_ExpansionCore::get_disabled_vars(int op1_no, int op2_no, std::vector<in
     }
 }
 
-void SSS_ExpansionCore::apply_s5(const GlobalOperator &op, const GlobalState &state) {
+void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
 
     std::pair<int, int> violated_precondition = make_pair(-1, -1);
@@ -328,7 +328,7 @@ void SSS_ExpansionCore::apply_s5(const GlobalOperator &op, const GlobalState &st
 }
 
 
-void SSS_ExpansionCore::do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) {
+void StubbornSetsEC::do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) {
     stubborn_ec.clear();
     stubborn_ec.assign(g_operators.size(), false);
     active_ops.clear();
@@ -404,10 +404,10 @@ void SSS_ExpansionCore::do_pruning(const GlobalState &state, std::vector<const G
 }
 
 static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("SSS_ExpansionCore", "applies stubborn sets that dominate expansion core");
+    parser.document_synopsis("StubbornSetsEC", "stubborn sets that dominate expansion core");
 
-    return make_shared<SSS_ExpansionCore>();
+    return make_shared<StubbornSetsEC>();
 }
 
-static PluginShared<PORMethod> _plugin("sss_expansion_core", _parse);
+static PluginShared<PORMethod> _plugin("stubborn_sets_ec", _parse);
 }
