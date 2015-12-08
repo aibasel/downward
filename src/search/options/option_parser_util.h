@@ -21,11 +21,6 @@
 class Heuristic;
 class OptionParser;
 
-// TODO: The following forward declaration can hopefully go away eventually.
-template<class Entry>
-class OpenList;
-
-
 
 struct ParseNode {
     ParseNode()
@@ -339,13 +334,6 @@ struct TypeNamer<ParseTree> {
     }
 };
 
-template<typename Entry>
-struct TypeNamer<std::shared_ptr<OpenList<Entry>>> {
-    static std::string name() {
-        return "OpenList";
-    }
-};
-
 template<typename T>
 struct TypeNamer<std::vector<T>> {
     static std::string name() {
@@ -388,13 +376,6 @@ template<typename T>
 struct TypeDocumenter<T *> {
     static std::string synopsis() {
         return TypeDocumenter<std::shared_ptr<T>>::synopsis();
-    }
-};
-
-template<typename Entry>
-struct TypeDocumenter<std::shared_ptr<OpenList<Entry>>> {
-    static std::string synopsis() {
-        return "";
     }
 };
 
