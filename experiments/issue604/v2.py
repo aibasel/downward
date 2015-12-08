@@ -33,6 +33,8 @@ def main(revisions=None):
     exp.add_command('ms-parser', ['ms_parser'])
 
     # planner outcome attributes
+    search_out_of_memory = Attribute('search_out_of_memory', absolute=True, min_wins=True)
+    search_out_of_time = Attribute('search_out_of_time', absolute=True, min_wins=True)
     perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False)
     proved_unsolvability = Attribute('proved_unsolvability', absolute=True, min_wins=False)
 
@@ -42,11 +44,11 @@ def main(revisions=None):
     ms_final_size = Attribute('ms_final_size', absolute=False, min_wins=True)
     ms_out_of_memory = Attribute('ms_out_of_memory', absolute=True, min_wins=True)
     ms_out_of_time = Attribute('ms_out_of_time', absolute=True, min_wins=True)
-    search_out_of_memory = Attribute('search_out_of_memory', absolute=True, min_wins=True)
-    search_out_of_time = Attribute('search_out_of_time', absolute=True, min_wins=True)
     ms_memory_delta = Attribute('ms_memory_delta', absolute=False, min_wins=True)
 
     extra_attributes = [
+        search_out_of_memory,
+        search_out_of_time,
         perfect_heuristic,
         proved_unsolvability,
 
@@ -55,8 +57,6 @@ def main(revisions=None):
         ms_final_size,
         ms_out_of_memory,
         ms_out_of_time,
-        search_out_of_memory,
-        search_out_of_time,
         ms_memory_delta,
     ]
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
