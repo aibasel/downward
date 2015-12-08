@@ -25,10 +25,10 @@ set(CORE_SOURCES
         heuristic.cc
         int_packer.cc
         operator_cost.cc
-        option_parser.cc
-        option_parser_util.cc
+        option_parser.h
+        option_parser_util.h
         per_state_information.cc
-        plugin.cc
+        plugin.h
         priority_queue.cc
         rng.cc
         root_task.cc
