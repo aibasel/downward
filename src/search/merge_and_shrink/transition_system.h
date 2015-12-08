@@ -20,6 +20,7 @@ namespace MergeAndShrink {
 class Distances;
 class HeuristicRepresentation;
 class LabelEquivalenceRelation;
+class LabelGroup; // TODO: include label_equivalence_relation.h directly?
 class Labels;
 
 struct Transition {
@@ -46,6 +47,16 @@ struct Transition {
 
 class TransitionSystem;
 
+struct GroupAndTransitions {
+    const LabelGroup &label_group;
+    const std::vector<Transition> &transitions;
+    GroupAndTransitions(const LabelGroup &label_group,
+                        const std::vector<Transition> &transitions)
+        : label_group(label_group),
+          transitions(transitions) {
+    }
+};
+
 class TSConstIterator {
     /*
       This class allows users to easily iterate over both label groups and
@@ -64,24 +75,14 @@ public:
     void next_valid_index();
     void operator++();
 
+    GroupAndTransitions operator*() const;
+
     bool operator==(const TSConstIterator &rhs) const {
         return current == rhs.current;
     }
 
     bool operator!=(const TSConstIterator &rhs) const {
         return current != rhs.current;
-    }
-
-    int get_id() const {
-        return current;
-    }
-
-    int get_cost() const;
-    LabelConstIter begin() const;
-    LabelConstIter end() const;
-
-    const std::vector<Transition> &get_transitions() const {
-        return transitions_by_group_id[current];
     }
 };
 
