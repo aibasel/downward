@@ -25,10 +25,10 @@ set(CORE_SOURCES
         heuristic.cc
         int_packer.cc
         operator_cost.cc
-        option_parser.cc
-        option_parser_util.cc
+        option_parser.h
+        option_parser_util.h
         per_state_information.cc
-        plugin.cc
+        plugin.h
         priority_queue.cc
         rng.cc
         root_task.cc
@@ -84,6 +84,7 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 #            <FILE_1> [ <FILE_2> ... ]
 #        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
 #        [ DEPENDENCY_ONLY ]
+#        [ CORE_PLUGIN ]
 #    )
 #
 # <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
@@ -93,6 +94,18 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # is enabled. If the dependency was not enabled before, this will be logged.
 # DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
 #     hides the option to enable the plugin in cmake GUIs like ccmake.
+# CORE_PLUGIN enables the plugin and hides the option to disable it in
+#     cmake GUIs like ccmake.
+
+fast_downward_plugin(
+    NAME OPTIONS
+    HELP "Option parsing and plugin definition"
+    SOURCES
+        options/option_parser.cc
+        options/option_parser_util.cc
+        options/plugin.cc
+    CORE_PLUGIN
+)
 
 fast_downward_plugin(
     NAME CONST_EVALUATOR
