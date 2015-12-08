@@ -22,20 +22,16 @@ using namespace std;
 
 
 namespace MergeAndShrink {
-/*
-  Implementation note: Transitions are grouped by their label groups,
-  not by source state or any such thing. Such a grouping is beneficial
-  for fast generation of products because we can iterate label group
-  by label group, and it also allows applying transition system
-  mappings very efficiently.
+std::ostream &operator<<(std::ostream &os, const Transition &trans) {
+    os << trans.src << "->" << trans.target;
+    return os;
+}
 
-  We rarely need to be able to efficiently query the successors of a
-  given state; actually, only the distance computation requires that,
-  and it simply generates such a graph representation of the
-  transitions itself. Various experiments have shown that maintaining
-  a graph representation permanently for the benefit of distance
-  computation is not worth the overhead.
-*/
+// Sorts the given set of transitions and removes duplicates.
+static void normalize_given_transitions(vector<Transition> &transitions) {
+    sort(transitions.begin(), transitions.end());
+    transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
+}
 
 TSConstIterator::TSConstIterator(
     const LabelEquivalenceRelation &label_equivalence_relation,
@@ -73,6 +69,22 @@ LabelConstIter TSConstIterator::end() const {
 
 const int TransitionSystem::PRUNED_STATE = -1;
 
+/*
+  Implementation note: Transitions are grouped by their label groups,
+  not by source state or any such thing. Such a grouping is beneficial
+  for fast generation of products because we can iterate label group
+  by label group, and it also allows applying transition system
+  mappings very efficiently.
+
+  We rarely need to be able to efficiently query the successors of a
+  given state; actually, only the distance computation requires that,
+  and it simply generates such a graph representation of the
+  transitions itself. Various experiments have shown that maintaining
+  a graph representation permanently for the benefit of distance
+  computation is not worth the overhead.
+*/
+
+
 TransitionSystem::TransitionSystem(
     int num_variables,
     vector<int> &&incorporated_variables,
@@ -104,8 +116,8 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     const Labels &labels,
     const TransitionSystem &ts1,
     const TransitionSystem &ts2) {
-    cout << "Merging " << ts1.description() << " and "
-         << ts2.description() << endl;
+    cout << "Merging " << ts1.get_description() << " and "
+         << ts2.get_description() << endl;
 
     assert(ts1.is_solvable() && ts2.is_solvable());
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
@@ -222,11 +234,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
                 goal_relevant,
                 false
             );
-}
-
-void TransitionSystem::normalize_given_transitions(vector<Transition> &transitions) const {
-    sort(transitions.begin(), transitions.end());
-    transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
 }
 
 void TransitionSystem::compute_locally_equivalent_labels() {
@@ -381,7 +388,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>
 }
 
 string TransitionSystem::tag() const {
-    string desc(description());
+    string desc(get_description());
     desc[0] = toupper(desc[0]);
     return desc + ": ";
 }
@@ -399,7 +406,7 @@ bool TransitionSystem::is_solvable() const {
     return init_state != PRUNED_STATE;
 }
 
-int TransitionSystem::total_transitions() const {
+int TransitionSystem::compute_total_transitions() const {
     int total = 0;
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
@@ -408,7 +415,7 @@ int TransitionSystem::total_transitions() const {
     return total;
 }
 
-string TransitionSystem::description() const {
+string TransitionSystem::get_description() const {
     ostringstream s;
     if (incorporated_variables.size() == 1) {
         s << "atomic transition system #" << *incorporated_variables.begin();
@@ -482,6 +489,6 @@ void TransitionSystem::dump_labels_and_transitions() const {
 
 void TransitionSystem::statistics() const {
     cout << tag() << get_size() << " states, "
-         << total_transitions() << " arcs " << endl;
+         << compute_total_transitions() << " arcs " << endl;
 }
 }

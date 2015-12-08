@@ -26,8 +26,8 @@ struct Transition {
     int src;
     int target;
 
-    Transition(int src_, int target_)
-        : src(src_), target(target_) {
+    Transition(int src, int target)
+        : src(src), target(target) {
     }
 
     bool operator==(const Transition &other) const {
@@ -38,13 +38,9 @@ struct Transition {
         return src < other.src || (src == other.src && target < other.target);
     }
 
+    // Required for "is_sorted_unique" in utilities
     bool operator>=(const Transition &other) const {
         return !(*this < other);
-    }
-
-    friend std::ostream &operator<<(std::ostream &os, const Transition &trans) {
-        os << trans.src << "->" << trans.target;
-        return os;
     }
 };
 
@@ -66,18 +62,23 @@ public:
                     const std::vector<std::vector<Transition>> &transitions_by_group_id,
                     bool end);
     void operator++();
+
     bool operator==(const TSConstIterator &rhs) const {
         return current == rhs.current;
     }
+
     bool operator!=(const TSConstIterator &rhs) const {
         return current != rhs.current;
     }
+
     int get_id() const {
         return current;
     }
+
     int get_cost() const;
     LabelConstIter begin() const;
     LabelConstIter end() const;
+
     const std::vector<Transition> &get_transitions() const {
         return transitions_by_group_id[current];
     }
@@ -100,15 +101,18 @@ private:
     const int num_variables;
     std::vector<int> incorporated_variables;
 
+    /*
+      All locally equivalent labels are grouped together, and their
+      transitions are only stored once for every such group, see below.
+
+      LabelEquivalenceRelation stores the equivalence relation over all
+      labels of the underlying factored transition system.
+    */
     std::unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
+
     /*
       The transitions of a label group are indexed via its id. The id of a
       group does not change, and hence its transitions are never moved.
-      Initially, every label is in a single label group, and its number is
-      used to index transitions_of_groups. When adding new labels via label
-      reduction, if a new label is not locally equivalent with any existing,
-      we again use its number to index its transitions. When computing a
-      composite, use the smallest label number of a group as index.
 
       We tested different alternatives to store the transitions, but they all
       performed worse: storing a vector transitions in the label group increases
@@ -120,25 +124,27 @@ private:
     std::vector<std::vector<Transition>> transitions_by_group_id;
 
     int num_states;
-
     std::vector<bool> goal_states;
     int init_state;
-
     bool goal_relevant; // TODO: Get rid of this?
 
-    // Methods related to the representation of transitions and labels
-    void normalize_given_transitions(std::vector<Transition> &transitions) const;
+    /*
+      Check if two or more labels are locally equivalent to each other, and
+      if so, update the label equivalence relation.
+    */
     void compute_locally_equivalent_labels();
+
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
         return transitions_by_group_id[group_id];
     }
+
     std::vector<Transition> &get_transitions_for_group_id(int group_id) {
         return transitions_by_group_id[group_id];
     }
 
     // Statistics and output
-    int total_transitions() const;
-    std::string description() const;
+    int compute_total_transitions() const;
+    std::string get_description() const;
 public:
     TransitionSystem(
         int num_variables,
@@ -173,11 +179,13 @@ public:
                                transitions_by_group_id,
                                false);
     }
+
     TSConstIterator end() const {
         return TSConstIterator(*label_equivalence_relation,
                                transitions_by_group_id,
                                true);
     }
+
     /*
       Method to identify the transition system in output.
       Print "Atomic transition system #x: " for atomic transition systems,
@@ -186,24 +194,30 @@ public:
       out of y variables.
     */
     std::string tag() const;
+
     /*
       The transitions for every group of locally equivalent labels are
       sorted (by source, by target) and there are no duplicates.
     */
     bool are_transitions_sorted_unique() const;
+
     bool is_solvable() const;
     void dump_dot_graph() const;
     void dump_labels_and_transitions() const;
     void statistics() const;
+
     int get_size() const {
         return num_states;
     }
+
     int get_init_state() const {
         return init_state;
     }
+
     bool is_goal_state(int state) const {
         return goal_states[state];
     }
+
     bool is_goal_relevant() const {  // used by merge_dfp
         return goal_relevant;
     }
