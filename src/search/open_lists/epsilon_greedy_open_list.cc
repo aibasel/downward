@@ -78,10 +78,10 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 template<class Entry>
 EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
-    evaluator(opts.get<ScalarEvaluator *>("eval")),
-    epsilon(opts.get<double>("epsilon")),
-    size(0),
-    next_id(0) {
+      evaluator(opts.get<ScalarEvaluator *>("eval")),
+      epsilon(opts.get<double>("epsilon")),
+      size(0),
+      next_id(0) {
 }
 
 template<class Entry>
