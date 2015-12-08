@@ -1,4 +1,4 @@
-#include "simple_stubborn_sets.h"
+#include "stubborn_sets_simple.h"
 
 #include "../globals.h"
 #include "../global_operator.h"
@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace SimpleStubbornSets {
+namespace StubbornSetsSimple {
 // Implementation of simple instantiation of strong stubborn sets.
 // Disjunctive action landmarks are computed trivially.
 //
@@ -60,20 +60,20 @@ static inline pair<int, int> find_unsatisfied_precondition(
 }
 
 
-SimpleStubbornSets::SimpleStubbornSets() {
+StubbornSetsSimple::StubbornSetsSimple() {
     verify_no_axioms_no_conditional_effects();
     compute_interference_relation();
     compute_achievers();
 }
 
-SimpleStubbornSets::~SimpleStubbornSets() {
+StubbornSetsSimple::~StubbornSetsSimple() {
 }
 
-void SimpleStubbornSets::dump_options() const {
+void StubbornSetsSimple::dump_options() const {
     cout << "partial order reduction method: simple stubborn sets" << endl;
 }
 
-void SimpleStubbornSets::compute_interference_relation() {
+void StubbornSetsSimple::compute_interference_relation() {
     compute_sorted_operators();
 
     int num_interfering_pairs = 0;
@@ -94,7 +94,7 @@ void SimpleStubbornSets::compute_interference_relation() {
     
 }
 
-void SimpleStubbornSets::mark_as_stubborn(int op_no) {
+void StubbornSetsSimple::mark_as_stubborn(int op_no) {
     if (!stubborn[op_no]) {
         stubborn[op_no] = true;
         stubborn_queue.push_back(op_no);
@@ -102,7 +102,7 @@ void SimpleStubbornSets::mark_as_stubborn(int op_no) {
 }
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
-void SimpleStubbornSets::add_nes_for_fact(pair<int, int> fact) {
+void StubbornSetsSimple::add_nes_for_fact(pair<int, int> fact) {
     int var = fact.first;
     int value = fact.second;
     const vector<int> &op_nos = achievers[var][value];
@@ -111,13 +111,13 @@ void SimpleStubbornSets::add_nes_for_fact(pair<int, int> fact) {
 }
 
 // Add all operators that interfere with op.
-void SimpleStubbornSets::add_interfering(int op_no) {
+void StubbornSetsSimple::add_interfering(int op_no) {
     const vector<int> &interferers = interference_relation[op_no];
     for (size_t i = 0; i < interferers.size(); ++i)
         mark_as_stubborn(interferers[i]);
 }
 
-void SimpleStubbornSets::do_pruning(
+void StubbornSetsSimple::do_pruning(
     const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) {
     // Clear stubborn set from previous call.
     stubborn.clear();
@@ -163,10 +163,10 @@ void SimpleStubbornSets::do_pruning(
 }
 
 static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("Simple stubborn sets", "applies simple stubborn sets");
+    parser.document_synopsis("Stubborn sets simple", "stubborn sets with simple instantiations of design choices");
 
-    return make_shared<SimpleStubbornSets>();
+    return make_shared<StubbornSetsSimple>();
 }
 
-static PluginShared<PORMethod> _plugin("simple_stubborn_sets", _parse);
+static PluginShared<PORMethod> _plugin("stubborn_sets_simple", _parse);
 }
