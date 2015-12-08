@@ -307,11 +307,11 @@ class IssueExperiment(FastDownwardExperiment):
                 report(self.eval_dir, outfile)
 
         def publish_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self.revisions, 2):
+            for rev1, rev2 in itertools.combinations(self._revisions, 2):
                 outfile = os.path.join(
                     self.eval_dir,
                     "%s-%s-%s-compare" % (self.name, rev1, rev2)
-                    + "." + report.output_format)
+                    + ".html")
                 subprocess.call(['publish', outfile])
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
