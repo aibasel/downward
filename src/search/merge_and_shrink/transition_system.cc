@@ -40,6 +40,10 @@ TSConstIterator::TSConstIterator(
     : label_equivalence_relation(label_equivalence_relation),
       transitions_by_group_id(transitions_by_group_id),
       current((end ? label_equivalence_relation.get_size() : 0)) {
+    next_valid_index();
+}
+
+void TSConstIterator::next_valid_index() {
     while (current < label_equivalence_relation.get_size()
            && label_equivalence_relation.get_group(current).empty()) {
         ++current;
@@ -48,10 +52,7 @@ TSConstIterator::TSConstIterator(
 
 void TSConstIterator::operator++() {
     ++current;
-    while (current < label_equivalence_relation.get_size()
-           && label_equivalence_relation.get_group(current).empty()) {
-        ++current;
-    }
+    next_valid_index();
 }
 
 int TSConstIterator::get_cost() const {
@@ -83,7 +84,6 @@ const int TransitionSystem::PRUNED_STATE = -1;
   a graph representation permanently for the benefit of distance
   computation is not worth the overhead.
 */
-
 
 TransitionSystem::TransitionSystem(
     int num_variables,
@@ -154,7 +154,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
       We can compute the local equivalence relation of a composite T
       from the local equivalence relations of the two components T1 and T2:
       l and l' are locally equivalent in T iff:
-      (A) they are local equivalent in T1 and in T2, or
+      (A) they are locally equivalent in T1 and in T2, or
       (B) they are both dead in T (e.g., this includes the case where
           l is dead in T1 only and l' is dead in T2 only, so they are not
           locally equivalent in either of the components).
@@ -166,9 +166,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
         unordered_map<int, vector<int>> buckets;
-        for (LabelConstIter label_it = group1_it.begin();
-             label_it != group1_it.end(); ++label_it) {
-            int label_no = *label_it;
+        for (int label_no : group1_it) {
             int group2_id = ts2.label_equivalence_relation->get_group_id(label_no);
             buckets[group2_id].push_back(label_no);
         }
@@ -187,12 +185,12 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
                 && transitions1.size() > new_transitions.max_size() / transitions2.size())
                 exit_with(EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
-            for (size_t i = 0; i < transitions1.size(); ++i) {
-                int src1 = transitions1[i].src;
-                int target1 = transitions1[i].target;
-                for (size_t j = 0; j < transitions2.size(); ++j) {
-                    int src2 = transitions2[j].src;
-                    int target2 = transitions2[j].target;
+            for (const Transition &transition1 : transitions1) {
+                int src1 = transition1.src;
+                int target1 = transition1.target;
+                for (const Transition &transition2 : transitions2) {
+                    int src2 = transition2.src;
+                    int target2 = transition2.target;
                     int src = src1 * multiplier + src2;
                     int target = target1 * multiplier + target2;
                     new_transitions.push_back(Transition(src, target));
@@ -206,7 +204,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
             } else {
                 sort(new_transitions.begin(), new_transitions.end());
                 int new_index = label_equivalence_relation->add_label_group(new_labels);
-                transitions_by_group_id[new_index].swap(new_transitions);
+                transitions_by_group_id[new_index] = move(new_transitions);
             }
         }
     }
@@ -264,15 +262,15 @@ bool TransitionSystem::apply_abstraction(
     const vector<int> &abstraction_mapping) {
     assert(are_transitions_sorted_unique());
 
-    if (static_cast<int>(state_equivalence_relation.size()) == get_size()) {
+    int new_num_states = state_equivalence_relation.size();
+    if (new_num_states == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
         return false;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
-         << " to " << state_equivalence_relation.size() << " states)" << endl;
+         << " to " << new_num_states << " states)" << endl;
 
-    int new_num_states = state_equivalence_relation.size();
     vector<bool> new_goal_states(new_num_states, false);
 
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
@@ -280,19 +278,17 @@ bool TransitionSystem::apply_abstraction(
             state_equivalence_relation[new_state];
         assert(!state_equivalence_class.empty());
 
-        StateEquivalenceClass::const_iterator pos =
-            state_equivalence_class.begin();
-        new_goal_states[new_state] = goal_states[*pos];
-
-        ++pos;
-        for (; pos != state_equivalence_class.end(); ++pos)
-            if (goal_states[*pos])
+        for (int old_state : state_equivalence_class) {
+            if (goal_states[old_state]) {
                 new_goal_states[new_state] = true;
+                break;
+            }
+        }
     }
 
     goal_states = move(new_goal_states);
 
-    // Update all transitions. Locally equivalent labels remain locally equivalent.
+    // Update all transitions.
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
         vector<Transition> &transitions = get_transitions_for_group_id(group_it.get_id());
@@ -305,7 +301,7 @@ bool TransitionSystem::apply_abstraction(
                 new_transitions.push_back(Transition(src, target));
         }
         normalize_given_transitions(new_transitions);
-        transitions.swap(new_transitions);
+        transitions = move(new_transitions);
     }
 
     compute_locally_equivalent_labels();
@@ -327,7 +323,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>
       We iterate over the given label mapping, treating every new label and
       the reduced old labels separately. We further distinguish the case
       where we know that the reduced labels are all from the same equivalence
-      group from the case where we may combine arbitrary labels.
+      class from the case where we may combine arbitrary labels.
 
       The case where only equivalent labels are combined is simple: remove all
       old labels from the label group and add the new one.
@@ -348,10 +344,10 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>
       computation does not accelerate the computation.
     */
 
-    for (size_t i = 0; i < label_mapping.size(); ++i) {
-        const vector<int> &old_label_nos = label_mapping[i].second;
+    for (const pair<int, vector<int>> &mapping: label_mapping) {
+        int new_label_no =mapping.first;
+        const vector<int> &old_label_nos = mapping.second;
         assert(old_label_nos.size() >= 2);
-        int new_label_no = label_mapping[i].first;
 
         if (only_equivalent_labels) {
             label_equivalence_relation->replace_labels_by_label(old_label_nos, new_label_no);
@@ -359,8 +355,10 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>
             /*
               Remove all existing labels from their group(s) and possibly the
               groups themselves.
+
+              We use a set to collect the reduced label's transitions so that
+              they are sorted and unique.
             */
-            // We use a set to collect the reduced label's transitions so that they are sorted.
             set<Transition> collected_transitions;
             for (int old_label_no : old_label_nos) {
                 int group_id = label_equivalence_relation->get_group_id(old_label_no);

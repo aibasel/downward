@@ -61,6 +61,7 @@ public:
     TSConstIterator(const LabelEquivalenceRelation &label_equivalence_relation,
                     const std::vector<std::vector<Transition>> &transitions_by_group_id,
                     bool end);
+    void next_valid_index();
     void operator++();
 
     bool operator==(const TSConstIterator &rhs) const {
@@ -167,9 +168,22 @@ public:
                                                    const TransitionSystem &ts1,
                                                    const TransitionSystem &ts2);
 
+    /*
+      Applies the given state equivalence relation to the transition system.
+      abstraction_mapping is a mapping from old states to new states, and it
+      must be consistent with state_equivalence_relation in the sense that
+      old states are only mapped to the same new state if they are in the same
+      equivalence class as specified in state_equivalence_relation.
+    */
     bool apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping);
+
+    /*
+      Applies the given label mapping, mapping old to new label numbers. This
+      updates the label equivalence relation which is internally used to group
+      locally equivalent labels and store their transitions only once.
+    */
     void apply_label_reduction(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         bool only_equivalent_labels);
