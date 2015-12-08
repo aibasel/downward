@@ -5,6 +5,7 @@ from downward import suites
 from lab.reports import Attribute, gm
 
 from common_setup import IssueConfig, IssueExperiment
+from relativescatter import RelativeScatterPlotReport
 
 def main(revisions=None):
     suite = suites.suite_optimal_with_ipc11()
@@ -63,6 +64,24 @@ def main(revisions=None):
     attributes.extend(extra_attributes)
 
     exp.add_comparison_table_step()
+    
+    exp.add_report(
+        RelativeScatterPlotReport(
+            attributes=["memory"],
+            filter_config=["issue604-base-dfp-ginf", "issue604-v1-dfp-ginf"],
+            get_category=lambda run1, run2: run1.get("domain"),
+        ),
+        outfile='issue604_base_v1_memory_dfp.png'
+    )
+
+    exp.add_report(
+        RelativeScatterPlotReport(
+            attributes=["memory"],
+            filter_config=["issue604-base-rl-ginf", "issue604-v1-rl-ginf"],
+            get_category=lambda run1, run2: run1.get("domain"),
+        ),
+        outfile='issue604_base_v1_memory_rl.png'
+    )
 
     exp()
 
