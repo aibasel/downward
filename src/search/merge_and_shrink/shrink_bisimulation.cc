@@ -2,6 +2,7 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
+#include "label_equivalence_relation.h"
 #include "transition_system.h"
 
 #include "../option_parser.h"
@@ -165,23 +166,22 @@ void ShrinkBisimulation::compute_signatures(
       the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
       Running the above config on those two revisions yields the same difference.
     */
-    for (TSConstIterator group_it = ts.begin();
-         group_it != ts.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it.get_transitions();
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            const Transition &trans = transitions[i];
-            assert(signatures[trans.src + 1].state == trans.src);
+    for (const GroupAndTransitions &gat : ts) {
+        const LabelGroup &label_group = gat.label_group;
+        const vector<Transition> &transitions = gat.transitions;
+        for (const Transition &transition : transitions) {
+            assert(signatures[transition.src + 1].state == transition.src);
             bool skip_transition = false;
             if (greedy) {
-                int src_h = distances.get_goal_distance(trans.src);
-                int target_h = distances.get_goal_distance(trans.target);
-                int cost = group_it.get_cost();
+                int src_h = distances.get_goal_distance(transition.src);
+                int target_h = distances.get_goal_distance(transition.target);
+                int cost = label_group.get_cost();
                 assert(target_h + cost >= src_h);
                 skip_transition = (target_h + cost != src_h);
             }
             if (!skip_transition) {
-                int target_group = state_to_group[trans.target];
-                signatures[trans.src + 1].succ_signature.push_back(
+                int target_group = state_to_group[transition.target];
+                signatures[transition.src + 1].succ_signature.push_back(
                     make_pair(label_group_counter, target_group));
             }
         }

@@ -55,16 +55,9 @@ void TSConstIterator::operator++() {
     next_valid_index();
 }
 
-int TSConstIterator::get_cost() const {
-    return label_equivalence_relation.get_group(current).get_cost();
-}
-
-LabelConstIter TSConstIterator::begin() const {
-    return label_equivalence_relation.get_group(current).begin();
-}
-
-LabelConstIter TSConstIterator::end() const {
-    return label_equivalence_relation.get_group(current).end();
+GroupAndTransitions TSConstIterator::operator*() const {
+    return GroupAndTransitions(label_equivalence_relation.get_group(current),
+                               transitions_by_group_id[current]);
 }
 
 
@@ -161,12 +154,14 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     */
     int multiplier = ts2_size;
     vector<int> dead_labels;
-    for (TSConstIterator group1_it = ts1.begin();
-         group1_it != ts1.end(); ++group1_it) {
+    for (const GroupAndTransitions &gat : ts1) {
+        const LabelGroup &group1 = gat.label_group;
+        const vector<Transition> &transitions1 = gat.transitions;
+
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
         unordered_map<int, vector<int>> buckets;
-        for (int label_no : group1_it) {
+        for (int label_no : group1) {
             int group2_id = ts2.label_equivalence_relation->get_group_id(label_no);
             buckets[group2_id].push_back(label_no);
         }
@@ -174,7 +169,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         // refinements of group1.
 
         // Now create the new groups together with their transitions.
-        const vector<Transition> &transitions1 = group1_it.get_transitions();
         for (const auto &bucket : buckets) {
             const vector<Transition> &transitions2 =
                 ts2.get_transitions_for_group_id(bucket.first);
@@ -239,19 +233,17 @@ void TransitionSystem::compute_locally_equivalent_labels() {
       Compare every group of labels and their transitions to all others and
       merge two groups whenever the transitions are the same.
     */
-    for (TSConstIterator group1_it = begin();
-         group1_it != end(); ++group1_it) {
-        const vector<Transition> &transitions1 = group1_it.get_transitions();
-        for (TSConstIterator group2_it = group1_it;
-             group2_it != end(); ++group2_it) {
-            if (group2_it != group1_it) {
-                int group2_id = group2_it.get_id();
-                vector<Transition> &transitions2 = get_transitions_for_group_id(group2_id);
-                if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
-                    label_equivalence_relation->move_group_into_group(
-                        group2_id, group1_it.get_id());
-                    release_vector_memory(transitions2);
-                }
+    for (int group_id1 = 0; group_id1 < label_equivalence_relation->get_size();
+         ++group_id1) {
+        const vector<Transition> &transitions1 = transitions_by_group_id[group_id1];
+        for (int group_id2 = group_id1 + 1;
+             group_id2 < label_equivalence_relation->get_size(); ++group_id2) {
+            vector<Transition> &transitions2 = transitions_by_group_id[group_id2];
+            if ((transitions1.empty() && transitions2.empty())
+                || transitions1 == transitions2) {
+                label_equivalence_relation->move_group_into_group(
+                    group_id2, group_id1);
+                release_vector_memory(transitions2);
             }
         }
     }
@@ -289,19 +281,19 @@ bool TransitionSystem::apply_abstraction(
     goal_states = move(new_goal_states);
 
     // Update all transitions.
-    for (TSConstIterator group_it = begin();
-         group_it != end(); ++group_it) {
-        vector<Transition> &transitions = get_transitions_for_group_id(group_it.get_id());
-        vector<Transition> new_transitions;
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            const Transition &transition = transitions[i];
-            int src = abstraction_mapping[transition.src];
-            int target = abstraction_mapping[transition.target];
-            if (src != PRUNED_STATE && target != PRUNED_STATE)
-                new_transitions.push_back(Transition(src, target));
+    for (vector<Transition> &transitions : transitions_by_group_id) {
+        if (!transitions.empty()) {
+            vector<Transition> new_transitions;
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                const Transition &transition = transitions[i];
+                int src = abstraction_mapping[transition.src];
+                int target = abstraction_mapping[transition.target];
+                if (src != PRUNED_STATE && target != PRUNED_STATE)
+                    new_transitions.push_back(Transition(src, target));
+            }
+            normalize_given_transitions(new_transitions);
+            transitions = move(new_transitions);
         }
-        normalize_given_transitions(new_transitions);
-        transitions = move(new_transitions);
     }
 
     compute_locally_equivalent_labels();
@@ -392,9 +384,8 @@ string TransitionSystem::tag() const {
 }
 
 bool TransitionSystem::are_transitions_sorted_unique() const {
-    for (TSConstIterator group_it = begin();
-         group_it != end(); ++group_it) {
-        if (!is_sorted_unique(group_it.get_transitions()))
+    for (const GroupAndTransitions &gat : *this) {
+        if (!is_sorted_unique(gat.transitions))
             return false;
     }
     return true;
@@ -406,9 +397,8 @@ bool TransitionSystem::is_solvable() const {
 
 int TransitionSystem::compute_total_transitions() const {
     int total = 0;
-    for (TSConstIterator group_it = begin();
-         group_it != end(); ++group_it) {
-        total += group_it.get_transitions().size();
+    for (const GroupAndTransitions &gat : *this) {
+        total += gat.transitions.size();
     }
     return total;
 }
@@ -439,16 +429,16 @@ void TransitionSystem::dump_dot_graph() const {
         if (is_init)
             cout << "    start -> node" << i << ";" << endl;
     }
-    for (TSConstIterator group_it = begin();
-         group_it != end(); ++group_it) {
-        const vector<Transition> &transitions = group_it.get_transitions();
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            int src = transitions[i].src;
-            int target = transitions[i].target;
+    for (const GroupAndTransitions &gat : *this) {
+        const LabelGroup &label_group = gat.label_group;
+        const vector<Transition> &transitions = gat.transitions;
+        for (const Transition &transition : transitions) {
+            int src = transition.src;
+            int target = transition.target;
             cout << "    node" << src << " -> node" << target << " [label = ";
-            for (LabelConstIter label_it = group_it.begin();
-                 label_it != group_it.end(); ++label_it) {
-                if (label_it != group_it.begin())
+            for (LabelConstIter label_it = label_group.begin();
+                 label_it != label_group.end(); ++label_it) {
+                if (label_it != label_group.begin())
                     cout << "_";
                 cout << "x" << *label_it;
             }
@@ -460,19 +450,19 @@ void TransitionSystem::dump_dot_graph() const {
 
 void TransitionSystem::dump_labels_and_transitions() const {
     cout << tag() << "transitions" << endl;
-    for (TSConstIterator group_it = begin();
-         group_it != end(); ++group_it) {
-        cout << "group id: " << group_it.get_id() << endl;
+    for (const GroupAndTransitions &gat : *this) {
+        const LabelGroup &label_group = gat.label_group;
+//        cout << "group id: " << ts_it.get_id() << endl;
         cout << "labels: ";
-        for (LabelConstIter label_it = group_it.begin();
-             label_it != group_it.end(); ++label_it) {
-            if (label_it != group_it.begin())
+        for (LabelConstIter label_it = label_group.begin();
+             label_it != label_group.end(); ++label_it) {
+            if (label_it != label_group.begin())
                 cout << ",";
             cout << *label_it;
         }
         cout << endl;
         cout << "transitions: ";
-        const vector<Transition> &transitions = group_it.get_transitions();
+        const vector<Transition> &transitions = gat.transitions;
         for (size_t i = 0; i < transitions.size(); ++i) {
             int src = transitions[i].src;
             int target = transitions[i].target;
@@ -481,7 +471,7 @@ void TransitionSystem::dump_labels_and_transitions() const {
             cout << src << " -> " << target;
         }
         cout << endl;
-        cout << "cost: " << group_it.get_cost() << endl;
+        cout << "cost: " << label_group.get_cost() << endl;
     }
 }
 
