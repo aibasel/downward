@@ -42,7 +42,7 @@ public:
     explicit ParetoOpenList(const Options &opts);
     virtual ~ParetoOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = 0) override;
+    virtual Entry remove_min(vector<int> *key = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_involved_heuristics(set<Heuristic *> &hset) override;

@@ -27,7 +27,7 @@ public:
     explicit AlternationOpenList(const Options &opts);
     virtual ~AlternationOpenList() override = default;
 
-    virtual Entry remove_min(vector<int> *key = 0) override;
+    virtual Entry remove_min(vector<int> *key = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void boost_preferred() override;
