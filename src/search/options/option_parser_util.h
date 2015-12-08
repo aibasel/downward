@@ -1,7 +1,7 @@
-#ifndef OPTION_PARSER_UTIL_H
-#define OPTION_PARSER_UTIL_H
+#ifndef OPTIONS_OPTION_PARSER_UTIL_H
+#define OPTIONS_OPTION_PARSER_UTIL_H
 
-#include "utilities.h"
+#include "../utilities.h"
 
 #include <boost/any.hpp>
 #include <tree.hh>
