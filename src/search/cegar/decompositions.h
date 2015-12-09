@@ -22,7 +22,7 @@ using Tasks = std::vector<Task>;
 
 enum class SubtaskOrder {
     ORIGINAL,
-    MIXED,
+    RANDOM,
     HADD_UP,
     HADD_DOWN
 };
