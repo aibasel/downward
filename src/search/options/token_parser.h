@@ -1,6 +1,8 @@
 #ifndef OPTIONS_TOKEN_PARSER_H
 #define OPTIONS_TOKEN_PARSER_H
 
+#include "predefinitions.h"
+
 class OptionParser;
 
 class Heuristic;

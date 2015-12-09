@@ -101,14 +101,18 @@ fast_downward_plugin(
     NAME OPTIONS
     HELP "Option parsing and plugin definition"
     SOURCES
+        options/bounds.cc
         options/doc_printer.cc
         options/doc_store.cc
         options/errors.cc
         options/option_parser.cc
         options/option_parser_util.cc
         options/options.cc
+        options/parse_tree.cc
+        options/predefinitions.cc
         options/plugin.cc
         options/registries.cc
+        options/synergy.cc
         options/token_parser.cc
         options/type_documenter.cc
         options/type_namer.cc

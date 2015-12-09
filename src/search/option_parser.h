@@ -5,5 +5,6 @@
    option parser code into a subdirectory. */
 #include "options/errors.h"
 #include "options/option_parser.h"
+#include "options/synergy.h"
 
 #endif

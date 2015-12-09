@@ -1,13 +1,13 @@
 #ifndef OPTIONS_DOC_STORE_H
 #define OPTIONS_DOC_STORE_H
 
-/*
-  TODO: We need the Bounds type from option_parser_util.h, but this
-  doesn't mean we should include all of it. Need to think more
-  carefully about what goes where.
-*/
+#include "bounds.h"
 
-#include "option_parser_util.h"
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
 
 typedef std::vector<std::pair<std::string, std::string>> ValueExplanations;
 struct ArgumentInfo {

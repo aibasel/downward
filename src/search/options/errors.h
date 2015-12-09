@@ -1,11 +1,7 @@
 #ifndef OPTIONS_ERRORS_H
 #define OPTIONS_ERRORS_H
 
-/*
-  TODO: Get rid of this #include if possible. Currently needed for
-  ParseTree (at least).
-*/
-#include "option_parser_util.h"
+#include "parse_tree.h"
 
 #include <iosfwd>
 #include <string>
