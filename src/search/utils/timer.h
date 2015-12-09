@@ -27,4 +27,6 @@ public:
 
 std::ostream &operator<<(std::ostream &os, const Timer &timer);
 
+extern Timer g_timer;
+
 #endif

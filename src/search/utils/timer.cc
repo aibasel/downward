@@ -97,3 +97,5 @@ ostream &operator<<(ostream &os, const Timer &timer) {
     os << value << "s";
     return os;
 }
+
+Timer g_timer;
