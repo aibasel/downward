@@ -106,7 +106,6 @@ fast_downward_plugin(
         options/doc_store.cc
         options/errors.cc
         options/option_parser.cc
-        options/option_parser_util.cc
         options/options.cc
         options/parse_tree.cc
         options/predefinitions.cc
