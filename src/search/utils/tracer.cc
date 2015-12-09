@@ -1,8 +1,9 @@
 #include "tracer.h"
 
-#include "globals.h"
 #include "timer.h"
 #include "utilities.h"
+
+#include "../globals.h"
 
 #include <iomanip>
 #include <iostream>

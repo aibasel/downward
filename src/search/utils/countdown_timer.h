@@ -1,5 +1,5 @@
-#ifndef COUNTDOWN_TIMER_H
-#define COUNTDOWN_TIMER_H
+#ifndef UTILS_COUNTDOWN_TIMER_H
+#define UTILS_COUNTDOWN_TIMER_H
 
 #include "timer.h"
 
