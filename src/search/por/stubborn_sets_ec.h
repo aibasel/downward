@@ -59,7 +59,8 @@ private:
     void add_nes_for_fact(std::pair<int, int> fact, const GlobalState &state);
     void apply_s5(const GlobalOperator &op, const GlobalState &state);
 protected:
-    void do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &ops);
+    virtual void initialize();
+    virtual void do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &ops);
 public:
     StubbornSetsEC();
     ~StubbornSetsEC();

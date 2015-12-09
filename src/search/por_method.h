@@ -12,6 +12,7 @@ public:
                                  std::vector<const GlobalOperator *> &ops) = 0;
     virtual void dump_options() const = 0;
     virtual void dump_statistics() const = 0;
+    virtual void initialize() = 0;
 };
 
 #endif

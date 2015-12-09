@@ -32,7 +32,11 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
     return make_pair(-1, -1);
 }
 
-StubbornSetsEC::StubbornSetsEC() {
+StubbornSetsEC::StubbornSetsEC() {}
+
+StubbornSetsEC::~StubbornSetsEC() {}
+
+void StubbornSetsEC::initialize() {
     verify_no_axioms_no_conditional_effects();
     compute_sorted_operators();
     compute_v_precond();
@@ -46,12 +50,13 @@ StubbornSetsEC::StubbornSetsEC() {
     for (size_t i = 0; i < g_variable_domain.size(); i++) {
         nes_computed.push_back(vector<bool>(g_variable_domain[i], false));
     }
+
+    cout << "Initialized stubborn sets ec" << endl; 
+    
 }
 
-StubbornSetsEC::~StubbornSetsEC() {}
-
 void StubbornSetsEC::dump_options() const {
-    cout << "partial order reduction method: sss_expansion core" << endl;
+    cout << "partial order reduction method: stubborn sets ec" << endl;
 }
 
 void StubbornSetsEC::build_dtgs() {
@@ -69,7 +74,6 @@ void StubbornSetsEC::build_dtgs() {
   from the usual DTG definition.
      */
 
-    cout << "[sss-expansion core] Building DTGs..." << flush;
     assert(dtgs.empty());
     size_t num_variables = g_variable_domain.size();
 
@@ -131,7 +135,6 @@ void StubbornSetsEC::build_dtgs() {
             }
         }
     }
-    cout << " done!" << endl;
 }
 
 void StubbornSetsEC::compute_v_precond() {

@@ -76,7 +76,8 @@ void EagerSearch::initialize() {
     }
     
     partial_order_reduction_method->dump_options();
-	print_initial_h_values(eval_context);
+    partial_order_reduction_method->initialize();
+    print_initial_h_values(eval_context);
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
