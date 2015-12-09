@@ -7,7 +7,7 @@
 
 #include <vector>
 
-struct State;
+class State;
 
 namespace ContextEnhancedAdditiveHeuristic {
 struct LocalProblem;
