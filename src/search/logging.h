@@ -1,9 +1,18 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include <string>
+#include "globals.h"
+#include "system.h"
+#include "timer.h"
 
-void log_time_and_memory();
-void log(const std::string &msg);
+#include <ostream>
+
+struct Log {
+    template<typename T>
+    std::ostream &operator<<(const T &elem) {
+        return std::cout << "[t=" << g_timer << ", "
+                         << get_peak_memory_in_kb() << " KB] " << elem;
+    }
+};
 
 #endif
