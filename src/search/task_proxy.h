@@ -634,7 +634,7 @@ template<>
 struct hash<FactProxy> {
     size_t operator()(const FactProxy &fact) const {
         std::pair<int, int> raw_fact = make_pair(fact.get_variable().get_id(), fact.get_value());
-        std::hash<std::pair<int, int> > hasher;
+        std::hash<std::pair<int, int>> hasher;
         return hasher(raw_fact);
     }
 };

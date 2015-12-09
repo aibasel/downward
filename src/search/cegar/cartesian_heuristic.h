@@ -17,7 +17,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state);
 
 public:
-    explicit CartesianHeuristic(const Options &options, SplitTree && split_tree);
+    explicit CartesianHeuristic(const Options &options, SplitTree &&split_tree);
     ~CartesianHeuristic() = default;
 };
 }

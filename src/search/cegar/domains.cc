@@ -12,13 +12,13 @@ vector<Bitset> Domains::masks;
 vector<Bitset> Domains::inverse_masks;
 Bitset Domains::temp_bits;
 
-Domains::Domains(vector<int> && domain_sizes) {
+Domains::Domains(vector<int> &&domain_sizes) {
     initialize_static_members(move(domain_sizes));
     bits = Bitset(num_facts);
     bits.set();
 }
 
-void Domains::initialize_static_members(vector<int> && domain_sizes) {
+void Domains::initialize_static_members(vector<int> &&domain_sizes) {
     orig_domain_sizes = domain_sizes;
 
     masks.clear();

@@ -19,7 +19,7 @@ bool DEBUG = false;
 shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
     shared_ptr<AbstractTask> task) {
     Options opts;
-    opts.set<shared_ptr<AbstractTask> >("transform", task);
+    opts.set<shared_ptr<AbstractTask>>("transform", task);
     opts.set<int>("cost_type", 0);
     opts.set<bool>("cache_estimates", false);
     shared_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic =

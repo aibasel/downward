@@ -11,8 +11,8 @@ private:
     std::vector<int> domain_size;
     std::vector<int> initial_state_values;
     std::vector<Fact> goals;
-    std::vector<std::vector<std::string> > fact_names;
-    std::vector<std::vector<int> > value_map;
+    std::vector<std::vector<std::string>> fact_names;
+    std::vector<std::vector<int>> value_map;
     std::shared_ptr<AbstractTask> task;
 
     void initialize(const std::shared_ptr<AbstractTask> parent);
