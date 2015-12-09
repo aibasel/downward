@@ -13,6 +13,8 @@
 class GlobalOperator;
 class GlobalState;
 
+
+namespace Landmarks {
 struct ExProposition;
 struct ExUnaryOperator;
 
@@ -137,5 +139,6 @@ public:
     Exploration(const Options &opts);
     ~Exploration();
 };
+}
 
 #endif

@@ -4,9 +4,12 @@
 
 #include <cassert>
 #include <iostream>
+#include <utility>
 
 using namespace std;
 
+
+namespace PDBs {
 struct MatchTree::Node {
     static const int LEAF_NODE = -1;
     Node();
@@ -62,7 +65,7 @@ bool MatchTree::Node::is_leaf_node() const {
 }
 
 MatchTree::MatchTree(const TaskProxy &task_proxy,
-                     const vector<int> &pattern,
+                     const Pattern &pattern,
                      const vector<size_t> &hash_multipliers)
     : task_proxy(task_proxy),
       pattern(pattern),
@@ -213,4 +216,5 @@ void MatchTree::dump_recursive(Node *node) const {
 
 void MatchTree::dump() const {
     dump_recursive(root);
+}
 }

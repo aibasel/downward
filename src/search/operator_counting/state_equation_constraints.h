@@ -5,8 +5,12 @@
 
 #include <set>
 
-class LPConstraint;
 class TaskProxy;
+
+namespace LP {
+class LPConstraint;
+}
+
 
 namespace OperatorCounting {
 /* A proposition is an atom of the form Var = Val. It stores the index of the
@@ -28,12 +32,12 @@ class StateEquationConstraints : public ConstraintGenerator {
     std::vector<int> goal_state;
 
     void build_propositions(const TaskProxy &task_proxy);
-    void add_constraints(std::vector<LPConstraint> &constraints, double infinity);
+    void add_constraints(std::vector<LP::LPConstraint> &constraints, double infinity);
 public:
     virtual void initialize_constraints(const std::shared_ptr<AbstractTask> task,
-                                        std::vector<LPConstraint> &constraints,
+                                        std::vector<LP::LPConstraint> &constraints,
                                         double infinity);
-    virtual bool update_constraints(const State &state, LPSolver &lp_solver);
+    virtual bool update_constraints(const State &state, LP::LPSolver &lp_solver);
 };
 }
 

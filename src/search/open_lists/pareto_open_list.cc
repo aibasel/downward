@@ -1,31 +1,64 @@
-// HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LISTS_PARETO_OPEN_LIST_H
+#include "pareto_open_list.h"
+
+#include "open_list.h"
 
 #include "../globals.h"
 #include "../option_parser.h"
+#include "../plugin.h"
 #include "../rng.h"
 
 #include <cassert>
-#include <iostream>
-#include <limits>
+#include <deque>
+#include <set>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 using namespace std;
+
+
+template<class Entry>
+class ParetoOpenList : public OpenList<Entry> {
+    typedef deque<Entry> Bucket;
+    typedef vector<int> KeyType;
+    typedef unordered_map<KeyType, Bucket> BucketMap;
+    typedef set<KeyType> KeySet;
+
+    BucketMap buckets;
+    KeySet nondominated;
+    bool state_uniform_selection;
+    vector<ScalarEvaluator *> evaluators;
+
+    bool dominates(const KeyType &v1, const KeyType &v2) const;
+    bool is_nondominated(
+        const KeyType &vec, KeySet &domination_candidates) const;
+    void remove_key(const KeyType &key);
+
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
+public:
+    explicit ParetoOpenList(const Options &opts);
+    virtual ~ParetoOpenList() override = default;
+
+    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
+    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override;
+
+    static OpenList<Entry> *_parse(OptionParser &p);
+};
 
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(const Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       state_uniform_selection(opts.get<bool>("state_uniform_selection")),
       evaluators(opts.get_list<ScalarEvaluator *>("evals")) {
-}
-
-template<class Entry>
-ParetoOpenList<Entry>::ParetoOpenList(
-    const std::vector<ScalarEvaluator *> &evals,
-    bool preferred_only,
-    bool state_uniform_selection)
-    : OpenList<Entry>(preferred_only),
-      state_uniform_selection(state_uniform_selection),
-      evaluators(evals) {
 }
 
 template<class Entry>
@@ -94,11 +127,14 @@ void ParetoOpenList<Entry>::do_insertion(
     bucket.push_back(entry);
 
     if (newkey && is_nondominated(key, nondominated)) {
-        // delete previously nondominated keys that are now
-        // dominated by key
-        // Note: this requirest that nondominated is a "normal"
-        // set (no hash set) because then iterators are not
-        // invalidated by erase(it).
+        /*
+          Delete previously nondominated keys that are now dominated
+          by key.
+
+          Note: this requires that nondominated is a "normal"
+          set (no hash set) because then iterators are not
+          invalidated by erase(it).
+        */
         auto it = nondominated.begin();
         while (it != nondominated.end()) {
             if (dominates(key, *it)) {
@@ -109,7 +145,7 @@ void ParetoOpenList<Entry>::do_insertion(
                 ++it;
             }
         }
-        // insert new key
+        // Insert new key.
         nondominated.insert(key);
     }
 }
@@ -154,8 +190,7 @@ void ParetoOpenList<Entry>::clear() {
 }
 
 template<class Entry>
-void ParetoOpenList<Entry>::get_involved_heuristics(
-    std::set<Heuristic *> &hset) {
+void ParetoOpenList<Entry>::get_involved_heuristics(set<Heuristic *> &hset) {
     for (ScalarEvaluator *evaluator : evaluators)
         evaluator->get_involved_heuristics(hset);
 }
@@ -184,8 +219,22 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-template<class Entry>
-OpenList<Entry> *ParetoOpenList<Entry>::_parse(OptionParser &parser) {
+ParetoOpenListFactory::ParetoOpenListFactory(
+    const Options &options)
+    : options(options) {
+}
+
+unique_ptr<StateOpenList>
+ParetoOpenListFactory::create_state_open_list() {
+    return make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(options);
+}
+
+unique_ptr<EdgeOpenList>
+ParetoOpenListFactory::create_edge_open_list() {
+    return make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(options);
+}
+
+static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Pareto open list",
         "Selects one of the Pareto-optimal (regarding the sub-evaluators) "
@@ -207,7 +256,7 @@ OpenList<Entry> *ParetoOpenList<Entry>::_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return new ParetoOpenList<Entry>(opts);
+        return make_shared<ParetoOpenListFactory>(opts);
 }
 
-#endif
+static PluginShared<OpenListFactory> _plugin("pareto", _parse);

@@ -15,6 +15,8 @@
 
 using namespace std;
 
+
+namespace Landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
     : LandmarkFactory(opts) {
 }
@@ -615,3 +617,4 @@ static LandmarkGraph *_parse(OptionParser &parser) {
 }
 
 static Plugin<LandmarkGraph> _plugin("lm_rhw", _parse);
+}

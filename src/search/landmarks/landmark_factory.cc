@@ -9,6 +9,8 @@
 
 using namespace std;
 
+
+namespace Landmarks {
 LandmarkFactory::LandmarkFactory(const Options &opts)
     : lm_graph(new LandmarkGraph(opts)) {
 }
@@ -774,4 +776,5 @@ void LandmarkFactory::calc_achievers() {
             }
         }
     }
+}
 }

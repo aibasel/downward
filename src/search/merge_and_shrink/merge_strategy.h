@@ -7,6 +7,9 @@
 #include <vector>
 
 class AbstractTask;
+
+
+namespace MergeAndShrink {
 class FactoredTransitionSystem;
 
 class MergeStrategy {
@@ -23,8 +26,9 @@ public:
     void dump_options() const;
 
     // Implementations of get_next have to decrease remaining_merges by one
-    virtual std::pair<int, int> get_next(std::shared_ptr<FactoredTransitionSystem> fts) = 0;
+    virtual std::pair<int, int> get_next(FactoredTransitionSystem &fts) = 0;
     virtual std::string name() const = 0;
 };
+}
 
 #endif

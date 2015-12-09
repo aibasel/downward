@@ -10,8 +10,8 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 const int Distances::DISTANCE_UNKNOWN;
-
 
 Distances::Distances(const TransitionSystem &transition_system)
     : transition_system(transition_system) {
@@ -268,31 +268,27 @@ vector<bool> Distances::compute_distances() {
 }
 
 bool Distances::apply_abstraction(
-    const vector<forward_list<int>> &collapsed_groups) {
+    const StateEquivalenceRelation &state_equivalence_relation) {
     assert(are_distances_computed());
+    assert(state_equivalence_relation.size() < init_distances.size());
+    assert(state_equivalence_relation.size() < goal_distances.size());
 
-    /*
-      TODO: Get rid of this repeated typedef, which also occurs elsewhere;
-      we should have a typedef for this and perhaps also for a vector of
-      this at a more central place.
-    */
-    typedef forward_list<int> Group;
-
-    int new_num_states = collapsed_groups.size();
+    int new_num_states = state_equivalence_relation.size();
     vector<int> new_init_distances(new_num_states, DISTANCE_UNKNOWN);
     vector<int> new_goal_distances(new_num_states, DISTANCE_UNKNOWN);
 
     bool must_recompute = false;
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
-        const Group &group = collapsed_groups[new_state];
-        assert(!group.empty());
+        const StateEquivalenceClass &state_equivalence_class =
+            state_equivalence_relation[new_state];
+        assert(!state_equivalence_class.empty());
 
-        Group::const_iterator pos = group.begin();
+        StateEquivalenceClass::const_iterator pos = state_equivalence_class.begin();
         int new_init_dist = init_distances[*pos];
         int new_goal_dist = goal_distances[*pos];
 
         ++pos;
-        for (; pos != group.end(); ++pos) {
+        for (; pos != state_equivalence_class.end(); ++pos) {
             if (init_distances[*pos] != new_init_dist) {
                 must_recompute = true;
                 break;
@@ -319,4 +315,13 @@ bool Distances::apply_abstraction(
         goal_distances = move(new_goal_distances);
         return true;
     }
+}
+
+void Distances::dump() const {
+    cout << "Distances: ";
+    for (size_t i = 0; i < goal_distances.size(); ++i) {
+        cout << i << ": " << goal_distances[i] << ", ";
+    }
+    cout << endl;
+}
 }

@@ -12,6 +12,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 ShrinkRandom::ShrinkRandom(const Options &opts)
     : ShrinkBucketBased(opts) {
 }
@@ -20,10 +21,10 @@ ShrinkRandom::~ShrinkRandom() {
 }
 
 void ShrinkRandom::partition_into_buckets(
-    shared_ptr<FactoredTransitionSystem> fts,
+    const FactoredTransitionSystem &fts,
     int index,
     vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts->get_ts(index);
+    const TransitionSystem &ts = fts.get_ts(index);
     assert(buckets.empty());
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();
@@ -54,3 +55,4 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_random", _parse);
+}

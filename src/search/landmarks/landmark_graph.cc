@@ -15,6 +15,8 @@
 
 using namespace std;
 
+
+namespace Landmarks {
 LandmarkGraph::LandmarkGraph(const Options &opts)
     : exploration(opts.get<Exploration *>("explor")),
       landmarks_count(0), conj_lms(0) {
@@ -351,3 +353,4 @@ static PluginTypePlugin<LandmarkGraph> _type_plugin(
     "This page describes how one can specify a new landmark graph instance. "
     "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
     "**Warning:** See OptionCaveats for using cost types with Landmarks");
+}

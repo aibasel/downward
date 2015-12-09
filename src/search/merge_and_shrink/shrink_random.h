@@ -5,10 +5,12 @@
 
 class Options;
 
+
+namespace MergeAndShrink {
 class ShrinkRandom : public ShrinkBucketBased {
 protected:
     virtual void partition_into_buckets(
-        std::shared_ptr<FactoredTransitionSystem> fts,
+        const FactoredTransitionSystem &fts,
         int index,
         std::vector<Bucket> &buckets) const override;
 
@@ -18,5 +20,6 @@ public:
     explicit ShrinkRandom(const Options &opts);
     virtual ~ShrinkRandom();
 };
+}
 
 #endif

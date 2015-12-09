@@ -49,6 +49,12 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996") # function call with parameters that may be unsafe
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4456") # declaration hides previous local declaration
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # conversion from size_t to int with possible loss of data
+
+        # The following are disabled because of what seems to be compiler bugs.
+        # "unreferenced local function has been removed";
+        # see http://stackoverflow.com/questions/3051992/compiler-warning-at-c-template-base-class
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4505")
 
         # TODO: Configuration-specific flags. We currently rely on the fact that
         # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
@@ -182,7 +188,7 @@ function(fast_downward_add_headers_to_sources_list _SOURCES_LIST_VAR)
 endfunction()
 
 function(fast_downward_plugin)
-    set(_OPTIONS DEPENDENCY_ONLY)
+    set(_OPTIONS DEPENDENCY_ONLY CORE_PLUGIN)
     set(_ONE_VALUE_ARGS NAME DISPLAY_NAME HELP)
     set(_MULTI_VALUE_ARGS SOURCES DEPENDS)
     cmake_parse_arguments(_PLUGIN "${_OPTIONS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
@@ -207,7 +213,7 @@ function(fast_downward_plugin)
     endif()
 
     option(PLUGIN_${_PLUGIN_NAME}_ENABLED ${_PLUGIN_HELP} ${_OPTION_DEFAULT})
-    if(_PLUGIN_DEPENDENCY_ONLY)
+    if(_PLUGIN_DEPENDENCY_ONLY OR _PLUGIN_CORE_PLUGIN)
         mark_as_advanced(PLUGIN_${_PLUGIN_NAME}_ENABLED)
     endif()
 
@@ -234,6 +240,7 @@ function(fast_downward_add_plugin_sources _SOURCES_LIST_VAR)
                 message(STATUS "Enabling plugin ${PLUGIN_${DEPENDENCY}_DISPLAY_NAME} "
                         "because plugin ${PLUGIN_${PLUGIN}_DISPLAY_NAME} is enabled and depends on it.")
                 set(PLUGIN_${DEPENDENCY}_ENABLED TRUE)
+                set(PLUGIN_${DEPENDENCY}_ENABLED TRUE PARENT_SCOPE)
                 list(APPEND _UNCHECKED_PLUGINS ${DEPENDENCY})
             endif()
         endforeach()

@@ -1,15 +1,17 @@
 #include "state_equation_constraints.h"
 
 #include "../globals.h"
-#include "../lp_solver.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
 
+#include "../lp/lp_solver.h"
+
 using namespace std;
 
+
 namespace OperatorCounting {
-void add_indices_to_constraint(LPConstraint &constraint,
+void add_indices_to_constraint(LP::LPConstraint &constraint,
                                const set<int> &indices,
                                double coefficient) {
     for (int index : indices) {
@@ -51,10 +53,10 @@ void StateEquationConstraints::build_propositions(const TaskProxy &task_proxy) {
 }
 
 void StateEquationConstraints::add_constraints(
-    vector<LPConstraint> &constraints, double infinity) {
+    vector<LP::LPConstraint> &constraints, double infinity) {
     for (vector<Proposition> &var_propositions : propositions) {
         for (Proposition &prop : var_propositions) {
-            LPConstraint constraint(-infinity, infinity);
+            LP::LPConstraint constraint(-infinity, infinity);
             add_indices_to_constraint(constraint, prop.always_produced_by, 1.0);
             add_indices_to_constraint(constraint, prop.sometimes_produced_by, 1.0);
             add_indices_to_constraint(constraint, prop.always_consumed_by, -1.0);
@@ -67,7 +69,7 @@ void StateEquationConstraints::add_constraints(
 }
 
 void StateEquationConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<LPConstraint> &constraints,
+    const shared_ptr<AbstractTask> task, vector<LP::LPConstraint> &constraints,
     double infinity) {
     cout << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);
@@ -85,7 +87,7 @@ void StateEquationConstraints::initialize_constraints(
 }
 
 bool StateEquationConstraints::update_constraints(const State &state,
-                                                  LPSolver &lp_solver) {
+                                                  LP::LPSolver &lp_solver) {
     // Compute the bounds for the rows in the LP.
     for (size_t var = 0; var < propositions.size(); ++var) {
         int num_values = propositions[var].size();

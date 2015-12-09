@@ -14,6 +14,8 @@
 #include "../option_parser.h"
 #include "../utilities_hash.h"
 
+
+namespace Landmarks {
 enum edge_type {
     /* NOTE: The code relies on the fact that larger numbers are
        stronger in the sense that, e.g., every greedy-necessary
@@ -233,5 +235,6 @@ private:
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 };
+}
 
 #endif

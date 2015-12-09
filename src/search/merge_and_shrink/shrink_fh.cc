@@ -17,6 +17,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 ShrinkFH::ShrinkFH(const Options &opts)
     : ShrinkBucketBased(opts),
       f_start(HighLow(opts.get_enum("shrink_f"))),
@@ -27,12 +28,12 @@ ShrinkFH::~ShrinkFH() {
 }
 
 void ShrinkFH::partition_into_buckets(
-    shared_ptr<FactoredTransitionSystem> fts,
+    const FactoredTransitionSystem &fts,
     int index,
     vector<Bucket> &buckets) const {
     assert(buckets.empty());
-    const TransitionSystem &ts = fts->get_ts(index);
-    const Distances &distances = fts->get_dist(index);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &distances = fts.get_dist(index);
     int max_f = distances.get_max_f();
     // Calculate with double to avoid overflow.
     if (static_cast<double>(max_f) * max_f / 2.0 > ts.get_size()) {
@@ -75,11 +76,11 @@ static void collect_f_h_buckets(
 }
 
 void ShrinkFH::ordered_buckets_use_map(
-    shared_ptr<FactoredTransitionSystem> fts,
+    const FactoredTransitionSystem &fts,
     int index,
     vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts->get_ts(index);
-    const Distances &distances = fts->get_dist(index);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &distances = fts.get_dist(index);
     map<int, map<int, Bucket>> states_by_f_and_h;
     int bucket_count = 0;
     int num_states = ts.get_size();
@@ -109,11 +110,11 @@ void ShrinkFH::ordered_buckets_use_map(
 }
 
 void ShrinkFH::ordered_buckets_use_vector(
-    shared_ptr<FactoredTransitionSystem> fts,
+    const FactoredTransitionSystem &fts,
     int index,
     vector<Bucket> &buckets) const {
-    const TransitionSystem &ts = fts->get_ts(index);
-    const Distances &distances = fts->get_dist(index);
+    const TransitionSystem &ts = fts.get_ts(index);
+    const Distances &distances = fts.get_dist(index);
     vector<vector<Bucket>> states_by_f_and_h;
     states_by_f_and_h.resize(distances.get_max_f() + 1);
     for (int f = 0; f <= distances.get_max_f(); ++f)
@@ -210,3 +211,4 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 }
 
 static PluginShared<ShrinkStrategy> _plugin("shrink_fh", _parse);
+}
