@@ -72,11 +72,6 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
         subtask = get_remaining_costs_task(subtask);
 
-        if (DEBUG) {
-            cout << "Next subtask:" << endl;
-            dump_task(TaskProxy(*subtask));
-        }
-
         Options abs_opts(options);
         abs_opts.set<Task>("transform", subtask);
         abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
