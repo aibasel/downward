@@ -29,6 +29,7 @@ class StubbornSetsSimple : public StubbornSets::StubbornSets {
 protected:
     virtual void do_pruning(const GlobalState &state,
                             std::vector<const GlobalOperator *> &ops);
+    virtual void initialize();
 public:
     StubbornSetsSimple();
     ~StubbornSetsSimple();

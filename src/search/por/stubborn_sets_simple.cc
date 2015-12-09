@@ -60,17 +60,19 @@ static inline pair<int, int> find_unsatisfied_precondition(
 }
 
 
-StubbornSetsSimple::StubbornSetsSimple() {
+StubbornSetsSimple::StubbornSetsSimple() {}
+
+StubbornSetsSimple::~StubbornSetsSimple() {}
+
+void StubbornSetsSimple::initialize() {
     verify_no_axioms_no_conditional_effects();
     compute_interference_relation();
     compute_achievers();
-}
-
-StubbornSetsSimple::~StubbornSetsSimple() {
+    cout << "Initialized stubborn sets simple" << endl;
 }
 
 void StubbornSetsSimple::dump_options() const {
-    cout << "partial order reduction method: simple stubborn sets" << endl;
+    cout << "partial order reduction method: stubborn sets simple" << endl;
 }
 
 void StubbornSetsSimple::compute_interference_relation() {
@@ -89,9 +91,6 @@ void StubbornSetsSimple::compute_interference_relation() {
 
 	num_interfering_pairs += interfere_op1.size();
     }
-    
-    cout << "Number of interfering operator pairs: " << num_interfering_pairs << endl;
-    
 }
 
 void StubbornSetsSimple::mark_as_stubborn(int op_no) {
