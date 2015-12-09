@@ -25,7 +25,7 @@ struct Flaw {
     AbstractState *abs_state;
     const AbstractState desired_abs_state;
 
-    Flaw(State && conc_state, AbstractState *abs_state, AbstractState && desired_abs_state)
+    Flaw(State &&conc_state, AbstractState *abs_state, AbstractState &&desired_abs_state)
         : conc_state(conc_state),
           abs_state(abs_state),
           desired_abs_state(std::move(desired_abs_state)) {
@@ -52,11 +52,11 @@ struct Flaw {
 };
 
 Abstraction::Abstraction(const Options &opts)
-    : task_proxy(*opts.get<shared_ptr<AbstractTask> >("transform")),
+    : task_proxy(*opts.get<shared_ptr<AbstractTask>>("transform")),
       do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
       max_states(opts.get<int>("max_states")),
       abstract_search(opts),
-      split_selector(opts.get<shared_ptr<AbstractTask> >("transform"),
+      split_selector(opts.get<shared_ptr<AbstractTask>>("transform"),
                      PickSplit(opts.get<int>("pick"))),
       timer(opts.get<double>("max_time")),
       init(nullptr),
@@ -204,9 +204,9 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                     cout << "  Paths deviate." << endl;
                 ++deviations;
                 return make_shared<Flaw>(
-                           move(conc_state),
-                           abs_state,
-                           next_abs_state->regress(op));
+                    move(conc_state),
+                    abs_state,
+                    next_abs_state->regress(op));
             }
             abs_state = next_abs_state;
             conc_state = move(next_conc_state);
@@ -215,10 +215,10 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             ++unmet_preconditions;
             return make_shared<Flaw>(
-                       move(conc_state),
-                       abs_state,
-                       AbstractState::get_abstract_state(
-                           task_proxy, op.get_preconditions()));
+                move(conc_state),
+                abs_state,
+                AbstractState::get_abstract_state(
+                    task_proxy, op.get_preconditions()));
         }
     }
     assert(is_goal(abs_state));
@@ -230,10 +230,10 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
         return make_shared<Flaw>(
-                   move(conc_state),
-                   abs_state,
-                   AbstractState::get_abstract_state(
-                       task_proxy, task_proxy.get_goals()));
+            move(conc_state),
+            abs_state,
+            AbstractState::get_abstract_state(
+                task_proxy, task_proxy.get_goals()));
     }
 }
 

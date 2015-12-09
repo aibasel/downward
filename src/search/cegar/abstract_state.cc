@@ -191,16 +191,16 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
 }
 
 AbstractState AbstractState::regress(OperatorProxy op) const {
-     Domains regressed_domains = domains;
-     for (EffectProxy effect : op.get_effects()) {
-         int var_id = effect.get_fact().get_variable().get_id();
-         regressed_domains.add_all(var_id);
-     }
-     for (FactProxy precondition : op.get_preconditions()) {
-         int var_id = precondition.get_variable().get_id();
-         regressed_domains.set(var_id, precondition.get_value());
-     }
-     return AbstractState(regressed_domains, nullptr);
+    Domains regressed_domains = domains;
+    for (EffectProxy effect : op.get_effects()) {
+        int var_id = effect.get_fact().get_variable().get_id();
+        regressed_domains.add_all(var_id);
+    }
+    for (FactProxy precondition : op.get_preconditions()) {
+        int var_id = precondition.get_variable().get_id();
+        regressed_domains.set(var_id, precondition.get_value());
+    }
+    return AbstractState(regressed_domains, nullptr);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {

@@ -29,12 +29,12 @@ class Domains {
     // Temporary bitset for speeding up calculations.
     static Bitset temp_bits;
 
-    static void initialize_static_members(std::vector<int> && domain_sizes);
+    static void initialize_static_members(std::vector<int> &&domain_sizes);
 
     int pos(int var, int value) const {return borders[var] + value; }
 
 public:
-    explicit Domains(std::vector<int> && domain_sizes);
+    explicit Domains(std::vector<int> &&domain_sizes);
     ~Domains() = default;
 
     void add(int var, int value);

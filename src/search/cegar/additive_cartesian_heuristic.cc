@@ -157,7 +157,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
 
-    parser.add_list_option<shared_ptr<Decomposition> >(
+    parser.add_list_option<shared_ptr<Decomposition>>(
         "decompositions", "task decompositions", "[landmarks,goals]");
     parser.add_option<int>(
         "max_states", "maximum number of abstract states", "infinity");
