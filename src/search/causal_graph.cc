@@ -3,8 +3,9 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "task_proxy.h"
-#include "timer.h"
 #include "utilities.h"
+
+#include "utils/timer.h"
 
 #include <algorithm>
 #include <cassert>

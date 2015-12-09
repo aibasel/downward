@@ -1,11 +1,12 @@
 #include "sampling.h"
 
-#include "countdown_timer.h"
 #include "globals.h"
-#include "rng.h"
 #include "successor_generator.h"
 #include "task_proxy.h"
 #include "task_tools.h"
+
+#include "utils/countdown_timer.h"
+#include "utils/rng.h"
 
 using namespace std;
 
