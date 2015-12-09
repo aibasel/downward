@@ -1,11 +1,7 @@
 #ifndef OPTIONS_TYPE_NAMER_H
 #define OPTIONS_TYPE_NAMER_H
 
-/*
-  TODO: Try to minimize these #includes. We currently need
-  option_parser_util.h for ParseTree at least.
-*/
-#include "option_parser_util.h"
+#include "parse_tree.h"
 #include "registries.h"
 
 #include <memory>

@@ -3,6 +3,7 @@
 #include "doc_printer.h"
 #include "errors.h"
 #include "plugin.h"
+#include "synergy.h"
 #include "type_documenter.h"
 
 #include "../globals.h"
@@ -25,7 +26,6 @@ using namespace std;
 class AbstractTask;
 class OpenListFactory;
 class SearchEngine;
-class Synergy;
 
 namespace Landmarks {
 class LandmarkGraph;

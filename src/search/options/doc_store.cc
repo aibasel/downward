@@ -1,5 +1,7 @@
 #include "doc_store.h"
 
+#include <algorithm>
+
 using namespace std;
 
 
