@@ -23,8 +23,10 @@ class FTSFactory {
     const TaskProxy &task_proxy;
 
     struct TransitionSystemData {
+        // The following two attributes are only used for statistics
         int num_variables;
         vector<int> incorporated_variables;
+
         unique_ptr<LabelEquivalenceRelation> label_equivalence_relation;
         vector<vector<Transition>> transitions_by_label;
         vector<bool> relevant_labels;
@@ -95,10 +97,8 @@ void FTSFactory::build_label_equivalence_relation(
     */
     int num_labels = task_proxy.get_operators().size();
     for (int label_no = 0; label_no < num_labels; ++label_no) {
-        // We use the label number as index for transitions of groups
+        // We use the label number as index for transitions of groups.
         label_equivalence_relation.add_label_group({label_no});
-        // We could assert that the return value equals label_no, but not
-        // easily in release mode without unused variable error.
     }
 }
 
