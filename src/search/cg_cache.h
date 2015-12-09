@@ -19,7 +19,7 @@ class CGCache {
 public:
     static const int NOT_COMPUTED = -2;
 
-    CGCache(TaskProxy &task_proxy);
+    explicit CGCache(TaskProxy &task_proxy);
     ~CGCache();
 
     bool is_cached(int var) const {
