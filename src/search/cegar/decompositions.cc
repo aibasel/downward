@@ -138,7 +138,11 @@ Tasks LandmarkDecomposition::get_subtasks(const Task &task) const {
 }
 
 static shared_ptr<Decomposition> _parse_original(OptionParser &parser) {
-    parser.add_option<int>("copies", "number of task copies", "1");
+    parser.add_option<int>(
+        "copies",
+        "number of task copies",
+        "1",
+        Bounds("1", "infinity"));
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
