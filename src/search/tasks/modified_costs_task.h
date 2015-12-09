@@ -1,5 +1,5 @@
-#ifndef MODIFIED_COSTS_TASK_H
-#define MODIFIED_COSTS_TASK_H
+#ifndef TASKS_MODIFIED_COSTS_TASK_H
+#define TASKS_MODIFIED_COSTS_TASK_H
 
 #include "../delegating_task.h"
 
