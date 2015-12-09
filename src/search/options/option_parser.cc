@@ -3,6 +3,7 @@
 #include "doc_printer.h"
 #include "errors.h"
 #include "plugin.h"
+#include "type_documenter.h"
 
 #include "../globals.h"
 #include "../rng.h"

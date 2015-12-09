@@ -3,6 +3,7 @@
 
 #include "doc_store.h"
 #include "option_parser_util.h"
+#include "options.h"
 
 #include <algorithm>
 #include <iostream>

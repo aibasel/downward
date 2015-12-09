@@ -3,7 +3,6 @@
 
 #include "../utilities.h"
 
-#include <boost/any.hpp>
 #include <tree.hh>
 #include <tree_util.hh>
 
@@ -45,6 +44,12 @@ struct ParseNode {
 
 typedef tree<ParseNode> ParseTree;
 
+/*
+  TODO: Due to cyclic dependencies, we must currently have this
+  include *after* defining ParseTree. Needs to be fixed.
+*/
+#include "type_namer.h"
+
 struct Bounds {
     std::string min;
     std::string max;
@@ -63,132 +68,6 @@ public:
     }
 
     friend std::ostream &operator<<(std::ostream &out, const Bounds &bounds);
-};
-
-
-//a registry<T> maps a string to a T-factory
-template<typename T>
-class Registry {
-public:
-    typedef T (*Factory)(OptionParser &);
-    static Registry<T> *instance() {
-        static Registry<T> instance_;
-        return &instance_;
-    }
-
-    void insert(const std::string &k, Factory f) {
-        if (registered.count(k)) {
-            std::cerr << "duplicate key in registry: " << k << std::endl;
-            exit_with(EXIT_CRITICAL_ERROR);
-        }
-        registered[k] = f;
-    }
-
-    bool contains(const std::string &k) {
-        return registered.find(k) != registered.end();
-    }
-
-    Factory get(const std::string &k) {
-        return registered[k];
-    }
-
-    std::vector<std::string> get_keys() {
-        std::vector<std::string> keys;
-        for (auto it : registered) {
-            keys.push_back(it.first);
-        }
-        return keys;
-    }
-
-private:
-    Registry() = default;
-    std::map<std::string, Factory> registered;
-};
-
-
-/*
-  The plugin type info class contains meta-information for a given
-  type of plugins (e.g. "SearchEngine" or "MergeStrategy").
-*/
-class PluginTypeInfo {
-    std::type_index type;
-
-    /*
-      The type name should be "user-friendly". It is for example used
-      as the name of the wiki page that documents this plugin type.
-      It follows wiki conventions (e.g. "Heuristic", "SearchEngine",
-      "ShrinkStrategy").
-    */
-    std::string type_name;
-
-    /*
-      General documentation for the plugin type. This is included at
-      the top of the wiki page for this plugin type.
-    */
-    std::string documentation;
-public:
-    PluginTypeInfo(const std::type_index &type,
-                   const std::string &type_name,
-                   const std::string &documentation)
-        : type(type),
-          type_name(type_name),
-          documentation(documentation) {
-    }
-
-    ~PluginTypeInfo() {
-    }
-
-    const std::type_index &get_type() const {
-        return type;
-    }
-
-    const std::string &get_type_name() const {
-        return type_name;
-    }
-
-    const std::string &get_documentation() const {
-        return documentation;
-    }
-};
-
-/*
-  The plugin type registry collects information about all plugin types
-  in use and gives access to the underlying information. This is used,
-  for example, to generate the complete help output.
-
-  Note that the information for individual plugins (rather than plugin
-  types) is organized in separate registries, one for each plugin
-  type. For example, there is a Registry<Heuristic> that organizes the
-  Heuristic plugins.
-*/
-
-// TODO: Reduce code duplication with Registry<T>.
-class PluginTypeRegistry {
-    using Map = std::map<std::type_index, PluginTypeInfo>;
-    PluginTypeRegistry() = default;
-    ~PluginTypeRegistry() = default;
-    Map registry;
-public:
-    static PluginTypeRegistry *instance();
-    void insert(const PluginTypeInfo &info);
-    const PluginTypeInfo &get(const std::type_index &type) const;
-
-    Map::const_iterator begin() const {
-        /*
-          TODO (post-issue586): We want plugin types sorted by name in
-          output. One way to achieve this is by defining the map's
-          comparison function to sort first by the name and then by
-          the type_index, but this is actually a bit difficult if the
-          name isn't part of the key. One option to work around this
-          is to use a set instead of a map as the internal data
-          structure here.
-        */
-        return registry.cbegin();
-    }
-
-    Map::const_iterator end() const {
-        return registry.cend();
-    }
 };
 
 
@@ -228,127 +107,6 @@ public:
     std::vector<Heuristic *> heuristics;
 };
 
-/*
-  TypeNamer prints out names of types.
-
-  There is no default implementation for Typenamer<T>::name(): the
-  template needs to be specialized for each type we want to support.
-  However, we have a generic version below for shared_ptr<...> types,
-  which are the ones we use for plugins.
-*/
-template<typename T>
-struct TypeNamer {
-    static std::string name();
-};
-
-/*
-  Note: for plug-in types, we use TypeNamer<shared_ptr<T>>::name().
-  One might be tempted to strip away the shared_ptr<...> here and use
-  TypeNamer<T>::name() instead, but this has the disadvantage that
-  typeid(T) requires T to be a complete type, while
-  typeid(shared_ptr<T>) also accepts incomplete types.
-*/
-template<typename T>
-struct TypeNamer<std::shared_ptr<T>> {
-    static std::string name() {
-        using TPtr = std::shared_ptr<T>;
-        const PluginTypeInfo &type_info =
-            PluginTypeRegistry::instance()->get(std::type_index(typeid(TPtr)));
-        return type_info.get_type_name();
-    }
-};
-
-/*
-  The following partial specialization for raw pointers is legacy code.
-  This can go away once all plugins use shared_ptr.
-*/
-template<typename T>
-struct TypeNamer<T *> {
-    static std::string name() {
-        return TypeNamer<std::shared_ptr<T>>::name();
-    }
-};
-
-template <>
-struct TypeNamer<int> {
-    static std::string name() {
-        return "int";
-    }
-};
-
-template <>
-struct TypeNamer<bool> {
-    static std::string name() {
-        return "bool";
-    }
-};
-
-template <>
-struct TypeNamer<double> {
-    static std::string name() {
-        return "double";
-    }
-};
-
-template <>
-struct TypeNamer<std::string> {
-    static std::string name() {
-        return "string";
-    }
-};
-
-template <>
-struct TypeNamer<ParseTree> {
-    static std::string name() {
-        return "ParseTree (this just means the input is parsed at a later point. The real type is probably a search engine.)";
-    }
-};
-
-template<typename T>
-struct TypeNamer<std::vector<T>> {
-    static std::string name() {
-        return "list of " + TypeNamer<T>::name();
-    }
-};
-
-/*
-  TypeDocumenter prints out the documentation synopsis for plug-in types.
-
-  The same comments as for TypeNamer apply.
-*/
-template<typename T>
-struct TypeDocumenter {
-    static std::string synopsis() {
-        /*
-          TODO (post-issue586): once all plugin types are pluginized, this
-          default implementation can go away (as in TypeNamer).
-        */
-        return "";
-    }
-};
-
-// See comments for TypeNamer.
-template<typename T>
-struct TypeDocumenter<std::shared_ptr<T>> {
-    static std::string synopsis() {
-        using TPtr = std::shared_ptr<T>;
-        const PluginTypeInfo &type_info =
-            PluginTypeRegistry::instance()->get(std::type_index(typeid(TPtr)));
-        return type_info.get_documentation();
-    }
-};
-
-/*
-  The following partial specialization for raw pointers is legacy code.
-  This can go away once all plugins use shared_ptr.
-*/
-template<typename T>
-struct TypeDocumenter<T *> {
-    static std::string synopsis() {
-        return TypeDocumenter<std::shared_ptr<T>>::synopsis();
-    }
-};
-
 
 //helper functions for the ParseTree (=tree<ParseNode>)
 
@@ -386,93 +144,5 @@ tree<T> subtree(
     ++ti_next;
     return tr.subtree(ti, ti_next);
 }
-
-
-//Options is just a wrapper for map<string, boost::any>
-class Options {
-public:
-    Options(bool hm = false)
-        : unparsed_config("<missing>"),
-          help_mode(hm) {
-    }
-
-    void set_help_mode(bool hm) {
-        help_mode = hm;
-    }
-
-    std::map<std::string, boost::any> storage;
-
-    template<typename T>
-    void set(std::string key, T value) {
-        storage[key] = value;
-    }
-
-    template<typename T>
-    T get(std::string key) const {
-        std::map<std::string, boost::any>::const_iterator it;
-        it = storage.find(key);
-        if (it == storage.end()) {
-            ABORT("Attempt to retrieve nonexisting object of name " +
-                  key + " (type: " + TypeNamer<T>::name() +
-                  ") from options.");
-        }
-        try {
-            T result = boost::any_cast<T>(it->second);
-            return result;
-        } catch (const boost::bad_any_cast &) {
-            std::cout << "Invalid conversion while retrieving config options!"
-                      << std::endl
-                      << key << " is not of type " << TypeNamer<T>::name()
-                      << std::endl << "exiting" << std::endl;
-            exit_with(EXIT_CRITICAL_ERROR);
-        }
-    }
-
-    template<typename T>
-    T get(std::string key, const T &default_value) const {
-        if (storage.count(key))
-            return get<T>(key);
-        else
-            return default_value;
-    }
-
-    template<typename T>
-    void verify_list_non_empty(std::string key) const {
-        if (!help_mode) {
-            std::vector<T> temp_vec = get<std::vector<T>>(key);
-            if (temp_vec.empty()) {
-                std::cout << "Error: unexpected empty list!"
-                          << std::endl
-                          << "List " << key << " is empty"
-                          << std::endl;
-                exit_with(EXIT_INPUT_ERROR);
-            }
-        }
-    }
-
-    template<typename T>
-    std::vector<T> get_list(std::string key) const {
-        return get<std::vector<T>>(key);
-    }
-
-    int get_enum(std::string key) const {
-        return get<int>(key);
-    }
-
-    bool contains(std::string key) const {
-        return storage.find(key) != storage.end();
-    }
-
-    std::string get_unparsed_config() const {
-        return unparsed_config;
-    }
-
-    void set_unparsed_config(const std::string &config) {
-        unparsed_config = config;
-    }
-private:
-    std::string unparsed_config;
-    bool help_mode;
-};
 
 #endif
