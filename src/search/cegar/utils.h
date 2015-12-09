@@ -1,19 +1,15 @@
 #ifndef CEGAR_UTILS_H
 #define CEGAR_UTILS_H
 
+#include "../task_proxy.h"
+
 #include <limits>
 #include <memory>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-class AbstractState;
 class AbstractTask;
-class FactProxy;
-class GoalsProxy;
-class OperatorProxy;
-class State;
-class TaskProxy;
 
 namespace AdditiveHeuristic {
 class AdditiveHeuristic;
@@ -47,6 +43,17 @@ std::vector<int> get_domain_sizes(TaskProxy task);
 int get_pre(OperatorProxy op, int var_id);
 int get_eff(OperatorProxy op, int var_id);
 int get_post(OperatorProxy op, int var_id);
+}
+
+namespace std {
+template<>
+struct hash<FactProxy> {
+    size_t operator()(const FactProxy &fact) const {
+        std::pair<int, int> raw_fact = make_pair(fact.get_variable().get_id(), fact.get_value());
+        std::hash<std::pair<int, int>> hasher;
+        return hasher(raw_fact);
+    }
+};
 }
 
 #endif
