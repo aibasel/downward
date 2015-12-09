@@ -39,13 +39,10 @@ FactDecomposition::FactDecomposition(const Options &opts)
 
 void FactDecomposition::remove_initial_state_facts(
     const TaskProxy &task_proxy, Facts &facts) const {
-    facts.erase(remove_if(
-                    facts.begin(), facts.end(),
-                    [&](Fact fact) {
-            return task_proxy.get_initial_state()[fact.first].get_value() == fact.second;
-        }
-                    ),
-                facts.end());
+    State initial_state = task_proxy.get_initial_state();
+    facts.erase(remove_if(facts.begin(), facts.end(), [&](Fact fact) {
+            return initial_state[fact.first].get_value() == fact.second;
+        }), facts.end());
 }
 
 Facts FactDecomposition::get_filtered_and_ordered_facts(const Task &task) const {
