@@ -72,8 +72,9 @@ public:
     }
 
     /*
-      We need this method for the CEGAR heuristic, which only has access to
-      State objects and not to GlobalState objects.
+      Until compute_heuristic() accepts State objects, we need this
+      method for the CEGAR heuristic, which only has access to State
+      objects and not to GlobalState objects.
     */
     void initialize_and_compute_heuristic(const State &state);
 };
