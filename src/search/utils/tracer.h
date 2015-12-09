@@ -1,5 +1,5 @@
-#ifndef TRACER_H
-#define TRACER_H
+#ifndef UTILS_TRACER_H
+#define UTILS_TRACER_H
 
 #include <string>
 

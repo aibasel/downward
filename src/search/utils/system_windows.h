@@ -1,5 +1,5 @@
-#ifndef SYSTEM_WINDOWS_H
-#define SYSTEM_WINDOWS_H
+#ifndef UTILS_SYSTEM_WINDOWS_H
+#define UTILS_SYSTEM_WINDOWS_H
 
 // Avoid min/max conflicts (http://support.microsoft.com/kb/143208).
 #ifndef NOMINMAX

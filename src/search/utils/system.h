@@ -1,5 +1,5 @@
-#ifndef SYSTEM_H
-#define SYSTEM_H
+#ifndef UTILS_SYSTEM_H
+#define UTILS_SYSTEM_H
 
 #define LINUX 0
 #define OSX 1

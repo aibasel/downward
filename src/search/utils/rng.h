@@ -1,5 +1,5 @@
-#ifndef RNG_H
-#define RNG_H
+#ifndef UTILS_RNG_H
+#define UTILS_RNG_H
 
 #include <algorithm>
 #include <cassert>

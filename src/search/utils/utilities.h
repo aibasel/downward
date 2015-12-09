@@ -1,5 +1,5 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef UTILS_UTILITIES_H
+#define UTILS_UTILITIES_H
 
 #include "system.h"
 
