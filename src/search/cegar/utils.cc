@@ -12,7 +12,6 @@
 
 using namespace std;
 
-
 namespace CEGAR {
 bool DEBUG = false;
 
