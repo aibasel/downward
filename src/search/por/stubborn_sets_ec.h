@@ -5,7 +5,7 @@
 
 namespace StubbornSetsEC {
 
-struct ExpansionCoreDTG {
+struct StubbornDTG {
     struct Arc {
         Arc(int target_value_, int operator_no_)
             : target_value(target_value_),
@@ -26,8 +26,8 @@ struct ExpansionCoreDTG {
     void recurse_forwards(int value, std::vector<bool> &reachable) const;
     void recurse_backwards(int value, std::vector<bool> &relevant) const;
 public:
-    ExpansionCoreDTG() {};
-    ~ExpansionCoreDTG() {};
+    StubbornDTG() {};
+    ~StubbornDTG() {};
 
     void forward_reachability_analysis(int start_value,
                                        std::vector<bool> &reachable) const;
@@ -36,7 +36,7 @@ public:
 
 class StubbornSetsEC : public StubbornSets::StubbornSets {
 private:
-    std::vector<ExpansionCoreDTG> dtgs;
+    std::vector<StubbornDTG> dtgs;
     std::vector<std::vector<std::vector<bool> > > reachability_map;
     std::vector<std::vector<int> > v_precond;
     std::vector<bool> active_ops;

@@ -119,7 +119,7 @@ void StubbornSetsEC::build_dtgs() {
 		}
 	    }
 
-	    ExpansionCoreDTG &dtg = dtgs[eff_var];
+	    StubbornDTG &dtg = dtgs[eff_var];
 	    int pre_value_min, pre_value_max;
 	    if (pre_var == -1) {
                 pre_value_min = 0;
@@ -130,8 +130,8 @@ void StubbornSetsEC::build_dtgs() {
             }
 		
 	    for (int value = pre_value_min; value < pre_value_max; ++value) {
-		dtg.nodes[value].outgoing.push_back(ExpansionCoreDTG::Arc(eff_val, op_no));
-		dtg.nodes[eff_val].incoming.push_back(ExpansionCoreDTG::Arc(value, op_no));
+		dtg.nodes[value].outgoing.push_back(StubbornDTG::Arc(eff_val, op_no));
+		dtg.nodes[eff_val].incoming.push_back(StubbornDTG::Arc(value, op_no));
             }
         }
     }
@@ -156,7 +156,7 @@ void StubbornSetsEC::compute_v_precond() {
 void StubbornSetsEC::build_reachability_map() {
     size_t num_variables = g_variable_domain.size();
     for (uint var_no = 0; var_no < num_variables; ++var_no) {
-        ExpansionCoreDTG &dtg = dtgs[var_no];
+        StubbornDTG &dtg = dtgs[var_no];
         size_t num_values = dtg.nodes.size();
         reachability_map[var_no].resize(num_values);
         for (uint val = 0; val < num_values; ++val) {
@@ -171,10 +171,10 @@ void StubbornSetsEC::build_reachability_map() {
 
 
 void StubbornSetsEC::recurse_forwards(int var, int start_value, int current_value, std::vector<bool> &reachable) {
-    ExpansionCoreDTG &dtg = dtgs[var];
+    StubbornDTG &dtg = dtgs[var];
     if (!reachable[current_value]) {
         reachable[current_value] = true;
-        const vector<ExpansionCoreDTG::Arc> &outgoing = dtg.nodes[current_value].outgoing;
+        const vector<StubbornDTG::Arc> &outgoing = dtg.nodes[current_value].outgoing;
         for (uint i = 0; i < outgoing.size(); ++i)
             recurse_forwards(var, start_value, outgoing[i].target_value, reachable);
     }
