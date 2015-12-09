@@ -1,15 +1,14 @@
 #include "iterated_search.h"
 
-#include "option_parser.h"
-#include "plugin.h"
-
-#include "ext/tree_util.hh"
+#include "../option_parser.h"
+#include "../plugin.h"
 
 #include <iostream>
 
 using namespace std;
 
 
+namespace IteratedSearch {
 IteratedSearch::IteratedSearch(const Options &opts)
     : SearchEngine(opts),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
@@ -193,3 +192,4 @@ static SearchEngine *_parse(OptionParser &parser) {
 }
 
 static Plugin<SearchEngine> _plugin("iterated", _parse);
+}

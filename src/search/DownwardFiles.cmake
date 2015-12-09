@@ -26,16 +26,15 @@ set(CORE_SOURCES
         int_packer.cc
         logging.cc
         operator_cost.cc
-        option_parser.cc
-        option_parser_util.cc
+        option_parser.h
+        option_parser_util.h
         per_state_information.cc
-        plugin.cc
+        plugin.h
         priority_queue.cc
         rng.cc
         root_task.cc
         sampling.cc
         scalar_evaluator.cc
-        search_common.cc
         search_engine.cc
         search_node_info.cc
         search_progress.cc
@@ -92,6 +91,7 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 #            <FILE_1> [ <FILE_2> ... ]
 #        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
 #        [ DEPENDENCY_ONLY ]
+#        [ CORE_PLUGIN ]
 #    )
 #
 # <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
@@ -101,6 +101,29 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # is enabled. If the dependency was not enabled before, this will be logged.
 # DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
 #     hides the option to enable the plugin in cmake GUIs like ccmake.
+# CORE_PLUGIN enables the plugin and hides the option to disable it in
+#     cmake GUIs like ccmake.
+
+fast_downward_plugin(
+    NAME OPTIONS
+    HELP "Option parsing and plugin definition"
+    SOURCES
+        options/bounds.cc
+        options/doc_printer.cc
+        options/doc_store.cc
+        options/errors.cc
+        options/option_parser.cc
+        options/options.cc
+        options/parse_tree.cc
+        options/predefinitions.cc
+        options/plugin.cc
+        options/registries.cc
+        options/synergy.cc
+        options/token_parser.cc
+        options/type_documenter.cc
+        options/type_namer.cc
+    CORE_PLUGIN
+)
 
 fast_downward_plugin(
     NAME CONST_EVALUATOR
@@ -154,34 +177,43 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME SEARCH_COMMON
+    HELP "Basic classes used for all search engines"
+    SOURCES
+        search_engines/search_common.cc
+    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
     NAME EAGER_SEARCH
     HELP "Eager search algorithm"
     SOURCES
-        eager_search.cc
-    DEPENDS G_EVALUATOR SUM_EVALUATOR
+        search_engines/eager_search.cc
+    DEPENDS SEARCH_COMMON
 )
 
 fast_downward_plugin(
-    NAME LAZY_SEARCH
-    HELP "Lazy search algorithm"
-    SOURCES
-        lazy_search.cc
-    DEPENDS G_EVALUATOR SUM_EVALUATOR WEIGHTED_EVALUATOR
-)
-
-fast_downward_plugin(
-    NAME EHC_SEARCH
+    NAME ENFORCED_HILL_CLIMBING_SEARCH
     HELP "Lazy enforced hill-climbing search algorithm"
     SOURCES
-        enforced_hill_climbing_search.cc
-    DEPENDS PREF_EVALUATOR G_EVALUATOR
+        search_engines/enforced_hill_climbing_search.cc
+    DEPENDS SEARCH_COMMON PREF_EVALUATOR G_EVALUATOR
 )
 
 fast_downward_plugin(
     NAME ITERATED_SEARCH
     HELP "Iterated search algorithm"
     SOURCES
-        iterated_search.cc
+        search_engines/iterated_search.cc
+)
+
+fast_downward_plugin(
+    NAME LAZY_SEARCH
+    HELP "Lazy search algorithm"
+    SOURCES
+        search_engines/lazy_search.cc
+    DEPENDS SEARCH_COMMON
 )
 
 fast_downward_plugin(
@@ -346,7 +378,7 @@ fast_downward_plugin(
         operator_counting/operator_counting_heuristic.cc
         operator_counting/pho_constraints.cc
         operator_counting/state_equation_constraints.cc
-    DEPENDS LP_SOLVER LM_CUT_HEURISTIC PDBS
+    DEPENDS LP_SOLVER LANDMARK_CUT_HEURISTIC PDBS
 )
 
 fast_downward_plugin(

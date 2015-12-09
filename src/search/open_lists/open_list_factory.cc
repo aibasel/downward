@@ -1,9 +1,6 @@
 #include "open_list_factory.h"
 
-#include "open_list.h"
-
 #include "../plugin.h"
-#include "../state_id.h"
 
 using namespace std;
 

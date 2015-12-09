@@ -1,14 +1,15 @@
 #include "lazy_search.h"
 
-#include "globals.h"
-#include "heuristic.h"
-#include "option_parser.h"
-#include "plugin.h"
-#include "rng.h"
 #include "search_common.h"
-#include "successor_generator.h"
 
-#include "open_lists/open_list_factory.h"
+#include "../globals.h"
+#include "../heuristic.h"
+#include "../option_parser.h"
+#include "../plugin.h"
+#include "../rng.h"
+#include "../successor_generator.h"
+
+#include "../open_lists/open_list_factory.h"
 
 #include <algorithm>
 #include <limits>
@@ -17,6 +18,7 @@
 using namespace std;
 
 
+namespace LazySearch {
 static const int DEFAULT_LAZY_BOOST = 1000;
 
 LazySearch::LazySearch(const Options &opts)
@@ -325,7 +327,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
     LazySearch *engine = 0;
     if (!parser.dry_run()) {
-        opts.set("open", create_greedy_open_list_factory(opts));
+        opts.set("open", SearchCommon::create_greedy_open_list_factory(opts));
         engine = new LazySearch(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
@@ -397,7 +399,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 
     LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
-        opts.set("open", create_wastar_open_list_factory(opts));
+        opts.set("open", SearchCommon::create_wastar_open_list_factory(opts));
         engine = new LazySearch(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
@@ -409,3 +411,4 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 static Plugin<SearchEngine> _plugin("lazy", _parse);
 static Plugin<SearchEngine> _plugin_greedy("lazy_greedy", _parse_greedy);
 static Plugin<SearchEngine> _plugin_weighted_astar("lazy_wastar", _parse_weighted_astar);
+}

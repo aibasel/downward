@@ -1,5 +1,5 @@
-#ifndef SEARCH_COMMON_H
-#define SEARCH_COMMON_H
+#ifndef SEARCH_ENGINES_SEARCH_COMMON_H
+#define SEARCH_ENGINES_SEARCH_COMMON_H
 
 /*
   This module contains functions for creating open list factories used
@@ -25,6 +25,7 @@ class Options;
 class ScalarEvaluator;
 
 
+namespace SearchCommon {
 /*
   Create a standard scalar open list factory with the given "eval" and
   "pref_only" options.
@@ -74,5 +75,6 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 */
 extern std::pair<std::shared_ptr<OpenListFactory>, ScalarEvaluator *>
 create_astar_open_list_factory_and_f_eval(const Options &opts);
+}
 
 #endif

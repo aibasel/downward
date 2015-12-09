@@ -1,24 +1,25 @@
 #include "search_common.h"
 
-#include "option_parser_util.h"
+#include "../option_parser_util.h"
 
-#include "evaluators/g_evaluator.h"
-#include "evaluators/sum_evaluator.h"
-#include "evaluators/weighted_evaluator.h"
+#include "../evaluators/g_evaluator.h"
+#include "../evaluators/sum_evaluator.h"
+#include "../evaluators/weighted_evaluator.h"
 
-#include "open_lists/alternation_open_list.h"
-#include "open_lists/open_list_factory.h"
-#include "open_lists/standard_scalar_open_list.h"
-#include "open_lists/tiebreaking_open_list.h"
+#include "../open_lists/alternation_open_list.h"
+#include "../open_lists/open_list_factory.h"
+#include "../open_lists/standard_scalar_open_list.h"
+#include "../open_lists/tiebreaking_open_list.h"
 
 #include <memory>
 
+using namespace std;
+
+
+namespace SearchCommon {
 using GEval = GEvaluator::GEvaluator;
 using SumEval = SumEvaluator::SumEvaluator;
 using WeightedEval = WeightedEvaluator::WeightedEvaluator;
-
-using namespace std;
-
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     ScalarEvaluator *eval, bool pref_only) {
@@ -124,4 +125,5 @@ create_astar_open_list_factory_and_f_eval(const Options &opts) {
     shared_ptr<OpenListFactory> open =
         make_shared<TieBreakingOpenListFactory>(options);
     return make_pair(open, f);
+}
 }
