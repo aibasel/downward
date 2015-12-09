@@ -1,12 +1,15 @@
+#include "domain_transition_graph.h"
+
+#include "utilities.h"
+
+#include "utils/hash.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 
 using namespace std;
 
-#include "domain_transition_graph.h"
-#include "utilities.h"
-#include "utilities_hash.h"
 
 DTGFactory::DTGFactory(const TaskProxy &task_proxy,
                        bool collect_transition_side_effects,

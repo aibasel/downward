@@ -43,7 +43,6 @@ set(CORE_SOURCES
         task_proxy.cc
         task_tools.cc
         utilities.h
-        utilities_hash.h
         variable_order_finder.cc
 
         open_lists/alternation_open_list.cc
@@ -115,6 +114,7 @@ fast_downward_plugin(
     HELP "System utilities"
     SOURCES
         utils/countdown_timer.cc
+        utils/hash.cc
         utils/rng.cc
         utils/system.cc
         utils/system_unix.cc
@@ -122,7 +122,6 @@ fast_downward_plugin(
         utils/timer.cc
         utils/tracer.cc
         utils/utilities.cc
-        utils/utilities_hash.cc
     CORE_PLUGIN
 )
 

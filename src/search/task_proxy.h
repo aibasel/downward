@@ -3,7 +3,8 @@
 
 #include "abstract_task.h"
 #include "utilities.h"
-#include "utilities_hash.h"
+
+#include "utils/hash.h"
 
 #include <cassert>
 #include <cstddef>

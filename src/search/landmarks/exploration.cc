@@ -3,7 +3,8 @@
 #include "../global_state.h"
 #include "../globals.h"
 #include "../utilities.h"
-#include "../utilities_hash.h"
+
+#include "../utils/hash.h"
 
 #include <algorithm>
 #include <cassert>
