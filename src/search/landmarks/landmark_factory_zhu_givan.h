@@ -6,7 +6,8 @@
 
 #include "../globals.h"
 #include "../utilities.h"
-#include "../utilities_hash.h"
+
+#include "../utils/hash.h"
 
 #include <unordered_set>
 #include <utility>
