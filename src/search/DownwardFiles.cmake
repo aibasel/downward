@@ -14,7 +14,6 @@ set(CORE_SOURCES
         cost_adapted_task.cc
         countdown_timer.cc
         delegating_task.cc
-        domain_transition_graph.cc
         equivalence_relation.cc
         evaluation_context.cc
         evaluation_result.cc
@@ -253,14 +252,23 @@ fast_downward_plugin(
     HELP "The context-enhanced additive heuristic"
     SOURCES
         heuristics/cea_heuristic.cc
+    DEPENDS DOMAIN_TRANSITION_GRAPH
 )
 
 fast_downward_plugin(
     NAME CG_HEURISTIC
     HELP "The causal graph heuristic"
+    SOURCES heuristics/cg_heuristic.cc
+            heuristics/cg_cache.cc
+    DEPENDS DOMAIN_TRANSITION_GRAPH
+)
+
+fast_downward_plugin(
+    NAME DOMAIN_TRANSITION_GRAPH
+    HELP "DTGs used by cg and cea heuristic"
     SOURCES
-        heuristics/cg_heuristic.cc
-        heuristics/cg_cache.cc
+        domain_transition_graph.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(

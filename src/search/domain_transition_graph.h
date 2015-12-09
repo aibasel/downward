@@ -1,19 +1,18 @@
 #ifndef DOMAIN_TRANSITION_GRAPH_H
 #define DOMAIN_TRANSITION_GRAPH_H
 
+#include "task_proxy.h"
+
 #include <cassert>
-#include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 using namespace std;
-
-class GlobalOperator;
-class GlobalState;
 
 namespace CGHeuristic {
 class CGHeuristic;
 }
 
+struct LocalAssignment;
 struct ValueNode;
 struct ValueTransition;
 struct ValueTransitionLabel;
@@ -23,6 +22,42 @@ class DomainTransitionGraph;
 // transitions and nodes. This is because these structures could not be
 // put into vectors otherwise.
 
+class DTGFactory {
+    const TaskProxy &task_proxy;
+    bool collect_transition_side_effects;
+    function<bool(int, int)> pruning_condition;
+
+    std::vector<std::unordered_map<std::pair<int, int>, int>> transition_index;
+    std::vector<std::unordered_map<int, int>> global_to_local_var;
+
+    void allocate_graphs_and_nodes(vector<DomainTransitionGraph *> &dtgs);
+    void initialize_index_structures(int num_dtgs);
+    void create_transitions(vector<DomainTransitionGraph *> &dtgs);
+    void process_effect(const EffectProxy &eff, const OperatorProxy &op,
+                        std::vector<DomainTransitionGraph *> &dtgs);
+    void update_transition_condition(const FactProxy &fact,
+                                     DomainTransitionGraph *dtg,
+                                     vector<LocalAssignment> &condition);
+    void extend_global_to_local_mapping_if_necessary(
+        DomainTransitionGraph *dtg, int global_var);
+    void revert_new_local_vars(DomainTransitionGraph *dtg,
+                               unsigned int first_local_var);
+    ValueTransition *get_transition(int origin, int target,
+                                    DomainTransitionGraph *dtg);
+    void simplify_transitions(vector<DomainTransitionGraph *> &dtgs);
+    void simplify_labels(vector<ValueTransitionLabel> &labels);
+    void collect_all_side_effects(vector<DomainTransitionGraph *> &dtgs);
+    void collect_side_effects(DomainTransitionGraph *dtg,
+                              std::vector<ValueTransitionLabel> &labels);
+    OperatorProxy get_op_for_label(const ValueTransitionLabel &label);
+
+public:
+    DTGFactory(const TaskProxy &task_proxy,
+               bool collect_transition_side_effects,
+               const function<bool(int, int)> &pruning_condition);
+
+    vector<DomainTransitionGraph *> build_dtgs();
+};
 
 struct LocalAssignment {
     short local_var;
@@ -37,28 +72,25 @@ struct LocalAssignment {
 };
 
 struct ValueTransitionLabel {
-    GlobalOperator *op;
+    int op_id;
+    bool is_axiom;
     vector<LocalAssignment> precond;
     vector<LocalAssignment> effect;
 
-    ValueTransitionLabel(GlobalOperator *theOp, const vector<LocalAssignment> &precond_,
-                         const vector<LocalAssignment> &effect_)
-        : op(theOp), precond(precond_), effect(effect_) {}
-    void dump() const;
+    ValueTransitionLabel(int op_id, bool axiom,
+                         const vector<LocalAssignment> &precond,
+                         const vector<LocalAssignment> &effect)
+        : op_id(op_id), is_axiom(axiom), precond(precond), effect(effect) {}
 };
 
 struct ValueTransition {
     ValueNode *target;
     vector<ValueTransitionLabel> labels;
-    vector<ValueTransitionLabel> cea_labels; // labels for cea heuristic
 
     ValueTransition(ValueNode *targ)
         : target(targ) {}
 
-    void simplify();
-    void dump() const;
-private:
-    void simplify_labels(vector<ValueTransitionLabel> &label_vec);
+    void simplify(const TaskProxy &task_proxy);
 };
 
 struct ValueNode {
@@ -66,16 +98,14 @@ struct ValueNode {
     int value;
     vector<ValueTransition> transitions;
 
-    vector<int> distances;             // cg; empty vector if not yet requested
+    vector<int> distances;
     vector<ValueTransitionLabel *> helpful_transitions;
-    // cg; empty vector if not requested
-    vector<int> children_state;        // cg
-    ValueNode *reached_from;           // cg
-    ValueTransitionLabel *reached_by;  // cg
+    vector<int> children_state;
+    ValueNode *reached_from;
+    ValueTransitionLabel *reached_by;
 
     ValueNode(DomainTransitionGraph *parent, int val)
         : parent_graph(parent), value(val), reached_from(0), reached_by(0) {}
-    void dump() const;
 };
 
 namespace ContextEnhancedAdditiveHeuristic {
@@ -85,33 +115,20 @@ class ContextEnhancedAdditiveHeuristic;
 class DomainTransitionGraph {
     friend class CGHeuristic::CGHeuristic;
     friend class ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic;
-    friend struct ValueNode;
-    friend struct ValueTransition;
-    friend struct LocalAssignment;
+    friend class DTGFactory;
 
     int var;
-    bool is_axiom;
     vector<ValueNode> nodes;
 
-    int last_helpful_transition_extraction_time; // cg heuristic; "dirty bit"
+    int last_helpful_transition_extraction_time;
 
     vector<int> local_to_global_child;
     // used for mapping variables in conditions to their global index
     // (only needed for initializing child_state for the start node?)
-    vector<int> cea_parents;
-    // Same as local_to_global_child, but for cea heuristic.
 
     DomainTransitionGraph(const DomainTransitionGraph &other); // copying forbidden
 public:
     DomainTransitionGraph(int var_index, int node_count);
-    void read_data(istream &in);
-
-    void dump() const;
-
-    void get_successors(int value, vector<int> &result) const;
-    // Build vector of values v' such that there is a transition from value to v'.
-
-    static void read_all(istream &in);
 };
 
 #endif
