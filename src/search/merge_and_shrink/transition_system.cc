@@ -17,6 +17,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
@@ -45,7 +46,7 @@ TSConstIterator::TSConstIterator(
 
 void TSConstIterator::next_valid_index() {
     while (current_group_id < label_equivalence_relation.get_size()
-           && !label_equivalence_relation.is_active_group(current_group_id)) {
+           && label_equivalence_relation.is_empty_group(current_group_id)) {
         ++current_group_id;
     }
 }
@@ -235,11 +236,11 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     */
     for (int group_id1 = 0; group_id1 < label_equivalence_relation->get_size();
          ++group_id1) {
-        if (label_equivalence_relation->is_active_group(group_id1)) {
+        if (!label_equivalence_relation->is_empty_group(group_id1)) {
             const vector<Transition> &transitions1 = transitions_by_group_id[group_id1];
             for (int group_id2 = group_id1 + 1;
                  group_id2 < label_equivalence_relation->get_size(); ++group_id2) {
-                if (label_equivalence_relation->is_active_group(group_id2)) {
+                if (!label_equivalence_relation->is_empty_group(group_id2)) {
                     vector<Transition> &transitions2 = transitions_by_group_id[group_id2];
                     if ((transitions1.empty() && transitions2.empty())
                         || transitions1 == transitions2) {
@@ -344,52 +345,54 @@ void TransitionSystem::apply_label_reduction(
     if (only_equivalent_labels) {
         label_equivalence_relation->apply_label_mapping(label_mapping, only_equivalent_labels);
     } else {
-        // Go over all mappings and collect information about involved groups.
-        vector<pair<int, set<int>>> new_label_and_old_group_ids;
+        /*
+          Go over all mappings, collect transitions of old groups and
+          remember all affected group ids. This needs to happen *before*
+          updating label_equivalence_relation, because after updating it,
+          we cannot find out the group id of reduced labels anymore.
+        */
+        unordered_map<int, set<Transition>> new_label_to_transitions;
+        unordered_set<int> affected_group_ids;
         for (const pair<int, vector<int>> &mapping: label_mapping) {
             int new_label_no = mapping.first;
             const vector<int> &old_label_nos = mapping.second;
             assert(old_label_nos.size() >= 2);
-            set<int> old_group_ids;
+            set<int> seen_group_ids;
+            set<Transition> &new_label_transitions = new_label_to_transitions[new_label_no];
             for (int old_label_no : old_label_nos) {
                 int group_id = label_equivalence_relation->get_group_id(old_label_no);
-                old_group_ids.insert(group_id);
-            }
-            new_label_and_old_group_ids.emplace_back(new_label_no, move(old_group_ids));
-        }
-
-        // Apply all label mappings to label_equivalence_relation
-        label_equivalence_relation->apply_label_mapping(label_mapping, only_equivalent_labels);
-
-        /*
-          Go over the collected information about involved groups and compute
-          the transitions of the each label group. Collect information about
-          label groups that became empty.
-        */
-        set<int> empty_label_group_ids;
-        for (const pair<int, set<int>> &label_and_ids : new_label_and_old_group_ids) {
-            int new_group_id = label_equivalence_relation->get_group_id(label_and_ids.first);
-            const set<int> &old_group_ids = label_and_ids.second;
-            /*
-              We use a set to collect the reduced label's transitions so that
-              they are sorted and unique.
-            */
-            set<Transition> collected_transitions;
-            for (int old_group_id : old_group_ids) {
-                vector<Transition> &transitions =
-                    get_transitions_for_group_id(old_group_id);
-                collected_transitions.insert(transitions.begin(), transitions.end());
-                if (!label_equivalence_relation->is_active_group(old_group_id)) {
-                    empty_label_group_ids.insert(old_group_id);
+                if (seen_group_ids.insert(group_id).second) {
+                    affected_group_ids.insert(group_id);
+                    const vector<Transition> &transitions = transitions_by_group_id[group_id];
+                    new_label_transitions.insert(transitions.begin(), transitions.end());
                 }
             }
-            transitions_by_group_id[new_group_id].assign(
-                collected_transitions.begin(), collected_transitions.end());
         }
 
-        // Go over all empty label group ids and delete the corresponding transitions.
-        for (int group_id : empty_label_group_ids) {
-            release_vector_memory(transitions_by_group_id[group_id]);
+        /*
+           Apply all label mappings to label_equivalence_relation. This needs
+           to happen *before* we can add the new transitions to this transition
+           systems and *before* we can remove empty groups of old labels,
+           because only after updating label_equivalence_relation, we know the
+           group id of the new labels and which old groups became empty.
+        */
+        label_equivalence_relation->apply_label_mapping(label_mapping, only_equivalent_labels);
+
+        // Go over the new transitions and add them at the correct position.
+        for (const auto &label_and_transitions : new_label_to_transitions) {
+            int new_label_no = label_and_transitions.first;
+            const set<Transition> &transitions = label_and_transitions.second;
+            int new_group_id = label_equivalence_relation->get_group_id(new_label_no);
+            transitions_by_group_id[new_group_id].assign(
+                transitions.begin(), transitions.end());
+        }
+
+        // Go over all affected group ids and remove their transitions if the
+        // group is empty.
+        for (int group_id : affected_group_ids) {
+            if (label_equivalence_relation->is_empty_group(group_id)) {
+                release_vector_memory(transitions_by_group_id[group_id]);
+            }
         }
 
         compute_locally_equivalent_labels();
