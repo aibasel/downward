@@ -73,8 +73,8 @@ void LabelEquivalenceRelation::apply_label_mapping(
 
 void LabelEquivalenceRelation::move_group_into_group(
     int from_group_id, int to_group_id) {
-    assert(is_active_group(from_group_id));
-    assert(is_active_group(to_group_id));
+    assert(!is_empty_group(from_group_id));
+    assert(!is_empty_group(to_group_id));
     LabelGroup &from_group = grouped_labels[from_group_id];
     for (LabelConstIter from_label_it = from_group.begin();
          from_label_it != from_group.end(); ++from_label_it) {

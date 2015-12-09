@@ -85,8 +85,8 @@ public:
         bool from_same_group);
     void move_group_into_group(int from_group_id, int to_group_id);
     int add_label_group(const std::vector<int> &new_labels);
-    bool is_active_group(int group_id) const {
-        return !grouped_labels[group_id].empty();
+    bool is_empty_group(int group_id) const {
+        return grouped_labels[group_id].empty();
     }
     int get_group_id(int label_no) const {
         return label_to_positions[label_no].first;
