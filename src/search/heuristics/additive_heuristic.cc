@@ -35,6 +35,7 @@ void AdditiveHeuristic::write_overflow_warning() {
 
 // initialization
 void AdditiveHeuristic::initialize() {
+    assert(!is_initialized());
     cout << "Initializing additive heuristic..." << endl;
     RelaxationHeuristic::initialize();
 }
@@ -147,7 +148,7 @@ int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
     return compute_heuristic(convert_global_state(global_state));
 }
 
-void AdditiveHeuristic::initialize_and_compute_heuristic(const State &state) {
+void AdditiveHeuristic::initialize_and_compute_heuristic_for_cegar(const State &state) {
     initialize();
     compute_heuristic(state);
 }

@@ -23,6 +23,8 @@
 using namespace std;
 
 namespace CEGAR {
+static const int memory_padding_in_mb = 75;
+
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),
@@ -110,7 +112,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
 void AdditiveCartesianHeuristic::initialize() {
     Log() << "Initializing additive Cartesian heuristic..." << endl;
-    reserve_extra_memory_padding();
+    reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
         cout << endl;

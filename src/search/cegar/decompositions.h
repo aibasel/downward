@@ -56,7 +56,7 @@ class FactDecomposition : public Decomposition {
         }
 
         int get_cost(Fact fact) {
-            return hadd->get_cost(fact.first, fact.second);
+            return hadd->get_cost_for_cegar(fact.first, fact.second);
         }
 
         bool operator()(Fact a, Fact b) {

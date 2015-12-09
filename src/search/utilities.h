@@ -65,7 +65,7 @@ template<class T>
 ostream &operator<<(ostream &stream, const unordered_set<T> &set) {
     stream << "{";
     string sep = "";
-    for (auto &item : set) {
+    for (const auto &item : set) {
         stream << sep << item;
         sep = ", ";
     }
