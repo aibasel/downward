@@ -57,7 +57,7 @@ void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const
     cout << "Sort " << facts.size() << " facts" << endl;
     if (subtask_order == SubtaskOrder::ORIGINAL) {
         // Nothing to do.
-    } else if (subtask_order == SubtaskOrder::MIXED) {
+    } else if (subtask_order == SubtaskOrder::RANDOM) {
         g_rng.shuffle(facts);
     } else if (subtask_order == SubtaskOrder::HADD_UP ||
                subtask_order == SubtaskOrder::HADD_DOWN) {
@@ -150,7 +150,7 @@ static shared_ptr<Decomposition> _parse_original(OptionParser &parser) {
 static void add_common_fact_decomposition_options(OptionParser &parser) {
     vector<string> subtask_orders;
     subtask_orders.push_back("ORIGINAL");
-    subtask_orders.push_back("MIXED");
+    subtask_orders.push_back("RANDOM");
     subtask_orders.push_back("HADD_UP");
     subtask_orders.push_back("HADD_DOWN");
     parser.add_enum_option(
@@ -168,8 +168,14 @@ static shared_ptr<Decomposition> _parse_goals(OptionParser &parser) {
 
 static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
     add_common_fact_decomposition_options(parser);
-    parser.add_option<bool>("combine_facts", "combine landmark facts", "true");
-    parser.add_option<bool>("write_graph", "write landmark graph dot file", "false");
+    parser.add_option<bool>(
+        "combine_facts",
+        "combine landmark facts with domain abstraction",
+        "true");
+    parser.add_option<bool>(
+        "write_graph",
+        "write dot file for landmark graph",
+        "false");
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
@@ -177,9 +183,9 @@ static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
         return make_shared<LandmarkDecomposition>(opts);
 }
 
-static PluginShared<Decomposition> _plugin_original("original", _parse_original);
-static PluginShared<Decomposition> _plugin_goals("goals", _parse_goals);
-static PluginShared<Decomposition> _plugin_landmarks("landmarks", _parse_landmarks);
+static PluginShared<Decomposition> _plugin_original("no_decomposition", _parse_original);
+static PluginShared<Decomposition> _plugin_goals("decomposition_by_goals", _parse_goals);
+static PluginShared<Decomposition> _plugin_landmarks("decomposition_by_landmarks", _parse_landmarks);
 
 static PluginTypePlugin<Decomposition> _type_plugin(
     "Decomposition",
