@@ -1,10 +1,10 @@
-#ifndef ENFORCED_HILL_CLIMBING_SEARCH_H
-#define ENFORCED_HILL_CLIMBING_SEARCH_H
+#ifndef SEARCH_ENGINES_ENFORCED_HILL_CLIMBING_SEARCH_H
+#define SEARCH_ENGINES_ENFORCED_HILL_CLIMBING_SEARCH_H
 
-#include "evaluation_context.h"
-#include "search_engine.h"
+#include "../evaluation_context.h"
+#include "../search_engine.h"
 
-#include "open_lists/open_list.h"
+#include "../open_lists/open_list.h"
 
 #include <map>
 #include <memory>
@@ -14,6 +14,7 @@
 
 class Options;
 
+namespace EnforcedHillClimbingSearch {
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
     RANK_PREFERRED_FIRST
@@ -61,5 +62,6 @@ public:
 
     virtual void print_statistics() const override;
 };
+}
 
 #endif
