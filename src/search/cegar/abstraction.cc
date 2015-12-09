@@ -3,6 +3,7 @@
 #include "abstract_state.h"
 #include "utils.h"
 
+#include "../logging.h"
 #include "../option_parser.h"
 #include "../task_tools.h"
 #include "../timer.h"
@@ -62,9 +63,9 @@ Abstraction::Abstraction(const Options &opts)
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
-    Log() << "Start building abstraction.";
+    log("Start building abstraction.");
     build();
-    Log() << "Done building abstraction.";
+    log("Done building abstraction.");
 
     /* Even if we found a concrete solution, we might have refined in the
        last iteration, so we should update the h values. */
@@ -169,8 +170,10 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     }
 
     int num_states = get_num_states();
-    if (num_states % STATES_LOG_STEP == 0)
-        Log() << "Abstract states: " << num_states << "/" << max_states;
+    if (num_states % STATES_LOG_STEP == 0) {
+        cout << "Abstract states: " << num_states << "/" << max_states;
+        log_time_and_memory();
+    }
 
     delete state;
 }
