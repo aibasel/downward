@@ -12,7 +12,6 @@ set(CORE_SOURCES
         axioms.cc
         causal_graph.cc
         cost_adapted_task.cc
-        countdown_timer.cc
         delegating_task.cc
         equivalence_relation.cc
         evaluation_context.cc
@@ -29,7 +28,6 @@ set(CORE_SOURCES
         per_state_information.cc
         plugin.h
         priority_queue.cc
-        rng.cc
         root_task.cc
         sampling.cc
         scalar_evaluator.cc
@@ -42,15 +40,10 @@ set(CORE_SOURCES
         state_id.cc
         state_registry.cc
         successor_generator.cc
-        system.cc
-        system_unix.cc
-        system_windows.cc
         task_proxy.cc
         task_tools.cc
-        timer.cc
-        tracer.cc
-        utilities.cc
-        utilities_hash.cc
+        utilities.h
+        utilities_hash.h
         variable_order_finder.cc
 
         open_lists/alternation_open_list.cc
@@ -114,6 +107,22 @@ fast_downward_plugin(
         options/token_parser.cc
         options/type_documenter.cc
         options/type_namer.cc
+    CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME UTILS
+    HELP "System utilities"
+    SOURCES
+        utils/countdown_timer.cc
+        utils/rng.cc
+        utils/system.cc
+        utils/system_unix.cc
+        utils/system_windows.cc
+        utils/timer.cc
+        utils/tracer.cc
+        utils/utilities.cc
+        utils/utilities_hash.cc
     CORE_PLUGIN
 )
 
