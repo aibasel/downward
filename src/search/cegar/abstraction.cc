@@ -63,9 +63,9 @@ Abstraction::Abstraction(const Options &opts)
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
-    log("Start building abstraction.");
+    Log() << "Start building abstraction." << endl;
     build();
-    log("Done building abstraction.");
+    Log() << "Done building abstraction." << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
        last iteration, so we should update the h values. */
@@ -170,10 +170,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     }
 
     int num_states = get_num_states();
-    if (num_states % STATES_LOG_STEP == 0) {
-        cout << "Abstract states: " << num_states << "/" << max_states;
-        log_time_and_memory();
-    }
+    if (num_states % STATES_LOG_STEP == 0)
+        Log() << "Abstract states: " << num_states << "/" << max_states << endl;
 
     delete state;
 }

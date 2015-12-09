@@ -109,7 +109,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
 }
 
 void AdditiveCartesianHeuristic::initialize() {
-    log("Initializing additive Cartesian heuristic...");
+    Log() << "Initializing additive Cartesian heuristic..." << endl;
     reserve_extra_memory_padding();
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
@@ -124,7 +124,7 @@ void AdditiveCartesianHeuristic::initialize() {
 }
 
 void AdditiveCartesianHeuristic::print_statistics() const {
-    log("Done initializing additive Cartesian heuristic");
+    Log() << "Done initializing additive Cartesian heuristic" << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
     cout << "Cartesian heuristics stored: " << heuristics.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
