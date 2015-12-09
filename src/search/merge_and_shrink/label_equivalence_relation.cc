@@ -39,17 +39,35 @@ void LabelEquivalenceRelation::recompute_group_cost() {
     }
 }
 
-void LabelEquivalenceRelation::replace_labels_by_label(
-    const vector<int> &old_label_nos, int new_label_no) {
-    // Add new label to group
-    int group_id = get_group_id(old_label_nos.front());
-    add_label_to_group(group_id, new_label_no);
+void LabelEquivalenceRelation::apply_label_mapping(
+    const vector<pair<int, vector<int>>> &label_mapping,
+    bool from_same_group) {
+    for (const pair<int, vector<int>> &mapping : label_mapping) {
+        int new_label_no = mapping.first;
+        const vector<int> &old_label_nos = mapping.second;
 
-    // Remove old labels from group
-    for (int old_label_no : old_label_nos) {
-        LabelIter label_it = label_to_positions[old_label_no].second;
-        assert(group_id == get_group_id(old_label_no));
-        grouped_labels[group_id].erase(label_it);
+        // Add new label to group
+        int canonical_group_id = get_group_id(old_label_nos.front());
+        if (from_same_group) {
+            add_label_to_group(canonical_group_id, new_label_no);
+        } else {
+            add_label_group({new_label_no});
+        }
+
+        // Remove old labels from group
+        for (int old_label_no : old_label_nos) {
+            if (from_same_group) {
+                assert(canonical_group_id == get_group_id(old_label_no));
+            }
+            LabelIter label_it = label_to_positions[old_label_no].second;
+            grouped_labels[canonical_group_id].erase(label_it);
+        }
+    }
+
+    if (!from_same_group) {
+        // Recompute the cost of all label groups.
+        // TODO: collect group ids for which recomputation is required?
+        recompute_group_cost();
     }
 }
 
@@ -64,13 +82,6 @@ void LabelEquivalenceRelation::move_group_into_group(
         add_label_to_group(to_group_id, from_label_no);
     }
     from_group.clear();
-}
-
-bool LabelEquivalenceRelation::erase(int label_no) {
-    int group_id = get_group_id(label_no);
-    LabelIter label_it = label_to_positions[label_no].second;
-    grouped_labels[group_id].erase(label_it);
-    return grouped_labels[group_id].empty();
 }
 
 int LabelEquivalenceRelation::add_label_group(const vector<int> &new_labels) {
