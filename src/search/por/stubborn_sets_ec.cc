@@ -68,7 +68,7 @@ void StubbornSetsEC::build_dtgs() {
      */
 
     /*
-  NOTE: for expansion core, the DTG for v *does* include
+  NOTE: for stubborn sets ec, the DTG for v *does* include
   self-loops from d to d if there is an operator that sets the
   value of v to d and has no precondition on v. This is different
   from the usual DTG definition.
@@ -407,7 +407,7 @@ void StubbornSetsEC::do_pruning(const GlobalState &state, std::vector<const Glob
 }
 
 static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("StubbornSetsEC", "stubborn sets that dominate expansion core");
+    parser.document_synopsis("StubbornSetsEC", "stubborn set method that dominates expansion core");
 
     return make_shared<StubbornSetsEC>();
 }
