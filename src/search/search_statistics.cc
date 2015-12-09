@@ -1,11 +1,9 @@
 #include "search_statistics.h"
 
-#include "globals.h"
-#include "utilities.h"
-
 #include "utils/timer.h"
 
 #include <iostream>
+
 using namespace std;
 
 
