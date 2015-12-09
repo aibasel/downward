@@ -21,7 +21,7 @@ namespace AdditiveHeuristic {
 class AdditiveHeuristic;
 }
 
-namespace cegar {
+namespace CEGAR {
 class AbstractState;
 struct Flaw;
 

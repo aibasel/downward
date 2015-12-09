@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace cegar {
+namespace CEGAR {
 using Bitset = boost::dynamic_bitset<>;
 
 class Domains {

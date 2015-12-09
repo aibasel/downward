@@ -19,7 +19,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace CEGAR {
 struct Flaw {
     const State conc_state;
     AbstractState *abs_state;

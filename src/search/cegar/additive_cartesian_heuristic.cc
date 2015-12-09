@@ -22,7 +22,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace CEGAR {
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       options(opts),

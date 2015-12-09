@@ -14,7 +14,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace CEGAR {
 SplitSelector::SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick)
     : task(task),
       task_proxy(*task),

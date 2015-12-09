@@ -8,7 +8,7 @@
 class GlobalState;
 class Options;
 
-namespace cegar {
+namespace CEGAR {
 class CartesianHeuristic : public Heuristic {
     const SplitTree split_tree;
 

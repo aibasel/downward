@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace CEGAR {
 vector<int> Domains::orig_domain_sizes;
 int Domains::num_facts = -1;
 vector<int> Domains::borders;

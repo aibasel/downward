@@ -13,7 +13,7 @@
 using namespace std;
 
 
-namespace cegar {
+namespace CEGAR {
 bool DEBUG = false;
 
 shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(

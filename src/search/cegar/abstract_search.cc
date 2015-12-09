@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace CEGAR {
 AbstractSearch::AbstractSearch(const Options &opts)
     : use_general_costs(opts.get<bool>("use_general_costs")) {
 }

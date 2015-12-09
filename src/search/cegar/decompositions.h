@@ -14,7 +14,7 @@ namespace Landmarks {
 class LandmarkGraph;
 }
 
-namespace cegar {
+namespace CEGAR {
 using Fact = std::pair<int, int>;
 using Facts = std::vector<Fact>;
 using Task = std::shared_ptr<AbstractTask>;
