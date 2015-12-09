@@ -25,7 +25,8 @@ shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
     shared_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic =
         make_shared<AdditiveHeuristic::AdditiveHeuristic>(opts);
     TaskProxy task_proxy(*task);
-    additive_heuristic->initialize_and_compute_heuristic(task_proxy.get_initial_state());
+    additive_heuristic->initialize_and_compute_heuristic_for_cegar(
+        task_proxy.get_initial_state());
     return additive_heuristic;
 }
 
