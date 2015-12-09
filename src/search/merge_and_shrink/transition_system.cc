@@ -39,25 +39,25 @@ TSConstIterator::TSConstIterator(
     bool end)
     : label_equivalence_relation(label_equivalence_relation),
       transitions_by_group_id(transitions_by_group_id),
-      current((end ? label_equivalence_relation.get_size() : 0)) {
+      current_group_id((end ? label_equivalence_relation.get_size() : 0)) {
     next_valid_index();
 }
 
 void TSConstIterator::next_valid_index() {
-    while (current < label_equivalence_relation.get_size()
-           && label_equivalence_relation.get_group(current).empty()) {
-        ++current;
+    while (current_group_id < label_equivalence_relation.get_size()
+           && !label_equivalence_relation.is_active_group(current_group_id)) {
+        ++current_group_id;
     }
 }
 
 void TSConstIterator::operator++() {
-    ++current;
+    ++current_group_id;
     next_valid_index();
 }
 
 GroupAndTransitions TSConstIterator::operator*() const {
-    return GroupAndTransitions(label_equivalence_relation.get_group(current),
-                               transitions_by_group_id[current]);
+    return GroupAndTransitions(label_equivalence_relation.get_group(current_group_id),
+                               transitions_by_group_id[current_group_id]);
 }
 
 
@@ -235,15 +235,19 @@ void TransitionSystem::compute_locally_equivalent_labels() {
     */
     for (int group_id1 = 0; group_id1 < label_equivalence_relation->get_size();
          ++group_id1) {
-        const vector<Transition> &transitions1 = transitions_by_group_id[group_id1];
-        for (int group_id2 = group_id1 + 1;
-             group_id2 < label_equivalence_relation->get_size(); ++group_id2) {
-            vector<Transition> &transitions2 = transitions_by_group_id[group_id2];
-            if ((transitions1.empty() && transitions2.empty())
-                || transitions1 == transitions2) {
-                label_equivalence_relation->move_group_into_group(
-                    group_id2, group_id1);
-                release_vector_memory(transitions2);
+        if (label_equivalence_relation->is_active_group(group_id1)) {
+            const vector<Transition> &transitions1 = transitions_by_group_id[group_id1];
+            for (int group_id2 = group_id1 + 1;
+                 group_id2 < label_equivalence_relation->get_size(); ++group_id2) {
+                if (label_equivalence_relation->is_active_group(group_id2)) {
+                    vector<Transition> &transitions2 = transitions_by_group_id[group_id2];
+                    if ((transitions1.empty() && transitions2.empty())
+                        || transitions1 == transitions2) {
+                        label_equivalence_relation->move_group_into_group(
+                            group_id2, group_id1);
+                        release_vector_memory(transitions2);
+                    }
+                }
             }
         }
     }
