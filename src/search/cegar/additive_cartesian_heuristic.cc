@@ -155,9 +155,15 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_list_option<shared_ptr<Decomposition>>(
         "decompositions", "task decompositions", "[landmarks,goals]");
     parser.add_option<int>(
-        "max_states", "maximum number of abstract states", "infinity");
+        "max_states",
+        "maximum sum of abstract states over all abstractions",
+        "infinity",
+        Bounds("1", "infinity"));
     parser.add_option<double>(
-        "max_time", "maximum time in seconds for building abstractions", "900");
+        "max_time",
+        "maximum time in seconds for building abstractions",
+        "900",
+        Bounds("0.0", "infinity"));
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_UNWANTED");
