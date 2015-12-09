@@ -7,6 +7,12 @@
 
 #include <ostream>
 
+/*
+  Simple logger that prepends time and peak memory info to messages.
+
+  Usage:
+        Log() << "States: " << num_states << endl;
+*/
 struct Log {
     template<typename T>
     std::ostream &operator<<(const T &elem) {
