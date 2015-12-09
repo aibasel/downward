@@ -46,7 +46,7 @@ void CGHeuristic::initialize() {
 
     min_action_cost = numeric_limits<int>::max();
     for (OperatorProxy op : task_proxy.get_operators())
-        if (!op.is_axiom() && min_action_cost > op.get_cost())
+        if (min_action_cost > op.get_cost())
             min_action_cost = op.get_cost();
 }
 

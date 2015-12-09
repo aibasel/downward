@@ -23,7 +23,7 @@ class DomainTransitionGraph;
 class DTGFactory {
     const TaskProxy &task_proxy;
     bool collect_transition_side_effects;
-    const function<bool(int, int)> &pruning_condition;
+    function<bool(int, int)> pruning_condition;
 
     std::vector<std::unordered_map<std::pair<int, int>, int>> transition_index;
     std::vector<std::unordered_map<int, int>> global_to_local_var;
@@ -76,9 +76,9 @@ struct ValueTransitionLabel {
     vector<LocalAssignment> effect;
 
     ValueTransitionLabel(int op_id, bool axiom,
-                         const vector<LocalAssignment> &precond_,
-                         const vector<LocalAssignment> &effect_)
-        : op_id(op_id), is_axiom(axiom), precond(precond_), effect(effect_) {}
+                         const vector<LocalAssignment> &precond,
+                         const vector<LocalAssignment> &effect)
+        : op_id(op_id), is_axiom(axiom), precond(precond), effect(effect) {}
 };
 
 struct ValueTransition {
@@ -96,12 +96,11 @@ struct ValueNode {
     int value;
     vector<ValueTransition> transitions;
 
-    vector<int> distances;             // cg; empty vector if not yet requested
+    vector<int> distances;
     vector<ValueTransitionLabel *> helpful_transitions;
-    // cg; empty vector if not requested
-    vector<int> children_state;        // cg
-    ValueNode *reached_from;           // cg
-    ValueTransitionLabel *reached_by;  // cg
+    vector<int> children_state;
+    ValueNode *reached_from;
+    ValueTransitionLabel *reached_by;
 
     ValueNode(DomainTransitionGraph *parent, int val)
         : parent_graph(parent), value(val), reached_from(0), reached_by(0) {}
@@ -119,7 +118,7 @@ class DomainTransitionGraph {
     int var;
     vector<ValueNode> nodes;
 
-    int last_helpful_transition_extraction_time; // cg heuristic; "dirty bit"
+    int last_helpful_transition_extraction_time;
 
     vector<int> local_to_global_child;
     // used for mapping variables in conditions to their global index
