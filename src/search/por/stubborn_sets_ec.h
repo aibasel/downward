@@ -39,13 +39,12 @@ private:
     std::vector<ExpansionCoreDTG> dtgs;
     std::vector<std::vector<std::vector<bool> > > reachability_map;
     std::vector<std::vector<int> > v_precond;
-    std::vector<bool> stubborn_ec;
     std::vector<bool> active_ops;
-    std::vector<int> stubborn_ec_queue;
     std::vector<std::vector<int> > conflicting_and_disabling;
     std::vector<std::vector<int> > disabled;
     std::vector<bool> written_vars;
     std::vector<std::vector<bool> > nes_computed;
+    
     void get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars);
     void build_dtgs();
     void build_reachability_map();

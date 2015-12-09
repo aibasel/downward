@@ -227,9 +227,9 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
 
 //Adapted from SimpleStubbornSets
 void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
-    if (!stubborn_ec[op_no]) {
-        stubborn_ec[op_no] = true;
-        stubborn_ec_queue.push_back(op_no);
+    if (!stubborn[op_no]) {
+        stubborn[op_no] = true;
+        stubborn_queue.push_back(op_no);
 
         const GlobalOperator &op = g_operators[op_no];
         if (op.is_applicable(state)) {
@@ -332,8 +332,8 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
 
 
 void StubbornSetsEC::do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) {
-    stubborn_ec.clear();
-    stubborn_ec.assign(g_operators.size(), false);
+    stubborn.clear();
+    stubborn.assign(g_operators.size(), false);
     active_ops.clear();
     active_ops.assign(g_operators.size(), false);
 
@@ -351,10 +351,10 @@ void StubbornSetsEC::do_pruning(const GlobalState &state, std::vector<const Glob
     assert(goal_pair.first != -1);
     add_nes_for_fact(goal_pair, state);     // active operators used
 
-    while (!stubborn_ec_queue.empty()) {
-        int op_no = stubborn_ec_queue.back();
+    while (!stubborn_queue.empty()) {
+        int op_no = stubborn_queue.back();
 
-        stubborn_ec_queue.pop_back();
+        stubborn_queue.pop_back();
         const GlobalOperator &op = g_operators[op_no];
         if (op.is_applicable(state)) {
             //Rule S2 & S3
@@ -397,7 +397,7 @@ void StubbornSetsEC::do_pruning(const GlobalState &state, std::vector<const Glob
     for (size_t i = 0; i < applicable_ops.size(); ++i) {
         const GlobalOperator *op = applicable_ops[i];
         int op_no = get_op_index(op);
-        if (stubborn_ec[op_no])
+        if (stubborn[op_no])
             pruned_ops.push_back(op);
     }
     if (pruned_ops.size() != applicable_ops.size()) {

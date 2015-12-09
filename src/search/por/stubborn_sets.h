@@ -23,6 +23,16 @@ protected:
     // operators that achieve the fact (var, value).
     std::vector<std::vector<std::vector<int> > > achievers;
 
+     // stubborn[op_no] is true iff the operator with operator index
+    // op_no is contained in the stubborn set
+    std::vector<bool> stubborn;
+
+    // stubborn_queue contains the operator indices of operators that
+    // have been marked and stubborn but have not yet been processed
+    // (i.e. more operators might need to be added to stubborn because
+    // of the operators in the queue).
+    std::vector<int> stubborn_queue;
+
     bool can_disable(int op1_no, int op2_no);
     bool can_conflict(int op1_no, int op2_no);
     bool interfere(int op1_no, int op2_no);

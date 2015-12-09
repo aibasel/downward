@@ -9,17 +9,7 @@ class StubbornSetsSimple : public StubbornSets::StubbornSets {
 
     // interference_relation[op1_no] contains all operator indices
     // of operators that interfere with op1.
-    std::vector<std::vector<int> > interference_relation;
-
-    // stubborn[op_no] is true iff the operator with operator index
-    // op_no is contained in the stubborn set
-    std::vector<bool> stubborn;
-
-    // stubborn_queue contains the operator indices of operators that
-    // have been marked and stubborn but have not yet been processed
-    // (i.e. more operators might need to be added to stubborn because
-    // of the operators in the queue).
-    std::vector<int> stubborn_queue;
+    std::vector<std::vector<int> > interference_relation;   
 
     void mark_as_stubborn(int op_no);
     void add_nes_for_fact(std::pair<int, int> fact);
