@@ -4,7 +4,6 @@
 #include "../por_method.h"
 
 namespace StubbornSets {
-
 struct Fact {
     int var;
     int val;
@@ -14,16 +13,16 @@ struct Fact {
 class StubbornSets : public PORMethod {
     long unpruned_successors_generated;
     long pruned_successors_generated;
-        
+
 protected:
-    std::vector<std::vector<Fact> > op_preconds;
-    std::vector<std::vector<Fact> > op_effects;
-    
+    std::vector<std::vector<Fact>> op_preconds;
+    std::vector<std::vector<Fact>> op_effects;
+
     // achievers[var][value] contains all operator indices of
     // operators that achieve the fact (var, value).
-    std::vector<std::vector<std::vector<int> > > achievers;
+    std::vector<std::vector<std::vector<int>>> achievers;
 
-     // stubborn[op_no] is true iff the operator with operator index
+    // stubborn[op_no] is true iff the operator with operator index
     // op_no is contained in the stubborn set
     std::vector<bool> stubborn;
 

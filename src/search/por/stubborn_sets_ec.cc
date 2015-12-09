@@ -8,7 +8,6 @@
 using namespace std;
 
 namespace StubbornSetsEC {
-
 // TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
     int op_index = op - &*g_operators.begin();
@@ -16,7 +15,7 @@ static inline int get_op_index(const GlobalOperator *op) {
     return op_index;
 }
 
-static inline bool is_v_applicable(int var, int op_no, const GlobalState &state, std::vector<std::vector<int> > &v_precond) {
+static inline bool is_v_applicable(int var, int op_no, const GlobalState &state, std::vector<std::vector<int>> &v_precond) {
     int vprecond = v_precond[op_no][var];
     return vprecond == -1 || vprecond == state[var];
 }
@@ -51,8 +50,7 @@ void StubbornSetsEC::initialize() {
         nes_computed.push_back(vector<bool>(g_variable_domain[i], false));
     }
 
-    cout << "Initialized stubborn sets ec" << endl; 
-    
+    cout << "Initialized stubborn sets ec" << endl;
 }
 
 void StubbornSetsEC::dump_options() const {
@@ -102,36 +100,36 @@ void StubbornSetsEC::build_dtgs() {
     for (uint op_no = 0; op_no < g_operators.size(); ++op_no) {
         const GlobalOperator &op = g_operators[op_no];
 
-	const vector<GlobalEffect> &effects = op.get_effects();
-	for (uint i = 0; i < effects.size(); ++i) {
-	    int eff_var = effects[i].var;
-	    int eff_val = effects[i].val;
-	    
-	    int pre_var = -1;
-	    int pre_val = -1;
-	    
-	    const vector<GlobalCondition> &preconds = op.get_preconditions();
-	    for (uint j = 0; j < preconds.size(); j++) {
-		if (preconds[j].var == eff_var) {
-		    pre_var = preconds[j].var;
-		    pre_val = preconds[j].val;
-		    break;
-		}
-	    }
+        const vector<GlobalEffect> &effects = op.get_effects();
+        for (uint i = 0; i < effects.size(); ++i) {
+            int eff_var = effects[i].var;
+            int eff_val = effects[i].val;
 
-	    StubbornDTG &dtg = dtgs[eff_var];
-	    int pre_value_min, pre_value_max;
-	    if (pre_var == -1) {
+            int pre_var = -1;
+            int pre_val = -1;
+
+            const vector<GlobalCondition> &preconds = op.get_preconditions();
+            for (uint j = 0; j < preconds.size(); j++) {
+                if (preconds[j].var == eff_var) {
+                    pre_var = preconds[j].var;
+                    pre_val = preconds[j].val;
+                    break;
+                }
+            }
+
+            StubbornDTG &dtg = dtgs[eff_var];
+            int pre_value_min, pre_value_max;
+            if (pre_var == -1) {
                 pre_value_min = 0;
                 pre_value_max = g_variable_domain[eff_var];
             } else {
                 pre_value_min = pre_val;
                 pre_value_max = pre_val + 1;
             }
-		
-	    for (int value = pre_value_min; value < pre_value_max; ++value) {
-		dtg.nodes[value].outgoing.push_back(StubbornDTG::Arc(eff_val, op_no));
-		dtg.nodes[eff_val].incoming.push_back(StubbornDTG::Arc(value, op_no));
+
+            for (int value = pre_value_min; value < pre_value_max; ++value) {
+                dtg.nodes[value].outgoing.push_back(StubbornDTG::Arc(eff_val, op_no));
+                dtg.nodes[eff_val].incoming.push_back(StubbornDTG::Arc(value, op_no));
             }
         }
     }
@@ -142,13 +140,12 @@ void StubbornSetsEC::compute_v_precond() {
     for (uint op_no = 0; op_no < g_operators.size(); op_no++) {
         v_precond[op_no].resize(g_variable_name.size(), -1);
         for (uint var = 0; var < g_variable_name.size(); var++) {
-
-	    const vector<GlobalCondition> &preconds = g_operators[op_no].get_preconditions();
-	    for (size_t i = 0; i < preconds.size(); i++) {
-		if (preconds[i].var == (int) var) {
+            const vector<GlobalCondition> &preconds = g_operators[op_no].get_preconditions();
+            for (size_t i = 0; i < preconds.size(); i++) {
+                if (preconds[i].var == (int)var) {
                     v_precond[op_no][var] = preconds[i].val;
                 }
-	    }
+            }
         }
     }
 }
@@ -184,19 +181,19 @@ void StubbornSetsEC::compute_active_operators(const GlobalState &state) {
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         GlobalOperator &op = g_operators[op_no];
         bool all_preconditions_are_active = true;
-	
-	const vector<GlobalCondition> &preconds = op.get_preconditions();
-	for (size_t i = 0; i < preconds.size(); i++) {
-	    int var = preconds[i].var;
-	    int value = preconds[i].val;
-	    int current_value = state[var];
-	    vector<bool> &reachable_values = reachability_map[var][current_value];
-	    if (!reachable_values[value]) {
+
+        const vector<GlobalCondition> &preconds = op.get_preconditions();
+        for (size_t i = 0; i < preconds.size(); i++) {
+            int var = preconds[i].var;
+            int value = preconds[i].val;
+            int current_value = state[var];
+            vector<bool> &reachable_values = reachability_map[var][current_value];
+            if (!reachable_values[value]) {
                 all_preconditions_are_active = false;
                 break;
             }
-	}
-	 
+        }
+
         if (all_preconditions_are_active) {
             active_ops[op_no] = true;
         }
@@ -233,7 +230,7 @@ void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
 
         const GlobalOperator &op = g_operators[op_no];
         if (op.is_applicable(state)) {
-	    const vector<GlobalEffect> &effects = op.get_effects();
+            const vector<GlobalEffect> &effects = op.get_effects();
             for (size_t i = 0; i < effects.size(); ++i) {
                 int var = effects[i].var;
                 written_vars[var] = true;
@@ -298,9 +295,9 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
 
     const vector<GlobalCondition> &preconds = op.get_preconditions();
     for (size_t i = 0; i < preconds.size(); i++) {
-	int var = preconds[i].var;
-	int value = preconds[i].val;
-	
+        int var = preconds[i].var;
+        int value = preconds[i].val;
+
         if (state[var] != value) {
             if (written_vars[var]) {
                 if (!nes_computed[var][value]) {

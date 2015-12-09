@@ -89,7 +89,7 @@ void StubbornSetsSimple::compute_interference_relation() {
                 interfere_op1.push_back(op2_no);
         }
 
-	num_interfering_pairs += interfere_op1.size();
+        num_interfering_pairs += interfere_op1.size();
     }
 }
 
