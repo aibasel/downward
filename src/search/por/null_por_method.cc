@@ -6,7 +6,6 @@
 using namespace std;
 
 namespace NullPORMethod {
-
 NullPORMethod::NullPORMethod() {}
 
 NullPORMethod::~NullPORMethod() {}

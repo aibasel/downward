@@ -74,7 +74,7 @@ void EagerSearch::initialize() {
 
         open_list->insert(eval_context, initial_state.get_id());
     }
-    
+
     partial_order_reduction_method->dump_options();
     partial_order_reduction_method->initialize();
     print_initial_h_values(eval_context);
@@ -112,7 +112,7 @@ SearchStatus EagerSearch::step() {
     // operator will be considered by the preferred operator queues
     // even when pruned by the POR method.
     partial_order_reduction_method->prune_operators(s, applicable_ops);
-    
+
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
     for (Heuristic *heur : preferred_operator_heuristics) {
@@ -324,7 +324,7 @@ static SearchEngine *_parse(OptionParser &parser) {
                             "reopen closed nodes", "false");
 
     parser.add_option<shared_ptr<PORMethod>>(
-	"partial_order_reduction",
+        "partial_order_reduction",
         "partial order reduction method",
         "null()");
 
@@ -373,7 +373,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
                             "use multi-path dependence (LM-A*)", "false");
 
     parser.add_option<shared_ptr<PORMethod>>(
-	"partial_order_reduction",
+        "partial_order_reduction",
         "partial order reduction method",
         "null()");
 
@@ -442,10 +442,10 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
         "boost",
         "boost value for preferred operator open lists", "0");
     parser.add_option<shared_ptr<PORMethod>>(
-	"partial_order_reduction",
+        "partial_order_reduction",
         "partial order reduction method",
         "null()");
-					     
+
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();

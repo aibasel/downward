@@ -4,7 +4,6 @@
 #include "stubborn_sets.h"
 
 namespace StubbornSetsEC {
-
 struct StubbornDTG {
     struct Arc {
         Arc(int target_value_, int operator_no_)
@@ -26,8 +25,8 @@ struct StubbornDTG {
     void recurse_forwards(int value, std::vector<bool> &reachable) const;
     void recurse_backwards(int value, std::vector<bool> &relevant) const;
 public:
-    StubbornDTG() {};
-    ~StubbornDTG() {};
+    StubbornDTG() {}
+    ~StubbornDTG() {}
 
     void forward_reachability_analysis(int start_value,
                                        std::vector<bool> &reachable) const;
@@ -37,14 +36,14 @@ public:
 class StubbornSetsEC : public StubbornSets::StubbornSets {
 private:
     std::vector<StubbornDTG> dtgs;
-    std::vector<std::vector<std::vector<bool> > > reachability_map;
-    std::vector<std::vector<int> > v_precond;
+    std::vector<std::vector<std::vector<bool>>> reachability_map;
+    std::vector<std::vector<int>> v_precond;
     std::vector<bool> active_ops;
-    std::vector<std::vector<int> > conflicting_and_disabling;
-    std::vector<std::vector<int> > disabled;
+    std::vector<std::vector<int>> conflicting_and_disabling;
+    std::vector<std::vector<int>> disabled;
     std::vector<bool> written_vars;
-    std::vector<std::vector<bool> > nes_computed;
-    
+    std::vector<std::vector<bool>> nes_computed;
+
     void get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars);
     void build_dtgs();
     void build_reachability_map();

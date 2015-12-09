@@ -9,7 +9,6 @@
 using namespace std;
 
 namespace StubbornSets {
-
 StubbornSets::StubbornSets()
     : unpruned_successors_generated(0),
       pruned_successors_generated(0) {
@@ -76,27 +75,27 @@ bool StubbornSets::interfere(int op1_no, int op2_no) {
 void StubbornSets::compute_sorted_operators() {
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         GlobalOperator *op = &g_operators[op_no];
-	
-	const vector<GlobalCondition> &preconds = op->get_preconditions();
-	const vector<GlobalEffect> &effects = op->get_effects();
+
+        const vector<GlobalCondition> &preconds = op->get_preconditions();
+        const vector<GlobalEffect> &effects = op->get_effects();
 
         vector<Fact> pre;
         vector<Fact> eff;
 
-	for (size_t i = 0; i < preconds.size(); i++) {
-	    int var = preconds[i].var;
-	    int val = preconds[i].val;
-	    Fact p(var, val);
-	    pre.push_back(p);
-	}
-	
-	for (size_t i = 0; i < effects.size(); i++) {
-	    int var = effects[i].var;
-	    int val = effects[i].val;
-	    Fact e(var, val);
-	    eff.push_back(e);
-	}
-	
+        for (size_t i = 0; i < preconds.size(); i++) {
+            int var = preconds[i].var;
+            int val = preconds[i].val;
+            Fact p(var, val);
+            pre.push_back(p);
+        }
+
+        for (size_t i = 0; i < effects.size(); i++) {
+            int var = effects[i].var;
+            int val = effects[i].val;
+            Fact e(var, val);
+            eff.push_back(e);
+        }
+
         if (pre.size() != 0) {
             sort(pre.begin(), pre.end());
             for (size_t i = 0; i < pre.size() - 1; ++i) {
@@ -120,7 +119,7 @@ void StubbornSets::compute_achievers() {
 
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         const GlobalOperator &op = g_operators[op_no];
-	const vector<GlobalEffect> &effects = op.get_effects();
+        const vector<GlobalEffect> &effects = op.get_effects();
         for (size_t i = 0; i < effects.size(); ++i) {
             int var = effects[i].var;
             int value = effects[i].val;
@@ -142,5 +141,4 @@ void StubbornSets::dump_statistics() const {
          << "total successors after partial-order reduction: "
          << pruned_successors_generated << endl;
 }
-
 }
