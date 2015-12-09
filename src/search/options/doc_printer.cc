@@ -1,112 +1,15 @@
-#include "option_parser_util.h"
+#include "doc_printer.h"
 
-#include "../utilities.h"
+#include "doc_store.h"
 
-#include <typeindex>
-#include <typeinfo>
-#include <vector>
+#include <iostream>
 
 using namespace std;
 
 
-ostream &operator<<(ostream &out, const Bounds &bounds) {
-    if (!bounds.min.empty() || !bounds.max.empty())
-        out << "[" << bounds.min << ", " << bounds.max << "]";
-    return out;
+static bool is_call(string s) {
+    return s.find("(") != string::npos;
 }
-
-void DocStore::register_object(string k, string type) {
-    transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
-    registered[k] = DocStruct();
-    registered[k].type = type;
-    registered[k].full_name = k;
-    registered[k].synopsis = "";
-    registered[k].hidden = false;
-}
-
-void DocStore::add_arg(string k,
-                       string arg_name,
-                       string help,
-                       string type,
-                       string default_value,
-                       Bounds bounds,
-                       ValueExplanations value_explanations) {
-    registered[k].arg_help.push_back(
-        ArgumentInfo(arg_name, help, type, default_value, bounds,
-                     value_explanations));
-}
-
-void DocStore::add_value_explanations(string k,
-                                      string arg_name,
-                                      ValueExplanations value_explanations) {
-    vector<ArgumentInfo> &args = registered[k].arg_help;
-    for (size_t i = 0; i < args.size(); ++i) {
-        if (args[i].kwd.compare(arg_name) == 0) {
-            args[i].value_explanations = value_explanations;
-            break;
-        }
-    }
-}
-
-
-void DocStore::set_synopsis(string k,
-                            string name, string description) {
-    registered[k].full_name = name;
-    registered[k].synopsis = description;
-}
-
-void DocStore::add_property(string k,
-                            string name, string description) {
-    registered[k].property_help.push_back(PropertyInfo(name, description));
-}
-
-void DocStore::add_feature(string k,
-                           string feature, string description) {
-    registered[k].support_help.push_back(LanguageSupportInfo(feature,
-                                                             description));
-}
-
-void DocStore::add_note(string k,
-                        string name, string description, bool long_text) {
-    registered[k].notes.push_back(NoteInfo(name, description, long_text));
-}
-
-void DocStore::hide(std::string k) {
-    registered[k].hidden = true;
-}
-
-
-bool DocStore::contains(string k) {
-    return registered.find(k) != registered.end();
-}
-
-DocStruct DocStore::get(string k) {
-    return registered[k];
-}
-
-vector<string> DocStore::get_keys() {
-    vector<string> keys;
-    for (map<string, DocStruct>::iterator it =
-             registered.begin();
-         it != registered.end(); ++it) {
-        keys.push_back(it->first);
-    }
-    return keys;
-}
-
-vector<string> DocStore::get_types() {
-    vector<string> types;
-    for (map<string, DocStruct>::iterator it =
-             registered.begin();
-         it != registered.end(); ++it) {
-        if (find(types.begin(), types.end(), it->second.type)
-            == types.end()) {
-            types.push_back(it->second.type);
-        }
-    }
-    return types;
-}
-
 
 DocPrinter::DocPrinter(ostream &out)
     : os(out) {
@@ -114,7 +17,6 @@ DocPrinter::DocPrinter(ostream &out)
 
 DocPrinter::~DocPrinter() {
 }
-
 
 void DocPrinter::print_all() {
     DocStore *ds = DocStore::instance();
@@ -179,10 +81,6 @@ void Txt2TagsPrinter::print_usage(string call_name, const DocStruct &info) {
     }
 }
 
-static bool is_call(string s) {
-    return s.find("(") != string::npos;
-}
-
 void Txt2TagsPrinter::print_arguments(const DocStruct &info) {
     for (size_t i = 0; i < info.arg_help.size(); ++i) {
         ArgumentInfo arg = info.arg_help[i];
@@ -237,7 +135,6 @@ void Txt2TagsPrinter::print_properties(const DocStruct &info) {
         os << "- **" << p.property << ":** " << p.description << endl;
     }
 }
-
 
 void Txt2TagsPrinter::print_category_header(string category_name) {
     os << ">>>>CATEGORY: " << category_name << "<<<<" << endl;
@@ -333,22 +230,4 @@ void PlainPrinter::print_category_header(string category_name) {
 
 void PlainPrinter::print_category_footer() {
     os << endl;
-}
-
-PluginTypeRegistry *PluginTypeRegistry::instance() {
-    static PluginTypeRegistry the_instance;
-    return &the_instance;
-}
-
-void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
-    if (registry.count(info.get_type())) {
-        std::cerr << "duplicate type in registry: "
-                  << info.get_type().name() << std::endl;
-        exit_with(EXIT_CRITICAL_ERROR);
-    }
-    registry.insert(make_pair(info.get_type(), info));
-}
-
-const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
-    return registry.at(type);
 }

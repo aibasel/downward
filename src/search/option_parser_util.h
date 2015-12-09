@@ -3,6 +3,8 @@
 
 /* We use this temporary stub to avoid merge conflicts while we move the
    option parser code into a subdirectory. */
-#include "options/option_parser_util.h"
+#include "options/bounds.h"
+#include "options/options.h"
+#include "options/synergy.h"
 
 #endif
