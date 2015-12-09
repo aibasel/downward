@@ -3,8 +3,6 @@
 #include "timer.h"
 #include "utilities.h"
 
-#include "../globals.h"
-
 #include <iomanip>
 #include <iostream>
 #include <vector>
