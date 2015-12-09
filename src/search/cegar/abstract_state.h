@@ -13,7 +13,7 @@ class OperatorProxy;
 class State;
 class TaskProxy;
 
-namespace cegar {
+namespace CEGAR {
 class AbstractState;
 class Node;
 

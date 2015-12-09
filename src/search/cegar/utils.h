@@ -19,7 +19,7 @@ namespace AdditiveHeuristic {
 class AdditiveHeuristic;
 }
 
-namespace cegar {
+namespace CEGAR {
 extern bool DEBUG;
 
 const int UNDEFINED = -1;

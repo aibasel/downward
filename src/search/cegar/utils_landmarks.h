@@ -12,7 +12,7 @@ namespace Landmarks {
 class LandmarkGraph;
 }
 
-namespace cegar {
+namespace CEGAR {
 using VarToValues = std::unordered_map<int, std::vector<int>>;
 
 std::shared_ptr<Landmarks::LandmarkGraph> get_landmark_graph();

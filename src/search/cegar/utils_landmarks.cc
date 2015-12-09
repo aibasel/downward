@@ -11,7 +11,7 @@
 using namespace std;
 using namespace Landmarks;
 
-namespace cegar {
+namespace CEGAR {
 static Fact get_fact(const LandmarkNode *node) {
     assert(node);
     assert(node->vars.size() == 1);

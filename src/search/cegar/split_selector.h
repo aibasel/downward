@@ -12,7 +12,7 @@ namespace AdditiveHeuristic {
 class AdditiveHeuristic;
 }
 
-namespace cegar {
+namespace CEGAR {
 class AbstractState;
 
 // Strategies for selecting a split in case there are multiple possibilities.

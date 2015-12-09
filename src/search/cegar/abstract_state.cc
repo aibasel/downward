@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace CEGAR {
 AbstractState::AbstractState(const Domains &domains, Node *node)
     : domains(domains),
       node(node) {

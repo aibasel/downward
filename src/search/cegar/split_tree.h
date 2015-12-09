@@ -8,7 +8,7 @@
 
 class State;
 
-namespace cegar {
+namespace CEGAR {
 class Node {
     static const int UNDEFINED = -2;
     /*

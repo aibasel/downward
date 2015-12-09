@@ -12,7 +12,7 @@
 
 class Options;
 
-namespace cegar {
+namespace CEGAR {
 class AbstractState;
 
 using AbstractStates = std::unordered_set<AbstractState *>;

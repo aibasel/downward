@@ -19,7 +19,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace CEGAR {
 NoDecomposition::NoDecomposition(const Options &opts)
     : num_copies(opts.get<int>("copies")) {
 }

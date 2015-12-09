@@ -53,7 +53,7 @@
 
 class CountdownTimer;
 
-namespace cegar {
+namespace CEGAR {
 class CartesianHeuristic;
 class Decomposition;
 
