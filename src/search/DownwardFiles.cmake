@@ -106,8 +106,12 @@ fast_downward_plugin(
         options/errors.cc
         options/option_parser.cc
         options/option_parser_util.cc
+        options/options.cc
         options/plugin.cc
+        options/registries.cc
         options/token_parser.cc
+        options/type_documenter.cc
+        options/type_namer.cc
     CORE_PLUGIN
 )
 
