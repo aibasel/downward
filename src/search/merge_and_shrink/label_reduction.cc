@@ -8,9 +8,10 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
 #include "../task_proxy.h"
 #include "../utilities.h"
+
+#include "../utils/rng.h"
 
 #include <cassert>
 #include <iostream>

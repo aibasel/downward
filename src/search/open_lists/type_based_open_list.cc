@@ -5,7 +5,8 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
+
+#include "../utils/rng.h"
 
 #include <memory>
 #include <unordered_map>

@@ -7,9 +7,10 @@
 #include "type_documenter.h"
 
 #include "../globals.h"
-#include "../rng.h"
 
 #include "../ext/tree_util.hh"
+
+#include "../utils/rng.h"
 
 #include <algorithm>
 #include <cassert>

@@ -6,12 +6,13 @@
 #include "global_state.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "rng.h"
 #include "root_task.h"
 #include "state_registry.h"
 #include "successor_generator.h"
-#include "timer.h"
 #include "utilities.h"
+
+#include "utils/rng.h"
+#include "utils/timer.h"
 
 #include <cstdlib>
 #include <fstream>

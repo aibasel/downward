@@ -2,8 +2,9 @@
 
 #include "pattern_database.h"
 
-#include "../timer.h"
 #include "../utilities_hash.h"
+
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>

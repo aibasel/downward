@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-#include "../timer.h"
+#include "../utils/timer.h"
 
 #include <fstream>
 #include <limits>

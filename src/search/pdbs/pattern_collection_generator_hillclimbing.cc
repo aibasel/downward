@@ -6,13 +6,14 @@
 #include "validation.h"
 
 #include "../causal_graph.h"
-#include "../countdown_timer.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../sampling.h"
 #include "../task_tools.h"
-#include "../timer.h"
 #include "../utilities.h"
+
+#include "../utils/countdown_timer.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>

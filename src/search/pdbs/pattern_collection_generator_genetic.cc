@@ -7,10 +7,11 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
 #include "../task_proxy.h"
-#include "../timer.h"
 #include "../utilities.h"
+
+#include "../utils/rng.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <cassert>

@@ -3,7 +3,7 @@
 #include "canonical_pdbs.h"
 #include "pattern_database.h"
 
-#include "../timer.h"
+#include "../utils/timer.h"
 
 #include <iostream>
 #include <limits>

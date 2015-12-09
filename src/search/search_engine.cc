@@ -1,11 +1,12 @@
 #include "search_engine.h"
 
-#include "countdown_timer.h"
 #include "evaluation_context.h"
 #include "globals.h"
 #include "operator_cost.h"
 #include "option_parser.h"
 #include "plugin.h"
+
+#include "utils/countdown_timer.h"
 
 #include <cassert>
 #include <iostream>
