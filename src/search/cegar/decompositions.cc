@@ -180,4 +180,8 @@ static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
 static PluginShared<Decomposition> _plugin_original("original", _parse_original);
 static PluginShared<Decomposition> _plugin_goals("goals", _parse_goals);
 static PluginShared<Decomposition> _plugin_landmarks("landmarks", _parse_landmarks);
+
+static PluginTypePlugin<Decomposition> _type_plugin(
+    "Decomposition",
+    "Task decomposition (used by additive CEGAR heuristic).");
 }
