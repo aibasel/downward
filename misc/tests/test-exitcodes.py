@@ -30,7 +30,7 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
          'max_states=50000,'
         'threshold=1,'
         'greedy=false),'
-    'label_reduction=label_reduction('
+    'label_reduction=exact('
         'before_shrinking=true,'
         'before_merging=false)'
 '))')

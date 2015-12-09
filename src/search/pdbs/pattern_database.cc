@@ -5,17 +5,19 @@
 #include "../priority_queue.h"
 #include "../task_tools.h"
 #include "../timer.h"
-#include "../utilities.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <limits>
 #include <string>
 #include <vector>
 
 using namespace std;
 
+
+namespace PDBs {
 AbstractOperator::AbstractOperator(const vector<pair<int, int>> &prev_pairs,
                                    const vector<pair<int, int>> &pre_pairs,
                                    const vector<pair<int, int>> &eff_pairs,
@@ -48,7 +50,7 @@ AbstractOperator::AbstractOperator(const vector<pair<int, int>> &prev_pairs,
 AbstractOperator::~AbstractOperator() {
 }
 
-void AbstractOperator::dump(const vector<int> &pattern,
+void AbstractOperator::dump(const Pattern &pattern,
                             const TaskProxy &task_proxy) const {
     cout << "AbstractOperator:" << endl;
     cout << "Regression preconditions:" << endl;
@@ -64,7 +66,7 @@ void AbstractOperator::dump(const vector<int> &pattern,
 
 PatternDatabase::PatternDatabase(
     const TaskProxy &task_proxy,
-    const vector<int> &pattern,
+    const Pattern &pattern,
     bool dump,
     const vector<int> &operator_costs)
     : task_proxy(task_proxy),
@@ -299,4 +301,5 @@ bool PatternDatabase::is_operator_relevant(const OperatorProxy &op) const {
         }
     }
     return false;
+}
 }

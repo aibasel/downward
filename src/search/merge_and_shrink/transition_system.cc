@@ -13,7 +13,6 @@
 #include <cctype>
 #include <iostream>
 #include <iterator>
-#include <limits>
 #include <set>
 #include <sstream>
 #include <string>
@@ -21,6 +20,8 @@
 
 using namespace std;
 
+
+namespace MergeAndShrink {
 /*
   Implementation note: Transitions are grouped by their label groups,
   not by source state or any such thing. Such a grouping is beneficial
@@ -36,40 +37,34 @@ using namespace std;
   computation is not worth the overhead.
 */
 
-const int INF = numeric_limits<int>::max();
-
-
-TSConstIterator::TSConstIterator(
-    const shared_ptr<LabelEquivalenceRelation> label_equivalence_relation,
-    const vector<vector<Transition>> &transitions_by_group_id,
-    bool end)
-    : label_equivalence_relation(label_equivalence_relation),
-      transitions_by_group_id(transitions_by_group_id),
-      current((end ? label_equivalence_relation->get_size() : 0)) {
-    while (current < label_equivalence_relation->get_size()
-           && (*label_equivalence_relation)[current].empty()) {
+TSConstIterator::TSConstIterator(const TransitionSystem &ts, bool end)
+    : label_equivalence_relation(*ts.label_equivalence_relation),
+      transitions_by_group_id(ts.transitions_by_group_id),
+      current((end ? label_equivalence_relation.get_size() : 0)) {
+    while (current < label_equivalence_relation.get_size()
+           && label_equivalence_relation.get_group(current).empty()) {
         ++current;
     }
 }
 
 void TSConstIterator::operator++() {
     ++current;
-    while (current < label_equivalence_relation->get_size()
-           && (*label_equivalence_relation)[current].empty()) {
+    while (current < label_equivalence_relation.get_size()
+           && label_equivalence_relation.get_group(current).empty()) {
         ++current;
     }
 }
 
 int TSConstIterator::get_cost() const {
-    return (*label_equivalence_relation)[current].get_cost();
+    return label_equivalence_relation.get_group(current).get_cost();
 }
 
 LabelConstIter TSConstIterator::begin() const {
-    return (*label_equivalence_relation)[current].begin();
+    return label_equivalence_relation.get_group(current).begin();
 }
 
 LabelConstIter TSConstIterator::end() const {
-    return (*label_equivalence_relation)[current].end();
+    return label_equivalence_relation.get_group(current).end();
 }
 
 
@@ -77,16 +72,16 @@ const int TransitionSystem::PRUNED_STATE = -1;
 
 // common case for both constructors
 TransitionSystem::TransitionSystem(int num_variables,
-                                   const shared_ptr<Labels> labels)
+                                   const Labels &labels)
     : num_variables(num_variables),
-      label_equivalence_relation(make_shared<LabelEquivalenceRelation>(labels)) {
-    transitions_by_group_id.resize(labels->get_max_size());
+      label_equivalence_relation(make_unique_ptr<LabelEquivalenceRelation>(labels)) {
+    transitions_by_group_id.resize(labels.get_max_size());
 }
 
 // atomic transition system constructor
 TransitionSystem::TransitionSystem(
     const TaskProxy &task_proxy,
-    const shared_ptr<Labels> labels,
+    const Labels &labels,
     int var_id,
     vector<vector<Transition>> &&transitions_by_label)
     : TransitionSystem(task_proxy.get_variables().size(), labels) {
@@ -110,7 +105,7 @@ TransitionSystem::TransitionSystem(
       but this would perhaps leak an implementation detail that the
       factory should not care about.
     */
-    transitions_by_group_id.resize(labels->get_max_size());
+    transitions_by_group_id.resize(labels.get_max_size());
 
     incorporated_variables.push_back(var_id);
 
@@ -144,8 +139,7 @@ TransitionSystem::TransitionSystem(
     int num_ops = task_proxy.get_operators().size();
     for (int label_no = 0; label_no < num_ops; ++label_no) {
         // We use the label number as index for transitions of groups
-        label_equivalence_relation->add_label_group({label_no}
-                                                    );
+        label_equivalence_relation->add_label_group({label_no});
         // We could assert that the return value equals label_no, but not
         // easily in release mode without unused variable error.
     }
@@ -155,33 +149,33 @@ TransitionSystem::TransitionSystem(
 }
 
 // constructor for merges
-TransitionSystem::TransitionSystem(const shared_ptr<Labels> labels,
-                                   TransitionSystem *ts1,
-                                   TransitionSystem *ts2)
-    : TransitionSystem(ts1->num_variables, labels) {
-    cout << "Merging " << ts1->description() << " and "
-         << ts2->description() << endl;
+TransitionSystem::TransitionSystem(const Labels &labels,
+                                   const TransitionSystem &ts1,
+                                   const TransitionSystem &ts2)
+    : TransitionSystem(ts1.num_variables, labels) {
+    cout << "Merging " << ts1.description() << " and "
+         << ts2.description() << endl;
 
-    assert(ts1->is_solvable() && ts2->is_solvable());
-    assert(ts1->are_transitions_sorted_unique() && ts2->are_transitions_sorted_unique());
+    assert(ts1.is_solvable() && ts2.is_solvable());
+    assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
 
     ::set_union(
-        ts1->incorporated_variables.begin(), ts1->incorporated_variables.end(),
-        ts2->incorporated_variables.begin(), ts2->incorporated_variables.end(),
+        ts1.incorporated_variables.begin(), ts1.incorporated_variables.end(),
+        ts2.incorporated_variables.begin(), ts2.incorporated_variables.end(),
         back_inserter(incorporated_variables));
 
-    int ts1_size = ts1->get_size();
-    int ts2_size = ts2->get_size();
+    int ts1_size = ts1.get_size();
+    int ts2_size = ts2.get_size();
     num_states = ts1_size * ts2_size;
     goal_states.resize(num_states, false);
-    goal_relevant = (ts1->goal_relevant || ts2->goal_relevant);
+    goal_relevant = (ts1.goal_relevant || ts2.goal_relevant);
 
     for (int s1 = 0; s1 < ts1_size; ++s1) {
         for (int s2 = 0; s2 < ts2_size; ++s2) {
             int state = s1 * ts2_size + s2;
-            if (ts1->goal_states[s1] && ts2->goal_states[s2])
+            if (ts1.goal_states[s1] && ts2.goal_states[s2])
                 goal_states[state] = true;
-            if (s1 == ts1->init_state && s2 == ts2->init_state)
+            if (s1 == ts1.init_state && s2 == ts2.init_state)
                 init_state = state;
         }
     }
@@ -197,15 +191,15 @@ TransitionSystem::TransitionSystem(const shared_ptr<Labels> labels,
     */
     int multiplier = ts2_size;
     vector<int> dead_labels;
-    for (TSConstIterator group1_it = ts1->begin();
-         group1_it != ts1->end(); ++group1_it) {
+    for (TSConstIterator group1_it = ts1.begin();
+         group1_it != ts1.end(); ++group1_it) {
         // Distribute the labels of this group among the "buckets"
         // corresponding to the groups of ts2.
         unordered_map<int, vector<int>> buckets;
         for (LabelConstIter label_it = group1_it.begin();
              label_it != group1_it.end(); ++label_it) {
             int label_no = *label_it;
-            int group2_id = ts2->label_equivalence_relation->get_group_id(label_no);
+            int group2_id = ts2.label_equivalence_relation->get_group_id(label_no);
             buckets[group2_id].push_back(label_no);
         }
         // Now buckets contains all equivalence classes that are
@@ -215,7 +209,7 @@ TransitionSystem::TransitionSystem(const shared_ptr<Labels> labels,
         const vector<Transition> &transitions1 = group1_it.get_transitions();
         for (const auto &bucket : buckets) {
             const vector<Transition> &transitions2 =
-                ts2->get_transitions_for_group_id(bucket.first);
+                ts2.get_transitions_for_group_id(bucket.first);
 
             // Create the new transitions for this bucket
             vector<Transition> new_transitions;
@@ -294,32 +288,32 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 }
 
 bool TransitionSystem::apply_abstraction(
-    const vector<forward_list<int>> &collapsed_groups,
+    const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping) {
     assert(are_transitions_sorted_unique());
 
-    if (static_cast<int>(collapsed_groups.size()) == get_size()) {
+    if (static_cast<int>(state_equivalence_relation.size()) == get_size()) {
         cout << tag() << "not applying abstraction (same number of states)" << endl;
         return false;
     }
 
     cout << tag() << "applying abstraction (" << get_size()
-         << " to " << collapsed_groups.size() << " states)" << endl;
+         << " to " << state_equivalence_relation.size() << " states)" << endl;
 
-    typedef forward_list<int> Group;
-
-    int new_num_states = collapsed_groups.size();
+    int new_num_states = state_equivalence_relation.size();
     vector<bool> new_goal_states(new_num_states, false);
 
     for (int new_state = 0; new_state < new_num_states; ++new_state) {
-        const Group &group = collapsed_groups[new_state];
-        assert(!group.empty());
+        const StateEquivalenceClass &state_equivalence_class =
+            state_equivalence_relation[new_state];
+        assert(!state_equivalence_class.empty());
 
-        Group::const_iterator pos = group.begin();
+        StateEquivalenceClass::const_iterator pos =
+            state_equivalence_class.begin();
         new_goal_states[new_state] = goal_states[*pos];
 
         ++pos;
-        for (; pos != group.end(); ++pos)
+        for (; pos != state_equivalence_class.end(); ++pos)
             if (goal_states[*pos])
                 new_goal_states[new_state] = true;
     }
@@ -524,4 +518,5 @@ void TransitionSystem::dump_labels_and_transitions() const {
 void TransitionSystem::statistics() const {
     cout << tag() << get_size() << " states, "
          << total_transitions() << " arcs " << endl;
+}
 }

@@ -24,21 +24,21 @@ def configs_optimal_core():
             "astar(merge_and_shrink("
             "merge_strategy=merge_linear(variable_order=reverse_level),"
             "shrink_strategy=shrink_fh(max_states=50000),"
-            "label_reduction=label_reduction(before_shrinking=false,"
+            "label_reduction=exact(before_shrinking=false,"
             "before_merging=true)))"],
         "astar_merge_and_shrink_dfp_bisim": [
             "--search",
             "astar(merge_and_shrink(merge_strategy=merge_dfp,"
             "shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,"
             "greedy=false),"
-            "label_reduction=label_reduction(before_shrinking=true,"
+            "label_reduction=exact(before_shrinking=true,"
             "before_merging=false)))"],
         "astar_merge_and_shrink_dfp_greedy_bisim": [
             "--search",
             "astar(merge_and_shrink(merge_strategy=merge_dfp,"
             "shrink_strategy=shrink_bisimulation(max_states=infinity,threshold=1,"
             "greedy=true),"
-            "label_reduction=label_reduction(before_shrinking=true,"
+            "label_reduction=exact(before_shrinking=true,"
             "before_merging=false)))"],
     }
 
@@ -48,7 +48,7 @@ MERGE_AND_SHRINK = ('astar(merge_and_shrink('
          'max_states=50000,'
         'threshold=1,'
         'greedy=false),'
-    'label_reduction=label_reduction('
+    'label_reduction=exact('
         'before_shrinking=true,'
         'before_merging=false)'
 '))')

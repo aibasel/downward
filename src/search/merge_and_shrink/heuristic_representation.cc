@@ -10,6 +10,7 @@
 using namespace std;
 
 
+namespace MergeAndShrink {
 HeuristicRepresentation::HeuristicRepresentation(int domain_size)
     : domain_size(domain_size) {
 }
@@ -108,4 +109,5 @@ void HeuristicRepresentationMerge::dump() const {
     left_child->dump();
     cout << "dump right child:" << endl;
     right_child->dump();
+}
 }

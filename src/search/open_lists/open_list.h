@@ -4,8 +4,12 @@
 #include <set>
 #include <vector>
 
-class EvaluationContext;
+#include "../evaluation_context.h"
+
+class GlobalOperator;
 class Heuristic;
+class StateID;
+
 
 
 template<class Entry>
@@ -37,7 +41,8 @@ public:
       will remain unchanged.
 
       This method will often compute heuristic estimates as a side
-      effect, which are cached in the EvaluationContext class.
+      effect, which are cached in the EvaluationContext object that
+      is passed in.
 
       Implementation note: uses the template method pattern, with
       do_insertion performing the bulk of the work. See comments for
@@ -128,8 +133,35 @@ public:
         EvaluationContext &eval_context) const = 0;
 };
 
-#include "open_list.cc"
 
-// HACK! Need a better strategy of dealing with templates, also in the Makefile.
+using StateOpenListEntry = StateID;
+using EdgeOpenListEntry = std::pair<StateID, const GlobalOperator *>;
+
+using StateOpenList = OpenList<StateOpenListEntry>;
+using EdgeOpenList = OpenList<EdgeOpenListEntry>;
+
+
+template<class Entry>
+OpenList<Entry>::OpenList(bool only_preferred)
+    : only_preferred(only_preferred) {
+}
+
+template<class Entry>
+void OpenList<Entry>::boost_preferred() {
+}
+
+template<class Entry>
+void OpenList<Entry>::insert(
+    EvaluationContext &eval_context, const Entry &entry) {
+    if (only_preferred && !eval_context.is_preferred())
+        return;
+    if (!is_dead_end(eval_context))
+        do_insertion(eval_context, entry);
+}
+
+template<class Entry>
+bool OpenList<Entry>::only_contains_preferred_entries() const {
+    return only_preferred;
+}
 
 #endif

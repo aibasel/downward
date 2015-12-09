@@ -1,8 +1,9 @@
 #include "landmark_count_heuristic.h"
 
-#include "../lp_solver.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
+
+#include "../lp/lp_solver.h"
 
 #include <cmath>
 #include <limits>
@@ -10,6 +11,8 @@
 
 using namespace std;
 
+
+namespace Landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
       lgraph(*opts.get<LandmarkGraph *>("lm_graph")),
@@ -38,7 +41,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
                 lgraph,
                 OperatorCost(opts.get_enum("cost_type")),
-                LPSolverType(opts.get_enum("lpsolver")));
+                LP::LPSolverType(opts.get_enum("lpsolver")));
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(
                 lgraph, opts.get<bool>("alm"),
@@ -271,7 +274,7 @@ static Heuristic *_parse(OptionParser &parser) {
                              "See also Synergy");
     parser.document_note(
         "Note",
-        "to use ``optimal=true``, you must build the planner with USE_LP=1. "
+        "to use ``optimal=true``, you must build the planner with LP support. "
         "See LPBuildInstructions.");
     parser.document_note(
         "Optimal search",
@@ -318,7 +321,7 @@ static Heuristic *_parse(OptionParser &parser) {
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
-    add_lp_solver_option_to_parser(parser);
+    LP::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -330,3 +333,4 @@ static Heuristic *_parse(OptionParser &parser) {
 
 static Plugin<Heuristic> _plugin(
     "lmcount", _parse);
+}
