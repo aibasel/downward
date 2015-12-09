@@ -4,14 +4,11 @@
 #include "system.h"
 
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include <functional>
 
 
 #define ABORT(msg) \
@@ -115,23 +112,5 @@ template<typename T, typename ... Args>
 std::unique_ptr<T> make_unique_ptr(Args && ... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
 }
-
-/*
-  Simple logger that includes the time and peak memory usage in logged lines.
-  Line breaks are automatically added. Passing std::endl is not supported.
-
-  Usage: Log() << "Variables: " << 10;
-*/
-class Log {
-    std::ostringstream os;
-public:
-    template <typename T>
-    Log &operator<<(T const &value) {
-        os << value;
-        return *this;
-    }
-
-    ~Log();
-};
 
 #endif

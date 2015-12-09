@@ -6,6 +6,7 @@
 #include "utils.h"
 
 #include "../evaluation_context.h"
+#include "../logging.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
@@ -113,7 +114,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
 }
 
 void AdditiveCartesianHeuristic::initialize() {
-    Log() << "Initializing additive Cartesian heuristic...";
+    log("Initializing additive Cartesian heuristic...");
     reserve_extra_memory_padding();
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
@@ -128,7 +129,7 @@ void AdditiveCartesianHeuristic::initialize() {
 }
 
 void AdditiveCartesianHeuristic::print_statistics() const {
-    Log() << "Done initializing additive Cartesian heuristic";
+    log("Done initializing additive Cartesian heuristic");
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
     cout << "Cartesian heuristics stored: " << heuristics.size() << endl;
     cout << "Cartesian states: " << num_states << endl;

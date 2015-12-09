@@ -24,6 +24,7 @@ set(CORE_SOURCES
         heuristic_cache.cc
         heuristic.cc
         int_packer.cc
+        logging.cc
         operator_cost.cc
         option_parser.cc
         option_parser_util.cc
