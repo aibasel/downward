@@ -4,7 +4,7 @@
 #include <iosfwd>
 #include <string>
 
-class DocStruct;
+struct DocStruct;
 
 
 class DocPrinter {
