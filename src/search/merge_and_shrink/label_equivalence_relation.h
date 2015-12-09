@@ -80,10 +80,10 @@ public:
     virtual ~LabelEquivalenceRelation() = default;
 
     void recompute_group_cost();
-    void replace_labels_by_label(
-        const std::vector<int> &old_label_nos, int new_label_no);
+    void apply_label_mapping(
+        const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
+        bool from_same_group);
     void move_group_into_group(int from_group_id, int to_group_id);
-    bool erase(int label_no);
     int add_label_group(const std::vector<int> &new_labels);
     bool is_active_group(int group_id) const {
         return !grouped_labels[group_id].empty();
