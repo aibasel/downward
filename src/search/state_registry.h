@@ -107,7 +107,8 @@ class StateRegistry {
             : state_data_pool(state_data_pool_) {
         }
         size_t operator()(StateID id) const {
-            return ::hash_sequence(state_data_pool[id.value], g_state_packer->get_num_bins());
+            return Utils::hash_sequence(state_data_pool[id.value],
+                                        g_state_packer->get_num_bins());
         }
     };
 
