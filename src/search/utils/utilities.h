@@ -7,15 +7,6 @@
 #include <memory>
 #include <utility>
 
-#define ABORT(msg) \
-    ( \
-        (std::cerr << "Critical error in file " << __FILE__ \
-                   << ", line " << __LINE__ << ": " << std::endl \
-                   << (msg) << std::endl), \
-        (abort()), \
-        (void)0 \
-    )
-
 
 namespace Utils {
 /* Test if the product of two numbers is bounded by a third number.
