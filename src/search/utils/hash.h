@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+namespace Utils {
 /*
   Hash a new value and combine it with an existing hash.
 
@@ -29,12 +30,13 @@ size_t hash_sequence(const Sequence &data, size_t length) {
     }
     return hash;
 }
+}
 
 namespace std {
 template<typename T>
 struct hash<std::vector<T>> {
     size_t operator()(const std::vector<T> &vec) const {
-        return ::hash_sequence(vec, vec.size());
+        return Utils::hash_sequence(vec, vec.size());
     }
 };
 
@@ -42,8 +44,8 @@ template<typename TA, typename TB>
 struct hash<std::pair<TA, TB>> {
     size_t operator()(const std::pair<TA, TB> &pair) const {
         size_t hash = 0;
-        hash_combine(hash, pair.first);
-        hash_combine(hash, pair.second);
+        Utils::hash_combine(hash, pair.first);
+        Utils::hash_combine(hash, pair.second);
         return hash;
     }
 };

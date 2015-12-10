@@ -5,6 +5,8 @@
 
 #include <ostream>
 
+
+namespace Utils {
 class Timer {
     double last_start_clock;
     double collected_time;
@@ -28,5 +30,6 @@ public:
 std::ostream &operator<<(std::ostream &os, const Timer &timer);
 
 extern Timer g_timer;
+}
 
 #endif

@@ -4,6 +4,7 @@
 #include <string>
 
 
+namespace Utils {
 class TraceBlock {
     std::string block_name;
 public:
@@ -12,5 +13,6 @@ public:
 };
 
 extern void trace(const std::string &msg = "");
+}
 
 #endif

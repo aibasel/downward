@@ -6,6 +6,8 @@
 #include <random>
 #include <vector>
 
+
+namespace Utils {
 class RandomNumberGenerator {
     // Mersenne Twister random number generator.
     std::mt19937 rng;
@@ -47,5 +49,6 @@ public:
         std::shuffle(vec.begin(), vec.end(), rng);
     }
 };
+}
 
 #endif

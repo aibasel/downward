@@ -18,6 +18,8 @@
         (void)0 \
     )
 
+
+namespace Utils {
 enum ExitCode {
     EXIT_PLAN_FOUND = 0,
     EXIT_CRITICAL_ERROR = 1,
@@ -44,20 +46,6 @@ extern bool is_sorted_unique(const std::vector<T> &values) {
             return false;
     }
     return true;
-}
-
-namespace std {
-template<class T>
-ostream &operator<<(ostream &stream, const vector<T> &vec) {
-    stream << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (i != 0)
-            stream << ", ";
-        stream << vec[i];
-    }
-    stream << "]";
-    return stream;
-}
 }
 
 template<class T>
@@ -97,6 +85,21 @@ void release_vector_memory(std::vector<T> &vec) {
 template<typename T, typename ... Args>
 std::unique_ptr<T> make_unique_ptr(Args && ... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
+}
+}
+
+namespace std {
+template<class T>
+ostream &operator<<(ostream &stream, const vector<T> &vec) {
+    stream << "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        if (i != 0)
+            stream << ", ";
+        stream << vec[i];
+    }
+    stream << "]";
+    return stream;
+}
 }
 
 #endif
