@@ -13,6 +13,7 @@
 
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/math.h"
 #include "../utils/timer.h"
 
 #include <algorithm>

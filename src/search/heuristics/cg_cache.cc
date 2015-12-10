@@ -4,6 +4,7 @@
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
+#include "../utils/math.h"
 
 #include <algorithm>
 #include <cassert>
