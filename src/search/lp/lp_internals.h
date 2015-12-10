@@ -9,7 +9,7 @@
   LP class instead.
 */
 
-#include "../utilities.h"
+#include "../utils/language.h"
 
 #include <memory>
 

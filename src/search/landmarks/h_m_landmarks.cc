@@ -2,6 +2,9 @@
 
 #include "../plugin.h"
 
+#include "../utils/collections.h"
+#include "../utils/system.h"
+
 using namespace std;
 using Utils::ExitCode;
 

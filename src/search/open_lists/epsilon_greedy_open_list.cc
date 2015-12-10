@@ -6,6 +6,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/collections.h"
 #include "../utils/rng.h"
 
 #include <functional>
@@ -56,7 +57,7 @@ public:
 
 template<class HeapNode>
 static void adjust_heap_up(vector<HeapNode> &heap, size_t pos) {
-    assert(in_bounds(pos, heap));
+    assert(Utils::in_bounds(pos, heap));
     while (pos != 0) {
         size_t parent_pos = (pos - 1) / 2;
         if (heap[pos] > heap[parent_pos]) {

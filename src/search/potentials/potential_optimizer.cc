@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../task_tools.h"
 
+#include "../utils/collections.h"
+
 #include <limits>
 #include <unordered_map>
 
@@ -55,8 +57,8 @@ void PotentialOptimizer::optimize_for_state(const State &state) {
 int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
     int var_id = fact.get_variable().get_id();
     int value = fact.get_value();
-    assert(in_bounds(var_id, lp_var_ids));
-    assert(in_bounds(value, lp_var_ids[var_id]));
+    assert(Utils::in_bounds(var_id, lp_var_ids));
+    assert(Utils::in_bounds(value, lp_var_ids[var_id]));
     return lp_var_ids[var_id][value];
 }
 

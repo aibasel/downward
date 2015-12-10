@@ -6,6 +6,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/collections.h"
 #include "../utils/rng.h"
 
 #include <memory>
@@ -57,7 +58,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
         keys_and_buckets.push_back(make_pair(move(key), Bucket({entry})));
     } else {
         size_t bucket_index = it->second;
-        assert(in_bounds(bucket_index, keys_and_buckets));
+        assert(Utils::in_bounds(bucket_index, keys_and_buckets));
         keys_and_buckets[bucket_index].second.push_back(entry);
     }
 }

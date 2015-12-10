@@ -6,7 +6,8 @@
 #include "labels.h"
 
 #include "../task_proxy.h"
-#include "../utilities.h"
+
+#include "../utils/collections.h"
 
 #include <algorithm>
 #include <cassert>

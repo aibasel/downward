@@ -9,9 +9,10 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
-#include "../utilities.h"
 
+#include "../utils/collections.h"
 #include "../utils/rng.h"
+#include "../utils/system.h"
 
 #include <cassert>
 #include <iostream>
@@ -182,7 +183,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
     assert(!transition_system_order.empty());
     while (transition_system_order[tso_index] >= num_transition_systems) {
         ++tso_index;
-        assert(in_bounds(tso_index, transition_system_order));
+        assert(Utils::in_bounds(tso_index, transition_system_order));
     }
 
     int max_iterations;
