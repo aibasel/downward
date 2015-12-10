@@ -289,6 +289,16 @@ bool TransitionSystem::apply_abstraction(
     for (vector<Transition> &transitions : transitions_by_group_id) {
         if (!transitions.empty()) {
             vector<Transition> new_transitions;
+            /*
+              We reserve more memory than necessary here, but this may be
+              better than resizing the vector several times when inserting
+              transitions one after the other.
+
+              An alternative would be to not use a new vector, but to
+              modify the existing transitions inplace, and in the end
+              removing all empty positions. This would be more ugly, though.
+            */
+            new_transitions.reserve(transitions.size());
             for (size_t i = 0; i < transitions.size(); ++i) {
                 const Transition &transition = transitions[i];
                 int src = abstraction_mapping[transition.src];
