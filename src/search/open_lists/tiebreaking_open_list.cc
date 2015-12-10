@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/memory.h"
+
 #include <cassert>
 #include <deque>
 #include <map>

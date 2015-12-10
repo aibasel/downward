@@ -7,6 +7,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/memory.h"
 #include "../utils/rng.h"
 
 #include <memory>

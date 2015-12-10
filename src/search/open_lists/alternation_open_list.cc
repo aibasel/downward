@@ -4,7 +4,8 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
+
+#include "../utils/memory.h"
 
 #include <cassert>
 #include <memory>

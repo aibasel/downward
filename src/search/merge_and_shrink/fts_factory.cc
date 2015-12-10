@@ -7,7 +7,8 @@
 #include "transition_system.h"
 
 #include "../task_proxy.h"
-#include "../utilities.h"
+
+#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>

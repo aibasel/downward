@@ -3,7 +3,6 @@
 #include "../utils/collections.h"
 #include "../utils/memory.h"
 
-
 #include <cassert>
 #include <iostream>
 

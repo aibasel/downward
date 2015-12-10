@@ -8,6 +8,8 @@
 #include "../task_proxy.h"
 
 #include "../utils/collections.h"
+#include "../utils/memory.h"
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
