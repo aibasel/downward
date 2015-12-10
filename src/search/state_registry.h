@@ -6,7 +6,6 @@
 #include "int_packer.h"
 #include "segmented_vector.h"
 #include "state_id.h"
-#include "utilities.h"
 
 #include "utils/hash.h"
 

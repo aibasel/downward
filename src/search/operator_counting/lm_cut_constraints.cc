@@ -2,7 +2,6 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
 
 #include "../heuristics/lm_cut_landmarks.h"
 

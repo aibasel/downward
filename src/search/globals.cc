@@ -9,7 +9,6 @@
 #include "root_task.h"
 #include "state_registry.h"
 #include "successor_generator.h"
-#include "utilities.h"
 
 #include "utils/rng.h"
 #include "utils/system.h"

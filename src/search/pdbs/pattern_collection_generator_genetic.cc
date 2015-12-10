@@ -8,7 +8,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
-#include "../utilities.h"
 
 #include "../utils/math.h"
 #include "../utils/rng.h"
