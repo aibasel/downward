@@ -14,10 +14,6 @@
 class State;
 class TaskProxy;
 
-namespace Utils {
-class Timer;
-}
-
 
 namespace MergeAndShrink {
 class Distances;
