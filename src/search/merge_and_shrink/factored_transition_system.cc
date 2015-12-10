@@ -5,8 +5,7 @@
 #include "heuristic_representation.h"
 #include "transition_system.h"
 
-#include "../utilities.h"
-
+#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <cassert>

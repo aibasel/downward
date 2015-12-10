@@ -7,6 +7,8 @@
 #include "../task_proxy.h"
 #include "../task_tools.h"
 
+#include "../utils/memory.h"
+
 #include <iostream>
 
 using namespace std;

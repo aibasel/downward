@@ -6,6 +6,7 @@
 #include "../task_tools.h"
 
 #include "../utils/collections.h"
+#include "../utils/memory.h"
 
 #include <limits>
 #include <unordered_map>

@@ -8,6 +8,8 @@
 
 #include "../lp/lp_solver.h"
 
+#include "../utils/memory.h"
+
 #include <cassert>
 
 using namespace std;

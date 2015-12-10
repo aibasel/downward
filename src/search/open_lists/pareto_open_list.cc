@@ -6,6 +6,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/memory.h"
 #include "../utils/rng.h"
 
 #include <cassert>

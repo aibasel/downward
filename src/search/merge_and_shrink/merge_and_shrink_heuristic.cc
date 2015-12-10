@@ -11,8 +11,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
-#include "../utilities.h"
 
+#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <cassert>
