@@ -115,7 +115,7 @@ fast_downward_plugin(
     SOURCES
         utils/collections.h
         utils/countdown_timer.cc
-        utils/hash.cc
+        utils/hash.h
         utils/language.h
         utils/logging.cc
         utils/math.cc

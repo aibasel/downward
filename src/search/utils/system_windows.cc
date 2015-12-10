@@ -4,7 +4,6 @@
 // TODO: find re-entrant alternatives on Windows.
 
 #include "system_windows.h"
-#include "utilities.h"
 
 #include <csignal>
 #include <ctime>
