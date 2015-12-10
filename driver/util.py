@@ -29,9 +29,9 @@ def find_domain_filename(task_filename):
     dirname, basename = os.path.split(task_filename)
 
     domain_basenames = [
-        'domain.pddl',
-        basename[:3] + '-domain.pddl',
-        'domain_' + basename,
+        "domain.pddl",
+        basename[:3] + "-domain.pddl",
+        "domain_" + basename,
     ]
 
     for domain_basename in domain_basenames:

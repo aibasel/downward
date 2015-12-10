@@ -68,8 +68,8 @@ def test_time_limits():
 
 
 def test_automatic_domain_file_name_computation():
-    benchmarks_dir = os.path.join(REPO_ROOT_DIR, 'benchmarks')
+    benchmarks_dir = os.path.join(REPO_ROOT_DIR, "benchmarks")
     for dirpath, dirnames, filenames in os.walk(benchmarks_dir):
         for filename in filenames:
-            if 'domain' not in filename:
+            if "domain" not in filename:
                 assert find_domain_filename(os.path.join(dirpath, filename))
