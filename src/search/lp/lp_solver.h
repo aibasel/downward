@@ -2,6 +2,7 @@
 #define LP_LP_SOLVER_H
 
 #include "../utils/language.h"
+#include "../utils/system.h"
 
 #include <functional>
 #include <memory>

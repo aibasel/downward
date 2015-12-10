@@ -5,7 +5,8 @@
 #include "operator_cost.h"
 #include "option_parser_util.h"
 #include "plugin.h"
-#include "utilities.h"
+
+#include "utils/system.h"
 
 #include <iostream>
 

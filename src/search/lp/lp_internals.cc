@@ -3,7 +3,7 @@
 #ifdef USE_LP
 #include "lp_solver.h"
 
-#include "../utilities.h"
+#include "../utils/system.h"
 
 #ifdef __GNUG__
 #pragma GCC diagnostic push

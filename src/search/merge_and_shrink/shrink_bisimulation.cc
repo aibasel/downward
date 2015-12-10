@@ -8,6 +8,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
