@@ -66,9 +66,10 @@ def test_time_limits():
         assert (limits._get_soft_and_hard_time_limits(internal, external) ==
             (expected_soft, expected_hard))
 
+
 def test_automatic_domain_file_name_computation():
     benchmarks_dir = os.path.join(REPO_ROOT_DIR, 'benchmarks')
     for dirpath, dirnames, filenames in os.walk(benchmarks_dir):
-        for file_name in filenames:
-            if 'domain' not in file_name:
-                find_domain_filename(os.path.join(dirpath, file_name))
+        for filename in filenames:
+            if 'domain' not in filename:
+                assert find_domain_filename(os.path.join(dirpath, filename))
