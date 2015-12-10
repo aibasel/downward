@@ -18,6 +18,8 @@
 
 #include "language.h"
 
+#include <iostream>
+
 #define ABORT(msg) \
     ( \
         (std::cerr << "Critical error in file " << __FILE__ \

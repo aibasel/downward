@@ -118,12 +118,13 @@ fast_downward_plugin(
         utils/hash.cc
         utils/language.h
         utils/logging.cc
+        utils/math.cc
+        utils/memory.h
         utils/rng.cc
         utils/system.cc
         utils/system_unix.cc
         utils/system_windows.cc
         utils/timer.cc
-        utils/utilities.cc
     CORE_PLUGIN
 )
 

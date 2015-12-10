@@ -1,7 +1,5 @@
 #include "system.h"
 
-#include "utilities.h"
-
 
 namespace Utils {
 const char *get_exit_code_message_reentrant(ExitCode exitcode) {
