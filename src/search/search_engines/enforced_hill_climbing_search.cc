@@ -110,9 +110,9 @@ void EnforcedHillClimbingSearch::initialize() {
     if (dead_end) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
-            Utils::exit_with(ExitCode::EXIT_UNSOLVABLE);
+            Utils::exit_with(ExitCode::UNSOLVABLE);
         else
-            Utils::exit_with(ExitCode::EXIT_UNSOLVED_INCOMPLETE);
+            Utils::exit_with(ExitCode::UNSOLVED_INCOMPLETE);
     }
 
     SearchNode node = search_space.get_node(current_eval_context.get_state());

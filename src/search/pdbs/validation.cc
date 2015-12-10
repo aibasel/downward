@@ -28,12 +28,12 @@ void validate_and_normalize_pattern(const TaskProxy &task_proxy,
     if (!pattern.empty()) {
         if (pattern.front() < 0) {
             cerr << "Variable number too low in pattern" << endl;
-            Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
+            Utils::exit_with(ExitCode::CRITICAL_ERROR);
         }
         int num_variables = task_proxy.get_variables().size();
         if (pattern.back() >= num_variables) {
             cerr << "Variable number too high in pattern" << endl;
-            Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
+            Utils::exit_with(ExitCode::CRITICAL_ERROR);
         }
     }
 }

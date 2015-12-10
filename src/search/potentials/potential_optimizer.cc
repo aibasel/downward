@@ -63,7 +63,7 @@ int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
 void PotentialOptimizer::optimize_for_all_states() {
     if (!potentials_are_bounded()) {
         cerr << "Potentials must be bounded for all-states LP." << endl;
-        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::INPUT_ERROR);
     }
     vector<double> coefficients(num_lp_vars, 0.0);
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {

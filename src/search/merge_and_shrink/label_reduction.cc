@@ -345,7 +345,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         if (!lr_before_shrinking && !lr_before_merging) {
             cerr << "Please turn on at least one of the options "
                  << "before_shrinking or before_merging!" << endl;
-            Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
+            Utils::exit_with(ExitCode::INPUT_ERROR);
         }
         return nullptr;
     } else {

@@ -4,39 +4,44 @@
 
 
 namespace Utils {
-const char *get_exit_code_message_reentrant(int exitcode) {
+const char *get_exit_code_message_reentrant(ExitCode exitcode) {
     switch (exitcode) {
-    case EXIT_PLAN_FOUND:
+    case ExitCode::PLAN_FOUND:
         return "Solution found.";
-    case EXIT_CRITICAL_ERROR:
+    case ExitCode::CRITICAL_ERROR:
         return "Unexplained error occurred.";
-    case EXIT_INPUT_ERROR:
+    case ExitCode::INPUT_ERROR:
         return "Usage error occurred.";
-    case EXIT_UNSUPPORTED:
+    case ExitCode::UNSUPPORTED:
         return "Tried to use unsupported feature.";
-    case EXIT_UNSOLVABLE:
+    case ExitCode::UNSOLVABLE:
         return "Task is provably unsolvable.";
-    case EXIT_UNSOLVED_INCOMPLETE:
+    case ExitCode::UNSOLVED_INCOMPLETE:
         return "Search stopped without finding a solution.";
-    case EXIT_OUT_OF_MEMORY:
+    case ExitCode::OUT_OF_MEMORY:
         return "Memory limit has been reached.";
     default:
         return nullptr;
     }
 }
 
-bool is_exit_code_error_reentrant(int exitcode) {
+bool is_exit_code_error_reentrant(ExitCode exitcode) {
     switch (exitcode) {
-    case EXIT_PLAN_FOUND:
-    case EXIT_UNSOLVABLE:
-    case EXIT_UNSOLVED_INCOMPLETE:
-    case EXIT_OUT_OF_MEMORY:
+    case ExitCode::PLAN_FOUND:
+    case ExitCode::UNSOLVABLE:
+    case ExitCode::UNSOLVED_INCOMPLETE:
+    case ExitCode::OUT_OF_MEMORY:
         return false;
-    case EXIT_CRITICAL_ERROR:
-    case EXIT_INPUT_ERROR:
-    case EXIT_UNSUPPORTED:
+    case ExitCode::CRITICAL_ERROR:
+    case ExitCode::INPUT_ERROR:
+    case ExitCode::UNSUPPORTED:
     default:
         return true;
     }
+}
+
+void exit_with(ExitCode exitcode) {
+    report_exit_code_reentrant(exitcode);
+    exit(static_cast<int>(exitcode));
 }
 }

@@ -14,11 +14,11 @@ using Utils::ExitCode;
 static void check_fact(int var, int val) {
     if (!Utils::in_bounds(var, g_variable_domain)) {
         cerr << "Invalid variable id: " << var << endl;
-        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::INPUT_ERROR);
     }
     if (val < 0 || val >= g_variable_domain[var]) {
         cerr << "Invalid value for variable " << var << ": " << val << endl;
-        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::INPUT_ERROR);
     }
 }
 

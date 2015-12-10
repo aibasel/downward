@@ -63,7 +63,7 @@ template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     if (key) {
         cerr << "not implemented -- see msg639 in the tracker" << endl;
-        Utils::exit_with(ExitCode::EXIT_UNSUPPORTED);
+        Utils::exit_with(ExitCode::UNSUPPORTED);
     }
     int best = -1;
     for (size_t i = 0; i < open_lists.size(); ++i) {

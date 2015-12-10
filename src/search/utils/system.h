@@ -17,11 +17,25 @@
 #endif
 
 namespace Utils {
+enum class ExitCode {
+    PLAN_FOUND = 0,
+    CRITICAL_ERROR = 1,
+    INPUT_ERROR = 2,
+    UNSUPPORTED = 3,
+    // Task is provably unsolvable with current bound. Currently unused (see issue377).
+    UNSOLVABLE = 4,
+    // Search ended without finding a solution.
+    UNSOLVED_INCOMPLETE = 5,
+    OUT_OF_MEMORY = 6
+};
+
+NO_RETURN extern void exit_with(ExitCode returncode);
+
 int get_peak_memory_in_kb();
-const char *get_exit_code_message_reentrant(int exitcode);
-bool is_exit_code_error_reentrant(int exitcode);
+const char *get_exit_code_message_reentrant(ExitCode exitcode);
+bool is_exit_code_error_reentrant(ExitCode exitcode);
 void register_event_handlers();
-void report_exit_code_reentrant(int exitcode);
+void report_exit_code_reentrant(ExitCode exitcode);
 int get_process_id();
 }
 

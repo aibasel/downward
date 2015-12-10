@@ -24,7 +24,7 @@ SearchEngine::SearchEngine(const Options &opts)
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
 }
