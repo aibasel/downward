@@ -3,11 +3,9 @@
 
 #include "system.h"
 
-#include <cassert>
 #include <iostream>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #define ABORT(msg) \
     ( \
@@ -34,20 +32,6 @@ extern bool is_product_within_limit(int factor1, int factor2, int limit);
 template<typename T, typename ... Args>
 std::unique_ptr<T> make_unique_ptr(Args && ... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
-}
-}
-
-namespace std {
-template<class T>
-ostream &operator<<(ostream &stream, const vector<T> &vec) {
-    stream << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (i != 0)
-            stream << ", ";
-        stream << vec[i];
-    }
-    stream << "]";
-    return stream;
 }
 }
 
