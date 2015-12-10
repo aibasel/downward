@@ -2,7 +2,6 @@
 
 #include "axioms.h"
 #include "causal_graph.h"
-#include "domain_transition_graph.h"
 #include "global_operator.h"
 #include "global_state.h"
 #include "heuristic.h"
@@ -253,8 +252,7 @@ void read_everything(istream &in) {
         getline(in, dummy_string);
     }
 
-    DomainTransitionGraph::read_all(in);
-    check_magic(in, "begin_CG"); // ignore everything from here
+    check_magic(in, "begin_DTG"); // ignore everything from here
 
     cout << "done reading input! [t=" << g_timer << "]" << endl;
 
@@ -385,7 +383,6 @@ vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
 AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
-vector<DomainTransitionGraph *> g_transition_graphs;
 
 Timer g_timer;
 string g_plan_filename = "sas_plan";

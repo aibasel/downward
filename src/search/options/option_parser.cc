@@ -1,10 +1,15 @@
 #include "option_parser.h"
 
-#include "globals.h"
+#include "doc_printer.h"
+#include "errors.h"
 #include "plugin.h"
-#include "rng.h"
+#include "synergy.h"
+#include "type_documenter.h"
 
-#include "ext/tree_util.hh"
+#include "../globals.h"
+#include "../rng.h"
+
+#include "../ext/tree_util.hh"
 
 #include <algorithm>
 #include <cassert>
@@ -21,7 +26,6 @@ using namespace std;
 class AbstractTask;
 class OpenListFactory;
 class SearchEngine;
-class Synergy;
 
 namespace Landmarks {
 class LandmarkGraph;
@@ -44,21 +48,6 @@ class PatternGenerator;
 
 const string OptionParser::NONE = "<none>";
 
-
-ArgError::ArgError(std::string msg_) : msg(msg_) {
-}
-
-
-ParseError::ParseError(string m, ParseTree pt)
-    : msg(m),
-      parse_tree(pt) {
-}
-
-ParseError::ParseError(string m, ParseTree pt, string correct_substring)
-    : msg(m),
-      parse_tree(pt),
-      substr(correct_substring) {
-}
 
 void OptionParser::error(string msg) {
     throw ParseError(msg, *this->get_parse_tree());

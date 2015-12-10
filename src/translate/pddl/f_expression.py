@@ -42,8 +42,6 @@ class PrimitiveNumericExpression(FunctionalExpression):
         return "%s %s(%s)" % ("PNE", self.symbol, ", ".join(map(str, self.args)))
     def dump(self, indent="  "):
         print("%s%s" % (indent, self._dump()))
-        for arg in self.args:
-            arg.dump(indent + "  ")
     def _dump(self):
         return str(self)
     def instantiate(self, var_mapping, init_facts):

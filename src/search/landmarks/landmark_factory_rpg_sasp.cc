@@ -3,12 +3,12 @@
 #include "landmark_graph.h"
 #include "util.h"
 
-#include "../domain_transition_graph.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_proxy.h"
 
 #include <cassert>
 #include <limits>
@@ -19,6 +19,57 @@ using namespace std;
 namespace Landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
     : LandmarkFactory(opts) {
+}
+
+void LandmarkFactoryRpgSasp::build_dtg_successors() {
+    // TODO: use given task proxy once this class is adapted for abstract tasks
+    const std::shared_ptr<AbstractTask> task(g_root_task());
+    TaskProxy task_proxy(*task);
+
+    // resize data structure
+    VariablesProxy variables = task_proxy.get_variables();
+    dtg_successors.resize(variables.size());
+    for (VariableProxy var : variables)
+        dtg_successors[var.get_id()].resize(var.get_domain_size());
+
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        // build map for precondition
+        std::unordered_map<int, int> precondition;
+        for (FactProxy pre : op.get_preconditions())
+            precondition[pre.get_variable().get_id()] = pre.get_value();
+
+        for (EffectProxy eff : op.get_effects()) {
+            // build map for effect condition
+            std::unordered_map<int, int> eff_condition;
+            for (FactProxy cond : eff.get_conditions())
+                eff_condition[cond.get_variable().get_id()] = cond.get_value();
+
+            // whenever the operator can change the value of a variable from pre to
+            // post, we insert post into dtg_successors[var_id][pre]
+            FactProxy fact = eff.get_fact();
+            int var_id = fact.get_variable().get_id();
+            int post = fact.get_value();
+            if (precondition.count(var_id)) {
+                int pre = precondition[var_id];
+                if (eff_condition.count(var_id) && eff_condition[var_id] != pre)
+                    continue; // confliction pre- and effect condition
+                add_dtg_successor(var_id, pre, post);
+            } else {
+                if (eff_condition.count(var_id)) {
+                    add_dtg_successor(var_id, eff_condition[var_id], post);
+                } else {
+                    int dom_size = fact.get_variable().get_domain_size();
+                    for (int pre = 0; pre < dom_size; ++pre)
+                        add_dtg_successor(var_id, pre, post);
+                }
+            }
+        }
+    }
+}
+
+void LandmarkFactoryRpgSasp::add_dtg_successor(int var_id, int pre, int post) {
+    if (pre != post)
+        dtg_successors[var_id][pre].insert(post);
 }
 
 void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
@@ -362,6 +413,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
 
 void LandmarkFactoryRpgSasp::generate_landmarks() {
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
+    build_dtg_successors();
     build_disjunction_classes();
 
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -456,30 +508,30 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
      is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
     const GlobalState &initial_state = g_initial_state();
-    assert(landmark.second != initial_state[landmark.first]); // no initial state landmarks
+    int var = landmark.first;
+    assert(landmark.second != initial_state[var]); // no initial state landmarks
     // The value that we want to achieve must not be excluded:
     assert(exclude.find(landmark.second) == exclude.end());
     // If the value in the initial state is excluded, we won't achieve our goal value:
-    if (exclude.find(initial_state[landmark.first]) != exclude.end())
+    if (exclude.find(initial_state[var]) != exclude.end())
         return false;
     list<int> open;
-    unordered_set<int> closed(g_variable_domain[landmark.first]);
+    unordered_set<int> closed(g_variable_domain[var]);
     closed = exclude;
-    open.push_back(initial_state[landmark.first]);
-    closed.insert(initial_state[landmark.first]);
+    open.push_back(initial_state[var]);
+    closed.insert(initial_state[var]);
+    const vector<std::unordered_set<int>> &successors = dtg_successors[var];
     while (closed.find(landmark.second) == closed.end()) {
         if (open.empty()) // landmark not in closed and nothing more to insert
             return false;
         const int c = open.front();
         open.pop_front();
-        vector<int> succ;
-        g_transition_graphs[landmark.first]->get_successors(c, succ);
-        for (size_t i = 0; i < succ.size(); ++i)
-            if (closed.find(succ[i]) == closed.end()) {
-                open.push_back(succ[i]);
-                closed.insert(succ[i]);
+        for (int val : successors[c]) {
+            if (closed.find(val) == closed.end()) {
+                open.push_back(val);
+                closed.insert(val);
             }
-
+        }
     }
     return true;
 }

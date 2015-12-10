@@ -14,7 +14,6 @@ set(CORE_SOURCES
         cost_adapted_task.cc
         countdown_timer.cc
         delegating_task.cc
-        domain_transition_graph.cc
         equivalence_relation.cc
         evaluation_context.cc
         evaluation_result.cc
@@ -25,10 +24,10 @@ set(CORE_SOURCES
         heuristic.cc
         int_packer.cc
         operator_cost.cc
-        option_parser.cc
-        option_parser_util.cc
+        option_parser.h
+        option_parser_util.h
         per_state_information.cc
-        plugin.cc
+        plugin.h
         priority_queue.cc
         rng.cc
         root_task.cc
@@ -84,6 +83,7 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 #            <FILE_1> [ <FILE_2> ... ]
 #        [ DEPENDS <PLUGIN_NAME_1> [ <PLUGIN_NAME_2> ... ] ]
 #        [ DEPENDENCY_ONLY ]
+#        [ CORE_PLUGIN ]
 #    )
 #
 # <DISPLAY_NAME> defaults to lower case <NAME> and is used to group
@@ -93,6 +93,29 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # is enabled. If the dependency was not enabled before, this will be logged.
 # DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
 #     hides the option to enable the plugin in cmake GUIs like ccmake.
+# CORE_PLUGIN enables the plugin and hides the option to disable it in
+#     cmake GUIs like ccmake.
+
+fast_downward_plugin(
+    NAME OPTIONS
+    HELP "Option parsing and plugin definition"
+    SOURCES
+        options/bounds.cc
+        options/doc_printer.cc
+        options/doc_store.cc
+        options/errors.cc
+        options/option_parser.cc
+        options/options.cc
+        options/parse_tree.cc
+        options/predefinitions.cc
+        options/plugin.cc
+        options/registries.cc
+        options/synergy.cc
+        options/token_parser.cc
+        options/type_documenter.cc
+        options/type_namer.cc
+    CORE_PLUGIN
+)
 
 fast_downward_plugin(
     NAME CONST_EVALUATOR
@@ -229,14 +252,23 @@ fast_downward_plugin(
     HELP "The context-enhanced additive heuristic"
     SOURCES
         heuristics/cea_heuristic.cc
+    DEPENDS DOMAIN_TRANSITION_GRAPH
 )
 
 fast_downward_plugin(
     NAME CG_HEURISTIC
     HELP "The causal graph heuristic"
+    SOURCES heuristics/cg_heuristic.cc
+            heuristics/cg_cache.cc
+    DEPENDS DOMAIN_TRANSITION_GRAPH
+)
+
+fast_downward_plugin(
+    NAME DOMAIN_TRANSITION_GRAPH
+    HELP "DTGs used by cg and cea heuristic"
     SOURCES
-        heuristics/cg_heuristic.cc
-        heuristics/cg_cache.cc
+        domain_transition_graph.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
