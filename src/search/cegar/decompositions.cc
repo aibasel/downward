@@ -189,5 +189,5 @@ static PluginShared<Decomposition> _plugin_landmarks("decomposition_by_landmarks
 
 static PluginTypePlugin<Decomposition> _type_plugin(
     "Decomposition",
-    "Task decomposition (used by additive CEGAR heuristic).");
+    "Task decomposition (used by the CEGAR heuristic).");
 }
