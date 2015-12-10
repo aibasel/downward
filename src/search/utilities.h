@@ -5,5 +5,6 @@
    utility code into a subdirectory. */
 #include "utils/utilities.h"
 #include "utils/language.h"
+#include "utils/collections.h"
 
 #endif
