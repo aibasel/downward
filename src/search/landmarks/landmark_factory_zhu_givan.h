@@ -5,7 +5,6 @@
 #include "landmark_graph.h"
 
 #include "../globals.h"
-#include "../utilities.h"
 
 #include "../utils/hash.h"
 

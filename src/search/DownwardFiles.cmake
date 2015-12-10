@@ -42,7 +42,6 @@ set(CORE_SOURCES
         successor_generator.cc
         task_proxy.cc
         task_tools.cc
-        utilities.h
         variable_order_finder.cc
 
         open_lists/alternation_open_list.cc

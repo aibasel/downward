@@ -1,7 +1,5 @@
 #include "domain_transition_graph.h"
 
-#include "utilities.h"
-
 #include "utils/hash.h"
 
 #include <algorithm>
