@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 using namespace std;
-using namespace Utils;
+using Utils::ExitCode;
 
 
 namespace Potentials {
@@ -63,7 +63,7 @@ int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
 void PotentialOptimizer::optimize_for_all_states() {
     if (!potentials_are_bounded()) {
         cerr << "Potentials must be bounded for all-states LP." << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
     }
     vector<double> coefficients(num_lp_vars, 0.0);
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
@@ -200,6 +200,6 @@ void PotentialOptimizer::extract_lp_solution() {
 
 unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
     assert(has_optimal_solution());
-    return make_unique_ptr<PotentialFunction>(fact_potentials);
+    return Utils::make_unique_ptr<PotentialFunction>(fact_potentials);
 }
 }
