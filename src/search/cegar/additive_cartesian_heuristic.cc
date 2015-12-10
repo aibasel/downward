@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -144,8 +145,45 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
     return sum_h;
 }
 
+static string t2t_escape(const string &s) {
+    return "\"\"" + s + "\"\"";
+}
+
+static string format_paper_reference(
+    string authors, string title, string url, string conference,
+    string pages, string publisher) {
+    stringstream ss;
+    ss << "\n\n"
+       << " * " << t2t_escape(authors) << ".<<BR>>\n"
+       << " [" << t2t_escape(title) << " " << t2t_escape(url) << "].<<BR>>\n"
+       << " In //" << t2t_escape(conference) << "//,"
+       << " pp. " << t2t_escape(pages) << ". "
+       << t2t_escape(publisher) << ".\n\n\n";
+    return ss.str();
+}
+
 static Heuristic *_parse(OptionParser &parser) {
-    parser.document_synopsis("Additive CEGAR heuristic", "");
+    parser.document_synopsis(
+        "Additive CEGAR heuristic",
+        "See the paper introducing Counterexample-guided Abstraction "
+        "Refinement (CEGAR) for classical planning:" +
+        format_paper_reference(
+            "Jendrik Seipp and Malte Helmert",
+            "Counterexample-guided Cartesian Abstraction Refinement",
+            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
+            "Proceedings of the 23rd International Conference on Automated "
+            "Planning and Scheduling (ICAPS 2013)",
+            "347-351",
+            "AAAI Press 2013") +
+        "and the paper showing how to make the abstractions additive:" +
+        format_paper_reference(
+            "Jendrik Seipp and Malte Helmert",
+            "Diverse and Additive Cartesian Abstraction Heuristics",
+            "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
+            "Proceedings of the 24th International Conference on "
+            "Automated Planning and Scheduling (ICAPS 2014)",
+            "289-297",
+            "AAAI Press 2014"));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
