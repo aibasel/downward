@@ -64,7 +64,7 @@ bool collection_dominates(const PDBCollection &superset,
 shared_ptr<MaxAdditivePDBSubsets> prune_dominated_subsets(
     const PDBCollection &pattern_databases,
     const MaxAdditivePDBSubsets &max_additive_subsets) {
-    Timer timer;
+    Utils::Timer timer;
     int num_patterns = pattern_databases.size();
     int num_additive_subsets = max_additive_subsets.size();
 

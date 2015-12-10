@@ -146,12 +146,12 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(const Options &options)
 
 unique_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<TieBreakingOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<TieBreakingOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

@@ -80,13 +80,13 @@ Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
     }
 
     int pos = g_rng(bucket.size());
-    Entry result = swap_and_pop_from_vector(bucket, pos);
+    Entry result = Utils::swap_and_pop_from_vector(bucket, pos);
 
     if (bucket.empty()) {
         // Swap the empty bucket with the last bucket, then delete it.
         key_to_bucket_index[keys_and_buckets.back().first] = bucket_id;
         key_to_bucket_index.erase(min_key);
-        swap_and_pop_from_vector(keys_and_buckets, bucket_id);
+        Utils::swap_and_pop_from_vector(keys_and_buckets, bucket_id);
     }
     return result;
 }
@@ -142,12 +142,12 @@ TypeBasedOpenListFactory::TypeBasedOpenListFactory(
 
 unique_ptr<StateOpenList>
 TypeBasedOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 TypeBasedOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

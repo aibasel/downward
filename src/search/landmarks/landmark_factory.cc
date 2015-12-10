@@ -16,7 +16,7 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
-    Timer lm_generation_timer;
+    Utils::Timer lm_generation_timer;
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"

@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 using namespace std;
+using namespace Utils;
 
 
 namespace Potentials {

@@ -13,6 +13,7 @@
 #include "../open_lists/tiebreaking_open_list.h"
 
 using namespace std;
+using Utils::ExitCode;
 
 
 namespace EnforcedHillClimbingSearch {
@@ -109,9 +110,9 @@ void EnforcedHillClimbingSearch::initialize() {
     if (dead_end) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
-            exit_with(EXIT_UNSOLVABLE);
+            Utils::exit_with(ExitCode::EXIT_UNSOLVABLE);
         else
-            exit_with(EXIT_UNSOLVED_INCOMPLETE);
+            Utils::exit_with(ExitCode::EXIT_UNSOLVED_INCOMPLETE);
     }
 
     SearchNode node = search_space.get_node(current_eval_context.get_state());

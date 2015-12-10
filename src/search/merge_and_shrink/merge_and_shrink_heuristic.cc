@@ -49,7 +49,8 @@ void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
     else
         cout << "Current";
     cout << " peak memory increase of merge-and-shrink computation: "
-         << get_peak_memory_in_kb() - starting_peak_memory << " KB" << endl;
+         << Utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
+         << endl;
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
@@ -97,12 +98,13 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
+void MergeAndShrinkHeuristic::build_transition_system(const Utils::Timer &timer) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    fts = make_unique_ptr<FactoredTransitionSystem>(create_factored_transition_system(task_proxy));
+    fts = Utils::make_unique_ptr<FactoredTransitionSystem>(
+        create_factored_transition_system(task_proxy));
     cout << endl;
 
     int final_index = -1; // TODO: get rid of this
@@ -169,9 +171,9 @@ void MergeAndShrinkHeuristic::build_transition_system(const Timer &timer) {
 }
 
 void MergeAndShrinkHeuristic::initialize() {
-    Timer timer;
+    Utils::Timer timer;
     cout << "Initializing merge-and-shrink heuristic..." << endl;
-    starting_peak_memory = get_peak_memory_in_kb();
+    starting_peak_memory = Utils::get_peak_memory_in_kb();
     verify_no_axioms(task_proxy);
     dump_options();
     warn_on_unusual_options();

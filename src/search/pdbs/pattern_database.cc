@@ -78,7 +78,7 @@ PatternDatabase::PatternDatabase(
            operator_costs.size() == task_proxy.get_operators().size());
     assert(is_sorted_unique(pattern));
 
-    Timer timer;
+    Utils::Timer timer;
     hash_multipliers.reserve(pattern.size());
     num_states = 1;
     for (int pattern_var_id : pattern) {

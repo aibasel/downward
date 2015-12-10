@@ -10,6 +10,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace Utils;
 
 
 namespace MergeAndShrink {
