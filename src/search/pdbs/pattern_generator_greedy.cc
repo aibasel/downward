@@ -7,6 +7,8 @@
 #include "../task_proxy.h"
 #include "../variable_order_finder.h"
 
+#include "../utils/logging.h"
+
 #include <iostream>
 
 using namespace std;
