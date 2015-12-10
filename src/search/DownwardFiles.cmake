@@ -113,6 +113,7 @@ fast_downward_plugin(
     NAME UTILS
     HELP "System utilities"
     SOURCES
+        utils/collections.h
         utils/countdown_timer.cc
         utils/hash.cc
         utils/language.h
