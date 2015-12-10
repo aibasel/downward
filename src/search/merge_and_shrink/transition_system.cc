@@ -19,6 +19,7 @@
 #include <unordered_map>
 
 using namespace std;
+using Utils::ExitCode;
 
 
 namespace MergeAndShrink {
@@ -74,7 +75,8 @@ const int TransitionSystem::PRUNED_STATE = -1;
 TransitionSystem::TransitionSystem(int num_variables,
                                    const Labels &labels)
     : num_variables(num_variables),
-      label_equivalence_relation(make_unique_ptr<LabelEquivalenceRelation>(labels)) {
+      label_equivalence_relation(
+          Utils::make_unique_ptr<LabelEquivalenceRelation>(labels)) {
     transitions_by_group_id.resize(labels.get_max_size());
 }
 
@@ -215,7 +217,7 @@ TransitionSystem::TransitionSystem(const Labels &labels,
             vector<Transition> new_transitions;
             if (transitions1.size() && transitions2.size()
                 && transitions1.size() > new_transitions.max_size() / transitions2.size())
-                exit_with(EXIT_OUT_OF_MEMORY);
+                Utils::exit_with(ExitCode::EXIT_OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {
                 int src1 = transitions1[i].src;
@@ -280,7 +282,7 @@ void TransitionSystem::compute_locally_equivalent_labels() {
                 if ((transitions1.empty() && transitions2.empty()) || transitions1 == transitions2) {
                     label_equivalence_relation->move_group_into_group(
                         group2_id, group1_it.get_id());
-                    release_vector_memory(transitions2);
+                    Utils::release_vector_memory(transitions2);
                 }
             }
         }
@@ -397,7 +399,7 @@ void TransitionSystem::apply_label_reduction(const vector<pair<int, vector<int>>
                 collected_transitions.insert(old_transitions.begin(), old_transitions.end());
                 bool remove_group = label_equivalence_relation->erase(old_label_no);
                 if (remove_group) {
-                    release_vector_memory(old_transitions);
+                    Utils::release_vector_memory(old_transitions);
                 }
             }
             int group_id = label_equivalence_relation->add_label_group({new_label_no});
@@ -424,7 +426,7 @@ string TransitionSystem::tag() const {
 bool TransitionSystem::are_transitions_sorted_unique() const {
     for (TSConstIterator group_it = begin();
          group_it != end(); ++group_it) {
-        if (!is_sorted_unique(group_it.get_transitions()))
+        if (!Utils::is_sorted_unique(group_it.get_transitions()))
             return false;
     }
     return true;

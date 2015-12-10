@@ -8,16 +8,17 @@
 #include <iostream>
 
 using namespace std;
+using Utils::ExitCode;
 
 
 static void check_fact(int var, int val) {
-    if (!in_bounds(var, g_variable_domain)) {
+    if (!Utils::in_bounds(var, g_variable_domain)) {
         cerr << "Invalid variable id: " << var << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
     }
     if (val < 0 || val >= g_variable_domain[var]) {
         cerr << "Invalid value for variable " << var << ": " << val << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
     }
 }
 

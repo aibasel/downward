@@ -8,6 +8,7 @@
 #include <memory>
 
 using namespace std;
+using Utils::ExitCode;
 
 
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
@@ -44,7 +45,7 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
             return original_cost + 1;
     default:
         cerr << "Unknown cost type" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
+        Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
     }
 }
 

@@ -57,7 +57,8 @@ void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
         for (int rel_var_id : relevant_vars) {
             VariableProxy rel_var = task_proxy.get_variables()[rel_var_id];
             int rel_var_size = rel_var.get_domain_size();
-            if (is_product_within_limit(pdb_size, rel_var_size, pdb_max_size)) {
+            if (Utils::is_product_within_limit(pdb_size, rel_var_size,
+                                               pdb_max_size)) {
                 Pattern new_pattern(pattern);
                 new_pattern.push_back(rel_var_id);
                 sort(new_pattern.begin(), new_pattern.end());
@@ -213,7 +214,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const SuccessorGenerator &successor_generator,
     double average_operator_cost,
     PatternCollection &initial_candidate_patterns) {
-    hill_climbing_timer = new CountdownTimer(max_time);
+    hill_climbing_timer = new Utils::CountdownTimer(max_time);
     // Candidate patterns generated so far (used to avoid duplicates).
     set<Pattern> generated_patterns;
     /* Set of new pattern candidates from the last call to
@@ -299,7 +300,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
     TaskProxy task_proxy(*task);
     SuccessorGenerator successor_generator(task);
 
-    Timer timer;
+    Utils::Timer timer;
     double average_operator_cost = get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
@@ -309,7 +310,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
         int goal_var_id = goal.get_variable().get_id();
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }
-    current_pdbs = make_unique_ptr<IncrementalCanonicalPDBs>(
+    current_pdbs = Utils::make_unique_ptr<IncrementalCanonicalPDBs>(
         task, initial_pattern_collection);
 
     State initial_state = task_proxy.get_initial_state();

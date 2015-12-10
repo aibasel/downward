@@ -29,7 +29,9 @@
 #ifdef __GNUG__
 #pragma GCC diagnostic pop
 #endif
+
 using namespace std;
+using Utils::ExitCode;
 
 
 namespace LP {
@@ -72,9 +74,9 @@ public:
         } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
                    messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
                    messageBuffer_ == CPLEX_ERROR_OOM_DEVEX) {
-            exit_with(EXIT_OUT_OF_MEMORY);
+            Utils::exit_with(ExitCode::EXIT_OUT_OF_MEMORY);
         } else {
-            exit_with(EXIT_CRITICAL_ERROR);
+            Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
         }
     }
 };
@@ -113,7 +115,7 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         return unique_ptr<OsiSolverInterface>(lp_solver);
     } else {
         cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
+        Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
     }
 }
 
@@ -122,7 +124,7 @@ void handle_coin_error(const CoinError &error) {
     cerr << "Coin threw exception: " << error.message() << endl
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
-    exit_with(EXIT_CRITICAL_ERROR);
+    Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
 }
 }
 

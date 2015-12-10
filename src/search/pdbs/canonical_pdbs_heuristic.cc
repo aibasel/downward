@@ -19,7 +19,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     const shared_ptr<AbstractTask> task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
-    Timer timer;
+    Utils::Timer timer;
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
     shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs();

@@ -140,12 +140,12 @@ EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

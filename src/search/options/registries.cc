@@ -1,6 +1,7 @@
 #include "registries.h"
 
 using namespace std;
+using Utils::ExitCode;
 
 
 PluginTypeRegistry *PluginTypeRegistry::instance() {
@@ -12,7 +13,7 @@ void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
     if (registry.count(info.get_type())) {
         std::cerr << "duplicate type in registry: "
                   << info.get_type().name() << std::endl;
-        exit_with(EXIT_CRITICAL_ERROR);
+        Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
     }
     registry.insert(make_pair(info.get_type(), info));
 }

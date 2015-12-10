@@ -3,6 +3,8 @@
 #include "../plugin.h"
 
 using namespace std;
+using Utils::ExitCode;
+
 
 namespace Landmarks {
 std::ostream &operator<<(std::ostream &os, const Fluent &p) {
@@ -588,7 +590,7 @@ HMLandmarks::HMLandmarks(const Options &opts)
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     if (!g_axioms.empty()) {
         cerr << "H_m_Landmarks do not support axioms" << endl;
-        exit_with(EXIT_UNSUPPORTED);
+        Utils::exit_with(ExitCode::EXIT_UNSUPPORTED);
     }
     // need this to be able to print propositions for debugging
     // already called in global.cc
@@ -684,10 +686,10 @@ void HMLandmarks::calc_achievers() {
 }
 
 void HMLandmarks::free_unneeded_memory() {
-    release_vector_memory(h_m_table_);
-    release_vector_memory(pm_ops_);
-    release_vector_memory(interesting_);
-    release_vector_memory(unsat_pc_count_);
+    Utils::release_vector_memory(h_m_table_);
+    Utils::release_vector_memory(pm_ops_);
+    Utils::release_vector_memory(interesting_);
+    Utils::release_vector_memory(unsat_pc_count_);
 
     set_indices_.clear();
     lm_node_table_.clear();

@@ -24,6 +24,7 @@
 #include <vector>
 
 using namespace std;
+using Utils::ExitCode;
 
 static const int PRE_FILE_VERSION = 3;
 
@@ -93,7 +94,7 @@ void check_magic(istream &in, string magic) {
                  << "on a preprocessor file from " << endl
                  << "an older version." << endl;
         }
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
     }
 }
 
@@ -106,7 +107,7 @@ void read_and_verify_version(istream &in) {
         cerr << "Expected preprocessor file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl;
         cerr << "Exiting." << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
     }
 }
 
@@ -195,7 +196,7 @@ void read_goal(istream &in) {
     in >> count;
     if (count < 1) {
         cerr << "Task has no goal condition!" << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
     }
     for (int i = 0; i < count; ++i) {
         int var, val;
@@ -229,7 +230,7 @@ void read_axioms(istream &in) {
 }
 
 void read_everything(istream &in) {
-    cout << "reading input... [t=" << g_timer << "]" << endl;
+    cout << "reading input... [t=" << Utils::g_timer << "]" << endl;
     read_and_verify_version(in);
     read_metric(in);
     read_variables(in);
@@ -255,12 +256,12 @@ void read_everything(istream &in) {
 
     check_magic(in, "begin_DTG"); // ignore everything from here
 
-    cout << "done reading input! [t=" << g_timer << "]" << endl;
+    cout << "done reading input! [t=" << Utils::g_timer << "]" << endl;
 
     cout << "packing state variables..." << flush;
     assert(!g_variable_domain.empty());
     g_state_packer = new IntPacker(g_variable_domain);
-    cout << "done! [t=" << g_timer << "]" << endl;
+    cout << "done! [t=" << Utils::g_timer << "]" << endl;
 
     // NOTE: state registry stores the sizes of the state, so must be
     // built after the problem has been read in.
@@ -279,9 +280,9 @@ void read_everything(istream &in) {
 
     cout << "Building successor generator..." << flush;
     g_successor_generator = new SuccessorGenerator(g_root_task());
-    cout << "done! [t=" << g_timer << "]" << endl;
+    cout << "done! [t=" << Utils::g_timer << "]" << endl;
 
-    cout << "done initalizing global data [t=" << g_timer << "]" << endl;
+    cout << "done initalizing global data [t=" << Utils::g_timer << "]" << endl;
 }
 
 void dump_everything() {
@@ -317,7 +318,7 @@ void verify_no_axioms() {
     if (has_axioms()) {
         cerr << "Heuristic does not support axioms!" << endl << "Terminating."
              << endl;
-        exit_with(EXIT_UNSUPPORTED);
+        Utils::exit_with(ExitCode::EXIT_UNSUPPORTED);
     }
 }
 
@@ -343,7 +344,7 @@ void verify_no_conditional_effects() {
         cerr << "Heuristic does not support conditional effects "
              << "(operator " << g_operators[op_id].get_name() << ")" << endl
              << "Terminating." << endl;
-        exit_with(EXIT_UNSUPPORTED);
+        Utils::exit_with(ExitCode::EXIT_UNSUPPORTED);
     }
 }
 
@@ -388,5 +389,5 @@ SuccessorGenerator *g_successor_generator;
 string g_plan_filename = "sas_plan";
 int g_num_previously_generated_plans = 0;
 bool g_is_part_of_anytime_portfolio = false;
-RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
+Utils::RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;

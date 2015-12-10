@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cassert>
+
 using namespace std;
 
 /* NOTE on possible optimizations:
@@ -159,8 +160,8 @@ SuccessorGenerator::SuccessorGenerator(const shared_ptr<AbstractTask> task)
     }
 
     root = unique_ptr<GeneratorBase>(construct_recursive(0, all_operators));
-    release_vector_memory(conditions);
-    release_vector_memory(next_condition_by_op);
+    Utils::release_vector_memory(conditions);
+    Utils::release_vector_memory(next_condition_by_op);
 }
 
 SuccessorGenerator::~SuccessorGenerator() {

@@ -72,7 +72,7 @@ FTSFactory::~FTSFactory() {
 vector<unique_ptr<Label>> FTSFactory::create_labels() {
     vector<unique_ptr<Label>> result;
     for (OperatorProxy op : task_proxy.get_operators()) {
-        result.push_back(make_unique_ptr<Label>(op.get_cost()));
+        result.push_back(Utils::make_unique_ptr<Label>(op.get_cost()));
     }
     return result;
 }
@@ -273,7 +273,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
 
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
-        result.push_back(make_unique_ptr<TransitionSystem>(
+        result.push_back(Utils::make_unique_ptr<TransitionSystem>(
                              task_proxy, labels, var_no, move(ts_data.transitions_by_label)));
     }
     return result;
@@ -290,7 +290,8 @@ vector<unique_ptr<HeuristicRepresentation>> FTSFactory::create_heuristic_represe
 
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         int range = task_proxy.get_variables()[var_no].get_domain_size();
-        result.push_back(make_unique_ptr<HeuristicRepresentationLeaf>(var_no, range));
+        result.push_back(
+            Utils::make_unique_ptr<HeuristicRepresentationLeaf>(var_no, range));
     }
     return result;
 }
@@ -306,7 +307,8 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
     result.reserve(num_variables * 2 - 1);
 
     for (int var_no = 0; var_no < num_variables; ++var_no) {
-        result.push_back(make_unique_ptr<Distances>(*transition_systems[var_no]));
+        result.push_back(
+            Utils::make_unique_ptr<Distances>(*transition_systems[var_no]));
     }
     return result;
 }
@@ -317,7 +319,7 @@ FactoredTransitionSystem FTSFactory::create() {
     initialize_transition_system_data();
     build_transitions();
 
-    unique_ptr<Labels> labels = make_unique_ptr<Labels>(create_labels());
+    unique_ptr<Labels> labels = Utils::make_unique_ptr<Labels>(create_labels());
     vector<unique_ptr<TransitionSystem>> transition_systems =
         create_transition_systems(*labels);
     vector<unique_ptr<HeuristicRepresentation>> heuristic_representations =

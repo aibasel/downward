@@ -138,7 +138,7 @@ bool PatternCollectionGeneratorGenetic::is_pattern_too_large(
     for (size_t i = 0; i < pattern.size(); ++i) {
         VariableProxy var = variables[pattern[i]];
         int domain_size = var.get_domain_size();
-        if (!is_product_within_limit(mem, domain_size, pdb_max_size))
+        if (!Utils::is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
         mem *= domain_size;
     }
@@ -228,8 +228,8 @@ void PatternCollectionGeneratorGenetic::bin_packing() {
             if (next_var_size > pdb_max_size)
                 // var never fits into a bin.
                 continue;
-            if (!is_product_within_limit(current_size, next_var_size,
-                                         pdb_max_size)) {
+            if (!Utils::is_product_within_limit(current_size, next_var_size,
+                                                pdb_max_size)) {
                 // Open a new bin for var.
                 pattern_collection.push_back(pattern);
                 pattern.clear();
@@ -274,7 +274,7 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm(
 
 PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     shared_ptr<AbstractTask> task) {
-    Timer timer;
+    Utils::Timer timer;
     genetic_algorithm(task);
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
     assert(best_patterns);

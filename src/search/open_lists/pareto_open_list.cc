@@ -227,12 +227,12 @@ ParetoOpenListFactory::ParetoOpenListFactory(
 
 unique_ptr<StateOpenList>
 ParetoOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 ParetoOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
