@@ -10,6 +10,7 @@
 #include "../task_proxy.h"
 #include "../utilities.h"
 
+#include "../utils/math.h"
 #include "../utils/rng.h"
 #include "../utils/timer.h"
 

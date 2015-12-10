@@ -8,6 +8,7 @@
 #include "../variable_order_finder.h"
 
 #include "../utils/logging.h"
+#include "../utils/math.h"
 
 #include <iostream>
 
