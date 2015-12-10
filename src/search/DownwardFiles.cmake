@@ -115,6 +115,7 @@ fast_downward_plugin(
     SOURCES
         utils/countdown_timer.cc
         utils/hash.cc
+        utils/language.h
         utils/rng.cc
         utils/system.cc
         utils/system_unix.cc

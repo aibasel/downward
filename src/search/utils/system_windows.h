@@ -14,6 +14,4 @@
 
 #include <windows.h>
 
-#define NO_RETURN __declspec(noreturn)
-
 #endif
