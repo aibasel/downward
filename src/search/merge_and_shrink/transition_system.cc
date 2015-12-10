@@ -351,14 +351,14 @@ void TransitionSystem::apply_label_reduction(
           updating label_equivalence_relation, because after updating it,
           we cannot find out the group id of reduced labels anymore.
         */
-        unordered_map<int, set<Transition>> new_label_to_transitions;
+        unordered_map<int, vector<Transition>> new_label_to_transitions;
         unordered_set<int> affected_group_ids;
         for (const pair<int, vector<int>> &mapping: label_mapping) {
             int new_label_no = mapping.first;
             const vector<int> &old_label_nos = mapping.second;
             assert(old_label_nos.size() >= 2);
-            set<int> seen_group_ids;
-            set<Transition> &new_label_transitions = new_label_to_transitions[new_label_no];
+            unordered_set<int> seen_group_ids;
+            set<Transition> new_label_transitions;
             for (int old_label_no : old_label_nos) {
                 int group_id = label_equivalence_relation->get_group_id(old_label_no);
                 if (seen_group_ids.insert(group_id).second) {
@@ -367,6 +367,8 @@ void TransitionSystem::apply_label_reduction(
                     new_label_transitions.insert(transitions.begin(), transitions.end());
                 }
             }
+            new_label_to_transitions[new_label_no] =
+                vector<Transition>(new_label_transitions.begin(), new_label_transitions.end());
         }
 
         /*
@@ -379,12 +381,11 @@ void TransitionSystem::apply_label_reduction(
         label_equivalence_relation->apply_label_mapping(label_mapping, only_equivalent_labels);
 
         // Go over the new transitions and add them at the correct position.
-        for (const auto &label_and_transitions : new_label_to_transitions) {
+        for (auto &label_and_transitions : new_label_to_transitions) {
             int new_label_no = label_and_transitions.first;
-            const set<Transition> &transitions = label_and_transitions.second;
+            vector<Transition> &transitions = label_and_transitions.second;
             int new_group_id = label_equivalence_relation->get_group_id(new_label_no);
-            transitions_by_group_id[new_group_id].assign(
-                transitions.begin(), transitions.end());
+            transitions_by_group_id[new_group_id] = move(transitions);
         }
 
         // Go over all affected group ids and remove their transitions if the
