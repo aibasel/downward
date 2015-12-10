@@ -8,8 +8,10 @@
 #define NO_RETURN __attribute__((noreturn))
 #endif
 
+namespace Utils {
 template<typename T>
 void unused_parameter(const T &) {
+}
 }
 
 #endif

@@ -12,9 +12,9 @@ class AxiomEvaluator;
 class CausalGraph;
 class GlobalOperator;
 class GlobalState;
-class SuccessorGenerator;
 class IntPacker;
 class StateRegistry;
+class SuccessorGenerator;
 
 namespace Utils {
 class RandomNumberGenerator;
