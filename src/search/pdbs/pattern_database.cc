@@ -5,6 +5,7 @@
 #include "../priority_queue.h"
 #include "../task_tools.h"
 
+#include "../utils/collections.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -76,7 +77,7 @@ PatternDatabase::PatternDatabase(
     verify_no_conditional_effects(task_proxy);
     assert(operator_costs.empty() ||
            operator_costs.size() == task_proxy.get_operators().size());
-    assert(is_sorted_unique(pattern));
+    assert(Utils::is_sorted_unique(pattern));
 
     Utils::Timer timer;
     hash_multipliers.reserve(pattern.size());

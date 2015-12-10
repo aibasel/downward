@@ -2,7 +2,8 @@
 
 #include "../causal_graph.h"
 #include "../task_proxy.h"
-#include "../utilities.h"
+
+#include "../utils/collections.h"
 
 #include <algorithm>
 #include <cassert>
@@ -125,7 +126,7 @@ int CGCache::get_index(int var, const State &state,
     if (to_val > from_val)
         --to_val;
     index += to_val * multiplier;
-    assert(in_bounds(index, cache[var]));
+    assert(Utils::in_bounds(index, cache[var]));
     return index;
 }
 }

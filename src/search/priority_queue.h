@@ -1,7 +1,7 @@
 #ifndef PRIORITY_QUEUE_H
 #define PRIORITY_QUEUE_H
 
-#include "utilities.h"
+#include "utils/collections.h"
 
 #include <cassert>
 #include <iostream>
@@ -194,7 +194,7 @@ public:
 
     virtual void clear() {
         for (int i = current_bucket_no; num_entries != 0; ++i) {
-            assert(in_bounds(i, buckets));
+            assert(Utils::in_bounds(i, buckets));
             int bucket_size = buckets[i].size();
             assert(bucket_size <= num_entries);
             num_entries -= bucket_size;

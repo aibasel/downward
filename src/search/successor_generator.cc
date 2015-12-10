@@ -2,7 +2,8 @@
 
 #include "global_state.h"
 #include "task_tools.h"
-#include "utilities.h"
+
+#include "utils/collections.h"
 
 #include <algorithm>
 #include <cassert>

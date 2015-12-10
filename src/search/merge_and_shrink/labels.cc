@@ -1,6 +1,8 @@
 #include "labels.h"
 
-#include "../utilities.h"
+#include "../utils/collections.h"
+#include "../utils/memory.h"
+
 
 #include <cassert>
 #include <iostream>
@@ -27,7 +29,7 @@ void Labels::reduce_labels(const vector<int> &old_label_nos) {
 }
 
 bool Labels::is_current_label(int label_no) const {
-    assert(in_bounds(label_no, labels));
+    assert(Utils::in_bounds(label_no, labels));
     return labels[label_no] != nullptr;
 }
 

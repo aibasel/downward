@@ -1,7 +1,9 @@
 #include "global_operator.h"
 
 #include "globals.h"
-#include "utilities.h"
+
+#include "utils/collections.h"
+#include "utils/system.h"
 
 #include <algorithm>
 #include <cassert>
