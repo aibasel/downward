@@ -13,8 +13,8 @@
 #include "../task_tools.h"
 
 #include "../utils/memory.h"
-#include "../utils/timer.h"
 #include "../utils/system.h"
+#include "../utils/timer.h"
 
 #include <cassert>
 #include <iostream>
