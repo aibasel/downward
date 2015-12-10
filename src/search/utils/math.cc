@@ -1,11 +1,6 @@
-#include "utilities.h"
-
-#include "system.h"
+#include "math.h"
 
 #include <cassert>
-#include <cstdlib>
-
-using namespace std;
 
 
 namespace Utils {

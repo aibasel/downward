@@ -1,7 +1,6 @@
 #include "logging.h"
 
 #include "timer.h"
-#include "utilities.h"
 
 #include <iomanip>
 #include <iostream>

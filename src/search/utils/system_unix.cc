@@ -21,7 +21,6 @@
 */
 
 #include "system_unix.h"
-#include "utilities.h"
 
 #include <csignal>
 #include <cstdio>
