@@ -6,5 +6,6 @@
 #include "utils/utilities.h"
 #include "utils/language.h"
 #include "utils/collections.h"
+#include "utils/logging.h"
 
 #endif

@@ -117,12 +117,12 @@ fast_downward_plugin(
         utils/countdown_timer.cc
         utils/hash.cc
         utils/language.h
+        utils/logging.cc
         utils/rng.cc
         utils/system.cc
         utils/system_unix.cc
         utils/system_windows.cc
         utils/timer.cc
-        utils/tracer.cc
         utils/utilities.cc
     CORE_PLUGIN
 )
