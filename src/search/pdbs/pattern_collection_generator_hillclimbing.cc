@@ -10,9 +10,9 @@
 #include "../plugin.h"
 #include "../sampling.h"
 #include "../task_tools.h"
-#include "../utilities.h"
 
 #include "../utils/countdown_timer.h"
+#include "../utils/logging.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
