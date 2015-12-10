@@ -5,6 +5,8 @@
 
 #include <ostream>
 
+
+namespace Utils {
 class CountdownTimer {
     Timer timer;
     double max_time;
@@ -16,5 +18,6 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
+}
 
 #endif

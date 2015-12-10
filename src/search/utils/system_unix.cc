@@ -38,6 +38,7 @@
 using namespace std;
 
 
+namespace Utils {
 void write_reentrant(int filedescr, const char *message, int len) {
     while (len > 0) {
         int written = TEMP_FAILURE_RETRY(write(filedescr, message, len));
@@ -245,4 +246,6 @@ void report_exit_code_reentrant(int exitcode) {
 int get_process_id() {
     return getpid();
 }
+}
+
 #endif

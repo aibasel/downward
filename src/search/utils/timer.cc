@@ -14,6 +14,7 @@
 using namespace std;
 
 
+namespace Utils {
 #if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
     uint64_t difference = end - start;
@@ -99,3 +100,4 @@ ostream &operator<<(ostream &os, const Timer &timer) {
 }
 
 Timer g_timer;
+}

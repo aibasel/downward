@@ -3,6 +3,7 @@
 #include "utilities.h"
 
 
+namespace Utils {
 const char *get_exit_code_message_reentrant(int exitcode) {
     switch (exitcode) {
     case EXIT_PLAN_FOUND:
@@ -37,4 +38,5 @@ bool is_exit_code_error_reentrant(int exitcode) {
     default:
         return true;
     }
+}
 }

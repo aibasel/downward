@@ -4,6 +4,8 @@
 
 using namespace std;
 
+
+namespace Utils {
 CountdownTimer::CountdownTimer(double max_time)
     : max_time(max_time) {
 }
@@ -23,4 +25,5 @@ bool CountdownTimer::is_expired() const {
 ostream &operator<<(ostream &os, const CountdownTimer &cd_timer) {
     os << cd_timer.timer;
     return os;
+}
 }

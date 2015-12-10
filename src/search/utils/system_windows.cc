@@ -15,6 +15,7 @@
 using namespace std;
 
 
+namespace Utils {
 void out_of_memory_handler() {
     cout << "Failed to allocate memory." << endl;
     exit_with(EXIT_OUT_OF_MEMORY);
@@ -75,4 +76,6 @@ void report_exit_code_reentrant(int exitcode) {
 int get_process_id() {
     return _getpid();
 }
+}
+
 #endif
