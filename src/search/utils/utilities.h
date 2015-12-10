@@ -20,20 +20,6 @@
 
 
 namespace Utils {
-enum ExitCode {
-    EXIT_PLAN_FOUND = 0,
-    EXIT_CRITICAL_ERROR = 1,
-    EXIT_INPUT_ERROR = 2,
-    EXIT_UNSUPPORTED = 3,
-    // Task is provably unsolvable with current bound. Currently unused (see issue377).
-    EXIT_UNSOLVABLE = 4,
-    // Search ended without finding a solution.
-    EXIT_UNSOLVED_INCOMPLETE = 5,
-    EXIT_OUT_OF_MEMORY = 6
-};
-
-NO_RETURN extern void exit_with(ExitCode returncode);
-
 /* Test if the product of two numbers is bounded by a third number.
    Safe against overflow. The caller must guarantee
    0 <= factor1, factor2 <= limit; failing this is an error. */

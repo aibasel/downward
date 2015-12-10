@@ -146,7 +146,7 @@ void out_of_memory_handler() {
       memory for the stack of the signal handler and raising a signal here.
     */
     write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
-    exit_with(EXIT_OUT_OF_MEMORY);
+    exit_with(ExitCode::OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {
@@ -228,7 +228,7 @@ void register_event_handlers() {
     sigaction(SIGXCPU, &default_signal_action, 0);
 }
 
-void report_exit_code_reentrant(int exitcode) {
+void report_exit_code_reentrant(ExitCode exitcode) {
     const char *message = get_exit_code_message_reentrant(exitcode);
     bool is_error = is_exit_code_error_reentrant(exitcode);
     if (message) {
@@ -237,7 +237,7 @@ void report_exit_code_reentrant(int exitcode) {
         write_reentrant_char(filedescr, '\n');
     } else {
         write_reentrant_str(STDERR_FILENO, "Exitcode: ");
-        write_reentrant_int(STDERR_FILENO, exitcode);
+        write_reentrant_int(STDERR_FILENO, static_cast<int>(exitcode));
         write_reentrant_str(STDERR_FILENO, "\nUnknown exitcode.\n");
         abort();
     }

@@ -31,7 +31,7 @@ bool is_unit_cost(TaskProxy task);
 bool has_axioms(TaskProxy task);
 
 /*
-  Report an error and exit with EXIT_UNSUPPORTED if the task has axioms.
+  Report an error and exit with ExitCode::UNSUPPORTED if the task has axioms.
   Runtime: O(1)
 */
 void verify_no_axioms(TaskProxy task);
@@ -40,7 +40,7 @@ void verify_no_axioms(TaskProxy task);
 bool has_conditional_effects(TaskProxy task);
 
 /*
-  Report an error and exit with EXIT_UNSUPPORTED if the task has
+  Report an error and exit with ExitCode::UNSUPPORTED if the task has
   conditional effects.
   Runtime: O(n), where n is the number of operators.
 */

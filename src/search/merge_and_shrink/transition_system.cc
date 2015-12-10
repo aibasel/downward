@@ -217,7 +217,7 @@ TransitionSystem::TransitionSystem(const Labels &labels,
             vector<Transition> new_transitions;
             if (transitions1.size() && transitions2.size()
                 && transitions1.size() > new_transitions.max_size() / transitions2.size())
-                Utils::exit_with(ExitCode::EXIT_OUT_OF_MEMORY);
+                Utils::exit_with(ExitCode::OUT_OF_MEMORY);
             new_transitions.reserve(transitions1.size() * transitions2.size());
             for (size_t i = 0; i < transitions1.size(); ++i) {
                 int src1 = transitions1[i].src;

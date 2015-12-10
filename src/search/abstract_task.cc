@@ -28,7 +28,7 @@ const shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
         cerr << "You may specify either the cost_type option (deprecated) or "
              << "use transform=adapt_costs(...) (recommended), but not both."
              << endl;
-        Utils::exit_with(ExitCode::EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::INPUT_ERROR);
     }
     shared_ptr<AbstractTask> task;
     if (opts.contains("transform")) {

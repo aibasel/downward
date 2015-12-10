@@ -295,7 +295,7 @@ void LPSolver::solve() {
             // to be the most common cause for this in our case.
             cerr << "Abandoned LP during resolve. "
                  << "Reasons include \"numerical difficulties\" and running out of memory." << endl;
-            Utils::exit_with(ExitCode::EXIT_CRITICAL_ERROR);
+            Utils::exit_with(ExitCode::CRITICAL_ERROR);
         }
         is_solved = true;
     } catch (CoinError &error) {
