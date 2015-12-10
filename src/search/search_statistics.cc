@@ -1,6 +1,7 @@
 #include "search_statistics.h"
 
 #include "utils/timer.h"
+#include "utils/system.h"
 
 #include <iostream>
 

@@ -12,6 +12,7 @@
 #include "utilities.h"
 
 #include "utils/rng.h"
+#include "utils/system.h"
 #include "utils/timer.h"
 
 #include <cstdlib>

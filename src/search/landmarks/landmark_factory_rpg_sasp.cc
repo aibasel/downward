@@ -10,6 +10,8 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/system.h"
+
 #include <cassert>
 #include <limits>
 

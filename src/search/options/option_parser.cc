@@ -11,6 +11,7 @@
 #include "../ext/tree_util.hh"
 
 #include "../utils/rng.h"
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>

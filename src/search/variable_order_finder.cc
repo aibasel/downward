@@ -2,7 +2,8 @@
 
 #include "causal_graph.h"
 #include "globals.h"
-#include "utilities.h"
+
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
