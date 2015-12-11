@@ -353,7 +353,7 @@ void TransitionSystem::apply_label_reduction(
     */
 
     if (only_equivalent_labels) {
-        label_equivalence_relation->apply_label_mapping(label_mapping, only_equivalent_labels);
+        label_equivalence_relation->apply_label_mapping(label_mapping);
     } else {
         /*
           Go over all mappings, collect transitions of old groups and
@@ -388,7 +388,7 @@ void TransitionSystem::apply_label_reduction(
            because only after updating label_equivalence_relation, we know the
            group id of the new labels and which old groups became empty.
         */
-        label_equivalence_relation->apply_label_mapping(label_mapping, only_equivalent_labels);
+        label_equivalence_relation->apply_label_mapping(label_mapping, &affected_group_ids);
 
         // Go over the new transitions and add them at the correct position.
         for (auto &label_and_transitions : new_label_to_transitions) {

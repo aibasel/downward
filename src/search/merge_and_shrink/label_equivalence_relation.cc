@@ -24,29 +24,16 @@ void LabelEquivalenceRelation::add_label_to_group(int group_id,
         grouped_labels[group_id].set_cost(label_cost);
 }
 
-void LabelEquivalenceRelation::recompute_group_costs() {
-    for (LabelGroup &label_group : grouped_labels) {
-        // Setting cost to infinity for empty groups does not hurt.
-        label_group.set_cost(INF);
-        for (int label_no : label_group) {
-            int cost = labels.get_label_cost(label_no);
-            if (cost < label_group.get_cost()) {
-                label_group.set_cost(cost);
-            }
-        }
-    }
-}
-
 void LabelEquivalenceRelation::apply_label_mapping(
     const vector<pair<int, vector<int>>> &label_mapping,
-    bool from_same_group) {
+    const unordered_set<int> *affected_group_ids) {
     for (const pair<int, vector<int>> &mapping : label_mapping) {
         int new_label_no = mapping.first;
         const vector<int> &old_label_nos = mapping.second;
 
         // Add new label to group
         int canonical_group_id = get_group_id(old_label_nos.front());
-        if (from_same_group) {
+        if (!affected_group_ids) {
             add_label_to_group(canonical_group_id, new_label_no);
         } else {
             add_label_group({new_label_no});
@@ -54,7 +41,7 @@ void LabelEquivalenceRelation::apply_label_mapping(
 
         // Remove old labels from group
         for (int old_label_no : old_label_nos) {
-            if (from_same_group) {
+            if (!affected_group_ids) {
                 assert(canonical_group_id == get_group_id(old_label_no));
             }
             LabelIter label_it = label_to_positions[old_label_no].second;
@@ -62,10 +49,20 @@ void LabelEquivalenceRelation::apply_label_mapping(
         }
     }
 
-    if (!from_same_group) {
-        // Recompute the cost of all label groups.
-        // TODO: collect group ids for which recomputation is required?
-        recompute_group_costs();
+    if (affected_group_ids) {
+        // Recompute the cost of all affected label groups.
+        const unordered_set<int> &group_ids = *affected_group_ids;
+        for (int group_id : group_ids) {
+            LabelGroup &label_group = grouped_labels[group_id];
+            // Setting cost to infinity for empty groups does not hurt.
+            label_group.set_cost(INF);
+            for (int label_no : label_group) {
+                int cost = labels.get_label_cost(label_no);
+                if (cost < label_group.get_cost()) {
+                    label_group.set_cost(cost);
+                }
+            }
+        }
     }
 }
 
