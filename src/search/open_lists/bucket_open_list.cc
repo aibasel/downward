@@ -4,7 +4,8 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
+
+#include "../utils/memory.h"
 
 #include <cassert>
 #include <deque>
@@ -120,12 +121,12 @@ BucketOpenListFactory::BucketOpenListFactory(
 
 unique_ptr<StateOpenList>
 BucketOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<BucketOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<BucketOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 BucketOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<BucketOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<BucketOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

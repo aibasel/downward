@@ -1,11 +1,13 @@
-#ifndef RNG_H
-#define RNG_H
+#ifndef UTILS_RNG_H
+#define UTILS_RNG_H
 
 #include <algorithm>
 #include <cassert>
 #include <random>
 #include <vector>
 
+
+namespace Utils {
 class RandomNumberGenerator {
     // Mersenne Twister random number generator.
     std::mt19937 rng;
@@ -47,5 +49,6 @@ public:
         std::shuffle(vec.begin(), vec.end(), rng);
     }
 };
+}
 
 #endif

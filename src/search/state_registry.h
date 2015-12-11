@@ -6,8 +6,8 @@
 #include "int_packer.h"
 #include "segmented_vector.h"
 #include "state_id.h"
-#include "utilities.h"
-#include "utilities_hash.h"
+
+#include "utils/hash.h"
 
 #include <set>
 #include <unordered_set>
@@ -106,7 +106,8 @@ class StateRegistry {
             : state_data_pool(state_data_pool_) {
         }
         size_t operator()(StateID id) const {
-            return ::hash_sequence(state_data_pool[id.value], g_state_packer->get_num_bins());
+            return Utils::hash_sequence(state_data_pool[id.value],
+                                        g_state_packer->get_num_bins());
         }
     };
 

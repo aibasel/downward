@@ -2,11 +2,12 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
 
 #include "../heuristics/lm_cut_landmarks.h"
 
 #include "../lp/lp_solver.h"
+
+#include "../utils/memory.h"
 
 #include <cassert>
 
@@ -18,7 +19,8 @@ void LMCutConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> task, vector<LP::LPConstraint> & /*constraints*/,
     double /*infinity*/) {
     TaskProxy task_proxy(*task);
-    landmark_generator = make_unique_ptr<LandmarkCutHeuristic::LandmarkCutLandmarks>(task_proxy);
+    landmark_generator =
+        Utils::make_unique_ptr<LandmarkCutHeuristic::LandmarkCutLandmarks>(task_proxy);
 }
 
 

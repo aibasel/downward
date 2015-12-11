@@ -5,7 +5,9 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
+
+#include "../utils/memory.h"
+#include "../utils/rng.h"
 
 #include <cassert>
 #include <deque>
@@ -226,12 +228,12 @@ ParetoOpenListFactory::ParetoOpenListFactory(
 
 unique_ptr<StateOpenList>
 ParetoOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 ParetoOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

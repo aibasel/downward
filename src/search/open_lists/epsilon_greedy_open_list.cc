@@ -5,7 +5,10 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
+
+#include "../utils/collections.h"
+#include "../utils/memory.h"
+#include "../utils/rng.h"
 
 #include <functional>
 #include <memory>
@@ -55,7 +58,7 @@ public:
 
 template<class HeapNode>
 static void adjust_heap_up(vector<HeapNode> &heap, size_t pos) {
-    assert(in_bounds(pos, heap));
+    assert(Utils::in_bounds(pos, heap));
     while (pos != 0) {
         size_t parent_pos = (pos - 1) / 2;
         if (heap[pos] > heap[parent_pos]) {
@@ -139,12 +142,12 @@ EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

@@ -1,10 +1,12 @@
-#ifndef COUNTDOWN_TIMER_H
-#define COUNTDOWN_TIMER_H
+#ifndef UTILS_COUNTDOWN_TIMER_H
+#define UTILS_COUNTDOWN_TIMER_H
 
 #include "timer.h"
 
 #include <ostream>
 
+
+namespace Utils {
 class CountdownTimer {
     Timer timer;
     double max_time;
@@ -16,5 +18,6 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
+}
 
 #endif
