@@ -27,7 +27,7 @@ const int MAX_COST_VALUE = 100000000;
 
 using Fact = std::pair<int, int>;
 
-std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
+extern std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
     std::shared_ptr<AbstractTask> task);
 
 /*
@@ -35,21 +35,22 @@ std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
   can be reached in the delete-relaxation before 'fact' is reached the first
   time, plus 'fact' itself.
 */
-std::unordered_set<FactProxy> get_relaxed_reachable_facts(
+extern std::unordered_set<FactProxy> get_relaxed_reachable_facts(
     TaskProxy task, FactProxy fact);
 
-std::vector<int> get_domain_sizes(TaskProxy task);
+extern std::vector<int> get_domain_sizes(TaskProxy task);
 
-int get_pre(OperatorProxy op, int var_id);
-int get_eff(OperatorProxy op, int var_id);
-int get_post(OperatorProxy op, int var_id);
+extern int get_pre(OperatorProxy op, int var_id);
+extern int get_eff(OperatorProxy op, int var_id);
+extern int get_post(OperatorProxy op, int var_id);
 }
 
 namespace std {
 template<>
 struct hash<FactProxy> {
     size_t operator()(const FactProxy &fact) const {
-        std::pair<int, int> raw_fact = make_pair(fact.get_variable().get_id(), fact.get_value());
+        std::pair<int, int> raw_fact = make_pair(
+            fact.get_variable().get_id(), fact.get_value());
         std::hash<std::pair<int, int>> hasher;
         return hasher(raw_fact);
     }
