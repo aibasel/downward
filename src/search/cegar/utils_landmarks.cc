@@ -19,7 +19,7 @@ static Fact get_fact(const LandmarkNode *node) {
     return Fact(node->vars[0], node->vals[0]);
 }
 
-SharedGraph get_landmark_graph() {
+unique_ptr<LandmarkGraph> get_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
     opts.set<bool>("cache_estimates", false);
@@ -35,12 +35,12 @@ SharedGraph get_landmark_graph() {
     Exploration exploration(opts);
     opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
-    return SharedGraph(lm_graph_factory.compute_lm_graph());
+    return make_unique_ptr<LandmarkGraph>(lm_graph_factory.compute_lm_graph());
 }
 
-vector<Fact> get_fact_landmarks(SharedGraph landmark_graph) {
+vector<Fact> get_fact_landmarks(const LandmarkGraph &graph) {
     vector<Fact> facts;
-    const set<LandmarkNode *> &nodes = landmark_graph->get_nodes();
+    const set<LandmarkNode *> &nodes = graph.get_nodes();
     for (LandmarkNode *node : nodes) {
         facts.push_back(get_fact(node));
     }
@@ -54,10 +54,9 @@ vector<Fact> get_fact_landmarks(SharedGraph landmark_graph) {
   variable the facts that have to be made true before the fact is made
   true for the first time.
 */
-VarToValues get_prev_landmarks(
-    SharedGraph landmark_graph, Fact fact) {
+VarToValues get_prev_landmarks(const LandmarkGraph &graph, Fact fact) {
     VarToValues groups;
-    LandmarkNode *node = landmark_graph->get_landmark(fact);
+    LandmarkNode *node = graph.get_landmark(fact);
     assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
@@ -88,12 +87,12 @@ static string get_quoted_node_name(Fact fact) {
     return out.str();
 }
 
-void dump_landmark_graph(SharedGraph graph) {
-    graph->dump();
+void dump_landmark_graph(const LandmarkGraph &graph) {
+    graph.dump();
 }
 
-void write_landmark_graph_dot_file(SharedGraph graph) {
-    const set<LandmarkNode *> &nodes = graph->get_nodes();
+void write_landmark_graph_dot_file(const LandmarkGraph &graph) {
+    const set<LandmarkNode *> &nodes = graph.get_nodes();
 
     ofstream dotfile("landmark-graph.dot");
     if (!dotfile.is_open()) {

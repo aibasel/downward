@@ -14,14 +14,13 @@ class LandmarkGraph;
 
 namespace CEGAR {
 using VarToValues = std::unordered_map<int, std::vector<int>>;
-using SharedGraph = std::shared_ptr<Landmarks::LandmarkGraph>;
 
-extern SharedGraph get_landmark_graph();
-extern std::vector<Fact> get_fact_landmarks(SharedGraph landmark_graph);
-extern VarToValues get_prev_landmarks(SharedGraph, Fact fact);
+extern std::unique_ptr<Landmarks::LandmarkGraph> get_landmark_graph();
+extern std::vector<Fact> get_fact_landmarks(const Landmarks::LandmarkGraph &graph);
+extern VarToValues get_prev_landmarks(const Landmarks::LandmarkGraph &graph, Fact fact);
 
-extern void dump_landmark_graph(SharedGraph graph);
-extern void write_landmark_graph_dot_file(SharedGraph graph);
+extern void dump_landmark_graph(const Landmarks::LandmarkGraph &graph);
+extern void write_landmark_graph_dot_file(const Landmarks::LandmarkGraph &graph);
 }
 
 #endif

@@ -7,6 +7,8 @@
 #include "../rng.h"
 #include "../task_tools.h"
 
+#include "../landmarks/landmark_graph.h"
+
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
 
@@ -99,16 +101,16 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
       landmark_graph(get_landmark_graph()),
       combine_facts(opts.get<bool>("combine_facts")) {
     if (DEBUG)
-        dump_landmark_graph(landmark_graph);
+        dump_landmark_graph(*landmark_graph);
     if (opts.get<bool>("write_graph"))
-        write_landmark_graph_dot_file(landmark_graph);
+        write_landmark_graph_dot_file(*landmark_graph);
 }
 
 Task LandmarkDecomposition::get_domain_abstracted_task(
     Task parent, Fact fact) const {
     assert(combine_facts);
     tasks::VarToGroups value_groups;
-    for (auto &pair : get_prev_landmarks(landmark_graph, fact)) {
+    for (auto &pair : get_prev_landmarks(*landmark_graph, fact)) {
         int var = pair.first;
         vector<int> &group = pair.second;
         if (group.size() >= 2)
@@ -119,7 +121,7 @@ Task LandmarkDecomposition::get_domain_abstracted_task(
 
 Facts LandmarkDecomposition::get_facts(const TaskProxy &) const {
     // TODO: Use landmark graph for task once the LM code supports tasks API.
-    return get_fact_landmarks(landmark_graph);
+    return get_fact_landmarks(*landmark_graph);
 }
 
 Tasks LandmarkDecomposition::get_subtasks(const Task &task) const {
