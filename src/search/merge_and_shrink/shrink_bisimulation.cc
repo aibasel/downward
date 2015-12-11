@@ -6,7 +6,9 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../utilities.h"
+
+#include "../utils/collections.h"
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
@@ -321,7 +323,7 @@ void ShrinkBisimulation::compute_abstraction(
     /* Reduce memory pressure before generating the equivalence
        relation since this is one of the code parts relevant to peak
        memory. */
-    release_vector_memory(signatures);
+    Utils::release_vector_memory(signatures);
 
     // Generate final result.
     assert(equivalence_relation.empty());

@@ -1,7 +1,8 @@
 #ifndef LP_LP_SOLVER_H
 #define LP_LP_SOLVER_H
 
-#include "../utilities.h"
+#include "../utils/language.h"
+#include "../utils/system.h"
 
 #include <functional>
 #include <memory>

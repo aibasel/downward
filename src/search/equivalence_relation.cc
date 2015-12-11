@@ -1,7 +1,5 @@
 #include "equivalence_relation.h"
 
-#include "utilities.h"
-
 #include <cassert>
 
 using namespace std;

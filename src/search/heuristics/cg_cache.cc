@@ -2,7 +2,9 @@
 
 #include "../causal_graph.h"
 #include "../task_proxy.h"
-#include "../utilities.h"
+
+#include "../utils/collections.h"
+#include "../utils/math.h"
 
 #include <algorithm>
 #include <cassert>
@@ -83,7 +85,8 @@ int CGCache::compute_required_cache_size(
 
     VariablesProxy variables = task_proxy.get_variables();
     int var_domain = variables[var_id].get_domain_size();
-    if (!is_product_within_limit(var_domain, var_domain - 1, MAX_CACHE_SIZE))
+    if (!Utils::is_product_within_limit(var_domain, var_domain - 1,
+                                        MAX_CACHE_SIZE))
         return -1;
 
     int required_size = var_domain * (var_domain - 1);
@@ -101,8 +104,8 @@ int CGCache::compute_required_cache_size(
         if (cache[depend_var_id].empty())
             return -1;
 
-        if (!is_product_within_limit(required_size, depend_var_domain,
-                                     MAX_CACHE_SIZE))
+        if (!Utils::is_product_within_limit(required_size, depend_var_domain,
+                                            MAX_CACHE_SIZE))
             return -1;
 
         required_size *= depend_var_domain;
@@ -124,7 +127,7 @@ int CGCache::get_index(int var, const State &state,
     if (to_val > from_val)
         --to_val;
     index += to_val * multiplier;
-    assert(in_bounds(index, cache[var]));
+    assert(Utils::in_bounds(index, cache[var]));
     return index;
 }
 }

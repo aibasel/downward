@@ -4,7 +4,6 @@
 // TODO: find re-entrant alternatives on Windows.
 
 #include "system_windows.h"
-#include "utilities.h"
 
 #include <csignal>
 #include <ctime>
@@ -15,9 +14,10 @@
 using namespace std;
 
 
+namespace Utils {
 void out_of_memory_handler() {
     cout << "Failed to allocate memory." << endl;
-    exit_with(EXIT_OUT_OF_MEMORY);
+    exit_with(ExitCode::OUT_OF_MEMORY);
 }
 
 void signal_handler(int signal_number) {
@@ -59,7 +59,7 @@ void register_event_handlers() {
     // SIGXCPU is not supported on Windows.
 }
 
-void report_exit_code_reentrant(int exitcode) {
+void report_exit_code_reentrant(ExitCode exitcode) {
     const char *message = get_exit_code_message_reentrant(exitcode);
     bool is_error = is_exit_code_error_reentrant(exitcode);
     if (message) {
@@ -75,4 +75,6 @@ void report_exit_code_reentrant(int exitcode) {
 int get_process_id() {
     return _getpid();
 }
+}
+
 #endif
