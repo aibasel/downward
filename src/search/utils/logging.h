@@ -14,7 +14,7 @@ namespace Utils {
   Simple logger that prepends time and peak memory info to messages.
 
   Usage:
-        Log() << "States: " << num_states << endl;
+        g_log << "States: " << num_states << endl;
 */
 struct Log {
     template<typename T>
@@ -23,6 +23,8 @@ struct Log {
                          << get_peak_memory_in_kb() << " KB] " << elem;
     }
 };
+
+extern Log g_log;
 
 class TraceBlock {
     std::string block_name;
