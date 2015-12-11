@@ -66,7 +66,7 @@ void report_exit_code_reentrant(ExitCode exitcode) {
         ostream &stream = is_error ? cerr : cout;
         stream << message << endl;
     } else {
-        cerr << "Exitcode: " << exitcode << endl
+        cerr << "Exitcode: " << static_cast<int>(exitcode) << endl
              << "Unknown exitcode." << endl;
         abort();
     }
