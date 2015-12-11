@@ -19,7 +19,7 @@ static Fact get_fact(const LandmarkNode *node) {
     return Fact(node->vars[0], node->vals[0]);
 }
 
-shared_ptr<LandmarkGraph> get_landmark_graph() {
+SharedGraph get_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", 0);
     opts.set<bool>("cache_estimates", false);
@@ -35,10 +35,10 @@ shared_ptr<LandmarkGraph> get_landmark_graph() {
     Exploration exploration(opts);
     opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
-    return shared_ptr<LandmarkGraph>(lm_graph_factory.compute_lm_graph());
+    return SharedGraph(lm_graph_factory.compute_lm_graph());
 }
 
-vector<Fact> get_fact_landmarks(shared_ptr<LandmarkGraph> landmark_graph) {
+vector<Fact> get_fact_landmarks(SharedGraph landmark_graph) {
     vector<Fact> facts;
     const set<LandmarkNode *> &nodes = landmark_graph->get_nodes();
     for (LandmarkNode *node : nodes) {
@@ -55,7 +55,7 @@ vector<Fact> get_fact_landmarks(shared_ptr<LandmarkGraph> landmark_graph) {
   true for the first time.
 */
 VarToValues get_prev_landmarks(
-    shared_ptr<LandmarkGraph> landmark_graph, Fact fact) {
+    SharedGraph landmark_graph, Fact fact) {
     VarToValues groups;
     LandmarkNode *node = landmark_graph->get_landmark(fact);
     assert(node);
@@ -88,11 +88,11 @@ static string get_quoted_node_name(Fact fact) {
     return out.str();
 }
 
-void dump_landmark_graph(shared_ptr<LandmarkGraph> graph) {
+void dump_landmark_graph(SharedGraph graph) {
     graph->dump();
 }
 
-void write_landmark_graph_dot_file(shared_ptr<LandmarkGraph> graph) {
+void write_landmark_graph_dot_file(SharedGraph graph) {
     const set<LandmarkNode *> &nodes = graph->get_nodes();
 
     ofstream dotfile("landmark-graph.dot");
