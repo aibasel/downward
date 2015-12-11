@@ -91,7 +91,7 @@ public:
 
 
 class LandmarkDecomposition : public FactDecomposition {
-    const std::shared_ptr<Landmarks::LandmarkGraph> landmark_graph;
+    const std::unique_ptr<Landmarks::LandmarkGraph> landmark_graph;
     bool combine_facts;
 
     Task get_domain_abstracted_task(Task parent, Fact fact) const;
