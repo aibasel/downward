@@ -4,6 +4,7 @@
 #include "types.h"
 
 #include <list>
+#include <unordered_set>
 #include <vector>
 
 
@@ -75,7 +76,6 @@ class LabelEquivalenceRelation {
     std::vector<std::pair<int, LabelIter>> label_to_positions;
 
     void add_label_to_group(int group_id, int label_no);
-    void recompute_group_costs();
 public:
     /*
       Constructs an empty label equivalence relation. It can be filled using
@@ -88,14 +88,15 @@ public:
       The given label mappings (from label reduction) contain the new label
       and the old label that were reduced to the new one.
 
-      If from_same_group is true, then all old labels must have been in the
-      same group before, and the new labels are added to this group. Otherwise,
-      all old labels are removed from their group(s) and add the new label is
-      added to a new group.
+      If affected_group_ids is not given, then all old labels must have been
+      in the same group before, and the new labels are added to this group.
+      Otherwise, all old labels are removed from their group(s) and the new
+      label is added to a new group. Furthermore, the costs of the affected
+      groups are recomputed.
     */
     void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-        bool from_same_group);
+        const std::unordered_set<int> *affected_group_ids = nullptr);
     // Moves all labels from one goup into the other
     void move_group_into_group(int from_group_id, int to_group_id);
     int add_label_group(const std::vector<int> &new_labels);
