@@ -290,13 +290,13 @@ bool TransitionSystem::apply_abstraction(
         if (!transitions.empty()) {
             vector<Transition> new_transitions;
             /*
-              We reserve more memory than necessary here, but this may be
-              better than resizing the vector several times when inserting
-              transitions one after the other.
+              We reserve more memory than necessary here, but this is better
+              than potentially resizing the vector several times when inserting
+              transitions one after the other. See issue604-v6.
 
-              An alternative would be to not use a new vector, but to
-              modify the existing transitions inplace, and in the end
-              removing all empty positions. This would be more ugly, though.
+              An alternative could be to not use a new vector, but to modify
+              the existing transitions inplace, and to remove all empty
+              positions in the end. This would be more ugly, though.
             */
             new_transitions.reserve(transitions.size());
             for (size_t i = 0; i < transitions.size(); ++i) {
