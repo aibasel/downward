@@ -10,8 +10,6 @@
 namespace MergeAndShrink {
 class Labels;
 
-typedef std::list<int>::iterator LabelIter;
-
 class LabelGroup {
     /*
       A label group contains a set of locally equivalent labels, possibly of
@@ -22,36 +20,35 @@ class LabelGroup {
 public:
     LabelGroup() : cost(INF) {
     }
+
     void set_cost(int cost_) {
         cost = cost_;
     }
+
     LabelIter insert(int label) {
         return labels.insert(labels.end(), label);
     }
+
     void erase(LabelIter pos) {
         labels.erase(pos);
     }
+
     void clear() {
         labels.clear();
     }
-    LabelIter begin() {
-        return labels.begin();
-    }
+
     LabelConstIter begin() const {
         return labels.begin();
     }
-    LabelIter end() {
-        return labels.end();
-    }
+
     LabelConstIter end() const {
         return labels.end();
     }
+
     bool empty() const {
         return labels.empty();
     }
-    int size() const {
-        return labels.size();
-    }
+
     int get_cost() const {
         return cost;
     }
@@ -59,9 +56,12 @@ public:
 
 class LabelEquivalenceRelation {
     /*
-      There should only be one instance of Labels at runtime. It is created
-      and managed by FactoredTransitionSystem.
+      This class groups labels together and allows easy acces to the group
+      and position within a group for every label. It is used by the class
+      TransitionSystem to group locally equivalent labels. Label groups
+      have implicit ids defined by their index in grouped_labels.
     */
+
     const Labels &labels;
 
     /*
@@ -75,25 +75,43 @@ class LabelEquivalenceRelation {
     std::vector<std::pair<int, LabelIter>> label_to_positions;
 
     void add_label_to_group(int group_id, int label_no);
+    void recompute_group_costs();
 public:
+    /*
+      Constructs an empty label equivalence relation. It can be filled using
+      the public add_label_group method below.
+    */
     explicit LabelEquivalenceRelation(const Labels &labels);
-    virtual ~LabelEquivalenceRelation() = default;
+    ~LabelEquivalenceRelation() = default;
 
-    void recompute_group_cost();
+    /*
+      The given label mappings (from label reduction) contain the new label
+      and the old label that were reduced to the new one.
+
+      If from_same_group is true, then all old labels must have been in the
+      same group before, and the new labels are added to this group. Otherwise,
+      all old labels are removed from their group(s) and add the new label is
+      added to a new group.
+    */
     void apply_label_mapping(
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         bool from_same_group);
+    // Moves all labels from one goup into the other
     void move_group_into_group(int from_group_id, int to_group_id);
     int add_label_group(const std::vector<int> &new_labels);
+
     bool is_empty_group(int group_id) const {
         return grouped_labels[group_id].empty();
     }
+
     int get_group_id(int label_no) const {
         return label_to_positions[label_no].first;
     }
+
     int get_size() const {
         return grouped_labels.size();
     }
+
     const LabelGroup &get_group(int group_id) const {
         return grouped_labels.at(group_id);
     }
