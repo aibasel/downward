@@ -8,8 +8,8 @@
   reserve enough memory. For CEGAR heuristics reserving 75 MB worked
   best.
 */
-void reserve_extra_memory_padding(int memory_in_mb);
-void release_extra_memory_padding();
-bool extra_memory_padding_is_reserved();
+extern void reserve_extra_memory_padding(int memory_in_mb);
+extern void release_extra_memory_padding();
+extern bool extra_memory_padding_is_reserved();
 
 #endif
