@@ -11,8 +11,6 @@ using namespace std;
 
 
 namespace Utils {
-Log g_log;
-
 class MemoryTracer {
     // The following constants affect the formatting of output.
     static const int INDENT_AMOUNT = 2;
