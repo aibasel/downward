@@ -1,7 +1,8 @@
 #ifndef LP_LP_SOLVER_H
 #define LP_LP_SOLVER_H
 
-#include "../utilities.h"
+#include "../utils/language.h"
+#include "../utils/system.h"
 
 #include <functional>
 #include <memory>
@@ -57,7 +58,7 @@ public:
 
     void clear();
     bool empty() const;
-    // Coefficients must be added ordered by index, without duplicate indices.
+    // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 };
 

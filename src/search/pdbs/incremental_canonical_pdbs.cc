@@ -3,7 +3,7 @@
 #include "canonical_pdbs.h"
 #include "pattern_database.h"
 
-#include "../timer.h"
+#include "../utils/timer.h"
 
 #include <iostream>
 #include <limits>
@@ -21,7 +21,7 @@ IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
       pattern_databases(make_shared<PDBCollection>()),
       max_additive_subsets(nullptr),
       size(0) {
-    Timer timer;
+    Utils::Timer timer;
     pattern_databases->reserve(patterns->size());
     for (const Pattern &pattern : *patterns)
         add_pdb_for_pattern(pattern);

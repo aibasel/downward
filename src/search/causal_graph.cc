@@ -3,8 +3,9 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "task_proxy.h"
-#include "timer.h"
-#include "utilities.h"
+
+#include "utils/logging.h"
+#include "utils/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -166,7 +167,7 @@ struct CausalGraphBuilder {
 };
 
 CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
-    Timer timer;
+    Utils::Timer timer;
     cout << "building causal graph..." << flush;
     int num_variables = task_proxy.get_variables().size();
     CausalGraphBuilder cg_builder(num_variables);

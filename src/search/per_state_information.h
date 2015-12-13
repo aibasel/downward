@@ -6,7 +6,8 @@
 #include "segmented_vector.h"
 #include "state_id.h"
 #include "state_registry.h"
-#include "utilities.h"
+
+#include "utils/collections.h"
 
 #include <cassert>
 #include <iterator>
@@ -181,7 +182,7 @@ public:
         SegmentedVector<Entry> *entries = get_entries(registry);
         int state_id = state.get_id().value;
         size_t virtual_size = registry->size();
-        assert(in_bounds(state_id, *registry));
+        assert(Utils::in_bounds(state_id, *registry));
         if (entries->size() < virtual_size) {
             entries->resize(virtual_size, default_value);
         }
@@ -195,7 +196,7 @@ public:
             return default_value;
         }
         int state_id = state.get_id().value;
-        assert(in_bounds(state_id, *registry));
+        assert(Utils::in_bounds(state_id, *registry));
         int num_entries = entries->size();
         if (state_id >= num_entries) {
             return default_value;

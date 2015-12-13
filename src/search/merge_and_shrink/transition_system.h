@@ -13,7 +13,6 @@
 
 class State;
 class TaskProxy;
-class Timer;
 
 
 namespace MergeAndShrink {
