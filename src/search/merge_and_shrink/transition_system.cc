@@ -221,16 +221,16 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     }
 
     return Utils::make_unique_ptr<TransitionSystem>(
-                num_variables,
-                move(incorporated_variables),
-                move(label_equivalence_relation),
-                move(transitions_by_group_id),
-                num_states,
-                move(goal_states),
-                init_state,
-                goal_relevant,
-                false
-            );
+        num_variables,
+        move(incorporated_variables),
+        move(label_equivalence_relation),
+        move(transitions_by_group_id),
+        num_states,
+        move(goal_states),
+        init_state,
+        goal_relevant,
+        false
+        );
 }
 
 void TransitionSystem::compute_locally_equivalent_labels() {

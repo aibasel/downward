@@ -332,16 +332,16 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
     for (int var_no = 0; var_no < num_variables; ++var_no) {
         TransitionSystemData &ts_data = transition_system_by_var[var_no];
         result.push_back(Utils::make_unique_ptr<TransitionSystem>(
-            ts_data.num_variables,
-            move(ts_data.incorporated_variables),
-            move(ts_data.label_equivalence_relation),
-            move(ts_data.transitions_by_label),
-            ts_data.num_states,
-            move(ts_data.goal_states),
-            ts_data.init_state,
-            ts_data.goal_relevant,
-            true
-        ));
+                             ts_data.num_variables,
+                             move(ts_data.incorporated_variables),
+                             move(ts_data.label_equivalence_relation),
+                             move(ts_data.transitions_by_label),
+                             ts_data.num_states,
+                             move(ts_data.goal_states),
+                             ts_data.init_state,
+                             ts_data.goal_relevant,
+                             true
+                             ));
     }
     return result;
 }
