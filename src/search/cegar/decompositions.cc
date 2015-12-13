@@ -70,7 +70,8 @@ void FactDecomposition::remove_initial_state_facts(
         }), facts.end());
 }
 
-Facts FactDecomposition::get_filtered_and_ordered_facts(shared_ptr<AbstractTask> task) const {
+Facts FactDecomposition::get_filtered_and_ordered_facts(
+    shared_ptr<AbstractTask> task) const {
     TaskProxy task_proxy(*task);
     Facts facts = get_facts(task_proxy);
     remove_initial_state_facts(task_proxy, facts);
@@ -78,8 +79,8 @@ Facts FactDecomposition::get_filtered_and_ordered_facts(shared_ptr<AbstractTask>
     return facts;
 }
 
-// TODO: Pass task by reference.
-void FactDecomposition::order_facts(shared_ptr<AbstractTask> task, vector<Fact> &facts) const {
+void FactDecomposition::order_facts(
+    shared_ptr<AbstractTask> task, vector<Fact> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
     if (subtask_order == SubtaskOrder::ORIGINAL) {
         // Nothing to do.
@@ -109,7 +110,8 @@ Facts GoalDecomposition::get_facts(const TaskProxy &task_proxy) const {
     return facts;
 }
 
-SharedTasks GoalDecomposition::get_subtasks(shared_ptr<AbstractTask> task) const {
+SharedTasks GoalDecomposition::get_subtasks(
+    shared_ptr<AbstractTask> task) const {
     SharedTasks subtasks;
     for (Fact goal : get_filtered_and_ordered_facts(task)) {
         shared_ptr<AbstractTask> subtask =
@@ -148,7 +150,8 @@ Facts LandmarkDecomposition::get_facts(const TaskProxy &) const {
     return get_fact_landmarks(*landmark_graph);
 }
 
-SharedTasks LandmarkDecomposition::get_subtasks(shared_ptr<AbstractTask> task) const {
+SharedTasks LandmarkDecomposition::get_subtasks(
+    shared_ptr<AbstractTask> task) const {
     SharedTasks subtasks;
     for (Fact landmark : get_filtered_and_ordered_facts(task)) {
         shared_ptr<AbstractTask> subtask =
@@ -210,9 +213,12 @@ static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
         return make_shared<LandmarkDecomposition>(opts);
 }
 
-static PluginShared<Decomposition> _plugin_original("no_decomposition", _parse_original);
-static PluginShared<Decomposition> _plugin_goals("decomposition_by_goals", _parse_goals);
-static PluginShared<Decomposition> _plugin_landmarks("decomposition_by_landmarks", _parse_landmarks);
+static PluginShared<Decomposition> _plugin_original(
+    "no_decomposition", _parse_original);
+static PluginShared<Decomposition> _plugin_goals(
+    "decomposition_by_goals", _parse_goals);
+static PluginShared<Decomposition> _plugin_landmarks(
+    "decomposition_by_landmarks", _parse_landmarks);
 
 static PluginTypePlugin<Decomposition> _type_plugin(
     "Decomposition",
