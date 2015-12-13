@@ -2,6 +2,7 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
+#include "label_equivalence_relation.h"
 #include "transition_system.h"
 #include "types.h"
 
@@ -52,19 +53,19 @@ void MergeDFP::compute_label_ranks(FactoredTransitionSystem &fts,
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     label_ranks.resize(num_labels, -1);
 
-    for (TSConstIterator group_it = ts.begin();
-         group_it != ts.end(); ++group_it) {
+    for (const GroupAndTransitions &gat : ts) {
+        const LabelGroup &label_group = gat.label_group;
+        const vector<Transition> &transitions = gat.transitions;
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
-        const vector<Transition> &transitions = group_it.get_transitions();
         bool group_relevant = false;
         if (static_cast<int>(transitions.size()) == ts.get_size()) {
             /*
               A label group is irrelevant in the earlier notion if it has
               exactly a self loop transition for every state.
             */
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                if (transitions[i].target != transitions[i].src) {
+            for (const Transition &transition : transitions) {
+                if (transition.target != transition.src) {
                     group_relevant = true;
                     break;
                 }
@@ -75,14 +76,12 @@ void MergeDFP::compute_label_ranks(FactoredTransitionSystem &fts,
         if (!group_relevant) {
             label_rank = -1;
         } else {
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &t = transitions[i];
-                label_rank = min(label_rank, distances.get_goal_distance(t.target));
+            for (const Transition &transition : transitions) {
+                label_rank = min(label_rank,
+                                 distances.get_goal_distance(transition.target));
             }
         }
-        for (LabelConstIter label_it = group_it.begin();
-             label_it != group_it.end(); ++label_it) {
-            int label_no = *label_it;
+        for (int label_no : label_group) {
             label_ranks[label_no] = label_rank;
         }
     }
