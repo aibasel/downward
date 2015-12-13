@@ -286,12 +286,12 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     }
 
     cout << "iPDB: iterations = " << num_iterations << endl;
-    cout << "iPDB: num_patterns = "
+    cout << "iPDB: number of patterns = "
          << current_pdbs->get_pattern_databases()->size() << endl;
     cout << "iPDB: size = " << current_pdbs->get_size() << endl;
     cout << "iPDB: generated = " << generated_patterns.size() << endl;
     cout << "iPDB: rejected = " << num_rejected << endl;
-    cout << "iPDB: max_pdb_size = " << max_pdb_size << endl;
+    cout << "iPDB: maximum pdb size = " << max_pdb_size << endl;
     cout << "iPDB: hill climbing time: " << *hill_climbing_timer << endl;
 
     delete hill_climbing_timer;
