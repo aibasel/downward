@@ -27,7 +27,7 @@ const int MAX_COST_VALUE = 100000000;
 
 using Fact = std::pair<int, int>;
 
-extern std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
+extern std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
     std::shared_ptr<AbstractTask> task);
 
 /*

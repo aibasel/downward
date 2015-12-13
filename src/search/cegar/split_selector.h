@@ -41,7 +41,7 @@ struct Split {
 class SplitSelector {
     const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
-    std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic;
+    std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic;
 
     const PickSplit pick;
 
@@ -54,7 +54,7 @@ class SplitSelector {
 
 public:
     SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick);
-    ~SplitSelector() = default;
+    ~SplitSelector();
 
     const Split &pick_split(const AbstractState &state,
                             const std::vector<Split> &splits) const;

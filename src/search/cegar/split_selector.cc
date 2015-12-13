@@ -24,6 +24,10 @@ SplitSelector::SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick)
         additive_heuristic = get_additive_heuristic(task);
 }
 
+// Define here to avoid include in header.
+SplitSelector::~SplitSelector() {
+}
+
 int SplitSelector::get_num_unwanted_values(const AbstractState &state,
                                            const Split &split) const {
     int num_unwanted_values = state.count(split.var_id) - split.values.size();

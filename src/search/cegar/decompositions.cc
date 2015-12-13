@@ -56,6 +56,7 @@ Facts FactDecomposition::get_filtered_and_ordered_facts(const Task &task) const 
     return facts;
 }
 
+// TODO: Pass task by reference.
 void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
     if (subtask_order == SubtaskOrder::ORIGINAL) {
@@ -64,8 +65,7 @@ void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const
         g_rng.shuffle(facts);
     } else if (subtask_order == SubtaskOrder::HADD_UP ||
                subtask_order == SubtaskOrder::HADD_DOWN) {
-        sort(facts.begin(), facts.end(),
-             SortHaddValuesUp(get_additive_heuristic(task)));
+        sort(facts.begin(), facts.end(), SortHaddValuesUp(task));
         if (subtask_order == SubtaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {

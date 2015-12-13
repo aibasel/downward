@@ -6,6 +6,8 @@
 
 #include "../heuristics/additive_heuristic.h"
 
+#include "../utils/memory.h"
+
 #include <algorithm>
 #include <cassert>
 #include <unordered_map>
@@ -15,14 +17,14 @@ using namespace std;
 namespace CEGAR {
 bool DEBUG = false;
 
-shared_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
+unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
     shared_ptr<AbstractTask> task) {
     Options opts;
     opts.set<shared_ptr<AbstractTask>>("transform", task);
     opts.set<int>("cost_type", 0);
     opts.set<bool>("cache_estimates", false);
-    shared_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic =
-        make_shared<AdditiveHeuristic::AdditiveHeuristic>(opts);
+    unique_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic =
+        Utils::make_unique_ptr<AdditiveHeuristic::AdditiveHeuristic>(opts);
     TaskProxy task_proxy(*task);
     additive_heuristic->initialize_and_compute_heuristic_for_cegar(
         task_proxy.get_initial_state());
