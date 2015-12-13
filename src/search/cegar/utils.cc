@@ -31,8 +31,8 @@ unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
     return additive_heuristic;
 }
 
-static bool operator_applicable(OperatorProxy op,
-                                const unordered_set<FactProxy> &facts) {
+static bool operator_applicable(
+    OperatorProxy op, const unordered_set<FactProxy> &facts) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (facts.count(precondition) == 0)
             return false;
