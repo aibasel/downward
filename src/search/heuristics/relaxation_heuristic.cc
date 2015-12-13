@@ -3,8 +3,9 @@
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
-#include "../utilities.h"
-#include "../utilities_hash.h"
+
+#include "../utils/collections.h"
+#include "../utils/hash.h"
 
 #include <algorithm>
 #include <cassert>
@@ -66,8 +67,8 @@ void RelaxationHeuristic::initialize() {
 Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
     int var = fact.get_variable().get_id();
     int value = fact.get_value();
-    assert(in_bounds(var, propositions));
-    assert(in_bounds(value, propositions[var]));
+    assert(Utils::in_bounds(var, propositions));
+    assert(Utils::in_bounds(value, propositions[var]));
     return &propositions[var][value];
 }
 

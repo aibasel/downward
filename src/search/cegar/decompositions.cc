@@ -4,13 +4,14 @@
 
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
 #include "../task_tools.h"
 
 #include "../landmarks/landmark_graph.h"
 
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
+
+#include "../utils/rng.h"
 
 #include <algorithm>
 #include <cassert>
@@ -69,7 +70,7 @@ void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const
             reverse(facts.begin(), facts.end());
     } else {
         cerr << "Invalid task order: " << static_cast<int>(subtask_order) << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
     }
 }
 

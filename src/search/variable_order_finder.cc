@@ -2,7 +2,8 @@
 
 #include "causal_graph.h"
 #include "globals.h"
-#include "utilities.h"
+
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
@@ -11,6 +12,8 @@
 #include <vector>
 
 using namespace std;
+using Utils::ExitCode;
+
 
 VariableOrderFinder::VariableOrderFinder(const shared_ptr<AbstractTask> task,
                                          VariableOrderType variable_order_type)
@@ -95,7 +98,7 @@ int VariableOrderFinder::next() {
         return var_no;
     }
     cerr << "Relevance analysis has not been performed." << endl;
-    exit_with(EXIT_INPUT_ERROR);
+    Utils::exit_with(ExitCode::INPUT_ERROR);
 }
 
 void VariableOrderFinder::dump() const {

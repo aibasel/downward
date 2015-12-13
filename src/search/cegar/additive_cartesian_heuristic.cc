@@ -6,13 +6,14 @@
 #include "utils.h"
 
 #include "../evaluation_context.h"
-#include "../logging.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
-#include "../utilities_memory.h"
 
 #include "../tasks/modified_costs_task.h"
+
+#include "../utils/logging.h"
+#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -31,7 +32,7 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
       options(opts),
       decompositions(opts.get_list<shared_ptr<Decomposition>>("decompositions")),
       max_states(options.get<int>("max_states")),
-      timer(new CountdownTimer(options.get<double>("max_time"))),
+      timer(new Utils::CountdownTimer(options.get<double>("max_time"))),
       num_abstractions(0),
       num_states(0) {
     DEBUG = opts.get<bool>("debug");
@@ -61,7 +62,7 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
            !timer->is_expired() &&
-           extra_memory_padding_is_reserved() &&
+           Utils::extra_memory_padding_is_reserved() &&
            compute_heuristic(g_initial_state()) != DEAD_END;
 }
 
@@ -112,22 +113,22 @@ void AdditiveCartesianHeuristic::build_abstractions(
 }
 
 void AdditiveCartesianHeuristic::initialize() {
-    Log() << "Initializing additive Cartesian heuristic..." << endl;
-    reserve_extra_memory_padding(memory_padding_in_mb);
+    g_log << "Initializing additive Cartesian heuristic..." << endl;
+    Utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
         cout << endl;
         if (!may_build_another_abstraction())
             break;
     }
-    if (extra_memory_padding_is_reserved())
-        release_extra_memory_padding();
+    if (Utils::extra_memory_padding_is_reserved())
+        Utils::release_extra_memory_padding();
     print_statistics();
     cout << endl;
 }
 
 void AdditiveCartesianHeuristic::print_statistics() const {
-    Log() << "Done initializing additive Cartesian heuristic" << endl;
+    g_log << "Done initializing additive Cartesian heuristic" << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
     cout << "Cartesian heuristics stored: " << heuristics.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
@@ -195,7 +196,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_list_option<shared_ptr<Decomposition>>(
         "decompositions",
         "task decompositions",
-        "[decomposition_by_landmarks,decomposition_by_goals]");
+        "[decomposition_by_landmarks(),decomposition_by_goals()]");
     parser.add_option<int>(
         "max_states",
         "maximum sum of abstract states over all abstractions",

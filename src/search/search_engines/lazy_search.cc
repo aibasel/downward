@@ -6,10 +6,11 @@
 #include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
 #include "../successor_generator.h"
 
 #include "../open_lists/open_list_factory.h"
+
+#include "../utils/rng.h"
 
 #include <algorithm>
 #include <limits>

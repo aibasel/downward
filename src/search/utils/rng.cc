@@ -1,11 +1,13 @@
 #include "rng.h"
-#include "utilities.h"
+
+#include "system.h"
 
 #include <chrono>
 
 using namespace std;
 
 
+namespace Utils {
 /*
   Ideally, one would use true randomness here from std::random_device. However,
   there exist platforms where this returns non-random data, which is condoned by
@@ -28,4 +30,5 @@ RandomNumberGenerator::~RandomNumberGenerator() {
 
 void RandomNumberGenerator::seed(int seed) {
     rng.seed(seed);
+}
 }

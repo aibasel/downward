@@ -2,7 +2,8 @@
 #define TASKS_DOMAIN_ABSTRACTED_TASK_H
 
 #include "../delegating_task.h"
-#include "../utilities.h"
+
+#include "../utils/collections.h"
 
 #include <cassert>
 #include <string>
@@ -25,8 +26,8 @@ private:
     const std::vector<std::vector<int>> value_map;
 
     int get_task_value(int var, int value) const {
-        assert(in_bounds(var, value_map));
-        assert(in_bounds(value, value_map[var]));
+        assert(Utils::in_bounds(var, value_map));
+        assert(Utils::in_bounds(value, value_map[var]));
         return value_map[var][value];
     }
 

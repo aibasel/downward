@@ -5,8 +5,9 @@
 #include "split_selector.h"
 #include "split_tree.h"
 
-#include "../countdown_timer.h"
 #include "../task_proxy.h"
+
+#include "../utils/countdown_timer.h"
 
 #include <limits>
 #include <memory>
@@ -36,7 +37,7 @@ class Abstraction {
     SplitSelector split_selector;
 
     // Limit the time for building the abstraction.
-    CountdownTimer timer;
+    Utils::CountdownTimer timer;
 
     // Set of all abstract states, i.e. states that have not been split.
     AbstractStates states;

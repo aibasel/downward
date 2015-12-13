@@ -1,7 +1,7 @@
 #ifndef OPTIONS_REGISTRIES_H
 #define OPTIONS_REGISTRIES_H
 
-#include "../utilities.h"
+#include "../utils/system.h"
 
 #include <iostream>
 #include <map>
@@ -25,7 +25,7 @@ public:
     void insert(const std::string &k, Factory f) {
         if (registered.count(k)) {
             std::cerr << "duplicate key in registry: " << k << std::endl;
-            exit_with(EXIT_CRITICAL_ERROR);
+            Utils::exit_with(Utils::ExitCode::CRITICAL_ERROR);
         }
         registered[k] = f;
     }

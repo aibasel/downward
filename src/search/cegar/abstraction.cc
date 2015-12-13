@@ -3,12 +3,12 @@
 #include "abstract_state.h"
 #include "utils.h"
 
-#include "../logging.h"
+#include "../globals.h"
 #include "../option_parser.h"
 #include "../task_tools.h"
-#include "../timer.h"
-#include "../utilities.h"
-#include "../utilities_memory.h"
+
+#include "../utils/logging.h"
+#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -63,9 +63,9 @@ Abstraction::Abstraction(const Options &opts)
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0) {
-    Log() << "Start building abstraction." << endl;
+    g_log << "Start building abstraction." << endl;
     build();
-    Log() << "Done building abstraction." << endl;
+    g_log << "Done building abstraction." << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
        last iteration, so we should update the h values. */
@@ -115,7 +115,7 @@ void Abstraction::create_trivial_abstraction() {
 }
 
 bool Abstraction::may_keep_refining() const {
-    return extra_memory_padding_is_reserved() &&
+    return Utils::extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
            !timer.is_expired();
 }
@@ -171,7 +171,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 
     int num_states = get_num_states();
     if (num_states % STATES_LOG_STEP == 0)
-        Log() << "Abstract states: " << num_states << "/" << max_states << endl;
+        g_log << "Abstract states: " << num_states << "/" << max_states << endl;
 
     delete state;
 }
@@ -188,7 +188,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         cout << "  Initial abstract state: " << *abs_state << endl;
 
     for (auto &step : solution) {
-        if (!extra_memory_padding_is_reserved())
+        if (!Utils::extra_memory_padding_is_reserved())
             break;
         const OperatorProxy op = step.first;
         AbstractState *next_abs_state = step.second;
