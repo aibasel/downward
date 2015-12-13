@@ -1,6 +1,9 @@
 #ifndef CEGAR_DECOMPOSITIONS_H
 #define CEGAR_DECOMPOSITIONS_H
 
+// TODO: Move include and SortHaddValuesUp implementation to .cc file.
+#include "utils.h"
+
 #include "../option_parser.h"
 #include "../task_proxy.h"
 
@@ -48,15 +51,17 @@ public:
 class FactDecomposition : public Decomposition {
     SubtaskOrder subtask_order;
 
-    struct SortHaddValuesUp {
-        const std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd;
-
-        explicit SortHaddValuesUp(std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd)
-            : hadd(hadd) {
-        }
+    class SortHaddValuesUp {
+        // Can't store as unique_ptr since the class needs copy-constructor.
+        std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd;
 
         int get_cost(Fact fact) {
             return hadd->get_cost_for_cegar(fact.first, fact.second);
+        }
+
+    public:
+        explicit SortHaddValuesUp(std::shared_ptr<AbstractTask> task)
+            : hadd(get_additive_heuristic(task)) {
         }
 
         bool operator()(Fact a, Fact b) {
