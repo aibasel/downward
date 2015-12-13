@@ -5,6 +5,8 @@
 #include "option_parser.h"
 #include "plugin.h"
 
+#include "utils/collections.h"
+
 #include <cassert>
 
 using namespace std;
@@ -12,10 +14,10 @@ using namespace std;
 
 static GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) {
     if (is_axiom) {
-        assert(in_bounds(index, g_axioms));
+        assert(Utils::in_bounds(index, g_axioms));
         return g_axioms[index];
     } else {
-        assert(in_bounds(index, g_operators));
+        assert(Utils::in_bounds(index, g_operators));
         return g_operators[index];
     }
 }

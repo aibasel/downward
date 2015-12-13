@@ -1,6 +1,13 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
+#include "exploration.h"
+
+#include "../global_operator.h"
+#include "../option_parser.h"
+
+#include "../utils/hash.h"
+
 #include <cassert>
 #include <list>
 #include <map>
@@ -8,11 +15,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include "exploration.h"
-#include "../global_operator.h"
-#include "../option_parser.h"
-#include "../utilities_hash.h"
 
 
 namespace Landmarks {

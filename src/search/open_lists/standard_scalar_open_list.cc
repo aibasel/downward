@@ -1,13 +1,47 @@
-// HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LISTS_STANDARD_SCALAR_OPEN_LIST_H
+#include "standard_scalar_open_list.h"
 
-#include "../evaluation_context.h"
-#include "../scalar_evaluator.h"
+#include "open_list.h"
+
 #include "../option_parser.h"
+#include "../plugin.h"
+
+#include "../utils/memory.h"
 
 #include <cassert>
+#include <deque>
+#include <map>
 
 using namespace std;
+
+
+template<class Entry>
+class StandardScalarOpenList : public OpenList<Entry> {
+    typedef deque<Entry> Bucket;
+
+    map<int, Bucket> buckets;
+    int size;
+
+    ScalarEvaluator *evaluator;
+
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
+public:
+    explicit StandardScalarOpenList(const Options &opts);
+    StandardScalarOpenList(ScalarEvaluator *eval,
+                           bool preferred_only);
+    virtual ~StandardScalarOpenList() override = default;
+
+    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
+    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override;
+};
 
 
 template<class Entry>
@@ -66,7 +100,7 @@ void StandardScalarOpenList<Entry>::clear() {
 
 template<class Entry>
 void StandardScalarOpenList<Entry>::get_involved_heuristics(
-    std::set<Heuristic *> &hset) {
+    set<Heuristic *> &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 
@@ -82,21 +116,6 @@ bool StandardScalarOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-#else
-
-// HACK: We're the top level target.
-
-#include "standard_scalar_open_list.h"
-
-#include "open_list_factory.h"
-
-#include "../plugin.h"
-
-#include <memory>
-
-using namespace std;
-
-
 StandardScalarOpenListFactory::StandardScalarOpenListFactory(
     const Options &options)
     : options(options) {
@@ -104,12 +123,12 @@ StandardScalarOpenListFactory::StandardScalarOpenListFactory(
 
 unique_ptr<StateOpenList>
 StandardScalarOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<StandardScalarOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<StandardScalarOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 StandardScalarOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<StandardScalarOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<StandardScalarOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
@@ -129,5 +148,3 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("single", _parse);
-
-#endif

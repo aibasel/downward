@@ -1,9 +1,10 @@
 #! /bin/bash
 
-set -e
-set -u
+set -euo pipefail
 
 cd "$(dirname "$0")"
+
+set -x
 
 ./test-exitcodes.py
 ./test-standard-configs.py

@@ -1,10 +1,12 @@
 #include "task_tools.h"
 
-#include "utilities.h"
+#include "../utils/system.h"
 
 #include <iostream>
 
 using namespace std;
+using Utils::ExitCode;
+
 
 bool is_unit_cost(TaskProxy task) {
     for (OperatorProxy op : task.get_operators()) {
@@ -22,7 +24,7 @@ void verify_no_axioms(TaskProxy task) {
     if (has_axioms(task)) {
         cerr << "This configuration does not support axioms!"
              << endl << "Terminating." << endl;
-        exit_with(EXIT_UNSUPPORTED);
+        Utils::exit_with(ExitCode::UNSUPPORTED);
     }
 }
 
@@ -48,7 +50,7 @@ void verify_no_conditional_effects(TaskProxy task) {
         cerr << "This configuration does not support conditional effects "
              << "(operator " << op.get_name() << ")!" << endl
              << "Terminating." << endl;
-        exit_with(EXIT_UNSUPPORTED);
+        Utils::exit_with(ExitCode::UNSUPPORTED);
     }
 }
 

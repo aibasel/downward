@@ -7,6 +7,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/collections.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -126,8 +128,8 @@ void ShrinkFH::ordered_buckets_use_vector(
         int h = distances.get_goal_distance(state);
         if (g != INF && h != INF) {
             int f = g + h;
-            assert(in_bounds(f, states_by_f_and_h));
-            assert(in_bounds(h, states_by_f_and_h[f]));
+            assert(Utils::in_bounds(f, states_by_f_and_h));
+            assert(Utils::in_bounds(h, states_by_f_and_h[f]));
             Bucket &bucket = states_by_f_and_h[f][h];
             if (bucket.empty())
                 ++bucket_count;
