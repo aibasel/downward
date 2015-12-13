@@ -1,17 +1,13 @@
 #ifndef CEGAR_DECOMPOSITIONS_H
 #define CEGAR_DECOMPOSITIONS_H
 
-// TODO: Move include and SortHaddValuesUp implementation to .cc file.
-#include "utils.h"
-
-#include "../option_parser.h"
-#include "../task_proxy.h"
-
-#include "../heuristics/additive_heuristic.h"
-
 #include <memory>
 #include <utility>
 #include <vector>
+
+class AbstractTask;
+class Options;
+class TaskProxy;
 
 namespace Landmarks {
 class LandmarkGraph;
@@ -50,24 +46,6 @@ public:
 
 class FactDecomposition : public Decomposition {
     SubtaskOrder subtask_order;
-
-    class SortHaddValuesUp {
-        // Can't store as unique_ptr since the class needs copy-constructor.
-        std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd;
-
-        int get_cost(Fact fact) {
-            return hadd->get_cost_for_cegar(fact.first, fact.second);
-        }
-
-    public:
-        explicit SortHaddValuesUp(std::shared_ptr<AbstractTask> task)
-            : hadd(get_additive_heuristic(task)) {
-        }
-
-        bool operator()(Fact a, Fact b) {
-            return get_cost(a) < get_cost(b);
-        }
-    };
 
     void remove_initial_state_facts(const TaskProxy &task_proxy, Facts &facts) const;
     void order_facts(const Task &task, Facts &facts) const;

@@ -1,10 +1,13 @@
 #include "decompositions.h"
 
+#include "utils.h"
 #include "utils_landmarks.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
+
+#include "../heuristics/additive_heuristic.h"
 
 #include "../landmarks/landmark_graph.h"
 
@@ -23,6 +26,25 @@
 using namespace std;
 
 namespace CEGAR {
+class SortFactsByIncreasingHaddValues {
+    // Can't store as unique_ptr since the class needs copy-constructor.
+    std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd;
+
+    int get_cost(Fact fact) {
+        return hadd->get_cost_for_cegar(fact.first, fact.second);
+    }
+
+public:
+    explicit SortFactsByIncreasingHaddValues(std::shared_ptr<AbstractTask> task)
+        : hadd(get_additive_heuristic(task)) {
+    }
+
+    bool operator()(Fact a, Fact b) {
+        return get_cost(a) < get_cost(b);
+    }
+};
+
+
 NoDecomposition::NoDecomposition(const Options &opts)
     : num_copies(opts.get<int>("copies")) {
 }
@@ -65,7 +87,7 @@ void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const
         g_rng.shuffle(facts);
     } else if (subtask_order == SubtaskOrder::HADD_UP ||
                subtask_order == SubtaskOrder::HADD_DOWN) {
-        sort(facts.begin(), facts.end(), SortHaddValuesUp(task));
+        sort(facts.begin(), facts.end(), SortFactsByIncreasingHaddValues(task));
         if (subtask_order == SubtaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
     } else {
