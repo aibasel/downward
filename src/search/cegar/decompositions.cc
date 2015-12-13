@@ -49,8 +49,8 @@ NoDecomposition::NoDecomposition(const Options &opts)
     : num_copies(opts.get<int>("copies")) {
 }
 
-Tasks NoDecomposition::get_subtasks(const Task &task) const {
-    Tasks subtasks;
+SharedTasks NoDecomposition::get_subtasks(shared_ptr<AbstractTask> task) const {
+    SharedTasks subtasks;
     for (int i = 0; i < num_copies; ++i) {
         subtasks.push_back(task);
     }
@@ -70,7 +70,7 @@ void FactDecomposition::remove_initial_state_facts(
         }), facts.end());
 }
 
-Facts FactDecomposition::get_filtered_and_ordered_facts(const Task &task) const {
+Facts FactDecomposition::get_filtered_and_ordered_facts(shared_ptr<AbstractTask> task) const {
     TaskProxy task_proxy(*task);
     Facts facts = get_facts(task_proxy);
     remove_initial_state_facts(task_proxy, facts);
@@ -79,7 +79,7 @@ Facts FactDecomposition::get_filtered_and_ordered_facts(const Task &task) const 
 }
 
 // TODO: Pass task by reference.
-void FactDecomposition::order_facts(const Task &task, vector<Fact> &facts) const {
+void FactDecomposition::order_facts(shared_ptr<AbstractTask> task, vector<Fact> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
     if (subtask_order == SubtaskOrder::ORIGINAL) {
         // Nothing to do.
@@ -109,10 +109,11 @@ Facts GoalDecomposition::get_facts(const TaskProxy &task_proxy) const {
     return facts;
 }
 
-Tasks GoalDecomposition::get_subtasks(const Task &task) const {
-    Tasks subtasks;
+SharedTasks GoalDecomposition::get_subtasks(shared_ptr<AbstractTask> task) const {
+    SharedTasks subtasks;
     for (Fact goal : get_filtered_and_ordered_facts(task)) {
-        Task subtask = make_shared<tasks::ModifiedGoalsTask>(task, Facts {goal});
+        shared_ptr<AbstractTask> subtask =
+            make_shared<tasks::ModifiedGoalsTask>(task, Facts {goal});
         subtasks.push_back(subtask);
     }
     return subtasks;
@@ -129,8 +130,8 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
         write_landmark_graph_dot_file(*landmark_graph);
 }
 
-Task LandmarkDecomposition::get_domain_abstracted_task(
-    Task parent, Fact fact) const {
+shared_ptr<AbstractTask> LandmarkDecomposition::get_domain_abstracted_task(
+    shared_ptr<AbstractTask> parent, Fact fact) const {
     assert(combine_facts);
     tasks::VarToGroups value_groups;
     for (auto &pair : get_prev_landmarks(*landmark_graph, fact)) {
@@ -147,10 +148,11 @@ Facts LandmarkDecomposition::get_facts(const TaskProxy &) const {
     return get_fact_landmarks(*landmark_graph);
 }
 
-Tasks LandmarkDecomposition::get_subtasks(const Task &task) const {
-    Tasks subtasks;
+SharedTasks LandmarkDecomposition::get_subtasks(shared_ptr<AbstractTask> task) const {
+    SharedTasks subtasks;
     for (Fact landmark : get_filtered_and_ordered_facts(task)) {
-        Task subtask = make_shared<tasks::ModifiedGoalsTask>(task, Facts {landmark});
+        shared_ptr<AbstractTask> subtask =
+            make_shared<tasks::ModifiedGoalsTask>(task, Facts {landmark});
         if (combine_facts) {
             subtask = get_domain_abstracted_task(subtask, landmark);
         }
