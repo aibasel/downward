@@ -13,8 +13,11 @@
 #include <utility>
 #include <vector>
 
-class CountdownTimer;
 class Options;
+
+namespace Utils {
+class CountdownTimer;
+}
 
 
 namespace PDBs {
@@ -37,7 +40,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
 
     // for stats only
     int num_rejected;
-    CountdownTimer *hill_climbing_timer;
+    Utils::CountdownTimer *hill_climbing_timer;
 
     /*
       For the given pattern, all possible extensions of the pattern by one

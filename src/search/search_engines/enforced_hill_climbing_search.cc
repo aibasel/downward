@@ -4,7 +4,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
-#include "../utilities.h"
 
 #include "../evaluators/g_evaluator.h"
 #include "../evaluators/pref_evaluator.h"
@@ -12,7 +11,10 @@
 #include "../open_lists/standard_scalar_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 
+#include "../utils/system.h"
+
 using namespace std;
+using Utils::ExitCode;
 
 
 namespace EnforcedHillClimbingSearch {
@@ -109,9 +111,9 @@ void EnforcedHillClimbingSearch::initialize() {
     if (dead_end) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
-            exit_with(EXIT_UNSOLVABLE);
+            Utils::exit_with(ExitCode::UNSOLVABLE);
         else
-            exit_with(EXIT_UNSOLVED_INCOMPLETE);
+            Utils::exit_with(ExitCode::UNSOLVED_INCOMPLETE);
     }
 
     SearchNode node = search_space.get_node(current_eval_context.get_state());

@@ -1,7 +1,8 @@
 #include "potential_function.h"
 
 #include "../task_proxy.h"
-#include "../utilities.h"
+
+#include "../utils/collections.h"
 
 #include <cmath>
 
@@ -19,8 +20,8 @@ int PotentialFunction::get_value(const State &state) const {
     for (FactProxy fact : state) {
         int var_id = fact.get_variable().get_id();
         int value = fact.get_value();
-        assert(in_bounds(var_id, fact_potentials));
-        assert(in_bounds(value, fact_potentials[var_id]));
+        assert(Utils::in_bounds(var_id, fact_potentials));
+        assert(Utils::in_bounds(value, fact_potentials[var_id]));
         heuristic_value += fact_potentials[var_id][value];
     }
     const double epsilon = 0.01;

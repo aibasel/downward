@@ -1,10 +1,12 @@
-#ifndef TIMER_H
-#define TIMER_H
+#ifndef UTILS_TIMER_H
+#define UTILS_TIMER_H
 
-#include "utilities.h"
+#include "system.h"
 
 #include <ostream>
 
+
+namespace Utils {
 class Timer {
     double last_start_clock;
     double collected_time;
@@ -26,5 +28,8 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &os, const Timer &timer);
+
+extern Timer g_timer;
+}
 
 #endif

@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <string>
+#include <unordered_set>
 
 using namespace std;
 
@@ -62,7 +63,7 @@ void DomainAbstractedTaskFactory::initialize(const shared_ptr<AbstractTask> pare
 }
 
 void DomainAbstractedTaskFactory::move_fact(int var, int before, int after) {
-    assert(in_bounds(var, domain_size));
+    assert(Utils::in_bounds(var, domain_size));
     assert(0 <= before && before < domain_size[var]);
     assert(0 <= after && after < domain_size[var]);
 
@@ -121,7 +122,7 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
         for (int before : group) {
             move_fact(var, before, next_free_pos);
         }
-        assert(in_bounds(next_free_pos, fact_names[var]));
+        assert(Utils::in_bounds(next_free_pos, fact_names[var]));
         fact_names[var][next_free_pos] = move(combined_fact_names[group_id]);
         ++next_free_pos;
     }

@@ -3,10 +3,11 @@
 #include "abstract_state.h"
 
 #include "../globals.h"
-#include "../rng.h"
-#include "../utilities.h"
 
 #include "../heuristics/additive_heuristic.h"
+
+#include "../utils/logging.h"
+#include "../utils/rng.h"
 
 #include <cassert>
 #include <iostream>
@@ -79,7 +80,7 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
         rating = get_extreme_hadd_value(var_id, values);
     } else {
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
     }
     if (pick == PickSplit::MIN_UNWANTED || pick == PickSplit::MIN_REFINED ||
         pick == PickSplit::MIN_HADD) {

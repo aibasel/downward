@@ -5,6 +5,8 @@
 #include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
 
+#include "../utils/memory.h"
+
 #include <algorithm>
 #include <fstream>
 
@@ -35,7 +37,8 @@ unique_ptr<LandmarkGraph> get_landmark_graph() {
     Exploration exploration(opts);
     opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
-    return make_unique_ptr<LandmarkGraph>(lm_graph_factory.compute_lm_graph());
+    return Utils::make_unique_ptr<LandmarkGraph>(
+        lm_graph_factory.compute_lm_graph());
 }
 
 vector<Fact> get_fact_landmarks(const LandmarkGraph &graph) {
@@ -97,7 +100,7 @@ void write_landmark_graph_dot_file(const LandmarkGraph &graph) {
     ofstream dotfile("landmark-graph.dot");
     if (!dotfile.is_open()) {
         cerr << "output file for landmark graph could not be opened" << endl;
-        exit_with(EXIT_CRITICAL_ERROR);
+        Utils::exit_with(Utils::ExitCode::CRITICAL_ERROR);
     }
 
     dotfile << "digraph landmarkgraph {" << endl;

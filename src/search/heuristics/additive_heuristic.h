@@ -5,6 +5,8 @@
 
 #include "../priority_queue.h"
 
+#include "../utils/collections.h"
+
 #include <cassert>
 
 class State;
@@ -72,8 +74,8 @@ public:
     void initialize_and_compute_heuristic_for_cegar(const State &state);
 
     int get_cost_for_cegar(int var, int value) const {
-        assert(in_bounds(var, propositions));
-        assert(in_bounds(value, propositions[var]));
+        assert(Utils::in_bounds(var, propositions));
+        assert(Utils::in_bounds(value, propositions[var]));
         return propositions[var][value].cost;
     }
 };

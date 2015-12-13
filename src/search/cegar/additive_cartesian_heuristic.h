@@ -51,7 +51,9 @@
       helper nodes for splits that split off multiple facts.
 */
 
+namespace Utils {
 class CountdownTimer;
+}
 
 namespace CEGAR {
 class CartesianHeuristic;
@@ -61,7 +63,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     const Options options;
     std::vector<std::shared_ptr<Decomposition>> decompositions;
     const int max_states;
-    std::unique_ptr<CountdownTimer> timer;
+    std::unique_ptr<Utils::CountdownTimer> timer;
     std::vector<int> remaining_costs;
     std::vector<std::shared_ptr<CartesianHeuristic>> heuristics;
     int num_abstractions;

@@ -38,7 +38,15 @@ def _run_pyflakes(path):
         python_files.extend([
             os.path.join(root, f) for f in files
             if f.endswith(".py") and f != "__init__.py"])
-    return subprocess.call(["pyflakes"] + python_files) == 0
+    try:
+        return subprocess.check_call(["pyflakes"] + python_files) == 0
+    except OSError as err:
+        if err.errno == 2:
+            print(
+                "Python style checks need pyflakes. Please install it "
+                "with \"sudo apt-get install pyflakes\".")
+        else:
+            raise
 
 def check_translator_pyflakes():
     return _run_pyflakes(os.path.join(SRC_DIR, "translate"))

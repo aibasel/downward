@@ -12,9 +12,7 @@ set(CORE_SOURCES
         axioms.cc
         causal_graph.cc
         cost_adapted_task.cc
-        countdown_timer.cc
         delegating_task.cc
-        domain_transition_graph.cc
         equivalence_relation.cc
         evaluation_context.cc
         evaluation_result.cc
@@ -24,14 +22,12 @@ set(CORE_SOURCES
         heuristic_cache.cc
         heuristic.cc
         int_packer.cc
-        logging.cc
         operator_cost.cc
         option_parser.h
         option_parser_util.h
         per_state_information.cc
         plugin.h
         priority_queue.cc
-        rng.cc
         root_task.cc
         sampling.cc
         scalar_evaluator.cc
@@ -44,16 +40,8 @@ set(CORE_SOURCES
         state_id.cc
         state_registry.cc
         successor_generator.cc
-        system.cc
-        system_unix.cc
-        system_windows.cc
         task_proxy.cc
         task_tools.cc
-        timer.cc
-        tracer.cc
-        utilities.cc
-        utilities_hash.cc
-        utilities_memory.cc
         variable_order_finder.cc
 
         open_lists/alternation_open_list.cc
@@ -117,6 +105,25 @@ fast_downward_plugin(
         options/token_parser.cc
         options/type_documenter.cc
         options/type_namer.cc
+    CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME UTILS
+    HELP "System utilities"
+    SOURCES
+        utils/collections.h
+        utils/countdown_timer.cc
+        utils/hash.h
+        utils/language.h
+        utils/logging.cc
+        utils/math.cc
+        utils/memory.cc
+        utils/rng.cc
+        utils/system.cc
+        utils/system_unix.cc
+        utils/system_windows.cc
+        utils/timer.cc
     CORE_PLUGIN
 )
 
@@ -255,14 +262,23 @@ fast_downward_plugin(
     HELP "The context-enhanced additive heuristic"
     SOURCES
         heuristics/cea_heuristic.cc
+    DEPENDS DOMAIN_TRANSITION_GRAPH
 )
 
 fast_downward_plugin(
     NAME CG_HEURISTIC
     HELP "The causal graph heuristic"
+    SOURCES heuristics/cg_heuristic.cc
+            heuristics/cg_cache.cc
+    DEPENDS DOMAIN_TRANSITION_GRAPH
+)
+
+fast_downward_plugin(
+    NAME DOMAIN_TRANSITION_GRAPH
+    HELP "DTGs used by cg and cea heuristic"
     SOURCES
-        heuristics/cg_heuristic.cc
-        heuristics/cg_cache.cc
+        domain_transition_graph.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(

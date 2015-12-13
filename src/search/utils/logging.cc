@@ -1,8 +1,7 @@
-#include "tracer.h"
+#include "logging.h"
 
-#include "globals.h"
+#include "system.h"
 #include "timer.h"
-#include "utilities.h"
 
 #include <iomanip>
 #include <iostream>
@@ -11,6 +10,7 @@
 using namespace std;
 
 
+namespace Utils {
 class MemoryTracer {
     // The following constants affect the formatting of output.
     static const int INDENT_AMOUNT = 2;
@@ -78,4 +78,5 @@ TraceBlock::~TraceBlock() {
 
 void trace(const std::string &msg) {
     _tracer.print_trace_message(msg);
+}
 }

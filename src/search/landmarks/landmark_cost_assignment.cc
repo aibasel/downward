@@ -2,7 +2,7 @@
 
 #include "landmark_graph.h"
 
-#include "../utilities.h"
+#include "../utils/collections.h"
 
 #include <cstdlib>
 #include <functional>
@@ -67,7 +67,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
             if (use_action_landmarks && achievers.size() == 1) {
                 // We have found an action landmark for this state.
                 int op_id = *achievers.begin();
-                assert(in_bounds(op_id, g_operators));
+                assert(Utils::in_bounds(op_id, g_operators));
                 if (!action_landmarks[op_id]) {
                     action_landmarks[op_id] = true;
                     const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
@@ -79,7 +79,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {
                     int op_id = *ach_it;
-                    assert(in_bounds(op_id, g_operators));
+                    assert(Utils::in_bounds(op_id, g_operators));
                     ++achieved_lms_by_op[op_id];
                 }
             }
@@ -102,7 +102,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
             for (ach_it = achievers.begin(); ach_it != achievers.end();
                  ++ach_it) {
                 int op_id = *ach_it;
-                assert(in_bounds(op_id, g_operators));
+                assert(Utils::in_bounds(op_id, g_operators));
                 if (action_landmarks[op_id]) {
                     covered_by_action_lm = true;
                     break;
@@ -112,7 +112,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {
                     int op_id = *ach_it;
-                    assert(in_bounds(op_id, g_operators));
+                    assert(Utils::in_bounds(op_id, g_operators));
                     --achieved_lms_by_op[op_id];
                 }
             } else {
@@ -132,7 +132,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
         for (ach_it = achievers.begin(); ach_it != achievers.end();
              ++ach_it) {
             int op_id = *ach_it;
-            assert(in_bounds(op_id, g_operators));
+            assert(Utils::in_bounds(op_id, g_operators));
             const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
                 op_id);
             int num_achieved = achieved_lms_by_op[op_id];
@@ -213,7 +213,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             const set<int> &achievers = get_achievers(lm_status, *lm);
             assert(!achievers.empty());
             for (int op_id : achievers) {
-                assert(in_bounds(op_id, g_operators));
+                assert(Utils::in_bounds(op_id, g_operators));
                 lp_constraints[op_id].insert(lm_id, 1.0);
             }
         }

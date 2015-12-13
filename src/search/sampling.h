@@ -5,10 +5,13 @@
 #include <functional>
 #include <vector>
 
-class CountdownTimer;
 class State;
 class SuccessorGenerator;
 class TaskProxy;
+
+namespace Utils {
+class CountdownTimer;
+}
 
 
 struct SamplingTimeout : public std::exception {};
@@ -31,6 +34,6 @@ std::vector<State> sample_states_with_random_walks(
     std::function<bool(State)> is_dead_end = [] (const State &) {
                                                  return false;
                                              },
-    const CountdownTimer *timer = nullptr);
+    const Utils::CountdownTimer *timer = nullptr);
 
 #endif
