@@ -73,7 +73,7 @@ class Abstraction {
 
     /* Try to convert the abstract solution into a concrete trace. Return the
        first encountered flaw or nullptr if there is no flaw. */
-    std::shared_ptr<Flaw> find_flaw(const Solution &solution);
+    std::unique_ptr<Flaw> find_flaw(const Solution &solution);
 
     // Perform Dijkstra's algorithm from the goal states to update the h-values.
     void update_h_values();
