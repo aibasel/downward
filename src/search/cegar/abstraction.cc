@@ -176,7 +176,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     delete state;
 }
 
-shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
+unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     if (DEBUG)
         cout << "Check solution:" << endl;
 
@@ -201,7 +201,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                 if (DEBUG)
                     cout << "  Paths deviate." << endl;
                 ++deviations;
-                return make_shared<Flaw>(
+                return Utils::make_unique_ptr<Flaw>(
                     move(conc_state),
                     abs_state,
                     next_abs_state->regress(op));
@@ -212,7 +212,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             if (DEBUG)
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             ++unmet_preconditions;
-            return make_shared<Flaw>(
+            return Utils::make_unique_ptr<Flaw>(
                 move(conc_state),
                 abs_state,
                 AbstractState::get_abstract_state(
@@ -227,7 +227,7 @@ shared_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         if (DEBUG)
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
-        return make_shared<Flaw>(
+        return Utils::make_unique_ptr<Flaw>(
             move(conc_state),
             abs_state,
             AbstractState::get_abstract_state(
