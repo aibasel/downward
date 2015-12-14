@@ -17,7 +17,7 @@ class StateRegistry;
 class SuccessorGenerator;
 
 namespace Utils {
-class Log;
+struct Log;
 class RandomNumberGenerator;
 }
 
