@@ -129,7 +129,7 @@ void Abstraction::build() {
             cout << "Abstract problem is unsolvable!" << endl;
             break;
         }
-        const shared_ptr<Flaw> flaw = find_flaw(abstract_search.get_solution());
+        unique_ptr<Flaw> flaw = find_flaw(abstract_search.get_solution());
         if (!flaw) {
             found_conc_solution = true;
             break;
