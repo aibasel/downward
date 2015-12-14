@@ -65,7 +65,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     const int max_states;
     std::unique_ptr<Utils::CountdownTimer> timer;
     std::vector<int> remaining_costs;
-    std::vector<std::shared_ptr<CartesianHeuristic>> heuristics;
+    std::vector<std::unique_ptr<CartesianHeuristic>> heuristics;
     int num_abstractions;
     int num_states;
 

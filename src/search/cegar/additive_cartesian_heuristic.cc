@@ -102,8 +102,9 @@ void AdditiveCartesianHeuristic::build_abstractions(
             opts.set<int>("cost_type", 0);
             opts.set<shared_ptr<AbstractTask>>("transform", subtask);
             opts.set<bool>("cache_estimates", cache_h_values);
-            heuristics.push_back(make_shared<CartesianHeuristic>(
-                                     opts, abstraction.get_split_tree()));
+            heuristics.push_back(
+                Utils::make_unique_ptr<CartesianHeuristic>(
+                    opts, abstraction.get_split_tree()));
         }
         if (!may_build_another_abstraction())
             break;
@@ -137,7 +138,7 @@ void AdditiveCartesianHeuristic::print_statistics() const {
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
     EvaluationContext eval_context(global_state);
     int sum_h = 0;
-    for (shared_ptr<CartesianHeuristic> heuristic : heuristics) {
+    for (auto &heuristic : heuristics) {
         if (eval_context.is_heuristic_infinite(heuristic.get()))
             return DEAD_END;
         sum_h += eval_context.get_heuristic_value(heuristic.get());
