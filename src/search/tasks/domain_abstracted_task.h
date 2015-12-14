@@ -17,8 +17,13 @@ using ValueGroup = std::vector<int>;
 using ValueGroups = std::vector<ValueGroup>;
 using VarToGroups = std::unordered_map<int, ValueGroups>;
 
+/*
+  Task transformation for performing domain abstraction.
+
+  We recommend using the factory function in
+  domain_abstracted_task_factory.h for creating DomainAbstractedTasks.
+*/
 class DomainAbstractedTask : public DelegatingTask {
-private:
     const std::vector<int> domain_size;
     const std::vector<int> initial_state_values;
     const std::vector<Fact> goals;
@@ -49,6 +54,7 @@ public:
 
     virtual std::pair<int, int> get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;
+    // TODO: Assert that task has no conditional effects.
     virtual std::pair<int, int> get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
 

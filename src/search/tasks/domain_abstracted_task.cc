@@ -13,11 +13,11 @@ DomainAbstractedTask::DomainAbstractedTask(
     vector<vector<string>> &&fact_names,
     vector<vector<int>> &&value_map)
     : DelegatingTask(parent),
-      domain_size(domain_size),
-      initial_state_values(initial_state_values),
-      goals(goals),
-      fact_names(fact_names),
-      value_map(value_map) {
+      domain_size(move(domain_size)),
+      initial_state_values(move(initial_state_values)),
+      goals(move(goals)),
+      fact_names(move(fact_names)),
+      value_map(move(value_map)) {
 }
 
 int DomainAbstractedTask::get_variable_domain_size(int var) const {
@@ -30,14 +30,14 @@ const string &DomainAbstractedTask::get_fact_name(int var, int value) const {
 
 pair<int, int> DomainAbstractedTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
-    return get_task_fact(parent->get_operator_precondition(
-                             op_index, fact_index, is_axiom));
+    return get_task_fact(
+        parent->get_operator_precondition(op_index, fact_index, is_axiom));
 }
 
 pair<int, int> DomainAbstractedTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
-    return get_task_fact(parent->get_operator_effect(
-                             op_index, eff_index, is_axiom));
+    return get_task_fact(
+        parent->get_operator_effect(op_index, eff_index, is_axiom));
 }
 
 pair<int, int> DomainAbstractedTask::get_goal_fact(int index) const {

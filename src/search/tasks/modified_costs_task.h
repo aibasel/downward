@@ -8,6 +8,7 @@
 namespace tasks {
 class ModifiedCostsTask : public DelegatingTask {
     const std::vector<int> operator_costs;
+
 public:
     explicit ModifiedCostsTask(const std::shared_ptr<AbstractTask> parent,
                                const std::vector<int> &costs);
