@@ -1,12 +1,30 @@
 #ifndef UTILS_LOGGING_H
 #define UTILS_LOGGING_H
 
+#include "system.h"
+#include "timer.h"
+
 #include <ostream>
 #include <string>
 #include <vector>
 
 
 namespace Utils {
+/*
+  Simple logger that prepends time and peak memory info to messages.
+  Logs are written to stdout.
+
+  Usage:
+        g_log << "States: " << num_states << endl;
+*/
+struct Log {
+    template<typename T>
+    std::ostream &operator<<(const T &elem) {
+        return std::cout << "[t=" << g_timer << ", "
+                         << get_peak_memory_in_kb() << " KB] " << elem;
+    }
+};
+
 class TraceBlock {
     std::string block_name;
 public:
