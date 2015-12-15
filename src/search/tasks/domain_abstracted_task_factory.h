@@ -4,11 +4,10 @@
 #include "domain_abstracted_task.h"
 
 #include <memory>
-#include <vector>
 
 class AbstractTask;
 
-namespace tasks {
+namespace Tasks {
 std::shared_ptr<AbstractTask> build_domain_abstracted_task(
     const std::shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups);

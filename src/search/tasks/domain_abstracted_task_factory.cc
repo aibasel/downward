@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace tasks {
+namespace Tasks {
 class DomainAbstractedTaskFactory {
 private:
     std::vector<int> domain_size;

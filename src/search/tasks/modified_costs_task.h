@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace tasks {
+namespace Tasks {
 class ModifiedCostsTask : public DelegatingTask {
     const std::vector<int> operator_costs;
 
