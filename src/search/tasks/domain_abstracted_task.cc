@@ -34,6 +34,13 @@ pair<int, int> DomainAbstractedTask::get_operator_precondition(
         parent->get_operator_precondition(op_index, fact_index, is_axiom));
 }
 
+pair<int, int> DomainAbstractedTask::get_operator_effect_condition(
+    int op_index, int eff_index, int cond_index, bool is_axiom) const {
+    return get_task_fact(
+        parent->get_operator_effect_condition(
+            op_index, eff_index, cond_index, is_axiom));
+}
+
 pair<int, int> DomainAbstractedTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     return get_task_fact(

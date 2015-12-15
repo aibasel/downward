@@ -54,7 +54,8 @@ public:
 
     virtual std::pair<int, int> get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;
-    // TODO: Assert that task has no conditional effects.
+    virtual std::pair<int, int> get_operator_effect_condition(
+        int op_index, int eff_index, int cond_index, bool is_axiom) const override;
     virtual std::pair<int, int> get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
 

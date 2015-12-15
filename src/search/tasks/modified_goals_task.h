@@ -8,12 +8,12 @@
 
 namespace Tasks {
 class ModifiedGoalsTask : public DelegatingTask {
-private:
     const std::vector<std::pair<int, int>> goals;
 
 public:
-    ModifiedGoalsTask(const std::shared_ptr<AbstractTask> parent,
-                      std::vector<std::pair<int, int>> &&goals);
+    ModifiedGoalsTask(
+        const std::shared_ptr<AbstractTask> parent,
+        std::vector<std::pair<int, int>> &&goals);
 
     virtual int get_num_goals() const override;
     virtual std::pair<int, int> get_goal_fact(int index) const override;
