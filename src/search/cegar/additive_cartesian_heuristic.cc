@@ -56,7 +56,7 @@ void AdditiveCartesianHeuristic::reduce_remaining_costs(
 
 shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
     shared_ptr<AbstractTask> parent) const {
-    return make_shared<tasks::ModifiedCostsTask>(parent, remaining_costs);
+    return make_shared<Tasks::ModifiedCostsTask>(parent, remaining_costs);
 }
 
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {

@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace tasks {
+namespace Tasks {
 class ModifiedGoalsTask : public DelegatingTask {
 private:
     const std::vector<std::pair<int, int>> goals;
