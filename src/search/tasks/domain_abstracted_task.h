@@ -51,6 +51,8 @@ public:
 
     virtual int get_variable_domain_size(int var) const override;
     virtual const std::string &get_fact_name(int var, int value) const override;
+    virtual bool are_facts_mutex(
+        const std::pair<int, int> &fact1, const std::pair<int, int> &fact2) const override;
 
     virtual std::pair<int, int> get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;

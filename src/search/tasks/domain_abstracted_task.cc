@@ -2,6 +2,8 @@
 
 #include "../global_state.h"
 
+#include "../utils/system.h"
+
 using namespace std;
 
 namespace Tasks {
@@ -26,6 +28,12 @@ int DomainAbstractedTask::get_variable_domain_size(int var) const {
 
 const string &DomainAbstractedTask::get_fact_name(int var, int value) const {
     return fact_names[var][value];
+}
+
+bool DomainAbstractedTask::are_facts_mutex(
+    const std::pair<int, int> &,
+    const std::pair<int, int> &) const {
+    ABORT("DomainAbstractedTask doesn't support querying mutexes.");
 }
 
 pair<int, int> DomainAbstractedTask::get_operator_precondition(
