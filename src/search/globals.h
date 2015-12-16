@@ -17,6 +17,7 @@ class StateRegistry;
 class SuccessorGenerator;
 
 namespace Utils {
+struct Log;
 class RandomNumberGenerator;
 }
 
@@ -79,5 +80,7 @@ extern Utils::RandomNumberGenerator g_rng;
 extern StateRegistry *g_state_registry;
 
 extern const std::shared_ptr<AbstractTask> g_root_task();
+
+extern Utils::Log g_log;
 
 #endif
