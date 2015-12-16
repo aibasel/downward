@@ -10,6 +10,7 @@
 #include "state_registry.h"
 #include "successor_generator.h"
 
+#include "utils/logging.h"
 #include "utils/rng.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -391,3 +392,5 @@ int g_num_previously_generated_plans = 0;
 bool g_is_part_of_anytime_portfolio = false;
 Utils::RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;
+
+Utils::Log g_log;
