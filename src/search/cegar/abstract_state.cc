@@ -17,6 +17,14 @@ AbstractState::AbstractState(const Domains &domains, Node *node)
       node(node) {
 }
 
+AbstractState::AbstractState(AbstractState &&other)
+    : domains(move(other.domains)),
+      node(move(other.node)),
+      incoming_arcs(move(other.incoming_arcs)),
+      outgoing_arcs(move(other.outgoing_arcs)),
+      loops(move(other.loops)) {
+}
+
 size_t AbstractState::count(int var) const {
     return domains.count(var);
 }
