@@ -74,7 +74,6 @@ void DomainAbstractedTaskFactory::move_fact(int var, int before, int after) {
     assert(value_map[var][before] == before);
 
     value_map[var][before] = after;
-    fact_names[var][after] = move(fact_names[var][before]);
     if (initial_state_values[var] == before)
         initial_state_values[var] = after;
     for (Fact &goal : goals) {
@@ -110,7 +109,9 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
     // Move all facts that are not part of groups to the front.
     for (int before = 0; before < domain_size[var]; ++before) {
         if (groups_union.count(before) == 0) {
-            move_fact(var, before, next_free_pos++);
+            move_fact(var, before, next_free_pos);
+            fact_names[var][next_free_pos] = move(fact_names[var][before]);
+            ++next_free_pos;
         }
     }
     int num_single_values = next_free_pos;
