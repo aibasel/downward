@@ -35,16 +35,16 @@ class FTSFactory {
         vector<bool> goal_states;
         int init_state;
         bool goal_relevant;
-        TransitionSystemData(TransitionSystemData &&other) 
+        TransitionSystemData(TransitionSystemData &&other)
             : num_variables(other.num_variables),
-            incorporated_variables(move(other.incorporated_variables)),
-            label_equivalence_relation(move(other.label_equivalence_relation)),
-            transitions_by_label(move(other.transitions_by_label)), 
-            relevant_labels(move(other.relevant_labels)),
-            num_states(other.num_states),
-            goal_states(move(other.goal_states)), 
-            init_state(other.init_state), 
-            goal_relevant(other.goal_relevant) {
+              incorporated_variables(move(other.incorporated_variables)),
+              label_equivalence_relation(move(other.label_equivalence_relation)),
+              transitions_by_label(move(other.transitions_by_label)),
+              relevant_labels(move(other.relevant_labels)),
+              num_states(other.num_states),
+              goal_states(move(other.goal_states)),
+              init_state(other.init_state),
+              goal_relevant(other.goal_relevant) {
         }
         TransitionSystemData() = default;
         TransitionSystemData(TransitionSystemData &other) = delete;
