@@ -54,6 +54,10 @@ SplitTree::SplitTree()
     : root(new Node()) {
 }
 
+SplitTree::SplitTree(SplitTree &&other)
+    : root(move(other.root)) {
+}
+
 Node *SplitTree::get_node(const State &state) const {
     assert(root);
     Node *current = root.get();
