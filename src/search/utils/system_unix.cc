@@ -34,6 +34,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#if OPERATING_SYSTEM == OSX
+#include <mach/mach.h>
+#endif
+
 using namespace std;
 
 
@@ -173,8 +177,9 @@ int get_peak_memory_in_kb() {
 
     if (task_info(mach_task_self(), TASK_BASIC_INFO,
                   reinterpret_cast<task_info_t>(&t_info),
-                  &t_info_count) == KERN_SUCCESS)
+                  &t_info_count) == KERN_SUCCESS) {
         memory_in_kb = t_info.virtual_size / 1024;
+    }
 #else
     ifstream procfile;
     procfile.open("/proc/self/status");
