@@ -7,11 +7,12 @@
 
 class AbstractTask;
 
+
 namespace ExtraTasks {
 /*
   Factory for creating domain abstractions.
 */
-std::shared_ptr<AbstractTask> build_domain_abstracted_task(
+std::shared_ptr<DomainAbstractedTask> build_domain_abstracted_task(
     const std::shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups);
 }
