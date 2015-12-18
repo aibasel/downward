@@ -128,7 +128,7 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
         ++next_free_pos;
     }
     int new_domain_size = num_single_values + static_cast<int>(groups.size());
-    assert(next_free_pos = new_domain_size);
+    assert(next_free_pos == new_domain_size);
 
     // Update domain size.
     fact_names[var].resize(new_domain_size);
