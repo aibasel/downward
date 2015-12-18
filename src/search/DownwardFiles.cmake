@@ -325,8 +325,8 @@ fast_downward_plugin(
     SOURCES
         tasks/domain_abstracted_task.cc
         tasks/domain_abstracted_task_factory.cc
-        tasks/modified_costs_task.cc
         tasks/modified_goals_task.cc
+        tasks/modified_operator_costs_task.cc
     DEPENDENCY_ONLY
 )
 
