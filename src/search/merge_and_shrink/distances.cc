@@ -1,5 +1,6 @@
 #include "distances.h"
 
+#include "label_equivalence_relation.h"
 #include "transition_system.h"
 
 #include "../priority_queue.h"
@@ -42,9 +43,9 @@ bool Distances::is_unit_cost() const {
       that the actual shortest-path algorithms (e.g.
       compute_goal_distances_general_cost) do.
     */
-    for (TSConstIterator group_it = transition_system.begin();
-         group_it != transition_system.end(); ++group_it) {
-        if (group_it.get_cost() != 1)
+    for (const GroupAndTransitions &gat : transition_system) {
+        const LabelGroup &label_group = gat.label_group;
+        if (label_group.get_cost() != 1)
             return false;
     }
     return true;
@@ -68,11 +69,9 @@ static void breadth_first_search(
 
 void Distances::compute_init_distances_unit_cost() {
     vector<vector<int>> forward_graph(get_num_states());
-    for (TSConstIterator group_it = transition_system.begin();
-         group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it.get_transitions();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
+    for (const GroupAndTransitions &gat : transition_system) {
+        const vector<Transition> &transitions = gat.transitions;
+        for (const Transition &transition : transitions) {
             forward_graph[transition.src].push_back(transition.target);
         }
     }
@@ -90,11 +89,9 @@ void Distances::compute_init_distances_unit_cost() {
 
 void Distances::compute_goal_distances_unit_cost() {
     vector<vector<int>> backward_graph(get_num_states());
-    for (TSConstIterator group_it = transition_system.begin();
-         group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it.get_transitions();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
+    for (const GroupAndTransitions &gat : transition_system) {
+        const vector<Transition> &transitions = gat.transitions;
+        for (const Transition &transition : transitions) {
             backward_graph[transition.target].push_back(transition.src);
         }
     }
@@ -136,12 +133,11 @@ static void dijkstra_search(
 
 void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int>>> forward_graph(get_num_states());
-    for (TSConstIterator group_it = transition_system.begin();
-         group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it.get_transitions();
-        int cost = group_it.get_cost();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
+    for (const GroupAndTransitions &gat : transition_system) {
+        const LabelGroup &label_group = gat.label_group;
+        const vector<Transition> &transitions = gat.transitions;
+        int cost = label_group.get_cost();
+        for (const Transition &transition : transitions) {
             forward_graph[transition.src].push_back(
                 make_pair(transition.target, cost));
         }
@@ -162,12 +158,11 @@ void Distances::compute_init_distances_general_cost() {
 
 void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int>>> backward_graph(get_num_states());
-    for (TSConstIterator group_it = transition_system.begin();
-         group_it != transition_system.end(); ++group_it) {
-        const vector<Transition> &transitions = group_it.get_transitions();
-        int cost = group_it.get_cost();
-        for (size_t j = 0; j < transitions.size(); ++j) {
-            const Transition &transition = transitions[j];
+    for (const GroupAndTransitions &gat : transition_system) {
+        const LabelGroup &label_group = gat.label_group;
+        const vector<Transition> &transitions = gat.transitions;
+        int cost = label_group.get_cost();
+        for (const Transition &transition : transitions) {
             backward_graph[transition.target].push_back(
                 make_pair(transition.src, cost));
         }

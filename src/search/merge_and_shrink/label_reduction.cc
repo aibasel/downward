@@ -1,6 +1,7 @@
 #include "label_reduction.h"
 
 #include "factored_transition_system.h"
+#include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
 
@@ -127,9 +128,9 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
             continue;
         }
         const TransitionSystem &ts = fts.get_ts(i);
-        for (TSConstIterator group_it = ts.begin();
-             group_it != ts.end(); ++group_it) {
-            relation->refine(group_it.begin(), group_it.end());
+        for (const GroupAndTransitions &gat : ts) {
+            const LabelGroup &label_group = gat.label_group;
+            relation->refine(label_group.begin(), label_group.end());
         }
     }
     return relation;
