@@ -5,12 +5,12 @@
 using namespace std;
 
 
-namespace Tasks {
+namespace ExtraTasks {
 ModifiedCostsTask::ModifiedCostsTask(
     const std::shared_ptr<AbstractTask> parent,
-    const std::vector<int> &costs)
+    std::vector<int> &&costs)
     : DelegatingTask(parent),
-      operator_costs(costs) {
+      operator_costs(move(costs)) {
     assert(static_cast<int>(operator_costs.size()) == get_num_operators());
 }
 

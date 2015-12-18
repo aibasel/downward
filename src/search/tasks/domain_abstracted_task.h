@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace Tasks {
+namespace ExtraTasks {
 using Fact = std::pair<int, int>;
 using ValueGroup = std::vector<int>;
 using ValueGroups = std::vector<ValueGroup>;

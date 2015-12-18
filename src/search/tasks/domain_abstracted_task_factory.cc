@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace Tasks {
+namespace ExtraTasks {
 class DomainAbstractedTaskFactory {
 private:
     std::vector<int> domain_size;
@@ -16,7 +16,7 @@ private:
     std::vector<std::vector<int>> value_map;
     std::shared_ptr<AbstractTask> task;
 
-    void initialize(const std::shared_ptr<AbstractTask> parent);
+    void initialize(const AbstractTask &parent);
     void move_fact(int var, int before, int after);
     void combine_values(int var, const ValueGroups &groups);
     std::string get_combined_fact_name(int var, const ValueGroup &values) const;
@@ -33,7 +33,7 @@ public:
 DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
     const std::shared_ptr<AbstractTask> parent,
     const VarToGroups &value_groups) {
-    initialize(parent);
+    initialize(*parent);
     for (const auto &pair : value_groups) {
         int var = pair.first;
         const ValueGroups &groups = pair.second;
@@ -44,20 +44,20 @@ DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
         move(fact_names), move(value_map));
 }
 
-void DomainAbstractedTaskFactory::initialize(const shared_ptr<AbstractTask> parent) {
-    int num_vars = parent->get_num_variables();
+void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
+    int num_vars = parent.get_num_variables();
     domain_size.resize(num_vars);
-    initial_state_values = parent->get_initial_state_values();
+    initial_state_values = parent.get_initial_state_values();
     value_map.resize(num_vars);
     fact_names.resize(num_vars);
     for (int var = 0; var < num_vars; ++var) {
-        int num_values = parent->get_variable_domain_size(var);
+        int num_values = parent.get_variable_domain_size(var);
         domain_size[var] = num_values;
         value_map[var].resize(num_values);
         fact_names[var].resize(num_values);
         for (int value = 0; value < num_values; ++value) {
             value_map[var][value] = value;
-            fact_names[var][value] = parent->get_fact_name(var, value);
+            fact_names[var][value] = parent.get_fact_name(var, value);
         }
     }
 }
