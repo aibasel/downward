@@ -12,7 +12,7 @@
 
   AdditiveCartesianHeuristic
     Get subtasks from Decompositions, adjust their costs by wrapping them in
-    tasks::ModifiedCostsTasks, compute Abstractions, move SplitTrees from
+    tasks::ModifiedOperatorCostsTasks, compute Abstractions, move SplitTrees from
     Abstractions to CartesianHeuristics, store CartesianHeuristics and
     compute overall heuristic by adding heuristic values of all
     CartesianHeuristics.
