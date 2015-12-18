@@ -35,8 +35,22 @@ class FTSFactory {
         vector<bool> goal_states;
         int init_state;
         bool goal_relevant;
+        TransitionSystemData(TransitionSystemData &&other) 
+            : num_variables(other.num_variables),
+            incorporated_variables(move(other.incorporated_variables)),
+            label_equivalence_relation(move(other.label_equivalence_relation)),
+            transitions_by_label(move(other.transitions_by_label)), 
+            relevant_labels(move(other.relevant_labels)),
+            num_states(other.num_states),
+            goal_states(move(other.goal_states)), 
+            init_state(other.init_state), 
+            goal_relevant(other.goal_relevant) {
+        }
+        TransitionSystemData() = default;
+        TransitionSystemData(TransitionSystemData &other) = delete;
+        TransitionSystemData &operator=(TransitionSystemData &other) = delete;
     };
-    vector<TransitionSystemData> transition_system_by_var;
+    vector<TransitionSystemData> transition_system_data_by_var;
     // see TODO in build_transitions()
     int task_has_conditional_effects;
 
@@ -105,7 +119,7 @@ void FTSFactory::build_label_equivalence_relation(
 
 void FTSFactory::build_state_data(VariableProxy var) {
     int var_id = var.get_id();
-    TransitionSystemData &ts_data = transition_system_by_var[var_id];
+    TransitionSystemData &ts_data = transition_system_data_by_var[var_id];
     ts_data.init_state = task_proxy.get_initial_state()[var_id].get_value();
 
     int range = task_proxy.get_variables()[var_id].get_domain_size();
@@ -133,9 +147,9 @@ void FTSFactory::build_state_data(VariableProxy var) {
 void FTSFactory::initialize_transition_system_data(const Labels &labels) {
     VariablesProxy variables = task_proxy.get_variables();
     int num_labels = task_proxy.get_operators().size();
-    transition_system_by_var.resize(variables.size());
+    transition_system_data_by_var.resize(variables.size());
     for (VariableProxy var : variables) {
-        TransitionSystemData &ts_data = transition_system_by_var[var.get_id()];
+        TransitionSystemData &ts_data = transition_system_data_by_var[var.get_id()];
         ts_data.num_variables = variables.size();
         ts_data.incorporated_variables.push_back(var.get_id());
         ts_data.label_equivalence_relation = Utils::make_unique_ptr<LabelEquivalenceRelation>(labels);
@@ -148,16 +162,16 @@ void FTSFactory::initialize_transition_system_data(const Labels &labels) {
 
 void FTSFactory::add_transition(int var_no, int label_no,
                                 int src_value, int dest_value) {
-    transition_system_by_var[var_no].transitions_by_label[label_no].push_back(
+    transition_system_data_by_var[var_no].transitions_by_label[label_no].push_back(
         Transition(src_value, dest_value));
 }
 
 bool FTSFactory::is_relevant(int var_no, int label_no) const {
-    return transition_system_by_var[var_no].relevant_labels[label_no];
+    return transition_system_data_by_var[var_no].relevant_labels[label_no];
 }
 
 void FTSFactory::mark_as_relevant(int var_no, int label_no) {
-    transition_system_by_var[var_no].relevant_labels[label_no] = true;
+    transition_system_data_by_var[var_no].relevant_labels[label_no] = true;
 }
 
 unordered_map<int, int> FTSFactory::compute_preconditions(OperatorProxy op) {
@@ -309,7 +323,7 @@ void FTSFactory::build_transitions() {
         int num_variables = task_proxy.get_variables().size();
         for (int var_no = 0; var_no < num_variables; ++var_no) {
             vector<vector<Transition>> &transitions_by_label =
-                transition_system_by_var[var_no].transitions_by_label;
+                transition_system_data_by_var[var_no].transitions_by_label;
             for (vector<Transition> &transitions : transitions_by_label) {
                 sort(transitions.begin(), transitions.end());
                 transitions.erase(unique(transitions.begin(),
@@ -330,7 +344,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
     result.reserve(num_variables * 2 - 1);
 
     for (int var_no = 0; var_no < num_variables; ++var_no) {
-        TransitionSystemData &ts_data = transition_system_by_var[var_no];
+        TransitionSystemData &ts_data = transition_system_data_by_var[var_no];
         result.push_back(Utils::make_unique_ptr<TransitionSystem>(
                              ts_data.num_variables,
                              move(ts_data.incorporated_variables),
