@@ -7,7 +7,7 @@
 
 class AbstractTask;
 
-namespace Tasks {
+namespace ExtraTasks {
 /*
   Factory for creating domain abstractions.
 */
