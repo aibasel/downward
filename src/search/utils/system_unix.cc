@@ -51,7 +51,7 @@ void write_reentrant(int filedescr, const char *message, int len) {
         /*
           We could check for other values of errno here but all errors except
           EINTR are catastrophic enough to abort, so we do not need the
-          distintion.
+          distinction.
         */
         if (written == -1)
             abort();
@@ -84,7 +84,7 @@ bool read_char_reentrant(int filedescr, char *c) {
     /*
       We could check for other values of errno here but all errors except
       EINTR are catastrophic enough to abort, so we do not need the
-      distintion.
+      distinction.
     */
     if (result == -1)
         abort();
