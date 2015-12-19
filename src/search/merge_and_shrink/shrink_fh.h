@@ -41,11 +41,11 @@ protected:
     virtual void partition_into_buckets(
         const FactoredTransitionSystem &fts,
         int index,
-        std::vector<Bucket> &buckets) const;
+        std::vector<Bucket> &buckets) const override;
 
 public:
     explicit ShrinkFH(const Options &opts);
-    virtual ~ShrinkFH();
+    virtual ~ShrinkFH() override;
 };
 }
 
