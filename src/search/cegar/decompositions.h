@@ -28,7 +28,8 @@ enum class SubtaskOrder {
 
 class Decomposition {
 public:
-    virtual SharedTasks get_subtasks(std::shared_ptr<AbstractTask> task) const = 0;
+    virtual SharedTasks get_subtasks(
+        const std::shared_ptr<AbstractTask> &task) const = 0;
 };
 
 
@@ -39,7 +40,8 @@ public:
     explicit NoDecomposition(const Options &options);
     virtual ~NoDecomposition() = default;
 
-    virtual SharedTasks get_subtasks(std::shared_ptr<AbstractTask> task) const override;
+    virtual SharedTasks get_subtasks(
+        const std::shared_ptr<AbstractTask> &task) const override;
 };
 
 
@@ -47,12 +49,13 @@ class FactDecomposition : public Decomposition {
     SubtaskOrder subtask_order;
 
     void remove_initial_state_facts(const TaskProxy &task_proxy, Facts &facts) const;
-    void order_facts(std::shared_ptr<AbstractTask>, Facts &facts) const;
+    void order_facts(const std::shared_ptr<AbstractTask> &task, Facts &facts) const;
 
 protected:
     virtual Facts get_facts(const TaskProxy &task_proxy) const = 0;
 
-    Facts get_filtered_and_ordered_facts(std::shared_ptr<AbstractTask> task) const;
+    Facts get_filtered_and_ordered_facts(
+        const std::shared_ptr<AbstractTask> &task) const;
 
 public:
     explicit FactDecomposition(const Options &options);
@@ -68,7 +71,8 @@ public:
     explicit GoalDecomposition(const Options &options);
     virtual ~GoalDecomposition() = default;
 
-    virtual SharedTasks get_subtasks(std::shared_ptr<AbstractTask> task) const override;
+    virtual SharedTasks get_subtasks(
+        const std::shared_ptr<AbstractTask> &task) const override;
 };
 
 
@@ -77,7 +81,7 @@ class LandmarkDecomposition : public FactDecomposition {
     bool combine_facts;
 
     std::shared_ptr<AbstractTask> get_domain_abstracted_task(
-        std::shared_ptr<AbstractTask> parent, Fact fact) const;
+        std::shared_ptr<AbstractTask> &parent, Fact fact) const;
 
 protected:
     virtual Facts get_facts(const TaskProxy &) const override;
@@ -86,7 +90,8 @@ public:
     explicit LandmarkDecomposition(const Options &opts);
     virtual ~LandmarkDecomposition() = default;
 
-    virtual SharedTasks get_subtasks(std::shared_ptr<AbstractTask> task) const override;
+    virtual SharedTasks get_subtasks(
+        const std::shared_ptr<AbstractTask> &task) const override;
 };
 }
 

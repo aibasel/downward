@@ -28,7 +28,7 @@ const int MAX_COST_VALUE = 100000000;
 using Fact = std::pair<int, int>;
 
 extern std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
-    std::shared_ptr<AbstractTask> task);
+    const std::shared_ptr<AbstractTask> &task);
 
 /*
   The set of relaxed-reachable facts is the possibly-before set of facts that
