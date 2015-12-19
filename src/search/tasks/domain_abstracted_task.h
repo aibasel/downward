@@ -41,7 +41,7 @@ class DomainAbstractedTask : public DelegatingTask {
 
 public:
     DomainAbstractedTask(
-        const std::shared_ptr<AbstractTask> parent,
+        const std::shared_ptr<AbstractTask> &parent,
         std::vector<int> &&domain_size,
         std::vector<int> &&initial_state_values,
         std::vector<std::pair<int, int>> &&goals,

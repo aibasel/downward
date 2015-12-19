@@ -56,8 +56,9 @@ Abstraction::Abstraction(const Options &opts)
       do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
       max_states(opts.get<int>("max_states")),
       abstract_search(opts),
-      split_selector(opts.get<shared_ptr<AbstractTask>>("transform"),
-                     PickSplit(opts.get<int>("pick"))),
+      split_selector(
+          opts.get<shared_ptr<AbstractTask>>("transform"),
+          PickSplit(opts.get<int>("pick"))),
       timer(opts.get<double>("max_time")),
       init(nullptr),
       deviations(0),

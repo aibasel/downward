@@ -8,7 +8,7 @@ using namespace std;
 
 namespace ExtraTasks {
 DomainAbstractedTask::DomainAbstractedTask(
-    const shared_ptr<AbstractTask> parent,
+    const shared_ptr<AbstractTask> &parent,
     vector<int> &&domain_size,
     vector<int> &&initial_state_values,
     vector<std::pair<int, int>> &&goals,

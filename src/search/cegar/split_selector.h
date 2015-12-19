@@ -53,11 +53,12 @@ class SplitSelector {
     double rate_split(const AbstractState &state, const Split &split) const;
 
 public:
-    SplitSelector(std::shared_ptr<AbstractTask> task, PickSplit pick);
+    SplitSelector(const std::shared_ptr<AbstractTask> &task, PickSplit pick);
     ~SplitSelector();
 
-    const Split &pick_split(const AbstractState &state,
-                            const std::vector<Split> &splits) const;
+    const Split &pick_split(
+        const AbstractState &state,
+        const std::vector<Split> &splits) const;
 };
 }
 

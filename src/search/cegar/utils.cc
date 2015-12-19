@@ -18,7 +18,7 @@ namespace CEGAR {
 bool DEBUG = false;
 
 unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
-    shared_ptr<AbstractTask> task) {
+    const shared_ptr<AbstractTask> &task) {
     Options opts;
     opts.set<shared_ptr<AbstractTask>>("transform", task);
     opts.set<int>("cost_type", 0);

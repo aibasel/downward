@@ -23,7 +23,7 @@ private:
 
 public:
     DomainAbstractedTaskFactory(
-        const std::shared_ptr<AbstractTask> parent,
+        const std::shared_ptr<AbstractTask> &parent,
         const VarToGroups &value_groups);
     ~DomainAbstractedTaskFactory() = default;
 
@@ -31,7 +31,7 @@ public:
 };
 
 DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
-    const std::shared_ptr<AbstractTask> parent,
+    const std::shared_ptr<AbstractTask> &parent,
     const VarToGroups &value_groups) {
     initialize(*parent);
     for (const auto &pair : value_groups) {
@@ -140,7 +140,7 @@ shared_ptr<DomainAbstractedTask> DomainAbstractedTaskFactory::get_task() const {
 }
 
 shared_ptr<DomainAbstractedTask> build_domain_abstracted_task(
-    const shared_ptr<AbstractTask> parent,
+    const shared_ptr<AbstractTask> &parent,
     const VarToGroups &value_groups) {
     return DomainAbstractedTaskFactory(parent, value_groups).get_task();
 }

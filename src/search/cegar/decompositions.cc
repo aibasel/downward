@@ -35,7 +35,8 @@ class SortFactsByIncreasingHaddValues {
     }
 
 public:
-    explicit SortFactsByIncreasingHaddValues(std::shared_ptr<AbstractTask> task)
+    explicit SortFactsByIncreasingHaddValues(
+        const std::shared_ptr<AbstractTask> &task)
         : hadd(get_additive_heuristic(task)) {
     }
 
@@ -49,7 +50,8 @@ NoDecomposition::NoDecomposition(const Options &opts)
     : num_copies(opts.get<int>("copies")) {
 }
 
-SharedTasks NoDecomposition::get_subtasks(shared_ptr<AbstractTask> task) const {
+SharedTasks NoDecomposition::get_subtasks(
+    const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
     for (int i = 0; i < num_copies; ++i) {
         subtasks.push_back(task);
@@ -71,7 +73,7 @@ void FactDecomposition::remove_initial_state_facts(
 }
 
 Facts FactDecomposition::get_filtered_and_ordered_facts(
-    shared_ptr<AbstractTask> task) const {
+    const shared_ptr<AbstractTask> &task) const {
     TaskProxy task_proxy(*task);
     Facts facts = get_facts(task_proxy);
     remove_initial_state_facts(task_proxy, facts);
@@ -80,7 +82,7 @@ Facts FactDecomposition::get_filtered_and_ordered_facts(
 }
 
 void FactDecomposition::order_facts(
-    shared_ptr<AbstractTask> task, vector<Fact> &facts) const {
+    const shared_ptr<AbstractTask> &task, vector<Fact> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
     if (subtask_order == SubtaskOrder::ORIGINAL) {
         // Nothing to do.
@@ -111,7 +113,7 @@ Facts GoalDecomposition::get_facts(const TaskProxy &task_proxy) const {
 }
 
 SharedTasks GoalDecomposition::get_subtasks(
-    shared_ptr<AbstractTask> task) const {
+    const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
     for (Fact goal : get_filtered_and_ordered_facts(task)) {
         shared_ptr<AbstractTask> subtask =
@@ -133,7 +135,7 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
 }
 
 shared_ptr<AbstractTask> LandmarkDecomposition::get_domain_abstracted_task(
-    shared_ptr<AbstractTask> parent, Fact fact) const {
+    shared_ptr<AbstractTask> &parent, Fact fact) const {
     assert(combine_facts);
     ExtraTasks::VarToGroups value_groups;
     for (auto &pair : get_prev_landmarks(*landmark_graph, fact)) {
@@ -151,7 +153,7 @@ Facts LandmarkDecomposition::get_facts(const TaskProxy &) const {
 }
 
 SharedTasks LandmarkDecomposition::get_subtasks(
-    shared_ptr<AbstractTask> task) const {
+    const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
     for (Fact landmark : get_filtered_and_ordered_facts(task)) {
         shared_ptr<AbstractTask> subtask =

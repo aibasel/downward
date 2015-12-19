@@ -12,7 +12,7 @@ class ModifiedGoalsTask : public DelegatingTask {
 
 public:
     ModifiedGoalsTask(
-        const std::shared_ptr<AbstractTask> parent,
+        const std::shared_ptr<AbstractTask> &parent,
         std::vector<std::pair<int, int>> &&goals);
     ~ModifiedGoalsTask() = default;
 

@@ -4,7 +4,7 @@ using namespace std;
 
 namespace ExtraTasks {
 ModifiedGoalsTask::ModifiedGoalsTask(
-    const std::shared_ptr<AbstractTask> parent,
+    const std::shared_ptr<AbstractTask> &parent,
     std::vector<std::pair<int, int>> &&goals)
     : DelegatingTask(parent),
       goals(move(goals)) {
