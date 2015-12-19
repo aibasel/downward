@@ -1,5 +1,7 @@
 #include "domain_abstracted_task_factory.h"
 
+#include "domain_abstracted_task.h"
+
 #include <sstream>
 #include <string>
 #include <unordered_set>
@@ -14,7 +16,7 @@ private:
     std::vector<std::pair<int, int>> goals;
     std::vector<std::vector<std::string>> fact_names;
     std::vector<std::vector<int>> value_map;
-    std::shared_ptr<DomainAbstractedTask> task;
+    std::shared_ptr<AbstractTask> task;
 
     void initialize(const AbstractTask &parent);
     void move_fact(int var, int before, int after);
@@ -27,7 +29,7 @@ public:
         const VarToGroups &value_groups);
     ~DomainAbstractedTaskFactory() = default;
 
-    std::shared_ptr<DomainAbstractedTask> get_task() const;
+    std::shared_ptr<AbstractTask> get_task() const;
 };
 
 DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
@@ -135,11 +137,11 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
     domain_size[var] = new_domain_size;
 }
 
-shared_ptr<DomainAbstractedTask> DomainAbstractedTaskFactory::get_task() const {
+shared_ptr<AbstractTask> DomainAbstractedTaskFactory::get_task() const {
     return task;
 }
 
-shared_ptr<DomainAbstractedTask> build_domain_abstracted_task(
+shared_ptr<AbstractTask> build_domain_abstracted_task(
     const shared_ptr<AbstractTask> &parent,
     const VarToGroups &value_groups) {
     return DomainAbstractedTaskFactory(parent, value_groups).get_task();

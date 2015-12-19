@@ -7,15 +7,11 @@
 
 #include <cassert>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
-namespace ExtraTasks {
-using ValueGroup = std::vector<int>;
-using ValueGroups = std::vector<ValueGroup>;
-using VarToGroups = std::unordered_map<int, ValueGroups>;
 
+namespace ExtraTasks {
 /*
   Task transformation for performing domain abstraction.
 
