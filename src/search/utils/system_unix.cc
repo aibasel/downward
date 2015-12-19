@@ -38,29 +38,20 @@
 #include <mach/mach.h>
 #endif
 
-// From http://fossies.org/linux/rose/src/frontend/SageIII/sage3basic.h
-// This macro is not available in OS X by default.
-#ifndef TEMP_FAILURE_RETRY
-#define TEMP_FAILURE_RETRY(expression) \
-    ({ \
-        long int _result; \
-        do _result = (long int) (expression); \
-        while (_result == -1L && errno == EINTR); \
-        _result; \
-    })
-#endif
-
 using namespace std;
 
 
 namespace Utils {
 void write_reentrant(int filedescr, const char *message, int len) {
     while (len > 0) {
-        int written = TEMP_FAILURE_RETRY(write(filedescr, message, len));
+        int written;
+        do {
+            written = write(filedescr, message, len);
+        } while (written == -1 && errno == EINTR);
         /*
-          We could check the value of errno here but all errors except EINTR
-          are catastrophic enough to abort, so we do not need the distintion.
-          The error EINTR is handled by the macro TEMP_FAILURE_RETRY.
+          We could check for other values of errno here but all errors except
+          EINTR are catastrophic enough to abort, so we do not need the
+          distintion.
         */
         if (written == -1)
             abort();
@@ -86,11 +77,14 @@ void write_reentrant_int(int filedescr, int value) {
 }
 
 bool read_char_reentrant(int filedescr, char *c) {
-    int result = TEMP_FAILURE_RETRY(read(filedescr, c, 1));
+    int result;
+    do {
+        result = read(filedescr, c, 1);
+    } while (result == -1 && errno == EINTR);
     /*
-      We could check the value of errno here but all errors except EINTR
-      are catastrophic enough to abort, so we do not need the distinction.
-      The error EINTR is handled by the macro TEMP_FAILURE_RETRY.
+      We could check for other values of errno here but all errors except
+      EINTR are catastrophic enough to abort, so we do not need the
+      distintion.
     */
     if (result == -1)
         abort();
@@ -98,7 +92,10 @@ bool read_char_reentrant(int filedescr, char *c) {
 }
 
 void print_peak_memory_reentrant() {
-    int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
+    int proc_file_descr;
+    do {
+        proc_file_descr = open("/proc/self/status", O_RDONLY);
+    } while (proc_file_descr == -1 && errno == EINTR);
     if (proc_file_descr == -1) {
         write_reentrant_str(
             STDERR_FILENO,
@@ -142,7 +139,10 @@ void print_peak_memory_reentrant() {
       Ignore potential errors other than EINTR (there is nothing we can do
       about I/O errors or bad file descriptors here).
     */
-    TEMP_FAILURE_RETRY(close(proc_file_descr));
+    int result;
+    do {
+        result = close(proc_file_descr);
+    } while (result == -1 && errno == EINTR);
 }
 
 #if OPERATING_SYSTEM == LINUX
