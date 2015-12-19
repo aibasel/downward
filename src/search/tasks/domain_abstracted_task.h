@@ -12,7 +12,6 @@
 #include <vector>
 
 namespace ExtraTasks {
-using Fact = std::pair<int, int>;
 using ValueGroup = std::vector<int>;
 using ValueGroups = std::vector<ValueGroup>;
 using VarToGroups = std::unordered_map<int, ValueGroups>;
@@ -26,7 +25,7 @@ using VarToGroups = std::unordered_map<int, ValueGroups>;
 class DomainAbstractedTask : public DelegatingTask {
     const std::vector<int> domain_size;
     const std::vector<int> initial_state_values;
-    const std::vector<Fact> goals;
+    const std::vector<std::pair<int, int>> goals;
     const std::vector<std::vector<std::string>> fact_names;
     const std::vector<std::vector<int>> value_map;
 
@@ -36,7 +35,7 @@ class DomainAbstractedTask : public DelegatingTask {
         return value_map[var][value];
     }
 
-    Fact get_abstract_fact(Fact fact) const {
+    std::pair<int, int> get_abstract_fact(const std::pair<int, int> &fact) const {
         return std::make_pair(fact.first, get_abstract_value(fact.first, fact.second));
     }
 
@@ -45,7 +44,7 @@ public:
         const std::shared_ptr<AbstractTask> parent,
         std::vector<int> &&domain_size,
         std::vector<int> &&initial_state_values,
-        std::vector<Fact> &&goals,
+        std::vector<std::pair<int, int>> &&goals,
         std::vector<std::vector<std::string>> &&fact_names,
         std::vector<std::vector<int>> &&value_map);
 
