@@ -92,10 +92,15 @@ bool read_char_reentrant(int filedescr, char *c) {
 }
 
 void print_peak_memory_reentrant() {
-    int proc_file_descr;
-    do {
-        proc_file_descr = open("/proc/self/status", O_RDONLY);
-    } while (proc_file_descr == -1 && errno == EINTR);
+#if OPERATING_SYSTEM == OSX
+    /* TODO we currently do not have a reentrant implementation of getting the
+      peak memory on OS X. */
+    write_reentrant_str(STDOUT_FILENO, "Peak memory: ");
+    write_reentrant_int(STDOUT_FILENO, get_peak_memory_in_kb());
+    write_reentrant_str(STDOUT_FILENO, " KB\n");
+#else
+
+    int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
     if (proc_file_descr == -1) {
         write_reentrant_str(
             STDERR_FILENO,
@@ -139,10 +144,8 @@ void print_peak_memory_reentrant() {
       Ignore potential errors other than EINTR (there is nothing we can do
       about I/O errors or bad file descriptors here).
     */
-    int result;
-    do {
-        result = close(proc_file_descr);
-    } while (result == -1 && errno == EINTR);
+    TEMP_FAILURE_RETRY(close(proc_file_descr));
+#endif
 }
 
 #if OPERATING_SYSTEM == LINUX
