@@ -19,7 +19,7 @@ using Fact = std::pair<int, int>;
 using Facts = std::vector<Fact>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 
-enum class SubtaskOrder {
+enum class FactOrder {
     ORIGINAL,
     RANDOM,
     HADD_UP,
@@ -47,7 +47,7 @@ public:
 
 
 class GoalDecomposition : public Decomposition {
-    SubtaskOrder subtask_order;
+    FactOrder fact_order;
 
     Facts get_goal_facts(const TaskProxy &task_proxy) const;
 
@@ -61,7 +61,7 @@ public:
 
 
 class LandmarkDecomposition : public Decomposition {
-    SubtaskOrder subtask_order;
+    FactOrder fact_order;
     const std::unique_ptr<Landmarks::LandmarkGraph> landmark_graph;
     bool combine_facts;
 
