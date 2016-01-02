@@ -26,8 +26,6 @@ namespace CEGAR {
 class AbstractState;
 struct Flaw;
 
-const int STATES_LOG_STEP = 1000;
-
 class Abstraction {
     const TaskProxy task_proxy;
     const bool do_separate_unreachable_facts;
@@ -39,11 +37,13 @@ class Abstraction {
     // Limit the time for building the abstraction.
     Utils::CountdownTimer timer;
 
-    // Set of all abstract states, i.e. states that have not been split.
+    // Set of all (as of yet unsplit) abstract states.
     AbstractStates states;
 
-    // Abstract initial and goal states.
+    // Abstract initial state.
     AbstractState *init;
+    /* Abstract goal states. Landmark tasks may have multiple abstract
+       goal states. */
     AbstractStates goals;
 
     // Count the number of times each flaw type is encountered.
