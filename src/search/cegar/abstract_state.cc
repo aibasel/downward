@@ -206,7 +206,7 @@ AbstractState AbstractState::regress(OperatorProxy op) const {
     }
     for (FactProxy precondition : op.get_preconditions()) {
         int var_id = precondition.get_variable().get_id();
-        regressed_domains.set(var_id, precondition.get_value());
+        regressed_domains.set_single_value(var_id, precondition.get_value());
     }
     return AbstractState(regressed_domains, nullptr);
 }
@@ -246,7 +246,7 @@ AbstractState AbstractState::get_abstract_state(
     TaskProxy task_proxy, const ConditionsProxy &conditions) {
     Domains domains(get_domain_sizes(task_proxy));
     for (FactProxy condition : conditions) {
-        domains.set(condition.get_variable().get_id(), condition.get_value());
+        domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
     return AbstractState(domains, nullptr);
 }
