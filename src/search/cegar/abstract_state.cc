@@ -65,7 +65,7 @@ void AbstractState::remove_outgoing_arc(OperatorProxy op, AbstractState *other) 
     remove_arc(outgoing_arcs, op, other);
 }
 
-void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
+void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (auto arc : incoming_arcs) {
         OperatorProxy op = arc.first;
         AbstractState *u = arc.second;
@@ -83,13 +83,14 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
         } else if (v2->domains.test(var, post)) {
             u->add_arc(op, v2);
         } else {
+            assert(v1->domains.test(var, post));
             u->add_arc(op, v1);
         }
         u->remove_outgoing_arc(op, this);
     }
 }
 
-void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
+void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
     for (auto arc : outgoing_arcs) {
         OperatorProxy op = arc.first;
         AbstractState *w = arc.second;
@@ -112,13 +113,14 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
         } else if (v2->domains.test(var, pre)) {
             v2->add_arc(op, w);
         } else {
+            assert(v1->domains.test(var, pre));
             v1->add_arc(op, w);
         }
         w->remove_incoming_arc(op, this);
     }
 }
 
-void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) {
+void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
     for (OperatorProxy op : loops) {
         int pre = get_pre(op, var);
         int post = get_post(op, var);
@@ -182,13 +184,13 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     AbstractState *v1 = new AbstractState(v1_domains, new_nodes.first);
     AbstractState *v2 = new AbstractState(v2_domains, new_nodes.second);
 
-    assert(this->is_abstraction_of(*v1));
-    assert(this->is_abstraction_of(*v2));
+    assert(this->is_more_general_than(*v1));
+    assert(this->is_more_general_than(*v2));
 
     // Update transition system.
-    update_incoming_arcs(var, v1, v2);
-    update_outgoing_arcs(var, v1, v2);
-    update_loops(var, v1, v2);
+    split_incoming_arcs(var, v1, v2);
+    split_outgoing_arcs(var, v1, v2);
+    split_loops(var, v1, v2);
 
     // Since h-values only increase we can assign the h-value to the children.
     int h = node->get_h_value();
@@ -215,7 +217,7 @@ bool AbstractState::domains_intersect(const AbstractState *other, int var) const
     return domains.intersects(other->domains, var);
 }
 
-bool AbstractState::is_abstraction_of(const State &conc_state) const {
+bool AbstractState::includes(const State &conc_state) const {
     for (FactProxy fact : conc_state) {
         if (!domains.test(fact.get_variable().get_id(), fact.get_value()))
             return false;
@@ -223,7 +225,7 @@ bool AbstractState::is_abstraction_of(const State &conc_state) const {
     return true;
 }
 
-bool AbstractState::is_abstraction_of(const AbstractState &other) const {
+bool AbstractState::is_more_general_than(const AbstractState &other) const {
     return domains.is_superset_of(other.domains);
 }
 

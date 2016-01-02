@@ -45,11 +45,13 @@ private:
     void remove_incoming_arc(OperatorProxy op, AbstractState *other);
     void remove_outgoing_arc(OperatorProxy op, AbstractState *other);
 
-    void update_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
-    void update_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
-    void update_loops(int var, AbstractState *v1, AbstractState *v2);
+    void split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
+    void split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
+    void split_loops(int var, AbstractState *v1, AbstractState *v2);
 
     bool domains_intersect(const AbstractState *other, int var) const;
+
+    bool is_more_general_than(const AbstractState &abs_state) const;
 
 public:
     ~AbstractState() = default;
@@ -77,8 +79,7 @@ public:
 
     void add_loop(OperatorProxy op);
 
-    bool is_abstraction_of(const State &conc_state) const;
-    bool is_abstraction_of(const AbstractState &abs_state) const;
+    bool includes(const State &conc_state) const;
 
     void set_h_value(int new_h);
     int get_h_value() const;
@@ -94,6 +95,8 @@ public:
     /*
       Create the initial unrefined abstract state on the heap. Must be deleted
       by the caller.
+
+      TODO: Return unique_ptr?
     */
     static AbstractState *get_trivial_abstract_state(
         TaskProxy task_proxy, Node *root_node);
