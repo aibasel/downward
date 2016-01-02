@@ -34,7 +34,7 @@ struct Split {
     const std::vector<int> values;
 
     Split(int var_id, std::vector<int> &&values)
-        : var_id(var_id), values(values) {
+        : var_id(var_id), values(move(values)) {
     }
 };
 
@@ -48,7 +48,8 @@ class SplitSelector {
     int get_num_unwanted_values(const AbstractState &state, const Split &split) const;
     double get_refinedness(const AbstractState &state, int var_id) const;
     int get_hadd_value(int var_id, int value) const;
-    int get_extreme_hadd_value(int var_id, const std::vector<int> &values) const;
+    int get_min_hadd_value(int var_id, const std::vector<int> &values) const;
+    int get_max_hadd_value(int var_id, const std::vector<int> &values) const;
 
     double rate_split(const AbstractState &state, const Split &split) const;
 
