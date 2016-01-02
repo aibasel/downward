@@ -87,16 +87,20 @@ Facts FactDecomposition::get_filtered_and_ordered_facts(
 void FactDecomposition::order_facts(
     const shared_ptr<AbstractTask> &task, vector<Fact> &facts) const {
     cout << "Sort " << facts.size() << " facts" << endl;
-    if (subtask_order == SubtaskOrder::ORIGINAL) {
+    switch (subtask_order) {
+    case SubtaskOrder::ORIGINAL:
         // Nothing to do.
-    } else if (subtask_order == SubtaskOrder::RANDOM) {
+        break;
+    case SubtaskOrder::RANDOM:
         g_rng.shuffle(facts);
-    } else if (subtask_order == SubtaskOrder::HADD_UP ||
-               subtask_order == SubtaskOrder::HADD_DOWN) {
+        break;
+    case SubtaskOrder::HADD_UP:
+    case SubtaskOrder::HADD_DOWN:
         sort(facts.begin(), facts.end(), SortFactsByIncreasingHaddValues(task));
         if (subtask_order == SubtaskOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
-    } else {
+        break;
+    default:
         cerr << "Invalid task order: " << static_cast<int>(subtask_order) << endl;
         Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
     }
