@@ -83,15 +83,22 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
     int var_id = split.var_id;
     const vector<int> &values = split.values;
     double rating;
-    if (pick == PickSplit::MIN_UNWANTED || pick == PickSplit::MAX_UNWANTED) {
+    switch (pick) {
+    case PickSplit::MIN_UNWANTED:
+    case PickSplit::MAX_UNWANTED:
         rating = get_num_unwanted_values(state, split);
-    } else if (pick == PickSplit::MIN_REFINED || pick == PickSplit::MAX_REFINED) {
+        break;
+    case PickSplit::MIN_REFINED:
+    case PickSplit::MAX_REFINED:
         rating = get_refinedness(state, var_id);
-    } else if (pick == PickSplit::MIN_HADD) {
+        break;
+    case PickSplit::MIN_HADD:
         rating = get_min_hadd_value(var_id, values);
-    } else if (pick == PickSplit::MAX_HADD) {
+        break;
+    case PickSplit::MAX_HADD:
         rating = get_max_hadd_value(var_id, values);
-    } else {
+        break;
+    default:
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
         Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
     }
