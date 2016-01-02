@@ -19,7 +19,7 @@ Domains::Domains(vector<int> &&domain_sizes) {
 }
 
 void Domains::initialize_static_members(vector<int> &&domain_sizes) {
-    orig_domain_sizes = domain_sizes;
+    orig_domain_sizes = move(domain_sizes);
 
     masks.clear();
     inverse_masks.clear();
@@ -31,10 +31,12 @@ void Domains::initialize_static_members(vector<int> &&domain_sizes) {
         num_facts += orig_domain_sizes[var];
     }
     for (int var = 0; var < num_vars; ++var) {
-        // 0000-----  =>  0000111--  =>  000011100
         Bitset mask(borders[var]);
+        // Example mask: 0000-----
         mask.resize(borders[var] + orig_domain_sizes[var], true);
+        // Example mask: 0000111--
         mask.resize(num_facts, false);
+        // Example mask: 000011100
         masks.push_back(mask);
         inverse_masks.push_back(~mask);
     }
@@ -49,7 +51,7 @@ void Domains::remove(int var, int value) {
     bits.reset(pos(var, value));
 }
 
-void Domains::set(int var, int value) {
+void Domains::set_single_value(int var, int value) {
     remove_all(var);
     add(var, value);
 }
@@ -67,7 +69,7 @@ size_t Domains::count(int var) const {
        a mask and calling dynamic_bitset::count(). */
     int num_values = 0;
     for (int value = 0; value < orig_domain_sizes[var]; ++value) {
-        num_values += test(var, value);
+        num_values += static_cast<int>(test(var, value));
     }
     return num_values;
 }
@@ -78,6 +80,8 @@ bool Domains::intersects(const Domains &other, int var) const {
       many boolean vars. We use a temporary bitset to reduce memory
       allocations. This substantially reduces the time spent in this method.
     */
+    /* TODO: If still relevant after changing the representation, check if
+       "temp_bits = bits" isn't faster than setting all bits and ANDing. */
     temp_bits.set();
     temp_bits &= bits;
     temp_bits &= other.bits;
