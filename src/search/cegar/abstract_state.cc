@@ -80,11 +80,11 @@ void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractStat
             if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
                 u->add_arc(op, v2);
             }
-        } else if (v2->domains.test(var, post)) {
-            u->add_arc(op, v2);
-        } else {
-            assert(v1->domains.test(var, post));
+        } else if (v1->domains.test(var, post)) {
             u->add_arc(op, v1);
+        } else {
+            assert(v2->domains.test(var, post));
+            u->add_arc(op, v2);
         }
         u->remove_outgoing_arc(op, this);
     }
@@ -110,11 +110,11 @@ void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractStat
         } else if (pre == UNDEFINED_VALUE) {
             v1->add_arc(op, w);
             v2->add_arc(op, w);
-        } else if (v2->domains.test(var, pre)) {
-            v2->add_arc(op, w);
-        } else {
-            assert(v1->domains.test(var, pre));
+        } else if (v1->domains.test(var, pre)) {
             v1->add_arc(op, w);
+        } else {
+            assert(v2->domains.test(var, pre));
+            v2->add_arc(op, w);
         }
         w->remove_incoming_arc(op, this);
     }
@@ -136,22 +136,22 @@ void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
                 v1->add_loop(op);
                 v2->add_arc(op, v1);
             }
-        } else if (v2->domains.test(var, pre)) {
-            assert(post != UNDEFINED_VALUE);
-            if (v2->domains.test(var, post)) {
-                v2->add_loop(op);
-            } else {
-                assert(v1->domains.test(var, post));
-                v2->add_arc(op, v1);
-            }
-        } else {
-            assert(v1->domains.test(var, pre));
+        } else if (v1->domains.test(var, pre)) {
             assert(post != UNDEFINED_VALUE);
             if (v1->domains.test(var, post)) {
                 v1->add_loop(op);
             } else {
                 assert(v2->domains.test(var, post));
                 v1->add_arc(op, v2);
+            }
+        } else {
+            assert(v2->domains.test(var, pre));
+            assert(post != UNDEFINED_VALUE);
+            if (v2->domains.test(var, post)) {
+                v2->add_loop(op);
+            } else {
+                assert(v1->domains.test(var, post));
+                v2->add_arc(op, v1);
             }
         }
     }
