@@ -138,7 +138,7 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
       combine_facts(opts.get<bool>("combine_facts")) {
 }
 
-shared_ptr<AbstractTask> LandmarkDecomposition::get_domain_abstracted_task(
+shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
     shared_ptr<AbstractTask> &parent, Fact fact) const {
     assert(combine_facts);
     ExtraTasks::VarToGroups value_groups;
@@ -161,14 +161,14 @@ SharedTasks LandmarkDecomposition::get_subtasks(
         shared_ptr<AbstractTask> subtask =
             make_shared<ExtraTasks::ModifiedGoalsTask>(task, Facts {landmark});
         if (combine_facts) {
-            subtask = get_domain_abstracted_task(subtask, landmark);
+            subtask = build_domain_abstracted_task(subtask, landmark);
         }
         subtasks.push_back(subtask);
     }
     return subtasks;
 }
 
-static shared_ptr<Decomposition> _parse_original(OptionParser &parser) {
+static shared_ptr<Decomposition> _parse_no_decomposition(OptionParser &parser) {
     parser.add_option<int>(
         "copies",
         "number of task copies",
@@ -214,7 +214,7 @@ static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
 }
 
 static PluginShared<Decomposition> _plugin_original(
-    "no_decomposition", _parse_original);
+    "no_decomposition", _parse_no_decomposition);
 static PluginShared<Decomposition> _plugin_goals(
     "decomposition_by_goals", _parse_goals);
 static PluginShared<Decomposition> _plugin_landmarks(

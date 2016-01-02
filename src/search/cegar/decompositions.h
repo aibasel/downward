@@ -65,7 +65,9 @@ class LandmarkDecomposition : public Decomposition {
     const std::unique_ptr<Landmarks::LandmarkGraph> landmark_graph;
     bool combine_facts;
 
-    std::shared_ptr<AbstractTask> get_domain_abstracted_task(
+    /* Perform domain abstraction by combining facts that have to be
+       achieved before a given landmark can be made true. */
+    std::shared_ptr<AbstractTask> build_domain_abstracted_task(
         std::shared_ptr<AbstractTask> &parent, Fact fact) const;
 
 public:
