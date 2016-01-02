@@ -157,8 +157,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     /* Since the search is always started from the abstract initial state, v2
        is never the new initial state and v1 is never a goal state. */
     if (state == init) {
-        assert(v1->is_abstraction_of(task_proxy.get_initial_state()));
-        assert(!v2->is_abstraction_of(task_proxy.get_initial_state()));
+        assert(v1->includes(task_proxy.get_initial_state()));
+        assert(!v2->includes(task_proxy.get_initial_state()));
         init = v1;
         if (DEBUG)
             cout << "New init state: " << *init << endl;
@@ -183,7 +183,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
 
     AbstractState *abs_state = init;
     State conc_state = task_proxy.get_initial_state();
-    assert(abs_state->is_abstraction_of(conc_state));
+    assert(abs_state->includes(conc_state));
 
     if (DEBUG)
         cout << "  Initial abstract state: " << *abs_state << endl;
@@ -198,7 +198,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                 cout << "  Move to " << *next_abs_state << " with "
                      << op.get_name() << endl;
             State next_conc_state = move(conc_state.get_successor(op));
-            if (!next_abs_state->is_abstraction_of(next_conc_state)) {
+            if (!next_abs_state->includes(next_conc_state)) {
                 if (DEBUG)
                     cout << "  Paths deviate." << endl;
                 ++deviations;
