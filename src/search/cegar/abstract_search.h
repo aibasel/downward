@@ -22,6 +22,9 @@ class AbstractSearch {
     const bool use_general_costs;
 
     AdaptiveQueue<AbstractState *> open_queue;
+    /* TODO: Storing paths and g-values in unordered_maps is expensive.
+       We should store them elsewhere. If we stick with unordered_maps,
+       we should use one unordered_map for both infos. */
     std::unordered_map<AbstractState *, Arc> prev_arc;
     Solution solution;
     std::unordered_map<AbstractState *, int> g_values;
@@ -44,8 +47,11 @@ public:
 
     void backwards_dijkstra(const AbstractStates goals);
 
-    /* Traverse abstraction and remember the minimum cost we need to keep for
-       each operator in order not to decrease any heuristic values. */
+    /*
+      Settle all nodes in the abstract transition system and remember
+      the minimum cost we need to keep for each operator in order not
+      to decrease any heuristic values.
+    */
     std::vector<int> get_needed_costs(AbstractState *init, int num_ops);
 
     const Solution &get_solution() {
