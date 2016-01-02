@@ -46,27 +46,10 @@ public:
 };
 
 
-class FactDecomposition : public Decomposition {
+class GoalDecomposition : public Decomposition {
     SubtaskOrder subtask_order;
 
-    void remove_initial_state_facts(const TaskProxy &task_proxy, Facts &facts) const;
-    void order_facts(const std::shared_ptr<AbstractTask> &task, Facts &facts) const;
-
-protected:
-    virtual Facts get_facts(const TaskProxy &task_proxy) const = 0;
-
-    Facts get_filtered_and_ordered_facts(
-        const std::shared_ptr<AbstractTask> &task) const;
-
-public:
-    explicit FactDecomposition(const Options &options);
-    virtual ~FactDecomposition() = default;
-};
-
-
-class GoalDecomposition : public FactDecomposition {
-protected:
-    virtual Facts get_facts(const TaskProxy &task_proxy) const override;
+    Facts get_goal_facts(const TaskProxy &task_proxy) const;
 
 public:
     explicit GoalDecomposition(const Options &options);
@@ -77,15 +60,13 @@ public:
 };
 
 
-class LandmarkDecomposition : public FactDecomposition {
+class LandmarkDecomposition : public Decomposition {
+    SubtaskOrder subtask_order;
     const std::unique_ptr<Landmarks::LandmarkGraph> landmark_graph;
     bool combine_facts;
 
     std::shared_ptr<AbstractTask> get_domain_abstracted_task(
         std::shared_ptr<AbstractTask> &parent, Fact fact) const;
-
-protected:
-    virtual Facts get_facts(const TaskProxy &) const override;
 
 public:
     explicit LandmarkDecomposition(const Options &opts);
