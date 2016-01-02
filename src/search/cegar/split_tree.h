@@ -9,14 +9,44 @@
 class State;
 
 namespace CEGAR {
+class Node;
+
+/*
+  This class stores the refinement hierarchy of a Cartesian abstraction.
+
+  It is used for efficient lookup of heuristic values during search.
+
+  Inner nodes correspond to abstract states that have been split (or
+  helper nodes, see below). Leaf nodes correspond to the current
+  (unsplit) states in an abstraction. The use of helper nodes makes
+  this structure a directed acyclic graph (instead of a tree).
+*/
+class SplitTree {
+    std::unique_ptr<Node> root;
+
+public:
+    SplitTree();
+    ~SplitTree() = default;
+
+    SplitTree(SplitTree &&other);
+
+    Node *get_node(const State &state) const;
+
+    Node *get_root() const {
+        return root.get();
+    }
+};
+
+
 class Node {
-    static const int UNDEFINED = -2;
+    static const int LEAF_NODE = -2;
     /*
       While right_child is always the node of a (possibly split) abstract
       state, left_child may be a helper node. We add helper nodes to the
       hierarchy to allow for efficient lookup in case more than one fact is
       split off a state.
     */
+    // TODO: Use shared_ptr for left_child and unique_ptr for right_child?
     Node *left_child;
     Node *right_child;
 
@@ -45,9 +75,9 @@ public:
 
     bool is_split() const {
         assert((!left_child && !right_child &&
-                var == UNDEFINED && value == UNDEFINED) ||
+                var == LEAF_NODE && value == LEAF_NODE) ||
                (left_child && right_child &&
-                var != UNDEFINED && value != UNDEFINED));
+                var != LEAF_NODE && value != LEAF_NODE));
         return left_child;
     }
 
@@ -63,7 +93,7 @@ public:
 
     Node *get_child(int value) const;
 
-    void set_h_value(int new_h) {
+    void increase_h_value(int new_h) {
         assert(new_h >= h);
         h = new_h;
     }
@@ -71,20 +101,6 @@ public:
     int get_h_value() const {
         return h;
     }
-};
-
-
-class SplitTree {
-    std::unique_ptr<Node> root;
-
-public:
-    SplitTree();
-    ~SplitTree() = default;
-
-    SplitTree(SplitTree &&other);
-
-    Node *get_node(const State &state) const;
-    Node *get_root() const {return root.get(); }
 };
 }
 

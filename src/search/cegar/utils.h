@@ -18,7 +18,7 @@ class AdditiveHeuristic;
 namespace CEGAR {
 extern bool DEBUG;
 
-const int UNDEFINED = -1;
+const int UNDEFINED_VALUE = -1;
 // Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
 const int INF = std::numeric_limits<int>::max();
 
