@@ -131,10 +131,6 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
     : FactDecomposition(opts),
       landmark_graph(get_landmark_graph()),
       combine_facts(opts.get<bool>("combine_facts")) {
-    if (DEBUG)
-        dump_landmark_graph(*landmark_graph);
-    if (opts.get<bool>("write_graph"))
-        write_landmark_graph_dot_file(*landmark_graph);
 }
 
 shared_ptr<AbstractTask> LandmarkDecomposition::get_domain_abstracted_task(
@@ -207,10 +203,6 @@ static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
         "combine_facts",
         "combine landmark facts with domain abstraction",
         "true");
-    parser.add_option<bool>(
-        "write_graph",
-        "write dot file for landmark graph",
-        "false");
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

@@ -79,48 +79,4 @@ VarToValues get_prev_landmarks(const LandmarkGraph &graph, const Fact &fact) {
     return groups;
 }
 
-static string get_quoted_node_name(Fact fact) {
-    stringstream out;
-    out << "\"" << g_fact_names[fact.first][fact.second]
-        << " (" << fact.first << "=" << fact.second << ")\"";
-    return out.str();
-}
-
-void dump_landmark_graph(const LandmarkGraph &graph) {
-    graph.dump();
-}
-
-void write_landmark_graph_dot_file(const LandmarkGraph &graph) {
-    const set<LandmarkNode *> &nodes = graph.get_nodes();
-
-    ofstream dotfile("landmark-graph.dot");
-    if (!dotfile.is_open()) {
-        cerr << "output file for landmark graph could not be opened" << endl;
-        Utils::exit_with(Utils::ExitCode::CRITICAL_ERROR);
-    }
-
-    dotfile << "digraph landmarkgraph {" << endl;
-    for (const auto *node_p : nodes) {
-        Fact node_fact = get_fact(*node_p);
-        for (const auto &parent_pair : node_p->parents) {
-            const LandmarkNode *parent_p = parent_pair.first;
-            Fact parent_fact = get_fact(*parent_p);
-            dotfile << get_quoted_node_name(parent_fact) << " -> "
-                    << get_quoted_node_name(node_fact) << ";" << endl;
-            // Mark initial state facts green.
-            if (g_initial_state()[parent_fact.first] == parent_fact.second)
-                dotfile << get_quoted_node_name(parent_fact)
-                        << " [color=green];" << endl;
-            if (g_initial_state()[node_fact.first] == node_fact.second)
-                dotfile << get_quoted_node_name(node_fact)
-                        << " [color=green];" << endl;
-        }
-    }
-    // Mark goal facts red.
-    for (Fact goal : g_goal) {
-        dotfile << get_quoted_node_name(goal) << " [color=red];" << endl;
-    }
-    dotfile << "}" << endl;
-    dotfile.close();
-}
 }

@@ -25,9 +25,6 @@ extern std::vector<Fact> get_fact_landmarks(const Landmarks::LandmarkGraph &grap
   can be true for the first time.
 */
 extern VarToValues get_prev_landmarks(const Landmarks::LandmarkGraph &graph, const Fact &fact);
-
-extern void dump_landmark_graph(const Landmarks::LandmarkGraph &graph);
-extern void write_landmark_graph_dot_file(const Landmarks::LandmarkGraph &graph);
 }
 
 #endif
