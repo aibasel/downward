@@ -20,26 +20,29 @@
 using namespace std;
 
 namespace CEGAR {
+static const int STATES_LOG_STEP = 1000;
+
 struct Flaw {
-    const State conc_state;
-    AbstractState *abs_state;
-    const AbstractState desired_abs_state;
+    const State concrete_state;
+    AbstractState *current_abstract_state;
+    const AbstractState desired_abstract_state;
 
     Flaw(State &&conc_state, AbstractState *abs_state, AbstractState &&desired_abs_state)
-        : conc_state(conc_state),
-          abs_state(abs_state),
-          desired_abs_state(std::move(desired_abs_state)) {
+        : concrete_state(move(conc_state)),
+          current_abstract_state(abs_state),
+          desired_abstract_state(move(desired_abs_state)) {
     }
+
     vector<Split> get_possible_splits() const {
         vector<Split> splits;
-        for (FactProxy wanted_fact : conc_state) {
-            if (!abs_state->contains(wanted_fact) ||
-                !desired_abs_state.contains(wanted_fact)) {
+        for (FactProxy wanted_fact : concrete_state) {
+            if (!current_abstract_state->contains(wanted_fact) ||
+                !desired_abstract_state.contains(wanted_fact)) {
                 VariableProxy var = wanted_fact.get_variable();
                 vector<int> wanted;
                 for (int value = 0; value < var.get_domain_size(); ++value) {
                     FactProxy fact = var.get_fact(value);
-                    if (abs_state->contains(fact) && desired_abs_state.contains(fact)) {
+                    if (current_abstract_state->contains(fact) && desired_abstract_state.contains(fact)) {
                         wanted.push_back(value);
                     }
                 }
@@ -135,7 +138,7 @@ void Abstraction::build() {
             found_conc_solution = true;
             break;
         }
-        AbstractState *abs_state = flaw->abs_state;
+        AbstractState *abs_state = flaw->current_abstract_state;
         vector<Split> splits = flaw->get_possible_splits();
         const Split &split = split_selector.pick_split(*abs_state, splits);
         refine(abs_state, split.var_id, split.values);
