@@ -99,7 +99,7 @@ int get_pre(const OperatorProxy &op, int var_id) {
         if (precondition.get_variable().get_id() == var_id)
             return precondition.get_value();
     }
-    return UNDEFINED;
+    return UNDEFINED_VALUE;
 }
 
 int get_eff(const OperatorProxy &op, int var_id) {
@@ -107,12 +107,12 @@ int get_eff(const OperatorProxy &op, int var_id) {
         if (effect.get_fact().get_variable().get_id() == var_id)
             return effect.get_fact().get_value();
     }
-    return UNDEFINED;
+    return UNDEFINED_VALUE;
 }
 
 int get_post(const OperatorProxy &op, int var_id) {
     int eff = get_eff(op, var_id);
-    if (eff != UNDEFINED)
+    if (eff != UNDEFINED_VALUE)
         return eff;
     return get_pre(op, var_id);
 }

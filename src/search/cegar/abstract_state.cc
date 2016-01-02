@@ -71,7 +71,7 @@ void AbstractState::update_incoming_arcs(int var, AbstractState *v1, AbstractSta
         AbstractState *u = arc.second;
         assert(u != this);
         int post = get_post(op, var);
-        if (post == UNDEFINED) {
+        if (post == UNDEFINED_VALUE) {
             // If the domains of u and v1 don't intersect, we must add the other arc.
             bool u_and_v1_intersect = u->domains_intersect(v1, var);
             if (u_and_v1_intersect) {
@@ -96,8 +96,8 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
         assert(w != this);
         int pre = get_pre(op, var);
         int post = get_post(op, var);
-        if (post == UNDEFINED) {
-            assert(pre == UNDEFINED);
+        if (post == UNDEFINED_VALUE) {
+            assert(pre == UNDEFINED_VALUE);
             // If the domains of v1 and w don't intersect, we must add the other arc.
             bool v1_and_w_intersect = v1->domains_intersect(w, var);
             if (v1_and_w_intersect) {
@@ -106,7 +106,7 @@ void AbstractState::update_outgoing_arcs(int var, AbstractState *v1, AbstractSta
             if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
                 v2->add_arc(op, w);
             }
-        } else if (pre == UNDEFINED) {
+        } else if (pre == UNDEFINED_VALUE) {
             v1->add_arc(op, w);
             v2->add_arc(op, w);
         } else if (v2->domains.test(var, pre)) {
@@ -122,8 +122,8 @@ void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) 
     for (OperatorProxy op : loops) {
         int pre = get_pre(op, var);
         int post = get_post(op, var);
-        if (pre == UNDEFINED) {
-            if (post == UNDEFINED) {
+        if (pre == UNDEFINED_VALUE) {
+            if (post == UNDEFINED_VALUE) {
                 v1->add_loop(op);
                 v2->add_loop(op);
             } else if (v2->domains.test(var, post)) {
@@ -135,7 +135,7 @@ void AbstractState::update_loops(int var, AbstractState *v1, AbstractState *v2) 
                 v2->add_arc(op, v1);
             }
         } else if (v2->domains.test(var, pre)) {
-            assert(post != UNDEFINED);
+            assert(post != UNDEFINED_VALUE);
             if (v2->domains.test(var, post)) {
                 v2->add_loop(op);
             } else {
@@ -229,7 +229,7 @@ bool AbstractState::is_abstraction_of(const AbstractState &other) const {
 
 void AbstractState::set_h_value(int new_h) {
     assert(node);
-    node->set_h_value(new_h);
+    node->increase_h_value(new_h);
 }
 
 int AbstractState::get_h_value() const {
