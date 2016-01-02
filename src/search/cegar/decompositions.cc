@@ -59,35 +59,35 @@ static void remove_initial_state_facts(
 
 static void order_facts(
     const shared_ptr<AbstractTask> &task,
-    SubtaskOrder subtask_order,
+    FactOrder fact_order,
     vector<Fact> &facts) {
     cout << "Sort " << facts.size() << " facts" << endl;
-    switch (subtask_order) {
-    case SubtaskOrder::ORIGINAL:
+    switch (fact_order) {
+    case FactOrder::ORIGINAL:
         // Nothing to do.
         break;
-    case SubtaskOrder::RANDOM:
+    case FactOrder::RANDOM:
         g_rng.shuffle(facts);
         break;
-    case SubtaskOrder::HADD_UP:
-    case SubtaskOrder::HADD_DOWN:
+    case FactOrder::HADD_UP:
+    case FactOrder::HADD_DOWN:
         sort(facts.begin(), facts.end(), SortFactsByIncreasingHaddValues(task));
-        if (subtask_order == SubtaskOrder::HADD_DOWN)
+        if (fact_order == FactOrder::HADD_DOWN)
             reverse(facts.begin(), facts.end());
         break;
     default:
-        cerr << "Invalid task order: " << static_cast<int>(subtask_order) << endl;
+        cerr << "Invalid task order: " << static_cast<int>(fact_order) << endl;
         Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
     }
 }
 
 static Facts filter_and_order_facts(
     const shared_ptr<AbstractTask> &task,
-    SubtaskOrder subtask_order,
+    FactOrder fact_order,
     Facts &facts) {
     TaskProxy task_proxy(*task);
     remove_initial_state_facts(task_proxy, facts);
-    order_facts(task, subtask_order, facts);
+    order_facts(task, fact_order, facts);
     return facts;
 }
 
@@ -106,7 +106,7 @@ SharedTasks NoDecomposition::get_subtasks(
 }
 
 GoalDecomposition::GoalDecomposition(const Options &opts)
-    : subtask_order(SubtaskOrder(opts.get_enum("order"))) {
+    : fact_order(FactOrder(opts.get_enum("order"))) {
 }
 
 Facts GoalDecomposition::get_goal_facts(const TaskProxy &task_proxy) const {
@@ -122,7 +122,7 @@ SharedTasks GoalDecomposition::get_subtasks(
     SharedTasks subtasks;
     TaskProxy task_proxy(*task);
     Facts goal_facts = get_goal_facts(task_proxy);
-    filter_and_order_facts(task, subtask_order, goal_facts);
+    filter_and_order_facts(task, fact_order, goal_facts);
     for (Fact goal : goal_facts) {
         shared_ptr<AbstractTask> subtask =
             make_shared<ExtraTasks::ModifiedGoalsTask>(task, Facts {goal});
@@ -133,7 +133,7 @@ SharedTasks GoalDecomposition::get_subtasks(
 
 
 LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
-    : subtask_order(SubtaskOrder(opts.get_enum("order"))),
+    : fact_order(FactOrder(opts.get_enum("order"))),
       landmark_graph(get_landmark_graph()),
       combine_facts(opts.get<bool>("combine_facts")) {
 }
@@ -156,7 +156,7 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     SharedTasks subtasks;
     // TODO: Use landmark graph for task once the LM code supports tasks API.
     Facts landmark_facts = get_fact_landmarks(*landmark_graph);
-    filter_and_order_facts(task, subtask_order, landmark_facts);
+    filter_and_order_facts(task, fact_order, landmark_facts);
     for (Fact landmark : landmark_facts) {
         shared_ptr<AbstractTask> subtask =
             make_shared<ExtraTasks::ModifiedGoalsTask>(task, Facts {landmark});
@@ -181,18 +181,21 @@ static shared_ptr<Decomposition> _parse_no_decomposition(OptionParser &parser) {
         return make_shared<NoDecomposition>(opts);
 }
 
-static void add_subtask_order_option(OptionParser &parser) {
-    vector<string> subtask_orders;
-    subtask_orders.push_back("ORIGINAL");
-    subtask_orders.push_back("RANDOM");
-    subtask_orders.push_back("HADD_UP");
-    subtask_orders.push_back("HADD_DOWN");
+static void add_fact_order_option(OptionParser &parser) {
+    vector<string> fact_orders;
+    fact_orders.push_back("ORIGINAL");
+    fact_orders.push_back("RANDOM");
+    fact_orders.push_back("HADD_UP");
+    fact_orders.push_back("HADD_DOWN");
     parser.add_enum_option(
-        "order", subtask_orders, "subtask order", "HADD_DOWN");
+        "order",
+        fact_orders,
+        "ordering of goal or landmark facts",
+        "HADD_DOWN");
 }
 
 static shared_ptr<Decomposition> _parse_goals(OptionParser &parser) {
-    add_subtask_order_option(parser);
+    add_fact_order_option(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
@@ -201,7 +204,7 @@ static shared_ptr<Decomposition> _parse_goals(OptionParser &parser) {
 }
 
 static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
-    add_subtask_order_option(parser);
+    add_fact_order_option(parser);
     parser.add_option<bool>(
         "combine_facts",
         "combine landmark facts with domain abstraction",
