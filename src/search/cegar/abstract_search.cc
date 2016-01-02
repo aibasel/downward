@@ -83,7 +83,7 @@ AbstractState *AbstractSearch::astar_search(
         assert(new_f <= old_f);
         if (new_f < old_f)
             continue;
-        if (forward && use_h && goals && goals->count(state) == 1) {
+        if (goals && goals->count(state) == 1) {
             return state;
         }
         if (needed_costs) {
