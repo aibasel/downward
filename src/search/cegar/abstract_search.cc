@@ -10,6 +10,10 @@
 using namespace std;
 
 namespace CEGAR {
+
+// See additive_heuristic.h.
+static const int MAX_COST_VALUE = 100000000;
+
 AbstractSearch::AbstractSearch(const Options &opts)
     : use_general_costs(opts.get<bool>("use_general_costs")) {
 }

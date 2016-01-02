@@ -14,6 +14,7 @@ class LandmarkGraph;
 }
 
 namespace CEGAR {
+// TODO: Remove typedef.
 using Fact = std::pair<int, int>;
 using Facts = std::vector<Fact>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
