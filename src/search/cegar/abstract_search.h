@@ -1,6 +1,8 @@
 #ifndef CEGAR_ABSTRACT_SEARCH_H
 #define CEGAR_ABSTRACT_SEARCH_H
 
+#include "abstract_state.h"  // TODO: Remove include when Arc typedef is no longer needed.
+
 #include "../priority_queue.h"
 #include "../task_proxy.h"
 
@@ -13,10 +15,7 @@
 class Options;
 
 namespace CEGAR {
-class AbstractState;
-
 using AbstractStates = std::unordered_set<AbstractState *>;
-using Arc = std::pair<OperatorProxy, AbstractState *>;
 using Solution = std::deque<Arc>;
 
 class AbstractSearch {
