@@ -22,8 +22,11 @@ SplitSelector::SplitSelector(
     : task(task),
       task_proxy(*task),
       pick(pick) {
-    if (pick == PickSplit::MIN_HADD || pick == PickSplit::MAX_HADD)
+    if (pick == PickSplit::MIN_HADD || pick == PickSplit::MAX_HADD) {
         additive_heuristic = get_additive_heuristic(task);
+        additive_heuristic->initialize_and_compute_heuristic_for_cegar(
+            task_proxy.get_initial_state());
+    }
 }
 
 // Define here to avoid include in header.

@@ -14,16 +14,17 @@ using namespace std;
 using namespace Landmarks;
 
 namespace CEGAR {
-static Fact get_fact(const LandmarkNode *node) {
-    assert(node);
-    assert(node->vars.size() == 1);
-    assert(node->vals.size() == 1);
-    return Fact(node->vars[0], node->vals[0]);
+static Fact get_fact(const LandmarkNode &node) {
+    /* We assume that the given LandmarkNodes are from an h^m landmark
+       graph with m=1. */
+    assert(node.vars.size() == 1);
+    assert(node.vals.size() == 1);
+    return Fact(node.vars[0], node.vals[0]);
 }
 
 unique_ptr<LandmarkGraph> get_landmark_graph() {
     Options opts = Options();
-    opts.set<int>("cost_type", 0);
+    opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_estimates", false);
     opts.set<int>("m", 1);
     // h^m doesn't produce reasonable orders anyway.
@@ -32,8 +33,10 @@ unique_ptr<LandmarkGraph> get_landmark_graph() {
     opts.set<bool>("disjunctive_landmarks", false);
     opts.set<bool>("conjunctive_landmarks", false);
     opts.set<bool>("no_orders", false);
-    opts.set<int>("lm_cost_type", 0);
+    opts.set<int>("lm_cost_type", NORMAL);
     opts.set<bool>("supports_conditional_effects", false);
+    /* This function assumes that the exploration object is not used
+       after the landmark graph has been created. */
     Exploration exploration(opts);
     opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
@@ -44,19 +47,13 @@ vector<Fact> get_fact_landmarks(const LandmarkGraph &graph) {
     vector<Fact> facts;
     const set<LandmarkNode *> &nodes = graph.get_nodes();
     for (LandmarkNode *node : nodes) {
-        facts.push_back(get_fact(node));
+        facts.push_back(get_fact(*node));
     }
     sort(facts.begin(), facts.end());
     return facts;
 }
 
-/*
-  Do a breadth-first search through the landmark graph ignoring
-  duplicates. Start at the node for the given fact and collect for each
-  variable the facts that have to be made true before the fact is made
-  true for the first time.
-*/
-VarToValues get_prev_landmarks(const LandmarkGraph &graph, Fact fact) {
+VarToValues get_prev_landmarks(const LandmarkGraph &graph, const Fact &fact) {
     VarToValues groups;
     LandmarkNode *node = graph.get_landmark(fact);
     assert(node);
@@ -72,7 +69,7 @@ VarToValues get_prev_landmarks(const LandmarkGraph &graph, Fact fact) {
         if (closed.count(ancestor) == 1)
             continue;
         closed.insert(ancestor);
-        Fact ancestor_fact = get_fact(ancestor);
+        Fact ancestor_fact = get_fact(*ancestor);
         groups[ancestor_fact.first].push_back(ancestor_fact.second);
         for (const auto &parent_and_edge : ancestor->parents) {
             const LandmarkNode *parent = parent_and_edge.first;
@@ -104,10 +101,10 @@ void write_landmark_graph_dot_file(const LandmarkGraph &graph) {
 
     dotfile << "digraph landmarkgraph {" << endl;
     for (const auto *node_p : nodes) {
-        Fact node_fact = get_fact(node_p);
+        Fact node_fact = get_fact(*node_p);
         for (const auto &parent_pair : node_p->parents) {
             const LandmarkNode *parent_p = parent_pair.first;
-            Fact parent_fact = get_fact(parent_p);
+            Fact parent_fact = get_fact(*parent_p);
             dotfile << get_quoted_node_name(parent_fact) << " -> "
                     << get_quoted_node_name(node_fact) << ";" << endl;
             // Mark initial state facts green.

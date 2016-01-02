@@ -22,9 +22,7 @@ const int UNDEFINED = -1;
 // Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
 const int INF = std::numeric_limits<int>::max();
 
-// See additive_heuristic.h.
-const int MAX_COST_VALUE = 100000000;
-
+// TODO: Remove typedef.
 using Fact = std::pair<int, int>;
 
 extern std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
@@ -35,16 +33,22 @@ extern std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuris
   can be reached in the delete-relaxation before 'fact' is reached the first
   time, plus 'fact' itself.
 */
-extern std::unordered_set<FactProxy> get_relaxed_reachable_facts(
-    TaskProxy task, FactProxy fact);
+extern std::unordered_set<FactProxy> get_relaxed_possible_before(
+    const TaskProxy &task, const FactProxy &fact);
 
-extern std::vector<int> get_domain_sizes(TaskProxy task);
+extern std::vector<int> get_domain_sizes(const TaskProxy &task);
 
-extern int get_pre(OperatorProxy op, int var_id);
-extern int get_eff(OperatorProxy op, int var_id);
-extern int get_post(OperatorProxy op, int var_id);
+// TODO: Move these methods to task_tools.h?
+extern int get_pre(const OperatorProxy &op, int var_id);
+extern int get_eff(const OperatorProxy &op, int var_id);
+extern int get_post(const OperatorProxy &op, int var_id);
 }
 
+/*
+  TODO: Our proxy classes are meant to be temporary objects and as such
+  shouldn't be stored in containers. Once we find a way to avoid
+  storing them in containers, we should remove this hashing function.
+*/
 namespace std {
 template<>
 struct hash<FactProxy> {
