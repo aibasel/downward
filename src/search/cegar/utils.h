@@ -16,6 +16,7 @@ class AdditiveHeuristic;
 }
 
 namespace CEGAR {
+// TODO: Think about better way for logging debug output.
 extern bool DEBUG;
 
 const int UNDEFINED_VALUE = -1;

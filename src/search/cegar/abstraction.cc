@@ -74,8 +74,10 @@ Abstraction::Abstraction(
       unmet_preconditions(0),
       unmet_goals(0) {
     g_log << "Start building abstraction." << endl;
+    cout << "Maximum number of states: " << max_states << endl;
     build();
     g_log << "Done building abstraction." << endl;
+    cout << "Time for building abstraction: " << timer << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
        last iteration, so we should update the h values. */
@@ -100,6 +102,8 @@ void Abstraction::separate_unreachable_facts() {
     unordered_set<FactProxy> reachable_facts = get_relaxed_possible_before(
         task_proxy, goal);
     for (VariableProxy var : task_proxy.get_variables()) {
+        if (!may_keep_refining())
+            break;
         int var_id = var.get_id();
         vector<int> unreachable_values;
         for (int value = 0; value < var.get_domain_size(); ++value) {
@@ -200,7 +204,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     if (DEBUG)
         cout << "  Initial abstract state: " << *abstract_state << endl;
 
-    for (auto &step : solution) {
+    for (const Arc &step : solution) {
         if (!Utils::extra_memory_padding_is_reserved())
             break;
         const OperatorProxy op = step.first;
@@ -209,7 +213,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             if (DEBUG)
                 cout << "  Move to " << *next_abstract_state << " with "
                      << op.get_name() << endl;
-            State next_concrete_state = move(concrete_state.get_successor(op));
+            State next_concrete_state = concrete_state.get_successor(op);
             if (!next_abstract_state->includes(next_concrete_state)) {
                 if (DEBUG)
                     cout << "  Paths deviate." << endl;
@@ -284,7 +288,6 @@ void Abstraction::print_statistics() {
     for (OperatorProxy op : task_proxy.get_operators())
         total_cost += op.get_cost();
 
-    cout << "Time for building abstraction: " << timer << endl;
     cout << "Total operator cost: " << total_cost << endl;
     cout << "States: " << get_num_states() << endl;
     cout << "Dead ends: " << dead_ends << endl;
