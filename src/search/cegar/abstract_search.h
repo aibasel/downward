@@ -1,7 +1,8 @@
 #ifndef CEGAR_ABSTRACT_SEARCH_H
 #define CEGAR_ABSTRACT_SEARCH_H
 
-#include "abstract_state.h"  // TODO: Remove include when Arc typedef is no longer needed.
+// TODO: Move include to .cc file when Arc typedef is no longer needed.
+#include "abstract_state.h"
 
 #include "../priority_queue.h"
 #include "../task_proxy.h"
@@ -11,8 +12,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-class Options;
 
 namespace CEGAR {
 using AbstractStates = std::unordered_set<AbstractState *>;
@@ -40,7 +39,7 @@ class AbstractSearch {
         std::vector<int> *needed_costs = nullptr);
 
 public:
-    explicit AbstractSearch(const Options &opts);
+    explicit AbstractSearch(bool use_general_costs);
     ~AbstractSearch() = default;
 
     bool find_solution(AbstractState *init, AbstractStates &goals);

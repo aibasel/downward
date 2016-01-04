@@ -16,8 +16,6 @@
 #include <utility>
 #include <vector>
 
-class Options;
-
 namespace AdditiveHeuristic {
 class AdditiveHeuristic;
 }
@@ -81,7 +79,13 @@ class Abstraction {
     void print_statistics();
 
 public:
-    explicit Abstraction(const Options &opts);
+    explicit Abstraction(
+        const std::shared_ptr<AbstractTask> task,
+        bool do_separate_unreachable_facts,
+        int max_states,
+        double max_time,
+        bool use_general_costs,
+        PickSplit pick);
     ~Abstraction();
 
     Abstraction(const Abstraction &) = delete;

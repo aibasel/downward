@@ -4,7 +4,6 @@
 #include "utils.h"
 
 #include "../globals.h"
-#include "../option_parser.h"
 #include "../task_tools.h"
 
 #include "../utils/logging.h"
@@ -54,15 +53,19 @@ struct Flaw {
     }
 };
 
-Abstraction::Abstraction(const Options &opts)
-    : task_proxy(*opts.get<shared_ptr<AbstractTask>>("transform")),
-      do_separate_unreachable_facts(opts.get<bool>("separate_unreachable_facts")),
-      max_states(opts.get<int>("max_states")),
-      abstract_search(opts),
-      split_selector(
-          opts.get<shared_ptr<AbstractTask>>("transform"),
-          PickSplit(opts.get<int>("pick"))),
-      timer(opts.get<double>("max_time")),
+Abstraction::Abstraction(
+    const shared_ptr<AbstractTask> task,
+    bool do_separate_unreachable_facts,
+    int max_states,
+    double max_time,
+    bool use_general_costs,
+    PickSplit pick)
+    : task_proxy(*task),
+      do_separate_unreachable_facts(do_separate_unreachable_facts),
+      max_states(max_states),
+      abstract_search(use_general_costs),
+      split_selector(task, pick),
+      timer(max_time),
       init(nullptr),
       deviations(0),
       unmet_preconditions(0),

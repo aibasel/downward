@@ -77,10 +77,6 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
         subtask = get_remaining_costs_task(subtask);
 
-        Options abs_opts(options);
-        abs_opts.set<shared_ptr<AbstractTask>>("transform", subtask);
-        abs_opts.set<int>("max_states", (max_states - num_states) / rem_subtasks);
-        abs_opts.set<double>("max_time", timer->get_remaining_time() / rem_subtasks);
         /*
           For landmark tasks we have to map all states in which the landmark
           might have been achieved to arbitrary abstract goal states. For the
@@ -88,9 +84,15 @@ void AdditiveCartesianHeuristic::build_abstractions(
           calling it unconditionally for subtasks with one goal doesn't hurt
           and simplifies the implementation.
         */
-        abs_opts.set<bool>("separate_unreachable_facts",
-                           TaskProxy(*subtask).get_goals().size() == 1);
-        Abstraction abstraction(abs_opts);
+        const bool separate_unreachable_facts =
+            TaskProxy(*subtask).get_goals().size() == 1;
+        Abstraction abstraction(
+            subtask,
+            separate_unreachable_facts,
+            (max_states - num_states) / rem_subtasks,
+            timer->get_remaining_time() / rem_subtasks,
+            options.get<bool>("use_general_costs"),
+            static_cast<PickSplit>(options.get<int>("pick")));
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();
@@ -100,7 +102,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
         if (init_h > 0) {
             Options opts;
-            opts.set<int>("cost_type", 0);
+            opts.set<int>("cost_type", NORMAL);
             opts.set<shared_ptr<AbstractTask>>("transform", subtask);
             opts.set<bool>("cache_estimates", cache_h_values);
             heuristics.push_back(
