@@ -22,20 +22,16 @@ Node::~Node() {
     }
 }
 
-void Node::set_members(int var, int value, Node *left_child, Node *right_child) {
-    this->var = var;
-    this->value = value;
-    this->left_child = left_child;
-    this->right_child = right_child;
-    assert(is_split());
-}
-
 pair<Node *, Node *> Node::split(int var, const vector<int> &values) {
     Node *helper = this;
     right_child = new Node();
     for (int value : values) {
         Node *new_helper = new Node();
-        helper->set_members(var, value, new_helper, right_child);
+        helper->var = var;
+        helper->value = value;
+        helper->left_child = new_helper;
+        helper->right_child = right_child;
+        assert(helper->is_split());
         helper = new_helper;
     }
     assert(!helper->is_split());

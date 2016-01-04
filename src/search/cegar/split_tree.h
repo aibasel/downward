@@ -59,8 +59,6 @@ class Node {
     // Estimated cost to nearest goal state from this node's state.
     int h;
 
-    void set_members(int var, int value, Node *left_child, Node *right_child);
-
 public:
     Node();
     ~Node();
