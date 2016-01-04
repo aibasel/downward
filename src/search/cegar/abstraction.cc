@@ -91,8 +91,8 @@ bool Abstraction::is_goal(AbstractState *state) const {
 }
 
 void Abstraction::separate_unreachable_facts() {
+    assert(goals.size() == 1);
     assert(states.size() == 1);
-    assert(task_proxy.get_goals().size() == 1);
     FactProxy goal = task_proxy.get_goals()[0];
     unordered_set<FactProxy> reachable_facts = get_relaxed_possible_before(
         task_proxy, goal);
@@ -107,6 +107,7 @@ void Abstraction::separate_unreachable_facts() {
         if (!unreachable_values.empty())
             refine(init, var_id, unreachable_values);
     }
+    goals.clear();
     goals.insert(states.begin(), states.end());
 }
 
