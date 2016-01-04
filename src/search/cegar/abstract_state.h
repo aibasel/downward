@@ -51,7 +51,7 @@ private:
 
     bool domains_intersect(const AbstractState *other, int var) const;
 
-    bool is_more_general_than(const AbstractState &abs_state) const;
+    bool is_more_general_than(const AbstractState &other) const;
 
 public:
     ~AbstractState() = default;
@@ -79,7 +79,7 @@ public:
 
     void add_loop(OperatorProxy op);
 
-    bool includes(const State &conc_state) const;
+    bool includes(const State &concrete_state) const;
 
     void set_h_value(int new_h);
     int get_h_value() const;
