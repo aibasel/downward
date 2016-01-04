@@ -20,6 +20,8 @@ class Node;
   helper nodes, see below). Leaf nodes correspond to the current
   (unsplit) states in an abstraction. The use of helper nodes makes
   this structure a directed acyclic graph (instead of a tree).
+
+  TODO: Rename class (and files) to RefinementHierarchy?
 */
 class SplitTree {
     std::unique_ptr<Node> root;

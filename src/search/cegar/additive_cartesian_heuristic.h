@@ -60,6 +60,11 @@ namespace CEGAR {
 class CartesianHeuristic;
 class Decomposition;
 
+/*
+  TODO: All members except "heuristics" are needed only for creating
+  the heuristic. Think about splitting heuristic creation and usage as
+  in iPDB.
+*/
 class AdditiveCartesianHeuristic : public Heuristic {
     std::vector<std::shared_ptr<Decomposition>> decompositions;
     const int max_states;
@@ -67,6 +72,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
+    // TODO: Store split trees or thin wrappers directly.
     std::vector<std::unique_ptr<CartesianHeuristic>> heuristics;
     int num_abstractions;
     int num_states;

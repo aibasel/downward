@@ -51,7 +51,6 @@ void AdditiveCartesianHeuristic::reduce_remaining_costs(
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
         assert(needed_costs[i] <= remaining_costs[i]);
         remaining_costs[i] -= needed_costs[i];
-        assert(remaining_costs[i] >= 0);
     }
 }
 
@@ -74,8 +73,6 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
-        cout << endl;
-
         subtask = get_remaining_costs_task(subtask);
 
         /*
@@ -97,6 +94,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();
+        assert(num_states <= max_states);
         vector<int> needed_costs = abstraction.get_needed_costs();
         reduce_remaining_costs(needed_costs);
         int init_h = abstraction.get_h_value_of_initial_state();
@@ -110,6 +108,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
                 Utils::make_unique_ptr<CartesianHeuristic>(
                     opts, abstraction.get_split_tree()));
         }
+        cout << endl;
         if (!may_build_another_abstraction())
             break;
 
@@ -122,7 +121,6 @@ void AdditiveCartesianHeuristic::initialize() {
     Utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<Decomposition> decomposition : decompositions) {
         build_abstractions(*decomposition);
-        cout << endl;
         if (!may_build_another_abstraction())
             break;
     }
@@ -151,6 +149,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
     return sum_h;
 }
 
+// TODO: Move t2t code into "options" and use it in the rest of the code as well.
 static string t2t_escape(const string &s) {
     return "\"\"" + s + "\"\"";
 }
@@ -194,6 +193,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
     parser.document_property("admissible", "yes");
+    // TODO: Is the additive version consistent as well?
     parser.document_property("consistent", "yes");
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
