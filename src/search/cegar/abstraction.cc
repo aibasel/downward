@@ -37,6 +37,14 @@ struct Flaw {
 
     vector<Split> get_possible_splits() const {
         vector<Split> splits;
+        /*
+          For each fact in the concrete state that is not contained in
+          the current abstract state (reason: abstract and concrete
+          traces diverged) or the desired abstract state (reason:
+          unsatisfied precondition or goal), loop over all values of
+          the corresponding variable. The values that are in both the
+          current and the desired abstract state are the "wanted" ones.
+        */
         for (FactProxy wanted_fact : concrete_state) {
             if (!current_abstract_state->contains(wanted_fact) ||
                 !desired_abstract_state.contains(wanted_fact)) {
@@ -44,7 +52,8 @@ struct Flaw {
                 vector<int> wanted;
                 for (int value = 0; value < var.get_domain_size(); ++value) {
                     FactProxy fact = var.get_fact(value);
-                    if (current_abstract_state->contains(fact) && desired_abstract_state.contains(fact)) {
+                    if (current_abstract_state->contains(fact) &&
+                        desired_abstract_state.contains(fact)) {
                         wanted.push_back(value);
                     }
                 }
