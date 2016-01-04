@@ -26,10 +26,13 @@ struct Flaw {
     AbstractState *current_abstract_state;
     const AbstractState desired_abstract_state;
 
-    Flaw(State &&conc_state, AbstractState *abs_state, AbstractState &&desired_abs_state)
-        : concrete_state(move(conc_state)),
-          current_abstract_state(abs_state),
-          desired_abstract_state(move(desired_abs_state)) {
+    Flaw(
+        State &&concrete_state,
+        AbstractState *current_abstract_state,
+        AbstractState &&desired_abstract_state)
+        : concrete_state(move(concrete_state)),
+          current_abstract_state(current_abstract_state),
+          desired_abstract_state(move(desired_abstract_state)) {
     }
 
     vector<Split> get_possible_splits() const {
@@ -132,24 +135,24 @@ bool Abstraction::may_keep_refining() const {
 
 void Abstraction::build() {
     create_trivial_abstraction();
-    bool found_conc_solution = false;
+    bool found_concrete_solution = false;
     while (may_keep_refining()) {
-        bool found_abs_solution = abstract_search.find_solution(init, goals);
-        if (!found_abs_solution) {
+        bool found_abstract_solution = abstract_search.find_solution(init, goals);
+        if (!found_abstract_solution) {
             cout << "Abstract problem is unsolvable!" << endl;
             break;
         }
         unique_ptr<Flaw> flaw = find_flaw(abstract_search.get_solution());
         if (!flaw) {
-            found_conc_solution = true;
+            found_concrete_solution = true;
             break;
         }
-        AbstractState *abs_state = flaw->current_abstract_state;
+        AbstractState *abstract_state = flaw->current_abstract_state;
         vector<Split> splits = flaw->get_possible_splits();
-        const Split &split = split_selector.pick_split(*abs_state, splits);
-        refine(abs_state, split.var_id, split.values);
+        const Split &split = split_selector.pick_split(*abstract_state, splits);
+        refine(abstract_state, split.var_id, split.values);
     }
-    cout << "Concrete solution found: " << found_conc_solution << endl;
+    cout << "Concrete solution found: " << found_concrete_solution << endl;
 }
 
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
@@ -190,47 +193,47 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     if (DEBUG)
         cout << "Check solution:" << endl;
 
-    AbstractState *abs_state = init;
-    State conc_state = task_proxy.get_initial_state();
-    assert(abs_state->includes(conc_state));
+    AbstractState *abstract_state = init;
+    State concrete_state = task_proxy.get_initial_state();
+    assert(abstract_state->includes(concrete_state));
 
     if (DEBUG)
-        cout << "  Initial abstract state: " << *abs_state << endl;
+        cout << "  Initial abstract state: " << *abstract_state << endl;
 
     for (auto &step : solution) {
         if (!Utils::extra_memory_padding_is_reserved())
             break;
         const OperatorProxy op = step.first;
-        AbstractState *next_abs_state = step.second;
-        if (is_applicable(op, conc_state)) {
+        AbstractState *next_abstract_state = step.second;
+        if (is_applicable(op, concrete_state)) {
             if (DEBUG)
-                cout << "  Move to " << *next_abs_state << " with "
+                cout << "  Move to " << *next_abstract_state << " with "
                      << op.get_name() << endl;
-            State next_conc_state = move(conc_state.get_successor(op));
-            if (!next_abs_state->includes(next_conc_state)) {
+            State next_concrete_state = move(concrete_state.get_successor(op));
+            if (!next_abstract_state->includes(next_concrete_state)) {
                 if (DEBUG)
                     cout << "  Paths deviate." << endl;
                 ++deviations;
                 return Utils::make_unique_ptr<Flaw>(
-                    move(conc_state),
-                    abs_state,
-                    next_abs_state->regress(op));
+                    move(concrete_state),
+                    abstract_state,
+                    next_abstract_state->regress(op));
             }
-            abs_state = next_abs_state;
-            conc_state = move(next_conc_state);
+            abstract_state = next_abstract_state;
+            concrete_state = move(next_concrete_state);
         } else {
             if (DEBUG)
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             ++unmet_preconditions;
             return Utils::make_unique_ptr<Flaw>(
-                move(conc_state),
-                abs_state,
+                move(concrete_state),
+                abstract_state,
                 AbstractState::get_abstract_state(
                     task_proxy, op.get_preconditions()));
         }
     }
-    assert(is_goal(abs_state));
-    if (is_goal_state(task_proxy, conc_state)) {
+    assert(is_goal(abstract_state));
+    if (is_goal_state(task_proxy, concrete_state)) {
         // We found a concrete solution.
         return nullptr;
     } else {
@@ -238,8 +241,8 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
         return Utils::make_unique_ptr<Flaw>(
-            move(conc_state),
-            abs_state,
+            move(concrete_state),
+            abstract_state,
             AbstractState::get_abstract_state(
                 task_proxy, task_proxy.get_goals()));
     }

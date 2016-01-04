@@ -221,8 +221,8 @@ bool AbstractState::domains_intersect(const AbstractState *other, int var) const
     return domains.intersects(other->domains, var);
 }
 
-bool AbstractState::includes(const State &conc_state) const {
-    for (FactProxy fact : conc_state) {
+bool AbstractState::includes(const State &concrete_state) const {
+    for (FactProxy fact : concrete_state) {
         if (!domains.test(fact.get_variable().get_id(), fact.get_value()))
             return false;
     }
