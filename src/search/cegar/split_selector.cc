@@ -46,6 +46,9 @@ double SplitSelector::get_refinedness(const AbstractState &state, int var_id) co
     double remaining_values = state.count(var_id);
     assert(2 <= remaining_values && remaining_values <= all_values);
     double refinedness = -(remaining_values / all_values);
+    /* TODO: Scale result such that "0.0 refinedness" means "not refined"
+       (i.e., never split before) while "1.0 refinedness" means "completely
+       refined" (i.e., only one value left after this split). */
     assert(-1.0 <= refinedness && refinedness < 0.0);
     return refinedness;
 }
