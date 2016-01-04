@@ -29,10 +29,11 @@ static const int memory_padding_in_mb = 75;
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
-      options(opts),
       decompositions(opts.get_list<shared_ptr<Decomposition>>("decompositions")),
-      max_states(options.get<int>("max_states")),
-      timer(new Utils::CountdownTimer(options.get<double>("max_time"))),
+      max_states(opts.get<int>("max_states")),
+      timer(new Utils::CountdownTimer(opts.get<double>("max_time"))),
+      use_general_costs(opts.get<bool>("use_general_costs")),
+      pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
       num_states(0) {
     DEBUG = opts.get<bool>("debug");
@@ -91,8 +92,8 @@ void AdditiveCartesianHeuristic::build_abstractions(
             separate_unreachable_facts,
             (max_states - num_states) / rem_subtasks,
             timer->get_remaining_time() / rem_subtasks,
-            options.get<bool>("use_general_costs"),
-            static_cast<PickSplit>(options.get<int>("pick")));
+            use_general_costs,
+            pick_split);
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();

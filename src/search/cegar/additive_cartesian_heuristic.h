@@ -1,8 +1,9 @@
 #ifndef CEGAR_ADDITIVE_CARTESIAN_HEURISTIC_H
 #define CEGAR_ADDITIVE_CARTESIAN_HEURISTIC_H
 
+#include "split_selector.h"
+
 #include "../heuristic.h"
-#include "../option_parser.h"
 
 #include <memory>
 #include <vector>
@@ -60,10 +61,11 @@ class CartesianHeuristic;
 class Decomposition;
 
 class AdditiveCartesianHeuristic : public Heuristic {
-    const Options options;
     std::vector<std::shared_ptr<Decomposition>> decompositions;
     const int max_states;
     std::unique_ptr<Utils::CountdownTimer> timer;
+    bool use_general_costs;
+    PickSplit pick_split;
     std::vector<int> remaining_costs;
     std::vector<std::unique_ptr<CartesianHeuristic>> heuristics;
     int num_abstractions;
