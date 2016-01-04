@@ -25,6 +25,15 @@
 using namespace std;
 
 namespace CEGAR {
+/*
+  We reserve some memory to be able to recover from out-of-memory
+  situations gracefully. When the memory runs out, we stop refining and
+  start the next refinement or the search. Due to memory fragmentation
+  the memory used for building the abstraction (states, transitions,
+  etc.) often can't be reused for things that require big continuous
+  blocks of memory. It is for this reason that we require such a large
+  amount of memory padding.
+*/
 static const int memory_padding_in_mb = 75;
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
