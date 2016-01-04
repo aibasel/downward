@@ -123,6 +123,8 @@ void Abstraction::create_trivial_abstraction() {
 }
 
 bool Abstraction::may_keep_refining() const {
+    /* TODO: Think about whether we really want to go to the memory limit.
+       Without doing so, the algorithm would be more deterministic. */
     return Utils::extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
            !timer.is_expired();
