@@ -10,7 +10,7 @@
 #include <string>
 
 
-//Options is just a wrapper for map<string, boost::any>
+//Options is just a wrapper for map<string, Any>
 class Options {
 public:
     Options(bool hm = false)
