@@ -27,26 +27,26 @@ enum class FactOrder {
 };
 
 
-class Decomposition {
+class SubtaskGenerator {
 public:
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const = 0;
 };
 
 
-class NoDecomposition : public Decomposition {
+class TaskDuplicator : public SubtaskGenerator {
     int num_copies;
 
 public:
-    explicit NoDecomposition(const Options &options);
-    virtual ~NoDecomposition() = default;
+    explicit TaskDuplicator(const Options &options);
+    virtual ~TaskDuplicator() = default;
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;
 };
 
 
-class GoalDecomposition : public Decomposition {
+class GoalDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
 
     Facts get_goal_facts(const TaskProxy &task_proxy) const;
@@ -60,7 +60,7 @@ public:
 };
 
 
-class LandmarkDecomposition : public Decomposition {
+class LandmarkDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
     const std::unique_ptr<Landmarks::LandmarkGraph> landmark_graph;
     bool combine_facts;
