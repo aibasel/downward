@@ -2,7 +2,7 @@
 
 #include "abstraction.h"
 #include "cartesian_heuristic.h"
-#include "decompositions.h"
+#include "subtask_generators.h"
 #include "utils.h"
 
 #include "../evaluation_context.h"
