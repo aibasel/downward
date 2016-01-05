@@ -1,5 +1,5 @@
-#ifndef CEGAR_DECOMPOSITIONS_H
-#define CEGAR_DECOMPOSITIONS_H
+#ifndef CEGAR_SUBTASK_GENERATORS_H
+#define CEGAR_SUBTASK_GENERATORS_H
 
 #include "utils.h"  // TODO: Remove once Fact typedef no longer needed.
 
