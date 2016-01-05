@@ -128,7 +128,8 @@ void Abstraction::separate_unreachable_facts() {
 }
 
 void Abstraction::create_trivial_abstraction() {
-    init = AbstractState::get_trivial_abstract_state(task_proxy, split_tree.get_root());
+    init = AbstractState::get_trivial_abstract_state(
+        task_proxy, refinement_hierarchy.get_root());
     goals.insert(init);
     for (OperatorProxy op : task_proxy.get_operators()) {
         init->add_loop(op);

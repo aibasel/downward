@@ -115,7 +115,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
             opts.set<bool>("cache_estimates", cache_h_values);
             heuristics.push_back(
                 Utils::make_unique_ptr<CartesianHeuristic>(
-                    opts, abstraction.get_split_tree()));
+                    opts, abstraction.get_refinement_hierarchy()));
         }
         cout << endl;
         if (!may_build_another_abstraction())

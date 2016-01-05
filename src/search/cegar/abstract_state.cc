@@ -1,6 +1,6 @@
 #include "abstract_state.h"
 
-#include "split_tree.h"
+#include "refinement_hierarchy.h"
 #include "utils.h"
 
 #include "../task_proxy.h"

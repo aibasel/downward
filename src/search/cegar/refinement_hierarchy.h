@@ -1,5 +1,5 @@
-#ifndef CEGAR_SPLIT_TREE_H
-#define CEGAR_SPLIT_TREE_H
+#ifndef CEGAR_REFINEMENT_HIERARCHY_H
+#define CEGAR_REFINEMENT_HIERARCHY_H
 
 #include <cassert>
 #include <memory>
@@ -20,17 +20,15 @@ class Node;
   helper nodes, see below). Leaf nodes correspond to the current
   (unsplit) states in an abstraction. The use of helper nodes makes
   this structure a directed acyclic graph (instead of a tree).
-
-  TODO: Rename class (and files) to RefinementHierarchy?
 */
-class SplitTree {
+class RefinementHierarchy {
     std::unique_ptr<Node> root;
 
 public:
-    SplitTree();
-    ~SplitTree() = default;
+    RefinementHierarchy();
+    ~RefinementHierarchy() = default;
 
-    SplitTree(SplitTree &&other);
+    RefinementHierarchy(RefinementHierarchy &&other);
 
     Node *get_node(const State &state) const;
 

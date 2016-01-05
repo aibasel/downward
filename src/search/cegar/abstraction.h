@@ -2,8 +2,8 @@
 #define CEGAR_ABSTRACTION_H
 
 #include "abstract_search.h"
+#include "refinement_hierarchy.h"
 #include "split_selector.h"
-#include "split_tree.h"
 
 #include "../task_proxy.h"
 
@@ -57,8 +57,9 @@ class Abstraction {
     int unmet_preconditions;
     int unmet_goals;
 
-    // Refinement hierarchy.
-    SplitTree split_tree;
+    /* DAG with inner nodes for all split states and leaves for all
+       current states. */
+    RefinementHierarchy refinement_hierarchy;
 
     void create_trivial_abstraction();
 
@@ -99,8 +100,8 @@ public:
     Abstraction(const Abstraction &) = delete;
     Abstraction &operator=(const Abstraction &) = delete;
 
-    SplitTree && get_split_tree() {
-        return std::move(split_tree);
+    RefinementHierarchy && get_refinement_hierarchy() {
+        return std::move(refinement_hierarchy);
     }
 
     int get_num_states() const {return states.size(); }
