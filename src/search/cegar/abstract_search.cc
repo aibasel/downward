@@ -7,7 +7,6 @@
 using namespace std;
 
 namespace CEGAR {
-
 // See additive_heuristic.h.
 static const int MAX_COST_VALUE = 100000000;
 
