@@ -17,6 +17,7 @@ namespace CEGAR {
 class AbstractState;
 class Node;
 
+// TODO: Use operator indices instead of proxies to save space.
 using Arc = std::pair<OperatorProxy, AbstractState *>;
 using Arcs = std::vector<Arc>;
 using Loops = std::vector<OperatorProxy>;
