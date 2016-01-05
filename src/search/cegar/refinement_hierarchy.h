@@ -39,7 +39,7 @@ public:
 
 
 class Node {
-    static const int LEAF_NODE = -2;
+    static const int LEAF_NODE = -1;
     /*
       While right_child is always the node of a (possibly split) abstract
       state, left_child may be a helper node. We add helper nodes to the
