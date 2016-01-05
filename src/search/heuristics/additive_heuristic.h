@@ -68,17 +68,13 @@ public:
     ~AdditiveHeuristic();
 
     /*
-      Until compute_result() accepts State objects, we need this method
-      for the CEGAR heuristic.
+      TODO: The two methods below are temporarily needed for the CEGAR
+      heuristic. In the long run it might be better to split the
+      computation from the heuristic class. Then the CEGAR code could
+      use the computation object instead of the heuristic.
     */
     void initialize_and_compute_heuristic_for_cegar(const State &state);
 
-    /*
-      This temporary solution is needed for the CEGAR heuristic. In the
-      long run it might be better to split the computation from the
-      heuristic class and add a method *get_cost()* to the class that
-      does the computation.
-    */
     int get_cost_for_cegar(int var, int value) const {
         assert(Utils::in_bounds(var, propositions));
         assert(Utils::in_bounds(value, propositions[var]));
