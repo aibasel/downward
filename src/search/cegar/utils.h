@@ -26,7 +26,7 @@ const int INF = std::numeric_limits<int>::max();
 // TODO: Remove typedef.
 using Fact = std::pair<int, int>;
 
-extern std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
+extern std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> create_additive_heuristic(
     const std::shared_ptr<AbstractTask> &task);
 
 /*
