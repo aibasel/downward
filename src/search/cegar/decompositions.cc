@@ -92,11 +92,11 @@ static Facts filter_and_order_facts(
 }
 
 
-NoDecomposition::NoDecomposition(const Options &opts)
+TaskDuplicator::TaskDuplicator(const Options &opts)
     : num_copies(opts.get<int>("copies")) {
 }
 
-SharedTasks NoDecomposition::get_subtasks(
+SharedTasks TaskDuplicator::get_subtasks(
     const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
     for (int i = 0; i < num_copies; ++i) {
@@ -168,7 +168,7 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     return subtasks;
 }
 
-static shared_ptr<Decomposition> _parse_no_decomposition(OptionParser &parser) {
+static shared_ptr<SubtaskGenerator> _parse_copy(OptionParser &parser) {
     parser.add_option<int>(
         "copies",
         "number of task copies",
@@ -178,7 +178,7 @@ static shared_ptr<Decomposition> _parse_no_decomposition(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return make_shared<NoDecomposition>(opts);
+        return make_shared<TaskDuplicator>(opts);
 }
 
 static void add_fact_order_option(OptionParser &parser) {
@@ -194,7 +194,7 @@ static void add_fact_order_option(OptionParser &parser) {
         "HADD_DOWN");
 }
 
-static shared_ptr<Decomposition> _parse_goals(OptionParser &parser) {
+static shared_ptr<SubtaskGenerator> _parse_goals(OptionParser &parser) {
     add_fact_order_option(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
@@ -203,7 +203,7 @@ static shared_ptr<Decomposition> _parse_goals(OptionParser &parser) {
         return make_shared<GoalDecomposition>(opts);
 }
 
-static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
+static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
     add_fact_order_option(parser);
     parser.add_option<bool>(
         "combine_facts",
@@ -216,14 +216,14 @@ static shared_ptr<Decomposition> _parse_landmarks(OptionParser &parser) {
         return make_shared<LandmarkDecomposition>(opts);
 }
 
-static PluginShared<Decomposition> _plugin_original(
-    "no_decomposition", _parse_no_decomposition);
-static PluginShared<Decomposition> _plugin_goals(
-    "decomposition_by_goals", _parse_goals);
-static PluginShared<Decomposition> _plugin_landmarks(
-    "decomposition_by_landmarks", _parse_landmarks);
+static PluginShared<SubtaskGenerator> _plugin_copy(
+    "copy", _parse_copy);
+static PluginShared<SubtaskGenerator> _plugin_goals(
+    "goals", _parse_goals);
+static PluginShared<SubtaskGenerator> _plugin_landmarks(
+    "landmarks", _parse_landmarks);
 
-static PluginTypePlugin<Decomposition> _type_plugin(
-    "Decomposition",
-    "Task decomposition (used by the CEGAR heuristic).");
+static PluginTypePlugin<SubtaskGenerator> _type_plugin(
+    "SubtaskGenerator",
+    "Subtask generator (used by the CEGAR heuristic).");
 }

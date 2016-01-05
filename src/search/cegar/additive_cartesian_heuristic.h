@@ -12,17 +12,17 @@
   Overview of classes relevant to Cartesian abstractions:
 
   AdditiveCartesianHeuristic
-    Get subtasks from Decompositions, adjust their costs by wrapping
+    Get subtasks from SubtaskGenerators, adjust their costs by wrapping
     them in ModifiedOperatorCostsTasks, compute Abstractions, move
     RefinementHierarchies from Abstractions to CartesianHeuristics,
     store CartesianHeuristics and compute overall heuristic by adding
     heuristic values of all CartesianHeuristics.
 
-    Decomposition
-      Create focused subtasks. NoDecomposition returns the original
-      task. GoalDecomposition uses ModifiedGoalsTask to set a single
-      goal fact. LandmarkDecomposition nests ModifiedGoalsTask and
-      DomainAbstractedTask to focus on a single landmark fact.
+    SubtaskGenerator
+      Create focused subtasks. TaskDuplicator returns copies of the
+      original task. GoalDecomposition uses ModifiedGoalsTask to set a
+      single goal fact. LandmarkDecomposition nests ModifiedGoalsTask
+      and DomainAbstractedTask to focus on a single landmark fact.
 
     CartesianHeuristic
       Store RefinementHierarchy for looking up heuristic values
@@ -61,7 +61,7 @@ class CountdownTimer;
 
 namespace CEGAR {
 class CartesianHeuristic;
-class Decomposition;
+class SubtaskGenerator;
 
 /*
   TODO: All members except "heuristics" are needed only for creating
@@ -69,7 +69,7 @@ class Decomposition;
   in iPDB.
 */
 class AdditiveCartesianHeuristic : public Heuristic {
-    std::vector<std::shared_ptr<Decomposition>> decompositions;
+    std::vector<std::shared_ptr<SubtaskGenerator>> decompositions;
     const int max_states;
     std::unique_ptr<Utils::CountdownTimer> timer;
     bool use_general_costs;
@@ -84,7 +84,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     std::shared_ptr<AbstractTask> get_remaining_costs_task(
         std::shared_ptr<AbstractTask> &parent) const;
     bool may_build_another_abstraction();
-    void build_abstractions(const Decomposition &decomposition);
+    void build_abstractions(const SubtaskGenerator &decomposition);
     void print_statistics() const;
 
 protected:

@@ -38,7 +38,7 @@ static const int memory_padding_in_mb = 75;
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
-      decompositions(opts.get_list<shared_ptr<Decomposition>>("decompositions")),
+      decompositions(opts.get_list<shared_ptr<SubtaskGenerator>>("decompositions")),
       max_states(opts.get<int>("max_states")),
       timer(new Utils::CountdownTimer(opts.get<double>("max_time"))),
       use_general_costs(opts.get<bool>("use_general_costs")),
@@ -77,7 +77,7 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(
-    const Decomposition &decomposition) {
+    const SubtaskGenerator &decomposition) {
     SharedTasks subtasks = decomposition.get_subtasks(task);
 
     int rem_subtasks = subtasks.size();
@@ -128,7 +128,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
 void AdditiveCartesianHeuristic::initialize() {
     g_log << "Initializing additive Cartesian heuristic..." << endl;
     Utils::reserve_extra_memory_padding(memory_padding_in_mb);
-    for (shared_ptr<Decomposition> decomposition : decompositions) {
+    for (shared_ptr<SubtaskGenerator> decomposition : decompositions) {
         build_abstractions(*decomposition);
         if (!may_build_another_abstraction())
             break;
@@ -207,10 +207,10 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("safe", "yes");
     parser.document_property("preferred operators", "no");
 
-    parser.add_list_option<shared_ptr<Decomposition>>(
+    parser.add_list_option<shared_ptr<SubtaskGenerator>>(
         "decompositions",
         "task decompositions",
-        "[decomposition_by_landmarks(),decomposition_by_goals()]");
+        "[landmarks(),goals()]");
     parser.add_option<int>(
         "max_states",
         "maximum sum of abstract states over all abstractions",
