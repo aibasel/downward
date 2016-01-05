@@ -40,7 +40,9 @@ unique_ptr<LandmarkGraph> get_landmark_graph() {
     Exploration exploration(opts);
     opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
-    return unique_ptr<LandmarkGraph>(lm_graph_factory.compute_lm_graph());
+    unique_ptr<LandmarkGraph> landmark_graph(lm_graph_factory.compute_lm_graph());
+    landmark_graph->invalidate_exploration_for_cegar();
+    return landmark_graph;
 }
 
 vector<Fact> get_fact_landmarks(const LandmarkGraph &graph) {
