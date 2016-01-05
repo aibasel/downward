@@ -78,5 +78,4 @@ VarToValues get_prev_landmarks(const LandmarkGraph &graph, const Fact &fact) {
     }
     return groups;
 }
-
 }
