@@ -40,7 +40,7 @@ protected:
     virtual std::string name() const override;
 public:
     explicit ShrinkBisimulation(const Options &opts);
-    virtual ~ShrinkBisimulation();
+    virtual ~ShrinkBisimulation() override;
 };
 }
 
