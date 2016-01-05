@@ -17,7 +17,7 @@ using namespace std;
 namespace CEGAR {
 bool DEBUG = false;
 
-unique_ptr<AdditiveHeuristic::AdditiveHeuristic> get_additive_heuristic(
+unique_ptr<AdditiveHeuristic::AdditiveHeuristic> create_additive_heuristic(
     const shared_ptr<AbstractTask> &task) {
     Options opts;
     opts.set<shared_ptr<AbstractTask>>("transform", task);

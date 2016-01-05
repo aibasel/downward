@@ -37,7 +37,7 @@ class SortFactsByIncreasingHaddValues {
 public:
     explicit SortFactsByIncreasingHaddValues(
         const std::shared_ptr<AbstractTask> &task)
-        : hadd(get_additive_heuristic(task)) {
+        : hadd(create_additive_heuristic(task)) {
         TaskProxy task_proxy(*task);
         hadd->initialize_and_compute_heuristic_for_cegar(
             task_proxy.get_initial_state());
