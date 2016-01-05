@@ -1,6 +1,8 @@
 #ifndef CEGAR_DECOMPOSITIONS_H
 #define CEGAR_DECOMPOSITIONS_H
 
+#include "utils.h"  // TODO: Remove once Fact typedef no longer needed.
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -14,8 +16,6 @@ class LandmarkGraph;
 }
 
 namespace CEGAR {
-// TODO: Remove typedef.
-using Fact = std::pair<int, int>;
 using Facts = std::vector<Fact>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 
