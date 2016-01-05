@@ -70,7 +70,7 @@ macro(fast_downward_set_linker_flags)
     # about 10% slower on Linux (see issue67).
 
     if(APPLE)
-        # Static linking is not supported by Apple
+        # Static linking is not supported by Apple.
         # https://developer.apple.com/library/mac/qa/qa1118/_index.html
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
     else()

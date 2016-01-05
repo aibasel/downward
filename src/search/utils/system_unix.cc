@@ -93,8 +93,7 @@ bool read_char_reentrant(int filedescr, char *c) {
 
 void print_peak_memory_reentrant() {
 #if OPERATING_SYSTEM == OSX
-    /* TODO we currently do not have a reentrant implementation of getting the
-      peak memory on OS X. */
+    // TODO: Write print_peak_memory_reentrant() for OS X.
     write_reentrant_str(STDOUT_FILENO, "Peak memory: ");
     write_reentrant_int(STDOUT_FILENO, get_peak_memory_in_kb());
     write_reentrant_str(STDOUT_FILENO, " KB\n");
