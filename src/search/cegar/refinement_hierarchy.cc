@@ -1,4 +1,4 @@
-#include "split_tree.h"
+#include "refinement_hierarchy.h"
 
 #include "../task_proxy.h"
 
@@ -46,15 +46,15 @@ Node *Node::get_child(int value) const {
 }
 
 
-SplitTree::SplitTree()
+RefinementHierarchy::RefinementHierarchy()
     : root(new Node()) {
 }
 
-SplitTree::SplitTree(SplitTree &&other)
+RefinementHierarchy::RefinementHierarchy(RefinementHierarchy &&other)
     : root(move(other.root)) {
 }
 
-Node *SplitTree::get_node(const State &state) const {
+Node *RefinementHierarchy::get_node(const State &state) const {
     assert(root);
     Node *current = root.get();
     while (current->is_split()) {

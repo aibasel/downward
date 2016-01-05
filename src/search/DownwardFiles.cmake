@@ -341,8 +341,8 @@ fast_downward_plugin(
         cegar/cartesian_heuristic.cc
         cegar/decompositions.cc
         cegar/domains.cc
+        cegar/refinement_hierarchy.cc
         cegar/split_selector.cc
-        cegar/split_tree.cc
         cegar/utils.cc
         cegar/utils_landmarks.cc
     DEPENDS EXTRA_TASKS
