@@ -1,11 +1,10 @@
 #ifndef OPTIONS_OPTIONS_H
 #define OPTIONS_OPTIONS_H
 
+#include "any.h"
 #include "type_namer.h"
 
 #include "../utils/system.h"
-
-#include <boost/any.hpp>
 
 #include <map>
 #include <string>
@@ -23,7 +22,7 @@ public:
         help_mode = hm;
     }
 
-    std::map<std::string, boost::any> storage;
+    std::map<std::string, Any> storage;
 
     template<typename T>
     void set(std::string key, T value) {
@@ -32,17 +31,16 @@ public:
 
     template<typename T>
     T get(std::string key) const {
-        std::map<std::string, boost::any>::const_iterator it;
-        it = storage.find(key);
+        const auto it = storage.find(key);
         if (it == storage.end()) {
             ABORT("Attempt to retrieve nonexisting object of name " +
                   key + " (type: " + TypeNamer<T>::name() +
                   ") from options.");
         }
         try {
-            T result = boost::any_cast<T>(it->second);
+            T result = any_cast<T>(it->second);
             return result;
-        } catch (const boost::bad_any_cast &) {
+        } catch (const BadAnyCast &) {
             std::cout << "Invalid conversion while retrieving config options!"
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
