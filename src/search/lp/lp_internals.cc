@@ -12,6 +12,9 @@
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wconstant-conversion"
+#endif
 #include <OsiSolverInterface.hpp>
 
 #ifdef COIN_HAS_CLP

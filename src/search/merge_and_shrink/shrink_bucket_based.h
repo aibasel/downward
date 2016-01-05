@@ -51,7 +51,7 @@ protected:
 
 public:
     explicit ShrinkBucketBased(const Options &opts);
-    virtual ~ShrinkBucketBased();
+    virtual ~ShrinkBucketBased() override;
 };
 }
 
