@@ -88,15 +88,19 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
     double rating;
     switch (pick) {
     case PickSplit::MIN_UNWANTED:
+        rating = -get_num_unwanted_values(state, split);
+        break;
     case PickSplit::MAX_UNWANTED:
         rating = get_num_unwanted_values(state, split);
         break;
     case PickSplit::MIN_REFINED:
+        rating = -get_refinedness(state, var_id);
+        break;
     case PickSplit::MAX_REFINED:
         rating = get_refinedness(state, var_id);
         break;
     case PickSplit::MIN_HADD:
-        rating = get_min_hadd_value(var_id, values);
+        rating = -get_min_hadd_value(var_id, values);
         break;
     case PickSplit::MAX_HADD:
         rating = get_max_hadd_value(var_id, values);
@@ -104,11 +108,6 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
     default:
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
         Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
-    }
-    if (pick == PickSplit::MIN_UNWANTED ||
-        pick == PickSplit::MIN_REFINED ||
-        pick == PickSplit::MIN_HADD) {
-        rating = -rating;
     }
     return rating;
 }
