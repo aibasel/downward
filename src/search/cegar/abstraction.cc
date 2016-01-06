@@ -21,6 +21,7 @@ using namespace std;
 namespace CEGAR {
 struct Flaw {
     const State concrete_state;
+    // TODO: After conversion to smart pointers, store as unique_ptr?
     AbstractState *current_abstract_state;
     const AbstractState desired_abstract_state;
 
