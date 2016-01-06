@@ -49,7 +49,7 @@ public:
     Any() : content(nullptr) {}
 
     Any(const Any &other)
-        : content(other.content ? other.content->clone() : 0) {
+        : content(other.content ? other.content->clone() : nullptr) {
     }
 
     template<typename ValueType>
@@ -94,7 +94,7 @@ template<typename ValueType>
 ValueType *any_cast(Any *operand) {
     return operand && operand->type() == typeid(ValueType)
         ? &static_cast<Any::Holder<ValueType> *>(operand->content)->held
-        : 0;
+        : nullptr;
 }
 
 template<typename ValueType>
