@@ -19,8 +19,6 @@
 using namespace std;
 
 namespace CEGAR {
-static const int STATES_LOG_STEP = 1000;
-
 struct Flaw {
     const State concrete_state;
     AbstractState *current_abstract_state;
@@ -199,7 +197,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     }
 
     int num_states = get_num_states();
-    if (num_states % STATES_LOG_STEP == 0)
+    if (num_states % 1000 == 0)
         g_log << "Abstract states: " << num_states << "/" << max_states << endl;
 
     delete state;
