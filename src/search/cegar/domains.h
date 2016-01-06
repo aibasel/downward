@@ -8,24 +8,12 @@
 namespace CEGAR {
 using Bitset = boost::dynamic_bitset<>;
 
+/*
+  For each variable store a subset of values.
+
+  The underlying data structure is a vector of bitsets.
+*/
 class Domains {
-    /*
-      We represent the possible values of all variables in a single
-      bitset. If we assume that all of the task's facts are joined in a
-      single list ordered by variable, this means that bits[i] is set
-      iff the task's fact i is a possible fact in this Domains object.
-
-      Example:
-        Original domains: {0,1,2}, {0,1}, {0,1}
-        Possible values:  {0},     {1},   {0,1}
-        Bitset:           100      01     11    => 1000111
-
-      TODO: We might want to think about a simpler representation.
-      Almost all operations inspect the values of only a single
-      variable, so it might even speed things up if we use, for
-      example, a vector<Bitset> or a vector<vector<bool>>. This might
-      also allow us to get rid of some of the static members.
-    */
     std::vector<Bitset> bits;
 
 public:
