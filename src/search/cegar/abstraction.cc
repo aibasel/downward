@@ -71,7 +71,8 @@ Abstraction::Abstraction(
     int max_states,
     double max_time,
     bool use_general_costs,
-    PickSplit pick)
+    PickSplit pick,
+    bool debug)
     : task_proxy(*task),
       do_separate_unreachable_facts(do_separate_unreachable_facts),
       max_states(max_states),
@@ -81,7 +82,8 @@ Abstraction::Abstraction(
       init(nullptr),
       deviations(0),
       unmet_preconditions(0),
-      unmet_goals(0) {
+      unmet_goals(0),
+      debug(debug) {
     g_log << "Start building abstraction." << endl;
     cout << "Maximum number of states: " << max_states << endl;
     build();
@@ -170,7 +172,7 @@ void Abstraction::build() {
 }
 
 void Abstraction::refine(AbstractState *state, int var, const vector<int> &wanted) {
-    if (DEBUG)
+    if (debug)
         cout << "Refine " << *state << " for " << var << "=" << wanted << endl;
     pair<AbstractState *, AbstractState *> new_states = state->split(var, wanted);
     AbstractState *v1 = new_states.first;
@@ -186,13 +188,13 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
         assert(v1->includes(task_proxy.get_initial_state()));
         assert(!v2->includes(task_proxy.get_initial_state()));
         init = v1;
-        if (DEBUG)
+        if (debug)
             cout << "New init state: " << *init << endl;
     }
     if (is_goal(state)) {
         goals.erase(state);
         goals.insert(v2);
-        if (DEBUG)
+        if (debug)
             cout << "New/additional goal state: " << *v2 << endl;
     }
 
@@ -204,14 +206,14 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
 }
 
 unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
-    if (DEBUG)
+    if (debug)
         cout << "Check solution:" << endl;
 
     AbstractState *abstract_state = init;
     State concrete_state = task_proxy.get_initial_state();
     assert(abstract_state->includes(concrete_state));
 
-    if (DEBUG)
+    if (debug)
         cout << "  Initial abstract state: " << *abstract_state << endl;
 
     for (const Arc &step : solution) {
@@ -220,12 +222,12 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         const OperatorProxy op = step.first;
         AbstractState *next_abstract_state = step.second;
         if (is_applicable(op, concrete_state)) {
-            if (DEBUG)
+            if (debug)
                 cout << "  Move to " << *next_abstract_state << " with "
                      << op.get_name() << endl;
             State next_concrete_state = concrete_state.get_successor(op);
             if (!next_abstract_state->includes(next_concrete_state)) {
-                if (DEBUG)
+                if (debug)
                     cout << "  Paths deviate." << endl;
                 ++deviations;
                 return Utils::make_unique_ptr<Flaw>(
@@ -236,7 +238,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             abstract_state = next_abstract_state;
             concrete_state = move(next_concrete_state);
         } else {
-            if (DEBUG)
+            if (debug)
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             ++unmet_preconditions;
             return Utils::make_unique_ptr<Flaw>(
@@ -251,7 +253,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         // We found a concrete solution.
         return nullptr;
     } else {
-        if (DEBUG)
+        if (debug)
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
         return Utils::make_unique_ptr<Flaw>(

@@ -61,6 +61,8 @@ class Abstraction {
        current states. */
     RefinementHierarchy refinement_hierarchy;
 
+    const bool debug;
+
     void create_trivial_abstraction();
 
     // Map all states with unreachable facts to arbitrary goal states.
@@ -94,7 +96,8 @@ public:
         int max_states,
         double max_time,
         bool use_general_costs,
-        PickSplit pick);
+        PickSplit pick,
+        bool debug = false);
     ~Abstraction();
 
     Abstraction(const Abstraction &) = delete;

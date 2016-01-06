@@ -120,13 +120,6 @@ const Split &SplitSelector::pick_split(const AbstractState &state,
         return splits[0];
     }
 
-    if (DEBUG) {
-        cout << "Splits for state " << state << ": " << endl;
-        for (const Split &split : splits)
-            cout << split.var_id << "=" << split.values << " ";
-        cout << endl;
-    }
-
     if (pick == PickSplit::RANDOM) {
         return *g_rng.choose(splits);
     }
