@@ -112,7 +112,9 @@ public:
         return std::move(refinement_hierarchy);
     }
 
-    int get_num_states() const {return states.size(); }
+    int get_num_states() const {
+        return states.size();
+    }
 
     /* For each operator calculate the mimimum cost that is needed to preserve
        all abstract goal distances. */
