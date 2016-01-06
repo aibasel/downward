@@ -222,8 +222,6 @@ static Heuristic *_parse(OptionParser &parser) {
         "pick", pick_strategies, "split-selection strategy", "MAX_REFINED");
     parser.add_option<bool>(
         "use_general_costs", "allow negative costs in cost partitioning", "true");
-    parser.add_option<bool>(
-        "debug", "print debugging output", "false");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
