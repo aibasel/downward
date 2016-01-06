@@ -12,6 +12,7 @@
 /*
   Poor man's version of boost::any, mostly copied from there.
   Does not support
+    - construction from literals (e.g., "Any a(3);")
     - moving
     - references as values
     - perfect forwarding.
