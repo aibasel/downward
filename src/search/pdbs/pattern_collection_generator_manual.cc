@@ -1,10 +1,12 @@
 #include "pattern_collection_generator_manual.h"
 
+#include "validation.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "validation.h"
+#include "../utils/logging.h"
 
 #include <iostream>
 

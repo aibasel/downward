@@ -4,7 +4,7 @@
 #include "pattern_generator.h"
 #include "types.h"
 
-#include "../utilities_hash.h"
+#include "../utils/hash.h"
 
 #include <cstdlib>
 #include <memory>

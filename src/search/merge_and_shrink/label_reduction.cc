@@ -1,6 +1,7 @@
 #include "label_reduction.h"
 
 #include "factored_transition_system.h"
+#include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
 
@@ -8,9 +9,11 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../rng.h"
 #include "../task_proxy.h"
-#include "../utilities.h"
+
+#include "../utils/collections.h"
+#include "../utils/rng.h"
+#include "../utils/system.h"
 
 #include <cassert>
 #include <iostream>
@@ -18,6 +21,8 @@
 #include <unordered_map>
 
 using namespace std;
+using Utils::ExitCode;
+
 
 namespace MergeAndShrink {
 LabelReduction::LabelReduction(const Options &options)
@@ -123,9 +128,9 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
             continue;
         }
         const TransitionSystem &ts = fts.get_ts(i);
-        for (TSConstIterator group_it = ts.begin();
-             group_it != ts.end(); ++group_it) {
-            relation->refine(group_it.begin(), group_it.end());
+        for (const GroupAndTransitions &gat : ts) {
+            const LabelGroup &label_group = gat.label_group;
+            relation->refine(label_group.begin(), label_group.end());
         }
     }
     return relation;
@@ -159,7 +164,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         }
         delete relation;
         relation = 0;
-        release_vector_memory(label_mapping);
+        Utils::release_vector_memory(label_mapping);
 
         relation = compute_combinable_equivalence_relation(
             next_merge.second,
@@ -179,7 +184,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
     assert(!transition_system_order.empty());
     while (transition_system_order[tso_index] >= num_transition_systems) {
         ++tso_index;
-        assert(in_bounds(tso_index, transition_system_order));
+        assert(Utils::in_bounds(tso_index, transition_system_order));
     }
 
     int max_iterations;
@@ -334,22 +339,24 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
-    if (parser.dry_run()) {
+    if (parser.help_mode()) {
+        return nullptr;
+    } else if (parser.dry_run()) {
         bool lr_before_shrinking = opts.get<bool>("before_shrinking");
         bool lr_before_merging = opts.get<bool>("before_merging");
         if (!lr_before_shrinking && !lr_before_merging) {
             cerr << "Please turn on at least one of the options "
                  << "before_shrinking or before_merging!" << endl;
-            exit_with(EXIT_INPUT_ERROR);
+            Utils::exit_with(ExitCode::INPUT_ERROR);
         }
-        return 0;
+        return nullptr;
     } else {
         return make_shared<LabelReduction>(opts);
     }
 }
 
 static PluginTypePlugin<LabelReduction> _type_plugin(
-    "Label reduction",
+    "LabelReduction",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
 

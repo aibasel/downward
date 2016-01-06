@@ -6,6 +6,8 @@
 class GlobalOperator;
 class GlobalState;
 
+#include <iostream>
+
 namespace NullPORMethod {
 class NullPORMethod : public PORMethod {
 public:

@@ -7,6 +7,8 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/logging.h"
+
 #include <iostream>
 #include <memory>
 #include <set>

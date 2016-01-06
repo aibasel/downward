@@ -1,13 +1,51 @@
-// HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LISTS_BUCKET_OPEN_LIST_H
+#include "bucket_open_list.h"
+
+#include "open_list.h"
 
 #include "../option_parser.h"
-#include "../scalar_evaluator.h"
+#include "../plugin.h"
+
+#include "../utils/memory.h"
 
 #include <cassert>
+#include <deque>
 #include <limits>
+#include <memory>
+#include <vector>
 
 using namespace std;
+
+
+class ScalarEvaluator;
+
+
+template<class Entry>
+class BucketOpenList : public OpenList<Entry> {
+    typedef deque<Entry> Bucket;
+    vector<Bucket> buckets;
+    mutable int lowest_bucket;
+    int size;
+
+    ScalarEvaluator *evaluator;
+
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
+public:
+    explicit BucketOpenList(const Options &opts);
+    virtual ~BucketOpenList() override = default;
+
+    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
+    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override;
+};
+
 
 template<class Entry>
 BucketOpenList<Entry>::BucketOpenList(const Options &opts)
@@ -60,7 +98,7 @@ void BucketOpenList<Entry>::clear() {
 
 template<class Entry>
 void BucketOpenList<Entry>::get_involved_heuristics(
-    std::set<Heuristic *> &hset) {
+    set<Heuristic *> &hset) {
     evaluator->get_involved_heuristics(hset);
 }
 
@@ -76,21 +114,6 @@ bool BucketOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-#else
-
-// HACK: We're the top level target.
-
-#include "bucket_open_list.h"
-
-#include "open_list_factory.h"
-
-#include "../plugin.h"
-
-#include <memory>
-
-using namespace std;
-
-
 BucketOpenListFactory::BucketOpenListFactory(
     const Options &options)
     : options(options) {
@@ -98,12 +121,12 @@ BucketOpenListFactory::BucketOpenListFactory(
 
 unique_ptr<StateOpenList>
 BucketOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<BucketOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<BucketOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 BucketOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<BucketOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<BucketOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
@@ -125,5 +148,3 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("single_buckets", _parse);
-
-#endif

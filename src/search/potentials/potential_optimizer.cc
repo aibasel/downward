@@ -5,10 +5,15 @@
 #include "../option_parser.h"
 #include "../task_tools.h"
 
+#include "../utils/collections.h"
+#include "../utils/memory.h"
+#include "../utils/system.h"
+
 #include <limits>
 #include <unordered_map>
 
 using namespace std;
+using Utils::ExitCode;
 
 
 namespace Potentials {
@@ -54,15 +59,15 @@ void PotentialOptimizer::optimize_for_state(const State &state) {
 int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
     int var_id = fact.get_variable().get_id();
     int value = fact.get_value();
-    assert(in_bounds(var_id, lp_var_ids));
-    assert(in_bounds(value, lp_var_ids[var_id]));
+    assert(Utils::in_bounds(var_id, lp_var_ids));
+    assert(Utils::in_bounds(value, lp_var_ids[var_id]));
     return lp_var_ids[var_id][value];
 }
 
 void PotentialOptimizer::optimize_for_all_states() {
     if (!potentials_are_bounded()) {
         cerr << "Potentials must be bounded for all-states LP." << endl;
-        exit_with(EXIT_INPUT_ERROR);
+        Utils::exit_with(ExitCode::INPUT_ERROR);
     }
     vector<double> coefficients(num_lp_vars, 0.0);
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
@@ -199,6 +204,6 @@ void PotentialOptimizer::extract_lp_solution() {
 
 unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
     assert(has_optimal_solution());
-    return make_unique_ptr<PotentialFunction>(fact_potentials);
+    return Utils::make_unique_ptr<PotentialFunction>(fact_potentials);
 }
 }

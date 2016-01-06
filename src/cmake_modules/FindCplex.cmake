@@ -25,7 +25,14 @@ find_path(CPLEX_INCLUDE_DIRS
     include/ilcplex
 )
 
-if(UNIX)
+if(APPLE)
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
+        "lib/x86_osx/static_pic")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
+    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
+        "lib/x86-64_osx/static_pic")
+    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
+elseif(UNIX)
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
         "lib/x86_sles10_4.1/static_pic"
         "lib/x86_linux/static_pic")
