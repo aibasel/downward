@@ -310,5 +310,6 @@ void Abstraction::print_statistics() {
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
     cout << "Unmet goals: " << unmet_goals << endl;
+    cout << endl;
 }
 }

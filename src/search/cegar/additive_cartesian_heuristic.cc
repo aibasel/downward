@@ -116,7 +116,6 @@ void AdditiveCartesianHeuristic::build_abstractions(
                 Utils::make_unique_ptr<CartesianHeuristic>(
                     opts, abstraction.get_refinement_hierarchy()));
         }
-        cout << endl;
         if (!may_build_another_abstraction())
             break;
 
@@ -135,7 +134,6 @@ void AdditiveCartesianHeuristic::initialize() {
     if (Utils::extra_memory_padding_is_reserved())
         Utils::release_extra_memory_padding();
     print_statistics();
-    cout << endl;
 }
 
 void AdditiveCartesianHeuristic::print_statistics() const {
@@ -143,6 +141,7 @@ void AdditiveCartesianHeuristic::print_statistics() const {
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
     cout << "Cartesian heuristics stored: " << heuristics.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
+    cout << endl;
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
