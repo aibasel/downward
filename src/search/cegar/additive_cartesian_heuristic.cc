@@ -92,10 +92,11 @@ void AdditiveCartesianHeuristic::build_abstractions(
         */
         const bool separate_unreachable_facts =
             TaskProxy(*subtask).get_goals().size() == 1;
+        assert(num_states < max_states);
         Abstraction abstraction(
             subtask,
             separate_unreachable_facts,
-            (max_states - num_states) / rem_subtasks,
+            max(1, (max_states - num_states) / rem_subtasks),
             timer->get_remaining_time() / rem_subtasks,
             use_general_costs,
             pick_split);
