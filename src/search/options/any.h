@@ -1,29 +1,33 @@
 #ifndef OPTIONS_ANY_H
 #define OPTIONS_ANY_H
 
+#include "../utils/memory.h"
+
 #include <algorithm>
 #include <exception>
+#include <memory>
 #include <typeinfo>
 
 /*
-  Poor-man's version of boost::any, mostly copied from there.
+  Poor man's version of boost::any, mostly copied from there.
   Does not support
     - moving
     - references as values
-    - perfect forwarding
-  All of these features can be added if we need them (see boost::any)
+    - perfect forwarding.
+  These features can be added if needed (see boost::any).
 */
+
 class Any {
     class Placeholder {
     public:
         virtual ~Placeholder() {}
-        virtual Placeholder *clone() const = 0;
-        virtual const std::type_info& type() const = 0;
+        virtual std::unique_ptr<Placeholder> clone() const = 0;
+        virtual const std::type_info &type() const = 0;
     };
 
     template<typename ValueType>
     class Holder : public Placeholder {
-        Holder &operator=(const Holder&) = delete;
+        Holder &operator=(const Holder &) = delete;
     public:
         ValueType held;
 
@@ -31,11 +35,11 @@ class Any {
           : held(value) {
         }
 
-        virtual Placeholder *clone() const {
-            return new Holder(held);
+        virtual std::unique_ptr<Placeholder> clone() const {
+            return Utils::make_unique_ptr<Holder<ValueType>>(held);
         }
 
-        virtual const std::type_info& type() const {
+        virtual const std::type_info &type() const {
             return typeid(ValueType);
         }
     };
@@ -43,7 +47,7 @@ class Any {
     template<typename ValueType>
     friend ValueType *any_cast(Any *);
 
-    Placeholder *content;
+    std::unique_ptr<Placeholder> content;
 
 public:
     Any() : content(nullptr) {}
@@ -54,11 +58,10 @@ public:
 
     template<typename ValueType>
     Any(ValueType &value)
-        : content(new Holder<ValueType>(value)) {
+        : content(Utils::make_unique_ptr<Holder<ValueType>>(value)) {
     }
 
     ~Any() {
-        delete content;
     }
 
     template<typename ValueType>
@@ -67,8 +70,9 @@ public:
         return *this;
     }
 
-    Any &operator=(Any rhs) {
-        rhs.swap(*this);
+    Any &operator=(const Any &rhs) {
+        Any copied(rhs);
+        copied.swap(*this);
         return *this;
     }
 
@@ -84,7 +88,7 @@ public:
 
 class BadAnyCast : public std::bad_cast {
 public:
-    virtual const char *what() const noexcept {
+    virtual const char *what() const noexcept override {
         return "BadAnyCast: failed conversion using any_cast";
     }
 };
@@ -92,9 +96,10 @@ public:
 
 template<typename ValueType>
 ValueType *any_cast(Any *operand) {
-    return operand && operand->type() == typeid(ValueType)
-        ? &static_cast<Any::Holder<ValueType> *>(operand->content)->held
-        : nullptr;
+    if (operand && operand->type() == typeid(ValueType))
+        return &static_cast<Any::Holder<ValueType> *>(operand->content.get())->held;
+    else
+        return nullptr;
 }
 
 template<typename ValueType>
