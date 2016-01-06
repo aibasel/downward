@@ -25,7 +25,7 @@ AbstractState::AbstractState(AbstractState &&other)
       loops(move(other.loops)) {
 }
 
-size_t AbstractState::count(int var) const {
+int AbstractState::count(int var) const {
     return domains.count(var);
 }
 
@@ -159,11 +159,12 @@ void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
 
 pair<AbstractState *, AbstractState *> AbstractState::split(
     int var, const vector<int> &wanted) {
+    int num_wanted = wanted.size();
     // We can only split states in the refinement hierarchy (not artificial states).
     assert(node);
     // We can only refine for variables with at least two values.
-    assert(wanted.size() >= 1);
-    assert(domains.count(var) > wanted.size());
+    assert(num_wanted >= 1);
+    assert(domains.count(var) > num_wanted);
 
     Domains v1_domains(domains);
     Domains v2_domains(domains);
@@ -179,8 +180,8 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
         // In v2 var can only have the wanted values.
         v2_domains.add(var, value);
     }
-    assert(v1_domains.count(var) == domains.count(var) - wanted.size());
-    assert(v2_domains.count(var) == wanted.size());
+    assert(v1_domains.count(var) == domains.count(var) - num_wanted);
+    assert(v2_domains.count(var) == num_wanted);
 
     // Update refinement hierarchy.
     pair<Node *, Node *> new_nodes = node->split(var, wanted);

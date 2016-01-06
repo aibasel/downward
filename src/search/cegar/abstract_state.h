@@ -63,7 +63,7 @@ public:
     AbstractState(AbstractState &&other);
 
     // Return the size of var's abstract domain for this state.
-    size_t count(int var) const;
+    int count(int var) const;
 
     bool contains(FactProxy fact) const;
 
