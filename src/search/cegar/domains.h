@@ -57,7 +57,7 @@ public:
         return bits.test(pos(var, value));
     }
 
-    size_t count(int var) const;
+    int count(int var) const;
     bool intersects(const Domains &other, int var) const;
     bool is_superset_of(const Domains &other) const;
 
