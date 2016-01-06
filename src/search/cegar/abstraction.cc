@@ -20,9 +20,11 @@ using namespace std;
 
 namespace CEGAR {
 struct Flaw {
+    // Last concrete and abstract state reached while tracing solution.
     const State concrete_state;
     // TODO: After conversion to smart pointers, store as unique_ptr?
     AbstractState *current_abstract_state;
+    // Hypothetical Cartesian set we would have liked to reach.
     const AbstractState desired_abstract_state;
 
     Flaw(
