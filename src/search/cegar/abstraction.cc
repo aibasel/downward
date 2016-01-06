@@ -66,14 +66,12 @@ struct Flaw {
 
 Abstraction::Abstraction(
     const shared_ptr<AbstractTask> task,
-    bool do_separate_unreachable_facts,
     int max_states,
     double max_time,
     bool use_general_costs,
     PickSplit pick,
     bool debug)
     : task_proxy(*task),
-      do_separate_unreachable_facts(do_separate_unreachable_facts),
       max_states(max_states),
       abstract_search(use_general_costs),
       split_selector(task, pick),
@@ -106,9 +104,10 @@ bool Abstraction::is_goal(AbstractState *state) const {
     return goals.count(state) == 1;
 }
 
-void Abstraction::separate_unreachable_facts() {
+void Abstraction::separate_facts_unreachable_before_goal() {
     assert(goals.size() == 1);
     assert(states.size() == 1);
+    assert(task_proxy.get_goals().size() == 1);
     FactProxy goal = task_proxy.get_goals()[0];
     unordered_set<FactProxy> reachable_facts = get_relaxed_possible_before(
         task_proxy, goal);
@@ -137,8 +136,16 @@ void Abstraction::create_trivial_abstraction() {
         init->add_loop(op);
     }
     states.insert(init);
-    if (do_separate_unreachable_facts)
-        separate_unreachable_facts();
+    /*
+      For landmark tasks we have to map all states in which the
+      landmark might have been achieved to arbitrary abstract goal
+      states. For the other types of subtasks our method won't find
+      unreachable facts, but calling it unconditionally for subtasks
+      with one goal doesn't hurt and simplifies the implementation.
+    */
+    if (task_proxy.get_goals().size() == 1) {
+        separate_facts_unreachable_before_goal();
+    }
 }
 
 bool Abstraction::may_keep_refining() const {

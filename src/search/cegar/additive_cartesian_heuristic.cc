@@ -83,19 +83,9 @@ void AdditiveCartesianHeuristic::build_abstractions(
     for (shared_ptr<AbstractTask> subtask : subtasks) {
         subtask = get_remaining_costs_task(subtask);
 
-        /*
-          For landmark tasks we have to map all states in which the landmark
-          might have been achieved to arbitrary abstract goal states. For the
-          other decompositions our method won't find unreachable facts, but
-          calling it unconditionally for subtasks with one goal doesn't hurt
-          and simplifies the implementation.
-        */
-        const bool separate_unreachable_facts =
-            TaskProxy(*subtask).get_goals().size() == 1;
         assert(num_states < max_states);
         Abstraction abstraction(
             subtask,
-            separate_unreachable_facts,
             max(1, (max_states - num_states) / rem_subtasks),
             timer->get_remaining_time() / rem_subtasks,
             use_general_costs,

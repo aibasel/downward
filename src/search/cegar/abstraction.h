@@ -26,7 +26,6 @@ struct Flaw;
 
 class Abstraction {
     const TaskProxy task_proxy;
-    const bool do_separate_unreachable_facts;
     const int max_states;
 
     AbstractSearch abstract_search;
@@ -65,8 +64,15 @@ class Abstraction {
 
     void create_trivial_abstraction();
 
-    // Map all states with unreachable facts to arbitrary goal states.
-    void separate_unreachable_facts();
+    /*
+      Map all states that can only be reached after reaching the goal
+      fact to arbitrary goal states.
+
+      We need this method only for landmark subtasks, but calling it
+      for other subtasks with a single goal fact doesn't hurt and
+      simplifies the implementation.
+    */
+    void separate_facts_unreachable_before_goal();
 
     bool may_keep_refining() const;
 
@@ -92,7 +98,6 @@ class Abstraction {
 public:
     explicit Abstraction(
         const std::shared_ptr<AbstractTask> task,
-        bool do_separate_unreachable_facts,
         int max_states,
         double max_time,
         bool use_general_costs,
