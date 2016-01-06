@@ -15,8 +15,6 @@
 using namespace std;
 
 namespace CEGAR {
-bool DEBUG = false;
-
 unique_ptr<AdditiveHeuristic::AdditiveHeuristic> create_additive_heuristic(
     const shared_ptr<AbstractTask> &task) {
     Options opts;

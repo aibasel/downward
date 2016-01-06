@@ -45,7 +45,6 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
       pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
       num_states(0) {
-    DEBUG = opts.get<bool>("debug");
 
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
