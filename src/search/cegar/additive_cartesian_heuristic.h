@@ -69,7 +69,7 @@ class SubtaskGenerator;
   in iPDB.
 */
 class AdditiveCartesianHeuristic : public Heuristic {
-    std::vector<std::shared_ptr<SubtaskGenerator>> decompositions;
+    std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators;
     const int max_states;
     std::unique_ptr<Utils::CountdownTimer> timer;
     bool use_general_costs;
@@ -84,7 +84,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     std::shared_ptr<AbstractTask> get_remaining_costs_task(
         std::shared_ptr<AbstractTask> &parent) const;
     bool may_build_another_abstraction();
-    void build_abstractions(const SubtaskGenerator &decomposition);
+    void build_abstractions(const SubtaskGenerator &subtask_generators);
     void print_statistics() const;
 
 protected:
