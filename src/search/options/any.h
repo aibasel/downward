@@ -21,7 +21,7 @@
 
 class Any {
     class Placeholder {
-    public:
+public:
         virtual ~Placeholder() {}
         virtual std::unique_ptr<Placeholder> clone() const = 0;
         virtual const std::type_info &type() const = 0;
@@ -30,11 +30,11 @@ class Any {
     template<typename ValueType>
     class Holder : public Placeholder {
         Holder &operator=(const Holder &) = delete;
-    public:
+public:
         ValueType held;
 
         Holder(const ValueType &value)
-          : held(value) {
+            : held(value) {
         }
 
         virtual std::unique_ptr<Placeholder> clone() const {
@@ -117,7 +117,7 @@ inline const ValueType *any_cast(const Any *operand) {
 template<typename ValueType>
 ValueType any_cast(Any &operand) {
     ValueType *result = any_cast<ValueType>(&operand);
-    if(!result)
+    if (!result)
         throw BadAnyCast();
     return *result;
 }
