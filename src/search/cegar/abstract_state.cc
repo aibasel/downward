@@ -274,7 +274,12 @@ int AbstractState::get_h_value() const {
 
 AbstractState *AbstractState::get_trivial_abstract_state(
     TaskProxy task_proxy, Node *root_node) {
-    return new AbstractState(Domains(get_domain_sizes(task_proxy)), root_node);
+    AbstractState *abstract_state = new AbstractState(
+        Domains(get_domain_sizes(task_proxy)), root_node);
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        abstract_state->add_loop(op);
+    }
+    return abstract_state;
 }
 
 AbstractState AbstractState::get_abstract_state(

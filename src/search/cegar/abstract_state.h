@@ -41,6 +41,7 @@ private:
     AbstractState(const Domains &domains, Node *node);
 
     void add_arc(OperatorProxy op, AbstractState *other);
+    void add_loop(OperatorProxy op);
 
     void remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other);
     void remove_incoming_arc(OperatorProxy op, AbstractState *other);
@@ -77,8 +78,6 @@ public:
     */
     std::pair<AbstractState *, AbstractState *> split(
         int var, const std::vector<int> &wanted);
-
-    void add_loop(OperatorProxy op);
 
     bool includes(const State &concrete_state) const;
 
