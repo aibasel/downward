@@ -57,10 +57,12 @@ def translate_task(python, task_file):
     print("Translate {} with {}".format(get_task_name(task_file), python))
     sys.stdout.flush()
     # For some reason, the driver cannot find the Python executable
-    # (sys.executable return the empty string) if we don't pass the
+    # (sys.executable returns the empty string) if we don't pass the
     # absolute path here.
-    python = find_executable(python)
-    cmd = [python, DRIVER, "--translate", task_file]
+    abs_python = find_executable(python)
+    if not abs_python:
+        sys.exit("Error: {} couldn't be found.".format(python))
+    cmd = [abs_python, DRIVER, "--translate", task_file]
     try:
         output = subprocess.check_output(cmd, env={"PYTHONHASHSEED": "random"})
     except OSError as err:

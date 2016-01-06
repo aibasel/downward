@@ -4,7 +4,6 @@
 #include "open_list.h"
 
 #include <memory>
-#include <utility>
 
 
 class OpenListFactory {

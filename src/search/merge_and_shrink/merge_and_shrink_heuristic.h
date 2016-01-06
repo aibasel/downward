@@ -5,7 +5,9 @@
 
 #include <memory>
 
+namespace Utils {
 class Timer;
+}
 
 
 namespace MergeAndShrink {
@@ -24,7 +26,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     long starting_peak_memory;
 
     std::unique_ptr<FactoredTransitionSystem> fts;
-    void build_transition_system(const Timer &timer);
+    void build_transition_system(const Utils::Timer &timer);
 
     void report_peak_memory_delta(bool final = false) const;
     void dump_options() const;

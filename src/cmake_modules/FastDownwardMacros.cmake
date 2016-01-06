@@ -49,6 +49,7 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996") # function call with parameters that may be unsafe
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4456") # declaration hides previous local declaration
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # conversion from size_t to int with possible loss of data
 
         # The following are disabled because of what seems to be compiler bugs.
         # "unreferenced local function has been removed";
@@ -65,30 +66,36 @@ macro(fast_downward_set_compiler_flags)
 endmacro()
 
 macro(fast_downward_set_linker_flags)
-    # We force linking to be static because the dynamically linked code is
+    # We try to force linking to be static because the dynamically linked code is
     # about 10% slower on Linux (see issue67).
 
-    # Any libs we build should be static.
-    set(BUILD_SHARED_LIBS FALSE)
-
-    # Any libraries that are implicitly added to the end of the linker
-    # command should be linked statically.
-    set(LINK_SEARCH_END_STATIC TRUE)
-
-    # Do not add "-rdynamic" flag.
-    set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
-    set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-
-    # Only look for static libraries (Windows does not support this).
-    if(UNIX)
-        set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-    endif()
-
-    # Set linker flags to link statically.
-    if(CMAKE_COMPILER_IS_GNUCXX)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libgcc")
-    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libstdc++")
+    if(APPLE)
+        # Static linking is not supported by Apple.
+        # https://developer.apple.com/library/mac/qa/qa1118/_index.html
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+    else()
+        # Any libs we build should be static.
+        set(BUILD_SHARED_LIBS FALSE)
+    
+        # Any libraries that are implicitly added to the end of the linker
+        # command should be linked statically.
+        set(LINK_SEARCH_END_STATIC TRUE)
+    
+        # Do not add "-rdynamic" flag.
+        set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+        set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+    
+        # Only look for static libraries (Windows does not support this).
+        if(UNIX)
+            set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+        endif()
+    
+        # Set linker flags to link statically.
+        if(CMAKE_COMPILER_IS_GNUCXX)
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libgcc")
+        elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -static -static-libstdc++")
+        endif()
     endif()
 endmacro()
 
@@ -187,7 +194,7 @@ function(fast_downward_add_headers_to_sources_list _SOURCES_LIST_VAR)
 endfunction()
 
 function(fast_downward_plugin)
-    set(_OPTIONS DEPENDENCY_ONLY)
+    set(_OPTIONS DEPENDENCY_ONLY CORE_PLUGIN)
     set(_ONE_VALUE_ARGS NAME DISPLAY_NAME HELP)
     set(_MULTI_VALUE_ARGS SOURCES DEPENDS)
     cmake_parse_arguments(_PLUGIN "${_OPTIONS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
@@ -212,7 +219,7 @@ function(fast_downward_plugin)
     endif()
 
     option(PLUGIN_${_PLUGIN_NAME}_ENABLED ${_PLUGIN_HELP} ${_OPTION_DEFAULT})
-    if(_PLUGIN_DEPENDENCY_ONLY)
+    if(_PLUGIN_DEPENDENCY_ONLY OR _PLUGIN_CORE_PLUGIN)
         mark_as_advanced(PLUGIN_${_PLUGIN_NAME}_ENABLED)
     endif()
 

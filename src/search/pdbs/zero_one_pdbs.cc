@@ -3,7 +3,8 @@
 #include "pattern_database.h"
 
 #include "../task_proxy.h"
-#include "../utilities.h"
+
+#include "../utils/logging.h"
 
 #include <iostream>
 #include <limits>
@@ -21,7 +22,6 @@ ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns
     for (OperatorProxy op : operators)
         operator_costs.push_back(op.get_cost());
 
-    //Timer timer;
     pattern_databases.reserve(patterns.size());
     for (const Pattern &pattern : patterns) {
         shared_ptr<PatternDatabase> pdb = make_shared<PatternDatabase>(
@@ -36,8 +36,6 @@ ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns
 
         pattern_databases.push_back(pdb);
     }
-    //cout << "All or nothing PDB collection construction time: " <<
-    //timer << endl;
 }
 
 

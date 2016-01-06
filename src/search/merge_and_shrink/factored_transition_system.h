@@ -8,8 +8,10 @@
 
 class State;
 class TaskProxy;
-class Timer;
 
+namespace Utils {
+class Timer;
+}
 
 namespace MergeAndShrink {
 class Distances;
@@ -69,7 +71,7 @@ public:
         return solvable;
     }
     int get_cost(const State &state) const;
-    void statistics(int index, const Timer &timer) const;
+    void statistics(int index, const Utils::Timer &timer) const;
     void dump(int index) const;
 
     // the following methods are used by merge strategies

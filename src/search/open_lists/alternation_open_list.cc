@@ -1,14 +1,45 @@
-// HACK! Ignore this if used as a top-level compile target.
-#ifdef OPEN_LISTS_ALTERNATION_OPEN_LIST_H
+#include "alternation_open_list.h"
 
-#include "open_list_factory.h"
+#include "open_list.h"
 
-#include "../evaluation_context.h"
 #include "../option_parser.h"
+#include "../plugin.h"
+
+#include "../utils/memory.h"
+#include "../utils/system.h"
 
 #include <cassert>
-#include <cstdlib>
+#include <memory>
+#include <vector>
+
 using namespace std;
+using Utils::ExitCode;
+
+
+template<class Entry>
+class AlternationOpenList : public OpenList<Entry> {
+    vector<unique_ptr<OpenList<Entry>>> open_lists;
+    vector<int> priorities;
+
+    const int boost_amount;
+protected:
+    virtual void do_insertion(EvaluationContext &eval_context,
+                              const Entry &entry) override;
+
+public:
+    explicit AlternationOpenList(const Options &opts);
+    virtual ~AlternationOpenList() override = default;
+
+    virtual Entry remove_min(vector<int> *key = nullptr) override;
+    virtual bool empty() const override;
+    virtual void clear() override;
+    virtual void boost_preferred() override;
+    virtual void get_involved_heuristics(set<Heuristic *> &hset) override;
+    virtual bool is_dead_end(
+        EvaluationContext &eval_context) const override;
+    virtual bool is_reliable_dead_end(
+        EvaluationContext &eval_context) const override;
+};
 
 
 template<class Entry>
@@ -34,7 +65,7 @@ template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     if (key) {
         cerr << "not implemented -- see msg639 in the tracker" << endl;
-        exit_with(EXIT_UNSUPPORTED);
+        Utils::exit_with(ExitCode::UNSUPPORTED);
     }
     int best = -1;
     for (size_t i = 0; i < open_lists.size(); ++i) {
@@ -100,21 +131,6 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-#else
-
-// HACK: We're the top level target.
-
-#include "alternation_open_list.h"
-
-#include "open_list_factory.h"
-
-#include "../plugin.h"
-#include "../utilities.h"
-
-#include <memory>
-
-using namespace std;
-
 
 AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
     : options(options) {
@@ -122,12 +138,12 @@ AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
 
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
+    return Utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
+    return Utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
@@ -151,5 +167,3 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
 }
 
 static PluginShared<OpenListFactory> _plugin("alt", _parse);
-
-#endif

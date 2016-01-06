@@ -1,7 +1,8 @@
 #include "shrink_bucket_based.h"
 
 #include "../globals.h"
-#include "../rng.h"
+
+#include "../utils/rng.h"
 
 #include <cassert>
 #include <iostream>
