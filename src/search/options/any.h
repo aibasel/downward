@@ -7,6 +7,7 @@
 #include <exception>
 #include <memory>
 #include <typeinfo>
+#include <type_traits>
 
 /*
   Poor man's version of boost::any, mostly copied from there.
@@ -50,21 +51,25 @@ class Any {
     std::unique_ptr<Placeholder> content;
 
 public:
-    Any() : content(nullptr) {}
+    Any() : content(nullptr) {
+    }
 
     Any(const Any &other)
         : content(other.content ? other.content->clone() : nullptr) {
     }
 
-    template<typename ValueType>
+    template<typename ValueType,
+             // Disable this constructor for ValueType = Any.
+             typename std::enable_if<!std::is_same<ValueType, Any>::value, int>::type = 0>
     Any(ValueType &value)
         : content(Utils::make_unique_ptr<Holder<ValueType>>(value)) {
     }
 
-    ~Any() {
-    }
+    ~Any() = default;
 
-    template<typename ValueType>
+    template<typename ValueType,
+             // Disable this assignment operator for ValueType = Any.
+             typename std::enable_if<!std::is_same<ValueType, Any>::value, int>::type = 0>
     Any &operator=(const ValueType &rhs) {
         Any(rhs).swap(*this);
         return *this;
