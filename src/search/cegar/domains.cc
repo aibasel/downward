@@ -14,8 +14,11 @@ Bitset Domains::temp_bits;
 
 Domains::Domains(vector<int> &&domain_sizes) {
     initialize_static_members(move(domain_sizes));
-    bits = Bitset(num_facts);
-    bits.set();
+    for (int domain_size : orig_domain_sizes) {
+        Bitset domain(domain_size);
+        domain.set();
+        bits.push_back(move(domain));
+    }
 }
 
 void Domains::initialize_static_members(vector<int> &&domain_sizes) {
@@ -44,11 +47,11 @@ void Domains::initialize_static_members(vector<int> &&domain_sizes) {
 }
 
 void Domains::add(int var, int value) {
-    bits.set(pos(var, value));
+    bits[var].set(value);
 }
 
 void Domains::remove(int var, int value) {
-    bits.reset(pos(var, value));
+    bits[var].reset(value);
 }
 
 void Domains::set_single_value(int var, int value) {
@@ -57,54 +60,43 @@ void Domains::set_single_value(int var, int value) {
 }
 
 void Domains::add_all(int var) {
-    bits |= masks[var];
+    bits[var].set();
 }
 
 void Domains::remove_all(int var) {
-    bits &= inverse_masks[var];
+    bits[var].reset();
 }
 
 int Domains::count(int var) const {
-    /* Profiling showed that an explicit loop is faster than intersecting with
-       a mask and calling dynamic_bitset::count(). */
-    int num_values = 0;
-    for (int value = 0; value < orig_domain_sizes[var]; ++value) {
-        num_values += static_cast<int>(test(var, value));
-    }
-    return num_values;
+    return bits[var].count();
 }
 
 bool Domains::intersects(const Domains &other, int var) const {
-    /*
-      Using test() directly is usually a bit slower, even for problems with
-      many boolean vars. We use a temporary bitset to reduce memory
-      allocations. This substantially reduces the time spent in this method.
-    */
-    /* TODO: If still relevant after changing the representation, check if
-       "temp_bits = bits" isn't faster than setting all bits and ANDing. */
-    temp_bits.set();
-    temp_bits &= bits;
-    temp_bits &= other.bits;
-    temp_bits &= masks[var];
-    assert(temp_bits.any() == (bits & other.bits & masks[var]).any());
-    return temp_bits.any();
+    return bits[var].intersects(other.bits[var]);
 }
 
 bool Domains::is_superset_of(const Domains &other) const {
-    return other.bits.is_subset_of(bits);
+    int num_vars = bits.size();
+    for (int var = 0; var < num_vars; ++var) {
+        if (!other.bits[var].is_subset_of(bits[var]))
+            return false;
+    }
+    return true;
 }
 
 ostream &operator<<(ostream &os, const Domains &domains) {
+    int num_vars = domains.bits.size();
     string var_sep = "";
     os << "<";
-    for (size_t var = 0; var < domains.orig_domain_sizes.size(); ++var) {
+    for (int var = 0; var < num_vars; ++var) {
+        const Bitset &domain = domains.bits[var];
         vector<int> values;
-        for (int value = 0; value < domains.orig_domain_sizes[var]; ++value) {
-            if (domains.test(var, value))
+        for (size_t value = 0; value < domain.size(); ++value) {
+            if (domain[value])
                 values.push_back(value);
         }
         assert(!values.empty());
-        if (static_cast<int>(values.size()) < domains.orig_domain_sizes[var]) {
+        if (values.size() < domain.size()) {
             os << var_sep << var << "={";
             string value_sep = "";
             for (int value : values) {

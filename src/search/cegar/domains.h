@@ -26,7 +26,7 @@ class Domains {
       example, a vector<Bitset> or a vector<vector<bool>>. This might
       also allow us to get rid of some of the static members.
     */
-    Bitset bits;
+    std::vector<Bitset> bits;
 
     static std::vector<int> orig_domain_sizes;
     // Total number of facts and size of the bitset.
@@ -54,7 +54,7 @@ public:
     void remove_all(int var);
 
     bool test(int var, int value) const {
-        return bits.test(pos(var, value));
+        return bits[var][value];
     }
 
     int count(int var) const;
