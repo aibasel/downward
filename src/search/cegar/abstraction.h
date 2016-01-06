@@ -116,6 +116,8 @@ public:
 
     /* For each operator calculate the mimimum cost that is needed to preserve
        all abstract goal distances. */
+    // TODO: Use information from last Dijkstra run instead of performing
+    // another Dijkstra run.
     std::vector<int> get_needed_costs();
 
     int get_h_value_of_initial_state() const;
