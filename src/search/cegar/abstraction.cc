@@ -132,9 +132,6 @@ void Abstraction::create_trivial_abstraction() {
     init = AbstractState::get_trivial_abstract_state(
         task_proxy, refinement_hierarchy.get_root());
     goals.insert(init);
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        init->add_loop(op);
-    }
     states.insert(init);
     /*
       For landmark tasks we have to map all states in which the
