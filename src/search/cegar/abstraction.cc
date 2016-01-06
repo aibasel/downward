@@ -11,8 +11,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <unordered_map>
 
@@ -58,6 +56,7 @@ struct Flaw {
                         wanted.push_back(value);
                     }
                 }
+                assert(!wanted.empty());
                 splits.emplace_back(var.get_id(), move(wanted));
             }
         }
