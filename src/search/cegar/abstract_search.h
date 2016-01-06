@@ -32,6 +32,7 @@ class AbstractSearch {
 
     void extract_solution(AbstractState *init, AbstractState *goal);
 
+    // TODO: Replace use_h by lambda functions?
     AbstractState *astar_search(
         bool forward,
         bool use_h,

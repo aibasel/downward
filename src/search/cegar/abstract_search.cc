@@ -60,12 +60,9 @@ int AbstractSearch::get_g_value(AbstractState *state) const {
 
 AbstractState *AbstractSearch::astar_search(
     bool forward, bool use_h, AbstractStates *goals, vector<int> *needed_costs) {
-    if (forward && use_h) {
-        assert(goals);
-    }
-    if (needed_costs) {
-        assert(forward && !use_h);
-    }
+    assert((forward && use_h && goals && !needed_costs) ||
+           (!forward && !use_h && !goals && !needed_costs) ||
+           (forward && !use_h && !goals && needed_costs));
     while (!open_queue.empty()) {
         pair<int, AbstractState *> top_pair = open_queue.pop();
         int old_f = top_pair.first;
