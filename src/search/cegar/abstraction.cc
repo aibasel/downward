@@ -133,16 +133,6 @@ void Abstraction::create_trivial_abstraction() {
         task_proxy, refinement_hierarchy.get_root());
     goals.insert(init);
     states.insert(init);
-    /*
-      For landmark tasks we have to map all states in which the
-      landmark might have been achieved to arbitrary abstract goal
-      states. For the other types of subtasks our method won't find
-      unreachable facts, but calling it unconditionally for subtasks
-      with one goal doesn't hurt and simplifies the implementation.
-    */
-    if (task_proxy.get_goals().size() == 1) {
-        separate_facts_unreachable_before_goal();
-    }
 }
 
 bool Abstraction::may_keep_refining() const {
@@ -155,6 +145,16 @@ bool Abstraction::may_keep_refining() const {
 
 void Abstraction::build() {
     create_trivial_abstraction();
+    /*
+      For landmark tasks we have to map all states in which the
+      landmark might have been achieved to arbitrary abstract goal
+      states. For the other types of subtasks our method won't find
+      unreachable facts, but calling it unconditionally for subtasks
+      with one goal doesn't hurt and simplifies the implementation.
+    */
+    if (task_proxy.get_goals().size() == 1) {
+        separate_facts_unreachable_before_goal();
+    }
     bool found_concrete_solution = false;
     while (may_keep_refining()) {
         bool found_abstract_solution = abstract_search.find_solution(init, goals);
