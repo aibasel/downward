@@ -38,7 +38,7 @@ static const int memory_padding_in_mb = 75;
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
-      decompositions(opts.get_list<shared_ptr<SubtaskGenerator>>("decompositions")),
+      subtask_generators(opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks")),
       max_states(opts.get<int>("max_states")),
       timer(new Utils::CountdownTimer(opts.get<double>("max_time"))),
       use_general_costs(opts.get<bool>("use_general_costs")),
@@ -77,8 +77,8 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(
-    const SubtaskGenerator &decomposition) {
-    SharedTasks subtasks = decomposition.get_subtasks(task);
+    const SubtaskGenerator &subtask_generator) {
+    SharedTasks subtasks = subtask_generator.get_subtasks(task);
 
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
@@ -128,8 +128,8 @@ void AdditiveCartesianHeuristic::build_abstractions(
 void AdditiveCartesianHeuristic::initialize() {
     g_log << "Initializing additive Cartesian heuristic..." << endl;
     Utils::reserve_extra_memory_padding(memory_padding_in_mb);
-    for (shared_ptr<SubtaskGenerator> decomposition : decompositions) {
-        build_abstractions(*decomposition);
+    for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
+        build_abstractions(*subtask_generator);
         if (!may_build_another_abstraction())
             break;
     }
@@ -208,8 +208,8 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("preferred operators", "no");
 
     parser.add_list_option<shared_ptr<SubtaskGenerator>>(
-        "decompositions",
-        "task decompositions",
+        "subtasks",
+        "subtask generators",
         "[landmarks(),goals()]");
     parser.add_option<int>(
         "max_states",

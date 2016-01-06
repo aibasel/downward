@@ -168,7 +168,7 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     return subtasks;
 }
 
-static shared_ptr<SubtaskGenerator> _parse_copy(OptionParser &parser) {
+static shared_ptr<SubtaskGenerator> _parse_original(OptionParser &parser) {
     parser.add_option<int>(
         "copies",
         "number of task copies",
@@ -216,8 +216,8 @@ static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
         return make_shared<LandmarkDecomposition>(opts);
 }
 
-static PluginShared<SubtaskGenerator> _plugin_copy(
-    "copy", _parse_copy);
+static PluginShared<SubtaskGenerator> _plugin_original(
+    "original", _parse_original);
 static PluginShared<SubtaskGenerator> _plugin_goals(
     "goals", _parse_goals);
 static PluginShared<SubtaskGenerator> _plugin_landmarks(
