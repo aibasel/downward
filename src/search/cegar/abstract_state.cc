@@ -66,23 +66,30 @@ void AbstractState::remove_outgoing_arc(OperatorProxy op, AbstractState *other) 
 }
 
 void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
+    /* Assume that the abstract state v has been split into v1 and v2.
+       Now for all transitions u->v we need to add transitions u->v1,
+       u->v2, or both. */
     for (auto arc : incoming_arcs) {
         OperatorProxy op = arc.first;
         AbstractState *u = arc.second;
         assert(u != this);
         int post = get_post(op, var);
         if (post == UNDEFINED_VALUE) {
-            // If the domains of u and v1 don't intersect, we must add the other arc.
+            // op has no precondition and no effect on var.
             bool u_and_v1_intersect = u->domains_intersect(v1, var);
             if (u_and_v1_intersect) {
                 u->add_arc(op, v1);
             }
+            /* If the domains of u and v1 don't intersect, we must add
+               the other arc and can avoid intersecting domains. */
             if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
                 u->add_arc(op, v2);
             }
         } else if (v1->domains.test(var, post)) {
+            // op can only end in v1.
             u->add_arc(op, v1);
         } else {
+            // op must end in v2.
             assert(v2->domains.test(var, post));
             u->add_arc(op, v2);
         }
@@ -91,6 +98,9 @@ void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractStat
 }
 
 void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
+    /* Assume that the abstract state v has been split into v1 and v2.
+       Now for all transitions v->w we need to add transitions v1->w,
+       v2->w, or both. */
     for (auto arc : outgoing_arcs) {
         OperatorProxy op = arc.first;
         AbstractState *w = arc.second;
@@ -99,20 +109,25 @@ void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractStat
         int post = get_post(op, var);
         if (post == UNDEFINED_VALUE) {
             assert(pre == UNDEFINED_VALUE);
-            // If the domains of v1 and w don't intersect, we must add the other arc.
+            // op has no precondition and no effect on var.
             bool v1_and_w_intersect = v1->domains_intersect(w, var);
             if (v1_and_w_intersect) {
                 v1->add_arc(op, w);
             }
+            /* If the domains of v1 and w don't intersect, we must add
+               the other arc and can avoid intersecting domains. */
             if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
                 v2->add_arc(op, w);
             }
         } else if (pre == UNDEFINED_VALUE) {
+            // op has no precondition, but an effect on var.
             v1->add_arc(op, w);
             v2->add_arc(op, w);
         } else if (v1->domains.test(var, pre)) {
+            // op can only start in v1.
             v1->add_arc(op, w);
         } else {
+            // op must start in v2.
             assert(v2->domains.test(var, pre));
             v2->add_arc(op, w);
         }
@@ -121,35 +136,48 @@ void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractStat
 }
 
 void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
+    /* Assume that the abstract state v has been split into v1 and v2.
+       Now for all self-loops v->v we need to add one or two of the
+       transitions v1->v1, v1->v2, v2->v1 and v2->v2. */
     for (OperatorProxy op : loops) {
         int pre = get_pre(op, var);
         int post = get_post(op, var);
         if (pre == UNDEFINED_VALUE) {
+            // op has no precondition on var --> it must start in v1 and v2.
             if (post == UNDEFINED_VALUE) {
+                // op has no effect on var --> it must end in v1 and v2.
                 v1->add_loop(op);
                 v2->add_loop(op);
             } else if (v2->domains.test(var, post)) {
+                // op must end in v2.
                 v1->add_arc(op, v2);
                 v2->add_loop(op);
             } else {
+                // op must end in v1.
                 assert(v1->domains.test(var, post));
                 v1->add_loop(op);
                 v2->add_arc(op, v1);
             }
         } else if (v1->domains.test(var, pre)) {
+            // op must start in v1.
             assert(post != UNDEFINED_VALUE);
             if (v1->domains.test(var, post)) {
+                // op must end in v1.
                 v1->add_loop(op);
             } else {
+                // op must end in v2.
                 assert(v2->domains.test(var, post));
                 v1->add_arc(op, v2);
             }
         } else {
+            // op must start in v2.
             assert(v2->domains.test(var, pre));
             assert(post != UNDEFINED_VALUE);
             if (v2->domains.test(var, post)) {
+                // op must end in v2.
                 v2->add_loop(op);
             } else {
+                // op must end in v1.
                 assert(v1->domains.test(var, post));
                 v2->add_arc(op, v1);
             }
