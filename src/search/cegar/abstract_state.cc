@@ -173,13 +173,13 @@ void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
             // op must start in v2.
             assert(v2->domains.test(var, pre));
             assert(post != UNDEFINED_VALUE);
-            if (v2->domains.test(var, post)) {
-                // op must end in v2.
-                v2->add_loop(op);
-            } else {
+            if (v1->domains.test(var, post)) {
                 // op must end in v1.
-                assert(v1->domains.test(var, post));
                 v2->add_arc(op, v1);
+            } else {
+                // op must end in v2.
+                assert(v2->domains.test(var, post));
+                v2->add_loop(op);
             }
         }
     }
