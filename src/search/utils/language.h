@@ -10,7 +10,7 @@
 
 namespace Utils {
 template<typename T>
-void unused_parameter(const T &) {
+void unused_variable(const T &) {
 }
 }
 
