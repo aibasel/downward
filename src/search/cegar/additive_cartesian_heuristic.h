@@ -38,8 +38,7 @@
       Store and update abstract Domains and transitions.
 
       Domains
-        Use a single boost::dynamic_bitset to store the Cartesian set
-        of values in an abstract state.
+        Store the Cartesian set of values in an abstract state.
 
     AbstractSearch
       Find an abstract solution using A*. Compute goal distances for

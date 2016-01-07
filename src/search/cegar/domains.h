@@ -1,12 +1,13 @@
 #ifndef CEGAR_DOMAINS_H
 #define CEGAR_DOMAINS_H
 
-#include <boost/dynamic_bitset.hpp>
+#include "../utils/dynamic_bitset.h"
 
+#include <ostream>
 #include <vector>
 
 namespace CEGAR {
-using Bitset = boost::dynamic_bitset<unsigned short>;
+using Bitset = Utils::DynamicBitset<unsigned short>;
 
 /*
   For each variable store a subset of values.
