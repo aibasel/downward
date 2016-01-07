@@ -10,34 +10,34 @@
 */
 
 namespace Utils {
-template <typename Block = unsigned long>
+template <typename Block = unsigned int>
 class DynamicBitset {
-public:
     static_assert(
         !std::numeric_limits<Block>::is_signed,
         "Block type must be unsigned");
-    using size_type = std::size_t;
 
-private:
     std::vector<Block> blocks;
-    const size_type num_bits;
+    const std::size_t num_bits;
+
+    static const Block zeros = Block(0);
+    static const Block ones = ~Block(0);
 
     static const int bits_per_block = std::numeric_limits<Block>::digits;
 
-    static int compute_num_blocks(size_type num_bits) {
+    static int compute_num_blocks(std::size_t num_bits) {
         return num_bits / bits_per_block +
                static_cast<int>(num_bits % bits_per_block != 0);
     }
 
-    static size_type block_index(size_type pos) {
+    static std::size_t block_index(std::size_t pos) {
         return pos / bits_per_block;
     }
 
-    static size_type bit_index(size_type pos) {
+    static std::size_t bit_index(std::size_t pos) {
         return pos % bits_per_block;
     }
 
-    static Block bit_mask(size_type pos) {
+    static Block bit_mask(std::size_t pos) {
         return Block(1) << bit_index(pos);
     }
 
@@ -50,19 +50,19 @@ private:
 
         if (bits_in_last_block != 0) {
             assert(!blocks.empty());
-            blocks.back() &= ~(~static_cast<Block>(0) << bits_in_last_block);
+            blocks.back() &= ~(ones << bits_in_last_block);
         }
     }
 
 public:
-    DynamicBitset(size_type num_bits)
-        : blocks(compute_num_blocks(num_bits), Block(0)),
+    DynamicBitset(std::size_t num_bits)
+        : blocks(compute_num_blocks(num_bits), zeros),
           num_bits(num_bits) {
     }
 
     ~DynamicBitset() = default;
 
-    size_type size() const {
+    std::size_t size() const {
         return num_bits;
     }
 
@@ -74,43 +74,43 @@ public:
     */
     int count() const {
         int result = 0;
-        for (size_type pos = 0; pos < num_bits; ++pos) {
+        for (std::size_t pos = 0; pos < num_bits; ++pos) {
             result += static_cast<int>(test(pos));
         }
         return result;
     }
 
     void set() {
-        std::fill(blocks.begin(), blocks.end(), ~Block(0));
+        std::fill(blocks.begin(), blocks.end(), ones);
         zero_unused_bits();
     }
 
     void reset() {
-        std::fill(blocks.begin(), blocks.end(), Block(0));
+        std::fill(blocks.begin(), blocks.end(), zeros);
     }
 
-    void set(size_type pos) {
+    void set(std::size_t pos) {
         assert(pos < num_bits);
         blocks[block_index(pos)] |= bit_mask(pos);
     }
 
-    void reset(size_type pos) {
+    void reset(std::size_t pos) {
         assert(pos < num_bits);
         blocks[block_index(pos)] &= ~bit_mask(pos);
     }
 
-    bool test(size_type pos) const {
+    bool test(std::size_t pos) const {
         assert(pos < num_bits);
         return (blocks[block_index(pos)] & bit_mask(pos)) != 0;
     }
 
-    bool operator[](size_type pos) const {
+    bool operator[](std::size_t pos) const {
         return test(pos);
     }
 
     bool intersects(const DynamicBitset &other) const {
         assert(size() == other.size());
-        for (size_type i = 0; i < blocks.size(); ++i) {
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
             if (blocks[i] & other.blocks[i])
                 return true;
         }
@@ -119,7 +119,7 @@ public:
 
     bool is_subset_of(const DynamicBitset &other) const {
         assert(size() == other.size());
-        for (size_type i = 0; i < blocks.size(); ++i) {
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
             if (blocks[i] & ~other.blocks[i])
                 return false;
         }
