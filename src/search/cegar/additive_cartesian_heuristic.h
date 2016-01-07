@@ -83,7 +83,8 @@ class AdditiveCartesianHeuristic : public Heuristic {
     std::shared_ptr<AbstractTask> get_remaining_costs_task(
         std::shared_ptr<AbstractTask> &parent) const;
     bool may_build_another_abstraction();
-    void build_abstractions(const SubtaskGenerator &subtask_generators);
+    void build_abstractions(
+        const std::vector<std::shared_ptr<AbstractTask>> &subtasks);
     void print_statistics() const;
 
 protected:

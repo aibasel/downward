@@ -76,8 +76,7 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(
-    const SubtaskGenerator &subtask_generator) {
-    SharedTasks subtasks = subtask_generator.get_subtasks(task);
+    const vector<shared_ptr<AbstractTask> > &subtasks) {
 
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
@@ -118,7 +117,8 @@ void AdditiveCartesianHeuristic::initialize() {
     g_log << "Initializing additive Cartesian heuristic..." << endl;
     Utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
-        build_abstractions(*subtask_generator);
+        SharedTasks subtasks = subtask_generator->get_subtasks(task);
+        build_abstractions(subtasks);
         if (!may_build_another_abstraction())
             break;
     }
