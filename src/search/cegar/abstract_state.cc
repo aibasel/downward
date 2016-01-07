@@ -81,7 +81,7 @@ void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractStat
                 u->add_arc(op, v1);
             }
             /* If the domains of u and v1 don't intersect, we must add
-               the other arc and can avoid intersecting domains. */
+               the other arc and can avoid an intersection test. */
             if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
                 u->add_arc(op, v2);
             }
@@ -89,7 +89,7 @@ void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractStat
             // op can only end in v1.
             u->add_arc(op, v1);
         } else {
-            // op must end in v2.
+            // op can only end in v2.
             assert(v2->domains.test(var, post));
             u->add_arc(op, v2);
         }
@@ -115,7 +115,7 @@ void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractStat
                 v1->add_arc(op, w);
             }
             /* If the domains of v1 and w don't intersect, we must add
-               the other arc and can avoid intersecting domains. */
+               the other arc and can avoid an intersection test. */
             if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
                 v2->add_arc(op, w);
             }
@@ -127,7 +127,7 @@ void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractStat
             // op can only start in v1.
             v1->add_arc(op, w);
         } else {
-            // op must start in v2.
+            // op can only start in v2.
             assert(v2->domains.test(var, pre));
             v2->add_arc(op, w);
         }
