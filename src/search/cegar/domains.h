@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace CEGAR {
-using Bitset = boost::dynamic_bitset<unsigned long>;
+using Bitset = boost::dynamic_bitset<unsigned short>;
 
 /*
   For each variable store a subset of values.
