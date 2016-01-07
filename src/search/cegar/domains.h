@@ -15,7 +15,7 @@ using Bitset = Utils::DynamicBitset<unsigned short>;
   The underlying data structure is a vector of bitsets.
 */
 class Domains {
-    std::vector<Bitset> bits;
+    std::vector<Bitset> domain_subsets;
 
 public:
     explicit Domains(const std::vector<int> &domain_sizes);
@@ -28,14 +28,15 @@ public:
     void remove_all(int var);
 
     bool test(int var, int value) const {
-        return bits[var][value];
+        return domain_subsets[var][value];
     }
 
     int count(int var) const;
     bool intersects(const Domains &other, int var) const;
     bool is_superset_of(const Domains &other) const;
 
-    friend std::ostream &operator<<(std::ostream &os, const Domains &bits);
+    friend std::ostream &operator<<(
+        std::ostream &os, const Domains &domain_subsets);
 };
 
 std::ostream &operator<<(std::ostream &os, const Domains &domains);
