@@ -6,6 +6,7 @@ using namespace std;
 
 namespace CEGAR {
 Domains::Domains(const vector<int> &domain_sizes) {
+    bits.reserve(domain_sizes.size());
     for (int domain_size : domain_sizes) {
         Bitset domain(domain_size);
         domain.set();
