@@ -10,9 +10,12 @@
 */
 
 namespace Utils {
-template <typename Block>
+template <typename Block = unsigned long>
 class DynamicBitset {
 public:
+    static_assert(
+        !std::numeric_limits<Block>::is_signed,
+        "Block type must be unsigned");
     using size_type = std::size_t;
 
 private:
