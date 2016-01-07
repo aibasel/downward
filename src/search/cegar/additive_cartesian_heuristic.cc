@@ -45,7 +45,6 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
       pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
       num_states(0) {
-
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
 
@@ -76,8 +75,7 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(
-    const vector<shared_ptr<AbstractTask> > &subtasks) {
-
+    const vector<shared_ptr<AbstractTask>> &subtasks) {
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
         subtask = get_remaining_costs_task(subtask);

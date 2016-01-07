@@ -26,7 +26,7 @@ private:
 
     static int compute_num_blocks(size_type num_bits) {
         return num_bits / bits_per_block +
-            static_cast<int>(num_bits % bits_per_block != 0);
+               static_cast<int>(num_bits % bits_per_block != 0);
     }
 
     static size_type block_index(size_type pos) {
@@ -56,8 +56,8 @@ private:
 
 public:
     DynamicBitset(size_type num_bits)
-      : blocks(compute_num_blocks(num_bits), Block(0)),
-        num_bits(num_bits) {
+        : blocks(compute_num_blocks(num_bits), Block(0)),
+          num_bits(num_bits) {
     }
 
     ~DynamicBitset() = default;
