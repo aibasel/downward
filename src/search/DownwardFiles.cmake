@@ -224,7 +224,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search.cc
-    DEPENDS SEARCH_COMMON
+    DEPENDS SEARCH_COMMON NULL_POR_METHOD
 )
 
 fast_downward_plugin(
