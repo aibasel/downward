@@ -11,7 +11,7 @@ namespace StubbornSetsEC {
 // TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
     int op_index = op - &*g_operators.begin();
-    assert(op_index >= 0 && op_index < g_operators.size());
+    assert(op_index >= 0 && (uint)op_index < g_operators.size());
     return op_index;
 }
 
