@@ -91,6 +91,7 @@ fast_downward_plugin(
     NAME OPTIONS
     HELP "Option parsing and plugin definition"
     SOURCES
+        options/any.h
         options/bounds.cc
         options/doc_printer.cc
         options/doc_store.cc
