@@ -135,7 +135,7 @@ void StubbornSets::prune_operators(
     pruned_successors_generated += ops.size();
 }
 
-void StubbornSets::dump_statistics() const {
+void StubbornSets::print_statistics() const {
     cout << "total successors before partial-order reduction: "
          << unpruned_successors_generated << endl
          << "total successors after partial-order reduction: "

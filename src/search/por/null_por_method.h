@@ -15,7 +15,7 @@ public:
     virtual void prune_operators(const GlobalState & /*state*/,
                                  std::vector<const GlobalOperator *> & /*ops*/) {}
     virtual void dump_options() const;
-    virtual void dump_statistics() const {}
+    virtual void print_statistics() const {}
 };
 }
 

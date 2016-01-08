@@ -7,6 +7,7 @@
 #include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../por_method.h"
 #include "../successor_generator.h"
 
 #include "../open_lists/open_list_factory.h"
@@ -76,10 +77,10 @@ void EagerSearch::initialize() {
 
         open_list->insert(eval_context, initial_state.get_id());
     }
-
+    
+    print_initial_h_values(eval_context);
     partial_order_reduction_method->dump_options();
     partial_order_reduction_method->initialize();
-    print_initial_h_values(eval_context);
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -91,7 +92,7 @@ void EagerSearch::print_checkpoint_line(int g) const {
 void EagerSearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
-    partial_order_reduction_method->dump_statistics();
+    partial_order_reduction_method->print_statistics();
 }
 
 SearchStatus EagerSearch::step() {
