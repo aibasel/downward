@@ -26,8 +26,9 @@ bool StubbornSets::can_disable(int op1_no, int op2_no) {
     while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
         int read_var = op_preconds[op2_no][i].var;
         int write_var = op_effects[op1_no][j].var;
-        if (read_var < write_var)
+        if (read_var < write_var) {
             i++;
+	}
         else if (read_var == write_var) {
             int read_value = op_preconds[op2_no][i].val;
             int write_value = op_effects[op1_no][j].val;
@@ -50,8 +51,9 @@ bool StubbornSets::can_conflict(int op1_no, int op2_no) {
     while (i < op_effects[op1_no].size() && j < op_effects[op2_no].size()) {
         int var1 = op_effects[op1_no][i].var;
         int var2 = op_effects[op2_no][j].var;
-        if (var1 < var2)
+        if (var1 < var2) {
             i++;
+	}
         else if (var1 == var2) {
             int value1 = op_effects[op1_no][i].val;
             int value2 = op_effects[op2_no][j].val;
