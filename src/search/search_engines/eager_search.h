@@ -1,7 +1,6 @@
 #ifndef SEARCH_ENGINES_EAGER_SEARCH_H
 #define SEARCH_ENGINES_EAGER_SEARCH_H
 
-#include "../por_method.h"
 #include "../search_engine.h"
 
 #include "../open_lists/open_list.h"
@@ -12,6 +11,7 @@
 class GlobalOperator;
 class Heuristic;
 class Options;
+class PORMethod;
 class ScalarEvaluator;
 
 namespace EagerSearch {
