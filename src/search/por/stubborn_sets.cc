@@ -119,8 +119,9 @@ void StubbornSets::compute_sorted_operators() {
 void StubbornSets::compute_achievers() {
     size_t num_variables = g_variable_domain.size();
     achievers.resize(num_variables);
-    for (uint var_no = 0; var_no < num_variables; ++var_no)
+    for (uint var_no = 0; var_no < num_variables; ++var_no) {
         achievers[var_no].resize(g_variable_domain[var_no]);
+    }
 
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         const GlobalOperator &op = g_operators[op_no];
