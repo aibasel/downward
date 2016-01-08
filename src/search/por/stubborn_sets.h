@@ -44,7 +44,7 @@ protected:
                             std::vector<const GlobalOperator *> &ops) = 0;
 public:
     StubbornSets();
-    virtual ~StubbornSets();
+    virtual ~StubbornSets() = default;
 
     virtual void prune_operators(const GlobalState &state,
                                  std::vector<const GlobalOperator *> &ops);
