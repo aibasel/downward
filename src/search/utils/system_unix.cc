@@ -34,17 +34,24 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#if OPERATING_SYSTEM == OSX
+#include <mach/mach.h>
+#endif
+
 using namespace std;
 
 
 namespace Utils {
 void write_reentrant(int filedescr, const char *message, int len) {
     while (len > 0) {
-        int written = TEMP_FAILURE_RETRY(write(filedescr, message, len));
+        int written;
+        do {
+            written = write(filedescr, message, len);
+        } while (written == -1 && errno == EINTR);
         /*
-          We could check the value of errno here but all errors except EINTR
-          are catastrophic enough to abort, so we do not need the distintion.
-          The error EINTR is handled by the macro TEMP_FAILURE_RETRY.
+          We could check for other values of errno here but all errors except
+          EINTR are catastrophic enough to abort, so we do not need the
+          distinction.
         */
         if (written == -1)
             abort();
@@ -70,11 +77,14 @@ void write_reentrant_int(int filedescr, int value) {
 }
 
 bool read_char_reentrant(int filedescr, char *c) {
-    int result = TEMP_FAILURE_RETRY(read(filedescr, c, 1));
+    int result;
+    do {
+        result = read(filedescr, c, 1);
+    } while (result == -1 && errno == EINTR);
     /*
-      We could check the value of errno here but all errors except EINTR
-      are catastrophic enough to abort, so we do not need the distinction.
-      The error EINTR is handled by the macro TEMP_FAILURE_RETRY.
+      We could check for other values of errno here but all errors except
+      EINTR are catastrophic enough to abort, so we do not need the
+      distinction.
     */
     if (result == -1)
         abort();
@@ -82,6 +92,13 @@ bool read_char_reentrant(int filedescr, char *c) {
 }
 
 void print_peak_memory_reentrant() {
+#if OPERATING_SYSTEM == OSX
+    // TODO: Write print_peak_memory_reentrant() for OS X.
+    write_reentrant_str(STDOUT_FILENO, "Peak memory: ");
+    write_reentrant_int(STDOUT_FILENO, get_peak_memory_in_kb());
+    write_reentrant_str(STDOUT_FILENO, " KB\n");
+#else
+
     int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
     if (proc_file_descr == -1) {
         write_reentrant_str(
@@ -127,6 +144,7 @@ void print_peak_memory_reentrant() {
       about I/O errors or bad file descriptors here).
     */
     TEMP_FAILURE_RETRY(close(proc_file_descr));
+#endif
 }
 
 #if OPERATING_SYSTEM == LINUX
@@ -173,8 +191,9 @@ int get_peak_memory_in_kb() {
 
     if (task_info(mach_task_self(), TASK_BASIC_INFO,
                   reinterpret_cast<task_info_t>(&t_info),
-                  &t_info_count) == KERN_SUCCESS)
+                  &t_info_count) == KERN_SUCCESS) {
         memory_in_kb = t_info.virtual_size / 1024;
+    }
 #else
     ifstream procfile;
     procfile.open("/proc/self/status");

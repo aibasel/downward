@@ -45,7 +45,7 @@ void LabelEquivalenceRelation::apply_label_mapping(
                 assert(canonical_group_id == get_group_id(old_label_no));
             }
             LabelIter label_it = label_to_positions[old_label_no].second;
-            grouped_labels[canonical_group_id].erase(label_it);
+            grouped_labels[get_group_id(old_label_no)].erase(label_it);
         }
     }
 
