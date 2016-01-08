@@ -14,9 +14,6 @@ StubbornSets::StubbornSets()
       num_pruned_successors_generated(0) {
 }
 
-StubbornSets::~StubbornSets() {
-}
-
 inline bool operator<(const Fact &lhs, const Fact &rhs) {
     return lhs.var < rhs.var;
 }
