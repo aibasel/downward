@@ -119,7 +119,10 @@ def get_abs_interpreter_path(python_name):
 
 
 def get_python_version_info(python):
-    output = subprocess.check_output([python, '-V'], stderr=subprocess.STDOUT).strip()
+    output = subprocess.check_output(
+        [python, '-V'],
+        stderr=subprocess.STDOUT,
+        universal_newlines=True).strip()
     assert output.startswith("Python "), output
     return output[len("Python "):]
 
