@@ -213,8 +213,16 @@ function(fast_downward_plugin)
     if(NOT _PLUGIN_HELP)
         set(_PLUGIN_HELP ${_PLUGIN_DISPLAY_NAME})
     endif()
-    set(_OPTION_DEFAULT TRUE)
-    if(_PLUGIN_DEPENDENCY_ONLY)
+    # Decide whether the plugin should be enabled by default.
+    if (DISABLE_PLUGINS_BY_DEFAULT)
+        set(_OPTION_DEFAULT FALSE)
+    else()
+        set(_OPTION_DEFAULT TRUE)
+    endif()
+    # Overwrite default value for core plugins and dependecy-only plugins.
+    if (_PLUGIN_CORE_PLUGIN)
+        set(_OPTION_DEFAULT TRUE)
+    elseif(_PLUGIN_DEPENDENCY_ONLY)
         set(_OPTION_DEFAULT FALSE)
     endif()
 
