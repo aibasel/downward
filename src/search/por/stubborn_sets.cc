@@ -103,12 +103,12 @@ void StubbornSets::compute_sorted_operators() {
 
         if (!pre.empty()) {
             sort(pre.begin(), pre.end());
-            for (size_t i = 0; i < pre.size() - 1; ++i) {
+            for (uint i = 0; i < pre.size() - 1; ++i) {
                 assert(pre[i].var < pre[i + 1].var);
             }
         }
         sort(eff.begin(), eff.end());
-        for (size_t i = 0; i < eff.size() - 1; ++i) {
+        for (uint i = 0; i < eff.size() - 1; ++i) {
             assert(eff[i].var < eff[i + 1].var);
         }
         op_preconds.push_back(pre);
