@@ -5,8 +5,8 @@
 
 namespace StubbornSetsSimple {
 class StubbornSetsSimple : public StubbornSets::StubbornSets {
-    // interference_relation[op1_no] contains all operator indices
-    // of operators that interfere with op1.
+    /* interference_relation[op1_no] contains all operator indices
+       of operators that interfere with op1. */
     std::vector<std::vector<int>> interference_relation;
 
     void mark_as_stubborn(int op_no);
