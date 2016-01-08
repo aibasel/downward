@@ -352,7 +352,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
         "is equivalent to\n"
         "```\n--heuristic h=evaluator\n"
         "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
-        "               reopen_closed=true, progress_evaluator=sum([g(), h]))\n"
+        "               reopen_closed=true, f_eval=sum([g(), h]))\n"
         "```\n", true);
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("mpd",

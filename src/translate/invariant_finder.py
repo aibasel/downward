@@ -85,15 +85,15 @@ def get_initial_invariants(task):
             yield invariants.Invariant((part,))
 
 def find_invariants(task, reachable_action_params):
-    candidates = deque(get_initial_invariants(task))
+    limit = options.invariant_generation_max_candidates
+    candidates = deque(itertools.islice(get_initial_invariants(task), 0, limit))
     print(len(candidates), "initial candidates")
     seen_candidates = set(candidates)
 
     balance_checker = BalanceChecker(task, reachable_action_params)
 
     def enqueue_func(invariant):
-        if (len(seen_candidates) < options.invariant_generation_max_candidates and
-                invariant not in seen_candidates):
+        if len(seen_candidates) < limit and invariant not in seen_candidates:
             candidates.append(invariant)
             seen_candidates.add(invariant)
 
