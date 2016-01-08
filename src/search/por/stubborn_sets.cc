@@ -18,6 +18,8 @@ inline bool operator<(const Fact &lhs, const Fact &rhs) {
     return lhs.var < rhs.var;
 }
 
+/* can_disable relies on op_preconds and op_effects being sorted by
+   variable */
 bool StubbornSets::can_disable(int op1_no, int op2_no) {
     size_t i = 0;
     size_t j = 0;
@@ -41,6 +43,7 @@ bool StubbornSets::can_disable(int op1_no, int op2_no) {
     return false;
 }
 
+// can_conflict relies on op_effect being sorted by variable
 bool StubbornSets::can_conflict(int op1_no, int op2_no) {
     size_t i = 0;
     size_t j = 0;
