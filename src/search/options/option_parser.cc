@@ -29,6 +29,10 @@ class AbstractTask;
 class OpenListFactory;
 class SearchEngine;
 
+namespace CEGAR {
+class SubtaskGenerator;
+}
+
 namespace Landmarks {
 class LandmarkGraph;
 }
@@ -87,6 +91,7 @@ static void get_help(string k) {
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
     get_help_templ<Landmarks::LandmarkGraph *>(pt);
+    get_help_templ<shared_ptr<CEGAR::SubtaskGenerator>>(pt);
     get_help_templ<shared_ptr<OpenListFactory>>(pt);
     get_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>(pt);
     get_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>(pt);
@@ -115,6 +120,7 @@ static void get_full_help() {
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
     get_full_help_templ<Landmarks::LandmarkGraph *>();
+    get_full_help_templ<shared_ptr<CEGAR::SubtaskGenerator>>();
     get_full_help_templ<shared_ptr<OpenListFactory>>();
     get_full_help_templ<shared_ptr<MergeAndShrink::MergeStrategy>>();
     get_full_help_templ<shared_ptr<MergeAndShrink::ShrinkStrategy>>();

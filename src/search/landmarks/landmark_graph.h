@@ -160,7 +160,23 @@ public:
         assert(landmarks_count == static_cast<int>(nodes.size()));
         return landmarks_count;
     }
-    Exploration *get_exploration() const {return exploration; }
+
+    Exploration *get_exploration() const {
+        assert(exploration);
+        return exploration;
+    }
+
+    /*
+      The CEGAR code creates a landmark graph with an exploration that
+      goes out of scope after the graph has been created. To safeguard
+      against code that accidentally accesses the exploration, we
+      explicitly invalidate it and assert that we never return an
+      invalidated exploration above.
+    */
+    void invalidate_exploration_for_cegar() {
+        exploration = nullptr;
+    }
+
     bool is_using_reasonable_orderings() const {return reasonable_orders; }
 
     // ------------------------------------------------------------------------------
