@@ -87,16 +87,16 @@ void StubbornSetsSimple::mark_as_stubborn(int op_no) {
 void StubbornSetsSimple::add_necessary_enabling_set(pair<int, int> fact) {
     int var = fact.first;
     int value = fact.second;
-    const vector<int> &op_nos = achievers[var][value];
-    for (size_t i = 0; i < op_nos.size(); ++i)
-        mark_as_stubborn(op_nos[i]);
+    for (int op_no : achievers[var][value]) {
+        mark_as_stubborn(op_no);
+    }
 }
 
 // Add all operators that interfere with op.
 void StubbornSetsSimple::add_interfering(int op_no) {
-    const vector<int> &interferers = interference_relation[op_no];
-    for (size_t i = 0; i < interferers.size(); ++i)
-        mark_as_stubborn(interferers[i]);
+    for (int interferer_no : interference_relation[op_no]) {
+	mark_as_stubborn(interferer_no);
+    }
 }
 
 void StubbornSetsSimple::do_pruning(
