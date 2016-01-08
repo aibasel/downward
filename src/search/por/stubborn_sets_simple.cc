@@ -30,7 +30,6 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
     return make_pair(-1, -1);
 }
 
-
 // Return the first unsatified precondition, or (-1, -1) if there is none.
 static inline pair<int, int> find_unsatisfied_precondition(
     const GlobalOperator &op, const GlobalState &state) {
@@ -44,11 +43,6 @@ static inline pair<int, int> find_unsatisfied_precondition(
 
     return make_pair(-1, -1);
 }
-
-
-StubbornSetsSimple::StubbornSetsSimple() {}
-
-StubbornSetsSimple::~StubbornSetsSimple() {}
 
 void StubbornSetsSimple::initialize() {
     verify_no_axioms_no_conditional_effects();
