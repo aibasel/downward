@@ -84,21 +84,21 @@ void StubbornSets::compute_sorted_operators() {
         vector<Fact> pre;
         vector<Fact> eff;
 
-        for (size_t i = 0; i < preconds.size(); i++) {
-            int var = preconds[i].var;
-            int val = preconds[i].val;
+	for (const GlobalCondition &precond : preconds) {
+            int var = precond.var;
+            int val = precond.val;
             Fact p(var, val);
             pre.push_back(p);
         }
 
-        for (size_t i = 0; i < effects.size(); i++) {
-            int var = effects[i].var;
-            int val = effects[i].val;
+	for (const GlobalEffect &effect: effects) {
+            int var = effect.var;
+            int val = effect.val;
             Fact e(var, val);
             eff.push_back(e);
         }
 
-        if (pre.size() != 0) {
+        if (!pre.empty()) {
             sort(pre.begin(), pre.end());
             for (size_t i = 0; i < pre.size() - 1; ++i) {
                 assert(pre[i].var < pre[i + 1].var);
