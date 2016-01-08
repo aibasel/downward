@@ -58,8 +58,6 @@ void StubbornSetsSimple::dump_options() const {
 void StubbornSetsSimple::compute_interference_relation() {
     compute_sorted_operators();
 
-    int num_interfering_pairs = 0;
-
     uint num_operators = g_operators.size();
     interference_relation.resize(num_operators);
     
@@ -75,8 +73,6 @@ void StubbornSetsSimple::compute_interference_relation() {
                 interfere_op1.push_back(op2_no);
 	    }
         }
-
-        num_interfering_pairs += interfere_op1.size();
     }
 }
 
