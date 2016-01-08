@@ -21,9 +21,9 @@ static inline int get_op_index(const GlobalOperator *op) {
 
 // Return the first unsatified goal pair, or (-1, -1) if there is none.
 static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int goal_var = g_goal[i].first;
-        int goal_value = g_goal[i].second;
+    for (const pair<int, int>& goal : g_goal) {
+        int goal_var = goal.first;
+        int goal_value = goal.second;
         if (state[goal_var] != goal_value)
             return make_pair(goal_var, goal_value);
     }
@@ -35,9 +35,9 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
 static inline pair<int, int> find_unsatisfied_precondition(
     const GlobalOperator &op, const GlobalState &state) {
     const vector<GlobalCondition> &preconds = op.get_preconditions();
-    for (size_t i = 0; i < preconds.size(); ++i) {
-        int var = preconds[i].var;
-        int value = preconds[i].val;
+    for (const GlobalCondition &precond : preconds) {
+        int var = precond.var;
+        int value = precond.val;
         if (state[var] != value)
             return make_pair(var, value);
     }
