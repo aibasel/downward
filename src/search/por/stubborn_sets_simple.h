@@ -10,7 +10,7 @@ class StubbornSetsSimple : public StubbornSets::StubbornSets {
     std::vector<std::vector<int>> interference_relation;
 
     void mark_as_stubborn(int op_no);
-    void add_nes_for_fact(std::pair<int, int> fact);
+    void add_necessary_enabling_set(std::pair<int, int> fact);
     void add_interfering(int op_no);
 
     void compute_interference_relation();

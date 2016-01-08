@@ -84,7 +84,7 @@ void StubbornSetsSimple::mark_as_stubborn(int op_no) {
 }
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
-void StubbornSetsSimple::add_nes_for_fact(pair<int, int> fact) {
+void StubbornSetsSimple::add_necessary_enabling_set(pair<int, int> fact) {
     int var = fact.first;
     int value = fact.second;
     const vector<int> &op_nos = achievers[var][value];
@@ -108,7 +108,7 @@ void StubbornSetsSimple::do_pruning(
     // Add a necessary enabling set for an unsatisfied goal.
     pair<int, int> goal_pair = find_unsatisfied_goal(state);
     assert(goal_pair.first != -1);
-    add_nes_for_fact(goal_pair);
+    add_necessary_enabling_set(goal_pair);
 
     // Iteratively insert operators to stubborn according to the
     // definition of strong stubborn sets until a fixpoint is reached.
@@ -125,7 +125,7 @@ void StubbornSetsSimple::do_pruning(
         } else {
             // unsatisfied precondition found
             // => add an enabling set for it
-            add_nes_for_fact(fact);
+            add_necessary_enabling_set(fact);
         }
     }
 
