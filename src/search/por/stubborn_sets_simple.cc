@@ -137,8 +137,7 @@ void StubbornSetsSimple::do_pruning(
     // Now check which applicable operators are in the stubborn set.
     vector<const GlobalOperator *> pruned_ops;
     pruned_ops.reserve(applicable_ops.size());
-    for (size_t i = 0; i < applicable_ops.size(); ++i) {
-        const GlobalOperator *op = applicable_ops[i];
+    for (const GlobalOperator *op : applicable_ops) {
         int op_no = get_op_index(op);
         if (stubborn[op_no])
             pruned_ops.push_back(op);
