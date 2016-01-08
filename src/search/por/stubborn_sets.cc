@@ -10,8 +10,8 @@ using namespace std;
 
 namespace StubbornSets {
 StubbornSets::StubbornSets()
-    : unpruned_successors_generated(0),
-      pruned_successors_generated(0) {
+    : num_unpruned_successors_generated(0),
+      num_pruned_successors_generated(0) {
 }
 
 StubbornSets::~StubbornSets() {
@@ -130,15 +130,15 @@ void StubbornSets::compute_achievers() {
 
 void StubbornSets::prune_operators(
     const GlobalState &state, std::vector<const GlobalOperator *> &ops) {
-    unpruned_successors_generated += ops.size();
+    num_unpruned_successors_generated += ops.size();
     do_pruning(state, ops);
-    pruned_successors_generated += ops.size();
+    num_pruned_successors_generated += ops.size();
 }
 
 void StubbornSets::print_statistics() const {
     cout << "total successors before partial-order reduction: "
-         << unpruned_successors_generated << endl
+         << num_unpruned_successors_generated << endl
          << "total successors after partial-order reduction: "
-         << pruned_successors_generated << endl;
+         << num_pruned_successors_generated << endl;
 }
 }
