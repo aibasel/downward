@@ -87,6 +87,14 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # CORE_PLUGIN enables the plugin and hides the option to disable it in
 #     cmake GUIs like ccmake.
 
+option(
+    DISABLE_PLUGINS_BY_DEFAULT
+    "If set to YES only plugins that are specifically enabled will be compiled"
+    NO)
+# This option should not show up in cmake GUIs like ccmake where all
+# plugins are enabled or disabled manually.
+mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
+
 fast_downward_plugin(
     NAME OPTIONS
     HELP "Option parsing and plugin definition"
