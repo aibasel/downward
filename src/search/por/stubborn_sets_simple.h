@@ -19,9 +19,6 @@ protected:
                             std::vector<const GlobalOperator *> &ops);
     virtual void initialize();
 public:
-    StubbornSetsSimple();
-    ~StubbornSetsSimple();
-
     virtual void dump_options() const;
 };
 }
