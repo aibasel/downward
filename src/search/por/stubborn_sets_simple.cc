@@ -8,25 +8,11 @@
 using namespace std;
 
 namespace StubbornSetsSimple {
-// Implementation of simple instantiation of strong stubborn sets.
-// Disjunctive action landmarks are computed trivially.
-//
-//
-// TODO: get_op_index belongs to a central place.
-// We currently have copies of it in different parts of the code.
-//
-//
-// Internal representation of operator preconditions.
-// Only used during computation of interference relation.
-// op_preconds[i] contains precondition facts of the i-th
-// operator.
-//
-//
-// Internal representation of operator effects.
-// Only used during computation of interference relation.
-// op_effects[i] contains effect facts of the i-th
-// operator.
+/* Implementation of simple instantiation of strong stubborn sets.
+   Disjunctive action landmarks are computed trivially.*/
 
+/* TODO: get_op_index belongs to a central place.
+   We currently have copies of it in different parts of the code. */
 static inline int get_op_index(const GlobalOperator *op) {
     int op_index = op - &*g_operators.begin();
     assert(op_index >= 0 && (uint)op_index < g_operators.size());
