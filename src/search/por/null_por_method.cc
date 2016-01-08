@@ -6,10 +6,6 @@
 using namespace std;
 
 namespace NullPORMethod {
-NullPORMethod::NullPORMethod() {}
-
-NullPORMethod::~NullPORMethod() {}
-
 void NullPORMethod::dump_options() const {
     cout << "partial order reduction method: none" << endl;
 }
