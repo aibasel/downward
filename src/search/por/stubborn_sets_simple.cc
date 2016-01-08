@@ -149,7 +149,8 @@ void StubbornSetsSimple::do_pruning(
 }
 
 static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("Stubborn sets simple", "stubborn sets with simple instantiations of design choices");
+    parser.document_synopsis("Stubborn sets simple", 
+			     "stubborn sets with simple instantiations of design choices");
 
     return make_shared<StubbornSetsSimple>();
 }
