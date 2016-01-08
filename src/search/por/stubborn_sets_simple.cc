@@ -107,24 +107,29 @@ void StubbornSetsSimple::do_pruning(
 
     // Add a necessary enabling set for an unsatisfied goal.
     pair<int, int> goal_pair = find_unsatisfied_goal(state);
-    assert(goal_pair.first != -1);
+    if (goal_pair.first == -1) {
+	// goal state encountered
+	applicable_ops.clear();
+	return;
+    }
+    
     add_necessary_enabling_set(goal_pair);
 
-    // Iteratively insert operators to stubborn according to the
-    // definition of strong stubborn sets until a fixpoint is reached.
+    /* Iteratively insert operators to stubborn according to the
+       definition of strong stubborn sets until a fixpoint is reached. */
     while (!stubborn_queue.empty()) {
         int op_no = stubborn_queue.back();
         stubborn_queue.pop_back();
         const GlobalOperator &op = g_operators[op_no];
         pair<int, int> fact = find_unsatisfied_precondition(op, state);
         if (fact.first == -1) {
-            // no unsatisfied precondition found
-            // => operator is applicable
-            // => add all interfering operators
+            /* no unsatisfied precondition found
+	       => operator is applicable
+	       => add all interfering operators */
             add_interfering(op_no);
         } else {
-            // unsatisfied precondition found
-            // => add an enabling set for it
+            /* unsatisfied precondition found
+	       => add a necessary enabling set for it */
             add_necessary_enabling_set(fact);
         }
     }
