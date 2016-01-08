@@ -11,8 +11,8 @@ struct Fact {
 };
 
 class StubbornSets : public PORMethod {
-    long unpruned_successors_generated;
-    long pruned_successors_generated;
+    long num_unpruned_successors_generated;
+    long num_pruned_successors_generated;
 
 protected:
     std::vector<std::vector<Fact>> op_preconds;
