@@ -19,7 +19,8 @@ static inline int get_op_index(const GlobalOperator *op) {
     return op_index;
 }
 
-// Return the first unsatified goal pair, or (-1, -1) if there is none.
+/* Return the first unsatified goal pair, or (-1, -1) if there is none.
+   TODO: use Fact instead of pair<int, int> */
 static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
     for (const pair<int, int>& goal : g_goal) {
         int goal_var = goal.first;
@@ -30,7 +31,8 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
     return make_pair(-1, -1);
 }
 
-// Return the first unsatified precondition, or (-1, -1) if there is none.
+/* Return the first unsatified precondition, or (-1, -1) if there is none.
+   TODO: use Fact instead of pair<int, int> */
 static inline pair<int, int> find_unsatisfied_precondition(
     const GlobalOperator &op, const GlobalState &state) {
     const vector<GlobalCondition> &preconds = op.get_preconditions();
@@ -83,7 +85,8 @@ void StubbornSetsSimple::mark_as_stubborn(int op_no) {
     }
 }
 
-// Add all operators that achieve the fact (var, value) to stubborn set.
+/* Add all operators that achieve the fact (var, value) to stubborn set.
+   TODO: use Fact instead of pair<int, int> */
 void StubbornSetsSimple::add_necessary_enabling_set(pair<int, int> fact) {
     int var = fact.first;
     int value = fact.second;
