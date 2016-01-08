@@ -60,13 +60,20 @@ void StubbornSetsSimple::compute_interference_relation() {
 
     int num_interfering_pairs = 0;
 
-    size_t num_operators = g_operators.size();
+    uint num_operators = g_operators.size();
     interference_relation.resize(num_operators);
+    
+    /* 
+       TODO: as interference is symmetric, we only need to compute the
+       relation for operators (o1, o2) with (o1 < o2) and add a lookup
+       method that looks up (i, j) if i < j and (j, i) otherwise.
+    */
     for (size_t op1_no = 0; op1_no < num_operators; ++op1_no) {
         vector<int> &interfere_op1 = interference_relation[op1_no];
         for (size_t op2_no = 0; op2_no < num_operators; ++op2_no) {
-            if (op1_no != op2_no && interfere(op1_no, op2_no))
+            if (op1_no != op2_no && interfere(op1_no, op2_no)) {
                 interfere_op1.push_back(op2_no);
+	    }
         }
 
         num_interfering_pairs += interfere_op1.size();
