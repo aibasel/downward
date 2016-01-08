@@ -6,4 +6,4 @@ using namespace std;
 
 static PluginTypePlugin<PORMethod> _type_plugin(
     "PORMethod",
-    "Partial order reduction method");
+    "Prune applicable operators based on partial order reduction.");
