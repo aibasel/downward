@@ -75,6 +75,9 @@ bool StubbornSets::interfere(int op1_no, int op2_no) {
 }
 
 void StubbornSets::compute_sorted_operators() {
+    assert(op_preconds.empty());
+    assert(op_effects.empty());
+
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         GlobalOperator *op = &g_operators[op_no];
 
