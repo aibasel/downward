@@ -16,10 +16,10 @@ class LMCutConstraints : public ConstraintGenerator {
 public:
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,
-        std::vector<LP::LPConstraint> &constraints,
+        std::vector<lp::LPConstraint> &constraints,
         double infinity) override;
     virtual bool update_constraints(const State &state,
-                                    LP::LPSolver &lp_solver) override;
+                                    lp::LPSolver &lp_solver) override;
 };
 }
 

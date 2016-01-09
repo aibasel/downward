@@ -25,8 +25,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace LP {
+namespace lp {
 void add_lp_solver_option_to_parser(OptionParser &parser) {
     parser.document_note(
         "Note",

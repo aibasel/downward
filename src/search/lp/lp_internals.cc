@@ -36,8 +36,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace LP {
+namespace lp {
 // CPLEX warning that is misleadingly reported with the severity of a critical error.
 static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
 // CPLEX warning from writeMps if no column names are defined.

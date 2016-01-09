@@ -43,7 +43,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
                 lgraph,
                 OperatorCost(opts.get_enum("cost_type")),
-                LP::LPSolverType(opts.get_enum("lpsolver")));
+                lp::LPSolverType(opts.get_enum("lpsolver")));
         } else {
             lm_cost_assignment = new LandmarkUniformSharedCostAssignment(
                 lgraph, opts.get<bool>("alm"),
@@ -323,7 +323,7 @@ static Heuristic *_parse(OptionParser &parser) {
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
-    LP::add_lp_solver_option_to_parser(parser);
+    lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
