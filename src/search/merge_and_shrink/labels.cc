@@ -8,8 +8,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 Labels::Labels(vector<unique_ptr<Label>> &&labels)
     : labels(move(labels)),
       max_size(0) {

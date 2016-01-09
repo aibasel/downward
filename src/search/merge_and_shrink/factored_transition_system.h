@@ -13,7 +13,7 @@ namespace Utils {
 class Timer;
 }
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class Distances;
 class HeuristicRepresentation;
 class Labels;
