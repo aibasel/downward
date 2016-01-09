@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 using PDBRelation = unordered_set<pair<PatternDatabase *, PatternDatabase *>>;
 
 PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {

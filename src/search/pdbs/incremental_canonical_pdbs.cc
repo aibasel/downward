@@ -10,8 +10,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
     const shared_ptr<AbstractTask> task, const PatternCollection &intitial_patterns)
     : task(task),
@@ -48,7 +47,7 @@ void IncrementalCanonicalPDBs::recompute_max_additive_subsets() {
 
 MaxAdditivePDBSubsets IncrementalCanonicalPDBs::get_max_additive_subsets(
     const Pattern &new_pattern) {
-    return PDBs::compute_max_additive_subsets_with_pattern(
+    return pdbs::compute_max_additive_subsets_with_pattern(
         *max_additive_subsets, new_pattern, are_additive);
 }
 

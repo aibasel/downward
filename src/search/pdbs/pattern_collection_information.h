@@ -7,8 +7,7 @@
 
 #include <memory>
 
-
-namespace PDBs {
+namespace pdbs {
 /*
   This class contains everything we know about a pattern collection. It will
   always contain patterns, but can also contain the computed PDBs and maximal

@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns) {
     vector<int> operator_costs;
     OperatorsProxy operators = task_proxy.get_operators();

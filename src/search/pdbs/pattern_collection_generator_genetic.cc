@@ -21,8 +21,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
     const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),

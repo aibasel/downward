@@ -7,7 +7,7 @@
 
 class State;
 
-namespace PDBs {
+namespace pdbs {
 class CanonicalPDBs {
     std::shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets;
 

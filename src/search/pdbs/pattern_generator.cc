@@ -2,8 +2,7 @@
 
 #include "../plugin.h"
 
-
-namespace PDBs {
+namespace pdbs {
 static PluginTypePlugin<PatternCollectionGenerator> _type_plugin_collection(
     "PatternCollectionGenerator",
     "Factory for pattern collections");

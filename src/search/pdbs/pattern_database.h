@@ -8,8 +8,7 @@
 #include <utility>
 #include <vector>
 
-
-namespace PDBs {
+namespace pdbs {
 class AbstractOperator {
     /*
       This class represents an abstract operator how it is needed for

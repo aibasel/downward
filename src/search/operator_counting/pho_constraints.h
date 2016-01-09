@@ -9,16 +9,16 @@
 
 class Options;
 
-namespace PDBs {
+namespace pdbs {
 class PatternCollectionGenerator;
 }
 
 namespace operator_counting {
 class PhOConstraints : public ConstraintGenerator {
-    std::shared_ptr<PDBs::PatternCollectionGenerator> pattern_generator;
+    std::shared_ptr<pdbs::PatternCollectionGenerator> pattern_generator;
 
     int constraint_offset;
-    std::shared_ptr<PDBs::PDBCollection> pdbs;
+    std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
     explicit PhOConstraints(const Options &opts);
     ~PhOConstraints() = default;

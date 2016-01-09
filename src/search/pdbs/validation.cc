@@ -10,8 +10,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace PDBs {
+namespace pdbs {
 void validate_and_normalize_pattern(const TaskProxy &task_proxy,
                                     Pattern &pattern) {
     /*
