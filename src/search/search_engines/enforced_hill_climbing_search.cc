@@ -16,8 +16,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace EnforcedHillClimbingSearch {
+namespace enforced_hill_climbing_search {
 using GEval = g_evaluator::GEvaluator;
 using PrefEval = pref_evaluator::PrefEvaluator;
 

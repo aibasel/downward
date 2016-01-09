@@ -17,7 +17,7 @@ class GlobalOperator;
 class Heuristic;
 class Options;
 
-namespace LazySearch {
+namespace lazy_search {
 class LazySearch : public SearchEngine {
 protected:
     std::unique_ptr<EdgeOpenList> open_list;
