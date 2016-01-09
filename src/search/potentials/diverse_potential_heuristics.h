@@ -7,8 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-
-namespace Potentials {
+namespace potentials {
 using SamplesToFunctionsMap =
           std::unordered_map<State, std::unique_ptr<PotentialFunction>>;
 

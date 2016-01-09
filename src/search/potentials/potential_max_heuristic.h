@@ -6,8 +6,7 @@
 #include <memory>
 #include <vector>
 
-
-namespace Potentials {
+namespace potentials {
 class PotentialFunction;
 
 /*

@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace Potentials {
+namespace potentials {
 vector<State> sample_without_dead_end_detection(
     PotentialOptimizer &optimizer, int num_samples) {
     const shared_ptr<AbstractTask> task = optimizer.get_task();
