@@ -11,8 +11,7 @@ namespace lp {
 class LPConstraint;
 }
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 /* A proposition is an atom of the form Var = Val. It stores the index of the
    constraint representing it in the LP */
 struct Proposition {

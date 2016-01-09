@@ -9,8 +9,7 @@
 
 using namespace std;
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 void add_indices_to_constraint(lp::LPConstraint &constraint,
                                const set<int> &indices,
                                double coefficient) {
@@ -18,7 +17,6 @@ void add_indices_to_constraint(lp::LPConstraint &constraint,
         constraint.insert(index, coefficient);
     }
 }
-
 
 void StateEquationConstraints::build_propositions(const TaskProxy &task_proxy) {
     VariablesProxy vars = task_proxy.get_variables();

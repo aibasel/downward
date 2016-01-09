@@ -12,8 +12,7 @@ class LPConstraint;
 class LPSolver;
 }
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 /*
   Derive from this class to add new operator-counting constraints. We support
   two types of constraints:
