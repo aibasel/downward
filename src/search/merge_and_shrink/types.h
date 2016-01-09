@@ -5,7 +5,7 @@
 #include <list>
 #include <vector>
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 // Related to representation of grouped labels
 using LabelIter = std::list<int>::iterator;
 using LabelConstIter = std::list<int>::const_iterator;

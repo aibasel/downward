@@ -17,8 +17,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 ShrinkStrategy::ShrinkStrategy(const Options &opts)
     : max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),

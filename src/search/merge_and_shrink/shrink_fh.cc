@@ -18,8 +18,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 ShrinkFH::ShrinkFH(const Options &opts)
     : ShrinkBucketBased(opts),
       f_start(HighLow(opts.get_enum("shrink_f"))),

@@ -13,7 +13,7 @@
 
 class TaskProxy;
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class FactoredTransitionSystem;
 
 extern FactoredTransitionSystem create_factored_transition_system(

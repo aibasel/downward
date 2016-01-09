@@ -23,8 +23,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 LabelReduction::LabelReduction(const Options &options)
     : lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),

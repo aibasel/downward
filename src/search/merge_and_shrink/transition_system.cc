@@ -25,8 +25,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 std::ostream &operator<<(std::ostream &os, const Transition &trans) {
     os << trans.src << "->" << trans.target;
     return os;

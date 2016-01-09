@@ -18,8 +18,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class FTSFactory {
     const TaskProxy &task_proxy;
 

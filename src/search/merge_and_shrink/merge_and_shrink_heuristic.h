@@ -9,8 +9,7 @@ namespace Utils {
 class Timer;
 }
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class LabelReduction;
 class MergeStrategy;

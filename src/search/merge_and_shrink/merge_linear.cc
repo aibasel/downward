@@ -14,8 +14,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 MergeLinear::MergeLinear(const Options &opts)
     : MergeStrategy(),
       variable_order_type(VariableOrderType(opts.get_enum("variable_order"))),
