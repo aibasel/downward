@@ -20,7 +20,7 @@ void LMCutConstraints::initialize_constraints(
     double /*infinity*/) {
     TaskProxy task_proxy(*task);
     landmark_generator =
-        Utils::make_unique_ptr<LandmarkCutHeuristic::LandmarkCutLandmarks>(task_proxy);
+        Utils::make_unique_ptr<lm_cut_heuristic::LandmarkCutLandmarks>(task_proxy);
 }
 
 

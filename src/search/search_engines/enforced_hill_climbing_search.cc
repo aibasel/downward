@@ -18,8 +18,8 @@ using Utils::ExitCode;
 
 
 namespace EnforcedHillClimbingSearch {
-using GEval = GEvaluator::GEvaluator;
-using PrefEval = PrefEvaluator::PrefEvaluator;
+using GEval = g_evaluator::GEvaluator;
+using PrefEval = pref_evaluator::PrefEvaluator;
 
 static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
     bool use_preferred, PreferredUsage preferred_usage) {
