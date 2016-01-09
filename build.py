@@ -8,8 +8,13 @@ import sys
 
 CONFIGS = {}
 script_dir = os.path.dirname(__file__)
-for config_file in glob.glob(os.path.join(script_dir, "*build_configs.py")):
+for config_file in sorted(glob.glob(os.path.join(script_dir, "*build_configs.py"))):
     execfile(config_file, globals(), CONFIGS)
+
+DEFAULT_CONFIG_NAME = CONFIGS["DEFAULT"]
+del CONFIGS["DEFAULT"]
+DEBUG_CONFIG_NAME = CONFIGS["DEBUG"]
+del CONFIGS["DEBUG"]
 
 CMAKE = "cmake"
 if os.name == "posix":
@@ -27,17 +32,17 @@ def print_usage():
     script_name = os.path.basename(__file__)
     configs = []
     for name, args in sorted(CONFIGS.items()):
-        if name in ("DEFAULT", "DEBUG"):
-            continue
-        if args == CONFIGS["DEFAULT"]:
+        if name == DEFAULT_CONFIG_NAME:
             name += " (default)"
-        if args == CONFIGS['DEBUG']:
+        if name == DEBUG_CONFIG_NAME:
             name += " (default with --debug)"
         configs.append(name + "\n    " + " ".join(args))
     configs_string = "\n  ".join(configs)
     cmake_name = os.path.basename(CMAKE)
     make_name = os.path.basename(MAKE)
     generator_name = CMAKE_GENERATOR.lower()
+    default_config_name = DEFAULT_CONFIG_NAME
+    debug_config_name = DEBUG_CONFIG_NAME
     print("""Usage: {script_name} [BUILD [BUILD ...]] [--all] [--debug] [MAKE_OPTIONS]
 
 Build one or more predefined build configurations of Fast Downward. Each build
@@ -55,10 +60,10 @@ Make options
   All other parameters are forwarded to {make_name}.
 
 Example usage:
-  ./{script_name} -j4                 # build release32 in 4 threads
+  ./{script_name} -j4                 # build {default_config_name} in 4 threads
   ./{script_name} -j4 downward        # as above, but only build the planner
   ./{script_name} debug32 -j4         # build debug32 in 4 threads
-  ./{script_name} --debug -j4         # build debug32 in 4 threads
+  ./{script_name} --debug -j4         # build {debug_config_name} in 4 threads
   ./{script_name} release64 debug64   # build both 64-bit build configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
 """.format(**locals()))
@@ -109,7 +114,7 @@ def main():
             print_usage()
             sys.exit(0)
         elif arg == "--debug":
-            config_names.add("DEBUG")
+            config_names.add(DEBUG_CONFIG_NAME)
         elif arg == "--all":
             config_names |= set(CONFIGS.keys())
         elif arg in CONFIGS:
@@ -117,7 +122,7 @@ def main():
         else:
             make_parameters.append(arg)
     if not config_names:
-        config_names.add("DEFAULT")
+        config_names.add(DEFAULT_CONFIG_NAME)
     for config_name in config_names:
         build(config_name, CONFIGS[config_name], make_parameters)
 
