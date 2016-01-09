@@ -9,8 +9,7 @@
 #include <set>
 #include <vector>
 
-
-namespace Landmarks {
+namespace landmarks {
 class LandmarkGraph;
 class LandmarkNode;
 

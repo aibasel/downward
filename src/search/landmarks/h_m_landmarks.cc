@@ -8,8 +8,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace Landmarks {
+namespace landmarks {
 std::ostream &operator<<(std::ostream &os, const Fluent &p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }

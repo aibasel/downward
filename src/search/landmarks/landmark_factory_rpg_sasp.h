@@ -10,8 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
-
-namespace Landmarks {
+namespace landmarks {
 class LandmarkFactoryRpgSasp : public LandmarkFactory {
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;

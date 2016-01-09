@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 /*
   Implementation notes:
 

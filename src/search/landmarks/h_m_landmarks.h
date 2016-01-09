@@ -5,8 +5,7 @@
 #include "landmark_graph.h"
 #include "../globals.h"
 
-
-namespace Landmarks {
+namespace landmarks {
 using Fluent = std::pair<int, int>;
 using FluentSet = std::vector<Fluent>;
 

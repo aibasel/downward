@@ -8,8 +8,7 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 bool _possibly_fires(const vector<GlobalCondition> &conditions, const vector<vector<int>> &lvl_var) {
     for (size_t i = 0; i < conditions.size(); ++i)
         if (lvl_var[conditions[i].var][conditions[i].val] ==

@@ -16,8 +16,7 @@
 #include <unordered_set>
 #include <vector>
 
-
-namespace Landmarks {
+namespace landmarks {
 enum edge_type {
     /* NOTE: The code relies on the fact that larger numbers are
        stronger in the sense that, e.g., every greedy-necessary

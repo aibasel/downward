@@ -10,8 +10,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace Landmarks {
+namespace landmarks {
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
     : LandmarkFactory(opts),
       lm_graphs(opts.get_list<LandmarkGraph *>("lm_graphs")) {

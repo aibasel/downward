@@ -12,8 +12,7 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
    - Added-on functionality for excluding certain operators from the relaxed
