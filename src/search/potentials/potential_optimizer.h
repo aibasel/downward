@@ -11,8 +11,7 @@
 class Options;
 class State;
 
-
-namespace Potentials {
+namespace potentials {
 class PotentialFunction;
 
 /*

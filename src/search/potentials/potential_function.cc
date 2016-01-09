@@ -8,8 +8,7 @@
 
 using namespace std;
 
-
-namespace Potentials {
+namespace potentials {
 PotentialFunction::PotentialFunction(
     const vector<vector<double>> &fact_potentials)
     : fact_potentials(fact_potentials) {

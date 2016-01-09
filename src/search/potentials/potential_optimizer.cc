@@ -15,8 +15,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-
-namespace Potentials {
+namespace potentials {
 static int get_undefined_value(VariableProxy var) {
     return var.get_domain_size();
 }
