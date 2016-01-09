@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace CGHeuristic {
+namespace cg_heuristic {
 const int CGCache::NOT_COMPUTED;
 
 CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {

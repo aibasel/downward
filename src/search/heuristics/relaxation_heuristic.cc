@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace RelaxationHeuristic {
+namespace relaxation_heuristic {
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
     : Heuristic(opts) {

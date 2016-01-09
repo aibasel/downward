@@ -17,9 +17,9 @@ using namespace std;
 
 
 namespace SearchCommon {
-using GEval = GEvaluator::GEvaluator;
-using SumEval = SumEvaluator::SumEvaluator;
-using WeightedEval = WeightedEvaluator::WeightedEvaluator;
+using GEval = g_evaluator::GEvaluator;
+using SumEval = sum_evaluator::SumEvaluator;
+using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     ScalarEvaluator *eval, bool pref_only) {

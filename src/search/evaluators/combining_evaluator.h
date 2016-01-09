@@ -7,8 +7,7 @@
 #include <string>
 #include <vector>
 
-
-namespace CombiningEvaluator {
+namespace combining_evaluator {
 /*
   CombiningEvaluator is the base class for SumEvaluator and
   MaxEvaluator, which captures the common aspects of their behaviour.

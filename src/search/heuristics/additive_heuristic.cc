@@ -10,8 +10,7 @@
 
 using namespace std;
 
-
-namespace AdditiveHeuristic {
+namespace additive_heuristic {
 // construction and destruction
 AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     : RelaxationHeuristic(opts),
