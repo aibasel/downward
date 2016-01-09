@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 PhOConstraints::PhOConstraints(const Options &opts)
     : pattern_generator(
           opts.get<shared_ptr<PDBs::PatternCollectionGenerator>>("patterns")) {

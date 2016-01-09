@@ -9,8 +9,7 @@ namespace lm_cut_heuristic {
 class LandmarkCutLandmarks;
 }
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 class LMCutConstraints : public ConstraintGenerator {
     std::unique_ptr<lm_cut_heuristic::LandmarkCutLandmarks> landmark_generator;
 public:

@@ -13,7 +13,7 @@ namespace PDBs {
 class PatternCollectionGenerator;
 }
 
-namespace OperatorCounting {
+namespace operator_counting {
 class PhOConstraints : public ConstraintGenerator {
     std::shared_ptr<PDBs::PatternCollectionGenerator> pattern_generator;
 
