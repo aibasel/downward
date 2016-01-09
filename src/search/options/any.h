@@ -38,7 +38,7 @@ public:
         }
 
         virtual std::unique_ptr<Placeholder> clone() const {
-            return Utils::make_unique_ptr<Holder<ValueType>>(held);
+            return utils::make_unique_ptr<Holder<ValueType>>(held);
         }
 
         virtual const std::type_info &type() const {
@@ -61,7 +61,7 @@ public:
 
     template<typename ValueType>
     Any(const ValueType &value)
-        : content(Utils::make_unique_ptr<Holder<ValueType>>(value)) {
+        : content(utils::make_unique_ptr<Holder<ValueType>>(value)) {
     }
 
     ~Any() = default;

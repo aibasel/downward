@@ -84,7 +84,7 @@ int CGCache::compute_required_cache_size(
 
     VariablesProxy variables = task_proxy.get_variables();
     int var_domain = variables[var_id].get_domain_size();
-    if (!Utils::is_product_within_limit(var_domain, var_domain - 1,
+    if (!utils::is_product_within_limit(var_domain, var_domain - 1,
                                         MAX_CACHE_SIZE))
         return -1;
 
@@ -103,7 +103,7 @@ int CGCache::compute_required_cache_size(
         if (cache[depend_var_id].empty())
             return -1;
 
-        if (!Utils::is_product_within_limit(required_size, depend_var_domain,
+        if (!utils::is_product_within_limit(required_size, depend_var_domain,
                                             MAX_CACHE_SIZE))
             return -1;
 
@@ -126,7 +126,7 @@ int CGCache::get_index(int var, const State &state,
     if (to_val > from_val)
         --to_val;
     index += to_val * multiplier;
-    assert(Utils::in_bounds(index, cache[var]));
+    assert(utils::in_bounds(index, cache[var]));
     return index;
 }
 }

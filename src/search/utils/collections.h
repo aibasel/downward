@@ -5,8 +5,7 @@
 #include <cstddef>
 #include <vector>
 
-
-namespace Utils {
+namespace utils {
 template<class T>
 extern bool is_sorted_unique(const std::vector<T> &values) {
     for (size_t i = 1; i < values.size(); ++i) {

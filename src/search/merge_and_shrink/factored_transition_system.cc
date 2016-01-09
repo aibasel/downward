@@ -155,13 +155,13 @@ int FactoredTransitionSystem::merge(int index1, int index2) {
     transition_systems[index1] = nullptr;
     transition_systems[index2] = nullptr;
     heuristic_representations.push_back(
-        Utils::make_unique_ptr<HeuristicRepresentationMerge>(
+        utils::make_unique_ptr<HeuristicRepresentationMerge>(
             move(heuristic_representations[index1]),
             move(heuristic_representations[index2])));
     heuristic_representations[index1] = nullptr;
     heuristic_representations[index2] = nullptr;
     const TransitionSystem &new_ts = *transition_systems.back();
-    distances.push_back(Utils::make_unique_ptr<Distances>(new_ts));
+    distances.push_back(utils::make_unique_ptr<Distances>(new_ts));
     int new_index = transition_systems.size() - 1;
     compute_distances_and_prune(new_index);
     assert(is_component_valid(new_index));
@@ -217,7 +217,7 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
 }
 
 void FactoredTransitionSystem::statistics(int index,
-                                          const Utils::Timer &timer) const {
+                                          const utils::Timer &timer) const {
     assert(is_index_valid(index));
     const TransitionSystem &ts = *transition_systems[index];
     ts.statistics();

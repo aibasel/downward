@@ -49,8 +49,8 @@ void SearchStatistics::print_basic_statistics() const {
     if (reopened_states > 0) {
         cout << reopened_states << " reopened, ";
     }
-    cout << "t=" << Utils::g_timer;
-    cout << ", " << Utils::get_peak_memory_in_kb() << " KB";
+    cout << "t=" << utils::g_timer;
+    cout << ", " << utils::get_peak_memory_in_kb() << " KB";
 }
 
 void SearchStatistics::print_detailed_statistics() const {

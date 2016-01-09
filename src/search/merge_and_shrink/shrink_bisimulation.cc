@@ -322,7 +322,7 @@ void ShrinkBisimulation::compute_abstraction(
     /* Reduce memory pressure before generating the equivalence
        relation since this is one of the code parts relevant to peak
        memory. */
-    Utils::release_vector_memory(signatures);
+    utils::release_vector_memory(signatures);
 
     // Generate final result.
     assert(equivalence_relation.empty());

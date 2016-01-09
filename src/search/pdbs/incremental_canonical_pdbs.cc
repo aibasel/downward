@@ -20,7 +20,7 @@ IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
       pattern_databases(make_shared<PDBCollection>()),
       max_additive_subsets(nullptr),
       size(0) {
-    Utils::Timer timer;
+    utils::Timer timer;
     pattern_databases->reserve(patterns->size());
     for (const Pattern &pattern : *patterns)
         add_pdb_for_pattern(pattern);

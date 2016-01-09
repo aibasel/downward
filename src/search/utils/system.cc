@@ -1,7 +1,6 @@
 #include "system.h"
 
-
-namespace Utils {
+namespace utils {
 const char *get_exit_code_message_reentrant(ExitCode exitcode) {
     switch (exitcode) {
     case ExitCode::PLAN_FOUND:

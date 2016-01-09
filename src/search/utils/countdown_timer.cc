@@ -4,8 +4,7 @@
 
 using namespace std;
 
-
-namespace Utils {
+namespace utils {
 CountdownTimer::CountdownTimer(double max_time)
     : max_time(max_time) {
 }
