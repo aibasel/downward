@@ -25,8 +25,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 struct HillClimbingTimeout : public exception {};
 
 PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const Options &opts)

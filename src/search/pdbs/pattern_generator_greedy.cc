@@ -14,8 +14,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
     : PatternGeneratorGreedy(opts.get<int>("max_states")) {
 }

@@ -10,8 +10,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 class MaxCliqueComputer {
     const vector<vector<int>> &graph;
     vector<vector<int>> &max_cliques;

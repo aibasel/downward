@@ -18,8 +18,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 AbstractOperator::AbstractOperator(const vector<pair<int, int>> &prev_pairs,
                                    const vector<pair<int, int>> &pre_pairs,
                                    const vector<pair<int, int>> &eff_pairs,

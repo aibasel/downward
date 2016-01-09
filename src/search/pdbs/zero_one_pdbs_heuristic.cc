@@ -7,8 +7,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 ZeroOnePDBs get_zero_one_pdbs_from_options(
     const shared_ptr<AbstractTask> task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =

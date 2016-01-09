@@ -18,7 +18,7 @@ using namespace std;
 namespace operator_counting {
 PhOConstraints::PhOConstraints(const Options &opts)
     : pattern_generator(
-          opts.get<shared_ptr<PDBs::PatternCollectionGenerator>>("patterns")) {
+          opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns")) {
 }
 
 void PhOConstraints::initialize_constraints(
@@ -26,7 +26,7 @@ void PhOConstraints::initialize_constraints(
     vector<lp::LPConstraint> &constraints,
     double infinity) {
     assert(pattern_generator);
-    PDBs::PatternCollectionInformation pattern_collection_info =
+    pdbs::PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
     /*
       TODO issue590: Currently initialize_constraints should only be called
@@ -38,7 +38,7 @@ void PhOConstraints::initialize_constraints(
     pdbs = pattern_collection_info.get_pdbs();
     TaskProxy task_proxy(*task);
     constraint_offset = constraints.size();
-    for (const shared_ptr<PDBs::PatternDatabase> &pdb : *pdbs) {
+    for (const shared_ptr<pdbs::PatternDatabase> &pdb : *pdbs) {
         constraints.emplace_back(0, infinity);
         lp::LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
@@ -53,7 +53,7 @@ bool PhOConstraints::update_constraints(const State &state,
                                         lp::LPSolver &lp_solver) {
     for (size_t i = 0; i < pdbs->size(); ++i) {
         int constraint_id = constraint_offset + i;
-        shared_ptr<PDBs::PatternDatabase> pdb = (*pdbs)[i];
+        shared_ptr<pdbs::PatternDatabase> pdb = (*pdbs)[i];
         int h = pdb->get_value(state);
         if (h == numeric_limits<int>::max()) {
             return true;
@@ -75,7 +75,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "Conference on Artificial Intelligence (IJCAI 2013)//, "
         "pp. 2357-2364. 2013.\n\n\n");
 
-    parser.add_option<shared_ptr<PDBs::PatternCollectionGenerator>>(
+    parser.add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
         "patterns",
         "pattern generation method",
         "systematic(2)");

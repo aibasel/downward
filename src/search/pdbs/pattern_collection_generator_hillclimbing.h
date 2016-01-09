@@ -19,8 +19,7 @@ namespace Utils {
 class CountdownTimer;
 }
 
-
-namespace PDBs {
+namespace pdbs {
 class CanonicalPDBsHeuristic;
 class IncrementalCanonicalPDBs;
 class PatternDatabase;

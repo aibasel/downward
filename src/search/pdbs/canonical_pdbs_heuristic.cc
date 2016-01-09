@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 CanonicalPDBs get_canonical_pdbs_from_options(
     const shared_ptr<AbstractTask> task, const Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
