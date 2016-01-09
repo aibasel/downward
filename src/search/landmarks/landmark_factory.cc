@@ -9,8 +9,7 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 LandmarkFactory::LandmarkFactory(const Options &opts)
     : lm_graph(new LandmarkGraph(opts)) {
 }

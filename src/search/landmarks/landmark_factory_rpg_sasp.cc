@@ -18,7 +18,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-namespace Landmarks {
+namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
     : LandmarkFactory(opts) {
 }

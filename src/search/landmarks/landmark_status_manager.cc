@@ -2,8 +2,7 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
     : lm_graph(graph) {
     do_intersection = true;

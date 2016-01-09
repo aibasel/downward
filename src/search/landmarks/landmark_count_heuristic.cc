@@ -14,7 +14,7 @@
 using namespace std;
 using Utils::ExitCode;
 
-namespace Landmarks {
+namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
       lgraph(*opts.get<LandmarkGraph *>("lm_graph")),
