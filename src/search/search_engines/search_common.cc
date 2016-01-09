@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace SearchCommon {
+namespace search_common {
 using GEval = g_evaluator::GEvaluator;
 using SumEval = sum_evaluator::SumEvaluator;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
