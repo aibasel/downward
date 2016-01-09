@@ -15,7 +15,7 @@
 
 class Options;
 
-namespace Utils {
+namespace utils {
 class CountdownTimer;
 }
 
@@ -39,7 +39,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
 
     // for stats only
     int num_rejected;
-    Utils::CountdownTimer *hill_climbing_timer;
+    utils::CountdownTimer *hill_climbing_timer;
 
     /*
       For the given pattern, all possible extensions of the pattern by one

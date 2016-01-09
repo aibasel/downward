@@ -21,7 +21,7 @@
 #include <unordered_map>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
 namespace merge_and_shrink {
 LabelReduction::LabelReduction(const Options &options)
@@ -163,7 +163,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         }
         delete relation;
         relation = 0;
-        Utils::release_vector_memory(label_mapping);
+        utils::release_vector_memory(label_mapping);
 
         relation = compute_combinable_equivalence_relation(
             next_merge.second,
@@ -183,7 +183,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
     assert(!transition_system_order.empty());
     while (transition_system_order[tso_index] >= num_transition_systems) {
         ++tso_index;
-        assert(Utils::in_bounds(tso_index, transition_system_order));
+        assert(utils::in_bounds(tso_index, transition_system_order));
     }
 
     int max_iterations;
@@ -346,7 +346,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         if (!lr_before_shrinking && !lr_before_merging) {
             cerr << "Please turn on at least one of the options "
                  << "before_shrinking or before_merging!" << endl;
-            Utils::exit_with(ExitCode::INPUT_ERROR);
+            utils::exit_with(ExitCode::INPUT_ERROR);
         }
         return nullptr;
     } else {

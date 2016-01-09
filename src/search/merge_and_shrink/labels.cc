@@ -23,11 +23,11 @@ void Labels::reduce_labels(const vector<int> &old_label_nos) {
         int old_label_no = old_label_nos[i];
         labels[old_label_no] = nullptr;
     }
-    labels.push_back(Utils::make_unique_ptr<Label>(new_label_cost));
+    labels.push_back(utils::make_unique_ptr<Label>(new_label_cost));
 }
 
 bool Labels::is_current_label(int label_no) const {
-    assert(Utils::in_bounds(label_no, labels));
+    assert(utils::in_bounds(label_no, labels));
     return labels[label_no] != nullptr;
 }
 

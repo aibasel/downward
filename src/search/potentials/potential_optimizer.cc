@@ -13,7 +13,7 @@
 #include <unordered_map>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
 namespace potentials {
 static int get_undefined_value(VariableProxy var) {
@@ -58,15 +58,15 @@ void PotentialOptimizer::optimize_for_state(const State &state) {
 int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
     int var_id = fact.get_variable().get_id();
     int value = fact.get_value();
-    assert(Utils::in_bounds(var_id, lp_var_ids));
-    assert(Utils::in_bounds(value, lp_var_ids[var_id]));
+    assert(utils::in_bounds(var_id, lp_var_ids));
+    assert(utils::in_bounds(value, lp_var_ids[var_id]));
     return lp_var_ids[var_id][value];
 }
 
 void PotentialOptimizer::optimize_for_all_states() {
     if (!potentials_are_bounded()) {
         cerr << "Potentials must be bounded for all-states LP." << endl;
-        Utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::INPUT_ERROR);
     }
     vector<double> coefficients(num_lp_vars, 0.0);
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
@@ -203,6 +203,6 @@ void PotentialOptimizer::extract_lp_solution() {
 
 unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
     assert(has_optimal_solution());
-    return Utils::make_unique_ptr<PotentialFunction>(fact_potentials);
+    return utils::make_unique_ptr<PotentialFunction>(fact_potentials);
 }
 }

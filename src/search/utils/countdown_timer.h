@@ -5,8 +5,7 @@
 
 #include <ostream>
 
-
-namespace Utils {
+namespace utils {
 class CountdownTimer {
     Timer timer;
     double max_time;

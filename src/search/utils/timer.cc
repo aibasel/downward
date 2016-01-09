@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace Utils {
+namespace utils {
 #if OPERATING_SYSTEM == OSX
 void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
     uint64_t difference = end - start;

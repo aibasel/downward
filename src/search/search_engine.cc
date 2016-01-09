@@ -15,7 +15,7 @@
 #include <limits>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
 
 SearchEngine::SearchEngine(const Options &opts)
@@ -26,7 +26,7 @@ SearchEngine::SearchEngine(const Options &opts)
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        Utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::INPUT_ERROR);
     }
     bound = opts.get<int>("bound");
 }
@@ -57,7 +57,7 @@ void SearchEngine::set_plan(const Plan &p) {
 
 void SearchEngine::search() {
     initialize();
-    Utils::CountdownTimer timer(max_time);
+    utils::CountdownTimer timer(max_time);
     while (status == IN_PROGRESS) {
         status = step();
         if (timer.is_expired()) {
@@ -67,7 +67,7 @@ void SearchEngine::search() {
         }
     }
     cout << "Actual search time: " << timer
-         << " [t=" << Utils::g_timer << "]" << endl;
+         << " [t=" << utils::g_timer << "]" << endl;
 }
 
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {

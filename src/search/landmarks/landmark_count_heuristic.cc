@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
@@ -31,13 +31,13 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         use_cost_sharing = true;
         if (lgraph.is_using_reasonable_orderings()) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
-            Utils::exit_with(ExitCode::INPUT_ERROR);
+            utils::exit_with(ExitCode::INPUT_ERROR);
         } else if (has_axioms()) {
             cerr << "cost partitioning does not support axioms" << endl;
-            Utils::exit_with(ExitCode::UNSUPPORTED);
+            utils::exit_with(ExitCode::UNSUPPORTED);
         } else if (has_conditional_effects() && !lgraph.supports_conditional_effects()) {
             cerr << "conditional effects not supported by the landmark generation method" << endl;
-            Utils::exit_with(ExitCode::UNSUPPORTED);
+            utils::exit_with(ExitCode::UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
