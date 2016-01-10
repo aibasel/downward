@@ -98,7 +98,7 @@ void StubbornSetsSimple::add_interfering(int op_no) {
     }
 }
 
-void StubbornSetsSimple::do_pruning(
+void StubbornSetsSimple::compute_stubborn_set(
     const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) {
     // Clear stubborn set from previous call.
     stubborn.clear();

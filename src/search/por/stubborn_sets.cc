@@ -137,7 +137,7 @@ void StubbornSets::compute_achievers() {
 void StubbornSets::prune_operators(
     const GlobalState &state, vector<const GlobalOperator *> &ops) {
     num_unpruned_successors_generated += ops.size();
-    do_pruning(state, ops);
+    compute_stubborn_set(state, ops);
     num_pruned_successors_generated += ops.size();
 }
 
