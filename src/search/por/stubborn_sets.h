@@ -46,6 +46,9 @@ public:
     StubbornSets();
     virtual ~StubbornSets() = default;
 
+    /* TODO: move prune_operators, and also the statistics, to the
+       base class to have only one method virtual, and to make the
+       interface more obvious */
     virtual void prune_operators(const GlobalState &state,
                                  std::vector<const GlobalOperator *> &ops) override;
     virtual void print_statistics() const override;
