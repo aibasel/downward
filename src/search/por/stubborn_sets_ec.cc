@@ -36,7 +36,6 @@ StubbornSetsEC::StubbornSetsEC() {}
 StubbornSetsEC::~StubbornSetsEC() {}
 
 void StubbornSetsEC::initialize() {
-    verify_no_axioms_no_conditional_effects();
     compute_sorted_operators();
     compute_v_precond();
     compute_achievers();
