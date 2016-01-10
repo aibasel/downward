@@ -132,15 +132,15 @@ void StubbornSetsSimple::compute_stubborn_set(
     }
 
     // Now check which applicable operators are in the stubborn set.
-    vector<const GlobalOperator *> pruned_ops;
-    pruned_ops.reserve(applicable_ops.size());
+    vector<const GlobalOperator *> remaining_ops;
+    remaining_ops.reserve(applicable_ops.size());
     for (const GlobalOperator *op : applicable_ops) {
         int op_no = get_op_index(op);
         if (stubborn[op_no])
-            pruned_ops.push_back(op);
+            remaining_ops.push_back(op);
     }
-    if (pruned_ops.size() != applicable_ops.size()) {
-        applicable_ops.swap(pruned_ops);
+    if (remaining_ops.size() != applicable_ops.size()) {
+        applicable_ops.swap(remaining_ops);
         sort(applicable_ops.begin(), applicable_ops.end());
     }
 }
