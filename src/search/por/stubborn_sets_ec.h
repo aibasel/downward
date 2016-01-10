@@ -60,7 +60,6 @@ protected:
 public:
     StubbornSetsEC();
     ~StubbornSetsEC();
-    virtual void dump_options() const;
 };
 }
 #endif

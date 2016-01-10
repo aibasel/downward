@@ -50,10 +50,6 @@ void StubbornSetsEC::initialize() {
         nes_computed.push_back(vector<bool>(g_variable_domain[i], false));
     }
 
-    cout << "Initialized stubborn sets ec" << endl;
-}
-
-void StubbornSetsEC::dump_options() const {
     cout << "partial order reduction method: stubborn sets ec" << endl;
 }
 
