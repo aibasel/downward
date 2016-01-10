@@ -50,10 +50,6 @@ void StubbornSetsSimple::initialize() {
     verify_no_axioms_no_conditional_effects();
     compute_interference_relation();
     compute_achievers();
-    cout << "Initialized stubborn sets simple" << endl;
-}
-
-void StubbornSetsSimple::dump_options() const {
     cout << "partial order reduction method: stubborn sets simple" << endl;
 }
 

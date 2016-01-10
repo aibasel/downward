@@ -9,10 +9,9 @@ class GlobalState;
 namespace NullPORMethod {
 class NullPORMethod : public PORMethod {
 public:
-    virtual void initialize() {}
+    virtual void initialize();
     virtual void prune_operators(const GlobalState & /*state*/,
                                  std::vector<const GlobalOperator *> & /*ops*/) {}
-    virtual void dump_options() const;
     virtual void print_statistics() const {}
 };
 }

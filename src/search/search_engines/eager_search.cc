@@ -81,7 +81,6 @@ void EagerSearch::initialize() {
     }
     
     print_initial_h_values(eval_context);
-    partial_order_reduction_method->dump_options();
     partial_order_reduction_method->initialize();
 }
 
