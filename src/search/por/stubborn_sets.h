@@ -40,7 +40,7 @@ protected:
     void compute_sorted_operators();
     void compute_achievers();
     virtual void compute_stubborn_set(const GlobalState &state,
-				      std::vector<const GlobalOperator *> &ops) = 0;
+                                      std::vector<const GlobalOperator *> &ops) = 0;
 public:
     StubbornSets();
     virtual ~StubbornSets() = default;

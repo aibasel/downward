@@ -22,7 +22,7 @@ static inline int get_op_index(const GlobalOperator *op) {
 /* Return the first unsatified goal pair, or (-1, -1) if there is none.
    TODO: use Fact instead of pair<int, int> */
 static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
-    for (const pair<int, int>& goal : g_goal) {
+    for (const pair<int, int> &goal : g_goal) {
         int goal_var = goal.first;
         int goal_value = goal.second;
         if (state[goal_var] != goal_value)
@@ -56,8 +56,8 @@ void StubbornSetsSimple::initialize() {
 void StubbornSetsSimple::compute_interference_relation() {
     uint num_operators = g_operators.size();
     interference_relation.resize(num_operators);
-    
-    /* 
+
+    /*
        TODO: as interference is symmetric, we only need to compute the
        relation for operators (o1, o2) with (o1 < o2) and add a lookup
        method that looks up (i, j) if i < j and (j, i) otherwise.
@@ -67,7 +67,7 @@ void StubbornSetsSimple::compute_interference_relation() {
         for (size_t op2_no = 0; op2_no < num_operators; ++op2_no) {
             if (op1_no != op2_no && interfere(op1_no, op2_no)) {
                 interfere_op1.push_back(op2_no);
-	    }
+            }
         }
     }
 }
@@ -92,7 +92,7 @@ void StubbornSetsSimple::add_necessary_enabling_set(pair<int, int> fact) {
 // Add all operators that interfere with op.
 void StubbornSetsSimple::add_interfering(int op_no) {
     for (int interferer_no : interference_relation[op_no]) {
-	mark_as_stubborn(interferer_no);
+        mark_as_stubborn(interferer_no);
     }
 }
 
@@ -105,11 +105,11 @@ void StubbornSetsSimple::compute_stubborn_set(
     // Add a necessary enabling set for an unsatisfied goal.
     pair<int, int> goal_pair = find_unsatisfied_goal(state);
     if (goal_pair.first == -1) {
-	// goal state encountered
-	applicable_ops.clear();
-	return;
+        // goal state encountered
+        applicable_ops.clear();
+        return;
     }
-    
+
     add_necessary_enabling_set(goal_pair);
 
     /* Iteratively insert operators to stubborn according to the
@@ -121,12 +121,12 @@ void StubbornSetsSimple::compute_stubborn_set(
         pair<int, int> fact = find_unsatisfied_precondition(op, state);
         if (fact.first == -1) {
             /* no unsatisfied precondition found
-	       => operator is applicable
-	       => add all interfering operators */
+               => operator is applicable
+               => add all interfering operators */
             add_interfering(op_no);
         } else {
             /* unsatisfied precondition found
-	       => add a necessary enabling set for it */
+               => add a necessary enabling set for it */
             add_necessary_enabling_set(fact);
         }
     }
@@ -146,8 +146,8 @@ void StubbornSetsSimple::compute_stubborn_set(
 }
 
 static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("Stubborn sets simple", 
-			     "stubborn sets with simple instantiations of design choices");
+    parser.document_synopsis("Stubborn sets simple",
+                             "stubborn sets with simple instantiations of design choices");
 
     return make_shared<StubbornSetsSimple>();
 }
