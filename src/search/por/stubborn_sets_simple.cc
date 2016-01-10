@@ -48,14 +48,13 @@ static inline pair<int, int> find_unsatisfied_precondition(
 
 void StubbornSetsSimple::initialize() {
     verify_no_axioms_no_conditional_effects();
+    compute_sorted_operators();
     compute_interference_relation();
     compute_achievers();
     cout << "partial order reduction method: stubborn sets simple" << endl;
 }
 
 void StubbornSetsSimple::compute_interference_relation() {
-    compute_sorted_operators();
-
     uint num_operators = g_operators.size();
     interference_relation.resize(num_operators);
     
