@@ -324,7 +324,7 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
 }
 
 
-void StubbornSetsEC::do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) {
+void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) {
     stubborn.clear();
     stubborn.assign(g_operators.size(), false);
     active_ops.clear();

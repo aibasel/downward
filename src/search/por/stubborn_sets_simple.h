@@ -15,8 +15,8 @@ class StubbornSetsSimple : public StubbornSets::StubbornSets {
 
     void compute_interference_relation();
 protected:
-    virtual void do_pruning(const GlobalState &state,
-                            std::vector<const GlobalOperator *> &ops);
+    virtual void compute_stubborn_set(const GlobalState &state,
+				      std::vector<const GlobalOperator *> &ops);
     virtual void initialize();
 };
 }

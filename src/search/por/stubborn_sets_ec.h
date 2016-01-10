@@ -56,7 +56,7 @@ private:
     void apply_s5(const GlobalOperator &op, const GlobalState &state);
 protected:
     virtual void initialize();
-    virtual void do_pruning(const GlobalState &state, std::vector<const GlobalOperator *> &ops);
+    virtual void compute_stubborn_set(const GlobalState &state, std::vector<const GlobalOperator *> &ops);
 public:
     StubbornSetsEC();
     ~StubbornSetsEC();
