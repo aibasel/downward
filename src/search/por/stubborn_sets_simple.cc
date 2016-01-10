@@ -47,7 +47,6 @@ static inline pair<int, int> find_unsatisfied_precondition(
 }
 
 void StubbornSetsSimple::initialize() {
-    verify_no_axioms_no_conditional_effects();
     compute_sorted_operators();
     compute_interference_relation();
     compute_achievers();
