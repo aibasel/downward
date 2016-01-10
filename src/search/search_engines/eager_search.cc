@@ -113,9 +113,9 @@ SearchStatus EagerSearch::step() {
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
     
     /*
-      Note that when preferred operators are in use, a preferred
-      operator will be considered by the preferred operator queues
-      even when pruned by the POR method.
+      TODO: When preferred operators are in use, a preferred operator
+      will be considered by the preferred operator queues even when
+      pruned by the POR method.
     */
     partial_order_reduction_method->prune_operators(s, applicable_ops);
 
