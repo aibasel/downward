@@ -217,7 +217,10 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
 }
 
 
-//Adapted from SimpleStubbornSets
+/* TODO: Currently, this is adapted from SimpleStubbornSets. We need
+   to separate the functionality of marking stubborn operators (and
+   move "mark_as_stubborn" to the stubborn sets base class) and the
+   marking of written variables */
 void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
     if (!stubborn[op_no]) {
         stubborn[op_no] = true;
