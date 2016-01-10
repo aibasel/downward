@@ -30,9 +30,9 @@ EagerSearch::EagerSearch(const Options &opts)
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       /* TODO: In the future, we might want to accept nullptr as a
-	 default value and remove the need for NullPORMethod this way. */
-      partial_order_reduction_method(opts.get<shared_ptr<PORMethod>>("partial_order_reduction"))
-      { }
+         default value and remove the need for NullPORMethod this way. */
+      partial_order_reduction_method(opts.get<shared_ptr<PORMethod>>("partial_order_reduction")) {
+}
 
 void EagerSearch::initialize() {
     cout << "Conducting best first search"
@@ -79,7 +79,7 @@ void EagerSearch::initialize() {
 
         open_list->insert(eval_context, initial_state.get_id());
     }
-    
+
     print_initial_h_values(eval_context);
     partial_order_reduction_method->initialize();
 }
@@ -111,7 +111,7 @@ SearchStatus EagerSearch::step() {
     set<const GlobalOperator *> preferred_ops;
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
-    
+
     /*
       TODO: When preferred operators are in use, a preferred operator
       will be considered by the preferred operator queues even when

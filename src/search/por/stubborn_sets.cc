@@ -30,8 +30,7 @@ bool StubbornSets::can_disable(int op1_no, int op2_no) {
         int write_var = op_effects[op1_no][j].var;
         if (read_var < write_var) {
             i++;
-	}
-        else if (read_var == write_var) {
+        } else if (read_var == write_var) {
             int read_value = op_preconds[op2_no][i].val;
             int write_value = op_effects[op1_no][j].val;
             if (read_value != write_value)
@@ -55,8 +54,7 @@ bool StubbornSets::can_conflict(int op1_no, int op2_no) {
         int var2 = op_effects[op2_no][j].var;
         if (var1 < var2) {
             i++;
-	}
-        else if (var1 == var2) {
+        } else if (var1 == var2) {
             int value1 = op_effects[op1_no][i].val;
             int value2 = op_effects[op2_no][j].val;
             if (value1 != value2)
@@ -85,25 +83,25 @@ void StubbornSets::compute_sorted_operators() {
         vector<Fact> pre;
         vector<Fact> eff;
 
-	for (const GlobalCondition &precond : preconds) {
+        for (const GlobalCondition &precond : preconds) {
             int var = precond.var;
             int val = precond.val;
             Fact p(var, val);
             pre.push_back(p);
         }
 
-	for (const GlobalEffect &effect: effects) {
+        for (const GlobalEffect &effect: effects) {
             int var = effect.var;
             int val = effect.val;
             Fact e(var, val);
             eff.push_back(e);
         }
 
-	sort(pre.begin(), pre.end());
-	for (uint i = 0; i < pre.size() - 1; ++i) {
-	    assert(pre[i].var < pre[i + 1].var);
-	}
-        
+        sort(pre.begin(), pre.end());
+        for (uint i = 0; i < pre.size() - 1; ++i) {
+            assert(pre[i].var < pre[i + 1].var);
+        }
+
         sort(eff.begin(), eff.end());
         for (uint i = 0; i < eff.size() - 1; ++i) {
             assert(eff[i].var < eff[i + 1].var);
