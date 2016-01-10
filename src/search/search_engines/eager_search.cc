@@ -29,8 +29,10 @@ EagerSearch::EagerSearch(const Options &opts)
                 create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
-      partial_order_reduction_method(opts.get<shared_ptr<PORMethod>>("partial_order_reduction")) {
-}
+      /* TODO: In the future, we might want to accept nullptr as a
+	 default value and remove the need for NullPORMethod this way. */
+      partial_order_reduction_method(opts.get<shared_ptr<PORMethod>>("partial_order_reduction"))
+      { }
 
 void EagerSearch::initialize() {
     cout << "Conducting best first search"
