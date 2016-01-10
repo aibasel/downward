@@ -36,7 +36,6 @@ protected:
 
     bool can_disable(int op1_no, int op2_no);
     bool can_conflict(int op1_no, int op2_no);
-    bool interfere(int op1_no, int op2_no);
 
     void compute_sorted_operators();
     void compute_achievers();
