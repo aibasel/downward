@@ -6,6 +6,7 @@
 class GlobalOperator;
 class GlobalState;
 
+// TODO: use the task interface for PORMethod
 class PORMethod {
 public:
     virtual void prune_operators(const GlobalState &state,
