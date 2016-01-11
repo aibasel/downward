@@ -279,7 +279,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         "This class implements the generalized label reduction described "
         "in the following paper:" +
         Utils::format_paper_reference(
-            "Silvan Sievers, Martin Wehrle, and Malte Helmert",
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
             "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
             "Proceedings of the 28th AAAI Conference on Artificial"
