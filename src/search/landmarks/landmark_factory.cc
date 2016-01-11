@@ -9,14 +9,13 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 LandmarkFactory::LandmarkFactory(const Options &opts)
     : lm_graph(new LandmarkGraph(opts)) {
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
-    Utils::Timer lm_generation_timer;
+    utils::Timer lm_generation_timer;
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"

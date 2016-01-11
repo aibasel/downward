@@ -14,8 +14,7 @@
 class State;
 class TaskProxy;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class Distances;
 class HeuristicRepresentation;
 class LabelEquivalenceRelation;

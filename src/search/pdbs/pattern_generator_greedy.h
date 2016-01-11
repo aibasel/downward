@@ -5,8 +5,7 @@
 
 class Options;
 
-
-namespace PDBs {
+namespace pdbs {
 class PatternGeneratorGreedy : public PatternGenerator {
     int max_states;
 public:

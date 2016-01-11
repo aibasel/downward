@@ -5,7 +5,7 @@
 
 #include "../per_state_information.h"
 
-namespace Landmarks {
+namespace landmarks {
 class LandmarkStatusManager {
 private:
     PerStateInformation<std::vector<bool>> reached_lms;

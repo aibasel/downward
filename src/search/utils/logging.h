@@ -8,8 +8,7 @@
 #include <string>
 #include <vector>
 
-
-namespace Utils {
+namespace utils {
 /*
   Simple logger that prepends time and peak memory info to messages.
   Logs are written to stdout.

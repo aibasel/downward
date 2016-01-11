@@ -6,8 +6,7 @@
 
 #include <vector>
 
-
-namespace Landmarks {
+namespace landmarks {
 class LandmarkGraphMerged : public LandmarkFactory {
     std::vector<LandmarkGraph *> lm_graphs;
     void generate_landmarks();

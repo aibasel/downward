@@ -11,8 +11,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternDatabase get_pdb_from_options(const shared_ptr<AbstractTask> task,
                                      const Options &opts) {
     shared_ptr<PatternGenerator> pattern_generator =

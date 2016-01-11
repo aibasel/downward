@@ -12,8 +12,7 @@
 #include <utility>
 #include <vector>
 
-
-namespace Landmarks {
+namespace landmarks {
 using lm_set = std::unordered_set<std::pair<int, int>>;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactory {

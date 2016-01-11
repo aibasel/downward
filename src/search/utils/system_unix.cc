@@ -40,8 +40,7 @@
 
 using namespace std;
 
-
-namespace Utils {
+namespace utils {
 void write_reentrant(int filedescr, const char *message, int len) {
     while (len > 0) {
         int written;

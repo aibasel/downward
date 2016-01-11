@@ -14,7 +14,7 @@
 
 using namespace std;
 
-namespace Landmarks {
+namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }

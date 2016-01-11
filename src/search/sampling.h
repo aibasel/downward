@@ -9,7 +9,7 @@ class State;
 class SuccessorGenerator;
 class TaskProxy;
 
-namespace Utils {
+namespace utils {
 class CountdownTimer;
 }
 
@@ -34,6 +34,6 @@ std::vector<State> sample_states_with_random_walks(
     std::function<bool(State)> is_dead_end = [] (const State &) {
                                                  return false;
                                              },
-    const Utils::CountdownTimer *timer = nullptr);
+    const utils::CountdownTimer *timer = nullptr);
 
 #endif

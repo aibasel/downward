@@ -16,7 +16,7 @@ class IntPacker;
 class StateRegistry;
 class SuccessorGenerator;
 
-namespace Utils {
+namespace utils {
 struct Log;
 class RandomNumberGenerator;
 }
@@ -73,7 +73,7 @@ extern SuccessorGenerator *g_successor_generator;
 extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
 extern bool g_is_part_of_anytime_portfolio;
-extern Utils::RandomNumberGenerator g_rng;
+extern utils::RandomNumberGenerator g_rng;
 // Only one global object for now. Could later be changed to use one instance
 // for each problem in this case the method GlobalState::get_id would also have to be
 // changed.
@@ -81,6 +81,6 @@ extern StateRegistry *g_state_registry;
 
 extern const std::shared_ptr<AbstractTask> g_root_task();
 
-extern Utils::Log g_log;
+extern utils::Log g_log;
 
 #endif

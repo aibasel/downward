@@ -13,7 +13,7 @@
 #include <vector>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
 
 template<class Entry>
@@ -65,7 +65,7 @@ template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min(vector<int> *key) {
     if (key) {
         cerr << "not implemented -- see msg639 in the tracker" << endl;
-        Utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::UNSUPPORTED);
     }
     int best = -1;
     for (size_t i = 0; i < open_lists.size(); ++i) {
@@ -138,12 +138,12 @@ AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
 
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return Utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return Utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

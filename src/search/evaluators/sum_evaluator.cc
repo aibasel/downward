@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace SumEvaluator {
+namespace sum_evaluator {
 SumEvaluator::SumEvaluator(const Options &opts)
     : CombiningEvaluator(opts.get_list<ScalarEvaluator *>("evals")) {
 }

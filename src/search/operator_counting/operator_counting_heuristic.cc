@@ -7,30 +7,29 @@
 
 using namespace std;
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
     : Heuristic(opts),
       constraint_generators(
           opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),
-      lp_solver(LP::LPSolverType(opts.get_enum("lpsolver"))) {
+      lp_solver(lp::LPSolverType(opts.get_enum("lpsolver"))) {
 }
 
 OperatorCountingHeuristic::~OperatorCountingHeuristic() {
 }
 
 void OperatorCountingHeuristic::initialize() {
-    vector<LP::LPVariable> variables;
+    vector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_cost = op.get_cost();
-        variables.push_back(LP::LPVariable(0, infinity, op_cost));
+        variables.push_back(lp::LPVariable(0, infinity, op_cost));
     }
-    vector<LP::LPConstraint> constraints;
+    vector<lp::LPConstraint> constraints;
     for (auto generator : constraint_generators) {
         generator->initialize_constraints(task, constraints, infinity);
     }
-    lp_solver.load_problem(LP::LPObjectiveSense::MINIMIZE, variables, constraints);
+    lp_solver.load_problem(lp::LPObjectiveSense::MINIMIZE, variables, constraints);
 }
 
 int OperatorCountingHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -101,7 +100,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_list_option<shared_ptr<ConstraintGenerator>>(
         "constraint_generators",
         "methods that generate constraints over operator counting variables");
-    LP::add_lp_solver_option_to_parser(parser);
+    lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace CEGAR {
+namespace cegar {
 Node::Node()
     : left_child(nullptr),
       right_child(nullptr),

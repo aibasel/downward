@@ -10,8 +10,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 CanonicalPDBs::CanonicalPDBs(
     shared_ptr<PDBCollection> pattern_databases,
     shared_ptr<MaxAdditivePDBSubsets> max_additive_subsets_,
