@@ -23,11 +23,6 @@ struct StubbornDTG {
 
     std::vector<Node> nodes;
     std::vector<bool> goal_values;
-
-    void recurse_forwards(int value, std::vector<bool> &reachable) const;
-public:
-    void forward_reachability_analysis(int start_value,
-                                       std::vector<bool> &reachable) const;
 };
 
 class StubbornSetsEC : public stubborn_sets::StubbornSets {
