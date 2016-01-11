@@ -20,7 +20,7 @@ namespace AdditiveHeuristic {
 class AdditiveHeuristic;
 }
 
-namespace CEGAR {
+namespace cegar {
 class AbstractState;
 struct Flaw;
 
@@ -32,7 +32,7 @@ class Abstraction {
     SplitSelector split_selector;
 
     // Limit the time for building the abstraction.
-    Utils::CountdownTimer timer;
+    utils::CountdownTimer timer;
 
     /*
       Set of all (as of yet unsplit) abstract states.

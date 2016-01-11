@@ -6,8 +6,7 @@
 
 using namespace std;
 
-
-namespace Utils {
+namespace utils {
 /*
   Ideally, one would use true randomness here from std::random_device. However,
   there exist platforms where this returns non-random data, which is condoned by

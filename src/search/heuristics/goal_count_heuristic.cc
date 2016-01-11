@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-namespace GoalCountHeuristic {
+namespace goal_count_heuristic {
 GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
     : Heuristic(opts) {
 }

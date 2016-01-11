@@ -8,8 +8,7 @@
 
 class Options;
 
-
-namespace PDBs {
+namespace pdbs {
 class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
     std::shared_ptr<PatternCollection> patterns;
 public:

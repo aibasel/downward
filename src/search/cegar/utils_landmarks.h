@@ -8,17 +8,17 @@
 #include <utility>
 #include <vector>
 
-namespace Landmarks {
+namespace landmarks {
 class LandmarkGraph;
 }
 
-// TODO: Move into "Landmarks" namespace and directory?
-namespace CEGAR {
+// TODO: Move into "landmarks" namespace and directory?
+namespace cegar {
 using VarToValues = std::unordered_map<int, std::vector<int>>;
 
-extern std::unique_ptr<Landmarks::LandmarkGraph> get_landmark_graph();
+extern std::unique_ptr<landmarks::LandmarkGraph> get_landmark_graph();
 extern std::vector<Fact> get_fact_landmarks(
-    const Landmarks::LandmarkGraph &graph);
+    const landmarks::LandmarkGraph &graph);
 
 /*
   Do a breadth-first search through the landmark graph ignoring
@@ -27,7 +27,7 @@ extern std::vector<Fact> get_fact_landmarks(
   can be true for the first time.
 */
 extern VarToValues get_prev_landmarks(
-    const Landmarks::LandmarkGraph &graph, const Fact &fact);
+    const landmarks::LandmarkGraph &graph, const Fact &fact);
 }
 
 #endif

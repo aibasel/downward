@@ -10,7 +10,7 @@
 class GlobalState;
 class Options;
 
-namespace LandmarkCutHeuristic {
+namespace lm_cut_heuristic {
 class LandmarkCutHeuristic : public Heuristic {
     std::unique_ptr<LandmarkCutLandmarks> landmark_generator;
 

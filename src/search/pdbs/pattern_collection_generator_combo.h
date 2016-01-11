@@ -3,8 +3,7 @@
 
 #include "pattern_generator.h"
 
-
-namespace PDBs {
+namespace pdbs {
 /* Take one large pattern and then single-variable patterns for
    all goal variables that are not in the large pattern. */
 class PatternCollectionGeneratorCombo : public PatternCollectionGenerator {

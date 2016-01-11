@@ -7,8 +7,7 @@
 struct GlobalCondition;
 class GlobalOperator;
 
-
-namespace Landmarks {
+namespace landmarks {
 class LandmarkNode;
 
 bool _possibly_fires(const std::vector<GlobalCondition> &conditions,

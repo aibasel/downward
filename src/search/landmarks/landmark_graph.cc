@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 LandmarkGraph::LandmarkGraph(const Options &opts)
     : exploration(opts.get<Exploration *>("explor")),
       landmarks_count(0), conj_lms(0) {

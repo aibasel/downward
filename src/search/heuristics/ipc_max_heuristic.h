@@ -7,8 +7,7 @@
 
 class Options;
 
-
-namespace IPCMaxHeuristic {
+namespace ipc_max_heuristic {
 class IPCMaxHeuristic : public Heuristic {
     std::vector<Heuristic *> heuristics;
 

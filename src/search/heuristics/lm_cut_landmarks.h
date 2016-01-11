@@ -9,8 +9,7 @@
 #include <memory>
 #include <vector>
 
-
-namespace LandmarkCutHeuristic {
+namespace lm_cut_heuristic {
 // TODO: Fix duplication with the other relaxation heuristics.
 struct RelaxedProposition;
 

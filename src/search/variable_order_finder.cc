@@ -12,7 +12,7 @@
 #include <vector>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
 
 VariableOrderFinder::VariableOrderFinder(const shared_ptr<AbstractTask> task,
@@ -98,7 +98,7 @@ int VariableOrderFinder::next() {
         return var_no;
     }
     cerr << "Relevance analysis has not been performed." << endl;
-    Utils::exit_with(ExitCode::INPUT_ERROR);
+    utils::exit_with(ExitCode::INPUT_ERROR);
 }
 
 void VariableOrderFinder::dump() const {

@@ -6,7 +6,7 @@
 #include <ostream>
 #include <vector>
 
-namespace CEGAR {
+namespace cegar {
 using Bitset = Utils::DynamicBitset<unsigned short>;
 
 /*

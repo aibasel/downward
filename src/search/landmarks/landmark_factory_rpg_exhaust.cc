@@ -7,7 +7,7 @@
 #include <vector>
 using namespace std;
 
-namespace Landmarks {
+namespace landmarks {
 /* Problem: We don't get any orders here. (All we have is the reasonable orders
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */

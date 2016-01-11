@@ -5,8 +5,7 @@
 
 #include <ostream>
 
-
-namespace Utils {
+namespace utils {
 class Timer {
     double last_start_clock;
     double collected_time;

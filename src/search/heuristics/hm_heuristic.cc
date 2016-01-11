@@ -10,8 +10,7 @@
 
 using namespace std;
 
-
-namespace HMHeuristic {
+namespace hm_heuristic {
 HMHeuristic::HMHeuristic(const Options &opts)
     : Heuristic(opts),
       m(opts.get<int>("m")),

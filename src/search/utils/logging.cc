@@ -9,8 +9,7 @@
 
 using namespace std;
 
-
-namespace Utils {
+namespace utils {
 class MemoryTracer {
     // The following constants affect the formatting of output.
     static const int INDENT_AMOUNT = 2;

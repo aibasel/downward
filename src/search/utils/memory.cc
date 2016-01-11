@@ -5,8 +5,7 @@
 
 using namespace std;
 
-
-namespace Utils {
+namespace utils {
 static char *extra_memory_padding = nullptr;
 
 // Save standard out-of-memory handler.
