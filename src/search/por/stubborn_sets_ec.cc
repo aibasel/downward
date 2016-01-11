@@ -11,17 +11,8 @@ using namespace std;
 
 namespace stubborn_sets_ec {
 struct StubbornDTG {
-    struct Arc {
-        Arc(int target_value, int operator_no)
-            : target_value(target_value),
-              operator_no(operator_no) {
-        }
-        int target_value;
-        int operator_no;
-    };
-
     struct Node {
-        std::vector<Arc> outgoing;
+        std::vector<int> successors;
     };
 
     std::vector<Node> nodes;
@@ -111,7 +102,7 @@ vector<StubbornDTG> build_dtgs() {
             }
 
             for (int value = pre_value_min; value < pre_value_max; ++value) {
-                dtg.nodes[value].outgoing.push_back(StubbornDTG::Arc(eff_val, op_no));
+                dtg.nodes[value].successors.push_back(eff_val);
             }
         }
     }
@@ -124,9 +115,8 @@ void recurse_forwards(const StubbornDTG &dtg,
                                       vector<bool> &reachable) {
     if (!reachable[current_value]) {
         reachable[current_value] = true;
-        const vector<StubbornDTG::Arc> &outgoing = dtg.nodes[current_value].outgoing;
-        for (uint i = 0; i < outgoing.size(); ++i)
-            recurse_forwards(dtg, start_value, outgoing[i].target_value, reachable);
+        for (int successor_value : dtg.nodes[current_value].successors)
+            recurse_forwards(dtg, start_value, successor_value, reachable);
     }
 }
 
