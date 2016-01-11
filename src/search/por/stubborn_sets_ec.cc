@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include <cassert>
+
 using namespace std;
 
 namespace stubborn_sets_ec {
@@ -15,9 +17,12 @@ static inline int get_op_index(const GlobalOperator *op) {
     return op_index;
 }
 
-static inline bool is_v_applicable(int var, int op_no, const GlobalState &state, std::vector<std::vector<int>> &v_precond) {
-    int vprecond = v_precond[op_no][var];
-    return vprecond == -1 || vprecond == state[var];
+static inline bool is_v_applicable(int var,
+                                   int op_no,
+                                   const GlobalState &state,
+                                   std::vector<std::vector<int>> &preconditions) {
+    int precondition_on_var = preconditions[op_no][var];
+    return precondition_on_var == -1 || precondition_on_var == state[var];
 }
 
 // Copied from SimpleStubbornSets
@@ -37,7 +42,7 @@ StubbornSetsEC::~stubborn_sets_ec() {}
 
 void StubbornSetsEC::initialize() {
     compute_sorted_operators();
-    compute_v_precond();
+    compute_operator_preconditions();
     compute_achievers();
     compute_conflicts_and_disabling();
     size_t num_variables = g_variable_domain.size();
@@ -130,15 +135,15 @@ void StubbornSetsEC::build_dtgs() {
     }
 }
 
-void StubbornSetsEC::compute_v_precond() {
-    v_precond.resize(g_operators.size());
+void StubbornSetsEC::compute_operator_preconditions() {
+    operator_preconditions.resize(g_operators.size());
     for (uint op_no = 0; op_no < g_operators.size(); op_no++) {
-        v_precond[op_no].resize(g_variable_name.size(), -1);
+        operator_preconditions[op_no].resize(g_variable_name.size(), -1);
         for (uint var = 0; var < g_variable_name.size(); var++) {
             const vector<GlobalCondition> &preconds = g_operators[op_no].get_preconditions();
             for (size_t i = 0; i < preconds.size(); i++) {
                 if (preconds[i].var == (int)var) {
-                    v_precond[op_no][var] = preconds[i].val;
+                    operator_preconditions[op_no][var] = preconds[i].val;
                 }
             }
         }
@@ -366,7 +371,7 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<
                     if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
                         for (var_it = disabled_vars.begin(); var_it != disabled_vars.end(); var_it++) {
                             //First case: add o'
-                            if (is_v_applicable(*var_it, *op_it, state, v_precond)) {
+                            if (is_v_applicable(*var_it, *op_it, state, operator_preconditions)) {
                                 mark_as_stubborn(*op_it, state);
                                 v_applicable_op_found = true;
                                 break;

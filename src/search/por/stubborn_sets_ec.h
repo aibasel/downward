@@ -35,7 +35,7 @@ class StubbornSetsEC : public StubbornSets::StubbornSets {
 private:
     std::vector<StubbornDTG> dtgs;
     std::vector<std::vector<std::vector<bool>>> reachability_map;
-    std::vector<std::vector<int>> v_precond;
+    std::vector<std::vector<int>> operator_preconditions;
     std::vector<bool> active_ops;
     std::vector<std::vector<int>> conflicting_and_disabling;
     std::vector<std::vector<int>> disabled;
@@ -45,7 +45,7 @@ private:
     void get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars);
     void build_dtgs();
     void build_reachability_map();
-    void compute_v_precond();
+    void compute_operator_preconditions();
     void compute_conflicts_and_disabling();
     void compute_disabled_by_o();
     void add_conflicting_and_disabling(int op_no, const GlobalState &state);

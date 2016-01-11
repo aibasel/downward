@@ -28,7 +28,7 @@ protected:
 
     /*
       stubborn_queue contains the operator indices of operators that
-      have been marked and stubborn but have not yet been processed
+      have been marked as stubborn but have not yet been processed
       (i.e. more operators might need to be added to stubborn because
       of the operators in the queue).
     */
