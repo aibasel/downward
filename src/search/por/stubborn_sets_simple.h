@@ -22,9 +22,9 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
     }
     void compute_interference_relation();
 protected:
-    virtual void compute_stubborn_set(const GlobalState &state,
-                                      std::vector<const GlobalOperator *> &ops);
-    virtual void initialize();
+    virtual void compute_stubborn_set(
+        const GlobalState &state, std::vector<const GlobalOperator *> &ops) override;
+    virtual void initialize() override;
 };
 }
 

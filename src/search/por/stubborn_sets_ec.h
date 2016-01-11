@@ -27,9 +27,9 @@ private:
     void add_nes_for_fact(Fact fact, const GlobalState &state);
     void apply_s5(const GlobalOperator &op, const GlobalState &state);
 protected:
-    virtual void initialize();
-    virtual void compute_stubborn_set(const GlobalState &state,
-                                      std::vector<const GlobalOperator *> &ops);
+    virtual void initialize() override;
+    virtual void compute_stubborn_set(
+        const GlobalState &state, std::vector<const GlobalOperator *> &ops) override;
 };
 }
 #endif
