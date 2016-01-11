@@ -41,63 +41,46 @@ static inline Fact find_unsatisfied_goal(const GlobalState &state) {
 
 vector<StubbornDTG> build_dtgs() {
     /*
-  NOTE: Code lifted and adapted from M&S atomic abstraction code.
-
-  We need a more general mechanism for creating data structures of
-  this kind.
+      NOTE: Code lifted and adapted from M&S atomic abstraction code.
+      We need a more general mechanism for creating data structures of
+      this kind.
      */
 
     /*
-  NOTE: for stubborn sets ec, the DTG for v *does* include
-  self-loops from d to d if there is an operator that sets the
-  value of v to d and has no precondition on v. This is different
-  from the usual DTG definition.
+      NOTE: for stubborn sets ec, the DTG for v *does* include
+      self-loops from d to d if there is an operator that sets the
+      value of v to d and has no precondition on v. This is different
+      from the usual DTG definition.
      */
 
+    // Create the empty DTG nodes.
     vector<StubbornDTG> dtgs;
-    size_t num_variables = g_variable_domain.size();
-
-    dtgs.resize(num_variables);
-
-    // Step 1: Create the empty DTG nodes.
-    for (uint var_no = 0; var_no < num_variables; ++var_no) {
-        size_t var_size = g_variable_domain[var_no];
-        dtgs[var_no].resize(var_size);
+    int num_variables = g_variable_domain.size();
+    for (int var_no = 0; var_no < num_variables; ++var_no) {
+        dtgs.emplace_back(g_variable_domain[var_no]);
     }
 
-    // Step 2: Add DTG arcs.
-    for (uint op_no = 0; op_no < g_operators.size(); ++op_no) {
-        const GlobalOperator &op = g_operators[op_no];
-
-        const vector<GlobalEffect> &effects = op.get_effects();
-        for (uint i = 0; i < effects.size(); ++i) {
-            int eff_var = effects[i].var;
-            int eff_val = effects[i].val;
-
-            int pre_var = -1;
+    // Add DTG arcs.
+    for (const GlobalOperator &op : g_operators) {
+        for (const GlobalEffect &effect : op.get_effects()) {
+            int eff_var = effect.var;
+            int eff_val = effect.val;
             int pre_val = -1;
 
-            const vector<GlobalCondition> &preconds = op.get_preconditions();
-            for (uint j = 0; j < preconds.size(); j++) {
-                if (preconds[j].var == eff_var) {
-                    pre_var = preconds[j].var;
-                    pre_val = preconds[j].val;
+            for (const GlobalCondition &precondition : op.get_preconditions()) {
+                if (precondition.var == eff_var) {
+                    pre_val = precondition.val;
                     break;
                 }
             }
 
             StubbornDTG &dtg = dtgs[eff_var];
-            int pre_value_min, pre_value_max;
-            if (pre_var == -1) {
-                pre_value_min = 0;
-                pre_value_max = g_variable_domain[eff_var];
+            if (pre_val == -1) {
+                for (int value = 0; value < g_variable_domain[eff_var]; ++value) {
+                    dtg[value].push_back(eff_val);
+                }
             } else {
-                pre_value_min = pre_val;
-                pre_value_max = pre_val + 1;
-            }
-
-            for (int value = pre_value_min; value < pre_value_max; ++value) {
-                dtg[value].push_back(eff_val);
+                dtg[pre_val].push_back(eff_val);
             }
         }
     }
