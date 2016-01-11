@@ -53,7 +53,7 @@ StubbornSets::StubbornSets()
 
 // Relies on op_preconds and op_effects being sorted by variable.
 bool StubbornSets::can_disable(int op1_no, int op2_no) {
-    return contain_conflicting_fact(op_effects[op1_no], op_preconds[op2_no]);
+    return contain_conflicting_fact(op_effects[op1_no], op_preconditions[op2_no]);
 }
 
 // Relies on op_effect being sorted by variable.
@@ -62,11 +62,11 @@ bool StubbornSets::can_conflict(int op1_no, int op2_no) {
 }
 
 void StubbornSets::compute_sorted_operators() {
-    assert(op_preconds.empty());
+    assert(op_preconditions.empty());
     assert(op_effects.empty());
 
     for (const GlobalOperator &op : g_operators) {
-        op_preconds.push_back(get_sorted_fact_set(op.get_preconditions()));
+        op_preconditions.push_back(get_sorted_fact_set(op.get_preconditions()));
         op_effects.push_back(get_sorted_fact_set(op.get_effects()));
     }
 }

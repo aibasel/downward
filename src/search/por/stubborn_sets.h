@@ -15,7 +15,7 @@ class StubbornSets : public PORMethod {
     long num_pruned_successors_generated;
 
 protected:
-    std::vector<std::vector<Fact>> op_preconds;
+    std::vector<std::vector<Fact>> op_preconditions;
     std::vector<std::vector<Fact>> op_effects;
 
     /* achievers[var][value] contains all operator indices of
