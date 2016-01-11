@@ -5,8 +5,7 @@
 
 class Heuristic;
 
-
-namespace GEvaluator {
+namespace g_evaluator {
 class GEvaluator : public ScalarEvaluator {
 public:
     GEvaluator() = default;

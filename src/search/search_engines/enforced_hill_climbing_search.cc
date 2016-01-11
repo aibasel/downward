@@ -14,12 +14,11 @@
 #include "../utils/system.h"
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
-
-namespace EnforcedHillClimbingSearch {
-using GEval = GEvaluator::GEvaluator;
-using PrefEval = PrefEvaluator::PrefEvaluator;
+namespace enforced_hill_climbing_search {
+using GEval = g_evaluator::GEvaluator;
+using PrefEval = pref_evaluator::PrefEvaluator;
 
 static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
     bool use_preferred, PreferredUsage preferred_usage) {
@@ -111,9 +110,9 @@ void EnforcedHillClimbingSearch::initialize() {
     if (dead_end) {
         cout << "Initial state is a dead end, no solution" << endl;
         if (heuristic->dead_ends_are_reliable())
-            Utils::exit_with(ExitCode::UNSOLVABLE);
+            utils::exit_with(ExitCode::UNSOLVABLE);
         else
-            Utils::exit_with(ExitCode::UNSOLVED_INCOMPLETE);
+            utils::exit_with(ExitCode::UNSOLVED_INCOMPLETE);
     }
 
     SearchNode node = search_space.get_node(current_eval_context.get_state());

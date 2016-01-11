@@ -7,8 +7,7 @@
 
 struct ValueTransitionLabel;
 
-
-namespace CGHeuristic {
+namespace cg_heuristic {
 class CGCache {
     TaskProxy task_proxy;
     std::vector<std::vector<int>> cache;

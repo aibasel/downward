@@ -18,7 +18,7 @@ vector<State> sample_states_with_random_walks(
     int init_h,
     double average_operator_cost,
     function<bool (State)> is_dead_end,
-    const Utils::CountdownTimer *timer) {
+    const utils::CountdownTimer *timer) {
     vector<State> samples;
 
     const State &initial_state = task_proxy.get_initial_state();

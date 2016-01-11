@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace CEGAR {
+namespace cegar {
 AbstractState::AbstractState(const Domains &domains, Node *node)
     : domains(domains),
       node(node) {
@@ -188,7 +188,7 @@ void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
 pair<AbstractState *, AbstractState *> AbstractState::split(
     int var, const vector<int> &wanted) {
     int num_wanted = wanted.size();
-    Utils::unused_variable(num_wanted);
+    utils::unused_variable(num_wanted);
     // We can only split states in the refinement hierarchy (not artificial states).
     assert(node);
     // We can only refine for variables with at least two values.

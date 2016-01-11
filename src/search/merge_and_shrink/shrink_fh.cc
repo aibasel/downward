@@ -18,8 +18,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 ShrinkFH::ShrinkFH(const Options &opts)
     : ShrinkBucketBased(opts),
       f_start(HighLow(opts.get_enum("shrink_f"))),
@@ -128,8 +127,8 @@ void ShrinkFH::ordered_buckets_use_vector(
         int h = distances.get_goal_distance(state);
         if (g != INF && h != INF) {
             int f = g + h;
-            assert(Utils::in_bounds(f, states_by_f_and_h));
-            assert(Utils::in_bounds(h, states_by_f_and_h[f]));
+            assert(utils::in_bounds(f, states_by_f_and_h));
+            assert(utils::in_bounds(h, states_by_f_and_h[f]));
             Bucket &bucket = states_by_f_and_h[f][h];
             if (bucket.empty())
                 ++bucket_count;

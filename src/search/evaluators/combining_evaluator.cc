@@ -5,8 +5,7 @@
 
 using namespace std;
 
-
-namespace CombiningEvaluator {
+namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
     const vector<ScalarEvaluator *> &subevaluators_)
     : subevaluators(subevaluators_) {

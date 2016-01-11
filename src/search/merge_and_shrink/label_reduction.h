@@ -7,7 +7,7 @@ class EquivalenceRelation;
 class Options;
 class TaskProxy;
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class FactoredTransitionSystem;
 
 class LabelReduction {

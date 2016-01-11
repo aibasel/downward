@@ -8,8 +8,7 @@
 
 class TaskProxy;
 
-
-namespace PDBs {
+namespace pdbs {
 using VariableAdditivity = std::vector<std::vector<bool>>;
 
 extern VariableAdditivity compute_additive_vars(TaskProxy task_proxy);

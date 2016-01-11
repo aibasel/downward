@@ -9,8 +9,7 @@
 #include "../global_state.h"
 #include "../heuristic.h"
 
-
-namespace Landmarks {
+namespace landmarks {
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
     LandmarkGraph &lgraph;

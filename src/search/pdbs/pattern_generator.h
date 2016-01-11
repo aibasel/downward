@@ -8,8 +8,7 @@
 
 class AbstractTask;
 
-
-namespace PDBs {
+namespace pdbs {
 class PatternCollectionGenerator {
 public:
     virtual PatternCollectionInformation generate(std::shared_ptr<AbstractTask> task) = 0;

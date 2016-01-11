@@ -5,8 +5,7 @@
 
 class Options;
 
-
-namespace WeightedEvaluator {
+namespace weighted_evaluator {
 class WeightedEvaluator : public ScalarEvaluator {
     ScalarEvaluator *evaluator;
     int w;

@@ -10,8 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
-
-namespace Landmarks {
+namespace landmarks {
 class LandmarkFactory {
 public:
     LandmarkFactory(const Options &opts);

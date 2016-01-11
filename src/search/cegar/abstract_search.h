@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-namespace CEGAR {
+namespace cegar {
 using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Arc>;
 
