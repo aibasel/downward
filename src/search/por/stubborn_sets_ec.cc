@@ -145,7 +145,8 @@ void StubbornSetsEC::build_reachability_map() {
 }
 
 void StubbornSetsEC::compute_active_operators(const GlobalState &state) {
-    for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
+    int num_operators = g_operators.size();
+    for (int op_no = 0; op_no < num_operators; ++op_no) {
         const GlobalOperator &op = g_operators[op_no];
         bool all_preconditions_are_active = true;
 
@@ -187,7 +188,6 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
     }
 }
 
-
 /* TODO: Currently, this is adapted from SimpleStubbornSets. We need
    to separate the functionality of marking stubborn operators (and
    move "mark_as_stubborn" to the stubborn sets base class) and the
@@ -199,10 +199,8 @@ void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
 
         const GlobalOperator &op = g_operators[op_no];
         if (op.is_applicable(state)) {
-            const vector<GlobalEffect> &effects = op.get_effects();
-            for (size_t i = 0; i < effects.size(); ++i) {
-                int var = effects[i].var;
-                written_vars[var] = true;
+            for (const GlobalEffect &effect : op.get_effects()) {
+                written_vars[effect.var] = true;
             }
         }
     }
