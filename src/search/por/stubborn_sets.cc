@@ -58,24 +58,15 @@ void StubbornSets::compute_sorted_operators() {
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         GlobalOperator *op = &g_operators[op_no];
 
-        const vector<GlobalCondition> &preconds = op->get_preconditions();
-        const vector<GlobalEffect> &effects = op->get_effects();
-
         vector<Fact> pre;
         vector<Fact> eff;
 
-        for (const GlobalCondition &precond : preconds) {
-            int var = precond.var;
-            int val = precond.val;
-            Fact p(var, val);
-            pre.push_back(p);
+        for (const GlobalCondition &precondition : op->get_preconditions()) {
+            pre.emplace_back(precondition.var, precondition.val);
         }
 
-        for (const GlobalEffect &effect: effects) {
-            int var = effect.var;
-            int val = effect.val;
-            Fact e(var, val);
-            eff.push_back(e);
+        for (const GlobalEffect &effect: op->get_effects()) {
+            eff.emplace_back(effect.var, effect.val);
         }
 
         sort(pre.begin(), pre.end(), SortFactsByVariable());
