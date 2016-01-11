@@ -38,7 +38,7 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
 
 StubbornSetsEC::StubbornSetsEC() {}
 
-StubbornSetsEC::~stubborn_sets_ec() {}
+StubbornSetsEC::~StubbornSetsEC() {}
 
 void StubbornSetsEC::initialize() {
     compute_sorted_operators();

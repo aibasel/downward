@@ -31,7 +31,7 @@ public:
                                        std::vector<bool> &reachable) const;
 };
 
-class StubbornSetsEC : public StubbornSets::StubbornSets {
+class StubbornSetsEC : public stubborn_sets::StubbornSets {
 private:
     std::vector<StubbornDTG> dtgs;
     std::vector<std::vector<std::vector<bool>>> reachability_map;
