@@ -10,13 +10,8 @@
 using namespace std;
 
 namespace stubborn_sets_ec {
-struct StubbornDTG {
-    struct Node {
-        std::vector<int> successors;
-    };
-
-    std::vector<Node> nodes;
-};
+// DTGs are stored as one adjacency list per value.
+using StubbornDTG = vector<vector<int>>;
 
 // TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
@@ -67,7 +62,7 @@ vector<StubbornDTG> build_dtgs() {
     // Step 1: Create the empty DTG nodes.
     for (uint var_no = 0; var_no < num_variables; ++var_no) {
         size_t var_size = g_variable_domain[var_no];
-        dtgs[var_no].nodes.resize(var_size);
+        dtgs[var_no].resize(var_size);
     }
 
     // Step 2: Add DTG arcs.
@@ -102,7 +97,7 @@ vector<StubbornDTG> build_dtgs() {
             }
 
             for (int value = pre_value_min; value < pre_value_max; ++value) {
-                dtg.nodes[value].successors.push_back(eff_val);
+                dtg[value].push_back(eff_val);
             }
         }
     }
@@ -110,12 +105,12 @@ vector<StubbornDTG> build_dtgs() {
 }
 
 void recurse_forwards(const StubbornDTG &dtg,
-                                      int start_value,
-                                      int current_value,
-                                      vector<bool> &reachable) {
+                      int start_value,
+                      int current_value,
+                      vector<bool> &reachable) {
     if (!reachable[current_value]) {
         reachable[current_value] = true;
-        for (int successor_value : dtg.nodes[current_value].successors)
+        for (int successor_value : dtg[current_value])
             recurse_forwards(dtg, start_value, successor_value, reachable);
     }
 }
@@ -161,7 +156,7 @@ void StubbornSetsEC::build_reachability_map() {
     size_t num_variables = g_variable_domain.size();
     for (uint var_no = 0; var_no < num_variables; ++var_no) {
         StubbornDTG &dtg = dtgs[var_no];
-        size_t num_values = dtg.nodes.size();
+        size_t num_values = dtg.size();
         reachability_map[var_no].resize(num_values);
         for (uint val = 0; val < num_values; ++val) {
             reachability_map[var_no][val].assign(num_values, false);
