@@ -8,7 +8,7 @@
 class GlobalState;
 class Options;
 
-namespace CEGAR {
+namespace cegar {
 class CartesianHeuristic : public Heuristic {
     const RefinementHierarchy refinement_hierarchy;
 

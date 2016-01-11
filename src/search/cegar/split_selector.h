@@ -8,11 +8,11 @@
 #include <memory>
 #include <vector>
 
-namespace AdditiveHeuristic {
+namespace additive_heuristic {
 class AdditiveHeuristic;
 }
 
-namespace CEGAR {
+namespace cegar {
 class AbstractState;
 
 // Strategies for selecting a split in case there are multiple possibilities.
@@ -43,7 +43,7 @@ struct Split {
 class SplitSelector {
     const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
-    std::unique_ptr<AdditiveHeuristic::AdditiveHeuristic> additive_heuristic;
+    std::unique_ptr<additive_heuristic::AdditiveHeuristic> additive_heuristic;
 
     const PickSplit pick;
 
