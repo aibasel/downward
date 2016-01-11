@@ -9,15 +9,16 @@
 using namespace std;
 
 namespace stubborn_sets {
+struct SortFactsByVariable {
+    bool operator()(const Fact &lhs, const Fact &rhs) {
+        return lhs.var < rhs.var;
+    }
+};
+
 StubbornSets::StubbornSets()
     : num_unpruned_successors_generated(0),
       num_pruned_successors_generated(0) {
     verify_no_axioms_no_conditional_effects();
-}
-
-// TODO: Use a lambda function?
-inline bool operator<(const Fact &lhs, const Fact &rhs) {
-    return lhs.var < rhs.var;
 }
 
 /* can_disable relies on op_preconds and op_effects being sorted by
@@ -99,15 +100,8 @@ void StubbornSets::compute_sorted_operators() {
             eff.push_back(e);
         }
 
-        sort(pre.begin(), pre.end());
-        for (uint i = 0; i < pre.size() - 1; ++i) {
-            assert(pre[i].var < pre[i + 1].var);
-        }
-
-        sort(eff.begin(), eff.end());
-        for (uint i = 0; i < eff.size() - 1; ++i) {
-            assert(eff[i].var < eff[i + 1].var);
-        }
+        sort(pre.begin(), pre.end(), SortFactsByVariable());
+        sort(eff.begin(), eff.end(), SortFactsByVariable());
 
         op_preconds.push_back(pre);
         op_effects.push_back(eff);
