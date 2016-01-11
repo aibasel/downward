@@ -22,11 +22,9 @@ struct StubbornDTG {
 
     struct Node {
         std::vector<Arc> outgoing;
-        std::vector<Arc> incoming;
     };
 
     std::vector<Node> nodes;
-    std::vector<bool> goal_values;
 };
 
 // TODO: needs a central place (see comment for simple stubborn sets)
@@ -79,22 +77,9 @@ vector<StubbornDTG> build_dtgs() {
     for (uint var_no = 0; var_no < num_variables; ++var_no) {
         size_t var_size = g_variable_domain[var_no];
         dtgs[var_no].nodes.resize(var_size);
-        dtgs[var_no].goal_values.resize(var_size, true);
     }
 
-    // Step 2: Mark goal values in each DTG. Variables that are not in
-    //         the goal have previously been set to "all are goals".
-    for (uint i = 0; i < g_goal.size(); ++i) {
-        int var_no = g_goal[i].first;
-        int goal_value = g_goal[i].second;
-        vector<bool> &goal_values = dtgs[var_no].goal_values;
-        size_t var_size = g_variable_domain[var_no];
-        goal_values.clear();
-        goal_values.resize(var_size, false);
-        goal_values[goal_value] = true;
-    }
-
-    // Step 3: Add DTG arcs.
+    // Step 2: Add DTG arcs.
     for (uint op_no = 0; op_no < g_operators.size(); ++op_no) {
         const GlobalOperator &op = g_operators[op_no];
 
@@ -127,7 +112,6 @@ vector<StubbornDTG> build_dtgs() {
 
             for (int value = pre_value_min; value < pre_value_max; ++value) {
                 dtg.nodes[value].outgoing.push_back(StubbornDTG::Arc(eff_val, op_no));
-                dtg.nodes[eff_val].incoming.push_back(StubbornDTG::Arc(value, op_no));
             }
         }
     }
