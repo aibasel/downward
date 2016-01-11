@@ -47,7 +47,6 @@ void StubbornSetsEC::initialize() {
     compute_conflicts_and_disabling();
     size_t num_variables = g_variable_domain.size();
     reachability_map.resize(num_variables);
-    build_dtgs();
     build_reachability_map();
 
     for (size_t i = 0; i < g_variable_domain.size(); i++) {
@@ -57,7 +56,7 @@ void StubbornSetsEC::initialize() {
     cout << "partial order reduction method: stubborn sets ec" << endl;
 }
 
-void StubbornSetsEC::build_dtgs() {
+vector<StubbornDTG> StubbornSetsEC::build_dtgs() {
     /*
   NOTE: Code lifted and adapted from M&S atomic abstraction code.
 
@@ -72,7 +71,7 @@ void StubbornSetsEC::build_dtgs() {
   from the usual DTG definition.
      */
 
-    assert(dtgs.empty());
+    vector<StubbornDTG> dtgs;
     size_t num_variables = g_variable_domain.size();
 
     dtgs.resize(num_variables);
@@ -133,6 +132,7 @@ void StubbornSetsEC::build_dtgs() {
             }
         }
     }
+    return dtgs;
 }
 
 void StubbornSetsEC::compute_operator_preconditions() {
@@ -151,6 +151,7 @@ void StubbornSetsEC::compute_operator_preconditions() {
 }
 
 void StubbornSetsEC::build_reachability_map() {
+    vector<StubbornDTG> dtgs = build_dtgs();
     size_t num_variables = g_variable_domain.size();
     for (uint var_no = 0; var_no < num_variables; ++var_no) {
         StubbornDTG &dtg = dtgs[var_no];
@@ -161,19 +162,21 @@ void StubbornSetsEC::build_reachability_map() {
         }
         for (int start_value = 0; start_value < g_variable_domain[var_no]; start_value++) {
             vector<bool> &reachable = reachability_map[var_no][start_value];
-            recurse_forwards(var_no, start_value, start_value, reachable);
+            recurse_forwards(dtg, start_value, start_value, reachable);
         }
     }
 }
 
 
-void StubbornSetsEC::recurse_forwards(int var, int start_value, int current_value, std::vector<bool> &reachable) {
-    StubbornDTG &dtg = dtgs[var];
+void StubbornSetsEC::recurse_forwards(const StubbornDTG &dtg,
+                                      int start_value,
+                                      int current_value,
+                                      vector<bool> &reachable) {
     if (!reachable[current_value]) {
         reachable[current_value] = true;
         const vector<StubbornDTG::Arc> &outgoing = dtg.nodes[current_value].outgoing;
         for (uint i = 0; i < outgoing.size(); ++i)
-            recurse_forwards(var, start_value, outgoing[i].target_value, reachable);
+            recurse_forwards(dtg, start_value, outgoing[i].target_value, reachable);
     }
 }
 
