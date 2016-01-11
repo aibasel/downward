@@ -33,14 +33,12 @@ static inline Fact find_unsatisfied_goal(const GlobalState &state) {
 // Return the first unsatified precondition, or (-1, -1) if there is none.
 static inline Fact find_unsatisfied_precondition(
     const GlobalOperator &op, const GlobalState &state) {
-    const vector<GlobalCondition> &preconds = op.get_preconditions();
-    for (const GlobalCondition &precond : preconds) {
-        int var = precond.var;
-        int value = precond.val;
+    for (const GlobalCondition &precondition : op.get_preconditions()) {
+        int var = precondition.var;
+        int value = precondition.val;
         if (state[var] != value)
             return Fact(var, value);
     }
-
     return Fact(-1, -1);
 }
 
@@ -52,7 +50,7 @@ void StubbornSetsSimple::initialize() {
 }
 
 void StubbornSetsSimple::compute_interference_relation() {
-    uint num_operators = g_operators.size();
+    int num_operators = g_operators.size();
     interference_relation.resize(num_operators);
 
     /*
@@ -60,9 +58,9 @@ void StubbornSetsSimple::compute_interference_relation() {
        relation for operators (o1, o2) with (o1 < o2) and add a lookup
        method that looks up (i, j) if i < j and (j, i) otherwise.
     */
-    for (size_t op1_no = 0; op1_no < num_operators; ++op1_no) {
+    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
         vector<int> &interfere_op1 = interference_relation[op1_no];
-        for (size_t op2_no = 0; op2_no < num_operators; ++op2_no) {
+        for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
             if (op1_no != op2_no && interfere(op1_no, op2_no)) {
                 interfere_op1.push_back(op2_no);
             }
@@ -141,8 +139,9 @@ void StubbornSetsSimple::compute_stubborn_set(
 }
 
 static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("Stubborn sets simple",
-                             "stubborn sets with simple instantiations of design choices");
+    parser.document_synopsis(
+        "Stubborn sets simple",
+        "stubborn sets with simple instantiations of design choices");
 
     return make_shared<StubbornSetsSimple>();
 }
