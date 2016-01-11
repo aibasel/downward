@@ -4,6 +4,8 @@
 #include "stubborn_sets.h"
 
 namespace stubborn_sets_ec {
+using stubborn_sets::Fact;
+
 struct StubbornDTG {
     struct Arc {
         Arc(int target_value_, int operator_no_)
@@ -52,7 +54,7 @@ private:
     void recurse_forwards(int var, int start_value, int current_value, std::vector<bool> &reachable);
     void compute_active_operators(const GlobalState &state);
     void mark_as_stubborn(int op_no, const GlobalState &state);
-    void add_nes_for_fact(std::pair<int, int> fact, const GlobalState &state);
+    void add_nes_for_fact(Fact fact, const GlobalState &state);
     void apply_s5(const GlobalOperator &op, const GlobalState &state);
 protected:
     virtual void initialize();

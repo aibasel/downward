@@ -26,14 +26,14 @@ static inline bool is_v_applicable(int var,
 }
 
 // Copied from SimpleStubbornSets
-static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
+static inline Fact find_unsatisfied_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
         int goal_var = g_goal[i].first;
         int goal_value = g_goal[i].second;
         if (state[goal_var] != goal_value)
-            return make_pair(goal_var, goal_value);
+            return Fact(goal_var, goal_value);
     }
-    return make_pair(-1, -1);
+    return Fact(-1, -1);
 }
 
 StubbornSetsEC::StubbornSetsEC() {}
@@ -242,17 +242,15 @@ void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
     }
 }
 
-void StubbornSetsEC::add_nes_for_fact(pair<int, int> fact, const GlobalState &state) {
-    int var = fact.first;
-    int value = fact.second;
-    const vector<int> &op_nos = achievers[var][value];
+void StubbornSetsEC::add_nes_for_fact(Fact fact, const GlobalState &state) {
+    const vector<int> &op_nos = achievers[fact.var][fact.val];
     for (size_t i = 0; i < op_nos.size(); ++i) {
         if (active_ops[op_nos[i]]) {
             mark_as_stubborn(op_nos[i], state);
         }
     }
 
-    nes_computed[var][value] = true;
+    nes_computed[fact.var][fact.val] = true;
 }
 
 void StubbornSetsEC::add_conflicting_and_disabling(int op_no, const GlobalState &state) {
@@ -293,8 +291,8 @@ void StubbornSetsEC::get_disabled_vars(int op1_no, int op2_no, std::vector<int> 
 void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
 
-    std::pair<int, int> violated_precondition = make_pair(-1, -1);
-    std::pair<int, int> violated_pre_post = make_pair(-1, -1);
+    Fact violated_precondition(-1, -1);
+    Fact violated_pre_post(-1, -1);
 
     const vector<GlobalCondition> &preconds = op.get_preconditions();
     for (size_t i = 0; i < preconds.size(); i++) {
@@ -304,26 +302,25 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
         if (state[var] != value) {
             if (written_vars[var]) {
                 if (!nes_computed[var][value]) {
-                    std::pair<int, int> fact = make_pair(var, value);
-                    add_nes_for_fact(fact, state);
+                    add_nes_for_fact(Fact(var, value), state);
                 }
                 return;
             }
-            if (violated_precondition.first == -1) {
-                violated_precondition = make_pair(var, value);
+            if (violated_precondition.var == -1) {
+                violated_precondition = Fact(var, value);
             }
         }
     }
 
-    if (violated_pre_post.first != -1) {
-        if (!nes_computed[violated_pre_post.first][violated_pre_post.second]) {
+    if (violated_pre_post.var != -1) {
+        if (!nes_computed[violated_pre_post.var][violated_pre_post.val]) {
             add_nes_for_fact(violated_pre_post, state);
         }
         return;
     }
 
-    assert(violated_precondition.first != -1);
-    if (!nes_computed[violated_precondition.first][violated_precondition.second]) {
+    assert(violated_precondition.var != -1);
+    if (!nes_computed[violated_precondition.var][violated_precondition.val]) {
         add_nes_for_fact(violated_precondition, state);
     }
 
@@ -347,9 +344,9 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<
     std::vector<int> disabled_vars;
 
     //rule S1
-    pair<int, int> goal_pair = find_unsatisfied_goal(state);
-    assert(goal_pair.first != -1);
-    add_nes_for_fact(goal_pair, state);     // active operators used
+    Fact unsatisfied_goal = find_unsatisfied_goal(state);
+    assert(unsatisfied_goal.var != -1);
+    add_nes_for_fact(unsatisfied_goal, state);     // active operators used
 
     while (!stubborn_queue.empty()) {
         int op_no = stubborn_queue.back();
