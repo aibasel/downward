@@ -103,26 +103,28 @@ void StubbornSetsEC::initialize() {
     compute_operator_preconditions();
     compute_achievers();
     compute_conflicts_and_disabling();
-    size_t num_variables = g_variable_domain.size();
+    int num_variables = g_variable_domain.size();
     reachability_map.resize(num_variables);
     build_reachability_map();
 
-    for (size_t i = 0; i < g_variable_domain.size(); i++) {
-        nes_computed.push_back(vector<bool>(g_variable_domain[i], false));
+    for (int var = 0; var < num_variables; var++) {
+        nes_computed.push_back(vector<bool>(g_variable_domain[var], false));
     }
 
     cout << "partial order reduction method: stubborn sets ec" << endl;
 }
 
 void StubbornSetsEC::compute_operator_preconditions() {
+    int num_operators = g_operators.size();
+    int num_variables = g_variable_domain.size();
     operator_preconditions.resize(g_operators.size());
-    for (uint op_no = 0; op_no < g_operators.size(); op_no++) {
+    for (int op_no = 0; op_no < num_operators; op_no++) {
         operator_preconditions[op_no].resize(g_variable_name.size(), -1);
-        for (uint var = 0; var < g_variable_name.size(); var++) {
-            const vector<GlobalCondition> &preconds = g_operators[op_no].get_preconditions();
-            for (size_t i = 0; i < preconds.size(); i++) {
-                if (preconds[i].var == (int)var) {
-                    operator_preconditions[op_no][var] = preconds[i].val;
+        const GlobalOperator &op = g_operators[op_no];
+        for (int var = 0; var < num_variables; var++) {
+            for (const GlobalCondition &precondition : op.get_preconditions()) {
+                if (precondition.var == var) {
+                    operator_preconditions[op_no][var] = precondition.val;
                 }
             }
         }
@@ -131,16 +133,16 @@ void StubbornSetsEC::compute_operator_preconditions() {
 
 void StubbornSetsEC::build_reachability_map() {
     vector<StubbornDTG> dtgs = build_dtgs();
-    size_t num_variables = g_variable_domain.size();
-    for (uint var_no = 0; var_no < num_variables; ++var_no) {
-        StubbornDTG &dtg = dtgs[var_no];
-        size_t num_values = dtg.size();
-        reachability_map[var_no].resize(num_values);
-        for (uint val = 0; val < num_values; ++val) {
-            reachability_map[var_no][val].assign(num_values, false);
+    int num_variables = g_variable_domain.size();
+    for (int var = 0; var < num_variables; ++var) {
+        StubbornDTG &dtg = dtgs[var];
+        int num_values = dtg.size();
+        reachability_map[var].resize(num_values);
+        for (int val = 0; val < num_values; ++val) {
+            reachability_map[var][val].assign(num_values, false);
         }
-        for (int start_value = 0; start_value < g_variable_domain[var_no]; start_value++) {
-            vector<bool> &reachable = reachability_map[var_no][start_value];
+        for (int start_value = 0; start_value < g_variable_domain[var]; start_value++) {
+            vector<bool> &reachable = reachability_map[var][start_value];
             recurse_forwards(dtg, start_value, start_value, reachable);
         }
     }
@@ -148,15 +150,14 @@ void StubbornSetsEC::build_reachability_map() {
 
 void StubbornSetsEC::compute_active_operators(const GlobalState &state) {
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
-        GlobalOperator &op = g_operators[op_no];
+        const GlobalOperator &op = g_operators[op_no];
         bool all_preconditions_are_active = true;
 
-        const vector<GlobalCondition> &preconds = op.get_preconditions();
-        for (size_t i = 0; i < preconds.size(); i++) {
-            int var = preconds[i].var;
-            int value = preconds[i].val;
+        for (const GlobalCondition &precondition : op.get_preconditions()) {
+            int var = precondition.var;
+            int value = precondition.val;
             int current_value = state[var];
-            vector<bool> &reachable_values = reachability_map[var][current_value];
+            const vector<bool> &reachable_values = reachability_map[var][current_value];
             if (!reachable_values[value]) {
                 all_preconditions_are_active = false;
                 break;
@@ -170,12 +171,12 @@ void StubbornSetsEC::compute_active_operators(const GlobalState &state) {
 }
 
 void StubbornSetsEC::compute_conflicts_and_disabling() {
-    size_t num_operators = g_operators.size();
+    int num_operators = g_operators.size();
     conflicting_and_disabling.resize(num_operators);
     disabled.resize(num_operators);
 
-    for (size_t op1_no = 0; op1_no < num_operators; ++op1_no) {
-        for (size_t op2_no = 0; op2_no < num_operators; ++op2_no) {
+    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
+        for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
             if (op1_no != op2_no) {
                 bool conflict = can_conflict(op1_no, op2_no);
                 bool disable = can_disable(op2_no, op1_no);
@@ -212,47 +213,45 @@ void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
 }
 
 void StubbornSetsEC::add_nes_for_fact(Fact fact, const GlobalState &state) {
-    const vector<int> &op_nos = achievers[fact.var][fact.val];
-    for (size_t i = 0; i < op_nos.size(); ++i) {
-        if (active_ops[op_nos[i]]) {
-            mark_as_stubborn(op_nos[i], state);
+    for (int achiever : achievers[fact.var][fact.val]) {
+        if (active_ops[achiever]) {
+            mark_as_stubborn(achiever, state);
         }
     }
 
     nes_computed[fact.var][fact.val] = true;
 }
 
-void StubbornSetsEC::add_conflicting_and_disabling(int op_no, const GlobalState &state) {
-    const vector<int> &conflict_and_disable = conflicting_and_disabling[op_no];
-
-    for (size_t i = 0; i < conflict_and_disable.size(); ++i) {
-        if (active_ops[conflict_and_disable[i]])
-            mark_as_stubborn(conflict_and_disable[i], state);
+void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
+                                                   const GlobalState &state) {
+    for (int conflict : conflicting_and_disabling[op_no]) {
+        if (active_ops[conflict])
+            mark_as_stubborn(conflict, state);
     }
 }
 
-void StubbornSetsEC::get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars) {
+void StubbornSetsEC::get_disabled_vars(int op1_no,
+                                       int op2_no,
+                                       vector<int> &disabled_vars) {
     disabled_vars.clear();
-    size_t i = 0;
-    size_t j = 0;
+    int i = 0;
+    int j = 0;
     while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
         int read_var = op_preconds[op2_no][i].var;
         int write_var = op_effects[op1_no][j].var;
         if (read_var < write_var) {
-            i++;
+            ++i;
+        } else if (read_var > write_var) {
+            ++j;
         } else {
-            if (read_var == write_var) {
-                int read_value = op_preconds[op2_no][i].val;
-                int write_value = op_effects[op1_no][j].val;
-                if (read_value != write_value) {
-                    disabled_vars.push_back(read_var);
-                }
-                i++;
-                j++;
-            } else {
-                // read_var > write_var
-                j++;
+            // read_var == write_var
+            int read_value = op_preconds[op2_no][i].val;
+            int write_value = op_effects[op1_no][j].val;
+            if (read_value != write_value) {
+                disabled_vars.push_back(read_var);
             }
+            ++i;
+            ++j;
         }
     }
 }
@@ -263,10 +262,9 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
     Fact violated_precondition(-1, -1);
     Fact violated_pre_post(-1, -1);
 
-    const vector<GlobalCondition> &preconds = op.get_preconditions();
-    for (size_t i = 0; i < preconds.size(); i++) {
-        int var = preconds[i].var;
-        int value = preconds[i].val;
+    for (const GlobalCondition &precondition : op.get_preconditions()) {
+        int var = precondition.var;
+        int value = precondition.val;
 
         if (state[var] != value) {
             if (written_vars[var]) {
@@ -297,7 +295,8 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
 }
 
 
-void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) {
+void StubbornSetsEC::compute_stubborn_set(
+    const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) {
     stubborn.clear();
     stubborn.assign(g_operators.size(), false);
     active_ops.clear();
@@ -319,26 +318,25 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<
 
     while (!stubborn_queue.empty()) {
         int op_no = stubborn_queue.back();
-
         stubborn_queue.pop_back();
+
         const GlobalOperator &op = g_operators[op_no];
         if (op.is_applicable(state)) {
             //Rule S2 & S3
             add_conflicting_and_disabling(op_no, state);     // active operators used
             //Rule S4'
-            std::vector<int>::iterator op_it;
-            for (op_it = disabled[op_no].begin(); op_it != disabled[op_no].end(); op_it++) {
-                if (active_ops[*op_it]) {
-                    const GlobalOperator &o = g_operators[*op_it];
-
+            for (int disabled_op_no : disabled[op_no]) {
+                if (active_ops[disabled_op_no]) {
                     bool v_applicable_op_found = false;
-                    std::vector<int>::iterator var_it;
-                    get_disabled_vars(op_no, *op_it, disabled_vars);
+                    get_disabled_vars(op_no, disabled_op_no, disabled_vars);
                     if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
-                        for (var_it = disabled_vars.begin(); var_it != disabled_vars.end(); var_it++) {
+                        for (int disabled_var : disabled_vars) {
                             //First case: add o'
-                            if (is_v_applicable(*var_it, *op_it, state, operator_preconditions)) {
-                                mark_as_stubborn(*op_it, state);
+                            if (is_v_applicable(disabled_var,
+                                                disabled_op_no,
+                                                state,
+                                                operator_preconditions)) {
+                                mark_as_stubborn(disabled_op_no, state);
                                 v_applicable_op_found = true;
                                 break;
                             }
@@ -346,7 +344,7 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<
 
                         //Second case: add a necessray enabling set for o' following S5
                         if (!v_applicable_op_found) {
-                            apply_s5(o, state);
+                            apply_s5(g_operators[disabled_op_no], state);
                         }
                     }
                 }
@@ -360,8 +358,7 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<
     // Now check which applicable operators are in the stubborn set.
     vector<const GlobalOperator *> remaining_ops;
     remaining_ops.reserve(applicable_ops.size());
-    for (size_t i = 0; i < applicable_ops.size(); ++i) {
-        const GlobalOperator *op = applicable_ops[i];
+    for (const GlobalOperator *op : applicable_ops) {
         int op_no = get_op_index(op);
         if (stubborn[op_no])
             remaining_ops.push_back(op);
@@ -373,7 +370,9 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state, std::vector<
 }
 
 static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("StubbornSetsEC", "stubborn set method that dominates expansion core");
+    parser.document_synopsis(
+        "StubbornSetsEC",
+        "stubborn set method that dominates expansion core");
 
     return make_shared<StubbornSetsEC>();
 }
