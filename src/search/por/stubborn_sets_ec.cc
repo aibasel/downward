@@ -98,11 +98,6 @@ void recurse_forwards(const StubbornDTG &dtg,
     }
 }
 
-
-StubbornSetsEC::StubbornSetsEC() {}
-
-StubbornSetsEC::~StubbornSetsEC() {}
-
 void StubbornSetsEC::initialize() {
     compute_sorted_operators();
     compute_operator_preconditions();
