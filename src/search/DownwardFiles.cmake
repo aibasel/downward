@@ -88,10 +88,19 @@ list(APPEND PLANNER_SOURCES ${CORE_SOURCES})
 # CORE_PLUGIN enables the plugin and hides the option to disable it in
 #     cmake GUIs like ccmake.
 
+option(
+    DISABLE_PLUGINS_BY_DEFAULT
+    "If set to YES only plugins that are specifically enabled will be compiled"
+    NO)
+# This option should not show up in cmake GUIs like ccmake where all
+# plugins are enabled or disabled manually.
+mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
+
 fast_downward_plugin(
     NAME OPTIONS
     HELP "Option parsing and plugin definition"
     SOURCES
+        options/any.h
         options/bounds.cc
         options/doc_printer.cc
         options/doc_store.cc
@@ -115,6 +124,7 @@ fast_downward_plugin(
     SOURCES
         utils/collections.h
         utils/countdown_timer.cc
+        utils/dynamic_bitset.h
         utils/hash.h
         utils/language.h
         utils/logging.cc
@@ -349,6 +359,35 @@ fast_downward_plugin(
     SOURCES
         heuristics/max_heuristic.cc
     DEPENDS RELAXATION_HEURISTIC
+)
+
+fast_downward_plugin(
+    NAME EXTRA_TASKS
+    HELP "Non-core task transformations"
+    SOURCES
+        tasks/domain_abstracted_task.cc
+        tasks/domain_abstracted_task_factory.cc
+        tasks/modified_goals_task.cc
+        tasks/modified_operator_costs_task.cc
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME CEGAR
+    HELP "Plugin containing the code for CEGAR heuristics"
+    SOURCES
+        cegar/abstraction.cc
+        cegar/abstract_search.cc
+        cegar/abstract_state.cc
+        cegar/additive_cartesian_heuristic.cc
+        cegar/cartesian_heuristic.cc
+        cegar/domains.cc
+        cegar/refinement_hierarchy.cc
+        cegar/split_selector.cc
+        cegar/subtask_generators.cc
+        cegar/utils.cc
+        cegar/utils_landmarks.cc
+    DEPENDS EXTRA_TASKS
 )
 
 fast_downward_plugin(

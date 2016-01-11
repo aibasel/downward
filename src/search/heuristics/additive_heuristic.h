@@ -5,6 +5,8 @@
 
 #include "../priority_queue.h"
 
+#include "../utils/collections.h"
+
 #include <cassert>
 
 class State;
@@ -53,6 +55,8 @@ class AdditiveHeuristic : public RelaxationHeuristic::RelaxationHeuristic {
     }
 
     void write_overflow_warning();
+
+    int compute_heuristic(const State &state);
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
@@ -62,6 +66,20 @@ protected:
 public:
     AdditiveHeuristic(const Options &options);
     ~AdditiveHeuristic();
+
+    /*
+      TODO: The two methods below are temporarily needed for the CEGAR
+      heuristic. In the long run it might be better to split the
+      computation from the heuristic class. Then the CEGAR code could
+      use the computation object instead of the heuristic.
+    */
+    void initialize_and_compute_heuristic_for_cegar(const State &state);
+
+    int get_cost_for_cegar(int var, int value) const {
+        assert(Utils::in_bounds(var, propositions));
+        assert(Utils::in_bounds(value, propositions[var]));
+        return propositions[var][value].cost;
+    }
 };
 }
 
