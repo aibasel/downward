@@ -8,7 +8,7 @@
 
 class State;
 
-namespace CEGAR {
+namespace cegar {
 class Node;
 
 /*

@@ -10,9 +10,9 @@
 #include <algorithm>
 
 using namespace std;
-using namespace Landmarks;
+using namespace landmarks;
 
-namespace CEGAR {
+namespace cegar {
 static Fact get_fact(const LandmarkNode &node) {
     /* We assume that the given LandmarkNodes are from an h^m landmark
        graph with m=1. */

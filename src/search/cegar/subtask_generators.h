@@ -11,11 +11,11 @@ class AbstractTask;
 class Options;
 class TaskProxy;
 
-namespace Landmarks {
+namespace landmarks {
 class LandmarkGraph;
 }
 
-namespace CEGAR {
+namespace cegar {
 using Facts = std::vector<Fact>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 
@@ -62,7 +62,7 @@ public:
 
 class LandmarkDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
-    const std::unique_ptr<Landmarks::LandmarkGraph> landmark_graph;
+    const std::unique_ptr<landmarks::LandmarkGraph> landmark_graph;
     bool combine_facts;
 
     /* Perform domain abstraction by combining facts that have to be
