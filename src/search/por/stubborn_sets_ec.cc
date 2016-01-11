@@ -236,7 +236,9 @@ void StubbornSetsEC::get_disabled_vars(int op1_no,
     disabled_vars.clear();
     int i = 0;
     int j = 0;
-    while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
+    int num_op1_effects = op_effects[op1_no].size();
+    int num_op2_preconditions = op_preconds[op2_no].size();
+    while (i < num_op2_preconditions && j < num_op1_effects) {
         int read_var = op_preconds[op2_no][i].var;
         int write_var = op_effects[op1_no][j].var;
         if (read_var < write_var) {

@@ -25,20 +25,21 @@ inline bool operator<(const Fact &lhs, const Fact &rhs) {
 bool StubbornSets::can_disable(int op1_no, int op2_no) {
     int i = 0;
     int j = 0;
-    while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
+    int num_op1_effects = op_effects[op1_no].size();
+    int num_op2_preconditions = op_preconds[op2_no].size();
+    while (i < num_op2_preconditions && j < num_op1_effects) {
         int read_var = op_preconds[op2_no][i].var;
         int write_var = op_effects[op1_no][j].var;
         if (read_var < write_var) {
             i++;
-        } else if (read_var == write_var) {
+        } else if (read_var > write_var) {
+            j++;
+        } else {
             int read_value = op_preconds[op2_no][i].val;
             int write_value = op_effects[op1_no][j].val;
             if (read_value != write_value)
                 return true;
             i++;
-            j++;
-        } else {
-            // read_var > write_var
             j++;
         }
     }
@@ -49,20 +50,21 @@ bool StubbornSets::can_disable(int op1_no, int op2_no) {
 bool StubbornSets::can_conflict(int op1_no, int op2_no) {
     int i = 0;
     int j = 0;
-    while (i < op_effects[op1_no].size() && j < op_effects[op2_no].size()) {
+    int num_op1_effects = op_effects[op1_no].size();
+    int num_op2_effects = op_effects[op2_no].size();
+    while (i < num_op1_effects && j < num_op2_effects) {
         int var1 = op_effects[op1_no][i].var;
         int var2 = op_effects[op2_no][j].var;
         if (var1 < var2) {
             i++;
-        } else if (var1 == var2) {
+        } else if (var1 > var2) {
+            j++;
+        } else {
             int value1 = op_effects[op1_no][i].val;
             int value2 = op_effects[op2_no][j].val;
             if (value1 != value2)
                 return true;
             i++;
-            j++;
-        } else {
-            // var1 > var2
             j++;
         }
     }
