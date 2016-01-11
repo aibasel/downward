@@ -36,27 +36,7 @@ static inline Fact find_unsatisfied_goal(const GlobalState &state) {
     return Fact(-1, -1);
 }
 
-StubbornSetsEC::StubbornSetsEC() {}
-
-StubbornSetsEC::~StubbornSetsEC() {}
-
-void StubbornSetsEC::initialize() {
-    compute_sorted_operators();
-    compute_operator_preconditions();
-    compute_achievers();
-    compute_conflicts_and_disabling();
-    size_t num_variables = g_variable_domain.size();
-    reachability_map.resize(num_variables);
-    build_reachability_map();
-
-    for (size_t i = 0; i < g_variable_domain.size(); i++) {
-        nes_computed.push_back(vector<bool>(g_variable_domain[i], false));
-    }
-
-    cout << "partial order reduction method: stubborn sets ec" << endl;
-}
-
-vector<StubbornDTG> StubbornSetsEC::build_dtgs() {
+vector<StubbornDTG> build_dtgs() {
     /*
   NOTE: Code lifted and adapted from M&S atomic abstraction code.
 
@@ -135,6 +115,39 @@ vector<StubbornDTG> StubbornSetsEC::build_dtgs() {
     return dtgs;
 }
 
+void recurse_forwards(const StubbornDTG &dtg,
+                                      int start_value,
+                                      int current_value,
+                                      vector<bool> &reachable) {
+    if (!reachable[current_value]) {
+        reachable[current_value] = true;
+        const vector<StubbornDTG::Arc> &outgoing = dtg.nodes[current_value].outgoing;
+        for (uint i = 0; i < outgoing.size(); ++i)
+            recurse_forwards(dtg, start_value, outgoing[i].target_value, reachable);
+    }
+}
+
+
+StubbornSetsEC::StubbornSetsEC() {}
+
+StubbornSetsEC::~StubbornSetsEC() {}
+
+void StubbornSetsEC::initialize() {
+    compute_sorted_operators();
+    compute_operator_preconditions();
+    compute_achievers();
+    compute_conflicts_and_disabling();
+    size_t num_variables = g_variable_domain.size();
+    reachability_map.resize(num_variables);
+    build_reachability_map();
+
+    for (size_t i = 0; i < g_variable_domain.size(); i++) {
+        nes_computed.push_back(vector<bool>(g_variable_domain[i], false));
+    }
+
+    cout << "partial order reduction method: stubborn sets ec" << endl;
+}
+
 void StubbornSetsEC::compute_operator_preconditions() {
     operator_preconditions.resize(g_operators.size());
     for (uint op_no = 0; op_no < g_operators.size(); op_no++) {
@@ -164,19 +177,6 @@ void StubbornSetsEC::build_reachability_map() {
             vector<bool> &reachable = reachability_map[var_no][start_value];
             recurse_forwards(dtg, start_value, start_value, reachable);
         }
-    }
-}
-
-
-void StubbornSetsEC::recurse_forwards(const StubbornDTG &dtg,
-                                      int start_value,
-                                      int current_value,
-                                      vector<bool> &reachable) {
-    if (!reachable[current_value]) {
-        reachable[current_value] = true;
-        const vector<StubbornDTG::Arc> &outgoing = dtg.nodes[current_value].outgoing;
-        for (uint i = 0; i < outgoing.size(); ++i)
-            recurse_forwards(dtg, start_value, outgoing[i].target_value, reachable);
     }
 }
 

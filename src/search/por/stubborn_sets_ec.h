@@ -36,16 +36,11 @@ private:
     std::vector<std::vector<bool>> nes_computed;
 
     void get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars);
-    std::vector<StubbornDTG> build_dtgs();
     void build_reachability_map();
     void compute_operator_preconditions();
     void compute_conflicts_and_disabling();
     void compute_disabled_by_o();
     void add_conflicting_and_disabling(int op_no, const GlobalState &state);
-    void recurse_forwards(const StubbornDTG &dtg,
-                          int start_value,
-                          int current_value,
-                          std::vector<bool> &reachable);
     void compute_active_operators(const GlobalState &state);
     void mark_as_stubborn(int op_no, const GlobalState &state);
     void add_nes_for_fact(Fact fact, const GlobalState &state);
