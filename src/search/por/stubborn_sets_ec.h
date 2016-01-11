@@ -30,9 +30,6 @@ protected:
     virtual void initialize();
     virtual void compute_stubborn_set(const GlobalState &state,
                                       std::vector<const GlobalOperator *> &ops);
-public:
-    StubbornSetsEC();
-    ~StubbornSetsEC();
 };
 }
 #endif
