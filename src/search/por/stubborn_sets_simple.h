@@ -3,7 +3,7 @@
 
 #include "stubborn_sets.h"
 
-namespace StubbornSetsSimple {
+namespace stubborn_sets_simple {
 class StubbornSetsSimple : public StubbornSets::StubbornSets {
     /* interference_relation[op1_no] contains all operator indices
        of operators that interfere with op1. */

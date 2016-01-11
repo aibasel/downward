@@ -6,7 +6,7 @@
 class GlobalOperator;
 class GlobalState;
 
-namespace NullPORMethod {
+namespace null_por_method {
 class NullPORMethod : public PORMethod {
 public:
     virtual void initialize();

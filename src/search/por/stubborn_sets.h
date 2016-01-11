@@ -3,7 +3,7 @@
 
 #include "../por_method.h"
 
-namespace StubbornSets {
+namespace stubborn_sets {
 struct Fact {
     int var;
     int val;
