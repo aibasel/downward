@@ -103,10 +103,9 @@ void StubbornSetsEC::initialize() {
     compute_operator_preconditions();
     compute_achievers();
     compute_conflicts_and_disabling();
-    int num_variables = g_variable_domain.size();
-    reachability_map.resize(num_variables);
     build_reachability_map();
 
+    int num_variables = g_variable_domain.size();
     for (int var = 0; var < num_variables; var++) {
         nes_computed.push_back(vector<bool>(g_variable_domain[var], false));
     }
@@ -130,6 +129,7 @@ void StubbornSetsEC::compute_operator_preconditions() {
 void StubbornSetsEC::build_reachability_map() {
     vector<StubbornDTG> dtgs = build_dtgs();
     int num_variables = g_variable_domain.size();
+    reachability_map.resize(num_variables);
     for (int var = 0; var < num_variables; ++var) {
         StubbornDTG &dtg = dtgs[var];
         int num_values = dtg.size();
