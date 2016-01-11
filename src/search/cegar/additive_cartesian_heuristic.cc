@@ -13,6 +13,7 @@
 #include "../tasks/modified_operator_costs_task.h"
 
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -145,30 +146,12 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
     return sum_h;
 }
 
-// TODO: Move t2t code into "options" and use it in the rest of the code as well.
-static string t2t_escape(const string &s) {
-    return "\"\"" + s + "\"\"";
-}
-
-static string format_paper_reference(
-    string authors, string title, string url, string conference,
-    string pages, string publisher) {
-    stringstream ss;
-    ss << "\n\n"
-       << " * " << t2t_escape(authors) << ".<<BR>>\n"
-       << " [" << t2t_escape(title) << " " << t2t_escape(url) << "].<<BR>>\n"
-       << " In //" << t2t_escape(conference) << "//,"
-       << " pp. " << t2t_escape(pages) << ". "
-       << t2t_escape(publisher) << ".\n\n\n";
-    return ss.str();
-}
-
 static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Additive CEGAR heuristic",
         "See the paper introducing Counterexample-guided Abstraction "
         "Refinement (CEGAR) for classical planning:" +
-        format_paper_reference(
+        Utils::format_paper_reference(
             "Jendrik Seipp and Malte Helmert",
             "Counterexample-guided Cartesian Abstraction Refinement",
             "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
@@ -177,7 +160,7 @@ static Heuristic *_parse(OptionParser &parser) {
             "347-351",
             "AAAI Press 2013") +
         "and the paper showing how to make the abstractions additive:" +
-        format_paper_reference(
+        Utils::format_paper_reference(
             "Jendrik Seipp and Malte Helmert",
             "Diverse and Additive Cartesian Abstraction Heuristics",
             "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
