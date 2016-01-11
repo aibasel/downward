@@ -119,6 +119,7 @@ fast_downward_plugin(
         utils/hash.h
         utils/language.h
         utils/logging.cc
+        utils/markup.cc
         utils/math.cc
         utils/memory.cc
         utils/rng.cc
