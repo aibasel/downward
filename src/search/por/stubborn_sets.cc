@@ -23,8 +23,8 @@ inline bool operator<(const Fact &lhs, const Fact &rhs) {
 /* can_disable relies on op_preconds and op_effects being sorted by
    variable */
 bool StubbornSets::can_disable(int op1_no, int op2_no) {
-    size_t i = 0;
-    size_t j = 0;
+    int i = 0;
+    int j = 0;
     while (i < op_preconds[op2_no].size() && j < op_effects[op1_no].size()) {
         int read_var = op_preconds[op2_no][i].var;
         int write_var = op_effects[op1_no][j].var;
@@ -47,8 +47,8 @@ bool StubbornSets::can_disable(int op1_no, int op2_no) {
 
 // can_conflict relies on op_effect being sorted by variable
 bool StubbornSets::can_conflict(int op1_no, int op2_no) {
-    size_t i = 0;
-    size_t j = 0;
+    int i = 0;
+    int j = 0;
     while (i < op_effects[op1_no].size() && j < op_effects[op2_no].size()) {
         int var1 = op_effects[op1_no][i].var;
         int var2 = op_effects[op2_no][j].var;
