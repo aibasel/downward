@@ -10,6 +10,25 @@
 using namespace std;
 
 namespace stubborn_sets_ec {
+struct StubbornDTG {
+    struct Arc {
+        Arc(int target_value, int operator_no)
+            : target_value(target_value),
+              operator_no(operator_no) {
+        }
+        int target_value;
+        int operator_no;
+    };
+
+    struct Node {
+        std::vector<Arc> outgoing;
+        std::vector<Arc> incoming;
+    };
+
+    std::vector<Node> nodes;
+    std::vector<bool> goal_values;
+};
+
 // TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
     int op_index = op - &*g_operators.begin();

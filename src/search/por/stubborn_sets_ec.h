@@ -6,25 +6,6 @@
 namespace stubborn_sets_ec {
 using stubborn_sets::Fact;
 
-struct StubbornDTG {
-    struct Arc {
-        Arc(int target_value, int operator_no)
-            : target_value(target_value),
-              operator_no(operator_no) {
-        }
-        int target_value;
-        int operator_no;
-    };
-
-    struct Node {
-        std::vector<Arc> outgoing;
-        std::vector<Arc> incoming;
-    };
-
-    std::vector<Node> nodes;
-    std::vector<bool> goal_values;
-};
-
 class StubbornSetsEC : public stubborn_sets::StubbornSets {
 private:
     std::vector<std::vector<std::vector<bool>>> reachability_map;
