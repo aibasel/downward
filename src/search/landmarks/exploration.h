@@ -13,8 +13,7 @@
 class GlobalOperator;
 class GlobalState;
 
-
-namespace Landmarks {
+namespace landmarks {
 struct ExProposition;
 struct ExUnaryOperator;
 

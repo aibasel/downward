@@ -12,8 +12,7 @@ class GlobalState;
 class State;
 struct ValueNode;
 
-
-namespace CGHeuristic {
+namespace cg_heuristic {
 class CGCache;
 
 class CGHeuristic : public Heuristic {

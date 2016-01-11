@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace PDBs {
+namespace pdbs {
 /* Implementation of the Max Cliques algorithm by Tomita et al. See:
 
    Etsuji Tomita, Akira Tanaka and Haruhisa Takahashi, The Worst-Case

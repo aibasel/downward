@@ -6,8 +6,7 @@
 
 class Options;
 
-
-namespace PDBs {
+namespace pdbs {
 class PatternGeneratorManual : public PatternGenerator {
     Pattern pattern;
 public:

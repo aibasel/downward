@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &opts)
     : max_states(opts.get<int>("max_states")) {
 }

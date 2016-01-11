@@ -6,8 +6,7 @@
 #include <string>
 #include <vector>
 
-
-namespace PrefEvaluator {
+namespace pref_evaluator {
 class PrefEvaluator : public ScalarEvaluator {
 public:
     PrefEvaluator();

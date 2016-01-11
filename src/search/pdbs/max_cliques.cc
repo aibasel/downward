@@ -10,8 +10,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 class MaxCliqueComputer {
     const vector<vector<int>> &graph;
     vector<vector<int>> &max_cliques;
@@ -19,8 +18,8 @@ class MaxCliqueComputer {
 
     int get_maximizing_vertex(
         const vector<int> &subg, const vector<int> &cand) {
-        assert(Utils::is_sorted_unique(subg));
-        assert(Utils::is_sorted_unique(cand));
+        assert(utils::is_sorted_unique(subg));
+        assert(utils::is_sorted_unique(cand));
 
         //cout << "subg: " << subg << endl;
         //cout << "cand: " << cand << endl;

@@ -16,7 +16,7 @@
 
 using namespace std;
 
-namespace CEGAR {
+namespace cegar {
 struct Flaw {
     // Last concrete and abstract state reached while tracing solution.
     const State concrete_state;
@@ -139,7 +139,7 @@ void Abstraction::create_trivial_abstraction() {
 bool Abstraction::may_keep_refining() const {
     /* TODO: Think about whether we really want to go to the memory limit.
        Without doing so, the algorithm would be more deterministic. */
-    return Utils::extra_memory_padding_is_reserved() &&
+    return utils::extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
            !timer.is_expired();
 }
@@ -222,7 +222,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         cout << "  Initial abstract state: " << *abstract_state << endl;
 
     for (const Arc &step : solution) {
-        if (!Utils::extra_memory_padding_is_reserved())
+        if (!utils::extra_memory_padding_is_reserved())
             break;
         const OperatorProxy op = step.first;
         AbstractState *next_abstract_state = step.second;
@@ -235,7 +235,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
                 if (debug)
                     cout << "  Paths deviate." << endl;
                 ++deviations;
-                return Utils::make_unique_ptr<Flaw>(
+                return utils::make_unique_ptr<Flaw>(
                     move(concrete_state),
                     abstract_state,
                     next_abstract_state->regress(op));
@@ -246,7 +246,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
             if (debug)
                 cout << "  Operator not applicable: " << op.get_name() << endl;
             ++unmet_preconditions;
-            return Utils::make_unique_ptr<Flaw>(
+            return utils::make_unique_ptr<Flaw>(
                 move(concrete_state),
                 abstract_state,
                 AbstractState::get_abstract_state(
@@ -261,7 +261,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
         if (debug)
             cout << "  Goal test failed." << endl;
         ++unmet_goals;
-        return Utils::make_unique_ptr<Flaw>(
+        return utils::make_unique_ptr<Flaw>(
             move(concrete_state),
             abstract_state,
             AbstractState::get_abstract_state(

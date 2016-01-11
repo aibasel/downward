@@ -5,8 +5,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-
-namespace PrefEvaluator {
+namespace pref_evaluator {
 PrefEvaluator::PrefEvaluator() {
 }
 

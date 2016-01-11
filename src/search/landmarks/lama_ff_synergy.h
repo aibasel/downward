@@ -5,8 +5,7 @@
 
 #include <memory>
 
-
-namespace Landmarks {
+namespace landmarks {
 class Exploration;
 class LandmarkCountHeuristic;
 

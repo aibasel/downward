@@ -19,8 +19,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 /* A successor signature characterizes the behaviour of an abstract
    state in so far as bisimulation cares about it. States with
    identical successor signature are not distinguished by
@@ -323,7 +322,7 @@ void ShrinkBisimulation::compute_abstraction(
     /* Reduce memory pressure before generating the equivalence
        relation since this is one of the code parts relevant to peak
        memory. */
-    Utils::release_vector_memory(signatures);
+    utils::release_vector_memory(signatures);
 
     // Generate final result.
     assert(equivalence_relation.empty());

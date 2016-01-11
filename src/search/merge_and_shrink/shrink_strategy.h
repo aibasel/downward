@@ -11,8 +11,7 @@
 class OptionParser;
 class Options;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class TransitionSystem;
 

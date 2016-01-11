@@ -11,8 +11,7 @@
 class Options;
 class State;
 
-
-namespace Potentials {
+namespace potentials {
 class PotentialFunction;
 
 /*
@@ -44,7 +43,7 @@ class PotentialFunction;
 class PotentialOptimizer {
     std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
-    LP::LPSolver lp_solver;
+    lp::LPSolver lp_solver;
     const double max_potential;
     int num_lp_vars;
     std::vector<std::vector<int>> lp_var_ids;

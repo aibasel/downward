@@ -5,21 +5,20 @@
 
 #include <memory>
 
-namespace LandmarkCutHeuristic {
+namespace lm_cut_heuristic {
 class LandmarkCutLandmarks;
 }
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 class LMCutConstraints : public ConstraintGenerator {
-    std::unique_ptr<LandmarkCutHeuristic::LandmarkCutLandmarks> landmark_generator;
+    std::unique_ptr<lm_cut_heuristic::LandmarkCutLandmarks> landmark_generator;
 public:
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,
-        std::vector<LP::LPConstraint> &constraints,
+        std::vector<lp::LPConstraint> &constraints,
         double infinity) override;
     virtual bool update_constraints(const State &state,
-                                    LP::LPSolver &lp_solver) override;
+                                    lp::LPSolver &lp_solver) override;
 };
 }
 

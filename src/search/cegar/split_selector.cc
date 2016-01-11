@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace CEGAR {
+namespace cegar {
 SplitSelector::SplitSelector(
     const std::shared_ptr<AbstractTask> &task,
     PickSplit pick)
@@ -107,7 +107,7 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
         break;
     default:
         cout << "Invalid pick strategy: " << static_cast<int>(pick) << endl;
-        Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::INPUT_ERROR);
     }
     return rating;
 }

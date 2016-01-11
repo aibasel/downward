@@ -4,6 +4,6 @@
 
 using namespace std;
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 const int INF = numeric_limits<int>::max();
 }

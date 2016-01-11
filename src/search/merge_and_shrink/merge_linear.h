@@ -7,8 +7,7 @@
 
 class Options;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class MergeLinear : public MergeStrategy {
     // Only needed until variable order finder is initialized.
     VariableOrderType variable_order_type;

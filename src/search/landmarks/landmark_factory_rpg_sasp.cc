@@ -16,9 +16,9 @@
 #include <limits>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
-namespace Landmarks {
+namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
     : LandmarkFactory(opts) {
 }
@@ -307,7 +307,7 @@ static string get_predicate_for_fact(int var_no, int value) {
     if (predicate_pos == 0 || paren_pos == string::npos) {
         cerr << "error: cannot extract predicate from fact: "
              << fact_name << endl;
-        Utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::INPUT_ERROR);
     }
     return string(fact_name.begin() + predicate_pos, fact_name.begin() + paren_pos);
 }

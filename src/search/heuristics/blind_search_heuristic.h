@@ -3,8 +3,7 @@
 
 #include "../heuristic.h"
 
-
-namespace BlindSearchHeuristic {
+namespace blind_search_heuristic {
 class BlindSearchHeuristic : public Heuristic {
     int min_operator_cost;
 protected:
