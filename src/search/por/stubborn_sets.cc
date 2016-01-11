@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace StubbornSets {
+namespace stubborn_sets {
 StubbornSets::StubbornSets()
     : num_unpruned_successors_generated(0),
       num_pruned_successors_generated(0) {

@@ -3,7 +3,7 @@
 
 #include "stubborn_sets.h"
 
-namespace StubbornSetsEC {
+namespace stubborn_sets_ec {
 struct StubbornDTG {
     struct Arc {
         Arc(int target_value_, int operator_no_)

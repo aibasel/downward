@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace StubbornSetsSimple {
+namespace stubborn_sets_simple {
 /* Implementation of simple instantiation of strong stubborn sets.
    Disjunctive action landmarks are computed trivially.*/
 

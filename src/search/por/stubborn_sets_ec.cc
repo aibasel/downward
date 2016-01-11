@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace StubbornSetsEC {
+namespace stubborn_sets_ec {
 // TODO: needs a central place (see comment for simple stubborn sets)
 static inline int get_op_index(const GlobalOperator *op) {
     int op_index = op - &*g_operators.begin();
@@ -33,7 +33,7 @@ static inline pair<int, int> find_unsatisfied_goal(const GlobalState &state) {
 
 StubbornSetsEC::StubbornSetsEC() {}
 
-StubbornSetsEC::~StubbornSetsEC() {}
+StubbornSetsEC::~stubborn_sets_ec() {}
 
 void StubbornSetsEC::initialize() {
     compute_sorted_operators();
