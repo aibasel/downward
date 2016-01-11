@@ -256,7 +256,6 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
     // Find a violated state variable and check if stubborn contains a writer for this variable.
 
     Fact violated_precondition(-1, -1);
-    Fact violated_pre_post(-1, -1);
 
     for (const GlobalCondition &precondition : op.get_preconditions()) {
         int var = precondition.var;
@@ -273,13 +272,6 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
                 violated_precondition = Fact(var, value);
             }
         }
-    }
-
-    if (violated_pre_post.var != -1) {
-        if (!nes_computed[violated_pre_post.var][violated_pre_post.val]) {
-            add_nes_for_fact(violated_pre_post, state);
-        }
-        return;
     }
 
     assert(violated_precondition.var != -1);
