@@ -35,6 +35,16 @@ bool contain_conflicting_fact(const std::vector<Fact> &fact_set_1,
     return false;
 }
 
+template<typename T>
+vector<Fact> get_sorted_fact_set(const vector<T> &facts) {
+    vector<Fact> result;
+    for (const T &fact : facts) {
+        result.emplace_back(fact.var, fact.val);
+    }
+    sort(result.begin(), result.end(), SortFactsByVariable());
+    return result;
+}
+
 StubbornSets::StubbornSets()
     : num_unpruned_successors_generated(0),
       num_pruned_successors_generated(0) {
@@ -55,25 +65,9 @@ void StubbornSets::compute_sorted_operators() {
     assert(op_preconds.empty());
     assert(op_effects.empty());
 
-    for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
-        GlobalOperator *op = &g_operators[op_no];
-
-        vector<Fact> pre;
-        vector<Fact> eff;
-
-        for (const GlobalCondition &precondition : op->get_preconditions()) {
-            pre.emplace_back(precondition.var, precondition.val);
-        }
-
-        for (const GlobalEffect &effect: op->get_effects()) {
-            eff.emplace_back(effect.var, effect.val);
-        }
-
-        sort(pre.begin(), pre.end(), SortFactsByVariable());
-        sort(eff.begin(), eff.end(), SortFactsByVariable());
-
-        op_preconds.push_back(pre);
-        op_effects.push_back(eff);
+    for (const GlobalOperator &op : g_operators) {
+        op_preconds.push_back(get_sorted_fact_set(op.get_preconditions()));
+        op_effects.push_back(get_sorted_fact_set(op.get_effects()));
     }
 }
 
