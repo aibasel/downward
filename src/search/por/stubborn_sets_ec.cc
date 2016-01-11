@@ -117,16 +117,12 @@ void StubbornSetsEC::initialize() {
 void StubbornSetsEC::compute_operator_preconditions() {
     int num_operators = g_operators.size();
     int num_variables = g_variable_domain.size();
-    operator_preconditions.resize(g_operators.size());
+    operator_preconditions.resize(num_operators);
     for (int op_no = 0; op_no < num_operators; op_no++) {
-        operator_preconditions[op_no].resize(g_variable_name.size(), -1);
+        operator_preconditions[op_no].resize(num_variables, -1);
         const GlobalOperator &op = g_operators[op_no];
-        for (int var = 0; var < num_variables; var++) {
-            for (const GlobalCondition &precondition : op.get_preconditions()) {
-                if (precondition.var == var) {
-                    operator_preconditions[op_no][var] = precondition.val;
-                }
-            }
+        for (const GlobalCondition &precondition : op.get_preconditions()) {
+            operator_preconditions[op_no][var] = precondition.val;
         }
     }
 }
