@@ -72,19 +72,15 @@ void StubbornSets::compute_sorted_operators() {
 }
 
 void StubbornSets::compute_achievers() {
-    size_t num_variables = g_variable_domain.size();
-    achievers.resize(num_variables);
-    for (uint var_no = 0; var_no < num_variables; ++var_no) {
-        achievers[var_no].resize(g_variable_domain[var_no]);
+    achievers.reserve(g_variable_domain.size());
+    for (int domain_size : g_variable_domain) {
+        achievers.push_back(vector<vector<int>>(domain_size));
     }
 
     for (size_t op_no = 0; op_no < g_operators.size(); ++op_no) {
         const GlobalOperator &op = g_operators[op_no];
-        const vector<GlobalEffect> &effects = op.get_effects();
-        for (size_t i = 0; i < effects.size(); ++i) {
-            int var = effects[i].var;
-            int value = effects[i].val;
-            achievers[var][value].push_back(op_no);
+        for (const GlobalEffect &effect : op.get_effects()) {
+            achievers[effect.var][effect.val].push_back(op_no);
         }
     }
 }
