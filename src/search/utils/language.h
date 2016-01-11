@@ -17,7 +17,7 @@
 
 namespace utils {
 template<typename T>
-void unused_parameter(const T &) {
+void unused_variable(const T &) {
 }
 }
 
