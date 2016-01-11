@@ -121,8 +121,8 @@ static void get_full_help() {
     get_full_help_templ<shared_ptr<AbstractTask>>();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
-    get_full_help_templ<Landmarks::LandmarkGraph *>();
-    get_full_help_templ<shared_ptr<CEGAR::SubtaskGenerator>>();
+    get_full_help_templ<landmarks::LandmarkGraph *>();
+    get_full_help_templ<shared_ptr<cegar::SubtaskGenerator>>();
     get_full_help_templ<shared_ptr<OpenListFactory>>();
     get_full_help_templ<shared_ptr<merge_and_shrink::MergeStrategy>>();
     get_full_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>();
@@ -200,8 +200,8 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<Landmarks::LandmarkGraph *>::instance()->predefine(
-            definees[0], op.start_parsing<Landmarks::LandmarkGraph *>());
+        Predefinitions<landmarks::LandmarkGraph *>::instance()->predefine(
+            definees[0], op.start_parsing<landmarks::LandmarkGraph *>());
     } else {
         op.error("predefinition has invalid left side");
     }
