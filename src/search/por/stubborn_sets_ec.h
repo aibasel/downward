@@ -26,9 +26,6 @@ struct StubbornDTG {
 
     void recurse_forwards(int value, std::vector<bool> &reachable) const;
 public:
-    StubbornDTG() {}
-    ~StubbornDTG() {}
-
     void forward_reachability_analysis(int start_value,
                                        std::vector<bool> &reachable) const;
 };
