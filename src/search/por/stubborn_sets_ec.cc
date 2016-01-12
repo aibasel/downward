@@ -98,6 +98,29 @@ void recurse_forwards(const StubbornDTG &dtg,
     }
 }
 
+// Relies on both fact sets being sorted by variable.
+void get_conflicting_vars(const vector<Fact> &facts1,
+                          const vector<Fact> &facts2,
+                          vector<int> &conflicting_vars) {
+    conflicting_vars.clear();
+    auto facts1_it = facts1.begin();
+    auto facts2_it = facts2.begin();
+    while (facts1_it != facts1.end() &&
+           facts2_it != facts2.end()) {
+        if (facts2_it->var < facts1_it->var) {
+            ++facts1_it;
+        } else if (facts2_it->var > facts1_it->var) {
+            ++facts2_it;
+        } else {
+            if (facts2_it->val != facts1_it->val) {
+                conflicting_vars.push_back(facts2_it->var);
+            }
+            ++facts1_it;
+            ++facts2_it;
+        }
+    }
+}
+
 void StubbornSetsEC::initialize() {
     compute_sorted_operators();
     compute_operator_preconditions();
@@ -224,32 +247,11 @@ void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
     }
 }
 
-void StubbornSetsEC::get_disabled_vars(int op1_no,
-                                       int op2_no,
-                                       vector<int> &disabled_vars) {
-    disabled_vars.clear();
-    int i = 0;
-    int j = 0;
-    int num_op1_effects = op_effects[op1_no].size();
-    int num_op2_preconditions = op_preconditions[op2_no].size();
-    while (i < num_op2_preconditions && j < num_op1_effects) {
-        int read_var = op_preconditions[op2_no][i].var;
-        int write_var = op_effects[op1_no][j].var;
-        if (read_var < write_var) {
-            ++i;
-        } else if (read_var > write_var) {
-            ++j;
-        } else {
-            // read_var == write_var
-            int read_value = op_preconditions[op2_no][i].val;
-            int write_value = op_effects[op1_no][j].val;
-            if (read_value != write_value) {
-                disabled_vars.push_back(read_var);
-            }
-            ++i;
-            ++j;
-        }
-    }
+// Relies on op_effects and op_preconditions being sorted by variable.
+void StubbornSetsEC::get_disabled_vars(
+    int op1_no, int op2_no, vector<int> &disabled_vars) {
+    get_conflicting_vars(
+        op_effects[op1_no], op_preconditions[op2_no], disabled_vars);
 }
 
 void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state) {

@@ -16,20 +16,20 @@ struct SortFactsByVariable {
 };
 
 // Relies on both fact sets being sorted by variable.
-bool contain_conflicting_fact(const std::vector<Fact> &fact_set_1,
-                              const std::vector<Fact> &fact_set_2) {
-    auto f1 = fact_set_1.begin();
-    auto f2 = fact_set_2.begin();
-    while (f1 != fact_set_1.end() && f2 != fact_set_2.end()) {
-        if (f1->var < f2->var) {
-            ++f1;
-        } else if (f1->var > f2->var) {
-            ++f2;
+bool contain_conflicting_fact(const vector<Fact> &facts1,
+                              const vector<Fact> &facts2) {
+    auto facts1_it = facts1.begin();
+    auto facts2_it = facts2.begin();
+    while (facts1_it != facts1.end() && facts2_it != facts2.end()) {
+        if (facts1_it->var < facts2_it->var) {
+            ++facts1_it;
+        } else if (facts1_it->var > facts2_it->var) {
+            ++facts2_it;
         } else {
-            if (f1->val != f2->val)
+            if (facts1_it->val != facts2_it->val)
                 return true;
-            ++f1;
-            ++f2;
+            ++facts1_it;
+            ++facts2_it;
         }
     }
     return false;
