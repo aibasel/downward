@@ -11,7 +11,6 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
        of operators that interfere with op1. */
     std::vector<std::vector<int>> interference_relation;
 
-    void mark_as_stubborn(int op_no);
     void add_necessary_enabling_set(Fact fact);
     void add_interfering(int op_no);
 

@@ -98,6 +98,15 @@ void StubbornSets::compute_achievers() {
     }
 }
 
+bool StubbornSets::mark_as_stubborn(int op_no) {
+    if (!stubborn[op_no]) {
+        stubborn[op_no] = true;
+        stubborn_queue.push_back(op_no);
+        return true;
+    }
+    return false;
+}
+
 void StubbornSets::prune_operators(
     const GlobalState &state, vector<const GlobalOperator *> &ops) {
     num_unpruned_successors_generated += ops.size();

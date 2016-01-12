@@ -59,13 +59,6 @@ void StubbornSetsSimple::compute_interference_relation() {
     }
 }
 
-void StubbornSetsSimple::mark_as_stubborn(int op_no) {
-    if (!stubborn[op_no]) {
-        stubborn[op_no] = true;
-        stubborn_queue.push_back(op_no);
-    }
-}
-
 // Add all operators that achieve the fact (var, value) to stubborn set.
 void StubbornSetsSimple::add_necessary_enabling_set(Fact fact) {
     for (int op_no : achievers[fact.var][fact.val]) {
