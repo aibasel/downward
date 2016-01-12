@@ -9,8 +9,7 @@ class FactProxy;
 class GlobalState;
 class OperatorProxy;
 
-
-namespace RelaxationHeuristic {
+namespace relaxation_heuristic {
 struct Proposition;
 struct UnaryOperator;
 

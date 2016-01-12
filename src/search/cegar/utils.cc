@@ -14,14 +14,14 @@
 
 using namespace std;
 
-namespace CEGAR {
-unique_ptr<AdditiveHeuristic::AdditiveHeuristic> create_additive_heuristic(
+namespace cegar {
+unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
     const shared_ptr<AbstractTask> &task) {
     Options opts;
     opts.set<shared_ptr<AbstractTask>>("transform", task);
     opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_estimates", false);
-    return Utils::make_unique_ptr<AdditiveHeuristic::AdditiveHeuristic>(opts);
+    return utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(opts);
 }
 
 static bool operator_applicable(

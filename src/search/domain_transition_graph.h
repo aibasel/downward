@@ -8,7 +8,7 @@
 #include <vector>
 using namespace std;
 
-namespace CGHeuristic {
+namespace cg_heuristic {
 class CGHeuristic;
 }
 
@@ -108,13 +108,13 @@ struct ValueNode {
         : parent_graph(parent), value(val), reached_from(0), reached_by(0) {}
 };
 
-namespace ContextEnhancedAdditiveHeuristic {
+namespace cea_heuristic {
 class ContextEnhancedAdditiveHeuristic;
 }
 
 class DomainTransitionGraph {
-    friend class CGHeuristic::CGHeuristic;
-    friend class ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic;
+    friend class cg_heuristic::CGHeuristic;
+    friend class cea_heuristic::ContextEnhancedAdditiveHeuristic;
     friend class DTGFactory;
 
     int var;

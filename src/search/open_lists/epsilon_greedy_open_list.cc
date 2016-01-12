@@ -59,7 +59,7 @@ public:
 
 template<class HeapNode>
 static void adjust_heap_up(vector<HeapNode> &heap, size_t pos) {
-    assert(Utils::in_bounds(pos, heap));
+    assert(utils::in_bounds(pos, heap));
     while (pos != 0) {
         size_t parent_pos = (pos - 1) / 2;
         if (heap[pos] > heap[parent_pos]) {
@@ -143,12 +143,12 @@ EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
-    return Utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
-    return Utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {

@@ -9,8 +9,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 HeuristicRepresentation::HeuristicRepresentation(int domain_size)
     : domain_size(domain_size) {
 }

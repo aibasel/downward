@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace Utils {
+namespace utils {
 void out_of_memory_handler() {
     cout << "Failed to allocate memory." << endl;
     exit_with(ExitCode::OUT_OF_MEMORY);

@@ -25,10 +25,10 @@
 
 using namespace std;
 
-namespace CEGAR {
+namespace cegar {
 class SortFactsByIncreasingHaddValues {
     // Can't store as unique_ptr since the class needs copy-constructor.
-    std::shared_ptr<AdditiveHeuristic::AdditiveHeuristic> hadd;
+    std::shared_ptr<additive_heuristic::AdditiveHeuristic> hadd;
 
     int get_cost(Fact fact) {
         return hadd->get_cost_for_cegar(fact.first, fact.second);
@@ -77,7 +77,7 @@ static void order_facts(
         break;
     default:
         cerr << "Invalid task order: " << static_cast<int>(fact_order) << endl;
-        Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::INPUT_ERROR);
     }
 }
 

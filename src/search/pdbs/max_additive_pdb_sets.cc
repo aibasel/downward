@@ -7,8 +7,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 bool are_patterns_additive(const Pattern &pattern1,
                            const Pattern &pattern2,
                            const VariableAdditivity &are_additive) {

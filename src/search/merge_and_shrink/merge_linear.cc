@@ -13,10 +13,9 @@
 #include <iostream>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 MergeLinear::MergeLinear(const Options &opts)
     : MergeStrategy(),
       variable_order_type(VariableOrderType(opts.get_enum("variable_order"))),
@@ -25,7 +24,7 @@ MergeLinear::MergeLinear(const Options &opts)
 
 void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
     MergeStrategy::initialize(task);
-    variable_order_finder = Utils::make_unique_ptr<VariableOrderFinder>(
+    variable_order_finder = utils::make_unique_ptr<VariableOrderFinder>(
         task, variable_order_type);
 }
 
@@ -52,7 +51,7 @@ pair<int, int> MergeLinear::get_next(FactoredTransitionSystem &fts) {
     --remaining_merges;
     if (done() && !variable_order_finder->done()) {
         cerr << "Variable order finder not done, but no merges remaining" << endl;
-        Utils::exit_with(ExitCode::CRITICAL_ERROR);
+        utils::exit_with(ExitCode::CRITICAL_ERROR);
     }
     return make_pair(first, second);
 }

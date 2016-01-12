@@ -8,8 +8,7 @@
 #include <vector>
 using namespace std;
 
-
-namespace MaxHeuristic {
+namespace max_heuristic {
 /*
   TODO: At the time of this writing, this shares huge amounts of code
         with h^add, and the two should be refactored so that the

@@ -9,7 +9,7 @@
 
 class State;
 
-namespace ContextEnhancedAdditiveHeuristic {
+namespace cea_heuristic {
 struct LocalProblem;
 struct LocalProblemNode;
 struct LocalTransition;

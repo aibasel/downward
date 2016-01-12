@@ -15,7 +15,7 @@
 #define NOEXCEPT noexcept
 #endif
 
-namespace Utils {
+namespace utils {
 template<typename T>
 void unused_variable(const T &) {
 }

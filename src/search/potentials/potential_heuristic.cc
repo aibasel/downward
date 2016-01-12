@@ -6,8 +6,7 @@
 
 using namespace std;
 
-
-namespace Potentials {
+namespace potentials {
 PotentialHeuristic::PotentialHeuristic(
     const Options &opts, std::unique_ptr<PotentialFunction> function)
     : Heuristic(opts),

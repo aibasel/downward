@@ -9,8 +9,7 @@ class GlobalState;
 class Options;
 class State;
 
-
-namespace PDBs {
+namespace pdbs {
 // Implements a heuristic for a single PDB.
 class PDBHeuristic : public Heuristic {
     PatternDatabase pdb;

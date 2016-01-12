@@ -25,7 +25,7 @@
 
 using namespace std;
 
-namespace CEGAR {
+namespace cegar {
 /*
   We reserve some memory to be able to recover from out-of-memory
   situations gracefully. When the memory runs out, we stop refining and
@@ -41,7 +41,7 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       subtask_generators(opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks")),
       max_states(opts.get<int>("max_states")),
-      timer(new Utils::CountdownTimer(opts.get<double>("max_time"))),
+      timer(new utils::CountdownTimer(opts.get<double>("max_time"))),
       use_general_costs(opts.get<bool>("use_general_costs")),
       pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
@@ -71,7 +71,7 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
            !timer->is_expired() &&
-           Utils::extra_memory_padding_is_reserved() &&
+           utils::extra_memory_padding_is_reserved() &&
            compute_heuristic(g_initial_state()) != DEAD_END;
 }
 
@@ -102,7 +102,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
             opts.set<shared_ptr<AbstractTask>>("transform", subtask);
             opts.set<bool>("cache_estimates", cache_h_values);
             heuristics.push_back(
-                Utils::make_unique_ptr<CartesianHeuristic>(
+                utils::make_unique_ptr<CartesianHeuristic>(
                     opts, abstraction.get_refinement_hierarchy()));
         }
         if (!may_build_another_abstraction())
@@ -114,15 +114,15 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
 void AdditiveCartesianHeuristic::initialize() {
     g_log << "Initializing additive Cartesian heuristic..." << endl;
-    Utils::reserve_extra_memory_padding(memory_padding_in_mb);
+    utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
         SharedTasks subtasks = subtask_generator->get_subtasks(task);
         build_abstractions(subtasks);
         if (!may_build_another_abstraction())
             break;
     }
-    if (Utils::extra_memory_padding_is_reserved())
-        Utils::release_extra_memory_padding();
+    if (utils::extra_memory_padding_is_reserved())
+        utils::release_extra_memory_padding();
     print_statistics();
 }
 

@@ -4,10 +4,9 @@
 
 #include <cassert>
 
-
 using namespace std;
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 LabelEquivalenceRelation::LabelEquivalenceRelation(const Labels &labels)
     : labels(labels) {
     grouped_labels.reserve(labels.get_max_size());
