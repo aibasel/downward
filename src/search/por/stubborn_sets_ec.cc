@@ -13,13 +13,6 @@ namespace stubborn_sets_ec {
 // DTGs are stored as one adjacency list per value.
 using StubbornDTG = vector<vector<int>>;
 
-// TODO: needs a central place (see comment for simple stubborn sets)
-static inline int get_op_index(const GlobalOperator *op) {
-    int op_index = op - &*g_operators.begin();
-    assert(op_index >= 0 && (uint)op_index < g_operators.size());
-    return op_index;
-}
-
 static inline bool is_v_applicable(int var,
                                    int op_no,
                                    const GlobalState &state,
@@ -281,9 +274,7 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
 }
 
 void StubbornSetsEC::compute_stubborn_set(
-    const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) {
-    stubborn.clear();
-    stubborn.assign(g_operators.size(), false);
+    const GlobalState &state, vector<const GlobalOperator *> &/*applicable_ops*/) {
     active_ops.clear();
     active_ops.assign(g_operators.size(), false);
     for (size_t i = 0; i < nes_computed.size(); i++) {
@@ -337,19 +328,6 @@ void StubbornSetsEC::compute_stubborn_set(
             //S5
             apply_s5(op, state);
         }
-    }
-
-    // Now check which applicable operators are in the stubborn set.
-    vector<const GlobalOperator *> remaining_ops;
-    remaining_ops.reserve(applicable_ops.size());
-    for (const GlobalOperator *op : applicable_ops) {
-        int op_no = get_op_index(op);
-        if (stubborn[op_no])
-            remaining_ops.push_back(op);
-    }
-    if (remaining_ops.size() != applicable_ops.size()) {
-        applicable_ops.swap(remaining_ops);
-        sort(applicable_ops.begin(), applicable_ops.end());
     }
 }
 

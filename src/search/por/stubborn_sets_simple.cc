@@ -11,14 +11,6 @@ namespace stubborn_sets_simple {
 /* Implementation of simple instantiation of strong stubborn sets.
    Disjunctive action landmarks are computed trivially.*/
 
-/* TODO: get_op_index belongs to a central place.
-   We currently have copies of it in different parts of the code. */
-static inline int get_op_index(const GlobalOperator *op) {
-    int op_index = op - &*g_operators.begin();
-    assert(op_index >= 0 && op_index < static_cast<int>(g_operators.size()));
-    return op_index;
-}
-
 // Return the first unsatified goal pair, or (-1, -1) if there is none.
 static inline Fact find_unsatisfied_goal(const GlobalState &state) {
     for (const pair<int, int> &goal : g_goal) {
@@ -91,10 +83,6 @@ void StubbornSetsSimple::add_interfering(int op_no) {
 
 void StubbornSetsSimple::compute_stubborn_set(
     const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) {
-    // Clear stubborn set from previous call.
-    stubborn.clear();
-    stubborn.assign(g_operators.size(), false);
-
     // Add a necessary enabling set for an unsatisfied goal.
     Fact unsatisfied_goal = find_unsatisfied_goal(state);
     if (unsatisfied_goal.var == -1) {
@@ -122,19 +110,6 @@ void StubbornSetsSimple::compute_stubborn_set(
                => add a necessary enabling set for it */
             add_necessary_enabling_set(unsatisfied_precondition);
         }
-    }
-
-    // Now check which applicable operators are in the stubborn set.
-    vector<const GlobalOperator *> remaining_ops;
-    remaining_ops.reserve(applicable_ops.size());
-    for (const GlobalOperator *op : applicable_ops) {
-        int op_no = get_op_index(op);
-        if (stubborn[op_no])
-            remaining_ops.push_back(op);
-    }
-    if (remaining_ops.size() != applicable_ops.size()) {
-        applicable_ops.swap(remaining_ops);
-        sort(applicable_ops.begin(), applicable_ops.end());
     }
 }
 
