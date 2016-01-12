@@ -13,6 +13,7 @@
 
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/memory.h"
 #include "../utils/timer.h"
@@ -401,22 +402,25 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
         "This pattern generation method is an adaption of the algorithm "
-        "described in the following paper:\n\n"
-        " * Patrik Haslum, Adi Botea, Malte Helmert, Blai Bonet and "
-        "Sven Koenig.<<BR>>\n"
-        " [Domain-Independent Construction of Pattern Database Heuristics for "
-        "Cost-Optimal Planning http://www.informatik.uni-freiburg.de/~ki"
-        "/papers/haslum-etal-aaai07.pdf].<<BR>>\n "
-        "In //Proceedings of the 22nd AAAI Conference on Artificial "
-        "Intelligence (AAAI 2007)//, pp. 1007-1012. AAAI Press 2007.\n"
-        "For implementation notes, see also this paper:\n\n"
-        " * Silvan Sievers, Manuela Ortlieb and Malte Helmert.<<BR>>\n"
-        " [Efficient Implementation of Pattern Database Heuristics for "
-        "Classical Planning "
-        "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf].<<BR>>\n"
-        " In //Proceedings of the Fifth Annual Symposium on Combinatorial "
-        "Search (SoCS 2012)//, "
-        "pp. 105-111. AAAI Press 2012.\n");
+        "described in the following paper:" + utils::format_paper_reference(
+            {"Patrik Haslum", "Adi Botea", "Malte Helmert", "Blai Bonet",
+             "Sven Koenig"},
+            "Domain-Independent Construction of Pattern Database Heuristics for"
+            " Cost-Optimal Planning",
+            "http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf",
+            "Proceedings of the 22nd AAAI Conference on Artificial"
+            " Intelligence (AAAI 2007)",
+            "1007-1012",
+            "AAAI Press 2007") +
+        "For implementation notes, see:" + utils::format_paper_reference(
+            {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
+            "Efficient Implementation of Pattern Database Heuristics for"
+            " Classical Planning",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+            "Proceedings of the Fifth Annual Symposium on Combinatorial"
+            " Search (SoCS 2012)",
+            "105-111",
+            "AAAI Press 2012"));
     parser.document_note(
         "Note",
         "The pattern collection created by the algorithm will always contain "
