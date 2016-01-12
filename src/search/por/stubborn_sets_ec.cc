@@ -144,7 +144,7 @@ void StubbornSetsEC::compute_operator_preconditions() {
         operator_preconditions[op_no].resize(num_variables, -1);
         const GlobalOperator &op = g_operators[op_no];
         for (const GlobalCondition &precondition : op.get_preconditions()) {
-            operator_preconditions[op_no][var] = precondition.val;
+            operator_preconditions[op_no][precondition.var] = precondition.val;
         }
     }
 }
