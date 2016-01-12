@@ -14,14 +14,6 @@ class StubbornSets : public PORMethod {
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
 
-protected:
-    std::vector<std::vector<Fact>> op_preconditions;
-    std::vector<std::vector<Fact>> op_effects;
-
-    /* achievers[var][value] contains all operator indices of
-       operators that achieve the fact (var, value). */
-    std::vector<std::vector<std::vector<int>>> achievers;
-
     /* stubborn[op_no] is true iff the operator with operator index
        op_no is contained in the stubborn set */
     std::vector<bool> stubborn;
@@ -33,6 +25,14 @@ protected:
       of the operators in the queue).
     */
     std::vector<int> stubborn_queue;
+
+protected:
+    std::vector<std::vector<Fact>> op_preconditions;
+    std::vector<std::vector<Fact>> op_effects;
+
+    /* achievers[var][value] contains all operator indices of
+       operators that achieve the fact (var, value). */
+    std::vector<std::vector<std::vector<int>>> achievers;
 
     bool can_disable(int op1_no, int op2_no);
     bool can_conflict(int op1_no, int op2_no);
