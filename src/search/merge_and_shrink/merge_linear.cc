@@ -5,6 +5,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -67,12 +68,14 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Linear merge strategies",
         "This merge strategy implements several linear merge orders, which "
-        "are described in the paper:\n\n"
-        " * Malte Helmert, Patrik Haslum and Joerg Hoffmann.<<BR>>\n"
-        " [Flexible Abstraction Heuristics for Optimal Sequential Planning "
-        "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf]<<BR>>\n "
-        "In //Proceedings of the Seventeenth International Conference on "
-        "Automated Planning and Scheduling (ICAPS 2007)//, pp. 176-183. 2007.");
+        "are described in the paper:" + utils::format_paper_reference(
+            {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
+            "Flexible Abstraction Heuristics for Optimal Sequential Planning",
+            "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
+            "Proceedings of the Seventeenth International Conference on"
+            " Automated Planning and Scheduling (ICAPS 2007)",
+            "176-183",
+            "2007"));
     vector<string> merge_strategies;
     merge_strategies.push_back("CG_GOAL_LEVEL");
     merge_strategies.push_back("CG_GOAL_RANDOM");

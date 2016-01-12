@@ -10,6 +10,8 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/markup.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -194,12 +196,14 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
         "This merge strategy implements the algorithm originally described in the "
         "paper \"Directed model checking with distance-preserving abstractions\" "
         "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-        "the following paper:\n\n"
-        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
-        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
-        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
-        "In //Proceedings of the 28th AAAI Conference on Artificial "
-        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.");
+        "the following paper:" + utils::format_paper_reference(
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+            "Generalized Label Reduction for Merge-and-Shrink Heuristics",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "Proceedings of the 28th AAAI Conference on Artificial"
+            " Intelligence (AAAI 2014)",
+            "2358-2366",
+            "AAAI Press 2014"));
     if (parser.dry_run())
         return nullptr;
     else

@@ -26,8 +26,8 @@ class DomainAbstractedTask : public DelegatingTask {
     const std::vector<std::vector<int>> value_map;
 
     int get_abstract_value(int var, int value) const {
-        assert(Utils::in_bounds(var, value_map));
-        assert(Utils::in_bounds(value, value_map[var]));
+        assert(utils::in_bounds(var, value_map));
+        assert(utils::in_bounds(value, value_map[var]));
         return value_map[var][value];
     }
 
