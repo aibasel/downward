@@ -272,7 +272,7 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
     }
 }
 
-void StubbornSetsEC::compute_stubborn_set(const GlobalState &state) {
+void StubbornSetsEC::initialize_stubborn_set(const GlobalState &state) {
     active_ops.clear();
     active_ops.assign(g_operators.size(), false);
     for (size_t i = 0; i < nes_computed.size(); i++) {
@@ -280,7 +280,6 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state) {
         nes_computed[i].assign(g_variable_domain[i], false);
     }
     written_vars.assign(g_variable_domain.size(), false);
-    std::vector<int> disabled_vars;
 
     compute_active_operators(state);
 
@@ -288,44 +287,42 @@ void StubbornSetsEC::compute_stubborn_set(const GlobalState &state) {
     Fact unsatisfied_goal = find_unsatisfied_goal(state);
     assert(unsatisfied_goal.var != -1);
     add_nes_for_fact(unsatisfied_goal, state);     // active operators used
+}
 
-    while (!stubborn_queue.empty()) {
-        int op_no = stubborn_queue.back();
-        stubborn_queue.pop_back();
-
-        const GlobalOperator &op = g_operators[op_no];
-        if (op.is_applicable(state)) {
-            //Rule S2 & S3
-            add_conflicting_and_disabling(op_no, state);     // active operators used
-            //Rule S4'
-            for (int disabled_op_no : disabled[op_no]) {
-                if (active_ops[disabled_op_no]) {
-                    get_disabled_vars(op_no, disabled_op_no, disabled_vars);
-                    if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
-                        bool v_applicable_op_found = false;
-                        for (int disabled_var : disabled_vars) {
-                            //First case: add o'
-                            if (is_v_applicable(disabled_var,
-                                                disabled_op_no,
-                                                state,
-                                                operator_preconditions)) {
-                                mark_as_stubborn(disabled_op_no, state);
-                                v_applicable_op_found = true;
-                                break;
-                            }
+void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_no) {
+    const GlobalOperator &op = g_operators[op_no];
+    if (op.is_applicable(state)) {
+        //Rule S2 & S3
+        add_conflicting_and_disabling(op_no, state);     // active operators used
+        //Rule S4'
+        vector<int> disabled_vars;
+        for (int disabled_op_no : disabled[op_no]) {
+            if (active_ops[disabled_op_no]) {
+                get_disabled_vars(op_no, disabled_op_no, disabled_vars);
+                if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
+                    bool v_applicable_op_found = false;
+                    for (int disabled_var : disabled_vars) {
+                        //First case: add o'
+                        if (is_v_applicable(disabled_var,
+                                            disabled_op_no,
+                                            state,
+                                            operator_preconditions)) {
+                            mark_as_stubborn(disabled_op_no, state);
+                            v_applicable_op_found = true;
+                            break;
                         }
+                    }
 
-                        //Second case: add a necessray enabling set for o' following S5
-                        if (!v_applicable_op_found) {
-                            apply_s5(g_operators[disabled_op_no], state);
-                        }
+                    //Second case: add a necessray enabling set for o' following S5
+                    if (!v_applicable_op_found) {
+                        apply_s5(g_operators[disabled_op_no], state);
                     }
                 }
             }
-        } else {     // op is inapplicable
-            //S5
-            apply_s5(op, state);
         }
+    } else {     // op is inapplicable
+        //S5
+        apply_s5(op, state);
     }
 }
 
