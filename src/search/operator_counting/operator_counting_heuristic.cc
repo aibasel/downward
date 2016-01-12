@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/markup.h"
+
 using namespace std;
 
 
@@ -70,15 +72,15 @@ static Heuristic *_parse(OptionParser &parser) {
         "are guaranteed to have a solution with Count_o = occurrences(o, pi) "
         "for every plan pi. Minimizing the total cost of operators subject to "
         "some operator counting constraints is an admissible heuristic. "
-        "For details, see\n"
-        " * Florian Pommerening, Gabriele Roeger, Malte Helmert and "
-        "Blai Bonet.<<BR>>\n"
-        " [LP-based Heuristics for Cost-optimal Planning "
-        "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Fourth International "
-        "Conference on Automated Planning and Scheduling (ICAPS "
-        "2014)//, pp. 226-234. AAAI Press 2014.\n\n\n");
+        "For details, see" + Utils::format_paper_reference(
+            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
+             "Blai Bonet"},
+            "LP-based Heuristics for Cost-optimal Planning",
+            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031",
+            "Proceedings of the Twenty-Fourth International Conference"
+            " on Automated Planning and Scheduling (ICAPS 2014)",
+            "226-234",
+            "AAAI Press 2014"));
 
     parser.document_language_support("action costs", "supported");
     parser.document_language_support(

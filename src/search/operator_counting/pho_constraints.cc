@@ -8,6 +8,8 @@
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
 
+#include "../utils/markup.h"
+
 #include <cassert>
 #include <limits>
 #include <memory>
@@ -67,14 +69,16 @@ bool PhOConstraints::update_constraints(const State &state,
 static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Posthoc optimization constraints",
-        "The generator will compute a PDB for each pattern and add the "
-        "constraint h(s) <= sum_{o in relevant(h)} Count_o. For details, see\n"
-        " * Florian Pommerening, Gabriele Roeger and Malte Helmert.<<BR>>\n"
-        " [Getting the Most Out of Pattern Databases for Classical Planning "
-        "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf].<<BR>>\n "
-        "In //Proceedings of the Twenty-Third International Joint "
-        "Conference on Artificial Intelligence (IJCAI 2013)//, "
-        "pp. 2357-2364. 2013.\n\n\n");
+        "The generator will compute a PDB for each pattern and add the"
+        " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
+        " see" + Utils::format_paper_reference(
+            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
+            "Getting the Most Out of Pattern Databases for Classical Planning",
+            "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
+            "Proceedings of the Twenty-Third International Joint"
+            " Conference on Artificial Intelligence (IJCAI 2013)",
+            "2357-2364",
+            "2013"));
 
     parser.add_option<shared_ptr<PDBs::PatternCollectionGenerator>>(
         "patterns",
