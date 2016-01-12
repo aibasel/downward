@@ -16,7 +16,7 @@ using StubbornDTG = vector<vector<int>>;
 static inline bool is_v_applicable(int var,
                                    int op_no,
                                    const GlobalState &state,
-                                   std::vector<std::vector<int>> &preconditions) {
+                                   vector<vector<int>> &preconditions) {
     int precondition_on_var = preconditions[op_no][var];
     return precondition_on_var == -1 || precondition_on_var == state[var];
 }
@@ -237,8 +237,9 @@ void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
 // Relies on op_effects and op_preconditions being sorted by variable.
 void StubbornSetsEC::get_disabled_vars(
     int op1_no, int op2_no, vector<int> &disabled_vars) {
-    get_conflicting_vars(
-        op_effects[op1_no], op_preconditions[op2_no], disabled_vars);
+    get_conflicting_vars(sorted_op_effects[op1_no],
+                         sorted_op_preconditions[op2_no],
+                         disabled_vars);
 }
 
 void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state) {
