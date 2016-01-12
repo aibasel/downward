@@ -13,8 +13,7 @@
 
 using namespace std;
 
-
-namespace Potentials {
+namespace potentials {
 DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
@@ -24,7 +23,7 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
 SamplesToFunctionsMap
 DiversePotentialHeuristics::filter_samples_and_compute_functions(
     const vector<State> &samples) {
-    Utils::Timer filtering_timer;
+    utils::Timer filtering_timer;
     unordered_set<State> dead_ends;
     int num_duplicates = 0;
     int num_dead_ends = 0;
@@ -98,7 +97,7 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
 
 void DiversePotentialHeuristics::cover_samples(
     SamplesToFunctionsMap &samples_to_functions) {
-    Utils::Timer covering_timer;
+    utils::Timer covering_timer;
     while (!samples_to_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
         cout << "Find heuristic #" << diverse_functions.size() + 1 << endl;
@@ -110,7 +109,7 @@ void DiversePotentialHeuristics::cover_samples(
 
 vector<unique_ptr<PotentialFunction>> && DiversePotentialHeuristics::find_functions() {
     assert(diverse_functions.empty());
-    Utils::Timer init_timer;
+    utils::Timer init_timer;
 
     // Sample states.
     vector<State> samples = sample_without_dead_end_detection(

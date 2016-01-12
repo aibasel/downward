@@ -34,10 +34,9 @@
 #endif
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
-
-namespace LP {
+namespace lp {
 // CPLEX warning that is misleadingly reported with the severity of a critical error.
 static const string CPLEX_WARNING_COMPRESS = "CPX0000  Compressing row and column files.";
 // CPLEX warning from writeMps if no column names are defined.
@@ -77,9 +76,9 @@ public:
         } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
                    messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
                    messageBuffer_ == CPLEX_ERROR_OOM_DEVEX) {
-            Utils::exit_with(ExitCode::OUT_OF_MEMORY);
+            utils::exit_with(ExitCode::OUT_OF_MEMORY);
         } else {
-            Utils::exit_with(ExitCode::CRITICAL_ERROR);
+            utils::exit_with(ExitCode::CRITICAL_ERROR);
         }
     }
 };
@@ -118,7 +117,7 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         return unique_ptr<OsiSolverInterface>(lp_solver);
     } else {
         cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
-        Utils::exit_with(ExitCode::CRITICAL_ERROR);
+        utils::exit_with(ExitCode::CRITICAL_ERROR);
     }
 }
 
@@ -127,7 +126,7 @@ void handle_coin_error(const CoinError &error) {
     cerr << "Coin threw exception: " << error.message() << endl
          << " from method " << error.methodName() << endl
          << " from class " << error.className() << endl;
-    Utils::exit_with(ExitCode::CRITICAL_ERROR);
+    utils::exit_with(ExitCode::CRITICAL_ERROR);
 }
 }
 

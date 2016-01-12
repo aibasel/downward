@@ -6,8 +6,7 @@
 class State;
 class TaskProxy;
 
-
-namespace PDBs {
+namespace pdbs {
 class ZeroOnePDBs {
     PDBCollection pattern_databases;
 public:

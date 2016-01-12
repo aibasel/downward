@@ -7,8 +7,7 @@
 
 using namespace std;
 
-
-namespace IteratedSearch {
+namespace iterated_search {
 IteratedSearch::IteratedSearch(const Options &opts)
     : SearchEngine(opts),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),

@@ -14,8 +14,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
     : PatternGeneratorGreedy(opts.get<int>("max_states")) {
 }
@@ -38,7 +37,7 @@ Pattern PatternGeneratorGreedy::generate(shared_ptr<AbstractTask> task) {
         VariableProxy next_var = variables[next_var_id];
         int next_var_size = next_var.get_domain_size();
 
-        if (!Utils::is_product_within_limit(size, next_var_size, max_states))
+        if (!utils::is_product_within_limit(size, next_var_size, max_states))
             break;
 
         pattern.push_back(next_var_id);

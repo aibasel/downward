@@ -5,7 +5,6 @@
 
 #include <vector>
 
-
 /*
   TODO: Possible interface improvements for this class:
 
@@ -39,7 +38,7 @@
     then?)
 */
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class TransitionSystem;
 
 class Distances {

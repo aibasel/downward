@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class Label {
     /*
       This class implements labels as used by merge-and-shrink transition systems.

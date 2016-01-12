@@ -12,8 +12,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
     : pattern(opts.get_list<int>("pattern")) {
 }

@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace RelaxationHeuristic {
+namespace relaxation_heuristic {
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const Options &opts)
     : Heuristic(opts) {
@@ -67,8 +66,8 @@ void RelaxationHeuristic::initialize() {
 Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {
     int var = fact.get_variable().get_id();
     int value = fact.get_value();
-    assert(Utils::in_bounds(var, propositions));
-    assert(Utils::in_bounds(value, propositions[var]));
+    assert(utils::in_bounds(var, propositions));
+    assert(utils::in_bounds(value, propositions[var]));
     return &propositions[var][value];
 }
 

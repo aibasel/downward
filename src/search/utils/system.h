@@ -29,8 +29,7 @@
         (void)0 \
     )
 
-
-namespace Utils {
+namespace utils {
 enum class ExitCode {
     PLAN_FOUND = 0,
     CRITICAL_ERROR = 1,

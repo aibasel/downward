@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace Potentials {
+namespace potentials {
 vector<State> sample_without_dead_end_detection(
     PotentialOptimizer &optimizer, int num_samples) {
     const shared_ptr<AbstractTask> task = optimizer.get_task();
@@ -54,7 +53,7 @@ void prepare_parser_for_admissible_potentials(OptionParser &parser) {
         "Bound potentials by this number",
         "1e8",
         Bounds("0.0", "infinity"));
-    LP::add_lp_solver_option_to_parser(parser);
+    lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 }
 }

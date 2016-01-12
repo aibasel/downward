@@ -15,10 +15,9 @@
 #include <iostream>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 ShrinkStrategy::ShrinkStrategy(const Options &opts)
     : max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),
@@ -61,7 +60,7 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     size_t new_size1 = min(size1, max_before_merge);
     size_t new_size2 = min(size2, max_before_merge);
 
-    if (!Utils::is_product_within_limit(new_size1, new_size2, max_states)) {
+    if (!utils::is_product_within_limit(new_size1, new_size2, max_states)) {
         size_t balanced_size = size_t(sqrt(max_states));
 
         if (new_size1 <= balanced_size) {
@@ -162,7 +161,7 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
         int n = max_states_before_merge;
-        if (Utils::is_product_within_limit(n, n, INF)) {
+        if (utils::is_product_within_limit(n, n, INF)) {
             max_states = n * n;
         } else {
             max_states = INF;
@@ -177,13 +176,13 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
 
     if (max_states < 1) {
         cerr << "error: transition system size must be at least 1" << endl;
-        Utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::INPUT_ERROR);
     }
 
     if (max_states_before_merge < 1) {
         cerr << "error: transition system size before merge must be at least 1"
              << endl;
-        Utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::INPUT_ERROR);
     }
 
     if (threshold == -1) {
@@ -191,7 +190,7 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
     }
     if (threshold < 1) {
         cerr << "error: threshold must be at least 1" << endl;
-        Utils::exit_with(ExitCode::INPUT_ERROR);
+        utils::exit_with(ExitCode::INPUT_ERROR);
     }
     if (threshold > max_states) {
         cerr << "warning: threshold exceeds max_states, correcting" << endl;

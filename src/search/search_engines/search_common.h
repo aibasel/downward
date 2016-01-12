@@ -24,8 +24,7 @@ class OpenListFactory;
 class Options;
 class ScalarEvaluator;
 
-
-namespace SearchCommon {
+namespace search_common {
 /*
   Create a standard scalar open list factory with the given "eval" and
   "pref_only" options.

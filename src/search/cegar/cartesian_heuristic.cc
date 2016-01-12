@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace CEGAR {
+namespace cegar {
 CartesianHeuristic::CartesianHeuristic(
     const Options &opts, RefinementHierarchy &&hierarchy)
     : Heuristic(opts),

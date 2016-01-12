@@ -9,8 +9,7 @@
 
 using namespace std;
 
-
-namespace FFHeuristic {
+namespace ff_heuristic {
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)
     : AdditiveHeuristic(opts) {

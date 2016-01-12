@@ -18,8 +18,7 @@
 
 using namespace std;
 
-
-namespace LazySearch {
+namespace lazy_search {
 static const int DEFAULT_LAZY_BOOST = 1000;
 
 LazySearch::LazySearch(const Options &opts)
@@ -328,7 +327,7 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
 
     LazySearch *engine = 0;
     if (!parser.dry_run()) {
-        opts.set("open", SearchCommon::create_greedy_open_list_factory(opts));
+        opts.set("open", search_common::create_greedy_open_list_factory(opts));
         engine = new LazySearch(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");
@@ -400,7 +399,7 @@ static SearchEngine *_parse_weighted_astar(OptionParser &parser) {
 
     LazySearch *engine = nullptr;
     if (!parser.dry_run()) {
-        opts.set("open", SearchCommon::create_wastar_open_list_factory(opts));
+        opts.set("open", search_common::create_wastar_open_list_factory(opts));
         engine = new LazySearch(opts);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<Heuristic *> preferred_list = opts.get_list<Heuristic *>("preferred");

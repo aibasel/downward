@@ -18,8 +18,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 MergeDFP::MergeDFP()
     : MergeStrategy() {
 }

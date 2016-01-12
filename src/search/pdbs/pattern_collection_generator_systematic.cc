@@ -15,8 +15,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 static bool patterns_are_disjoint(
     const Pattern &pattern1, const Pattern &pattern2) {
     size_t i = 0;
