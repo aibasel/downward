@@ -7,6 +7,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 
@@ -160,15 +161,15 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "When retrieving an entry, a bucket is chosen uniformly at "
         "random and one of the contained entries is selected "
         "uniformly randomly. "
-        "The algorithm is based on\n\n"
-        " * Fan Xie, Martin Mueller, Robert Holte, Tatsuya Imai.<<BR>>\n"
-        " [Type-Based Exploration with Multiple Search Queues for "
-        "Satisficing Planning "
-        "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Eigth AAAI Conference "
-        "Conference on Artificial Intelligence (AAAI "
-        "2014)//, pp. 2395-2401. AAAI Press 2014.\n\n\n");
+        "The algorithm is based on" + Utils::format_paper_reference(
+            {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
+            "Type-Based Exploration with Multiple Search Queues for"
+            " Satisficing Planning",
+            "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
+            "Proceedings of the Twenty-Eigth AAAI Conference Conference"
+            " on Artificial Intelligence (AAAI 2014)",
+            "2395-2401",
+            "AAAI Press 2014"));
     parser.add_list_option<ScalarEvaluator *>(
         "evaluators",
         "Evaluators used to determine the bucket for each entry.");
