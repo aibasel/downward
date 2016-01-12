@@ -41,6 +41,9 @@ protected:
     void compute_achievers();
     virtual void initialize() override;
 
+    // Returns true iff the operators was enqueued.
+    // TODO: rename to enqueue_stubborn_operator?
+    bool mark_as_stubborn(int op_no);
     virtual void initialize_stubborn_set(const GlobalState &state) = 0;
     virtual void handle_stubborn_operator(const GlobalState &state, int op_no) = 0;
 public:

@@ -203,15 +203,10 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
     }
 }
 
-/* TODO: Currently, this is adapted from SimpleStubbornSets. We need
-   to separate the functionality of marking stubborn operators (and
-   move "mark_as_stubborn" to the stubborn sets base class) and the
-   marking of written variables */
-void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
-    if (!stubborn[op_no]) {
-        stubborn[op_no] = true;
-        stubborn_queue.push_back(op_no);
-
+// TODO: find a better name.
+void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
+    int op_no, const GlobalState &state) {
+    if (mark_as_stubborn(op_no)) {
         const GlobalOperator &op = g_operators[op_no];
         if (op.is_applicable(state)) {
             for (const GlobalEffect &effect : op.get_effects()) {
@@ -224,7 +219,7 @@ void StubbornSetsEC::mark_as_stubborn(int op_no, const GlobalState &state) {
 void StubbornSetsEC::add_nes_for_fact(Fact fact, const GlobalState &state) {
     for (int achiever : achievers[fact.var][fact.val]) {
         if (active_ops[achiever]) {
-            mark_as_stubborn(achiever, state);
+            mark_as_stubborn_and_remember_written_vars(achiever, state);
         }
     }
 
@@ -235,7 +230,7 @@ void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
                                                    const GlobalState &state) {
     for (int conflict : conflicting_and_disabling[op_no]) {
         if (active_ops[conflict])
-            mark_as_stubborn(conflict, state);
+            mark_as_stubborn_and_remember_written_vars(conflict, state);
     }
 }
 
@@ -307,7 +302,7 @@ void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_n
                                             disabled_op_no,
                                             state,
                                             operator_preconditions)) {
-                            mark_as_stubborn(disabled_op_no, state);
+                            mark_as_stubborn_and_remember_written_vars(disabled_op_no, state);
                             v_applicable_op_found = true;
                             break;
                         }
