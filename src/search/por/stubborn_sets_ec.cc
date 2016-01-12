@@ -286,15 +286,14 @@ void StubbornSetsEC::compute_stubborn_set(
     stubborn.assign(g_operators.size(), false);
     active_ops.clear();
     active_ops.assign(g_operators.size(), false);
-
     for (size_t i = 0; i < nes_computed.size(); i++) {
         nes_computed[i].clear();
         nes_computed[i].assign(g_variable_domain[i], false);
     }
-
-    compute_active_operators(state);
     written_vars.assign(g_variable_domain.size(), false);
     std::vector<int> disabled_vars;
+
+    compute_active_operators(state);
 
     //rule S1
     Fact unsatisfied_goal = find_unsatisfied_goal(state);
@@ -312,9 +311,9 @@ void StubbornSetsEC::compute_stubborn_set(
             //Rule S4'
             for (int disabled_op_no : disabled[op_no]) {
                 if (active_ops[disabled_op_no]) {
-                    bool v_applicable_op_found = false;
                     get_disabled_vars(op_no, disabled_op_no, disabled_vars);
                     if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
+                        bool v_applicable_op_found = false;
                         for (int disabled_var : disabled_vars) {
                             //First case: add o'
                             if (is_v_applicable(disabled_var,
