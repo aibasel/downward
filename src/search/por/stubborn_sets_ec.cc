@@ -273,8 +273,7 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
     }
 }
 
-void StubbornSetsEC::compute_stubborn_set(
-    const GlobalState &state, vector<const GlobalOperator *> &/*applicable_ops*/) {
+void StubbornSetsEC::compute_stubborn_set(const GlobalState &state) {
     active_ops.clear();
     active_ops.assign(g_operators.size(), false);
     for (size_t i = 0; i < nes_computed.size(); i++) {

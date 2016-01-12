@@ -101,7 +101,7 @@ void StubbornSets::prune_operators(
     stubborn.clear();
     stubborn.assign(g_operators.size(), false);
 
-    compute_stubborn_set(state, ops);
+    compute_stubborn_set(state);
 
     // Now check which applicable operators are in the stubborn set.
     vector<const GlobalOperator *> remaining_ops;

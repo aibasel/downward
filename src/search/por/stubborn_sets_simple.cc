@@ -81,16 +81,10 @@ void StubbornSetsSimple::add_interfering(int op_no) {
     }
 }
 
-void StubbornSetsSimple::compute_stubborn_set(
-    const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) {
+void StubbornSetsSimple::compute_stubborn_set(const GlobalState &state) {
     // Add a necessary enabling set for an unsatisfied goal.
     Fact unsatisfied_goal = find_unsatisfied_goal(state);
-    if (unsatisfied_goal.var == -1) {
-        // goal state encountered
-        applicable_ops.clear();
-        return;
-    }
-
+    assert(unsatisfied_goal.var != -1);
     add_necessary_enabling_set(unsatisfied_goal);
 
     /* Iteratively insert operators to stubborn according to the

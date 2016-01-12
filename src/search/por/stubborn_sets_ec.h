@@ -28,8 +28,7 @@ private:
     void apply_s5(const GlobalOperator &op, const GlobalState &state);
 protected:
     virtual void initialize() override;
-    virtual void compute_stubborn_set(
-        const GlobalState &state, std::vector<const GlobalOperator *> &ops) override;
+    virtual void compute_stubborn_set(const GlobalState &state) override;
 };
 }
 #endif
