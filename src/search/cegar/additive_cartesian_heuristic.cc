@@ -151,7 +151,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "Additive CEGAR heuristic",
         "See the paper introducing Counterexample-guided Abstraction "
         "Refinement (CEGAR) for classical planning:" +
-        Utils::format_paper_reference(
+        utils::format_paper_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Counterexample-guided Cartesian Abstraction Refinement",
             "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
@@ -160,7 +160,7 @@ static Heuristic *_parse(OptionParser &parser) {
             "347-351",
             "AAAI Press 2013") +
         "and the paper showing how to make the abstractions additive:" +
-        Utils::format_paper_reference(
+        utils::format_paper_reference(
             {"Jendrik Seipp", "Malte Helmert"},
             "Diverse and Additive Cartesian Abstraction Heuristics",
             "http://ai.cs.unibas.ch/papers/seipp-helmert-icaps2014.pdf",

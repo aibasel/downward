@@ -200,7 +200,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
         "This heuristic implements the algorithm described in the following "
-        "paper:" + Utils::format_paper_reference(
+        "paper:" + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
             "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
@@ -209,7 +209,7 @@ static Heuristic *_parse(OptionParser &parser) {
             "2358-2366",
             "AAAI Press 2014") + "\n" +
         "For a more exhaustive description of merge-and-shrink, see the journal "
-        "paper" + Utils::format_paper_reference(
+        "paper" + utils::format_paper_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann", "Raz Nissim"},
             "Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds"
             " in Factored State Spaces",

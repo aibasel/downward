@@ -197,7 +197,7 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
         "This merge strategy implements the algorithm originally described in the "
         "paper \"Directed model checking with distance-preserving abstractions\" "
         "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-        "the following paper:" + Utils::format_paper_reference(
+        "the following paper:" + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
             "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",

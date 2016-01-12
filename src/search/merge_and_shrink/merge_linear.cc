@@ -69,7 +69,7 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Linear merge strategies",
         "This merge strategy implements several linear merge orders, which "
-        "are described in the paper:" + Utils::format_paper_reference(
+        "are described in the paper:" + utils::format_paper_reference(
         {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
         "Flexible Abstraction Heuristics for Optimal Sequential Planning",
         "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf",

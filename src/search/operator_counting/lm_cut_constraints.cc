@@ -56,7 +56,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "For each landmark L the constraint sum_{o in L} Count_o >= 1 is added "
         "to the operator counting LP temporarily. After the heuristic value "
         "for the state is computed, all temporary constraints are removed "
-        "again. For details, see" + Utils::format_paper_reference(
+        "again. For details, see" + utils::format_paper_reference(
             {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
              "Blai Bonet"},
             "LP-based Heuristics for Cost-optimal Planning",
@@ -64,7 +64,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "Proceedings of the Twenty-Fourth International Conference"
             " on Automated Planning and Scheduling (ICAPS 2014)",
             "226-234",
-            "AAAI Press 2014") + Utils::format_paper_reference(
+            "AAAI Press 2014") + utils::format_paper_reference(
             {"Blai Bonet"},
             "An admissible heuristic for SAS+ planning obtained from the"
             " state equation",
