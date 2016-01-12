@@ -30,8 +30,8 @@ class StubbornSets : public PORMethod {
     void compute_achievers();
 
 protected:
-    std::vector<std::vector<Fact>> op_preconditions;
-    std::vector<std::vector<Fact>> op_effects;
+    std::vector<std::vector<Fact>> sorted_op_preconditions;
+    std::vector<std::vector<Fact>> sorted_op_effects;
 
     /* achievers[var][value] contains all operator indices of
        operators that achieve the fact (var, value). */

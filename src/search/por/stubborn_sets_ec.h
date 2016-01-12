@@ -9,7 +9,7 @@ using stubborn_sets::Fact;
 class StubbornSetsEC : public stubborn_sets::StubbornSets {
 private:
     std::vector<std::vector<std::vector<bool>>> reachability_map;
-    std::vector<std::vector<int>> operator_preconditions;
+    std::vector<std::vector<int>> op_preconditions_on_var;
     std::vector<bool> active_ops;
     std::vector<std::vector<int>> conflicting_and_disabling;
     std::vector<std::vector<int>> disabled;
