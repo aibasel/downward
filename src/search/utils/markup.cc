@@ -38,5 +38,4 @@ string format_paper_reference(
        << t2t_escape(publisher) << ".\n\n\n";
     return ss.str();
 }
-
 }
