@@ -26,6 +26,9 @@ class StubbornSets : public PORMethod {
     */
     std::vector<int> stubborn_queue;
 
+    void compute_sorted_operators();
+    void compute_achievers();
+
 protected:
     std::vector<std::vector<Fact>> op_preconditions;
     std::vector<std::vector<Fact>> op_effects;
@@ -37,8 +40,6 @@ protected:
     bool can_disable(int op1_no, int op2_no);
     bool can_conflict(int op1_no, int op2_no);
 
-    void compute_sorted_operators();
-    void compute_achievers();
     virtual void initialize() override;
 
     // Returns true iff the operators was enqueued.
