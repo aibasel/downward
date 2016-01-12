@@ -35,9 +35,8 @@ static inline Fact find_unsatisfied_precondition(
 }
 
 void StubbornSetsSimple::initialize() {
-    compute_sorted_operators();
+    StubbornSets::initialize();
     compute_interference_relation();
-    compute_achievers();
     cout << "partial order reduction method: stubborn sets simple" << endl;
 }
 

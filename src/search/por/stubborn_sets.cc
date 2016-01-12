@@ -59,6 +59,11 @@ StubbornSets::StubbornSets()
     verify_no_axioms_no_conditional_effects();
 }
 
+void StubbornSets::initialize() {
+    compute_sorted_operators();
+    compute_achievers();
+}
+
 // Relies on op_preconds and op_effects being sorted by variable.
 bool StubbornSets::can_disable(int op1_no, int op2_no) {
     return contain_conflicting_fact(op_effects[op1_no], op_preconditions[op2_no]);

@@ -115,9 +115,8 @@ void get_conflicting_vars(const vector<Fact> &facts1,
 }
 
 void StubbornSetsEC::initialize() {
-    compute_sorted_operators();
+    StubbornSets::initialize();
     compute_operator_preconditions();
-    compute_achievers();
     compute_conflicts_and_disabling();
     build_reachability_map();
 

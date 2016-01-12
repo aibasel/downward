@@ -39,6 +39,7 @@ protected:
 
     void compute_sorted_operators();
     void compute_achievers();
+    virtual void initialize() override;
     virtual void compute_stubborn_set(const GlobalState &state) = 0;
 public:
     StubbornSets();
