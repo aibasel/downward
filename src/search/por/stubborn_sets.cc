@@ -105,8 +105,16 @@ void StubbornSets::prune_operators(
     // Clear stubborn set from previous call.
     stubborn.clear();
     stubborn.assign(g_operators.size(), false);
+    assert(stubborn_queue.empty());
 
-    compute_stubborn_set(state);
+    initialize_stubborn_set(state);
+    /* Iteratively insert operators to stubborn according to the
+       definition of strong stubborn sets until a fixpoint is reached. */
+    while (!stubborn_queue.empty()) {
+        int op_no = stubborn_queue.back();
+        stubborn_queue.pop_back();
+        handle_stubborn_operator(state, op_no);
+    }
 
     // Now check which applicable operators are in the stubborn set.
     vector<const GlobalOperator *> remaining_ops;

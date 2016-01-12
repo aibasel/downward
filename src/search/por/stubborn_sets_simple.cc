@@ -80,29 +80,26 @@ void StubbornSetsSimple::add_interfering(int op_no) {
     }
 }
 
-void StubbornSetsSimple::compute_stubborn_set(const GlobalState &state) {
+void StubbornSetsSimple::initialize_stubborn_set(const GlobalState &state) {
     // Add a necessary enabling set for an unsatisfied goal.
     Fact unsatisfied_goal = find_unsatisfied_goal(state);
     assert(unsatisfied_goal.var != -1);
     add_necessary_enabling_set(unsatisfied_goal);
+}
 
-    /* Iteratively insert operators to stubborn according to the
-       definition of strong stubborn sets until a fixpoint is reached. */
-    while (!stubborn_queue.empty()) {
-        int op_no = stubborn_queue.back();
-        stubborn_queue.pop_back();
-        const GlobalOperator &op = g_operators[op_no];
-        Fact unsatisfied_precondition = find_unsatisfied_precondition(op, state);
-        if (unsatisfied_precondition.var == -1) {
-            /* no unsatisfied precondition found
-               => operator is applicable
-               => add all interfering operators */
-            add_interfering(op_no);
-        } else {
-            /* unsatisfied precondition found
-               => add a necessary enabling set for it */
-            add_necessary_enabling_set(unsatisfied_precondition);
-        }
+void StubbornSetsSimple::handle_stubborn_operator(const GlobalState &state,
+                                                  int op_no) {
+    const GlobalOperator &op = g_operators[op_no];
+    Fact unsatisfied_precondition = find_unsatisfied_precondition(op, state);
+    if (unsatisfied_precondition.var == -1) {
+        /* no unsatisfied precondition found
+           => operator is applicable
+           => add all interfering operators */
+        add_interfering(op_no);
+    } else {
+        /* unsatisfied precondition found
+           => add a necessary enabling set for it */
+        add_necessary_enabling_set(unsatisfied_precondition);
     }
 }
 

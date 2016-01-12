@@ -40,7 +40,9 @@ protected:
     void compute_sorted_operators();
     void compute_achievers();
     virtual void initialize() override;
-    virtual void compute_stubborn_set(const GlobalState &state) = 0;
+
+    virtual void initialize_stubborn_set(const GlobalState &state) = 0;
+    virtual void handle_stubborn_operator(const GlobalState &state, int op_no) = 0;
 public:
     StubbornSets();
     virtual ~StubbornSets() = default;
