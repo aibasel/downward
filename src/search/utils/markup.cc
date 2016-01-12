@@ -12,13 +12,14 @@ static string t2t_escape(const std::string &s) {
 
 static string format_authors(const vector<string> &authors) {
     assert(!authors.empty());
+    int num_authors = authors.size();
     stringstream ss;
-    for (size_t i = 0; i < authors.size(); ++i) {
+    for (int i = 0; i < num_authors; ++i) {
         const string &author = authors[i];
         ss << t2t_escape(author);
-        if (i < authors.size() - 2) {
+        if (i < num_authors - 2) {
             ss << ", ";
-        } else if (i == authors.size() - 2) {
+        } else if (i == num_authors - 2) {
             ss << " and ";
         }
     }
