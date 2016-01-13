@@ -216,6 +216,8 @@ void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
     }
 }
 
+/* TODO: think about a better name, which distinguishes this method
+   better from the corresponding method for simple stubborn sets */
 void StubbornSetsEC::add_nes_for_fact(Fact fact, const GlobalState &state) {
     for (int achiever : achievers[fact.var][fact.value]) {
         if (active_ops[achiever]) {
