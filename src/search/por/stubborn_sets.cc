@@ -34,7 +34,7 @@ bool contain_conflicting_fact(const vector<Fact> &facts1,
         } else if (facts1_it->var > facts2_it->var) {
             ++facts2_it;
         } else {
-            if (facts1_it->val != facts2_it->val)
+            if (facts1_it->value != facts2_it->value)
                 return true;
             ++facts1_it;
             ++facts2_it;
