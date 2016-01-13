@@ -4,8 +4,6 @@
 #include "stubborn_sets.h"
 
 namespace stubborn_sets_simple {
-using stubborn_sets::Fact;
-
 class StubbornSetsSimple : public stubborn_sets::StubbornSets {
     /* interference_relation[op1_no] contains all operator indices
        of operators that interfere with op1. */
