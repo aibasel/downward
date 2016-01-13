@@ -1,15 +1,10 @@
 #ifndef POR_STUBBORN_SETS_H
 #define POR_STUBBORN_SETS_H
 
+#include "../abstract_task.h"
 #include "../por_method.h"
 
 namespace stubborn_sets {
-struct Fact {
-    int var;
-    int value;
-    Fact(int var, int value) : var(var), value(value) {}
-};
-
 class StubbornSets : public PORMethod {
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;

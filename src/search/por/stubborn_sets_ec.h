@@ -4,8 +4,6 @@
 #include "stubborn_sets.h"
 
 namespace stubborn_sets_ec {
-using stubborn_sets::Fact;
-
 class StubbornSetsEC : public stubborn_sets::StubbornSets {
 private:
     std::vector<std::vector<std::vector<bool>>> reachability_map;
