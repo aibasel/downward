@@ -131,12 +131,12 @@ void StubbornSetsEC::initialize() {
 void StubbornSetsEC::compute_operator_preconditions() {
     int num_operators = g_operators.size();
     int num_variables = g_variable_domain.size();
-    operator_preconditions.resize(num_operators);
+    op_preconditions_on_var.resize(num_operators);
     for (int op_no = 0; op_no < num_operators; op_no++) {
-        operator_preconditions[op_no].resize(num_variables, -1);
+        op_preconditions_on_var[op_no].resize(num_variables, -1);
         const GlobalOperator &op = g_operators[op_no];
         for (const GlobalCondition &precondition : op.get_preconditions()) {
-            operator_preconditions[op_no][precondition.var] = precondition.val;
+            op_preconditions_on_var[op_no][precondition.var] = precondition.val;
         }
     }
 }
@@ -302,7 +302,7 @@ void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_n
                         if (is_v_applicable(disabled_var,
                                             disabled_op_no,
                                             state,
-                                            operator_preconditions)) {
+                                            op_preconditions_on_var)) {
                             mark_as_stubborn_and_remember_written_vars(disabled_op_no, state);
                             v_applicable_op_found = true;
                             break;
