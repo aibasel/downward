@@ -6,8 +6,8 @@
 namespace stubborn_sets {
 struct Fact {
     int var;
-    int val;
-    Fact(int v, int d) : var(v), val(d) {}
+    int value;
+    Fact(int var, int value) : var(var), value(value) {}
 };
 
 class StubbornSets : public PORMethod {

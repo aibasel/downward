@@ -105,7 +105,7 @@ void get_conflicting_vars(const vector<Fact> &facts1,
         } else if (facts2_it->var > facts1_it->var) {
             ++facts2_it;
         } else {
-            if (facts2_it->val != facts1_it->val) {
+            if (facts2_it->value != facts1_it->value) {
                 conflicting_vars.push_back(facts2_it->var);
             }
             ++facts1_it;
@@ -217,13 +217,13 @@ void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
 }
 
 void StubbornSetsEC::add_nes_for_fact(Fact fact, const GlobalState &state) {
-    for (int achiever : achievers[fact.var][fact.val]) {
+    for (int achiever : achievers[fact.var][fact.value]) {
         if (active_ops[achiever]) {
             mark_as_stubborn_and_remember_written_vars(achiever, state);
         }
     }
 
-    nes_computed[fact.var][fact.val] = true;
+    nes_computed[fact.var][fact.value] = true;
 }
 
 void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
@@ -263,7 +263,7 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
     }
 
     assert(violated_precondition.var != -1);
-    if (!nes_computed[violated_precondition.var][violated_precondition.val]) {
+    if (!nes_computed[violated_precondition.var][violated_precondition.value]) {
         add_nes_for_fact(violated_precondition, state);
     }
 }
