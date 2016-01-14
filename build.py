@@ -13,10 +13,8 @@ for config_file in sorted(glob.glob(os.path.join(script_dir, "*build_configs.py"
         config_file_content = f.read()
         exec(config_file_content, globals(), CONFIGS)
 
-DEFAULT_CONFIG_NAME = CONFIGS["DEFAULT"]
-del CONFIGS["DEFAULT"]
-DEBUG_CONFIG_NAME = CONFIGS["DEBUG"]
-del CONFIGS["DEBUG"]
+DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
+DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 
 CMAKE = "cmake"
 if os.name == "posix":
