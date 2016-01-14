@@ -12,8 +12,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(const Options &opts)
     : patterns(make_shared<PatternCollection>(opts.get_list<Pattern>("patterns"))) {
 }

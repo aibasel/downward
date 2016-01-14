@@ -15,8 +15,7 @@ class CausalGraph;
 class Options;
 class TaskProxy;
 
-
-namespace PDBs {
+namespace pdbs {
 class CanonicalPDBsHeuristic;
 
 // Invariant: patterns are always sorted.

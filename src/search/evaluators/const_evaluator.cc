@@ -3,8 +3,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-
-namespace ConstEvaluator {
+namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(const Options &opts)
     : Heuristic(opts),
       value(opts.get<int>("value")) {

@@ -7,8 +7,7 @@
 #include <unordered_set>
 #include <vector>
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class Labels;
 
 class LabelGroup {

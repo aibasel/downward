@@ -11,8 +11,7 @@
 
 using namespace std;
 
-
-namespace Landmarks {
+namespace landmarks {
 LandmarkCostAssignment::LandmarkCostAssignment(
     LandmarkGraph &graph, OperatorCost cost_type_)
     : lm_graph(graph), cost_type(cost_type_) {
@@ -67,7 +66,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
             if (use_action_landmarks && achievers.size() == 1) {
                 // We have found an action landmark for this state.
                 int op_id = *achievers.begin();
-                assert(Utils::in_bounds(op_id, g_operators));
+                assert(utils::in_bounds(op_id, g_operators));
                 if (!action_landmarks[op_id]) {
                     action_landmarks[op_id] = true;
                     const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
@@ -79,7 +78,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {
                     int op_id = *ach_it;
-                    assert(Utils::in_bounds(op_id, g_operators));
+                    assert(utils::in_bounds(op_id, g_operators));
                     ++achieved_lms_by_op[op_id];
                 }
             }
@@ -102,7 +101,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
             for (ach_it = achievers.begin(); ach_it != achievers.end();
                  ++ach_it) {
                 int op_id = *ach_it;
-                assert(Utils::in_bounds(op_id, g_operators));
+                assert(utils::in_bounds(op_id, g_operators));
                 if (action_landmarks[op_id]) {
                     covered_by_action_lm = true;
                     break;
@@ -112,7 +111,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
                 for (ach_it = achievers.begin(); ach_it != achievers.end();
                      ++ach_it) {
                     int op_id = *ach_it;
-                    assert(Utils::in_bounds(op_id, g_operators));
+                    assert(utils::in_bounds(op_id, g_operators));
                     --achieved_lms_by_op[op_id];
                 }
             } else {
@@ -132,7 +131,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
         for (ach_it = achievers.begin(); ach_it != achievers.end();
              ++ach_it) {
             int op_id = *ach_it;
-            assert(Utils::in_bounds(op_id, g_operators));
+            assert(utils::in_bounds(op_id, g_operators));
             const GlobalOperator &op = lm_graph.get_operator_for_lookup_index(
                 op_id);
             int num_achieved = achieved_lms_by_op[op_id];
@@ -147,7 +146,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type, LP::LPSolverType solver_type)
+    LandmarkGraph &graph, OperatorCost cost_type, lp::LPSolverType solver_type)
     : LandmarkCostAssignment(graph, cost_type),
       lp_solver(solver_type) {
     /* The LP has one variable (column) per landmark and one
@@ -158,12 +157,12 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     /* We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
        so the coefficients are all 1.
        Variable bounds are state-dependent; we initialize the range to {0}. */
-    lp_variables.resize(num_cols, LP::LPVariable(0.0, 0.0, 1.0));
+    lp_variables.resize(num_cols, lp::LPVariable(0.0, 0.0, 1.0));
 
     /* Set up lower bounds and upper bounds for the inequalities.
        These simply say that the operator's total cost must fall
        between 0 and the real operator cost. */
-    lp_constraints.resize(num_rows, LP::LPConstraint(0.0, 0.0));
+    lp_constraints.resize(num_rows, lp::LPConstraint(0.0, 0.0));
     for (size_t op_id = 0; op_id < g_operators.size(); ++op_id) {
         const GlobalOperator &op = g_operators[op_id];
         lp_constraints[op_id].set_lower_bound(0);
@@ -203,7 +202,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
       in the op-th row and lm-th column, the matrix has a 1.0 entry.
     */
     // Reuse previous constraint objects to save the effort of recreating them.
-    for (LP::LPConstraint &constraint : lp_constraints) {
+    for (lp::LPConstraint &constraint : lp_constraints) {
         constraint.clear();
     }
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
@@ -213,7 +212,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             const set<int> &achievers = get_achievers(lm_status, *lm);
             assert(!achievers.empty());
             for (int op_id : achievers) {
-                assert(Utils::in_bounds(op_id, g_operators));
+                assert(utils::in_bounds(op_id, g_operators));
                 lp_constraints[op_id].insert(lm_id, 1.0);
             }
         }
@@ -223,13 +222,13 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
        This significantly speeds up the heuristic calculation. See issue443. */
     // TODO: do not copy the data here.
     non_empty_lp_constraints.clear();
-    for (const LP::LPConstraint &constraint : lp_constraints) {
+    for (const lp::LPConstraint &constraint : lp_constraints) {
         if (!constraint.empty())
             non_empty_lp_constraints.push_back(constraint);
     }
 
     // Load the problem into the LP solver.
-    lp_solver.load_problem(LP::LPObjectiveSense::MAXIMIZE,
+    lp_solver.load_problem(lp::LPObjectiveSense::MAXIMIZE,
                            lp_variables, non_empty_lp_constraints);
 
     // Solve the linear program.

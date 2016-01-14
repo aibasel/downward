@@ -6,8 +6,7 @@
 
 using namespace std;
 
-
-namespace IPCMaxHeuristic {
+namespace ipc_max_heuristic {
 IPCMaxHeuristic::IPCMaxHeuristic(const Options &opts)
     : Heuristic(opts),
       heuristics(opts.get_list<Heuristic *>("heuristics")) {

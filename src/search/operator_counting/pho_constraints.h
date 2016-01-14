@@ -9,26 +9,26 @@
 
 class Options;
 
-namespace PDBs {
+namespace pdbs {
 class PatternCollectionGenerator;
 }
 
-namespace OperatorCounting {
+namespace operator_counting {
 class PhOConstraints : public ConstraintGenerator {
-    std::shared_ptr<PDBs::PatternCollectionGenerator> pattern_generator;
+    std::shared_ptr<pdbs::PatternCollectionGenerator> pattern_generator;
 
     int constraint_offset;
-    std::shared_ptr<PDBs::PDBCollection> pdbs;
+    std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
     explicit PhOConstraints(const Options &opts);
     ~PhOConstraints() = default;
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,
-        std::vector<LP::LPConstraint> &constraints,
+        std::vector<lp::LPConstraint> &constraints,
         double infinity) override;
     virtual bool update_constraints(
-        const State &state, LP::LPSolver &lp_solver) override;
+        const State &state, lp::LPSolver &lp_solver) override;
 };
 }
 

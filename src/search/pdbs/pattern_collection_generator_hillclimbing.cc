@@ -13,6 +13,7 @@
 
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/memory.h"
 #include "../utils/timer.h"
@@ -25,8 +26,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 struct HillClimbingTimeout : public exception {};
 
 PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const Options &opts)
@@ -59,7 +59,7 @@ void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
         for (int rel_var_id : relevant_vars) {
             VariableProxy rel_var = task_proxy.get_variables()[rel_var_id];
             int rel_var_size = rel_var.get_domain_size();
-            if (Utils::is_product_within_limit(pdb_size, rel_var_size,
+            if (utils::is_product_within_limit(pdb_size, rel_var_size,
                                                pdb_max_size)) {
                 Pattern new_pattern(pattern);
                 new_pattern.push_back(rel_var_id);
@@ -216,7 +216,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     const SuccessorGenerator &successor_generator,
     double average_operator_cost,
     PatternCollection &initial_candidate_patterns) {
-    hill_climbing_timer = new Utils::CountdownTimer(max_time);
+    hill_climbing_timer = new utils::CountdownTimer(max_time);
     // Candidate patterns generated so far (used to avoid duplicates).
     set<Pattern> generated_patterns;
     /* Set of new pattern candidates from the last call to
@@ -302,7 +302,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
     TaskProxy task_proxy(*task);
     SuccessorGenerator successor_generator(task);
 
-    Utils::Timer timer;
+    utils::Timer timer;
     double average_operator_cost = get_average_operator_cost(task_proxy);
     cout << "Average operator cost: " << average_operator_cost << endl;
 
@@ -312,7 +312,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(sh
         int goal_var_id = goal.get_variable().get_id();
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }
-    current_pdbs = Utils::make_unique_ptr<IncrementalCanonicalPDBs>(
+    current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
         task, initial_pattern_collection);
 
     State initial_state = task_proxy.get_initial_state();
@@ -401,22 +401,25 @@ static Heuristic *_parse_ipdb(OptionParser &parser) {
     parser.document_synopsis(
         "iPDB",
         "This pattern generation method is an adaption of the algorithm "
-        "described in the following paper:\n\n"
-        " * Patrik Haslum, Adi Botea, Malte Helmert, Blai Bonet and "
-        "Sven Koenig.<<BR>>\n"
-        " [Domain-Independent Construction of Pattern Database Heuristics for "
-        "Cost-Optimal Planning http://www.informatik.uni-freiburg.de/~ki"
-        "/papers/haslum-etal-aaai07.pdf].<<BR>>\n "
-        "In //Proceedings of the 22nd AAAI Conference on Artificial "
-        "Intelligence (AAAI 2007)//, pp. 1007-1012. AAAI Press 2007.\n"
-        "For implementation notes, see also this paper:\n\n"
-        " * Silvan Sievers, Manuela Ortlieb and Malte Helmert.<<BR>>\n"
-        " [Efficient Implementation of Pattern Database Heuristics for "
-        "Classical Planning "
-        "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf].<<BR>>\n"
-        " In //Proceedings of the Fifth Annual Symposium on Combinatorial "
-        "Search (SoCS 2012)//, "
-        "pp. 105-111. AAAI Press 2012.\n");
+        "described in the following paper:" + utils::format_paper_reference(
+            {"Patrik Haslum", "Adi Botea", "Malte Helmert", "Blai Bonet",
+             "Sven Koenig"},
+            "Domain-Independent Construction of Pattern Database Heuristics for"
+            " Cost-Optimal Planning",
+            "http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf",
+            "Proceedings of the 22nd AAAI Conference on Artificial"
+            " Intelligence (AAAI 2007)",
+            "1007-1012",
+            "AAAI Press 2007") +
+        "For implementation notes, see:" + utils::format_paper_reference(
+            {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
+            "Efficient Implementation of Pattern Database Heuristics for"
+            " Classical Planning",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+            "Proceedings of the Fifth Annual Symposium on Combinatorial"
+            " Search (SoCS 2012)",
+            "105-111",
+            "AAAI Press 2012"));
     parser.document_note(
         "Note",
         "The pattern collection created by the algorithm will always contain "

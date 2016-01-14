@@ -45,7 +45,7 @@ public:
                       << std::endl
                       << key << " is not of type " << TypeNamer<T>::name()
                       << std::endl << "exiting" << std::endl;
-            Utils::exit_with(Utils::ExitCode::CRITICAL_ERROR);
+            utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
         }
     }
 
@@ -66,7 +66,7 @@ public:
                           << std::endl
                           << "List " << key << " is empty"
                           << std::endl;
-                Utils::exit_with(Utils::ExitCode::INPUT_ERROR);
+                utils::exit_with(utils::ExitCode::INPUT_ERROR);
             }
         }
     }

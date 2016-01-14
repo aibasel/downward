@@ -10,8 +10,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 const int Distances::DISTANCE_UNKNOWN;
 
 Distances::Distances(const TransitionSystem &transition_system)

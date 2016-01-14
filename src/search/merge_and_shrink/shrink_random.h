@@ -5,8 +5,7 @@
 
 class Options;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class ShrinkRandom : public ShrinkBucketBased {
 protected:
     virtual void partition_into_buckets(

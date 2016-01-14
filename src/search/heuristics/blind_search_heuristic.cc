@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace BlindSearchHeuristic {
+namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts) {
     min_operator_cost = numeric_limits<int>::max();

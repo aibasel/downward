@@ -7,6 +7,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 
@@ -59,7 +60,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
         keys_and_buckets.push_back(make_pair(move(key), Bucket({entry})));
     } else {
         size_t bucket_index = it->second;
-        assert(Utils::in_bounds(bucket_index, keys_and_buckets));
+        assert(utils::in_bounds(bucket_index, keys_and_buckets));
         keys_and_buckets[bucket_index].second.push_back(entry);
     }
 }
@@ -82,13 +83,13 @@ Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
     }
 
     int pos = g_rng(bucket.size());
-    Entry result = Utils::swap_and_pop_from_vector(bucket, pos);
+    Entry result = utils::swap_and_pop_from_vector(bucket, pos);
 
     if (bucket.empty()) {
         // Swap the empty bucket with the last bucket, then delete it.
         key_to_bucket_index[keys_and_buckets.back().first] = bucket_id;
         key_to_bucket_index.erase(min_key);
-        Utils::swap_and_pop_from_vector(keys_and_buckets, bucket_id);
+        utils::swap_and_pop_from_vector(keys_and_buckets, bucket_id);
     }
     return result;
 }
@@ -144,12 +145,12 @@ TypeBasedOpenListFactory::TypeBasedOpenListFactory(
 
 unique_ptr<StateOpenList>
 TypeBasedOpenListFactory::create_state_open_list() {
-    return Utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 TypeBasedOpenListFactory::create_edge_open_list() {
-    return Utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
@@ -160,15 +161,15 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "When retrieving an entry, a bucket is chosen uniformly at "
         "random and one of the contained entries is selected "
         "uniformly randomly. "
-        "The algorithm is based on\n\n"
-        " * Fan Xie, Martin Mueller, Robert Holte, Tatsuya Imai.<<BR>>\n"
-        " [Type-Based Exploration with Multiple Search Queues for "
-        "Satisficing Planning "
-        "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Eigth AAAI Conference "
-        "Conference on Artificial Intelligence (AAAI "
-        "2014)//, pp. 2395-2401. AAAI Press 2014.\n\n\n");
+        "The algorithm is based on" + utils::format_paper_reference(
+            {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
+            "Type-Based Exploration with Multiple Search Queues for"
+            " Satisficing Planning",
+            "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
+            "Proceedings of the Twenty-Eigth AAAI Conference Conference"
+            " on Artificial Intelligence (AAAI 2014)",
+            "2395-2401",
+            "AAAI Press 2014"));
     parser.add_list_option<ScalarEvaluator *>(
         "evaluators",
         "Evaluators used to determine the bucket for each entry.");

@@ -12,6 +12,7 @@
 #include "../plugin.h"
 #include "../task_tools.h"
 
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 #include "../utils/timer.h"
@@ -24,8 +25,7 @@
 
 using namespace std;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy(opts.get<shared_ptr<MergeStrategy>>("merge_strategy")),
@@ -50,7 +50,7 @@ void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
     else
         cout << "Current";
     cout << " peak memory increase of merge-and-shrink computation: "
-         << Utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
+         << utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
          << endl;
 }
 
@@ -99,12 +99,12 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-void MergeAndShrinkHeuristic::build_transition_system(const Utils::Timer &timer) {
+void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer) {
     // TODO: We're leaking memory here in various ways. Fix this.
     //       Don't forget that build_atomic_transition_systems also
     //       allocates memory.
 
-    fts = Utils::make_unique_ptr<FactoredTransitionSystem>(
+    fts = utils::make_unique_ptr<FactoredTransitionSystem>(
         create_factored_transition_system(task_proxy));
     cout << endl;
 
@@ -172,9 +172,9 @@ void MergeAndShrinkHeuristic::build_transition_system(const Utils::Timer &timer)
 }
 
 void MergeAndShrinkHeuristic::initialize() {
-    Utils::Timer timer;
+    utils::Timer timer;
     cout << "Initializing merge-and-shrink heuristic..." << endl;
-    starting_peak_memory = Utils::get_peak_memory_in_kb();
+    starting_peak_memory = utils::get_peak_memory_in_kb();
     verify_no_axioms(task_proxy);
     dump_options();
     warn_on_unusual_options();
@@ -199,19 +199,23 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
         "This heuristic implements the algorithm described in the following "
-        "paper:\n\n"
-        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
-        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
-        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
-        "In //Proceedings of the 28th AAAI Conference on Artificial "
-        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.\n"
+        "paper:" + utils::format_paper_reference(
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+            "Generalized Label Reduction for Merge-and-Shrink Heuristics",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "Proceedings of the 28th AAAI Conference on Artificial"
+            " Intelligence (AAAI 2014)",
+            "2358-2366",
+            "AAAI Press 2014") + "\n" +
         "For a more exhaustive description of merge-and-shrink, see the journal "
-        "paper\n\n"
-        " * Malte Helmert, Patrik Haslum, Joerg Hoffmann, and Raz Nissim.<<BR>>\n"
-        " [Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds "
-        "in Factored State Spaces "
-        "http://ai.cs.unibas.ch/papers/helmert-et-al-jacm2014.pdf].<<BR>>\n "
-        "//Journal of the ACM 61 (3)//, pp. 16:1-63. 2014\n"
+        "paper" + utils::format_paper_reference(
+            {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann", "Raz Nissim"},
+            "Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds"
+            " in Factored State Spaces",
+            "http://ai.cs.unibas.ch/papers/helmert-et-al-jacm2014.pdf",
+            "Journal of the ACM 61 (3)",
+            "16:1-63",
+            "2014") + "\n" +
         "Please note that the journal paper describes the \"old\" theory of "
         "label reduction, which has been superseded by the above conference "
         "paper and is no longer implemented in Fast Downward.");

@@ -5,7 +5,7 @@
 
 #include "../heuristic.h"
 
-namespace PDBs {
+namespace pdbs {
 class PatternDatabase;
 
 class ZeroOnePDBsHeuristic : public Heuristic {

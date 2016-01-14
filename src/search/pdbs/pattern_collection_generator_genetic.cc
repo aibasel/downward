@@ -9,6 +9,7 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
 #include "../utils/timer.h"
@@ -21,8 +22,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
     const Options &opts)
     : pdb_max_size(opts.get<int>("pdb_max_size")),
@@ -138,7 +138,7 @@ bool PatternCollectionGeneratorGenetic::is_pattern_too_large(
     for (size_t i = 0; i < pattern.size(); ++i) {
         VariableProxy var = variables[pattern[i]];
         int domain_size = var.get_domain_size();
-        if (!Utils::is_product_within_limit(mem, domain_size, pdb_max_size))
+        if (!utils::is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
         mem *= domain_size;
     }
@@ -228,7 +228,7 @@ void PatternCollectionGeneratorGenetic::bin_packing() {
             if (next_var_size > pdb_max_size)
                 // var never fits into a bin.
                 continue;
-            if (!Utils::is_product_within_limit(current_size, next_var_size,
+            if (!utils::is_product_within_limit(current_size, next_var_size,
                                                 pdb_max_size)) {
                 // Open a new bin for var.
                 pattern_collection.push_back(pattern);
@@ -274,7 +274,7 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm(
 
 PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
     shared_ptr<AbstractTask> task) {
-    Utils::Timer timer;
+    utils::Timer timer;
     genetic_algorithm(task);
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;
     assert(best_patterns);
@@ -290,12 +290,14 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "to optimize the pattern collections with an objective function that "
         "estimates the mean heuristic value of the the pattern collections. "
         "Pattern collections with higher mean heuristic estimates are more "
-        "likely selected for the next generation.\n\n"
-        " * Stefan Edelkamp<<BR>>"
-        " [Automated Creation of Pattern Database Search Heuristics "
-        "http://www.springerlink.com/content/20613345434608x1/].<<BR>>"
-        "In //Proceedings of the 4th Workshop on Model Checking and Artificial "
-        "Intelligence (!MoChArt 2006)//, pp. 35-50, 2007.");
+        "likely selected for the next generation." + utils::format_paper_reference(
+            {"Stefan Edelkamp"},
+            "Automated Creation of Pattern Database Search Heuristics",
+            "http://www.springerlink.com/content/20613345434608x1/",
+            "In Proceedings of the 4th Workshop on Model Checking and Artificial"
+            " Intelligence (!MoChArt 2006)",
+            "35-50",
+            "2007"));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");

@@ -7,6 +7,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
 
@@ -58,7 +59,7 @@ public:
 
 template<class HeapNode>
 static void adjust_heap_up(vector<HeapNode> &heap, size_t pos) {
-    assert(Utils::in_bounds(pos, heap));
+    assert(utils::in_bounds(pos, heap));
     while (pos != 0) {
         size_t parent_pos = (pos - 1) / 2;
         if (heap[pos] > heap[parent_pos]) {
@@ -142,12 +143,12 @@ EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
-    return Utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
-    return Utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
@@ -155,16 +156,16 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "Epsilon-greedy open list",
         "Chooses an entry uniformly randomly with probability "
         "'epsilon', otherwise it returns the minimum entry. "
-        "The algorithm is based on\n\n"
-        " * Richard Valenzano, Nathan R. Sturtevant, "
-        "Jonathan Schaeffer, and Fan Xie.<<BR>>\n"
-        " [A Comparison of Knowledge-Based GBFS Enhancements and "
-        "Knowledge-Free Exploration "
-        "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7943/8066]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Fourth International "
-        "Conference on Automated Planning and Scheduling (ICAPS "
-        "2014)//, pp. 375-379. AAAI Press 2014.\n\n\n");
+        "The algorithm is based on" + utils::format_paper_reference(
+            {"Richard Valenzano", "Nathan R. Sturtevant",
+             "Jonathan Schaeffer", "Fan Xie"},
+            "A Comparison of Knowledge-Based GBFS Enhancements and"
+            " Knowledge-Free Exploration",
+            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7943/8066",
+            "Proceedings of the Twenty-Fourth International Conference"
+            " on Automated Planning and Scheduling (ICAPS 2014)",
+            "375-379",
+            "AAAI Press 2014"));
     parser.add_option<ScalarEvaluator *>("eval", "scalar evaluator");
     parser.add_option<bool>(
         "pref_only",

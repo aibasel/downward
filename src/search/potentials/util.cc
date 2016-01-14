@@ -9,12 +9,13 @@
 #include "../successor_generator.h"
 #include "../task_tools.h"
 
+#include "../utils/markup.h"
+
 #include <limits>
 
 using namespace std;
 
-
-namespace Potentials {
+namespace potentials {
 vector<State> sample_without_dead_end_detection(
     PotentialOptimizer &optimizer, int num_samples) {
     const shared_ptr<AbstractTask> task = optimizer.get_task();
@@ -29,14 +30,14 @@ vector<State> sample_without_dead_end_detection(
 }
 
 string get_admissible_potentials_reference() {
-    return "The algorithm is based on\n\n"
-           " * Jendrik Seipp, Florian Pommerening and Malte Helmert.<<BR>>\n"
-           " [New Optimization Functions for Potential Heuristics "
-           "http://ai.cs.unibas.ch/papers/seipp-et-al-icaps2015.pdf]."
-           "<<BR>>\n "
-           "In //Proceedings of the 25th International Conference on "
-           "Automated Planning and Scheduling (ICAPS 2015)//, pp. 193-201. "
-           "AAAI Press 2015.\n\n\n";
+    return "The algorithm is based on" + utils::format_paper_reference(
+        {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
+        "New Optimization Functions for Potential Heuristics",
+        "http://ai.cs.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
+        "Proceedings of the 25th International Conference on"
+        " Automated Planning and Scheduling (ICAPS 2015)",
+        "193-201",
+        "AAAI Press 2015");
 }
 
 void prepare_parser_for_admissible_potentials(OptionParser &parser) {
@@ -52,7 +53,7 @@ void prepare_parser_for_admissible_potentials(OptionParser &parser) {
         "Bound potentials by this number",
         "1e8",
         Bounds("0.0", "infinity"));
-    LP::add_lp_solver_option_to_parser(parser);
+    lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 }
 }

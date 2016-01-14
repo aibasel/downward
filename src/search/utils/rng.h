@@ -6,8 +6,7 @@
 #include <random>
 #include <vector>
 
-
-namespace Utils {
+namespace utils {
 class RandomNumberGenerator {
     // Mersenne Twister random number generator.
     std::mt19937 rng;

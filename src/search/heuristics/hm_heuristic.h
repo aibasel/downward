@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-typedef std::vector<std::pair<int, int>> Tuple;
+using Tuple = std::vector<std::pair<int, int>>;
 
 class Options;
 
-namespace HMHeuristic {
+namespace hm_heuristic {
 /*
   Haslum's h^m heuristic family ("critical path heuristics").
 

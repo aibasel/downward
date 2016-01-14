@@ -7,12 +7,11 @@
 
 #include <cassert>
 
+namespace max_heuristic {
+using relaxation_heuristic::Proposition;
+using relaxation_heuristic::UnaryOperator;
 
-namespace MaxHeuristic {
-using Proposition = RelaxationHeuristic::Proposition;
-using UnaryOperator = RelaxationHeuristic::UnaryOperator;
-
-class HSPMaxHeuristic : public RelaxationHeuristic::RelaxationHeuristic {
+class HSPMaxHeuristic : public relaxation_heuristic::RelaxationHeuristic {
     AdaptiveQueue<Proposition *> queue;
 
     void setup_exploration_queue();

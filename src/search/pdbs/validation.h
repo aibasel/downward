@@ -5,8 +5,7 @@
 
 class TaskProxy;
 
-
-namespace PDBs {
+namespace pdbs {
 extern void validate_and_normalize_pattern(
     const TaskProxy &task_proxy, Pattern &pattern);
 extern void validate_and_normalize_patterns(

@@ -5,8 +5,7 @@
 
 class Options;
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 struct Signature;
 
 class ShrinkBisimulation : public ShrinkStrategy {

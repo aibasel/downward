@@ -23,10 +23,9 @@
 #include <numeric>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
-
-namespace LP {
+namespace lp {
 void add_lp_solver_option_to_parser(OptionParser &parser) {
     parser.document_note(
         "Note",
@@ -296,7 +295,7 @@ void LPSolver::solve() {
             // to be the most common cause for this in our case.
             cerr << "Abandoned LP during resolve. "
                  << "Reasons include \"numerical difficulties\" and running out of memory." << endl;
-            Utils::exit_with(ExitCode::CRITICAL_ERROR);
+            utils::exit_with(ExitCode::CRITICAL_ERROR);
         }
         is_solved = true;
     } catch (CoinError &error) {

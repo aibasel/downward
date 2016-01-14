@@ -9,8 +9,7 @@
 
 #include <memory>
 
-
-namespace PDBs {
+namespace pdbs {
 class IncrementalCanonicalPDBs {
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
