@@ -9,7 +9,9 @@ import sys
 CONFIGS = {}
 script_dir = os.path.dirname(__file__)
 for config_file in sorted(glob.glob(os.path.join(script_dir, "*build_configs.py"))):
-    execfile(config_file, globals(), CONFIGS)
+    with open(config_file) as f:
+        config_file_content = f.read()
+        exec(config_file_content, globals(), CONFIGS)
 
 DEFAULT_CONFIG_NAME = CONFIGS["DEFAULT"]
 del CONFIGS["DEFAULT"]
