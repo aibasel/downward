@@ -310,7 +310,7 @@ void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_n
                         }
                     }
 
-                    //Second case: add a necessray enabling set for o' following S5
+                    //Second case: add a necessary enabling set for o' following S5
                     if (!v_applicable_op_found) {
                         apply_s5(g_operators[disabled_op_no], state);
                     }
@@ -326,7 +326,14 @@ void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_n
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "StubbornSetsEC",
-        "stubborn set method that dominates expansion core");
+        "Stubborn sets represent a state pruning method which computes a subset "
+	"of applicable operators in each state such that completeness and "
+	"optimality of the overall search is preserved. As stubborn sets rely "
+	"on several design choices, there are different variants thereof. "
+	"The variant 'StubbornSetsEC' resolves the design choices such that "
+	"the resulting pruning method is guaranteed to strictly dominate the "
+	"Expansion Core pruning method. For details, see\n"
+	"TODO: refer to ICAPS'13 paper");
 
     if (parser.dry_run()) {
 	return nullptr;
