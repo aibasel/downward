@@ -7,7 +7,7 @@ class GlobalOperator;
 class GlobalState;
 
 namespace null_pruning_method {
-class NullPORMethod : public PORMethod {
+class NullPruningMethod : public PruningMethod {
 public:
     virtual void initialize();
     virtual void prune_operators(const GlobalState & /*state*/,

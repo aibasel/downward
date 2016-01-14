@@ -5,7 +5,7 @@
 #include "../pruning_method.h"
 
 namespace stubborn_sets {
-class StubbornSets : public PORMethod {
+class StubbornSets : public PruningMethod {
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
 

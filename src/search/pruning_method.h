@@ -6,8 +6,8 @@
 class GlobalOperator;
 class GlobalState;
 
-// TODO: use the task interface for PORMethod
-class PORMethod {
+// TODO: use the task interface for PruningMethod
+class PruningMethod {
 public:
     /* This method should never be called for goal states. This can be checked
        with assertions in derived classes. */
