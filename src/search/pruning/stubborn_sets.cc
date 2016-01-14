@@ -57,9 +57,6 @@ StubbornSets::StubbornSets()
     : num_unpruned_successors_generated(0),
       num_pruned_successors_generated(0) {
     verify_no_axioms_no_conditional_effects();
-}
-
-void StubbornSets::initialize() {
     compute_sorted_operators();
     compute_achievers();
 }

@@ -14,7 +14,6 @@ public:
     virtual void prune_operators(const GlobalState &state,
                                  std::vector<const GlobalOperator *> &ops) = 0;
     virtual void print_statistics() const = 0;
-    virtual void initialize() = 0;
 };
 
 #endif
