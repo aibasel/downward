@@ -8,10 +8,9 @@
 #include <set>
 
 using namespace std;
-using Utils::ExitCode;
+using utils::ExitCode;
 
-
-namespace Landmarks {
+namespace landmarks {
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
     : LandmarkFactory(opts),
       lm_graphs(opts.get_list<LandmarkGraph *>("lm_graphs")) {
@@ -38,7 +37,7 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
             return 0;
     } else if (lm.conjunctive) {
         cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
-        Utils::exit_with(ExitCode::UNSUPPORTED);
+        utils::exit_with(ExitCode::UNSUPPORTED);
     }
     return 0;
 }
@@ -83,7 +82,7 @@ void LandmarkGraphMerged::generate_landmarks() {
                 }
             } else if (node.conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
-                Utils::exit_with(ExitCode::UNSUPPORTED);
+                utils::exit_with(ExitCode::UNSUPPORTED);
             }
         }
     }

@@ -7,13 +7,12 @@
 class AbstractTask;
 class State;
 
-namespace LP {
+namespace lp {
 class LPConstraint;
 class LPSolver;
 }
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 /*
   Derive from this class to add new operator-counting constraints. We support
   two types of constraints:
@@ -38,7 +37,7 @@ public:
     */
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> task,
-        std::vector<LP::LPConstraint> &constraints,
+        std::vector<lp::LPConstraint> &constraints,
         double infinity);
 
     /*
@@ -49,7 +48,7 @@ public:
       Returns true if a dead end was detected and false otherwise.
     */
     virtual bool update_constraints(const State &state,
-                                    LP::LPSolver &lp_solver) = 0;
+                                    lp::LPSolver &lp_solver) = 0;
 };
 }
 

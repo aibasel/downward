@@ -17,8 +17,7 @@ using namespace std;
 // TODO: Turn this into an option and check its impact.
 #define USE_CACHE true
 
-
-namespace CGHeuristic {
+namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
       cache(new CGCache(task_proxy)), cache_hits(0), cache_misses(0),

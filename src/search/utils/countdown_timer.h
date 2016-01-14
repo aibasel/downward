@@ -5,8 +5,7 @@
 
 #include <ostream>
 
-
-namespace Utils {
+namespace utils {
 class CountdownTimer {
     Timer timer;
     double max_time;
@@ -14,6 +13,8 @@ public:
     explicit CountdownTimer(double max_time);
     ~CountdownTimer();
     bool is_expired() const;
+    double get_elapsed_time() const;
+    double get_remaining_time() const;
     friend std::ostream &operator<<(std::ostream &os, const CountdownTimer &cd_timer);
 };
 

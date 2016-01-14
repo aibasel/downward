@@ -5,8 +5,7 @@
 
 #include <memory>
 
-
-namespace Potentials {
+namespace potentials {
 class PotentialFunction;
 
 /*

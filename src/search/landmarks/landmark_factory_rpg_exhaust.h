@@ -4,8 +4,7 @@
 #include "landmark_factory.h"
 #include "landmark_graph.h"
 
-
-namespace Landmarks {
+namespace landmarks {
 class LandmarkFactoryRpgExhaust : public LandmarkFactory {
 public:
     LandmarkFactoryRpgExhaust(const Options &opts);

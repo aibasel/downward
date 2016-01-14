@@ -1,0 +1,129 @@
+#ifndef CEGAR_ABSTRACTION_H
+#define CEGAR_ABSTRACTION_H
+
+#include "abstract_search.h"
+#include "refinement_hierarchy.h"
+#include "split_selector.h"
+
+#include "../task_proxy.h"
+
+#include "../utils/countdown_timer.h"
+
+#include <limits>
+#include <memory>
+#include <string>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
+namespace AdditiveHeuristic {
+class AdditiveHeuristic;
+}
+
+namespace cegar {
+class AbstractState;
+struct Flaw;
+
+class Abstraction {
+    const TaskProxy task_proxy;
+    const int max_states;
+
+    AbstractSearch abstract_search;
+    SplitSelector split_selector;
+
+    // Limit the time for building the abstraction.
+    utils::CountdownTimer timer;
+
+    /*
+      Set of all (as of yet unsplit) abstract states.
+
+      TODO: Store states as unique_ptrs. C++11 doesn't really support
+      unordered_sets of unique_ptrs, so we should probably use an
+      unordered_map<AbstractState *, unique_ptr<AbstractState>> to
+      allow for removing elements (see
+      https://stackoverflow.com/questions/18939882).
+    */
+    AbstractStates states;
+
+    // Abstract initial state.
+    AbstractState *init;
+    /* Abstract goal states. Landmark tasks may have multiple abstract
+       goal states. */
+    AbstractStates goals;
+
+    // Count the number of times each flaw type is encountered.
+    int deviations;
+    int unmet_preconditions;
+    int unmet_goals;
+
+    /* DAG with inner nodes for all split states and leaves for all
+       current states. */
+    RefinementHierarchy refinement_hierarchy;
+
+    const bool debug;
+
+    void create_trivial_abstraction();
+
+    /*
+      Map all states that can only be reached after reaching the goal
+      fact to arbitrary goal states.
+
+      We need this method only for landmark subtasks, but calling it
+      for other subtasks with a single goal fact doesn't hurt and
+      simplifies the implementation.
+    */
+    void separate_facts_unreachable_before_goal();
+
+    bool may_keep_refining() const;
+
+    // Build abstraction.
+    void build();
+
+    bool is_goal(AbstractState *state) const;
+
+    // Split state into two child states.
+    void refine(AbstractState *state, int var, const std::vector<int> &wanted);
+
+    AbstractState get_cartesian_set(const ConditionsProxy &conditions) const;
+
+    /* Try to convert the abstract solution into a concrete trace. Return the
+       first encountered flaw or nullptr if there is no flaw. */
+    std::unique_ptr<Flaw> find_flaw(const Solution &solution);
+
+    // Perform Dijkstra's algorithm from the goal states to update the h-values.
+    void update_h_values();
+
+    void print_statistics();
+
+public:
+    explicit Abstraction(
+        const std::shared_ptr<AbstractTask> task,
+        int max_states,
+        double max_time,
+        bool use_general_costs,
+        PickSplit pick,
+        bool debug = false);
+    ~Abstraction();
+
+    Abstraction(const Abstraction &) = delete;
+    Abstraction &operator=(const Abstraction &) = delete;
+
+    RefinementHierarchy && get_refinement_hierarchy() {
+        return std::move(refinement_hierarchy);
+    }
+
+    int get_num_states() const {
+        return states.size();
+    }
+
+    /* For each operator calculate the mimimum cost that is needed to preserve
+       all abstract goal distances. */
+    // TODO: Use information from last Dijkstra run instead of performing
+    // another Dijkstra run.
+    std::vector<int> get_needed_costs();
+
+    int get_h_value_of_initial_state() const;
+};
+}
+
+#endif

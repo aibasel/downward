@@ -14,7 +14,6 @@
 
 using namespace std;
 
-
 /* Implementation notes:
 
    The main data structures are:
@@ -48,8 +47,7 @@ using namespace std;
      transitions. So it's not clear if this would really save much, which
      is why we do not currently do it.
  */
-
-namespace ContextEnhancedAdditiveHeuristic {
+namespace cea_heuristic {
 struct LocalTransition {
     LocalProblemNode *source;
     LocalProblemNode *target;

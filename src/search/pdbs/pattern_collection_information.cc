@@ -11,8 +11,7 @@
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 PatternCollectionInformation::PatternCollectionInformation(
     shared_ptr<AbstractTask> task,
     shared_ptr<PatternCollection> patterns)

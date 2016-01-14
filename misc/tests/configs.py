@@ -118,10 +118,12 @@ def configs_satisficing_ipc():
 
 def configs_optimal_extended():
     return {
-        # A*
         "astar_lmcount_lm_merged_rhw_hm_no_order": [
             "--search",
             "astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),mpd=true)"],
+        "astar_cegar": [
+            "--search",
+            "astar(cegar())"],
     }
 
 

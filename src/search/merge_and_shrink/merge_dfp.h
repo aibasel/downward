@@ -3,8 +3,7 @@
 
 #include "merge_strategy.h"
 
-
-namespace MergeAndShrink {
+namespace merge_and_shrink {
 class MergeDFP : public MergeStrategy {
     // Store the "DFP" ordering in which transition systems should be considered.
     std::vector<int> transition_system_order;

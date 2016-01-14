@@ -8,8 +8,7 @@
 #include <cstddef>
 #include <vector>
 
-
-namespace PDBs {
+namespace pdbs {
 class AbstractOperator;
 
 // Successor Generator for abstract operators.

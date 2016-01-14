@@ -27,8 +27,7 @@ class CoinPackedVectorBase;
 class OptionParser;
 class OsiSolverInterface;
 
-
-namespace LP {
+namespace lp {
 enum class LPSolverType {
     CLP, CPLEX, GUROBI
 };

@@ -13,7 +13,7 @@ class Heuristic;
 class Options;
 class ScalarEvaluator;
 
-namespace EagerSearch {
+namespace eager_search {
 class EagerSearch : public SearchEngine {
     const bool reopen_closed_nodes;
     const bool use_multi_path_dependence;

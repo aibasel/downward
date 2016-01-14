@@ -7,14 +7,15 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/markup.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 
 using namespace std;
 
-
-namespace PDBs {
+namespace pdbs {
 static bool patterns_are_disjoint(
     const Pattern &pattern1, const Pattern &pattern2) {
     size_t i = 0;
@@ -275,13 +276,14 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "Systematically generated patterns",
         "Generates all (interesting) patterns with up to pattern_max_size "
         "variables. "
-        "For details, see\n"
-        " * Florian Pommerening, Gabriele Roeger and Malte Helmert.<<BR>>\n"
-        " [Getting the Most Out of Pattern Databases for Classical Planning "
-        "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf].<<BR>>\n "
-        "In //Proceedings of the Twenty-Third International Joint "
-        "Conference on Artificial Intelligence (IJCAI 2013)//, "
-        "pp. 2357-2364. 2013.\n\n\n");
+        "For details, see" + utils::format_paper_reference(
+            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
+            "Getting the Most Out of Pattern Databases for Classical Planning",
+            "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
+            "Proceedings of the Twenty-Third International Joint"
+            " Conference on Artificial Intelligence (IJCAI 2013)",
+            "2357-2364",
+            "2013"));
 
     parser.add_option<int>(
         "pattern_max_size",

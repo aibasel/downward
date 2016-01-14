@@ -7,34 +7,34 @@
 
 #include "../lp/lp_solver.h"
 
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 
 #include <cassert>
 
 using namespace std;
 
-
-namespace OperatorCounting {
+namespace operator_counting {
 void LMCutConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<LP::LPConstraint> & /*constraints*/,
+    const shared_ptr<AbstractTask> task, vector<lp::LPConstraint> & /*constraints*/,
     double /*infinity*/) {
     TaskProxy task_proxy(*task);
     landmark_generator =
-        Utils::make_unique_ptr<LandmarkCutHeuristic::LandmarkCutLandmarks>(task_proxy);
+        utils::make_unique_ptr<lm_cut_heuristic::LandmarkCutLandmarks>(task_proxy);
 }
 
 
 bool LMCutConstraints::update_constraints(const State &state,
-                                          LP::LPSolver &lp_solver) {
+                                          lp::LPSolver &lp_solver) {
     assert(landmark_generator);
-    vector<LP::LPConstraint> constraints;
+    vector<lp::LPConstraint> constraints;
     double infinity = lp_solver.get_infinity();
 
     bool dead_end = landmark_generator->compute_landmarks(
         state, nullptr,
         [&](const vector<int> &op_ids, int /*cost*/) {
             constraints.emplace_back(1.0, infinity);
-            LP::LPConstraint &landmark_constraint = constraints.back();
+            lp::LPConstraint &landmark_constraint = constraints.back();
             for (int op_id : op_ids) {
                 landmark_constraint.insert(op_id, 1.0);
             }
@@ -55,23 +55,23 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "For each landmark L the constraint sum_{o in L} Count_o >= 1 is added "
         "to the operator counting LP temporarily. After the heuristic value "
         "for the state is computed, all temporary constraints are removed "
-        "again. For details, see\n"
-        " * Florian Pommerening, Gabriele Roeger, Malte Helmert and "
-        "Blai Bonet.<<BR>>\n"
-        " [LP-based Heuristics for Cost-optimal Planning "
-        "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Fourth International "
-        "Conference on Automated Planning and Scheduling (ICAPS "
-        "2014)//, pp. 226-234. AAAI Press 2014.\n"
-        " * Blai Bonet.<<BR>>\n"
-        " [An admissible heuristic for SAS+ planning obtained from the "
-        "state equation "
-        "http://ijcai.org/papers13/Papers/IJCAI13-335.pdf]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Third International Joint "
-        "Conference on Artificial Intelligence (IJCAI 2013)//, "
-        "pp. 2268-2274. 2013.\n\n\n");
+        "again. For details, see" + utils::format_paper_reference(
+            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
+             "Blai Bonet"},
+            "LP-based Heuristics for Cost-optimal Planning",
+            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031",
+            "Proceedings of the Twenty-Fourth International Conference"
+            " on Automated Planning and Scheduling (ICAPS 2014)",
+            "226-234",
+            "AAAI Press 2014") + utils::format_paper_reference(
+            {"Blai Bonet"},
+            "An admissible heuristic for SAS+ planning obtained from the"
+            " state equation",
+            "http://ijcai.org/papers13/Papers/IJCAI13-335.pdf",
+            "Proceedings of the Twenty-Third International Joint"
+            " Conference on Artificial Intelligence (IJCAI 2013)",
+            "2268-2274",
+            "2013"));
 
     if (parser.dry_run())
         return nullptr;

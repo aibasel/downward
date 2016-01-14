@@ -7,18 +7,18 @@
 
 #include "../lp/lp_solver.h"
 
+#include "../utils/markup.h"
+
 using namespace std;
 
-
-namespace OperatorCounting {
-void add_indices_to_constraint(LP::LPConstraint &constraint,
+namespace operator_counting {
+void add_indices_to_constraint(lp::LPConstraint &constraint,
                                const set<int> &indices,
                                double coefficient) {
     for (int index : indices) {
         constraint.insert(index, coefficient);
     }
 }
-
 
 void StateEquationConstraints::build_propositions(const TaskProxy &task_proxy) {
     VariablesProxy vars = task_proxy.get_variables();
@@ -53,10 +53,10 @@ void StateEquationConstraints::build_propositions(const TaskProxy &task_proxy) {
 }
 
 void StateEquationConstraints::add_constraints(
-    vector<LP::LPConstraint> &constraints, double infinity) {
+    vector<lp::LPConstraint> &constraints, double infinity) {
     for (vector<Proposition> &var_propositions : propositions) {
         for (Proposition &prop : var_propositions) {
-            LP::LPConstraint constraint(-infinity, infinity);
+            lp::LPConstraint constraint(-infinity, infinity);
             add_indices_to_constraint(constraint, prop.always_produced_by, 1.0);
             add_indices_to_constraint(constraint, prop.sometimes_produced_by, 1.0);
             add_indices_to_constraint(constraint, prop.always_consumed_by, -1.0);
@@ -69,7 +69,7 @@ void StateEquationConstraints::add_constraints(
 }
 
 void StateEquationConstraints::initialize_constraints(
-    const shared_ptr<AbstractTask> task, vector<LP::LPConstraint> &constraints,
+    const shared_ptr<AbstractTask> task, vector<lp::LPConstraint> &constraints,
     double infinity) {
     cout << "Initializing constraints from state equation." << endl;
     TaskProxy task_proxy(*task);
@@ -87,7 +87,7 @@ void StateEquationConstraints::initialize_constraints(
 }
 
 bool StateEquationConstraints::update_constraints(const State &state,
-                                                  LP::LPSolver &lp_solver) {
+                                                  lp::LPSolver &lp_solver) {
     // Compute the bounds for the rows in the LP.
     for (size_t var = 0; var < propositions.size(); ++var) {
         int num_values = propositions[var].size();
@@ -121,31 +121,31 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
         "change of the fact, i.e., the total number of times the fact is added "
         "minus the total number of times is removed. The bounds of each "
         "constraint depend on the current state and the goal state and are "
-        "updated in each state. For details, see\n"
-        " * Menkes van den Briel, J. Benton, Subbarao Kambhampati and "
-        "Thomas Vossen.<<BR>>\n"
-        " [An LP-based heuristic for optimal planning "
-        "http://link.springer.com/chapter/10.1007/978-3-540-74970-7_46]."
-        "<<BR>>\n "
-        "In //Proceedings of the Thirteenth International Conference on "
-        "Principles and Practice of Constraint Programming (CP 2007)//, "
-        "pp. 651-665. 2007.\n"
-        " * Blai Bonet.<<BR>>\n"
-        " [An admissible heuristic for SAS+ planning obtained from the "
-        "state equation "
-        "http://ijcai.org/papers13/Papers/IJCAI13-335.pdf]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Third International Joint "
-        "Conference on Artificial Intelligence (IJCAI 2013)//, "
-        "pp. 2268-2274. 2013.\n"
-        " * Florian Pommerening, Gabriele Roeger, Malte Helmert and "
-        "Blai Bonet.<<BR>>\n"
-        " [LP-based Heuristics for Cost-optimal Planning "
-        "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031]."
-        "<<BR>>\n "
-        "In //Proceedings of the Twenty-Fourth International "
-        "Conference on Automated Planning and Scheduling (ICAPS "
-        "2014)//, pp. 226-234. AAAI Press 2014.\n\n\n");
+        "updated in each state. For details, see" + utils::format_paper_reference(
+            {"Menkes van den Briel", "J. Benton", "Subbarao Kambhampati",
+             "Thomas Vossen"},
+            "An LP-based heuristic for optimal planning",
+            "http://link.springer.com/chapter/10.1007/978-3-540-74970-7_46",
+            "Proceedings of the Thirteenth International Conference on"
+            " Principles and Practice of Constraint Programming (CP 2007)",
+            "651-665",
+            "2007") + utils::format_paper_reference(
+            {"Blai Bonet"},
+            "An admissible heuristic for SAS+ planning obtained from the"
+            " state equation",
+            "http://ijcai.org/papers13/Papers/IJCAI13-335.pdf",
+            "Proceedings of the Twenty-Third International Joint"
+            " Conference on Artificial Intelligence (IJCAI 2013)",
+            "2268-2274",
+            "2013") + utils::format_paper_reference(
+            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
+             "Blai Bonet"},
+            "LP-based Heuristics for Cost-optimal Planning",
+            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031",
+            "Proceedings of the Twenty-Fourth International Conference"
+            " on Automated Planning and Scheduling (ICAPS 2014)",
+            "226-234",
+            "AAAI Press 2014"));
 
     if (parser.dry_run())
         return nullptr;
