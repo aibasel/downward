@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 
 import errno
+import glob
 import os
 import subprocess
 import sys
 
-CONFIGS = {
-    "release32": ["-DCMAKE_BUILD_TYPE=Release"],
-    "debug32":   ["-DCMAKE_BUILD_TYPE=Debug"],
-    "release64": ["-DCMAKE_BUILD_TYPE=Release", "-DALLOW_64_BIT=True", "-DCMAKE_CXX_FLAGS='-m64'"],
-    "debug64":   ["-DCMAKE_BUILD_TYPE=Debug",   "-DALLOW_64_BIT=True", "-DCMAKE_CXX_FLAGS='-m64'"],
-}
-DEFAULT_DEBUG_CONFIG = "debug32"
-DEFAULT_CONFIG = "release32"
+CONFIGS = {}
+script_dir = os.path.dirname(__file__)
+for config_file in sorted(glob.glob(os.path.join(script_dir, "*build_configs.py"))):
+    with open(config_file) as f:
+        config_file_content = f.read()
+        exec(config_file_content, globals(), CONFIGS)
+
+DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
+DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 
 CMAKE = "cmake"
 if os.name == "posix":
@@ -30,16 +32,17 @@ def print_usage():
     script_name = os.path.basename(__file__)
     configs = []
     for name, args in sorted(CONFIGS.items()):
-        if name == DEFAULT_CONFIG:
+        if name == DEFAULT_CONFIG_NAME:
             name += " (default)"
-        if name == DEFAULT_DEBUG_CONFIG:
+        if name == DEBUG_CONFIG_NAME:
             name += " (default with --debug)"
         configs.append(name + "\n    " + " ".join(args))
     configs_string = "\n  ".join(configs)
     cmake_name = os.path.basename(CMAKE)
     make_name = os.path.basename(MAKE)
     generator_name = CMAKE_GENERATOR.lower()
-    default_config_name = DEFAULT_CONFIG
+    default_config_name = DEFAULT_CONFIG_NAME
+    debug_config_name = DEBUG_CONFIG_NAME
     print("""Usage: {script_name} [BUILD [BUILD ...]] [--all] [--debug] [MAKE_OPTIONS]
 
 Build one or more predefined build configurations of Fast Downward. Each build
@@ -60,7 +63,7 @@ Example usage:
   ./{script_name} -j4                 # build {default_config_name} in 4 threads
   ./{script_name} -j4 downward        # as above, but only build the planner
   ./{script_name} debug32 -j4         # build debug32 in 4 threads
-  ./{script_name} --debug -j4         # build debug32 in 4 threads
+  ./{script_name} --debug -j4         # build {debug_config_name} in 4 threads
   ./{script_name} release64 debug64   # build both 64-bit build configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
 """.format(**locals()))
@@ -111,7 +114,7 @@ def main():
             print_usage()
             sys.exit(0)
         elif arg == "--debug":
-            config_names.add(DEFAULT_DEBUG_CONFIG)
+            config_names.add(DEBUG_CONFIG_NAME)
         elif arg == "--all":
             config_names |= set(CONFIGS.keys())
         elif arg in CONFIGS:
@@ -119,7 +122,7 @@ def main():
         else:
             make_parameters.append(arg)
     if not config_names:
-        config_names.add(DEFAULT_CONFIG)
+        config_names.add(DEFAULT_CONFIG_NAME)
     for config_name in config_names:
         build(config_name, CONFIGS[config_name], make_parameters)
 
