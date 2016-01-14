@@ -1,5 +1,5 @@
-#ifndef POR_STUBBORN_SETS_SIMPLE_H
-#define POR_STUBBORN_SETS_SIMPLE_H
+#ifndef PRUNING_STUBBORN_SETS_SIMPLE_H
+#define PRUNING_STUBBORN_SETS_SIMPLE_H
 
 #include "stubborn_sets.h"
 

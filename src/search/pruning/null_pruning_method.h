@@ -1,12 +1,12 @@
-#ifndef POR_NULL_POR_METHOD_H
-#define POR_NULL_POR_METHOD_H
+#ifndef PRUNING_NULL_PRUNING_METHOD_H
+#define PRUNING_NULL_PRUNING_METHOD_H
 
-#include "../por_method.h"
+#include "../pruning_method.h"
 
 class GlobalOperator;
 class GlobalState;
 
-namespace null_por_method {
+namespace null_pruning_method {
 class NullPORMethod : public PORMethod {
 public:
     virtual void initialize();

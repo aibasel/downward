@@ -7,7 +7,7 @@
 #include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
-#include "../por_method.h"
+#include "../pruning_method.h"
 #include "../successor_generator.h"
 
 #include "../open_lists/open_list_factory.h"

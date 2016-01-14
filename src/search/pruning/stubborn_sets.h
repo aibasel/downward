@@ -1,8 +1,8 @@
-#ifndef POR_STUBBORN_SETS_H
-#define POR_STUBBORN_SETS_H
+#ifndef PRUNING_STUBBORN_SETS_H
+#define PRUNING_STUBBORN_SETS_H
 
 #include "../abstract_task.h"
-#include "../por_method.h"
+#include "../pruning_method.h"
 
 namespace stubborn_sets {
 class StubbornSets : public PORMethod {

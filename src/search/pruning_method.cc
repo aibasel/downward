@@ -1,4 +1,4 @@
-#include "por_method.h"
+#include "pruning_method.h"
 
 #include "plugin.h"
 
