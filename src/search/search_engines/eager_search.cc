@@ -29,8 +29,8 @@ EagerSearch::EagerSearch(const Options &opts)
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
       /* TODO: In the future, we might want to accept nullptr as a
-         default value and remove the need for NullPORMethod this way. */
-      partial_order_reduction_method(opts.get<shared_ptr<PORMethod>>("partial_order_reduction")) {
+         default value and remove the need for NullPruningMethod this way. */
+      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
 
 void EagerSearch::initialize() {
@@ -80,7 +80,7 @@ void EagerSearch::initialize() {
     }
 
     print_initial_h_values(eval_context);
-    partial_order_reduction_method->initialize();
+    pruning_method->initialize();
 }
 
 void EagerSearch::print_checkpoint_line(int g) const {
@@ -92,7 +92,7 @@ void EagerSearch::print_checkpoint_line(int g) const {
 void EagerSearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
-    partial_order_reduction_method->print_statistics();
+    pruning_method->print_statistics();
 }
 
 SearchStatus EagerSearch::step() {
@@ -112,11 +112,10 @@ SearchStatus EagerSearch::step() {
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
 
     /*
-      TODO: When preferred operators are in use, a preferred operator
-      will be considered by the preferred operator queues even when
-      pruned by the POR method.
+      TODO: When preferred operators are in use, a preferred operator will be
+      considered by the preferred operator queues even when they are pruned.
     */
-    partial_order_reduction_method->prune_operators(s, applicable_ops);
+    pruning_method->prune_operators(s, applicable_ops);
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
@@ -328,9 +327,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
 
-    parser.add_option<shared_ptr<PORMethod>>(
-        "partial_order_reduction",
-        "partial order reduction method",
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "pruning method",
         "null()");
 
     parser.add_option<ScalarEvaluator *>(
@@ -377,9 +376,9 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<bool>("mpd",
                             "use multi-path dependence (LM-A*)", "false");
 
-    parser.add_option<shared_ptr<PORMethod>>(
-        "partial_order_reduction",
-        "partial order reduction method",
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "pruning method",
         "null()");
 
     SearchEngine::add_options_to_parser(parser);
@@ -446,9 +445,9 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
-    parser.add_option<shared_ptr<PORMethod>>(
-        "partial_order_reduction",
-        "partial order reduction method",
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "pruning method",
         "null()");
 
     SearchEngine::add_options_to_parser(parser);

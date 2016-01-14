@@ -37,7 +37,7 @@ static inline Fact find_unsatisfied_precondition(
 void StubbornSetsSimple::initialize() {
     StubbornSets::initialize();
     compute_interference_relation();
-    cout << "partial order reduction method: stubborn sets simple" << endl;
+    cout << "pruning method: stubborn sets simple" << endl;
 }
 
 void StubbornSetsSimple::compute_interference_relation() {
@@ -96,7 +96,7 @@ void StubbornSetsSimple::handle_stubborn_operator(const GlobalState &state,
     }
 }
 
-static shared_ptr<PORMethod> _parse(OptionParser &parser) {
+static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Stubborn sets simple",
         "stubborn sets with simple instantiations of design choices");
@@ -104,5 +104,5 @@ static shared_ptr<PORMethod> _parse(OptionParser &parser) {
     return make_shared<StubbornSetsSimple>();
 }
 
-static PluginShared<PORMethod> _plugin("stubborn_sets_simple", _parse);
+static PluginShared<PruningMethod> _plugin("stubborn_sets_simple", _parse);
 }

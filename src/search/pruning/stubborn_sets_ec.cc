@@ -125,7 +125,7 @@ void StubbornSetsEC::initialize() {
         nes_computed.push_back(vector<bool>(g_variable_domain[var], false));
     }
 
-    cout << "partial order reduction method: stubborn sets ec" << endl;
+    cout << "pruning method: stubborn sets ec" << endl;
 }
 
 void StubbornSetsEC::compute_operator_preconditions() {
@@ -324,7 +324,7 @@ void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_n
     }
 }
 
-static shared_ptr<PORMethod> _parse(OptionParser &parser) {
+static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "StubbornSetsEC",
         "stubborn set method that dominates expansion core");
@@ -332,5 +332,5 @@ static shared_ptr<PORMethod> _parse(OptionParser &parser) {
     return make_shared<StubbornSetsEC>();
 }
 
-static PluginShared<PORMethod> _plugin("stubborn_sets_ec", _parse);
+static PluginShared<PruningMethod> _plugin("stubborn_sets_ec", _parse);
 }

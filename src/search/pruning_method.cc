@@ -4,6 +4,6 @@
 
 using namespace std;
 
-static PluginTypePlugin<PORMethod> _type_plugin(
-    "PORMethod",
-    "Prune applicable operators based on partial order reduction.");
+static PluginTypePlugin<PruningMethod> _type_plugin(
+    "PruningMethod",
+    "Prune or reorder applicable operators.");

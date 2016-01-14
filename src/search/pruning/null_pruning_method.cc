@@ -6,15 +6,17 @@
 using namespace std;
 
 namespace null_pruning_method {
-void NullPORMethod::initialize() {
-    cout << "partial order reduction method: none" << endl;
+void NullPruningMethod::initialize() {
+    cout << "pruning method: none" << endl;
 }
 
-static shared_ptr<PORMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis("No pruning", "por method without pruning");
+static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "No pruning",
+        "pruning method without pruning");
 
-    return make_shared<NullPORMethod>();
+    return make_shared<NullPruningMethod>();
 }
 
-static PluginShared<PORMethod> _plugin("null", _parse);
+static PluginShared<PruningMethod> _plugin("null", _parse);
 }
