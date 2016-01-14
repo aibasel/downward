@@ -1,11 +1,11 @@
-#include "null_por_method.h"
+#include "null_pruning_method.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
 
 using namespace std;
 
-namespace null_por_method {
+namespace null_pruning_method {
 void NullPORMethod::initialize() {
     cout << "partial order reduction method: none" << endl;
 }

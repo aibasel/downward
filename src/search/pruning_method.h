@@ -1,5 +1,5 @@
-#ifndef POR_METHOD_H
-#define POR_METHOD_H
+#ifndef PRUNING_METHOD_H
+#define PRUNING_METHOD_H
 
 #include <vector>
 
