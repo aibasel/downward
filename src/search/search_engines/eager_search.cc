@@ -320,18 +320,21 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     }
 }
 
+/* TODO: merge this into SearchEngine::add_options_to_parser when all search
+         engines support pruning. */
+void add_pruning_option(OptionParser &parser) {
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "pruning method",
+        "null()");
+}
+
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Eager best-first search", "");
 
     parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
     parser.add_option<bool>("reopen_closed",
                             "reopen closed nodes", "false");
-
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "pruning method",
-        "null()");
-
     parser.add_option<ScalarEvaluator *>(
         "f_eval",
         "set evaluator for jump statistics. "
@@ -340,6 +343,8 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
+
+    add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -376,11 +381,7 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<bool>("mpd",
                             "use multi-path dependence (LM-A*)", "false");
 
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "pruning method",
-        "null()");
-
+    add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -445,11 +446,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "pruning method",
-        "null()");
 
+    add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();
