@@ -98,7 +98,13 @@ void StubbornSetsSimple::handle_stubborn_operator(const GlobalState &state,
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Stubborn sets simple",
-        "stubborn sets with simple instantiations of design choices");
+        "Stubborn sets represent a state pruning method which computes a subset "
+	"of applicable operators in each state such that completeness and "
+	"optimality of the overall search is preserved. As stubborn sets rely "
+	"on several design choices, there are different variants thereof. "
+	"The variant 'StubbornSetsSimple' resolves the design choices in a "
+	"straight-forward way. For details, see\n. "
+	"TODO: refer to ECAI'12 and ICAPS'14 paper");
 
     if (parser.dry_run()) {
 	return nullptr;

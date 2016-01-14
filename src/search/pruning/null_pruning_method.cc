@@ -13,7 +13,8 @@ NullPruningMethod::NullPruningMethod() {
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "No pruning",
-        "pruning method without pruning");
+        "This is a skeleton method that does not perform any pruning, i.e., "
+	"all applicable operators are applied in all expanded states. ");
 
     if (parser.dry_run()) {
 	return nullptr;
