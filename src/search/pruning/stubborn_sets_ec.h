@@ -25,9 +25,11 @@ private:
     void add_nes_for_fact(Fact fact, const GlobalState &state);
     void apply_s5(const GlobalOperator &op, const GlobalState &state);
 protected:
-    virtual void initialize() override;
     virtual void initialize_stubborn_set(const GlobalState &state) override;
     virtual void handle_stubborn_operator(const GlobalState &state, int op_no) override;
+public:
+    StubbornSetsEC();
+    virtual ~StubbornSetsEC() = default;
 };
 }
 #endif

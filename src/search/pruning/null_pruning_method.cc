@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace null_pruning_method {
-void NullPruningMethod::initialize() {
+NullPruningMethod::NullPruningMethod() {
     cout << "pruning method: none" << endl;
 }
 

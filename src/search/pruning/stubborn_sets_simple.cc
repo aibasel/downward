@@ -34,8 +34,7 @@ static inline Fact find_unsatisfied_precondition(
     return Fact(-1, -1);
 }
 
-void StubbornSetsSimple::initialize() {
-    StubbornSets::initialize();
+StubbornSetsSimple::StubbornSetsSimple() {
     compute_interference_relation();
     cout << "pruning method: stubborn sets simple" << endl;
 }

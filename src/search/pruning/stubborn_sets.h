@@ -35,8 +35,6 @@ protected:
     bool can_disable(int op1_no, int op2_no);
     bool can_conflict(int op1_no, int op2_no);
 
-    virtual void initialize() override;
-
     // Returns true iff the operators was enqueued.
     // TODO: rename to enqueue_stubborn_operator?
     bool mark_as_stubborn(int op_no);
