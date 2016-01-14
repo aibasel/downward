@@ -101,6 +101,10 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "Stubborn sets simple",
         "stubborn sets with simple instantiations of design choices");
 
+    if (parser.dry_run()) {
+	return nullptr;
+    }
+
     return make_shared<StubbornSetsSimple>();
 }
 

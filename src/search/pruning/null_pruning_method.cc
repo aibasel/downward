@@ -15,6 +15,10 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "No pruning",
         "pruning method without pruning");
 
+    if (parser.dry_run()) {
+	return nullptr;
+    }
+    
     return make_shared<NullPruningMethod>();
 }
 

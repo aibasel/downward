@@ -329,6 +329,10 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "StubbornSetsEC",
         "stubborn set method that dominates expansion core");
 
+    if (parser.dry_run()) {
+	return nullptr;
+    }
+    
     return make_shared<StubbornSetsEC>();
 }
 
