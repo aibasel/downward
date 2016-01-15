@@ -339,7 +339,7 @@ class SASOperator:
                 pre_values[var] = pre
         for var, pre, post, cond in self.pre_post:
             for cvar, cval in cond:
-                assert(cvar not in pre_values)
+                assert(cvar not in pre_values or pre_values[cvar] == -1)
                 assert(cvar not in prevail_vars)
         assert self.pre_post
         assert self.cost >= 0 and self.cost == int(self.cost)

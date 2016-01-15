@@ -12,6 +12,7 @@
 #include "../plugin.h"
 #include "../task_tools.h"
 
+#include "../utils/markup.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 #include "../utils/timer.h"
@@ -198,19 +199,23 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
         "This heuristic implements the algorithm described in the following "
-        "paper:\n\n"
-        " * Silvan Sievers, Martin Wehrle, and Malte Helmert.<<BR>>\n"
-        " [Generalized Label Reduction for Merge-and-Shrink Heuristics "
-        "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf].<<BR>>\n "
-        "In //Proceedings of the 28th AAAI Conference on Artificial "
-        "Intelligence (AAAI 2014)//, pp. 2358-2366. AAAI Press 2014.\n"
+        "paper:" + utils::format_paper_reference(
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+            "Generalized Label Reduction for Merge-and-Shrink Heuristics",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+            "Proceedings of the 28th AAAI Conference on Artificial"
+            " Intelligence (AAAI 2014)",
+            "2358-2366",
+            "AAAI Press 2014") + "\n" +
         "For a more exhaustive description of merge-and-shrink, see the journal "
-        "paper\n\n"
-        " * Malte Helmert, Patrik Haslum, Joerg Hoffmann, and Raz Nissim.<<BR>>\n"
-        " [Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds "
-        "in Factored State Spaces "
-        "http://ai.cs.unibas.ch/papers/helmert-et-al-jacm2014.pdf].<<BR>>\n "
-        "//Journal of the ACM 61 (3)//, pp. 16:1-63. 2014\n"
+        "paper" + utils::format_paper_reference(
+            {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann", "Raz Nissim"},
+            "Merge-and-Shrink Abstraction: A Method for Generating Lower Bounds"
+            " in Factored State Spaces",
+            "http://ai.cs.unibas.ch/papers/helmert-et-al-jacm2014.pdf",
+            "Journal of the ACM 61 (3)",
+            "16:1-63",
+            "2014") + "\n" +
         "Please note that the journal paper describes the \"old\" theory of "
         "label reduction, which has been superseded by the above conference "
         "paper and is no longer implemented in Fast Downward.");

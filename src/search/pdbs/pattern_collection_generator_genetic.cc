@@ -9,6 +9,7 @@
 #include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/rng.h"
 #include "../utils/timer.h"
@@ -289,12 +290,14 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "to optimize the pattern collections with an objective function that "
         "estimates the mean heuristic value of the the pattern collections. "
         "Pattern collections with higher mean heuristic estimates are more "
-        "likely selected for the next generation.\n\n"
-        " * Stefan Edelkamp<<BR>>"
-        " [Automated Creation of Pattern Database Search Heuristics "
-        "http://www.springerlink.com/content/20613345434608x1/].<<BR>>"
-        "In //Proceedings of the 4th Workshop on Model Checking and Artificial "
-        "Intelligence (!MoChArt 2006)//, pp. 35-50, 2007.");
+        "likely selected for the next generation." + utils::format_paper_reference(
+            {"Stefan Edelkamp"},
+            "Automated Creation of Pattern Database Search Heuristics",
+            "http://www.springerlink.com/content/20613345434608x1/",
+            "In Proceedings of the 4th Workshop on Model Checking and Artificial"
+            " Intelligence (!MoChArt 2006)",
+            "35-50",
+            "2007"));
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "not supported");
     parser.document_language_support("axioms", "not supported");
