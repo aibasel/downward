@@ -113,9 +113,8 @@ private:
 */
 }
 #include "token_parser.h"
+
 namespace options {
-
-
 //Definitions of OptionParsers template functions:
 
 template<typename T>
