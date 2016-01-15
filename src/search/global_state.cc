@@ -9,20 +9,17 @@
 using namespace std;
 
 
-GlobalState::GlobalState(const PackedStateBin *buffer_, const StateRegistry &registry_,
-                         StateID id_)
-    : buffer(buffer_),
-      registry(&registry_),
-      id(id_) {
+GlobalState::GlobalState(
+    const PackedStateBin *buffer, const StateRegistry &registry, StateID id)
+    : buffer(buffer),
+      registry(&registry),
+      id(id) {
     assert(buffer);
     assert(id != StateID::no_state);
 }
 
-GlobalState::~GlobalState() {
-}
-
-int GlobalState::operator[](size_t index) const {
-    return g_state_packer->get(buffer, index);
+int GlobalState::operator[](int var) const {
+    return registry->get_state_value(buffer, var);
 }
 
 void GlobalState::dump_pddl() const {

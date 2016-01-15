@@ -259,14 +259,7 @@ void read_everything(istream &in) {
 
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
-    cout << "packing state variables..." << flush;
-    assert(!g_variable_domain.empty());
-    g_state_packer = new IntPacker(g_variable_domain);
-    cout << "done! [t=" << utils::g_timer << "]" << endl;
-
-    // NOTE: state registry stores the sizes of the state, so must be
-    // built after the problem has been read in.
-    g_state_registry = new StateRegistry;
+    g_state_registry = new StateRegistry(g_variable_domain);
 
     int num_vars = g_variable_domain.size();
     int num_facts = 0;
@@ -276,8 +269,7 @@ void read_everything(istream &in) {
     cout << "Variables: " << num_vars << endl;
     cout << "Facts: " << num_facts << endl;
     cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() *
-        g_state_packer->get_bin_size_in_bytes() << endl;
+         << g_state_registry->get_state_size_in_bytes() << endl;
 
     cout << "Building successor generator..." << flush;
     g_successor_generator = new SuccessorGenerator(g_root_task());
@@ -379,7 +371,6 @@ vector<int> g_variable_domain;
 vector<vector<string>> g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
-IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int>> g_goal;
 vector<GlobalOperator> g_operators;

@@ -102,26 +102,34 @@ class PerStateInformationBase;
 class StateRegistry {
     struct StateIDSemanticHash {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
-        StateIDSemanticHash(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool(state_data_pool_) {
+        int state_size;
+        StateIDSemanticHash(
+            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            int state_size)
+            : state_data_pool(state_data_pool),
+              state_size(state_size) {
         }
+
         size_t operator()(StateID id) const {
             return utils::hash_sequence(state_data_pool[id.value],
-                                        g_state_packer->get_num_bins());
+                                        state_size);
         }
     };
 
     struct StateIDSemanticEqual {
         const SegmentedArrayVector<PackedStateBin> &state_data_pool;
-        StateIDSemanticEqual(const SegmentedArrayVector<PackedStateBin> &state_data_pool_)
-            : state_data_pool(state_data_pool_) {
+        int state_size;
+        StateIDSemanticEqual(
+            const SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            int state_size)
+            : state_data_pool(state_data_pool),
+              state_size(state_size) {
         }
 
         bool operator()(StateID lhs, StateID rhs) const {
-            size_t size = g_state_packer->get_num_bins();
             const PackedStateBin *lhs_data = state_data_pool[lhs.value];
             const PackedStateBin *rhs_data = state_data_pool[rhs.value];
-            return std::equal(lhs_data, lhs_data + size, rhs_data);
+            return std::equal(lhs_data, lhs_data + state_size, rhs_data);
         }
     };
 
@@ -134,14 +142,19 @@ class StateRegistry {
                                StateIDSemanticHash,
                                StateIDSemanticEqual> StateIDSet;
 
+    const IntPacker state_packer;
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
     GlobalState *cached_initial_state;
     mutable std::set<PerStateInformationBase *> subscribers;
     StateID insert_id_or_pop_state();
 public:
-    StateRegistry();
+    StateRegistry(const std::vector<int> &variable_domains);
     ~StateRegistry();
+
+    inline int get_state_value(const PackedStateBin *buffer, int var) const {
+        return state_packer.get(buffer, var);
+    }
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
@@ -168,6 +181,8 @@ public:
     size_t size() const {
         return registered_states.size();
     }
+
+    int get_state_size_in_bytes();
 
     /*
       Remembers the given PerStateInformation. If this StateRegistry is
