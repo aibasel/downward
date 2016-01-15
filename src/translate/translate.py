@@ -28,6 +28,7 @@ import sas_tasks
 import simplify
 import timers
 import tools
+import variable_order
 
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only
@@ -570,6 +571,7 @@ def pddl_to_sas(task):
             except simplify.TriviallySolvable:
                 return solvable_sas_task("Simplified to empty goal")
 
+    variable_order.find_and_apply_variable_order(sas_task)
     return sas_task
 
 
