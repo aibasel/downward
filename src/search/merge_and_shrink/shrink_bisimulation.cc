@@ -9,6 +9,7 @@
 #include "../plugin.h"
 
 #include "../utils/collections.h"
+#include "../utils/markup.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -364,13 +365,16 @@ void ShrinkBisimulation::dump_strategy_specific_options() const {
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Bismulation based shrink strategy",
-        "This shrink strategy implements the algorithm described in the paper:\n\n"
-        " * Raz Nissim, Joerg Hoffmann and Malte Helmert.<<BR>>\n"
-        " [Computing Perfect Heuristics in Polynomial Time: On Bisimulation "
-        "and Merge-and-Shrink Abstractions in Optimal Planning "
-        "http://ai.cs.unibas.ch/papers/nissim-et-al-ijcai2011.pdf].<<BR>>\n "
-        "In //Proceedings of the Twenty-Second International Joint Conference "
-        "on Artificial Intelligence (IJCAI 2011)//, pp. 1983-1990. 2011.");
+        "This shrink strategy implements the algorithm described in"
+        " the paper:" + utils::format_paper_reference(
+            {"Raz Nissim", "Joerg Hoffmann", "Malte Helmert"},
+            "Computing Perfect Heuristics in Polynomial Time: On Bisimulation"
+            " and Merge-and-Shrink Abstractions in Optimal Planning.",
+            "http://ai.cs.unibas.ch/papers/nissim-et-al-ijcai2011.pdf",
+            "Proceedings of the Twenty-Second International Joint Conference"
+            " on Artificial Intelligence (IJCAI 2011)",
+            "1983-1990",
+            "2011"));
     parser.document_note(
         "shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
         "Greedy bisimulation without size bound "
