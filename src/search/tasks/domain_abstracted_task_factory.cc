@@ -65,7 +65,7 @@ void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
 }
 
 void DomainAbstractedTaskFactory::move_fact(int var, int before, int after) {
-    assert(Utils::in_bounds(var, domain_size));
+    assert(utils::in_bounds(var, domain_size));
     assert(0 <= before && before < domain_size[var]);
     assert(0 <= after && after < domain_size[var]);
 
@@ -125,7 +125,7 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
         for (int before : group) {
             move_fact(var, before, next_free_pos);
         }
-        assert(Utils::in_bounds(next_free_pos, fact_names[var]));
+        assert(utils::in_bounds(next_free_pos, fact_names[var]));
         fact_names[var][next_free_pos] = move(combined_fact_names[group_id]);
         ++next_free_pos;
     }
