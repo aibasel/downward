@@ -8,8 +8,11 @@
 #include <memory>
 #include <vector>
 
-class Options;
 class State;
+
+namespace options {
+class Options;
+}
 
 namespace potentials {
 class PotentialFunction;
@@ -56,7 +59,7 @@ class PotentialOptimizer {
     void extract_lp_solution();
 
 public:
-    explicit PotentialOptimizer(const Options &opts);
+    explicit PotentialOptimizer(const options::Options &opts);
     ~PotentialOptimizer() = default;
 
     const std::shared_ptr<AbstractTask> get_task() const;

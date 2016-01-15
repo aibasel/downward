@@ -9,7 +9,7 @@ namespace pdbs {
 class PatternCollectionGeneratorCombo : public PatternCollectionGenerator {
     int max_states;
 public:
-    explicit PatternCollectionGeneratorCombo(const Options &opts);
+    explicit PatternCollectionGeneratorCombo(const options::Options &opts);
     virtual ~PatternCollectionGeneratorCombo() = default;
 
     virtual PatternCollectionInformation generate(

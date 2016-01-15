@@ -10,8 +10,11 @@
 
 class GlobalOperator;
 class Heuristic;
-class Options;
 class ScalarEvaluator;
+
+namespace options {
+class Options;
+}
 
 namespace eager_search {
 class EagerSearch : public SearchEngine {
@@ -35,7 +38,7 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(const Options &opts);
+    explicit EagerSearch(const options::Options &opts);
     virtual ~EagerSearch() = default;
 
     virtual void print_statistics() const override;

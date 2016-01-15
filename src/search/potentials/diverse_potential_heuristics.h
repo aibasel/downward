@@ -42,7 +42,7 @@ class DiversePotentialHeuristics {
     void cover_samples(SamplesToFunctionsMap &samples_to_functions);
 
 public:
-    explicit DiversePotentialHeuristics(const Options &opts);
+    explicit DiversePotentialHeuristics(const options::Options &opts);
     ~DiversePotentialHeuristics() = default;
 
     // Sample states, then cover them.

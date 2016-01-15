@@ -5,10 +5,11 @@
 
 class Heuristic;
 
-
+namespace options {
 class Synergy {
 public:
     std::vector<Heuristic *> heuristics;
 };
+}
 
 #endif

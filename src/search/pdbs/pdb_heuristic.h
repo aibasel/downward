@@ -6,8 +6,11 @@
 #include "../heuristic.h"
 
 class GlobalState;
-class Options;
 class State;
+
+namespace options {
+class Options;
+}
 
 namespace pdbs {
 // Implements a heuristic for a single PDB.
@@ -30,7 +33,7 @@ public:
        operator. This is useful for action cost partitioning. If left
        empty, default operator costs are used.
     */
-    PDBHeuristic(const Options &opts);
+    PDBHeuristic(const options::Options &opts);
     virtual ~PDBHeuristic() override = default;
 };
 }

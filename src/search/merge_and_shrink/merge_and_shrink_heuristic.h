@@ -34,7 +34,7 @@ protected:
     virtual void initialize() override;
     virtual int compute_heuristic(const GlobalState &global_state) override;
 public:
-    explicit MergeAndShrinkHeuristic(const Options &opts);
+    explicit MergeAndShrinkHeuristic(const options::Options &opts);
     ~MergeAndShrinkHeuristic() = default;
 };
 }

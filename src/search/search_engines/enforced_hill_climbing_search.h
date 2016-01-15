@@ -12,7 +12,9 @@
 #include <utility>
 #include <vector>
 
+namespace options {
 class Options;
+}
 
 namespace enforced_hill_climbing_search {
 enum class PreferredUsage {
@@ -57,7 +59,7 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EnforcedHillClimbingSearch(const Options &opts);
+    explicit EnforcedHillClimbingSearch(const options::Options &opts);
     virtual ~EnforcedHillClimbingSearch() override;
 
     virtual void print_statistics() const override;

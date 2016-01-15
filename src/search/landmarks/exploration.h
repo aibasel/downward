@@ -135,7 +135,7 @@ public:
     // via "exported_ops". (This is the real reason why you might want to call this.)
     bool plan_for_disj(std::vector<std::pair<int, int>> &disj_goal, const GlobalState &state);
 
-    Exploration(const Options &opts);
+    Exploration(const options::Options &opts);
     ~Exploration();
 };
 }

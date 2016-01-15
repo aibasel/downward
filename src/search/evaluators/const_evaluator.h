@@ -13,7 +13,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &) override;
 
 public:
-    explicit ConstEvaluator(const Options &opts);
+    explicit ConstEvaluator(const options::Options &opts);
     virtual ~ConstEvaluator() override = default;
 };
 }
