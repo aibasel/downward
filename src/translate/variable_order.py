@@ -1,0 +1,311 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from collections import defaultdict, deque
+from itertools import chain
+import heapq
+
+DEBUG = False
+
+class CausalGraph:
+    def __init__(self, sas_task):
+        self.weighted_graph = defaultdict(lambda: defaultdict(int))
+        self.predecessor_graph = defaultdict(lambda: defaultdict(int))
+        ## both: var_no -> (var_no -> number)
+        self.ordering = []
+
+        self.weigh_graph_from_ops(sas_task.operators)
+        self.weigh_graph_from_axioms(sas_task.axioms)
+
+        num_variables = len(sas_task.variables.ranges)
+        sccs = self.get_strongly_connected_components(num_variables)
+        self.calculate_topological_pseudo_sort(sccs, sas_task.goal)
+        self.calculate_important_vars(sas_task.goal)
+
+    def get_ordering(self):
+        return self.ordering
+
+    def weigh_graph_from_ops(self, operators):
+        ### XXX TODO: a source variable can be processed several times. Is this
+        ### intended?
+        for op in operators:
+            source_vars = [var for (var, value) in op.prevail]
+            for var, pre, _, _ in op.pre_post:
+                if pre != -1:
+                    source_vars.append(var)
+            
+            for target, _, _, cond in op.pre_post:
+                for source in chain(source_vars, (var for var, _ in cond)):
+                    if source != target:
+                        self.weighted_graph[source][target] += 1
+                        self.predecessor_graph[target][source] += 1
+
+    def weigh_graph_from_axioms(self, axioms):
+        for ax in axioms:
+            target = ax.effect[0]
+            for source, _ in ax.condition:
+                if source != target:
+                    self.weighted_graph[source][target] += 1
+                    self.predecessor_graph[target][source] += 1
+
+    def get_strongly_connected_components(self, num_variables):
+        unweighted_graph = [[] for _ in range(num_variables)]
+        assert(len(self.weighted_graph) <= num_variables)
+        for source, target_weights in self.weighted_graph.items():
+            unweighted_graph[source] = sorted(target_weights.keys())
+        sccs = list(SCC(unweighted_graph).get_result())
+        return sccs
+
+    def calculate_topological_pseudo_sort(self, sccs, goal):
+        goal_map = dict(goal.pairs)
+        for scc in sccs:
+            if len(scc) > 1:
+                # component needs to be turned into acyclic subgraph
+                
+                # Compute subgraph induced by scc
+                subgraph = defaultdict(list)
+                for var in scc:
+                    # for each variable in component only list edges inside
+                    # component.
+                    subgraph_edges = subgraph[var]
+                    for target, cost in sorted(self.weighted_graph[var].items()):
+                        if target in scc:
+                            if target in goal_map:
+                                subgraph_edges.append((target, 100000 + cost))
+                            subgraph_edges.append((target, cost))
+
+                self.ordering.extend(MaxDAG(subgraph, scc).get_result())
+            else:
+                self.ordering.append(scc[0])
+
+    def calculate_important_vars(self, goal):
+        necessary = defaultdict(bool)
+        for var, _ in goal.pairs:
+            if not necessary[var]:
+                necessary[var] = True
+                self.dfs(var, necessary)
+        self.ordering = [var for var in self.ordering if necessary[var]]
+
+    def dfs(self, node, necessary):
+        stack = [pred for pred in self.predecessor_graph[node]]
+        while stack:
+            n = stack.pop()
+            if not necessary[n]:
+                necessary[n] = True
+                stack.extend(pred for pred in self.predecessor_graph[n])
+
+
+class SCC:
+    """Tarjan's algorithm for maximal strongly connected components.
+   
+    Since the original recursive version exceeds python's maximal recursion
+    depth on some planning instances, this is an iterative version with an
+    explicit recursion stack (iter_stack).
+
+    Note that the derived graph where each SCC is a single "supernode" is
+    necessarily acyclic. The SCCs returned by get_result() are in a topological
+    sort order with regard to this derived DAG.
+    """
+
+    def __init__(self, unweighted_graph):
+        self.graph = unweighted_graph
+        self.BEGIN, self.CONTINUE, self.RETURN  = 0, 1, 2 # "recursion" handling
+
+    def get_result(self):
+        self.indices = dict()
+        self.lowlinks = defaultdict(lambda: -1)
+        self.stack_indices = dict()
+        self.current_index = 0
+        self.stack = []
+        self.sccs = []
+
+        for i in range(len(self.graph)):
+            if i not in self.indices:
+                self.visit(i)
+        return reversed(self.sccs)
+
+    def visit(self, vertex):
+        iter_stack = [(vertex, None, None, self.BEGIN)]
+        while iter_stack:
+            v, w, succ_index, state = iter_stack.pop() 
+                
+            if state == self.BEGIN:
+                self.current_index += 1
+                self.indices[v] = self.current_index 
+                self.lowlinks[v] = self.current_index
+                self.stack_indices[v] = len(self.stack)
+                self.stack.append(v)
+
+                iter_stack.append((v, None, 0, self.CONTINUE))
+            elif state == self.CONTINUE:
+                successors = self.graph[v]
+                if succ_index == len(successors):
+                    if self.lowlinks[v] == self.indices[v]:
+                        stack_index = self.stack_indices[v]
+                        scc = self.stack[stack_index:]
+                        del self.stack[stack_index:]
+                        for n in scc:
+                            del self.stack_indices[n]
+                        self.sccs.append(scc)
+                else:
+                    w = successors[succ_index]
+                    if w not in self.indices:
+                        iter_stack.append((v, w, succ_index, self.RETURN))
+                        iter_stack.append((w, None, None, self.BEGIN))
+                    else:
+                        if w in self.stack_indices:
+                            self.lowlinks[v] = min(self.lowlinks[v],
+                                                   self.indices[w])
+                        iter_stack.append((v, None, succ_index+1, self.CONTINUE))
+            elif state == self.RETURN:
+                self.lowlinks[v] = min(self.lowlinks[v], self.lowlinks[w])
+                iter_stack.append((v, None, succ_index+1, self.CONTINUE))
+
+
+class MaxDAG:
+    def __init__(self, graph, input_order):
+        self.weighted_graph = graph
+        # TODO input_order is only used to get the same tiebreaking as with the
+        # old preprocessor
+        self.input_order = input_order
+
+    def get_result(self):
+        incoming_weights = defaultdict(int)
+        for weighted_edges in self.weighted_graph.values():
+            for target, weight in weighted_edges:
+                incoming_weights[target] += weight
+       
+        weight_to_nodes = defaultdict(deque)
+        for node in self.input_order:
+            weight = incoming_weights[node]
+            weight_to_nodes[weight].append(node)
+        weights = list(weight_to_nodes.keys())
+        heapq.heapify(weights)
+
+        done = defaultdict(bool)
+        result = []
+        while weights:
+            min_key = weights[0]
+            min_elem = None
+            entries = weight_to_nodes[min_key]
+            while (entries and 
+                (min_elem is None or done[min_elem] or 
+                min_key > incoming_weights[min_elem])):
+                min_elem = entries.popleft()
+            if not entries:
+                del weight_to_nodes[min_key]
+                heapq.heappop(weights) # remove min_key from heap
+            if min_elem is None or done[min_elem]:
+                # since we use lazy deletion from the heap weights, there can be
+                # weights without an undone entry in weight_to_nodes
+                continue
+            done[min_elem] = True
+            result.append(min_elem)
+            for target, weight in self.weighted_graph[min_elem]:
+                if not done[target]:
+                    weight = weight%100000
+                    if weight == 0:
+                        continue
+                    old_in_weight = incoming_weights[target]
+                    new_in_weight = old_in_weight - weight
+                    incoming_weights[target] = new_in_weight
+
+                    # add new entry to weight_to_nodes
+                    if new_in_weight not in weight_to_nodes:
+                        heapq.heappush(weights, new_in_weight)
+                    weight_to_nodes[new_in_weight].append(target)
+        return result 
+
+
+class VariableOrder:
+    """Applies a given variable order to a SAS task."""
+    def __init__(self, ordering):
+        """Ordering is a list of variable numbers in the desired order.
+        
+        If a variable does not occur in the ordering, it will be removed from
+        the task.
+        """
+        self.ordering = ordering 
+        self.new_var = dict((v, i) for i,v in enumerate(ordering))
+
+    def apply_to_task(self, sas_task):
+        self._apply_to_variables(sas_task.variables)
+        self._apply_to_init(sas_task.init)
+        self._apply_to_goal(sas_task.goal)
+        self._apply_to_mutexes(sas_task.mutexes)
+        self._apply_to_operators(sas_task.operators)
+        self._apply_to_axioms(sas_task.axioms)
+        if DEBUG:
+            sas_task.validate()
+    
+    def _apply_to_variables(self, variables):
+        ranges, layers, names = [], [], []
+        for index, var in enumerate(self.ordering):
+            ranges.append(variables.ranges[var])
+            layers.append(variables.axiom_layers[var])
+            names.append(variables.value_names[var])
+        variables.ranges = ranges
+        variables.axiom_layers = layers
+        variables.value_names = names
+
+    def _apply_to_init(self, init):
+        init.values = [init.values[var] for var in self.ordering]
+
+    def _apply_to_goal(self, goal):
+        goal.pairs = sorted((self.new_var[var], val)
+                            for var, val in goal.pairs
+                            if var in self.new_var)
+
+    def _apply_to_mutexes(self, mutexes):
+        new_mutexes = []
+        num_removed = 0
+        for group in mutexes:
+            facts = [(self.new_var[var], val) for var, val in group.facts
+                     if var in self.new_var]
+            if not facts or len(set(var for var, _ in facts)) == 1:
+                num_removed += 1
+            else:
+                group.facts = facts
+                new_mutexes.append(group)
+        mutexes[:] = new_mutexes
+
+    def _apply_to_operators(self, operators):
+        new_ops = []
+        num_removed = 0
+        for op in operators:
+            pre_post = []
+            for eff_var, pre, post, cond in op.pre_post:
+                if eff_var in self.new_var:
+                    new_cond = list((self.new_var[var], val)
+                                    for var, val in cond
+                                    if var in self.new_var) 
+                    pre_post.append((self.new_var[eff_var], pre, post, new_cond))
+            if not pre_post:
+                num_removed += 1
+            else:
+                op.pre_post = pre_post
+                op.prevail = [(self.new_var[var], val)
+                              for var, val in op.prevail
+                              if var in self.new_var]
+                new_ops.append(op)
+        operators[:] = new_ops
+
+    def _apply_to_axioms(self, axioms):
+        new_axioms = []
+        num_removed = 0
+        for ax in axioms: 
+            eff_var, eff_val = ax.effect
+            if eff_var not in self.new_var:
+                num_removed += 1 
+            else:
+                ax.condition = [(self.new_var[var], val)
+                                for var, val in ax.condition
+                                if var in self.new_var]
+                ax.effect = (self.new_var[eff_var], eff_val)
+                new_axioms.append(ax)
+        axioms[:] = new_axioms
+
+
+def find_and_apply_variable_order(sas_task):
+    order = CausalGraph(sas_task).get_ordering()
+    VariableOrder(order).apply_to_task(sas_task)
