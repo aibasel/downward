@@ -101,9 +101,9 @@ void get_conflicting_vars(const vector<Fact> &facts1,
     while (facts1_it != facts1.end() &&
            facts2_it != facts2.end()) {
         if (facts2_it->var < facts1_it->var) {
-            ++facts1_it;
-        } else if (facts2_it->var > facts1_it->var) {
             ++facts2_it;
+        } else if (facts2_it->var > facts1_it->var) {
+            ++facts1_it;
         } else {
             if (facts2_it->value != facts1_it->value) {
                 conflicting_vars.push_back(facts2_it->var);
