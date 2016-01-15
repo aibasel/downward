@@ -324,7 +324,9 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
 void add_pruning_option(OptionParser &parser) {
     parser.add_option<shared_ptr<PruningMethod>>(
         "pruning",
-        "Pruning methods apply a subset of the applicable opeators in each state.",
+        "Pruning methods can prune or reorder the set of applicable operators in "
+	"each state and thereby influence the number and order of successor states "
+	"that are considered.",
         "null()");
 }
 
