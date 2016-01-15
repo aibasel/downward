@@ -9,8 +9,8 @@
 #include <typeindex>
 #include <vector>
 
+namespace options {
 class OptionParser;
-
 
 //a registry<T> maps a string to a T-factory
 template<typename T>
@@ -136,5 +136,6 @@ public:
         return registry.cend();
     }
 };
+}
 
 #endif

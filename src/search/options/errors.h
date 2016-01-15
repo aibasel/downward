@@ -6,7 +6,7 @@
 #include <iosfwd>
 #include <string>
 
-
+namespace options {
 struct ArgError {
     ArgError(std::string msg);
 
@@ -35,5 +35,6 @@ struct ParseError {
         return out;
     }
 };
+}
 
 #endif

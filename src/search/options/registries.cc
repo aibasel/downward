@@ -5,7 +5,7 @@
 using namespace std;
 using utils::ExitCode;
 
-
+namespace options {
 PluginTypeRegistry *PluginTypeRegistry::instance() {
     static PluginTypeRegistry the_instance;
     return &the_instance;
@@ -22,4 +22,5 @@ void PluginTypeRegistry::insert(const PluginTypeInfo &info) {
 
 const PluginTypeInfo &PluginTypeRegistry::get(const type_index &type) const {
     return registry.at(type);
+}
 }

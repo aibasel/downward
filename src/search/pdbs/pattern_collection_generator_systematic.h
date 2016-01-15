@@ -12,8 +12,11 @@
 #include <vector>
 
 class CausalGraph;
-class Options;
 class TaskProxy;
+
+namespace options {
+class Options;
+}
 
 namespace pdbs {
 class CanonicalPDBsHeuristic;
@@ -39,7 +42,7 @@ class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
     void build_patterns(TaskProxy task_proxy);
     void build_patterns_naive(TaskProxy task_proxy);
 public:
-    explicit PatternCollectionGeneratorSystematic(const Options &opts);
+    explicit PatternCollectionGeneratorSystematic(const options::Options &opts);
     ~PatternCollectionGeneratorSystematic() = default;
 
     virtual PatternCollectionInformation generate(

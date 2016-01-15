@@ -11,9 +11,12 @@
 
 class GlobalOperator;
 class GlobalState;
+class TaskProxy;
+
+namespace options {
 class OptionParser;
 class Options;
-class TaskProxy;
+}
 
 class Heuristic : public ScalarEvaluator {
     struct HEntry {
@@ -69,7 +72,7 @@ protected:
     State convert_global_state(const GlobalState &global_state) const;
 
 public:
-    Heuristic(const Options &options);
+    Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
     virtual bool reach_state(
@@ -82,8 +85,8 @@ public:
 
     OperatorCost get_cost_type() const {return cost_type; }
 
-    static void add_options_to_parser(OptionParser &parser);
-    static Options default_options();
+    static void add_options_to_parser(options::OptionParser &parser);
+    static options::Options default_options();
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
