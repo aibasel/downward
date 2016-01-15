@@ -5,6 +5,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/markup.h"
+
 #include <cassert>
 
 using namespace std;
@@ -332,8 +334,14 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
 	"on several design choices, there are different variants thereof. "
 	"The variant 'StubbornSetsEC' resolves the design choices such that "
 	"the resulting pruning method is guaranteed to strictly dominate the "
-	"Expansion Core pruning method. For details, see\n"
-	"TODO: refer to ICAPS'13 paper");
+	"Expansion Core pruning method. For details, see" + utils::format_paper_reference(
+	     {"Martin Wehrle", "Malte Helmert", "Yusra Alkhazraji", "Robert Mattmüller"},
+	    "The Relative Pruning Power of Strong Stubborn Sets and Expansion Core",
+	    "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS13/paper/view/6053/6185",
+	    "Proceedings of the 23rd International Conference on Automated Planning "
+	     "and Scheduling (ICAPS 2013)",
+	    "251-259",
+	    "AAAI Press 2013")); 
 
     if (parser.dry_run()) {
 	return nullptr;
