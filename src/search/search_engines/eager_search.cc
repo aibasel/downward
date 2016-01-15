@@ -325,8 +325,8 @@ void add_pruning_option(OptionParser &parser) {
     parser.add_option<shared_ptr<PruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
-	"each state and thereby influence the number and order of successor states "
-	"that are considered.",
+        "each state and thereby influence the number and order of successor states "
+        "that are considered.",
         "null()");
 }
 
