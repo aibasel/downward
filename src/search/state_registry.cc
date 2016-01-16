@@ -1,13 +1,14 @@
 #include "state_registry.h"
 
-#include "axioms.h"
 #include "global_operator.h"
 #include "per_state_information.h"
 
 using namespace std;
 
-StateRegistry::StateRegistry(const vector<int> &variable_domains)
+StateRegistry::StateRegistry(const vector<int> &variable_domains,
+                             const vector<int> &initial_state_data)
     : state_packer(variable_domains),
+      initial_state_data(initial_state_data),
       state_data_pool(get_bins_per_state()),
       registered_states(
           0,
@@ -51,10 +52,10 @@ const GlobalState &StateRegistry::get_initial_state() {
         PackedStateBin *buffer = new PackedStateBin[get_bins_per_state()];
         // Avoid garbage values in half-full bins.
         fill_n(buffer, get_bins_per_state(), 0);
-        for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
-            state_packer.set(buffer, i, g_initial_state_data[i]);
+        for (size_t i = 0; i < initial_state_data.size(); ++i) {
+            state_packer.set(buffer, i, initial_state_data[i]);
         }
-        g_axiom_evaluator->evaluate(buffer, state_packer);
+        axiom_evaluator.evaluate(buffer, state_packer);
         state_data_pool.push_back(buffer);
         // buffer is copied by push_back
         delete[] buffer;
@@ -76,7 +77,7 @@ GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, c
         if (effect.does_fire(predecessor))
             state_packer.set(buffer, effect.var, effect.val);
     }
-    g_axiom_evaluator->evaluate(buffer, state_packer);
+    axiom_evaluator.evaluate(buffer, state_packer);
     StateID id = insert_id_or_pop_state();
     return lookup_state(id);
 }
