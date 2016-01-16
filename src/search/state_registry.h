@@ -147,7 +147,9 @@ class StateRegistry {
     StateIDSet registered_states;
     GlobalState *cached_initial_state;
     mutable std::set<PerStateInformationBase *> subscribers;
+
     StateID insert_id_or_pop_state();
+    int get_bins_per_state() const;
 public:
     StateRegistry(const std::vector<int> &variable_domains);
     ~StateRegistry();
@@ -182,7 +184,7 @@ public:
         return registered_states.size();
     }
 
-    int get_state_size_in_bytes();
+    int get_state_size_in_bytes() const;
 
     /*
       Remembers the given PerStateInformation. If this StateRegistry is
