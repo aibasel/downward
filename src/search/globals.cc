@@ -226,8 +226,6 @@ void read_axioms(istream &in) {
     in >> count;
     for (int i = 0; i < count; ++i)
         g_axioms.push_back(GlobalOperator(in, true));
-
-    g_axiom_evaluator = new AxiomEvaluator;
 }
 
 void read_everything(istream &in) {
@@ -259,7 +257,7 @@ void read_everything(istream &in) {
 
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
-    g_state_registry = new StateRegistry(g_variable_domain);
+    g_state_registry = new StateRegistry(g_variable_domain, g_initial_state_data);
 
     int num_vars = g_variable_domain.size();
     int num_facts = 0;
@@ -375,7 +373,6 @@ vector<int> g_initial_state_data;
 vector<pair<int, int>> g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
-AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 
 string g_plan_filename = "sas_plan";

@@ -1,8 +1,8 @@
 #ifndef STATE_REGISTRY_H
 #define STATE_REGISTRY_H
 
+#include "axioms.h"
 #include "global_state.h"
-#include "globals.h"
 #include "int_packer.h"
 #include "segmented_vector.h"
 #include "state_id.h"
@@ -143,15 +143,20 @@ class StateRegistry {
                                StateIDSemanticEqual> StateIDSet;
 
     const IntPacker state_packer;
+    AxiomEvaluator axiom_evaluator;
+    const std::vector<int> initial_state_data;
+
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
+
     GlobalState *cached_initial_state;
     mutable std::set<PerStateInformationBase *> subscribers;
 
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
 public:
-    StateRegistry(const std::vector<int> &variable_domains);
+    StateRegistry(const std::vector<int> &variable_domains,
+                  const std::vector<int> &initial_state_data);
     ~StateRegistry();
 
     inline int get_state_value(const PackedStateBin *buffer, int var) const {
