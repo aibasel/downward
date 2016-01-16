@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "option_parser.h"
 #include "plugin.h"
+#include "state_registry.h"
 
 #include "utils/collections.h"
 
@@ -104,7 +105,9 @@ pair<int, int> RootTask::get_goal_fact(int index) const {
 }
 
 vector<int> RootTask::get_initial_state_values() const {
-    return get_state_values(g_initial_state());
+    // TODO: think about a better way to do this.
+    StateRegistry state_registry(g_variable_domain, g_initial_state_data);
+    return get_state_values(state_registry.get_initial_state());
 }
 
 vector<int> RootTask::get_state_values(const GlobalState &global_state) const {

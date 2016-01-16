@@ -91,7 +91,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // size 2 and initially the variable has the other value than required by
     // the landmark then at the first time the landmark is reached the
     // variable must still have the initial value.
-    const GlobalState &initial_state = g_initial_state();
+    const GlobalState &initial_state = hacked_initial_state();
     const vector<GlobalEffect> &effects = o.get_effects();
     for (size_t i = 0; i < effects.size(); ++i) {
         int var = effects[i].var;
@@ -231,7 +231,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(const set<pair<int, int>> a
                                                      LandmarkNode &b, edge_type t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
-    const GlobalState &initial_state = g_initial_state();
+    const GlobalState &initial_state = hacked_initial_state();
     for (set<pair<int, int>>::iterator it = a.begin(); it != a.end(); ++it) {
         if (initial_state[it->first] == it->second) {
             //cout << endl << "not adding LM that's true in initial state: "
@@ -429,7 +429,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
         open_landmarks.pop_front();
         assert(bp->forward_orders.empty());
 
-        if (!bp->is_true_in_state(g_initial_state())) {
+        if (!bp->is_true_in_state(hacked_initial_state())) {
             // Backchain from landmark bp and compute greedy necessary predecessors.
             // Firstly, collect information about the earliest possible time step in a
             // relaxed plan that propositions are achieved (in lvl_var) and operators
@@ -509,7 +509,7 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const pair<int, int> &landmark,
      any value in "exclude". If not, that means that one of the values in "exclude"
      is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
-    const GlobalState &initial_state = g_initial_state();
+    const GlobalState &initial_state = hacked_initial_state();
     int var = landmark.first;
     assert(landmark.second != initial_state[var]); // no initial state landmarks
     // The value that we want to achieve must not be excluded:

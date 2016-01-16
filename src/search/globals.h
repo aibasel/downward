@@ -58,10 +58,6 @@ extern std::vector<int> g_default_axiom_values;
 // This vector holds the initial values *before* the axioms have been evaluated.
 // Use the state registry to obtain the real initial state.
 extern std::vector<int> g_initial_state_data;
-// TODO The following function returns the initial state that is registered
-//      in g_state_registry. This is only a short-term solution. In the
-//      medium term, we should get rid of the global registry.
-extern const GlobalState &g_initial_state();
 extern std::vector<std::pair<int, int>> g_goal;
 
 extern std::vector<GlobalOperator> g_operators;
@@ -71,10 +67,6 @@ extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
 extern bool g_is_part_of_anytime_portfolio;
 extern utils::RandomNumberGenerator g_rng;
-// Only one global object for now. Could later be changed to use one instance
-// for each problem in this case the method GlobalState::get_id would also have to be
-// changed.
-extern StateRegistry *g_state_registry;
 
 extern const std::shared_ptr<AbstractTask> g_root_task();
 

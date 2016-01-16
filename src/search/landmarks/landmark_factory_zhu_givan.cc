@@ -72,7 +72,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
 
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
-                assert(g_initial_state()[it->first] == it->second ||
+                assert(hacked_initial_state()[it->first] == it->second ||
                        !relaxed_task_solvable(true, node));
             } else
                 node = &lm_graph->get_simple_lm_node(*it);
@@ -91,7 +91,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
     unordered_set<int> triggered(g_operators.size() + g_axioms.size());
 
     // set initial layer
-    const GlobalState &initial_state = g_initial_state();
+    const GlobalState &initial_state = hacked_initial_state();
     current_prop_layer.resize(g_variable_domain.size());
     for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         current_prop_layer[i].resize(g_variable_domain[i]);

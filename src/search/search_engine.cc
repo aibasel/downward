@@ -21,7 +21,8 @@ using utils::ExitCode;
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
-      search_space(OperatorCost(opts.get_enum("cost_type"))),
+      state_registry(g_variable_domain, g_initial_state_data),
+      search_space(state_registry, OperatorCost(opts.get_enum("cost_type"))),
       cost_type(OperatorCost(opts.get_enum("cost_type"))),
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
@@ -35,6 +36,8 @@ SearchEngine::~SearchEngine() {
 }
 
 void SearchEngine::print_statistics() const {
+    cout << "Bytes per state: "
+         << state_registry.get_state_size_in_bytes() << endl;
 }
 
 bool SearchEngine::found_solution() const {

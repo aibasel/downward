@@ -12,6 +12,12 @@
 
 using namespace std;
 
+// HACK! remove this once landmark heuristics are switched to the new task interface
+GlobalState hacked_initial_state() {
+    static StateRegistry registry(g_variable_domain, g_initial_state_data);
+    return registry.get_initial_state();
+}
+
 namespace landmarks {
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
@@ -333,7 +339,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
                                                      const unordered_set<const GlobalOperator *> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
-    setup_exploration_queue(g_initial_state(), excluded_props, excluded_ops, true);
+    setup_exploration_queue(hacked_initial_state(), excluded_props, excluded_ops, true);
     relaxed_exploration(true, level_out);
 
     // Copy reachability information into lvl_var and lvl_op
