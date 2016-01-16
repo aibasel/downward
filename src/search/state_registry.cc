@@ -8,11 +8,11 @@ using namespace std;
 
 StateRegistry::StateRegistry(const vector<int> &variable_domains)
     : state_packer(variable_domains),
-      state_data_pool(state_packer.get_num_bins()),
+      state_data_pool(get_bins_per_state()),
       registered_states(
           0,
-          StateIDSemanticHash(state_data_pool, state_packer.get_num_bins()),
-          StateIDSemanticEqual(state_data_pool, state_packer.get_num_bins())),
+          StateIDSemanticHash(state_data_pool, get_bins_per_state()),
+          StateIDSemanticEqual(state_data_pool, get_bins_per_state())),
       cached_initial_state(0) {
 }
 
@@ -48,9 +48,9 @@ GlobalState StateRegistry::lookup_state(StateID id) const {
 
 const GlobalState &StateRegistry::get_initial_state() {
     if (cached_initial_state == 0) {
-        PackedStateBin *buffer = new PackedStateBin[state_packer.get_num_bins()];
+        PackedStateBin *buffer = new PackedStateBin[get_bins_per_state()];
         // Avoid garbage values in half-full bins.
-        fill_n(buffer, state_packer.get_num_bins(), 0);
+        fill_n(buffer, get_bins_per_state(), 0);
         for (size_t i = 0; i < g_initial_state_data.size(); ++i) {
             state_packer.set(buffer, i, g_initial_state_data[i]);
         }
@@ -81,8 +81,12 @@ GlobalState StateRegistry::get_successor_state(const GlobalState &predecessor, c
     return lookup_state(id);
 }
 
-int StateRegistry::get_state_size_in_bytes() {
-    return state_packer.get_num_bins() * state_packer.get_bin_size_in_bytes();
+int StateRegistry::get_bins_per_state() const {
+    return state_packer.get_num_bins();
+}
+
+int StateRegistry::get_state_size_in_bytes() const {
+    return get_bins_per_state() * state_packer.get_bin_size_in_bytes();
 }
 
 void StateRegistry::subscribe(PerStateInformationBase *psi) const {
