@@ -69,10 +69,13 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
 }
 
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
+    // HACK: remove this once CartesianHeuristic is no longer a nested heuristic (issue627).
+    StateRegistry registry(g_variable_domain, g_initial_state_data);
+
     return num_states < max_states &&
            !timer->is_expired() &&
            utils::extra_memory_padding_is_reserved() &&
-           compute_heuristic(g_initial_state()) != DEAD_END;
+           compute_heuristic(registry.get_initial_state()) != DEAD_END;
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(

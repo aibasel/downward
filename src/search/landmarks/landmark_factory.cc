@@ -409,7 +409,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
         if (node_p->disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(g_initial_state()))
+        if (node_p->is_true_in_state(hacked_initial_state()))
             return;
 
         if (!obedient_orders && node_p->is_goal()) {

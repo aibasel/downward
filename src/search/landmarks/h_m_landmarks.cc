@@ -739,7 +739,7 @@ void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
 void HMLandmarks::compute_h_m_landmarks() {
     // get subsets of initial state
     std::vector<FluentSet> init_subsets;
-    get_m_sets(m_, init_subsets, g_initial_state());
+    get_m_sets(m_, init_subsets, hacked_initial_state());
 
     TriggerSet current_trigger, next_trigger;
 

@@ -13,6 +13,10 @@
 class GlobalOperator;
 class GlobalState;
 
+// HACK! remove this once landmark heuristics are switched to the new task interface
+GlobalState hacked_initial_state();
+
+
 namespace landmarks {
 struct ExProposition;
 struct ExUnaryOperator;
