@@ -72,7 +72,7 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
            !timer->is_expired() &&
            utils::extra_memory_padding_is_reserved() &&
-           compute_heuristic(g_initial_state()) != DEAD_END;
+           compute_heuristic(task_proxy.get_initial_state()) != DEAD_END;
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(
@@ -97,13 +97,9 @@ void AdditiveCartesianHeuristic::build_abstractions(
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
-            Options opts;
-            opts.set<int>("cost_type", NORMAL);
-            opts.set<shared_ptr<AbstractTask>>("transform", subtask);
-            opts.set<bool>("cache_estimates", cache_h_values);
             heuristics.push_back(
                 utils::make_unique_ptr<CartesianHeuristic>(
-                    opts, abstraction.get_refinement_hierarchy()));
+                    abstraction.get_refinement_hierarchy()));
         }
         if (!may_build_another_abstraction())
             break;
@@ -135,12 +131,18 @@ void AdditiveCartesianHeuristic::print_statistics() const {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
-    EvaluationContext eval_context(global_state);
+    State state = task_proxy.convert_global_state(global_state);
+    return compute_heuristic(state);
+}
+
+int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     int sum_h = 0;
-    for (auto &heuristic : heuristics) {
-        if (eval_context.is_heuristic_infinite(heuristic.get()))
+    for (std::unique_ptr<CartesianHeuristic> &heuristic : heuristics) {
+        int h = heuristic->get_value(state);
+        assert(h >= 0);
+        if (h == INF)
             return DEAD_END;
-        sum_h += eval_context.get_heuristic_value(heuristic.get());
+        sum_h += h;
     }
     assert(sum_h >= 0);
     return sum_h;

@@ -90,6 +90,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
+    int compute_heuristic(const State &state);
 
 public:
     explicit AdditiveCartesianHeuristic(const options::Options &options);

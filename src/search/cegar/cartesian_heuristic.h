@@ -3,26 +3,15 @@
 
 #include "refinement_hierarchy.h"
 
-#include "../heuristic.h"
-
-class GlobalState;
-
-namespace options {
-class Options;
-}
-
 namespace cegar {
-class CartesianHeuristic : public Heuristic {
+class CartesianHeuristic {
     const RefinementHierarchy refinement_hierarchy;
 
-protected:
-    virtual void initialize();
-    virtual int compute_heuristic(const GlobalState &global_state);
-
 public:
-    explicit CartesianHeuristic(
-        const options::Options &options, RefinementHierarchy &&hierarchy);
+    explicit CartesianHeuristic(RefinementHierarchy &&hierarchy);
     ~CartesianHeuristic() = default;
+
+    int get_value(const State &state) const;
 };
 }
 
