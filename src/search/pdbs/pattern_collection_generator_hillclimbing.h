@@ -13,7 +13,9 @@
 #include <utility>
 #include <vector>
 
+namespace options {
 class Options;
+}
 
 namespace utils {
 class CountdownTimer;
@@ -118,7 +120,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
         PatternCollection &initial_candidate_patterns);
 
 public:
-    explicit PatternCollectionGeneratorHillclimbing(const Options &opts);
+    explicit PatternCollectionGeneratorHillclimbing(const options::Options &opts);
     virtual ~PatternCollectionGeneratorHillclimbing() = default;
 
     /*

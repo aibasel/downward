@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+namespace options {
 /*
   Predefinitions<T> maps strings to pointers to already created
   plug-in objects.
@@ -34,5 +35,6 @@ private:
     Predefinitions<T>() = default;
     std::map<std::string, T> predefined;
 };
+}
 
 #endif

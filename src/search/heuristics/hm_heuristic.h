@@ -11,7 +11,9 @@
 
 using Tuple = std::vector<std::pair<int, int>>;
 
+namespace options {
 class Options;
+}
 
 namespace hm_heuristic {
 /*
@@ -61,7 +63,7 @@ protected:
     virtual void initialize();
 
 public:
-    HMHeuristic(const Options &opts);
+    HMHeuristic(const options::Options &opts);
     virtual ~HMHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };

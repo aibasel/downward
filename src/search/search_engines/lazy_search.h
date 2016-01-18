@@ -15,7 +15,10 @@
 
 class GlobalOperator;
 class Heuristic;
+
+namespace options {
 class Options;
+}
 
 namespace lazy_search {
 class LazySearch : public SearchEngine {
@@ -52,7 +55,7 @@ protected:
     void print_checkpoint_line(int g) const;
 
 public:
-    explicit LazySearch(const Options &opts);
+    explicit LazySearch(const options::Options &opts);
     virtual ~LazySearch() = default;
 
     void set_pref_operator_heuristics(std::vector<Heuristic *> &heur);

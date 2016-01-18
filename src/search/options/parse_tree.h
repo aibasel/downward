@@ -7,7 +7,7 @@
 #include <tree.hh>
 #include <tree_util.hh>
 
-
+namespace options {
 struct ParseNode {
     ParseNode()
         : value(""),
@@ -66,6 +66,7 @@ tree<T> subtree(
     typename tree<T>::sibling_iterator ti_next = ti;
     ++ti_next;
     return tr.subtree(ti, ti_next);
+}
 }
 
 #endif

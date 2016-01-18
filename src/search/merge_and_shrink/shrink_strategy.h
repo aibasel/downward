@@ -8,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+namespace options {
 class OptionParser;
 class Options;
+}
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
@@ -61,7 +63,7 @@ protected:
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
-    ShrinkStrategy(const Options &opts);
+    ShrinkStrategy(const options::Options &opts);
     virtual ~ShrinkStrategy();
 
     /*
@@ -75,8 +77,8 @@ public:
     void dump_options() const;
     std::string get_name() const;
 
-    static void add_options_to_parser(OptionParser &parser);
-    static void handle_option_defaults(Options &opts);
+    static void add_options_to_parser(options::OptionParser &parser);
+    static void handle_option_defaults(options::Options &opts);
 };
 }
 

@@ -21,7 +21,7 @@ ZeroOnePDBs get_zero_one_pdbs_from_options(
 }
 
 ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
-    const Options &opts)
+    const options::Options &opts)
     : Heuristic(opts),
       zero_one_pdbs(get_zero_one_pdbs_from_options(task, opts)) {
 }
