@@ -12,6 +12,7 @@ class AxiomEvaluator;
 class CausalGraph;
 class GlobalOperator;
 class GlobalState;
+class IntPacker;
 class StateRegistry;
 class SuccessorGenerator;
 
@@ -55,6 +56,7 @@ extern std::vector<std::vector<std::string>> g_fact_names;
 extern std::vector<int> g_axiom_layers;
 extern std::vector<int> g_default_axiom_values;
 
+extern IntPacker *g_state_packer;
 // This vector holds the initial values *before* the axioms have been evaluated.
 // Use the state registry to obtain the real initial state.
 extern std::vector<int> g_initial_state_data;
@@ -62,6 +64,7 @@ extern std::vector<std::pair<int, int>> g_goal;
 
 extern std::vector<GlobalOperator> g_operators;
 extern std::vector<GlobalOperator> g_axioms;
+extern AxiomEvaluator *g_axiom_evaluator;
 extern SuccessorGenerator *g_successor_generator;
 extern std::string g_plan_filename;
 extern int g_num_previously_generated_plans;
