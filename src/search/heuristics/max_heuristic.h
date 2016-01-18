@@ -30,7 +30,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
 public:
-    HSPMaxHeuristic(const Options &options);
+    HSPMaxHeuristic(const options::Options &options);
     ~HSPMaxHeuristic();
 };
 }

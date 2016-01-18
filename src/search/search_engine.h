@@ -1,17 +1,20 @@
 #ifndef SEARCH_ENGINE_H
 #define SEARCH_ENGINE_H
 
-#include <vector>
-
-class Heuristic;
-class OptionParser;
-class Options;
-
 #include "global_operator.h"
 #include "operator_cost.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
+
+#include <vector>
+
+class Heuristic;
+
+namespace options {
+class OptionParser;
+class Options;
+}
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
@@ -37,7 +40,7 @@ protected:
     bool check_goal_and_set_plan(const GlobalState &state);
     int get_adjusted_cost(const GlobalOperator &op) const;
 public:
-    SearchEngine(const Options &opts);
+    SearchEngine(const options::Options &opts);
     virtual ~SearchEngine();
     virtual void print_statistics() const;
     virtual void save_plan_if_necessary() const;
@@ -48,7 +51,7 @@ public:
     const SearchStatistics &get_statistics() const {return statistics; }
     void set_bound(int b) {bound = b; }
     int get_bound() {return bound; }
-    static void add_options_to_parser(OptionParser &parser);
+    static void add_options_to_parser(options::OptionParser &parser);
 };
 
 /*

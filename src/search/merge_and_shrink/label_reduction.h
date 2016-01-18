@@ -4,8 +4,11 @@
 #include <vector>
 
 class EquivalenceRelation;
-class Options;
 class TaskProxy;
+
+namespace options {
+class Options;
+}
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
@@ -59,7 +62,7 @@ class LabelReduction {
         int ts_index,
         const FactoredTransitionSystem &fts) const;
 public:
-    explicit LabelReduction(const Options &options);
+    explicit LabelReduction(const options::Options &options);
     void initialize(const TaskProxy &task_proxy);
     void reduce(std::pair<int, int> next_merge,
                 FactoredTransitionSystem &fts);

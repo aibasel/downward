@@ -4,7 +4,9 @@
 #include "delegating_task.h"
 #include "operator_cost.h"
 
+namespace options {
 class Options;
+}
 
 /*
   Task transformation that changes operator costs. If the parent task assigns
@@ -23,7 +25,7 @@ class CostAdaptedTask : public DelegatingTask {
     const bool is_unit_cost;
     bool compute_is_unit_cost() const;
 public:
-    explicit CostAdaptedTask(const Options &opts);
+    explicit CostAdaptedTask(const options::Options &opts);
     virtual ~CostAdaptedTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;

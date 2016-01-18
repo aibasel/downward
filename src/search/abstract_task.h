@@ -8,7 +8,10 @@
 
 class GlobalOperator;
 class GlobalState;
+
+namespace options {
 class Options;
+}
 
 class AbstractTask {
 public:
@@ -45,6 +48,7 @@ public:
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const = 0;
 };
 
-const std::shared_ptr<AbstractTask> get_task_from_options(const Options &opts);
+const std::shared_ptr<AbstractTask> get_task_from_options(
+    const options::Options &opts);
 
 #endif

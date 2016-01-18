@@ -8,7 +8,7 @@
 #include <string>
 #include <typeindex>
 
-
+namespace options {
 /*
   TypeNamer prints out names of types.
 
@@ -91,5 +91,6 @@ struct TypeNamer<std::vector<T>> {
         return "list of " + TypeNamer<T>::name();
     }
 };
+}
 
 #endif

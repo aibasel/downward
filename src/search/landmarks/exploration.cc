@@ -31,7 +31,7 @@ namespace landmarks {
 */
 
 // Construction and destruction
-Exploration::Exploration(const Options &opts)
+Exploration::Exploration(const options::Options &opts)
     : Heuristic(opts),
       did_write_overflow_warning(false) {
     cout << "Initializing Exploration..." << endl;

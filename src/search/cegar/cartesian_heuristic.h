@@ -6,7 +6,10 @@
 #include "../heuristic.h"
 
 class GlobalState;
+
+namespace options {
 class Options;
+}
 
 namespace cegar {
 class CartesianHeuristic : public Heuristic {
@@ -18,7 +21,7 @@ protected:
 
 public:
     explicit CartesianHeuristic(
-        const Options &options, RefinementHierarchy &&hierarchy);
+        const options::Options &options, RefinementHierarchy &&hierarchy);
     ~CartesianHeuristic() = default;
 };
 }
