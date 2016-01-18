@@ -226,6 +226,8 @@ void read_axioms(istream &in) {
     in >> count;
     for (int i = 0; i < count; ++i)
         g_axioms.push_back(GlobalOperator(in, true));
+
+    g_axiom_evaluator = new AxiomEvaluator;
 }
 
 void read_everything(istream &in) {
@@ -257,6 +259,11 @@ void read_everything(istream &in) {
 
     cout << "done reading input! [t=" << utils::g_timer << "]" << endl;
 
+    cout << "packing state variables..." << flush;
+    assert(!g_variable_domain.empty());
+    g_state_packer = new IntPacker(g_variable_domain);
+    cout << "done! [t=" << utils::g_timer << "]" << endl;
+
     int num_vars = g_variable_domain.size();
     int num_facts = 0;
     for (int var = 0; var < num_vars; ++var)
@@ -264,6 +271,9 @@ void read_everything(istream &in) {
 
     cout << "Variables: " << num_vars << endl;
     cout << "Facts: " << num_facts << endl;
+    cout << "Bytes per state: "
+         << g_state_packer->get_num_bins() *
+        g_state_packer->get_bin_size_in_bytes() << endl;
 
     cout << "Building successor generator..." << flush;
     g_successor_generator = new SuccessorGenerator(g_root_task());
@@ -361,10 +371,12 @@ vector<int> g_variable_domain;
 vector<vector<string>> g_fact_names;
 vector<int> g_axiom_layers;
 vector<int> g_default_axiom_values;
+IntPacker *g_state_packer;
 vector<int> g_initial_state_data;
 vector<pair<int, int>> g_goal;
 vector<GlobalOperator> g_operators;
 vector<GlobalOperator> g_axioms;
+AxiomEvaluator *g_axiom_evaluator;
 SuccessorGenerator *g_successor_generator;
 
 string g_plan_filename = "sas_plan";

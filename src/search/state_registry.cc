@@ -5,9 +5,11 @@
 
 using namespace std;
 
-StateRegistry::StateRegistry(const vector<int> &variable_domains,
-                             const vector<int> &initial_state_data)
-    : state_packer(variable_domains),
+StateRegistry::StateRegistry(const IntPacker &state_packer,
+                             AxiomEvaluator &axiom_evaluator,
+                             const std::vector<int> &initial_state_data)
+    : state_packer(state_packer),
+      axiom_evaluator(axiom_evaluator),
       initial_state_data(initial_state_data),
       state_data_pool(get_bins_per_state()),
       registered_states(

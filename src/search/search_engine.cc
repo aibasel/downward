@@ -21,7 +21,9 @@ using utils::ExitCode;
 SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
-      state_registry(g_variable_domain, g_initial_state_data),
+      state_registry(*g_state_packer,
+                     *g_axiom_evaluator,
+                     g_initial_state_data),
       search_space(state_registry, OperatorCost(opts.get_enum("cost_type"))),
       cost_type(OperatorCost(opts.get_enum("cost_type"))),
       max_time(opts.get<double>("max_time")) {

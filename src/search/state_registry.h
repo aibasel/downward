@@ -9,6 +9,7 @@
 
 #include "utils/hash.h"
 
+#include <memory>
 #include <set>
 #include <unordered_set>
 
@@ -142,9 +143,11 @@ class StateRegistry {
                                StateIDSemanticHash,
                                StateIDSemanticEqual> StateIDSet;
 
-    const IntPacker state_packer;
-    AxiomEvaluator axiom_evaluator;
-    const std::vector<int> initial_state_data;
+    /* TODO: When we switch StateRegistry to the task interface, the next three
+             members should come from the task. */
+    const IntPacker &state_packer;
+    AxiomEvaluator &axiom_evaluator;
+    const std::vector<int> &initial_state_data;
 
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
@@ -155,7 +158,8 @@ class StateRegistry {
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
 public:
-    StateRegistry(const std::vector<int> &variable_domains,
+    StateRegistry(const IntPacker &state_packer,
+                  AxiomEvaluator &axiom_evaluator,
                   const std::vector<int> &initial_state_data);
     ~StateRegistry();
 
