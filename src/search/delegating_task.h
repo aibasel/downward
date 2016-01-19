@@ -50,6 +50,9 @@ public:
 
     virtual std::vector<int> get_initial_state_values() const override;
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
+    virtual std::vector<int> get_state_values(
+        const std::vector<int> &ancestor_state_values,
+        const AbstractTask *ancestor_task) const override;
 };
 
 #endif

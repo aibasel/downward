@@ -116,6 +116,15 @@ vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     return values;
 }
 
+vector<int> RootTask::get_state_values(
+    const vector<int> &ancestor_state_values,
+    const AbstractTask *ancestor_task) const {
+    if (this == ancestor_task) {
+        return ancestor_state_values;
+    }
+    ABORT("Invalid state conversion");
+}
+
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;

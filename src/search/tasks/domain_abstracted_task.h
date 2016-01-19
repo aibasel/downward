@@ -35,6 +35,9 @@ class DomainAbstractedTask : public DelegatingTask {
         return std::make_pair(fact.first, get_abstract_value(fact.first, fact.second));
     }
 
+    template <class T>
+    std::vector<int> translate_parent_state(const T &parent_state) const;
+
 public:
     DomainAbstractedTask(
         const std::shared_ptr<AbstractTask> &parent,
@@ -61,6 +64,9 @@ public:
     virtual std::vector<int> get_initial_state_values() const override;
     virtual std::vector<int> get_state_values(
         const GlobalState &global_state) const override;
+    virtual std::vector<int> get_state_values(
+        const std::vector<int> &ancestor_state_values,
+        const AbstractTask *ancestor_task) const override;
 };
 }
 
