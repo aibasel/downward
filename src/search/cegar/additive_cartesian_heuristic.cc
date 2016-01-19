@@ -45,7 +45,8 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
       use_general_costs(opts.get<bool>("use_general_costs")),
       pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
-      num_states(0) {
+      num_states(0),
+      initial_state(task_proxy.get_initial_state()) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
 
@@ -72,7 +73,7 @@ bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
            !timer->is_expired() &&
            utils::extra_memory_padding_is_reserved() &&
-           compute_heuristic(task_proxy.get_initial_state()) != DEAD_END;
+           compute_heuristic(initial_state) != DEAD_END;
 }
 
 void AdditiveCartesianHeuristic::build_abstractions(
