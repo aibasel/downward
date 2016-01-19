@@ -60,6 +60,7 @@ class CountdownTimer;
 
 namespace cegar {
 class CartesianHeuristic;
+class RefinementHierarchy;
 class SubtaskGenerator;
 
 /*
@@ -74,8 +75,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
-    // TODO: Store split trees or thin wrappers directly.
-    std::vector<std::unique_ptr<CartesianHeuristic>> heuristics;
+    std::vector<RefinementHierarchy> heuristics;
     int num_abstractions;
     int num_states;
     State initial_state;
