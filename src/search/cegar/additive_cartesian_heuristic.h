@@ -54,7 +54,7 @@ class CountdownTimer;
 }
 
 namespace cegar {
-class RefinementHierarchy;
+class CartesianHeuristicFunction;
 class SubtaskGenerator;
 
 /*
@@ -69,7 +69,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
-    std::vector<RefinementHierarchy> refinement_hierarchies;
+    std::vector<std::unique_ptr<CartesianHeuristicFunction>> heuristic_functions;
     int num_abstractions;
     int num_states;
     State initial_state;
