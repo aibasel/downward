@@ -1,6 +1,5 @@
 #include "cartesian_heuristic_function.h"
 
-
 using namespace std;
 
 namespace cegar {
