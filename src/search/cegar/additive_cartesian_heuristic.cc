@@ -1,7 +1,7 @@
 #include "additive_cartesian_heuristic.h"
 
 #include "abstraction.h"
-#include "cartesian_heuristic.h"
+#include "refinement_hierarchy.h"
 #include "subtask_generators.h"
 #include "utils.h"
 
@@ -98,9 +98,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
-            heuristics.push_back(
-                utils::make_unique_ptr<CartesianHeuristic>(
-                    abstraction.get_refinement_hierarchy()));
+            heuristics.push_back(abstraction.get_refinement_hierarchy());
         }
         if (!may_build_another_abstraction())
             break;
@@ -138,8 +136,8 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     int sum_h = 0;
-    for (std::unique_ptr<CartesianHeuristic> &heuristic : heuristics) {
-        int h = heuristic->get_value(state);
+    for (const RefinementHierarchy &heuristic : heuristics) {
+        int h = heuristic.get_node(state)->get_h_value();
         assert(h >= 0);
         if (h == INF)
             return DEAD_END;
