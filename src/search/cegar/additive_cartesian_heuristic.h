@@ -59,7 +59,6 @@ class CountdownTimer;
 }
 
 namespace cegar {
-class CartesianHeuristic;
 class RefinementHierarchy;
 class SubtaskGenerator;
 
