@@ -548,6 +548,10 @@ public:
         return (*this)[var.get_id()];
     }
 
+    const std::vector<int> get_values() const {
+        return values;
+    }
+
     State get_successor(OperatorProxy op) const {
         if (task->get_num_axioms() > 0) {
             ABORT("State::apply currently does not support axioms.");
@@ -605,6 +609,12 @@ public:
 
     State convert_global_state(const GlobalState &global_state) const {
         return State(*task, task->get_state_values(global_state));
+    }
+
+    State convert_local_state(const State &ancestor_state,
+                              const AbstractTask *ancestor_task) const {
+        return State(*task, task->get_state_values(ancestor_state.get_values(),
+                                                   ancestor_task));
     }
 
     const CausalGraph &get_causal_graph() const;
