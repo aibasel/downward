@@ -13,15 +13,20 @@
 
   AdditiveCartesianHeuristic
     Get subtasks from SubtaskGenerators, adjust their costs by wrapping
-    them in ModifiedOperatorCostsTasks, compute Abstractions, store their
-    RefinementHierarchies and compute overall heuristic by adding
-    heuristic values of all RefinementHierarchies.
+    them in ModifiedOperatorCostsTasks, compute Abstractions, move
+    RefinementHierarchies from Abstractions to CartesianHeuristicFunctions,
+    store CartesianHeuristicFunctions and compute overall heuristic by adding
+    heuristic values of all CartesianHeuristicFunctions.
 
     SubtaskGenerator
       Create focused subtasks. TaskDuplicator returns copies of the
       original task. GoalDecomposition uses ModifiedGoalsTask to set a
       single goal fact. LandmarkDecomposition nests ModifiedGoalsTask
       and DomainAbstractedTask to focus on a single landmark fact.
+
+    CartesianHeuristic
+      Store RefinementHierarchy for looking up heuristic values
+      efficiently.
 
   Abstraction
     Store the set of AbstractStates, use AbstractSearch to find

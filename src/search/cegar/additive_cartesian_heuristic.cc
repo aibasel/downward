@@ -2,7 +2,6 @@
 
 #include "abstraction.h"
 #include "cartesian_heuristic_function.h"
-#include "refinement_hierarchy.h"
 #include "subtask_generators.h"
 #include "utils.h"
 
@@ -128,8 +127,8 @@ void AdditiveCartesianHeuristic::initialize() {
 void AdditiveCartesianHeuristic::print_statistics() const {
     g_log << "Done initializing additive Cartesian heuristic" << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
-    cout << "Refinement hierarchies stored: " << heuristic_functions.size()
-         << endl;
+    cout << "Cartesian heuristic functions stored: "
+         << heuristic_functions.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
     cout << endl;
 }
