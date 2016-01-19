@@ -98,7 +98,8 @@ void AdditiveCartesianHeuristic::build_abstractions(
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
-            heuristics.push_back(abstraction.get_refinement_hierarchy());
+            refinement_hierarchies.push_back(
+                abstraction.get_refinement_hierarchy());
         }
         if (!may_build_another_abstraction())
             break;
@@ -124,7 +125,8 @@ void AdditiveCartesianHeuristic::initialize() {
 void AdditiveCartesianHeuristic::print_statistics() const {
     g_log << "Done initializing additive Cartesian heuristic" << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
-    cout << "Cartesian heuristics stored: " << heuristics.size() << endl;
+    cout << "Refinement hierarchies stored: " << refinement_hierarchies.size()
+         << endl;
     cout << "Cartesian states: " << num_states << endl;
     cout << endl;
 }
@@ -136,8 +138,8 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     int sum_h = 0;
-    for (const RefinementHierarchy &heuristic : heuristics) {
-        int h = heuristic.get_node(state)->get_h_value();
+    for (const RefinementHierarchy &refinement_hierarchy : refinement_hierarchies) {
+        int h = refinement_hierarchy.get_node(state)->get_h_value();
         assert(h >= 0);
         if (h == INF)
             return DEAD_END;
