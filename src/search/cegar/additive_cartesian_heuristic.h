@@ -75,7 +75,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
-    std::vector<RefinementHierarchy> heuristics;
+    std::vector<RefinementHierarchy> refinement_hierarchies;
     int num_abstractions;
     int num_states;
     State initial_state;
