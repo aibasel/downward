@@ -21,12 +21,12 @@ int IPCMaxHeuristic::compute_heuristic(const GlobalState &state) {
     return value;
 }
 
-bool IPCMaxHeuristic::reach_state(const GlobalState &parent_state,
-                                  const GlobalOperator &op,
-                                  const GlobalState &state) {
+bool IPCMaxHeuristic::notify_state_transition(const GlobalState &parent_state,
+                                              const GlobalOperator &op,
+                                              const GlobalState &state) {
     bool h_dirty = false;
     for (Heuristic *heuristic : heuristics) {
-        if (heuristic->reach_state(parent_state, op, state)) {
+        if (heuristic->notify_state_transition(parent_state, op, state)) {
             h_dirty = true;
             // Don't break: we must call reached_state everywhere.
         }

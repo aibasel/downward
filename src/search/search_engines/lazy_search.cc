@@ -180,7 +180,8 @@ SearchStatus LazySearch::step() {
 
         if (current_operator) {
             for (Heuristic *heuristic : heuristics)
-                heuristic->reach_state(parent_state, *current_operator, current_state);
+                heuristic->notify_state_transition(
+                    parent_state, *current_operator, current_state);
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {

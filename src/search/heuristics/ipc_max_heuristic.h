@@ -18,9 +18,9 @@ public:
     explicit IPCMaxHeuristic(const Options &options);
     virtual ~IPCMaxHeuristic() = default;
 
-    virtual bool reach_state(const GlobalState &parent_state,
-                             const GlobalOperator &op,
-                             const GlobalState &state) override;
+    virtual bool notify_state_transition(const GlobalState &parent_state,
+                                         const GlobalOperator &op,
+                                         const GlobalState &state) override;
 };
 }
 

@@ -135,11 +135,11 @@ SearchStatus EagerSearch::step() {
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
             /*
-              Note: we must call reach_state for each heuristic, so
+              Note: we must call notify_state_transition for each heuristic, so
               don't break out of the for loop early.
             */
             for (Heuristic *heuristic : heuristics) {
-                heuristic->reach_state(s, *op, succ_state);
+                heuristic->notify_state_transition(s, *op, succ_state);
             }
         }
 

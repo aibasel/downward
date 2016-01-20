@@ -89,7 +89,7 @@ EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 void EnforcedHillClimbingSearch::reach_state(
     const GlobalState &parent, const GlobalOperator &op, const GlobalState &state) {
     for (Heuristic *heur : heuristics) {
-        heur->reach_state(parent, op, state);
+        heur->notify_state_transition(parent, op, state);
     }
 }
 
