@@ -101,7 +101,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
             heuristic_functions.push_back(
                 utils::make_unique_ptr<CartesianHeuristicFunction>(
                     subtask,
-                    abstraction.get_refinement_hierarchy()));
+                    abstraction.extract_refinement_hierarchy()));
         }
         if (!may_build_another_abstraction())
             break;
