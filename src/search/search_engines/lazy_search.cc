@@ -59,6 +59,10 @@ void LazySearch::initialize() {
 
     heuristics.assign(hset.begin(), hset.end());
     assert(!heuristics.empty());
+    GlobalState initial_state = state_registry.get_initial_state();
+    for (Heuristic *heuristic : heuristics) {
+        heuristic->notify_initial_state(initial_state);
+    }
 }
 
 void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {

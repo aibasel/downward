@@ -18,9 +18,8 @@ vector<bool> &LandmarkStatusManager::get_reached_landmarks(const GlobalState &st
 }
 
 
-void LandmarkStatusManager::set_landmarks_for_initial_state() {
-    // TODO use correct state registry here.
-    const GlobalState &initial_state = hacked_initial_state();
+void LandmarkStatusManager::set_landmarks_for_initial_state(
+    const GlobalState &initial_state) {
     vector<bool> &reached = get_reached_landmarks(initial_state);
     reached.resize(lm_graph.number_of_landmarks());
     //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;

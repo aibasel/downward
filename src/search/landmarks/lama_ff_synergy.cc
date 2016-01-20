@@ -57,6 +57,10 @@ public:
         return synergy->lama_result;
     }
 
+    virtual void notify_initial_state(const GlobalState &initial_state) override {
+        synergy->lama_notify_initial_state(initial_state);
+    }
+
     virtual bool notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state) override {
@@ -126,6 +130,10 @@ void LamaFFSynergy::compute_heuristics(EvaluationContext &eval_context) {
     exploration->set_recompute_heuristic();
     lama_result = lama_heuristic->compute_result(eval_context);
     ff_result = exploration->compute_result(eval_context);
+}
+
+void LamaFFSynergy::lama_notify_initial_state(const GlobalState &initial_state) {
+    lama_heuristic->notify_initial_state(initial_state);
 }
 
 bool LamaFFSynergy::lama_notify_state_transition(

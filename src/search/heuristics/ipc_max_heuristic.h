@@ -18,6 +18,7 @@ public:
     explicit IPCMaxHeuristic(const Options &options);
     virtual ~IPCMaxHeuristic() = default;
 
+    virtual void notify_initial_state(const GlobalState &initial_state) override;
     virtual bool notify_state_transition(const GlobalState &parent_state,
                                          const GlobalOperator &op,
                                          const GlobalState &state) override;

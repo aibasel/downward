@@ -38,6 +38,7 @@ class LamaFFSynergy {
     EvaluationResult lama_result;
     EvaluationResult ff_result;
 
+    void lama_notify_initial_state(const GlobalState &initial_state);
     bool lama_notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state);
