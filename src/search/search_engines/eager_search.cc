@@ -57,6 +57,10 @@ void EagerSearch::initialize() {
     assert(!heuristics.empty());
 
     const GlobalState &initial_state = state_registry.get_initial_state();
+    for (Heuristic *heuristic : heuristics) {
+        heuristic->notify_initial_state(initial_state);
+    }
+
     // Note: we consider the initial state as reached by a preferred
     // operator.
     EvaluationContext eval_context(initial_state, 0, true, &statistics);

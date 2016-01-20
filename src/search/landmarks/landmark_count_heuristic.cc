@@ -53,8 +53,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
         use_cost_sharing = false;
         lm_cost_assignment = 0;
     }
-
-    lm_status_manager.set_landmarks_for_initial_state();
 }
 
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
@@ -233,6 +231,10 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const GlobalState &s,
             return !check_node_orders_disobeyed(lm, reached);
     }
     return lm.is_goal() && !lm.is_true_in_state(s);
+}
+
+void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_state) {
+    lm_status_manager.set_landmarks_for_initial_state(initial_state);
 }
 
 bool LandmarkCountHeuristic::notify_state_transition(

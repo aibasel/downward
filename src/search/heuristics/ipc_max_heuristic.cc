@@ -21,6 +21,12 @@ int IPCMaxHeuristic::compute_heuristic(const GlobalState &state) {
     return value;
 }
 
+void IPCMaxHeuristic::notify_initial_state(const GlobalState &initial_state) {
+    for (Heuristic *heuristic : heuristics) {
+        heuristic->notify_initial_state(initial_state);
+    }
+}
+
 bool IPCMaxHeuristic::notify_state_transition(const GlobalState &parent_state,
                                               const GlobalOperator &op,
                                               const GlobalState &state) {
