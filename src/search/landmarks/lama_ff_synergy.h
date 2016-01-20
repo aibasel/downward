@@ -38,7 +38,7 @@ class LamaFFSynergy {
     EvaluationResult lama_result;
     EvaluationResult ff_result;
 
-    bool lama_reach_state(
+    bool lama_notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state);
 

@@ -235,8 +235,9 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const GlobalState &s,
     return lm.is_goal() && !lm.is_true_in_state(s);
 }
 
-bool LandmarkCountHeuristic::reach_state(const GlobalState &parent_state,
-                                         const GlobalOperator &op, const GlobalState &state) {
+bool LandmarkCountHeuristic::notify_state_transition(
+    const GlobalState &parent_state, const GlobalOperator &op,
+    const GlobalState &state) {
     lm_status_manager.update_reached_lms(parent_state, op, state);
     /* TODO: The return value "true" signals that the LM set of this state
              has changed and the h value should be recomputed. It's not

@@ -39,7 +39,7 @@ void Heuristic::set_preferred(OperatorProxy op) {
     set_preferred(op.get_global_operator());
 }
 
-bool Heuristic::reach_state(
+bool Heuristic::notify_state_transition(
     const GlobalState & /*parent_state*/,
     const GlobalOperator & /*op*/,
     const GlobalState & /*state*/) {
