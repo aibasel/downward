@@ -12,7 +12,7 @@ CartesianHeuristicFunction::CartesianHeuristicFunction(
 }
 
 int CartesianHeuristicFunction::get_value(const State &parent_state) const {
-    State local_state = task_proxy.convert_local_state(parent_state);
+    State local_state = task_proxy.convert_ancestor_state(parent_state);
     return refinement_hierarchy.get_node(local_state)->get_h_value();
 }
 }
