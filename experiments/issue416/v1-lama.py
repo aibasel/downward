@@ -13,7 +13,7 @@ def main(revisions=None):
     configs = {
         IssueConfig('seq_sat_lama_2011', [], driver_options=['--alias', 'seq-sat-lama-2011']),
         IssueConfig('lama_first', [], driver_options=['--alias', 'lama-first']),
-        IssueConfig('ehc_lm_zhu', ['--search', 'ehc(lmcount(lm_zg()))']
+        IssueConfig('ehc_lm_zhu', ['--search', 'ehc(lmcount(lm_zg()))']),
     }
 
     exp = IssueExperiment(
