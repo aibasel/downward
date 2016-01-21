@@ -21,7 +21,7 @@ public:
         RefinementHierarchy &&hierarchy);
     ~CartesianHeuristicFunction() = default;
 
-    int get_value(const State &parent_state, const AbstractTask *parent_task) const;
+    int get_value(const State &parent_state) const;
 };
 }
 
