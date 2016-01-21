@@ -565,12 +565,13 @@ public:
     }
 
     /*
-      Convert this state into a state of target_task which must be a
+      Convert this state into a state of descendent_task which must be a
       transformation of this->task.
-      See TaskProxy::convert_local_state for details.
+      See TaskProxy::convert_ancestor_state for details.
     */
-    State convert_to_task(const AbstractTask *target_task) const {
-        return State(*target_task, target_task->get_state_values(values, task));
+    State convert_to_descendent_task(const AbstractTask *descendent_task) const {
+        return State(*descendent_task,
+                     descendent_task->get_state_values(values, task));
     }
 };
 
@@ -624,8 +625,8 @@ public:
       "ancestor_state.task" is not found while walking up the transformation
       hierarchy.
     */
-    State convert_local_state(const State &ancestor_state) const {
-        return ancestor_state.convert_to_task(task);
+    State convert_ancestor_state(const State &ancestor_state) const {
+        return ancestor_state.convert_to_descendent_task(task);
     }
 
     const CausalGraph &get_causal_graph() const;
