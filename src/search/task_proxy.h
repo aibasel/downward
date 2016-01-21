@@ -564,6 +564,11 @@ public:
         return State(*task, std::move(new_values));
     }
 
+    /*
+      Convert this state into a state of target_task which must be a
+      transformation of this->task.
+      See TaskProxy::convert_local_state for details.
+    */
     State convert_to_task(const AbstractTask *target_task) const {
         return State(*target_task, target_task->get_state_values(values, task));
     }
@@ -611,6 +616,14 @@ public:
         return State(*task, task->get_state_values(global_state));
     }
 
+    /*
+      Convert a state from an ancestor task into a state of this task.
+      The given state has to come from a task that is an ancestor of this task
+      in the sense that this task is the result of a series of task
+      transformations on the ancestor task. The function aborts if
+      "ancestor_state.task" is not found while walking up the transformation
+      hierarchy.
+    */
     State convert_local_state(const State &ancestor_state) const {
         return ancestor_state.convert_to_task(task);
     }
