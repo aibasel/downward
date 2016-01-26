@@ -58,7 +58,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state) = 0;
 public:
-    RelaxationHeuristic(const Options &options);
+    RelaxationHeuristic(const options::Options &options);
     virtual ~RelaxationHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };

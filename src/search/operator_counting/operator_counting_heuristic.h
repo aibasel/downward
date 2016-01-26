@@ -8,7 +8,9 @@
 #include <memory>
 #include <vector>
 
+namespace options {
 class Options;
+}
 
 namespace operator_counting {
 class ConstraintGenerator;
@@ -21,7 +23,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state) override;
     int compute_heuristic(const State &state);
 public:
-    explicit OperatorCountingHeuristic(const Options &opts);
+    explicit OperatorCountingHeuristic(const options::Options &opts);
     ~OperatorCountingHeuristic();
 };
 }

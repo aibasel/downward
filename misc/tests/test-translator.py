@@ -58,8 +58,10 @@ def translate_task(python, python_version, task_file):
         get_task_name(task_file), python, python_version))
     sys.stdout.flush()
     cmd = [python, DRIVER, "--translate", task_file]
+    env = os.environ.copy()
+    env["PYTHONHASHSEED"] = "random"
     try:
-        output = subprocess.check_output(cmd, env={"PYTHONHASHSEED": "random"})
+        output = subprocess.check_output(cmd, env=env)
     except OSError as err:
         sys.exit("Call failed: {}\n{}".format(" ".join(cmd), err))
     output = str(output)

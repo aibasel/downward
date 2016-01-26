@@ -92,7 +92,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &global_state);
 
 public:
-    explicit AdditiveCartesianHeuristic(const Options &options);
+    explicit AdditiveCartesianHeuristic(const options::Options &options);
     ~AdditiveCartesianHeuristic() = default;
 };
 }

@@ -5,14 +5,16 @@
 
 #include <vector>
 
+namespace options {
 class Options;
+}
 
 namespace sum_evaluator {
 class SumEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) override;
 public:
-    explicit SumEvaluator(const Options &opts);
+    explicit SumEvaluator(const options::Options &opts);
     explicit SumEvaluator(const std::vector<ScalarEvaluator *> &evals);
     virtual ~SumEvaluator() override;
 };

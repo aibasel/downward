@@ -4,7 +4,7 @@
 #include <iosfwd>
 #include <string>
 
-
+namespace options {
 struct Bounds {
     std::string min;
     std::string max;
@@ -24,5 +24,6 @@ public:
 
     friend std::ostream &operator<<(std::ostream &out, const Bounds &bounds);
 };
+}
 
 #endif

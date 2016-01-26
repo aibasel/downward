@@ -5,7 +5,9 @@
 
 #include <vector>
 
+namespace options {
 class Options;
+}
 
 namespace ipc_max_heuristic {
 class IPCMaxHeuristic : public Heuristic {
@@ -15,7 +17,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &state) override;
 
 public:
-    explicit IPCMaxHeuristic(const Options &options);
+    explicit IPCMaxHeuristic(const options::Options &options);
     virtual ~IPCMaxHeuristic() = default;
 
     virtual bool reach_state(const GlobalState &parent_state,
