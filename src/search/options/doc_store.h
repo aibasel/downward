@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-
+namespace options {
 typedef std::vector<std::pair<std::string, std::string>> ValueExplanations;
 struct ArgumentInfo {
     ArgumentInfo(
@@ -110,5 +110,6 @@ private:
     DocStore() = default;
     std::map<std::string, DocStruct> registered;
 };
+}
 
 #endif

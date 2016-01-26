@@ -4,8 +4,8 @@
 #include <iosfwd>
 #include <string>
 
+namespace options {
 struct DocStruct;
-
 
 class DocPrinter {
 public:
@@ -58,5 +58,6 @@ protected:
 private:
     bool print_all; //if this is false, notes, properties and language_features are omitted
 };
+}
 
 #endif

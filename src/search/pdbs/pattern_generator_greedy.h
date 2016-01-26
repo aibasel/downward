@@ -3,13 +3,15 @@
 
 #include "pattern_generator.h"
 
+namespace options {
 class Options;
+}
 
 namespace pdbs {
 class PatternGeneratorGreedy : public PatternGenerator {
     int max_states;
 public:
-    explicit PatternGeneratorGreedy(const Options &opts);
+    explicit PatternGeneratorGreedy(const options::Options &opts);
     explicit PatternGeneratorGreedy(int max_states);
     virtual ~PatternGeneratorGreedy() = default;
 

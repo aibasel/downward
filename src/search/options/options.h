@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-
+namespace options {
 //Options is just a wrapper for map<string, Any>
 class Options {
 public:
@@ -95,5 +95,6 @@ private:
     std::string unparsed_config;
     bool help_mode;
 };
+}
 
 #endif

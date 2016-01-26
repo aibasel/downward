@@ -49,7 +49,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
 public:
-    ContextEnhancedAdditiveHeuristic(const Options &opts);
+    ContextEnhancedAdditiveHeuristic(const options::Options &opts);
     ~ContextEnhancedAdditiveHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };

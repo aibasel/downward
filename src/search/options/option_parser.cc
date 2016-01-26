@@ -53,6 +53,7 @@ class PatternCollectionGenerator;
 class PatternGenerator;
 }
 
+namespace options {
 const string OptionParser::NONE = "<none>";
 
 
@@ -639,4 +640,5 @@ bool OptionParser::help_mode() const {
 
 const ParseTree *OptionParser::get_parse_tree() {
     return &parse_tree;
+}
 }

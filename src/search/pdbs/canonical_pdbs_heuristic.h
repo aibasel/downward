@@ -19,7 +19,7 @@ protected:
     int compute_heuristic(const State &state) const;
 
 public:
-    explicit CanonicalPDBsHeuristic(const Options &opts);
+    explicit CanonicalPDBsHeuristic(const options::Options &opts);
     virtual ~CanonicalPDBsHeuristic() = default;
 };
 }

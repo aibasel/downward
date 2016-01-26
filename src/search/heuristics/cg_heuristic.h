@@ -34,7 +34,7 @@ protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &state);
 public:
-    CGHeuristic(const Options &opts);
+    CGHeuristic(const options::Options &opts);
     ~CGHeuristic();
     virtual bool dead_ends_are_reliable() const;
 };

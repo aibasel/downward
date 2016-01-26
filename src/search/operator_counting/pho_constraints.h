@@ -7,7 +7,9 @@
 
 #include <memory>
 
+namespace options {
 class Options;
+}
 
 namespace pdbs {
 class PatternCollectionGenerator;
@@ -20,7 +22,7 @@ class PhOConstraints : public ConstraintGenerator {
     int constraint_offset;
     std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
-    explicit PhOConstraints(const Options &opts);
+    explicit PhOConstraints(const options::Options &opts);
     ~PhOConstraints() = default;
 
     virtual void initialize_constraints(

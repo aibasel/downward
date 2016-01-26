@@ -5,4 +5,8 @@
    option parser code into a subdirectory. */
 #include "options/plugin.h"
 
+using options::Plugin;
+using options::PluginShared;
+using options::PluginTypePlugin;
+
 #endif
