@@ -13,6 +13,12 @@ namespace options {
 class Options;
 }
 
+struct Fact {
+    int var;
+    int value;
+    Fact(int var, int value) : var(var), value(value) {}
+};
+
 class AbstractTask {
 public:
     AbstractTask() = default;

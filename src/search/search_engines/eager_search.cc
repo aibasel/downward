@@ -7,6 +7,7 @@
 #include "../heuristic.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../pruning_method.h"
 #include "../successor_generator.h"
 
 #include "../open_lists/open_list_factory.h"
@@ -26,7 +27,8 @@ EagerSearch::EagerSearch(const Options &opts)
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
-      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")) {
+      preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
+      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
 
 void EagerSearch::initialize() {
@@ -87,6 +89,7 @@ void EagerSearch::print_checkpoint_line(int g) const {
 void EagerSearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
+    pruning_method->print_statistics();
 }
 
 SearchStatus EagerSearch::step() {
@@ -104,6 +107,13 @@ SearchStatus EagerSearch::step() {
     set<const GlobalOperator *> preferred_ops;
 
     g_successor_generator->generate_applicable_ops(s, applicable_ops);
+
+    /*
+      TODO: When preferred operators are in use, a preferred operator will be
+      considered by the preferred operator queues even when it is pruned.
+    */
+    pruning_method->prune_operators(s, applicable_ops);
+
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
     for (Heuristic *heur : preferred_operator_heuristics) {
@@ -307,6 +317,17 @@ void EagerSearch::update_f_value_statistics(const SearchNode &node) {
     }
 }
 
+/* TODO: merge this into SearchEngine::add_options_to_parser when all search
+         engines support pruning. */
+void add_pruning_option(OptionParser &parser) {
+    parser.add_option<shared_ptr<PruningMethod>>(
+        "pruning",
+        "Pruning methods can prune or reorder the set of applicable operators in "
+        "each state and thereby influence the number and order of successor states "
+        "that are considered.",
+        "null()");
+}
+
 static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Eager best-first search", "");
 
@@ -321,6 +342,8 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.add_list_option<Heuristic *>(
         "preferred",
         "use preferred operators of these heuristics", "[]");
+
+    add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -356,6 +379,8 @@ static SearchEngine *_parse_astar(OptionParser &parser) {
     parser.add_option<ScalarEvaluator *>("eval", "evaluator for h-value");
     parser.add_option<bool>("mpd",
                             "use multi-path dependence (LM-A*)", "false");
+
+    add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
     Options opts = parser.parse();
 
@@ -420,6 +445,8 @@ static SearchEngine *_parse_greedy(OptionParser &parser) {
     parser.add_option<int>(
         "boost",
         "boost value for preferred operator open lists", "0");
+
+    add_pruning_option(parser);
     SearchEngine::add_options_to_parser(parser);
 
     Options opts = parser.parse();
