@@ -28,8 +28,6 @@ EagerSearch::EagerSearch(const Options &opts)
                 create_state_open_list()),
       f_evaluator(opts.get<ScalarEvaluator *>("f_eval", nullptr)),
       preferred_operator_heuristics(opts.get_list<Heuristic *>("preferred")),
-      /* TODO: In the future, we might want to accept nullptr as a
-         default value and remove the need for NullPruningMethod this way. */
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
 }
 
@@ -112,7 +110,7 @@ SearchStatus EagerSearch::step() {
 
     /*
       TODO: When preferred operators are in use, a preferred operator will be
-      considered by the preferred operator queues even when they are pruned.
+      considered by the preferred operator queues even when it is pruned.
     */
     pruning_method->prune_operators(s, applicable_ops);
 
