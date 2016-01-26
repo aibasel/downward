@@ -27,6 +27,7 @@ set(CORE_SOURCES
         option_parser_util.h
         per_state_information.cc
         plugin.h
+        pruning_method.cc
         priority_queue.cc
         root_task.cc
         sampling.cc
@@ -190,6 +191,37 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME NULL_PRUNING_METHOD
+    HELP "Pruning method that does nothing"
+    SOURCES
+        pruning/null_pruning_method.cc
+)
+
+fast_downward_plugin(
+    NAME STUBBORN_SETS
+    HELP "Base class for all stubborn set partial order reduction methods"
+    SOURCES
+        pruning/stubborn_sets.cc
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
+    NAME STUBBORN_SETS_SIMPLE
+    HELP "Stubborn sets simple"
+    SOURCES
+        pruning/stubborn_sets_simple.cc
+    DEPENDS STUBBORN_SETS
+)
+
+fast_downward_plugin(
+    NAME StubbornSetsEC
+    HELP "Stubborn set method that dominates expansion core"
+    SOURCES
+        pruning/stubborn_sets_ec.cc
+    DEPENDS STUBBORN_SETS
+)
+
+fast_downward_plugin(
     NAME SEARCH_COMMON
     HELP "Basic classes used for all search engines"
     SOURCES
@@ -203,7 +235,7 @@ fast_downward_plugin(
     HELP "Eager search algorithm"
     SOURCES
         search_engines/eager_search.cc
-    DEPENDS SEARCH_COMMON
+    DEPENDS SEARCH_COMMON NULL_PRUNING_METHOD
 )
 
 fast_downward_plugin(
