@@ -117,11 +117,7 @@ AbstractState *AbstractSearch::astar_search(
                 }
                 assert(f >= 0);
                 open_queue.push(f, successor);
-                // Work around the fact that OperatorProxy has no default constructor.
-                auto it = prev_arc.find(successor);
-                if (it != prev_arc.end())
-                    prev_arc.erase(it);
-                prev_arc.insert(make_pair(successor, Arc(op_id, state)));
+                successor->get_search_info().set_incoming_arc(Arc(op_id, state));
             }
         }
     }
@@ -131,7 +127,7 @@ AbstractState *AbstractSearch::astar_search(
 void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) {
     AbstractState *current = goal;
     while (current != init) {
-        Arc &prev = prev_arc.at(current);
+        const Arc &prev = current->get_search_info().get_incoming_arc();
         int prev_op_id = prev.first;
         AbstractState *prev_state = prev.second;
         solution.push_front(Arc(prev_op_id, current));
