@@ -20,7 +20,6 @@ AbstractSearch::AbstractSearch(
 }
 
 void AbstractSearch::reset() {
-    g_values.clear();
     open_queue.clear();
     for (AbstractState *state : states) {
         state->get_search_info().reset();
@@ -30,7 +29,7 @@ void AbstractSearch::reset() {
 
 bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
     reset();
-    g_values[init] = 0;
+    init->get_search_info().set_g_value(0);
     open_queue.push(init->get_h_value(), init);
     AbstractState *goal = astar_search(true, true, &goals);
     bool has_found_solution = static_cast<bool>(goal);
@@ -43,7 +42,7 @@ bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
 void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
     reset();
     for (AbstractState *goal : goals) {
-        g_values[goal] = 0;
+        goal->get_search_info().set_g_value(0);
         open_queue.push(0, goal);
     }
     astar_search(false, false);
@@ -52,17 +51,14 @@ void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
 vector<int> AbstractSearch::get_needed_costs(AbstractState *init, int num_ops) {
     reset();
     vector<int> needed_costs(num_ops, -MAX_COST_VALUE);
-    g_values[init] = 0;
+    init->get_search_info().set_g_value(0);
     open_queue.push(0, init);
     astar_search(true, false, nullptr, &needed_costs);
     return needed_costs;
 }
 
 int AbstractSearch::get_g_value(AbstractState *state) const {
-    auto it = g_values.find(state);
-    if (it == g_values.end())
-        return INF;
-    return it->second;
+    return state->get_search_info().get_g_value();
 }
 
 AbstractState *AbstractSearch::astar_search(
@@ -112,7 +108,7 @@ AbstractState *AbstractSearch::astar_search(
             assert(succ_g >= 0);
 
             if (succ_g < get_g_value(successor)) {
-                g_values[successor] = succ_g;
+                successor->get_search_info().set_g_value(succ_g);
                 int f = succ_g;
                 if (use_h) {
                     int h = successor->get_h_value();

@@ -7,7 +7,6 @@
 #include "../priority_queue.h"
 
 #include <deque>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -23,7 +22,6 @@ class AbstractSearch {
 
     AdaptiveQueue<AbstractState *> open_queue;
     Solution solution;
-    std::unordered_map<AbstractState *, int> g_values;
 
     void reset();
 
