@@ -18,13 +18,10 @@ using Solution = std::deque<Arc>;
 
 class AbstractSearch {
     const std::vector<int> operator_costs;
+    AbstractStates &states;
     const bool use_general_costs;
 
     AdaptiveQueue<AbstractState *> open_queue;
-    /* TODO: Storing paths and g-values in unordered_maps is expensive.
-       We should store them elsewhere. If we stick with unordered_maps,
-       we should use one unordered_map for both infos. */
-    std::unordered_map<AbstractState *, Arc> prev_arc;
     Solution solution;
     std::unordered_map<AbstractState *, int> g_values;
 
@@ -40,7 +37,10 @@ class AbstractSearch {
         std::vector<int> *needed_costs = nullptr);
 
 public:
-    AbstractSearch(std::vector<int> &&operator_costs, bool use_general_costs);
+    AbstractSearch(
+        std::vector<int> &&operator_costs,
+        AbstractStates &states,
+        bool use_general_costs);
     ~AbstractSearch() = default;
 
     bool find_solution(AbstractState *init, AbstractStates &goals);
