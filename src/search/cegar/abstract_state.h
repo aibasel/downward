@@ -20,6 +20,27 @@ using Arcs = std::vector<Arc>;
 // To save space we store self-loops (operator indices) separately.
 using Loops = std::vector<int>;
 
+struct AbstractSearchInfo {
+    int g;
+    Arc incoming_arc;
+
+    AbstractSearchInfo() {
+        reset();
+    }
+
+    AbstractSearchInfo(int g, const Arc &incoming_arc)
+      : g(g),
+        incoming_arc(incoming_arc) {
+    }
+
+    ~AbstractSearchInfo() = default;
+
+    void reset() {
+        g = std::numeric_limits<int>::max();
+        incoming_arc = Arc(-1, nullptr);
+    }
+};
+
 class AbstractState {
 private:
     // Since the abstraction owns the state we don't need AbstractTask.
@@ -37,6 +58,8 @@ private:
 
     // Self-loops.
     Loops loops;
+
+    AbstractSearchInfo search_info;
 
     // Construct instances with factory methods.
     AbstractState(
