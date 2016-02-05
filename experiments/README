@@ -4,7 +4,7 @@ Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
 the creation of experiments. We recommend using common_setup.py (and
-related files for usage) from issue604 for new experiments since it is
+related files for usage) from issue633 for new experiments since it is
 the most recent version that uses lab's new FastDownwardExperiment
 class.
 
