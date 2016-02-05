@@ -11,15 +11,20 @@ namespace cegar {
 static const int MAX_COST_VALUE = 100000000;
 
 AbstractSearch::AbstractSearch(
-    vector<int> &&operator_costs, bool use_general_costs)
+    vector<int> &&operator_costs,
+    AbstractStates &states,
+    bool use_general_costs)
     : operator_costs(move(operator_costs)),
+      states(states),
       use_general_costs(use_general_costs) {
 }
 
 void AbstractSearch::reset() {
     g_values.clear();
     open_queue.clear();
-    prev_arc.clear();
+    for (AbstractState *state : states) {
+        state->get_search_info().reset();
+    }
     solution.clear();
 }
 

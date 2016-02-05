@@ -74,7 +74,10 @@ Abstraction::Abstraction(
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
-      abstract_search(get_operator_costs(task_proxy), use_general_costs),
+      abstract_search(
+          get_operator_costs(task_proxy), 
+          states, 
+          use_general_costs),
       split_selector(task, pick),
       timer(max_time),
       init(nullptr),
