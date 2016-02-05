@@ -82,8 +82,8 @@ AbstractState *AbstractSearch::astar_search(
         if (needed_costs) {
             /* To prevent negative cost cycles, all operators inducing
                self-loops must have non-negative costs. */
-            for (OperatorProxy op : state->get_loops())
-                (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], 0);
+            for (int op_id : state->get_loops())
+                (*needed_costs)[op_id] = max((*needed_costs)[op_id], 0);
         }
         const Arcs &successors = (forward) ? state->get_outgoing_arcs() :
                                  state->get_incoming_arcs();

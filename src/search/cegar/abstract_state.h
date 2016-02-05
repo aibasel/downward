@@ -3,15 +3,11 @@
 
 #include "domains.h"
 
+#include "../task_proxy.h"
+
 #include <string>
 #include <utility>
 #include <vector>
-
-class ConditionsProxy;
-class FactProxy;
-class OperatorProxy;
-class State;
-class TaskProxy;
 
 namespace cegar {
 class AbstractState;
@@ -20,10 +16,12 @@ class Node;
 // TODO: Use operator indices instead of proxies to save space.
 using Arc = std::pair<OperatorProxy, AbstractState *>;
 using Arcs = std::vector<Arc>;
-using Loops = std::vector<OperatorProxy>;
+using Loops = std::vector<int>;
 
 class AbstractState {
 private:
+    TaskProxy task_proxy;
+
     // Abstract domains for all variables.
     const Domains domains;
 
@@ -38,10 +36,11 @@ private:
     Loops loops;
 
     // Construct instances with factory methods.
-    AbstractState(const Domains &domains, Node *node);
+    AbstractState(
+        const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
     void add_arc(OperatorProxy op, AbstractState *other);
-    void add_loop(OperatorProxy op);
+    void add_loop(int op_id);
 
     void remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other);
     void remove_incoming_arc(OperatorProxy op, AbstractState *other);

@@ -3,8 +3,6 @@
 #include "refinement_hierarchy.h"
 #include "utils.h"
 
-#include "../task_proxy.h"
-
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
@@ -12,13 +10,16 @@
 using namespace std;
 
 namespace cegar {
-AbstractState::AbstractState(const Domains &domains, Node *node)
-    : domains(domains),
+AbstractState::AbstractState(
+    const TaskProxy &task_proxy, const Domains &domains, Node *node)
+    : task_proxy(task_proxy),
+      domains(domains),
       node(node) {
 }
 
 AbstractState::AbstractState(AbstractState &&other)
-    : domains(move(other.domains)),
+    : task_proxy(move(other.task_proxy)),
+      domains(move(other.domains)),
       node(move(other.node)),
       incoming_arcs(move(other.incoming_arcs)),
       outgoing_arcs(move(other.outgoing_arcs)),
@@ -46,8 +47,8 @@ void AbstractState::add_arc(OperatorProxy op, AbstractState *other) {
     other->incoming_arcs.push_back(Arc(op, this));
 }
 
-void AbstractState::add_loop(OperatorProxy op) {
-    loops.push_back(op);
+void AbstractState::add_loop(int op_id) {
+    loops.push_back(op_id);
 }
 
 void AbstractState::remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other) {
@@ -139,23 +140,24 @@ void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
     /* Assume that the abstract state v has been split into v1 and v2.
        Now for all self-loops v->v we need to add one or two of the
        transitions v1->v1, v1->v2, v2->v1 and v2->v2. */
-    for (OperatorProxy op : loops) {
+    for (int op_id : loops) {
+        OperatorProxy op = task_proxy.get_operators()[op_id];
         int pre = get_pre(op, var);
         int post = get_post(op, var);
         if (pre == UNDEFINED_VALUE) {
             // op has no precondition on var --> it must start in v1 and v2.
             if (post == UNDEFINED_VALUE) {
                 // op has no effect on var --> it must end in v1 and v2.
-                v1->add_loop(op);
-                v2->add_loop(op);
+                v1->add_loop(op_id);
+                v2->add_loop(op_id);
             } else if (v2->domains.test(var, post)) {
                 // op must end in v2.
                 v1->add_arc(op, v2);
-                v2->add_loop(op);
+                v2->add_loop(op_id);
             } else {
                 // op must end in v1.
                 assert(v1->domains.test(var, post));
-                v1->add_loop(op);
+                v1->add_loop(op_id);
                 v2->add_arc(op, v1);
             }
         } else if (v1->domains.test(var, pre)) {
@@ -163,7 +165,7 @@ void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
             assert(post != UNDEFINED_VALUE);
             if (v1->domains.test(var, post)) {
                 // op must end in v1.
-                v1->add_loop(op);
+                v1->add_loop(op_id);
             } else {
                 // op must end in v2.
                 assert(v2->domains.test(var, post));
@@ -179,7 +181,7 @@ void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
             } else {
                 // op must end in v2.
                 assert(v2->domains.test(var, post));
-                v2->add_loop(op);
+                v2->add_loop(op_id);
             }
         }
     }
@@ -215,8 +217,8 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     // Update refinement hierarchy.
     pair<Node *, Node *> new_nodes = node->split(var, wanted);
 
-    AbstractState *v1 = new AbstractState(v1_domains, new_nodes.first);
-    AbstractState *v2 = new AbstractState(v2_domains, new_nodes.second);
+    AbstractState *v1 = new AbstractState(task_proxy, v1_domains, new_nodes.first);
+    AbstractState *v2 = new AbstractState(task_proxy, v2_domains, new_nodes.second);
 
     assert(this->is_more_general_than(*v1));
     assert(this->is_more_general_than(*v2));
@@ -244,7 +246,7 @@ AbstractState AbstractState::regress(OperatorProxy op) const {
         int var_id = precondition.get_variable().get_id();
         regressed_domains.set_single_value(var_id, precondition.get_value());
     }
-    return AbstractState(regressed_domains, nullptr);
+    return AbstractState(task_proxy, regressed_domains, nullptr);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
@@ -276,9 +278,9 @@ int AbstractState::get_h_value() const {
 AbstractState *AbstractState::get_trivial_abstract_state(
     TaskProxy task_proxy, Node *root_node) {
     AbstractState *abstract_state = new AbstractState(
-        Domains(get_domain_sizes(task_proxy)), root_node);
+        task_proxy, Domains(get_domain_sizes(task_proxy)), root_node);
     for (OperatorProxy op : task_proxy.get_operators()) {
-        abstract_state->add_loop(op);
+        abstract_state->add_loop(op.get_id());
     }
     return abstract_state;
 }
@@ -289,6 +291,6 @@ AbstractState AbstractState::get_abstract_state(
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
-    return AbstractState(domains, nullptr);
+    return AbstractState(task_proxy, domains, nullptr);
 }
 }
