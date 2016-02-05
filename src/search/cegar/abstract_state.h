@@ -13,14 +13,16 @@ namespace cegar {
 class AbstractState;
 class Node;
 
-// TODO: Use operator indices instead of proxies to save space.
-using Arc = std::pair<OperatorProxy, AbstractState *>;
+// Transitions are pairs of operator index and AbstractState pointers.
+using Arc = std::pair<int, AbstractState *>;
 using Arcs = std::vector<Arc>;
+
+// To save space we store self-loops (operator indices) separately.
 using Loops = std::vector<int>;
 
 class AbstractState {
 private:
-    TaskProxy task_proxy;
+    const TaskProxy task_proxy;
 
     // Abstract domains for all variables.
     const Domains domains;
@@ -39,12 +41,12 @@ private:
     AbstractState(
         const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
-    void add_arc(OperatorProxy op, AbstractState *other);
+    void add_arc(int op_id, AbstractState *other);
     void add_loop(int op_id);
 
-    void remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other);
-    void remove_incoming_arc(OperatorProxy op, AbstractState *other);
-    void remove_outgoing_arc(OperatorProxy op, AbstractState *other);
+    void remove_arc(Arcs &arcs, int op_id, AbstractState *other);
+    void remove_incoming_arc(int op_id, AbstractState *other);
+    void remove_outgoing_arc(int op_id, AbstractState *other);
 
     void split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);

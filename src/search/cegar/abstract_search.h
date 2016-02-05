@@ -18,6 +18,7 @@ using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Arc>;
 
 class AbstractSearch {
+    const TaskProxy task_proxy;
     const bool use_general_costs;
 
     AdaptiveQueue<AbstractState *> open_queue;
@@ -40,7 +41,7 @@ class AbstractSearch {
         std::vector<int> *needed_costs = nullptr);
 
 public:
-    explicit AbstractSearch(bool use_general_costs);
+    AbstractSearch(const TaskProxy &task_proxy, bool use_general_costs);
     ~AbstractSearch() = default;
 
     bool find_solution(AbstractState *init, AbstractStates &goals);
