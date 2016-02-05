@@ -20,10 +20,11 @@ using Arcs = std::vector<Arc>;
 // To save space we store self-loops (operator indices) separately.
 using Loops = std::vector<int>;
 
-struct AbstractSearchInfo {
+class AbstractSearchInfo {
     int g;
     Arc incoming_arc;
 
+public:
     AbstractSearchInfo() {
         reset();
     }
@@ -38,6 +39,18 @@ struct AbstractSearchInfo {
     void reset() {
         g = std::numeric_limits<int>::max();
         incoming_arc = Arc(-1, nullptr);
+    }
+
+    void set_g_value(int new_g) {
+        g = new_g;
+    }
+
+    void set_incoming_arc(const Arc &arc) {
+        incoming_arc = arc;
+    }
+
+    const Arc &get_incoming_arc() const {
+        return incoming_arc;
     }
 };
 
@@ -112,6 +125,8 @@ public:
     const Arcs &get_outgoing_arcs() const {return outgoing_arcs; }
     const Arcs &get_incoming_arcs() const {return incoming_arcs; }
     const Loops &get_loops() const {return loops; }
+
+    AbstractSearchInfo &get_search_info() {return search_info; }
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
         return os << state.domains;
