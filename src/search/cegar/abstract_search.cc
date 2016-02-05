@@ -57,10 +57,6 @@ vector<int> AbstractSearch::get_needed_costs(AbstractState *init, int num_ops) {
     return needed_costs;
 }
 
-int AbstractSearch::get_g_value(AbstractState *state) const {
-    return state->get_search_info().get_g_value();
-}
-
 AbstractState *AbstractSearch::astar_search(
     bool forward, bool use_h, AbstractStates *goals, vector<int> *needed_costs) {
     assert((forward && use_h && goals && !needed_costs) ||
@@ -71,7 +67,7 @@ AbstractState *AbstractSearch::astar_search(
         int old_f = top_pair.first;
         AbstractState *state = top_pair.second;
 
-        const int g = get_g_value(state);
+        const int g = state->get_search_info().get_g_value();
         assert(0 <= g && g < INF);
         int new_f = g;
         if (use_h)
@@ -107,7 +103,7 @@ AbstractState *AbstractSearch::astar_search(
             int succ_g = g + op_cost;
             assert(succ_g >= 0);
 
-            if (succ_g < get_g_value(successor)) {
+            if (succ_g < successor->get_search_info().get_g_value()) {
                 successor->get_search_info().decrease_g_value(succ_g);
                 int f = succ_g;
                 if (use_h) {

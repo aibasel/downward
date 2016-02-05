@@ -55,8 +55,6 @@ public:
     const Solution &get_solution() {
         return solution;
     }
-
-    int get_g_value(AbstractState *state) const;
 };
 }
 
