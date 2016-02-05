@@ -153,8 +153,8 @@ public:
     }
 
     bool is_mutex(const FactProxy &other) const {
-        std::pair<int, int> fact1(var_id, value);
-        std::pair<int, int> fact2(other.var_id, other.value);
+        Fact fact1(var_id, value);
+        Fact fact2(other.var_id, other.value);
         return task->are_facts_mutex(fact1, fact2);
     }
 };
@@ -309,9 +309,9 @@ public:
 
     FactProxy operator[](std::size_t fact_index) const override {
         assert(fact_index < size());
-        std::pair<int, int> fact =
+        Fact fact =
             task->get_operator_precondition(op_index, fact_index, is_axiom);
-        return FactProxy(*task, fact.first, fact.second);
+        return FactProxy(*task, fact.var, fact.value);
     }
 };
 
@@ -332,9 +332,9 @@ public:
 
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
-        std::pair<int, int> fact =
+        Fact fact =
             task->get_operator_effect_condition(op_index, eff_index, index, is_axiom);
-        return FactProxy(*task, fact.first, fact.second);
+        return FactProxy(*task, fact.var, fact.value);
     }
 };
 
@@ -354,9 +354,8 @@ public:
     }
 
     FactProxy get_fact() const {
-        std::pair<int, int> fact =
-            task->get_operator_effect(op_index, eff_index, is_axiom);
-        return FactProxy(*task, fact.first, fact.second);
+        Fact fact = task->get_operator_effect(op_index, eff_index, is_axiom);
+        return FactProxy(*task, fact.var, fact.value);
     }
 };
 
@@ -488,8 +487,8 @@ public:
 
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
-        std::pair<int, int> fact = task->get_goal_fact(index);
-        return FactProxy(*task, fact.first, fact.second);
+        Fact fact = task->get_goal_fact(index);
+        return FactProxy(*task, fact.var, fact.value);
     }
 };
 

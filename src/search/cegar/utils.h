@@ -20,9 +20,6 @@ const int UNDEFINED_VALUE = -1;
 // Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
 const int INF = std::numeric_limits<int>::max();
 
-// TODO: Remove typedef.
-using Fact = std::pair<int, int>;
-
 extern std::unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
     const std::shared_ptr<AbstractTask> &task);
 
