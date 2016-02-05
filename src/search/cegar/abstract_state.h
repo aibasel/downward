@@ -24,6 +24,8 @@ class AbstractSearchInfo {
     int g;
     Arc incoming_arc;
 
+    const static int UNDEFINED_OPERATOR = -1;
+
 public:
     AbstractSearchInfo() {
         reset();
@@ -33,10 +35,11 @@ public:
 
     void reset() {
         g = std::numeric_limits<int>::max();
-        incoming_arc = Arc(-1, nullptr);
+        incoming_arc = Arc(UNDEFINED_OPERATOR, nullptr);
     }
 
-    void set_g_value(int new_g) {
+    void decrease_g_value(int new_g) {
+        assert(new_g <= g);
         g = new_g;
     }
 
@@ -49,6 +52,7 @@ public:
     }
 
     const Arc &get_incoming_arc() const {
+        assert(incoming_arc.first >= 0 && incoming_arc.second);
         return incoming_arc;
     }
 };
