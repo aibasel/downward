@@ -45,6 +45,10 @@ public:
         g = new_g;
     }
 
+    int get_g_value() const {
+        return g;
+    }
+
     void set_incoming_arc(const Arc &arc) {
         incoming_arc = arc;
     }
