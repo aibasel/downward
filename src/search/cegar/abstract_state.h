@@ -29,11 +29,6 @@ public:
         reset();
     }
 
-    AbstractSearchInfo(int g, const Arc &incoming_arc)
-      : g(g),
-        incoming_arc(incoming_arc) {
-    }
-
     ~AbstractSearchInfo() = default;
 
     void reset() {
