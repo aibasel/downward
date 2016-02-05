@@ -276,7 +276,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
 void Abstraction::update_h_values() {
     abstract_search.backwards_dijkstra(goals);
     for (AbstractState *state : states) {
-        state->set_h_value(abstract_search.get_g_value(state));
+        state->set_h_value(state->get_search_info().get_g_value());
     }
 }
 
