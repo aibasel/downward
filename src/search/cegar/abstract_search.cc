@@ -10,8 +10,10 @@ namespace cegar {
 // See additive_heuristic.h.
 static const int MAX_COST_VALUE = 100000000;
 
-AbstractSearch::AbstractSearch(bool use_general_costs)
-    : use_general_costs(use_general_costs) {
+AbstractSearch::AbstractSearch(
+    const TaskProxy &task_proxy, bool use_general_costs)
+    : task_proxy(task_proxy),
+      use_general_costs(use_general_costs) {
 }
 
 void AbstractSearch::reset() {
@@ -88,11 +90,11 @@ AbstractState *AbstractSearch::astar_search(
         const Arcs &successors = (forward) ? state->get_outgoing_arcs() :
                                  state->get_incoming_arcs();
         for (auto &arc : successors) {
-            OperatorProxy op = arc.first;
+            int op_id = arc.first;
             AbstractState *successor = arc.second;
+            OperatorProxy op = task_proxy.get_operators()[op_id];
 
             if (needed_costs) {
-                int op_id = op.get_id();
                 int needed = state->get_h_value() - successor->get_h_value();
                 if (!use_general_costs)
                     needed = max(0, needed);
@@ -118,7 +120,7 @@ AbstractState *AbstractSearch::astar_search(
                 auto it = prev_arc.find(successor);
                 if (it != prev_arc.end())
                     prev_arc.erase(it);
-                prev_arc.insert(make_pair(successor, Arc(op, state)));
+                prev_arc.insert(make_pair(successor, Arc(op_id, state)));
             }
         }
     }
@@ -129,9 +131,10 @@ void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) 
     AbstractState *current = goal;
     while (current != init) {
         Arc &prev = prev_arc.at(current);
-        OperatorProxy prev_op = prev.first;
+        int prev_op_id = prev.first;
+        OperatorProxy prev_op = task_proxy.get_operators()[prev_op_id];
         AbstractState *prev_state = prev.second;
-        solution.push_front(Arc(prev_op, current));
+        solution.push_front(Arc(prev_op_id, current));
         prev_state->set_h_value(current->get_h_value() + prev_op.get_cost());
         assert(prev_state != current);
         current = prev_state;
