@@ -25,14 +25,14 @@ class DomainAbstractedTask : public DelegatingTask {
     const std::vector<std::vector<std::string>> fact_names;
     const std::vector<std::vector<int>> value_map;
 
-    int get_abstract_value(int var, int value) const {
-        assert(utils::in_bounds(var, value_map));
-        assert(utils::in_bounds(value, value_map[var]));
-        return value_map[var][value];
+    int get_abstract_value(const Fact &fact) const {
+        assert(utils::in_bounds(fact.var, value_map));
+        assert(utils::in_bounds(fact.value, value_map[fact.var]));
+        return value_map[fact.var][fact.value];
     }
 
     Fact get_abstract_fact(const Fact &fact) const {
-        return Fact(fact.var, get_abstract_value(fact.var, fact.value));
+        return Fact(fact.var, get_abstract_value(fact));
     }
 
 public:
