@@ -92,6 +92,13 @@ vector<int> get_domain_sizes(const TaskProxy &task) {
     return domain_sizes;
 }
 
+vector<int> get_operator_costs(const TaskProxy &task) {
+    vector<int> costs;
+    for (OperatorProxy op : task.get_operators())
+        costs.push_back(op.get_cost());
+    return costs;
+}
+
 int get_pre(const OperatorProxy &op, int var_id) {
     for (FactProxy precondition : op.get_preconditions()) {
         if (precondition.get_variable().get_id() == var_id)
