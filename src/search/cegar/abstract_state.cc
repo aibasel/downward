@@ -278,7 +278,7 @@ int AbstractState::get_h_value() const {
 }
 
 AbstractState *AbstractState::get_trivial_abstract_state(
-    TaskProxy task_proxy, Node *root_node) {
+    const TaskProxy &task_proxy, Node *root_node) {
     AbstractState *abstract_state = new AbstractState(
         task_proxy, Domains(get_domain_sizes(task_proxy)), root_node);
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -288,7 +288,7 @@ AbstractState *AbstractState::get_trivial_abstract_state(
 }
 
 AbstractState AbstractState::get_abstract_state(
-    TaskProxy task_proxy, const ConditionsProxy &conditions) {
+    const TaskProxy &task_proxy, const ConditionsProxy &conditions) {
     Domains domains(get_domain_sizes(task_proxy));
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());

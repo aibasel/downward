@@ -22,7 +22,7 @@ using Loops = std::vector<int>;
 
 class AbstractState {
 private:
-    const TaskProxy task_proxy;
+    const TaskProxy &task_proxy;
 
     // Abstract domains for all variables.
     const Domains domains;
@@ -100,11 +100,11 @@ public:
       TODO: Return unique_ptr?
     */
     static AbstractState *get_trivial_abstract_state(
-        TaskProxy task_proxy, Node *root_node);
+        const TaskProxy &task_proxy, Node *root_node);
 
     // Create the Cartesian set that corresponds to the given fact conditions.
     static AbstractState get_abstract_state(
-        TaskProxy task_proxy, const ConditionsProxy &conditions);
+        const TaskProxy &task_proxy, const ConditionsProxy &conditions);
 };
 }
 
