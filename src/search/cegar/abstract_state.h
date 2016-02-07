@@ -22,6 +22,7 @@ using Loops = std::vector<int>;
 
 class AbstractState {
 private:
+    // Since the abstraction owns the state we don't need AbstractTask.
     const TaskProxy &task_proxy;
 
     // Abstract domains for all variables.
