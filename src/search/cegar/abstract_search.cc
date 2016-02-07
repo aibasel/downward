@@ -11,8 +11,8 @@ namespace cegar {
 static const int MAX_COST_VALUE = 100000000;
 
 AbstractSearch::AbstractSearch(
-    const TaskProxy &task_proxy, bool use_general_costs)
-    : task_proxy(task_proxy),
+    vector<int> &&operator_costs, bool use_general_costs)
+    : operator_costs(move(operator_costs)),
       use_general_costs(use_general_costs) {
 }
 
@@ -92,7 +92,6 @@ AbstractState *AbstractSearch::astar_search(
         for (auto &arc : successors) {
             int op_id = arc.first;
             AbstractState *successor = arc.second;
-            OperatorProxy op = task_proxy.get_operators()[op_id];
 
             if (needed_costs) {
                 int needed = state->get_h_value() - successor->get_h_value();
@@ -101,8 +100,10 @@ AbstractState *AbstractSearch::astar_search(
                 (*needed_costs)[op_id] = max((*needed_costs)[op_id], needed);
             }
 
-            assert(op.get_cost() >= 0);
-            int succ_g = g + op.get_cost();
+            assert(utils::in_bounds(op_id, operator_costs));
+            const int op_cost = operator_costs[op_id];
+            assert(op_cost >= 0);
+            int succ_g = g + op_cost;
             assert(succ_g >= 0);
 
             if (succ_g < get_g_value(successor)) {
@@ -132,10 +133,11 @@ void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) 
     while (current != init) {
         Arc &prev = prev_arc.at(current);
         int prev_op_id = prev.first;
-        OperatorProxy prev_op = task_proxy.get_operators()[prev_op_id];
         AbstractState *prev_state = prev.second;
         solution.push_front(Arc(prev_op_id, current));
-        prev_state->set_h_value(current->get_h_value() + prev_op.get_cost());
+        assert(utils::in_bounds(prev_op_id, operator_costs));
+        const int prev_op_cost = operator_costs[prev_op_id];
+        prev_state->set_h_value(current->get_h_value() + prev_op_cost);
         assert(prev_state != current);
         current = prev_state;
     }

@@ -5,7 +5,6 @@
 #include "abstract_state.h"
 
 #include "../priority_queue.h"
-#include "../task_proxy.h"
 
 #include <deque>
 #include <unordered_map>
@@ -18,7 +17,7 @@ using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Arc>;
 
 class AbstractSearch {
-    const TaskProxy task_proxy;
+    const std::vector<int> operator_costs;
     const bool use_general_costs;
 
     AdaptiveQueue<AbstractState *> open_queue;
@@ -41,7 +40,7 @@ class AbstractSearch {
         std::vector<int> *needed_costs = nullptr);
 
 public:
-    AbstractSearch(const TaskProxy &task_proxy, bool use_general_costs);
+    AbstractSearch(std::vector<int> &&operator_costs, bool use_general_costs);
     ~AbstractSearch() = default;
 
     bool find_solution(AbstractState *init, AbstractStates &goals);
