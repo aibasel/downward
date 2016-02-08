@@ -14,6 +14,12 @@ class Options;
 }
 
 struct Fact {
+private:
+    std::pair<int, int> get_pair() const {
+        return std::make_pair(var, value);
+    }
+
+public:
     int var;
     int value;
 
@@ -31,10 +37,6 @@ struct Fact {
 
     bool operator!=(const Fact &other) const {
         return !(*this == other);
-    }
-
-    std::pair<int, int> get_pair() const {
-        return std::make_pair(var, value);
     }
 };
 

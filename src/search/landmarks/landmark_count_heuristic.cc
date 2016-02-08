@@ -193,9 +193,8 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const GlobalState &state,
         for (size_t j = 0; j < effects.size(); ++j) {
             if (!effects[j].does_fire(state))
                 continue;
-            const pair<int, int> varval = make_pair(effects[j].var,
-                                                    effects[j].val);
-            LandmarkNode *lm_p = lgraph.get_landmark(varval);
+            const Fact fact(effects[j].var, effects[j].val);
+            LandmarkNode *lm_p = lgraph.get_landmark(fact);
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
                     ha_disj.push_back(all_operators[i]);
