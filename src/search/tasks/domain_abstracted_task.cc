@@ -26,8 +26,8 @@ int DomainAbstractedTask::get_variable_domain_size(int var) const {
     return domain_size[var];
 }
 
-const string &DomainAbstractedTask::get_fact_name(int var, int value) const {
-    return fact_names[var][value];
+const string &DomainAbstractedTask::get_fact_name(const Fact &fact) const {
+    return fact_names[fact.var][fact.value];
 }
 
 bool DomainAbstractedTask::are_facts_mutex(const Fact &, const Fact &) const {

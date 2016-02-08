@@ -34,8 +34,8 @@ int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
 }
 
-const string &RootTask::get_fact_name(int var, int value) const {
-    return g_fact_names[var][value];
+const string &RootTask::get_fact_name(const Fact &fact) const {
+    return g_fact_names[fact.var][fact.value];
 }
 
 bool RootTask::are_facts_mutex(const Fact &fact1, const Fact &fact2) const {
