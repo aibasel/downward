@@ -153,7 +153,7 @@ class IssueExperiment(FastDownwardExperiment):
         ]
 
     def __init__(self, suite, revisions=[], configs={}, grid_priority=None,
-                 path=None, test_suite=None, email=None, processes=1,
+                 path=None, test_suite=None, email=None, processes=None,
                  **kwargs):
         """Create a DownwardExperiment with some convenience features.
 
