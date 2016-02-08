@@ -308,7 +308,7 @@ public:
     FactProxy operator[](std::size_t fact_index) const override {
         assert(fact_index < size());
         return FactProxy(*task, task->get_operator_precondition(
-            op_index, fact_index, is_axiom));
+                             op_index, fact_index, is_axiom));
     }
 };
 
@@ -330,7 +330,7 @@ public:
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
         return FactProxy(*task, task->get_operator_effect_condition(
-            op_index, eff_index, index, is_axiom));
+                             op_index, eff_index, index, is_axiom));
     }
 };
 
@@ -351,7 +351,7 @@ public:
 
     FactProxy get_fact() const {
         return FactProxy(*task, task->get_operator_effect(
-            op_index, eff_index, is_axiom));
+                             op_index, eff_index, is_axiom));
     }
 };
 
