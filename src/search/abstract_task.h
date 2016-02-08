@@ -24,7 +24,7 @@ public:
     int value;
 
     Fact(int var, int value)
-      : var(var), value(value) {
+        : var(var), value(value) {
     }
 
     bool operator<(const Fact &other) const {
