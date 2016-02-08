@@ -39,7 +39,7 @@ const string &RootTask::get_fact_name(const Fact &fact) const {
 }
 
 bool RootTask::are_facts_mutex(const Fact &fact1, const Fact &fact2) const {
-    return are_mutex(fact1.get_pair(), fact2.get_pair());
+    return are_mutex(fact1, fact2);
 }
 
 int RootTask::get_operator_cost(int index, bool is_axiom) const {
