@@ -46,11 +46,12 @@ void LandmarkGraph::generate_operators_lookups() {
     }
 }
 
-LandmarkNode *LandmarkGraph::get_landmark(const pair<int, int> &prop) const {
+LandmarkNode *LandmarkGraph::get_landmark(const Fact &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact, or 0 if no such
      landmark exists.
      */
     LandmarkNode *node_p = 0;
+    pair<int, int> prop(fact.var, fact.value);
     auto it = simple_lms_to_nodes.find(prop);
     if (it != simple_lms_to_nodes.end())
         node_p = it->second;
