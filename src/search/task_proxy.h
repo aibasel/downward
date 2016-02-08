@@ -131,6 +131,7 @@ class FactProxy {
     int value;
 public:
     FactProxy(const AbstractTask &task, int var_id, int value);
+    FactProxy(const AbstractTask &task, const Fact &fact);
     ~FactProxy() = default;
 
     VariableProxy get_variable() const;
@@ -309,9 +310,8 @@ public:
 
     FactProxy operator[](std::size_t fact_index) const override {
         assert(fact_index < size());
-        Fact fact =
-            task->get_operator_precondition(op_index, fact_index, is_axiom);
-        return FactProxy(*task, fact.var, fact.value);
+        return FactProxy(*task, task->get_operator_precondition(
+            op_index, fact_index, is_axiom));
     }
 };
 
@@ -332,9 +332,8 @@ public:
 
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
-        Fact fact =
-            task->get_operator_effect_condition(op_index, eff_index, index, is_axiom);
-        return FactProxy(*task, fact.var, fact.value);
+        return FactProxy(*task, task->get_operator_effect_condition(
+            op_index, eff_index, index, is_axiom));
     }
 };
 
@@ -354,8 +353,8 @@ public:
     }
 
     FactProxy get_fact() const {
-        Fact fact = task->get_operator_effect(op_index, eff_index, is_axiom);
-        return FactProxy(*task, fact.var, fact.value);
+        return FactProxy(*task, task->get_operator_effect(
+            op_index, eff_index, is_axiom));
     }
 };
 
@@ -487,8 +486,7 @@ public:
 
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
-        Fact fact = task->get_goal_fact(index);
-        return FactProxy(*task, fact.var, fact.value);
+        return FactProxy(*task, task->get_goal_fact(index));
     }
 };
 
@@ -614,6 +612,10 @@ inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
     : task(&task), var_id(var_id), value(value) {
     assert(var_id >= 0 && var_id < task.get_num_variables());
     assert(value >= 0 && value < get_variable().get_domain_size());
+}
+
+inline FactProxy::FactProxy(const AbstractTask &task, const Fact &fact)
+    : FactProxy(task, fact.var, fact.value) {
 }
 
 
