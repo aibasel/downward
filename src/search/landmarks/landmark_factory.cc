@@ -319,6 +319,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             }
 
             // 1. a, b mutex
+            // TODO(issue635): Use Fact struct right away.
             if (are_mutex(Fact(a.first, a.second), Fact(b.first, b.second)))
                 return true;
 

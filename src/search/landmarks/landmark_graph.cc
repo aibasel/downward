@@ -51,6 +51,7 @@ LandmarkNode *LandmarkGraph::get_landmark(const Fact &fact) const {
      landmark exists.
      */
     LandmarkNode *node_p = 0;
+    // TODO(issue635): Use Fact struct for landmarks.
     pair<int, int> prop(fact.var, fact.value);
     auto it = simple_lms_to_nodes.find(prop);
     if (it != simple_lms_to_nodes.end())
