@@ -141,7 +141,7 @@ public:
     }
 
     const std::string &get_name() const {
-        return task->get_fact_name(var_id, value);
+        return task->get_fact_name(Fact(var_id, value));
     }
 
     bool operator==(const FactProxy &other) const {

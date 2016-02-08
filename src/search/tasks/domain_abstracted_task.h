@@ -45,7 +45,7 @@ public:
         std::vector<std::vector<int>> &&value_map);
 
     virtual int get_variable_domain_size(int var) const override;
-    virtual const std::string &get_fact_name(int var, int value) const override;
+    virtual const std::string &get_fact_name(const Fact &fact) const override;
     virtual bool are_facts_mutex(
         const Fact &fact1, const Fact &fact2) const override;
 

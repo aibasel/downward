@@ -19,8 +19,8 @@ int DelegatingTask::get_variable_domain_size(int var) const {
     return parent->get_variable_domain_size(var);
 }
 
-const string &DelegatingTask::get_fact_name(int var, int value) const {
-    return parent->get_fact_name(var, value);
+const string &DelegatingTask::get_fact_name(const Fact &fact) const {
+    return parent->get_fact_name(fact);
 }
 
 bool DelegatingTask::are_facts_mutex(const Fact &fact1, const Fact &fact2) const {

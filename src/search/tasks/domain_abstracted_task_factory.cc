@@ -59,7 +59,7 @@ void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
         fact_names[var].resize(num_values);
         for (int value = 0; value < num_values; ++value) {
             value_map[var][value] = value;
-            fact_names[var][value] = parent.get_fact_name(var, value);
+            fact_names[var][value] = parent.get_fact_name(Fact(var, value));
         }
     }
 }
