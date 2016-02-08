@@ -25,6 +25,14 @@ struct Fact {
         return get_pair() < other.get_pair();
     }
 
+    bool operator==(const Fact &other) const {
+        return get_pair() == other.get_pair();
+    }
+
+    bool operator!=(const Fact &other) const {
+        return !(*this == other);
+    }
+
     std::pair<int, int> get_pair() const {
         return std::make_pair(var, value);
     }
