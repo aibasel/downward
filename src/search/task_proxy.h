@@ -127,8 +127,7 @@ inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
 
 class FactProxy {
     const AbstractTask *task;
-    int var_id;
-    int value;
+    Fact fact;
 public:
     FactProxy(const AbstractTask &task, int var_id, int value);
     FactProxy(const AbstractTask &task, const Fact &fact);
@@ -137,16 +136,16 @@ public:
     VariableProxy get_variable() const;
 
     int get_value() const {
-        return value;
+        return fact.value;
     }
 
     const std::string &get_name() const {
-        return task->get_fact_name(Fact(var_id, value));
+        return task->get_fact_name(fact);
     }
 
     bool operator==(const FactProxy &other) const {
         assert(task == other.task);
-        return var_id == other.var_id && value == other.value;
+        return fact == other.fact;
     }
 
     bool operator!=(const FactProxy &other) const {
@@ -154,9 +153,7 @@ public:
     }
 
     bool is_mutex(const FactProxy &other) const {
-        Fact fact1(var_id, value);
-        Fact fact2(other.var_id, other.value);
-        return task->are_facts_mutex(fact1, fact2);
+        return task->are_facts_mutex(fact, other.fact);
     }
 };
 
@@ -608,19 +605,19 @@ public:
 };
 
 
-inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
-    : task(&task), var_id(var_id), value(value) {
-    assert(var_id >= 0 && var_id < task.get_num_variables());
-    assert(value >= 0 && value < get_variable().get_domain_size());
+inline FactProxy::FactProxy(const AbstractTask &task, const Fact &fact)
+    : task(&task), fact(fact) {
+    assert(fact.var >= 0 && fact.var < task.get_num_variables());
+    assert(fact.value >= 0 && fact.value < get_variable().get_domain_size());
 }
 
-inline FactProxy::FactProxy(const AbstractTask &task, const Fact &fact)
-    : FactProxy(task, fact.var, fact.value) {
+inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
+    : FactProxy(task, Fact(var_id, value)) {
 }
 
 
 inline VariableProxy FactProxy::get_variable() const {
-    return VariableProxy(*task, var_id);
+    return VariableProxy(*task, fact.var);
 }
 
 inline bool does_fire(EffectProxy effect, const State &state) {
