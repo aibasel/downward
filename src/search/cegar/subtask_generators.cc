@@ -31,7 +31,7 @@ class SortFactsByIncreasingHaddValues {
     std::shared_ptr<additive_heuristic::AdditiveHeuristic> hadd;
 
     int get_cost(Fact fact) {
-        return hadd->get_cost_for_cegar(fact.first, fact.second);
+        return hadd->get_cost_for_cegar(fact.var, fact.value);
     }
 
 public:
@@ -53,7 +53,7 @@ static void remove_initial_state_facts(
     const TaskProxy &task_proxy, Facts &facts) {
     State initial_state = task_proxy.get_initial_state();
     facts.erase(remove_if(facts.begin(), facts.end(), [&](Fact fact) {
-            return initial_state[fact.first].get_value() == fact.second;
+            return initial_state[fact.var].get_value() == fact.value;
         }), facts.end());
 }
 
