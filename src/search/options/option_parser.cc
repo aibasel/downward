@@ -27,6 +27,7 @@ using namespace std;
 // TODO (post-issue586): Remove this once we no longer need it.
 class AbstractTask;
 class OpenListFactory;
+class PruningMethod;
 class SearchEngine;
 
 namespace cegar {
@@ -100,6 +101,7 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>(pt);
     get_help_templ<shared_ptr<pdbs::PatternCollectionGenerator>>(pt);
     get_help_templ<shared_ptr<pdbs::PatternGenerator>>(pt);
+    get_help_templ<shared_ptr<PruningMethod>>(pt);
 }
 
 template<typename T>
@@ -129,6 +131,7 @@ static void get_full_help() {
     get_full_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>();
     get_full_help_templ<shared_ptr<pdbs::PatternCollectionGenerator>>();
     get_full_help_templ<shared_ptr<pdbs::PatternGenerator>>();
+    get_full_help_templ<shared_ptr<PruningMethod>>();
 }
 
 
