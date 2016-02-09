@@ -13,7 +13,7 @@ class DomainAbstractedTaskFactory {
 private:
     std::vector<int> domain_size;
     std::vector<int> initial_state_values;
-    std::vector<std::pair<int, int>> goals;
+    std::vector<Fact> goals;
     std::vector<std::vector<std::string>> fact_names;
     std::vector<std::vector<int>> value_map;
     std::shared_ptr<AbstractTask> task;
@@ -59,7 +59,7 @@ void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
         fact_names[var].resize(num_values);
         for (int value = 0; value < num_values; ++value) {
             value_map[var][value] = value;
-            fact_names[var][value] = parent.get_fact_name(var, value);
+            fact_names[var][value] = parent.get_fact_name(Fact(var, value));
         }
     }
 }
@@ -79,8 +79,8 @@ void DomainAbstractedTaskFactory::move_fact(int var, int before, int after) {
     if (initial_state_values[var] == before)
         initial_state_values[var] = after;
     for (auto &goal : goals) {
-        if (var == goal.first && before == goal.second)
-            goal.second = after;
+        if (var == goal.var && before == goal.value)
+            goal.value = after;
     }
 }
 
