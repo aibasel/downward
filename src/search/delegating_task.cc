@@ -19,11 +19,11 @@ int DelegatingTask::get_variable_domain_size(int var) const {
     return parent->get_variable_domain_size(var);
 }
 
-const string &DelegatingTask::get_fact_name(int var, int value) const {
-    return parent->get_fact_name(var, value);
+const string &DelegatingTask::get_fact_name(const Fact &fact) const {
+    return parent->get_fact_name(fact);
 }
 
-bool DelegatingTask::are_facts_mutex(const std::pair<int, int> &fact1, const std::pair<int, int> &fact2) const {
+bool DelegatingTask::are_facts_mutex(const Fact &fact1, const Fact &fact2) const {
     return parent->are_facts_mutex(fact1, fact2);
 }
 
@@ -43,7 +43,7 @@ int DelegatingTask::get_num_operator_preconditions(int index, bool is_axiom) con
     return parent->get_num_operator_preconditions(index, is_axiom);
 }
 
-pair<int, int> DelegatingTask::get_operator_precondition(
+Fact DelegatingTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
     return parent->get_operator_precondition(op_index, fact_index, is_axiom);
 }
@@ -57,12 +57,12 @@ int DelegatingTask::get_num_operator_effect_conditions(
     return parent->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
 }
 
-pair<int, int> DelegatingTask::get_operator_effect_condition(
+Fact DelegatingTask::get_operator_effect_condition(
     int op_index, int eff_index, int cond_index, bool is_axiom) const {
     return parent->get_operator_effect_condition(op_index, eff_index, cond_index, is_axiom);
 }
 
-pair<int, int> DelegatingTask::get_operator_effect(
+Fact DelegatingTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     return parent->get_operator_effect(op_index, eff_index, is_axiom);
 }
@@ -79,7 +79,7 @@ int DelegatingTask::get_num_goals() const {
     return parent->get_num_goals();
 }
 
-pair<int, int> DelegatingTask::get_goal_fact(int index) const {
+Fact DelegatingTask::get_goal_fact(int index) const {
     return parent->get_goal_fact(index);
 }
 

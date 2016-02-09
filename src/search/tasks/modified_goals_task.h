@@ -8,16 +8,16 @@
 
 namespace ExtraTasks {
 class ModifiedGoalsTask : public DelegatingTask {
-    const std::vector<std::pair<int, int>> goals;
+    const std::vector<Fact> goals;
 
 public:
     ModifiedGoalsTask(
         const std::shared_ptr<AbstractTask> &parent,
-        std::vector<std::pair<int, int>> &&goals);
+        std::vector<Fact> &&goals);
     ~ModifiedGoalsTask() = default;
 
     virtual int get_num_goals() const override;
-    virtual std::pair<int, int> get_goal_fact(int index) const override;
+    virtual Fact get_goal_fact(int index) const override;
 };
 }
 
