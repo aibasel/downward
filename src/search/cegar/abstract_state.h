@@ -3,27 +3,28 @@
 
 #include "domains.h"
 
+#include "../task_proxy.h"
+
 #include <string>
 #include <utility>
 #include <vector>
-
-class ConditionsProxy;
-class FactProxy;
-class OperatorProxy;
-class State;
-class TaskProxy;
 
 namespace cegar {
 class AbstractState;
 class Node;
 
-// TODO: Use operator indices instead of proxies to save space.
-using Arc = std::pair<OperatorProxy, AbstractState *>;
+// Transitions are pairs of operator index and AbstractState pointers.
+using Arc = std::pair<int, AbstractState *>;
 using Arcs = std::vector<Arc>;
-using Loops = std::vector<OperatorProxy>;
+
+// To save space we store self-loops (operator indices) separately.
+using Loops = std::vector<int>;
 
 class AbstractState {
 private:
+    // Since the abstraction owns the state we don't need AbstractTask.
+    const TaskProxy &task_proxy;
+
     // Abstract domains for all variables.
     const Domains domains;
 
@@ -38,14 +39,15 @@ private:
     Loops loops;
 
     // Construct instances with factory methods.
-    AbstractState(const Domains &domains, Node *node);
+    AbstractState(
+        const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
-    void add_arc(OperatorProxy op, AbstractState *other);
-    void add_loop(OperatorProxy op);
+    void add_arc(int op_id, AbstractState *other);
+    void add_loop(int op_id);
 
-    void remove_arc(Arcs &arcs, OperatorProxy op, AbstractState *other);
-    void remove_incoming_arc(OperatorProxy op, AbstractState *other);
-    void remove_outgoing_arc(OperatorProxy op, AbstractState *other);
+    void remove_arc(Arcs &arcs, int op_id, AbstractState *other);
+    void remove_incoming_arc(int op_id, AbstractState *other);
+    void remove_outgoing_arc(int op_id, AbstractState *other);
 
     void split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
@@ -99,11 +101,11 @@ public:
       TODO: Return unique_ptr?
     */
     static AbstractState *get_trivial_abstract_state(
-        TaskProxy task_proxy, Node *root_node);
+        const TaskProxy &task_proxy, Node *root_node);
 
     // Create the Cartesian set that corresponds to the given fact conditions.
     static AbstractState get_abstract_state(
-        TaskProxy task_proxy, const ConditionsProxy &conditions);
+        const TaskProxy &task_proxy, const ConditionsProxy &conditions);
 };
 }
 

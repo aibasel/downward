@@ -74,7 +74,7 @@ Abstraction::Abstraction(
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
-      abstract_search(use_general_costs),
+      abstract_search(get_operator_costs(task_proxy), use_general_costs),
       split_selector(task, pick),
       timer(max_time),
       init(nullptr),
@@ -224,7 +224,8 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     for (const Arc &step : solution) {
         if (!utils::extra_memory_padding_is_reserved())
             break;
-        const OperatorProxy op = step.first;
+        int op_id = step.first;
+        OperatorProxy op = task_proxy.get_operators()[op_id];
         AbstractState *next_abstract_state = step.second;
         if (is_applicable(op, concrete_state)) {
             if (debug)

@@ -34,11 +34,11 @@ int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
 }
 
-const string &RootTask::get_fact_name(int var, int value) const {
-    return g_fact_names[var][value];
+const string &RootTask::get_fact_name(const Fact &fact) const {
+    return g_fact_names[fact.var][fact.value];
 }
 
-bool RootTask::are_facts_mutex(const std::pair<int, int> &fact1, const std::pair<int, int> &fact2) const {
+bool RootTask::are_facts_mutex(const Fact &fact1, const Fact &fact2) const {
     return are_mutex(fact1, fact2);
 }
 
@@ -58,11 +58,11 @@ int RootTask::get_num_operator_preconditions(int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).get_preconditions().size();
 }
 
-pair<int, int> RootTask::get_operator_precondition(
+Fact RootTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
     const GlobalOperator &op = get_operator_or_axiom(op_index, is_axiom);
     const GlobalCondition &precondition = op.get_preconditions()[fact_index];
-    return make_pair(precondition.var, precondition.val);
+    return Fact(precondition.var, precondition.val);
 }
 
 int RootTask::get_num_operator_effects(int op_index, bool is_axiom) const {
@@ -74,17 +74,17 @@ int RootTask::get_num_operator_effect_conditions(
     return get_operator_or_axiom(op_index, is_axiom).get_effects()[eff_index].conditions.size();
 }
 
-pair<int, int> RootTask::get_operator_effect_condition(
+Fact RootTask::get_operator_effect_condition(
     int op_index, int eff_index, int cond_index, bool is_axiom) const {
     const GlobalEffect &effect = get_operator_or_axiom(op_index, is_axiom).get_effects()[eff_index];
     const GlobalCondition &condition = effect.conditions[cond_index];
-    return make_pair(condition.var, condition.val);
+    return Fact(condition.var, condition.val);
 }
 
-pair<int, int> RootTask::get_operator_effect(
+Fact RootTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     const GlobalEffect &effect = get_operator_or_axiom(op_index, is_axiom).get_effects()[eff_index];
-    return make_pair(effect.var, effect.val);
+    return Fact(effect.var, effect.val);
 }
 
 const GlobalOperator *RootTask::get_global_operator(int index, bool is_axiom) const {
@@ -99,8 +99,9 @@ int RootTask::get_num_goals() const {
     return g_goal.size();
 }
 
-pair<int, int> RootTask::get_goal_fact(int index) const {
-    return g_goal[index];
+Fact RootTask::get_goal_fact(int index) const {
+    pair<int, int> &goal = g_goal[index];
+    return Fact(goal.first, goal.second);
 }
 
 vector<int> RootTask::get_initial_state_values() const {

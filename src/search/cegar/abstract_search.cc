@@ -10,8 +10,10 @@ namespace cegar {
 // See additive_heuristic.h.
 static const int MAX_COST_VALUE = 100000000;
 
-AbstractSearch::AbstractSearch(bool use_general_costs)
-    : use_general_costs(use_general_costs) {
+AbstractSearch::AbstractSearch(
+    vector<int> &&operator_costs, bool use_general_costs)
+    : operator_costs(move(operator_costs)),
+      use_general_costs(use_general_costs) {
 }
 
 void AbstractSearch::reset() {
@@ -82,25 +84,26 @@ AbstractState *AbstractSearch::astar_search(
         if (needed_costs) {
             /* To prevent negative cost cycles, all operators inducing
                self-loops must have non-negative costs. */
-            for (OperatorProxy op : state->get_loops())
-                (*needed_costs)[op.get_id()] = max((*needed_costs)[op.get_id()], 0);
+            for (int op_id : state->get_loops())
+                (*needed_costs)[op_id] = max((*needed_costs)[op_id], 0);
         }
         const Arcs &successors = (forward) ? state->get_outgoing_arcs() :
                                  state->get_incoming_arcs();
         for (auto &arc : successors) {
-            OperatorProxy op = arc.first;
+            int op_id = arc.first;
             AbstractState *successor = arc.second;
 
             if (needed_costs) {
-                int op_id = op.get_id();
                 int needed = state->get_h_value() - successor->get_h_value();
                 if (!use_general_costs)
                     needed = max(0, needed);
                 (*needed_costs)[op_id] = max((*needed_costs)[op_id], needed);
             }
 
-            assert(op.get_cost() >= 0);
-            int succ_g = g + op.get_cost();
+            assert(utils::in_bounds(op_id, operator_costs));
+            const int op_cost = operator_costs[op_id];
+            assert(op_cost >= 0);
+            int succ_g = g + op_cost;
             assert(succ_g >= 0);
 
             if (succ_g < get_g_value(successor)) {
@@ -118,7 +121,7 @@ AbstractState *AbstractSearch::astar_search(
                 auto it = prev_arc.find(successor);
                 if (it != prev_arc.end())
                     prev_arc.erase(it);
-                prev_arc.insert(make_pair(successor, Arc(op, state)));
+                prev_arc.insert(make_pair(successor, Arc(op_id, state)));
             }
         }
     }
@@ -129,10 +132,12 @@ void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) 
     AbstractState *current = goal;
     while (current != init) {
         Arc &prev = prev_arc.at(current);
-        OperatorProxy prev_op = prev.first;
+        int prev_op_id = prev.first;
         AbstractState *prev_state = prev.second;
-        solution.push_front(Arc(prev_op, current));
-        prev_state->set_h_value(current->get_h_value() + prev_op.get_cost());
+        solution.push_front(Arc(prev_op_id, current));
+        assert(utils::in_bounds(prev_op_id, operator_costs));
+        const int prev_op_cost = operator_costs[prev_op_id];
+        prev_state->set_h_value(current->get_h_value() + prev_op_cost);
         assert(prev_state != current);
         current = prev_state;
     }
