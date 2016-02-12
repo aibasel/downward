@@ -22,6 +22,10 @@ static Heuristic *_parse(OptionParser &parser) {
         "the constant value",
         "1",
         Bounds("0", "infinity"));
+    parser.document_property("admissible", "no");
+    parser.document_property("consistent", "no");
+    parser.document_property("safe", "no");
+    parser.document_property("preferred operators", "no");
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
 
