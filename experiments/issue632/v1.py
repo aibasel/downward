@@ -1,10 +1,9 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from downward import suites
-
 from common_setup import IssueConfig, IssueExperiment
 from relativescatter import RelativeScatterPlotReport
+import suites
 
 
 configs = [
