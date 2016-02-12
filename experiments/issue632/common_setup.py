@@ -109,7 +109,7 @@ class IssueConfig(object):
 
 
 class IssueExperiment(FastDownwardExperiment):
-    """Wrapper for FastDownwardExperiment with a few convenience features."""
+    """Subclass of FastDownwardExperiment with some convenience features."""
 
     DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
 
@@ -155,8 +155,7 @@ class IssueExperiment(FastDownwardExperiment):
     def __init__(self, suite, revisions=[], configs={}, grid_priority=None,
                  path=None, test_suite=None, email=None, processes=None,
                  **kwargs):
-        """Create a DownwardExperiment with some convenience features.
-
+        """
         If *revisions* is specified, it should be a non-empty
         list of revisions, which specify which planner versions to use
         in the experiment. The same versions are used for translator,
