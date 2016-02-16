@@ -9,7 +9,7 @@
   Poor man's version of boost::dynamic_bitset, mostly copied from there.
 */
 
-namespace Utils {
+namespace utils {
 template <typename Block = unsigned int>
 class DynamicBitset {
     static_assert(
