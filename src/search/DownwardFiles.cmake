@@ -388,7 +388,7 @@ fast_downward_plugin(
         cegar/subtask_generators.cc
         cegar/utils.cc
         cegar/utils_landmarks.cc
-    DEPENDS EXTRA_TASKS
+    DEPENDS ADDITIVE_HEURISTIC EXTRA_TASKS LANDMARKS
 )
 
 fast_downward_plugin(
