@@ -74,7 +74,10 @@ Abstraction::Abstraction(
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
-      abstract_search(get_operator_costs(task_proxy), use_general_costs),
+      abstract_search(
+          get_operator_costs(task_proxy),
+          states,
+          use_general_costs),
       split_selector(task, pick),
       timer(max_time),
       init(nullptr),
@@ -273,7 +276,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
 void Abstraction::update_h_values() {
     abstract_search.backwards_dijkstra(goals);
     for (AbstractState *state : states) {
-        state->set_h_value(abstract_search.get_g_value(state));
+        state->set_h_value(state->get_search_info().get_g_value());
     }
 }
 
