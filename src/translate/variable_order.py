@@ -10,19 +10,20 @@ DEBUG = False
 class CausalGraph:
     def __init__(self, sas_task):
         self.weighted_graph = defaultdict(lambda: defaultdict(int))
-        self.predecessor_graph = defaultdict(lambda: defaultdict(int))
-        ## both: var_no -> (var_no -> number)
+        ## var_no -> (var_no -> number)
+        self.predecessor_graph = defaultdict(set)
         self.ordering = []
 
         self.weigh_graph_from_ops(sas_task.operators)
         self.weigh_graph_from_axioms(sas_task.axioms)
 
-        num_variables = len(sas_task.variables.ranges)
-        sccs = self.get_strongly_connected_components(num_variables)
-        self.calculate_topological_pseudo_sort(sccs, sas_task.goal)
-        self.calculate_important_vars(sas_task.goal)
+        self.num_variables = len(sas_task.variables.ranges)
+        self.goal_map = dict(sas_task.goal.pairs)
 
     def get_ordering(self):
+        if not self.ordering:
+            sccs = self.get_strongly_connected_components()
+            self.calculate_topological_pseudo_sort(sccs)
         return self.ordering
 
     def weigh_graph_from_ops(self, operators):
@@ -38,7 +39,7 @@ class CausalGraph:
                 for source in chain(source_vars, (var for var, _ in cond)):
                     if source != target:
                         self.weighted_graph[source][target] += 1
-                        self.predecessor_graph[target][source] += 1
+                        self.predecessor_graph[target].add(source)
 
     def weigh_graph_from_axioms(self, axioms):
         for ax in axioms:
@@ -46,18 +47,17 @@ class CausalGraph:
             for source, _ in ax.condition:
                 if source != target:
                     self.weighted_graph[source][target] += 1
-                    self.predecessor_graph[target][source] += 1
+                    self.predecessor_graph[target].add(source)
 
-    def get_strongly_connected_components(self, num_variables):
-        unweighted_graph = [[] for _ in range(num_variables)]
-        assert(len(self.weighted_graph) <= num_variables)
+    def get_strongly_connected_components(self):
+        unweighted_graph = [[] for _ in range(self.num_variables)]
+        assert(len(self.weighted_graph) <= self.num_variables)
         for source, target_weights in self.weighted_graph.items():
             unweighted_graph[source] = sorted(target_weights.keys())
         sccs = list(SCC(unweighted_graph).get_result())
         return sccs
 
-    def calculate_topological_pseudo_sort(self, sccs, goal):
-        goal_map = dict(goal.pairs)
+    def calculate_topological_pseudo_sort(self, sccs):
         for scc in sccs:
             if len(scc) > 1:
                 # component needs to be turned into acyclic subgraph
@@ -70,7 +70,7 @@ class CausalGraph:
                     subgraph_edges = subgraph[var]
                     for target, cost in sorted(self.weighted_graph[var].items()):
                         if target in scc:
-                            if target in goal_map:
+                            if target in self.goal_map:
                                 subgraph_edges.append((target, 100000 + cost))
                             subgraph_edges.append((target, cost))
 
@@ -84,7 +84,7 @@ class CausalGraph:
             if not necessary[var]:
                 necessary[var] = True
                 self.dfs(var, necessary)
-        self.ordering = [var for var in self.ordering if necessary[var]]
+        return necessary
 
     def dfs(self, node, necessary):
         stack = [pred for pred in self.predecessor_graph[node]]
@@ -306,6 +306,15 @@ class VariableOrder:
         axioms[:] = new_axioms
 
 
-def find_and_apply_variable_order(sas_task):
-    order = CausalGraph(sas_task).get_ordering()
-    VariableOrder(order).apply_to_task(sas_task)
+def find_and_apply_variable_order(sas_task, reorder_vars=True,
+                                  filter_unimportant_vars=True):
+    if reorder_vars or filter_unimportant_vars:
+        cg = CausalGraph(sas_task)
+        if reorder_vars:
+            order = cg.get_ordering()
+        else:
+            order = list(range(len(sas_task.variables.ranges)))
+        if filter_unimportant_vars:
+            necessary = cg.calculate_important_vars(sas_task.goal)
+            order = [var for var in order if necessary[var]]
+        VariableOrder(order).apply_to_task(sas_task)

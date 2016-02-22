@@ -571,9 +571,11 @@ def pddl_to_sas(task):
             except simplify.TriviallySolvable:
                 return solvable_sas_task("Simplified to empty goal")
 
-    if options.reorder_variables:
-        with timers.timing("Reordering variables"):
-            variable_order.find_and_apply_variable_order(sas_task)
+    if options.reorder_variables or options.filter_unimportant_vars:
+        with timers.timing("Reordering and filtering variables"):
+            variable_order.find_and_apply_variable_order(
+                sas_task, options.reorder_variables,
+                options.filter_unimportant_vars)
     return sas_task
 
 

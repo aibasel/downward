@@ -45,6 +45,10 @@ def parse_args():
         help="do not reorder variables based on the causal graph. Do not use"
         "this option with the causal graph heuristic!")
     argparser.add_argument(
+        "--keep-unimportant-variables",
+        dest="filter_unimportant_vars", action="store_false",
+        help="keep variables that do not influence the goal in the causal graph")
+    argparser.add_argument(
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
     return argparser.parse_args()
