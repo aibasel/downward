@@ -20,6 +20,43 @@ using Arcs = std::vector<Arc>;
 // To save space we store self-loops (operator indices) separately.
 using Loops = std::vector<int>;
 
+class AbstractSearchInfo {
+    int g;
+    Arc incoming_arc;
+
+    const static int UNDEFINED_OPERATOR = -1;
+
+public:
+    AbstractSearchInfo() {
+        reset();
+    }
+
+    ~AbstractSearchInfo() = default;
+
+    void reset() {
+        g = std::numeric_limits<int>::max();
+        incoming_arc = Arc(UNDEFINED_OPERATOR, nullptr);
+    }
+
+    void decrease_g_value(int new_g) {
+        assert(new_g <= g);
+        g = new_g;
+    }
+
+    int get_g_value() const {
+        return g;
+    }
+
+    void set_incoming_arc(const Arc &arc) {
+        incoming_arc = arc;
+    }
+
+    const Arc &get_incoming_arc() const {
+        assert(incoming_arc.first >= 0 && incoming_arc.second);
+        return incoming_arc;
+    }
+};
+
 class AbstractState {
 private:
     // Since the abstraction owns the state we don't need AbstractTask.
@@ -37,6 +74,8 @@ private:
 
     // Self-loops.
     Loops loops;
+
+    AbstractSearchInfo search_info;
 
     // Construct instances with factory methods.
     AbstractState(
@@ -89,6 +128,8 @@ public:
     const Arcs &get_outgoing_arcs() const {return outgoing_arcs; }
     const Arcs &get_incoming_arcs() const {return incoming_arcs; }
     const Loops &get_loops() const {return loops; }
+
+    AbstractSearchInfo &get_search_info() {return search_info; }
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
         return os << state.domains;

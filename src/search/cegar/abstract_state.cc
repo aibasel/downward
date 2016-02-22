@@ -23,7 +23,8 @@ AbstractState::AbstractState(AbstractState &&other)
       node(move(other.node)),
       incoming_arcs(move(other.incoming_arcs)),
       outgoing_arcs(move(other.outgoing_arcs)),
-      loops(move(other.loops)) {
+      loops(move(other.loops)),
+      search_info(move(other.search_info)) {
 }
 
 int AbstractState::count(int var) const {
