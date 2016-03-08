@@ -18,7 +18,15 @@ using namespace std;
 namespace landmarks {
 LandmarkGraph::LandmarkGraph(const Options &opts)
     : exploration(opts.get<Exploration *>("explor")),
-      landmarks_count(0), conj_lms(0) {
+      landmarks_count(0), conj_lms(0),
+      reasonable_orders(false),
+      only_causal_landmarks(false),
+      disjunctive_landmarks(true),
+      conjunctive_landmarks(true),
+      no_orders(false),
+      lm_cost_type(NORMAL),
+      conditional_effects_supported(false) {
+
     reasonable_orders = opts.get<bool>("reasonable_orders");
     only_causal_landmarks = opts.get<bool>("only_causal_landmarks");
     disjunctive_landmarks = opts.get<bool>("disjunctive_landmarks");
