@@ -20,6 +20,8 @@ public:
     // take care to delete the pointer when you don't need it anymore!
     // (method should principally anyways be called by every inheriting class)
     LandmarkGraph *compute_lm_graph();
+    static void add_options_to_parser(OptionParser &parser);
+    bool supports_conditional_effects() {return lm_graph->supports_conditional_effects(); }
 protected:
     LandmarkGraph *lm_graph;
     virtual void generate_landmarks() = 0;

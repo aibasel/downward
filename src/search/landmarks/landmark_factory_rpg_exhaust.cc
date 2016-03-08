@@ -45,7 +45,7 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
     }
 }
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Exhaustive Landmarks",
         "Exhaustively checks for each fact if it is a landmark."
@@ -53,7 +53,7 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     parser.document_note(
         "Relevant options",
         "reasonable_orders, only_causal_landmarks");
-    LandmarkGraph::add_options_to_parser(parser);
+    LandmarkFactory::add_options_to_parser(parser);
 
     Options opts = parser.parse();
 
@@ -65,12 +65,10 @@ static LandmarkGraph *_parse(OptionParser &parser) {
         return 0;
     } else {
         opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkFactoryRpgExhaust lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkFactoryRpgExhaust(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin(
+static Plugin<LandmarkFactory> _plugin(
     "lm_exhaust", _parse);
 }

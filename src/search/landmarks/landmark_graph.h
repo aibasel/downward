@@ -125,8 +125,6 @@ typedef std::unordered_set<LandmarkNode *> LandmarkSet;
 
 class LandmarkGraph {
 public:
-    static void add_options_to_parser(OptionParser &parser);
-
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
     inline int cost_of_landmarks() const {return landmarks_cost; }
@@ -141,7 +139,7 @@ public:
     // landmark factory classes. For now, this cannot easily be done since the
     // factories do not exist anymore when the landmark heuristic is
     // constructed.
-    void enable_conditional_effects_support() {conditional_effects_supported = true; }
+    void enable_support_of_conditional_effects() {conditional_effects_supported = true; }
     bool supports_conditional_effects() {return conditional_effects_supported; }
 
     // ------------------------------------------------------------------------------
@@ -183,7 +181,6 @@ public:
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
     LandmarkGraph();
-    LandmarkGraph(const Options &opts);
     virtual ~LandmarkGraph() {}
 
     void generate_operators_lookups();

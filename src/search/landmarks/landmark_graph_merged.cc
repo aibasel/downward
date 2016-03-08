@@ -12,8 +12,11 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
-    : LandmarkFactory(opts),
-      lm_graphs(opts.get_list<LandmarkGraph *>("lm_graphs")) {
+    : LandmarkFactory(opts) {
+    vector<LandmarkFactory *> lm_factories = opts.get_list<LandmarkFactory *>("lm_factories");
+    for (LandmarkFactory *lm_factory : lm_factories) {
+        lm_graphs.push_back(lm_factory->compute_lm_graph());
+    }
 }
 
 LandmarkGraphMerged::~LandmarkGraphMerged() {
@@ -111,7 +114,7 @@ void LandmarkGraphMerged::generate_landmarks() {
 }
 
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merged Landmarks",
         "Merges the landmarks and orderings from the parameter landmarks");
@@ -126,11 +129,11 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     parser.document_note(
         "Note",
         "Does not currently support conjunctive landmarks");
-    parser.add_list_option<LandmarkGraph *>("lm_graphs");
-    LandmarkGraph::add_options_to_parser(parser);
+    parser.add_list_option<LandmarkFactory *>("lm_factories");
+    LandmarkFactory::add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<LandmarkGraph *>("lm_graphs");
+    opts.verify_list_non_empty<LandmarkFactory *>("lm_factories");
 
     parser.document_language_support("conditional_effects",
                                      "supported if all components support them");
@@ -138,23 +141,20 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        vector<LandmarkGraph *> lm_graphs = opts.get_list<LandmarkGraph *>("lm_graphs");
+        vector<LandmarkFactory *> lm_factories = opts.get_list<LandmarkFactory *>("lm_factories");
         bool supports_conditional_effects = true;
-        for (size_t i = 0; i < lm_graphs.size(); ++i) {
-            if (!lm_graphs[i]->supports_conditional_effects()) {
+        for (size_t i = 0; i < lm_factories.size(); ++i) {
+            if (!lm_factories[i]->supports_conditional_effects()) {
                 supports_conditional_effects = false;
                 break;
             }
         }
         opts.set<bool>("supports_conditional_effects", supports_conditional_effects);
-
         opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkGraphMerged lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkGraphMerged(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin(
+static Plugin<LandmarkFactory> _plugin(
     "lm_merged", _parse);
 }

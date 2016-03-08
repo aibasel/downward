@@ -288,13 +288,13 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
     }
 }
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
     parser.document_note("Relevant options", "reasonable_orders, no_orders");
-    LandmarkGraph::add_options_to_parser(parser);
+    LandmarkFactory::add_options_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: Make sure that conditional effects are indeed supported.
@@ -307,11 +307,9 @@ static LandmarkGraph *_parse(OptionParser &parser) {
         return 0;
     } else {
         opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkFactoryZhuGivan lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkFactoryZhuGivan(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin("lm_zg", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_zg", _parse);
 }

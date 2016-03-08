@@ -1,5 +1,6 @@
 #include "landmark_factory.h"
 
+#include "../plugin.h"
 #include "util.h"
 
 #include "../utils/timer.h"
@@ -10,12 +11,28 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory(const Options &opts)
-    : lm_graph(new LandmarkGraph(opts)) {
+LandmarkFactory::LandmarkFactory(const Options &opts) {
+        lm_graph = new LandmarkGraph();
+        lm_graph->set_exploration(opts.get<Exploration *>("explor"));
+        if (opts.get<bool>("reasonable_orders"))
+            lm_graph->enable_using_reasonable_orderings();
+        if (opts.get<bool>("only_causal_landmarks"))
+            lm_graph->enable_use_only_causal_landmarks();
+        if (!opts.get<bool>("disjunctive_landmarks"))
+            lm_graph->disable_disjunctive_landmarks();
+        if (!opts.get<bool>("conjunctive_landmarks"))
+            lm_graph->disable_conjunctive_landmarks();
+        if (opts.get<bool>("no_orders"))
+            lm_graph->disable_orders();
+        lm_graph->set_lm_cost_type(static_cast<OperatorCost>(opts.get_enum("lm_cost_type")));
+        if (opts.get<bool>("supports_conditional_effects"))
+            lm_graph->enable_support_of_conditional_effects();
+
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     utils::Timer lm_generation_timer;
+    lm_graph->generate_operators_lookups();
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"
@@ -777,4 +794,48 @@ void LandmarkFactory::calc_achievers() {
         }
     }
 }
+
+void LandmarkFactory::add_options_to_parser(OptionParser &parser) {
+    Heuristic::add_options_to_parser(parser);
+    parser.add_option<bool>("reasonable_orders",
+                            "generate reasonable orders",
+                            "false");
+    parser.add_option<bool>("only_causal_landmarks",
+                            "keep only causal landmarks",
+                            "false");
+    parser.add_option<bool>("disjunctive_landmarks",
+                            "keep disjunctive landmarks",
+                            "true");
+    parser.add_option<bool>("conjunctive_landmarks",
+                            "keep conjunctive landmarks",
+                            "true");
+    parser.add_option<bool>("no_orders",
+                            "discard all orderings",
+                            "false");
+
+    /* TODO: The following lines overlap strongly with
+       ::add_cost_type_option_to_parser, but the option name is
+       different, so the method cannot be used directly. We could make
+       the option name in ::add_cost_type_option_to_parser settable by
+       the caller, but this doesn't seem worth it since this option
+       should go away anyway once the landmark code is properly
+       cleaned up. */
+    vector<string> cost_types;
+    cost_types.push_back("NORMAL");
+    cost_types.push_back("ONE");
+    cost_types.push_back("PLUSONE");
+    parser.add_enum_option("lm_cost_type",
+                           cost_types,
+                           "landmark action cost adjustment",
+                           "NORMAL");
+}
+
+
+static PluginTypePlugin<LandmarkFactory> _type_plugin(
+    "LandmarkFactory",
+    "A landmark graph specification is either a newly created "
+    "instance or a landmark graph that has been defined previously. "
+    "This page describes how one can specify a new landmark graph instance. "
+    "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
+    "**Warning:** See OptionCaveats for using cost types with Landmarks");
 }
