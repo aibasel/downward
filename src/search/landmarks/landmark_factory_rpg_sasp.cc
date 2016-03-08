@@ -591,7 +591,7 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     }
 }
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "RHW Landmarks",
         "The landmark generation method introduced by "
@@ -600,7 +600,7 @@ static LandmarkGraph *_parse(OptionParser &parser) {
         "Relevant Options",
         "reasonable_orders, only_causal_landmarks, "
         "disjunctive_landmarks, no_orders");
-    LandmarkGraph::add_options_to_parser(parser);
+    LandmarkFactory::add_options_to_parser(parser);
 
     Options opts = parser.parse();
 
@@ -612,11 +612,9 @@ static LandmarkGraph *_parse(OptionParser &parser) {
         return 0;
     } else {
         opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkFactoryRpgSasp lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkFactoryRpgSasp(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin("lm_rhw", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_rhw", _parse);
 }

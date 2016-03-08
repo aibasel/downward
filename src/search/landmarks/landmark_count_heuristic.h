@@ -12,13 +12,13 @@
 namespace landmarks {
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
-    LandmarkGraph &lgraph;
+    LandmarkGraph *lgraph;
     Exploration *exploration;
     bool use_preferred_operators;
     int lookahead;
     bool ff_search_disjunctive_lms;
 
-    LandmarkStatusManager lm_status_manager;
+    LandmarkStatusManager *lm_status_manager;
     LandmarkCostAssignment *lm_cost_assignment;
 
     bool use_cost_sharing;

@@ -1039,7 +1039,7 @@ void HMLandmarks::generate_landmarks() {
     free_unneeded_memory();
 }
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "h^m Landmarks",
         "The landmark generation method introduced by "
@@ -1049,7 +1049,7 @@ static LandmarkGraph *_parse(OptionParser &parser) {
         "m, reasonable_orders, conjunctive_landmarks, no_orders");
     parser.add_option<int>(
         "m", "subset size (if unsure, use the default of 2)", "2");
-    LandmarkGraph::add_options_to_parser(parser);
+    LandmarkFactory::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
@@ -1063,12 +1063,10 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        HMLandmarks lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new HMLandmarks(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin(
+static Plugin<LandmarkFactory> _plugin(
     "lm_hm", _parse);
 }
