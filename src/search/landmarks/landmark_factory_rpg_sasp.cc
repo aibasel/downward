@@ -155,7 +155,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp))
-                min_cost = min(min_cost, get_adjusted_action_cost(op, lm_graph->get_lm_cost_type()));
+                min_cost = min(min_cost, get_adjusted_action_cost(op, get_lm_cost_type()));
         }
     }
     /*

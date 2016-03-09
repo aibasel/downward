@@ -16,14 +16,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkGraph::LandmarkGraph()
-    : landmarks_count(0), conj_lms(0),
-      reasonable_orders(false),
-      only_causal_landmarks(false),
-      disjunctive_landmarks(true),
-      conjunctive_landmarks(true),
-      no_orders(false),
-      lm_cost_type(NORMAL),
-      conditional_effects_supported(false) {
+    : landmarks_count(0), conj_lms(0) {
+    generate_operators_lookups();
 }
 
 void LandmarkGraph::generate_operators_lookups() {

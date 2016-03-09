@@ -17,6 +17,7 @@ class LandmarkCountHeuristic : public Heuristic {
     bool use_preferred_operators;
     int lookahead;
     bool ff_search_disjunctive_lms;
+    bool conditional_effects_supported;
 
     LandmarkStatusManager *lm_status_manager;
     LandmarkCostAssignment *lm_cost_assignment;

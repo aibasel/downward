@@ -11,28 +11,21 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory(const Options &opts) {
-        lm_graph = new LandmarkGraph();
-        lm_graph->set_exploration(opts.get<Exploration *>("explor"));
-        if (opts.get<bool>("reasonable_orders"))
-            lm_graph->enable_using_reasonable_orderings();
-        if (opts.get<bool>("only_causal_landmarks"))
-            lm_graph->enable_use_only_causal_landmarks();
-        if (!opts.get<bool>("disjunctive_landmarks"))
-            lm_graph->disable_disjunctive_landmarks();
-        if (!opts.get<bool>("conjunctive_landmarks"))
-            lm_graph->disable_conjunctive_landmarks();
-        if (opts.get<bool>("no_orders"))
-            lm_graph->disable_orders();
-        lm_graph->set_lm_cost_type(static_cast<OperatorCost>(opts.get_enum("lm_cost_type")));
-        if (opts.get<bool>("supports_conditional_effects"))
-            lm_graph->enable_support_of_conditional_effects();
-
+LandmarkFactory::LandmarkFactory(const Options &opts)
+    : lm_graph(nullptr),
+      exploration(opts.get<Exploration *>("explor")),
+      reasonable_orders(opts.get<bool>("reasonable_orders")),
+      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
+      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
+      no_orders(opts.get<bool>("no_orders")),
+      lm_cost_type(static_cast<OperatorCost>(opts.get_enum("lm_cost_type"))),
+      conditional_effects_supported(opts.get<bool>("supports_conditional_effects")) {
 }
 
 LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     utils::Timer lm_generation_timer;
-    lm_graph->generate_operators_lookups();
+    lm_graph = new LandmarkGraph();
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"
@@ -52,17 +45,17 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
 }
 
 void LandmarkFactory::generate() {
-    if (lm_graph->use_only_causal_landmarks())
+    if (only_causal_landmarks)
         discard_noncausal_landmarks();
-    if (!lm_graph->use_disjunctive_landmarks())
+    if (!disjunctive_landmarks)
         discard_disjunctive_landmarks();
-    if (!lm_graph->use_conjunctive_landmarks())
+    if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
 
-    if (!lm_graph->use_orders())
+    if (no_orders)
         discard_all_orderings();
-    else if (lm_graph->is_using_reasonable_orderings()) {
+    else if (reasonable_orders) {
         cout << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(false);
         cout << "approx. obedient reasonable orders" << endl;
@@ -145,7 +138,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
                                               exclude->vals[i]));
     }
     // Do relaxed exploration
-    lm_graph->get_exploration()->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
+    exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
                                                                     exclude_props, exclude_ops, compute_lvl_op);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
@@ -182,7 +175,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
         }
     }
     // Do relaxed exploration
-    lm_graph->get_exploration()->compute_reachability_with_excludes(lvl_var, lvl_op, true,
+    exploration->compute_reachability_with_excludes(lvl_var, lvl_op, true,
                                                                     exclude_props, exclude_ops, false);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
