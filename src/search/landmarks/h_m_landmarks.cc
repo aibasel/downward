@@ -793,7 +793,7 @@ void HMLandmarks::compute_h_m_landmarks() {
                 union_with(local_landmarks, h_m_table_[*it].landmarks);
                 insert_into(local_landmarks, *it);
 
-                if (lm_graph->use_orders()) {
+                if (use_orders()) {
                     insert_into(local_necessary, *it);
                 }
             }
@@ -809,7 +809,7 @@ void HMLandmarks::compute_h_m_landmarks() {
                     // or add op to first achievers
                     if (!contains(local_landmarks, *it)) {
                         insert_into(h_m_table_[*it].first_achievers, op_index);
-                        if (lm_graph->use_orders()) {
+                        if (use_orders()) {
                             intersect_with(h_m_table_[*it].necessary, local_necessary);
                         }
                     }
@@ -819,7 +819,7 @@ void HMLandmarks::compute_h_m_landmarks() {
                 } else {
                     h_m_table_[*it].level = level;
                     h_m_table_[*it].landmarks = local_landmarks;
-                    if (lm_graph->use_orders()) {
+                    if (use_orders()) {
                         h_m_table_[*it].necessary = local_necessary;
                     }
                     insert_into(h_m_table_[*it].first_achievers, op_index);
@@ -881,7 +881,7 @@ void HMLandmarks::compute_noop_landmarks(
 
     cn_landmarks = local_landmarks;
 
-    if (lm_graph->use_orders()) {
+    if (use_orders()) {
         cn_necessary.clear();
         cn_necessary = local_necessary;
     }
@@ -891,7 +891,7 @@ void HMLandmarks::compute_noop_landmarks(
         union_with(cn_landmarks, h_m_table_[pm_fluent].landmarks);
         insert_into(cn_landmarks, pm_fluent);
 
-        if (lm_graph->use_orders()) {
+        if (use_orders()) {
             insert_into(cn_necessary, pm_fluent);
         }
     }
@@ -911,7 +911,7 @@ void HMLandmarks::compute_noop_landmarks(
             // or add op to first achievers
             if (!contains(cn_landmarks, pm_fluent)) {
                 insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
-                if (lm_graph->use_orders()) {
+                if (use_orders()) {
                     intersect_with(h_m_table_[pm_fluent].necessary, cn_necessary);
                 }
             }
@@ -921,7 +921,7 @@ void HMLandmarks::compute_noop_landmarks(
         } else {
             h_m_table_[pm_fluent].level = level;
             h_m_table_[pm_fluent].landmarks = cn_landmarks;
-            if (lm_graph->use_orders()) {
+            if (use_orders()) {
                 h_m_table_[pm_fluent].necessary = cn_necessary;
             }
             insert_into(h_m_table_[pm_fluent].first_achievers, op_index);
@@ -1001,7 +1001,7 @@ void HMLandmarks::generate_landmarks() {
     for (std::list<int>::iterator it = all_lms.begin(); it != all_lms.end(); ++it) {
         add_lm_node(*it, false);
     }
-    if (lm_graph->use_orders()) {
+    if (use_orders()) {
         // do reduction of graph
         // if f2 is landmark for f1, subtract landmark set of f2 from that of f1
         for (std::list<int>::iterator f1 = all_lms.begin(); f1 != all_lms.end(); ++f1) {
@@ -1013,7 +1013,7 @@ void HMLandmarks::generate_landmarks() {
             set_minus(h_m_table_[*f1].landmarks, everything_to_remove);
             // remove necessaries here, otherwise they will be overwritten
             // since we are writing them as greedy nec. orderings.
-            if (lm_graph->use_orders())
+            if (use_orders())
                 set_minus(h_m_table_[*f1].landmarks, h_m_table_[*f1].necessary);
         }
 
@@ -1028,7 +1028,7 @@ void HMLandmarks::generate_landmarks() {
 
                 edge_add(*lm_node_table_[*lms_it], *lm_node_table_[set_index], natural);
             }
-            if (lm_graph->use_orders()) {
+            if (use_orders()) {
                 for (std::list<int>::iterator gn_it = h_m_table_[set_index].necessary.begin();
                      gn_it != h_m_table_[set_index].necessary.end(); ++gn_it) {
                     edge_add(*lm_node_table_[*gn_it], *lm_node_table_[set_index], greedy_necessary);

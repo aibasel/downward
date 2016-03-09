@@ -40,7 +40,6 @@ unique_ptr<LandmarkGraph> get_landmark_graph() {
     opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
     unique_ptr<LandmarkGraph> landmark_graph(lm_graph_factory.compute_lm_graph());
-    landmark_graph->invalidate_exploration_for_cegar();
     return landmark_graph;
 }
 

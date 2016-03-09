@@ -1,10 +1,12 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
-#include "exploration.h"
-
 #include "../global_operator.h"
 #include "../option_parser.h"
+#include "../abstract_task.h"
+#include "../globals.h"
+
+
 
 #include "../utils/hash.h"
 
@@ -134,14 +136,6 @@ public:
     int get_reached_cost() const {return reached_cost; }
     LandmarkNode *get_landmark(const Fact &fact) const;
 
-    // TODO: the following method should not exist. Ideally, we want the
-    // information about support for conditional effects to reside in the
-    // landmark factory classes. For now, this cannot easily be done since the
-    // factories do not exist anymore when the landmark heuristic is
-    // constructed.
-    void enable_support_of_conditional_effects() {conditional_effects_supported = true; }
-    bool supports_conditional_effects() {return conditional_effects_supported; }
-
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
     inline const std::set<LandmarkNode *> &get_nodes() const {
@@ -158,32 +152,13 @@ public:
         assert(landmarks_count == static_cast<int>(nodes.size()));
         return landmarks_count;
     }
-    void set_exploration(Exploration *exploration_) {exploration = exploration_; }
-    Exploration *get_exploration() const {
-        assert(exploration);
-        return exploration;
-    }
-
-    /*
-      The CEGAR code creates a landmark graph with an exploration that
-      goes out of scope after the graph has been created. To safeguard
-      against code that accidentally accesses the exploration, we
-      explicitly invalidate it and assert that we never return an
-      invalidated exploration above.
-    */
-    void invalidate_exploration_for_cegar() {
-        exploration = nullptr;
-    }
-
-    void enable_using_reasonable_orderings() {reasonable_orders = true; }
-    bool is_using_reasonable_orderings() const {return reasonable_orders; }
 
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
     LandmarkGraph();
     virtual ~LandmarkGraph() {}
 
-    void generate_operators_lookups();
+
 
     inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
         assert(simple_landmark_exists(a));
@@ -199,15 +174,6 @@ public:
         return operators_eff_lookup[eff.first][eff.second];
     }
 
-    void disable_orders() {no_orders = true; }  // only needed by HMLandmark
-    bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
-    void enable_use_only_causal_landmarks() {only_causal_landmarks = true; }
-    bool use_only_causal_landmarks() const {return only_causal_landmarks; }
-    void disable_disjunctive_landmarks() {disjunctive_landmarks = false; }
-    bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
-    void disable_conjunctive_landmarks() {conjunctive_landmarks = false; }
-    bool use_conjunctive_landmarks() const {return conjunctive_landmarks; }
-
     int number_of_disj_landmarks() const {
         return landmarks_count - (simple_lms_to_nodes.size() + conj_lms);
     }
@@ -215,12 +181,6 @@ public:
         return conj_lms;
     }
     int number_of_edges() const;
-
-    void set_lm_cost_type(OperatorCost cost_type) {lm_cost_type = cost_type; }
-    // HACK! (Temporary accessor needed for LandmarkFactorySasp.)
-    OperatorCost get_lm_cost_type() const {
-        return lm_cost_type;
-    }
 
     bool simple_landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
     bool disj_landmark_exists(const std::set<std::pair<int, int>> &lm) const;  // not needed by HMLandmark
@@ -239,16 +199,9 @@ public:
     void dump_node(const LandmarkNode *node_p) const;
     void dump() const;
 private:
-    Exploration *exploration;
+    void generate_operators_lookups();
     int landmarks_count;
     int conj_lms;
-    bool reasonable_orders;
-    bool only_causal_landmarks;
-    bool disjunctive_landmarks;
-    bool conjunctive_landmarks;
-    bool no_orders;
-    OperatorCost lm_cost_type;
-    bool conditional_effects_supported;
     int reached_cost;
     int needed_cost;
     int landmarks_cost;

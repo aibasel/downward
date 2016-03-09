@@ -21,7 +21,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph();
-    exploration = lgraph->get_exploration();
+    exploration = lm_graph_factory->get_exploration();
+    bool reasonable_orders = lm_graph_factory->is_using_reasonable_orderings();
+    conditional_effects_supported = lm_graph_factory->supports_conditional_effects();
+    delete(lm_graph_factory);
     lm_status_manager = new LandmarkStatusManager(*lgraph);
     use_preferred_operators = opts.get<bool>("pref");
     lookahead = numeric_limits<int>::max();
@@ -31,13 +34,13 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
 
     if (opts.get<bool>("admissible")) {
         use_cost_sharing = true;
-        if (lgraph->is_using_reasonable_orderings()) {
+        if (reasonable_orders) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::INPUT_ERROR);
         } else if (has_axioms()) {
             cerr << "cost partitioning does not support axioms" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
-        } else if (has_conditional_effects() && !lgraph->supports_conditional_effects()) {
+        } else if (has_conditional_effects() && !conditional_effects_supported) {
             cerr << "conditional effects not supported by the landmark generation method" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
         }
@@ -257,7 +260,7 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
 
     // admissible = false
     return !has_axioms() && (!has_conditional_effects()
-                             || lgraph->supports_conditional_effects());
+                             || conditional_effects_supported);
 }
 
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
@@ -273,7 +276,6 @@ void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
 
 
 static Heuristic *_parse(OptionParser &parser) {
-    cout << "here" << endl << endl;
     parser.document_synopsis("Landmark-count heuristic",
                              "See also Synergy");
     parser.document_note(

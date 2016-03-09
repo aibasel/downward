@@ -20,10 +20,20 @@ public:
     // take care to delete the pointer when you don't need it anymore!
     // (method should principally anyways be called by every inheriting class)
     LandmarkGraph *compute_lm_graph();
+    Exploration *get_exploration() const {
+        assert(exploration);
+        return exploration;
+    }
+    bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
+    bool is_using_reasonable_orderings() const {return reasonable_orders; }
     static void add_options_to_parser(OptionParser &parser);
-    bool supports_conditional_effects() {return lm_graph->supports_conditional_effects(); }
+    bool supports_conditional_effects() {return conditional_effects_supported; }
 protected:
     LandmarkGraph *lm_graph;
+
+    bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
+    OperatorCost get_lm_cost_type() const { return lm_cost_type; }
+
     virtual void generate_landmarks() = 0;
     void generate();
     void discard_noncausal_landmarks();
@@ -47,6 +57,17 @@ protected:
     bool is_landmark_precondition(const GlobalOperator &o, const LandmarkNode *lmp) const;
 
 private:
+    Exploration *exploration;
+    int landmarks_count;
+    int conj_lms;
+    bool reasonable_orders;
+    bool only_causal_landmarks;
+    bool disjunctive_landmarks;
+    bool conjunctive_landmarks;
+    bool no_orders;
+    OperatorCost lm_cost_type;
+    bool conditional_effects_supported;
+
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const std::vector<GlobalEffect> &effects,
                                std::set<std::pair<int, int>> &eff) const;
