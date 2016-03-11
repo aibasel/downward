@@ -143,8 +143,8 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     } else {
         vector<LandmarkFactory *> lm_factories = opts.get_list<LandmarkFactory *>("lm_factories");
         bool supports_conditional_effects = true;
-        for (size_t i = 0; i < lm_factories.size(); ++i) {
-            if (!lm_factories[i]->supports_conditional_effects()) {
+        for (LandmarkFactory *lm_factory : lm_factories) {
+            if (!lm_factory->supports_conditional_effects()) {
                 supports_conditional_effects = false;
                 break;
             }

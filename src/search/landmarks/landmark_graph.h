@@ -1,12 +1,10 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
-#include "../global_operator.h"
-#include "../option_parser.h"
 #include "../abstract_task.h"
+#include "../global_operator.h"
 #include "../globals.h"
-
-
+#include "../option_parser.h"
 
 #include "../utils/hash.h"
 
@@ -157,8 +155,6 @@ public:
     // methods needed only by landmarkgraph-factories
     LandmarkGraph();
     virtual ~LandmarkGraph() {}
-
-
 
     inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
         assert(simple_landmark_exists(a));
