@@ -1,11 +1,13 @@
 #include "landmark_count_heuristic.h"
 
 #include "landmark_factory.h"
+
 #include "../plugin.h"
 #include "../successor_generator.h"
 
 #include "../lp/lp_solver.h"
 
+#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <cmath>
@@ -17,20 +19,24 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
-    : Heuristic(opts) {
+    : Heuristic(opts),
+      lgraph(nullptr),
+      exploration(nullptr),
+      use_preferred_operators(opts.get<bool>("pref")),
+      lookahead(numeric_limits<int>::max()),
+      ff_search_disjunctive_lms(false),
+      conditional_effects_supported(false),
+      lm_status_manager(nullptr),
+      lm_cost_assignment(nullptr)
+      {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph();
     exploration = lm_graph_factory->get_exploration();
-    bool reasonable_orders = lm_graph_factory->is_using_reasonable_orderings();
+    bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     conditional_effects_supported = lm_graph_factory->supports_conditional_effects();
     delete(lm_graph_factory);
-    lm_status_manager = new LandmarkStatusManager(*lgraph);
-    use_preferred_operators = opts.get<bool>("pref");
-    lookahead = numeric_limits<int>::max();
-    // When generating preferred operators, we plan towards
-    // non-disjunctive landmarks only
-    ff_search_disjunctive_lms = false;
+    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (opts.get<bool>("admissible")) {
         use_cost_sharing = true;
@@ -45,12 +51,12 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
             utils::exit_with(ExitCode::UNSUPPORTED);
         }
         if (opts.get<bool>("optimal")) {
-            lm_cost_assignment = new LandmarkEfficientOptimalSharedCostAssignment(
+            lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 *lgraph,
                 OperatorCost(opts.get_enum("cost_type")),
                 lp::LPSolverType(opts.get_enum("lpsolver")));
         } else {
-            lm_cost_assignment = new LandmarkUniformSharedCostAssignment(
+            lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 *lgraph, opts.get<bool>("alm"),
                 OperatorCost(opts.get_enum("cost_type")));
         }
@@ -143,8 +149,8 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
             exploration->exported_ops.clear();
             return DEAD_END;
         }
-        for (size_t i = 0; i < exploration->exported_ops.size(); ++i) {
-            set_preferred(exploration->exported_ops[i]);
+        for (const GlobalOperator *exported_op : exploration->exported_ops) {
+            set_preferred(exported_op);
         }
         exploration->exported_ops.clear();
     }
@@ -155,8 +161,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
                                                LandmarkSet &reached_lms, vector<pair<int, int>> &leaves) {
     set<LandmarkNode *>::const_iterator it;
-    for (it = lgraph->get_nodes().begin(); it != lgraph->get_nodes().end(); ++it) {
-        LandmarkNode *node_p = *it;
+    for (LandmarkNode *node_p : lgraph->get_nodes()) {
 
         if (!disjunctive_lms && node_p->disjunctive)
             continue;

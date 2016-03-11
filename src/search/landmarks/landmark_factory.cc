@@ -1,8 +1,9 @@
 #include "landmark_factory.h"
 
-#include "../plugin.h"
 #include "util.h"
 
+#include "../plugin.h"
+#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <fstream>
@@ -23,9 +24,9 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
       conditional_effects_supported(opts.get<bool>("supports_conditional_effects")) {
 }
 
-LandmarkGraph *LandmarkFactory::compute_lm_graph() {
+std::unique_ptr<LandmarkGraph> &&LandmarkFactory::compute_lm_graph() {
     utils::Timer lm_generation_timer;
-    lm_graph = new LandmarkGraph();
+    lm_graph = utils::make_unique_ptr<LandmarkGraph>();
     generate_landmarks();
 
     // the following replaces the old "build_lm_graph"
@@ -41,7 +42,7 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
              << lm_graph->number_of_edges() << " edges\n";
     }
     //lm_graph->dump();
-    return lm_graph;
+    return move(lm_graph);
 }
 
 void LandmarkFactory::generate() {
@@ -138,8 +139,8 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
                                               exclude->vals[i]));
     }
     // Do relaxed exploration
-    exploration->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
-                                                                    exclude_props, exclude_ops, compute_lvl_op);
+    exploration->compute_reachability_with_excludes(
+                lvl_var, lvl_op, level_out, exclude_props, exclude_ops, compute_lvl_op);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (size_t i = 0; i < g_goal.size(); ++i)
@@ -175,8 +176,8 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
         }
     }
     // Do relaxed exploration
-    exploration->compute_reachability_with_excludes(lvl_var, lvl_op, true,
-                                                                    exclude_props, exclude_ops, false);
+    exploration->compute_reachability_with_excludes(
+                lvl_var, lvl_op, true, exclude_props, exclude_ops, false);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (size_t i = 0; i < g_goal.size(); ++i)
@@ -826,9 +827,9 @@ void LandmarkFactory::add_options_to_parser(OptionParser &parser) {
 
 static PluginTypePlugin<LandmarkFactory> _type_plugin(
     "LandmarkFactory",
-    "A landmark graph specification is either a newly created "
-    "instance or a landmark graph that has been defined previously. "
-    "This page describes how one can specify a new landmark graph instance. "
-    "For re-using landmark graphs, see OptionSyntax#Landmark_Predefinitions.\n\n"
+    "A landmark factory specification is either a newly created "
+    "instance or a landmark factory that has been defined previously. "
+    "This page describes how one can specify a new landmark factory instance. "
+    "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.\n\n"
     "**Warning:** See OptionCaveats for using cost types with Landmarks");
 }
