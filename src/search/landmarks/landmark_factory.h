@@ -13,12 +13,9 @@
 namespace landmarks {
 class LandmarkFactory {
 public:
-    LandmarkFactory(const Options &opts);
+    explicit LandmarkFactory(const Options &opts);
     virtual ~LandmarkFactory() {}
-    // compute_lm_graph *must* be called to avoid memory leeks!
-    // returns a landmarkgraph created by a factory class.
-    // take care to delete the pointer when you don't need it anymore!
-    // (method should principally anyways be called by every inheriting class)
+
     std::unique_ptr<LandmarkGraph> &&compute_lm_graph();
     Exploration *get_exploration() const {
         assert(exploration);

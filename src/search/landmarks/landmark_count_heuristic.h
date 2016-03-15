@@ -32,7 +32,7 @@ class LandmarkCountHeuristic : public Heuristic {
                              LandmarkSet &result);
     // returns true iff relaxed reachable and marks relaxed operators
 
-    bool check_node_orders_disobeyed(LandmarkNode &node,
+    bool check_node_orders_disobeyed(const LandmarkNode &node,
                                      const LandmarkSet &reached) const;
 
     void add_node_children(LandmarkNode &node, const LandmarkSet &reached) const;
