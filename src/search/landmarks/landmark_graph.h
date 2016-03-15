@@ -121,7 +121,7 @@ struct LandmarkNodeComparer {
 };
 
 
-typedef std::unordered_set<LandmarkNode *> LandmarkSet;
+typedef std::unordered_set<const LandmarkNode *> LandmarkSet;
 
 class LandmarkGraph {
 public:

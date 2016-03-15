@@ -20,7 +20,6 @@ using utils::ExitCode;
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
     : Heuristic(opts),
-      lgraph(nullptr),
       exploration(nullptr),
       use_preferred_operators(opts.get<bool>("pref")),
       lookahead(numeric_limits<int>::max()),
@@ -160,8 +159,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
 
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
                                                LandmarkSet &reached_lms, vector<pair<int, int>> &leaves) {
-    set<LandmarkNode *>::const_iterator it;
-    for (LandmarkNode *node_p : lgraph->get_nodes()) {
+    for (const LandmarkNode *node_p : lgraph->get_nodes()) {
 
         if (!disjunctive_lms && node_p->disjunctive)
             continue;
@@ -177,7 +175,7 @@ void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
     }
 }
 
-bool LandmarkCountHeuristic::check_node_orders_disobeyed(LandmarkNode &node,
+bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &node,
                                                          const LandmarkSet &reached) const {
     for (const auto &parent : node.parents) {
         if (reached.count(parent.first) == 0) {
