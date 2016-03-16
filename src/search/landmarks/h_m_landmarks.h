@@ -69,7 +69,7 @@ typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
 class HMLandmarks : public LandmarkFactory {
 public:
-    HMLandmarks(const Options &opts);
+    HMLandmarks(const options::Options &opts);
     virtual ~HMLandmarks() {}
 
 // should be used together in a tuple?

@@ -2,6 +2,7 @@
 
 #include "landmark_factory.h"
 
+#include "../option_parser.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
 
@@ -18,23 +19,20 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkCountHeuristic::LandmarkCountHeuristic(const Options &opts)
+LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
-      exploration(nullptr),
       use_preferred_operators(opts.get<bool>("pref")),
       lookahead(numeric_limits<int>::max()),
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(false),
       lm_status_manager(nullptr),
-      lm_cost_assignment(nullptr)
-      {
+      lm_cost_assignment(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph();
     exploration = lm_graph_factory->get_exploration();
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     conditional_effects_supported = lm_graph_factory->supports_conditional_effects();
-    delete(lm_graph_factory);
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (opts.get<bool>("admissible")) {
@@ -160,7 +158,6 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
                                                LandmarkSet &reached_lms, vector<pair<int, int>> &leaves) {
     for (const LandmarkNode *node_p : lgraph->get_nodes()) {
-
         if (!disjunctive_lms && node_p->disjunctive)
             continue;
 

@@ -1,5 +1,6 @@
 #include "h_m_landmarks.h"
 
+#include "../option_parser.h"
 #include "../plugin.h"
 
 #include "../utils/collections.h"
@@ -587,7 +588,7 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
     return !are_mutex(Fact(var1, val1), Fact(var2, val2));
 }
 
-HMLandmarks::HMLandmarks(const Options &opts)
+HMLandmarks::HMLandmarks(const options::Options &opts)
     : LandmarkFactory(opts),
       m_(opts.get<int>("m")) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;

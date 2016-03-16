@@ -1,5 +1,6 @@
 #include "landmark_graph.h"
 
+#include "../abstract_task.h"
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"

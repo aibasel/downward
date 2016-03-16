@@ -2,6 +2,7 @@
 
 #include "util.h"
 
+#include "../option_parser.h"
 #include "../plugin.h"
 
 #include "../utils/memory.h"
@@ -13,9 +14,8 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory(const Options &opts)
-    : lm_graph(nullptr),
-      exploration(opts.get<Exploration *>("explor")),
+LandmarkFactory::LandmarkFactory(const options::Options &opts)
+    : exploration(opts.get<Exploration *>("explor")),
       reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
@@ -25,7 +25,7 @@ LandmarkFactory::LandmarkFactory(const Options &opts)
       conditional_effects_supported(opts.get<bool>("supports_conditional_effects")) {
 }
 
-std::unique_ptr<LandmarkGraph> &&LandmarkFactory::compute_lm_graph() {
+std::unique_ptr<LandmarkGraph> && LandmarkFactory::compute_lm_graph() {
     utils::Timer lm_generation_timer;
     lm_graph = utils::make_unique_ptr<LandmarkGraph>();
     generate_landmarks();
@@ -141,7 +141,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
     }
     // Do relaxed exploration
     exploration->compute_reachability_with_excludes(
-                lvl_var, lvl_op, level_out, exclude_props, exclude_ops, compute_lvl_op);
+        lvl_var, lvl_op, level_out, exclude_props, exclude_ops, compute_lvl_op);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (size_t i = 0; i < g_goal.size(); ++i)
@@ -178,7 +178,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
     }
     // Do relaxed exploration
     exploration->compute_reachability_with_excludes(
-                lvl_var, lvl_op, true, exclude_props, exclude_ops, false);
+        lvl_var, lvl_op, true, exclude_props, exclude_ops, false);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (size_t i = 0; i < g_goal.size(); ++i)

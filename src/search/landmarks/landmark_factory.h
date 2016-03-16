@@ -10,21 +10,27 @@
 #include <unordered_set>
 #include <vector>
 
+namespace options {
+class OptionParser;
+class Options;
+}
+
 namespace landmarks {
 class LandmarkFactory {
 public:
-    explicit LandmarkFactory(const Options &opts);
+    explicit LandmarkFactory(const options::Options &opts);
     virtual ~LandmarkFactory() {}
 
-    std::unique_ptr<LandmarkGraph> &&compute_lm_graph();
+    std::unique_ptr<LandmarkGraph> && compute_lm_graph();
     Exploration *get_exploration() const {
         assert(exploration);
         return exploration;
     }
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
     bool use_reasonable_orders() const {return reasonable_orders; }
-    static void add_options_to_parser(OptionParser &parser);
-    bool supports_conditional_effects() {return conditional_effects_supported; }
+    bool supports_conditional_effects() const {return conditional_effects_supported; }
+
+    static void add_options_to_parser(options::OptionParser &parser);
 
 protected:
     std::unique_ptr<LandmarkGraph> lm_graph;
