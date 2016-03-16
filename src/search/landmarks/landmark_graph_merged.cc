@@ -12,11 +12,8 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
-    : LandmarkFactory(opts) {
-    vector<LandmarkFactory *> lm_factories = opts.get_list<LandmarkFactory *>("lm_factories");
-    for (LandmarkFactory *lm_factory : lm_factories) {
-        lm_graphs.push_back(lm_factory->compute_lm_graph());
-    }
+    : LandmarkFactory(opts),
+      lm_factories(opts.get_list<LandmarkFactory *>("lm_factories")) {
 }
 
 LandmarkGraphMerged::~LandmarkGraphMerged() {
@@ -45,8 +42,12 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
     return 0;
 }
 
-void LandmarkGraphMerged::generate_landmarks() {
-    cout << "Merging " << lm_graphs.size() << " landmark graphs" << endl;
+void LandmarkGraphMerged::generate_landmarks(Exploration &exploration) {
+    cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
+
+    for (LandmarkFactory *lm_factory : lm_factories) {
+        lm_graphs.push_back(lm_factory->compute_lm_graph(exploration));
+    }
 
     cout << "Adding simple landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
@@ -150,7 +151,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
             }
         }
         opts.set<bool>("supports_conditional_effects", supports_conditional_effects);
-        opts.set<Exploration *>("explor", new Exploration(opts));
         return new LandmarkGraphMerged(opts);
     }
 }

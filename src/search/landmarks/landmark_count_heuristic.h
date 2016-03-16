@@ -13,7 +13,7 @@ namespace landmarks {
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
     std::unique_ptr<LandmarkGraph> lgraph;
-    Exploration *exploration;
+    Exploration exploration;
     bool use_preferred_operators;
     int lookahead;
     bool ff_search_disjunctive_lms;
@@ -43,7 +43,7 @@ class LandmarkCountHeuristic : public Heuristic {
                                   const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &state);
 
-    Exploration *get_exploration() {return exploration; }
+    Exploration *get_exploration() {return &exploration; }
     void convert_lms(LandmarkSet &lms_set, const std::vector<bool> &lms_vec);
 protected:
     virtual int compute_heuristic(const GlobalState &state);

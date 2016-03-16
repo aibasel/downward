@@ -19,7 +19,7 @@ LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks() {
+void LandmarkFactoryZhuGivan::generate_landmarks(Exploration & /* exploration */) {
     cout << "Generating landmarks using Zhu/Givan label propagation\n";
 
     compute_triggers();
@@ -306,7 +306,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        opts.set<Exploration *>("explor", new Exploration(opts));
         return new LandmarkFactoryZhuGivan(opts);
     }
 }

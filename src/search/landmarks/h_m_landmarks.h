@@ -78,7 +78,7 @@ private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef std::unordered_map<int, std::set<int>> TriggerSet;
 
-    virtual void generate_landmarks();
+    virtual void generate_landmarks(Exploration &exploration);
 
     void compute_h_m_landmarks();
     void compute_noop_landmarks(int op_index, int noop_index,

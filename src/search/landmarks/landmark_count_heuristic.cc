@@ -21,6 +21,7 @@ using utils::ExitCode;
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
+      exploration(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       lookahead(numeric_limits<int>::max()),
       ff_search_disjunctive_lms(false),
@@ -29,8 +30,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       lm_cost_assignment(nullptr) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
-    lgraph = lm_graph_factory->compute_lm_graph();
-    exploration = lm_graph_factory->get_exploration();
+    lgraph = lm_graph_factory->compute_lm_graph(exploration);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     conditional_effects_supported = lm_graph_factory->supports_conditional_effects();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
@@ -66,14 +66,13 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
 }
 
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
-    assert(exploration != 0);
     // Set additional goals for FF exploration
     vector<pair<int, int>> lm_leaves;
     LandmarkSet result;
     const vector<bool> &reached_lms_v = lm_status_manager->get_reached_landmarks(state);
     convert_lms(result, reached_lms_v);
     collect_lm_leaves(ff_search_disjunctive_lms, result, lm_leaves);
-    exploration->set_additional_goals(lm_leaves);
+    exploration.set_additional_goals(lm_leaves);
 }
 
 int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
@@ -142,14 +141,14 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
         // Use FF to plan to a landmark leaf
         vector<pair<int, int>> leaves;
         collect_lm_leaves(ff_search_disjunctive_lms, reached_lms, leaves);
-        if (!exploration->plan_for_disj(leaves, state)) {
-            exploration->exported_ops.clear();
+        if (!exploration.plan_for_disj(leaves, state)) {
+            exploration.exported_ops.clear();
             return DEAD_END;
         }
-        for (const GlobalOperator *exported_op : exploration->exported_ops) {
+        for (const GlobalOperator *exported_op : exploration.exported_ops) {
             set_preferred(exported_op);
         }
-        exploration->exported_ops.clear();
+        exploration.exported_ops.clear();
     }
 
     return h;

@@ -10,7 +10,7 @@ public:
     LandmarkFactoryRpgExhaust(const options::Options &opts);
     virtual ~LandmarkFactoryRpgExhaust() {}
 private:
-    void generate_landmarks();
+    void generate_landmarks(Exploration &exploration);
 };
 }
 

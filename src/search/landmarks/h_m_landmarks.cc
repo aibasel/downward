@@ -1,5 +1,6 @@
 #include "h_m_landmarks.h"
 
+#include "../abstract_task.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -954,7 +955,7 @@ void HMLandmarks::add_lm_node(int set_index, bool goal) {
     }
 }
 
-void HMLandmarks::generate_landmarks() {
+void HMLandmarks::generate_landmarks(Exploration & /* exploration */) {
     int set_index;
     init();
     compute_h_m_landmarks();
@@ -1054,8 +1055,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;
-
-    opts.set("explor", new Exploration(opts));
 
     parser.document_language_support("conditional_effects",
                                      "ignored, i.e. not supported");
