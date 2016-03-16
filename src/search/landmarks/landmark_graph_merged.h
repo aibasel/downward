@@ -12,7 +12,7 @@ class LandmarkGraphMerged : public LandmarkFactory {
     void generate_landmarks();
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
-    LandmarkGraphMerged(const Options &opts);
+    LandmarkGraphMerged(const options::Options &opts);
     virtual ~LandmarkGraphMerged();
 };
 }

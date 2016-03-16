@@ -47,7 +47,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
 
     void build_disjunction_classes();
 public:
-    LandmarkFactoryRpgSasp(const Options &opts);
+    LandmarkFactoryRpgSasp(const options::Options &opts);
     virtual ~LandmarkFactoryRpgSasp() {}
 };
 }

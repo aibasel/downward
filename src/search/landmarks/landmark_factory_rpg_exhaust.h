@@ -7,7 +7,7 @@
 namespace landmarks {
 class LandmarkFactoryRpgExhaust : public LandmarkFactory {
 public:
-    LandmarkFactoryRpgExhaust(const Options &opts);
+    LandmarkFactoryRpgExhaust(const options::Options &opts);
     virtual ~LandmarkFactoryRpgExhaust() {}
 private:
     void generate_landmarks();
