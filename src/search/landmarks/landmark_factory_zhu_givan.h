@@ -72,7 +72,7 @@ public:
     // test if layer satisfies goal
     bool satisfies_goal_conditions(const proposition_layer &) const;
 
-    void generate_landmarks();
+    void generate_landmarks(Exploration &exploration);
 
 public:
     LandmarkFactoryZhuGivan(const options::Options &opts);

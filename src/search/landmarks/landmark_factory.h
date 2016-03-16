@@ -2,7 +2,8 @@
 #define LANDMARKS_LANDMARK_FACTORY_H
 
 #include "landmark_graph.h"
-#include "exploration.h"
+
+#include "../operator_cost.h"
 
 #include <map>
 #include <set>
@@ -16,16 +17,15 @@ class Options;
 }
 
 namespace landmarks {
+class Exploration;
+
 class LandmarkFactory {
 public:
     explicit LandmarkFactory(const options::Options &opts);
     virtual ~LandmarkFactory() {}
 
-    std::unique_ptr<LandmarkGraph> && compute_lm_graph();
-    Exploration *get_exploration() const {
-        assert(exploration);
-        return exploration;
-    }
+    std::unique_ptr<LandmarkGraph> &&compute_lm_graph(Exploration &exploration);
+
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
     bool use_reasonable_orders() const {return reasonable_orders; }
     bool supports_conditional_effects() const {return conditional_effects_supported; }
@@ -38,21 +38,23 @@ protected:
     bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
     OperatorCost get_lm_cost_type() const {return lm_cost_type; }
 
-    virtual void generate_landmarks() = 0;
-    void generate();
-    void discard_noncausal_landmarks();
+    virtual void generate_landmarks(Exploration &exploration) = 0;
+    void generate(Exploration &exploration);
+    void discard_noncausal_landmarks(Exploration &exploration);
     void discard_disjunctive_landmarks();
     void discard_conjunctive_landmarks();
     void discard_all_orderings();
-    inline bool relaxed_task_solvable(bool level_out,
+    inline bool relaxed_task_solvable(Exploration &exploration,
+                                      bool level_out,
                                       const LandmarkNode *exclude,
                                       bool compute_lvl_op = false) const {
         std::vector<std::vector<int>> lvl_var;
         std::vector<std::unordered_map<std::pair<int, int>, int>> lvl_op;
-        return relaxed_task_solvable(lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
+        return relaxed_task_solvable(exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
     void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
-    void compute_predecessor_information(LandmarkNode *bp,
+    void compute_predecessor_information(Exploration &exploration,
+                                         LandmarkNode *bp,
                                          std::vector<std::vector<int>> &lvl_var,
                                          std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op);
 
@@ -61,7 +63,6 @@ protected:
     bool is_landmark_precondition(const GlobalOperator &o, const LandmarkNode *lmp) const;
 
 private:
-    Exploration *exploration;
     int landmarks_count;
     int conj_lms;
     const bool reasonable_orders;
@@ -85,13 +86,14 @@ private:
     int calculate_lms_cost() const;
     void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);
-    bool relaxed_task_solvable(std::vector<std::vector<int>> &lvl_var,
+    bool relaxed_task_solvable(Exploration &exploration,
+                               std::vector<std::vector<int>> &lvl_var,
                                std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op,
                                bool level_out,
                                const LandmarkNode *exclude,
                                bool compute_lvl_op = false) const;
-    bool is_causal_landmark(const LandmarkNode &landmark) const;
-    virtual void calc_achievers(); // keep this virtual because HMLandmarks overrides it!
+    bool is_causal_landmark(Exploration &exploration, const LandmarkNode &landmark) const;
+    virtual void calc_achievers(Exploration &exploration); // keep this virtual because HMLandmarks overrides it!
 };
 }
 

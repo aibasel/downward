@@ -16,7 +16,7 @@ LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
     : LandmarkFactory(opts) {
 }
 
-void LandmarkFactoryRpgExhaust::generate_landmarks() {
+void LandmarkFactoryRpgExhaust::generate_landmarks(Exploration &exploration) {
     cout << "Generating landmarks by testing all facts with RPG method" << endl;
 
     // insert goal landmarks and mark them as goals
@@ -31,7 +31,7 @@ void LandmarkFactoryRpgExhaust::generate_landmarks() {
             const pair<int, int> lm = make_pair(i, j);
             if (!lm_graph->simple_landmark_exists(lm)) {
                 LandmarkNode *new_lm = &lm_graph->landmark_add_simple(lm);
-                if (initial_state[lm.first] != lm.second && relaxed_task_solvable(true, new_lm)) {
+                if (initial_state[lm.first] != lm.second && relaxed_task_solvable(exploration, true, new_lm)) {
                     assert(lm_graph->landmark_exists(lm));
                     LandmarkNode *node;
                     if (lm_graph->simple_landmark_exists(lm))
@@ -64,7 +64,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        opts.set<Exploration *>("explor", new Exploration(opts));
         return new LandmarkFactoryRpgExhaust(opts);
     }
 }

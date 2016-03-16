@@ -413,7 +413,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     }
 }
 
-void LandmarkFactoryRpgSasp::generate_landmarks() {
+void LandmarkFactoryRpgSasp::generate_landmarks(Exploration &exploration) {
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
     build_dtg_successors();
     build_disjunction_classes();
@@ -436,7 +436,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
             // applied (in lvl_ops).
             vector<vector<int>> lvl_var;
             vector<unordered_map<pair<int, int>, int>> lvl_op;
-            compute_predecessor_information(bp, lvl_var, lvl_op);
+            compute_predecessor_information(exploration, bp, lvl_var, lvl_op);
             // Use this information to determine all operators that can possibly achieve bp
             // for the first time, and collect any precondition propositions that all such
             // operators share (if there are any).
@@ -611,7 +611,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return 0;
     } else {
-        opts.set<Exploration *>("explor", new Exploration(opts));
         return new LandmarkFactoryRpgSasp(opts);
     }
 }

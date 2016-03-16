@@ -1,5 +1,6 @@
 #include "landmark_factory.h"
 
+#include "exploration.h"
 #include "util.h"
 
 #include "../option_parser.h"
@@ -15,8 +16,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
-    : exploration(opts.get<Exploration *>("explor")),
-      reasonable_orders(opts.get<bool>("reasonable_orders")),
+    : reasonable_orders(opts.get<bool>("reasonable_orders")),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
@@ -25,13 +25,13 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
       conditional_effects_supported(opts.get<bool>("supports_conditional_effects")) {
 }
 
-std::unique_ptr<LandmarkGraph> && LandmarkFactory::compute_lm_graph() {
+std::unique_ptr<LandmarkGraph> &&LandmarkFactory::compute_lm_graph(Exploration &exploration) {
     utils::Timer lm_generation_timer;
     lm_graph = utils::make_unique_ptr<LandmarkGraph>();
-    generate_landmarks();
+    generate_landmarks(exploration);
 
     // the following replaces the old "build_lm_graph"
-    generate();
+    generate(exploration);
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
@@ -46,9 +46,9 @@ std::unique_ptr<LandmarkGraph> && LandmarkFactory::compute_lm_graph() {
     return move(lm_graph);
 }
 
-void LandmarkFactory::generate() {
+void LandmarkFactory::generate(Exploration &exploration) {
     if (only_causal_landmarks)
-        discard_noncausal_landmarks();
+        discard_noncausal_landmarks(exploration);
     if (!disjunctive_landmarks)
         discard_disjunctive_landmarks();
     if (!conjunctive_landmarks)
@@ -65,7 +65,7 @@ void LandmarkFactory::generate() {
     }
     mk_acyclic_graph();
     lm_graph->set_landmark_cost(calculate_lms_cost());
-    calc_achievers();
+    calc_achievers(exploration);
 }
 
 bool LandmarkFactory::achieves_non_conditional(const GlobalOperator &o,
@@ -100,7 +100,7 @@ bool LandmarkFactory::is_landmark_precondition(const GlobalOperator &o,
     return false;
 }
 
-bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
+bool LandmarkFactory::relaxed_task_solvable(Exploration &exploration, vector<vector<int>> &lvl_var,
                                             vector<unordered_map<pair<int, int>, int>> &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
@@ -140,7 +140,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
                                               exclude->vals[i]));
     }
     // Do relaxed exploration
-    exploration->compute_reachability_with_excludes(
+    exploration.compute_reachability_with_excludes(
         lvl_var, lvl_op, level_out, exclude_props, exclude_ops, compute_lvl_op);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
@@ -153,7 +153,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
 }
 
 
-bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
+bool LandmarkFactory::is_causal_landmark(Exploration &exploration, const LandmarkNode &landmark) const {
     /* Test whether the relaxed planning task is unsolvable without using any operator
        that has "landmark" has a precondition.
        Similar to "relaxed_task_solvable" above.
@@ -177,7 +177,7 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
         }
     }
     // Do relaxed exploration
-    exploration->compute_reachability_with_excludes(
+    exploration.compute_reachability_with_excludes(
         lvl_var, lvl_op, true, exclude_props, exclude_ops, false);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
@@ -552,7 +552,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(to.parents.find(&from) != to.parents.end());
 }
 
-void LandmarkFactory::discard_noncausal_landmarks() {
+void LandmarkFactory::discard_noncausal_landmarks(Exploration &exploration) {
     int number_of_noncausal_landmarks = 0;
     bool change = true;
     while (change) {
@@ -560,7 +560,7 @@ void LandmarkFactory::discard_noncausal_landmarks() {
         for (set<LandmarkNode *>::const_iterator it = lm_graph->get_nodes().begin(); it
              != lm_graph->get_nodes().end(); ++it) {
             LandmarkNode *n = *it;
-            if (!is_causal_landmark(*n)) {
+            if (!is_causal_landmark(exploration, *n)) {
                 cout << "Discarding non-causal landmark: ";
                 lm_graph->dump_node(n);
                 lm_graph->rm_landmark_node(n);
@@ -749,6 +749,7 @@ int LandmarkFactory::calculate_lms_cost() const {
 }
 
 void LandmarkFactory::compute_predecessor_information(
+    Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
     std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op) {
@@ -756,10 +757,10 @@ void LandmarkFactory::compute_predecessor_information(
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
 
-    relaxed_task_solvable(lvl_var, lvl_op, true, bp);
+    relaxed_task_solvable(exploration, lvl_var, lvl_op, true, bp);
 }
 
-void LandmarkFactory::calc_achievers() {
+void LandmarkFactory::calc_achievers(Exploration &exploration) {
     for (set<LandmarkNode *>::iterator node_it = lm_graph->get_nodes().begin(); node_it
          != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &lmn = **node_it;
@@ -775,7 +776,7 @@ void LandmarkFactory::calc_achievers() {
 
         vector<vector<int>> lvl_var;
         vector<unordered_map<pair<int, int>, int>> lvl_op;
-        compute_predecessor_information(&lmn, lvl_var, lvl_op);
+        compute_predecessor_information(exploration, &lmn, lvl_var, lvl_op);
 
         set<int>::iterator ach_it;
         for (ach_it = lmn.possible_achievers.begin(); ach_it
