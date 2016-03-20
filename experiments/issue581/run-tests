@@ -1,0 +1,19 @@
+#! /bin/bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")"
+cd ../..
+
+py.test driver/tests.py
+py.test src/translate/tests/test_scripts.py
+
+# misc/buildbot/buildbot-exp.py  # TODO: Use FastDownwardExperiment
+
+misc/tests/test-exitcodes.py
+misc/tests/test-standard-configs.py
+misc/tests/test-translator.py  # TODO: Pass benchmarks dir
+
+# Commented out because compilation is slow.
+# misc/make-ipc-submission seq-sat-lama-2011 64
+
