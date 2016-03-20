@@ -37,6 +37,7 @@ hg archive -I 're:src\/search\/' $DIST
 hg archive -I 're:driver\/' $DIST
 hg archive -I 're:fast-downward.py' $DIST
 hg archive -I 're:build.py' $DIST
+hg archive -I 're:build_configs.py' $DIST
 hg id -i >> $DIST/src/VERSION
 echo "$WORDSIZE bit" >> $DIST/src/VERSION
 
@@ -76,7 +77,7 @@ rm -rf $DIST
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 echo $DIR
-BENCHMARKS="$DIR/../benchmarks"
+BENCHMARKS="$DIR/../misc/tests/benchmarks"
 VALIDATOR="$DIR/../src/VAL/validate"
 
 function planner-test-run () {
@@ -101,7 +102,7 @@ if [[ "$SANITY_TEST_UNPACK" == 1 ]]; then
         ./build
 
         if [[ "$SANITY_TEST_RUN_STRIPS" == 1 ]]; then
-            planner-test-run grid/domain.pddl grid/prob01.pddl
+            planner-test-run gripper/domain.pddl gripper/prob01.pddl
         fi
         if [[ "$SANITY_TEST_RUN_AXIOMS" == 1 ]]; then
             planner-test-run psr-large/domain.pddl \
