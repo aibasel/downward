@@ -33,7 +33,7 @@ VERSIONS = ["2.7", "3"]
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 DRIVER = os.path.join(REPO, "fast-downward.py")
-BENCHMARKS = os.path.join(REPO, "benchmarks")
+BENCHMARKS = os.path.join(REPO, "misc", "tests", "benchmarks")
 
 # Translating these problems covers 84% of the translator code. Translating all
 # first problems covers 85%.

@@ -8,7 +8,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
-BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
+BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
 DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
 TASKS = {
