@@ -2,7 +2,6 @@
 #define LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
 
 #include "landmark_factory.h"
-#include "landmark_graph.h"
 
 #include "../globals.h"
 
@@ -72,7 +71,7 @@ public:
     // test if layer satisfies goal
     bool satisfies_goal_conditions(const proposition_layer &) const;
 
-    void generate_landmarks(Exploration &exploration);
+    virtual void generate_landmarks(Exploration &exploration) override;
 
 public:
     LandmarkFactoryZhuGivan(const options::Options &opts);
