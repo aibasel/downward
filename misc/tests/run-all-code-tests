@@ -8,7 +8,7 @@ set -x
 
 ./test-exitcodes.py
 ./test-standard-configs.py
-./test-translator.py
+./test-translator.py --all ../../misc/tests/benchmarks
 
 py.test ../../driver/tests.py
 
