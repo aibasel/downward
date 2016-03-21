@@ -631,7 +631,7 @@ void HMLandmarks::init() {
     //  std::cout << "Built P(m) ops, total: " << pm_ops_.size() << "." << std::endl;
 }
 
-void HMLandmarks::calc_achievers() {
+void HMLandmarks::calc_achievers(Exploration &) {
     std::cout << "Calculating achievers." << std::endl;
 
     // first_achievers are already filled in by compute_h_m_landmarks
@@ -955,7 +955,7 @@ void HMLandmarks::add_lm_node(int set_index, bool goal) {
     }
 }
 
-void HMLandmarks::generate_landmarks(Exploration & /* exploration */) {
+void HMLandmarks::generate_landmarks(Exploration &) {
     int set_index;
     init();
     compute_h_m_landmarks();

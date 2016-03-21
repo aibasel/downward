@@ -1,5 +1,7 @@
 #include "landmark_factory_zhu_givan.h"
+
 #include "landmark_graph.h"
+
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
@@ -19,7 +21,7 @@ LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks(Exploration & /* exploration */) {
+void LandmarkFactoryZhuGivan::generate_landmarks(Exploration &) {
     cout << "Generating landmarks using Zhu/Givan label propagation\n";
 
     compute_triggers();

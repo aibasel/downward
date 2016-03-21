@@ -2,7 +2,6 @@
 #define LANDMARKS_LANDMARK_FACTORY_RPG_SASP_H
 
 #include "landmark_factory.h"
-#include "landmark_graph.h"
 
 #include "../globals.h"
 
@@ -35,7 +34,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
         std::vector<std::vector<int>> &lvl_var, LandmarkNode *bp);
 
     int min_cost_for_landmark(LandmarkNode *bp, std::vector<std::vector<int>> &lvl_var);
-    void generate_landmarks(Exploration &exploration);
+    virtual void generate_landmarks(Exploration &exploration) override;
     void found_simple_lm_and_order(const std::pair<int, int> a, LandmarkNode &b,
                                    edge_type t);
     void found_disj_lm_and_order(const std::set<std::pair<int, int>> a, LandmarkNode &b,
