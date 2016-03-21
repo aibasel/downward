@@ -39,7 +39,8 @@ unique_ptr<LandmarkGraph> get_landmark_graph() {
        after the landmark graph has been created. */
     Exploration exploration(opts);
     HMLandmarks lm_graph_factory(opts);
-    unique_ptr<LandmarkGraph> landmark_graph(lm_graph_factory.compute_lm_graph(exploration));
+    unique_ptr<LandmarkGraph> landmark_graph(
+        lm_graph_factory.compute_lm_graph(exploration));
     return landmark_graph;
 }
 

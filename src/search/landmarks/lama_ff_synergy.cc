@@ -109,8 +109,7 @@ LamaFFSynergy::LamaFFSynergy(const Options &opts)
     : lama_master_heuristic(new LamaMasterHeuristic(this)),
       ff_slave_heuristic(new FFSlaveHeuristic(
                              this, lama_master_heuristic.get())),
-      lama_heuristic(new LandmarkCountHeuristic(opts)),
-      exploration(lama_heuristic->get_exploration()) {
+      lama_heuristic(new LandmarkCountHeuristic(opts)) {
     cout << "Initializing LAMA-FF synergy object" << endl;
 }
 
@@ -123,9 +122,9 @@ void LamaFFSynergy::compute_heuristics(EvaluationContext &eval_context) {
       together.
     */
 
-    exploration->set_recompute_heuristic();
+    lama_heuristic->exploration.set_recompute_heuristic();
     lama_result = lama_heuristic->compute_result(eval_context);
-    ff_result = exploration->compute_result(eval_context);
+    ff_result = lama_heuristic->exploration.compute_result(eval_context);
 }
 
 bool LamaFFSynergy::lama_reach_state(

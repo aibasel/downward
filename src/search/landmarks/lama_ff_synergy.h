@@ -33,7 +33,6 @@ class LamaFFSynergy {
     std::unique_ptr<FFSlaveHeuristic> ff_slave_heuristic;
 
     std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
-    Exploration *exploration;
 
     EvaluationResult lama_result;
     EvaluationResult ff_result;
