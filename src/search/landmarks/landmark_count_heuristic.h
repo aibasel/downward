@@ -43,12 +43,11 @@ class LandmarkCountHeuristic : public Heuristic {
                                   const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &state);
 
-    Exploration *get_exploration() {return &exploration; }
     void convert_lms(LandmarkSet &lms_set, const std::vector<bool> &lms_vec);
 protected:
     virtual int compute_heuristic(const GlobalState &state);
 public:
-    LandmarkCountHeuristic(const options::Options &opts);
+    explicit LandmarkCountHeuristic(const options::Options &opts);
     ~LandmarkCountHeuristic() {
     }
     virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
