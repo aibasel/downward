@@ -8,8 +8,8 @@
 using namespace std;
 
 namespace max_evaluator {
-MaxEvaluator::MaxEvaluator(const vector<ScalarEvaluator *> &subevaluators)
-    : CombiningEvaluator(subevaluators) {
+MaxEvaluator::MaxEvaluator(const Options &opts)
+    : CombiningEvaluator(opts.get_list<ScalarEvaluator *>("evals")) {
 }
 
 MaxEvaluator::~MaxEvaluator() {
@@ -24,35 +24,23 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-/* commented out to silence compiler warning while this is unused.
+static ScalarEvaluator *_parse(OptionParser &parser) {
+    parser.document_synopsis(
+        "Max evaluator",
+        "Calculates the maximum of the sub-evaluators.");
+    parser.add_list_option<ScalarEvaluator *>(
+        "evals",
+        "at least one scalar evaluator");
 
-static ScalarEvaluator *create(const vector<string> &config,
-                               int start, int &end, bool dry_run) {
-    if (config[start + 1] != "(")
-        throw ParseError(start + 1);
+    Options opts = parser.parse();
 
-    // create evaluators
-    vector<ScalarEvaluator *> evals;
-    OptionParser::instance()->parse_scalar_evaluator_list(
-        config, start + 2, end, false, evals, dry_run);
+    opts.verify_list_non_empty<ScalarEvaluator *>("evals");
 
-    if (evals.empty())
-        throw ParseError(end);
-    // need at least one evaluator
-
-    ++end;
-    if (config[end] != ")")
-        throw ParseError(end);
-
-    if (dry_run)
-        return 0;
-    else
-        return new MaxEvaluator(evals);
+    if (parser.dry_run()) {
+        return nullptr;
+    }
+    return new MaxEvaluator(opts);
 }
-*/
 
-// TODO: Comment this in once the max/sum evaluator stuff is fixed.
-//       For now, it's commented out to use the IPC implementation of
-//       max again, see issue181.
-// static Plugin<ScalarEvaluator> plugin("max", create);
+static Plugin<ScalarEvaluator> plugin("max", _parse);
 }
