@@ -53,5 +53,5 @@ static Heuristic *_parse(OptionParser &parser) {
         return new IPCMaxHeuristic(opts);
 }
 
-static Plugin<Heuristic> plugin("max", _parse);
+static Plugin<Heuristic> plugin("ipc_max", _parse);
 }
