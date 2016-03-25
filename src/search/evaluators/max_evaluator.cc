@@ -1,5 +1,6 @@
 #include "max_evaluator.h"
 
+#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -21,6 +22,25 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
         assert(value >= 0);
         result = max(result, value);
     }
+    return result;
+}
+
+EvaluationResult MaxEvaluator::compute_result(
+    EvaluationContext &eval_context) {
+    // This marks no preferred operators.
+    EvaluationResult result;
+
+    int value = 0;
+    for (ScalarEvaluator *subevaluator : subevaluators) {
+        int h_val = eval_context.get_heuristic_value_or_infinity(subevaluator);
+        if (h_val == EvaluationResult::INFTY) {
+            value = h_val;
+            break;
+        } else {
+            value = max(value, h_val);
+        }
+    }
+    result.set_h_value(value);
     return result;
 }
 
