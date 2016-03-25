@@ -13,9 +13,9 @@ namespace combining_evaluator {
   MaxEvaluator, which captures the common aspects of their behaviour.
 */
 class CombiningEvaluator : public ScalarEvaluator {
-    std::vector<ScalarEvaluator *> subevaluators;
     bool all_dead_ends_are_reliable;
 protected:
+    std::vector<ScalarEvaluator *> subevaluators;
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
     explicit CombiningEvaluator(
