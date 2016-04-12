@@ -115,14 +115,14 @@ bool FactoredTransitionSystem::apply_abstraction(
     assert(is_index_valid(index));
 
     vector<int> abstraction_mapping(
-        transition_systems[index]->get_size(), TransitionSystem::PRUNED_STATE);
+        transition_systems[index]->get_size(), PRUNED_STATE);
     for (size_t class_no = 0; class_no < state_equivalence_relation.size(); ++class_no) {
         const StateEquivalenceClass &state_equivalence_class =
             state_equivalence_relation[class_no];
         for (auto pos = state_equivalence_class.begin();
              pos != state_equivalence_class.end(); ++pos) {
             int state = *pos;
-            assert(abstraction_mapping[state] == TransitionSystem::PRUNED_STATE);
+            assert(abstraction_mapping[state] == PRUNED_STATE);
             abstraction_mapping[state] = class_no;
         }
     }
@@ -209,7 +209,7 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
     assert(distances[final_index]->are_distances_computed());
     int abs_state = heuristic_representations[final_index]->get_abstract_state(state);
 
-    if (abs_state == TransitionSystem::PRUNED_STATE)
+    if (abs_state == PRUNED_STATE)
         return -1;
     int cost = distances[final_index]->get_goal_distance(abs_state);
     assert(cost != INF);

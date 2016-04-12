@@ -85,9 +85,6 @@ public:
 };
 
 class TransitionSystem {
-public:
-    static const int PRUNED_STATE;
-
 private:
     /*
       The following two attributes are only used for output.
