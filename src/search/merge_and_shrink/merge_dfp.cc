@@ -45,7 +45,7 @@ void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
     }
 }
 
-void MergeDFP::compute_label_ranks(FactoredTransitionSystem &fts,
+void MergeDFP::compute_label_ranks(const FactoredTransitionSystem &fts,
                                    int index,
                                    vector<int> &label_ranks) const {
     const TransitionSystem &ts = fts.get_ts(index);
