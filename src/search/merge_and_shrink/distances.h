@@ -96,6 +96,7 @@ public:
         return goal_distances[state];
     }
     void dump() const;
+    void statistics() const;
 };
 }
 

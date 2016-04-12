@@ -219,20 +219,8 @@ void FactoredTransitionSystem::statistics(int index) const {
     assert(is_index_valid(index));
     const TransitionSystem &ts = *transition_systems[index];
     ts.statistics();
-    // TODO: Turn the following block into Distances::statistics()?
-    cout << ts.tag();
     const Distances &dist = *distances[index];
-    if (!dist.are_distances_computed()) {
-        cout << "distances not computed";
-    } else if (is_solvable()) {
-        cout << "init h=" << dist.get_goal_distance(ts.get_init_state())
-             << ", max f=" << dist.get_max_f()
-             << ", max g=" << dist.get_max_g()
-             << ", max h=" << dist.get_max_h();
-    } else {
-        cout << "transition system is unsolvable";
-    }
-    cout << endl;
+    dist.statistics();
 }
 
 void FactoredTransitionSystem::dump(int index) const {
