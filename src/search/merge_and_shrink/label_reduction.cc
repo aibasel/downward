@@ -6,7 +6,6 @@
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
@@ -47,7 +46,8 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (lr_system_order == RANDOM) {
-            g_rng.shuffle(transition_system_order);
+            utils::RandomNumberGenerator rng(2016);
+            rng.shuffle(transition_system_order);
         }
     } else {
         assert(lr_system_order == REVERSE);
