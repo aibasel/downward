@@ -3,22 +3,15 @@
 
 #include "types.h"
 
-#include <forward_list>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-class State;
-class TaskProxy;
-
 namespace merge_and_shrink {
-class Distances;
-class HeuristicRepresentation;
 class LabelEquivalenceRelation;
-class LabelGroup; // TODO: include label_equivalence_relation.h directly?
+class LabelGroup;
 class Labels;
 
 struct Transition {
@@ -42,8 +35,6 @@ struct Transition {
         return !(*this < other);
     }
 };
-
-class TransitionSystem;
 
 struct GroupAndTransitions {
     const LabelGroup &label_group;
@@ -131,12 +122,7 @@ private:
     */
     void compute_locally_equivalent_labels();
 
-    // TODO: make private or remove
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
-        return transitions_by_group_id[group_id];
-    }
-
-    std::vector<Transition> &get_transitions_for_group_id(int group_id) {
         return transitions_by_group_id[group_id];
     }
 
