@@ -136,7 +136,7 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
     return relation;
 }
 
-void LabelReduction::reduce(pair<int, int> next_merge,
+bool LabelReduction::reduce(pair<int, int> next_merge,
                             FactoredTransitionSystem &fts) {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
@@ -153,6 +153,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         assert(fts.is_active(next_merge.first));
         assert(fts.is_active(next_merge.second));
 
+        bool reduced = false;
         EquivalenceRelation *relation = compute_combinable_equivalence_relation(
             next_merge.first,
             fts);
@@ -161,6 +162,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
                                       next_merge.first);
+            reduced = true;
         }
         delete relation;
         relation = 0;
@@ -173,9 +175,10 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
                                       next_merge.second);
+            reduced = true;
         }
         delete relation;
-        return;
+        return reduced;
     }
 
     // Make sure that we start with an index not ouf of range for
@@ -198,6 +201,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
 
     int num_unsuccessful_iterations = 0;
 
+    bool reduced = false;
     for (int i = 0; i < max_iterations; ++i) {
         int ts_index = transition_system_order[tso_index];
 
@@ -215,6 +219,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
             // it as unsuccessful iterations (the size of the vector matters).
             ++num_unsuccessful_iterations;
         } else {
+            reduced = true;
             num_unsuccessful_iterations = 0;
             fts.apply_label_reduction(label_mapping, ts_index);
         }
@@ -232,6 +237,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
             }
         }
     }
+    return reduced;
 }
 
 void LabelReduction::dump_options() const {

@@ -64,7 +64,7 @@ class LabelReduction {
 public:
     explicit LabelReduction(const options::Options &options);
     void initialize(const TaskProxy &task_proxy);
-    void reduce(std::pair<int, int> next_merge,
+    bool reduce(std::pair<int, int> next_merge,
                 FactoredTransitionSystem &fts);
     void dump_options() const;
     bool reduce_before_shrinking() const {
