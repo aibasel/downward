@@ -1,11 +1,8 @@
 #include "transition_system.h"
 
 #include "distances.h"
-#include "heuristic_representation.h"
 #include "label_equivalence_relation.h"
 #include "labels.h"
-
-#include "../task_proxy.h"
 
 #include "../utils/collections.h"
 #include "../utils/memory.h"
@@ -13,9 +10,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <iostream>
-#include <iterator>
 #include <set>
 #include <sstream>
 #include <string>
