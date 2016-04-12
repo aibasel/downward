@@ -6,7 +6,6 @@
 #include "transition_system.h"
 
 #include "../utils/memory.h"
-#include "../utils/timer.h"
 
 #include <cassert>
 
@@ -216,8 +215,7 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
     return cost;
 }
 
-void FactoredTransitionSystem::statistics(int index,
-                                          const utils::Timer &timer) const {
+void FactoredTransitionSystem::statistics(int index) const {
     assert(is_index_valid(index));
     const TransitionSystem &ts = *transition_systems[index];
     ts.statistics();
@@ -234,7 +232,7 @@ void FactoredTransitionSystem::statistics(int index,
     } else {
         cout << "transition system is unsolvable";
     }
-    cout << " [t=" << timer << "]" << endl;
+    cout << endl;
 }
 
 void FactoredTransitionSystem::dump(int index) const {
