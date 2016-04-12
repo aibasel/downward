@@ -131,18 +131,21 @@ void ShrinkStrategy::add_options_to_parser(OptionParser &parser) {
     parser.add_option<int>(
         "max_states",
         "maximum transition system size allowed at any time point.",
-        "-1");
+        "-1",
+        Bounds("-1", "infinity"));
     parser.add_option<int>(
         "max_states_before_merge",
         "maximum transition system size allowed for two transition systems "
         "before being merged to form the synchronized product.",
-        "-1");
+        "-1",
+        Bounds("-1", "infinity"));
     parser.add_option<int>(
         "threshold",
         "If a transition system, before being merged, surpasses this soft "
         "transition system size limit, the shrink strategy is called to "
         "possibly shrink the transition system.",
-        "-1");
+        "-1",
+        Bounds("-1", "infinity"));
 }
 
 void ShrinkStrategy::handle_option_defaults(Options &opts) {
