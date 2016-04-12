@@ -65,8 +65,6 @@ GroupAndTransitions TSConstIterator::operator*() const {
 }
 
 
-const int TransitionSystem::PRUNED_STATE = -1;
-
 /*
   Implementation note: Transitions are grouped by their label groups,
   not by source state or any such thing. Such a grouping is beneficial
