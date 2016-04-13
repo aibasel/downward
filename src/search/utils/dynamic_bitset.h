@@ -10,7 +10,7 @@
 */
 
 namespace utils {
-template <typename Block>
+template <typename Block = unsigned int>
 class DynamicBitset {
     static_assert(
         !std::numeric_limits<Block>::is_signed,
