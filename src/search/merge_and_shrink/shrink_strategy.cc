@@ -53,15 +53,13 @@ bool ShrinkStrategy::shrink_transition_system(
     return false;
 }
 
-pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
-    size_t size1, size_t size2) const {
+pair<int, int> ShrinkStrategy::compute_shrink_sizes(int size1, int size2) const {
     // Bound both sizes by max allowed size before merge.
-    size_t max_before_merge = max_states_before_merge;
-    size_t new_size1 = min(size1, max_before_merge);
-    size_t new_size2 = min(size2, max_before_merge);
+    int new_size1 = min(size1, max_states_before_merge);
+    int new_size2 = min(size2, max_states_before_merge);
 
     if (!utils::is_product_within_limit(new_size1, new_size2, max_states)) {
-        size_t balanced_size = size_t(sqrt(max_states));
+        int balanced_size = int(sqrt(max_states));
 
         if (new_size1 <= balanced_size) {
             // Size of the first transition system is small enough. Use whatever
@@ -83,9 +81,9 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
         }
     }
     assert(new_size1 <= size1 && new_size2 <= size2);
-    assert(static_cast<int>(new_size1) <= max_states_before_merge);
-    assert(static_cast<int>(new_size2) <= max_states_before_merge);
-    assert(static_cast<int>(new_size1 * new_size2) <= max_states);
+    assert(new_size1 <= max_states_before_merge);
+    assert(new_size2 <= max_states_before_merge);
+    assert(new_size1 * new_size2 <= max_states);
     return make_pair(new_size1, new_size2);
 }
 
