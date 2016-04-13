@@ -10,6 +10,8 @@
 using namespace std;
 
 namespace cegar {
+const int AbstractSearchInfo::UNDEFINED_OPERATOR = -1;
+
 AbstractState::AbstractState(
     const TaskProxy &task_proxy, const Domains &domains, Node *node)
     : task_proxy(task_proxy),
