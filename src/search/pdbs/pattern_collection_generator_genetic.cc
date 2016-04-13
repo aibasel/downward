@@ -294,7 +294,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
             {"Stefan Edelkamp"},
             "Automated Creation of Pattern Database Search Heuristics",
             "http://www.springerlink.com/content/20613345434608x1/",
-            "In Proceedings of the 4th Workshop on Model Checking and Artificial"
+            "Proceedings of the 4th Workshop on Model Checking and Artificial"
             " Intelligence (!MoChArt 2006)",
             "35-50",
             "2007"));
