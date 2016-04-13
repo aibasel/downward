@@ -3,10 +3,15 @@
 
 #include "shrink_strategy.h"
 
+#include <memory>
 #include <vector>
 
 namespace options {
 class Options;
+}
+
+namespace utils {
+class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
@@ -30,6 +35,8 @@ namespace merge_and_shrink {
    (up to) one bucket "in the middle" is partially abstracted.
 */
 class ShrinkBucketBased : public ShrinkStrategy {
+private:
+    std::unique_ptr<utils::RandomNumberGenerator> rng;
 protected:
     typedef std::vector<int> Bucket;
 

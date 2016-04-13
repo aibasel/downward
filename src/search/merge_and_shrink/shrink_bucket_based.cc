@@ -2,6 +2,7 @@
 
 #include "../globals.h"
 
+#include "../utils/memory.h"
 #include "../utils/rng.h"
 
 #include <cassert>
@@ -13,6 +14,13 @@ using namespace std;
 namespace merge_and_shrink {
 ShrinkBucketBased::ShrinkBucketBased(const options::Options &opts)
     : ShrinkStrategy(opts) {
+    rng = utils::make_unique_ptr<utils::RandomNumberGenerator>(2011);
+    // TODO: the following three lines put the random number generator into
+    // the same state as it would have been using g_rng both for label
+    // reduction and here. This should disappear at some point.
+    size_t max_transition_system_count = g_variable_domain.size() * 2 - 1;
+    vector<int> shuffle_vector(max_transition_system_count);
+    rng->shuffle(shuffle_vector);
 }
 
 ShrinkBucketBased::~ShrinkBucketBased() {
@@ -71,10 +79,10 @@ void ShrinkBucketBased::compute_abstraction(
             assert(budget_for_this_bucket >= 2 &&
                    budget_for_this_bucket < static_cast<int>(groups.size()));
             while (static_cast<int>(groups.size()) > budget_for_this_bucket) {
-                auto it1 = g_rng.choose(groups);
+                auto it1 = rng->choose(groups);
                 auto it2 = it1;
                 while (it1 == it2) {
-                    it2 = g_rng.choose(groups);
+                    it2 = rng->choose(groups);
                 }
                 it1->splice_after(it1->before_begin(), *it2);
                 swap(*it2, groups.back());
