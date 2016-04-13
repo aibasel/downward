@@ -132,6 +132,7 @@ void FTSFactory::build_state_data(VariableProxy var) {
             ts_data.goal_relevant = true;
             assert(goal_value == -1);
             goal_value = goal.get_value();
+            break;
         }
     }
 
