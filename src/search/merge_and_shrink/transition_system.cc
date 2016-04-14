@@ -83,7 +83,6 @@ TransitionSystem::TransitionSystem(
     int num_states,
     vector<bool> &&goal_states,
     int init_state,
-    bool goal_relevant,
     bool compute_label_equivalence_relation)
     : num_variables(num_variables),
       incorporated_variables(move(incorporated_variables)),
@@ -91,8 +90,7 @@ TransitionSystem::TransitionSystem(
       transitions_by_group_id(move(transitions_by_label)),
       num_states(num_states),
       goal_states(move(goal_states)),
-      init_state(init_state),
-      goal_relevant(goal_relevant) {
+      init_state(init_state) {
     if (compute_label_equivalence_relation) {
         compute_locally_equivalent_labels();
     }
@@ -126,7 +124,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     int ts2_size = ts2.get_size();
     int num_states = ts1_size * ts2_size;
     vector<bool> goal_states(num_states, false);
-    bool goal_relevant = (ts1.goal_relevant || ts2.goal_relevant);
     int init_state = -1;
 
     for (int s1 = 0; s1 < ts1_size; ++s1) {
@@ -220,7 +217,6 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         num_states,
         move(goal_states),
         init_state,
-        goal_relevant,
         false
         );
 }

@@ -33,7 +33,6 @@ class FTSFactory {
         int num_states;
         vector<bool> goal_states;
         int init_state;
-        bool goal_relevant;
         TransitionSystemData(TransitionSystemData &&other)
             : num_variables(other.num_variables),
               incorporated_variables(move(other.incorporated_variables)),
@@ -42,8 +41,7 @@ class FTSFactory {
               relevant_labels(move(other.relevant_labels)),
               num_states(other.num_states),
               goal_states(move(other.goal_states)),
-              init_state(other.init_state),
-              goal_relevant(other.goal_relevant) {
+              init_state(other.init_state) {
         }
         TransitionSystemData() = default;
         TransitionSystemData(TransitionSystemData &other) = delete;
@@ -125,11 +123,9 @@ void FTSFactory::build_state_data(VariableProxy var) {
     ts_data.num_states = range;
 
     int goal_value = -1;
-    ts_data.goal_relevant = false;
     GoalsProxy goals = task_proxy.get_goals();
     for (FactProxy goal : goals) {
         if (goal.get_variable().get_id() == var_id) {
-            ts_data.goal_relevant = true;
             assert(goal_value == -1);
             goal_value = goal.get_value();
             break;
@@ -353,7 +349,6 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems() {
                              ts_data.num_states,
                              move(ts_data.goal_states),
                              ts_data.init_state,
-                             ts_data.goal_relevant,
                              true
                              ));
     }

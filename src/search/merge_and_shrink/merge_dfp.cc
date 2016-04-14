@@ -49,6 +49,16 @@ void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
     compute_ts_order(task);
 }
 
+bool MergeDFP::is_goal_relevant(const TransitionSystem &ts) const {
+    int num_states = ts.get_size();
+    for (int state = 0; state < num_states; ++state) {
+        if (!ts.is_goal_state(state)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void MergeDFP::compute_label_ranks(const FactoredTransitionSystem &fts,
                                    int index,
                                    vector<int> &label_ranks) const {
@@ -98,6 +108,18 @@ pair<int, int> MergeDFP::compute_next_pair(
     assert(initialized());
     assert(!done());
 
+    vector<bool> goal_relevant(sorted_active_ts_indices.size(), false);
+    for (int ts_index : sorted_active_ts_indices) {
+        const TransitionSystem &ts = fts.get_ts(ts_index);
+        cout << ts.tag();
+        if (is_goal_relevant(ts)) {
+            goal_relevant[ts_index] = true;
+            cout << "goal relevant" << endl;
+        } else {
+            cout << "not goal relevant" << endl;
+        }
+    }
+
     int next_index1 = -1;
     int next_index2 = -1;
     int first_valid_pair_index1 = -1;
@@ -115,8 +137,7 @@ pair<int, int> MergeDFP::compute_next_pair(
         for (size_t j = i + 1; j < sorted_active_ts_indices.size(); ++j) {
             int ts_index2 = sorted_active_ts_indices[j];
             assert(fts.is_active(ts_index2));
-            if (fts.get_ts(ts_index1).is_goal_relevant()
-                || fts.get_ts(ts_index2).is_goal_relevant()) {
+            if (goal_relevant[ts_index1] || goal_relevant[ts_index2]) {
                 // Only consider pairs where at least one component is goal relevant.
 
                 // TODO: the 'old' code that took the 'first' pair in case of
