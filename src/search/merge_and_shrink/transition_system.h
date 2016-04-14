@@ -114,7 +114,6 @@ private:
     int num_states;
     std::vector<bool> goal_states;
     int init_state;
-    bool goal_relevant; // TODO: Get rid of this?
 
     /*
       Check if two or more labels are locally equivalent to each other, and
@@ -138,7 +137,6 @@ public:
         int num_states,
         std::vector<bool> &&goal_states,
         int init_state,
-        bool goal_relevant,
         bool compute_label_equivalence_relation);
     ~TransitionSystem();
     /*
@@ -213,10 +211,6 @@ public:
 
     bool is_goal_state(int state) const {
         return goal_states[state];
-    }
-
-    bool is_goal_relevant() const {  // used by merge_dfp
-        return goal_relevant;
     }
 };
 }
