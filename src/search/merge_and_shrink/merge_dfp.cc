@@ -111,12 +111,8 @@ pair<int, int> MergeDFP::compute_next_pair(
     vector<bool> goal_relevant(sorted_active_ts_indices.size(), false);
     for (int ts_index : sorted_active_ts_indices) {
         const TransitionSystem &ts = fts.get_ts(ts_index);
-        cout << ts.tag();
         if (is_goal_relevant(ts)) {
             goal_relevant[ts_index] = true;
-            cout << "goal relevant" << endl;
-        } else {
-            cout << "not goal relevant" << endl;
         }
     }
 
