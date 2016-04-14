@@ -5,7 +5,6 @@
 #include <cassert>
 #include <random>
 #include <vector>
-#include <iostream>
 
 namespace utils {
 class RandomNumberGenerator {
@@ -46,7 +45,6 @@ public:
 
     template<typename T>
     void shuffle(std::vector<T> &vec) {
-        std::cout << "shuffling" << std::endl;
         std::shuffle(vec.begin(), vec.end(), rng);
     }
 };
