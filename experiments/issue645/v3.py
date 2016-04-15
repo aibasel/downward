@@ -41,6 +41,7 @@ def main(revisions=None):
     ms_out_of_time = Attribute('ms_out_of_time', absolute=True, min_wins=True)
     search_out_of_memory = Attribute('search_out_of_memory', absolute=True, min_wins=True)
     search_out_of_time = Attribute('search_out_of_time', absolute=True, min_wins=True)
+    ms_dfp_nogoalrelevantpair_counter = Attribute('ms_dfp_nogoalrelevantpair_counter', absolute=True, min_wins=True)
 
     extra_attributes = [
         perfect_heuristic,
@@ -54,6 +55,7 @@ def main(revisions=None):
         ms_out_of_time,
         search_out_of_memory,
         search_out_of_time,
+        ms_dfp_nogoalrelevantpair_counter,
     ]
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
