@@ -109,10 +109,11 @@ pair<int, int> MergeDFP::compute_next_pair(
     assert(!done());
 
     vector<bool> goal_relevant(sorted_active_ts_indices.size(), false);
-    for (int ts_index : sorted_active_ts_indices) {
+    for (size_t i = 0; i < sorted_active_ts_indices.size(); ++i) {
+        int ts_index = sorted_active_ts_indices[i];
         const TransitionSystem &ts = fts.get_ts(ts_index);
         if (is_goal_relevant(ts)) {
-            goal_relevant[ts_index] = true;
+            goal_relevant[i] = true;
         }
     }
 
@@ -133,7 +134,7 @@ pair<int, int> MergeDFP::compute_next_pair(
         for (size_t j = i + 1; j < sorted_active_ts_indices.size(); ++j) {
             int ts_index2 = sorted_active_ts_indices[j];
             assert(fts.is_active(ts_index2));
-            if (goal_relevant[ts_index1] || goal_relevant[ts_index2]) {
+            if (goal_relevant[i] || goal_relevant[j]) {
                 // Only consider pairs where at least one component is goal relevant.
 
                 // TODO: the 'old' code that took the 'first' pair in case of
@@ -179,13 +180,22 @@ pair<int, int> MergeDFP::compute_next_pair(
           least one goal relevant transition system which we compute in the
           loop before. There always exists such a pair assuming that the
           global goal specification is non-empty.
+
+          TODO: exception! with the definition of goal relevance w.r.t.
+          existence of a non-goal state, there might be no such pair!
         */
         assert(next_index2 == -1);
         assert(minimum_weight == INF);
-        assert(first_valid_pair_index1 != -1);
-        assert(first_valid_pair_index2 != -1);
-        next_index1 = first_valid_pair_index1;
-        next_index2 = first_valid_pair_index2;
+        if (first_valid_pair_index1 == -1) {
+            assert(first_valid_pair_index2 == -1);
+            next_index1 = sorted_active_ts_indices[0];
+            next_index2 = sorted_active_ts_indices[1];
+            cout << "found no goal relevant pair" << endl;
+        } else {
+            assert(first_valid_pair_index2 != -1);
+            next_index1 = first_valid_pair_index1;
+            next_index2 = first_valid_pair_index2;
+        }
     }
 
     assert(next_index1 != -1);
