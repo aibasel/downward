@@ -69,4 +69,13 @@ def check_proved_unsolvability(content, props):
 
 parser.add_function(check_proved_unsolvability)
 
+def count_dfp_no_goal_relevant_ts(content, props):
+    counter = 0
+    for line in content.splitlines():
+        if line == 'found no goal relevant pair':
+            counter += 1
+    props['ms_dfp_nogoalrelevantpair_counter'] = counter
+
+parser.add_function(count_dfp_no_goal_relevant_ts)
+
 parser.parse()
