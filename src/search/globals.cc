@@ -387,7 +387,6 @@ SuccessorGenerator *g_successor_generator;
 string g_plan_filename = "sas_plan";
 int g_num_previously_generated_plans = 0;
 bool g_is_part_of_anytime_portfolio = false;
-utils::RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 StateRegistry *g_state_registry = 0;
 
 utils::Log g_log;

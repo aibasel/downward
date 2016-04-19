@@ -71,10 +71,10 @@ void ShrinkBucketBased::compute_abstraction(
             assert(budget_for_this_bucket >= 2 &&
                    budget_for_this_bucket < static_cast<int>(groups.size()));
             while (static_cast<int>(groups.size()) > budget_for_this_bucket) {
-                auto it1 = g_rng.choose(groups);
+                auto it1 = utils::RandomNumberGenerator::rng()->choose(groups);
                 auto it2 = it1;
                 while (it1 == it2) {
-                    it2 = g_rng.choose(groups);
+                    it2 = utils::RandomNumberGenerator::rng()->choose(groups);
                 }
                 it1->splice_after(it1->before_begin(), *it2);
                 swap(*it2, groups.back());
