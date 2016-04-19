@@ -121,7 +121,7 @@ const Split &SplitSelector::pick_split(const AbstractState &state,
     }
 
     if (pick == PickSplit::RANDOM) {
-        return *g_rng.choose(splits);
+        return *utils::RandomNumberGenerator::rng()->choose(splits);
     }
 
     double max_rating = numeric_limits<double>::lowest();
