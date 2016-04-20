@@ -3,6 +3,7 @@
 import itertools
 import os
 import platform
+import subprocess
 import sys
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
@@ -108,7 +109,7 @@ class IssueConfig(object):
 
 
 class IssueExperiment(FastDownwardExperiment):
-    """Wrapper for FastDownwardExperiment with a few convenience features."""
+    """Subclass of FastDownwardExperiment with some convenience features."""
 
     DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
 
@@ -151,10 +152,10 @@ class IssueExperiment(FastDownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(self, revisions, configs, suite, grid_priority=None,
-                 path=None, test_suite=None, email=None, **kwargs):
-        """Create a DownwardExperiment with some convenience features.
-
+    def __init__(self, suite, revisions=[], configs={}, grid_priority=None,
+                 path=None, test_suite=None, email=None, processes=None,
+                 **kwargs):
+        """
         If *revisions* is specified, it should be a non-empty
         list of revisions, which specify which planner versions to use
         in the experiment. The same versions are used for translator,
@@ -209,7 +210,7 @@ class IssueExperiment(FastDownwardExperiment):
         """
 
         if is_test_run():
-            kwargs["environment"] = LocalEnvironment()
+            kwargs["environment"] = LocalEnvironment(processes=processes)
             suite = test_suite or self.DEFAULT_TEST_SUITE
         elif "environment" not in kwargs:
             kwargs["environment"] = MaiaEnvironment(
@@ -263,8 +264,13 @@ class IssueExperiment(FastDownwardExperiment):
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = AbsoluteReport(**kwargs)
-        outfile = get_experiment_name() + "." + report.output_format
+        outfile = os.path.join(self.eval_dir,
+                               get_experiment_name() + "." +
+                               report.output_format)
         self.add_report(report, outfile=outfile)
+        self.add_step(Step('publish-absolute-report',
+                           subprocess.call,
+                           ['publish', outfile]))
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -288,18 +294,27 @@ class IssueExperiment(FastDownwardExperiment):
                 compared_configs = []
                 for config in self._configs:
                     config_nick = config.nick
-                    compared_configs.append((
-                        "{rev1}-{config_nick}".format(**locals()),
-                        "{rev2}-{config_nick}".format(**locals()),
-                        "Diff ({config_nick})".format(**locals())))
+                    compared_configs.append(
+                        ("%s-%s" % (rev1, config_nick),
+                         "%s-%s" % (rev2, config_nick),
+                         "Diff (%s)" % config_nick))
                 report = CompareConfigsReport(compared_configs, **kwargs)
                 outfile = os.path.join(
                     self.eval_dir,
-                    "{name}-{rev1}-{rev2}-compare.html".format(
-                        name=self.name, **locals()))
+                    "%s-%s-%s-compare" % (self.name, rev1, rev2)
+                    + "." + report.output_format)
                 report(self.eval_dir, outfile)
 
+        def publish_comparison_tables():
+            for rev1, rev2 in itertools.combinations(self._revisions, 2):
+                outfile = os.path.join(
+                    self.eval_dir,
+                    "%s-%s-%s-compare" % (self.name, rev1, rev2)
+                    + ".html")
+                subprocess.call(['publish', outfile])
+
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
+        self.add_step(Step("publish-comparison-tables", publish_comparison_tables))
 
     def add_scatter_plot_step(self, attributes=None):
         """Add a step that creates scatter plots for all revision pairs.
