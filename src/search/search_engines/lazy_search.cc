@@ -79,11 +79,11 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     }
 
     if (randomize_successors) {
-        utils::RandomNumberGenerator::rng()->shuffle(all_operators);
+        g_rng()->shuffle(all_operators);
         // Note that preferred_operators can contain duplicates that are
         // only filtered out later, which gives operators "preferred
         // multiple times" a higher chance to be ordered early.
-        utils::RandomNumberGenerator::rng()->shuffle(preferred_operators);
+        g_rng()->shuffle(preferred_operators);
     }
 
     if (preferred_successors_first) {

@@ -67,7 +67,7 @@ static void order_facts(
         // Nothing to do.
         break;
     case FactOrder::RANDOM:
-        utils::RandomNumberGenerator::rng()->shuffle(facts);
+        g_rng()->shuffle(facts);
         break;
     case FactOrder::HADD_UP:
     case FactOrder::HADD_DOWN:

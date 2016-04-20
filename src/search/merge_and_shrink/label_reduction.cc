@@ -47,7 +47,7 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (lr_system_order == RANDOM) {
-            utils::RandomNumberGenerator::rng()->shuffle(transition_system_order);
+            g_rng()->shuffle(transition_system_order);
         }
     } else {
         assert(lr_system_order == REVERSE);
