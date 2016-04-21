@@ -5,7 +5,12 @@ from downward import suites
 from lab.reports import Attribute, gm
 
 from common_setup import IssueConfig, IssueExperiment
-#from relativescatter import RelativeScatterPlotReport
+try:
+    from relativescatter import RelativeScatterPlotReport
+    matplotlib = True
+except ImportError:
+    print 'matplotlib not availabe, scatter plots not available'
+    matplotlib = False
 
 def main(revisions=None):
     suite=suites.suite_optimal_strips()
@@ -66,16 +71,17 @@ def main(revisions=None):
 
     exp.add_comparison_table_step()
 
-    #for attribute in ["memory", "total_time"]:
-    #    for config in configs:
-    #        exp.add_report(
-    #            RelativeScatterPlotReport(
-    #                attributes=[attribute],
-    #                filter_config=["{}-{}".format(rev, config.nick) for rev in revisions],
-    #                get_category=lambda run1, run2: run1.get("domain"),
-    #            ),
-    #            outfile="{}-{}-{}.png".format(exp.name, attribute, config.nick)
-    #        )
+    if matplotlib:
+        for attribute in ["memory", "total_time"]:
+            for config in configs:
+                exp.add_report(
+                    RelativeScatterPlotReport(
+                        attributes=[attribute],
+                        filter_config=["{}-{}".format(rev, config.nick) for rev in revisions],
+                        get_category=lambda run1, run2: run1.get("domain"),
+                    ),
+                    outfile="{}-{}-{}.png".format(exp.name, attribute, config.nick)
+                )
 
     exp()
 
