@@ -38,6 +38,12 @@ DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
     for (const auto &pair : value_groups) {
         int var = pair.first;
         const ValueGroups &groups = pair.second;
+        assert(utils::in_bounds(var, domain_size));
+        for (const ValueGroup &group : groups) {
+            for (int value : group) {
+                assert(0 <= value && value < domain_size[var]);
+            }
+        }
         combine_values(var, groups);
     }
 
