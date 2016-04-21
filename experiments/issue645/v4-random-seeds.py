@@ -5,7 +5,7 @@ from downward import suites
 from lab.reports import Attribute, gm
 
 from common_setup import IssueConfig, IssueExperiment
-from relativescatter import RelativeScatterPlotReport
+#from relativescatter import RelativeScatterPlotReport
 
 def main(revisions=None):
     suite=suites.suite_optimal_strips()
