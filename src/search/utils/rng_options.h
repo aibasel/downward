@@ -8,16 +8,16 @@ class OptionParser;
 class Options;
 }
 
-namespace utlis {
+namespace utils {
 class RandomNumberGenerator;
 
 // Add random_seed option to parser.
 extern void add_rng_options(options::OptionParser &parser);
 
 /*
-  The parameter options has to contain the key "random_seed".
-  If random_seed = -1, return the rng object from rng(). Otherwise,
-  create and return a pointer to a new rng object with the given seed.
+  Return an RNG based on the given options, which can either be the global
+  RNG or a local one with a user-specified seed. Only use this together with
+  "add_rng_options()".
 */
 extern std::shared_ptr<RandomNumberGenerator> parse_rng_from_options(
     const options::Options &options);
