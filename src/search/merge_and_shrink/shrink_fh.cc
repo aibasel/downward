@@ -191,6 +191,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "with label reduction, this strategy performed best when used with "
         "label reduction before merging (and no label reduction before "
         "shrinking).");
+    ShrinkBucketBased::add_options_to_parser(parser);
     ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");

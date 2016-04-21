@@ -3,10 +3,11 @@
 
 #include "shrink_strategy.h"
 
+#include <memory>
 #include <vector>
 
-namespace options {
-class Options;
+namespace utils {
+class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
@@ -32,6 +33,7 @@ namespace merge_and_shrink {
 class ShrinkBucketBased : public ShrinkStrategy {
 protected:
     typedef std::vector<int> Bucket;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 private:
     void compute_abstraction(
@@ -53,6 +55,7 @@ protected:
 public:
     explicit ShrinkBucketBased(const options::Options &opts);
     virtual ~ShrinkBucketBased() override;
+    static void add_options_to_parser(options::OptionParser &parser);
 };
 }
 

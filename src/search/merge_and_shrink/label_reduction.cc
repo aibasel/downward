@@ -6,7 +6,6 @@
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
@@ -14,6 +13,7 @@
 #include "../utils/collections.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -30,6 +30,7 @@ LabelReduction::LabelReduction(const Options &options)
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(LabelReductionMethod(options.get_enum("method"))),
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
+    rng = utils::parse_rng_from_options(options);
 }
 
 bool LabelReduction::initialized() const {
@@ -47,7 +48,7 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (lr_system_order == RANDOM) {
-            g_rng()->shuffle(transition_system_order);
+            rng->shuffle(transition_system_order);
         }
     } else {
         assert(lr_system_order == REVERSE);
@@ -345,6 +346,8 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
                            "label_reduction_method.",
                            "RANDOM",
                            label_reduction_system_order_doc);
+    // add random_seed option
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
 
