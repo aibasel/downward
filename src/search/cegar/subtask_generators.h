@@ -75,7 +75,7 @@ class LandmarkDecomposition : public SubtaskGenerator {
 
 public:
     explicit LandmarkDecomposition(const options::Options &opts);
-    virtual ~LandmarkDecomposition() = default;
+    virtual ~LandmarkDecomposition();
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;

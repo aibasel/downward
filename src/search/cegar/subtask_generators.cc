@@ -67,7 +67,7 @@ static void order_facts(
         // Nothing to do.
         break;
     case FactOrder::RANDOM:
-        g_rng.shuffle(facts);
+        g_rng()->shuffle(facts);
         break;
     case FactOrder::HADD_UP:
     case FactOrder::HADD_DOWN:
@@ -136,6 +136,9 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
     : fact_order(FactOrder(opts.get_enum("order"))),
       landmark_graph(get_landmark_graph()),
       combine_facts(opts.get<bool>("combine_facts")) {
+}
+
+LandmarkDecomposition::~LandmarkDecomposition() {
 }
 
 shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
