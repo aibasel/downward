@@ -135,6 +135,7 @@ fast_downward_plugin(
         utils/math.cc
         utils/memory.cc
         utils/rng.cc
+        utils/rng_options.cc
         utils/system.cc
         utils/system_unix.cc
         utils/system_windows.cc

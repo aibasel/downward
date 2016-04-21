@@ -24,7 +24,7 @@ class AbstractSearchInfo {
     int g;
     Arc incoming_arc;
 
-    const static int UNDEFINED_OPERATOR = -1;
+    static const int UNDEFINED_OPERATOR;
 
 public:
     AbstractSearchInfo() {

@@ -19,8 +19,8 @@ class DynamicBitset {
     std::vector<Block> blocks;
     const std::size_t num_bits;
 
-    static const Block zeros = Block(0);
-    static const Block ones = ~Block(0);
+    static const Block zeros;
+    static const Block ones;
 
     static const int bits_per_block = std::numeric_limits<Block>::digits;
 
@@ -126,6 +126,13 @@ public:
         return true;
     }
 };
+
+template <typename Block>
+const Block DynamicBitset<Block>::zeros = Block(0);
+
+template <typename Block>
+// MSVC's bitwise negation always returns int.
+const Block DynamicBitset<Block>::ones = Block(~Block(0));
 }
 
 /*
