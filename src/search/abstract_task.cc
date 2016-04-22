@@ -39,7 +39,7 @@ const shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
         Options options;
         options.set<shared_ptr<AbstractTask>>("transform", g_root_task());
         options.set<int>("cost_type", cost_type);
-        task = make_shared<CostAdaptedTask>(options);
+        task = make_shared<tasks::CostAdaptedTask>(options);
     } else {
         task = g_root_task();
     }
