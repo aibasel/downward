@@ -2,7 +2,6 @@
 
 using namespace std;
 
-
 DelegatingTask::DelegatingTask(const shared_ptr<AbstractTask> &parent)
     : parent(parent) {
 }

@@ -1,13 +1,12 @@
-#ifndef DELEGATING_TASK_H
-#define DELEGATING_TASK_H
+#ifndef TASKS_DELEGATING_TASK_H
+#define TASKS_DELEGATING_TASK_H
 
-#include "abstract_task.h"
+#include "../abstract_task.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
 
 /*
   Task transformation that delegates all calls to the corresponding methods of
