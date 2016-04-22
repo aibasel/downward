@@ -1,7 +1,7 @@
 #ifndef TASKS_MODIFIED_OPERATOR_COSTS_TASK_H
 #define TASKS_MODIFIED_OPERATOR_COSTS_TASK_H
 
-#include "../delegating_task.h"
+#include "delegating_task.h"
 
 #include <vector>
 
