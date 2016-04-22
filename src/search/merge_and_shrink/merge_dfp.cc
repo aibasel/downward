@@ -151,7 +151,7 @@ pair<int, int> MergeDFP::compute_next_pair(
                 vector<int> &label_ranks2 = transition_system_label_ranks[j];
                 if (label_ranks2.empty()) {
                     compute_label_ranks(fts, ts_index2, label_ranks2);
-                };
+                }
                 assert(label_ranks1.size() == label_ranks2.size());
                 int pair_weight = INF;
                 for (size_t k = 0; k < label_ranks1.size(); ++k) {
