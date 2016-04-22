@@ -125,7 +125,7 @@ SharedTasks GoalDecomposition::get_subtasks(
     filter_and_order_facts(task, fact_order, goal_facts);
     for (Fact goal : goal_facts) {
         shared_ptr<AbstractTask> subtask =
-            make_shared<ExtraTasks::ModifiedGoalsTask>(task, Facts {goal});
+            make_shared<extra_tasks::ModifiedGoalsTask>(task, Facts {goal});
         subtasks.push_back(subtask);
     }
     return subtasks;
@@ -144,14 +144,14 @@ LandmarkDecomposition::~LandmarkDecomposition() {
 shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
     shared_ptr<AbstractTask> &parent, Fact fact) const {
     assert(combine_facts);
-    ExtraTasks::VarToGroups value_groups;
+    extra_tasks::VarToGroups value_groups;
     for (auto &pair : get_prev_landmarks(*landmark_graph, fact)) {
         int var = pair.first;
         vector<int> &group = pair.second;
         if (group.size() >= 2)
             value_groups[var].push_back(group);
     }
-    return ExtraTasks::build_domain_abstracted_task(parent, value_groups);
+    return extra_tasks::build_domain_abstracted_task(parent, value_groups);
 }
 
 SharedTasks LandmarkDecomposition::get_subtasks(
@@ -162,7 +162,7 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     filter_and_order_facts(task, fact_order, landmark_facts);
     for (Fact landmark : landmark_facts) {
         shared_ptr<AbstractTask> subtask =
-            make_shared<ExtraTasks::ModifiedGoalsTask>(task, Facts {landmark});
+            make_shared<extra_tasks::ModifiedGoalsTask>(task, Facts {landmark});
         if (combine_facts) {
             subtask = build_domain_abstracted_task(subtask, landmark);
         }
