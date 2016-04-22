@@ -1,10 +1,11 @@
 #include "abstract_task.h"
 
-#include "cost_adapted_task.h"
 #include "globals.h"
 #include "operator_cost.h"
 #include "option_parser_util.h"
 #include "plugin.h"
+
+#include "tasks/cost_adapted_task.h"
 
 #include "utils/system.h"
 

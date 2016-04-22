@@ -1,6 +1,5 @@
 #include "heuristic.h"
 
-#include "cost_adapted_task.h"
 #include "evaluation_context.h"
 #include "evaluation_result.h"
 #include "global_operator.h"
@@ -8,6 +7,8 @@
 #include "option_parser.h"
 #include "operator_cost.h"
 #include "plugin.h"
+
+#include "tasks/cost_adapted_task.h"
 
 #include <cassert>
 #include <cstdlib>
