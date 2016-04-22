@@ -1,8 +1,8 @@
-#ifndef COST_ADAPTED_TASK_H
-#define COST_ADAPTED_TASK_H
+#ifndef TASKS_COST_ADAPTED_TASK_H
+#define TASKS_COST_ADAPTED_TASK_H
 
-#include "delegating_task.h"
-#include "operator_cost.h"
+#include "../delegating_task.h"
+#include "../operator_cost.h"
 
 namespace options {
 class Options;
