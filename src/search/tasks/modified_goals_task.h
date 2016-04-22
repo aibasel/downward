@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace extra_tasks {
-class ModifiedGoalsTask : public DelegatingTask {
+class ModifiedGoalsTask : public tasks::DelegatingTask {
     const std::vector<Fact> goals;
 
 public:
