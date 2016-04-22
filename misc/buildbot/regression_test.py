@@ -51,23 +51,22 @@ class RegressionCheckReport(AbsoluteReport):
         self.baseline = baseline
         self.checks = checks
 
-    def _get_rev(self, run):
-        return run.get('planner') or run['search_rev']
+    def _is_baseline_run(self, run):
+        return run['global_revision'].startswith(self.baseline)
 
     def get_markup(self):
         lines = []
         for (domain, problem), runs in self.problem_runs.items():
-            runs_base = [run for run in runs if self._get_rev(run) == self.baseline]
-            runs_new = [run for run in runs if self._get_rev(run) != self.baseline]
+            runs_base = [run for run in runs if self._is_baseline_run(run)]
+            runs_new = [run for run in runs if not self._is_baseline_run(run)]
             assert len(runs_base) == len(runs_new), (len(runs_base), len(runs_new))
             for base, new in zip(runs_base, runs_new):
-                assert base['config_nick'] == new['config_nick']
-                config_nick = base['config_nick']
+                config = new['config']
                 for check in self.checks:
                     error = check.get_error(base, new)
                     if error:
                         lines.append('| %(domain)s:%(problem)s '
-                                     '| %(config_nick)s '
+                                     '| %(config)s '
                                      '| %(error)s |' % locals())
         if lines:
             # Add header.
