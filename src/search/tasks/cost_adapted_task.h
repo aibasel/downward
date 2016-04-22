@@ -8,6 +8,7 @@ namespace options {
 class Options;
 }
 
+namespace tasks {
 /*
   Task transformation that changes operator costs. If the parent task assigns
   costs 'c' to an operator, its adjusted costs, depending on the value of the
@@ -30,5 +31,6 @@ public:
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
 };
+}
 
 #endif
