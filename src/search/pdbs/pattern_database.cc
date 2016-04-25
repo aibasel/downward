@@ -86,8 +86,8 @@ PatternDatabase::PatternDatabase(
     for (int pattern_var_id : pattern) {
         hash_multipliers.push_back(num_states);
         VariableProxy var = task_proxy.get_variables()[pattern_var_id];
-        if (utils::is_product_within_limit_size_t(num_states, var.get_domain_size(),
-                                                  numeric_limits<size_t>::max())) {
+        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
+                                           numeric_limits<int>::max())) {
             num_states *= var.get_domain_size();
         } else {
             cerr << "Given pattern is too large! (Overflow occured): " << endl;

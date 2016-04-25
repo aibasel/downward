@@ -59,8 +59,8 @@ void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
         for (int rel_var_id : relevant_vars) {
             VariableProxy rel_var = task_proxy.get_variables()[rel_var_id];
             int rel_var_size = rel_var.get_domain_size();
-            if (utils::is_product_within_limit_int(pdb_size, rel_var_size,
-                                                   pdb_max_size)) {
+            if (utils::is_product_within_limit(pdb_size, rel_var_size,
+                                               pdb_max_size)) {
                 Pattern new_pattern(pattern);
                 new_pattern.push_back(rel_var_id);
                 sort(new_pattern.begin(), new_pattern.end());
