@@ -78,10 +78,7 @@ Abstraction::Abstraction(
     : task_proxy(*task),
       max_states(max_states),
       use_general_costs(use_general_costs),
-      abstract_search(
-          get_operator_costs(task_proxy),
-          states,
-          use_general_costs),
+      abstract_search(get_operator_costs(task_proxy), states),
       split_selector(task, pick),
       timer(max_time),
       init(nullptr),
@@ -333,7 +330,6 @@ vector<int> Abstraction::get_needed_costs() {
         }
 
     }
-    assert(needed_costs == abstract_search.get_needed_costs(init, num_ops));
     return needed_costs;
 }
 

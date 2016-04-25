@@ -18,7 +18,6 @@ using Solution = std::deque<Arc>;
 class AbstractSearch {
     const std::vector<int> operator_costs;
     AbstractStates &states;
-    const bool use_general_costs;
 
     AdaptiveQueue<AbstractState *> open_queue;
     Solution solution;
@@ -31,27 +30,18 @@ class AbstractSearch {
     AbstractState *astar_search(
         bool forward,
         bool use_h,
-        AbstractStates *goals = nullptr,
-        std::vector<int> *needed_costs = nullptr);
+        AbstractStates *goals = nullptr);
 
 public:
     AbstractSearch(
         std::vector<int> &&operator_costs,
-        AbstractStates &states,
-        bool use_general_costs);
+        AbstractStates &states);
     ~AbstractSearch() = default;
 
     bool find_solution(AbstractState *init, AbstractStates &goals);
 
     void forward_dijkstra(AbstractState *init);
     void backwards_dijkstra(const AbstractStates goals);
-
-    /*
-      Settle all nodes in the abstract transition system and remember
-      the minimum cost we need to keep for each operator in order not
-      to decrease any heuristic values.
-    */
-    std::vector<int> get_needed_costs(AbstractState *init, int num_ops);
 
     const Solution &get_solution() {
         return solution;
