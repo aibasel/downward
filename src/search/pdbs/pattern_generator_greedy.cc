@@ -37,8 +37,7 @@ Pattern PatternGeneratorGreedy::generate(shared_ptr<AbstractTask> task) {
         VariableProxy next_var = variables[next_var_id];
         int next_var_size = next_var.get_domain_size();
 
-        if (!utils::is_product_within_limit_int(size, next_var_size,
-                                                max_states))
+        if (!utils::is_product_within_limit(size, next_var_size, max_states))
             break;
 
         pattern.push_back(next_var_id);

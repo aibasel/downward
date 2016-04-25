@@ -138,7 +138,7 @@ bool PatternCollectionGeneratorGenetic::is_pattern_too_large(
     for (size_t i = 0; i < pattern.size(); ++i) {
         VariableProxy var = variables[pattern[i]];
         int domain_size = var.get_domain_size();
-        if (!utils::is_product_within_limit_int(mem, domain_size, pdb_max_size))
+        if (!utils::is_product_within_limit(mem, domain_size, pdb_max_size))
             return true;
         mem *= domain_size;
     }
@@ -228,7 +228,7 @@ void PatternCollectionGeneratorGenetic::bin_packing() {
             if (next_var_size > pdb_max_size)
                 // var never fits into a bin.
                 continue;
-            if (!utils::is_product_within_limit_int(current_size, next_var_size,
+            if (!utils::is_product_within_limit(current_size, next_var_size,
                                                 pdb_max_size)) {
                 // Open a new bin for var.
                 pattern_collection.push_back(pattern);
