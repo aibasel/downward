@@ -282,13 +282,6 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME IPC_MAX_HEURISTIC
-    HELP "The IPC max heuristic"
-    SOURCES
-        heuristics/ipc_max_heuristic.cc
-)
-
-fast_downward_plugin(
     NAME ADDITIVE_HEURISTIC
     HELP "The additive heuristic"
     SOURCES
