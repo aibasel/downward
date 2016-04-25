@@ -60,7 +60,7 @@ pair<size_t, size_t> ShrinkStrategy::compute_shrink_sizes(
     size_t new_size1 = min(size1, max_before_merge);
     size_t new_size2 = min(size2, max_before_merge);
 
-    if (!utils::is_product_within_limit(new_size1, new_size2, max_states)) {
+    if (!utils::is_product_within_limit_int(new_size1, new_size2, max_states)) {
         size_t balanced_size = size_t(sqrt(max_states));
 
         if (new_size1 <= balanced_size) {
@@ -161,7 +161,7 @@ void ShrinkStrategy::handle_option_defaults(Options &opts) {
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
         int n = max_states_before_merge;
-        if (utils::is_product_within_limit(n, n, INF)) {
+        if (utils::is_product_within_limit_int(n, n, INF)) {
             max_states = n * n;
         } else {
             max_states = INF;
