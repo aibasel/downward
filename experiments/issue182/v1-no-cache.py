@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import common_setup
 from common_setup import IssueConfig, IssueExperiment
 import suites
 
@@ -19,10 +20,10 @@ configs = [
         ["--search", "astar({})".format(eval_)])
     for name, eval_ in [("max", max_eval), ("ipc_max", ipc_max)]
 ]
-revisions = ["8f1563b36fc7"]
+revision = "8f1563b36fc7"
 
 exp = IssueExperiment(
-    revisions=revisions,
+    revisions=[revision],
     configs=configs,
     suite=suites.suite_optimal_strips(),
     test_suite=["depot:pfile1"],
@@ -30,5 +31,10 @@ exp = IssueExperiment(
 )
 
 exp.add_absolute_report_step()
+exp.add_report(
+    common_setup.CompareConfigsReport(
+        [(revision + "-" + "ipc_max", revision + "-" + "max")],
+        attributes=IssueExperiment.DEFAULT_TABLE_ATTRIBUTES),
+    name=common_setup.get_experiment_name() + "-compare")
 
 exp()
