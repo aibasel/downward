@@ -297,26 +297,21 @@ vector<int> Abstraction::get_needed_costs() {
         /*
           No need to maintain goal distances of unreachable states (g
           == INF).
-
-          Note: If this abstract state is a dead end (h == INF), then
-          so is its successor. Currently, we set the saturated costs of
-          operators between two dead end states to at least 0. It is
-          unclear whether we can lower the saturated costs to
-          -MAX_COST_VALUE and still be admissible.
         */
         if (g == INF) {
             continue;
         }
 
-        for (const Arc arc: state->get_outgoing_arcs()) {
+        /*
+          Note: Currently, we set the saturated costs of operators
+          between two dead end states to at least 0 (INF - INF). It is
+          unclear whether we can lower the saturated costs to
+          -MAX_COST_VALUE and still be admissible.
+        */
+        for (const Arc &arc: state->get_outgoing_arcs()) {
             int op_id = arc.first;
             AbstractState *successor = arc.second;
             const int succ_h = successor->get_h_value();
-
-            // If this is state is a dead end, then so is its successor.
-            if (h == INF)
-                assert(succ_h == INF);
-
             int needed = h - succ_h;
             if (!use_general_costs)
                 needed = max(0, needed);
