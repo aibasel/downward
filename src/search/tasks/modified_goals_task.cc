@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace ExtraTasks {
+namespace extra_tasks {
 ModifiedGoalsTask::ModifiedGoalsTask(
     const std::shared_ptr<AbstractTask> &parent,
     std::vector<Fact> &&goals)
