@@ -8,7 +8,7 @@ cd ../..
 py.test driver/tests.py
 py.test src/translate/tests/test_scripts.py
 
-# misc/buildbot/buildbot-exp.py  # TODO: Use FastDownwardExperiment
+misc/buildbot/buildbot-exp.py --rev baseline 1
 
 misc/tests/test-exitcodes.py
 misc/tests/test-standard-configs.py
