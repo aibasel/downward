@@ -10,11 +10,7 @@ py.test src/translate/tests/test_scripts.py
 
 misc/buildbot/buildbot-exp.py --rev baseline 1
 
-misc/tests/test-exitcodes.py
-misc/tests/test-standard-configs.py
-misc/tests/test-translator.py misc/tests/benchmarks
-misc/tests/test-translator.py misc/tests/benchmarks --first
-misc/tests/test-translator.py misc/tests/benchmarks --all
+misc/tests/run-all-code-tests
 
 # Commented out because compilation is slow.
 # misc/make-ipc-submission seq-sat-lama-2011 64

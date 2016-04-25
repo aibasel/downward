@@ -22,20 +22,6 @@ VERSIONS = ["2.7", "3"]
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 DRIVER = os.path.join(REPO, "fast-downward.py")
-BENCHMARKS = os.path.join(REPO, "misc", "tests", "benchmarks")
-
-# Translating these problems covers 84% of the translator code. Translating all
-# first problems covers 85%.
-TASKS = [
-    "airport/p01-airport1-p1.pddl",
-    "airport-adl/p01-airport1-p1.pddl",
-    "assembly/prob01.pddl",
-    "barman-opt11-strips/pfile01-001.pddl",
-    "miconic-fulladl/f1-0.pddl",
-    "psr-large/p01-s29-n2-l5-f30.pddl",
-    "transport-opt08-strips/p01.pddl",
-    "woodworking-opt11-strips/p01.pddl",
-    ]
 
 
 def parse_args():
@@ -44,11 +30,10 @@ def parse_args():
         "benchmarks_dir",
         help="path to benchmark directory")
     parser.add_argument(
-        "--first", action="store_true",
-        help="test first task of each domain")
-    parser.add_argument(
-        "--all", action="store_true",
-        help="test complete benchmark suite")
+        "suite", nargs="*", default=["first"],
+        help='Use "all" to test all benchmarks, '
+             '"first" to test the first task of each domain (default), '
+             'or "<domain>:<problem>" to test individual tasks')
     return parser.parse_args()
 
 
@@ -81,22 +66,27 @@ def _get_all_tasks_by_domain(benchmarks_dir):
     tasks = defaultdict(list)
     for domain in os.listdir(benchmarks_dir):
         path = os.path.join(benchmarks_dir, domain)
-        tasks[domain] = [os.path.join(benchmarks_dir, domain, f)
-                         for f in sorted(os.listdir(path)) if not "domain" in f]
+        tasks[domain] = [
+            os.path.join(benchmarks_dir, domain, f)
+            for f in sorted(os.listdir(path)) if not "domain" in f]
     return sorted(tasks.values())
 
 
 def get_tasks(args):
-    if args.first:
-        # Use the first problem of each domain.
-        return [tasks[0] for tasks in _get_all_tasks_by_domain(args.benchmarks_dir)]
-    elif args.all:
-        # Use the whole benchmark suite.
-        return itertools.chain.from_iterable(
-                tasks for tasks in _get_all_tasks_by_domain(args.benchmarks_dir))
-    else:
-        # Use predefined problems.
-        return [os.path.join(args.benchmarks_dir, task) for task in TASKS]
+    suite = []
+    for task in args.suite:
+        if task == "first":
+            # Add the first task of each domain.
+            suite.extend([tasks[0] for tasks in _get_all_tasks_by_domain(args.benchmarks_dir)])
+        elif task == "all":
+            # Add the whole benchmark suite.
+            suite.extend(itertools.chain.from_iterable(
+                    tasks for tasks in _get_all_tasks_by_domain(args.benchmarks_dir)))
+        else:
+            # Add task from command line.
+            task = task.replace(":", "/")
+            suite.append(os.path.join(args.benchmarks_dir, task))
+    return sorted(set(suite))
 
 
 def cleanup():
