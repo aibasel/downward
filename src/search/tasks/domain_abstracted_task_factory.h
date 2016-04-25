@@ -8,7 +8,7 @@
 class AbstractTask;
 
 
-namespace ExtraTasks {
+namespace extra_tasks {
 using ValueGroup = std::vector<int>;
 using ValueGroups = std::vector<ValueGroup>;
 using VarToGroups = std::unordered_map<int, ValueGroups>;

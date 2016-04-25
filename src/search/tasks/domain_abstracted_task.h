@@ -1,7 +1,7 @@
 #ifndef TASKS_DOMAIN_ABSTRACTED_TASK_H
 #define TASKS_DOMAIN_ABSTRACTED_TASK_H
 
-#include "../delegating_task.h"
+#include "delegating_task.h"
 
 #include "../utils/collections.h"
 
@@ -11,14 +11,14 @@
 #include <vector>
 
 
-namespace ExtraTasks {
+namespace extra_tasks {
 /*
   Task transformation for performing domain abstraction.
 
   We recommend using the factory function in
   domain_abstracted_task_factory.h for creating DomainAbstractedTasks.
 */
-class DomainAbstractedTask : public DelegatingTask {
+class DomainAbstractedTask : public tasks::DelegatingTask {
     const std::vector<int> domain_size;
     const std::vector<int> initial_state_values;
     const std::vector<Fact> goals;

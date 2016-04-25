@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace ExtraTasks {
+namespace extra_tasks {
 DomainAbstractedTask::DomainAbstractedTask(
     const shared_ptr<AbstractTask> &parent,
     vector<int> &&domain_size,

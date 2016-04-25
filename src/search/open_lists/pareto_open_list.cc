@@ -164,7 +164,7 @@ Entry ParetoOpenList<Entry>::remove_min(vector<int> *key) {
         else
             numerator = 1;
         seen += numerator;
-        if (g_rng(seen) < numerator)
+        if ((*g_rng())(seen) < numerator)
             selected = it;
     }
     if (key) {

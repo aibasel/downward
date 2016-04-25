@@ -108,7 +108,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "The variant 'StubbornSetsSimple' resolves the design choices in a "
         "straight-forward way. For details, see the following papers: "
         + utils::format_paper_reference(
-            {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmüller", "Malte Helmert"},
+            {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
             "A Stubborn Set Algorithm for Optimal Planning",
             "http://ai.cs.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
             "Proceedings of the 20th European Conference on Artificial Intelligence "

@@ -2,13 +2,15 @@
 
 #include "domain_abstracted_task.h"
 
+#include "../utils/language.h"
+
 #include <sstream>
 #include <string>
 #include <unordered_set>
 
 using namespace std;
 
-namespace ExtraTasks {
+namespace extra_tasks {
 class DomainAbstractedTaskFactory {
 private:
     std::vector<int> domain_size;
@@ -19,7 +21,6 @@ private:
     std::shared_ptr<AbstractTask> task;
 
     void initialize(const AbstractTask &parent);
-    void move_fact(int var, int before, int after);
     void combine_values(int var, const ValueGroups &groups);
     std::string get_combined_fact_name(int var, const ValueGroup &values) const;
 
@@ -39,8 +40,26 @@ DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
     for (const auto &pair : value_groups) {
         int var = pair.first;
         const ValueGroups &groups = pair.second;
+        assert(utils::in_bounds(var, domain_size));
+        for (const ValueGroup &group : groups) {
+            for (int value : group) {
+                utils::unused_variable(value);
+                assert(0 <= value && value < domain_size[var]);
+            }
+        }
         combine_values(var, groups);
     }
+
+    // Apply domain abstraction to initial state.
+    for (size_t var_id = 0; var_id < initial_state_values.size(); ++var_id) {
+        initial_state_values[var_id] = value_map[var_id][initial_state_values[var_id]];
+    }
+
+    // Apply domain abstraction to goals.
+    for (Fact &goal : goals) {
+        goal.value = value_map[goal.var][goal.value];
+    }
+
     task = make_shared<DomainAbstractedTask>(
         parent, move(domain_size), move(initial_state_values), move(goals),
         move(fact_names), move(value_map));
@@ -61,26 +80,6 @@ void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
             value_map[var][value] = value;
             fact_names[var][value] = parent.get_fact_name(Fact(var, value));
         }
-    }
-}
-
-void DomainAbstractedTaskFactory::move_fact(int var, int before, int after) {
-    assert(utils::in_bounds(var, domain_size));
-    assert(0 <= before && before < domain_size[var]);
-    assert(0 <= after && after < domain_size[var]);
-
-    if (before == after)
-        return;
-
-    // Move each fact at most once.
-    assert(value_map[var][before] == before);
-
-    value_map[var][before] = after;
-    if (initial_state_values[var] == before)
-        initial_state_values[var] = after;
-    for (auto &goal : goals) {
-        if (var == goal.var && before == goal.value)
-            goal.value = after;
     }
 }
 
@@ -111,7 +110,7 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
     // Move all facts that are not part of groups to the front.
     for (int before = 0; before < domain_size[var]; ++before) {
         if (groups_union.count(before) == 0) {
-            move_fact(var, before, next_free_pos);
+            value_map[var][before] = next_free_pos;
             fact_names[var][next_free_pos] = move(fact_names[var][before]);
             ++next_free_pos;
         }
@@ -123,7 +122,7 @@ void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &gro
     for (size_t group_id = 0; group_id < groups.size(); ++group_id) {
         const ValueGroup &group = groups[group_id];
         for (int before : group) {
-            move_fact(var, before, next_free_pos);
+            value_map[var][before] = next_free_pos;
         }
         assert(utils::in_bounds(next_free_pos, fact_names[var]));
         fact_names[var][next_free_pos] = move(combined_fact_names[group_id]);

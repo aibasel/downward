@@ -2,7 +2,7 @@
 
 using namespace std;
 
-
+namespace tasks {
 DelegatingTask::DelegatingTask(const shared_ptr<AbstractTask> &parent)
     : parent(parent) {
 }
@@ -90,12 +90,4 @@ std::vector<int> DelegatingTask::get_initial_state_values() const {
 vector<int> DelegatingTask::get_state_values(const GlobalState &global_state) const {
     return parent->get_state_values(global_state);
 }
-
-vector<int> DelegatingTask::get_state_values(
-    const vector<int> &ancestor_state_values,
-    const AbstractTask *ancestor_task) const {
-    if (this == ancestor_task) {
-        return ancestor_state_values;
-    }
-    return parent->get_state_values(ancestor_state_values, ancestor_task);
 }

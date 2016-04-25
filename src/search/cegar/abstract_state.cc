@@ -10,6 +10,8 @@
 using namespace std;
 
 namespace cegar {
+const int AbstractSearchInfo::UNDEFINED_OPERATOR = -1;
+
 AbstractState::AbstractState(
     const TaskProxy &task_proxy, const Domains &domains, Node *node)
     : task_proxy(task_proxy),
@@ -23,7 +25,8 @@ AbstractState::AbstractState(AbstractState &&other)
       node(move(other.node)),
       incoming_arcs(move(other.incoming_arcs)),
       outgoing_arcs(move(other.outgoing_arcs)),
-      loops(move(other.loops)) {
+      loops(move(other.loops)),
+      search_info(move(other.search_info)) {
 }
 
 int AbstractState::count(int var) const {
