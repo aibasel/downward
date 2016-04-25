@@ -17,9 +17,6 @@ protected:
 public:
     explicit MaxEvaluator(const options::Options &opts);
     virtual ~MaxEvaluator() override;
-
-    virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) override;
 };
 }
 
