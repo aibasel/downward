@@ -39,6 +39,13 @@ bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
     return has_found_solution;
 }
 
+void AbstractSearch::forward_dijkstra(AbstractState *init) {
+    reset();
+    init->get_search_info().decrease_g_value(0);
+    open_queue.push(0, init);
+    astar_search(true, false);
+}
+
 void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
     reset();
     for (AbstractState *goal : goals) {
@@ -61,7 +68,8 @@ AbstractState *AbstractSearch::astar_search(
     bool forward, bool use_h, AbstractStates *goals, vector<int> *needed_costs) {
     assert((forward && use_h && goals && !needed_costs) ||
            (!forward && !use_h && !goals && !needed_costs) ||
-           (forward && !use_h && !goals && needed_costs));
+           (forward && !use_h && !goals && needed_costs) ||
+           (forward && !use_h && !goals && !needed_costs));
     while (!open_queue.empty()) {
         pair<int, AbstractState *> top_pair = open_queue.pop();
         int old_f = top_pair.first;

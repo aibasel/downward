@@ -17,6 +17,9 @@
 using namespace std;
 
 namespace cegar {
+// See additive_heuristic.h.
+static const int MAX_COST_VALUE = 100000000;
+
 struct Flaw {
     // Last concrete and abstract state reached while tracing solution.
     const State concrete_state;
@@ -74,6 +77,7 @@ Abstraction::Abstraction(
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
+      use_general_costs(use_general_costs),
       abstract_search(
           get_operator_costs(task_proxy),
           states,
@@ -285,7 +289,52 @@ int Abstraction::get_h_value_of_initial_state() const {
 }
 
 vector<int> Abstraction::get_needed_costs() {
-    return abstract_search.get_needed_costs(init, task_proxy.get_operators().size());
+    // Update g values; h values are already up-to-date.
+    abstract_search.forward_dijkstra(init);
+    const int num_ops = task_proxy.get_operators().size();
+    vector<int> needed_costs(num_ops, -MAX_COST_VALUE);
+    for (AbstractState *state : states) {
+        const int h = state->get_h_value();
+        const int g = state->get_search_info().get_g_value();
+
+        /*
+          No need to maintain goal distances of unreachable states (g
+          == INF).
+
+          Note: If this abstract state is a dead end (h == INF), then
+          so is its successor. Currently, we set the saturated costs of
+          operators between two dead end states to at least 0. It is
+          unclear whether we can lower the saturated costs to
+          -MAX_COST_VALUE and still be admissible.
+        */
+        if (g == INF) {
+            continue;
+        }
+
+        for (const Arc arc: state->get_outgoing_arcs()) {
+            int op_id = arc.first;
+            AbstractState *successor = arc.second;
+            const int succ_h = successor->get_h_value();
+
+            // If this is state is a dead end, then so is its successor.
+            if (h == INF)
+                assert(succ_h == INF);
+
+            int needed = h - succ_h;
+            if (!use_general_costs)
+                needed = max(0, needed);
+            needed_costs[op_id] = max(needed_costs[op_id], needed);
+        }
+
+        /* To prevent negative cost cycles, all operators inducing
+           self-loops must have non-negative costs. */
+        for (int op_id : state->get_loops()) {
+            needed_costs[op_id] = max(needed_costs[op_id], 0);
+        }
+
+    }
+    assert(needed_costs == abstract_search.get_needed_costs(init, num_ops));
+    return needed_costs;
 }
 
 void Abstraction::print_statistics() {
