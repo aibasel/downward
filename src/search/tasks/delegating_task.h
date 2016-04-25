@@ -1,14 +1,14 @@
-#ifndef DELEGATING_TASK_H
-#define DELEGATING_TASK_H
+#ifndef TASKS_DELEGATING_TASK_H
+#define TASKS_DELEGATING_TASK_H
 
-#include "abstract_task.h"
+#include "../abstract_task.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-
+namespace tasks {
 /*
   Task transformation that delegates all calls to the corresponding methods of
   the parent task. You should inherit from this class instead of AbstractTask
@@ -51,5 +51,6 @@ public:
     virtual std::vector<int> get_initial_state_values() const override;
     virtual std::vector<int> get_state_values(const GlobalState &global_state) const override;
 };
+}
 
 #endif

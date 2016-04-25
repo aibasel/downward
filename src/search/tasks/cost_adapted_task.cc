@@ -1,9 +1,9 @@
 #include "cost_adapted_task.h"
 
-#include "option_parser.h"
-#include "plugin.h"
+#include "../option_parser.h"
+#include "../plugin.h"
 
-#include "utils/system.h"
+#include "../utils/system.h"
 
 #include <iostream>
 #include <memory>
@@ -11,7 +11,7 @@
 using namespace std;
 using utils::ExitCode;
 
-
+namespace tasks {
 CostAdaptedTask::CostAdaptedTask(const Options &opts)
     : DelegatingTask(opts.get<shared_ptr<AbstractTask>>("transform")),
       cost_type(OperatorCost(opts.get<int>("cost_type"))),
@@ -65,3 +65,4 @@ static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
 }
 
 static PluginShared<AbstractTask> _plugin("adapt_costs", _parse);
+}

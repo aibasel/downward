@@ -72,7 +72,7 @@ TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
 
 template<class Entry>
 Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
-    size_t bucket_id = g_rng(keys_and_buckets.size());
+    size_t bucket_id = (*g_rng())(keys_and_buckets.size());
     auto &key_and_bucket = keys_and_buckets[bucket_id];
     const Key &min_key = key_and_bucket.first;
     Bucket &bucket = key_and_bucket.second;
@@ -82,7 +82,7 @@ Entry TypeBasedOpenList<Entry>::remove_min(vector<int> *key) {
         *key = min_key;
     }
 
-    int pos = g_rng(bucket.size());
+    int pos = (*g_rng())(bucket.size());
     Entry result = utils::swap_and_pop_from_vector(bucket, pos);
 
     if (bucket.empty()) {
