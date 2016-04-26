@@ -1,12 +1,12 @@
 #ifndef TASKS_MODIFIED_OPERATOR_COSTS_TASK_H
 #define TASKS_MODIFIED_OPERATOR_COSTS_TASK_H
 
-#include "../delegating_task.h"
+#include "delegating_task.h"
 
 #include <vector>
 
-namespace ExtraTasks {
-class ModifiedOperatorCostsTask : public DelegatingTask {
+namespace extra_tasks {
+class ModifiedOperatorCostsTask : public tasks::DelegatingTask {
     const std::vector<int> operator_costs;
 
 public:
