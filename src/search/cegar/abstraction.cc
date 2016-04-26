@@ -17,9 +17,6 @@
 using namespace std;
 
 namespace cegar {
-// See additive_heuristic.h.
-static const int MAX_COST_VALUE = 100000000;
-
 struct Flaw {
     // Last concrete and abstract state reached while tracing solution.
     const State concrete_state;
@@ -290,7 +287,7 @@ int Abstraction::get_h_value_of_initial_state() const {
 
 vector<int> Abstraction::get_saturated_costs() {
     const int num_ops = task_proxy.get_operators().size();
-    vector<int> saturated_costs(num_ops, -MAX_COST_VALUE);
+    vector<int> saturated_costs(num_ops, -INF);
     for (AbstractState *state : states) {
         const int g = state->get_search_info().get_g_value();
         const int h = state->get_h_value();
