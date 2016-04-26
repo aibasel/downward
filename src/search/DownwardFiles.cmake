@@ -14,8 +14,6 @@ set(CORE_SOURCES
         abstract_task.cc
         axioms.cc
         causal_graph.cc
-        cost_adapted_task.cc
-        delegating_task.cc
         equivalence_relation.cc
         evaluation_context.cc
         evaluation_result.cc
@@ -283,13 +281,6 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME IPC_MAX_HEURISTIC
-    HELP "The IPC max heuristic"
-    SOURCES
-        heuristics/ipc_max_heuristic.cc
-)
-
-fast_downward_plugin(
     NAME ADDITIVE_HEURISTIC
     HELP "The additive heuristic"
     SOURCES
@@ -364,6 +355,15 @@ fast_downward_plugin(
     SOURCES
         heuristics/max_heuristic.cc
     DEPENDS RELAXATION_HEURISTIC
+)
+
+fast_downward_plugin(
+    NAME CORE_TASKS
+    HELP "Core task transformations"
+    SOURCES
+        tasks/cost_adapted_task.cc
+        tasks/delegating_task.cc
+    CORE_PLUGIN
 )
 
 fast_downward_plugin(
