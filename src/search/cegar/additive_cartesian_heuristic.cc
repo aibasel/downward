@@ -54,11 +54,11 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
 }
 
 void AdditiveCartesianHeuristic::reduce_remaining_costs(
-    const vector<int> &needed_costs) {
-    assert(remaining_costs.size() == needed_costs.size());
+    const vector<int> &saturated_costs) {
+    assert(remaining_costs.size() == saturated_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
-        assert(needed_costs[i] <= remaining_costs[i]);
-        remaining_costs[i] -= needed_costs[i];
+        assert(saturated_costs[i] <= remaining_costs[i]);
+        remaining_costs[i] -= saturated_costs[i];
     }
 }
 
@@ -92,8 +92,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
         ++num_abstractions;
         num_states += abstraction.get_num_states();
         assert(num_states <= max_states);
-        vector<int> needed_costs = abstraction.get_needed_costs();
-        reduce_remaining_costs(needed_costs);
+        reduce_remaining_costs(abstraction.get_saturated_costs());
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
