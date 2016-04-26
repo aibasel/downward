@@ -1,10 +1,11 @@
 #include "heuristic_representation.h"
 
-#include "transition_system.h" // TODO: Try to get rid of this.
+#include "types.h"
 
 #include "../task_proxy.h"
 
 #include <algorithm>
+#include <iostream>
 #include <numeric>
 
 using namespace std;
@@ -34,7 +35,7 @@ void HeuristicRepresentationLeaf::apply_abstraction_to_lookup_table(
     const vector<int> &abstraction_mapping) {
     int new_domain_size = 0;
     for (int &entry : lookup_table) {
-        if (entry != TransitionSystem::PRUNED_STATE) {
+        if (entry != PRUNED_STATE) {
             entry = abstraction_mapping[entry];
             new_domain_size = max(new_domain_size, entry + 1);
         }
@@ -78,7 +79,7 @@ void HeuristicRepresentationMerge::apply_abstraction_to_lookup_table(
     int new_domain_size = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
-            if (entry != TransitionSystem::PRUNED_STATE) {
+            if (entry != PRUNED_STATE) {
                 entry = abstraction_mapping[entry];
                 new_domain_size = max(new_domain_size, entry + 1);
             }
@@ -91,9 +92,9 @@ int HeuristicRepresentationMerge::get_abstract_state(
     const State &state) const {
     int state1 = left_child->get_abstract_state(state);
     int state2 = right_child->get_abstract_state(state);
-    if (state1 == TransitionSystem::PRUNED_STATE ||
-        state2 == TransitionSystem::PRUNED_STATE)
-        return TransitionSystem::PRUNED_STATE;
+    if (state1 == PRUNED_STATE ||
+        state2 == PRUNED_STATE)
+        return PRUNED_STATE;
     return lookup_table[state1][state2];
 }
 
