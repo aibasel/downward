@@ -58,14 +58,7 @@ void AdditiveCartesianHeuristic::reduce_remaining_costs(
     assert(remaining_costs.size() == saturated_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
         assert(saturated_costs[i] <= remaining_costs[i]);
-        if (saturated_costs[i] == -INF) {
-            remaining_costs[i] = INF;
-        } else {
-            remaining_costs[i] -= saturated_costs[i];
-        }
-        if (remaining_costs[i] < 0) {
-            ABORT("Overflow occured.");
-        }
+        remaining_costs[i] -= saturated_costs[i];
     }
 }
 
