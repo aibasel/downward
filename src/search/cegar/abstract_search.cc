@@ -24,7 +24,7 @@ void AbstractSearch::reset() {
 
 bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
     reset();
-    init->get_search_info().decrease_g_value(0);
+    init->get_search_info().decrease_g_value_to(0);
     open_queue.push(init->get_h_value(), init);
     AbstractState *goal = astar_search(true, true, &goals);
     bool has_found_solution = static_cast<bool>(goal);
@@ -36,7 +36,7 @@ bool AbstractSearch::find_solution(AbstractState *init, AbstractStates &goals) {
 
 void AbstractSearch::forward_dijkstra(AbstractState *init) {
     reset();
-    init->get_search_info().decrease_g_value(0);
+    init->get_search_info().decrease_g_value_to(0);
     open_queue.push(0, init);
     astar_search(true, false);
 }
@@ -44,7 +44,7 @@ void AbstractSearch::forward_dijkstra(AbstractState *init) {
 void AbstractSearch::backwards_dijkstra(const AbstractStates goals) {
     reset();
     for (AbstractState *goal : goals) {
-        goal->get_search_info().decrease_g_value(0);
+        goal->get_search_info().decrease_g_value_to(0);
         open_queue.push(0, goal);
     }
     astar_search(false, false);
@@ -84,7 +84,7 @@ AbstractState *AbstractSearch::astar_search(
             assert(succ_g >= 0);
 
             if (succ_g < successor->get_search_info().get_g_value()) {
-                successor->get_search_info().decrease_g_value(succ_g);
+                successor->get_search_info().decrease_g_value_to(succ_g);
                 int f = succ_g;
                 if (use_h) {
                     int h = successor->get_h_value();
