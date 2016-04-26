@@ -3,22 +3,15 @@
 
 #include "types.h"
 
-#include <forward_list>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-class State;
-class TaskProxy;
-
 namespace merge_and_shrink {
-class Distances;
-class HeuristicRepresentation;
 class LabelEquivalenceRelation;
-class LabelGroup; // TODO: include label_equivalence_relation.h directly?
+class LabelGroup;
 class Labels;
 
 struct Transition {
@@ -42,8 +35,6 @@ struct Transition {
         return !(*this < other);
     }
 };
-
-class TransitionSystem;
 
 struct GroupAndTransitions {
     const LabelGroup &label_group;
@@ -85,9 +76,6 @@ public:
 };
 
 class TransitionSystem {
-public:
-    static const int PRUNED_STATE;
-
 private:
     /*
       The following two attributes are only used for output.
@@ -126,7 +114,6 @@ private:
     int num_states;
     std::vector<bool> goal_states;
     int init_state;
-    bool goal_relevant; // TODO: Get rid of this?
 
     /*
       Check if two or more labels are locally equivalent to each other, and
@@ -134,12 +121,7 @@ private:
     */
     void compute_locally_equivalent_labels();
 
-    // TODO: make private or remove
     const std::vector<Transition> &get_transitions_for_group_id(int group_id) const {
-        return transitions_by_group_id[group_id];
-    }
-
-    std::vector<Transition> &get_transitions_for_group_id(int group_id) {
         return transitions_by_group_id[group_id];
     }
 
@@ -155,7 +137,6 @@ public:
         int num_states,
         std::vector<bool> &&goal_states,
         int init_state,
-        bool goal_relevant,
         bool compute_label_equivalence_relation);
     ~TransitionSystem();
     /*
@@ -230,10 +211,6 @@ public:
 
     bool is_goal_state(int state) const {
         return goal_states[state];
-    }
-
-    bool is_goal_relevant() const {  // used by merge_dfp
-        return goal_relevant;
     }
 };
 }
