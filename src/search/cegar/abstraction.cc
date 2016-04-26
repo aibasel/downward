@@ -292,27 +292,28 @@ vector<int> Abstraction::get_saturated_costs() {
     const int num_ops = task_proxy.get_operators().size();
     vector<int> saturated_costs(num_ops, -MAX_COST_VALUE);
     for (AbstractState *state : states) {
-        const int h = state->get_h_value();
         const int g = state->get_search_info().get_g_value();
+        const int h = state->get_h_value();
 
         /*
-          No need to maintain goal distances of unreachable states (g
-          == INF).
+          No need to maintain goal distances of unreachable (g == INF)
+          and dead end states (h == INF).
+
+          Note that the "succ_h == INF" test below is sufficient for
+          ignoring dead end states. The "h == INF" test is a speed
+          optimization.
         */
-        if (g == INF) {
+        if (g == INF || h == INF)
             continue;
-        }
 
-        /*
-          Note: Currently, we set the saturated costs of operators
-          between two dead end states to at least 0 (INF - INF). It is
-          unclear whether we can lower the saturated costs to
-          -MAX_COST_VALUE and still be admissible.
-        */
         for (const Arc &arc: state->get_outgoing_arcs()) {
             int op_id = arc.first;
             AbstractState *successor = arc.second;
             const int succ_h = successor->get_h_value();
+
+            if (succ_h == INF)
+                continue;
+
             int needed = h - succ_h;
             if (!use_general_costs)
                 needed = max(0, needed);
@@ -324,7 +325,6 @@ vector<int> Abstraction::get_saturated_costs() {
         for (int op_id : state->get_loops()) {
             saturated_costs[op_id] = max(saturated_costs[op_id], 0);
         }
-
     }
     return saturated_costs;
 }
