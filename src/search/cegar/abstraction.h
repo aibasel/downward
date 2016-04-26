@@ -121,7 +121,7 @@ public:
       For each operator calculate the mimimum cost that is needed to
       preserve the abstract goal distances of all reachable states.
     */
-    std::vector<int> get_needed_costs();
+    std::vector<int> get_saturated_costs();
 
     int get_h_value_of_initial_state() const;
 };
