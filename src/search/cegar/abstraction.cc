@@ -94,8 +94,8 @@ Abstraction::Abstraction(
     cout << "Time for building abstraction: " << timer << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
-       last iteration, so we should update the h values. */
-    update_h_values();
+       last iteration, so we should update the distances. */
+    update_h_and_g_values();
 
     print_statistics();
 }
@@ -274,11 +274,14 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     }
 }
 
-void Abstraction::update_h_values() {
+void Abstraction::update_h_and_g_values() {
     abstract_search.backwards_dijkstra(goals);
     for (AbstractState *state : states) {
         state->set_h_value(state->get_search_info().get_g_value());
     }
+    // Update g values.
+    // TODO: updating h values overwrites g values. Find better solution.
+    abstract_search.forward_dijkstra(init);
 }
 
 int Abstraction::get_h_value_of_initial_state() const {
@@ -286,8 +289,6 @@ int Abstraction::get_h_value_of_initial_state() const {
 }
 
 vector<int> Abstraction::get_needed_costs() {
-    // Update g values; h values are already up-to-date.
-    abstract_search.forward_dijkstra(init);
     const int num_ops = task_proxy.get_operators().size();
     vector<int> needed_costs(num_ops, -MAX_COST_VALUE);
     for (AbstractState *state : states) {

@@ -92,7 +92,7 @@ class Abstraction {
     std::unique_ptr<Flaw> find_flaw(const Solution &solution);
 
     // Perform Dijkstra's algorithm from the goal states to update the h-values.
-    void update_h_values();
+    void update_h_and_g_values();
 
     void print_statistics();
 
