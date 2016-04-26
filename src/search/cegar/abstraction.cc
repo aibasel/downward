@@ -287,7 +287,8 @@ int Abstraction::get_h_value_of_initial_state() const {
 
 vector<int> Abstraction::get_saturated_costs() {
     const int num_ops = task_proxy.get_operators().size();
-    vector<int> saturated_costs(num_ops, -INF);
+    const int min_cost = use_general_costs ? -INF : 0;
+    vector<int> saturated_costs(num_ops, min_cost);
     for (AbstractState *state : states) {
         const int g = state->get_search_info().get_g_value();
         const int h = state->get_h_value();
@@ -312,15 +313,15 @@ vector<int> Abstraction::get_saturated_costs() {
                 continue;
 
             int needed = h - succ_h;
-            if (!use_general_costs)
-                needed = max(0, needed);
             saturated_costs[op_id] = max(saturated_costs[op_id], needed);
         }
 
-        /* To prevent negative cost cycles, all operators inducing
-           self-loops must have non-negative costs. */
-        for (int op_id : state->get_loops()) {
-            saturated_costs[op_id] = max(saturated_costs[op_id], 0);
+        if (use_general_costs) {
+            /* To prevent negative cost cycles, all operators inducing
+               self-loops must have non-negative costs. */
+            for (int op_id : state->get_loops()) {
+                saturated_costs[op_id] = max(saturated_costs[op_id], 0);
+            }
         }
     }
     return saturated_costs;
