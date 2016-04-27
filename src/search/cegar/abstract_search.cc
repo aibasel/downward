@@ -80,7 +80,7 @@ AbstractState *AbstractSearch::astar_search(
             assert(utils::in_bounds(op_id, operator_costs));
             const int op_cost = operator_costs[op_id];
             assert(op_cost >= 0);
-            int succ_g = g + op_cost;
+            int succ_g = (op_cost == INF) ? INF : g + op_cost;
             assert(succ_g >= 0);
 
             if (succ_g < successor->get_search_info().get_g_value()) {
@@ -110,6 +110,7 @@ void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) 
         solution.push_front(Arc(prev_op_id, current));
         assert(utils::in_bounds(prev_op_id, operator_costs));
         const int prev_op_cost = operator_costs[prev_op_id];
+        assert(prev_op_cost != INF);
         prev_state->set_h_value(current->get_h_value() + prev_op_cost);
         assert(prev_state != current);
         current = prev_state;

@@ -57,8 +57,20 @@ void AdditiveCartesianHeuristic::reduce_remaining_costs(
     const vector<int> &saturated_costs) {
     assert(remaining_costs.size() == saturated_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
-        assert(saturated_costs[i] <= remaining_costs[i]);
-        remaining_costs[i] -= saturated_costs[i];
+        int &remaining = remaining_costs[i];
+        const int &saturated = saturated_costs[i];
+        assert(saturated <= remaining);
+        /* Since we ignore transitions from states s with h(s)=INF, all
+           saturated costs (h(s)-h(s')) are finite or -INF. */
+        assert(saturated != INF);
+        if (remaining == INF) {
+            // INF - x = INF for finite values x.
+        } else if (saturated == -INF) {
+            remaining = INF;
+        } else {
+            remaining -= saturated;
+        }
+        assert(remaining >= 0);
     }
 }
 

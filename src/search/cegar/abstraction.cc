@@ -288,7 +288,7 @@ int Abstraction::get_h_value_of_initial_state() const {
 vector<int> Abstraction::get_saturated_costs() {
     const int num_ops = task_proxy.get_operators().size();
     // Use value greater than -INF to avoid arithmetic difficulties.
-    const int min_cost = use_general_costs ? -100000000 : 0;
+    const int min_cost = use_general_costs ? -INF : 0;
     vector<int> saturated_costs(num_ops, min_cost);
     for (AbstractState *state : states) {
         const int g = state->get_search_info().get_g_value();
