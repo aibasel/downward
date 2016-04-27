@@ -38,7 +38,7 @@ public:
         incoming_arc = Arc(UNDEFINED_OPERATOR, nullptr);
     }
 
-    void decrease_g_value(int new_g) {
+    void decrease_g_value_to(int new_g) {
         assert(new_g <= g);
         g = new_g;
     }

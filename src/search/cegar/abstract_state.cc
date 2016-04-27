@@ -272,7 +272,7 @@ bool AbstractState::is_more_general_than(const AbstractState &other) const {
 
 void AbstractState::set_h_value(int new_h) {
     assert(node);
-    node->increase_h_value(new_h);
+    node->increase_h_value_to(new_h);
 }
 
 int AbstractState::get_h_value() const {
