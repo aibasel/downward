@@ -79,7 +79,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
     int num_abstractions;
     int num_states;
 
-    void reduce_remaining_costs(const std::vector<int> &needed_costs);
+    void reduce_remaining_costs(const std::vector<int> &saturated_costs);
     std::shared_ptr<AbstractTask> get_remaining_costs_task(
         std::shared_ptr<AbstractTask> &parent) const;
     bool may_build_another_abstraction();

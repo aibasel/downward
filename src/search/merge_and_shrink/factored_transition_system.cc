@@ -146,7 +146,7 @@ int FactoredTransitionSystem::merge(int index1, int index2) {
     assert(is_index_valid(index1));
     assert(is_index_valid(index2));
     transition_systems.push_back(TransitionSystem::merge(
-        *labels, *transition_systems[index1], *transition_systems[index2]));
+                                     *labels, *transition_systems[index1], *transition_systems[index2]));
     distances[index1] = nullptr;
     distances[index2] = nullptr;
     transition_systems[index1] = nullptr;
