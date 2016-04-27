@@ -45,6 +45,9 @@ performed. All of them use lab's deprecated DownwardExperiment:
 * M&S: configs and additional parsing:
   * issue548/base-v2.py and issue548/ms-parser.py
 
+* Run experiment in debug mode (with assertions):
+  * issue650/v2.py
+
 
 Microbenchmarks
 ===============
