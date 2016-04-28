@@ -1,17 +1,17 @@
 #ifndef CEGAR_ABSTRACT_SEARCH_H
 #define CEGAR_ABSTRACT_SEARCH_H
 
-// TODO: Move include to .cc file when Arc typedef is no longer needed.
-#include "abstract_state.h"
-
 #include "../priority_queue.h"
+
+#include "types.h"
 
 #include <deque>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 namespace cegar {
+class AbstractState;
+
 using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Arc>;
 
