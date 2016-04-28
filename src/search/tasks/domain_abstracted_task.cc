@@ -72,19 +72,19 @@ vector<int> DomainAbstractedTask::translate_parent_state(const T &parent_state) 
     return state_data;
 }
 
-vector<int> DomainAbstractedTask::get_state_values(
+vector<int> DomainAbstractedTask::convert_state_values(
     const GlobalState &global_state) const {
     return translate_parent_state(global_state);
 }
 
-vector<int> DomainAbstractedTask::get_state_values(
+vector<int> DomainAbstractedTask::convert_state_values(
     const vector<int> &ancestor_state_values,
     const AbstractTask *ancestor_task) const {
     if (this == ancestor_task) {
         return ancestor_state_values;
     }
     return translate_parent_state(
-        parent->get_state_values(ancestor_state_values, ancestor_task));
+        parent->convert_state_values(ancestor_state_values, ancestor_task));
 }
 
 }

@@ -105,10 +105,10 @@ Fact RootTask::get_goal_fact(int index) const {
 }
 
 vector<int> RootTask::get_initial_state_values() const {
-    return get_state_values(g_initial_state());
+    return convert_state_values(g_initial_state());
 }
 
-vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
+vector<int> RootTask::convert_state_values(const GlobalState &global_state) const {
     // TODO: Use unpacked values directly once issue348 is merged.
     int num_vars = g_variable_domain.size();
     vector<int> values(num_vars);
@@ -117,7 +117,7 @@ vector<int> RootTask::get_state_values(const GlobalState &global_state) const {
     return values;
 }
 
-vector<int> RootTask::get_state_values(
+vector<int> RootTask::convert_state_values(
     const vector<int> &ancestor_state_values,
     const AbstractTask *ancestor_task) const {
     if (this == ancestor_task) {
