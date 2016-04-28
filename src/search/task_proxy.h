@@ -565,7 +565,7 @@ public:
     */
     State convert_to_descendent_task(const AbstractTask *descendent_task) const {
         return State(*descendent_task,
-                     descendent_task->get_state_values(values, task));
+                     descendent_task->convert_state_values(values, task));
     }
 };
 
@@ -608,7 +608,7 @@ public:
     }
 
     State convert_global_state(const GlobalState &global_state) const {
-        return State(*task, task->get_state_values(global_state));
+        return State(*task, task->convert_state_values(global_state));
     }
 
     /*
