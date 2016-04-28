@@ -1,5 +1,6 @@
 #include "abstract_search.h"
 
+#include "abstract_state.h"
 #include "utils.h"
 
 #include <cassert>

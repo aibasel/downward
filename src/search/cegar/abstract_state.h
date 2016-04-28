@@ -2,6 +2,7 @@
 #define CEGAR_ABSTRACT_STATE_H
 
 #include "domains.h"
+#include "types.h"
 
 #include "../task_proxy.h"
 
@@ -13,8 +14,6 @@ namespace cegar {
 class AbstractState;
 class Node;
 
-// Transitions are pairs of operator index and AbstractState pointers.
-using Arc = std::pair<int, AbstractState *>;
 using Arcs = std::vector<Arc>;
 
 // To save space we store self-loops (operator indices) separately.
