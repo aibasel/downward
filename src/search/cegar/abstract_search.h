@@ -3,7 +3,7 @@
 
 #include "../priority_queue.h"
 
-#include "types.h"
+#include "arc.h"
 
 #include <deque>
 #include <unordered_set>

@@ -1,8 +1,8 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
+#include "arc.h"
 #include "domains.h"
-#include "types.h"
 
 #include "../task_proxy.h"
 
