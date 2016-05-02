@@ -1,5 +1,5 @@
-#ifndef CEGAR_TYPES_H
-#define CEGAR_TYPES_H
+#ifndef CEGAR_ARC_H
+#define CEGAR_ARC_H
 
 class AbstractTask;
 
