@@ -73,10 +73,10 @@ void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractStat
     /* Assume that the abstract state v has been split into v1 and v2.
        Now for all transitions u->v we need to add transitions u->v1,
        u->v2, or both. */
-    for (auto arc : incoming_arcs) {
-        int op_id = arc.first;
+    for (const Arc &arc : incoming_arcs) {
+        int op_id = arc.op_id;
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        AbstractState *u = arc.second;
+        AbstractState *u = arc.target;
         assert(u != this);
         int post = get_post(op, var);
         if (post == UNDEFINED_VALUE) {
@@ -106,10 +106,10 @@ void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractStat
     /* Assume that the abstract state v has been split into v1 and v2.
        Now for all transitions v->w we need to add transitions v1->w,
        v2->w, or both. */
-    for (auto arc : outgoing_arcs) {
-        int op_id = arc.first;
+    for (const Arc &arc : outgoing_arcs) {
+        int op_id = arc.op_id;
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        AbstractState *w = arc.second;
+        AbstractState *w = arc.target;
         assert(w != this);
         int pre = get_pre(op, var);
         int post = get_post(op, var);

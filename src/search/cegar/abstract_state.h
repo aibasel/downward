@@ -26,7 +26,8 @@ class AbstractSearchInfo {
     static const int UNDEFINED_OPERATOR;
 
 public:
-    AbstractSearchInfo() {
+    AbstractSearchInfo()
+        : incoming_arc(UNDEFINED_OPERATOR, nullptr) {
         reset();
     }
 
@@ -51,7 +52,7 @@ public:
     }
 
     const Arc &get_incoming_arc() const {
-        assert(incoming_arc.first >= 0 && incoming_arc.second);
+        assert(incoming_arc.op_id != UNDEFINED_OPERATOR && incoming_arc.target);
         return incoming_arc;
     }
 };

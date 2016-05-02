@@ -225,9 +225,8 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     for (const Arc &step : solution) {
         if (!utils::extra_memory_padding_is_reserved())
             break;
-        int op_id = step.first;
-        OperatorProxy op = task_proxy.get_operators()[op_id];
-        AbstractState *next_abstract_state = step.second;
+        OperatorProxy op = task_proxy.get_operators()[step.op_id];
+        AbstractState *next_abstract_state = step.target;
         if (is_applicable(op, concrete_state)) {
             if (debug)
                 cout << "  Move to " << *next_abstract_state << " with "
@@ -306,8 +305,8 @@ vector<int> Abstraction::get_saturated_costs() {
             continue;
 
         for (const Arc &arc: state->get_outgoing_arcs()) {
-            int op_id = arc.first;
-            AbstractState *successor = arc.second;
+            int op_id = arc.op_id;
+            AbstractState *successor = arc.target;
             const int succ_h = successor->get_h_value();
 
             if (succ_h == INF)

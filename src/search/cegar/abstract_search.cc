@@ -74,9 +74,9 @@ AbstractState *AbstractSearch::astar_search(
         }
         const Arcs &successors = (forward) ? state->get_outgoing_arcs() :
                                  state->get_incoming_arcs();
-        for (auto &arc : successors) {
-            int op_id = arc.first;
-            AbstractState *successor = arc.second;
+        for (const Arc &arc : successors) {
+            int op_id = arc.op_id;
+            AbstractState *successor = arc.target;
 
             assert(utils::in_bounds(op_id, operator_costs));
             const int op_cost = operator_costs[op_id];
@@ -106,15 +106,13 @@ void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) 
     AbstractState *current = goal;
     while (current != init) {
         const Arc &prev = current->get_search_info().get_incoming_arc();
-        int prev_op_id = prev.first;
-        AbstractState *prev_state = prev.second;
-        solution.push_front(Arc(prev_op_id, current));
-        assert(utils::in_bounds(prev_op_id, operator_costs));
-        const int prev_op_cost = operator_costs[prev_op_id];
+        solution.push_front(Arc(prev.op_id, current));
+        assert(utils::in_bounds(prev.op_id, operator_costs));
+        const int prev_op_cost = operator_costs[prev.op_id];
         assert(prev_op_cost != INF);
-        prev_state->set_h_value(current->get_h_value() + prev_op_cost);
-        assert(prev_state != current);
-        current = prev_state;
+        prev.target->set_h_value(current->get_h_value() + prev_op_cost);
+        assert(prev.target != current);
+        current = prev.target;
     }
 }
 }

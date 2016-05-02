@@ -1,19 +1,24 @@
 #ifndef CEGAR_TYPES_H
 #define CEGAR_TYPES_H
 
-#include <limits>
-#include <memory>
-#include <unordered_set>
-#include <utility>
-#include <vector>
-
 class AbstractTask;
 
 namespace cegar {
 class AbstractState;
 
-// Transitions are pairs of operator index and AbstractState pointers.
-using Arc = std::pair<int, AbstractState *>;
+struct Arc {
+    int op_id;
+    AbstractState *target;
+
+    Arc(int op_id, AbstractState *state)
+        : op_id(op_id),
+          target(state) {
+    }
+
+    bool operator==(const Arc &other) {
+        return op_id == other.op_id && target == other.target;
+    }
+};
 }
 
 #endif
