@@ -41,7 +41,7 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       subtask_generators(opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks")),
       max_states(opts.get<int>("max_states")),
-      timer(new utils::CountdownTimer(opts.get<double>("max_time"))),
+      timer(opts.get<double>("max_time")),
       use_general_costs(opts.get<bool>("use_general_costs")),
       pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
@@ -82,7 +82,7 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
 
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
-           !timer->is_expired() &&
+           !timer.is_expired() &&
            utils::extra_memory_padding_is_reserved() &&
            compute_heuristic(g_initial_state()) != DEAD_END;
 }
@@ -97,7 +97,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
         Abstraction abstraction(
             subtask,
             max(1, (max_states - num_states) / rem_subtasks),
-            timer->get_remaining_time() / rem_subtasks,
+            timer.get_remaining_time() / rem_subtasks,
             use_general_costs,
             pick_split);
 

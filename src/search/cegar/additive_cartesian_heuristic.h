@@ -5,6 +5,8 @@
 
 #include "../heuristic.h"
 
+#include "../utils/countdown_timer.h"
+
 #include <memory>
 #include <vector>
 
@@ -54,10 +56,6 @@
       Contains helper nodes for splits that split off multiple facts.
 */
 
-namespace utils {
-class CountdownTimer;
-}
-
 namespace cegar {
 class CartesianHeuristic;
 class SubtaskGenerator;
@@ -70,7 +68,7 @@ class SubtaskGenerator;
 class AdditiveCartesianHeuristic : public Heuristic {
     std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators;
     const int max_states;
-    std::unique_ptr<utils::CountdownTimer> timer;
+    utils::CountdownTimer timer;
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
