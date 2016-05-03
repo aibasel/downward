@@ -11,7 +11,7 @@ import configs
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-BENCHMARKS_DIR = os.path.join(REPO, "benchmarks")
+BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 FAST_DOWNWARD = os.path.join(REPO, "fast-downward.py")
 
 TASKS = [os.path.join(BENCHMARKS_DIR, path) for path in [
