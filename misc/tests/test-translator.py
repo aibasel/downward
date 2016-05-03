@@ -34,7 +34,9 @@ def parse_args():
         help='Use "all" to test all benchmarks, '
              '"first" to test the first task of each domain (default), '
              'or "<domain>:<problem>" to test individual tasks')
-    return parser.parse_args()
+    args = parser.parse_args()
+    args.benchmarks_dir = os.path.abspath(args.benchmarks_dir)
+    return args
 
 
 def get_task_name(path):
@@ -64,7 +66,11 @@ def translate_task(python, python_version, task_file):
 
 def _get_all_tasks_by_domain(benchmarks_dir):
     tasks = defaultdict(list)
-    for domain in os.listdir(benchmarks_dir):
+    domains = [
+        name for name in os.listdir(benchmarks_dir)
+        if os.path.isdir(os.path.join(benchmarks_dir, name)) and
+        not name.startswith((".", "_"))]
+    for domain in domains:
         path = os.path.join(benchmarks_dir, domain)
         tasks[domain] = [
             os.path.join(benchmarks_dir, domain, f)
@@ -116,11 +122,11 @@ def get_python_version_info(python):
 
 
 def main():
+    args = parse_args()
     os.chdir(DIR)
     cleanup()
     interpreter_paths = [get_abs_interpreter_path("python{}".format(version)) for version in VERSIONS]
     interpreter_versions = [get_python_version_info(path) for path in interpreter_paths]
-    args = parse_args()
     for task in get_tasks(args):
         for python, python_version in zip(interpreter_paths, interpreter_versions):
             log = translate_task(python, python_version, task)
