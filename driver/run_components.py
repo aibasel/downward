@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import errno
 import logging
 import os.path
 import subprocess
@@ -177,5 +178,11 @@ def run_validate(args):
 
     logging.info("validate executable: %s" % VALIDATE)
 
-    call_component(
-        VALIDATE, args.validate_options + args.validate_inputs)
+    try:
+        call_component(
+            VALIDATE, args.validate_options + args.validate_inputs)
+    except OSError as err:
+        if err.errno == errno.ENOENT:
+            sys.exit("Error: 'validate' not found. Is it on the PATH?")
+        else:
+            raise
