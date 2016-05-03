@@ -17,11 +17,11 @@ REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
     REL_PREPROCESS_PATH = "preprocess"
     REL_SEARCH_PATH = "downward"
-    REL_VALIDATE_PATH = "validate"
+    VALIDATE = "validate"
 elif os.name == "nt":
     REL_PREPROCESS_PATH = "preprocess.exe"
     REL_SEARCH_PATH = "downward.exe"
-    REL_VALIDATE_PATH = "validate.exe"
+    VALIDATE = "validate.exe"
 else:
     print("Unsupported OS: " + os.name)
     sys.exit(1)
@@ -175,8 +175,7 @@ def run_validate(args):
         "validate", args.validate_inputs, args.validate_options,
         time_limit=None, memory_limit=None)
 
-    validate = get_executable(args.build, REL_VALIDATE_PATH)
-    logging.info("validate executable: %s" % validate)
+    logging.info("validate executable: %s" % VALIDATE)
 
     call_component(
-        validate, args.validate_options + args.validate_inputs)
+        VALIDATE, args.validate_options + args.validate_inputs)

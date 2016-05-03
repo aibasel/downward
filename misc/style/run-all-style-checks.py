@@ -60,7 +60,7 @@ def check_include_guard_convention():
 
 
 def check_preprocessor_and_search_style():
-    output = subprocess.check_output(["hg", "uncrustify", "-X", "re:^src/VAL"])
+    output = subprocess.check_output(["hg", "uncrustify"])
     if output:
         print('Run "hg uncrustify -m" to fix the style in the following files:')
         print(output.rstrip())
