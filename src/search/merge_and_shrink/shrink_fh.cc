@@ -179,6 +179,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             " Automated Planning and Scheduling (ICAPS 2007)",
             "176-183",
             "2007"));
+    // TODO: this must be moved somewhere else
     parser.document_note(
         "shrink_fh(max_states=N)",
         "f-preserving shrinking of transition systems "
@@ -192,7 +193,6 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "label reduction before merging (and no label reduction before "
         "shrinking).");
     ShrinkBucketBased::add_options_to_parser(parser);
-    ShrinkStrategy::add_options_to_parser(parser);
     vector<string> high_low;
     high_low.push_back("HIGH");
     high_low.push_back("LOW");
@@ -207,8 +207,6 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
-
-    ShrinkStrategy::handle_option_defaults(opts);
 
     if (parser.dry_run())
         return nullptr;

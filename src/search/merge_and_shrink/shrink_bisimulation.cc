@@ -84,7 +84,7 @@ struct Signature {
 
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
-    : ShrinkStrategy(opts),
+    : ShrinkStrategy(),
       greedy(opts.get<bool>("greedy")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
@@ -375,6 +375,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             " on Artificial Intelligence (IJCAI 2011)",
             "1983-1990",
             "2011"));
+    // TODO: this must be moved somewhere else
     parser.document_note(
         "shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
         "Greedy bisimulation without size bound "
@@ -398,7 +399,6 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "label reduction before shrinking (and no label reduction before "
         "merging).");
 
-    ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
 
     vector<string> at_limit;
@@ -412,8 +412,6 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 
     if (parser.help_mode())
         return nullptr;
-
-    ShrinkStrategy::handle_option_defaults(opts);
 
     if (parser.dry_run())
         return nullptr;

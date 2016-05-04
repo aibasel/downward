@@ -11,7 +11,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 ShrinkBucketBased::ShrinkBucketBased(const options::Options &opts)
-    : ShrinkStrategy(opts) {
+    : ShrinkStrategy() {
     rng = utils::parse_rng_from_options(opts);
 }
 
