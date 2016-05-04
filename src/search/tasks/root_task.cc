@@ -11,7 +11,7 @@
 
 using namespace std;
 
-
+namespace tasks {
 static GlobalOperator &get_operator_or_axiom(int index, bool is_axiom) {
     if (is_axiom) {
         assert(utils::in_bounds(index, g_axioms));
@@ -125,3 +125,4 @@ static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
 }
 
 static PluginShared<AbstractTask> _plugin("no_transform", _parse);
+}
