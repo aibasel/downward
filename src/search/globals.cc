@@ -6,9 +6,10 @@
 #include "global_state.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "root_task.h"
 #include "state_registry.h"
 #include "successor_generator.h"
+
+#include "tasks/root_task.h"
 
 #include "utils/logging.h"
 #include "utils/rng.h"
