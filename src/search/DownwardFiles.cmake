@@ -30,7 +30,6 @@ set(CORE_SOURCES
         plugin.h
         pruning_method.cc
         priority_queue.cc
-        root_task.cc
         sampling.cc
         scalar_evaluator.cc
         search_engine.cc
@@ -363,6 +362,7 @@ fast_downward_plugin(
     SOURCES
         tasks/cost_adapted_task.cc
         tasks/delegating_task.cc
+        tasks/root_task.cc
     CORE_PLUGIN
 )
 

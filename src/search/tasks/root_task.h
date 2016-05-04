@@ -1,7 +1,7 @@
-#ifndef ROOT_TASK_H
-#define ROOT_TASK_H
+#ifndef TASKS_ROOT_TASK_H
+#define TASKS_ROOT_TASK_H
 
-#include "abstract_task.h"
+#include "../abstract_task.h"
 
 
 class RootTask : public AbstractTask {
