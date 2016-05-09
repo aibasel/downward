@@ -43,13 +43,12 @@ class VariablesProxy;
 
   Example code for creating a new task object and accessing its operators:
 
-      TaskProxy task = new TaskProxy(new RootTask());
+      TaskProxy task_proxy(*g_root_task());
       for (OperatorProxy op : task->get_operators())
           cout << op.get_name() << endl;
 
-  Since proxy classes only store a reference to the AbstractTask and some
-  indices, they can be copied cheaply and be passed by value instead of
-  by reference.
+  Since proxy classes only store a reference to the AbstractTask and
+  some indices, they can be copied cheaply.
 
   In addition to the lightweight proxy classes, the task interface
   consists of the State class, which is used to hold state information
@@ -57,18 +56,20 @@ class VariablesProxy;
   proxy classes, but since State objects own the state data they should
   be passed by reference.
 
-  For now, only the heuristics work with the TaskProxy classes and hence
-  potentially on a transformed view of the original task. The search
-  algorithms keep working on the original unmodified task using the
-  GlobalState, GlobalOperator etc. classes. We therefore need to do two
-  conversions: converting GlobalStates to State objects for the heuristic
-  computation and converting OperatorProxy objects used by the heuristic
-  to GlobalOperators for reporting preferred operators. These conversions
-  are done by the Heuristic base class. Until all heuristics use the new
-  task interface, heuristics can use Heuristic::convert_global_state() to
-  convert GlobalStates to States. Afterwards, the heuristics are passed a
-  State object directly. To mark operators as preferred, heuristics can
-  use Heuristic::set_preferred() which currently works for both
+  For now, only the heuristics work with the TaskProxy classes and
+  hence potentially on a transformed view of the original task. The
+  search algorithms keep working on the original unmodified task using
+  the GlobalState, GlobalOperator etc. classes. We therefore need to do
+  two conversions between the search and the heuristics: converting
+  GlobalStates to State objects for the heuristic computation and
+  converting OperatorProxy objects used by the heuristic to
+  GlobalOperators for reporting preferred operators. These conversions
+  are done by the Heuristic base class. Until all heuristics use the
+  new task interface, heuristics can use
+  Heuristic::convert_global_state() to convert GlobalStates to States.
+  Afterwards, the heuristics are passed a State object directly. To
+  mark operators as preferred, heuristics can use
+  Heuristic::set_preferred() which currently works for both
   OperatorProxy and GlobalOperator objects.
 
       int FantasyHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -79,6 +80,12 @@ class VariablesProxy;
               sum += fact.get_value();
           return sum;
       }
+
+  There is one additional conversion: heuristics may need to convert
+  states between different tasks. For this they can use
+  TaskProxy::convert_ancestor_state() which takes a state of the
+  ancestor task and returns the corresponding state of the descendent
+  task.
 
   For helper functions that work on task related objects, please see the
   task_tools.h module.
@@ -604,10 +611,11 @@ public:
     }
 
     /*
-      Convert a state from an ancestor task into a state of this task. The given
-      state has to belong to a task that is an ancestor of this task in the sense
-      that this task is the result of a sequence of task transformations on the
-      ancestor task. If this is not the case, the function aborts.
+      Convert a state from an ancestor task into a state of this task.
+      The given state has to belong to a task that is an ancestor of
+      this task in the sense that this task is the result of a sequence
+      of task transformations on the ancestor task. If this is not the
+      case, the function aborts.
     */
     State convert_ancestor_state(const State &ancestor_state) const {
         TaskProxy ancestor_task_proxy = ancestor_state.get_task();
