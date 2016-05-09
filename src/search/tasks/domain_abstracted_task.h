@@ -35,9 +35,6 @@ class DomainAbstractedTask : public tasks::DelegatingTask {
         return Fact(fact.var, get_abstract_value(fact));
     }
 
-    template <class T>
-    std::vector<int> translate_parent_state(const T &parent_state) const;
-
 public:
     DomainAbstractedTask(
         const std::shared_ptr<AbstractTask> &parent,
@@ -62,8 +59,6 @@ public:
     virtual Fact get_goal_fact(int index) const override;
 
     virtual std::vector<int> get_initial_state_values() const override;
-    virtual std::vector<int> convert_state_values(
-        const GlobalState &global_state) const override;
     virtual std::vector<int> convert_state_values(
         const std::vector<int> &ancestor_state_values,
         const AbstractTask *ancestor_task) const override;

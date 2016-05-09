@@ -87,10 +87,6 @@ std::vector<int> DelegatingTask::get_initial_state_values() const {
     return parent->get_initial_state_values();
 }
 
-vector<int> DelegatingTask::convert_state_values(const GlobalState &global_state) const {
-    return parent->convert_state_values(global_state);
-}
-
 vector<int> DelegatingTask::convert_state_values(
     const vector<int> &ancestor_state_values,
     const AbstractTask *ancestor_task) const {

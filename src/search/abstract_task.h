@@ -71,7 +71,6 @@ public:
     virtual Fact get_goal_fact(int index) const = 0;
 
     virtual std::vector<int> get_initial_state_values() const = 0;
-    virtual std::vector<int> convert_state_values(const GlobalState &global_state) const = 0;
     virtual std::vector<int> convert_state_values(const std::vector<int> &ancestor_state_values,
                                                   const AbstractTask *ancestor_task) const = 0;
 };
