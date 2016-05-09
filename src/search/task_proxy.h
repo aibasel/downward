@@ -542,6 +542,12 @@ public:
         return (*this)[var.get_id()];
     }
 
+    inline TaskProxy get_task() const;
+
+    const std::vector<int> &get_values() const {
+        return values;
+    }
+
     State get_successor(OperatorProxy op) const {
         if (task->get_num_axioms() > 0) {
             ABORT("State::apply currently does not support axioms.");
@@ -556,16 +562,6 @@ public:
             }
         }
         return State(*task, std::move(new_values));
-    }
-
-    /*
-      Convert this state into a state of descendent_task which must be a
-      transformation of this->task.
-      See TaskProxy::convert_ancestor_state for details.
-    */
-    State convert_to_descendent_task(const AbstractTask *descendent_task) const {
-        return State(*descendent_task,
-                     descendent_task->convert_state_values(values, task));
     }
 };
 
@@ -608,15 +604,16 @@ public:
     }
 
     /*
-      Convert a state from an ancestor task into a state of this task.
-      The given state has to come from a task that is an ancestor of this task
-      in the sense that this task is the result of a series of task
-      transformations on the ancestor task. The function aborts if
-      "ancestor_state.task" is not found while walking up the transformation
-      hierarchy.
+      Convert a state from an ancestor task into a state of this task. The given
+      state has to belong to a task that is an ancestor of this task in the sense
+      that this task is the result of a sequence of task transformations on the
+      ancestor task. If this is not the case, the function aborts.
     */
     State convert_ancestor_state(const State &ancestor_state) const {
-        return ancestor_state.convert_to_descendent_task(task);
+        TaskProxy ancestor_task_proxy = ancestor_state.get_task();
+        std::vector<int> state_values = task->convert_state_values(
+            ancestor_state.get_values(), ancestor_task_proxy.task);
+        return State(*task, std::move(state_values));
     }
 
     const CausalGraph &get_causal_graph() const;
@@ -636,6 +633,10 @@ inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
 
 inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, fact.var);
+}
+
+inline TaskProxy State::get_task() const {
+    return TaskProxy(*task);
 }
 
 inline bool does_fire(EffectProxy effect, const State &state) {
