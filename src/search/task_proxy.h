@@ -607,10 +607,6 @@ public:
         return State(*task, task->get_initial_state_values());
     }
 
-    State convert_global_state(const GlobalState &global_state) const {
-        return State(*task, task->convert_state_values(global_state));
-    }
-
     /*
       Convert a state from an ancestor task into a state of this task.
       The given state has to come from a task that is an ancestor of this task
