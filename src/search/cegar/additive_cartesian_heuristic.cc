@@ -134,7 +134,7 @@ void AdditiveCartesianHeuristic::print_statistics() const {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
-    State state = task_proxy.convert_global_state(global_state);
+    State state = convert_global_state(global_state);
     return compute_heuristic(state);
 }
 
