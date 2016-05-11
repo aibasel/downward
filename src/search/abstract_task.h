@@ -71,8 +71,15 @@ public:
     virtual Fact get_goal_fact(int index) const = 0;
 
     virtual std::vector<int> get_initial_state_values() const = 0;
-    virtual std::vector<int> convert_state_values(const std::vector<int> &ancestor_state_values,
-                                                  const AbstractTask *ancestor_task) const = 0;
+    /*
+      Convert state values from an ancestor task A (ancestor) into
+      state values from this task, C (child). Task A has to be an
+      ancestor of C in the sense that C is the result of a sequence of
+      task transformations on A.
+    */
+    virtual std::vector<int> convert_state_values(
+        const std::vector<int> &ancestor_state_values,
+        const AbstractTask *ancestor_task) const = 0;
 };
 
 const std::shared_ptr<AbstractTask> get_task_from_options(
