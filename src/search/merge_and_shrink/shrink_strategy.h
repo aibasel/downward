@@ -13,11 +13,10 @@ class TransitionSystem;
 class ShrinkStrategy {
 protected:
     /*
-      Compute an equivalence relation on the states that shrinks the given
-      transition system down to at most size target. This method needs to be
-      specified by concrete shrinking strategies.
-
-      TODO: We currently violate this; see issue250
+      Compute an equivalence relation on the states of the given transition
+      system (index in fts) which has a size of at most target (currently
+      violated; see issue250). This method needs to be specified by concrete
+      shrinking strategies.
     */
     virtual void compute_equivalence_relation(
         const FactoredTransitionSystem &fts,
@@ -32,7 +31,7 @@ public:
 
     /*
       Shrink the given transition system (index in fts) so that its size is
-      at most target.
+      at most target (currently violated; see issue250).
 
       Note that if target equals the current size of the fts, the shrink
       strategy is not required to actually shrink the size of the transition

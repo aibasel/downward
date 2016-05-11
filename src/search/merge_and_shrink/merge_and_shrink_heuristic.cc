@@ -40,7 +40,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       starting_peak_memory(-1),
       max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),
-      shrink_threshold_before_merge(opts.get<int>("threshold")),
+      shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
       fts(nullptr) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
@@ -74,7 +74,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     cout << "Transition system size limit: " << max_states << endl
          << "Transition system size limit right before merge: "
          << max_states_before_merge << endl;
-    cout << "(Independent) Threshold to trigger shrinking: "
+    cout << "Threshold to trigger shrinking right before merge: "
          << shrink_threshold_before_merge << endl;
     cout << endl;
 
@@ -325,7 +325,7 @@ void MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(OptionParser &p
         "-1",
         Bounds("-1", "infinity"));
     parser.add_option<int>(
-        "threshold",
+        "threshold_before_merge",
         "If a transition system, before being merged, surpasses this soft "
         "transition system size limit, the shrink strategy is called to "
         "possibly shrink the transition system.",

@@ -39,10 +39,6 @@ string ShrinkStrategy::get_name() const {
 
 static PluginTypePlugin<ShrinkStrategy> _type_plugin(
     "ShrinkStrategy",
-    /*
-      TODO: Replace by better documentation. The text below is just
-      to test the plug-in feature.
-    */
     "This page describes the various shrink strategies supported "
     "by the planner.");
 }
