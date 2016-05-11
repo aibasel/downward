@@ -3,7 +3,8 @@ import subprocess
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 TRANSLATE_DIR = os.path.dirname(DIR)
-BENCHMARKS = os.path.abspath(os.path.join(DIR, "..", "..", "..", "benchmarks"))
+REPO = os.path.abspath(os.path.join(DIR, "..", "..", ".."))
+BENCHMARKS = os.path.join(REPO, "misc", "tests", "benchmarks")
 DOMAIN = os.path.join(BENCHMARKS, "gripper", "domain.pddl")
 PROBLEM = os.path.join(BENCHMARKS, "gripper", "prob01.pddl")
 SCRIPTS = [

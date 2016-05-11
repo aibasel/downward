@@ -47,8 +47,8 @@ private:
       this method computes balanced sizes for both transition systems so
       that these limits are respected again.
     */
-    std::pair<std::size_t, std::size_t> compute_shrink_sizes(
-        std::size_t size1, std::size_t size2) const;
+    std::pair<int, int> compute_shrink_sizes(
+        int size1, int size2) const;
 protected:
     /*
       Compute an equivalence relation on the states that shrinks the given

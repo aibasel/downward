@@ -6,7 +6,6 @@
 #include "transition_system.h"
 
 #include "../equivalence_relation.h"
-#include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_proxy.h"
@@ -14,6 +13,7 @@
 #include "../utils/collections.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
+#include "../utils/rng_options.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -30,6 +30,7 @@ LabelReduction::LabelReduction(const Options &options)
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(LabelReductionMethod(options.get_enum("method"))),
       lr_system_order(LabelReductionSystemOrder(options.get_enum("system_order"))) {
+    rng = utils::parse_rng_from_options(options);
 }
 
 bool LabelReduction::initialized() const {
@@ -47,7 +48,7 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
         for (size_t i = 0; i < max_transition_system_count; ++i)
             transition_system_order.push_back(i);
         if (lr_system_order == RANDOM) {
-            g_rng()->shuffle(transition_system_order);
+            rng->shuffle(transition_system_order);
         }
     } else {
         assert(lr_system_order == REVERSE);
@@ -136,7 +137,7 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
     return relation;
 }
 
-void LabelReduction::reduce(pair<int, int> next_merge,
+bool LabelReduction::reduce(pair<int, int> next_merge,
                             FactoredTransitionSystem &fts) {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
@@ -153,6 +154,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         assert(fts.is_active(next_merge.first));
         assert(fts.is_active(next_merge.second));
 
+        bool reduced = false;
         EquivalenceRelation *relation = compute_combinable_equivalence_relation(
             next_merge.first,
             fts);
@@ -161,6 +163,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
                                       next_merge.first);
+            reduced = true;
         }
         delete relation;
         relation = 0;
@@ -173,9 +176,10 @@ void LabelReduction::reduce(pair<int, int> next_merge,
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
                                       next_merge.second);
+            reduced = true;
         }
         delete relation;
-        return;
+        return reduced;
     }
 
     // Make sure that we start with an index not ouf of range for
@@ -198,6 +202,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
 
     int num_unsuccessful_iterations = 0;
 
+    bool reduced = false;
     for (int i = 0; i < max_iterations; ++i) {
         int ts_index = transition_system_order[tso_index];
 
@@ -215,6 +220,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
             // it as unsuccessful iterations (the size of the vector matters).
             ++num_unsuccessful_iterations;
         } else {
+            reduced = true;
             num_unsuccessful_iterations = 0;
             fts.apply_label_reduction(label_mapping, ts_index);
         }
@@ -232,6 +238,7 @@ void LabelReduction::reduce(pair<int, int> next_merge,
             }
         }
     }
+    return reduced;
 }
 
 void LabelReduction::dump_options() const {
@@ -339,6 +346,8 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
                            "label_reduction_method.",
                            "RANDOM",
                            label_reduction_system_order_doc);
+    // add random_seed option
+    utils::add_rng_options(parser);
 
     Options opts = parser.parse();
 

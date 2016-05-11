@@ -1,8 +1,6 @@
 #ifndef CEGAR_SPLIT_SELECTOR_H
 #define CEGAR_SPLIT_SELECTOR_H
 
-#include "utils.h"
-
 #include "../task_proxy.h"
 
 #include <memory>

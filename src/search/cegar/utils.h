@@ -17,11 +17,12 @@ class AdditiveHeuristic;
 
 namespace cegar {
 const int UNDEFINED_VALUE = -1;
+
 // Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
 const int INF = std::numeric_limits<int>::max();
 
-extern std::unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
-    const std::shared_ptr<AbstractTask> &task);
+extern std::unique_ptr<additive_heuristic::AdditiveHeuristic>
+create_additive_heuristic(const std::shared_ptr<AbstractTask> &task);
 
 /*
   The set of relaxed-reachable facts is the possibly-before set of facts that
@@ -34,7 +35,6 @@ extern std::unordered_set<FactProxy> get_relaxed_possible_before(
 extern std::vector<int> get_domain_sizes(const TaskProxy &task);
 extern std::vector<int> get_operator_costs(const TaskProxy &task);
 
-// TODO: Move these methods to task_tools.h?
 extern int get_pre(const OperatorProxy &op, int var_id);
 extern int get_eff(const OperatorProxy &op, int var_id);
 extern int get_post(const OperatorProxy &op, int var_id);
