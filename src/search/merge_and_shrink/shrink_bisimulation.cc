@@ -375,25 +375,23 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             " on Artificial Intelligence (IJCAI 2011)",
             "1983-1990",
             "2011"));
-    // TODO: this must be moved somewhere else
     parser.document_note(
-        "shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
-        "Greedy bisimulation without size bound "
-        "(called M&S-gop in the IJCAI 2011 paper)."
-        "Combine this with the linear merge strategy "
-        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "shrink_bisimulation(greedy=true)",
+        "Combine this with the merge-and-shrink options max_states=infinity "
+        "and threshold_before_merge=1 and with the linear merge strategy "
+        "reverse_level to obtain the variant 'greedy bisimulation without size "
+        "limit', called M&S-gop in the IJCAI 2011 paper."
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before shrinking (and no label reduction before "
         "merging).");
     parser.document_note(
-        "shrink_bisimulation(max_states=N, greedy=false)",
-        "Exact bisimulation with a size limit "
-        "(called DFP-bop in the IJCAI 2011 paper), "
-        "where N is a numerical parameter for which sensible values "
-        "include 1000, 10000, 50000, 100000 and 200000. "
-        "Combine this with the linear merge strategy "
-        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "shrink_bisimulation(greedy=false)",
+        "Combine this with the merge-and-shrink option max_states=N (where N "
+        "is a numerical parameter for which sensible values include 1000, "
+        "10000, 50000, 100000 and 200000) and with the linear merge strategy "
+        "reverse_level to obtain the variant 'exact bisimulation with a size "
+        "limit', called DFP-bop in the IJCAI 2011 paper. "
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before shrinking (and no label reduction before "
