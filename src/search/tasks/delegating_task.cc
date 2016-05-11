@@ -93,6 +93,13 @@ vector<int> DelegatingTask::convert_state_values(
     if (this == ancestor_task) {
         return ancestor_state_values;
     }
-    return parent->convert_state_values(ancestor_state_values, ancestor_task);
+    vector<int> parent_state_values =
+            parent->convert_state_values(ancestor_state_values, ancestor_task);
+    return convert_state_values_from_parent(move(parent_state_values));
+}
+
+vector<int> DelegatingTask::convert_state_values_from_parent(
+    const vector<int> &&parent_state_values) const {
+    return parent_state_values;
 }
 }
