@@ -41,7 +41,7 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       subtask_generators(opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks")),
       max_states(opts.get<int>("max_states")),
-      timer(new utils::CountdownTimer(opts.get<double>("max_time"))),
+      timer(opts.get<double>("max_time")),
       use_general_costs(opts.get<bool>("use_general_costs")),
       pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
@@ -55,11 +55,23 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
 }
 
 void AdditiveCartesianHeuristic::reduce_remaining_costs(
-    const vector<int> &needed_costs) {
-    assert(remaining_costs.size() == needed_costs.size());
+    const vector<int> &saturated_costs) {
+    assert(remaining_costs.size() == saturated_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
-        assert(needed_costs[i] <= remaining_costs[i]);
-        remaining_costs[i] -= needed_costs[i];
+        int &remaining = remaining_costs[i];
+        const int &saturated = saturated_costs[i];
+        assert(saturated <= remaining);
+        /* Since we ignore transitions from states s with h(s)=INF, all
+           saturated costs (h(s)-h(s')) are finite or -INF. */
+        assert(saturated != INF);
+        if (remaining == INF) {
+            // INF - x = INF for finite values x.
+        } else if (saturated == -INF) {
+            remaining = INF;
+        } else {
+            remaining -= saturated;
+        }
+        assert(remaining >= 0);
     }
 }
 
@@ -71,7 +83,7 @@ shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
 
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
-           !timer->is_expired() &&
+           !timer.is_expired() &&
            utils::extra_memory_padding_is_reserved() &&
            compute_heuristic(initial_state) != DEAD_END;
 }
@@ -86,15 +98,14 @@ void AdditiveCartesianHeuristic::build_abstractions(
         Abstraction abstraction(
             subtask,
             max(1, (max_states - num_states) / rem_subtasks),
-            timer->get_remaining_time() / rem_subtasks,
+            timer.get_remaining_time() / rem_subtasks,
             use_general_costs,
             pick_split);
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();
         assert(num_states <= max_states);
-        vector<int> needed_costs = abstraction.get_needed_costs();
-        reduce_remaining_costs(needed_costs);
+        reduce_remaining_costs(abstraction.get_saturated_costs());
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {

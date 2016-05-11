@@ -42,7 +42,7 @@ from regression_test import Check, RegressionCheckReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
-BENCHMARKS_DIR = os.path.join(REPO, "benchmarks")
+BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
 CACHE_DIR = os.path.expanduser('~/lab')
 
@@ -61,9 +61,8 @@ CONFIGS['nightly'] = [
 CONFIGS['weekly'] = CONFIGS['nightly']
 
 SUITES = {
-    'nightly': ['gripper:prob01.pddl', 'blocks:probBLOCKS-4-1.pddl'],
-    'weekly': ['gripper:prob01.pddl', 'gripper:prob02.pddl',
-               'blocks:probBLOCKS-4-1.pddl', 'blocks:probBLOCKS-4-2.pddl'],
+    'nightly': ['gripper:prob01.pddl', 'miconic:s1-0.pddl'],
+    'weekly': ['gripper:prob01.pddl', 'miconic:s1-0.pddl'],
 }
 
 TRANSLATOR_ATTRIBUTES = [

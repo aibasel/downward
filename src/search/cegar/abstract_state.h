@@ -1,6 +1,7 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
+#include "arc.h"
 #include "domains.h"
 
 #include "../task_proxy.h"
@@ -13,8 +14,6 @@ namespace cegar {
 class AbstractState;
 class Node;
 
-// Transitions are pairs of operator index and AbstractState pointers.
-using Arc = std::pair<int, AbstractState *>;
 using Arcs = std::vector<Arc>;
 
 // To save space we store self-loops (operator indices) separately.
@@ -27,7 +26,8 @@ class AbstractSearchInfo {
     static const int UNDEFINED_OPERATOR;
 
 public:
-    AbstractSearchInfo() {
+    AbstractSearchInfo()
+        : incoming_arc(UNDEFINED_OPERATOR, nullptr) {
         reset();
     }
 
@@ -38,7 +38,7 @@ public:
         incoming_arc = Arc(UNDEFINED_OPERATOR, nullptr);
     }
 
-    void decrease_g_value(int new_g) {
+    void decrease_g_value_to(int new_g) {
         assert(new_g <= g);
         g = new_g;
     }
@@ -52,7 +52,7 @@ public:
     }
 
     const Arc &get_incoming_arc() const {
-        assert(incoming_arc.first >= 0 && incoming_arc.second);
+        assert(incoming_arc.op_id != UNDEFINED_OPERATOR && incoming_arc.target);
         return incoming_arc;
     }
 };

@@ -6,9 +6,10 @@
 #include "global_state.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "root_task.h"
 #include "state_registry.h"
 #include "successor_generator.h"
+
+#include "tasks/root_task.h"
 
 #include "utils/logging.h"
 #include "utils/rng.h"
@@ -364,7 +365,7 @@ const GlobalState &g_initial_state() {
 }
 
 const shared_ptr<AbstractTask> g_root_task() {
-    static shared_ptr<AbstractTask> root_task = make_shared<RootTask>();
+    static shared_ptr<AbstractTask> root_task = make_shared<tasks::RootTask>();
     return root_task;
 }
 

@@ -8,7 +8,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
-BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
+BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
 DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
 TASKS = {
@@ -78,7 +78,7 @@ TESTS = [
 
 
 def run_plan_script(task_type, relpath, search):
-    problem = os.path.join(REPO_BASE, "benchmarks", relpath)
+    problem = os.path.join(BENCHMARKS_DIR, relpath)
     print("\nRun %(search)s on %(task_type)s task:" % locals())
     sys.stdout.flush()
     return subprocess.call(

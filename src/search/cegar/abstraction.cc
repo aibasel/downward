@@ -74,10 +74,8 @@ Abstraction::Abstraction(
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
-      abstract_search(
-          get_operator_costs(task_proxy),
-          states,
-          use_general_costs),
+      use_general_costs(use_general_costs),
+      abstract_search(get_operator_costs(task_proxy), states),
       split_selector(task, pick),
       timer(max_time),
       init(nullptr),
@@ -93,8 +91,8 @@ Abstraction::Abstraction(
     cout << "Time for building abstraction: " << timer << endl;
 
     /* Even if we found a concrete solution, we might have refined in the
-       last iteration, so we should update the h values. */
-    update_h_values();
+       last iteration, so we should update the distances. */
+    update_h_and_g_values();
 
     print_statistics();
 }
@@ -227,9 +225,8 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     for (const Arc &step : solution) {
         if (!utils::extra_memory_padding_is_reserved())
             break;
-        int op_id = step.first;
-        OperatorProxy op = task_proxy.get_operators()[op_id];
-        AbstractState *next_abstract_state = step.second;
+        OperatorProxy op = task_proxy.get_operators()[step.op_id];
+        AbstractState *next_abstract_state = step.target;
         if (is_applicable(op, concrete_state)) {
             if (debug)
                 cout << "  Move to " << *next_abstract_state << " with "
@@ -273,19 +270,61 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     }
 }
 
-void Abstraction::update_h_values() {
+void Abstraction::update_h_and_g_values() {
     abstract_search.backwards_dijkstra(goals);
     for (AbstractState *state : states) {
         state->set_h_value(state->get_search_info().get_g_value());
     }
+    // Update g values.
+    // TODO: updating h values overwrites g values. Find better solution.
+    abstract_search.forward_dijkstra(init);
 }
 
 int Abstraction::get_h_value_of_initial_state() const {
     return init->get_h_value();
 }
 
-vector<int> Abstraction::get_needed_costs() {
-    return abstract_search.get_needed_costs(init, task_proxy.get_operators().size());
+vector<int> Abstraction::get_saturated_costs() {
+    const int num_ops = task_proxy.get_operators().size();
+    // Use value greater than -INF to avoid arithmetic difficulties.
+    const int min_cost = use_general_costs ? -INF : 0;
+    vector<int> saturated_costs(num_ops, min_cost);
+    for (AbstractState *state : states) {
+        const int g = state->get_search_info().get_g_value();
+        const int h = state->get_h_value();
+
+        /*
+          No need to maintain goal distances of unreachable (g == INF)
+          and dead end states (h == INF).
+
+          Note that the "succ_h == INF" test below is sufficient for
+          ignoring dead end states. The "h == INF" test is a speed
+          optimization.
+        */
+        if (g == INF || h == INF)
+            continue;
+
+        for (const Arc &arc: state->get_outgoing_arcs()) {
+            int op_id = arc.op_id;
+            AbstractState *successor = arc.target;
+            const int succ_h = successor->get_h_value();
+
+            if (succ_h == INF)
+                continue;
+
+            int needed = h - succ_h;
+            saturated_costs[op_id] = max(saturated_costs[op_id], needed);
+        }
+
+        if (use_general_costs) {
+            /* To prevent negative cost cycles, all operators inducing
+               self-loops must have non-negative costs. */
+            for (int op_id : state->get_loops()) {
+                saturated_costs[op_id] = max(saturated_costs[op_id], 0);
+            }
+        }
+    }
+    return saturated_costs;
 }
 
 void Abstraction::print_statistics() {
