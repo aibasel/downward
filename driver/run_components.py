@@ -183,6 +183,6 @@ def run_validate(args):
             VALIDATE, args.validate_options + args.validate_inputs)
     except OSError as err:
         if err.errno == errno.ENOENT:
-            sys.exit("Error: 'validate' not found. Is it on the PATH?")
+            sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
         else:
             raise
