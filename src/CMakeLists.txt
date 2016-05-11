@@ -65,10 +65,3 @@ add_custom_command(TARGET translate POST_BUILD
 
 add_subdirectory(preprocess)
 add_subdirectory(search)
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VAL/")
-    add_subdirectory(VAL)
-else()
-    # This can happen for IPC submissions that should just include the planner code.
-    message(WARNING "Skipping VAL because it is not present.")
-endif()

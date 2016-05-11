@@ -2,8 +2,6 @@ Fast Downward is a domain-independent planning system.
 
 The following directories are not part of Fast Downward as covered by this
 license:
-./benchmarks
-./src/VAL
 ./src/search/ext
 
 For the rest, the following license applies:
