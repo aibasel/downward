@@ -49,9 +49,12 @@ public:
     virtual Fact get_goal_fact(int index) const override;
 
     virtual std::vector<int> get_initial_state_values() const override;
+
     virtual std::vector<int> convert_state_values(
         const std::vector<int> &ancestor_state_values,
-        const AbstractTask *ancestor_task) const override;
+        const AbstractTask *ancestor_task) const final override;
+    virtual std::vector<int> convert_state_values_from_parent(
+        const std::vector<int> &&parent_state_values) const;
 };
 }
 
