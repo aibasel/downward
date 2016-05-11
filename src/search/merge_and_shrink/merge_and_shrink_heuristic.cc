@@ -336,7 +336,7 @@ void MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(OptionParser &p
 void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
-    int threshold = opts.get<int>("threshold");
+    int threshold = opts.get<int>("threshold_before_merge");
 
     // If none of the two state limits has been set: set default limit.
     if (max_states == -1 && max_states_before_merge == -1) {
@@ -387,7 +387,7 @@ void MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(Options &opts
 
     opts.set<int>("max_states", max_states);
     opts.set<int>("max_states_before_merge", max_states_before_merge);
-    opts.set<int>("threshold", threshold);
+    opts.set<int>("threshold_before_merge", threshold);
 }
 
 static Heuristic *_parse(OptionParser &parser) {
@@ -435,9 +435,10 @@ static Heuristic *_parse(OptionParser &parser) {
         "based shrinking (selecting max states from 50000 to 200000 is "
         "reasonable), DFP merging, and the appropriate label "
         "reduction setting:\n"
-        "merge_and_shrink(shrink_strategy=shrink_bisimulation(max_states=100000,"
-        "threshold=1,greedy=false),merge_strategy=merge_dfp(),"
-        "label_reduction=label_reduction(before_shrinking=true, before_merging=false))");
+        "merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
+        "merge_strategy=merge_dfp(),label_reduction=label_reduction("
+        "before_shrinking=true, before_merging=false),max_states=100000,"
+        "threshold_before_merge=1)");
 
     // Merge strategy option.
     parser.add_option<shared_ptr<MergeStrategy>>(
