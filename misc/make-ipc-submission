@@ -78,7 +78,7 @@ rm -rf $DIST
 DIR="$(cd "$(dirname "$0")" && pwd)"
 echo $DIR
 BENCHMARKS="$DIR/../misc/tests/benchmarks"
-VALIDATOR="$DIR/../src/VAL/validate"
+VALIDATOR="validate"
 
 function planner-test-run () {
     DOMAIN="$BENCHMARKS/$1"
