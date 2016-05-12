@@ -41,12 +41,9 @@ string ShrinkRandom::name() const {
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     parser.document_synopsis("Random", "");
     ShrinkBucketBased::add_options_to_parser(parser);
-    ShrinkStrategy::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
-
-    ShrinkStrategy::handle_option_defaults(opts);
 
     if (parser.dry_run())
         return nullptr;

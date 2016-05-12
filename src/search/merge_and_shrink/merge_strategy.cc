@@ -42,6 +42,6 @@ void MergeStrategy::dump_options() const {
 
 static PluginTypePlugin<MergeStrategy> _type_plugin(
     "MergeStrategy",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
+    "This page describes the various merge strategies supported "
+    "by the planner.");
 }
