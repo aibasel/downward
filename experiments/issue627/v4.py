@@ -33,7 +33,7 @@ def main(revisions=None):
         exp.add_report(
             RelativeScatterPlotReport(
                 attributes=["memory"],
-                filter_config=["issue627-v4-base-%s" % config.nick,
+                filter_config=["issue627-v3-base-%s" % config.nick,
                                "issue627-v4-%s" % config.nick],
                 get_category=lambda run1, run2: run1.get("domain"),
             ),
@@ -43,7 +43,7 @@ def main(revisions=None):
         exp.add_report(
             RelativeScatterPlotReport(
                 attributes=["total_time"],
-                filter_config=["issue627-v4-base-%s" % config.nick,
+                filter_config=["issue627-v3-base-%s" % config.nick,
                                "issue627-v4-%s" % config.nick],
                 get_category=lambda run1, run2: run1.get("domain"),
             ),
