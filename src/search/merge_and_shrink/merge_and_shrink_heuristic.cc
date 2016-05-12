@@ -463,6 +463,10 @@ static Heuristic *_parse(OptionParser &parser) {
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
+    if (parser.help_mode()) {
+        return nullptr;
+    }
+
     MergeAndShrinkHeuristic::handle_shrink_limit_options_defaults(opts);
 
     if (parser.dry_run()) {
