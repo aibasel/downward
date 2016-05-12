@@ -159,28 +159,24 @@ def run_search(args):
 def run_validate(args):
     logging.info("Running validate.")
 
-    if args.validate_inputs is None:
-        num_files = len(args.filenames)
-        if num_files in [1, 2]:
-            if num_files == 1:
-                task, = args.filenames
-                domain = util.find_domain_filename(task)
-            elif num_files == 2:
-                domain, task = args.filenames
-            plan_files = list(PlanManager(args.plan_file).get_existing_plans())
-            args.validate_inputs = [domain, task] + plan_files
-        else:
-            raise ValueError("validate needs one or two PDDL input files.")
+    num_files = len(args.filenames)
+    if num_files == 1:
+        task, = args.filenames
+        domain = util.find_domain_filename(task)
+    elif num_files == 2:
+        domain, task = args.filenames
+    else:
+        raise ValueError("validate needs one or two PDDL input files.")
+
+    plan_files = list(PlanManager(args.plan_file).get_existing_plans())
+    validate_inputs = [domain, task] + plan_files
 
     print_component_settings(
-        "validate", args.validate_inputs, args.validate_options,
+        "validate", validate_inputs, [],
         time_limit=None, memory_limit=None)
 
-    logging.info("validate executable: %s" % VALIDATE)
-
     try:
-        call_component(
-            VALIDATE, args.validate_options + args.validate_inputs)
+        call_component(VALIDATE, validate_inputs)
     except OSError as err:
         if err.errno == errno.ENOENT:
             sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
