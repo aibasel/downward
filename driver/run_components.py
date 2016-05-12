@@ -13,6 +13,7 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
+VALIDATE_MEMORY_LIMIT_IN_MB = 3072
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
@@ -24,8 +25,7 @@ elif os.name == "nt":
     REL_SEARCH_PATH = "downward.exe"
     VALIDATE = "validate.exe"
 else:
-    print("Unsupported OS: " + os.name)
-    sys.exit(1)
+    sys.exit("Unsupported OS: " + os.name)
 
 def get_executable(build, rel_path):
     # First, consider 'build' to be a path directly to the binaries.
@@ -173,7 +173,7 @@ def run_validate(args):
 
     print_component_settings(
         "validate", validate_inputs, [],
-        time_limit=None, memory_limit=None)
+        time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
 
     try:
         call_component(VALIDATE, validate_inputs)
