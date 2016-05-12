@@ -16,7 +16,6 @@ except ImportError:
 def main(revisions=None):
     benchmarks_dir=os.path.expanduser('~/repos/downward/benchmarks')
     suite=suites.suite_optimal_strips()
-    suite.extend(suites.suite_ipc14_opt_strips())
 
     configs = {
         IssueConfig('rl-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_linear(variable_order=reverse_level),shrink_strategy=shrink_bisimulation(greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false),max_states=50000,threshold_before_merge=1))']),

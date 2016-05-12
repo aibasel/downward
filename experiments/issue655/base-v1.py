@@ -16,7 +16,6 @@ except ImportError:
 def main(revisions=None):
     benchmarks_dir=os.path.expanduser('~/repos/downward/benchmarks')
     suite=suites.suite_optimal_strips()
-    suite.extend(suites.suite_ipc14_opt_strips())
 
     # dummy configs with correct names so that comparison report works
     configs = {
