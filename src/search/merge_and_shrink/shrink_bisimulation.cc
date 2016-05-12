@@ -383,7 +383,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
         "Combine this with the merge-and-shrink options max_states=infinity "
         "and threshold_before_merge=1 and with the linear merge strategy "
         "reverse_level to obtain the variant 'greedy bisimulation without size "
-        "limit', called M&S-gop in the IJCAI 2011 paper."
+        "limit', called M&S-gop in the IJCAI 2011 paper. "
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before shrinking (and no label reduction before "

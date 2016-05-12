@@ -281,9 +281,9 @@ void LabelReduction::dump_options() const {
 
 static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
     parser.document_synopsis(
-        "Generalized label reduction",
-        "This class implements the generalized label reduction described "
-        "in the following paper:" +
+        "Exact generalized label reduction",
+        "This class implements the exact generalized label reduction "
+        "described in the following paper:" +
         utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "Generalized Label Reduction for Merge-and-Shrink Heuristics",
