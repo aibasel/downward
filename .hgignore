@@ -1,4 +1,5 @@
 \.pyc$
+^.*build_configs.py$
 ^experiments/issue[0-9]*/data/
 ^experiments/issue[0-9]*/.*.-microbenchmark/\.obj/
 ^experiments/issue[0-9]*/.*.-microbenchmark/benchmark$
