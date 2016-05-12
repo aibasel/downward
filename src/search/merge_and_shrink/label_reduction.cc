@@ -369,8 +369,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
 
 static PluginTypePlugin<LabelReduction> _type_plugin(
     "LabelReduction",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
+    "This page describes the current single 'option' for label reduction.");
 
 static PluginShared<LabelReduction> _plugin("exact", _parse);
 }
