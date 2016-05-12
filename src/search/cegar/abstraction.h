@@ -27,6 +27,7 @@ struct Flaw;
 class Abstraction {
     const TaskProxy task_proxy;
     const int max_states;
+    const int max_transitions;
     const bool use_general_costs;
 
     AbstractSearch abstract_search;
@@ -51,6 +52,9 @@ class Abstraction {
     /* Abstract goal states. Landmark tasks may have multiple abstract
        goal states. */
     AbstractStates goals;
+
+    // Total number of transitions including self-loops.
+    int num_transitions;
 
     // Count the number of times each flaw type is encountered.
     int deviations;
@@ -100,6 +104,7 @@ public:
     explicit Abstraction(
         const std::shared_ptr<AbstractTask> task,
         int max_states,
+        int max_transitions,
         double max_time,
         bool use_general_costs,
         PickSplit pick,
@@ -115,6 +120,10 @@ public:
 
     int get_num_states() const {
         return states.size();
+    }
+
+    int get_num_transitions() const {
+        return num_transitions;
     }
 
     /*
