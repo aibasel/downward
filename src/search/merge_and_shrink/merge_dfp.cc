@@ -268,7 +268,7 @@ string MergeDFP::name() const {
     return "dfp";
 }
 
-static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
+void MergeDFP::add_options_to_parser(OptionParser &parser) {
     vector<string> atomic_ts_order;
     atomic_ts_order.push_back("REGULAR");
     atomic_ts_order.push_back("INVERSE");
@@ -292,6 +292,10 @@ static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
                             "globally randomized order",
                             "false");
     utils::add_rng_options(parser);
+}
+
+static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
+    MergeDFP::add_options_to_parser(parser);
 
     Options options = parser.parse();
     parser.document_synopsis(
