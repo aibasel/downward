@@ -26,7 +26,7 @@ protected:
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
-    explicit ShrinkStrategy();
+    ShrinkStrategy();
     virtual ~ShrinkStrategy();
 
     /*
