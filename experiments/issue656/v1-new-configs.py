@@ -16,7 +16,6 @@ except ImportError:
 def main(revisions=None):
     benchmarks_dir=os.path.expanduser('~/repos/downward/benchmarks')
     suite=suites.suite_optimal_strips()
-    suite.extend(suites.suite_ipc14_opt_strips())
 
     configs = {
         IssueConfig('dfp-reg-otn-abp-b50k', ['--search', 'astar(merge_and_shrink(merge_strategy=merge_dfp(atomic_ts_order=regular,product_ts_order=old_to_new,atomic_before_product=true),shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,greedy=false),label_reduction=exact(before_shrinking=true,before_merging=false)))']),
