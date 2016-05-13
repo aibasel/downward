@@ -107,7 +107,7 @@ void AdditiveCartesianHeuristic::build_abstractions(
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();
-        num_transitions += abstraction.get_num_transitions();
+        num_transitions += abstraction.compute_num_transitions();
         assert(num_states <= max_states);
         reduce_remaining_costs(abstraction.get_saturated_costs());
         int init_h = abstraction.get_h_value_of_initial_state();

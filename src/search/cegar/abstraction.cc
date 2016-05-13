@@ -81,7 +81,6 @@ Abstraction::Abstraction(
       split_selector(task, pick),
       timer(max_time),
       init(nullptr),
-      num_transitions(0),
       deviations(0),
       unmet_preconditions(0),
       unmet_goals(0),
@@ -139,7 +138,6 @@ void Abstraction::create_trivial_abstraction() {
         task_proxy, refinement_hierarchy.get_root());
     goals.insert(init);
     states.insert(init);
-    num_transitions = init->get_num_transitions();
 }
 
 bool Abstraction::may_keep_refining() const {
@@ -147,7 +145,7 @@ bool Abstraction::may_keep_refining() const {
        Without doing so, the algorithm would be more deterministic. */
     return utils::extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
-           num_transitions < max_transitions &&
+           compute_num_transitions() < max_transitions &&
            !timer.is_expired();
 }
 
@@ -193,8 +191,6 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     states.erase(state);
     states.insert(v1);
     states.insert(v2);
-    num_transitions += v1->get_num_transitions() + v2->get_num_transitions() -
-        state->get_num_transitions();
 
     /* Since the search is always started from the abstract initial state, v2
        is never the new initial state and v1 is never a goal state. */
@@ -215,7 +211,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     int num_states = get_num_states();
     if (num_states % 1000 == 0) {
         g_log << num_states << "/" << max_states << " states, "
-              << num_transitions << "/" << max_transitions
+              << compute_num_transitions() << "/" << max_transitions
               << " transitions" << endl;
     }
 
@@ -291,6 +287,15 @@ void Abstraction::update_h_and_g_values() {
     abstract_search.forward_dijkstra(init);
 }
 
+int Abstraction::compute_num_transitions() const {
+    int num_transitions = 0;
+    for (const AbstractState *state : states) {
+        num_transitions += state->get_outgoing_arcs().size() +
+            state->get_loops().size();
+    }
+    return num_transitions;
+}
+
 int Abstraction::get_h_value_of_initial_state() const {
     return init->get_h_value();
 }
@@ -364,7 +369,8 @@ void Abstraction::print_statistics() {
     cout << "Dead ends: " << dead_ends << endl;
     cout << "Init h: " << get_h_value_of_initial_state() << endl;
 
-    cout << "Self-loops/transitions: " << total_loops << "/" << get_num_transitions() << endl;
+    cout << "Self-loops/transitions: "
+         << total_loops << "/" << compute_num_transitions() << endl;
 
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
