@@ -310,7 +310,7 @@ void MergeDFP::add_options_to_parser(OptionParser &parser) {
 
     parser.add_option<bool>(
         "randomized_order",
-        "If true, use a 'globally'' randomized order, i.e. all transition "
+        "If true, use a 'globally' randomized order, i.e. all transition "
         "systems are considered in an arbitrary order. This renders all other "
         "ordering options void.",
         "false");
