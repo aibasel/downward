@@ -4,9 +4,9 @@ Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
 the creation of experiments. We recommend using common_setup.py (and
-related files for usage) from issue643 for new experiments since it is
+related files for usage) from issue655 for new experiments since it is
 the most recent version that uses lab's new FastDownwardExperiment
-class.
+class and requires the benchmarks directory to be specified.
 
 Previously, most experiments imported lab's downward/configs.py module.
 To make experiments more self-contained, the module has been deprecated
@@ -42,8 +42,8 @@ performed. All of them use lab's deprecated DownwardExperiment:
 * RelativeScatterPlotReport:
   * issue77/issue77-v7-opt.py
 
-* M&S: configs and additional parsing:
-  * issue548/base-v2.py and issue548/ms-parser.py
+* M&S: configs and additional parsing and a check for availability of matplotlib
+  * issue655/v1.py and issue655/ms-parser.py
 
 * Run experiment in debug mode (with assertions):
   * issue650/v2.py
