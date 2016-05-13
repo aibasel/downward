@@ -26,13 +26,11 @@ EXIT_UNSOLVED_INCOMPLETE = 5
 
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'merge_strategy=merge_dfp,'
-        'shrink_strategy=shrink_bisimulation('
-         'max_states=50000,'
-        'threshold=1,'
-        'greedy=false),'
+    'shrink_strategy=shrink_bisimulation(greedy=false),'
     'label_reduction=exact('
         'before_shrinking=true,'
-        'before_merging=false)'
+        'before_merging=false),'
+    'max_states=50000,threshold_before_merge=1'
 '))')
 
 TESTS = [
