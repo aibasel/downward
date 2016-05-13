@@ -53,9 +53,6 @@ class Abstraction {
        goal states. */
     AbstractStates goals;
 
-    // Total number of transitions including self-loops.
-    int num_transitions;
-
     // Count the number of times each flaw type is encountered.
     int deviations;
     int unmet_preconditions;
@@ -98,6 +95,8 @@ class Abstraction {
     // Perform Dijkstra's algorithm from the goal states to update the h-values.
     void update_h_and_g_values();
 
+
+
     void print_statistics();
 
 public:
@@ -122,9 +121,7 @@ public:
         return states.size();
     }
 
-    int get_num_transitions() const {
-        return num_transitions;
-    }
+    int compute_num_transitions() const;
 
     /*
       For each operator calculate the mimimum cost that is needed to
