@@ -16,9 +16,9 @@ from .returncodes import EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE
 from .util import REPO_ROOT_DIR, find_domain_filename
 
 
-def preprocess():
-    """Create preprocessed task."""
-    cmd = ["./fast-downward.py", "--translate", "--preprocess",
+def translate():
+    """Create translated task."""
+    cmd = ["./fast-downward.py", "--translate",
            "misc/tests/benchmarks/gripper/prob01.pddl"]
     assert subprocess.check_call(cmd, cwd=REPO_ROOT_DIR) == 0
 
@@ -30,7 +30,7 @@ def cleanup():
 
 def run_driver(cmd):
     cleanup()
-    preprocess()
+    translate()
     return subprocess.call(cmd, cwd=REPO_ROOT_DIR)
 
 
@@ -42,14 +42,14 @@ def test_commandline_args():
 
 def test_aliases():
     for alias, config in ALIASES.items():
-        cmd = ["./fast-downward.py", "--alias", alias, "output"]
+        cmd = ["./fast-downward.py", "--alias", alias, "output.sas"]
         assert run_driver(cmd) == 0
 
 
 def test_portfolios():
     for name, portfolio in PORTFOLIOS.items():
         cmd = ["./fast-downward.py", "--portfolio", portfolio,
-               "--search-time-limit", "30m", "output"]
+               "--search-time-limit", "30m", "output.sas"]
         assert run_driver(cmd) in [
             EXIT_PLAN_FOUND, EXIT_UNSOLVED_INCOMPLETE]
 
