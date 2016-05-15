@@ -10,7 +10,6 @@ def _try_remove(f):
 
 def cleanup_temporary_files(args):
     _try_remove("output.sas")
-    _try_remove("output")
     _try_remove(args.plan_file)
 
     for i in count(1):
