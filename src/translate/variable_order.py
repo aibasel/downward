@@ -8,6 +8,17 @@ import heapq
 DEBUG = False
 
 class CausalGraph:
+    """Weighted causal graph used for defining a variable order.
+
+       The variable order is defined such that removing all edges v->v' with
+       v>v' induces an acyclic subgraph of the causal graph. This corresponds to
+       the pruning of the causal graph as described in the JAIR 2006 Fast
+       Downward paper for the causal graph heuristic. The greedy method is based
+       on weighing the edges of the causal graph. In this implementation these
+       weights slightly differ from the description in the JAIR paper to
+       reproduce the behaviour of the original implementation in the
+       preprocessor component of the planner.
+    """
     def __init__(self, sas_task):
         self.weighted_graph = defaultdict(lambda: defaultdict(int))
         ## var_no -> (var_no -> number)
@@ -27,8 +38,11 @@ class CausalGraph:
         return self.ordering
 
     def weigh_graph_from_ops(self, operators):
-        ### XXX TODO: a source variable can be processed several times. Is this
-        ### intended?
+        ### A source variable can be processed several times. This was probably
+        ### not intended originally but in experiments (cg. issue26) it
+        ### performed better than the (clearer) weighing described in the Fast
+        ### Downward paper (which would require a more complicated
+        ### implementation).
         for op in operators:
             source_vars = [var for (var, value) in op.prevail]
             for var, pre, _, _ in op.pre_post:
@@ -163,10 +177,18 @@ class SCC:
 
 
 class MaxDAG:
+    """Defines a variable ordering for a SCC of the (weighted) causal graph.
+ 
+       Conceptually, the greedy algorithm successively picks a node with minimal
+       cummulated weight of incoming arcs and removes its incident edges from
+       the graph until only a single node remains (cf. computation of total
+       order of vertices when pruning the causal graph in the Fast Downward JAIR
+       2006 paper).
+    """
     def __init__(self, graph, input_order):
         self.weighted_graph = graph
-        # TODO input_order is only used to get the same tiebreaking as with the
-        # old preprocessor
+        # input_order is only used to get the same tiebreaking as with the old
+        # preprocessor
         self.input_order = input_order
 
     def get_result(self):
