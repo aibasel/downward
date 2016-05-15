@@ -28,6 +28,7 @@ class Abstraction {
     const TaskProxy task_proxy;
     const int max_states;
     const int max_transitions;
+    const int max_arcs;
     const bool use_general_costs;
 
     AbstractSearch abstract_search;
@@ -104,6 +105,7 @@ public:
         const std::shared_ptr<AbstractTask> task,
         int max_states,
         int max_transitions,
+        int max_arcs,
         double max_time,
         bool use_general_costs,
         PickSplit pick,
@@ -122,6 +124,7 @@ public:
     }
 
     int compute_num_transitions() const;
+    int compute_num_arcs() const;
 
     /*
       For each operator calculate the mimimum cost that is needed to
