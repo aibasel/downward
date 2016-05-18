@@ -109,13 +109,11 @@ vector<int> RootTask::get_initial_state_values() const {
     return initial_state.get_values();
 }
 
-vector<int> RootTask::convert_state_values(
-    const vector<int> &ancestor_state_values,
-    const AbstractTask *ancestor_task) const {
-    if (this == ancestor_task) {
-        return ancestor_state_values;
+void RootTask::convert_state_values(
+    vector<int> &, const AbstractTask *ancestor_task) const {
+    if (this != ancestor_task) {
+        ABORT("Invalid state conversion");
     }
-    ABORT("Invalid state conversion");
 }
 
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {

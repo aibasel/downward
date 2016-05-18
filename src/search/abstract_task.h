@@ -76,9 +76,13 @@ public:
       state values from this task, C (child). Task A has to be an
       ancestor of C in the sense that C is the result of a sequence of
       task transformations on A.
+      The values are converted in-place to avoid unnecessary copies. If a
+      subclass needs to create a new vector, e.g., because the size changes,
+      it should create the new vector in a local variable and then swap it with
+      the parameter.
     */
-    virtual std::vector<int> convert_state_values(
-        const std::vector<int> &ancestor_state_values,
+    virtual void convert_state_values(
+        std::vector<int> &values,
         const AbstractTask *ancestor_task) const = 0;
 };
 
