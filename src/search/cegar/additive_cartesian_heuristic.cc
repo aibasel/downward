@@ -216,8 +216,9 @@ static Heuristic *_parse(OptionParser &parser) {
         Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_arcs",
-        "maximum sum of real transitions (no self-loops) over all abstractions",
-        "infinity",
+        "maximum sum of real transitions (excluding self-loops) over "
+        " all abstractions",
+        "2000000",
         Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_time",
