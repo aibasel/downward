@@ -619,8 +619,9 @@ public:
     */
     State convert_ancestor_state(const State &ancestor_state) const {
         TaskProxy ancestor_task_proxy = ancestor_state.get_task();
-        std::vector<int> state_values = task->convert_state_values(
-            ancestor_state.get_values(), ancestor_task_proxy.task);
+        // Create a copy of the state values for the new state.
+        std::vector<int> state_values = ancestor_state.get_values();
+        task->convert_state_values(state_values, ancestor_task_proxy.task);
         return State(*task, std::move(state_values));
     }
 

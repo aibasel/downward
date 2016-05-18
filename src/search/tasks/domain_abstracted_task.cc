@@ -61,16 +61,14 @@ vector<int> DomainAbstractedTask::get_initial_state_values() const {
     return initial_state_values;
 }
 
-vector<int> DomainAbstractedTask::convert_state_values_from_parent(
-    const vector<int> &&parent_state_values) const {
-    vector<int> values(move(parent_state_values));
+void DomainAbstractedTask::convert_state_values_from_parent(
+    vector<int> &values) const {
     int num_vars = domain_size.size();
     for (int var = 0; var < num_vars; ++var) {
         int old_value = values[var];
         int new_value = value_map[var][old_value];
         values[var] = new_value;
     }
-    return values;
 }
 
 }
