@@ -39,7 +39,7 @@ CONFIGS = [
         "--heuristic",
         "h2=lmcount(lm,admissible=false)",
         "--search",
-        "astar(max([h1,h2])))"]),
+        "astar(max([h1,h2]))"]),
 ]
 
 exp = IssueExperiment(
