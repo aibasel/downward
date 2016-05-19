@@ -16,7 +16,7 @@ bool MergeStrategy::initialized() const {
     return remaining_merges != UNINITIALIZED;
 }
 
-void MergeStrategy::initialize(const shared_ptr<AbstractTask> task) {
+void MergeStrategy::initialize(const shared_ptr<AbstractTask> &task) {
     assert(!initialized());
     cout << "Initializing merge strategy..." << endl;
     /*

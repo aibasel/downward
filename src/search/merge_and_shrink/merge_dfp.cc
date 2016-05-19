@@ -31,7 +31,7 @@ MergeDFP::MergeDFP(const Options &options)
     rng = utils::parse_rng_from_options(options);
 }
 
-void MergeDFP::compute_ts_order(const shared_ptr<AbstractTask> task) {
+void MergeDFP::compute_ts_order(const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     int num_variables = task_proxy.get_variables().size();
     int max_transition_system_count = num_variables * 2 - 1;
@@ -83,7 +83,7 @@ void MergeDFP::compute_ts_order(const shared_ptr<AbstractTask> task) {
     }
 }
 
-void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
+void MergeDFP::initialize(const shared_ptr<AbstractTask> &task) {
     MergeStrategy::initialize(task);
     compute_ts_order(task);
 }

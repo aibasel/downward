@@ -26,9 +26,11 @@ class VariableOrderFinder {
 
     void select_next(int position, int var_no);
 public:
-    VariableOrderFinder(const std::shared_ptr<AbstractTask> task,
-                        VariableOrderType variable_order_type);
+    VariableOrderFinder(
+        const std::shared_ptr<AbstractTask> &task,
+        VariableOrderType variable_order_type);
     ~VariableOrderFinder() = default;
+
     bool done() const;
     int next();
     void dump() const;

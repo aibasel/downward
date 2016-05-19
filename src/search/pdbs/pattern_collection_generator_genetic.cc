@@ -254,7 +254,7 @@ void PatternCollectionGeneratorGenetic::bin_packing() {
 }
 
 void PatternCollectionGeneratorGenetic::genetic_algorithm(
-    shared_ptr<AbstractTask> task_) {
+    const shared_ptr<AbstractTask> &task_) {
     task = task_;
     best_fitness = -1;
     best_patterns = nullptr;
@@ -273,7 +273,7 @@ void PatternCollectionGeneratorGenetic::genetic_algorithm(
 }
 
 PatternCollectionInformation PatternCollectionGeneratorGenetic::generate(
-    shared_ptr<AbstractTask> task) {
+    const shared_ptr<AbstractTask> &task) {
     utils::Timer timer;
     genetic_algorithm(task);
     cout << "Pattern generation (Edelkamp) time: " << timer << endl;

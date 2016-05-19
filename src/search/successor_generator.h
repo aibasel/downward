@@ -29,7 +29,7 @@ class SuccessorGenerator {
 
     SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
-    SuccessorGenerator(const std::shared_ptr<AbstractTask> task);
+    SuccessorGenerator(const std::shared_ptr<AbstractTask> &task);
     ~SuccessorGenerator();
 
     void generate_applicable_ops(

@@ -15,7 +15,8 @@ public:
     explicit PatternGeneratorGreedy(int max_states);
     virtual ~PatternGeneratorGreedy() = default;
 
-    virtual Pattern generate(std::shared_ptr<AbstractTask> task) override;
+    virtual Pattern generate(
+        const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 
