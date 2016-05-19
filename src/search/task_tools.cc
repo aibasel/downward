@@ -8,20 +8,20 @@ using namespace std;
 using utils::ExitCode;
 
 
-bool is_unit_cost(TaskProxy task) {
-    for (OperatorProxy op : task.get_operators()) {
+bool is_unit_cost(const TaskProxy &task_proxy) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
         if (op.get_cost() != 1)
             return false;
     }
     return true;
 }
 
-bool has_axioms(TaskProxy task) {
-    return !task.get_axioms().empty();
+bool has_axioms(const TaskProxy &task_proxy) {
+    return !task_proxy.get_axioms().empty();
 }
 
-void verify_no_axioms(TaskProxy task) {
-    if (has_axioms(task)) {
+void verify_no_axioms(const TaskProxy &task_proxy) {
+    if (has_axioms(task_proxy)) {
         cerr << "This configuration does not support axioms!"
              << endl << "Terminating." << endl;
         utils::exit_with(ExitCode::UNSUPPORTED);
@@ -29,8 +29,8 @@ void verify_no_axioms(TaskProxy task) {
 }
 
 
-static int get_first_conditional_effects_op_id(TaskProxy task) {
-    for (OperatorProxy op : task.get_operators()) {
+static int get_first_conditional_effects_op_id(const TaskProxy &task_proxy) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
         for (EffectProxy effect : op.get_effects()) {
             if (!effect.get_conditions().empty())
                 return op.get_id();
@@ -39,14 +39,14 @@ static int get_first_conditional_effects_op_id(TaskProxy task) {
     return -1;
 }
 
-bool has_conditional_effects(TaskProxy task) {
-    return get_first_conditional_effects_op_id(task) != -1;
+bool has_conditional_effects(const TaskProxy &task_proxy) {
+    return get_first_conditional_effects_op_id(task_proxy) != -1;
 }
 
-void verify_no_conditional_effects(TaskProxy task) {
-    int op_id = get_first_conditional_effects_op_id(task);
+void verify_no_conditional_effects(const TaskProxy &task_proxy) {
+    int op_id = get_first_conditional_effects_op_id(task_proxy);
     if (op_id != -1) {
-        OperatorProxy op = task.get_operators()[op_id];
+        OperatorProxy op = task_proxy.get_operators()[op_id];
         cerr << "This configuration does not support conditional effects "
              << "(operator " << op.get_name() << ")!" << endl
              << "Terminating." << endl;
@@ -54,7 +54,7 @@ void verify_no_conditional_effects(TaskProxy task) {
     }
 }
 
-double get_average_operator_cost(TaskProxy task_proxy) {
+double get_average_operator_cost(const TaskProxy &task_proxy) {
     double average_operator_cost = 0;
     for (OperatorProxy op : task_proxy.get_operators()) {
         average_operator_cost += op.get_cost();

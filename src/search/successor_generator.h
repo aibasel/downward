@@ -16,7 +16,7 @@ class State;
 
 class SuccessorGenerator {
     const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+    const TaskProxy task_proxy;
 
     std::unique_ptr<GeneratorBase> root;
 

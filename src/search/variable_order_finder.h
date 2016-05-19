@@ -17,7 +17,7 @@ enum VariableOrderType {
 
 class VariableOrderFinder {
     const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+    const TaskProxy task_proxy;
     const VariableOrderType variable_order_type;
     std::vector<int> selected_vars;
     std::vector<int> remaining_vars;
