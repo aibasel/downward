@@ -22,7 +22,7 @@ MergeLinear::MergeLinear(const Options &opts)
       need_first_index(true) {
 }
 
-void MergeLinear::initialize(const shared_ptr<AbstractTask> task) {
+void MergeLinear::initialize(const shared_ptr<AbstractTask> &task) {
     MergeStrategy::initialize(task);
     variable_order_finder = utils::make_unique_ptr<VariableOrderFinder>(
         task, variable_order_type);

@@ -13,14 +13,17 @@ class FactoredTransitionSystem;
 
 class MergeStrategy {
     const int UNINITIALIZED = -1;
+
 protected:
     int remaining_merges;
     bool initialized() const;
     virtual void dump_strategy_specific_options() const = 0;
+
 public:
     MergeStrategy();
     virtual ~MergeStrategy() = default;
-    virtual void initialize(const std::shared_ptr<AbstractTask> task);
+
+    virtual void initialize(const std::shared_ptr<AbstractTask> &task);
     bool done() const;
     void dump_options() const;
 

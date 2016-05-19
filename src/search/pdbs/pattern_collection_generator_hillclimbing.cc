@@ -304,7 +304,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
 }
 
 PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
-    shared_ptr<AbstractTask> task) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     SuccessorGenerator successor_generator(task);
 

@@ -130,7 +130,7 @@ public:
       set too small or if there are many goal variables with a large domain.
     */
     virtual PatternCollectionInformation generate(
-        std::shared_ptr<AbstractTask> task) override;
+        const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 
