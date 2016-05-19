@@ -71,7 +71,7 @@ public:
 
 // Implements a single pattern database
 class PatternDatabase {
-    TaskProxy task_proxy;
+    const TaskProxy task_proxy;
 
     Pattern pattern;
 

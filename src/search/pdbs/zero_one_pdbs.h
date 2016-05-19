@@ -10,7 +10,7 @@ namespace pdbs {
 class ZeroOnePDBs {
     PDBCollection pattern_databases;
 public:
-    ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns);
+    ZeroOnePDBs(const TaskProxy &task_proxy, const PatternCollection &patterns);
     ~ZeroOnePDBs() = default;
 
     int get_value(const State &state) const;
