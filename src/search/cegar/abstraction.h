@@ -109,7 +109,7 @@ public:
     Abstraction(const Abstraction &) = delete;
     Abstraction &operator=(const Abstraction &) = delete;
 
-    RefinementHierarchy && get_refinement_hierarchy() {
+    RefinementHierarchy get_refinement_hierarchy() {
         return std::move(refinement_hierarchy);
     }
 
