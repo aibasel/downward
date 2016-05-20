@@ -212,7 +212,7 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.add_option<double>(
         "max_time",
         "maximum time in seconds for building abstractions",
-        "900",
+        "infinity",
         Bounds("0.0", "infinity"));
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
