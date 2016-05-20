@@ -68,7 +68,6 @@ struct Flaw {
 Abstraction::Abstraction(
     const shared_ptr<AbstractTask> task,
     int max_states,
-    int max_transitions,
     int max_arcs,
     double max_time,
     bool use_general_costs,
@@ -76,7 +75,6 @@ Abstraction::Abstraction(
     bool debug)
     : task_proxy(*task),
       max_states(max_states),
-      max_transitions(max_transitions),
       max_arcs(max_arcs),
       use_general_costs(use_general_costs),
       abstract_search(get_operator_costs(task_proxy), states),
@@ -90,7 +88,6 @@ Abstraction::Abstraction(
     assert(max_states >= 1);
     g_log << "Start building abstraction." << endl;
     cout << "Maximum number of states: " << max_states << endl;
-    cout << "Maximum number of transitions: " << max_transitions << endl;
     cout << "Maximum number of arcs: " << max_arcs << endl;
     build();
     g_log << "Done building abstraction." << endl;
@@ -148,7 +145,6 @@ bool Abstraction::may_keep_refining() const {
        Without doing so, the algorithm would be more deterministic. */
     return utils::extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
-           compute_num_transitions() < max_transitions &&
            compute_num_arcs() < max_arcs &&
            !timer.is_expired();
 }
@@ -215,8 +211,6 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     int num_states = get_num_states();
     if (num_states % 1000 == 0) {
         g_log << num_states << "/" << max_states << " states, "
-              << compute_num_transitions() << "/" << max_transitions
-              << " transitions, "
               << compute_num_arcs() << "/" << max_arcs << " arcs" << endl;
     }
 
@@ -290,15 +284,6 @@ void Abstraction::update_h_and_g_values() {
     // Update g values.
     // TODO: updating h values overwrites g values. Find better solution.
     abstract_search.forward_dijkstra(init);
-}
-
-int Abstraction::compute_num_transitions() const {
-    int num_transitions = 0;
-    for (const AbstractState *state : states) {
-        num_transitions += state->get_outgoing_arcs().size() +
-            state->get_loops().size();
-    }
-    return num_transitions;
 }
 
 int Abstraction::compute_num_arcs() const {
@@ -382,8 +367,7 @@ void Abstraction::print_statistics() {
     cout << "Dead ends: " << dead_ends << endl;
     cout << "Init h: " << get_h_value_of_initial_state() << endl;
 
-    cout << "Self-loops/transitions: "
-         << total_loops << "/" << compute_num_transitions() << endl;
+    cout << "Self-loops: " << total_loops << endl;
     cout << "Arcs: " << total_outgoing_arcs << endl;
 
     cout << "Deviations: " << deviations << endl;
