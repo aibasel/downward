@@ -5,6 +5,7 @@
 #include "label_reduction.h"
 #include "labels.h"
 #include "merge_strategy.h"
+#include "merge_strategy_factory.h"
 #include "shrink_strategy.h"
 #include "transition_system.h"
 
@@ -34,7 +35,7 @@ void print_time(const utils::Timer &timer, string text) {
 
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
-      merge_strategy(opts.get<shared_ptr<MergeStrategy>>("merge_strategy")),
+      merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),
       shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
       label_reduction(nullptr),
       starting_peak_memory(-1),
@@ -45,11 +46,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
     assert(shrink_threshold_before_merge <= max_states_before_merge);
-    /*
-      TODO: Can we later get rid of the initialize calls, after rethinking
-      how to handle communication between different components? See issue559.
-    */
-    merge_strategy->initialize(task);
+
     if (opts.contains("label_reduction")) {
         label_reduction = opts.get<shared_ptr<LabelReduction>>("label_reduction");
         label_reduction->initialize(task_proxy);
@@ -67,8 +64,10 @@ void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
-    merge_strategy->dump_options();
-    cout << endl;
+    if (merge_strategy_factory) { // deleted after merge strategy extraction
+        merge_strategy_factory->dump_options();
+        cout << endl;
+    }
 
     cout << "Options related to size limits and shrinking: " << endl;
     cout << "Transition system size limit: " << max_states << endl
@@ -210,11 +209,16 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
 
+    unique_ptr<MergeStrategy> merge_strategy
+        = merge_strategy_factory->compute_merge_strategy(task, *fts);
+    merge_strategy_factory = nullptr;
+
     int final_index = -1; // TODO: get rid of this
     if (fts->is_solvable()) { // All atomic transition system are solvable.
-        while (!merge_strategy->done()) {
+        int number_of_merges = task_proxy.get_variables().size() - 1;
+        for (int i = 0; i < number_of_merges; ++i) {
             // Choose next transition systems to merge
-            pair<int, int> merge_indices = merge_strategy->get_next(*fts);
+            pair<int, int> merge_indices = merge_strategy->get_next();
             int merge_index1 = merge_indices.first;
             int merge_index2 = merge_indices.second;
             cout << "Next pair of indices: (" << merge_index1 << ", " << merge_index2 << ")" << endl;
@@ -441,7 +445,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "threshold_before_merge=1)");
 
     // Merge strategy option.
-    parser.add_option<shared_ptr<MergeStrategy>>(
+    parser.add_option<shared_ptr<MergeStrategyFactory>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
         "We currently recommend merge_dfp.");

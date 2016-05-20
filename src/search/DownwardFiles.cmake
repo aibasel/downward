@@ -411,6 +411,9 @@ fast_downward_plugin(
         merge_and_shrink/merge_dfp.cc
         merge_and_shrink/merge_linear.cc
         merge_and_shrink/merge_strategy.cc
+        merge_and_shrink/merge_strategy_factory.cc
+        merge_and_shrink/merge_strategy_factory_dfp.cc
+        merge_and_shrink/merge_strategy_factory_linear.cc
         merge_and_shrink/shrink_bisimulation.cc
         merge_and_shrink/shrink_bucket_based.cc
         merge_and_shrink/shrink_fh.cc
