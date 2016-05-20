@@ -6,12 +6,8 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../option_parser.h"
-#include "../option_parser_util.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
-#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -22,70 +18,8 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeDFP::MergeDFP(const Options &options)
-    : MergeStrategy(),
-      atomic_ts_order(AtomicTSOrder(options.get_enum("atomic_ts_order"))),
-      product_ts_order(ProductTSOrder(options.get_enum("product_ts_order"))),
-      atomic_before_product(options.get<bool>("atomic_before_product")),
-      randomized_order(options.get<bool>("randomized_order")) {
-    rng = utils::parse_rng_from_options(options);
-}
-
-void MergeDFP::compute_ts_order(const shared_ptr<AbstractTask> task) {
-    TaskProxy task_proxy(*task);
-    int num_variables = task_proxy.get_variables().size();
-    int max_transition_system_count = num_variables * 2 - 1;
-    transition_system_order.reserve(max_transition_system_count);
-    if (randomized_order) {
-        for (int i = 0; i < max_transition_system_count; ++i) {
-            transition_system_order.push_back(i);
-        }
-        rng->shuffle(transition_system_order);
-    } else {
-        // Compute the order in which atomic transition systems are considered
-        vector<int> atomic_tso;
-        for (int i = 0; i < num_variables; ++i) {
-            atomic_tso.push_back(i);
-        }
-        if (atomic_ts_order == AtomicTSOrder::INVERSE) {
-            reverse(atomic_tso.begin(), atomic_tso.end());
-        } else if (atomic_ts_order == AtomicTSOrder::RANDOM) {
-            rng->shuffle(atomic_tso);
-        }
-
-        // Compute the order in which product transition systems are considered
-        vector<int> product_tso;
-        for (int i = num_variables; i < max_transition_system_count; ++i) {
-            product_tso.push_back(i);
-        }
-        if (product_ts_order == ProductTSOrder::NEW_TO_OLD) {
-            reverse(product_tso.begin(), product_tso.end());
-        } else if (product_ts_order == ProductTSOrder::RANDOM) {
-            rng->shuffle(product_tso);
-        }
-
-        // Put the orders in the correct order
-        if (atomic_before_product) {
-            transition_system_order.insert(transition_system_order.end(),
-                                           atomic_tso.begin(),
-                                           atomic_tso.end());
-            transition_system_order.insert(transition_system_order.end(),
-                                           product_tso.begin(),
-                                           product_tso.end());
-        } else {
-            transition_system_order.insert(transition_system_order.end(),
-                                           product_tso.begin(),
-                                           product_tso.end());
-            transition_system_order.insert(transition_system_order.end(),
-                                           atomic_tso.begin(),
-                                           atomic_tso.end());
-        }
-    }
-}
-
-void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
-    MergeStrategy::initialize(task);
-    compute_ts_order(task);
+MergeDFP::MergeDFP(FactoredTransitionSystem &fts, vector<int> &&transition_system_order)
+    : MergeStrategy(fts), transition_system_order(move(transition_system_order)) {
 }
 
 bool MergeDFP::is_goal_relevant(const TransitionSystem &ts) const {
@@ -98,9 +32,8 @@ bool MergeDFP::is_goal_relevant(const TransitionSystem &ts) const {
     return false;
 }
 
-void MergeDFP::compute_label_ranks(const FactoredTransitionSystem &fts,
-                                   int index,
-                                   vector<int> &label_ranks) const {
+void MergeDFP::compute_label_ranks(
+    int index, vector<int> &label_ranks) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     int num_labels = fts.get_num_labels();
@@ -142,10 +75,7 @@ void MergeDFP::compute_label_ranks(const FactoredTransitionSystem &fts,
 }
 
 pair<int, int> MergeDFP::compute_next_pair(
-    const FactoredTransitionSystem &fts,
     const vector<int> &sorted_active_ts_indices) const {
-    assert(initialized());
-    assert(!done());
 
     vector<bool> goal_relevant(sorted_active_ts_indices.size(), false);
     for (size_t i = 0; i < sorted_active_ts_indices.size(); ++i) {
@@ -168,7 +98,7 @@ pair<int, int> MergeDFP::compute_next_pair(
         assert(fts.is_active(ts_index1));
         vector<int> &label_ranks1 = transition_system_label_ranks[i];
         if (label_ranks1.empty()) {
-            compute_label_ranks(fts, ts_index1, label_ranks1);
+            compute_label_ranks(ts_index1, label_ranks1);
         }
         for (size_t j = i + 1; j < sorted_active_ts_indices.size(); ++j) {
             int ts_index2 = sorted_active_ts_indices[j];
@@ -189,7 +119,7 @@ pair<int, int> MergeDFP::compute_next_pair(
                 // Compute the weight associated with this pair
                 vector<int> &label_ranks2 = transition_system_label_ranks[j];
                 if (label_ranks2.empty()) {
-                    compute_label_ranks(fts, ts_index2, label_ranks2);
+                    compute_label_ranks(ts_index2, label_ranks2);
                 }
                 assert(label_ranks1.size() == label_ranks2.size());
                 int pair_weight = INF;
@@ -242,10 +172,7 @@ pair<int, int> MergeDFP::compute_next_pair(
     return make_pair(next_index1, next_index2);
 }
 
-pair<int, int> MergeDFP::get_next(FactoredTransitionSystem &fts) {
-    assert(initialized());
-    assert(!done());
-
+pair<int, int> MergeDFP::get_next() {
     /*
       Precompute a vector sorted_active_ts_indices which contains all active
       transition system indices in the correct order.
@@ -258,87 +185,7 @@ pair<int, int> MergeDFP::get_next(FactoredTransitionSystem &fts) {
         }
     }
 
-    pair<int, int> next_merge = compute_next_pair(fts, sorted_active_ts_indices);
-
-    --remaining_merges;
+    pair<int, int> next_merge = compute_next_pair(sorted_active_ts_indices);
     return next_merge;
 }
-
-string MergeDFP::name() const {
-    return "dfp";
-}
-
-void MergeDFP::add_options_to_parser(OptionParser &parser) {
-    vector<string> atomic_ts_order;
-    vector<string> atomic_ts_order_documentation;
-    atomic_ts_order.push_back("regular");
-    atomic_ts_order_documentation.push_back("the variable order of Fast Downward");
-    atomic_ts_order.push_back("inverse");
-    atomic_ts_order_documentation.push_back("opposite of regular");
-    atomic_ts_order.push_back("random");
-    atomic_ts_order_documentation.push_back("a randomized order");
-    parser.add_enum_option(
-        "atomic_ts_order",
-        atomic_ts_order,
-        "The order in which atomic transition systems are considered when "
-        "considering pairs of potential merges.",
-        "regular",
-        atomic_ts_order_documentation);
-
-    vector<string> product_ts_order;
-    vector<string> product_ts_order_documentation;
-    product_ts_order.push_back("old_to_new");
-    product_ts_order_documentation.push_back(
-        "consider composite transition systems from most recent to oldest, "
-        "that is in decreasing index order");
-    product_ts_order.push_back("new_to_old");
-    product_ts_order_documentation.push_back("opposite of old_to_new");
-    product_ts_order.push_back("random");
-    product_ts_order_documentation.push_back("a randomized order");
-    parser.add_enum_option(
-        "product_ts_order",
-        product_ts_order,
-        "The order in which product transition systems are considered when "
-        "considering pairs of potential merges.",
-        "new_to_old",
-        product_ts_order_documentation);
-
-    parser.add_option<bool>(
-        "atomic_before_product",
-        "Consider atomic transition systems before composite ones iff true.",
-        "false");
-
-    parser.add_option<bool>(
-        "randomized_order",
-        "If true, use a 'globally' randomized order, i.e. all transition "
-        "systems are considered in an arbitrary order. This renders all other "
-        "ordering options void.",
-        "false");
-    utils::add_rng_options(parser);
-}
-
-static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
-    MergeDFP::add_options_to_parser(parser);
-
-    Options options = parser.parse();
-    parser.document_synopsis(
-        "Merge strategy DFP",
-        "This merge strategy implements the algorithm originally described in the "
-        "paper \"Directed model checking with distance-preserving abstractions\" "
-        "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-        "the following paper:" + utils::format_paper_reference(
-            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
-            "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
-            "Proceedings of the 28th AAAI Conference on Artificial"
-            " Intelligence (AAAI 2014)",
-            "2358-2366",
-            "AAAI Press 2014"));
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeDFP>(options);
-}
-
-static PluginShared<MergeStrategy> _plugin("merge_dfp", _parse);
 }

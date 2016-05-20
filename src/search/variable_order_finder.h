@@ -15,6 +15,8 @@ enum VariableOrderType {
     REVERSE_LEVEL
 };
 
+extern void dump_variable_order_type(VariableOrderType variable_order_type);
+
 class VariableOrderFinder {
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
@@ -31,7 +33,6 @@ public:
     ~VariableOrderFinder() = default;
     bool done() const;
     int next();
-    void dump() const;
 };
 
 #endif
