@@ -68,7 +68,6 @@ class SubtaskGenerator;
 class AdditiveCartesianHeuristic : public Heuristic {
     std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators;
     const int max_states;
-    const int max_transitions;
     const int max_arcs;
     utils::CountdownTimer timer;
     bool use_general_costs;
@@ -78,7 +77,6 @@ class AdditiveCartesianHeuristic : public Heuristic {
     std::vector<std::unique_ptr<CartesianHeuristic>> heuristics;
     int num_abstractions;
     int num_states;
-    int num_transitions;
     int num_arcs;
 
     void reduce_remaining_costs(const std::vector<int> &saturated_costs);
