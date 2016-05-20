@@ -129,10 +129,6 @@ public:
     const Arcs &get_incoming_arcs() const {return incoming_arcs; }
     const Loops &get_loops() const {return loops; }
 
-    int get_num_transitions() const {
-        return outgoing_arcs.size() + loops.size();
-    }
-
     AbstractSearchInfo &get_search_info() {return search_info; }
 
     friend std::ostream &operator<<(std::ostream &os, const AbstractState &state) {
