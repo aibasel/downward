@@ -95,8 +95,6 @@ class Abstraction {
     // Perform Dijkstra's algorithm from the goal states to update the h-values.
     void update_h_and_g_values();
 
-
-
     void print_statistics();
 
 public:
