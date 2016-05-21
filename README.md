@@ -1,11 +1,15 @@
 Fast Downward is a domain-independent planning system.
 
+For documentation and contact information see http://www.fast-downward.org/.
+
 The following directories are not part of Fast Downward as covered by this
 license:
-./src/search/ext
+
+* ./src/search/ext
 
 For the rest, the following license applies:
 
+```
 Copyright (C) 2003-2016 Malte Helmert
 Copyright (C) 2008-2016 Gabriele Roeger
 Copyright (C) 2012-2016 Florian Pommerening
@@ -37,5 +41,4 @@ PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
-
-For contact information see http://www.fast-downward.org/.
+```
