@@ -12,9 +12,10 @@ For the rest, the following license applies:
 ```
 Copyright (C) 2003-2016 Malte Helmert
 Copyright (C) 2008-2016 Gabriele Roeger
+Copyright (C) 2010-2016 Jendrik Seipp
+Copyright (C) 2010, 2011, 2013-2016 Silvan Sievers
 Copyright (C) 2012-2016 Florian Pommerening
-Copyright (C) 2010-2015 Jendrik Seipp
-Copyright (C) 2010, 2011, 2013-2015 Silvan Sievers
+Copyright (C) 2016 Martin Wehrle
 Copyright (C) 2013, 2015 Salome Simon
 Copyright (C) 2014, 2015 Patrick von Reth
 Copyright (C) 2015 Manuel Heusner, Thomas Keller
