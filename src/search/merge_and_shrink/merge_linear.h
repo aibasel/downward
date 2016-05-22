@@ -7,10 +7,6 @@
 
 class VariableOrderFinder;
 
-namespace options {
-class Options;
-}
-
 namespace merge_and_shrink {
 class MergeLinear : public MergeStrategy {
     std::unique_ptr<VariableOrderFinder> variable_order_finder;
