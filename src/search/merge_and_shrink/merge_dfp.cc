@@ -6,8 +6,6 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../task_proxy.h"
-
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 

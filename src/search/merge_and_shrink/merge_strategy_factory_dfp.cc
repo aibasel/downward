@@ -18,7 +18,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeStrategyFactoryDFP::MergeStrategyFactoryDFP(options::Options &options)
+MergeStrategyFactoryDFP::MergeStrategyFactoryDFP(const options::Options &options)
     : MergeStrategyFactory(),
       atomic_ts_order(AtomicTSOrder(options.get_enum("atomic_ts_order"))),
       product_ts_order(ProductTSOrder(options.get_enum("product_ts_order"))),

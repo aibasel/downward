@@ -38,7 +38,7 @@ class MergeStrategyFactoryDFP : public MergeStrategyFactory {
 protected:
     virtual void dump_strategy_specific_options() const override;
 public:
-    explicit MergeStrategyFactoryDFP(options::Options &options);
+    explicit MergeStrategyFactoryDFP(const options::Options &options);
     virtual ~MergeStrategyFactoryDFP() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
             const std::shared_ptr<AbstractTask> task,
