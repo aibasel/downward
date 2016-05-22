@@ -18,7 +18,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeDFP::MergeDFP(FactoredTransitionSystem &fts, vector<int> &&transition_system_order)
+MergeDFP::MergeDFP(FactoredTransitionSystem &fts, vector<int> transition_system_order)
     : MergeStrategy(fts), transition_system_order(move(transition_system_order)) {
 }
 
