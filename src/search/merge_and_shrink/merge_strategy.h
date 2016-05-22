@@ -1,7 +1,7 @@
 #ifndef MERGE_AND_SHRINK_MERGE_STRATEGY_H
 #define MERGE_AND_SHRINK_MERGE_STRATEGY_H
 
-#include <utility> // pair
+#include <utility>
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
