@@ -19,7 +19,7 @@ class MergeDFP : public MergeStrategy {
         const std::vector<int> &sorted_active_ts_indices) const;
 public:
     MergeDFP(FactoredTransitionSystem &fts,
-             std::vector<int> &&transition_system_order);
+             std::vector<int> transition_system_order);
     virtual ~MergeDFP() override = default;
     virtual std::pair<int, int> get_next() override;
 };
