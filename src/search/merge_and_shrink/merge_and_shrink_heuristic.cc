@@ -51,6 +51,20 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
         label_reduction = opts.get<shared_ptr<LabelReduction>>("label_reduction");
         label_reduction->initialize(task_proxy);
     }
+
+    utils::Timer timer;
+    cout << "Initializing merge-and-shrink heuristic..." << endl;
+    starting_peak_memory = utils::get_peak_memory_in_kb();
+    verify_no_axioms(task_proxy);
+    dump_options();
+    warn_on_unusual_options();
+    cout << endl;
+
+    build_transition_system(timer);
+    report_peak_memory_delta(true);
+    cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
+         << endl;
+    cout << endl;
 }
 
 void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
@@ -211,7 +225,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
 
     unique_ptr<MergeStrategy> merge_strategy
         = merge_strategy_factory->compute_merge_strategy(task, *fts);
-    merge_strategy_factory = nullptr;
+//    merge_strategy_factory = nullptr;
 
     int final_index = -1; // TODO: get rid of this
     if (fts->is_solvable()) { // All atomic transition system are solvable.
@@ -293,19 +307,6 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
 }
 
 void MergeAndShrinkHeuristic::initialize() {
-    utils::Timer timer;
-    cout << "Initializing merge-and-shrink heuristic..." << endl;
-    starting_peak_memory = utils::get_peak_memory_in_kb();
-    verify_no_axioms(task_proxy);
-    dump_options();
-    warn_on_unusual_options();
-    cout << endl;
-
-    build_transition_system(timer);
-    report_peak_memory_delta(true);
-    cout << "Done initializing merge-and-shrink heuristic [" << timer << "]"
-         << endl;
-    cout << endl;
 }
 
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
