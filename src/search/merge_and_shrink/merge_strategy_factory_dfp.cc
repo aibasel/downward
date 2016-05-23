@@ -122,7 +122,7 @@ void MergeStrategyFactoryDFP::dump_strategy_specific_options() const {
         cout << endl;
 
         cout << "Consider " << (atomic_before_product ?
-                "atomic before product" : "product before atomic")
+                                "atomic before product" : "product before atomic")
              << " transition systems" << endl;
     }
 }

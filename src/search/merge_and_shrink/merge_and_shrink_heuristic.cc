@@ -223,8 +223,8 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
 
-    unique_ptr<MergeStrategy> merge_strategy
-        = merge_strategy_factory->compute_merge_strategy(task, *fts);
+    unique_ptr<MergeStrategy> merge_strategy =
+        merge_strategy_factory->compute_merge_strategy(task, *fts);
 
     int final_index = -1; // TODO: get rid of this
     if (fts->is_solvable()) { // All atomic transition system are solvable.

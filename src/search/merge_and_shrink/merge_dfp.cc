@@ -75,7 +75,6 @@ vector<int> MergeDFP::compute_label_ranks(int index) const {
 
 pair<int, int> MergeDFP::compute_next_pair(
     const vector<int> &sorted_active_ts_indices) const {
-
     vector<bool> goal_relevant(sorted_active_ts_indices.size(), false);
     for (size_t i = 0; i < sorted_active_ts_indices.size(); ++i) {
         int ts_index = sorted_active_ts_indices[i];
