@@ -9,7 +9,7 @@ struct ValueTransitionLabel;
 
 namespace cg_heuristic {
 class CGCache {
-    TaskProxy task_proxy;
+    const TaskProxy task_proxy;
     std::vector<std::vector<int>> cache;
     std::vector<std::vector<ValueTransitionLabel *>> helpful_transition_cache;
     std::vector<std::vector<int>> depends_on;
@@ -20,7 +20,7 @@ class CGCache {
 public:
     static const int NOT_COMPUTED = -2;
 
-    explicit CGCache(TaskProxy &task_proxy);
+    explicit CGCache(const TaskProxy &task_proxy);
     ~CGCache();
 
     bool is_cached(int var) const {

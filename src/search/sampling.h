@@ -26,7 +26,7 @@ struct SamplingTimeout : public std::exception {};
   possibly return less than 'num_samples' states.
 */
 std::vector<State> sample_states_with_random_walks(
-    TaskProxy task_proxy,
+    const TaskProxy &task_proxy,
     const SuccessorGenerator &successor_generator,
     int num_samples,
     int init_h,

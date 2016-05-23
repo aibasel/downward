@@ -41,8 +41,8 @@ public:
     explicit MergeStrategyFactoryDFP(const options::Options &options);
     virtual ~MergeStrategyFactoryDFP() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
-            const std::shared_ptr<AbstractTask> task,
-            FactoredTransitionSystem &fts) override;
+        const std::shared_ptr<AbstractTask> &task,
+        FactoredTransitionSystem &fts) override;
     virtual std::string name() const override;
     static void add_options_to_parser(options::OptionParser &parser);
 };

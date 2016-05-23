@@ -49,7 +49,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       duplicated patterns.
     */
     void generate_candidate_patterns(
-        TaskProxy task_proxy,
+        const TaskProxy &task_proxy,
         const PatternDatabase &pdb,
         PatternCollection &candidate_patterns);
 
@@ -58,7 +58,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       not been generated already.
     */
     std::size_t generate_pdbs_for_candidates(
-        TaskProxy task_proxy,
+        const TaskProxy &task_proxy,
         std::set<Pattern> &generated_patterns,
         PatternCollection &new_candidates,
         PDBCollection &candidate_pdbs) const;
@@ -74,7 +74,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       a sample state, thus totalling exactly num_samples of sample states.
     */
     void sample_states(
-        TaskProxy task_proxy,
+        const TaskProxy &task_proxy,
         const SuccessorGenerator &successor_generator,
         std::vector<State> &samples,
         double average_operator_cost);
@@ -114,7 +114,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       adapt CanonicalPDBsHeuristic accordingly.
     */
     void hill_climbing(
-        TaskProxy task_proxy,
+        const TaskProxy &task_proxy,
         const SuccessorGenerator &successor_generator,
         double average_operator_costs,
         PatternCollection &initial_candidate_patterns);
@@ -130,7 +130,7 @@ public:
       set too small or if there are many goal variables with a large domain.
     */
     virtual PatternCollectionInformation generate(
-        std::shared_ptr<AbstractTask> task) override;
+        const std::shared_ptr<AbstractTask> &task) override;
 };
 }
 

@@ -24,7 +24,7 @@ PhOConstraints::PhOConstraints(const Options &opts)
 }
 
 void PhOConstraints::initialize_constraints(
-    const std::shared_ptr<AbstractTask> task,
+    const std::shared_ptr<AbstractTask> &task,
     vector<lp::LPConstraint> &constraints,
     double infinity) {
     assert(pattern_generator);

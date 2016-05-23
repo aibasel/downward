@@ -44,8 +44,8 @@ class PotentialFunction;
   ICAPS 2015.
 */
 class PotentialOptimizer {
-    std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+    const std::shared_ptr<AbstractTask> task;
+    const TaskProxy task_proxy;
     lp::LPSolver lp_solver;
     const double max_potential;
     int num_lp_vars;

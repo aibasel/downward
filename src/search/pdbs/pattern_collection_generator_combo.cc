@@ -21,7 +21,7 @@ PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(const Options &
 }
 
 PatternCollectionInformation PatternCollectionGeneratorCombo::generate(
-    shared_ptr<AbstractTask> task) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
