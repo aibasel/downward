@@ -34,7 +34,7 @@ class MergeStrategyFactoryDFP : public MergeStrategyFactory {
     bool randomized_order;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
-    std::vector<int> compute_ts_order(const std::shared_ptr<AbstractTask> task);
+    std::vector<int> compute_ts_order(const std::shared_ptr<AbstractTask> &task);
 protected:
     virtual void dump_strategy_specific_options() const override;
 public:

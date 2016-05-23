@@ -35,7 +35,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryDFP::compute_merge_strategy(
 }
 
 vector<int> MergeStrategyFactoryDFP::compute_ts_order(
-    const shared_ptr<AbstractTask> task) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     int num_variables = task_proxy.get_variables().size();
     int max_transition_system_count = num_variables * 2 - 1;
