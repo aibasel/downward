@@ -12,14 +12,14 @@ class Timer;
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class LabelReduction;
-class MergeStrategy;
+class MergeStrategyFactory;
 class ShrinkStrategy;
 class TransitionSystem;
 
 class MergeAndShrinkHeuristic : public Heuristic {
     // TODO: when the option parser supports it, the following should become
     // unique pointers.
-    std::shared_ptr<MergeStrategy> merge_strategy;
+    std::shared_ptr<MergeStrategyFactory> merge_strategy_factory;
     std::shared_ptr<ShrinkStrategy> shrink_strategy;
     std::shared_ptr<LabelReduction> label_reduction;
     long starting_peak_memory;
