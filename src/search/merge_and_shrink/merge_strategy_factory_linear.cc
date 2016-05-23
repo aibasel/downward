@@ -16,7 +16,7 @@ MergeStrategyFactoryLinear::MergeStrategyFactoryLinear(
     options::Options &options)
     : MergeStrategyFactory(),
       variable_order_type(static_cast<VariableOrderType>(
-                            options.get_enum("variable_order"))) {
+                              options.get_enum("variable_order"))) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryLinear::compute_merge_strategy(
