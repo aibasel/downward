@@ -119,7 +119,7 @@ void PatternCollectionGeneratorSystematic::enqueue_pattern_if_new(
 }
 
 void PatternCollectionGeneratorSystematic::build_sga_patterns(
-    TaskProxy task_proxy, const CausalGraph &cg) {
+    const TaskProxy &task_proxy, const CausalGraph &cg) {
     assert(max_pattern_size >= 1);
     assert(pattern_set.empty());
     assert(patterns && patterns->empty());
@@ -172,7 +172,7 @@ void PatternCollectionGeneratorSystematic::build_sga_patterns(
 }
 
 void PatternCollectionGeneratorSystematic::build_patterns(
-    TaskProxy task_proxy) {
+    const TaskProxy &task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     const CausalGraph &cg = task_proxy.get_causal_graph();
 
@@ -235,7 +235,7 @@ void PatternCollectionGeneratorSystematic::build_patterns(
 }
 
 void PatternCollectionGeneratorSystematic::build_patterns_naive(
-    TaskProxy task_proxy) {
+    const TaskProxy &task_proxy) {
     int num_variables = task_proxy.get_variables().size();
     PatternCollection current_patterns(1);
     PatternCollection next_patterns;
@@ -259,7 +259,7 @@ void PatternCollectionGeneratorSystematic::build_patterns_naive(
 }
 
 PatternCollectionInformation PatternCollectionGeneratorSystematic::generate(
-    shared_ptr<AbstractTask> task) {
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
     pattern_set.clear();

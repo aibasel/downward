@@ -13,7 +13,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionInformation::PatternCollectionInformation(
-    shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     shared_ptr<PatternCollection> patterns)
     : task(task),
       task_proxy(*task),

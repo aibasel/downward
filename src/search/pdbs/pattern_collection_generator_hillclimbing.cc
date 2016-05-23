@@ -40,7 +40,8 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
 }
 
 void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
-    TaskProxy task_proxy, const PatternDatabase &pdb,
+    const TaskProxy &task_proxy,
+    const PatternDatabase &pdb,
     PatternCollection &candidate_patterns) {
     const CausalGraph &causal_graph = task_proxy.get_causal_graph();
     const Pattern &pattern = pdb.get_pattern();
@@ -73,8 +74,10 @@ void PatternCollectionGeneratorHillclimbing::generate_candidate_patterns(
 }
 
 size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
-    TaskProxy task_proxy, set<Pattern> &generated_patterns,
-    PatternCollection &new_candidates, PDBCollection &candidate_pdbs) const {
+    const TaskProxy &task_proxy,
+    set<Pattern> &generated_patterns,
+    PatternCollection &new_candidates,
+    PDBCollection &candidate_pdbs) const {
     /*
       For the new candidate patterns check whether they already have been
       candidates before and thus already a PDB has been created an inserted into
@@ -94,8 +97,10 @@ size_t PatternCollectionGeneratorHillclimbing::generate_pdbs_for_candidates(
 }
 
 void PatternCollectionGeneratorHillclimbing::sample_states(
-    TaskProxy task_proxy, const SuccessorGenerator &successor_generator,
-    vector<State> &samples, double average_operator_cost) {
+    const TaskProxy &task_proxy,
+    const SuccessorGenerator &successor_generator,
+    vector<State> &samples,
+    double average_operator_cost) {
     int init_h = current_pdbs->get_value(
         task_proxy.get_initial_state());
 
@@ -212,7 +217,7 @@ bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
 }
 
 void PatternCollectionGeneratorHillclimbing::hill_climbing(
-    TaskProxy task_proxy,
+    const TaskProxy &task_proxy,
     const SuccessorGenerator &successor_generator,
     double average_operator_cost,
     PatternCollection &initial_candidate_patterns) {
@@ -298,7 +303,8 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
     hill_climbing_timer = nullptr;
 }
 
-PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(shared_ptr<AbstractTask> task) {
+PatternCollectionInformation PatternCollectionGeneratorHillclimbing::generate(
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     SuccessorGenerator successor_generator(task);
 

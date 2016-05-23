@@ -98,7 +98,7 @@ class Abstraction {
 
 public:
     explicit Abstraction(
-        const std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> &task,
         int max_states,
         double max_time,
         bool use_general_costs,
@@ -109,7 +109,7 @@ public:
     Abstraction(const Abstraction &) = delete;
     Abstraction &operator=(const Abstraction &) = delete;
 
-    RefinementHierarchy && get_refinement_hierarchy() {
+    RefinementHierarchy get_refinement_hierarchy() {
         return std::move(refinement_hierarchy);
     }
 

@@ -16,7 +16,7 @@ class State;
 
 class SuccessorGenerator {
     const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+    const TaskProxy task_proxy;
 
     std::unique_ptr<GeneratorBase> root;
 
@@ -29,7 +29,7 @@ class SuccessorGenerator {
 
     SuccessorGenerator(const SuccessorGenerator &) = delete;
 public:
-    SuccessorGenerator(const std::shared_ptr<AbstractTask> task);
+    SuccessorGenerator(const std::shared_ptr<AbstractTask> &task);
     ~SuccessorGenerator();
 
     void generate_applicable_ops(

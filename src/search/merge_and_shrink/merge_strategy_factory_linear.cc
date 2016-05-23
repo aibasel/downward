@@ -20,7 +20,7 @@ MergeStrategyFactoryLinear::MergeStrategyFactoryLinear(
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryLinear::compute_merge_strategy(
-    const shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     FactoredTransitionSystem &fts) {
     return utils::make_unique_ptr<MergeLinear>(fts,
         utils::make_unique_ptr<VariableOrderFinder>(task, variable_order_type));
