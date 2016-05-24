@@ -791,7 +791,7 @@ void LandmarkFactory::calc_achievers(Exploration &exploration) {
     }
 }
 
-void LandmarkFactory::add_options_to_parser(OptionParser &parser) {
+void _add_options_to_parser(OptionParser &parser) {
     parser.add_option<bool>("reasonable_orders",
                             "generate reasonable orders",
                             "false");

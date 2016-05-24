@@ -8,6 +8,8 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/language.h"
+
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
@@ -21,7 +23,7 @@ LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks(Exploration &) {
+void LandmarkFactoryZhuGivan::generate_landmarks(Exploration &exploration) {
     cout << "Generating landmarks using Zhu/Givan label propagation\n";
 
     compute_triggers();
@@ -33,7 +35,7 @@ void LandmarkFactoryZhuGivan::generate_landmarks(Exploration &) {
         return;
     }
 
-    extract_landmarks(last_prop_layer);
+    extract_landmarks(exploration, last_prop_layer);
 }
 
 bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
@@ -46,7 +48,9 @@ bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
 }
 
 void LandmarkFactoryZhuGivan::extract_landmarks(
+    Exploration &exploration,
     const proposition_layer &last_prop_layer) {
+    utils::unused_variable(exploration);
     // insert goal landmarks and mark them as goals
     for (size_t i = 0; i < g_goal.size(); ++i) {
         LandmarkNode *lmp;
@@ -75,7 +79,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
                 assert(g_initial_state()[it->first] == it->second ||
-                       !relaxed_task_solvable(true, node));
+                       !relaxed_task_solvable(exploration, true, node));
             } else
                 node = &lm_graph->get_simple_lm_node(*it);
             // Add order: *it ->_{nat} g_goal[i]
@@ -296,7 +300,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
         "The landmark generation method introduced by "
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
     parser.document_note("Relevant options", "reasonable_orders, no_orders");
-    LandmarkFactory::add_options_to_parser(parser);
+    _add_options_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: Make sure that conditional effects are indeed supported.

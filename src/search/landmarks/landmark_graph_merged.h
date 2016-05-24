@@ -16,8 +16,8 @@ class LandmarkGraphMerged : public LandmarkFactory {
     virtual void generate_landmarks(Exploration &exploration) override;
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
-    LandmarkGraphMerged(const options::Options &opts);
-    virtual ~LandmarkGraphMerged();
+    explicit LandmarkGraphMerged(const options::Options &opts);
+    virtual ~LandmarkGraphMerged() override = default;
 };
 }
 

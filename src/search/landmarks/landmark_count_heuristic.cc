@@ -24,10 +24,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       exploration(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       lookahead(numeric_limits<int>::max()),
-      ff_search_disjunctive_lms(false),
-      conditional_effects_supported(false),
-      lm_status_manager(nullptr),
-      lm_cost_assignment(nullptr) {
+      ff_search_disjunctive_lms(false) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(exploration);
@@ -135,7 +132,6 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &state) {
     int num_reached = reached_lms.size();
     if (num_reached == lgraph->number_of_landmarks()
         || !generate_helpful_actions(state, reached_lms)) {
-        assert(exploration != NULL);
         set_exploration_goals(state);
 
         // Use FF to plan to a landmark leaf

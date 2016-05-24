@@ -66,7 +66,7 @@ public:
 
     // Extract landmarks from last proposition layer and add them to the
     // landmarks graph
-    void extract_landmarks(const proposition_layer &last_prop_layer);
+    void extract_landmarks(Exploration &exploration, const proposition_layer &last_prop_layer);
 
     // test if layer satisfies goal
     bool satisfies_goal_conditions(const proposition_layer &) const;
@@ -74,8 +74,8 @@ public:
     virtual void generate_landmarks(Exploration &exploration) override;
 
 public:
-    LandmarkFactoryZhuGivan(const options::Options &opts);
-    virtual ~LandmarkFactoryZhuGivan() {}
+    explicit LandmarkFactoryZhuGivan(const options::Options &opts);
+    virtual ~LandmarkFactoryZhuGivan() override = default;
 };
 }
 

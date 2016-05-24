@@ -22,15 +22,13 @@ class Exploration;
 class LandmarkFactory {
 public:
     explicit LandmarkFactory(const options::Options &opts);
-    virtual ~LandmarkFactory() {}
+    virtual ~LandmarkFactory() = default;
 
     std::unique_ptr<LandmarkGraph> &&compute_lm_graph(Exploration &exploration);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
     bool use_reasonable_orders() const {return reasonable_orders; }
     bool supports_conditional_effects() const {return conditional_effects_supported; }
-
-    static void add_options_to_parser(options::OptionParser &parser);
 
 protected:
     std::unique_ptr<LandmarkGraph> lm_graph;
@@ -63,8 +61,6 @@ protected:
     bool is_landmark_precondition(const GlobalOperator &o, const LandmarkNode *lmp) const;
 
 private:
-    int landmarks_count;
-    int conj_lms;
     const bool reasonable_orders;
     const bool only_causal_landmarks;
     const bool disjunctive_landmarks;
@@ -95,6 +91,8 @@ private:
     bool is_causal_landmark(Exploration &exploration, const LandmarkNode &landmark) const;
     virtual void calc_achievers(Exploration &exploration); // keep this virtual because HMLandmarks overrides it!
 };
+
+extern void _add_options_to_parser(options::OptionParser &parser);
 }
 
 #endif

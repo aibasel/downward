@@ -45,7 +45,7 @@ class LamaFFSynergy {
 
 public:
     explicit LamaFFSynergy(const options::Options &opts);
-    ~LamaFFSynergy() = default;
+    virtual ~LamaFFSynergy() = default;
 
     Heuristic *get_lama_heuristic_proxy() const;
     Heuristic *get_ff_heuristic_proxy() const;

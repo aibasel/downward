@@ -16,9 +16,6 @@ LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
       lm_factories(opts.get_list<LandmarkFactory *>("lm_factories")) {
 }
 
-LandmarkGraphMerged::~LandmarkGraphMerged() {
-}
-
 LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
     if (!lm.disjunctive && !lm.conjunctive) {
         pair<int, int> lm_fact = make_pair(lm.vars[0], lm.vals[0]);
@@ -131,7 +128,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
         "Note",
         "Does not currently support conjunctive landmarks");
     parser.add_list_option<LandmarkFactory *>("lm_factories");
-    LandmarkFactory::add_options_to_parser(parser);
+    _add_options_to_parser(parser);
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<LandmarkFactory *>("lm_factories");
