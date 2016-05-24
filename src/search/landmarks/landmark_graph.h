@@ -120,7 +120,7 @@ struct LandmarkNodeComparer {
 };
 
 
-typedef std::unordered_set<const LandmarkNode *> LandmarkSet;
+using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:
@@ -153,7 +153,7 @@ public:
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
     LandmarkGraph();
-    virtual ~LandmarkGraph() {}
+    ~LandmarkGraph() = default;
 
     inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
         assert(simple_landmark_exists(a));

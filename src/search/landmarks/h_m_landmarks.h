@@ -69,8 +69,8 @@ typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
 class HMLandmarks : public LandmarkFactory {
 public:
-    HMLandmarks(const options::Options &opts);
-    virtual ~HMLandmarks() {}
+    explicit HMLandmarks(const options::Options &opts);
+    virtual ~HMLandmarks() override = default;
 
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);

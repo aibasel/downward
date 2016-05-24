@@ -1051,7 +1051,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
         "m, reasonable_orders, conjunctive_landmarks, no_orders");
     parser.add_option<int>(
         "m", "subset size (if unsure, use the default of 2)", "2");
-    LandmarkFactory::add_options_to_parser(parser);
+    _add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
         return 0;

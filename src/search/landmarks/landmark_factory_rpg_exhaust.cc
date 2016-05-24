@@ -55,7 +55,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_note(
         "Relevant options",
         "reasonable_orders, only_causal_landmarks");
-    LandmarkFactory::add_options_to_parser(parser);
+    _add_options_to_parser(parser);
 
     Options opts = parser.parse();
 
