@@ -24,7 +24,24 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
       lm_cost_type(static_cast<OperatorCost>(opts.get_enum("lm_cost_type"))),
       conditional_effects_supported(opts.get<bool>("supports_conditional_effects")) {
 }
+/*
+Each call of this function on a LandmarkFactory object returns the same LandmarkGraph
+object, because the LandmarkFactory object caches the first LandmarkGraph object it
+has computed.
 
+When computing different landmark graphs with Exploration objects that have different
+parameters (for example different adapted task), this function needs to be called
+for each Exploration object on seperate LandmarkFactory objects.
+
+In a later step, we want to provide explicit options for recomputation and caching
+of landmark graphs if desired.
+
+As all heuristics will work on adapted tasks in future, this function will also
+get access to a TaskProxy object. Then we need to ensure that the TaskProxy object
+used by the Exploration object must be the same as the TaskProxy object that is
+directly passed to this function.
+
+*/
 std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
     utils::Timer lm_generation_timer;
     if (lm_graph)
