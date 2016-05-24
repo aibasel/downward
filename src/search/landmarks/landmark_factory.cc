@@ -25,9 +25,11 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
       conditional_effects_supported(opts.get<bool>("supports_conditional_effects")) {
 }
 
-std::unique_ptr<LandmarkGraph> &&LandmarkFactory::compute_lm_graph(Exploration &exploration) {
+std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
     utils::Timer lm_generation_timer;
-    lm_graph = utils::make_unique_ptr<LandmarkGraph>();
+    if (lm_graph)
+        return lm_graph;
+    lm_graph = make_shared<LandmarkGraph>();
     generate_landmarks(exploration);
 
     // the following replaces the old "build_lm_graph"
@@ -43,7 +45,7 @@ std::unique_ptr<LandmarkGraph> &&LandmarkFactory::compute_lm_graph(Exploration &
              << lm_graph->number_of_edges() << " edges\n";
     }
     //lm_graph->dump();
-    return move(lm_graph);
+    return lm_graph;
 }
 
 void LandmarkFactory::generate(Exploration &exploration) {

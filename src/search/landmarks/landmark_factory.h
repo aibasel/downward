@@ -24,14 +24,14 @@ public:
     explicit LandmarkFactory(const options::Options &opts);
     virtual ~LandmarkFactory() = default;
 
-    std::unique_ptr<LandmarkGraph> &&compute_lm_graph(Exploration &exploration);
+    std::shared_ptr<LandmarkGraph> compute_lm_graph(Exploration &exploration);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
     bool use_reasonable_orders() const {return reasonable_orders; }
     bool supports_conditional_effects() const {return conditional_effects_supported; }
 
 protected:
-    std::unique_ptr<LandmarkGraph> lm_graph;
+    std::shared_ptr<LandmarkGraph> lm_graph;
 
     bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
     OperatorCost get_lm_cost_type() const {return lm_cost_type; }
