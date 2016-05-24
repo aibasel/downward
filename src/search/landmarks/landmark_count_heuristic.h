@@ -12,7 +12,7 @@
 namespace landmarks {
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
-    std::unique_ptr<LandmarkGraph> lgraph;
+    std::shared_ptr<LandmarkGraph> lgraph;
     Exploration exploration;
     bool use_preferred_operators;
     int lookahead;

@@ -10,7 +10,7 @@ class LandmarkGraph;
 class LandmarkNode;
 
 class LandmarkGraphMerged : public LandmarkFactory {
-    std::vector<std::unique_ptr<LandmarkGraph>> lm_graphs;
+    std::vector<std::shared_ptr<LandmarkGraph>> lm_graphs;
     std::vector<LandmarkFactory *> lm_factories;
 
     virtual void generate_landmarks(Exploration &exploration) override;
