@@ -140,7 +140,7 @@ void GeneratorEmpty::generate_applicable_ops(
     const GlobalState &, vector<const GlobalOperator *> &) const {
 }
 
-SuccessorGenerator::SuccessorGenerator(const shared_ptr<AbstractTask> &task)
+SuccessorGenerator::SuccessorGenerator(const shared_ptr<AbstractTask> task)
     : task(task),
       task_proxy(*task) {
     OperatorsProxy operators = task_proxy.get_operators();

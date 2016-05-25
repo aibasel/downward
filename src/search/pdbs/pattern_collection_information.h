@@ -28,10 +28,9 @@ class PatternCollectionInformation {
     void create_max_additive_subsets_if_missing();
 
     bool information_is_valid() const;
-
 public:
     PatternCollectionInformation(
-        const std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<AbstractTask> task,
         std::shared_ptr<PatternCollection> patterns);
     ~PatternCollectionInformation() = default;
 

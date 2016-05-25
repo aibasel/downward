@@ -23,8 +23,7 @@ PatternGeneratorGreedy::PatternGeneratorGreedy(int max_states)
     : max_states(max_states) {
 }
 
-Pattern PatternGeneratorGreedy::generate(
-    const shared_ptr<AbstractTask> &task) {
+Pattern PatternGeneratorGreedy::generate(shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     Pattern pattern;
     VariableOrderFinder order(task, GOAL_CG_LEVEL);

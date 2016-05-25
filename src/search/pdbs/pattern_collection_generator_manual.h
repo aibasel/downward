@@ -18,7 +18,7 @@ public:
     virtual ~PatternCollectionGeneratorManual() = default;
 
     virtual PatternCollectionInformation generate(
-        const std::shared_ptr<AbstractTask> &task) override;
+        std::shared_ptr<AbstractTask> task) override;
 };
 }
 
