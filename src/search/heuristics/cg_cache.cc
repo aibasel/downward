@@ -16,7 +16,7 @@ using namespace std;
 namespace cg_heuristic {
 const int CGCache::NOT_COMPUTED;
 
-CGCache::CGCache(const TaskProxy &task_proxy) : task_proxy(task_proxy) {
+CGCache::CGCache(TaskProxy &task_proxy) : task_proxy(task_proxy) {
     cout << "Initializing heuristic cache... " << flush;
 
     int var_count = task_proxy.get_variables().size();
