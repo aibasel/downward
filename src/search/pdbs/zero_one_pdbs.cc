@@ -14,8 +14,7 @@
 using namespace std;
 
 namespace pdbs {
-ZeroOnePDBs::ZeroOnePDBs(
-    const TaskProxy &task_proxy, const PatternCollection &patterns) {
+ZeroOnePDBs::ZeroOnePDBs(TaskProxy task_proxy, const PatternCollection &patterns) {
     vector<int> operator_costs;
     OperatorsProxy operators = task_proxy.get_operators();
     operator_costs.reserve(operators.size());

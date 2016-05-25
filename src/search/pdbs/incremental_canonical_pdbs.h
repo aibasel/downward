@@ -12,7 +12,7 @@
 namespace pdbs {
 class IncrementalCanonicalPDBs {
     const std::shared_ptr<AbstractTask> task;
-    const TaskProxy task_proxy;
+    TaskProxy task_proxy;
 
     std::shared_ptr<PatternCollection> patterns;
     std::shared_ptr<PDBCollection> pattern_databases;

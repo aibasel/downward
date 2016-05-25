@@ -53,7 +53,7 @@ protected:
     // Hold a reference to the task implementation and pass it to objects that need it.
     const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
-    const TaskProxy task_proxy;
+    TaskProxy task_proxy;
     OperatorCost cost_type;
     enum {DEAD_END = -1, NO_VALUE = -2};
     virtual void initialize() {}

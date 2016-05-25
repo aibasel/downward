@@ -21,7 +21,7 @@ bool are_patterns_additive(const Pattern &pattern1,
     return true;
 }
 
-VariableAdditivity compute_additive_vars(const TaskProxy &task_proxy) {
+VariableAdditivity compute_additive_vars(TaskProxy task_proxy) {
     VariableAdditivity are_additive;
     int num_vars = task_proxy.get_variables().size();
     are_additive.resize(num_vars, vector<bool>(num_vars, true));
