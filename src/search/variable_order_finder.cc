@@ -15,9 +15,8 @@ using namespace std;
 using utils::ExitCode;
 
 
-VariableOrderFinder::VariableOrderFinder(
-    const shared_ptr<AbstractTask> &task,
-    VariableOrderType variable_order_type)
+VariableOrderFinder::VariableOrderFinder(const shared_ptr<AbstractTask> task,
+                                         VariableOrderType variable_order_type)
     : task(task),
       task_proxy(*task),
       variable_order_type(variable_order_type) {

@@ -18,7 +18,7 @@ PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(const Options
 }
 
 PatternCollectionInformation PatternCollectionGeneratorManual::generate(
-    const std::shared_ptr<AbstractTask> &task) {
+    std::shared_ptr<AbstractTask> task) {
     cout << "Manual pattern collection: " << *patterns << endl;
     return PatternCollectionInformation(task, patterns);
 }

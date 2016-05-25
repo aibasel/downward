@@ -34,14 +34,14 @@ class MergeStrategyFactoryDFP : public MergeStrategyFactory {
     bool randomized_order;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
-    std::vector<int> compute_ts_order(const std::shared_ptr<AbstractTask> &task);
+    std::vector<int> compute_ts_order(std::shared_ptr<AbstractTask> task);
 protected:
     virtual void dump_strategy_specific_options() const override;
 public:
     explicit MergeStrategyFactoryDFP(const options::Options &options);
     virtual ~MergeStrategyFactoryDFP() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
-        const std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts) override;
     virtual std::string name() const override;
     static void add_options_to_parser(options::OptionParser &parser);

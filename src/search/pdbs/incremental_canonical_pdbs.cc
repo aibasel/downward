@@ -12,8 +12,7 @@ using namespace std;
 
 namespace pdbs {
 IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
-    const shared_ptr<AbstractTask> &task,
-    const PatternCollection &intitial_patterns)
+    const shared_ptr<AbstractTask> task, const PatternCollection &intitial_patterns)
     : task(task),
       task_proxy(*task),
       patterns(make_shared<PatternCollection>(intitial_patterns.begin(),

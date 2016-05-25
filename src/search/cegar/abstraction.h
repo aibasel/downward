@@ -98,7 +98,7 @@ class Abstraction {
 
 public:
     explicit Abstraction(
-        const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<AbstractTask> task,
         int max_states,
         double max_time,
         bool use_general_costs,
