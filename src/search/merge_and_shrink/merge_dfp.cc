@@ -96,7 +96,7 @@ pair<int, int> MergeDFP::compute_next_pair(
         assert(fts.is_active(ts_index1));
         vector<int> &label_ranks1 = transition_system_label_ranks[i];
         if (label_ranks1.empty()) {
-            label_ranks1 = move(compute_label_ranks(ts_index1));
+            label_ranks1 = compute_label_ranks(ts_index1);
         }
         for (size_t j = i + 1; j < sorted_active_ts_indices.size(); ++j) {
             int ts_index2 = sorted_active_ts_indices[j];
@@ -117,7 +117,7 @@ pair<int, int> MergeDFP::compute_next_pair(
                 // Compute the weight associated with this pair
                 vector<int> &label_ranks2 = transition_system_label_ranks[j];
                 if (label_ranks2.empty()) {
-                    label_ranks2 = move(compute_label_ranks(ts_index2));
+                    label_ranks2 = compute_label_ranks(ts_index2);
                 }
                 assert(label_ranks1.size() == label_ranks2.size());
                 int pair_weight = INF;
