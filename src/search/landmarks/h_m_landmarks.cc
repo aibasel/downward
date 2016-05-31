@@ -1054,14 +1054,14 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     _add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.help_mode())
-        return 0;
+        return nullptr;
 
     parser.document_language_support("conditional_effects",
                                      "ignored, i.e. not supported");
     opts.set<bool>("supports_conditional_effects", false);
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
         return new HMLandmarks(opts);
     }

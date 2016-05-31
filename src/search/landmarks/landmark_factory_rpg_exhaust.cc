@@ -64,7 +64,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     opts.set<bool>("supports_conditional_effects", false);
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
         return new LandmarkFactoryRpgExhaust(opts);
     }

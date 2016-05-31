@@ -310,7 +310,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     opts.set<bool>("supports_conditional_effects", true);
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
         return new LandmarkFactoryZhuGivan(opts);
     }

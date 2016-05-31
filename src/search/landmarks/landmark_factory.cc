@@ -34,8 +34,8 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   If you want to compute different landmark graphs for different
   Exploration objects, you have to use separate landmark factories.
 
-  In a later step, we want to provide explicit options for recomputation
-  and caching of landmark graphs.
+  This solution remains temporary as long as the question of when and
+  how to reuse landmark graphs is open.
 
   As all heuristics will work on task transformations in the future,
   this function will also get access to a TaskProxy. Then we need to
