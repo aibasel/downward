@@ -327,7 +327,7 @@ static Heuristic *_parse(OptionParser &parser) {
     Options opts = parser.parse();
 
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return new LandmarkCountHeuristic(opts);
 }

@@ -137,7 +137,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
                                      "supported if all components support them");
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
         vector<LandmarkFactory *> lm_factories = opts.get_list<LandmarkFactory *>("lm_factories");
         bool supports_conditional_effects = true;
