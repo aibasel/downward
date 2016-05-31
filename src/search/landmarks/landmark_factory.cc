@@ -25,27 +25,27 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
       conditional_effects_supported(opts.get<bool>("supports_conditional_effects")) {
 }
 /*
-Each call of this function on a LandmarkFactory object returns the same LandmarkGraph
-object, because the LandmarkFactory object caches the first LandmarkGraph object it
-has computed.
+  Note: To allow reusing landmark graphs, we use the following temporary
+  solution.
 
-When computing different landmark graphs with Exploration objects that have different
-parameters (for example different adapted task), this function needs to be called
-for each Exploration object on seperate LandmarkFactory objects.
+  Landmark factories cache the first landmark graph they compute, so
+  each call to this function returns the same graph.
 
-In a later step, we want to provide explicit options for recomputation and caching
-of landmark graphs if desired.
+  If you want to compute different landmark graphs for different
+  Exploration objects, you have to use separate landmark factories.
 
-As all heuristics will work on adapted tasks in future, this function will also
-get access to a TaskProxy object. Then we need to ensure that the TaskProxy object
-used by the Exploration object must be the same as the TaskProxy object that is
-directly passed to this function.
+  In a later step, we want to provide explicit options for recomputation
+  and caching of landmark graphs.
 
+  As all heuristics will work on task transformations in the future,
+  this function will also get access to a TaskProxy. Then we need to
+  ensure that the TaskProxy used by the Exploration object is the same
+  as the TaskProxy object passed to this function.
 */
 std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
-    utils::Timer lm_generation_timer;
     if (lm_graph)
         return lm_graph;
+    utils::Timer lm_generation_timer;
     lm_graph = make_shared<LandmarkGraph>();
     generate_landmarks(exploration);
 
