@@ -1,7 +1,7 @@
 #include "additive_cartesian_heuristic.h"
 
 #include "abstraction.h"
-#include "cartesian_heuristic.h"
+#include "cartesian_heuristic_function.h"
 #include "subtask_generators.h"
 #include "utils.h"
 
@@ -41,11 +41,12 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
     : Heuristic(opts),
       subtask_generators(opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks")),
       max_states(opts.get<int>("max_states")),
-      timer(new utils::CountdownTimer(opts.get<double>("max_time"))),
+      timer(opts.get<double>("max_time")),
       use_general_costs(opts.get<bool>("use_general_costs")),
       pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
       num_abstractions(0),
-      num_states(0) {
+      num_states(0),
+      initial_state(task_proxy.get_initial_state()) {
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
 
@@ -54,23 +55,35 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(const Options &opts)
 }
 
 void AdditiveCartesianHeuristic::reduce_remaining_costs(
-    const vector<int> &needed_costs) {
-    assert(remaining_costs.size() == needed_costs.size());
+    const vector<int> &saturated_costs) {
+    assert(remaining_costs.size() == saturated_costs.size());
     for (size_t i = 0; i < remaining_costs.size(); ++i) {
-        assert(needed_costs[i] <= remaining_costs[i]);
-        remaining_costs[i] -= needed_costs[i];
+        int &remaining = remaining_costs[i];
+        const int &saturated = saturated_costs[i];
+        assert(saturated <= remaining);
+        /* Since we ignore transitions from states s with h(s)=INF, all
+           saturated costs (h(s)-h(s')) are finite or -INF. */
+        assert(saturated != INF);
+        if (remaining == INF) {
+            // INF - x = INF for finite values x.
+        } else if (saturated == -INF) {
+            remaining = INF;
+        } else {
+            remaining -= saturated;
+        }
+        assert(remaining >= 0);
     }
 }
 
 shared_ptr<AbstractTask> AdditiveCartesianHeuristic::get_remaining_costs_task(
     shared_ptr<AbstractTask> &parent) const {
     vector<int> costs = remaining_costs;
-    return make_shared<ExtraTasks::ModifiedOperatorCostsTask>(parent, move(costs));
+    return make_shared<extra_tasks::ModifiedOperatorCostsTask>(parent, move(costs));
 }
 
 bool AdditiveCartesianHeuristic::may_build_another_abstraction() {
     return num_states < max_states &&
-           !timer->is_expired() &&
+           !timer.is_expired() &&
            utils::extra_memory_padding_is_reserved() &&
            compute_heuristic(initial_state) != DEAD_END;
 }
@@ -85,25 +98,21 @@ void AdditiveCartesianHeuristic::build_abstractions(
         Abstraction abstraction(
             subtask,
             max(1, (max_states - num_states) / rem_subtasks),
-            timer->get_remaining_time() / rem_subtasks,
+            timer.get_remaining_time() / rem_subtasks,
             use_general_costs,
             pick_split);
 
         ++num_abstractions;
         num_states += abstraction.get_num_states();
         assert(num_states <= max_states);
-        vector<int> needed_costs = abstraction.get_needed_costs();
-        reduce_remaining_costs(needed_costs);
+        reduce_remaining_costs(abstraction.get_saturated_costs());
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
-            Options opts;
-            opts.set<int>("cost_type", NORMAL);
-            opts.set<shared_ptr<AbstractTask>>("transform", subtask);
-            opts.set<bool>("cache_estimates", cache_h_values);
-            heuristics.push_back(
-                utils::make_unique_ptr<CartesianHeuristic>(
-                    opts, abstraction.get_refinement_hierarchy()));
+            heuristic_functions.push_back(
+                utils::make_unique_ptr<CartesianHeuristicFunction>(
+                    subtask,
+                    abstraction.extract_refinement_hierarchy()));
         }
         if (!may_build_another_abstraction())
             break;
@@ -129,18 +138,25 @@ void AdditiveCartesianHeuristic::initialize() {
 void AdditiveCartesianHeuristic::print_statistics() const {
     g_log << "Done initializing additive Cartesian heuristic" << endl;
     cout << "Cartesian abstractions built: " << num_abstractions << endl;
-    cout << "Cartesian heuristics stored: " << heuristics.size() << endl;
+    cout << "Cartesian heuristic functions stored: "
+         << heuristic_functions.size() << endl;
     cout << "Cartesian states: " << num_states << endl;
     cout << endl;
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
-    EvaluationContext eval_context(global_state);
+    State state = convert_global_state(global_state);
+    return compute_heuristic(state);
+}
+
+int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     int sum_h = 0;
-    for (auto &heuristic : heuristics) {
-        if (eval_context.is_heuristic_infinite(heuristic.get()))
+    for (const unique_ptr<CartesianHeuristicFunction> &heuristic_function : heuristic_functions) {
+        int h = heuristic_function->get_value(state);
+        assert(h >= 0);
+        if (h == INF)
             return DEAD_END;
-        sum_h += eval_context.get_heuristic_value(heuristic.get());
+        sum_h += h;
     }
     assert(sum_h >= 0);
     return sum_h;
