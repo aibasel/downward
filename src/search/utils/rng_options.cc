@@ -12,7 +12,7 @@ namespace utils {
 void add_rng_options(options::OptionParser &parser) {
     parser.add_option<int>(
         "random_seed",
-        "Set to -1 (default) to use the global random number generator.\n"
+        "Set to -1 (default) to use the global random number generator. "
         "Set to any other value to use a local random number generator with "
         "the given seed.",
         "-1",

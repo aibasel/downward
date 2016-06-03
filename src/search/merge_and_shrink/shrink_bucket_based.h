@@ -6,6 +6,11 @@
 #include <memory>
 #include <vector>
 
+namespace options {
+class OptionParser;
+class Options;
+}
+
 namespace utils {
 class RandomNumberGenerator;
 }

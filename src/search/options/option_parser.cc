@@ -40,7 +40,7 @@ class LandmarkGraph;
 
 namespace merge_and_shrink {
 class LabelReduction;
-class MergeStrategy;
+class MergeStrategyFactory;
 class ShrinkStrategy;
 }
 
@@ -95,7 +95,7 @@ static void get_help(string k) {
     get_help_templ<landmarks::LandmarkGraph *>(pt);
     get_help_templ<shared_ptr<cegar::SubtaskGenerator>>(pt);
     get_help_templ<shared_ptr<OpenListFactory>>(pt);
-    get_help_templ<shared_ptr<merge_and_shrink::MergeStrategy>>(pt);
+    get_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>(pt);
     get_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>(pt);
     get_help_templ<shared_ptr<merge_and_shrink::LabelReduction>>(pt);
     get_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>(pt);
@@ -125,7 +125,7 @@ static void get_full_help() {
     get_full_help_templ<landmarks::LandmarkGraph *>();
     get_full_help_templ<shared_ptr<cegar::SubtaskGenerator>>();
     get_full_help_templ<shared_ptr<OpenListFactory>>();
-    get_full_help_templ<shared_ptr<merge_and_shrink::MergeStrategy>>();
+    get_full_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>();
     get_full_help_templ<shared_ptr<merge_and_shrink::ShrinkStrategy>>();
     get_full_help_templ<shared_ptr<merge_and_shrink::LabelReduction>>();
     get_full_help_templ<shared_ptr<operator_counting::ConstraintGenerator>>();
