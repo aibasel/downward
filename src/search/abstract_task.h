@@ -71,7 +71,19 @@ public:
     virtual Fact get_goal_fact(int index) const = 0;
 
     virtual std::vector<int> get_initial_state_values() const = 0;
-    virtual std::vector<int> get_state_values(const GlobalState &global_state) const = 0;
+    /*
+      Convert state values from an ancestor task A (ancestor) into
+      state values from this task, C (child). Task A has to be an
+      ancestor of C in the sense that C is the result of a sequence of
+      task transformations on A.
+      The values are converted in-place to avoid unnecessary copies. If a
+      subclass needs to create a new vector, e.g., because the size changes,
+      it should create the new vector in a local variable and then swap it with
+      the parameter.
+    */
+    virtual void convert_state_values(
+        std::vector<int> &values,
+        const AbstractTask *ancestor_task) const = 0;
 };
 
 const std::shared_ptr<AbstractTask> get_task_from_options(
