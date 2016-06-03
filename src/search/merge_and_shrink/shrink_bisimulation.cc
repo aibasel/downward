@@ -84,7 +84,7 @@ struct Signature {
 
 
 ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
-    : ShrinkStrategy(opts),
+    : ShrinkStrategy(),
       greedy(opts.get<bool>("greedy")),
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
@@ -161,12 +161,15 @@ void ShrinkBisimulation::compute_signatures(
       groups by smallest label number), then the following configuration
       gives a different result on parcprinter-08-strips:p06.pddl:
       astar(merge_and_shrink(merge_strategy=merge_dfp,
-            shrink_strategy=shrink_bisimulation(max_states=50000,threshold=1,greedy=false),
-            label_reduction=label_reduction(before_shrinking=true,before_merging=false)))
+            shrink_strategy=shrink_bisimulation(greedy=false),
+            label_reduction=label_reduction(before_shrinking=true,before_merging=false),
+            max_states=50000,threshold_before_merge=1))
 
       The same behavioral difference can be obtained even without modifying
       the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
-      Running the above config on those two revisions yields the same difference.
+      Running the above config (move max_states inside shrink_bisimulation,
+      move threshold_before_merge inside shrink_bisimulation and rename to
+      threshold) on those two revisions yields the same difference.
     */
     for (const GroupAndTransitions &gat : ts) {
         const LabelGroup &label_group = gat.label_group;
@@ -376,29 +379,27 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             "1983-1990",
             "2011"));
     parser.document_note(
-        "shrink_bisimulation(max_states=infinity, threshold=1, greedy=true)",
-        "Greedy bisimulation without size bound "
-        "(called M&S-gop in the IJCAI 2011 paper)."
-        "Combine this with the linear merge strategy "
-        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "shrink_bisimulation(greedy=true)",
+        "Combine this with the merge-and-shrink options max_states=infinity "
+        "and threshold_before_merge=1 and with the linear merge strategy "
+        "reverse_level to obtain the variant 'greedy bisimulation without size "
+        "limit', called M&S-gop in the IJCAI 2011 paper. "
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before shrinking (and no label reduction before "
         "merging).");
     parser.document_note(
-        "shrink_bisimulation(max_states=N, greedy=false)",
-        "Exact bisimulation with a size limit "
-        "(called DFP-bop in the IJCAI 2011 paper), "
-        "where N is a numerical parameter for which sensible values "
-        "include 1000, 10000, 50000, 100000 and 200000. "
-        "Combine this with the linear merge strategy "
-        "REVERSE_LEVEL to match the heuristic in the paper. "
+        "shrink_bisimulation(greedy=false)",
+        "Combine this with the merge-and-shrink option max_states=N (where N "
+        "is a numerical parameter for which sensible values include 1000, "
+        "10000, 50000, 100000 and 200000) and with the linear merge strategy "
+        "reverse_level to obtain the variant 'exact bisimulation with a size "
+        "limit', called DFP-bop in the IJCAI 2011 paper. "
         "When we last ran experiments on interaction of shrink strategies "
         "with label reduction, this strategy performed best when used with "
         "label reduction before shrinking (and no label reduction before "
         "merging).");
 
-    ShrinkStrategy::add_options_to_parser(parser);
     parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
 
     vector<string> at_limit;
@@ -412,8 +413,6 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 
     if (parser.help_mode())
         return nullptr;
-
-    ShrinkStrategy::handle_option_defaults(opts);
 
     if (parser.dry_run())
         return nullptr;

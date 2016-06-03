@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import errno
 import logging
 import os.path
 import subprocess
@@ -12,19 +13,19 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
+VALIDATE_MEMORY_LIMIT_IN_MB = 3072
 #TODO: We might want to turn translate into a module and call it with "python -m translate".
 REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
     REL_PREPROCESS_PATH = "preprocess"
     REL_SEARCH_PATH = "downward"
-    REL_VALIDATE_PATH = "validate"
+    VALIDATE = "validate"
 elif os.name == "nt":
     REL_PREPROCESS_PATH = "preprocess.exe"
     REL_SEARCH_PATH = "downward.exe"
-    REL_VALIDATE_PATH = "validate.exe"
+    VALIDATE = "validate.exe"
 else:
-    print("Unsupported OS: " + os.name)
-    sys.exit(1)
+    sys.exit("Unsupported OS: " + os.name)
 
 def get_executable(build, rel_path):
     # First, consider 'build' to be a path directly to the binaries.
@@ -158,25 +159,26 @@ def run_search(args):
 def run_validate(args):
     logging.info("Running validate.")
 
-    if args.validate_inputs is None:
-        num_files = len(args.filenames)
-        if num_files in [1, 2]:
-            if num_files == 1:
-                task, = args.filenames
-                domain = util.find_domain_filename(task)
-            elif num_files == 2:
-                domain, task = args.filenames
-            plan_files = list(PlanManager(args.plan_file).get_existing_plans())
-            args.validate_inputs = [domain, task] + plan_files
-        else:
-            raise ValueError("validate needs one or two PDDL input files.")
+    num_files = len(args.filenames)
+    if num_files == 1:
+        task, = args.filenames
+        domain = util.find_domain_filename(task)
+    elif num_files == 2:
+        domain, task = args.filenames
+    else:
+        raise ValueError("validate needs one or two PDDL input files.")
+
+    plan_files = list(PlanManager(args.plan_file).get_existing_plans())
+    validate_inputs = [domain, task] + plan_files
 
     print_component_settings(
-        "validate", args.validate_inputs, args.validate_options,
-        time_limit=None, memory_limit=None)
+        "validate", validate_inputs, [],
+        time_limit=None, memory_limit=VALIDATE_MEMORY_LIMIT_IN_MB)
 
-    validate = get_executable(args.build, REL_VALIDATE_PATH)
-    logging.info("validate executable: %s" % validate)
-
-    call_component(
-        validate, args.validate_options + args.validate_inputs)
+    try:
+        call_component(VALIDATE, validate_inputs)
+    except OSError as err:
+        if err.errno == errno.ENOENT:
+            sys.exit("Error: %s not found. Is it on the PATH?" % VALIDATE)
+        else:
+            raise
