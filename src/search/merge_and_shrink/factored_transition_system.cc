@@ -6,7 +6,6 @@
 #include "transition_system.h"
 
 #include "../utils/memory.h"
-#include "../utils/timer.h"
 
 #include <cassert>
 
@@ -115,14 +114,14 @@ bool FactoredTransitionSystem::apply_abstraction(
     assert(is_index_valid(index));
 
     vector<int> abstraction_mapping(
-        transition_systems[index]->get_size(), TransitionSystem::PRUNED_STATE);
+        transition_systems[index]->get_size(), PRUNED_STATE);
     for (size_t class_no = 0; class_no < state_equivalence_relation.size(); ++class_no) {
         const StateEquivalenceClass &state_equivalence_class =
             state_equivalence_relation[class_no];
         for (auto pos = state_equivalence_class.begin();
              pos != state_equivalence_class.end(); ++pos) {
             int state = *pos;
-            assert(abstraction_mapping[state] == TransitionSystem::PRUNED_STATE);
+            assert(abstraction_mapping[state] == PRUNED_STATE);
             abstraction_mapping[state] = class_no;
         }
     }
@@ -146,10 +145,8 @@ bool FactoredTransitionSystem::apply_abstraction(
 int FactoredTransitionSystem::merge(int index1, int index2) {
     assert(is_index_valid(index1));
     assert(is_index_valid(index2));
-    transition_systems.push_back(move(
-                                     TransitionSystem::merge(*labels,
-                                                             *transition_systems[index1],
-                                                             *transition_systems[index2])));
+    transition_systems.push_back(TransitionSystem::merge(
+                                     *labels, *transition_systems[index1], *transition_systems[index2]));
     distances[index1] = nullptr;
     distances[index2] = nullptr;
     transition_systems[index1] = nullptr;
@@ -209,32 +206,19 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
     assert(distances[final_index]->are_distances_computed());
     int abs_state = heuristic_representations[final_index]->get_abstract_state(state);
 
-    if (abs_state == TransitionSystem::PRUNED_STATE)
+    if (abs_state == PRUNED_STATE)
         return -1;
     int cost = distances[final_index]->get_goal_distance(abs_state);
     assert(cost != INF);
     return cost;
 }
 
-void FactoredTransitionSystem::statistics(int index,
-                                          const utils::Timer &timer) const {
+void FactoredTransitionSystem::statistics(int index) const {
     assert(is_index_valid(index));
     const TransitionSystem &ts = *transition_systems[index];
     ts.statistics();
-    // TODO: Turn the following block into Distances::statistics()?
-    cout << ts.tag();
     const Distances &dist = *distances[index];
-    if (!dist.are_distances_computed()) {
-        cout << "distances not computed";
-    } else if (is_solvable()) {
-        cout << "init h=" << dist.get_goal_distance(ts.get_init_state())
-             << ", max f=" << dist.get_max_f()
-             << ", max g=" << dist.get_max_g()
-             << ", max h=" << dist.get_max_h();
-    } else {
-        cout << "transition system is unsolvable";
-    }
-    cout << " [t=" << timer << "]" << endl;
+    dist.statistics();
 }
 
 void FactoredTransitionSystem::dump(int index) const {

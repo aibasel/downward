@@ -9,8 +9,8 @@
 #include <typeindex>
 #include <vector>
 
+namespace options {
 class OptionParser;
-
 
 //a registry<T> maps a string to a T-factory
 template<typename T>
@@ -54,7 +54,7 @@ private:
 
 /*
   The plugin type info class contains meta-information for a given
-  type of plugins (e.g. "SearchEngine" or "MergeStrategy").
+  type of plugins (e.g. "SearchEngine" or "MergeStrategyFactory").
 */
 class PluginTypeInfo {
     std::type_index type;
@@ -136,5 +136,6 @@ public:
         return registry.cend();
     }
 };
+}
 
 #endif

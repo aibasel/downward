@@ -6,11 +6,8 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-#include "../task_proxy.h"
-
-#include "../utils/markup.h"
+#include "../utils/rng.h"
+#include "../utils/rng_options.h"
 
 #include <algorithm>
 #include <cassert>
@@ -19,40 +16,26 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeDFP::MergeDFP()
-    : MergeStrategy() {
+MergeDFP::MergeDFP(FactoredTransitionSystem &fts, vector<int> transition_system_order)
+    : MergeStrategy(fts), transition_system_order(move(transition_system_order)) {
 }
 
-void MergeDFP::initialize(const shared_ptr<AbstractTask> task) {
-    MergeStrategy::initialize(task);
-    TaskProxy task_proxy(*task);
-    int num_variables = task_proxy.get_variables().size();
-    int max_transition_system_count = num_variables * 2 - 1;
-    transition_system_order.reserve(max_transition_system_count);
-    /*
-      Precompute the order in which we consider transition systems:
-      first consider the non-atomic transition systems, going from the most
-      recent to the oldest one (located at index num_variables). Afterwards,
-      consider the atomic transition systems in the "regular" order, i.e.
-      in the Fast Downward order of variables.
-    */
-    for (int i = max_transition_system_count - 1; i >= 0; --i) {
-        int corrected_index = i;
-        if (i < num_variables) {
-            corrected_index = num_variables - 1 - i;
+bool MergeDFP::is_goal_relevant(const TransitionSystem &ts) const {
+    int num_states = ts.get_size();
+    for (int state = 0; state < num_states; ++state) {
+        if (!ts.is_goal_state(state)) {
+            return true;
         }
-        transition_system_order.push_back(corrected_index);
     }
+    return false;
 }
 
-void MergeDFP::compute_label_ranks(FactoredTransitionSystem &fts,
-                                   int index,
-                                   vector<int> &label_ranks) const {
+vector<int> MergeDFP::compute_label_ranks(int index) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     int num_labels = fts.get_num_labels();
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
-    label_ranks.resize(num_labels, -1);
+    vector<int> label_ranks(num_labels, -1);
 
     for (const GroupAndTransitions &gat : ts) {
         const LabelGroup &label_group = gat.label_group;
@@ -86,26 +69,18 @@ void MergeDFP::compute_label_ranks(FactoredTransitionSystem &fts,
             label_ranks[label_no] = label_rank;
         }
     }
+
+    return label_ranks;
 }
 
-pair<int, int> MergeDFP::get_next(FactoredTransitionSystem &fts) {
-    assert(initialized());
-    assert(!done());
-
-    /*
-      Precompute a vector sorted_active_ts_indices which contains all exisiting
-      transition systems in the given order and compute label ranks.
-    */
-    assert(!transition_system_order.empty());
-    vector<int> sorted_active_ts_indices;
-    vector<vector<int>> transition_system_label_ranks;
-    for (size_t tso_index = 0; tso_index < transition_system_order.size(); ++tso_index) {
-        int ts_index = transition_system_order[tso_index];
-        if (fts.is_active(ts_index)) {
-            sorted_active_ts_indices.push_back(ts_index);
-            transition_system_label_ranks.push_back(vector<int>());
-            vector<int> &label_ranks = transition_system_label_ranks.back();
-            compute_label_ranks(fts, ts_index, label_ranks);
+pair<int, int> MergeDFP::compute_next_pair(
+    const vector<int> &sorted_active_ts_indices) const {
+    vector<bool> goal_relevant(sorted_active_ts_indices.size(), false);
+    for (size_t i = 0; i < sorted_active_ts_indices.size(); ++i) {
+        int ts_index = sorted_active_ts_indices[i];
+        const TransitionSystem &ts = fts.get_ts(ts_index);
+        if (is_goal_relevant(ts)) {
+            goal_relevant[i] = true;
         }
     }
 
@@ -114,16 +89,19 @@ pair<int, int> MergeDFP::get_next(FactoredTransitionSystem &fts) {
     int first_valid_pair_index1 = -1;
     int first_valid_pair_index2 = -1;
     int minimum_weight = INF;
+    vector<vector<int>> transition_system_label_ranks(sorted_active_ts_indices.size());
     // Go over all pairs of transition systems and compute their weight.
     for (size_t i = 0; i < sorted_active_ts_indices.size(); ++i) {
         int ts_index1 = sorted_active_ts_indices[i];
-        const vector<int> &label_ranks1 = transition_system_label_ranks[i];
-        assert(!label_ranks1.empty());
+        assert(fts.is_active(ts_index1));
+        vector<int> &label_ranks1 = transition_system_label_ranks[i];
+        if (label_ranks1.empty()) {
+            label_ranks1 = compute_label_ranks(ts_index1);
+        }
         for (size_t j = i + 1; j < sorted_active_ts_indices.size(); ++j) {
             int ts_index2 = sorted_active_ts_indices[j];
-
-            if (fts.get_ts(ts_index1).is_goal_relevant()
-                || fts.get_ts(ts_index2).is_goal_relevant()) {
+            assert(fts.is_active(ts_index2));
+            if (goal_relevant[i] || goal_relevant[j]) {
                 // Only consider pairs where at least one component is goal relevant.
 
                 // TODO: the 'old' code that took the 'first' pair in case of
@@ -138,7 +116,9 @@ pair<int, int> MergeDFP::get_next(FactoredTransitionSystem &fts) {
 
                 // Compute the weight associated with this pair
                 vector<int> &label_ranks2 = transition_system_label_ranks[j];
-                assert(!label_ranks2.empty());
+                if (label_ranks2.empty()) {
+                    label_ranks2 = compute_label_ranks(ts_index2);
+                }
                 assert(label_ranks1.size() == label_ranks2.size());
                 int pair_weight = INF;
                 for (size_t k = 0; k < label_ranks1.size(); ++k) {
@@ -164,51 +144,46 @@ pair<int, int> MergeDFP::get_next(FactoredTransitionSystem &fts) {
 
           No pair with finite weight has been found. In this case, we simply
           take the first pair according to our ordering consisting of at
-          least one goal relevant transition system. (We computed that in the
-          loop before.)
+          least one goal relevant transition system which we compute in the
+          loop before. There always exists such a pair assuming that the
+          global goal specification is non-empty.
+
+          TODO: exception! with the definition of goal relevance w.r.t.
+          existence of a non-goal state, there might be no such pair!
         */
         assert(next_index2 == -1);
         assert(minimum_weight == INF);
-        assert(first_valid_pair_index1 != -1);
-        assert(first_valid_pair_index2 != -1);
-        next_index1 = first_valid_pair_index1;
-        next_index2 = first_valid_pair_index2;
+        if (first_valid_pair_index1 == -1) {
+            assert(first_valid_pair_index2 == -1);
+            next_index1 = sorted_active_ts_indices[0];
+            next_index2 = sorted_active_ts_indices[1];
+            cout << "found no goal relevant pair" << endl;
+        } else {
+            assert(first_valid_pair_index2 != -1);
+            next_index1 = first_valid_pair_index1;
+            next_index2 = first_valid_pair_index2;
+        }
     }
 
-    /*
-      There always exists at least one goal relevant transition system,
-      assuming that the global goal specification is non-empty. Hence at
-      this point, we must have found a pair of transition systems to merge.
-    */
     assert(next_index1 != -1);
     assert(next_index2 != -1);
-    --remaining_merges;
     return make_pair(next_index1, next_index2);
 }
 
-string MergeDFP::name() const {
-    return "dfp";
-}
+pair<int, int> MergeDFP::get_next() {
+    /*
+      Precompute a vector sorted_active_ts_indices which contains all active
+      transition system indices in the correct order.
+    */
+    assert(!transition_system_order.empty());
+    vector<int> sorted_active_ts_indices;
+    for (int ts_index : transition_system_order) {
+        if (fts.is_active(ts_index)) {
+            sorted_active_ts_indices.push_back(ts_index);
+        }
+    }
 
-static shared_ptr<MergeStrategy>_parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Merge strategy DFP",
-        "This merge strategy implements the algorithm originally described in the "
-        "paper \"Directed model checking with distance-preserving abstractions\" "
-        "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-        "the following paper:" + utils::format_paper_reference(
-            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
-            "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "http://ai.cs.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
-            "Proceedings of the 28th AAAI Conference on Artificial"
-            " Intelligence (AAAI 2014)",
-            "2358-2366",
-            "AAAI Press 2014"));
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeDFP>();
+    pair<int, int> next_merge = compute_next_pair(sorted_active_ts_indices);
+    return next_merge;
 }
-
-static PluginShared<MergeStrategy> _plugin("merge_dfp", _parse);
 }

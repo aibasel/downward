@@ -11,9 +11,12 @@
 
 class GlobalOperator;
 class GlobalState;
+class TaskProxy;
+
+namespace options {
 class OptionParser;
 class Options;
-class TaskProxy;
+}
 
 class Heuristic : public ScalarEvaluator {
     struct HEntry {
@@ -65,11 +68,12 @@ protected:
     void set_preferred(OperatorProxy op);
     // TODO: Remove once all heuristics use the TaskProxy class.
     int get_adjusted_cost(const GlobalOperator &op) const;
-    // TODO: Make private once all heuristics use the TaskProxy class.
+    /* TODO: Make private and use State instead of GlobalState once all
+       heuristics use the TaskProxy class. */
     State convert_global_state(const GlobalState &global_state) const;
 
 public:
-    Heuristic(const Options &options);
+    Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
     virtual void notify_initial_state(const GlobalState &/*initial_state*/) {
@@ -85,8 +89,8 @@ public:
 
     OperatorCost get_cost_type() const {return cost_type; }
 
-    static void add_options_to_parser(OptionParser &parser);
-    static Options default_options();
+    static void add_options_to_parser(options::OptionParser &parser);
+    static options::Options default_options();
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

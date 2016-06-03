@@ -6,9 +6,10 @@
 #include "global_state.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "root_task.h"
 #include "state_registry.h"
 #include "successor_generator.h"
+
+#include "tasks/root_task.h"
 
 #include "utils/logging.h"
 #include "utils/rng.h"
@@ -36,7 +37,7 @@ static const int PRE_FILE_VERSION = 3;
 //       are_mutex, which is at least better than exposing the data
 //       structure globally.)
 
-static vector<vector<set<pair<int, int>>>> g_inconsistent_facts;
+static vector<vector<set<Fact>>> g_inconsistent_facts;
 
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -159,21 +160,18 @@ void read_mutexes(istream &in) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
         in >> num_facts;
-        vector<pair<int, int>> invariant_group;
+        vector<Fact> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
-            int var, val;
-            in >> var >> val;
-            invariant_group.push_back(make_pair(var, val));
+            int var;
+            int value;
+            in >> var >> value;
+            invariant_group.emplace_back(var, value);
         }
         check_magic(in, "end_mutex_group");
-        for (size_t j = 0; j < invariant_group.size(); ++j) {
-            const pair<int, int> &fact1 = invariant_group[j];
-            int var1 = fact1.first, val1 = fact1.second;
-            for (size_t k = 0; k < invariant_group.size(); ++k) {
-                const pair<int, int> &fact2 = invariant_group[k];
-                int var2 = fact2.first;
-                if (var1 != var2) {
+        for (const Fact &fact1 : invariant_group) {
+            for (const Fact &fact2 : invariant_group) {
+                if (fact1.var != fact2.var) {
                     /* The "different variable" test makes sure we
                        don't mark a fact as mutex with itself
                        (important for correctness) and don't include
@@ -184,7 +182,7 @@ void read_mutexes(istream &in) {
                        groups which lead to *some* redundant mutexes,
                        where some but not all facts talk about the
                        same variable. */
-                    g_inconsistent_facts[var1][val1].insert(fact2);
+                    g_inconsistent_facts[fact1.var][fact1.value].insert(fact2);
                 }
             }
         }
@@ -350,17 +348,24 @@ void verify_no_axioms_no_conditional_effects() {
     verify_no_conditional_effects();
 }
 
-bool are_mutex(const pair<int, int> &a, const pair<int, int> &b) {
-    if (a.first == b.first) {
+bool are_mutex(const Fact &a, const Fact &b) {
+    if (a.var == b.var) {
         // Same variable: mutex iff different value.
-        return a.second != b.second;
+        return a.value != b.value;
     }
-    return bool(g_inconsistent_facts[a.first][a.second].count(b));
+    return bool(g_inconsistent_facts[a.var][a.value].count(b));
 }
 
 const shared_ptr<AbstractTask> g_root_task() {
-    static shared_ptr<AbstractTask> root_task = make_shared<RootTask>();
+    static shared_ptr<AbstractTask> root_task = make_shared<tasks::RootTask>();
     return root_task;
+}
+
+shared_ptr<utils::RandomNumberGenerator> g_rng() {
+    // Use an arbitrary default seed.
+    static shared_ptr<utils::RandomNumberGenerator> rng =
+        make_shared<utils::RandomNumberGenerator>(2011);
+    return rng;
 }
 
 bool g_use_metric;
@@ -382,6 +387,5 @@ SuccessorGenerator *g_successor_generator;
 string g_plan_filename = "sas_plan";
 int g_num_previously_generated_plans = 0;
 bool g_is_part_of_anytime_portfolio = false;
-utils::RandomNumberGenerator g_rng(2011); // Use an arbitrary default seed.
 
 utils::Log g_log;

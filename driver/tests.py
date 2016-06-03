@@ -19,7 +19,7 @@ from .util import REPO_ROOT_DIR, find_domain_filename
 def preprocess():
     """Create preprocessed task."""
     cmd = ["./fast-downward.py", "--translate", "--preprocess",
-           "benchmarks/gripper/prob01.pddl"]
+           "misc/tests/benchmarks/gripper/prob01.pddl"]
     assert subprocess.check_call(cmd, cwd=REPO_ROOT_DIR) == 0
 
 

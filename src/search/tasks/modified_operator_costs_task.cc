@@ -5,7 +5,7 @@
 using namespace std;
 
 
-namespace ExtraTasks {
+namespace extra_tasks {
 ModifiedOperatorCostsTask::ModifiedOperatorCostsTask(
     const std::shared_ptr<AbstractTask> parent,
     std::vector<int> &&costs)

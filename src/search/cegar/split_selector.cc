@@ -1,6 +1,7 @@
 #include "split_selector.h"
 
 #include "abstract_state.h"
+#include "utils.h"
 
 #include "../globals.h"
 
@@ -46,9 +47,6 @@ double SplitSelector::get_refinedness(const AbstractState &state, int var_id) co
     double remaining_values = state.count(var_id);
     assert(2 <= remaining_values && remaining_values <= all_values);
     double refinedness = -(remaining_values / all_values);
-    /* TODO: Scale result such that "0.0 refinedness" means "not refined"
-       (i.e., never split before) while "1.0 refinedness" means "completely
-       refined" (i.e., only one value left after this split). */
     assert(-1.0 <= refinedness && refinedness < 0.0);
     return refinedness;
 }
@@ -121,7 +119,7 @@ const Split &SplitSelector::pick_split(const AbstractState &state,
     }
 
     if (pick == PickSplit::RANDOM) {
-        return *g_rng.choose(splits);
+        return *g_rng()->choose(splits);
     }
 
     double max_rating = numeric_limits<double>::lowest();

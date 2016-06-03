@@ -91,7 +91,7 @@ public:
 
     Node *get_child(int value) const;
 
-    void increase_h_value(int new_h) {
+    void increase_h_value_to(int new_h) {
         assert(new_h >= h);
         h = new_h;
     }

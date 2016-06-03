@@ -4,7 +4,9 @@
 #include "../option_parser_util.h"
 #include "../search_engine.h"
 
+namespace options {
 class Options;
+}
 
 namespace iterated_search {
 class IteratedSearch : public SearchEngine {

@@ -7,4 +7,11 @@
 #include "options/option_parser.h"
 #include "options/synergy.h"
 
+using options::ArgError;
+using options::Bounds;
+using options::OptionParser;
+using options::Options;
+using options::ParseError;
+using options::Synergy;
+
 #endif

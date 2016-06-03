@@ -30,13 +30,11 @@ import logging
 import os
 import shutil
 
-from lab.fetcher import Fetcher
 from lab.steps import Step
 from lab.experiment import ARGPARSER
 
-from downward.experiments import DownwardExperiment
-from downward.checkouts import Translator, Preprocessor, Planner
-from downward import checkouts
+from downward import cached_revision
+from downward.experiment import FastDownwardExperiment
 from downward.reports.absolute import AbsoluteReport
 
 from regression_test import Check, RegressionCheckReport
@@ -44,11 +42,11 @@ from regression_test import Check, RegressionCheckReport
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(DIR, '../../'))
+BENCHMARKS_DIR = os.path.join(REPO, "misc", "tests", "benchmarks")
 EXPERIMENTS_DIR = os.path.expanduser('~/experiments')
+CACHE_DIR = os.path.expanduser('~/lab')
 
-BASELINE = checkouts.get_global_rev(REPO, 'eb9f8c86918f')
-if not BASELINE:
-    logging.critical('Baseline not set or not found in repo.')
+BASELINE = cached_revision.get_global_rev(REPO, rev='eb9f8c86918f')
 CONFIGS = {}
 CONFIGS['nightly'] = [
     ('lmcut', ['--search', 'astar(lmcut())']),
@@ -56,28 +54,15 @@ CONFIGS['nightly'] = [
     ('lazy-greedy-cea', ['--heuristic', 'h=cea()', '--search', 'lazy_greedy(h, preferred=h)']),
     ('lazy-greedy-ff-cea', ['--heuristic', 'hff=ff()', '--heuristic',  'hcea=cea()',
                             '--search', 'lazy_greedy([hff, hcea], preferred=[hff, hcea])']),
-    ('lama-2011', ['ipc', 'seq-sat-lama-2011']),
     ('blind', ['--search', 'astar(blind())']),
-    ('merge-and-shrink-bisim', ['--search',
-        'astar(merge_and_shrink('
-             'merge_strategy=merge_dfp,'
-             'shrink_strategy=shrink_bisimulation('
-                 'max_states=50000,'
-                 'threshold=1,'
-                 'greedy=false),'
-             'label_reduction=exact('
-                 'before_shrinking=true,'
-                 'before_merging=false)'
-         '))']),
     ('lmcount-optimal', ['--search',
         'astar(lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true,optimal=true,lpsolver=CPLEX))']),
 ]
 CONFIGS['weekly'] = CONFIGS['nightly']
 
 SUITES = {
-    'nightly': ['gripper:prob01.pddl', 'blocks:probBLOCKS-4-1.pddl'],
-    'weekly': ['gripper:prob01.pddl', 'gripper:prob02.pddl',
-               'blocks:probBLOCKS-4-1.pddl', 'blocks:probBLOCKS-4-2.pddl'],
+    'nightly': ['gripper:prob01.pddl', 'miconic:s1-0.pddl'],
+    'weekly': ['gripper:prob01.pddl', 'miconic:s1-0.pddl'],
 }
 
 TRANSLATOR_ATTRIBUTES = [
@@ -116,8 +101,8 @@ ABSOLUTE_ATTRIBUTES = [check.attribute for check in RELATIVE_CHECKS]
 
 def parse_custom_args():
     ARGPARSER.description = USAGE
-    ARGPARSER.add_argument('--rev', dest='revision',
-        help='Fast Downward revision or "baseline". If omitted use current revision.')
+    ARGPARSER.add_argument('--rev', dest='revision', default='default',
+        help='Fast Downward revision or "baseline".')
     ARGPARSER.add_argument('--test', choices=['nightly', 'weekly'], default='nightly',
         help='Select whether "nightly" or "weekly" tests should be run.')
     return ARGPARSER.parse_args()
@@ -128,43 +113,38 @@ def get_exp_dir(name, test):
 def main():
     args = parse_custom_args()
 
-    if not args.revision:
-        rev = 'WORK'
-        name = 'current'
-    elif args.revision.lower() == 'baseline':
+    if args.revision.lower() == 'baseline':
         rev = BASELINE
         name = 'baseline'
     else:
-        rev = checkouts.get_global_rev(REPO, args.revision)
+        rev = args.revision
         name = rev
 
-    combo = [(Translator(REPO, rev=rev), Preprocessor(REPO, rev=rev), Planner(REPO, rev=rev))]
-
-    exp = DownwardExperiment(path=get_exp_dir(name, args.test), repo=REPO, combinations=combo)
-    exp.add_suite(SUITES[args.test])
-    for nick, config in CONFIGS[args.test]:
-        exp.add_config(nick, config)
+    exp = FastDownwardExperiment(path=get_exp_dir(name, args.test), cache_dir=CACHE_DIR)
+    exp.add_suite(BENCHMARKS_DIR, SUITES[args.test])
+    for config_nick, config in CONFIGS[args.test]:
+        exp.add_algorithm(rev + "-" + config_nick, REPO, rev, config)
     exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='report')
 
     # Only compare results if we are not running the baseline experiment.
     if rev != BASELINE:
-        dirty_paths = [path for path in [exp.preprocess_exp_path, exp.path, exp.eval_dir]
-                       if os.path.exists(path)]
+        dirty_paths = [
+            path for path in [exp.path, exp.eval_dir]
+            if os.path.exists(path)]
         if dirty_paths:
             logging.critical(
                 'The last run found a regression. Please inspect what '
                 'went wrong and then delete the following directories '
                 'manually: %s' % dirty_paths)
-        exp.add_step(Step('fetch-baseline-results', Fetcher(),
-                          get_exp_dir('baseline', args.test) + '-eval',
-                          exp.eval_dir))
+        exp.add_fetcher(
+            src=get_exp_dir('baseline', args.test) + '-eval',
+            dest=exp.eval_dir,
+            name='fetch-baseline-results')
         exp.add_report(AbsoluteReport(attributes=ABSOLUTE_ATTRIBUTES), name='comparison')
-        exp.add_report(RegressionCheckReport(BASELINE, RELATIVE_CHECKS),
-                       name='regression-check')
+        exp.add_report(
+            RegressionCheckReport(BASELINE, RELATIVE_CHECKS), name='regression-check')
         # We abort if there is a regression and keep the directories.
-        exp.add_step(Step('rm-preprocess-dir', shutil.rmtree, exp.preprocess_exp_path))
         exp.add_step(Step('rm-exp-dir', shutil.rmtree, exp.path))
-        exp.add_step(Step('rm-preprocessed-tasks', shutil.rmtree, exp.preprocessed_tasks_dir))
         exp.add_step(Step('rm-eval-dir', shutil.rmtree, exp.eval_dir))
 
     exp()

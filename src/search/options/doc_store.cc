@@ -4,7 +4,7 @@
 
 using namespace std;
 
-
+namespace options {
 void DocStore::register_object(string k, string type) {
     transform(k.begin(), k.end(), k.begin(), ::tolower); //k to lowercase
     registered[k] = DocStruct();
@@ -95,4 +95,5 @@ vector<string> DocStore::get_types() {
         }
     }
     return types;
+}
 }
