@@ -70,5 +70,4 @@ void DomainAbstractedTask::convert_state_values_from_parent(
         values[var] = new_value;
     }
 }
-
 }
