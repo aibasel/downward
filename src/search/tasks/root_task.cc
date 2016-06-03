@@ -110,7 +110,7 @@ vector<int> RootTask::get_initial_state_values() const {
     StateRegistry state_registry(*g_state_packer,
                                  *g_axiom_evaluator,
                                  g_initial_state_data);
-    return get_state_values(state_registry.get_initial_state());
+    return state_registry.get_initial_state().get_values();
 }
 
 void RootTask::convert_state_values(
