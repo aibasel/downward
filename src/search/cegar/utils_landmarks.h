@@ -1,18 +1,17 @@
 #ifndef CEGAR_UTILS_LANDMARKS_H
 #define CEGAR_UTILS_LANDMARKS_H
 
-#include "utils.h"
-
 #include <memory>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+struct Fact;
+
 namespace landmarks {
 class LandmarkGraph;
 }
 
-// TODO: Move into "landmarks" namespace and directory?
 namespace cegar {
 using VarToValues = std::unordered_map<int, std::vector<int>>;
 

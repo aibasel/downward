@@ -7,7 +7,7 @@
 #include <string>
 #include <typeinfo>
 
-
+namespace options {
 /*
   The following function is not meant for users, but only for the
   plugin implementation. We only declare it here because the template
@@ -56,5 +56,6 @@ public:
     ~PluginShared() = default;
     PluginShared(const PluginShared<T> &other) = delete;
 };
+}
 
 #endif

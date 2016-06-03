@@ -3,10 +3,11 @@
 
 #include "predefinitions.h"
 
-class OptionParser;
-
 class Heuristic;
 class ScalarEvaluator;
+
+namespace options {
+class OptionParser;
 
 /*
   TokenParser<T> wraps functions to parse supported types T.
@@ -202,6 +203,7 @@ inline std::vector<T> TokenParser<std::vector<T>>::parse(OptionParser &p) {
         }
     }
     return results;
+}
 }
 
 #endif

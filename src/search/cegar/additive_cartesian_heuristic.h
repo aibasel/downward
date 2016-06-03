@@ -5,6 +5,8 @@
 
 #include "../heuristic.h"
 
+#include "../utils/countdown_timer.h"
+
 #include <memory>
 #include <vector>
 
@@ -14,9 +16,9 @@
   AdditiveCartesianHeuristic
     Get subtasks from SubtaskGenerators, adjust their costs by wrapping
     them in ModifiedOperatorCostsTasks, compute Abstractions, move
-    RefinementHierarchies from Abstractions to CartesianHeuristics,
-    store CartesianHeuristics and compute overall heuristic by adding
-    heuristic values of all CartesianHeuristics.
+    RefinementHierarchies from Abstractions to CartesianHeuristicFunctions,
+    store CartesianHeuristicFunctions and compute overall heuristic by adding
+    heuristic values of all CartesianHeuristicFunctions.
 
     SubtaskGenerator
       Create focused subtasks. TaskDuplicator returns copies of the
@@ -54,12 +56,8 @@
       Contains helper nodes for splits that split off multiple facts.
 */
 
-namespace utils {
-class CountdownTimer;
-}
-
 namespace cegar {
-class CartesianHeuristic;
+class CartesianHeuristicFunction;
 class SubtaskGenerator;
 
 /*
@@ -70,16 +68,16 @@ class SubtaskGenerator;
 class AdditiveCartesianHeuristic : public Heuristic {
     std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators;
     const int max_states;
-    std::unique_ptr<utils::CountdownTimer> timer;
+    utils::CountdownTimer timer;
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
-    // TODO: Store split trees or thin wrappers directly.
-    std::vector<std::unique_ptr<CartesianHeuristic>> heuristics;
+    std::vector<std::unique_ptr<CartesianHeuristicFunction>> heuristic_functions;
     int num_abstractions;
     int num_states;
+    State initial_state;
 
-    void reduce_remaining_costs(const std::vector<int> &needed_costs);
+    void reduce_remaining_costs(const std::vector<int> &saturated_costs);
     std::shared_ptr<AbstractTask> get_remaining_costs_task(
         std::shared_ptr<AbstractTask> &parent) const;
     bool may_build_another_abstraction();
@@ -90,9 +88,10 @@ class AdditiveCartesianHeuristic : public Heuristic {
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
+    int compute_heuristic(const State &state);
 
 public:
-    explicit AdditiveCartesianHeuristic(const Options &options);
+    explicit AdditiveCartesianHeuristic(const options::Options &options);
     ~AdditiveCartesianHeuristic() = default;
 };
 }

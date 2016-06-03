@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+namespace options {
 static bool is_call(string s) {
     return s.find("(") != string::npos;
 }
@@ -230,4 +230,5 @@ void PlainPrinter::print_category_header(string category_name) {
 
 void PlainPrinter::print_category_footer() {
     os << endl;
+}
 }

@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace cegar {
-using Bitset = Utils::DynamicBitset<unsigned short>;
+using Bitset = utils::DynamicBitset<unsigned short>;
 
 /*
   For each variable store a subset of values.

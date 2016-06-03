@@ -318,4 +318,19 @@ void Distances::dump() const {
     }
     cout << endl;
 }
+
+void Distances::statistics() const {
+    cout << transition_system.tag();
+    if (!are_distances_computed()) {
+        cout << "distances not computed";
+    } else if (transition_system.is_solvable()) {
+        cout << "init h=" << get_goal_distance(transition_system.get_init_state())
+             << ", max f=" << get_max_f()
+             << ", max g=" << get_max_g()
+             << ", max h=" << get_max_h();
+    } else {
+        cout << "transition system is unsolvable";
+    }
+    cout << endl;
+}
 }

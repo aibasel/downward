@@ -46,6 +46,8 @@ public:
 
     int operator[](int var) const;
 
+    std::vector<int> get_values() const;
+
     void dump_pddl() const;
     void dump_fdr() const;
 };

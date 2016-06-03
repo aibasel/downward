@@ -71,7 +71,7 @@ VarToValues get_prev_landmarks(const LandmarkGraph &graph, const Fact &fact) {
             continue;
         closed.insert(ancestor);
         Fact ancestor_fact = get_fact(*ancestor);
-        groups[ancestor_fact.first].push_back(ancestor_fact.second);
+        groups[ancestor_fact.var].push_back(ancestor_fact.value);
         for (const auto &parent_and_edge : ancestor->parents) {
             const LandmarkNode *parent = parent_and_edge.first;
             open.push_back(parent);

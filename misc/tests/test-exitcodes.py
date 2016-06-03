@@ -8,7 +8,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_BASE = os.path.dirname(os.path.dirname(DIR))
-BENCHMARKS_DIR = os.path.join(REPO_BASE, "benchmarks")
+BENCHMARKS_DIR = os.path.join(REPO_BASE, "misc", "tests", "benchmarks")
 DRIVER = os.path.join(REPO_BASE, "fast-downward.py")
 
 TASKS = {
@@ -26,13 +26,11 @@ EXIT_UNSOLVED_INCOMPLETE = 5
 
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'merge_strategy=merge_dfp,'
-        'shrink_strategy=shrink_bisimulation('
-         'max_states=50000,'
-        'threshold=1,'
-        'greedy=false),'
+    'shrink_strategy=shrink_bisimulation(greedy=false),'
     'label_reduction=exact('
         'before_shrinking=true,'
-        'before_merging=false)'
+        'before_merging=false),'
+    'max_states=50000,threshold_before_merge=1'
 '))')
 
 TESTS = [
@@ -78,7 +76,7 @@ TESTS = [
 
 
 def run_plan_script(task_type, relpath, search):
-    problem = os.path.join(REPO_BASE, "benchmarks", relpath)
+    problem = os.path.join(BENCHMARKS_DIR, relpath)
     print("\nRun %(search)s on %(task_type)s task:" % locals())
     sys.stdout.flush()
     return subprocess.call(

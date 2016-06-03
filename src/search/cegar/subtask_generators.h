@@ -1,18 +1,20 @@
 #ifndef CEGAR_SUBTASK_GENERATORS_H
 #define CEGAR_SUBTASK_GENERATORS_H
 
-#include "utils.h"  // TODO: Remove once Fact typedef no longer needed.
-
 #include <memory>
 #include <utility>
 #include <vector>
 
 class AbstractTask;
-class Options;
+struct Fact;
 class TaskProxy;
 
 namespace landmarks {
 class LandmarkGraph;
+}
+
+namespace options {
+class Options;
 }
 
 namespace cegar {
@@ -38,7 +40,7 @@ class TaskDuplicator : public SubtaskGenerator {
     int num_copies;
 
 public:
-    explicit TaskDuplicator(const Options &options);
+    explicit TaskDuplicator(const options::Options &options);
     virtual ~TaskDuplicator() = default;
 
     virtual SharedTasks get_subtasks(
@@ -52,7 +54,7 @@ class GoalDecomposition : public SubtaskGenerator {
     Facts get_goal_facts(const TaskProxy &task_proxy) const;
 
 public:
-    explicit GoalDecomposition(const Options &options);
+    explicit GoalDecomposition(const options::Options &options);
     virtual ~GoalDecomposition() = default;
 
     virtual SharedTasks get_subtasks(
@@ -71,8 +73,8 @@ class LandmarkDecomposition : public SubtaskGenerator {
         std::shared_ptr<AbstractTask> &parent, Fact fact) const;
 
 public:
-    explicit LandmarkDecomposition(const Options &opts);
-    virtual ~LandmarkDecomposition() = default;
+    explicit LandmarkDecomposition(const options::Options &opts);
+    virtual ~LandmarkDecomposition();
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;

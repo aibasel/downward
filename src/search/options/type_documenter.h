@@ -7,7 +7,7 @@
 #include <string>
 #include <typeindex>
 
-
+namespace options {
 /*
   TypeDocumenter prints out the documentation synopsis for plug-in types.
 
@@ -45,5 +45,6 @@ struct TypeDocumenter<T *> {
         return TypeDocumenter<std::shared_ptr<T>>::synopsis();
     }
 };
+}
 
 #endif

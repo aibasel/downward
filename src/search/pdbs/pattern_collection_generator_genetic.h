@@ -8,7 +8,10 @@
 #include <vector>
 
 class AbstractTask;
+
+namespace options {
 class Options;
+}
 
 namespace pdbs {
 /*
@@ -104,7 +107,7 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     */
     void genetic_algorithm(std::shared_ptr<AbstractTask> task);
 public:
-    PatternCollectionGeneratorGenetic(const Options &opts);
+    PatternCollectionGeneratorGenetic(const options::Options &opts);
     virtual ~PatternCollectionGeneratorGenetic() = default;
 
     virtual PatternCollectionInformation generate(

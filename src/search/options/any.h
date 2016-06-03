@@ -19,6 +19,7 @@
   These features can be added if needed (see boost::any).
 */
 
+namespace options {
 class Any {
     class Placeholder {
 public:
@@ -121,6 +122,7 @@ ValueType any_cast(Any &operand) {
 template<typename ValueType>
 inline ValueType any_cast(const Any &operand) {
     return any_cast<const ValueType>(const_cast<Any &>(operand));
+}
 }
 
 /*

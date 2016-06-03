@@ -1,11 +1,19 @@
 #ifndef MERGE_AND_SHRINK_LABEL_REDUCTION_H
 #define MERGE_AND_SHRINK_LABEL_REDUCTION_H
 
+#include <memory>
 #include <vector>
 
 class EquivalenceRelation;
-class Options;
 class TaskProxy;
+
+namespace options {
+class Options;
+}
+
+namespace utils {
+class RandomNumberGenerator;
+}
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
@@ -47,6 +55,7 @@ class LabelReduction {
     };
     LabelReductionMethod lr_method;
     LabelReductionSystemOrder lr_system_order;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     bool initialized() const;
     // Apply the given label equivalence relation to the set of labels and compute
@@ -59,9 +68,9 @@ class LabelReduction {
         int ts_index,
         const FactoredTransitionSystem &fts) const;
 public:
-    explicit LabelReduction(const Options &options);
+    explicit LabelReduction(const options::Options &options);
     void initialize(const TaskProxy &task_proxy);
-    void reduce(std::pair<int, int> next_merge,
+    bool reduce(std::pair<int, int> next_merge,
                 FactoredTransitionSystem &fts);
     void dump_options() const;
     bool reduce_before_shrinking() const {

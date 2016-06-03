@@ -3,7 +3,9 @@
 
 #include "shrink_strategy.h"
 
+namespace options {
 class Options;
+}
 
 namespace merge_and_shrink {
 struct Signature;
@@ -38,7 +40,7 @@ protected:
     virtual void dump_strategy_specific_options() const override;
     virtual std::string name() const override;
 public:
-    explicit ShrinkBisimulation(const Options &opts);
+    explicit ShrinkBisimulation(const options::Options &opts);
     virtual ~ShrinkBisimulation() override;
 };
 }

@@ -49,7 +49,7 @@ vector<State> sample_states_with_random_walks(
         // Calculate length of random walk according to a binomial distribution.
         int length = 0;
         for (int j = 0; j < n; ++j) {
-            double random = g_rng(); // [0..1)
+            double random = (*g_rng())(); // [0..1)
             if (random < p)
                 ++length;
         }
@@ -65,7 +65,7 @@ vector<State> sample_states_with_random_walks(
             if (applicable_ops.empty()) {
                 break;
             } else {
-                const OperatorProxy &random_op = *g_rng.choose(applicable_ops);
+                const OperatorProxy &random_op = *g_rng()->choose(applicable_ops);
                 assert(is_applicable(random_op, current_state));
                 current_state = current_state.get_successor(random_op);
                 /* If current state is a dead end, then restart the random walk

@@ -1,6 +1,5 @@
 #include "heuristic.h"
 
-#include "cost_adapted_task.h"
 #include "evaluation_context.h"
 #include "evaluation_result.h"
 #include "global_operator.h"
@@ -8,6 +7,8 @@
 #include "option_parser.h"
 #include "operator_cost.h"
 #include "plugin.h"
+
+#include "tasks/cost_adapted_task.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -51,7 +52,8 @@ int Heuristic::get_adjusted_cost(const GlobalOperator &op) const {
 }
 
 State Heuristic::convert_global_state(const GlobalState &global_state) const {
-    return task_proxy.convert_global_state(global_state);
+    State state(*g_root_task(), global_state.get_values());
+    return task_proxy.convert_ancestor_state(state);
 }
 
 void Heuristic::add_options_to_parser(OptionParser &parser) {

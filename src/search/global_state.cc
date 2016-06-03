@@ -22,6 +22,14 @@ int GlobalState::operator[](int var) const {
     return registry->get_state_value(buffer, var);
 }
 
+vector<int> GlobalState::get_values() const {
+    int num_vars = g_variable_domain.size();
+    vector<int> values(num_vars);
+    for (int var = 0; var < num_vars; ++var)
+        values[var] = (*this)[var];
+    return values;
+}
+
 void GlobalState::dump_pddl() const {
     for (size_t i = 0; i < g_variable_domain.size(); ++i) {
         const string &fact_name = g_fact_names[i][(*this)[i]];

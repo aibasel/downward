@@ -5,7 +5,9 @@
 
 #include <vector>
 
+namespace options {
 class Options;
+}
 
 namespace merge_and_shrink {
 /*
@@ -43,7 +45,7 @@ protected:
         std::vector<Bucket> &buckets) const override;
 
 public:
-    explicit ShrinkFH(const Options &opts);
+    explicit ShrinkFH(const options::Options &opts);
     virtual ~ShrinkFH() override;
 };
 }
