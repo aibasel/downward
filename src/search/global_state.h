@@ -47,6 +47,8 @@ public:
 
     int operator[](std::size_t index) const;
 
+    std::vector<int> get_values() const;
+
     void dump_pddl() const;
     void dump_fdr() const;
 };

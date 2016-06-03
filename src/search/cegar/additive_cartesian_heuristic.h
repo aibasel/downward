@@ -16,9 +16,9 @@
   AdditiveCartesianHeuristic
     Get subtasks from SubtaskGenerators, adjust their costs by wrapping
     them in ModifiedOperatorCostsTasks, compute Abstractions, move
-    RefinementHierarchies from Abstractions to CartesianHeuristics,
-    store CartesianHeuristics and compute overall heuristic by adding
-    heuristic values of all CartesianHeuristics.
+    RefinementHierarchies from Abstractions to CartesianHeuristicFunctions,
+    store CartesianHeuristicFunctions and compute overall heuristic by adding
+    heuristic values of all CartesianHeuristicFunctions.
 
     SubtaskGenerator
       Create focused subtasks. TaskDuplicator returns copies of the
@@ -57,7 +57,7 @@
 */
 
 namespace cegar {
-class CartesianHeuristic;
+class CartesianHeuristicFunction;
 class SubtaskGenerator;
 
 /*
@@ -72,10 +72,10 @@ class AdditiveCartesianHeuristic : public Heuristic {
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
-    // TODO: Store split trees or thin wrappers directly.
-    std::vector<std::unique_ptr<CartesianHeuristic>> heuristics;
+    std::vector<std::unique_ptr<CartesianHeuristicFunction>> heuristic_functions;
     int num_abstractions;
     int num_states;
+    State initial_state;
 
     void reduce_remaining_costs(const std::vector<int> &saturated_costs);
     std::shared_ptr<AbstractTask> get_remaining_costs_task(
@@ -88,6 +88,7 @@ class AdditiveCartesianHeuristic : public Heuristic {
 protected:
     virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
+    int compute_heuristic(const State &state);
 
 public:
     explicit AdditiveCartesianHeuristic(const options::Options &options);

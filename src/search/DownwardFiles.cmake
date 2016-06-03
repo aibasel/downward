@@ -386,7 +386,7 @@ fast_downward_plugin(
         cegar/abstract_state.cc
         cegar/additive_cartesian_heuristic.cc
         cegar/arc.cc
-        cegar/cartesian_heuristic.cc
+        cegar/cartesian_heuristic_function.cc
         cegar/domains.cc
         cegar/refinement_hierarchy.cc
         cegar/split_selector.cc
