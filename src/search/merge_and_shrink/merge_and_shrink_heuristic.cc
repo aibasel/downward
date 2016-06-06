@@ -305,9 +305,6 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
     label_reduction = nullptr;
 }
 
-void MergeAndShrinkHeuristic::initialize() {
-}
-
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
     int cost = fts->get_cost(state);

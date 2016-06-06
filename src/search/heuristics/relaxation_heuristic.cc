@@ -19,17 +19,6 @@ namespace relaxation_heuristic {
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const options::Options &opts)
     : Heuristic(opts) {
-}
-
-RelaxationHeuristic::~RelaxationHeuristic() {
-}
-
-bool RelaxationHeuristic::dead_ends_are_reliable() const {
-    return !has_axioms();
-}
-
-// initialization
-void RelaxationHeuristic::initialize() {
     // Build propositions.
     int prop_id = 0;
     VariablesProxy variables = task_proxy.get_variables();
@@ -61,6 +50,13 @@ void RelaxationHeuristic::initialize() {
         for (size_t j = 0; j < op->precondition.size(); ++j)
             op->precondition[j]->precondition_of.push_back(op);
     }
+}
+
+RelaxationHeuristic::~RelaxationHeuristic() {
+}
+
+bool RelaxationHeuristic::dead_ends_are_reliable() const {
+    return !has_axioms();
 }
 
 Proposition *RelaxationHeuristic::get_proposition(const FactProxy &fact) {

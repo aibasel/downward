@@ -15,12 +15,6 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
       constraint_generators(
           opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),
       lp_solver(lp::LPSolverType(opts.get_enum("lpsolver"))) {
-}
-
-OperatorCountingHeuristic::~OperatorCountingHeuristic() {
-}
-
-void OperatorCountingHeuristic::initialize() {
     vector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();
     for (OperatorProxy op : task_proxy.get_operators()) {
@@ -32,6 +26,9 @@ void OperatorCountingHeuristic::initialize() {
         generator->initialize_constraints(task, constraints, infinity);
     }
     lp_solver.load_problem(lp::LPObjectiveSense::MINIMIZE, variables, constraints);
+}
+
+OperatorCountingHeuristic::~OperatorCountingHeuristic() {
 }
 
 int OperatorCountingHeuristic::compute_heuristic(const GlobalState &global_state) {

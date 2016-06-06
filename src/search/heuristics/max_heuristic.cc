@@ -24,15 +24,10 @@ namespace max_heuristic {
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
     : RelaxationHeuristic(opts) {
+    cout << "Initializing HSP max heuristic..." << endl;
 }
 
 HSPMaxHeuristic::~HSPMaxHeuristic() {
-}
-
-// initialization
-void HSPMaxHeuristic::initialize() {
-    cout << "Initializing HSP max heuristic..." << endl;
-    RelaxationHeuristic::initialize();
 }
 
 // heuristic computation

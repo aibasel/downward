@@ -14,20 +14,14 @@
 using namespace std;
 
 namespace lm_cut_heuristic {
-// construction and destruction
 LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
     : Heuristic(opts),
       landmark_generator(nullptr) {
+    cout << "Initializing landmark cut heuristic..." << endl;
+    landmark_generator = utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
-}
-
-// initialization
-void LandmarkCutHeuristic::initialize() {
-    cout << "Initializing landmark cut heuristic..." << endl;
-    // TODO we don't need a pointer if we initialize in the constructor.
-    landmark_generator = utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
 }
 
 int LandmarkCutHeuristic::compute_heuristic(const GlobalState &global_state) {
