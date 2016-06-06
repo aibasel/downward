@@ -119,7 +119,7 @@ class Exploration : public Heuristic {
     void increase_cost(int &cost, int amount);
     void write_overflow_warning();
 protected:
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &state) override;
 public:
     void set_additional_goals(const std::vector<std::pair<int, int>> &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
