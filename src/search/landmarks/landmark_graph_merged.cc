@@ -1,5 +1,7 @@
 #include "landmark_graph_merged.h"
 
+#include "landmark_graph.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -11,6 +13,8 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
+class LandmarkNode;
+
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
     : LandmarkFactory(opts),
       lm_factories(opts.get_list<LandmarkFactory *>("lm_factories")) {
@@ -96,7 +100,7 @@ void LandmarkGraphMerged::generate_landmarks(Exploration &exploration) {
             if (from) {
                 for (const auto &to : from_orig->children) {
                     const LandmarkNode &to_orig = *to.first;
-                    edge_type e_type = to.second;
+                    EdgeType e_type = to.second;
                     LandmarkNode *to_node = get_matching_landmark(to_orig);
                     if (to_node) {
                         edge_add(*from, *to_node, e_type);

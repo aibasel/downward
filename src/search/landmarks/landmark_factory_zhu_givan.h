@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+struct GlobalCondition;
+
 namespace landmarks {
 using lm_set = std::unordered_set<std::pair<int, int>>;
 

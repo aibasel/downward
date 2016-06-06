@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace landmarks {
-enum edge_type {
+enum class EdgeType : std::int8_t {
     /* NOTE: The code relies on the fact that larger numbers are
        stronger in the sense that, e.g., every greedy-necessary
        ordering is also natural and reasonable. (It is a sad fact of
@@ -46,8 +46,8 @@ public:
     std::vector<int> vals;
     bool disjunctive;
     bool conjunctive;
-    std::unordered_map<LandmarkNode *, edge_type> parents;
-    std::unordered_map<LandmarkNode *, edge_type> children;
+    std::unordered_map<LandmarkNode *, EdgeType> parents;
+    std::unordered_map<LandmarkNode *, EdgeType> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;

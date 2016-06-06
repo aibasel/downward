@@ -1,5 +1,7 @@
 #include "landmark_factory.h"
 
+#include "landmark_graph.h"
+
 #include "exploration.h"
 #include "util.h"
 
@@ -451,7 +453,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;
                 if (interferes(node2_p, node_p)) {
-                    edge_add(*node2_p, *node_p, reasonable);
+                    edge_add(*node2_p, *node_p, EdgeType::reasonable);
                 }
             }
         } else {
@@ -460,14 +462,14 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
             unordered_set<LandmarkNode *> interesting_nodes(g_variable_name.size());
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2 = *child.first;
-                const edge_type &edge2 = child.second;
-                if (edge2 >= greedy_necessary) { // found node2: node_p ->_gn node2
+                const EdgeType &edge2 = child.second;
+                if (edge2 >= EdgeType::greedy_necessary) { // found node2: node_p ->_gn node2
                     for (const auto &p : node2.parents) {   // find parent
                         LandmarkNode &parent = *(p.first);
-                        const edge_type &edge = p.second;
+                        const EdgeType &edge = p.second;
                         if (parent.disjunctive)
                             continue;
-                        if ((edge >= natural || (obedient_orders && edge == reasonable)) &&
+                        if ((edge >= EdgeType::natural || (obedient_orders && edge == EdgeType::reasonable)) &&
                             &parent != node_p) {  // find predecessors or parent and collect in
                             // "interesting nodes"
                             interesting_nodes.insert(&parent);
@@ -484,9 +486,9 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
                     continue;
                 if (interferes(node, node_p)) {
                     if (!obedient_orders)
-                        edge_add(*node, *node_p, reasonable);
+                        edge_add(*node, *node_p, EdgeType::reasonable);
                     else
-                        edge_add(*node, *node_p, obedient_reasonable);
+                        edge_add(*node, *node_p, EdgeType::obedient_reasonable);
                 }
             }
         }
@@ -504,8 +506,8 @@ void LandmarkFactory::collect_ancestors(
     unordered_set<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
-        const edge_type &edge = p.second;
-        if (edge >= natural || (use_reasonable && edge == reasonable))
+        const EdgeType &edge = p.second;
+        if (edge >= EdgeType::natural || (use_reasonable && edge == EdgeType::reasonable))
             if (closed_nodes.count(&parent) == 0) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
@@ -517,8 +519,8 @@ void LandmarkFactory::collect_ancestors(
         LandmarkNode &node2 = *(open_nodes.front());
         for (const auto &p : node2.parents) {
             LandmarkNode &parent = *(p.first);
-            const edge_type &edge = p.second;
-            if (edge >= natural || (use_reasonable && edge == reasonable)) {
+            const EdgeType &edge = p.second;
+            if (edge >= EdgeType::natural || (use_reasonable && edge == EdgeType::reasonable)) {
                 if (closed_nodes.count(&parent) == 0) {
                     open_nodes.push_back(&parent);
                     closed_nodes.insert(&parent);
@@ -531,7 +533,7 @@ void LandmarkFactory::collect_ancestors(
 }
 
 void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
-                               edge_type type) {
+                               EdgeType type) {
     /* Adds an edge in the landmarks graph if there is no contradicting edge (simple measure to
     reduce cycles. If the edge is already present, the stronger edge type wins.
     */
@@ -539,7 +541,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(from.parents.find(&to) == from.parents.end() || type <= reasonable);
     assert(to.children.find(&from) == to.children.end() || type <= reasonable);
 
-    if (type == reasonable || type == obedient_reasonable) { // simple cycle test
+    if (type == EdgeType::reasonable || type == EdgeType::obedient_reasonable) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
             //cout << "edge in opposite direction exists" << endl;
             if (from.parents.find(&to)->second > type) // Stronger order present, return
@@ -672,24 +674,24 @@ void LandmarkFactory::mk_acyclic_graph() {
 }
 
 bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                                      list<pair<LandmarkNode *, edge_type>> &path, list<pair<LandmarkNode *,
-                                                                                                             edge_type>>::iterator it) {
+                                                      list<pair<LandmarkNode *, EdgeType>> &path, list<pair<LandmarkNode *,
+                                                                                                            EdgeType>>::iterator it) {
     LandmarkNode *parent_p = 0;
     LandmarkNode *child_p = 0;
-    for (list<pair<LandmarkNode *, edge_type>>::iterator it2 = it; it2
+    for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it; it2
          != path.end(); ++it2) {
-        edge_type edge = it2->second;
-        if (edge == reasonable || edge == obedient_reasonable) {
+        EdgeType edge = it2->second;
+        if (edge == EdgeType::reasonable || edge == EdgeType::obedient_reasonable) {
             parent_p = it2->first;
             if (*it2 == path.back()) {
                 child_p = cur;
                 break;
             } else {
-                list<pair<LandmarkNode *, edge_type>>::iterator child_it = it2;
+                list<pair<LandmarkNode *, EdgeType>>::iterator child_it = it2;
                 ++child_it;
                 child_p = child_it->first;
             }
-            if (edge == obedient_reasonable)
+            if (edge == EdgeType::obedient_reasonable)
                 break;
             // else no break since o_r order could still appear in list
         }
@@ -706,14 +708,14 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
                                         unordered_set<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
-    list<pair<LandmarkNode *, edge_type>> path;
+    list<pair<LandmarkNode *, EdgeType>> path;
     unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
         if (visited.find(cur) != visited.end()) { // cycle
             // find other occurrence of cur node in path
-            list<pair<LandmarkNode *, edge_type>>::iterator it;
+            list<pair<LandmarkNode *, EdgeType>>::iterator it;
             for (it = path.begin(); it != path.end(); ++it) {
                 if (it->first == cur)
                     break;
@@ -733,7 +735,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
         bool empty = true;
         for (const auto &child : cur->children) {
             LandmarkNode *child_p = child.first;
-            edge_type edge = child.second;
+            EdgeType edge = child.second;
             if (acyclic_node_set.find(child_p) == acyclic_node_set.end()) {
                 path.push_back(make_pair(cur, edge));
                 cur = child_p;

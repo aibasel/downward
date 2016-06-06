@@ -1,15 +1,17 @@
 #ifndef LANDMARKS_LANDMARK_FACTORY_H
 #define LANDMARKS_LANDMARK_FACTORY_H
 
-#include "landmark_graph.h"
-
 #include "../operator_cost.h"
 
+#include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+class GlobalEffect;
 
 namespace options {
 class OptionParser;
@@ -18,6 +20,9 @@ class Options;
 
 namespace landmarks {
 class Exploration;
+class LandmarkGraph;
+class LandmarkNode;
+enum class EdgeType : std::int8_t;
 
 class LandmarkFactory {
 public:
@@ -50,7 +55,7 @@ protected:
         std::vector<std::unordered_map<std::pair<int, int>, int>> lvl_op;
         return relaxed_task_solvable(exploration, lvl_var, lvl_op, level_out, exclude, compute_lvl_op);
     }
-    void edge_add(LandmarkNode &from, LandmarkNode &to, edge_type type);
+    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
     void compute_predecessor_information(Exploration &exploration,
                                          LandmarkNode *bp,
                                          std::vector<std::vector<int>> &lvl_var,
@@ -77,8 +82,8 @@ private:
     int loop_acyclic_graph(LandmarkNode &lmn,
                            std::unordered_set<LandmarkNode *> &acyclic_node_set);
     bool remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                         std::list<std::pair<LandmarkNode *, edge_type>> &path,
-                                         std::list<std::pair<LandmarkNode *, edge_type>>::iterator it);
+                                         std::list<std::pair<LandmarkNode *, EdgeType>> &path,
+                                         std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
     int calculate_lms_cost() const;
     void collect_ancestors(std::unordered_set<LandmarkNode *> &result, LandmarkNode &node,
                            bool use_reasonable);

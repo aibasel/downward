@@ -254,22 +254,22 @@ void LandmarkGraph::dump() const {
         dump_node(node_p);
         for (const auto &parent : node_p->parents) {
             const LandmarkNode *parent_node = parent.first;
-            const edge_type &edge = parent.second;
+            const EdgeType &edge = parent.second;
             cout << "\t\t<-_";
             switch (edge) {
-            case necessary:
+            case EdgeType::necessary:
                 cout << "nec ";
                 break;
-            case greedy_necessary:
+            case EdgeType::greedy_necessary:
                 cout << "gn  ";
                 break;
-            case natural:
+            case EdgeType::natural:
                 cout << "nat ";
                 break;
-            case reasonable:
+            case EdgeType::reasonable:
                 cout << "r   ";
                 break;
-            case obedient_reasonable:
+            case EdgeType::obedient_reasonable:
                 cout << "o_r ";
                 break;
             }
@@ -277,22 +277,22 @@ void LandmarkGraph::dump() const {
         }
         for (const auto &child : node_p->children) {
             const LandmarkNode *child_node = child.first;
-            const edge_type &edge = child.second;
+            const EdgeType &edge = child.second;
             cout << "\t\t->_";
             switch (edge) {
-            case necessary:
+            case EdgeType::necessary:
                 cout << "nec ";
                 break;
-            case greedy_necessary:
+            case EdgeType::greedy_necessary:
                 cout << "gn  ";
                 break;
-            case natural:
+            case EdgeType::natural:
                 cout << "nat ";
                 break;
-            case reasonable:
+            case EdgeType::reasonable:
                 cout << "r   ";
                 break;
-            case obedient_reasonable:
+            case EdgeType::obedient_reasonable:
                 cout << "o_r ";
                 break;
             }
