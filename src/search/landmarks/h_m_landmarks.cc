@@ -1028,12 +1028,12 @@ void HMLandmarks::generate_landmarks(Exploration &) {
                 assert(lm_node_table_.find(*lms_it) != lm_node_table_.end());
                 assert(lm_node_table_.find(set_index) != lm_node_table_.end());
 
-                edge_add(*lm_node_table_[*lms_it], *lm_node_table_[set_index], natural);
+                edge_add(*lm_node_table_[*lms_it], *lm_node_table_[set_index], EdgeType::natural);
             }
             if (use_orders()) {
                 for (std::list<int>::iterator gn_it = h_m_table_[set_index].necessary.begin();
                      gn_it != h_m_table_[set_index].necessary.end(); ++gn_it) {
-                    edge_add(*lm_node_table_[*gn_it], *lm_node_table_[set_index], greedy_necessary);
+                    edge_add(*lm_node_table_[*gn_it], *lm_node_table_[set_index], EdgeType::greedy_necessary);
                 }
             }
         }

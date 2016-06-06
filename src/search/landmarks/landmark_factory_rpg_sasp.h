@@ -36,9 +36,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     int min_cost_for_landmark(LandmarkNode *bp, std::vector<std::vector<int>> &lvl_var);
     virtual void generate_landmarks(Exploration &exploration) override;
     void found_simple_lm_and_order(const std::pair<int, int> a, LandmarkNode &b,
-                                   edge_type t);
+                                   EdgeType t);
     void found_disj_lm_and_order(const std::set<std::pair<int, int>> a, LandmarkNode &b,
-                                 edge_type t);
+                                 EdgeType t);
     void approximate_lookahead_orders(const std::vector<std::vector<int>> &lvl_var,
                                       LandmarkNode *lmp);
     bool domain_connectivity(const std::pair<int, int> &landmark,
