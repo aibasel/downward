@@ -9,7 +9,7 @@ public:
     explicit LandmarkFactoryRpgExhaust(const options::Options &opts);
     virtual ~LandmarkFactoryRpgExhaust() override = default;
 
-    bool supports_conditional_effects() const override;
+    virtual bool supports_conditional_effects() const override;
 private:
     virtual void generate_landmarks(Exploration &exploration) override;
 };

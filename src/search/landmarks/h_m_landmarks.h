@@ -72,7 +72,7 @@ public:
     explicit HMLandmarks(const options::Options &opts);
     virtual ~HMLandmarks() override = default;
 
-    bool supports_conditional_effects() const override;
+    virtual bool supports_conditional_effects() const override;
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
 private:

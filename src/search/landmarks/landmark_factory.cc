@@ -673,8 +673,8 @@ void LandmarkFactory::mk_acyclic_graph() {
 }
 
 bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                                      list<pair<LandmarkNode *, EdgeType>> &path, list<pair<LandmarkNode *,
-                                                                                                            EdgeType>>::iterator it) {
+                                                      list<pair<LandmarkNode *, EdgeType>> &path,
+                                                      list<pair<LandmarkNode *, EdgeType>>::iterator it) {
     LandmarkNode *parent_p = 0;
     LandmarkNode *child_p = 0;
     for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it; it2
