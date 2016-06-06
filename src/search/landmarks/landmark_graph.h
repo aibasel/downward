@@ -16,7 +16,7 @@
 #include <vector>
 
 namespace landmarks {
-enum class EdgeType : std::int8_t {
+enum class EdgeType {
     /* NOTE: The code relies on the fact that larger numbers are
        stronger in the sense that, e.g., every greedy-necessary
        ordering is also natural and reasonable. (It is a sad fact of

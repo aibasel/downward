@@ -49,7 +49,7 @@ public:
     explicit LandmarkFactoryRpgSasp(const options::Options &opts);
     virtual ~LandmarkFactoryRpgSasp() override = default;
 
-    bool supports_conditional_effects() const override;
+    virtual bool supports_conditional_effects() const override;
 };
 }
 

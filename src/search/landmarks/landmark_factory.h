@@ -22,7 +22,7 @@ namespace landmarks {
 class Exploration;
 class LandmarkGraph;
 class LandmarkNode;
-enum class EdgeType : std::int8_t;
+enum class EdgeType;
 
 class LandmarkFactory {
 public:
