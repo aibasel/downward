@@ -17,7 +17,7 @@ private:
     bool check_lost_landmark_children_needed_again(const LandmarkNode &node) const;
 public:
     LandmarkStatusManager(LandmarkGraph &graph);
-    virtual ~LandmarkStatusManager();
+    virtual ~LandmarkStatusManager() = default;
 
     std::vector<bool> &get_reached_landmarks(const GlobalState &state);
 

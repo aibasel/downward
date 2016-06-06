@@ -35,7 +35,7 @@ class SubtaskGenerator;
 }
 
 namespace landmarks {
-class LandmarkGraph;
+class LandmarkFactory;
 }
 
 namespace merge_and_shrink {
@@ -92,7 +92,7 @@ static void get_help(string k) {
     get_help_templ<shared_ptr<AbstractTask>>(pt);
     get_help_templ<ScalarEvaluator *>(pt);
     get_help_templ<Synergy *>(pt);
-    get_help_templ<landmarks::LandmarkGraph *>(pt);
+    get_help_templ<landmarks::LandmarkFactory *>(pt);
     get_help_templ<shared_ptr<cegar::SubtaskGenerator>>(pt);
     get_help_templ<shared_ptr<OpenListFactory>>(pt);
     get_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>(pt);
@@ -122,7 +122,7 @@ static void get_full_help() {
     get_full_help_templ<shared_ptr<AbstractTask>>();
     get_full_help_templ<ScalarEvaluator *>();
     get_full_help_templ<Synergy *>();
-    get_full_help_templ<landmarks::LandmarkGraph *>();
+    get_full_help_templ<landmarks::LandmarkFactory *>();
     get_full_help_templ<shared_ptr<cegar::SubtaskGenerator>>();
     get_full_help_templ<shared_ptr<OpenListFactory>>();
     get_full_help_templ<shared_ptr<merge_and_shrink::MergeStrategyFactory>>();
@@ -159,7 +159,7 @@ static std::vector<std::string> to_list(std::string s) {
 }
 
 //Note: originally the following function was templated (predefine<T>),
-//but there is no Synergy<LandmarkGraph>, so I split it up for now.
+//but there is no Synergy<LandmarkFactory>, so I split it up for now.
 static void predefine_heuristic(std::string s, bool dry_run) {
     //remove newlines so they don't mess anything up:
     s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
@@ -201,8 +201,8 @@ static void predefine_lmgraph(std::string s, bool dry_run) {
     std::string rs = s.substr(split + 1);
     OptionParser op(rs, dry_run);
     if (definees.size() == 1) {
-        Predefinitions<landmarks::LandmarkGraph *>::instance()->predefine(
-            definees[0], op.start_parsing<landmarks::LandmarkGraph *>());
+        Predefinitions<landmarks::LandmarkFactory *>::instance()->predefine(
+            definees[0], op.start_parsing<landmarks::LandmarkFactory *>());
     } else {
         op.error("predefinition has invalid left side");
     }
