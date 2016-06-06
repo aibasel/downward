@@ -115,6 +115,14 @@ void LandmarkGraphMerged::generate_landmarks(Exploration &exploration) {
     }
 }
 
+bool LandmarkGraphMerged::supports_conditional_effects() const {
+    for (const LandmarkFactory *lm_factory : lm_factories) {
+        if (!lm_factory->supports_conditional_effects()) {
+            return false;
+        }
+    }
+    return true;
+}
 
 static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
@@ -143,15 +151,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     } else {
-        vector<LandmarkFactory *> lm_factories = opts.get_list<LandmarkFactory *>("lm_factories");
-        bool supports_conditional_effects = true;
-        for (const LandmarkFactory *lm_factory : lm_factories) {
-            if (!lm_factory->supports_conditional_effects()) {
-                supports_conditional_effects = false;
-                break;
-            }
-        }
-        opts.set<bool>("supports_conditional_effects", supports_conditional_effects);
         return new LandmarkGraphMerged(opts);
     }
 }

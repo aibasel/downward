@@ -78,6 +78,8 @@ public:
 public:
     explicit LandmarkFactoryZhuGivan(const options::Options &opts);
     virtual ~LandmarkFactoryZhuGivan() override = default;
+
+    bool supports_conditional_effects() const override;
 };
 }
 

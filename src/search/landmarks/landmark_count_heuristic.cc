@@ -23,17 +23,17 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     : Heuristic(opts),
       exploration(opts),
       use_preferred_operators(opts.get<bool>("pref")),
-      lookahead(numeric_limits<int>::max()),
-      ff_search_disjunctive_lms(false) {
+      ff_search_disjunctive_lms(false),
+      conditional_effects_supported(
+          opts.get<LandmarkFactory *>("lm_factory")->supports_conditional_effects()),
+      use_cost_sharing(opts.get<bool>("admissible")) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(exploration);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
-    conditional_effects_supported = lm_graph_factory->supports_conditional_effects();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (opts.get<bool>("admissible")) {
-        use_cost_sharing = true;
         if (reasonable_orders) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::INPUT_ERROR);
@@ -55,7 +55,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
                 OperatorCost(opts.get_enum("cost_type")));
         }
     } else {
-        use_cost_sharing = false;
         lm_cost_assignment = 0;
     }
 
