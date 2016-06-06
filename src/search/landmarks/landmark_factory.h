@@ -11,7 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
-class GlobalEffect;
+struct GlobalEffect;
 
 namespace options {
 class OptionParser;
