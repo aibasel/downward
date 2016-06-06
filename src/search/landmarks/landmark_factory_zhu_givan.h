@@ -2,7 +2,6 @@
 #define LANDMARKS_LANDMARK_FACTORY_ZHU_GIVAN_H
 
 #include "landmark_factory.h"
-#include "landmark_graph.h"
 
 #include "../globals.h"
 
@@ -11,6 +10,8 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+struct GlobalCondition;
 
 namespace landmarks {
 using lm_set = std::unordered_set<std::pair<int, int>>;
@@ -67,16 +68,18 @@ public:
 
     // Extract landmarks from last proposition layer and add them to the
     // landmarks graph
-    void extract_landmarks(const proposition_layer &last_prop_layer);
+    void extract_landmarks(Exploration &exploration, const proposition_layer &last_prop_layer);
 
     // test if layer satisfies goal
     bool satisfies_goal_conditions(const proposition_layer &) const;
 
-    void generate_landmarks();
+    virtual void generate_landmarks(Exploration &exploration) override;
 
 public:
-    LandmarkFactoryZhuGivan(const Options &opts);
-    virtual ~LandmarkFactoryZhuGivan() {}
+    explicit LandmarkFactoryZhuGivan(const options::Options &opts);
+    virtual ~LandmarkFactoryZhuGivan() override = default;
+
+    virtual bool supports_conditional_effects() const override;
 };
 }
 

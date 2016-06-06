@@ -1,5 +1,7 @@
 #include "landmark_graph_merged.h"
 
+#include "landmark_graph.h"
+
 #include "../option_parser.h"
 #include "../plugin.h"
 
@@ -11,12 +13,11 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
+class LandmarkNode;
+
 LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
     : LandmarkFactory(opts),
-      lm_graphs(opts.get_list<LandmarkGraph *>("lm_graphs")) {
-}
-
-LandmarkGraphMerged::~LandmarkGraphMerged() {
+      lm_factories(opts.get_list<LandmarkFactory *>("lm_factories")) {
 }
 
 LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
@@ -42,8 +43,12 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
     return 0;
 }
 
-void LandmarkGraphMerged::generate_landmarks() {
-    cout << "Merging " << lm_graphs.size() << " landmark graphs" << endl;
+void LandmarkGraphMerged::generate_landmarks(Exploration &exploration) {
+    cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
+
+    for (LandmarkFactory *lm_factory : lm_factories) {
+        lm_graphs.push_back(lm_factory->compute_lm_graph(exploration));
+    }
 
     cout << "Adding simple landmarks" << endl;
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
@@ -95,7 +100,7 @@ void LandmarkGraphMerged::generate_landmarks() {
             if (from) {
                 for (const auto &to : from_orig->children) {
                     const LandmarkNode &to_orig = *to.first;
-                    edge_type e_type = to.second;
+                    EdgeType e_type = to.second;
                     LandmarkNode *to_node = get_matching_landmark(to_orig);
                     if (to_node) {
                         edge_add(*from, *to_node, e_type);
@@ -110,8 +115,16 @@ void LandmarkGraphMerged::generate_landmarks() {
     }
 }
 
+bool LandmarkGraphMerged::supports_conditional_effects() const {
+    for (const LandmarkFactory *lm_factory : lm_factories) {
+        if (!lm_factory->supports_conditional_effects()) {
+            return false;
+        }
+    }
+    return true;
+}
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Merged Landmarks",
         "Merges the landmarks and orderings from the parameter landmarks");
@@ -126,35 +139,22 @@ static LandmarkGraph *_parse(OptionParser &parser) {
     parser.document_note(
         "Note",
         "Does not currently support conjunctive landmarks");
-    parser.add_list_option<LandmarkGraph *>("lm_graphs");
-    LandmarkGraph::add_options_to_parser(parser);
+    parser.add_list_option<LandmarkFactory *>("lm_factories");
+    _add_options_to_parser(parser);
     Options opts = parser.parse();
 
-    opts.verify_list_non_empty<LandmarkGraph *>("lm_graphs");
+    opts.verify_list_non_empty<LandmarkFactory *>("lm_factories");
 
     parser.document_language_support("conditional_effects",
                                      "supported if all components support them");
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
-        vector<LandmarkGraph *> lm_graphs = opts.get_list<LandmarkGraph *>("lm_graphs");
-        bool supports_conditional_effects = true;
-        for (size_t i = 0; i < lm_graphs.size(); ++i) {
-            if (!lm_graphs[i]->supports_conditional_effects()) {
-                supports_conditional_effects = false;
-                break;
-            }
-        }
-        opts.set<bool>("supports_conditional_effects", supports_conditional_effects);
-
-        opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkGraphMerged lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkGraphMerged(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin(
+static Plugin<LandmarkFactory> _plugin(
     "lm_merged", _parse);
 }

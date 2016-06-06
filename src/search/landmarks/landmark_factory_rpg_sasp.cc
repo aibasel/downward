@@ -155,7 +155,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp))
-                min_cost = min(min_cost, get_adjusted_action_cost(op, lm_graph->get_lm_cost_type()));
+                min_cost = min(min_cost, get_adjusted_action_cost(op, get_lm_cost_type()));
         }
     }
     /*
@@ -169,7 +169,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(LandmarkNode *bp, vector<vecto
 }
 
 void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
-                                                       LandmarkNode &b, edge_type t) {
+                                                       LandmarkNode &b, EdgeType t) {
     LandmarkNode *new_lm;
     if (lm_graph->simple_landmark_exists(a)) {
         new_lm = &lm_graph->get_simple_lm_node(a);
@@ -228,7 +228,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
 }
 
 void LandmarkFactoryRpgSasp::found_disj_lm_and_order(const set<pair<int, int>> a,
-                                                     LandmarkNode &b, edge_type t) {
+                                                     LandmarkNode &b, EdgeType t) {
     bool simple_lm_exists = false;
     pair<int, int> lm_prop;
     const GlobalState &initial_state = hacked_initial_state();
@@ -413,7 +413,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(vector<set<pair<i
     }
 }
 
-void LandmarkFactoryRpgSasp::generate_landmarks() {
+void LandmarkFactoryRpgSasp::generate_landmarks(Exploration &exploration) {
     cout << "Generating landmarks using the RPG/SAS+ approach\n";
     build_dtg_successors();
     build_disjunction_classes();
@@ -436,7 +436,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
             // applied (in lvl_ops).
             vector<vector<int>> lvl_var;
             vector<unordered_map<pair<int, int>, int>> lvl_op;
-            compute_predecessor_information(bp, lvl_var, lvl_op);
+            compute_predecessor_information(exploration, bp, lvl_var, lvl_op);
             // Use this information to determine all operators that can possibly achieve bp
             // for the first time, and collect any precondition propositions that all such
             // operators share (if there are any).
@@ -444,7 +444,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
             compute_shared_preconditions(shared_pre, lvl_var, bp);
             // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
             for (const auto &pre : shared_pre) {
-                found_simple_lm_and_order(pre, *bp, greedy_necessary);
+                found_simple_lm_and_order(pre, *bp, EdgeType::greedy_necessary);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(lvl_var, bp);
@@ -456,7 +456,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks() {
             compute_disjunctive_preconditions(disjunctive_pre, lvl_var, bp);
             for (size_t i = 0; i < disjunctive_pre.size(); ++i)
                 if (disjunctive_pre[i].size() < 5) { // We don't want disj. LMs to get too big
-                    found_disj_lm_and_order(disjunctive_pre[i], *bp, greedy_necessary);
+                    found_disj_lm_and_order(disjunctive_pre[i], *bp, EdgeType::greedy_necessary);
                 }
 
         }
@@ -497,7 +497,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
             if (!domain_connectivity(lmk, exclude))
-                found_simple_lm_and_order(make_pair(lmk.first, i), *lmp, natural);
+                found_simple_lm_and_order(make_pair(lmk.first, i), *lmp, EdgeType::natural);
         }
 
 }
@@ -584,14 +584,18 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
         for (const auto &node2_pair : node->forward_orders) {
             if (lm_graph->simple_landmark_exists(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_lm_node(node2_pair);
-                edge_add(*node, node2, natural);
+                edge_add(*node, node2, EdgeType::natural);
             }
         }
         node->forward_orders.clear();
     }
 }
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
+    return true;
+}
+
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "RHW Landmarks",
         "The landmark generation method introduced by "
@@ -600,23 +604,19 @@ static LandmarkGraph *_parse(OptionParser &parser) {
         "Relevant Options",
         "reasonable_orders, only_causal_landmarks, "
         "disjunctive_landmarks, no_orders");
-    LandmarkGraph::add_options_to_parser(parser);
+    _add_options_to_parser(parser);
 
     Options opts = parser.parse();
 
     parser.document_language_support("conditional_effects",
                                      "supported");
-    opts.set<bool>("supports_conditional_effects", true);
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
-        opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkFactoryRpgSasp lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkFactoryRpgSasp(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin("lm_rhw", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_rhw", _parse);
 }

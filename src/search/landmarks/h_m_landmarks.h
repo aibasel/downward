@@ -69,16 +69,17 @@ typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
 class HMLandmarks : public LandmarkFactory {
 public:
-    HMLandmarks(const Options &opts);
-    virtual ~HMLandmarks() {}
+    explicit HMLandmarks(const options::Options &opts);
+    virtual ~HMLandmarks() override = default;
 
+    virtual bool supports_conditional_effects() const override;
 // should be used together in a tuple?
     bool interesting(int var1, int val1, int var2, int val2);
 private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef std::unordered_map<int, std::set<int>> TriggerSet;
 
-    virtual void generate_landmarks();
+    virtual void generate_landmarks(Exploration &exploration) override;
 
     void compute_h_m_landmarks();
     void compute_noop_landmarks(int op_index, int noop_index,
@@ -94,7 +95,7 @@ private:
     void build_pm_ops();
 
 // already generated, so just return
-    virtual void calc_achievers();
+    virtual void calc_achievers(Exploration &exploration) override;
 
     void add_lm_node(int set_index, bool goal = false);
 

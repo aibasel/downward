@@ -2,6 +2,7 @@
 
 #include "../option_parser.h"
 
+#include "../landmarks/exploration.h"
 #include "../landmarks/h_m_landmarks.h"
 #include "../landmarks/landmark_graph.h"
 
@@ -21,7 +22,7 @@ static Fact get_fact(const LandmarkNode &node) {
     return Fact(node.vars[0], node.vals[0]);
 }
 
-unique_ptr<LandmarkGraph> get_landmark_graph() {
+shared_ptr<LandmarkGraph> get_landmark_graph() {
     Options opts = Options();
     opts.set<int>("cost_type", NORMAL);
     opts.set<bool>("cache_estimates", false);
@@ -37,10 +38,9 @@ unique_ptr<LandmarkGraph> get_landmark_graph() {
     /* This function assumes that the exploration object is not used
        after the landmark graph has been created. */
     Exploration exploration(opts);
-    opts.set<Exploration *>("explor", &exploration);
     HMLandmarks lm_graph_factory(opts);
-    unique_ptr<LandmarkGraph> landmark_graph(lm_graph_factory.compute_lm_graph());
-    landmark_graph->invalidate_exploration_for_cegar();
+    shared_ptr<LandmarkGraph> landmark_graph(
+        lm_graph_factory.compute_lm_graph(exploration));
     return landmark_graph;
 }
 

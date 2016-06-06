@@ -107,10 +107,10 @@ ALIASES["seq-sat-lama-2011"] = [
     "--if-non-unit-cost",
     "--heuristic",
     "hlm1,hff1=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=one,cost_type=one))",
+    "                           lm_cost_type=one),cost_type=one)",
     "--heuristic",
     "hlm2,hff2=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                           lm_cost_type=plusone,cost_type=plusone))",
+    "                           lm_cost_type=plusone),cost_type=plusone)",
     "--search", """iterated([
                      lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
                                  cost_type=one,reopen_closed=false),
@@ -128,7 +128,7 @@ ALIASES["seq-sat-lama-2011"] = [
 ALIASES["lama-first"] = [
     "--heuristic",
     "hlm,hff=lm_ff_syn(lm_rhw(reasonable_orders=true,"
-    "                         lm_cost_type=one,cost_type=one))",
+    "                         lm_cost_type=one),cost_type=one)",
     "--search", """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                cost_type=one,reopen_closed=false)"""]
 

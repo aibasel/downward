@@ -79,9 +79,6 @@ Exploration::Exploration(const options::Options &opts)
     heuristic_recomputation_needed = true;
 }
 
-Exploration::~Exploration() {
-}
-
 void Exploration::increase_cost(int &cost, int amount) {
     assert(cost >= 0);
     assert(amount >= 0);
