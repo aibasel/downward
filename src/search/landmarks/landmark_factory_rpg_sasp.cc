@@ -591,6 +591,10 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
     }
 }
 
+bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
+    return true;
+}
+
 static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "RHW Landmarks",
@@ -606,7 +610,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
 
     parser.document_language_support("conditional_effects",
                                      "supported");
-    opts.set<bool>("supports_conditional_effects", true);
 
     if (parser.dry_run()) {
         return nullptr;

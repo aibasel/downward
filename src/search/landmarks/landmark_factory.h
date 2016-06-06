@@ -33,7 +33,7 @@ public:
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
     bool use_reasonable_orders() const {return reasonable_orders; }
-    bool supports_conditional_effects() const {return conditional_effects_supported; }
+    virtual bool supports_conditional_effects() const = 0;
 
 protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
@@ -72,7 +72,6 @@ private:
     const bool conjunctive_landmarks;
     const bool no_orders;
     const OperatorCost lm_cost_type;
-    const bool conditional_effects_supported;
 
     bool interferes(const LandmarkNode *, const LandmarkNode *) const;
     bool effect_always_happens(const std::vector<GlobalEffect> &effects,

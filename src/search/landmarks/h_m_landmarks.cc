@@ -1041,6 +1041,10 @@ void HMLandmarks::generate_landmarks(Exploration &) {
     free_unneeded_memory();
 }
 
+bool HMLandmarks::supports_conditional_effects() const {
+    return false;
+}
+
 static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "h^m Landmarks",
@@ -1058,7 +1062,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
 
     parser.document_language_support("conditional_effects",
                                      "ignored, i.e. not supported");
-    opts.set<bool>("supports_conditional_effects", false);
 
     if (parser.dry_run()) {
         return nullptr;

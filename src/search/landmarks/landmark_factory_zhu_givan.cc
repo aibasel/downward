@@ -294,6 +294,10 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
     }
 }
 
+bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
+    return true;
+}
+
 static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Zhu/Givan Landmarks",
@@ -307,7 +311,6 @@ static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_language_support("conditional_effects",
                                      "We think they are supported, but this "
                                      "is not 100% sure.");
-    opts.set<bool>("supports_conditional_effects", true);
 
     if (parser.dry_run()) {
         return nullptr;

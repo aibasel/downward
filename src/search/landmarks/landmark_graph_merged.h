@@ -18,6 +18,8 @@ class LandmarkGraphMerged : public LandmarkFactory {
 public:
     explicit LandmarkGraphMerged(const options::Options &opts);
     virtual ~LandmarkGraphMerged() override = default;
+
+    bool supports_conditional_effects() const override;
 };
 }
 
