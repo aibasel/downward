@@ -1,10 +1,9 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
-#include "exploration.h"
-
 #include "../global_operator.h"
-#include "../option_parser.h"
+#include "../global_state.h"
+#include "../globals.h"
 
 #include "../utils/hash.h"
 
@@ -17,7 +16,7 @@
 #include <vector>
 
 namespace landmarks {
-enum edge_type {
+enum class EdgeType {
     /* NOTE: The code relies on the fact that larger numbers are
        stronger in the sense that, e.g., every greedy-necessary
        ordering is also natural and reasonable. (It is a sad fact of
@@ -47,8 +46,8 @@ public:
     std::vector<int> vals;
     bool disjunctive;
     bool conjunctive;
-    std::unordered_map<LandmarkNode *, edge_type> parents;
-    std::unordered_map<LandmarkNode *, edge_type> children;
+    std::unordered_map<LandmarkNode *, EdgeType> parents;
+    std::unordered_map<LandmarkNode *, EdgeType> children;
     bool in_goal;
     int min_cost; // minimal cost of achieving operators
     double shared_cost;
@@ -121,12 +120,10 @@ struct LandmarkNodeComparer {
 };
 
 
-typedef std::unordered_set<LandmarkNode *> LandmarkSet;
+using LandmarkSet = std::unordered_set<const LandmarkNode *>;
 
 class LandmarkGraph {
 public:
-    static void add_options_to_parser(OptionParser &parser);
-
     // ------------------------------------------------------------------------------
     // methods needed only by non-landmarkgraph-factories
     inline int cost_of_landmarks() const {return landmarks_cost; }
@@ -135,13 +132,6 @@ public:
     int get_needed_cost() const {return needed_cost; }
     int get_reached_cost() const {return reached_cost; }
     LandmarkNode *get_landmark(const Fact &fact) const;
-
-    // TODO: the following method should not exist. Ideally, we want the
-    // information about support for conditional effects to reside in the
-    // landmark factory classes. For now, this cannot easily be done since the
-    // factories do not exist anymore when the landmark heuristic is
-    // constructed.
-    bool supports_conditional_effects() {return conditional_effects_supported; }
 
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories
@@ -160,28 +150,10 @@ public:
         return landmarks_count;
     }
 
-    Exploration *get_exploration() const {
-        assert(exploration);
-        return exploration;
-    }
-
-    /*
-      The CEGAR code creates a landmark graph with an exploration that
-      goes out of scope after the graph has been created. To safeguard
-      against code that accidentally accesses the exploration, we
-      explicitly invalidate it and assert that we never return an
-      invalidated exploration above.
-    */
-    void invalidate_exploration_for_cegar() {
-        exploration = nullptr;
-    }
-
-    bool is_using_reasonable_orderings() const {return reasonable_orders; }
-
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
-    LandmarkGraph(const Options &opts);
-    virtual ~LandmarkGraph() {}
+    LandmarkGraph();
+    ~LandmarkGraph() = default;
 
     inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
         assert(simple_landmark_exists(a));
@@ -197,11 +169,6 @@ public:
         return operators_eff_lookup[eff.first][eff.second];
     }
 
-    bool use_orders() const {return !no_orders; }  // only needed by HMLandmark
-    bool use_only_causal_landmarks() const {return only_causal_landmarks; }
-    bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }
-    bool use_conjunctive_landmarks() const {return conjunctive_landmarks; }
-
     int number_of_disj_landmarks() const {
         return landmarks_count - (simple_lms_to_nodes.size() + conj_lms);
     }
@@ -209,11 +176,6 @@ public:
         return conj_lms;
     }
     int number_of_edges() const;
-
-    // HACK! (Temporary accessor needed for LandmarkFactorySasp.)
-    OperatorCost get_lm_cost_type() const {
-        return lm_cost_type;
-    }
 
     bool simple_landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
     bool disj_landmark_exists(const std::set<std::pair<int, int>> &lm) const;  // not needed by HMLandmark
@@ -233,16 +195,8 @@ public:
     void dump() const;
 private:
     void generate_operators_lookups();
-    Exploration *exploration;
     int landmarks_count;
     int conj_lms;
-    bool reasonable_orders;
-    bool only_causal_landmarks;
-    bool disjunctive_landmarks;
-    bool conjunctive_landmarks;
-    bool no_orders;
-    OperatorCost lm_cost_type;
-    bool conditional_effects_supported;
     int reached_cost;
     int needed_cost;
     int landmarks_cost;

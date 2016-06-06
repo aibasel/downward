@@ -33,7 +33,6 @@ class LamaFFSynergy {
     std::unique_ptr<FFSlaveHeuristic> ff_slave_heuristic;
 
     std::unique_ptr<LandmarkCountHeuristic> lama_heuristic;
-    Exploration *exploration;
 
     EvaluationResult lama_result;
     EvaluationResult ff_result;
@@ -47,7 +46,7 @@ class LamaFFSynergy {
 
 public:
     explicit LamaFFSynergy(const options::Options &opts);
-    ~LamaFFSynergy() = default;
+    virtual ~LamaFFSynergy() = default;
 
     Heuristic *get_lama_heuristic_proxy() const;
     Heuristic *get_ff_heuristic_proxy() const;

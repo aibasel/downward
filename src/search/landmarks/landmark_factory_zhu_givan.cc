@@ -1,10 +1,14 @@
 #include "landmark_factory_zhu_givan.h"
+
 #include "landmark_graph.h"
+
 #include "../global_operator.h"
 #include "../global_state.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+
+#include "../utils/language.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -19,7 +23,7 @@ LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
     : LandmarkFactory(opts) {
 }
 
-void LandmarkFactoryZhuGivan::generate_landmarks() {
+void LandmarkFactoryZhuGivan::generate_landmarks(Exploration &exploration) {
     cout << "Generating landmarks using Zhu/Givan label propagation\n";
 
     compute_triggers();
@@ -31,7 +35,7 @@ void LandmarkFactoryZhuGivan::generate_landmarks() {
         return;
     }
 
-    extract_landmarks(last_prop_layer);
+    extract_landmarks(exploration, last_prop_layer);
 }
 
 bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
@@ -44,7 +48,9 @@ bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
 }
 
 void LandmarkFactoryZhuGivan::extract_landmarks(
+    Exploration &exploration,
     const proposition_layer &last_prop_layer) {
+    utils::unused_variable(exploration);
     // insert goal landmarks and mark them as goals
     for (size_t i = 0; i < g_goal.size(); ++i) {
         LandmarkNode *lmp;
@@ -73,13 +79,13 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
                 assert(hacked_initial_state()[it->first] == it->second ||
-                       !relaxed_task_solvable(true, node));
+                       !relaxed_task_solvable(exploration, true, node));
             } else
                 node = &lm_graph->get_simple_lm_node(*it);
             // Add order: *it ->_{nat} g_goal[i]
             assert(node->parents.find(lmp) == node->parents.end());
             assert(lmp->children.find(node) == lmp->children.end());
-            edge_add(*node, *lmp, natural);
+            edge_add(*node, *lmp, EdgeType::natural);
         }
     }
 }
@@ -288,30 +294,30 @@ void LandmarkFactoryZhuGivan::compute_triggers() {
     }
 }
 
-static LandmarkGraph *_parse(OptionParser &parser) {
+bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
+    return true;
+}
+
+static LandmarkFactory *_parse(OptionParser &parser) {
     parser.document_synopsis(
         "Zhu/Givan Landmarks",
         "The landmark generation method introduced by "
         "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
     parser.document_note("Relevant options", "reasonable_orders, no_orders");
-    LandmarkGraph::add_options_to_parser(parser);
+    _add_options_to_parser(parser);
     Options opts = parser.parse();
 
     // TODO: Make sure that conditional effects are indeed supported.
     parser.document_language_support("conditional_effects",
                                      "We think they are supported, but this "
                                      "is not 100% sure.");
-    opts.set<bool>("supports_conditional_effects", true);
 
     if (parser.dry_run()) {
-        return 0;
+        return nullptr;
     } else {
-        opts.set<Exploration *>("explor", new Exploration(opts));
-        LandmarkFactoryZhuGivan lm_graph_factory(opts);
-        LandmarkGraph *graph = lm_graph_factory.compute_lm_graph();
-        return graph;
+        return new LandmarkFactoryZhuGivan(opts);
     }
 }
 
-static Plugin<LandmarkGraph> _plugin("lm_zg", _parse);
+static Plugin<LandmarkFactory> _plugin("lm_zg", _parse);
 }
