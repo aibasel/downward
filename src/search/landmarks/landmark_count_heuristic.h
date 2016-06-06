@@ -12,16 +12,15 @@
 namespace landmarks {
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
-    LandmarkGraph &lgraph;
-    Exploration *exploration;
-    bool use_preferred_operators;
-    int lookahead;
-    bool ff_search_disjunctive_lms;
+    std::shared_ptr<LandmarkGraph> lgraph;
+    Exploration exploration;
+    const bool use_preferred_operators;
+    const bool ff_search_disjunctive_lms;
+    const bool conditional_effects_supported;
+    const bool use_cost_sharing;
 
-    LandmarkStatusManager lm_status_manager;
-    LandmarkCostAssignment *lm_cost_assignment;
-
-    bool use_cost_sharing;
+    std::unique_ptr<LandmarkStatusManager> lm_status_manager;
+    std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
 
     int get_heuristic_value(const GlobalState &state);
 
@@ -31,7 +30,7 @@ class LandmarkCountHeuristic : public Heuristic {
                              LandmarkSet &result);
     // returns true iff relaxed reachable and marks relaxed operators
 
-    bool check_node_orders_disobeyed(LandmarkNode &node,
+    bool check_node_orders_disobeyed(const LandmarkNode &node,
                                      const LandmarkSet &reached) const;
 
     void add_node_children(LandmarkNode &node, const LandmarkSet &reached) const;
@@ -42,14 +41,12 @@ class LandmarkCountHeuristic : public Heuristic {
                                   const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &state);
 
-    Exploration *get_exploration() {return exploration; }
     void convert_lms(LandmarkSet &lms_set, const std::vector<bool> &lms_vec);
 protected:
     virtual int compute_heuristic(const GlobalState &state);
 public:
-    LandmarkCountHeuristic(const Options &opts);
-    ~LandmarkCountHeuristic() {
-    }
+    explicit LandmarkCountHeuristic(const options::Options &opts);
+    virtual ~LandmarkCountHeuristic() override = default;
     virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
                              const GlobalState &state);
     virtual bool dead_ends_are_reliable() const;

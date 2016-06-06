@@ -109,8 +109,7 @@ LamaFFSynergy::LamaFFSynergy(const Options &opts)
     : lama_master_heuristic(new LamaMasterHeuristic(this)),
       ff_slave_heuristic(new FFSlaveHeuristic(
                              this, lama_master_heuristic.get())),
-      lama_heuristic(new LandmarkCountHeuristic(opts)),
-      exploration(lama_heuristic->get_exploration()) {
+      lama_heuristic(new LandmarkCountHeuristic(opts)) {
     cout << "Initializing LAMA-FF synergy object" << endl;
 }
 
@@ -123,9 +122,9 @@ void LamaFFSynergy::compute_heuristics(EvaluationContext &eval_context) {
       together.
     */
 
-    exploration->set_recompute_heuristic();
+    lama_heuristic->exploration.set_recompute_heuristic();
     lama_result = lama_heuristic->compute_result(eval_context);
-    ff_result = exploration->compute_result(eval_context);
+    ff_result = lama_heuristic->exploration.compute_result(eval_context);
 }
 
 bool LamaFFSynergy::lama_reach_state(
@@ -153,7 +152,7 @@ static Synergy *_parse(OptionParser &parser) {
         "This synergy can only be used via Predefinition "
         "(see OptionSyntax#Predefinitions), for example:\n"
         "\"hlm,hff=lm_ff_syn(...)\"");
-    parser.add_option<LandmarkGraph *>("lm_graph");
+    parser.add_option<LandmarkFactory *>("lm_factory");
     parser.add_option<bool>("admissible", "get admissible estimate", "false");
     parser.add_option<bool>("optimal", "optimal cost sharing", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
