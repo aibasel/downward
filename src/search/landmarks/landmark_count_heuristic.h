@@ -43,13 +43,13 @@ class LandmarkCountHeuristic : public Heuristic {
 
     void convert_lms(LandmarkSet &lms_set, const std::vector<bool> &lms_vec);
 protected:
-    virtual int compute_heuristic(const GlobalState &state);
+    virtual int compute_heuristic(const GlobalState &state) override;
 public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
     virtual ~LandmarkCountHeuristic() override = default;
     virtual bool reach_state(const GlobalState &parent_state, const GlobalOperator &op,
-                             const GlobalState &state);
-    virtual bool dead_ends_are_reliable() const;
+                             const GlobalState &state) override;
+    virtual bool dead_ends_are_reliable() const override;
 };
 }
 
