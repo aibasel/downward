@@ -39,8 +39,7 @@ public:
         const std::shared_ptr<AbstractTask> &task)
         : hadd(create_additive_heuristic(task)) {
         TaskProxy task_proxy(*task);
-        hadd->initialize_and_compute_heuristic_for_cegar(
-            task_proxy.get_initial_state());
+        hadd->compute_heuristic_for_cegar(task_proxy.get_initial_state());
     }
 
     bool operator()(Fact a, Fact b) {

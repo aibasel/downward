@@ -57,13 +57,12 @@ class AdditiveHeuristic : public relaxation_heuristic::RelaxationHeuristic {
 
     int compute_heuristic(const State &state);
 protected:
-    virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
 
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);
 public:
-    AdditiveHeuristic(const options::Options &options);
+    explicit AdditiveHeuristic(const options::Options &options);
     ~AdditiveHeuristic();
 
     /*
@@ -72,7 +71,7 @@ public:
       computation from the heuristic class. Then the CEGAR code could
       use the computation object instead of the heuristic.
     */
-    void initialize_and_compute_heuristic_for_cegar(const State &state);
+    void compute_heuristic_for_cegar(const State &state);
 
     int get_cost_for_cegar(int var, int value) const {
         assert(utils::in_bounds(var, propositions));
