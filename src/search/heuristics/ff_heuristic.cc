@@ -12,9 +12,9 @@ using namespace std;
 namespace ff_heuristic {
 // construction and destruction
 FFHeuristic::FFHeuristic(const Options &opts)
-    : AdditiveHeuristic(opts) {
+    : AdditiveHeuristic(opts),
+      relaxed_plan(task_proxy.get_operators().size(), false) {
     cout << "Initializing FF heuristic..." << endl;
-    relaxed_plan.resize(task_proxy.get_operators().size(), false);
 }
 
 FFHeuristic::~FFHeuristic() {

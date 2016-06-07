@@ -16,9 +16,8 @@ using namespace std;
 namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
     : Heuristic(opts),
-      landmark_generator(nullptr) {
+      landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     cout << "Initializing landmark cut heuristic..." << endl;
-    landmark_generator = utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy);
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
