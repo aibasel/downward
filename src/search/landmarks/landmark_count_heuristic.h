@@ -45,7 +45,7 @@ class LandmarkCountHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const GlobalState &state) override;
 public:
-    LandmarkCountHeuristic(const Options &opts);
+    LandmarkCountHeuristic(const options::Options &opts);
     ~LandmarkCountHeuristic() {
     }
 
