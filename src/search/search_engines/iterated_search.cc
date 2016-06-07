@@ -21,9 +21,6 @@ IteratedSearch::IteratedSearch(const Options &opts)
       iterated_found_solution(false) {
 }
 
-void IteratedSearch::initialize() {
-}
-
 SearchEngine *IteratedSearch::get_search_engine(
     int engine_configs_index) {
     OptionParser parser(engine_configs[engine_configs_index], false);

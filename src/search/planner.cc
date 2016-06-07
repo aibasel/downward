@@ -20,7 +20,7 @@ int main(int argc, const char **argv) {
     if (string(argv[1]).compare("--help") != 0)
         read_everything(cin);
 
-    SearchEngine *engine = 0;
+    SearchEngine *engine = nullptr;
 
     // The command line is parsed twice: once in dry-run mode, to
     // check for simple input errors, and then in normal mode.
