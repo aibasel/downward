@@ -177,8 +177,10 @@ void Exploration::setup_exploration_queue(const State &state,
     }
 
     // Deal with current state.
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        ExProposition *init_prop = &propositions[var][state[var].get_value()];
+    for (FactProxy fact : state) {
+        int var_id = fact.get_variable().get_id();
+        int value = fact.get_value();
+        ExProposition *init_prop = &propositions[var_id][value];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
 
