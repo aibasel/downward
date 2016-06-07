@@ -21,7 +21,8 @@ namespace cg_heuristic {
 CGHeuristic::CGHeuristic(const Options &opts)
     : Heuristic(opts),
       cache(new CGCache(task_proxy)), cache_hits(0), cache_misses(0),
-      helpful_transition_extraction_counter(0) {
+      helpful_transition_extraction_counter(0),
+      min_action_cost(get_min_operator_cost(task_proxy)) {
     cout << "Initializing causal graph heuristic..." << endl;
 
     unsigned int num_vars = task_proxy.get_variables().size();
@@ -33,11 +34,6 @@ CGHeuristic::CGHeuristic(const Options &opts)
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var; };
     DTGFactory factory(task_proxy, false, pruning_condition);
     transition_graphs = factory.build_dtgs();
-
-    min_action_cost = numeric_limits<int>::max();
-    for (OperatorProxy op : task_proxy.get_operators())
-        if (min_action_cost > op.get_cost())
-            min_action_cost = op.get_cost();
 }
 
 CGHeuristic::~CGHeuristic() {
