@@ -13,10 +13,6 @@
 class GlobalOperator;
 class GlobalState;
 
-// HACK! remove this once landmark heuristics are switched to the new task interface
-GlobalState hacked_initial_state();
-
-
 namespace landmarks {
 struct ExProposition;
 struct ExUnaryOperator;
@@ -100,7 +96,12 @@ class Exploration : public Heuristic {
     void build_unary_operators(const GlobalOperator &op);
     void simplify();
 
-    void setup_exploration_queue(const GlobalState &state,
+    // TODO: this overload should go away once the landmark code uses the task interface
+    void setup_exploration_queue(const GlobalState &global_state,
+                                 const std::vector<std::pair<int, int>> &excluded_props,
+                                 const std::unordered_set<const GlobalOperator *> &excluded_ops,
+                                 bool use_h_max);
+    void setup_exploration_queue(const State &state,
                                  const std::vector<std::pair<int, int>> &excluded_props,
                                  const std::unordered_set<const GlobalOperator *> &excluded_ops,
                                  bool use_h_max);

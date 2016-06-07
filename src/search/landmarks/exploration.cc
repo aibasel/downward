@@ -12,14 +12,6 @@
 
 using namespace std;
 
-// HACK! remove this once landmark heuristics are switched to the new task interface
-GlobalState hacked_initial_state() {
-    static StateRegistry registry(*g_state_packer,
-                                  *g_axiom_evaluator,
-                                  g_initial_state_data);
-    return registry.get_initial_state();
-}
-
 namespace landmarks {
 /* Integration Note: this class is the same as (rich man's) FF heuristic
    (taken from hector branch) except for the following:
@@ -162,7 +154,16 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
 }
 
 // heuristic computation
-void Exploration::setup_exploration_queue(const GlobalState &state,
+void Exploration::setup_exploration_queue(const GlobalState &global_state,
+                                          const vector<pair<int, int>> &excluded_props,
+                                          const unordered_set<const GlobalOperator *> &excluded_ops,
+                                          bool use_h_max = false) {
+    // HACK switch everything to use the correct task through the task interface
+    State state = convert_global_state(global_state);
+    setup_exploration_queue(state, excluded_props, excluded_ops, use_h_max);
+}
+
+void Exploration::setup_exploration_queue(const State &state,
                                           const vector<pair<int, int>> &excluded_props,
                                           const unordered_set<const GlobalOperator *> &excluded_ops,
                                           bool use_h_max = false) {
@@ -186,7 +187,7 @@ void Exploration::setup_exploration_queue(const GlobalState &state,
 
     // Deal with current state.
     for (size_t var = 0; var < propositions.size(); ++var) {
-        ExProposition *init_prop = &propositions[var][state[var]];
+        ExProposition *init_prop = &propositions[var][state[var].get_value()];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
 
@@ -338,7 +339,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
                                                      const unordered_set<const GlobalOperator *> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
-    setup_exploration_queue(hacked_initial_state(), excluded_props, excluded_ops, true);
+    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_ops, true);
     relaxed_exploration(true, level_out);
 
     // Copy reachability information into lvl_var and lvl_op
