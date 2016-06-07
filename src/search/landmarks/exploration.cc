@@ -154,15 +154,6 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
 }
 
 // heuristic computation
-void Exploration::setup_exploration_queue(const GlobalState &global_state,
-                                          const vector<pair<int, int>> &excluded_props,
-                                          const unordered_set<const GlobalOperator *> &excluded_ops,
-                                          bool use_h_max = false) {
-    // HACK switch everything to use the correct task through the task interface
-    State state = convert_global_state(global_state);
-    setup_exploration_queue(state, excluded_props, excluded_ops, use_h_max);
-}
-
 void Exploration::setup_exploration_queue(const State &state,
                                           const vector<pair<int, int>> &excluded_props,
                                           const unordered_set<const GlobalOperator *> &excluded_ops,
@@ -390,7 +381,8 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
     heuristic_recomputation_needed = true;
 }
 
-void Exploration::prepare_heuristic_computation(const GlobalState &state, bool h_max = false) {
+void Exploration::prepare_heuristic_computation(const GlobalState &state,
+                                                bool h_max = false) {
     setup_exploration_queue(state, h_max);
     relaxed_exploration(h_max);
     heuristic_recomputation_needed = false;
