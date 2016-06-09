@@ -188,6 +188,8 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     AbstractState *v1 = new_states.first;
     AbstractState *v2 = new_states.second;
 
+    //transition_system.rewire(state, v1, v2, var, wanted);
+
     states.erase(state);
     states.insert(v1);
     states.insert(v2);

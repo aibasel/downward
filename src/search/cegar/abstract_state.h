@@ -58,7 +58,6 @@ public:
 };
 
 class AbstractState {
-private:
     // Since the abstraction owns the state we don't need AbstractTask.
     const TaskProxy &task_proxy;
 
@@ -82,17 +81,12 @@ private:
         const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
     void add_arc(int op_id, AbstractState *other);
-    void add_loop(int op_id);
 
     void remove_arc(Arcs &arcs, int op_id, AbstractState *other);
-    void remove_incoming_arc(int op_id, AbstractState *other);
-    void remove_outgoing_arc(int op_id, AbstractState *other);
 
     void split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
     void split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
     void split_loops(int var, AbstractState *v1, AbstractState *v2);
-
-    bool domains_intersect(const AbstractState *other, int var) const;
 
     bool is_more_general_than(const AbstractState &other) const;
 
@@ -104,10 +98,20 @@ public:
 
     AbstractState(AbstractState &&other);
 
+    void add_outgoing_arc(int op_id, AbstractState *target);
+    void add_incoming_arc(int op_id, AbstractState *src);
+    void add_loop(int op_id);
+
+    void remove_incoming_arc(int op_id, AbstractState *other);
+    void remove_outgoing_arc(int op_id, AbstractState *other);
+
+    bool domains_intersect(const AbstractState *other, int var) const;
+
     // Return the size of var's abstract domain for this state.
     int count(int var) const;
 
     bool contains(FactProxy fact) const;
+    bool contains(int var, int value) const;
 
     // Return the abstract state in which applying "op" leads to this state.
     AbstractState regress(OperatorProxy op) const;

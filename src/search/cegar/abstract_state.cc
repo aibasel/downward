@@ -37,6 +37,10 @@ bool AbstractState::contains(FactProxy fact) const {
     return domains.test(fact.get_variable().get_id(), fact.get_value());
 }
 
+bool AbstractState::contains(int var, int value) const {
+    return domains.test(var, value);
+}
+
 void AbstractState::add_arc(int op_id, AbstractState *other) {
     /*
       Experiments showed that keeping the arcs sorted for faster removal
@@ -48,6 +52,16 @@ void AbstractState::add_arc(int op_id, AbstractState *other) {
     assert(other != this);
     outgoing_arcs.push_back(Arc(op_id, other));
     other->incoming_arcs.push_back(Arc(op_id, this));
+}
+
+void AbstractState::add_outgoing_arc(int op_id, AbstractState *target) {
+    assert(target != this);
+    outgoing_arcs.emplace_back(op_id, target);
+}
+
+void AbstractState::add_incoming_arc(int op_id, AbstractState *src) {
+    assert(src != this);
+    incoming_arcs.emplace_back(op_id, src);
 }
 
 void AbstractState::add_loop(int op_id) {
