@@ -386,7 +386,7 @@ fast_downward_plugin(
         cegar/abstract_state.cc
         cegar/additive_cartesian_heuristic.cc
         cegar/arc.cc
-        cegar/cartesian_heuristic.cc
+        cegar/cartesian_heuristic_function.cc
         cegar/domains.cc
         cegar/refinement_hierarchy.cc
         cegar/split_selector.cc
@@ -411,6 +411,9 @@ fast_downward_plugin(
         merge_and_shrink/merge_dfp.cc
         merge_and_shrink/merge_linear.cc
         merge_and_shrink/merge_strategy.cc
+        merge_and_shrink/merge_strategy_factory.cc
+        merge_and_shrink/merge_strategy_factory_dfp.cc
+        merge_and_shrink/merge_strategy_factory_linear.cc
         merge_and_shrink/shrink_bisimulation.cc
         merge_and_shrink/shrink_bucket_based.cc
         merge_and_shrink/shrink_fh.cc

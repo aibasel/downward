@@ -28,7 +28,6 @@ class IteratedSearch : public SearchEngine {
     SearchEngine *create_phase(int p);
     SearchStatus step_return_value();
 
-    virtual void initialize() override;
     virtual SearchStatus step() override;
 
 public:

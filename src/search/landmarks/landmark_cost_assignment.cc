@@ -4,6 +4,7 @@
 
 #include "../utils/collections.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <functional>
 #include <iostream>

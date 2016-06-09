@@ -1,7 +1,14 @@
 #include "landmark_factory.h"
 
+#include "landmark_graph.h"
+
+#include "exploration.h"
 #include "util.h"
 
+#include "../option_parser.h"
+#include "../plugin.h"
+
+#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <fstream>
@@ -10,16 +17,41 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory(const Options &opts)
-    : lm_graph(new LandmarkGraph(opts)) {
+LandmarkFactory::LandmarkFactory(const options::Options &opts)
+    : reasonable_orders(opts.get<bool>("reasonable_orders")),
+      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")),
+      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
+      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
+      no_orders(opts.get<bool>("no_orders")),
+      lm_cost_type(static_cast<OperatorCost>(opts.get_enum("lm_cost_type"))) {
 }
+/*
+  Note: To allow reusing landmark graphs, we use the following temporary
+  solution.
 
-LandmarkGraph *LandmarkFactory::compute_lm_graph() {
+  Landmark factories cache the first landmark graph they compute, so
+  each call to this function returns the same graph.
+
+  If you want to compute different landmark graphs for different
+  Exploration objects, you have to use separate landmark factories.
+
+  This solution remains temporary as long as the question of when and
+  how to reuse landmark graphs is open.
+
+  As all heuristics will work on task transformations in the future,
+  this function will also get access to a TaskProxy. Then we need to
+  ensure that the TaskProxy used by the Exploration object is the same
+  as the TaskProxy object passed to this function.
+*/
+std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
+    if (lm_graph)
+        return lm_graph;
     utils::Timer lm_generation_timer;
-    generate_landmarks();
+    lm_graph = make_shared<LandmarkGraph>();
+    generate_landmarks(exploration);
 
     // the following replaces the old "build_lm_graph"
-    generate();
+    generate(exploration);
     cout << "Landmarks generation time: " << lm_generation_timer << endl;
     if (lm_graph->number_of_landmarks() == 0)
         cout << "Warning! No landmarks found. Task unsolvable?" << endl;
@@ -34,18 +66,18 @@ LandmarkGraph *LandmarkFactory::compute_lm_graph() {
     return lm_graph;
 }
 
-void LandmarkFactory::generate() {
-    if (lm_graph->use_only_causal_landmarks())
-        discard_noncausal_landmarks();
-    if (!lm_graph->use_disjunctive_landmarks())
+void LandmarkFactory::generate(Exploration &exploration) {
+    if (only_causal_landmarks)
+        discard_noncausal_landmarks(exploration);
+    if (!disjunctive_landmarks)
         discard_disjunctive_landmarks();
-    if (!lm_graph->use_conjunctive_landmarks())
+    if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     lm_graph->set_landmark_ids();
 
-    if (!lm_graph->use_orders())
+    if (no_orders)
         discard_all_orderings();
-    else if (lm_graph->is_using_reasonable_orderings()) {
+    else if (reasonable_orders) {
         cout << "approx. reasonable orders" << endl;
         approximate_reasonable_orders(false);
         cout << "approx. obedient reasonable orders" << endl;
@@ -53,7 +85,7 @@ void LandmarkFactory::generate() {
     }
     mk_acyclic_graph();
     lm_graph->set_landmark_cost(calculate_lms_cost());
-    calc_achievers();
+    calc_achievers(exploration);
 }
 
 bool LandmarkFactory::achieves_non_conditional(const GlobalOperator &o,
@@ -88,7 +120,7 @@ bool LandmarkFactory::is_landmark_precondition(const GlobalOperator &o,
     return false;
 }
 
-bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
+bool LandmarkFactory::relaxed_task_solvable(Exploration &exploration, vector<vector<int>> &lvl_var,
                                             vector<unordered_map<pair<int, int>, int>> &lvl_op,
                                             bool level_out, const LandmarkNode *exclude, bool compute_lvl_op) const {
     /* Test whether the relaxed planning task is solvable without achieving the propositions in
@@ -128,8 +160,8 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
                                               exclude->vals[i]));
     }
     // Do relaxed exploration
-    lm_graph->get_exploration()->compute_reachability_with_excludes(lvl_var, lvl_op, level_out,
-                                                                    exclude_props, exclude_ops, compute_lvl_op);
+    exploration.compute_reachability_with_excludes(
+        lvl_var, lvl_op, level_out, exclude_props, exclude_ops, compute_lvl_op);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (size_t i = 0; i < g_goal.size(); ++i)
@@ -141,7 +173,7 @@ bool LandmarkFactory::relaxed_task_solvable(vector<vector<int>> &lvl_var,
 }
 
 
-bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
+bool LandmarkFactory::is_causal_landmark(Exploration &exploration, const LandmarkNode &landmark) const {
     /* Test whether the relaxed planning task is unsolvable without using any operator
        that has "landmark" has a precondition.
        Similar to "relaxed_task_solvable" above.
@@ -165,8 +197,8 @@ bool LandmarkFactory::is_causal_landmark(const LandmarkNode &landmark) const {
         }
     }
     // Do relaxed exploration
-    lm_graph->get_exploration()->compute_reachability_with_excludes(lvl_var, lvl_op, true,
-                                                                    exclude_props, exclude_ops, false);
+    exploration.compute_reachability_with_excludes(
+        lvl_var, lvl_op, true, exclude_props, exclude_ops, false);
 
     // Test whether all goal propositions have a level of less than numeric_limits<int>::max()
     for (size_t i = 0; i < g_goal.size(); ++i)
@@ -420,7 +452,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
                 if (node2_p == node_p || node2_p->disjunctive)
                     continue;
                 if (interferes(node2_p, node_p)) {
-                    edge_add(*node2_p, *node_p, reasonable);
+                    edge_add(*node2_p, *node_p, EdgeType::reasonable);
                 }
             }
         } else {
@@ -429,14 +461,14 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
             unordered_set<LandmarkNode *> interesting_nodes(g_variable_name.size());
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2 = *child.first;
-                const edge_type &edge2 = child.second;
-                if (edge2 >= greedy_necessary) { // found node2: node_p ->_gn node2
+                const EdgeType &edge2 = child.second;
+                if (edge2 >= EdgeType::greedy_necessary) { // found node2: node_p ->_gn node2
                     for (const auto &p : node2.parents) {   // find parent
                         LandmarkNode &parent = *(p.first);
-                        const edge_type &edge = p.second;
+                        const EdgeType &edge = p.second;
                         if (parent.disjunctive)
                             continue;
-                        if ((edge >= natural || (obedient_orders && edge == reasonable)) &&
+                        if ((edge >= EdgeType::natural || (obedient_orders && edge == EdgeType::reasonable)) &&
                             &parent != node_p) {  // find predecessors or parent and collect in
                             // "interesting nodes"
                             interesting_nodes.insert(&parent);
@@ -453,9 +485,9 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
                     continue;
                 if (interferes(node, node_p)) {
                     if (!obedient_orders)
-                        edge_add(*node, *node_p, reasonable);
+                        edge_add(*node, *node_p, EdgeType::reasonable);
                     else
-                        edge_add(*node, *node_p, obedient_reasonable);
+                        edge_add(*node, *node_p, EdgeType::obedient_reasonable);
                 }
             }
         }
@@ -473,8 +505,8 @@ void LandmarkFactory::collect_ancestors(
     unordered_set<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
-        const edge_type &edge = p.second;
-        if (edge >= natural || (use_reasonable && edge == reasonable))
+        const EdgeType &edge = p.second;
+        if (edge >= EdgeType::natural || (use_reasonable && edge == EdgeType::reasonable))
             if (closed_nodes.count(&parent) == 0) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
@@ -486,8 +518,8 @@ void LandmarkFactory::collect_ancestors(
         LandmarkNode &node2 = *(open_nodes.front());
         for (const auto &p : node2.parents) {
             LandmarkNode &parent = *(p.first);
-            const edge_type &edge = p.second;
-            if (edge >= natural || (use_reasonable && edge == reasonable)) {
+            const EdgeType &edge = p.second;
+            if (edge >= EdgeType::natural || (use_reasonable && edge == EdgeType::reasonable)) {
                 if (closed_nodes.count(&parent) == 0) {
                     open_nodes.push_back(&parent);
                     closed_nodes.insert(&parent);
@@ -500,15 +532,15 @@ void LandmarkFactory::collect_ancestors(
 }
 
 void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
-                               edge_type type) {
+                               EdgeType type) {
     /* Adds an edge in the landmarks graph if there is no contradicting edge (simple measure to
     reduce cycles. If the edge is already present, the stronger edge type wins.
     */
     assert(&from != &to);
-    assert(from.parents.find(&to) == from.parents.end() || type <= reasonable);
-    assert(to.children.find(&from) == to.children.end() || type <= reasonable);
+    assert(from.parents.find(&to) == from.parents.end() || type <= EdgeType::reasonable);
+    assert(to.children.find(&from) == to.children.end() || type <= EdgeType::reasonable);
 
-    if (type == reasonable || type == obedient_reasonable) { // simple cycle test
+    if (type == EdgeType::reasonable || type == EdgeType::obedient_reasonable) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
             //cout << "edge in opposite direction exists" << endl;
             if (from.parents.find(&to)->second > type) // Stronger order present, return
@@ -540,7 +572,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     assert(to.parents.find(&from) != to.parents.end());
 }
 
-void LandmarkFactory::discard_noncausal_landmarks() {
+void LandmarkFactory::discard_noncausal_landmarks(Exploration &exploration) {
     int number_of_noncausal_landmarks = 0;
     bool change = true;
     while (change) {
@@ -548,7 +580,7 @@ void LandmarkFactory::discard_noncausal_landmarks() {
         for (set<LandmarkNode *>::const_iterator it = lm_graph->get_nodes().begin(); it
              != lm_graph->get_nodes().end(); ++it) {
             LandmarkNode *n = *it;
-            if (!is_causal_landmark(*n)) {
+            if (!is_causal_landmark(exploration, *n)) {
                 cout << "Discarding non-causal landmark: ";
                 lm_graph->dump_node(n);
                 lm_graph->rm_landmark_node(n);
@@ -641,24 +673,24 @@ void LandmarkFactory::mk_acyclic_graph() {
 }
 
 bool LandmarkFactory::remove_first_weakest_cycle_edge(LandmarkNode *cur,
-                                                      list<pair<LandmarkNode *, edge_type>> &path, list<pair<LandmarkNode *,
-                                                                                                             edge_type>>::iterator it) {
+                                                      list<pair<LandmarkNode *, EdgeType>> &path,
+                                                      list<pair<LandmarkNode *, EdgeType>>::iterator it) {
     LandmarkNode *parent_p = 0;
     LandmarkNode *child_p = 0;
-    for (list<pair<LandmarkNode *, edge_type>>::iterator it2 = it; it2
+    for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it; it2
          != path.end(); ++it2) {
-        edge_type edge = it2->second;
-        if (edge == reasonable || edge == obedient_reasonable) {
+        EdgeType edge = it2->second;
+        if (edge == EdgeType::reasonable || edge == EdgeType::obedient_reasonable) {
             parent_p = it2->first;
             if (*it2 == path.back()) {
                 child_p = cur;
                 break;
             } else {
-                list<pair<LandmarkNode *, edge_type>>::iterator child_it = it2;
+                list<pair<LandmarkNode *, EdgeType>>::iterator child_it = it2;
                 ++child_it;
                 child_p = child_it->first;
             }
-            if (edge == obedient_reasonable)
+            if (edge == EdgeType::obedient_reasonable)
                 break;
             // else no break since o_r order could still appear in list
         }
@@ -675,14 +707,14 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
                                         unordered_set<LandmarkNode *> &acyclic_node_set) {
     assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
     int nr_removed = 0;
-    list<pair<LandmarkNode *, edge_type>> path;
+    list<pair<LandmarkNode *, EdgeType>> path;
     unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->number_of_landmarks());
     LandmarkNode *cur = &lmn;
     while (true) {
         assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
         if (visited.find(cur) != visited.end()) { // cycle
             // find other occurrence of cur node in path
-            list<pair<LandmarkNode *, edge_type>>::iterator it;
+            list<pair<LandmarkNode *, EdgeType>>::iterator it;
             for (it = path.begin(); it != path.end(); ++it) {
                 if (it->first == cur)
                     break;
@@ -702,7 +734,7 @@ int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
         bool empty = true;
         for (const auto &child : cur->children) {
             LandmarkNode *child_p = child.first;
-            edge_type edge = child.second;
+            EdgeType edge = child.second;
             if (acyclic_node_set.find(child_p) == acyclic_node_set.end()) {
                 path.push_back(make_pair(cur, edge));
                 cur = child_p;
@@ -737,6 +769,7 @@ int LandmarkFactory::calculate_lms_cost() const {
 }
 
 void LandmarkFactory::compute_predecessor_information(
+    Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
     std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op) {
@@ -744,10 +777,10 @@ void LandmarkFactory::compute_predecessor_information(
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
 
-    relaxed_task_solvable(lvl_var, lvl_op, true, bp);
+    relaxed_task_solvable(exploration, lvl_var, lvl_op, true, bp);
 }
 
-void LandmarkFactory::calc_achievers() {
+void LandmarkFactory::calc_achievers(Exploration &exploration) {
     for (set<LandmarkNode *>::iterator node_it = lm_graph->get_nodes().begin(); node_it
          != lm_graph->get_nodes().end(); ++node_it) {
         LandmarkNode &lmn = **node_it;
@@ -763,7 +796,7 @@ void LandmarkFactory::calc_achievers() {
 
         vector<vector<int>> lvl_var;
         vector<unordered_map<pair<int, int>, int>> lvl_op;
-        compute_predecessor_information(&lmn, lvl_var, lvl_op);
+        compute_predecessor_information(exploration, &lmn, lvl_var, lvl_op);
 
         set<int>::iterator ach_it;
         for (ach_it = lmn.possible_achievers.begin(); ach_it
@@ -777,4 +810,47 @@ void LandmarkFactory::calc_achievers() {
         }
     }
 }
+
+void _add_options_to_parser(OptionParser &parser) {
+    parser.add_option<bool>("reasonable_orders",
+                            "generate reasonable orders",
+                            "false");
+    parser.add_option<bool>("only_causal_landmarks",
+                            "keep only causal landmarks",
+                            "false");
+    parser.add_option<bool>("disjunctive_landmarks",
+                            "keep disjunctive landmarks",
+                            "true");
+    parser.add_option<bool>("conjunctive_landmarks",
+                            "keep conjunctive landmarks",
+                            "true");
+    parser.add_option<bool>("no_orders",
+                            "discard all orderings",
+                            "false");
+
+    /* TODO: The following lines overlap strongly with
+       ::add_cost_type_option_to_parser, but the option name is
+       different, so the method cannot be used directly. We could make
+       the option name in ::add_cost_type_option_to_parser settable by
+       the caller, but this doesn't seem worth it since this option
+       should go away anyway once the landmark code is properly
+       cleaned up. */
+    vector<string> cost_types;
+    cost_types.push_back("NORMAL");
+    cost_types.push_back("ONE");
+    cost_types.push_back("PLUSONE");
+    parser.add_enum_option("lm_cost_type",
+                           cost_types,
+                           "landmark action cost adjustment",
+                           "NORMAL");
+}
+
+
+static PluginTypePlugin<LandmarkFactory> _type_plugin(
+    "LandmarkFactory",
+    "A landmark factory specification is either a newly created "
+    "instance or a landmark factory that has been defined previously. "
+    "This page describes how one can specify a new landmark factory instance. "
+    "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.\n\n"
+    "**Warning:** See OptionCaveats for using cost types with Landmarks");
 }

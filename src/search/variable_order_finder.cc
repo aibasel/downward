@@ -101,7 +101,7 @@ int VariableOrderFinder::next() {
     utils::exit_with(ExitCode::INPUT_ERROR);
 }
 
-void VariableOrderFinder::dump() const {
+void dump_variable_order_type(VariableOrderType variable_order_type) {
     cout << "Variable order type: ";
     switch (variable_order_type) {
     case CG_GOAL_LEVEL:
