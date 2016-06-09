@@ -102,7 +102,7 @@ class Exploration : public Heuristic {
                                  const std::vector<std::pair<int, int>> &excluded_props,
                                  const std::unordered_set<const GlobalOperator *> &excluded_ops,
                                  bool use_h_max);
-    inline void setup_exploration_queue(const GlobalState &global_state, bool h_max) {
+    void setup_exploration_queue(const GlobalState &global_state, bool h_max) {
         std::vector<std::pair<int, int>> excluded_props;
         std::unordered_set<const GlobalOperator *> excluded_ops;
         State state = convert_global_state(global_state);

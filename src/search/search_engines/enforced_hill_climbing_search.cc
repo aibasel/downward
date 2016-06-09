@@ -75,7 +75,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     heuristics.insert(preferred_operator_heuristics.begin(),
                       preferred_operator_heuristics.end());
     heuristics.insert(heuristic);
-    GlobalState initial_state = state_registry.get_initial_state();
+    const GlobalState &initial_state = state_registry.get_initial_state();
     for (Heuristic *heuristic : heuristics) {
         heuristic->notify_initial_state(initial_state);
     }

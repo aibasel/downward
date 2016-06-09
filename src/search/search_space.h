@@ -57,6 +57,7 @@ class SearchSpace {
     OperatorCost cost_type;
 public:
     SearchSpace(StateRegistry &state_registry, OperatorCost cost_type);
+
     SearchNode get_node(const GlobalState &state);
     void trace_path(const GlobalState &goal_state,
                     std::vector<const GlobalOperator *> &path) const;

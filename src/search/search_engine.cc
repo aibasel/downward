@@ -24,8 +24,9 @@ SearchEngine::SearchEngine(const Options &opts)
       state_registry(*g_state_packer,
                      *g_axiom_evaluator,
                      g_initial_state_data),
-      search_space(state_registry, OperatorCost(opts.get_enum("cost_type"))),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))),
+      search_space(state_registry,
+                   static_cast<OperatorCost>(opts.get_enum("cost_type"))),
+      cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;

@@ -59,7 +59,7 @@ extern std::vector<int> g_default_axiom_values;
 
 extern IntPacker *g_state_packer;
 // This vector holds the initial values *before* the axioms have been evaluated.
-// Use the state registry to obtain the real initial state.
+// Use a state registry to obtain the real initial state.
 extern std::vector<int> g_initial_state_data;
 extern std::vector<std::pair<int, int>> g_goal;
 
