@@ -4,7 +4,7 @@
 from downward import suites
 from lab.reports import Attribute, gm
 
-from common_setup import IssueConfig, IssueExperiment
+from common_setup_no_benchmarks import IssueConfig, IssueExperiment
 from relativescatter import RelativeScatterPlotReport
 
 def main(revisions=None):
@@ -17,6 +17,7 @@ def main(revisions=None):
     }
 
     exp = IssueExperiment(
+        benchmarks_dir="/infai/pommeren/projects/downward/benchmarks/",
         revisions=revisions,
         configs=configs,
         suite=suite,
