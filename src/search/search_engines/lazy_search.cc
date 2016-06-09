@@ -59,7 +59,7 @@ void LazySearch::initialize() {
 
     heuristics.assign(hset.begin(), hset.end());
     assert(!heuristics.empty());
-    GlobalState initial_state = state_registry.get_initial_state();
+    const GlobalState &initial_state = state_registry.get_initial_state();
     for (Heuristic *heuristic : heuristics) {
         heuristic->notify_initial_state(initial_state);
     }
@@ -176,7 +176,7 @@ SearchStatus LazySearch::step() {
         StateID dummy_id = current_predecessor_id;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
         if (dummy_id == StateID::no_state) {
-            GlobalState initial_state = state_registry.get_initial_state();
+            const GlobalState &initial_state = state_registry.get_initial_state();
             dummy_id = initial_state.get_id();
         }
         GlobalState parent_state = state_registry.lookup_state(dummy_id);

@@ -7,7 +7,7 @@
 using namespace std;
 
 void State::dump_pddl() const {
-    for (const FactProxy &fact : (*this)) {
+    for (FactProxy fact : (*this)) {
         const string &fact_name = fact.get_name();
         if (fact_name != "<none of those>")
             cout << fact_name << endl;
@@ -15,8 +15,8 @@ void State::dump_pddl() const {
 }
 
 void State::dump_fdr() const {
-    for (const FactProxy &fact : (*this)) {
-        const VariableProxy &var = fact.get_variable();
+    for (FactProxy fact : (*this)) {
+        VariableProxy var = fact.get_variable();
         cout << "  #" << var.get_id() << " [" << var.get_name() << "] -> "
              << fact.get_value() << endl;
     }

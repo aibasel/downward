@@ -243,7 +243,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             // HACK! HACK! we do this because SearchNode has no default/copy constructor
-            GlobalState initial_state = state_registry.get_initial_state();
+            const GlobalState &initial_state = state_registry.get_initial_state();
             SearchNode dummy_node = search_space.get_node(initial_state);
             return make_pair(dummy_node, false);
         }

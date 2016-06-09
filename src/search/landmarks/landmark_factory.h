@@ -20,7 +20,7 @@ class Options;
 
 // HACK! remove this once landmark heuristics are switched to the new task interface
 #include "../global_state.h"
-GlobalState hacked_initial_state();
+const GlobalState &hacked_initial_state();
 
 
 namespace landmarks {
