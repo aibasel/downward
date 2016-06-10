@@ -1,7 +1,5 @@
 #include "stubborn_sets_simple.h"
 
-#include "../globals.h"
-#include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 
