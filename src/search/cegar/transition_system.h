@@ -9,6 +9,9 @@ class AbstractState;
 class TransitionSystem {
     const TaskProxy &task_proxy;
 
+    int num_non_loops;
+    int num_loops;
+
     void add_arc(AbstractState *src, int op_id, AbstractState *target);
     void add_loop(AbstractState *state, int op_id);
 
@@ -33,6 +36,9 @@ public:
     // Update transition system after v has been split into v1 and v2.
     void rewire(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
+
+    int get_num_non_loops() const;
+    int get_num_loops() const;
 };
 }
 

@@ -7,7 +7,9 @@ using namespace std;
 
 namespace cegar {
 TransitionSystem::TransitionSystem(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy) {
+    : task_proxy(task_proxy),
+      num_non_loops(0),
+      num_loops(0) {
 }
 
 void TransitionSystem::add_loops_to_trivial_abstract_state(AbstractState *state) {
@@ -20,20 +22,24 @@ void TransitionSystem::add_arc(AbstractState *src, int op_id, AbstractState *tar
     assert(src != target);
     src->add_outgoing_arc(op_id, target);
     target->add_incoming_arc(op_id, src);
+    ++num_non_loops;
 }
 
 void TransitionSystem::add_loop(AbstractState *state, int op_id) {
     state->add_loop(op_id);
+    ++num_loops;
 }
 
 void TransitionSystem::remove_incoming_arc(
     AbstractState *src, int op_id, AbstractState *target) {
     target->remove_incoming_arc(op_id, src);
+    --num_non_loops;
 }
 
 void TransitionSystem::remove_outgoing_arc(
     AbstractState *src, int op_id, AbstractState *target) {
     src->remove_outgoing_arc(op_id, target);
+    --num_non_loops;
 }
 
 void TransitionSystem::split_incoming_arcs(
@@ -158,6 +164,7 @@ void TransitionSystem::split_loops(
             }
         }
     }
+    num_loops -= v->get_loops().size();
 }
 
 void TransitionSystem::rewire(
@@ -165,5 +172,13 @@ void TransitionSystem::rewire(
     split_incoming_arcs(v, v1, v2, var);
     split_outgoing_arcs(v, v1, v2, var);
     split_loops(v, v1, v2, var);
+}
+
+int TransitionSystem::get_num_non_loops() const {
+    return num_non_loops;
+}
+
+int TransitionSystem::get_num_loops() const {
+    return num_loops;
 }
 }
