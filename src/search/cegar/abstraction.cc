@@ -371,8 +371,10 @@ void Abstraction::print_statistics() {
     cout << "Dead ends: " << dead_ends << endl;
     cout << "Init h: " << get_h_value_of_initial_state() << endl;
 
-    cout << "Self-loops: " << total_loops << endl;
+    assert(transition_system.get_num_non_loops() == total_outgoing_arcs);
+    assert(transition_system.get_num_loops() == total_loops);
     cout << "Arcs: " << total_outgoing_arcs << endl;
+    cout << "Self-loops: " << total_loops << endl;
 
     cout << "Deviations: " << deviations << endl;
     cout << "Unmet preconditions: " << unmet_preconditions << endl;
