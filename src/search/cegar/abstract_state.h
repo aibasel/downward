@@ -82,7 +82,7 @@ class AbstractState {
         const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
     void remove_non_looping_transition(
-        Transitions &arcs, int op_id, AbstractState *other);
+        Transitions &transitions, int op_id, AbstractState *other);
 
     bool is_more_general_than(const AbstractState &other) const;
 
