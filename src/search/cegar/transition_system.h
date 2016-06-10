@@ -28,7 +28,7 @@ class TransitionSystem {
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
 
 public:
-    TransitionSystem(const TaskProxy &task_proxy);
+    explicit TransitionSystem(const TaskProxy &task_proxy);
     ~TransitionSystem() = default;
 
     void add_loops_to_trivial_abstract_state(AbstractState *state);
