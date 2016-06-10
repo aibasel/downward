@@ -6,7 +6,6 @@
 #include "global_state.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "state_registry.h"
 #include "successor_generator.h"
 
 #include "tasks/root_task.h"
@@ -270,8 +269,8 @@ void read_everything(istream &in) {
     cout << "Variables: " << num_vars << endl;
     cout << "Facts: " << num_facts << endl;
     cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() *
-        g_state_packer->get_bin_size_in_bytes() << endl;
+         << g_state_packer->get_num_bins() * sizeof(IntPacker::Bin)
+         << endl;
 
     cout << "Building successor generator..." << flush;
     g_successor_generator = new SuccessorGenerator(g_root_task());

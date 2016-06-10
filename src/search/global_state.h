@@ -37,7 +37,6 @@ class GlobalState {
         return *registry;
     }
 public:
-    GlobalState() = delete;
     ~GlobalState() = default;
 
     StateID get_id() const {
