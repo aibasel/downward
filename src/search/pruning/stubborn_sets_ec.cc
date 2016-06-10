@@ -245,7 +245,6 @@ void StubbornSetsEC::apply_s5(OperatorProxy op, const State &state) {
     }
 
     Fact violated_precondition = find_unsatisfied_precondition(op, state);
-
     assert(violated_precondition.var != -1);
     if (!nes_computed[violated_precondition.var][violated_precondition.value]) {
         add_nes_for_fact(violated_precondition, state);
