@@ -236,23 +236,19 @@ void StubbornSetsEC::get_disabled_vars(
 
 void StubbornSetsEC::apply_s5(OperatorProxy op, const State &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
-    Fact violated_precondition(-1, -1);
     for (FactProxy precondition : op.get_preconditions()) {
         int var_id = precondition.get_variable().get_id();
         int value = precondition.get_value();
 
-        if (state[var_id] != precondition) {
-            if (written_vars[var_id]) {
-                if (!nes_computed[var_id][value]) {
-                    add_nes_for_fact(Fact(var_id, value), state);
-                }
-                return;
+        if (state[var_id] != precondition && written_vars[var_id]) {
+            if (!nes_computed[var_id][value]) {
+                add_nes_for_fact(Fact(var_id, value), state);
             }
-            if (violated_precondition.var == -1) {
-                violated_precondition = Fact(var_id, value);
-            }
+            return;
         }
     }
+
+    Fact violated_precondition = find_unsatisfied_precondition(op, state);
 
     assert(violated_precondition.var != -1);
     if (!nes_computed[violated_precondition.var][violated_precondition.value]) {
