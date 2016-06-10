@@ -14,19 +14,21 @@ private:
     std::vector<bool> written_vars;
     std::vector<std::vector<bool>> nes_computed;
 
-    void get_disabled_vars(int op1_no, int op2_no, std::vector<int> &disabled_vars);
+    void get_disabled_vars(OperatorProxy op1, OperatorProxy op2,
+                           std::vector<int> &disabled_vars);
     void build_reachability_map();
     void compute_operator_preconditions();
     void compute_conflicts_and_disabling();
     void compute_disabled_by_o();
-    void add_conflicting_and_disabling(int op_no, const GlobalState &state);
-    void compute_active_operators(const GlobalState &state);
-    void mark_as_stubborn_and_remember_written_vars(int op_no, const GlobalState &state);
-    void add_nes_for_fact(Fact fact, const GlobalState &state);
-    void apply_s5(const GlobalOperator &op, const GlobalState &state);
+    void add_conflicting_and_disabling(OperatorProxy op, const State &state);
+    void compute_active_operators(const State &state);
+    void mark_as_stubborn_and_remember_written_vars(int op_no, const State &state);
+    void add_nes_for_fact(Fact fact, const State &state);
+    void apply_s5(OperatorProxy op, const State &state);
 protected:
-    virtual void initialize_stubborn_set(const GlobalState &state) override;
-    virtual void handle_stubborn_operator(const GlobalState &state, int op_no) override;
+    virtual void initialize_stubborn_set(const State &state) override;
+    virtual void handle_stubborn_operator(const State &state,
+                                          OperatorProxy op) override;
 public:
     StubbornSetsEC();
     virtual ~StubbornSetsEC() = default;

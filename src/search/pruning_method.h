@@ -1,18 +1,30 @@
 #ifndef PRUNING_METHOD_H
 #define PRUNING_METHOD_H
 
+#include "task_proxy.h"
+
+#include <memory>
 #include <vector>
 
 class GlobalOperator;
 class GlobalState;
 
-// TODO: use the task interface for PruningMethod
 class PruningMethod {
+protected:
+    const std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
+
 public:
+    PruningMethod();
+    virtual ~PruningMethod() = default;
+
     /* This method should never be called for goal states. This can be checked
        with assertions in derived classes. */
-    virtual void prune_operators(const GlobalState &state,
-                                 std::vector<const GlobalOperator *> &ops) = 0;
+    virtual void prune_operators(const State &state,
+                                 std::vector<OperatorProxy> &ops) = 0;
+    // TODO remove this overload once the search uses the task interface.
+    void prune_operators(const GlobalState &state,
+                         std::vector<const GlobalOperator *> &ops);
     virtual void print_statistics() const = 0;
 };
 

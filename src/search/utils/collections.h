@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include<unordered_map>
 #include <vector>
 
 namespace utils {
@@ -37,6 +38,18 @@ T swap_and_pop_from_vector(std::vector<T> &vec, size_t pos) {
 template<class T>
 void release_vector_memory(std::vector<T> &vec) {
     std::vector<T>().swap(vec);
+}
+
+template<class KeyType, class ValueType>
+ValueType get_value_or_default(
+    const std::unordered_map<KeyType, ValueType> &dict,
+    const KeyType &key,
+    const ValueType &default_value) {
+    auto it = dict.find(key);
+    if (it != dict.end()) {
+        return it->second;
+    }
+    return default_value;
 }
 }
 
