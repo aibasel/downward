@@ -19,7 +19,6 @@ private:
     void build_reachability_map();
     void compute_operator_preconditions();
     void compute_conflicts_and_disabling();
-    void compute_disabled_by_o();
     void add_conflicting_and_disabling(OperatorProxy op, const State &state);
     void compute_active_operators(const State &state);
     void mark_as_stubborn_and_remember_written_vars(int op_no, const State &state);
