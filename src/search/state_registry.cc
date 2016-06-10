@@ -89,7 +89,7 @@ int StateRegistry::get_bins_per_state() const {
 }
 
 int StateRegistry::get_state_size_in_bytes() const {
-    return get_bins_per_state() * state_packer.get_bin_size_in_bytes();
+    return get_bins_per_state() * sizeof(PackedStateBin);
 }
 
 void StateRegistry::subscribe(PerStateInformationBase *psi) const {
