@@ -28,7 +28,7 @@ struct Flaw;
 class Abstraction {
     const TaskProxy task_proxy;
     const int max_states;
-    const int max_arcs;
+    const int max_non_looping_transitions;
     const bool use_general_costs;
 
     AbstractSearch abstract_search;
@@ -103,7 +103,7 @@ public:
     explicit Abstraction(
         const std::shared_ptr<AbstractTask> task,
         int max_states,
-        int max_arcs,
+        int max_non_looping_transitions,
         double max_time,
         bool use_general_costs,
         PickSplit pick,

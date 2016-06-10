@@ -12,17 +12,17 @@ class TransitionSystem {
     int num_non_loops;
     int num_loops;
 
-    void add_arc(AbstractState *src, int op_id, AbstractState *target);
+    void add_transition(AbstractState *src, int op_id, AbstractState *target);
     void add_loop(AbstractState *state, int op_id);
 
-    void remove_incoming_arc(
+    void remove_incoming_transition(
         AbstractState *src, int op_id, AbstractState *target);
-    void remove_outgoing_arc(
+    void remove_outgoing_transition(
         AbstractState *src, int op_id, AbstractState *target);
 
-    void split_incoming_arcs(
+    void split_incoming_transitions(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
-    void split_outgoing_arcs(
+    void split_outgoing_transitions(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
     void split_loops(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);

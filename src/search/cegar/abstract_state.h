@@ -21,13 +21,13 @@ using Loops = std::vector<int>;
 
 class AbstractSearchInfo {
     int g;
-    Arc incoming_arc;
+    Arc incoming_transition;
 
     static const int UNDEFINED_OPERATOR;
 
 public:
     AbstractSearchInfo()
-        : incoming_arc(UNDEFINED_OPERATOR, nullptr) {
+        : incoming_transition(UNDEFINED_OPERATOR, nullptr) {
         reset();
     }
 
@@ -35,7 +35,7 @@ public:
 
     void reset() {
         g = std::numeric_limits<int>::max();
-        incoming_arc = Arc(UNDEFINED_OPERATOR, nullptr);
+        incoming_transition = Arc(UNDEFINED_OPERATOR, nullptr);
     }
 
     void decrease_g_value_to(int new_g) {
@@ -47,13 +47,14 @@ public:
         return g;
     }
 
-    void set_incoming_arc(const Arc &arc) {
-        incoming_arc = arc;
+    void set_incoming_transition(const Arc &transition) {
+        incoming_transition = transition;
     }
 
-    const Arc &get_incoming_arc() const {
-        assert(incoming_arc.op_id != UNDEFINED_OPERATOR && incoming_arc.target);
-        return incoming_arc;
+    const Arc &get_incoming_transition() const {
+        assert(incoming_transition.op_id != UNDEFINED_OPERATOR &&
+               incoming_transition.target);
+        return incoming_transition;
     }
 };
 
@@ -68,8 +69,8 @@ class AbstractState {
     Node *node;
 
     // Transitions from and to other abstract states.
-    Arcs incoming_arcs;
-    Arcs outgoing_arcs;
+    Arcs incoming_transitions;
+    Arcs outgoing_transitions;
 
     // Self-loops.
     Loops loops;
@@ -80,7 +81,7 @@ class AbstractState {
     AbstractState(
         const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
-    void remove_arc(Arcs &arcs, int op_id, AbstractState *other);
+    void remove_non_looping_transition(Arcs &arcs, int op_id, AbstractState *other);
 
     bool is_more_general_than(const AbstractState &other) const;
 
@@ -92,12 +93,12 @@ public:
 
     AbstractState(AbstractState &&other);
 
-    void add_outgoing_arc(int op_id, AbstractState *target);
-    void add_incoming_arc(int op_id, AbstractState *src);
+    void add_outgoing_transition(int op_id, AbstractState *target);
+    void add_incoming_transition(int op_id, AbstractState *src);
     void add_loop(int op_id);
 
-    void remove_incoming_arc(int op_id, AbstractState *other);
-    void remove_outgoing_arc(int op_id, AbstractState *other);
+    void remove_incoming_transition(int op_id, AbstractState *other);
+    void remove_outgoing_transition(int op_id, AbstractState *other);
 
     bool domains_intersect(const AbstractState *other, int var) const;
 
@@ -123,8 +124,8 @@ public:
     void set_h_value(int new_h);
     int get_h_value() const;
 
-    const Arcs &get_outgoing_arcs() const {return outgoing_arcs; }
-    const Arcs &get_incoming_arcs() const {return incoming_arcs; }
+    const Arcs &get_outgoing_transitions() const {return outgoing_transitions; }
+    const Arcs &get_incoming_transitions() const {return incoming_transitions; }
     const Loops &get_loops() const {return loops; }
 
     AbstractSearchInfo &get_search_info() {return search_info; }
