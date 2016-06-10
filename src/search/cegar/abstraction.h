@@ -122,7 +122,9 @@ public:
         return states.size();
     }
 
-    int compute_num_arcs() const;
+    int get_num_non_looping_transitions() const {
+        return transition_system.get_num_non_loops();
+    }
 
     /*
       For each operator calculate the mimimum cost that is needed to
