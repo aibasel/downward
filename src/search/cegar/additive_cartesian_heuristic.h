@@ -42,6 +42,9 @@
       Domains
         Store the Cartesian set of values in an abstract state.
 
+    TransitionSystem
+      Rewire transitions after each split.
+
     AbstractSearch
       Find an abstract solution using A*. Compute goal distances for
       abstract states.
