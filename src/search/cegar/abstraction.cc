@@ -137,6 +137,7 @@ void Abstraction::separate_facts_unreachable_before_goal() {
 void Abstraction::create_trivial_abstraction() {
     init = AbstractState::get_trivial_abstract_state(
         task_proxy, refinement_hierarchy.get_root());
+    transition_system.add_loops_to_trivial_abstract_state(init);
     goals.insert(init);
     states.insert(init);
 }

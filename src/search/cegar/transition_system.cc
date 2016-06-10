@@ -10,6 +10,12 @@ TransitionSystem::TransitionSystem(const TaskProxy &task_proxy)
     : task_proxy(task_proxy) {
 }
 
+void TransitionSystem::add_loops_to_trivial_abstract_state(AbstractState *state) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        add_loop(state, op.get_id());
+    }
+}
+
 void TransitionSystem::add_arc(AbstractState *src, int op_id, AbstractState *target) {
     assert(src != target);
     src->add_outgoing_arc(op_id, target);

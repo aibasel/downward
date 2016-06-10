@@ -28,6 +28,8 @@ public:
     TransitionSystem(const TaskProxy &task_proxy);
     ~TransitionSystem() = default;
 
+    void add_loops_to_trivial_abstract_state(AbstractState *state);
+
     // Update transition system after v has been split into v1 and v2.
     void rewire(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);

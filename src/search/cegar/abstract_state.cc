@@ -157,9 +157,6 @@ AbstractState *AbstractState::get_trivial_abstract_state(
     const TaskProxy &task_proxy, Node *root_node) {
     AbstractState *abstract_state = new AbstractState(
         task_proxy, Domains(get_domain_sizes(task_proxy)), root_node);
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        abstract_state->add_loop(op.get_id());
-    }
     return abstract_state;
 }
 
