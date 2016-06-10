@@ -148,6 +148,8 @@ void StubbornSetsEC::build_reachability_map() {
 }
 
 void StubbornSetsEC::compute_active_operators(const State &state) {
+    active_ops.assign(task_proxy.get_operators().size(), false);
+
     for (OperatorProxy op : task_proxy.get_operators()) {
         bool all_preconditions_are_active = true;
 
@@ -259,8 +261,6 @@ void StubbornSetsEC::apply_s5(OperatorProxy op, const State &state) {
 }
 
 void StubbornSetsEC::initialize_stubborn_set(const State &state) {
-    active_ops.clear();
-    active_ops.assign(task_proxy.get_operators().size(), false);
     for (VariableProxy var : task_proxy.get_variables()) {
         nes_computed[var.get_id()].assign(var.get_domain_size(), false);
     }
