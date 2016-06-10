@@ -41,19 +41,6 @@ bool AbstractState::contains(int var, int value) const {
     return domains.test(var, value);
 }
 
-void AbstractState::add_arc(int op_id, AbstractState *other) {
-    /*
-      Experiments showed that keeping the arcs sorted for faster removal
-      increases the overall processing time. Out of 30 domains it made no
-      difference for 10 domains, 17 domains preferred unsorted arcs and in
-      3 domains performance was better with sorted arcs.
-      Inlining this method has no effect.
-    */
-    assert(other != this);
-    outgoing_arcs.push_back(Arc(op_id, other));
-    other->incoming_arcs.push_back(Arc(op_id, this));
-}
-
 void AbstractState::add_outgoing_arc(int op_id, AbstractState *target) {
     assert(target != this);
     outgoing_arcs.emplace_back(op_id, target);
@@ -81,129 +68,6 @@ void AbstractState::remove_incoming_arc(int op_id, AbstractState *other) {
 
 void AbstractState::remove_outgoing_arc(int op_id, AbstractState *other) {
     remove_arc(outgoing_arcs, op_id, other);
-}
-
-void AbstractState::split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    /* Assume that the abstract state v has been split into v1 and v2.
-       Now for all transitions u->v we need to add transitions u->v1,
-       u->v2, or both. */
-    for (const Arc &arc : incoming_arcs) {
-        int op_id = arc.op_id;
-        OperatorProxy op = task_proxy.get_operators()[op_id];
-        AbstractState *u = arc.target;
-        assert(u != this);
-        int post = get_post(op, var);
-        if (post == UNDEFINED_VALUE) {
-            // op has no precondition and no effect on var.
-            bool u_and_v1_intersect = u->domains_intersect(v1, var);
-            if (u_and_v1_intersect) {
-                u->add_arc(op_id, v1);
-            }
-            /* If the domains of u and v1 don't intersect, we must add
-               the other arc and can avoid an intersection test. */
-            if (!u_and_v1_intersect || u->domains_intersect(v2, var)) {
-                u->add_arc(op_id, v2);
-            }
-        } else if (v1->domains.test(var, post)) {
-            // op can only end in v1.
-            u->add_arc(op_id, v1);
-        } else {
-            // op can only end in v2.
-            assert(v2->domains.test(var, post));
-            u->add_arc(op_id, v2);
-        }
-        u->remove_outgoing_arc(op_id, this);
-    }
-}
-
-void AbstractState::split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2) {
-    /* Assume that the abstract state v has been split into v1 and v2.
-       Now for all transitions v->w we need to add transitions v1->w,
-       v2->w, or both. */
-    for (const Arc &arc : outgoing_arcs) {
-        int op_id = arc.op_id;
-        OperatorProxy op = task_proxy.get_operators()[op_id];
-        AbstractState *w = arc.target;
-        assert(w != this);
-        int pre = get_pre(op, var);
-        int post = get_post(op, var);
-        if (post == UNDEFINED_VALUE) {
-            assert(pre == UNDEFINED_VALUE);
-            // op has no precondition and no effect on var.
-            bool v1_and_w_intersect = v1->domains_intersect(w, var);
-            if (v1_and_w_intersect) {
-                v1->add_arc(op_id, w);
-            }
-            /* If the domains of v1 and w don't intersect, we must add
-               the other arc and can avoid an intersection test. */
-            if (!v1_and_w_intersect || v2->domains_intersect(w, var)) {
-                v2->add_arc(op_id, w);
-            }
-        } else if (pre == UNDEFINED_VALUE) {
-            // op has no precondition, but an effect on var.
-            v1->add_arc(op_id, w);
-            v2->add_arc(op_id, w);
-        } else if (v1->domains.test(var, pre)) {
-            // op can only start in v1.
-            v1->add_arc(op_id, w);
-        } else {
-            // op can only start in v2.
-            assert(v2->domains.test(var, pre));
-            v2->add_arc(op_id, w);
-        }
-        w->remove_incoming_arc(op_id, this);
-    }
-}
-
-void AbstractState::split_loops(int var, AbstractState *v1, AbstractState *v2) {
-    /* Assume that the abstract state v has been split into v1 and v2.
-       Now for all self-loops v->v we need to add one or two of the
-       transitions v1->v1, v1->v2, v2->v1 and v2->v2. */
-    for (int op_id : loops) {
-        OperatorProxy op = task_proxy.get_operators()[op_id];
-        int pre = get_pre(op, var);
-        int post = get_post(op, var);
-        if (pre == UNDEFINED_VALUE) {
-            // op has no precondition on var --> it must start in v1 and v2.
-            if (post == UNDEFINED_VALUE) {
-                // op has no effect on var --> it must end in v1 and v2.
-                v1->add_loop(op_id);
-                v2->add_loop(op_id);
-            } else if (v2->domains.test(var, post)) {
-                // op must end in v2.
-                v1->add_arc(op_id, v2);
-                v2->add_loop(op_id);
-            } else {
-                // op must end in v1.
-                assert(v1->domains.test(var, post));
-                v1->add_loop(op_id);
-                v2->add_arc(op_id, v1);
-            }
-        } else if (v1->domains.test(var, pre)) {
-            // op must start in v1.
-            assert(post != UNDEFINED_VALUE);
-            if (v1->domains.test(var, post)) {
-                // op must end in v1.
-                v1->add_loop(op_id);
-            } else {
-                // op must end in v2.
-                assert(v2->domains.test(var, post));
-                v1->add_arc(op_id, v2);
-            }
-        } else {
-            // op must start in v2.
-            assert(v2->domains.test(var, pre));
-            assert(post != UNDEFINED_VALUE);
-            if (v1->domains.test(var, post)) {
-                // op must end in v1.
-                v2->add_arc(op_id, v1);
-            } else {
-                // op must end in v2.
-                assert(v2->domains.test(var, post));
-                v2->add_loop(op_id);
-            }
-        }
-    }
 }
 
 pair<AbstractState *, AbstractState *> AbstractState::split(
@@ -241,11 +105,6 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
 
     assert(this->is_more_general_than(*v1));
     assert(this->is_more_general_than(*v2));
-
-    // Update transition system.
-    split_incoming_arcs(var, v1, v2);
-    split_outgoing_arcs(var, v1, v2);
-    split_loops(var, v1, v2);
 
     // Since h-values only increase we can assign the h-value to the children.
     int h = node->get_h_value();

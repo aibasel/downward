@@ -4,6 +4,7 @@
 #include "abstract_search.h"
 #include "refinement_hierarchy.h"
 #include "split_selector.h"
+#include "transition_system.h"
 
 #include "../task_proxy.h"
 
@@ -32,6 +33,7 @@ class Abstraction {
 
     AbstractSearch abstract_search;
     SplitSelector split_selector;
+    TransitionSystem transition_system;
 
     // Limit the time for building the abstraction.
     utils::CountdownTimer timer;

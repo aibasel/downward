@@ -80,13 +80,7 @@ class AbstractState {
     AbstractState(
         const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
-    void add_arc(int op_id, AbstractState *other);
-
     void remove_arc(Arcs &arcs, int op_id, AbstractState *other);
-
-    void split_incoming_arcs(int var, AbstractState *v1, AbstractState *v2);
-    void split_outgoing_arcs(int var, AbstractState *v1, AbstractState *v2);
-    void split_loops(int var, AbstractState *v1, AbstractState *v2);
 
     bool is_more_general_than(const AbstractState &other) const;
 
