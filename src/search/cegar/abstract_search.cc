@@ -72,11 +72,11 @@ AbstractState *AbstractSearch::astar_search(
         if (goals && goals->count(state) == 1) {
             return state;
         }
-        const Arcs &successors = (forward) ? state->get_outgoing_arcs() :
-                                 state->get_incoming_arcs();
-        for (const Arc &arc : successors) {
-            int op_id = arc.op_id;
-            AbstractState *successor = arc.target;
+        const Arcs &successors = (forward) ? state->get_outgoing_transitions() :
+                                 state->get_incoming_transitions();
+        for (const Arc &transition : successors) {
+            int op_id = transition.op_id;
+            AbstractState *successor = transition.target;
 
             assert(utils::in_bounds(op_id, operator_costs));
             const int op_cost = operator_costs[op_id];
@@ -95,7 +95,8 @@ AbstractState *AbstractSearch::astar_search(
                 }
                 assert(f >= 0);
                 open_queue.push(f, successor);
-                successor->get_search_info().set_incoming_arc(Arc(op_id, state));
+                successor->get_search_info().set_incoming_transition(
+                    Arc(op_id, state));
             }
         }
     }
@@ -105,7 +106,7 @@ AbstractState *AbstractSearch::astar_search(
 void AbstractSearch::extract_solution(AbstractState *init, AbstractState *goal) {
     AbstractState *current = goal;
     while (current != init) {
-        const Arc &prev = current->get_search_info().get_incoming_arc();
+        const Arc &prev = current->get_search_info().get_incoming_transition();
         solution.push_front(Arc(prev.op_id, current));
         assert(utils::in_bounds(prev.op_id, operator_costs));
         const int prev_op_cost = operator_costs[prev.op_id];

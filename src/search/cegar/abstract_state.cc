@@ -23,8 +23,8 @@ AbstractState::AbstractState(AbstractState &&other)
     : task_proxy(move(other.task_proxy)),
       domains(move(other.domains)),
       node(move(other.node)),
-      incoming_arcs(move(other.incoming_arcs)),
-      outgoing_arcs(move(other.outgoing_arcs)),
+      incoming_transitions(move(other.incoming_transitions)),
+      outgoing_transitions(move(other.outgoing_transitions)),
       loops(move(other.loops)),
       search_info(move(other.search_info)) {
 }
@@ -41,33 +41,34 @@ bool AbstractState::contains(int var, int value) const {
     return domains.test(var, value);
 }
 
-void AbstractState::add_outgoing_arc(int op_id, AbstractState *target) {
+void AbstractState::add_outgoing_transition(int op_id, AbstractState *target) {
     assert(target != this);
-    outgoing_arcs.emplace_back(op_id, target);
+    outgoing_transitions.emplace_back(op_id, target);
 }
 
-void AbstractState::add_incoming_arc(int op_id, AbstractState *src) {
+void AbstractState::add_incoming_transition(int op_id, AbstractState *src) {
     assert(src != this);
-    incoming_arcs.emplace_back(op_id, src);
+    incoming_transitions.emplace_back(op_id, src);
 }
 
 void AbstractState::add_loop(int op_id) {
     loops.push_back(op_id);
 }
 
-void AbstractState::remove_arc(Arcs &arcs, int op_id, AbstractState *other) {
+void AbstractState::remove_non_looping_transition(
+    Arcs &arcs, int op_id, AbstractState *other) {
     auto pos = find(arcs.begin(), arcs.end(), Arc(op_id, other));
     assert(pos != arcs.end());
     swap(*pos, arcs.back());
     arcs.pop_back();
 }
 
-void AbstractState::remove_incoming_arc(int op_id, AbstractState *other) {
-    remove_arc(incoming_arcs, op_id, other);
+void AbstractState::remove_incoming_transition(int op_id, AbstractState *other) {
+    remove_non_looping_transition(incoming_transitions, op_id, other);
 }
 
-void AbstractState::remove_outgoing_arc(int op_id, AbstractState *other) {
-    remove_arc(outgoing_arcs, op_id, other);
+void AbstractState::remove_outgoing_transition(int op_id, AbstractState *other) {
+    remove_non_looping_transition(outgoing_transitions, op_id, other);
 }
 
 pair<AbstractState *, AbstractState *> AbstractState::split(
