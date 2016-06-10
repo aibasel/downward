@@ -1,8 +1,8 @@
 #ifndef CEGAR_ABSTRACT_STATE_H
 #define CEGAR_ABSTRACT_STATE_H
 
-#include "arc.h"
 #include "domains.h"
+#include "transition.h"
 
 #include "../task_proxy.h"
 
@@ -14,14 +14,14 @@ namespace cegar {
 class AbstractState;
 class Node;
 
-using Arcs = std::vector<Arc>;
+using Transitions = std::vector<Transition>;
 
 // To save space we store self-loops (operator indices) separately.
 using Loops = std::vector<int>;
 
 class AbstractSearchInfo {
     int g;
-    Arc incoming_transition;
+    Transition incoming_transition;
 
     static const int UNDEFINED_OPERATOR;
 
@@ -35,7 +35,7 @@ public:
 
     void reset() {
         g = std::numeric_limits<int>::max();
-        incoming_transition = Arc(UNDEFINED_OPERATOR, nullptr);
+        incoming_transition = Transition(UNDEFINED_OPERATOR, nullptr);
     }
 
     void decrease_g_value_to(int new_g) {
@@ -47,11 +47,11 @@ public:
         return g;
     }
 
-    void set_incoming_transition(const Arc &transition) {
+    void set_incoming_transition(const Transition &transition) {
         incoming_transition = transition;
     }
 
-    const Arc &get_incoming_transition() const {
+    const Transition &get_incoming_transition() const {
         assert(incoming_transition.op_id != UNDEFINED_OPERATOR &&
                incoming_transition.target);
         return incoming_transition;
@@ -69,8 +69,8 @@ class AbstractState {
     Node *node;
 
     // Transitions from and to other abstract states.
-    Arcs incoming_transitions;
-    Arcs outgoing_transitions;
+    Transitions incoming_transitions;
+    Transitions outgoing_transitions;
 
     // Self-loops.
     Loops loops;
@@ -81,7 +81,8 @@ class AbstractState {
     AbstractState(
         const TaskProxy &task_proxy, const Domains &domains, Node *node);
 
-    void remove_non_looping_transition(Arcs &arcs, int op_id, AbstractState *other);
+    void remove_non_looping_transition(
+        Transitions &arcs, int op_id, AbstractState *other);
 
     bool is_more_general_than(const AbstractState &other) const;
 
@@ -124,9 +125,17 @@ public:
     void set_h_value(int new_h);
     int get_h_value() const;
 
-    const Arcs &get_outgoing_transitions() const {return outgoing_transitions; }
-    const Arcs &get_incoming_transitions() const {return incoming_transitions; }
-    const Loops &get_loops() const {return loops; }
+    const Transitions &get_outgoing_transitions() const {
+        return outgoing_transitions;
+    }
+
+    const Transitions &get_incoming_transitions() const {
+        return incoming_transitions;
+    }
+
+    const Loops &get_loops() const {
+        return loops;
+    }
 
     AbstractSearchInfo &get_search_info() {return search_info; }
 

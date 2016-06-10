@@ -47,7 +47,7 @@ void TransitionSystem::split_incoming_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        u->v we need to add transitions u->v1, u->v2, or both. */
-    for (const Arc &transition : v->get_incoming_transitions()) {
+    for (const Transition &transition : v->get_incoming_transitions()) {
         int op_id = transition.op_id;
         OperatorProxy op = task_proxy.get_operators()[op_id];
         AbstractState *u = transition.target;
@@ -80,7 +80,7 @@ void TransitionSystem::split_outgoing_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        v->w we need to add transitions v1->w, v2->w, or both. */
-    for (const Arc &transition : v->get_outgoing_transitions()) {
+    for (const Transition &transition : v->get_outgoing_transitions()) {
         int op_id = transition.op_id;
         OperatorProxy op = task_proxy.get_operators()[op_id];
         AbstractState *w = transition.target;
