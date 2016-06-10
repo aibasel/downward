@@ -233,7 +233,7 @@ unique_ptr<Flaw> Abstraction::find_flaw(const Solution &solution) {
     if (debug)
         cout << "  Initial abstract state: " << *abstract_state << endl;
 
-    for (const Arc &step : solution) {
+    for (const Transition &step : solution) {
         if (!utils::extra_memory_padding_is_reserved())
             break;
         OperatorProxy op = task_proxy.get_operators()[step.op_id];
@@ -315,7 +315,7 @@ vector<int> Abstraction::get_saturated_costs() {
         if (g == INF || h == INF)
             continue;
 
-        for (const Arc &transition: state->get_outgoing_transitions()) {
+        for (const Transition &transition: state->get_outgoing_transitions()) {
             int op_id = transition.op_id;
             AbstractState *successor = transition.target;
             const int succ_h = successor->get_h_value();
@@ -346,12 +346,9 @@ void Abstraction::print_statistics() {
     for (AbstractState *state : states) {
         if (state->get_h_value() == INF)
             ++dead_ends;
-        const Arcs &incoming_transitions = state->get_incoming_transitions();
-        const Arcs &outgoing_transitions = state->get_outgoing_transitions();
-        const Loops &loops = state->get_loops();
-        total_incoming_transitions += incoming_transitions.size();
-        total_outgoing_transitions += outgoing_transitions.size();
-        total_loops += loops.size();
+        total_incoming_transitions += state->get_incoming_transitions().size();
+        total_outgoing_transitions += state->get_outgoing_transitions().size();
+        total_loops += state->get_loops().size();
     }
     assert(total_outgoing_transitions == total_incoming_transitions);
 

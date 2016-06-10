@@ -56,8 +56,8 @@ void AbstractState::add_loop(int op_id) {
 }
 
 void AbstractState::remove_non_looping_transition(
-    Arcs &arcs, int op_id, AbstractState *other) {
-    auto pos = find(arcs.begin(), arcs.end(), Arc(op_id, other));
+    Transitions &arcs, int op_id, AbstractState *other) {
+    auto pos = find(arcs.begin(), arcs.end(), Transition(op_id, other));
     assert(pos != arcs.end());
     swap(*pos, arcs.back());
     arcs.pop_back();
