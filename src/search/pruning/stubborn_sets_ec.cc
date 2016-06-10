@@ -104,15 +104,11 @@ void get_conflicting_vars(const vector<Fact> &facts1,
     }
 }
 
-StubbornSetsEC::StubbornSetsEC() {
+StubbornSetsEC::StubbornSetsEC()
+    : nes_computed(task_proxy.get_variables.size()) {
     compute_operator_preconditions();
     compute_conflicts_and_disabling();
     build_reachability_map();
-
-    for (VariableProxy var : task_proxy.get_variables()) {
-        nes_computed.push_back(vector<bool>(var.get_domain_size(), false));
-    }
-
     cout << "pruning method: stubborn sets ec" << endl;
 }
 
@@ -257,10 +253,11 @@ void StubbornSetsEC::apply_s5(OperatorProxy op, const State &state) {
 }
 
 void StubbornSetsEC::initialize_stubborn_set(const State &state) {
-    for (VariableProxy var : task_proxy.get_variables()) {
+    VariablesProxy variables = task_proxy.get_variables();
+    for (VariableProxy var : variables) {
         nes_computed[var.get_id()].assign(var.get_domain_size(), false);
     }
-    written_vars.assign(task_proxy.get_variables().size(), false);
+    written_vars.assign(variables.size(), false);
 
     compute_active_operators(state);
 
