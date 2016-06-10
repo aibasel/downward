@@ -11,8 +11,8 @@ class NullPruningMethod : public PruningMethod {
 public:
     NullPruningMethod();
     virtual ~NullPruningMethod() = default;
-    virtual void prune_operators(const GlobalState & /*state*/,
-                                 std::vector<const GlobalOperator *> & /*ops*/) override {}
+    virtual void prune_operators(const State & /*state*/,
+                                 std::vector<OperatorProxy> & /*ops*/) override {}
     virtual void print_statistics() const override {}
 };
 }

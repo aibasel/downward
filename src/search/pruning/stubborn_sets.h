@@ -32,14 +32,21 @@ protected:
        operators that achieve the fact (var, value). */
     std::vector<std::vector<std::vector<int>>> achievers;
 
-    bool can_disable(int op1_no, int op2_no);
-    bool can_conflict(int op1_no, int op2_no);
+    bool can_disable(OperatorProxy op1, OperatorProxy op2);
+    bool can_conflict(OperatorProxy op1, OperatorProxy op2);
+
+
+    // Return the first unsatified goal pair, or (-1, -1) if there is none.
+    Fact find_unsatisfied_goal(const State &state);
+
+    // Return the first unsatified precondition, or (-1, -1) if there is none.
+    Fact find_unsatisfied_precondition(OperatorProxy op, const State &state);
 
     // Returns true iff the operators was enqueued.
     // TODO: rename to enqueue_stubborn_operator?
     bool mark_as_stubborn(int op_no);
-    virtual void initialize_stubborn_set(const GlobalState &state) = 0;
-    virtual void handle_stubborn_operator(const GlobalState &state, int op_no) = 0;
+    virtual void initialize_stubborn_set(const State &state) = 0;
+    virtual void handle_stubborn_operator(const State &state, OperatorProxy op) = 0;
 public:
     StubbornSets();
     virtual ~StubbornSets() = default;
@@ -47,8 +54,8 @@ public:
     /* TODO: move prune_operators, and also the statistics, to the
        base class to have only one method virtual, and to make the
        interface more obvious */
-    virtual void prune_operators(const GlobalState &state,
-                                 std::vector<const GlobalOperator *> &ops) override;
+    virtual void prune_operators(const State &state,
+                                 std::vector<OperatorProxy> &ops) override;
     virtual void print_statistics() const override;
 };
 }

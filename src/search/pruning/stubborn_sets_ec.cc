@@ -4,10 +4,13 @@
 #include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_tools.h"
 
 #include "../utils/markup.h"
+#include "../utils/collections.h"
 
 #include <cassert>
+#include <unordered_map>
 
 using namespace std;
 
@@ -17,24 +20,13 @@ using StubbornDTG = vector<vector<int>>;
 
 static inline bool is_v_applicable(int var,
                                    int op_no,
-                                   const GlobalState &state,
+                                   const State &state,
                                    vector<vector<int>> &preconditions) {
     int precondition_on_var = preconditions[op_no][var];
-    return precondition_on_var == -1 || precondition_on_var == state[var];
+    return precondition_on_var == -1 || precondition_on_var == state[var].get_value();
 }
 
-// Copied from SimpleStubbornSets
-static inline Fact find_unsatisfied_goal(const GlobalState &state) {
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int goal_var = g_goal[i].first;
-        int goal_value = g_goal[i].second;
-        if (state[goal_var] != goal_value)
-            return Fact(goal_var, goal_value);
-    }
-    return Fact(-1, -1);
-}
-
-vector<StubbornDTG> build_dtgs() {
+vector<StubbornDTG> build_dtgs(TaskProxy task_proxy) {
     /*
       NOTE: Code lifted and adapted from M&S atomic abstraction code.
       We need a more general mechanism for creating data structures of
@@ -50,28 +42,26 @@ vector<StubbornDTG> build_dtgs() {
 
     // Create the empty DTG nodes.
     vector<StubbornDTG> dtgs;
-    int num_variables = g_variable_domain.size();
-    for (int var_no = 0; var_no < num_variables; ++var_no) {
-        dtgs.emplace_back(g_variable_domain[var_no]);
+    for (VariableProxy var : task_proxy.get_variables()) {
+        dtgs.emplace_back(var.get_domain_size());
     }
 
     // Add DTG arcs.
-    for (const GlobalOperator &op : g_operators) {
-        for (const GlobalEffect &effect : op.get_effects()) {
-            int eff_var = effect.var;
-            int eff_val = effect.val;
-            int pre_val = -1;
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        unordered_map<int, int> preconditions;
+        for (FactProxy pre : op.get_preconditions()) {
+            preconditions[pre.get_variable().get_id()] = pre.get_value();
+        }
+        for (EffectProxy effect : op.get_effects()) {
+            FactProxy fact = effect.get_fact();
+            VariableProxy var = fact.get_variable();
+            int var_id = var.get_id();
+            int eff_val = fact.get_value();
+            int pre_val = utils::get_value_or_default(preconditions, var_id, -1);
 
-            for (const GlobalCondition &precondition : op.get_preconditions()) {
-                if (precondition.var == eff_var) {
-                    pre_val = precondition.val;
-                    break;
-                }
-            }
-
-            StubbornDTG &dtg = dtgs[eff_var];
+            StubbornDTG &dtg = dtgs[var_id];
             if (pre_val == -1) {
-                for (int value = 0; value < g_variable_domain[eff_var]; ++value) {
+                for (int value = 0; value < var.get_domain_size(); ++value) {
                     dtg[value].push_back(eff_val);
                 }
             } else {
@@ -121,56 +111,54 @@ StubbornSetsEC::StubbornSetsEC() {
     compute_conflicts_and_disabling();
     build_reachability_map();
 
-    int num_variables = g_variable_domain.size();
-    for (int var = 0; var < num_variables; var++) {
-        nes_computed.push_back(vector<bool>(g_variable_domain[var], false));
+    for (VariableProxy var : task_proxy.get_variables()) {
+        nes_computed.push_back(vector<bool>(var.get_domain_size(), false));
     }
 
     cout << "pruning method: stubborn sets ec" << endl;
 }
 
 void StubbornSetsEC::compute_operator_preconditions() {
-    int num_operators = g_operators.size();
-    int num_variables = g_variable_domain.size();
-    op_preconditions_on_var.resize(num_operators);
-    for (int op_no = 0; op_no < num_operators; op_no++) {
-        op_preconditions_on_var[op_no].resize(num_variables, -1);
-        const GlobalOperator &op = g_operators[op_no];
-        for (const GlobalCondition &precondition : op.get_preconditions()) {
-            op_preconditions_on_var[op_no][precondition.var] = precondition.val;
+    OperatorsProxy operators = task_proxy.get_operators();
+    int num_variables = task_proxy.get_variables().size();
+    op_preconditions_on_var.resize(operators.size());
+    for (OperatorProxy op : operators) {
+        op_preconditions_on_var[op.get_id()].resize(num_variables, -1);
+        for (FactProxy precondition : op.get_preconditions()) {
+            int var_id = precondition.get_variable().get_id();
+            int value = precondition.get_value();
+            op_preconditions_on_var[op.get_id()][var_id] = value;
         }
     }
 }
 
 void StubbornSetsEC::build_reachability_map() {
-    vector<StubbornDTG> dtgs = build_dtgs();
-    int num_variables = g_variable_domain.size();
-    reachability_map.resize(num_variables);
-    for (int var = 0; var < num_variables; ++var) {
-        StubbornDTG &dtg = dtgs[var];
-        int num_values = dtg.size();
-        reachability_map[var].resize(num_values);
-        for (int val = 0; val < num_values; ++val) {
-            reachability_map[var][val].assign(num_values, false);
-        }
-        for (int start_value = 0; start_value < g_variable_domain[var]; start_value++) {
-            vector<bool> &reachable = reachability_map[var][start_value];
+    vector<StubbornDTG> dtgs = build_dtgs(task_proxy);
+    VariablesProxy variables = task_proxy.get_variables();
+    reachability_map.resize(variables.size());
+    for (VariableProxy var : variables) {
+        int var_id = var.get_id();
+        StubbornDTG &dtg = dtgs[var_id];
+        int num_values = var.get_domain_size();
+        reachability_map[var_id].resize(num_values);
+        for (int start_value = 0; start_value < num_values; ++start_value) {
+            vector<bool> &reachable = reachability_map[var_id][start_value];
+            reachable.assign(num_values, false);
             recurse_forwards(dtg, start_value, start_value, reachable);
         }
     }
 }
 
-void StubbornSetsEC::compute_active_operators(const GlobalState &state) {
-    int num_operators = g_operators.size();
-    for (int op_no = 0; op_no < num_operators; ++op_no) {
-        const GlobalOperator &op = g_operators[op_no];
+void StubbornSetsEC::compute_active_operators(const State &state) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
         bool all_preconditions_are_active = true;
 
-        for (const GlobalCondition &precondition : op.get_preconditions()) {
-            int var = precondition.var;
-            int value = precondition.val;
-            int current_value = state[var];
-            const vector<bool> &reachable_values = reachability_map[var][current_value];
+        for (FactProxy precondition : op.get_preconditions()) {
+            int var_id = precondition.get_variable().get_id();
+            int value = precondition.get_value();
+            int current_value = state[var_id].get_value();
+            const vector<bool> &reachable_values =
+                reachability_map[var_id][current_value];
             if (!reachable_values[value]) {
                 all_preconditions_are_active = false;
                 break;
@@ -178,26 +166,26 @@ void StubbornSetsEC::compute_active_operators(const GlobalState &state) {
         }
 
         if (all_preconditions_are_active) {
-            active_ops[op_no] = true;
+            active_ops[op.get_id()] = true;
         }
     }
 }
 
 void StubbornSetsEC::compute_conflicts_and_disabling() {
-    int num_operators = g_operators.size();
-    conflicting_and_disabling.resize(num_operators);
-    disabled.resize(num_operators);
+    OperatorsProxy operators = task_proxy.get_operators();
+    conflicting_and_disabling.resize(operators.size());
+    disabled.resize(operators.size());
 
-    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
-        for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
-            if (op1_no != op2_no) {
-                bool conflict = can_conflict(op1_no, op2_no);
-                bool disable = can_disable(op2_no, op1_no);
+    for (OperatorProxy op1 : operators) {
+        for (OperatorProxy op2 : operators) {
+            if (op1 != op2) {
+                bool conflict = can_conflict(op1, op2);
+                bool disable = can_disable(op2, op1);
                 if (conflict || disable) {
-                    conflicting_and_disabling[op1_no].push_back(op2_no);
+                    conflicting_and_disabling[op1.get_id()].push_back(op2.get_id());
                 }
                 if (disable) {
-                    disabled[op2_no].push_back(op1_no);
+                    disabled[op2.get_id()].push_back(op1.get_id());
                 }
             }
         }
@@ -206,12 +194,13 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
 
 // TODO: find a better name.
 void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
-    int op_no, const GlobalState &state) {
+    int op_no, const State &state) {
     if (mark_as_stubborn(op_no)) {
-        const GlobalOperator &op = g_operators[op_no];
-        if (op.is_applicable(state)) {
-            for (const GlobalEffect &effect : op.get_effects()) {
-                written_vars[effect.var] = true;
+        OperatorProxy op = task_proxy.get_operators()[op_no];
+        if (is_applicable(op, state)) {
+            for (EffectProxy effect : op.get_effects()) {
+                int var_id = effect.get_fact().get_variable().get_id();
+                written_vars[var_id] = true;
             }
         }
     }
@@ -219,7 +208,7 @@ void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
 
 /* TODO: think about a better name, which distinguishes this method
    better from the corresponding method for simple stubborn sets */
-void StubbornSetsEC::add_nes_for_fact(Fact fact, const GlobalState &state) {
+void StubbornSetsEC::add_nes_for_fact(Fact fact, const State &state) {
     for (int achiever : achievers[fact.var][fact.value]) {
         if (active_ops[achiever]) {
             mark_as_stubborn_and_remember_written_vars(achiever, state);
@@ -229,9 +218,9 @@ void StubbornSetsEC::add_nes_for_fact(Fact fact, const GlobalState &state) {
     nes_computed[fact.var][fact.value] = true;
 }
 
-void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
-                                                   const GlobalState &state) {
-    for (int conflict : conflicting_and_disabling[op_no]) {
+void StubbornSetsEC::add_conflicting_and_disabling(OperatorProxy op,
+                                                   const State &state) {
+    for (int conflict : conflicting_and_disabling[op.get_id()]) {
         if (active_ops[conflict])
             mark_as_stubborn_and_remember_written_vars(conflict, state);
     }
@@ -239,28 +228,28 @@ void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
 
 // Relies on op_effects and op_preconditions being sorted by variable.
 void StubbornSetsEC::get_disabled_vars(
-    int op1_no, int op2_no, vector<int> &disabled_vars) {
-    get_conflicting_vars(sorted_op_effects[op1_no],
-                         sorted_op_preconditions[op2_no],
+    OperatorProxy op1, OperatorProxy op2, vector<int> &disabled_vars) {
+    get_conflicting_vars(sorted_op_effects[op1.get_id()],
+                         sorted_op_preconditions[op2.get_id()],
                          disabled_vars);
 }
 
-void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state) {
+void StubbornSetsEC::apply_s5(OperatorProxy op, const State &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
     Fact violated_precondition(-1, -1);
-    for (const GlobalCondition &precondition : op.get_preconditions()) {
-        int var = precondition.var;
-        int value = precondition.val;
+    for (FactProxy precondition : op.get_preconditions()) {
+        int var_id = precondition.get_variable().get_id();
+        int value = precondition.get_value();
 
-        if (state[var] != value) {
-            if (written_vars[var]) {
-                if (!nes_computed[var][value]) {
-                    add_nes_for_fact(Fact(var, value), state);
+        if (state[var_id] != precondition) {
+            if (written_vars[var_id]) {
+                if (!nes_computed[var_id][value]) {
+                    add_nes_for_fact(Fact(var_id, value), state);
                 }
                 return;
             }
             if (violated_precondition.var == -1) {
-                violated_precondition = Fact(var, value);
+                violated_precondition = Fact(var_id, value);
             }
         }
     }
@@ -271,14 +260,13 @@ void StubbornSetsEC::apply_s5(const GlobalOperator &op, const GlobalState &state
     }
 }
 
-void StubbornSetsEC::initialize_stubborn_set(const GlobalState &state) {
+void StubbornSetsEC::initialize_stubborn_set(const State &state) {
     active_ops.clear();
-    active_ops.assign(g_operators.size(), false);
-    for (size_t i = 0; i < nes_computed.size(); i++) {
-        nes_computed[i].clear();
-        nes_computed[i].assign(g_variable_domain[i], false);
+    active_ops.assign(task_proxy.get_operators().size(), false);
+    for (VariableProxy var : task_proxy.get_variables()) {
+        nes_computed[var.get_id()].assign(var.get_domain_size(), false);
     }
-    written_vars.assign(g_variable_domain.size(), false);
+    written_vars.assign(task_proxy.get_variables().size(), false);
 
     compute_active_operators(state);
 
@@ -288,16 +276,18 @@ void StubbornSetsEC::initialize_stubborn_set(const GlobalState &state) {
     add_nes_for_fact(unsatisfied_goal, state);     // active operators used
 }
 
-void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_no) {
-    const GlobalOperator &op = g_operators[op_no];
-    if (op.is_applicable(state)) {
+void StubbornSetsEC::handle_stubborn_operator(const State &state,
+                                              OperatorProxy op) {
+    if (is_applicable(op, state)) {
         //Rule S2 & S3
-        add_conflicting_and_disabling(op_no, state);     // active operators used
+        add_conflicting_and_disabling(op, state);     // active operators used
         //Rule S4'
+        OperatorsProxy operators = task_proxy.get_operators();
         vector<int> disabled_vars;
-        for (int disabled_op_no : disabled[op_no]) {
+        for (int disabled_op_no : disabled[op.get_id()]) {
+            OperatorProxy disabled_op = operators[disabled_op_no];
             if (active_ops[disabled_op_no]) {
-                get_disabled_vars(op_no, disabled_op_no, disabled_vars);
+                get_disabled_vars(op, disabled_op, disabled_vars);
                 if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
                     bool v_applicable_op_found = false;
                     for (int disabled_var : disabled_vars) {
@@ -314,7 +304,7 @@ void StubbornSetsEC::handle_stubborn_operator(const GlobalState &state, int op_n
 
                     //Second case: add a necessary enabling set for o' following S5
                     if (!v_applicable_op_found) {
-                        apply_s5(g_operators[disabled_op_no], state);
+                        apply_s5(disabled_op, state);
                     }
                 }
             }
