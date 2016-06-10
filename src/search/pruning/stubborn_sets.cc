@@ -1,7 +1,6 @@
 #include "stubborn_sets.h"
 
-#include "../global_operator.h"
-#include "../globals.h"
+#include "../task_tools.h"
 
 #include <algorithm>
 #include <cassert>
@@ -45,7 +44,8 @@ bool contain_conflicting_fact(const vector<Fact> &facts1,
 StubbornSets::StubbornSets()
     : num_unpruned_successors_generated(0),
       num_pruned_successors_generated(0) {
-    verify_no_axioms_no_conditional_effects();
+    verify_no_axioms(task_proxy);
+    verify_no_conditional_effects(task_proxy);
     compute_sorted_operators();
     compute_achievers();
 }
