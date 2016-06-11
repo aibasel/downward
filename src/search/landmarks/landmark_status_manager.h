@@ -23,8 +23,10 @@ public:
 
     bool update_lm_status(const GlobalState &state);
 
-    void set_landmarks_for_initial_state();
-    bool update_reached_lms(const GlobalState &parent_state, const GlobalOperator &op, const GlobalState &state);
+    void set_landmarks_for_initial_state(const GlobalState &initial_state);
+    bool update_reached_lms(const GlobalState &parent_state,
+                            const GlobalOperator &op,
+                            const GlobalState &state);
 };
 }
 

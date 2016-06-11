@@ -58,7 +58,11 @@ void EagerSearch::initialize() {
     heuristics.assign(hset.begin(), hset.end());
     assert(!heuristics.empty());
 
-    const GlobalState &initial_state = g_initial_state();
+    const GlobalState &initial_state = state_registry.get_initial_state();
+    for (Heuristic *heuristic : heuristics) {
+        heuristic->notify_initial_state(initial_state);
+    }
+
     // Note: we consider the initial state as reached by a preferred
     // operator.
     EvaluationContext eval_context(initial_state, 0, true, &statistics);
@@ -132,7 +136,7 @@ SearchStatus EagerSearch::step() {
         if ((node.get_real_g() + op->get_cost()) >= bound)
             continue;
 
-        GlobalState succ_state = g_state_registry->get_successor_state(s, *op);
+        GlobalState succ_state = state_registry.get_successor_state(s, *op);
         statistics.inc_generated();
         bool is_preferred = (preferred_ops.find(op) != preferred_ops.end());
 
@@ -145,11 +149,11 @@ SearchStatus EagerSearch::step() {
         // update new path
         if (use_multi_path_dependence || succ_node.is_new()) {
             /*
-              Note: we must call reach_state for each heuristic, so
+              Note: we must call notify_state_transition for each heuristic, so
               don't break out of the for loop early.
             */
             for (Heuristic *heuristic : heuristics) {
-                heuristic->reach_state(s, *op, succ_state);
+                heuristic->notify_state_transition(s, *op, succ_state);
             }
         }
 
@@ -239,7 +243,8 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         if (open_list->empty()) {
             cout << "Completely explored state space -- no solution!" << endl;
             // HACK! HACK! we do this because SearchNode has no default/copy constructor
-            SearchNode dummy_node = search_space.get_node(g_initial_state());
+            const GlobalState &initial_state = state_registry.get_initial_state();
+            SearchNode dummy_node = search_space.get_node(initial_state);
             return make_pair(dummy_node, false);
         }
         vector<int> last_key_removed;
@@ -249,7 +254,7 @@ pair<SearchNode, bool> EagerSearch::fetch_next_node() {
         //      recreate it outside of this function with node.get_state()?
         //      One way would be to store GlobalState objects inside SearchNodes
         //      instead of StateIDs
-        GlobalState s = g_state_registry->lookup_state(id);
+        GlobalState s = state_registry.lookup_state(id);
         SearchNode node = search_space.get_node(s);
 
         if (node.is_closed())

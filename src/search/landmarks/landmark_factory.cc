@@ -16,6 +16,15 @@
 
 using namespace std;
 
+// HACK! remove this once landmark heuristics are switched to the new task interface
+#include "../state_registry.h"
+const GlobalState &hacked_initial_state() {
+    static StateRegistry registry(*g_state_packer,
+                                  *g_axiom_evaluator,
+                                  g_initial_state_data);
+    return registry.get_initial_state();
+}
+
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
     : reasonable_orders(opts.get<bool>("reasonable_orders")),
@@ -442,7 +451,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
         if (node_p->disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(g_initial_state()))
+        if (node_p->is_true_in_state(hacked_initial_state()))
             return;
 
         if (!obedient_orders && node_p->is_goal()) {

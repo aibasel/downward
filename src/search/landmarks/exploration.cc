@@ -154,7 +154,7 @@ void Exploration::build_unary_operators(const GlobalOperator &op) {
 }
 
 // heuristic computation
-void Exploration::setup_exploration_queue(const GlobalState &state,
+void Exploration::setup_exploration_queue(const State &state,
                                           const vector<pair<int, int>> &excluded_props,
                                           const unordered_set<const GlobalOperator *> &excluded_ops,
                                           bool use_h_max = false) {
@@ -177,8 +177,10 @@ void Exploration::setup_exploration_queue(const GlobalState &state,
     }
 
     // Deal with current state.
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        ExProposition *init_prop = &propositions[var][state[var]];
+    for (FactProxy fact : state) {
+        int var_id = fact.get_variable().get_id();
+        int value = fact.get_value();
+        ExProposition *init_prop = &propositions[var_id][value];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
 
@@ -330,7 +332,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
                                                      const unordered_set<const GlobalOperator *> &excluded_ops,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
-    setup_exploration_queue(g_initial_state(), excluded_props, excluded_ops, true);
+    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_ops, true);
     relaxed_exploration(true, level_out);
 
     // Copy reachability information into lvl_var and lvl_op
@@ -381,7 +383,8 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
     heuristic_recomputation_needed = true;
 }
 
-void Exploration::prepare_heuristic_computation(const GlobalState &state, bool h_max = false) {
+void Exploration::prepare_heuristic_computation(const GlobalState &state,
+                                                bool h_max = false) {
     setup_exploration_queue(state, h_max);
     relaxed_exploration(h_max);
     heuristic_recomputation_needed = false;

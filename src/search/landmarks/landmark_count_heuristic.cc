@@ -57,8 +57,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     } else {
         lm_cost_assignment = 0;
     }
-
-    lm_status_manager->set_landmarks_for_initial_state();
 }
 
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
@@ -233,8 +231,13 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const GlobalState &s,
     return lm.is_goal() && !lm.is_true_in_state(s);
 }
 
-bool LandmarkCountHeuristic::reach_state(const GlobalState &parent_state,
-                                         const GlobalOperator &op, const GlobalState &state) {
+void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_state) {
+    lm_status_manager->set_landmarks_for_initial_state(initial_state);
+}
+
+bool LandmarkCountHeuristic::notify_state_transition(
+    const GlobalState &parent_state, const GlobalOperator &op,
+    const GlobalState &state) {
     lm_status_manager->update_reached_lms(parent_state, op, state);
     /* TODO: The return value "true" signals that the LM set of this state
              has changed and the h value should be recomputed. It's not

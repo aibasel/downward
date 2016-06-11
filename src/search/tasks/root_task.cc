@@ -4,6 +4,7 @@
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../state_registry.h"
 
 #include "../utils/collections.h"
 
@@ -105,8 +106,11 @@ Fact RootTask::get_goal_fact(int index) const {
 }
 
 vector<int> RootTask::get_initial_state_values() const {
-    const GlobalState &initial_state = g_initial_state();
-    return initial_state.get_values();
+    // TODO: think about a better way to do this.
+    static StateRegistry state_registry(*g_state_packer,
+                                        *g_axiom_evaluator,
+                                        g_initial_state_data);
+    return state_registry.get_initial_state().get_values();
 }
 
 void RootTask::convert_state_values(

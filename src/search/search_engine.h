@@ -6,6 +6,7 @@
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
+#include "state_registry.h"
 
 #include <vector>
 
@@ -26,6 +27,7 @@ private:
     bool solution_found;
     Plan plan;
 protected:
+    StateRegistry state_registry;
     SearchSpace search_space;
     SearchProgress search_progress;
     SearchStatistics statistics;
