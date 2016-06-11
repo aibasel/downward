@@ -9,14 +9,19 @@
 
 using namespace std;
 
-SearchNode::SearchNode(StateID state_id_, SearchNodeInfo &info_,
-                       OperatorCost cost_type_)
-    : state_id(state_id_), info(info_), cost_type(cost_type_) {
+SearchNode::SearchNode(const StateRegistry &state_registry,
+                       StateID state_id,
+                       SearchNodeInfo &info,
+                       OperatorCost cost_type)
+    : state_registry(state_registry),
+      state_id(state_id),
+      info(info),
+      cost_type(cost_type) {
     assert(state_id != StateID::no_state);
 }
 
 GlobalState SearchNode::get_state() const {
-    return g_state_registry->lookup_state(state_id);
+    return state_registry.lookup_state(state_id);
 }
 
 bool SearchNode::is_open() const {
@@ -101,7 +106,7 @@ void SearchNode::mark_as_dead_end() {
 
 void SearchNode::dump() const {
     cout << state_id << ": ";
-    g_state_registry->lookup_state(state_id).dump_fdr();
+    state_registry.lookup_state(state_id).dump_fdr();
     if (info.creating_operator) {
         cout << " created by " << info.creating_operator->get_name()
              << " from " << info.parent_state_id << endl;
@@ -110,12 +115,14 @@ void SearchNode::dump() const {
     }
 }
 
-SearchSpace::SearchSpace(OperatorCost cost_type_)
-    : cost_type(cost_type_) {
+SearchSpace::SearchSpace(StateRegistry &state_registry, OperatorCost cost_type)
+    : state_registry(state_registry),
+      cost_type(cost_type) {
 }
 
 SearchNode SearchSpace::get_node(const GlobalState &state) {
-    return SearchNode(state.get_id(), search_node_infos[state], cost_type);
+    return SearchNode(
+        state_registry, state.get_id(), search_node_infos[state], cost_type);
 }
 
 void SearchSpace::trace_path(const GlobalState &goal_state,
@@ -130,17 +137,17 @@ void SearchSpace::trace_path(const GlobalState &goal_state,
             break;
         }
         path.push_back(op);
-        current_state = g_state_registry->lookup_state(info.parent_state_id);
+        current_state = state_registry.lookup_state(info.parent_state_id);
     }
     reverse(path.begin(), path.end());
 }
 
 void SearchSpace::dump() const {
     for (PerStateInformation<SearchNodeInfo>::const_iterator it =
-             search_node_infos.begin(g_state_registry);
-         it != search_node_infos.end(g_state_registry); ++it) {
+             search_node_infos.begin(&state_registry);
+         it != search_node_infos.end(&state_registry); ++it) {
         StateID id = *it;
-        GlobalState s = g_state_registry->lookup_state(id);
+        GlobalState s = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[s];
         cout << id << ": ";
         s.dump_fdr();
@@ -155,5 +162,5 @@ void SearchSpace::dump() const {
 
 void SearchSpace::print_statistics() const {
     cout << "Number of registered states: "
-         << g_state_registry->size() << endl;
+         << state_registry.size() << endl;
 }
