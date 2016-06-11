@@ -76,7 +76,7 @@ public:
     Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
-    virtual void notify_initial_state(const GlobalState &/*initial_state*/) {
+    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
     }
 
     virtual bool notify_state_transition(
