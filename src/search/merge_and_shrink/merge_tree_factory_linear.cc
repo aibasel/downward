@@ -1,44 +1,44 @@
-#include "merge_strategy_factory_linear.h"
+#include "merge_tree_factory_linear.h"
 
-#include "merge_linear.h"
+#include "merge_tree.h"
 
 #include "../options/option_parser.h"
 #include "../options/options.h"
 #include "../options/plugin.h"
 
 #include "../utils/markup.h"
-#include "../utils/memory.h"
 
 using namespace std;
 
 namespace merge_and_shrink {
-MergeStrategyFactoryLinear::MergeStrategyFactoryLinear(
-    options::Options &options)
-    : MergeStrategyFactory(),
+MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
+    : MergeTreeFactory(),
       variable_order_type(static_cast<VariableOrderType>(
-                              options.get_enum("variable_order"))) {
+          options.get_enum("variable_order"))){
 }
 
-unique_ptr<MergeStrategy> MergeStrategyFactoryLinear::compute_merge_strategy(
+MergeTree *MergeTreeFactoryLinear::compute_merge_tree(
     shared_ptr<AbstractTask> task,
-    FactoredTransitionSystem &fts) {
-    return utils::make_unique_ptr<MergeLinear>(
-        fts,
-        utils::make_unique_ptr<VariableOrderFinder>(task, variable_order_type));
+    FactoredTransitionSystem &) {
+    VariableOrderFinder vof(task, variable_order_type);
+    MergeTree *left_child = new MergeTree(vof.next());
+    MergeTree *root = nullptr;
+    while (!vof.done()) {
+        MergeTree *right_child = new MergeTree(vof.next());
+        root = new MergeTree(left_child, right_child);
+        left_child = root;
+    }
+    return root;
 }
 
-void MergeStrategyFactoryLinear::dump_strategy_specific_options() const {
+void MergeTreeFactoryLinear::dump_options() const {
     dump_variable_order_type(variable_order_type);
 }
 
-string MergeStrategyFactoryLinear::name() const {
-    return "linear";
-}
-
-static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
+static shared_ptr<MergeTreeFactory>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
-        "Linear merge strategies",
-        "This merge strategy implements several linear merge orders, which "
+        "Linear merge trees",
+        "These merge trees implement several linear merge orders, which "
         "are described in the paper:" + utils::format_paper_reference(
             {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
             "Flexible Abstraction Heuristics for Optimal Sequential Planning",
@@ -62,8 +62,8 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return make_shared<MergeStrategyFactoryLinear>(opts);
+        return make_shared<MergeTreeFactoryLinear>(opts);
 }
 
-static options::PluginShared<MergeStrategyFactory> _plugin("merge_linear", _parse);
+static options::PluginShared<MergeTreeFactory> _plugin("linear", _parse);
 }

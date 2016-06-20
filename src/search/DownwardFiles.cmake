@@ -409,11 +409,14 @@ fast_downward_plugin(
         merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
         merge_and_shrink/merge_dfp.cc
-        merge_and_shrink/merge_linear.cc
         merge_and_shrink/merge_strategy.cc
         merge_and_shrink/merge_strategy_factory.cc
         merge_and_shrink/merge_strategy_factory_dfp.cc
-        merge_and_shrink/merge_strategy_factory_linear.cc
+        merge_and_shrink/merge_strategy_factory_precomputed.cc
+        merge_and_shrink/merge_strategy_precomputed.cc
+        merge_and_shrink/merge_tree.cc
+        merge_and_shrink/merge_tree_factory.cc
+        merge_and_shrink/merge_tree_factory_linear.cc
         merge_and_shrink/shrink_bisimulation.cc
         merge_and_shrink/shrink_bucket_based.cc
         merge_and_shrink/shrink_fh.cc
