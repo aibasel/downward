@@ -4,15 +4,14 @@ Experiments using lab
 =====================
 All experiments use their own common_setup.py module that simplifies
 the creation of experiments. We recommend using common_setup.py (and
-related files for usage) from issue655 for new experiments since it is
-the most recent version that uses lab's new FastDownwardExperiment
-class and requires the benchmarks directory to be specified.
+related files for usage) from issue591 for new experiments since it is
+the most recent version.
 
 Previously, most experiments imported lab's downward/configs.py module.
 To make experiments more self-contained, the module has been deprecated
-and we recommend either copying config.py into the experiment
-directory (see issue77 for an example) or manually specifying the
-configurations (see issue511).
+and we recommend either copying misc/tests/configs.py into the
+experiment directory (see issue77 for an example using an older
+configs.py) or manually specifying the configurations (see issue511).
 
 Below we list some experiments that show how certain tasks can be
 performed. All of them use lab's deprecated DownwardExperiment:
