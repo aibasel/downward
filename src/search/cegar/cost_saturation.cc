@@ -6,7 +6,6 @@
 #include "subtask_generators.h"
 #include "utils.h"
 
-#include "../evaluation_context.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../task_tools.h"
@@ -19,10 +18,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <sstream>
 #include <string>
-#include <unordered_set>
-#include <vector>
 
 using namespace std;
 
