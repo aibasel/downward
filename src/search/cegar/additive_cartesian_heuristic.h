@@ -11,7 +11,7 @@ class CartesianHeuristicFunction;
 class SubtaskGenerator;
 
 class AdditiveCartesianHeuristic : public Heuristic {
-    std::vector<std::unique_ptr<CartesianHeuristicFunction>> heuristic_functions;
+    std::vector<CartesianHeuristicFunction> heuristic_functions;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
@@ -20,7 +20,7 @@ protected:
 public:
     AdditiveCartesianHeuristic(
         const options::Options &opts,
-        std::vector<std::unique_ptr<CartesianHeuristicFunction>> &&heuristic_functions);
+        std::vector<CartesianHeuristicFunction> &&heuristic_functions);
     virtual ~AdditiveCartesianHeuristic() = default;
 };
 }

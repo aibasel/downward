@@ -66,8 +66,7 @@ CostSaturation::CostSaturation(const Options &opts)
     print_statistics();
 }
 
-vector<unique_ptr<CartesianHeuristicFunction>>
-CostSaturation::extract_heuristic_functions() {
+vector<CartesianHeuristicFunction> CostSaturation::extract_heuristic_functions() {
     return move(heuristic_functions);
 }
 
@@ -100,9 +99,8 @@ shared_ptr<AbstractTask> CostSaturation::get_remaining_costs_task(
 }
 
 bool CostSaturation::initial_state_is_dead_end() const {
-    for (const unique_ptr<CartesianHeuristicFunction> &func :
-         heuristic_functions) {
-        if (func->get_value(initial_state) == INF)
+    for (const CartesianHeuristicFunction &func : heuristic_functions) {
+        if (func.get_value(initial_state) == INF)
             return true;
     }
     return false;
@@ -136,10 +134,9 @@ void CostSaturation::build_abstractions(
         int init_h = abstraction.get_h_value_of_initial_state();
 
         if (init_h > 0) {
-            heuristic_functions.push_back(
-                utils::make_unique_ptr<CartesianHeuristicFunction>(
-                    subtask,
-                    abstraction.extract_refinement_hierarchy()));
+            heuristic_functions.emplace_back(
+                subtask,
+                abstraction.extract_refinement_hierarchy());
         }
         if (!may_build_another_abstraction())
             break;
