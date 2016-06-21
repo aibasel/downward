@@ -1,5 +1,8 @@
 #include "merge_tree.h"
 
+#include "../globals.h"
+
+#include "../utils/rng.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -47,7 +50,7 @@ MergeTree *MergeTree::get_left_most_sibling() {
     return right_child->get_left_most_sibling();
 }
 
-pair<int, int> MergeTree::erase_children(int new_index) {
+pair<int, int> MergeTree::erase_children_and_set_index(int new_index) {
     assert(has_two_leaf_children());
     int left_child_index = left_child->ts_index;
     int right_child_index = right_child->ts_index;
@@ -64,61 +67,85 @@ pair<int, int> MergeTree::erase_children(int new_index) {
 
 pair<int, int> MergeTree::get_next_merge(int new_index) {
     MergeTree *next_merge = get_left_most_sibling();
-    return next_merge->erase_children(new_index);
+    return next_merge->erase_children_and_set_index(new_index);
 }
 
-MergeTree *MergeTree::get_leaf_for_ts_index(int index) {
-    if (ts_index == index) {
+MergeTree *MergeTree::get_parent_of_ts_index(int index) {
+    if ((left_child && left_child->ts_index == index) &&
+        (right_child && right_child->ts_index == index)) {
         return this;
     }
 
     if (left_child) {
-        return left_child->get_leaf_for_ts_index(index);
+        return left_child->get_parent_of_ts_index(index);
     }
 
-    if (right_child) {
-        return right_child->get_leaf_for_ts_index(index);
-    }
-
-    ABORT("Could not find a parent of a leave with given index");
+    assert(right_child);
+    return right_child->get_parent_of_ts_index(index);
 }
 
 void MergeTree::update(pair<int, int> merge, int new_index, UpdateOption option) {
     assert(!parent); // only call on root tree
     int first_index = merge.first;
     int second_index = merge.second;
-    MergeTree *first_leaf = get_leaf_for_ts_index(first_index);
-    MergeTree *second_leaf = get_leaf_for_ts_index(second_index);
+    MergeTree *first_parent = get_parent_of_ts_index(first_index);
+    MergeTree *second_parent = get_parent_of_ts_index(second_index);
 
-    if (first_leaf->parent == second_leaf->parent) {
-        first_leaf->parent->erase_children(new_index);
+    if (first_parent == second_parent) { // given merge already in the tree
+        first_parent->erase_children_and_set_index(new_index);
     } else {
+
+        MergeTree *surviving_parent = nullptr;
+        MergeTree *to_be_removed_parent = nullptr;
         if (option == UpdateOption::USE_FIRST) {
-            first_leaf->ts_index = new_index;
-
-            MergeTree *to_be_removed_node = second_leaf->parent;
-            MergeTree *surviving_child = nullptr;
-            if (to_be_removed_node->right_child == second_leaf) {
-                surviving_child = to_be_removed_node->left_child;
-            } else {
-                assert(to_be_removed_node->left_child == second_leaf);
-                surviving_child = to_be_removed_node->right_child;
-            }
-            surviving_child->parent = to_be_removed_node->parent;
-
-            if (to_be_removed_node->parent->left_child == to_be_removed_node) {
-                to_be_removed_node->parent->left_child = surviving_child;
-            } else {
-                assert(to_be_removed_node->parent->right_child == to_be_removed_node);
-                to_be_removed_node->parent->right_child = surviving_child;
-            }
-
-            delete second_leaf->parent;
-            second_leaf->parent = nullptr;
-            delete second_leaf;
-            second_leaf = nullptr;
+            surviving_parent = first_parent;
+            to_be_removed_parent = second_parent;
+        } else if (option == UpdateOption::USE_SECOND) {
+            surviving_parent = second_parent;
+            to_be_removed_parent = first_parent;
+        } else if (option == UpdateOption::USE_RANDOM) {
+            int random = (*g_rng())(2);
+            surviving_parent = (random == 0 ? first_parent : second_parent);
+            to_be_removed_parent = (random == 0 ? second_parent : first_parent);
+        } else {
+            ABORT("Unknown merge tree update option");
         }
-        // TODO: remaining options
+
+        // Update the leaf node corresponding to one of the indices to
+        // correspond to the merged index.
+        if (surviving_parent->left_child->ts_index == first_index ||
+            surviving_parent->left_child->ts_index == second_index) {
+            surviving_parent->left_child->ts_index = new_index;
+        } else {
+            assert(surviving_parent->right_child->ts_index == first_index ||
+                surviving_parent->right_child->ts_index == second_index);
+            surviving_parent->right_child->ts_index = new_index;
+        }
+
+        // Remove the other leaf and its parent from the tree, moving up
+        // the other child of the removed parent.
+        to_be_removed_parent->ts_index = -2; // mark the node
+        MergeTree *to_be_removed_parents_parent = to_be_removed_parent->parent;
+        bool is_right_child = to_be_removed_parents_parent->right_child->ts_index == -2;
+        if (to_be_removed_parent->left_child->ts_index == first_index ||
+            to_be_removed_parent->left_child->ts_index == second_index) {
+            if (is_right_child) {
+                to_be_removed_parents_parent->right_child = move(to_be_removed_parent->left_child);
+            } else {
+                to_be_removed_parents_parent->left_child = move(to_be_removed_parent->left_child);
+            }
+            to_be_removed_parent->left_child->parent = to_be_removed_parents_parent;
+        } else {
+            assert(to_be_removed_parent->right_child->ts_index == first_index ||
+                   to_be_removed_parent->right_child->ts_index == second_index);
+            if (is_right_child) {
+                to_be_removed_parents_parent->right_child = move(to_be_removed_parent->right_child);
+            } else {
+                to_be_removed_parents_parent->left_child = move(to_be_removed_parent->right_child);
+            }
+            to_be_removed_parent->right_child->parent = to_be_removed_parents_parent;
+        }
+        to_be_removed_parent = nullptr;
     }
 }
 
