@@ -6,7 +6,6 @@ import platform
 import subprocess
 import sys
 
-from lab.environments import LocalEnvironment, MaiaEnvironment
 from lab.experiment import ARGPARSER
 from lab.steps import Step
 from lab import tools
@@ -111,7 +110,7 @@ class IssueConfig(object):
 class IssueExperiment(FastDownwardExperiment):
     """Subclass of FastDownwardExperiment with some convenience features."""
 
-    DEFAULT_TEST_SUITE = "gripper:prob01.pddl"
+    DEFAULT_TEST_SUITE = ["gripper:prob01.pddl"]
 
     DEFAULT_TABLE_ATTRIBUTES = [
         "cost",
@@ -152,10 +151,7 @@ class IssueExperiment(FastDownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(
-            self, revisions=None, configs=None, grid_priority=None,
-            path=None, test_suite=None, email=None, processes=None,
-            **kwargs):
+    def __init__(self, revisions=None, configs=None, path=None, **kwargs):
         """
 
         You can either specify both *revisions* and *configs* or none
@@ -179,12 +175,6 @@ class IssueExperiment(FastDownwardExperiment):
                     driver_options=["--alias", "seq-sat-lama-2011"]),
             ])
 
-        Use *grid_priority* to set the job priority for cluster
-        experiments. It must be in the range [-1023, 0] where 0 is the
-        highest priority. By default the priority is 0. ::
-
-            IssueExperiment(..., grid_priority=-500)
-
         If *path* is specified, it must be the path to where the
         experiment should be built (e.g.
         /home/john/experiments/issue123/exp01/). If omitted, the
@@ -194,22 +184,7 @@ class IssueExperiment(FastDownwardExperiment):
             script = experiments/issue123/exp01.py -->
             path = experiments/issue123/data/issue123-exp01/
 
-        Specify *test_suite* to set the benchmarks for experiment test
-        runs. By default the first gripper task is used.
-
-            IssueExperiment(..., test_suite=["depot:pfile1", "tpp:p01.pddl"])
-
-        If *email* is specified, it should be an email address. This
-        email address will be notified upon completion of the experiments
-        if it is run on the cluster.
         """
-
-        if is_test_run():
-            kwargs["environment"] = LocalEnvironment(processes=processes)
-            suite = test_suite or self.DEFAULT_TEST_SUITE
-        elif "environment" not in kwargs:
-            kwargs["environment"] = MaiaEnvironment(
-                priority=grid_priority, email=email)
 
         path = path or get_data_dir()
 
@@ -297,20 +272,20 @@ class IssueExperiment(FastDownwardExperiment):
                 report = CompareConfigsReport(compared_configs, **kwargs)
                 outfile = os.path.join(
                     self.eval_dir,
-                    "%s-%s-%s-compare" % (self.name, rev1, rev2)
-                    + "." + report.output_format)
+                    "%s-%s-%s-compare.%s" % (
+                        self.name, rev1, rev2, report.output_format))
                 report(self.eval_dir, outfile)
 
         def publish_comparison_tables():
             for rev1, rev2 in itertools.combinations(self._revisions, 2):
                 outfile = os.path.join(
                     self.eval_dir,
-                    "%s-%s-%s-compare" % (self.name, rev1, rev2)
-                    + ".html")
+                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
                 subprocess.call(['publish', outfile])
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
-        self.add_step(Step("publish-comparison-tables", publish_comparison_tables))
+        self.add_step(Step(
+            "publish-comparison-tables", publish_comparison_tables))
 
     def add_scatter_plot_step(self, attributes=None):
         """Add a step that creates scatter plots for all revision pairs.
