@@ -1,6 +1,7 @@
 #ifndef MERGE_AND_SHRINK_MERGE_TREE_H
 #define MERGE_AND_SHRINK_MERGE_TREE_H
 
+#include <memory>
 #include <utility>
 
 namespace merge_and_shrink {
@@ -22,9 +23,9 @@ class MergeTree {
 
     bool has_two_leaf_children() const;
     MergeTree *get_left_most_sibling();
-    std::pair<int, int> erase_children(int new_index);
-    MergeTree *get_leaf_for_ts_index(int index);
-    MergeTree() {}
+    std::pair<int, int> erase_children_and_set_index(int new_index);
+    MergeTree *get_parent_of_ts_index(int index);
+    MergeTree() = delete;
 public:
     MergeTree(int ts_index);
     MergeTree(MergeTree *left_child, MergeTree *right_child);
