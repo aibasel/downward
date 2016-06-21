@@ -152,18 +152,25 @@ class IssueExperiment(FastDownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(self, suite, revisions=[], configs={}, grid_priority=None,
-                 path=None, test_suite=None, email=None, processes=None,
-                 **kwargs):
+    def __init__(
+            self, revisions=None, configs=None, grid_priority=None,
+            path=None, test_suite=None, email=None, processes=None,
+            **kwargs):
         """
-        If *revisions* is specified, it should be a non-empty
-        list of revisions, which specify which planner versions to use
-        in the experiment. The same versions are used for translator,
-        preprocessor and search. ::
+
+        You can either specify both *revisions* and *configs* or none
+        of them. If they are omitted, you will need to call
+        exp.add_algorithm() manually.
+
+        If *revisions* is given, it must be a non-empty list of
+        revision identifiers, which specify which planner versions to
+        use in the experiment. The same versions are used for
+        translator, preprocessor and search. ::
 
             IssueExperiment(revisions=["issue123", "4b3d581643"], ...)
 
-        *configs* must be a non-empty list of IssueConfig objects. ::
+        If *configs* is given, it must be a non-empty list of
+        IssueConfig objects. ::
 
             IssueExperiment(..., configs=[
                 IssueConfig("ff", ["--search", "eager_greedy(ff())"]),
@@ -171,18 +178,6 @@ class IssueExperiment(FastDownwardExperiment):
                     "lama", [],
                     driver_options=["--alias", "seq-sat-lama-2011"]),
             ])
-
-        *suite* sets the benchmarks for the experiment. It must be a
-        single string or a list of strings specifying domains or
-        tasks. The downward.suites module has many predefined
-        suites. ::
-
-            IssueExperiment(..., suite=["grid", "gripper:prob01.pddl"])
-
-            from downward import suites
-            IssueExperiment(..., suite=suites.suite_all())
-            IssueExperiment(..., suite=suites.suite_satisficing_with_ipc11())
-            IssueExperiment(..., suite=suites.suite_optimal())
 
         Use *grid_priority* to set the job priority for cluster
         experiments. It must be in the range [-1023, 0] where 0 is the
@@ -220,18 +215,19 @@ class IssueExperiment(FastDownwardExperiment):
 
         FastDownwardExperiment.__init__(self, path=path, **kwargs)
 
-        repo = get_repo_base()
+        if (revisions and not configs) or (not revisions and configs):
+            raise ValueError(
+                "please provide either both or none of revisions and configs")
+
         for rev in revisions:
             for config in configs:
                 self.add_algorithm(
                     get_algo_nick(rev, config.nick),
-                    repo,
+                    get_repo_base(),
                     rev,
                     config.component_options,
                     build_options=config.build_options,
                     driver_options=config.driver_options)
-
-        self.add_suite(os.path.join(repo, "benchmarks"), suite)
 
         self._revisions = revisions
         self._configs = configs
