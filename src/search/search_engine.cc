@@ -66,6 +66,9 @@ void SearchEngine::search() {
             break;
         }
     }
+    // TODO: Revise when and which search times are logged.
+    cout << "Actual search time: " << timer
+         << " [t=" << utils::g_timer << "]" << endl;
 }
 
 bool SearchEngine::check_goal_and_set_plan(const GlobalState &state) {
