@@ -42,10 +42,10 @@ class RelativeScatterMatplotlib(Matplotlib):
         axes.set_ylim(report.ylim_bottom or -1, report.ylim_top or plot_size)
 
         for axis in [axes.xaxis, axes.yaxis]:
-            MatplotlibPlot.change_axis_formatter(axis,
-                                report.missing_val if report.show_missing else None)
+            MatplotlibPlot.change_axis_formatter(
+                axis,
+                report.missing_val if report.show_missing else None)
         return has_points
-
 
 
 class RelativeScatterPlotReport(ScatterPlotReport):
