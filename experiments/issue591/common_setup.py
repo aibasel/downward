@@ -15,6 +15,8 @@ from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import CompareConfigsReport
 from downward.reports.scatter import ScatterPlotReport
 
+from relativescatter import RelativeScatterPlotReport
+
 
 def parse_args():
     ARGPARSER.add_argument(
@@ -287,8 +289,8 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(Step(
             "publish-comparison-tables", publish_comparison_tables))
 
-    def add_scatter_plot_step(self, attributes=None):
-        """Add a step that creates scatter plots for all revision pairs.
+    def add_scatter_plot_step(self, relative=False, attributes=None):
+        """Add step creating (relative) scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
         configuration and revisions pair. If *attributes* is not
@@ -299,16 +301,23 @@ class IssueExperiment(FastDownwardExperiment):
             exp.add_scatter_plot_step(attributes=["expansions"])
 
         """
+        if relative:
+            report_class = RelativeScatterPlotReport
+            scatter_dir = os.path.join(self.eval_dir, "scatter-relative")
+            step_name = "make-relative-scatter-plots"
+        else:
+            report_class = ScatterPlotReport
+            scatter_dir = os.path.join(self.eval_dir, "scatter-absolute")
+            step_name = "make-absolute-scatter-plots"
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
-        scatter_dir = os.path.join(self.eval_dir, "scatter")
 
         def make_scatter_plot(config_nick, rev1, rev2, attribute):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
             print "Make scatter plot for", name
-            algo1 = "%s-%s" % (rev1, config_nick)
-            algo2 = "%s-%s" % (rev2, config_nick)
-            report = ScatterPlotReport(
+            algo1 = "{}-{}".format(rev1, config_nick)
+            algo2 = "{}-{}".format(rev2, config_nick)
+            report = report_class(
                 filter_config=[algo1, algo2],
                 attributes=[attribute],
                 get_category=lambda run1, run2: run1["domain"],
@@ -324,4 +333,4 @@ class IssueExperiment(FastDownwardExperiment):
                             config.nick, attributes):
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
 
-        self.add_step(Step("make-scatter-plots", make_scatter_plots))
+        self.add_step(Step(step_name, make_scatter_plots))
