@@ -223,27 +223,26 @@ class IssueExperiment(FastDownwardExperiment):
     def add_absolute_report_step(self, **kwargs):
         """Add step that makes an absolute report.
 
-        Absolute reports are useful for experiments that don't
-        compare revisions.
+        Absolute reports are useful for experiments that don't compare
+        revisions.
 
         The report is written to the experiment evaluation directory.
 
-        All *kwargs* will be passed to the AbsoluteReport class. If
-        the keyword argument *attributes* is not specified, a
-        default list of attributes is used. ::
+        All *kwargs* will be passed to the AbsoluteReport class. If the
+        keyword argument *attributes* is not specified, a default list
+        of attributes is used. ::
 
             exp.add_absolute_report_step(attributes=["coverage"])
 
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
         report = AbsoluteReport(**kwargs)
-        outfile = os.path.join(self.eval_dir,
-                               get_experiment_name() + "." +
-                               report.output_format)
+        outfile = os.path.join(
+            self.eval_dir,
+            get_experiment_name() + "." + report.output_format)
         self.add_report(report, outfile=outfile)
-        self.add_step(Step('publish-absolute-report',
-                           subprocess.call,
-                           ['publish', outfile]))
+        self.add_step(Step(
+            'publish-absolute-report', subprocess.call, ['publish', outfile]))
 
     def add_comparison_table_step(self, **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -283,7 +282,7 @@ class IssueExperiment(FastDownwardExperiment):
                 outfile = os.path.join(
                     self.eval_dir,
                     "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
-                subprocess.call(['publish', outfile])
+                subprocess.call(["publish", outfile])
 
         self.add_step(Step("make-comparison-tables", make_comparison_tables))
         self.add_step(Step(
