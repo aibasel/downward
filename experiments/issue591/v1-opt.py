@@ -11,19 +11,17 @@ from common_setup import IssueConfig, IssueExperiment, is_test_run
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue591-base", "issue591-v1"]
 CONFIGS = [
-    IssueConfig(
-        "lazy_greedy_{}".format(heuristic),
-        ["--heuristic", "h={}()".format(heuristic),
-         "--search", "lazy_greedy(h, preferred=h)"])
-    for heuristic in ["add", "cea", "cg", "ff"]
+    IssueConfig(heuristic, ["--search", "astar({})".format(heuristic)])
+    for heuristic in [
+        "blind()", "cegar(max_states=10000)", "hm()", "lmcut()", "hmax()"]
 ]
 SUITE = [
-    'barman-sat14-strips', 'cavediving-14-adl', 'childsnack-sat14-strips',
-    'citycar-sat14-adl', 'floortile-sat14-strips', 'ged-sat14-strips',
-    'hiking-sat14-strips', 'maintenance-sat14-adl',
-    'openstacks-sat14-strips', 'parking-sat14-strips',
-    'tetris-sat14-strips', 'thoughtful-sat14-strips',
-    'transport-sat14-strips', 'visitall-sat14-strips']
+    'barman-opt14-strips', 'cavediving-14-adl', 'childsnack-opt14-strips',
+    'citycar-opt14-adl', 'floortile-opt14-strips', 'ged-opt14-strips',
+    'hiking-opt14-strips', 'maintenance-opt14-adl',
+    'openstacks-opt14-strips', 'parking-opt14-strips',
+    'tetris-opt14-strips', 'tidybot-opt14-strips', 'transport-opt14-strips',
+    'visitall-opt14-strips']
 ENVIRONMENT = MaiaEnvironment(
     priority=0, email="jendrik.seipp@unibas.ch")
 
