@@ -97,13 +97,6 @@ private:
     bool is_more_general_than(const AbstractState &other) const;
 
 public:
-    ~AbstractState() = default;
-
-    AbstractState(const AbstractState &) = delete;
-    AbstractState &operator=(const AbstractState &) = delete;
-
-    AbstractState(AbstractState &&other) = default;
-
     // Return the size of var's abstract domain for this state.
     int count(int var) const;
 

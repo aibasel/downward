@@ -59,13 +59,6 @@ public:
         : blocks(compute_num_blocks(num_bits), zeros),
           num_bits(num_bits) {
     }
-    ~DynamicBitset() = default;
-
-    DynamicBitset(const DynamicBitset &other) = default;
-    DynamicBitset &operator=(const DynamicBitset &other) = default;
-
-    DynamicBitset(DynamicBitset &&other) = default;
-    DynamicBitset &operator=(DynamicBitset &&other) = default;
 
     std::size_t size() const {
         return num_bits;

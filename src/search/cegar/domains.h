@@ -19,13 +19,6 @@ class Domains {
 
 public:
     explicit Domains(const std::vector<int> &domain_sizes);
-    ~Domains() = default;
-
-    Domains(const Domains &other) = default;
-    Domains &operator=(const Domains &other) = default;
-
-    Domains(Domains &&other) = default;
-    Domains &operator=(Domains &&other) = default;
 
     void add(int var, int value);
     void set_single_value(int var, int value);
