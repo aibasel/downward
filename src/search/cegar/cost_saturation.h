@@ -69,7 +69,7 @@ class CostSaturation {
     bool use_general_costs;
     PickSplit pick_split;
     std::vector<int> remaining_costs;
-    std::vector<std::unique_ptr<CartesianHeuristicFunction>> heuristic_functions;
+    std::vector<CartesianHeuristicFunction> heuristic_functions;
     int num_abstractions;
     int num_states;
     State initial_state;
@@ -87,8 +87,7 @@ public:
     explicit CostSaturation(const options::Options &opts);
     ~CostSaturation() = default;
 
-    std::vector<std::unique_ptr<CartesianHeuristicFunction>>
-    extract_heuristic_functions();
+    std::vector<CartesianHeuristicFunction> extract_heuristic_functions();
 };
 }
 

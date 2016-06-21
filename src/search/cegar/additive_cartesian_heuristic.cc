@@ -10,7 +10,7 @@ using namespace std;
 namespace cegar {
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const options::Options &opts,
-    vector<unique_ptr<CartesianHeuristicFunction>> &&heuristic_functions)
+    vector<CartesianHeuristicFunction> &&heuristic_functions)
     : Heuristic(opts),
       heuristic_functions(move(heuristic_functions)) {
 }
@@ -22,8 +22,8 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     int sum_h = 0;
-    for (const unique_ptr<CartesianHeuristicFunction> &func : heuristic_functions) {
-        int value = func->get_value(state);
+    for (const CartesianHeuristicFunction &func : heuristic_functions) {
+        int value = func.get_value(state);
         assert(value >= 0);
         if (value == INF)
             return DEAD_END;
