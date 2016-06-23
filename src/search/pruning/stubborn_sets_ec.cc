@@ -105,7 +105,7 @@ void get_conflicting_vars(const vector<Fact> &facts1,
 }
 
 StubbornSetsEC::StubbornSetsEC()
-    : nes_computed(task_proxy.get_variables.size()) {
+    : nes_computed(task_proxy.get_variables().size()) {
     compute_operator_preconditions();
     compute_conflicts_and_disabling();
     build_reachability_map();
