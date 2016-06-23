@@ -10,6 +10,7 @@
 
 #include "../utils/markup.h"
 #include "../utils/rng_options.h"
+#include "../utils/system.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
     : MergeTreeFactory(options) {
 }
 
-MergeTree *MergeTreeFactoryLinear::compute_merge_tree(
+unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     shared_ptr<AbstractTask> task,
     FactoredTransitionSystem &) {
     VariableOrderFinder vof(task,
@@ -29,7 +30,8 @@ MergeTree *MergeTreeFactoryLinear::compute_merge_tree(
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
         root = new MergeTreeNode(root, right_child);
     }
-    return new MergeTree(root, utils::parse_rng_from_options(options));
+    return utils::make_unique_ptr<MergeTree>(
+        root, utils::parse_rng_from_options(options));
 }
 
 void MergeTreeFactoryLinear::dump_options() const {

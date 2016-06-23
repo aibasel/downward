@@ -2,6 +2,7 @@
 
 #include "merge_strategy_precomputed.h"
 #include "merge_tree_factory.h"
+#include "merge_tree.h"
 
 #include "../options/option_parser.h"
 #include "../options/options.h"
@@ -21,8 +22,9 @@ MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
 unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
     shared_ptr<AbstractTask> task,
     FactoredTransitionSystem &fts) {
-    MergeTree *merge_tree = merge_tree_factory->compute_merge_tree(task, fts);
-    return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, merge_tree);
+    unique_ptr<MergeTree> merge_tree =
+        merge_tree_factory->compute_merge_tree(task, fts);
+    return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
 }
 
 void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
