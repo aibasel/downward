@@ -11,33 +11,34 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTree::MergeTree(int ts_index)
+const int UNINITIALIZED = -1;
+
+MergeTreeNode::MergeTreeNode(int ts_index)
     : parent(nullptr),
       left_child(nullptr),
       right_child(nullptr),
       ts_index(ts_index) {
 }
 
-MergeTree::MergeTree(MergeTree *left_child, MergeTree *right_child)
+MergeTreeNode::MergeTreeNode(
+    MergeTreeNode *left_child,
+    MergeTreeNode *right_child)
     : parent(nullptr),
       left_child(left_child),
       right_child(right_child),
-      ts_index(-1) {
+      ts_index(UNINITIALIZED) {
     left_child->parent = this;
     right_child->parent = this;
 }
 
-MergeTree::~MergeTree() {
+MergeTreeNode::~MergeTreeNode() {
     delete left_child;
     delete right_child;
+    left_child = nullptr;
+    right_child = nullptr;
 }
 
-bool MergeTree::has_two_leaf_children() const {
-    return left_child && right_child &&
-        left_child->is_leaf() && right_child->is_leaf();
-}
-
-MergeTree *MergeTree::get_left_most_sibling() {
+MergeTreeNode *MergeTreeNode::get_left_most_sibling() {
     if (has_two_leaf_children()) {
         return this;
     }
@@ -50,27 +51,22 @@ MergeTree *MergeTree::get_left_most_sibling() {
     return right_child->get_left_most_sibling();
 }
 
-pair<int, int> MergeTree::erase_children_and_set_index(int new_index) {
+pair<int, int> MergeTreeNode::erase_children_and_set_index(int new_index) {
     assert(has_two_leaf_children());
     int left_child_index = left_child->ts_index;
     int right_child_index = right_child->ts_index;
-    assert(left_child_index != -1);
-    assert(right_child_index != -1);
+    assert(left_child_index != UNINITIALIZED);
+    assert(right_child_index != UNINITIALIZED);
     delete left_child;
     delete right_child;
     left_child = nullptr;
     right_child = nullptr;
-    assert(ts_index == -1);
+    assert(ts_index == UNINITIALIZED);
     ts_index = new_index;
     return make_pair(left_child_index, right_child_index);
 }
 
-pair<int, int> MergeTree::get_next_merge(int new_index) {
-    MergeTree *next_merge = get_left_most_sibling();
-    return next_merge->erase_children_and_set_index(new_index);
-}
-
-MergeTree *MergeTree::get_parent_of_ts_index(int index) {
+MergeTreeNode *MergeTreeNode::get_parent_of_ts_index(int index) {
     if ((left_child && left_child->ts_index == index) &&
         (right_child && right_child->ts_index == index)) {
         return this;
@@ -84,19 +80,59 @@ MergeTree *MergeTree::get_parent_of_ts_index(int index) {
     return right_child->get_parent_of_ts_index(index);
 }
 
+int MergeTreeNode::compute_num_internal_nodes() const {
+    if (is_leaf()) {
+        return 0;
+    } else {
+        int number_of_internal_nodes = 1; // count the node itself
+        if (left_child) {
+            number_of_internal_nodes += left_child->compute_num_internal_nodes();
+        }
+        if (right_child) {
+            number_of_internal_nodes += right_child->compute_num_internal_nodes();
+        }
+        return number_of_internal_nodes;
+    }
+}
+
+void MergeTreeNode::postorder(int indentation) const {
+    if (left_child) {
+        left_child->postorder(indentation + 1);
+    }
+    if (right_child) {
+        right_child->postorder(indentation + 1);
+    }
+    for (int i = 0; i < indentation; ++i) {
+        cout << "  ";
+    }
+    cout << ts_index << endl;
+}
+
+MergeTree::MergeTree(MergeTreeNode *root)
+    : root(root) {
+}
+
+MergeTree::~MergeTree() {
+    delete root;
+    root = nullptr;
+}
+
+pair<int, int> MergeTree::get_next_merge(int new_index) {
+    MergeTreeNode *next_merge = root->get_left_most_sibling();
+    return next_merge->erase_children_and_set_index(new_index);
+}
+
 void MergeTree::update(pair<int, int> merge, int new_index, UpdateOption option) {
-    assert(!parent); // only call on root tree
     int first_index = merge.first;
     int second_index = merge.second;
-    MergeTree *first_parent = get_parent_of_ts_index(first_index);
-    MergeTree *second_parent = get_parent_of_ts_index(second_index);
+    MergeTreeNode *first_parent = root->get_parent_of_ts_index(first_index);
+    MergeTreeNode *second_parent = root->get_parent_of_ts_index(second_index);
 
     if (first_parent == second_parent) { // given merge already in the tree
         first_parent->erase_children_and_set_index(new_index);
     } else {
-
-        MergeTree *surviving_parent = nullptr;
-        MergeTree *to_be_removed_parent = nullptr;
+        MergeTreeNode *surviving_parent = nullptr;
+        MergeTreeNode *to_be_removed_parent = nullptr;
         if (option == UpdateOption::USE_FIRST) {
             surviving_parent = first_parent;
             to_be_removed_parent = second_parent;
@@ -125,7 +161,7 @@ void MergeTree::update(pair<int, int> merge, int new_index, UpdateOption option)
         // Remove the other leaf and its parent from the tree, moving up
         // the other child of the removed parent.
         to_be_removed_parent->ts_index = -2; // mark the node
-        MergeTree *to_be_removed_parents_parent = to_be_removed_parent->parent;
+        MergeTreeNode *to_be_removed_parents_parent = to_be_removed_parent->parent;
         bool is_right_child = to_be_removed_parents_parent->right_child->ts_index == -2;
         if (to_be_removed_parent->left_child->ts_index == first_index ||
             to_be_removed_parent->left_child->ts_index == second_index) {
@@ -147,33 +183,5 @@ void MergeTree::update(pair<int, int> merge, int new_index, UpdateOption option)
         }
         to_be_removed_parent = nullptr;
     }
-}
-
-int MergeTree::compute_num_internal_nodes() const {
-    if (is_leaf()) {
-        return 0;
-    } else {
-        int number_of_internal_nodes = 1; // count the node itself
-        if (left_child) {
-            number_of_internal_nodes += left_child->compute_num_internal_nodes();
-        }
-        if (right_child) {
-            number_of_internal_nodes += right_child->compute_num_internal_nodes();
-        }
-        return number_of_internal_nodes;
-    }
-}
-
-void MergeTree::postorder(int indentation) const {
-    if (left_child) {
-        left_child->postorder(indentation + 1);
-    }
-    if (right_child) {
-        right_child->postorder(indentation + 1);
-    }
-    for (int i = 0; i < indentation; ++i) {
-        cout << "  ";
-    }
-    cout << ts_index << endl;
 }
 }
