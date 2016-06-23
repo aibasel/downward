@@ -21,14 +21,12 @@ MergeTree *MergeTreeFactoryLinear::compute_merge_tree(
     shared_ptr<AbstractTask> task,
     FactoredTransitionSystem &) {
     VariableOrderFinder vof(task, variable_order_type);
-    MergeTree *left_child = new MergeTree(vof.next());
-    MergeTree *root = nullptr;
+    MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
-        MergeTree *right_child = new MergeTree(vof.next());
-        root = new MergeTree(left_child, right_child);
-        left_child = root;
+        MergeTreeNode *right_child = new MergeTreeNode(vof.next());
+        root = new MergeTreeNode(root, right_child);
     }
-    return root;
+    return new MergeTree(root);
 }
 
 void MergeTreeFactoryLinear::dump_options() const {
