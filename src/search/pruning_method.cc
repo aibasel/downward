@@ -47,7 +47,7 @@ void PruningMethod::prune_operators(const GlobalState &global_state,
     if (local_ops.size() < global_ops.size()) {
         vector<const GlobalOperator *> pruned_ops;
         for (OperatorProxy op : local_ops) {
-            pruned_ops.push_back(g_operators[op.get_id()]);
+            pruned_ops.push_back(&g_operators[op.get_id()]);
         }
 
         global_ops.swap(pruned_ops);
