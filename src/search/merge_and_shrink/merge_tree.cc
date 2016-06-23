@@ -1,7 +1,5 @@
 #include "merge_tree.h"
 
-#include "../globals.h"
-
 #include "../utils/rng.h"
 #include "../utils/system.h"
 
@@ -108,8 +106,10 @@ void MergeTreeNode::postorder(int indentation) const {
     cout << ts_index << endl;
 }
 
-MergeTree::MergeTree(MergeTreeNode *root)
-    : root(root) {
+MergeTree::MergeTree(
+    MergeTreeNode *root,
+    shared_ptr<utils::RandomNumberGenerator> rng)
+    : root(root), rng(rng) {
 }
 
 MergeTree::~MergeTree() {
@@ -140,7 +140,7 @@ void MergeTree::update(pair<int, int> merge, int new_index, UpdateOption option)
             surviving_parent = second_parent;
             to_be_removed_parent = first_parent;
         } else if (option == UpdateOption::USE_RANDOM) {
-            int random = (*g_rng())(2);
+            int random = (*rng)(2);
             surviving_parent = (random == 0 ? first_parent : second_parent);
             to_be_removed_parent = (random == 0 ? second_parent : first_parent);
         } else {

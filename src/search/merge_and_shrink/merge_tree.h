@@ -4,6 +4,10 @@
 #include <memory>
 #include <utility>
 
+namespace utils {
+class RandomNumberGenerator;
+}
+
 namespace merge_and_shrink {
 extern const int UNINITIALIZED;
 
@@ -42,9 +46,12 @@ enum class UpdateOption {
 
 class MergeTree {
     MergeTreeNode *root;
+    std::shared_ptr<utils::RandomNumberGenerator> rng;
     MergeTree() = delete;
 public:
-    explicit MergeTree(MergeTreeNode *root);
+    MergeTree(
+        MergeTreeNode *root,
+        std::shared_ptr<utils::RandomNumberGenerator> rng);
     ~MergeTree();
     std::pair<int, int> get_next_merge(int new_index);
     void update(std::pair<int, int> merge, int new_index, UpdateOption option);
