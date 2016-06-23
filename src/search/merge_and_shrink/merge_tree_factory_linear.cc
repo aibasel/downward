@@ -2,35 +2,39 @@
 
 #include "merge_tree.h"
 
+#include "../variable_order_finder.h"
+
 #include "../options/option_parser.h"
 #include "../options/options.h"
 #include "../options/plugin.h"
 
 #include "../utils/markup.h"
+#include "../utils/rng_options.h"
 
 using namespace std;
 
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
-    : MergeTreeFactory(),
-      variable_order_type(static_cast<VariableOrderType>(
-          options.get_enum("variable_order"))){
+    : MergeTreeFactory(options) {
 }
 
 MergeTree *MergeTreeFactoryLinear::compute_merge_tree(
     shared_ptr<AbstractTask> task,
     FactoredTransitionSystem &) {
-    VariableOrderFinder vof(task, variable_order_type);
+    VariableOrderFinder vof(task,
+                            static_cast<VariableOrderType>(
+                                options.get_enum("variable_order")));
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
         root = new MergeTreeNode(root, right_child);
     }
-    return new MergeTree(root);
+    return new MergeTree(root, utils::parse_rng_from_options(options));
 }
 
 void MergeTreeFactoryLinear::dump_options() const {
-    dump_variable_order_type(variable_order_type);
+    dump_variable_order_type(static_cast<VariableOrderType>(
+                                 options.get_enum("variable_order")));
 }
 
 static shared_ptr<MergeTreeFactory>_parse(options::OptionParser &parser) {
@@ -55,6 +59,7 @@ static shared_ptr<MergeTreeFactory>_parse(options::OptionParser &parser) {
     parser.add_enum_option("variable_order", merge_strategies,
                            "the order in which atomic transition systems are merged",
                            "CG_GOAL_LEVEL");
+    utils::add_rng_options(parser);
 
     options::Options opts = parser.parse();
     if (parser.dry_run())
