@@ -17,7 +17,7 @@ protected:
 public:
     explicit MergeTreeFactory(const options::Options &options);
     virtual ~MergeTreeFactory() = default;
-    virtual MergeTree *compute_merge_tree(
+    virtual std::unique_ptr<MergeTree> compute_merge_tree(
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts) = 0;
     virtual void dump_options() const = 0;

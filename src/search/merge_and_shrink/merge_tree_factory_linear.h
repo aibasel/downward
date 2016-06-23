@@ -8,7 +8,7 @@ class MergeTreeFactoryLinear : public MergeTreeFactory {
 public:
     explicit MergeTreeFactoryLinear(const options::Options &options);
     virtual ~MergeTreeFactoryLinear() override = default;
-    virtual MergeTree *compute_merge_tree(
+    virtual std::unique_ptr<MergeTree> compute_merge_tree(
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts) override;
     virtual void dump_options() const override;
