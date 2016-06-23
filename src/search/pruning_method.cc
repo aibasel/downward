@@ -43,18 +43,15 @@ void PruningMethod::prune_operators(const GlobalState &global_state,
 
     prune_operators(state, local_ops);
 
-    vector<const GlobalOperator *> pruned_ops;
-    int pos_global = 0;
-    for (OperatorProxy op : local_ops) {
-        while (get_op_index(global_ops[pos_global]) != op.get_id()) {
-            ++pos_global;
+    // If we pruned anything, translate the local operators back to global operators.
+    if (local_ops.size() < global_ops.size()) {
+        vector<const GlobalOperator *> pruned_ops;
+        for (OperatorProxy op : local_ops) {
+            pruned_ops.push_back(g_operators[op.get_id()]);
         }
-        // Note that operators occur in the same order in both vectors.
-        assert(in_bounds(pos_global, global_ops));
-        pruned_ops.push_back(global_ops[pos_global]);
-    }
 
-    global_ops.swap(pruned_ops);
+        global_ops.swap(pruned_ops);
+    }
 }
 
 static PluginTypePlugin<PruningMethod> _type_plugin(
