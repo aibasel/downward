@@ -45,6 +45,8 @@ public:
         std::vector<std::vector<int>> &&value_map);
 
     virtual int get_variable_domain_size(int var) const override;
+    // Axiom layer is unaffected by domain abstraction.
+    virtual int get_variable_default_axiom_value(int var) const override;
     virtual const std::string &get_fact_name(const Fact &fact) const override;
     virtual bool are_facts_mutex(
         const Fact &fact1, const Fact &fact2) const override;

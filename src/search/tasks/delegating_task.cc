@@ -19,6 +19,14 @@ int DelegatingTask::get_variable_domain_size(int var) const {
     return parent->get_variable_domain_size(var);
 }
 
+int DelegatingTask::get_variable_axiom_layer(int var) const {
+    return parent->get_variable_axiom_layer(var);
+}
+
+int DelegatingTask::get_variable_default_axiom_value(int var) const {
+    return parent->get_variable_default_axiom_value(var);
+}
+
 const string &DelegatingTask::get_fact_name(const Fact &fact) const {
     return parent->get_fact_name(fact);
 }
