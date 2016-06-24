@@ -26,6 +26,11 @@ int DomainAbstractedTask::get_variable_domain_size(int var) const {
     return domain_size[var];
 }
 
+int DomainAbstractedTask::get_variable_default_axiom_value(int var) const {
+    int parent_value = parent->get_variable_default_axiom_value(var);
+    return get_abstract_value(Fact(var, parent_value));
+}
+
 const string &DomainAbstractedTask::get_fact_name(const Fact &fact) const {
     return fact_names[fact.var][fact.value];
 }

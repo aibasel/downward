@@ -274,6 +274,14 @@ public:
         assert(index < get_domain_size());
         return FactProxy(*task, id, index);
     }
+
+    int get_axiom_layer() const {
+        return task->get_variable_axiom_layer(id);
+    }
+
+    int get_default_axiom_value() const {
+        return task->get_variable_default_axiom_value(id);
+    }
 };
 
 
