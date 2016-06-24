@@ -1,6 +1,4 @@
 #include "axioms.h"
-#include "global_operator.h"
-#include "globals.h"
 #include "int_packer.h"
 
 #include <algorithm>
@@ -10,42 +8,47 @@
 
 using namespace std;
 
-AxiomEvaluator::AxiomEvaluator() {
+AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
+    : task(task),
+      task_proxy(*task) {
     // Initialize literals
-    for (size_t i = 0; i < g_variable_domain.size(); ++i)
-        axiom_literals.push_back(vector<AxiomLiteral>(g_variable_domain[i]));
+    for (VariableProxy var : task_proxy.get_variables())
+        axiom_literals.push_back(vector<AxiomLiteral>(var.get_domain_size()));
 
     // Initialize rules
-    for (size_t i = 0; i < g_axioms.size(); ++i) {
-        const GlobalOperator &axiom = g_axioms[i];
-        int cond_count = axiom.get_effects()[0].conditions.size();
-        int eff_var = axiom.get_effects()[0].var;
-        int eff_val = axiom.get_effects()[0].val;
+    for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        EffectProxy effect = axiom.get_effects()[0];
+        int cond_count = effect.get_conditions().size();
+        int eff_var = effect.get_fact().get_variable().get_id();
+        int eff_val = effect.get_fact().get_value();
         AxiomLiteral *eff_literal = &axiom_literals[eff_var][eff_val];
         rules.push_back(AxiomRule(cond_count, eff_var, eff_val, eff_literal));
     }
 
     // Cross-reference rules and literals
-    for (size_t i = 0; i < g_axioms.size(); ++i) {
-        const vector<GlobalCondition> &conditions = g_axioms[i].get_effects()[0].conditions;
-        for (size_t j = 0; j < conditions.size(); ++j) {
-            const GlobalCondition &cond = conditions[j];
-            axiom_literals[cond.var][cond.val].condition_of.push_back(&rules[i]);
+    for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        EffectProxy effect = axiom.get_effects()[0];
+        for (FactProxy condition : effect.get_conditions()) {
+            int var_id = condition.get_variable().get_id();
+            int val = condition.get_value();
+            AxiomRule *rule = &rules[axiom.get_id()];
+            axiom_literals[var_id][val].condition_of.push_back(rule);
         }
     }
 
     // Initialize negation-by-failure information
     int last_layer = -1;
-    for (size_t i = 0; i < g_axiom_layers.size(); ++i)
-        last_layer = max(last_layer, g_axiom_layers[i]);
+    for (VariableProxy var : task_proxy.get_variables())
+        last_layer = max(last_layer, var.get_axiom_layer());
     nbf_info_by_layer.resize(last_layer + 1);
 
-    for (size_t var_no = 0; var_no < g_axiom_layers.size(); ++var_no) {
-        int layer = g_axiom_layers[var_no];
+    for (VariableProxy var : task_proxy.get_variables()) {
+        int var_id = var.get_id();
+        int layer = var.get_axiom_layer();
         if (layer != -1 && layer != last_layer) {
-            int nbf_value = g_default_axiom_values[var_no];
-            AxiomLiteral *nbf_literal = &axiom_literals[var_no][nbf_value];
-            NegationByFailureInfo nbf_info(var_no, nbf_literal);
+            int nbf_value = var.get_default_axiom_value();
+            AxiomLiteral *nbf_literal = &axiom_literals[var_id][nbf_value];
+            NegationByFailureInfo nbf_info(var_id, nbf_literal);
             nbf_info_by_layer[layer].push_back(nbf_info);
         }
     }
@@ -57,31 +60,35 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     if (!has_axioms())
         return;
 
+    VariablesProxy variables = task_proxy.get_variables();
+
     assert(queue.empty());
-    for (size_t i = 0; i < g_axiom_layers.size(); ++i) {
-        if (g_axiom_layers[i] != -1) {
-            state_packer.set(buffer, i, g_default_axiom_values[i]);
+    for (VariableProxy var : variables) {
+        int var_id = var.get_id();
+        if (var.get_axiom_layer() != -1) {
+            state_packer.set(buffer, var_id, var.get_default_axiom_value());
         } else {
-            queue.push_back(&axiom_literals[i][state_packer.get(buffer, i)]);
+            int value = state_packer.get(buffer, var_id);
+            queue.push_back(&axiom_literals[var_id][value]);
         }
     }
 
-    for (size_t i = 0; i < rules.size(); ++i) {
-        rules[i].unsatisfied_conditions = rules[i].condition_count;
+    for (AxiomRule &rule : rules) {
+        rule.unsatisfied_conditions = rule.condition_count;
 
         // TODO: In a perfect world, trivial axioms would have been
         // compiled away, and we could have the following assertion
         // instead of the following block.
         // assert(rules[i].condition_counter != 0);
-        if (rules[i].condition_count == 0) {
+        if (rule.condition_count == 0) {
             // NOTE: This duplicates code from the main loop below.
             // I don't mind because this is (hopefully!) going away
             // some time.
-            int var_no = rules[i].effect_var;
-            int val = rules[i].effect_val;
+            int var_no = rule.effect_var;
+            int val = rule.effect_val;
             if (state_packer.get(buffer, var_no) != val) {
                 state_packer.set(buffer, var_no, val);
-                queue.push_back(rules[i].effect_literal);
+                queue.push_back(rule.effect_literal);
             }
         }
     }
@@ -110,7 +117,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
             const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
             for (size_t i = 0; i < nbf_info.size(); ++i) {
                 int var_no = nbf_info[i].var_no;
-                if (state_packer.get(buffer, var_no) == g_default_axiom_values[var_no])
+                VariableProxy var = variables[var_no];
+                if (state_packer.get(buffer, var_no) == var.get_default_axiom_value())
                     queue.push_back(nbf_info[i].literal);
             }
         }
