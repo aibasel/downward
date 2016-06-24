@@ -1,5 +1,7 @@
 #include "axioms.h"
+
 #include "int_packer.h"
+#include "task_tools.h"
 
 #include <algorithm>
 #include <cassert>
@@ -57,7 +59,7 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                               const IntPacker &state_packer) {
-    if (!has_axioms())
+    if (!has_axioms(task_proxy))
         return;
 
     VariablesProxy variables = task_proxy.get_variables();
