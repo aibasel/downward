@@ -2,7 +2,9 @@
 #define AXIOMS_H
 
 #include "global_state.h"
+#include "task_proxy.h"
 
+#include <memory>
 #include <vector>
 
 class IntPacker;
@@ -30,6 +32,8 @@ class AxiomEvaluator {
             : var_no(var), literal(lit) {}
     };
 
+    const std::shared_ptr<AbstractTask> task;
+    TaskProxy task_proxy;
     std::vector<std::vector<AxiomLiteral>> axiom_literals;
     std::vector<AxiomRule> rules;
     std::vector<std::vector<NegationByFailureInfo>> nbf_info_by_layer;
@@ -38,7 +42,7 @@ class AxiomEvaluator {
     // to reduce reallocation effort. See issue420.
     std::vector<AxiomLiteral *> queue;
 public:
-    AxiomEvaluator();
+    AxiomEvaluator(const std::shared_ptr<AbstractTask> &task);
     void evaluate(PackedStateBin *buffer, const IntPacker &state_packer);
 };
 
