@@ -18,6 +18,11 @@ class OptionParser;
 class Options;
 }
 
+// HACK! remove this once landmark heuristics are switched to the new task interface
+#include "../global_state.h"
+const GlobalState &hacked_initial_state();
+
+
 namespace landmarks {
 class Exploration;
 class LandmarkGraph;
