@@ -28,7 +28,7 @@ LazySearch::LazySearch(const Options &opts)
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       randomize_successors(opts.get<bool>("randomize_successors")),
       preferred_successors_first(opts.get<bool>("preferred_successors_first")),
-      current_state(g_initial_state()),
+      current_state(state_registry.get_initial_state()),
       current_predecessor_id(StateID::no_state),
       current_operator(nullptr),
       current_g(0),
@@ -59,6 +59,10 @@ void LazySearch::initialize() {
 
     heuristics.assign(hset.begin(), hset.end());
     assert(!heuristics.empty());
+    const GlobalState &initial_state = state_registry.get_initial_state();
+    for (Heuristic *heuristic : heuristics) {
+        heuristic->notify_initial_state(initial_state);
+    }
 }
 
 void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
@@ -134,9 +138,9 @@ SearchStatus LazySearch::fetch_next_state() {
 
     current_predecessor_id = next.first;
     current_operator = next.second;
-    GlobalState current_predecessor = g_state_registry->lookup_state(current_predecessor_id);
+    GlobalState current_predecessor = state_registry.lookup_state(current_predecessor_id);
     assert(current_operator->is_applicable(current_predecessor));
-    current_state = g_state_registry->get_successor_state(current_predecessor, *current_operator);
+    current_state = state_registry.get_successor_state(current_predecessor, *current_operator);
 
     SearchNode pred_node = search_space.get_node(current_predecessor);
     current_g = pred_node.get_g() + get_adjusted_cost(*current_operator);
@@ -172,14 +176,16 @@ SearchStatus LazySearch::step() {
         StateID dummy_id = current_predecessor_id;
         // HACK! HACK! we do this because SearchNode has no default/copy constructor
         if (dummy_id == StateID::no_state) {
-            dummy_id = g_initial_state().get_id();
+            const GlobalState &initial_state = state_registry.get_initial_state();
+            dummy_id = initial_state.get_id();
         }
-        GlobalState parent_state = g_state_registry->lookup_state(dummy_id);
+        GlobalState parent_state = state_registry.lookup_state(dummy_id);
         SearchNode parent_node = search_space.get_node(parent_state);
 
         if (current_operator) {
             for (Heuristic *heuristic : heuristics)
-                heuristic->reach_state(parent_state, *current_operator, current_state);
+                heuristic->notify_state_transition(
+                    parent_state, *current_operator, current_state);
         }
         statistics.inc_evaluated_states();
         if (!open_list->is_dead_end(current_eval_context)) {
