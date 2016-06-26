@@ -9,7 +9,6 @@ class Options;
 
 namespace merge_and_shrink {
 class MergeTreeFactory;
-
 class MergeStrategyFactoryPrecomputed : public MergeStrategyFactory {
     std::shared_ptr<MergeTreeFactory> merge_tree_factory;
 protected:
