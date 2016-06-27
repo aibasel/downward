@@ -15,10 +15,10 @@ using namespace std;
 
 namespace cegar {
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
-    const options::Options &opts,
-    vector<CartesianHeuristicFunction> &&heuristic_functions)
-    : Heuristic(opts),
-      heuristic_functions(move(heuristic_functions)) {
+    const options::Options &opts)
+    : Heuristic(opts) {
+    CostSaturation cost_saturation(opts);
+    heuristic_functions = cost_saturation.extract_heuristic_functions();
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
@@ -104,18 +104,7 @@ static Heuristic *_parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    CostSaturation cost_saturation(opts);
-
-    Options heuristic_opts;
-    heuristic_opts.set<shared_ptr<AbstractTask>>(
-        "transform", get_task_from_options(opts));
-    heuristic_opts.set<int>(
-        "cost_type", NORMAL);
-    heuristic_opts.set<bool>(
-        "cache_estimates", opts.get<bool>("cache_estimates"));
-
-    return new AdditiveCartesianHeuristic(
-        heuristic_opts, cost_saturation.extract_heuristic_functions());
+    return new AdditiveCartesianHeuristic(opts);
 }
 
 static Plugin<Heuristic> _plugin("cegar", _parse);
