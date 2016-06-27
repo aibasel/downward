@@ -138,10 +138,10 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
             "2358-2366",
             "AAAI Press 2014"));
     MergeScoringFunctionTiebreakingDFP::add_options_to_parser(parser);
+    options::Options options = parser.parse();
     if (parser.dry_run())
         return nullptr;
 
-    options::Options options = parser.parse();
     shared_ptr<MergeScoringFunction> scoring_tiebreaking_dfp =
         make_shared<MergeScoringFunctionTiebreakingDFP>(options);
 

@@ -3,8 +3,6 @@
 #include "merge_strategy_factory_precomputed.h"
 #include "merge_tree.h"
 
-#include "../variable_order_finder.h"
-
 #include "../options/option_parser.h"
 #include "../options/options.h"
 #include "../options/plugin.h"
@@ -17,30 +15,30 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
-    : MergeTreeFactory(options) {
+    : MergeTreeFactory(options),
+      variable_order_type(static_cast<VariableOrderType>(
+        options.get_enum("variable_order"))) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     shared_ptr<AbstractTask> task,
     FactoredTransitionSystem &) {
-    VariableOrderFinder vof(task,
-                            static_cast<VariableOrderType>(
-                                options.get_enum("variable_order")));
+    VariableOrderFinder vof(task, variable_order_type);
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
         root = new MergeTreeNode(root, right_child);
     }
     return utils::make_unique_ptr<MergeTree>(
-        root, utils::parse_rng_from_options(options));
+        root, rng);
 }
 
 void MergeTreeFactoryLinear::dump_options() const {
-    dump_variable_order_type(static_cast<VariableOrderType>(
-                                 options.get_enum("variable_order")));
+    dump_variable_order_type(variable_order_type);
 }
 
 static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
+    MergeTreeFactory::add_options_to_parser(parser);
     parser.document_synopsis(
         "Linear merge trees",
         "These merge trees implement several linear merge orders, which "
@@ -63,7 +61,6 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
         "variable_order", merge_strategies,
         "the order in which atomic transition systems are merged",
         "CG_GOAL_LEVEL");
-    utils::add_rng_options(parser);
 
     options::Options opts = parser.parse();
     if (parser.dry_run())
@@ -74,6 +71,7 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
 
 static shared_ptr<MergeStrategyFactory> _parse_strategy(
     options::OptionParser &parser) {
+    MergeTreeFactory::add_options_to_parser(parser);
     parser.document_synopsis(
         "Linear merge trees",
         "These merge trees implement several linear merge orders, which "

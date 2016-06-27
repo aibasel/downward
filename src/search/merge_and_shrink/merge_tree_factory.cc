@@ -2,17 +2,19 @@
 
 #include "../options/plugin.h"
 
+#include "../utils/rng_options.h"
+
 #include <iostream>
 
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactory::MergeTreeFactory(const options::Options &options)
-    : options(options) {
-    if (!options.contains("random_seed")) {
-        cerr << "Options for merge tree factories must include a random "
-                "seed option!" << endl;
-    }
+MergeTreeFactory::MergeTreeFactory(const options::Options &options) {
+    rng = utils::parse_rng_from_options(options);
+}
+
+void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
+    utils::add_rng_options(parser);
 }
 
 static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(
