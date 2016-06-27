@@ -6,7 +6,6 @@
 #include "utils.h"
 
 #include "../globals.h"
-#include "../option_parser.h"
 #include "../task_tools.h"
 
 #include "../tasks/modified_operator_costs_task.h"
@@ -32,13 +31,19 @@ namespace cegar {
 */
 static const int memory_padding_in_mb = 75;
 
-CostSaturation::CostSaturation(const Options &opts)
-    : task(get_task_from_options(opts)),
-      subtask_generators(opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks")),
-      max_states(opts.get<int>("max_states")),
-      timer(opts.get<double>("max_time")),
-      use_general_costs(opts.get<bool>("use_general_costs")),
-      pick_split(static_cast<PickSplit>(opts.get<int>("pick"))),
+CostSaturation::CostSaturation(
+    shared_ptr<AbstractTask> task,
+    vector<shared_ptr<SubtaskGenerator>> subtask_generators,
+    int max_states,
+    int max_time,
+    bool use_general_costs,
+    PickSplit pick_split)
+    : task(task),
+      subtask_generators(subtask_generators),
+      max_states(max_states),
+      timer(max_time),
+      use_general_costs(use_general_costs),
+      pick_split(pick_split),
       num_abstractions(0),
       num_states(0),
       initial_state(TaskProxy(*task).get_initial_state()) {

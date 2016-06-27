@@ -17,7 +17,13 @@ namespace cegar {
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const options::Options &opts)
     : Heuristic(opts) {
-    CostSaturation cost_saturation(opts);
+    CostSaturation cost_saturation(
+        task,
+        opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
+        opts.get<int>("max_states"),
+        opts.get<double>("max_time"),
+        opts.get<bool>("use_general_costs"),
+        static_cast<PickSplit>(opts.get<int>("pick")));
     heuristic_functions = cost_saturation.extract_heuristic_functions();
 }
 
