@@ -10,6 +10,10 @@ namespace cegar {
 class CartesianHeuristicFunction;
 class SubtaskGenerator;
 
+/*
+  Store CartesianHeuristicFunctions and compute overall heuristic by
+  summing all of their values.
+*/
 class AdditiveCartesianHeuristic : public Heuristic {
     std::vector<CartesianHeuristicFunction> heuristic_functions;
 

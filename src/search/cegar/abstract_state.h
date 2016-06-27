@@ -57,6 +57,9 @@ public:
     }
 };
 
+/*
+  Store and update abstract Domains and transitions.
+*/
 class AbstractState {
 private:
     // Since the abstraction owns the state we don't need AbstractTask.
