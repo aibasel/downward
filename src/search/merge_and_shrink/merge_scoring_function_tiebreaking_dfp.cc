@@ -9,6 +9,7 @@
 #include "../options/options.h"
 #include "../options/plugin.h"
 
+#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -194,6 +195,21 @@ void MergeScoringFunctionTiebreakingDFP::add_options_to_parser(
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
+    parser.document_synopsis(
+        "DFP tiebreaking",
+        "This scoring function computes an order on merge candidates, based"
+        "on an order of all possible 'indices' of transition systems that may "
+        "occur. The score for each merge candidate correponds to its position "
+        "in the order. This tiebreaking has been introduced in the following "
+        "paper:"
+            + utils::format_paper_reference(
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+            "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "Proceedings of the 26th International Conference on Automated "
+            "Planning and Scheduling (ICAPS 2016)",
+            "294-298",
+            "AAAI Press 2016"));
     MergeScoringFunctionTiebreakingDFP::add_options_to_parser(parser);
 
     options::Options options = parser.parse();

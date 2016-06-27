@@ -41,6 +41,10 @@ void MergeScoringFunctionTiebreakingRandom::dump_specific_options() const {
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
+    parser.document_synopsis(
+        "Random tiebreaking",
+        "This scoring functions assign exactly one merge candidate a score of "
+        "0, chosen randomly, and positive infinity to all others.");
     utils::add_rng_options(parser);
 
     options::Options options = parser.parse();

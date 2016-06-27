@@ -38,7 +38,10 @@ string MergeStrategyFactoryPrecomputed::name() const {
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Precomputed merge strategy",
-        "This merge strategy has a precomputed merge tree.");
+        "This merge strategy has a precomputed merge tree. Note that this "
+        "the merge strategy does not take into account the current state of "
+        "the FTS. That also means that this merge strategy relies on the FTS"
+        "being obtained by strictly following this merge strategy.");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
         "the precomputed merge tree");
