@@ -3,8 +3,11 @@
 
 #include "merge_tree_factory.h"
 
+#include "../variable_order_finder.h"
+
 namespace merge_and_shrink {
 class MergeTreeFactoryLinear : public MergeTreeFactory {
+    VariableOrderType variable_order_type;
 public:
     explicit MergeTreeFactoryLinear(const options::Options &options);
     virtual ~MergeTreeFactoryLinear() override = default;
