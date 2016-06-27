@@ -42,7 +42,7 @@ class AxiomEvaluator {
     // to reduce reallocation effort. See issue420.
     std::vector<AxiomLiteral *> queue;
 public:
-    AxiomEvaluator(const std::shared_ptr<AbstractTask> &task);
+    explicit AxiomEvaluator(const std::shared_ptr<AbstractTask> &task);
     void evaluate(PackedStateBin *buffer, const IntPacker &state_packer);
 };
 
