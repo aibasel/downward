@@ -29,6 +29,14 @@ enum class FactOrder {
 };
 
 
+/*
+  SubtaskGenerators create focused subtasks.
+
+  TaskDuplicator returns copies of the original task. GoalDecomposition
+  uses ModifiedGoalsTask to set a single goal fact.
+  LandmarkDecomposition nests ModifiedGoalsTask and
+  DomainAbstractedTask to focus on a single landmark fact.
+*/
 class SubtaskGenerator {
 public:
     virtual SharedTasks get_subtasks(

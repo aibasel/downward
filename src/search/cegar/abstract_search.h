@@ -15,6 +15,10 @@ class AbstractState;
 using AbstractStates = std::unordered_set<AbstractState *>;
 using Solution = std::deque<Arc>;
 
+/*
+  Find abstract solutions using A*. Compute g and h values for abstract
+  states.
+*/
 class AbstractSearch {
     const std::vector<int> operator_costs;
     AbstractStates &states;

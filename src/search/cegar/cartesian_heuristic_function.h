@@ -11,6 +11,10 @@ class AbstractTask;
 class State;
 
 namespace cegar {
+/*
+  Store RefinementHierarchy and subtask for looking up heuristic values
+  efficiently.
+*/
 class CartesianHeuristicFunction {
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;

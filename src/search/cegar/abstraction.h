@@ -24,6 +24,12 @@ namespace cegar {
 class AbstractState;
 struct Flaw;
 
+/*
+  Store the set of AbstractStates, use AbstractSearch to find abstract
+  solutions, find flaws, use SplitSelector to select splits in case of
+  ambiguities, break spurious solutions and maintain the
+  RefinementHierarchy.
+*/
 class Abstraction {
     const TaskProxy task_proxy;
     const int max_states;
