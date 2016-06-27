@@ -15,7 +15,7 @@ class SubtaskGenerator;
   summing all of their values.
 */
 class AdditiveCartesianHeuristic : public Heuristic {
-    std::vector<CartesianHeuristicFunction> heuristic_functions;
+    const std::vector<CartesianHeuristicFunction> heuristic_functions;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
