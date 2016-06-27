@@ -42,8 +42,13 @@ class CostSaturation {
     void print_statistics() const;
 
 public:
-    explicit CostSaturation(const options::Options &opts);
-    ~CostSaturation() = default;
+    CostSaturation(
+        std::shared_ptr<AbstractTask> task,
+        std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators,
+        int max_states,
+        int max_time,
+        bool use_general_costs,
+        PickSplit pick_split);
 
     std::vector<CartesianHeuristicFunction> extract_heuristic_functions();
 };
