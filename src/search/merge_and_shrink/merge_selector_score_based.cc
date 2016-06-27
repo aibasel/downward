@@ -106,7 +106,7 @@ static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
         "Score based merge selector",
         "This merge selector has a list of scoring functions, which are used "
         "iteratively to compute scores for merge candidates until one best "
-        "candidate has been determined".);
+        "candidate has been determined.");
     parser.add_list_option<shared_ptr<MergeScoringFunction>>(
         "scoring_functions",
         "The list of scoring functions used to compute scores for candidates.");
