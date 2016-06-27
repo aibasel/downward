@@ -59,9 +59,10 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
     merge_strategies.push_back("RANDOM");
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
-    parser.add_enum_option("variable_order", merge_strategies,
-                           "the order in which atomic transition systems are merged",
-                           "CG_GOAL_LEVEL");
+    parser.add_enum_option(
+        "variable_order", merge_strategies,
+        "the order in which atomic transition systems are merged",
+        "CG_GOAL_LEVEL");
     utils::add_rng_options(parser);
 
     options::Options opts = parser.parse();
@@ -71,7 +72,8 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
         return make_shared<MergeTreeFactoryLinear>(opts);
 }
 
-static shared_ptr<MergeStrategyFactory> _parse_strategy(options::OptionParser &parser) {
+static shared_ptr<MergeStrategyFactory> _parse_strategy(
+    options::OptionParser &parser) {
     parser.document_synopsis(
         "Linear merge trees",
         "These merge trees implement several linear merge orders, which "
@@ -90,23 +92,28 @@ static shared_ptr<MergeStrategyFactory> _parse_strategy(options::OptionParser &p
     merge_strategies.push_back("RANDOM");
     merge_strategies.push_back("LEVEL");
     merge_strategies.push_back("REVERSE_LEVEL");
-    parser.add_enum_option("variable_order", merge_strategies,
-                           "the order in which atomic transition systems are merged",
-                           "CG_GOAL_LEVEL");
+    parser.add_enum_option(
+        "variable_order", merge_strategies,
+        "the order in which atomic transition systems are merged",
+        "CG_GOAL_LEVEL");
     utils::add_rng_options(parser);
 
     options::Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
 
-    shared_ptr<MergeTreeFactoryLinear> tree_factory = make_shared<MergeTreeFactoryLinear>(opts);
+    shared_ptr<MergeTreeFactoryLinear> tree_factory =
+        make_shared<MergeTreeFactoryLinear>(opts);
 
     options::Options strategy_factory_options;
-    strategy_factory_options.set<shared_ptr<MergeTreeFactory>>("merge_tree", tree_factory);
+    strategy_factory_options.set<shared_ptr<MergeTreeFactory>>(
+        "merge_tree", tree_factory);
 
-    return make_shared<MergeStrategyFactoryPrecomputed>(strategy_factory_options);
+    return make_shared<MergeStrategyFactoryPrecomputed>(
+        strategy_factory_options);
 }
 
 static options::PluginShared<MergeTreeFactory> _plugin("linear", _parse);
-static options::PluginShared<MergeStrategyFactory> _plugin_strategy("merge_linear", _parse_strategy);
+static options::PluginShared<MergeStrategyFactory> _plugin_strategy(
+    "merge_linear", _parse_strategy);
 }

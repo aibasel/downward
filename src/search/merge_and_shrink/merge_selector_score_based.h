@@ -25,7 +25,6 @@ protected:
     virtual void dump_specific_options() const override;
 public:
     explicit MergeSelectorScoreBased(const options::Options &options);
-    // TODO: the option parser does not handle this
     // TODO: get rid of this extra constructor
     explicit MergeSelectorScoreBased(
         std::vector<std::shared_ptr<MergeScoringFunction>> scoring_functions);

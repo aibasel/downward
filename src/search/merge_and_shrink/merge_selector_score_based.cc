@@ -104,7 +104,9 @@ void MergeSelectorScoreBased::dump_specific_options() const {
 static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Score based merge selector",
-        "Computes the best merge based on assigning scores to all candidates.");
+        "This merge selector has a list of scoring functions, which are used "
+        "iteratively to compute scores for merge candidates until one best "
+        "candidate has been determined".);
     parser.add_list_option<shared_ptr<MergeScoringFunction>>(
         "scoring_functions",
         "The list of scoring functions used to compute scores for candidates.");
@@ -148,6 +150,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
     scoring_functions.push_back(make_shared<MergeScoringFunctionDFP>());
     scoring_functions.push_back(scoring_tiebreaking_dfp);
 
+    // TODO: the option parser does not handle this
 //    options::Options selector_options;
 //    selector_options.set<vector<shared_ptr<MergeScoringFunction>>(
 //        "scoring_functions",
