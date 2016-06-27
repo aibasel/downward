@@ -15,7 +15,7 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
       task_proxy(*task) {
     // Initialize literals
     for (VariableProxy var : task_proxy.get_variables())
-        axiom_literals.push_back(vector<AxiomLiteral>(var.get_domain_size()));
+        axiom_literals.emplace_back(var.get_domain_size());
 
     // Initialize rules
     for (OperatorProxy axiom : task_proxy.get_axioms()) {
@@ -24,7 +24,7 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
         int eff_var = effect.get_fact().get_variable().get_id();
         int eff_val = effect.get_fact().get_value();
         AxiomLiteral *eff_literal = &axiom_literals[eff_var][eff_val];
-        rules.push_back(AxiomRule(cond_count, eff_var, eff_val, eff_literal));
+        rules.emplace_back(cond_count, eff_var, eff_val, eff_literal);
     }
 
     // Cross-reference rules and literals
@@ -50,8 +50,7 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
         if (layer != -1 && layer != last_layer) {
             int nbf_value = var.get_default_axiom_value();
             AxiomLiteral *nbf_literal = &axiom_literals[var_id][nbf_value];
-            NegationByFailureInfo nbf_info(var_id, nbf_literal);
-            nbf_info_by_layer[layer].push_back(nbf_info);
+            nbf_info_by_layer[layer].emplace_back(var_id, nbf_literal);
         }
     }
 }
