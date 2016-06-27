@@ -22,9 +22,7 @@ protected:
     int compute_heuristic(const State &state);
 
 public:
-    AdditiveCartesianHeuristic(
-        const options::Options &opts,
-        std::vector<CartesianHeuristicFunction> &&heuristic_functions);
+    explicit AdditiveCartesianHeuristic(const options::Options &opts);
     virtual ~AdditiveCartesianHeuristic() = default;
 };
 }
