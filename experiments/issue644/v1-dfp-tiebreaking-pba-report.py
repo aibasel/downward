@@ -80,7 +80,7 @@ def main(revisions=None):
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
 
-    exp.add_fetcher('data/issue644/issue644-v1-dfp-tiebreaking-eval',
+    exp.add_fetcher('data/issue644-v1-dfp-tiebreaking-eval',
         filter_config=[
             'issue644-base-dfp-reg-otn-pba-b50k',
             'issue644-base-dfp-reg-nto-pba-b50k',
