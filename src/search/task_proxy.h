@@ -146,6 +146,10 @@ public:
         return fact.value;
     }
 
+    FactPair get_pair() const {
+        return fact;
+    }
+
     const std::string &get_name() const {
         return task->get_fact_name(fact);
     }
