@@ -65,7 +65,7 @@ protected:
     // preferred operators for this heuristic once.
     // TODO: Make private once all heuristics use the TaskProxy class.
     void set_preferred(const GlobalOperator *op);
-    void set_preferred(OperatorProxy op);
+    void set_preferred(const OperatorProxy &op);
     // TODO: Remove once all heuristics use the TaskProxy class.
     int get_adjusted_cost(const GlobalOperator &op) const;
     /* TODO: Make private and use State instead of GlobalState once all

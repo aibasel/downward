@@ -1,13 +1,14 @@
 #ifndef LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 #define LANDMARKS_LANDMARK_COST_ASSIGNMENT_H
 
-#include "../globals.h"
 #include "../operator_cost.h"
 
 #include "../lp/lp_solver.h"
 
 #include <set>
 #include <vector>
+
+class TaskProxy;
 
 namespace landmarks {
 class LandmarkGraph;
@@ -25,7 +26,7 @@ public:
     LandmarkCostAssignment(LandmarkGraph &graph, OperatorCost cost_type_);
     virtual ~LandmarkCostAssignment();
 
-    virtual double cost_sharing_h_value() = 0;
+    virtual double cost_sharing_h_value(const TaskProxy &task_proxy) = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
@@ -34,7 +35,7 @@ public:
     LandmarkUniformSharedCostAssignment(LandmarkGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_);
     virtual ~LandmarkUniformSharedCostAssignment();
 
-    virtual double cost_sharing_h_value();
+    virtual double cost_sharing_h_value(const TaskProxy &task_proxy) override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
@@ -49,10 +50,13 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     std::vector<lp::LPConstraint> lp_constraints;
     std::vector<lp::LPConstraint> non_empty_lp_constraints;
 public:
-    LandmarkEfficientOptimalSharedCostAssignment(LandmarkGraph &graph, OperatorCost cost_type, lp::LPSolverType solver_type);
+    LandmarkEfficientOptimalSharedCostAssignment(const TaskProxy &task_proxy,
+                                                 LandmarkGraph &graph,
+                                                 OperatorCost cost_type,
+                                                 lp::LPSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
-    virtual double cost_sharing_h_value();
+    virtual double cost_sharing_h_value(const TaskProxy &task_proxy) override;
 };
 }
 

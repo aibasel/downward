@@ -1,9 +1,8 @@
 #ifndef LANDMARKS_LANDMARK_GRAPH_H
 #define LANDMARKS_LANDMARK_GRAPH_H
 
-#include "../global_operator.h"
 #include "../global_state.h"
-#include "../globals.h"
+#include "../task_proxy.h"
 
 #include "../utils/hash.h"
 
@@ -72,17 +71,35 @@ public:
         return in_goal;
     }
 
-    bool is_true_in_state(const GlobalState &state) const {
+    bool is_true_in_state(const GlobalState &global_state) const {
         if (disjunctive) {
             for (size_t i = 0; i < vars.size(); ++i) {
-                if (state[vars[i]] == vals[i]) {
+                if (global_state[vars[i]] == vals[i]) {
                     return true;
                 }
             }
             return false;
         } else { // conjunctive or simple
             for (size_t i = 0; i < vars.size(); ++i) {
-                if (state[vars[i]] != vals[i]) {
+                if (global_state[vars[i]] != vals[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    bool is_true_in_state(const State &state) const {
+        if (disjunctive) {
+            for (size_t i = 0; i < vars.size(); ++i) {
+                if (state[vars[i]].get_value() == vals[i]) {
+                    return true;
+                }
+            }
+            return false;
+        } else { // conjunctive or simple
+            for (size_t i = 0; i < vars.size(); ++i) {
+                if (state[vars[i]].get_value() != vals[i]) {
                     return false;
                 }
             }
@@ -138,13 +155,7 @@ public:
     inline const std::set<LandmarkNode *> &get_nodes() const {
         return nodes;
     }
-    inline const GlobalOperator &get_operator_for_lookup_index(int op_no) const {
-        int num_ops = g_operators.size();
-        if (op_no < num_ops)
-            return g_operators[op_no];
-        else
-            return g_axioms[op_no - num_ops];
-    }
+
     inline int number_of_landmarks() const {
         assert(landmarks_count == static_cast<int>(nodes.size()));
         return landmarks_count;
@@ -152,8 +163,9 @@ public:
 
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
-    LandmarkGraph();
-    ~LandmarkGraph() = default;
+    LandmarkGraph(const TaskProxy &task_proxy);
+    LandmarkGraph() = default;
+    virtual ~LandmarkGraph() = default;
 
     inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
         assert(simple_landmark_exists(a));
@@ -191,10 +203,10 @@ public:
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;
     }
-    void dump_node(const LandmarkNode *node_p) const;
-    void dump() const;
+    void dump_node(const TaskProxy &task_proxy, const LandmarkNode *node_p) const;
+    void dump(const TaskProxy &task_proxy) const;
 private:
-    void generate_operators_lookups();
+    void generate_operators_lookups(const TaskProxy &task_proxy);
     int landmarks_count;
     int conj_lms;
     int reached_cost;

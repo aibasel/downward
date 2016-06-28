@@ -3,6 +3,8 @@
 
 #include "task_proxy.h"
 
+#include <unordered_set>
+#include <unordered_map>
 
 inline bool is_applicable(OperatorProxy op, const State &state) {
     for (FactProxy precondition : op.get_preconditions()) {

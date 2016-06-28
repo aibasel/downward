@@ -1,9 +1,6 @@
 #include "landmark_graph.h"
 
-#include "../abstract_task.h"
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../globals.h"
+#include "../task_proxy.h"
 
 #include <cassert>
 #include <list>
@@ -16,24 +13,34 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkGraph::LandmarkGraph()
+LandmarkGraph::LandmarkGraph(const TaskProxy &task_proxy)
     : landmarks_count(0), conj_lms(0) {
-    generate_operators_lookups();
+    generate_operators_lookups(task_proxy);
 }
 
-void LandmarkGraph::generate_operators_lookups() {
+void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
     /* Build datastructures for efficient landmark computation. Map propositions
     to the operators that achieve them or have them as preconditions */
 
-    operators_eff_lookup.resize(g_variable_domain.size());
-    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-        operators_eff_lookup[i].resize(g_variable_domain[i]);
+    const VariablesProxy &variables = task_proxy.get_variables();
+    operators_eff_lookup.resize(variables.size());
+    for (VariableProxy variable : variables) {
+        operators_eff_lookup[variable.get_id()].resize(variable.get_domain_size());
     }
-    for (size_t i = 0; i < g_operators.size() + g_axioms.size(); ++i) {
-        const GlobalOperator &op = get_operator_for_lookup_index(i);
-        const vector<GlobalEffect> &effects = op.get_effects();
-        for (size_t j = 0; j < effects.size(); ++j) {
-            operators_eff_lookup[effects[j].var][effects[j].val].push_back(i);
+    const OperatorsProxy &operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
+        const EffectsProxy &effects = op.get_effects();
+        for (EffectProxy cond_eff : effects) {
+            const FactProxy &eff = cond_eff.get_fact();
+            operators_eff_lookup[eff.get_variable().get_id()][eff.get_value()].push_back(op.get_id());
+        }
+    }
+    const AxiomsProxy &axioms = task_proxy.get_axioms();
+    for (OperatorProxy op : axioms) {
+        const EffectsProxy &effects = op.get_effects();
+        for (EffectProxy cond_eff : effects) {
+            const FactProxy &eff = cond_eff.get_fact();
+            operators_eff_lookup[eff.get_variable().get_id()][eff.get_value()].push_back(op.get_id());
         }
     }
 }
@@ -215,25 +222,25 @@ LandmarkNode &LandmarkGraph::make_disj_node_simple(pair<int, int> lm) {
 void LandmarkGraph::set_landmark_ids() {
     ordered_nodes.resize(landmarks_count);
     int id = 0;
-    for (set<LandmarkNode *>::iterator node_it =
-             nodes.begin(); node_it != nodes.end(); ++node_it) {
-        LandmarkNode *lmn = *node_it;
+    for (LandmarkNode *lmn : nodes) {
         lmn->assign_id(id);
         ordered_nodes[id] = lmn;
         ++id;
     }
 }
 
-void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
+void LandmarkGraph::dump_node(const TaskProxy &task_proxy, const LandmarkNode *node_p) const {
     cout << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
         cout << "disj {";
     else if (node_p->conjunctive)
         cout << "conj {";
+    VariablesProxy variables = task_proxy.get_variables();
     for (size_t i = 0; i < node_p->vars.size(); ++i) {
         int var_no = node_p->vars[i], value = node_p->vals[i];
-        cout << g_fact_names[var_no][value] << " ("
-             << g_variable_name[var_no] << "(" << var_no << ")"
+        VariableProxy var = variables[var_no];
+        cout << var.get_fact(value).get_name() << " ("
+             << var.get_name() << "(" << var_no << ")"
              << "->" << value << ")";
         if (i < node_p->vars.size() - 1)
             cout << ", ";
@@ -246,12 +253,12 @@ void LandmarkGraph::dump_node(const LandmarkNode *node_p) const {
     cout << endl;
 }
 
-void LandmarkGraph::dump() const {
+void LandmarkGraph::dump(const TaskProxy &task_proxy) const {
     cout << "Landmark graph: " << endl;
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 
     for (const LandmarkNode *node_p : nodes2) {
-        dump_node(node_p);
+        dump_node(task_proxy, node_p);
         for (const auto &parent : node_p->parents) {
             const LandmarkNode *parent_node = parent.first;
             const EdgeType &edge = parent.second;
@@ -273,7 +280,7 @@ void LandmarkGraph::dump() const {
                 cout << "o_r ";
                 break;
             }
-            dump_node(parent_node);
+            dump_node(task_proxy, parent_node);
         }
         for (const auto &child : node_p->children) {
             const LandmarkNode *child_node = child.first;
@@ -296,7 +303,7 @@ void LandmarkGraph::dump() const {
                 cout << "o_r ";
                 break;
             }
-            dump_node(child_node);
+            dump_node(task_proxy, child_node);
         }
         cout << endl;
     }

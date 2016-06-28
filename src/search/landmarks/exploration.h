@@ -4,14 +4,15 @@
 #include "../heuristic.h"
 #include "../globals.h"
 #include "../priority_queue.h"
+#include "../task_tools.h"
 
 #include <cassert>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-class GlobalOperator;
 class GlobalState;
+class OperatorProxy;
 
 namespace landmarks {
 struct ExProposition;
@@ -45,7 +46,7 @@ struct ExProposition {
 };
 
 struct ExUnaryOperator {
-    const GlobalOperator *op;
+    int op_id;
     std::vector<ExProposition *> precondition;
     ExProposition *effect;
     int base_cost; // 0 for axioms, 1 for regular operators
@@ -55,8 +56,8 @@ struct ExUnaryOperator {
     int h_max_cost;
     int depth;
     ExUnaryOperator(const std::vector<ExProposition *> &pre, ExProposition *eff,
-                    const GlobalOperator *the_op, int base)
-        : op(the_op), precondition(pre), effect(eff), base_cost(base) {}
+                    int op_id, int base)
+        : op_id(op_id), precondition(pre), effect(eff), base_cost(base) {}
 
 
     bool operator<(const ExUnaryOperator &other) const {
@@ -81,7 +82,7 @@ struct ExUnaryOperator {
 class Exploration : public Heuristic {
     static const int MAX_COST_VALUE = 100000000; // See additive_heuristic.h.
 
-    typedef std::unordered_set<const GlobalOperator *> RelaxedPlan;
+    using RelaxedPlan = std::set<int>;
     RelaxedPlan relaxed_plan;
     std::vector<ExUnaryOperator> unary_operators;
     std::vector<std::vector<ExProposition>> propositions;
@@ -93,29 +94,28 @@ class Exploration : public Heuristic {
 
     bool heuristic_recomputation_needed;
 
-    void build_unary_operators(const GlobalOperator &op);
+    void build_unary_operators(const OperatorProxy &op);
     void simplify();
 
     /* HACK: switching Exploration to the task interface should get rid of the
        strange mix of State and GlobalOperator* here. */
     void setup_exploration_queue(const State &state,
                                  const std::vector<std::pair<int, int>> &excluded_props,
-                                 const std::unordered_set<const GlobalOperator *> &excluded_ops,
+                                 const std::set<int> &excluded_op_ids,
                                  bool use_h_max);
-    void setup_exploration_queue(const GlobalState &global_state, bool h_max) {
+    inline void setup_exploration_queue(const State &state, bool h_max) {
         std::vector<std::pair<int, int>> excluded_props;
-        std::unordered_set<const GlobalOperator *> excluded_ops;
-        State state = convert_global_state(global_state);
-        setup_exploration_queue(state, excluded_props, excluded_ops, h_max);
+        std::set<int> excluded_op_ids;
+        setup_exploration_queue(state, excluded_props, excluded_op_ids, h_max);
     }
     void relaxed_exploration(bool use_h_max, bool level_out);
-    void prepare_heuristic_computation(const GlobalState &state, bool h_max);
-    void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const GlobalState &state);
+    void prepare_heuristic_computation(const State &state, bool h_max);
+    void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
 
     int compute_hsp_add_heuristic();
-    int compute_ff_heuristic(const GlobalState &state);
+    int compute_ff_heuristic(const State &state);
 
-    void collect_ha(ExProposition *goal, RelaxedPlan &relaxed_plan, const GlobalState &state);
+    void collect_ha(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
 
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
@@ -130,13 +130,13 @@ public:
                                             std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op,
                                             bool level_out,
                                             const std::vector<std::pair<int, int>> &excluded_props,
-                                            const std::unordered_set<const GlobalOperator *> &excluded_ops,
+                                            const std::set<int> &excluded_op_ids,
                                             bool compute_lvl_ops);
-    std::vector<const GlobalOperator *> exported_ops; // only needed for landmarks count heuristic ha
+    std::vector<int> exported_op_ids; // only needed for landmarks count heuristic ha
 
     // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
     // via "exported_ops". (This is the real reason why you might want to call this.)
-    bool plan_for_disj(std::vector<std::pair<int, int>> &disj_goal, const GlobalState &state);
+    bool plan_for_disj(std::vector<std::pair<int, int>> &disj_goal, const State &state);
 
     explicit Exploration(const options::Options &opts);
     virtual ~Exploration() override = default;

@@ -43,11 +43,11 @@ LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm)
     return 0;
 }
 
-void LandmarkGraphMerged::generate_landmarks(Exploration &exploration) {
+void LandmarkGraphMerged::generate_landmarks(const TaskProxy &task_proxy, Exploration &exploration) {
     cout << "Merging " << lm_factories.size() << " landmark graphs" << endl;
 
     for (LandmarkFactory *lm_factory : lm_factories) {
-        lm_graphs.push_back(lm_factory->compute_lm_graph(exploration));
+        lm_graphs.push_back(lm_factory->compute_lm_graph(task_proxy, exploration));
     }
 
     cout << "Adding simple landmarks" << endl;
