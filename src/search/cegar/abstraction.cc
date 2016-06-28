@@ -79,7 +79,7 @@ Abstraction::Abstraction(
       use_general_costs(use_general_costs),
       abstract_search(get_operator_costs(task_proxy), states),
       split_selector(task, pick),
-      transition_system(task_proxy),
+      transition_system(task),
       timer(max_time),
       init(nullptr),
       deviations(0),

@@ -6,14 +6,18 @@
 using namespace std;
 
 namespace cegar {
-TransitionSystem::TransitionSystem(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy),
+TransitionSystem::TransitionSystem(const shared_ptr<AbstractTask> &task)
+    : task(task),
       num_non_loops(0),
       num_loops(0) {
 }
 
+TaskProxy TransitionSystem::get_task_proxy() const {
+    return TaskProxy(*task);
+}
+
 void TransitionSystem::add_loops_to_trivial_abstract_state(AbstractState *state) {
-    for (OperatorProxy op : task_proxy.get_operators()) {
+    for (OperatorProxy op : get_task_proxy().get_operators()) {
         add_loop(state, op.get_id());
     }
 }
@@ -47,9 +51,10 @@ void TransitionSystem::split_incoming_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        u->v we need to add transitions u->v1, u->v2, or both. */
+    OperatorsProxy operators(get_task_proxy().get_operators());
     for (const Transition &transition : v->get_incoming_transitions()) {
         int op_id = transition.op_id;
-        OperatorProxy op = task_proxy.get_operators()[op_id];
+        OperatorProxy op = operators[op_id];
         AbstractState *u = transition.target;
         assert(u != v);
         int post = get_post(op, var);
@@ -80,9 +85,10 @@ void TransitionSystem::split_outgoing_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        v->w we need to add transitions v1->w, v2->w, or both. */
+    OperatorsProxy operators(get_task_proxy().get_operators());
     for (const Transition &transition : v->get_outgoing_transitions()) {
         int op_id = transition.op_id;
-        OperatorProxy op = task_proxy.get_operators()[op_id];
+        OperatorProxy op = operators[op_id];
         AbstractState *w = transition.target;
         assert(w != v);
         int pre = get_pre(op, var);
@@ -120,8 +126,9 @@ void TransitionSystem::split_loops(
     /* State v has been split into v1 and v2. Now for all self-loops
        v->v we need to add one or two of the transitions v1->v1, v1->v2,
        v2->v1 and v2->v2. */
+    OperatorsProxy operators(get_task_proxy().get_operators());
     for (int op_id : v->get_loops()) {
-        OperatorProxy op = task_proxy.get_operators()[op_id];
+        OperatorProxy op = operators[op_id];
         int pre = get_pre(op, var);
         int post = get_post(op, var);
         if (pre == UNDEFINED_VALUE) {
