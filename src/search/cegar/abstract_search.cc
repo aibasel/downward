@@ -110,7 +110,7 @@ void AbstractSearch::extract_solution(
     while (current != init) {
         const Transition &prev =
             current->get_search_info().get_incoming_transition();
-        solution.push_front(Transition(prev.op_id, current));
+        solution.emplace_front(prev.op_id, current);
         assert(utils::in_bounds(prev.op_id, operator_costs));
         const int prev_op_cost = operator_costs[prev.op_id];
         assert(prev_op_cost != INF);
