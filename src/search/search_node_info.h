@@ -22,7 +22,8 @@ struct SearchNodeInfo {
     }
 };
 
-static_assert(sizeof(SearchNodeInfo) == 
+static_assert(
+    sizeof(SearchNodeInfo) ==
     sizeof(int) + sizeof(StateID) + sizeof(GlobalOperator *) + sizeof(int),
     "The size of SearchNodeInfo is larger than expected. This probably means "
     "that packing two field into one integer using bitfields is not supported.");
