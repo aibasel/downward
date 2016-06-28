@@ -112,7 +112,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
     }
 }
 
-std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
+FactPair PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
     vector<State> &samples, PDBCollection &candidate_pdbs) {
     /*
       TODO: The original implementation by Haslum et al. uses A* to compute
@@ -172,7 +172,7 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
         }
     }
 
-    return make_pair(improvement, best_pdb_index);
+    return FactPair(improvement, best_pdb_index);
 }
 
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
@@ -249,10 +249,10 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             sample_states(
                 task_proxy, successor_generator, samples, average_operator_cost);
 
-            pair<int, int> improvement_and_index =
+            FactPair improvement_and_index =
                 find_best_improving_pdb(samples, candidate_pdbs);
-            int improvement = improvement_and_index.first;
-            int best_pdb_index = improvement_and_index.second;
+            int improvement = improvement_and_index.var;
+            int best_pdb_index = improvement_and_index.value;
 
             if (improvement < min_improvement) {
                 cout << "Improvement below threshold. Stop hill climbing."
