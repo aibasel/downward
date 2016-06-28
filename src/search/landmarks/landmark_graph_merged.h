@@ -13,7 +13,7 @@ class LandmarkGraphMerged : public LandmarkFactory {
     std::vector<std::shared_ptr<LandmarkGraph>> lm_graphs;
     std::vector<LandmarkFactory *> lm_factories;
 
-    virtual void generate_landmarks(Exploration &exploration) override;
+    virtual void generate_landmarks(const TaskProxy &task_proxy, Exploration &exploration) override;
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
     explicit LandmarkGraphMerged(const options::Options &opts);

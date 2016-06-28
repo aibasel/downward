@@ -59,14 +59,15 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
 }
 
 
-bool LandmarkStatusManager::update_reached_lms(
-    const GlobalState &parent_state, const GlobalOperator &, const GlobalState &state) {
-    vector<bool> &parent_reached = get_reached_landmarks(parent_state);
-    vector<bool> &reached = get_reached_landmarks(state);
+bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_state,
+                                               const GlobalOperator &,
+                                               const GlobalState &global_state) {
+    vector<bool> &parent_reached = get_reached_landmarks(parent_global_state);
+    vector<bool> &reached = get_reached_landmarks(global_state);
 
 
     if (&parent_reached == &reached) {
-        assert(state.get_id() == parent_state.get_id());
+        assert(global_state.get_id() == parent_global_state.get_id());
         // This can happen, e.g., in Satellite-01.
         return false;
     }
@@ -94,7 +95,7 @@ bool LandmarkStatusManager::update_reached_lms(
             reached[id] = false;
         } else if (!reached[id]) {
             LandmarkNode *node = lm_graph.get_lm_for_index(id);
-            if (node->is_true_in_state(state)) {
+            if (node->is_true_in_state(global_state)) {
                 // cout << "New LM reached: id " << id << " ";
                 // lm_graph.dump_node(node);
                 if (landmark_is_leaf(*node, reached)) {
@@ -114,32 +115,29 @@ bool LandmarkStatusManager::update_reached_lms(
     return true;
 }
 
-bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
-    vector<bool> &reached = get_reached_landmarks(state);
+bool LandmarkStatusManager::update_lm_status(const GlobalState &global_state) {
+    vector<bool> &reached = get_reached_landmarks(global_state);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     // initialize all nodes to not reached and not effect of unused ALM
-    set<LandmarkNode *>::iterator lit;
-    for (lit = nodes.begin(); lit != nodes.end(); ++lit) {
-        LandmarkNode &node = **lit;
-        node.status = lm_not_reached;
-        if (reached[node.get_id()]) {
-            node.status = lm_reached;
+    for (LandmarkNode *node : nodes) {
+        node->status = lm_not_reached;
+        if (reached[node->get_id()]) {
+            node->status = lm_reached;
         }
     }
 
     bool dead_end_found = false;
 
     // mark reached and find needed again landmarks
-    for (lit = nodes.begin(); lit != nodes.end(); ++lit) {
-        LandmarkNode &node = **lit;
-        if (node.status == lm_reached) {
-            if (!node.is_true_in_state(state)) {
-                if (node.is_goal()) {
-                    node.status = lm_needed_again;
+    for (LandmarkNode *node : nodes) {
+        if (node->status == lm_reached) {
+            if (!node->is_true_in_state(global_state)) {
+                if (node->is_goal()) {
+                    node->status = lm_needed_again;
                 } else {
-                    if (check_lost_landmark_children_needed_again(node)) {
-                        node.status = lm_needed_again;
+                    if (check_lost_landmark_children_needed_again(*node)) {
+                        node->status = lm_needed_again;
                     }
                 }
             }
@@ -154,13 +152,13 @@ bool LandmarkStatusManager::update_lm_status(const GlobalState &state) {
         // A (possibly) more effective option would be to test reachability of the landmark
         // from the current state.
 
-        if (!node.is_derived) {
-            if ((node.status == lm_not_reached) &&
-                (node.first_achievers.size() == 0)) {
+        if (!node->is_derived) {
+            if ((node->status == lm_not_reached) &&
+                (node->first_achievers.size() == 0)) {
                 dead_end_found = true;
             }
-            if ((node.status == lm_needed_again) &&
-                (node.possible_achievers.size() == 0)) {
+            if ((node->status == lm_needed_again) &&
+                (node->possible_achievers.size() == 0)) {
                 dead_end_found = true;
             }
         }

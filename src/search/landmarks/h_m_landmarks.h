@@ -3,7 +3,6 @@
 
 #include "landmark_factory.h"
 #include "landmark_graph.h"
-#include "../globals.h"
 
 namespace landmarks {
 using Fluent = std::pair<int, int>;
@@ -79,9 +78,9 @@ private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef std::unordered_map<int, std::set<int>> TriggerSet;
 
-    virtual void generate_landmarks(Exploration &exploration) override;
+    virtual void generate_landmarks(const TaskProxy &task_proxy, Exploration &exploration) override;
 
-    void compute_h_m_landmarks();
+    void compute_h_m_landmarks(const TaskProxy &task_proxy);
     void compute_noop_landmarks(int op_index, int noop_index,
                                 std::list<int> const &local_landmarks,
                                 std::list<int> const &local_necessary,
@@ -92,18 +91,18 @@ private:
                            TriggerSet &trigger);
 
     bool possible_noop_set(const FluentSet &fs1, const FluentSet &fs2);
-    void build_pm_ops();
+    void build_pm_ops(const TaskProxy &task_proxy);
 
 // already generated, so just return
-    virtual void calc_achievers(Exploration &exploration) override;
+    virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) override;
 
     void add_lm_node(int set_index, bool goal = false);
 
-    void init();
+    void init(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
-    void print_fluentset(const FluentSet &fs);
-    void print_pm_op(const PMOp &op);
+    void print_fluentset(const TaskProxy &task_proxy, const FluentSet &fs);
+    void print_pm_op(const TaskProxy &task_proxy, const PMOp &op);
 
     int m_;
 
@@ -119,7 +118,7 @@ private:
 // variable pairs worth looking at
     std::vector<std::vector<bool>> interesting_;
 
-    void get_m_sets_(int m, int num_included, int current_var,
+    void get_m_sets_(const TaskProxy &task_proxy, int m, int num_included, int current_var,
                      FluentSet &current,
                      std::vector<FluentSet > &subsets);
 
@@ -135,16 +134,16 @@ private:
                            std::vector<FluentSet> &subsets,
                            const FluentSet &superset1, const FluentSet &superset2);
 
-    void get_m_sets(int m, std::vector<FluentSet> &subsets);
+    void get_m_sets(const TaskProxy &task_proxy, int m, std::vector<FluentSet> &subsets);
 
     void get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset);
 
-    void get_m_sets(int m, std::vector<FluentSet> &subsets,
-                    const GlobalState &s);
+    void get_m_sets(const TaskProxy &task_proxy, int m, std::vector<FluentSet> &subsets,
+                    const State &s);
 
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
-    void print_proposition(const std::pair<int, int> &fluent) const;
+    void print_proposition(const TaskProxy &task_proxy, const std::pair<int, int> &fluent) const;
 };
 }
 
