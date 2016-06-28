@@ -1,7 +1,10 @@
 #ifndef CEGAR_TRANSITION_SYSTEM_H
 #define CEGAR_TRANSITION_SYSTEM_H
 
-#include "../task_proxy.h"
+class AbstractTask;
+class OperatorsProxy;
+
+#include <memory>
 
 namespace cegar {
 class AbstractState;
@@ -12,7 +15,7 @@ class TransitionSystem {
     int num_non_loops;
     int num_loops;
 
-    TaskProxy get_task_proxy() const;
+    OperatorsProxy get_operators() const;
 
     void add_transition(AbstractState *src, int op_id, AbstractState *target);
     void add_loop(AbstractState *state, int op_id);

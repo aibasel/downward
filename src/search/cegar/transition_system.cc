@@ -3,6 +3,8 @@
 #include "abstract_state.h"
 #include "utils.h"
 
+#include "../task_proxy.h"
+
 using namespace std;
 
 namespace cegar {
@@ -12,12 +14,12 @@ TransitionSystem::TransitionSystem(const shared_ptr<AbstractTask> &task)
       num_loops(0) {
 }
 
-TaskProxy TransitionSystem::get_task_proxy() const {
-    return TaskProxy(*task);
+OperatorsProxy TransitionSystem::get_operators() const {
+    return TaskProxy(*task).get_operators();
 }
 
 void TransitionSystem::add_loops_to_trivial_abstract_state(AbstractState *state) {
-    for (OperatorProxy op : get_task_proxy().get_operators()) {
+    for (OperatorProxy op : get_operators()) {
         add_loop(state, op.get_id());
     }
 }
@@ -51,7 +53,7 @@ void TransitionSystem::split_incoming_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        u->v we need to add transitions u->v1, u->v2, or both. */
-    OperatorsProxy operators(get_task_proxy().get_operators());
+    OperatorsProxy operators = get_operators();
     for (const Transition &transition : v->get_incoming_transitions()) {
         int op_id = transition.op_id;
         OperatorProxy op = operators[op_id];
@@ -85,7 +87,7 @@ void TransitionSystem::split_outgoing_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        v->w we need to add transitions v1->w, v2->w, or both. */
-    OperatorsProxy operators(get_task_proxy().get_operators());
+    OperatorsProxy operators = get_operators();
     for (const Transition &transition : v->get_outgoing_transitions()) {
         int op_id = transition.op_id;
         OperatorProxy op = operators[op_id];
@@ -126,7 +128,7 @@ void TransitionSystem::split_loops(
     /* State v has been split into v1 and v2. Now for all self-loops
        v->v we need to add one or two of the transitions v1->v1, v1->v2,
        v2->v1 and v2->v2. */
-    OperatorsProxy operators(get_task_proxy().get_operators());
+    OperatorsProxy operators = get_operators();
     for (int op_id : v->get_loops()) {
         OperatorProxy op = operators[op_id];
         int pre = get_pre(op, var);
