@@ -6,7 +6,7 @@
 #include <vector>
 
 class AbstractTask;
-struct Fact;
+struct FactPair;
 class TaskProxy;
 
 namespace landmarks {
@@ -18,7 +18,7 @@ class Options;
 }
 
 namespace cegar {
-using Facts = std::vector<Fact>;
+using Facts = std::vector<FactPair>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 
 enum class FactOrder {
@@ -70,7 +70,7 @@ class LandmarkDecomposition : public SubtaskGenerator {
     /* Perform domain abstraction by combining facts that have to be
        achieved before a given landmark can be made true. */
     std::shared_ptr<AbstractTask> build_domain_abstracted_task(
-        std::shared_ptr<AbstractTask> &parent, Fact fact) const;
+        std::shared_ptr<AbstractTask> &parent, FactPair fact) const;
 
 public:
     explicit LandmarkDecomposition(const options::Options &opts);

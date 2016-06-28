@@ -360,8 +360,8 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             }
 
             // 1. a, b mutex
-            // TODO(issue635): Use Fact struct right away.
-            if (are_mutex(Fact(a.first, a.second), Fact(b.first, b.second)))
+            // TODO(issue635): Use FactPair struct right away.
+            if (are_mutex(FactPair(a.first, a.second), FactPair(b.first, b.second)))
                 return true;
 
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
@@ -415,7 +415,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             }
             // Test whether one of the shared effects is inconsistent with b
             for (const auto &eff : shared_eff)
-                if (eff != a && eff != b && are_mutex(Fact(eff.first, eff.second), Fact(b.first, b.second)))
+                if (eff != a && eff != b && are_mutex(FactPair(eff.first, eff.second), FactPair(b.first, b.second)))
                     return true;
         }
 

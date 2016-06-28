@@ -134,10 +134,10 @@ inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
 
 class FactProxy {
     const AbstractTask *task;
-    Fact fact;
+    FactPair fact;
 public:
     FactProxy(const AbstractTask &task, int var_id, int value);
-    FactProxy(const AbstractTask &task, const Fact &fact);
+    FactProxy(const AbstractTask &task, const FactPair &fact);
     ~FactProxy() = default;
 
     VariableProxy get_variable() const;
@@ -632,14 +632,14 @@ public:
 };
 
 
-inline FactProxy::FactProxy(const AbstractTask &task, const Fact &fact)
+inline FactProxy::FactProxy(const AbstractTask &task, const FactPair &fact)
     : task(&task), fact(fact) {
     assert(fact.var >= 0 && fact.var < task.get_num_variables());
     assert(fact.value >= 0 && fact.value < get_variable().get_domain_size());
 }
 
 inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
-    : FactProxy(task, Fact(var_id, value)) {
+    : FactProxy(task, FactPair(var_id, value)) {
 }
 
 
