@@ -7,10 +7,12 @@ namespace cegar {
 class AbstractState;
 
 class TransitionSystem {
-    const TaskProxy &task_proxy;
+    const std::shared_ptr<AbstractTask> task;
 
     int num_non_loops;
     int num_loops;
+
+    TaskProxy get_task_proxy() const;
 
     void add_transition(AbstractState *src, int op_id, AbstractState *target);
     void add_loop(AbstractState *state, int op_id);
@@ -28,8 +30,7 @@ class TransitionSystem {
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
 
 public:
-    explicit TransitionSystem(const TaskProxy &task_proxy);
-    ~TransitionSystem() = default;
+    explicit TransitionSystem(const std::shared_ptr<AbstractTask> &task);
 
     void add_loops_to_trivial_abstract_state(AbstractState *state);
 
