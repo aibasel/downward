@@ -464,8 +464,8 @@ bool HMLandmarks::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) 
 
     for (fs1it = fs1.begin(); fs1it != fs1.end(); ++fs1it) {
         for (fs2it = fs2.begin(); fs2it != fs2.end(); ++fs2it) {
-            // TODO(issue635): Use Fact struct right away.
-            if (are_mutex(Fact(fs1it->first, fs1it->second), Fact(fs2it->first, fs2it->second)))
+            // TODO(issue635): Use FactPair struct right away.
+            if (are_mutex(FactPair(fs1it->first, fs1it->second), FactPair(fs2it->first, fs2it->second)))
                 return false;
         }
     }
@@ -586,7 +586,7 @@ void HMLandmarks::build_pm_ops() {
 
 bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
     // mutexes can always be safely pruned
-    return !are_mutex(Fact(var1, val1), Fact(var2, val2));
+    return !are_mutex(FactPair(var1, val1), FactPair(var2, val2));
 }
 
 HMLandmarks::HMLandmarks(const options::Options &opts)
@@ -665,9 +665,9 @@ void HMLandmarks::calc_achievers(Exploration &) {
                 size_t k;
                 for (k = 0; k < post.size(); ++k) {
                     if (are_mutex(
-                            // TODO(issue635): Use Fact struct right away.
-                            Fact(post[k].first, post[k].second),
-                            Fact(lm_val.first, lm_val.second))) {
+                            // TODO(issue635): Use FactPair struct right away.
+                            FactPair(post[k].first, post[k].second),
+                            FactPair(lm_val.first, lm_val.second))) {
                         break;
                     }
                 }
@@ -678,9 +678,9 @@ void HMLandmarks::calc_achievers(Exploration &) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
                     if (are_mutex(
-                            // TODO(issue635): Use Fact struct right away.
-                            Fact(pre[k].first, pre[k].second),
-                            Fact(lm_val.first, lm_val.second))) {
+                            // TODO(issue635): Use FactPair struct right away.
+                            FactPair(pre[k].first, pre[k].second),
+                            FactPair(lm_val.first, lm_val.second))) {
                         break;
                     }
                 }

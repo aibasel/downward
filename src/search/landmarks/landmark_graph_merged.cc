@@ -130,7 +130,7 @@ static LandmarkFactory *_parse(OptionParser &parser) {
         "Merges the landmarks and orderings from the parameter landmarks");
     parser.document_note(
         "Precedence",
-        "Fact landmarks take precedence over disjunctive landmarks, "
+        "FactPair landmarks take precedence over disjunctive landmarks, "
         "orderings take precedence in the usual manner "
         "(gn > nat > reas > o_reas). ");
     parser.document_note(
