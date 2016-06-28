@@ -19,16 +19,6 @@ AbstractState::AbstractState(
       node(node) {
 }
 
-AbstractState::AbstractState(AbstractState &&other)
-    : task_proxy(move(other.task_proxy)),
-      domains(move(other.domains)),
-      node(move(other.node)),
-      incoming_transitions(move(other.incoming_transitions)),
-      outgoing_transitions(move(other.outgoing_transitions)),
-      loops(move(other.loops)),
-      search_info(move(other.search_info)) {
-}
-
 int AbstractState::count(int var) const {
     return domains.count(var);
 }

@@ -63,7 +63,7 @@ class AbstractState {
     const TaskProxy &task_proxy;
 
     // Abstract domains for all variables.
-    const Domains domains;
+    Domains domains;
 
     // This state's node in the refinement hierarchy.
     Node *node;
@@ -87,13 +87,6 @@ class AbstractState {
     bool is_more_general_than(const AbstractState &other) const;
 
 public:
-    ~AbstractState() = default;
-
-    AbstractState(const AbstractState &) = delete;
-    AbstractState &operator=(const AbstractState &) = delete;
-
-    AbstractState(AbstractState &&other);
-
     void add_outgoing_transition(int op_id, AbstractState *target);
     void add_incoming_transition(int op_id, AbstractState *src);
     void add_loop(int op_id);

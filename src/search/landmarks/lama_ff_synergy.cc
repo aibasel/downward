@@ -57,10 +57,14 @@ public:
         return synergy->lama_result;
     }
 
-    virtual bool reach_state(
+    virtual void notify_initial_state(const GlobalState &initial_state) override {
+        synergy->lama_notify_initial_state(initial_state);
+    }
+
+    virtual bool notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state) override {
-        if (synergy->lama_reach_state(parent_state, op, state)) {
+        if (synergy->lama_notify_state_transition(parent_state, op, state)) {
             if (cache_h_values) {
                 heuristic_cache[state].dirty = true;
             }
@@ -127,10 +131,14 @@ void LamaFFSynergy::compute_heuristics(EvaluationContext &eval_context) {
     ff_result = lama_heuristic->exploration.compute_result(eval_context);
 }
 
-bool LamaFFSynergy::lama_reach_state(
+void LamaFFSynergy::lama_notify_initial_state(const GlobalState &initial_state) {
+    lama_heuristic->notify_initial_state(initial_state);
+}
+
+bool LamaFFSynergy::lama_notify_state_transition(
     const GlobalState &parent_state, const GlobalOperator &op,
     const GlobalState &state) {
-    return lama_heuristic->reach_state(parent_state, op, state);
+    return lama_heuristic->notify_state_transition(parent_state, op, state);
 }
 
 Heuristic *LamaFFSynergy::get_lama_heuristic_proxy() const {
