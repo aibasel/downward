@@ -52,16 +52,17 @@ AxiomEvaluator::AxiomEvaluator() {
 }
 
 // TODO rethink the way this is called: see issue348.
-void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
+void AxiomEvaluator::evaluate(PackedStateBin *buffer,
+                              const IntPacker &state_packer) {
     if (!has_axioms())
         return;
 
     assert(queue.empty());
     for (size_t i = 0; i < g_axiom_layers.size(); ++i) {
         if (g_axiom_layers[i] != -1) {
-            g_state_packer->set(buffer, i, g_default_axiom_values[i]);
+            state_packer.set(buffer, i, g_default_axiom_values[i]);
         } else {
-            queue.push_back(&axiom_literals[i][g_state_packer->get(buffer, i)]);
+            queue.push_back(&axiom_literals[i][state_packer.get(buffer, i)]);
         }
     }
 
@@ -78,8 +79,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
             // some time.
             int var_no = rules[i].effect_var;
             int val = rules[i].effect_val;
-            if (g_state_packer->get(buffer, var_no) != val) {
-                g_state_packer->set(buffer, var_no, val);
+            if (state_packer.get(buffer, var_no) != val) {
+                state_packer.set(buffer, var_no, val);
                 queue.push_back(rules[i].effect_literal);
             }
         }
@@ -95,8 +96,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
                 if (--rule->unsatisfied_conditions == 0) {
                     int var_no = rule->effect_var;
                     int val = rule->effect_val;
-                    if (g_state_packer->get(buffer, var_no) != val) {
-                        g_state_packer->set(buffer, var_no, val);
+                    if (state_packer.get(buffer, var_no) != val) {
+                        state_packer.set(buffer, var_no, val);
                         queue.push_back(rule->effect_literal);
                     }
                 }
@@ -109,7 +110,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer) {
             const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
             for (size_t i = 0; i < nbf_info.size(); ++i) {
                 int var_no = nbf_info[i].var_no;
-                if (g_state_packer->get(buffer, var_no) == g_default_axiom_values[var_no])
+                if (state_packer.get(buffer, var_no) == g_default_axiom_values[var_no])
                     queue.push_back(nbf_info[i].literal);
             }
         }

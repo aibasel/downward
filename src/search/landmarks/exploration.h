@@ -96,13 +96,16 @@ class Exploration : public Heuristic {
     void build_unary_operators(const GlobalOperator &op);
     void simplify();
 
-    void setup_exploration_queue(const GlobalState &state,
+    /* HACK: switching Exploration to the task interface should get rid of the
+       strange mix of State and GlobalOperator* here. */
+    void setup_exploration_queue(const State &state,
                                  const std::vector<std::pair<int, int>> &excluded_props,
                                  const std::unordered_set<const GlobalOperator *> &excluded_ops,
                                  bool use_h_max);
-    inline void setup_exploration_queue(const GlobalState &state, bool h_max) {
+    void setup_exploration_queue(const GlobalState &global_state, bool h_max) {
         std::vector<std::pair<int, int>> excluded_props;
         std::unordered_set<const GlobalOperator *> excluded_ops;
+        State state = convert_global_state(global_state);
         setup_exploration_queue(state, excluded_props, excluded_ops, h_max);
     }
     void relaxed_exploration(bool use_h_max, bool level_out);
