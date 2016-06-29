@@ -262,7 +262,7 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
 bool PatternDatabase::is_goal_state(
     const size_t state_index,
     const vector<FactPair> &abstract_goals) const {
-    for (FactPair abstract_goal : abstract_goals) {
+    for (const FactPair &abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.var;
         int var_id = pattern[pattern_var_id];
         VariableProxy var = task_proxy.get_variables()[var_id];

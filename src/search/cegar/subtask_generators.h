@@ -70,7 +70,7 @@ class LandmarkDecomposition : public SubtaskGenerator {
     /* Perform domain abstraction by combining facts that have to be
        achieved before a given landmark can be made true. */
     std::shared_ptr<AbstractTask> build_domain_abstracted_task(
-        std::shared_ptr<AbstractTask> &parent, FactPair fact) const;
+        std::shared_ptr<AbstractTask> &parent, const FactPair &fact) const;
 
 public:
     explicit LandmarkDecomposition(const options::Options &opts);
