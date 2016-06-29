@@ -62,7 +62,7 @@ void StubbornSetsSimple::compute_interference_relation() {
 }
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
-void StubbornSetsSimple::add_necessary_enabling_set(FactPair fact) {
+void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
     for (int op_no : achievers[fact.var][fact.value]) {
         mark_as_stubborn(op_no);
     }
