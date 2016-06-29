@@ -90,8 +90,8 @@ void MatchTree::insert_recursive(
         // All preconditions have been checked, insert op.
         node->applicable_operators.push_back(&op);
     } else {
-        const FactPair &var_val = regression_preconditions[pre_index];
-        int pattern_var_id = var_val.var;
+        const FactPair &fact = regression_preconditions[pre_index];
+        int pattern_var_id = fact.var;
         int var_id = pattern[pattern_var_id];
         VariableProxy var = task_proxy.get_variables()[var_id];
         int var_domain_size = var.get_domain_size();
@@ -114,14 +114,14 @@ void MatchTree::insert_recursive(
         /* Set up edge to the correct child (for which we want to call
            this function recursively). */
         Node **edge_to_child = 0;
-        if (node->var_id == var_val.var) {
+        if (node->var_id == fact.var) {
             // Operator has a precondition on the variable tested by node.
-            edge_to_child = &node->successors[var_val.value];
+            edge_to_child = &node->successors[fact.value];
             ++pre_index;
         } else {
             // Operator doesn't have a precondition on the variable tested by
             // node: follow/create the star-edge.
-            assert(node->var_id < var_val.var);
+            assert(node->var_id < fact.var);
             edge_to_child = &node->star_successor;
         }
 
