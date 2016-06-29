@@ -84,7 +84,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       counting approximation and the given samples. Returns the improvement and
       the index of the best pdb in candidate_pdbs.
     */
-    FactPair find_best_improving_pdb(
+    std::pair<int, int> find_best_improving_pdb(
         std::vector<State> &samples,
         PDBCollection &candidate_pdbs);
 
