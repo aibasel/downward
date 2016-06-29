@@ -112,7 +112,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
     }
 }
 
-std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
+pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
     vector<State> &samples, PDBCollection &candidate_pdbs) {
     /*
       TODO: The original implementation by Haslum et al. uses A* to compute
@@ -172,7 +172,7 @@ std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_
         }
     }
 
-    return std::make_pair(improvement, best_pdb_index);
+    return make_pair(improvement, best_pdb_index);
 }
 
 bool PatternCollectionGeneratorHillclimbing::is_heuristic_improved(
@@ -249,7 +249,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             sample_states(
                 task_proxy, successor_generator, samples, average_operator_cost);
 
-            std::pair<int, int> improvement_and_index =
+            pair<int, int> improvement_and_index =
                 find_best_improving_pdb(samples, candidate_pdbs);
             int improvement = improvement_and_index.first;
             int best_pdb_index = improvement_and_index.second;
