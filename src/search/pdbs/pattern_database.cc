@@ -121,10 +121,10 @@ void PatternDatabase::multiply_out(
         VariableProxy var = task_proxy.get_variables()[pattern[var_id]];
         for (int i = 0; i < var.get_domain_size(); ++i) {
             if (i != eff) {
-                pre_pairs.push_back(FactPair(var_id, i));
-                eff_pairs.push_back(FactPair(var_id, eff));
+                pre_pairs.emplace_back(FactPair(var_id, i));
+                eff_pairs.emplace_back(FactPair(var_id, eff));
             } else {
-                prev_pairs.push_back(FactPair(var_id, i));
+                prev_pairs.emplace_back(FactPair(var_id, i));
             }
             multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
                          effects_without_pre, operators);
@@ -165,9 +165,9 @@ void PatternDatabase::build_abstract_operators(
         if (pattern_var_id != -1) {
             if (has_precondition_on_var[var_id]) {
                 has_precond_and_effect_on_var[var_id] = true;
-                eff_pairs.push_back(FactPair(pattern_var_id, val));
+                eff_pairs.emplace_back(FactPair(pattern_var_id, val));
             } else {
-                effects_without_pre.push_back(FactPair(pattern_var_id, val));
+                effects_without_pre.emplace_back(FactPair(pattern_var_id, val));
             }
         }
     }
@@ -177,9 +177,9 @@ void PatternDatabase::build_abstract_operators(
         int val = pre.get_value();
         if (pattern_var_id != -1) { // variable occurs in pattern
             if (has_precond_and_effect_on_var[var_id]) {
-                pre_pairs.push_back(FactPair(pattern_var_id, val));
+                pre_pairs.emplace_back(FactPair(pattern_var_id, val));
             } else {
-                prev_pairs.push_back(FactPair(pattern_var_id, val));
+                prev_pairs.emplace_back(FactPair(pattern_var_id, val));
             }
         }
     }
@@ -218,7 +218,7 @@ void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
         int var_id = goal.get_variable().get_id();
         int val = goal.get_value();
         if (variable_to_index[var_id] != -1) {
-            abstract_goals.push_back(FactPair(variable_to_index[var_id], val));
+            abstract_goals.emplace_back(FactPair(variable_to_index[var_id], val));
         }
     }
 
