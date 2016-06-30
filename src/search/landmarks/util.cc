@@ -44,12 +44,12 @@ bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lv
 
     // Go through all effects of o and check whether one can reach a
     // proposition in lmp
-    for (EffectProxy cond_eff : op.get_effects()) {
-        FactProxy eff = cond_eff.get_fact();
-        assert(!lvl_var[eff.get_variable().get_id()].empty());
+    for (EffectProxy effect: op.get_effects()) {
+        FactProxy effect_fact = effect.get_fact();
+        assert(!lvl_var[effect_fact.get_variable().get_id()].empty());
         for (size_t j = 0; j < lmp->vars.size(); ++j) {
-            if (eff.get_variable().get_id() == lmp->vars[j] && eff.get_value() == lmp->vals[j]) {
-                if (_possibly_fires(cond_eff.get_conditions(), lvl_var))
+            if (effect_fact.get_variable().get_id() == lmp->vars[j] && effect_fact.get_value() == lmp->vals[j]) {
+                if (_possibly_fires(effect.get_conditions(), lvl_var))
                     return true;
                 break;
             }

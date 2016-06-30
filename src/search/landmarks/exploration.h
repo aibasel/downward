@@ -2,16 +2,13 @@
 #define LANDMARKS_EXPLORATION_H
 
 #include "../heuristic.h"
-#include "../globals.h"
 #include "../priority_queue.h"
-#include "../task_tools.h"
 
 #include <cassert>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-class GlobalState;
 class OperatorProxy;
 
 namespace landmarks {
@@ -97,13 +94,11 @@ class Exploration : public Heuristic {
     void build_unary_operators(const OperatorProxy &op);
     void simplify();
 
-    /* HACK: switching Exploration to the task interface should get rid of the
-       strange mix of State and GlobalOperator* here. */
     void setup_exploration_queue(const State &state,
                                  const std::vector<std::pair<int, int>> &excluded_props,
                                  const std::set<int> &excluded_op_ids,
                                  bool use_h_max);
-    inline void setup_exploration_queue(const State &state, bool h_max) {
+    void setup_exploration_queue(const State &state, bool h_max) {
         std::vector<std::pair<int, int>> excluded_props;
         std::set<int> excluded_op_ids;
         setup_exploration_queue(state, excluded_props, excluded_op_ids, h_max);

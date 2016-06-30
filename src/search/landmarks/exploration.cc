@@ -1,9 +1,7 @@
 #include "exploration.h"
+
 #include "util.h"
 
-#include "../global_operator.h"
-#include "../global_state.h"
-#include "../globals.h"
 #include "../task_tools.h"
 
 #include "../utils/collections.h"
@@ -123,23 +121,20 @@ void Exploration::set_additional_goals(const vector<pair<int, int>> &add_goals) 
 void Exploration::build_unary_operators(const OperatorProxy &op) {
     // Note: changed from the original to allow sorting of operator conditions
     int base_cost = op.get_cost();
-    PreconditionsProxy preconditions = op.get_preconditions();
     EffectsProxy effects = op.get_effects();
     vector<ExProposition *> precondition;
     vector<pair<int, int>> precondition_var_vals1;
 
-    for (FactProxy pre : preconditions) {
+    for (FactProxy pre : op.get_preconditions()) {
         precondition_var_vals1.emplace_back(
             pre.get_variable().get_id(), pre.get_value());
     }
-    for (EffectProxy cond_eff : effects) {
-        FactProxy eff = cond_eff.get_fact();
+    for (EffectProxy effect : effects) {
         vector<pair<int, int>> precondition_var_vals2(precondition_var_vals1);
-        ExProposition *effect = &propositions[eff.get_variable().get_id()][eff.get_value()];
-        EffectConditionsProxy effect_conditions = cond_eff.get_conditions();
-        for (FactProxy eff_cond : effect_conditions) {
+        EffectConditionsProxy effect_conditions = effect.get_conditions();
+        for (FactProxy eff_condidition : effect_conditions) {
             precondition_var_vals2.emplace_back(
-                eff_cond.get_variable().get_id(), eff_cond.get_value());
+                eff_condidition.get_variable().get_id(), eff_condidition.get_value());
         }
 
         sort(precondition_var_vals2.begin(), precondition_var_vals2.end());
@@ -148,8 +143,10 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
             precondition.push_back(&propositions[precondition_var_vals2[j].first]
                                    [precondition_var_vals2[j].second]);
 
+        FactProxy effect_fact = effect.get_fact();
+        ExProposition *eff = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
         int op_id = get_operator_or_axiom_id(task_proxy, op);
-        unary_operators.push_back(ExUnaryOperator(precondition, effect, op_id, base_cost));
+        unary_operators.push_back(ExUnaryOperator(precondition, eff, op_id, base_cost));
         precondition.clear();
         precondition_var_vals2.clear();
     }

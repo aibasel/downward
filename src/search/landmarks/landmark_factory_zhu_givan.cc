@@ -11,9 +11,7 @@
 
 #include <iostream>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
-#include <vector>
 
 using namespace std;
 
@@ -28,7 +26,7 @@ void LandmarkFactoryZhuGivan::generate_landmarks(const TaskProxy &task_proxy,
 
     compute_triggers(task_proxy);
 
-    proposition_layer last_prop_layer = build_relaxed_plan_graph_with_labels(task_proxy);
+    PropositionLayer last_prop_layer = build_relaxed_plan_graph_with_labels(task_proxy);
 
     if (!satisfies_goal_conditions(task_proxy, last_prop_layer)) {
         cout << "Problem not solvable, even if relaxed.\n";
@@ -40,7 +38,7 @@ void LandmarkFactoryZhuGivan::generate_landmarks(const TaskProxy &task_proxy,
 
 bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
     const TaskProxy &task_proxy,
-    const proposition_layer &layer) const {
+    const PropositionLayer &layer) const {
     for (FactProxy goal : task_proxy.get_goals())
         if (!layer[goal.get_variable().get_id()][goal.get_value()].reached())
             return false;
@@ -50,12 +48,12 @@ bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
 
 void LandmarkFactoryZhuGivan::extract_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration,
-    const proposition_layer &last_prop_layer) {
+    const PropositionLayer &last_prop_layer) {
     utils::unused_variable(exploration);
     State initial_state = task_proxy.get_initial_state();
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
-        pair<int, int> goal_lm = make_pair(goal.get_variable().get_id(), goal.get_value());
+        pair<int, int> goal_lm(goal.get_variable().get_id(), goal.get_value());
         LandmarkNode *lmp;
         if (lm_graph->simple_landmark_exists(goal_lm)) {
             lmp = &lm_graph->get_simple_lm_node(goal_lm);
@@ -70,7 +68,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
 
         assert(goal_node.reached());
 
-        for (const pair<int, int> lm : goal_node.labels) {
+        for (const pair<int, int> &lm : goal_node.labels) {
             if (lm == goal_lm) // ignore label on itself
                 continue;
             LandmarkNode *node;
@@ -92,25 +90,26 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     }
 }
 
-LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxed_plan_graph_with_labels(
+LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed_plan_graph_with_labels(
     const TaskProxy &task_proxy) const {
     assert(!triggers.empty());
 
-    proposition_layer current_prop_layer;
+    PropositionLayer current_prop_layer;
     unordered_set<int> triggered(task_proxy.get_operators().size() + task_proxy.get_axioms().size());
 
     // set initial layer
     State initial_state = task_proxy.get_initial_state();
     VariablesProxy variables = task_proxy.get_variables();
     current_prop_layer.resize(variables.size());
-    for (VariableProxy var : variables) {
-        current_prop_layer[var.get_id()].resize(var.get_domain_size());
+    for (VariableProxy variable : variables) {
+        const int variable_id = variable.get_id();
+        current_prop_layer[variable_id].resize(variable.get_domain_size());
 
         // label nodes from initial state
-        const int val = initial_state[var.get_id()].get_value();
-        current_prop_layer[var.get_id()][val].labels.emplace(make_pair(var.get_id(), val));
+        const int value = initial_state[variable].get_value();
+        current_prop_layer[variable_id][value].labels.emplace(variable_id, value);
 
-        triggered.insert(triggers[var.get_id()][val].begin(), triggers[var.get_id()][val].end());
+        triggered.insert(triggers[variable_id][value].begin(), triggers[variable_id][value].end());
     }
     // Operators without preconditions do not propagate labels. So if they have
     // no conditional effects, is only necessary to apply them once. (If they
@@ -120,7 +119,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
 
     bool changes = true;
     while (changes) {
-        proposition_layer next_prop_layer(current_prop_layer);
+        PropositionLayer next_prop_layer(current_prop_layer);
         unordered_set<int> next_triggered;
         changes = false;
         for (int op_index : triggered) {
@@ -145,7 +144,7 @@ LandmarkFactoryZhuGivan::proposition_layer LandmarkFactoryZhuGivan::build_relaxe
 }
 
 bool LandmarkFactoryZhuGivan::operator_applicable(const OperatorProxy &op,
-                                                  const proposition_layer &state) const {
+                                                  const PropositionLayer &state) const {
     // test preconditions
     for (FactProxy fact : op.get_preconditions())
         if (!state[fact.get_variable().get_id()][fact.get_value()].reached())
@@ -154,9 +153,9 @@ bool LandmarkFactoryZhuGivan::operator_applicable(const OperatorProxy &op,
 }
 
 bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
-    const EffectConditionsProxy &effect_conditions, const proposition_layer &state) const {
-    for (FactProxy cond : effect_conditions)
-        if (!state[cond.get_variable().get_id()][cond.get_value()].reached())
+    const EffectConditionsProxy &effect_conditions, const PropositionLayer &state) const {
+    for (FactProxy effect_condition : effect_conditions)
+        if (!state[effect_condition.get_variable().get_id()][effect_condition.get_value()].reached())
             return false;
     return true;
 }
@@ -185,23 +184,23 @@ static lm_set _intersection(const lm_set &a, const lm_set &b) {
 }
 
 lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const OperatorProxy &op,
-                                                             const proposition_layer &current) const {
+                                                             const PropositionLayer &current) const {
     lm_set result;
 
     // TODO This looks like an O(n^2) algorithm where O(n log n) would do, a
     // bit like the Python string concatenation anti-pattern.
-    for (FactProxy pre : op.get_preconditions())
+    for (FactProxy precondition : op.get_preconditions())
         result = _union(result,
-                        current[pre.get_variable().get_id()][pre.get_value()].labels);
+                        current[precondition.get_variable().get_id()][precondition.get_value()].labels);
 
     return result;
 }
 
 lm_set LandmarkFactoryZhuGivan::union_of_condition_labels(
-    const EffectConditionsProxy &effect_conditions, const proposition_layer &current) const {
+    const EffectConditionsProxy &effect_conditions, const PropositionLayer &current) const {
     lm_set result;
-    for (FactProxy cond : effect_conditions)
-        result = _union(result, current[cond.get_variable().get_id()][cond.get_value()].labels);
+    for (FactProxy effect_condition : effect_conditions)
+        result = _union(result, current[effect_condition.get_variable().get_id()][effect_condition.get_value()].labels);
 
     return result;
 }
@@ -231,30 +230,31 @@ static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
 }
 
 lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
-    const OperatorProxy &op, const proposition_layer &current,
-    proposition_layer &next) const {
+    const OperatorProxy &op, const PropositionLayer &current,
+    PropositionLayer &next) const {
     assert(operator_applicable(op, current));
 
     lm_set result;
     lm_set precond_label_union = union_of_precondition_labels(op, current);
 
-    for (EffectProxy cond_eff : op.get_effects()) {
-        FactProxy eff = cond_eff.get_fact();
-        const int var = eff.get_variable().get_id();
-        const int post = eff.get_value();
+    for (EffectProxy effect : op.get_effects()) {
+        FactProxy effect_fact = effect.get_fact();
+        const int variable_id = effect_fact.get_variable().get_id();
+        const int value = effect_fact.get_value();
 
-        if (next[var][post].labels.size() == 1)
+        if (next[variable_id][value].labels.size() == 1)
             continue;
 
-        if (operator_cond_effect_fires(cond_eff.get_conditions(), current)) {
+        if (operator_cond_effect_fires(effect.get_conditions(), current)) {
             const lm_set precond_label_union_with_condeff = _union(
                 precond_label_union, union_of_condition_labels(
-                    cond_eff.get_conditions(), current));         // NOTE: this equals precond_label_union, if effects[i] is
-            // not a conditional effect
+                    // NOTE: this equals precond_label_union, if effects[i] is
+                    // not a conditional effect.
+                    effect.get_conditions(), current));
 
-            if (_propagate_labels(next[var][post].labels,
-                                  precond_label_union_with_condeff, make_pair(var, post)))
-                result.insert(make_pair(var, post));
+            if (_propagate_labels(next[variable_id][value].labels,
+                                  precond_label_union_with_condeff, make_pair(variable_id, value)))
+                result.insert(make_pair(variable_id, value));
         }
     }
 
@@ -280,23 +280,23 @@ void LandmarkFactoryZhuGivan::compute_triggers(const TaskProxy &task_proxy) {
 }
 
 void LandmarkFactoryZhuGivan::add_operator_to_triggers(const TaskProxy &task_proxy, const OperatorProxy &op) {
-    // collect possible triggers first
-    lm_set t;
+    // Collect possible triggers first.
+    lm_set possible_triggers;
 
     int op_id = get_operator_or_axiom_id(task_proxy, op);
     PreconditionsProxy preconditions = op.get_preconditions();
-    for (FactProxy pre : preconditions)
-        t.emplace(pre.get_variable().get_id(), pre.get_value());
+    for (FactProxy precondition : preconditions)
+        possible_triggers.emplace(precondition.get_variable().get_id(), precondition.get_value());
 
-    for (EffectProxy cond_eff : op.get_effects()) {
-        for (FactProxy fact : cond_eff.get_conditions())
-            t.insert(make_pair(fact.get_variable().get_id(), fact.get_value()));
+    for (EffectProxy effect : op.get_effects()) {
+        for (FactProxy effect_condition : effect.get_conditions())
+            possible_triggers.emplace(effect_condition.get_variable().get_id(), effect_condition.get_value());
     }
     if (preconditions.empty())
         operators_without_preconditions.push_back(op_id);
 
     // add operator to triggers vector
-    for (const pair<int, int> lm : t)
+    for (const pair<int, int> lm : possible_triggers)
         triggers[lm.first][lm.second].push_back(op_id);
 }
 

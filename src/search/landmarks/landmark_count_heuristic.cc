@@ -27,14 +27,14 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
           opts.get<LandmarkFactory *>("lm_factory")->supports_conditional_effects()),
-      use_cost_sharing(opts.get<bool>("admissible")) {
+      admissible(opts.get<bool>("admissible")) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task_proxy, exploration);
     bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
-    if (opts.get<bool>("admissible")) {
+    if (admissible) {
         if (reasonable_orders) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::INPUT_ERROR);
@@ -47,14 +47,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         }
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
-                task_proxy,
-                *lgraph,
-                OperatorCost(opts.get_enum("cost_type")),
-                lp::LPSolverType(opts.get_enum("lpsolver")));
+                task_proxy, *lgraph, lp::LPSolverType(opts.get_enum("lpsolver")));
         } else {
-            lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
-                *lgraph, opts.get<bool>("alm"),
-                OperatorCost(opts.get_enum("cost_type")));
+            lm_cost_assignment = nullptr;
         }
     } else {
         lm_cost_assignment = 0;
@@ -88,8 +83,8 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
 
     int h = -1;
 
-    if (use_cost_sharing) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value(task_proxy);
+    if (admissible) {
+        double h_val = lm_cost_assignment->cost_sharing_h_value();
         h = static_cast<int>(ceil(h_val - epsilon));
     } else {
         lgraph->count_costs();
@@ -130,8 +125,8 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     convert_lms(reached_lms, reached_lms_v);
 
     int num_reached = reached_lms.size();
-    if (num_reached == lgraph->number_of_landmarks()
-        || !generate_helpful_actions(global_state, reached_lms)) {
+    if (num_reached == lgraph->number_of_landmarks() ||
+        !generate_helpful_actions(global_state, reached_lms)) {
         set_exploration_goals(global_state);
 
         // Use FF to plan to a landmark leaf
@@ -143,7 +138,6 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
         }
         for (int exported_op_id : exploration.exported_op_ids) {
             OperatorProxy exported_op = task_proxy.get_operators()[exported_op_id];
-            assert(!exported_op.is_axiom());
             set_preferred(exported_op);
         }
         exploration.exported_op_ids.clear();
@@ -255,14 +249,11 @@ bool LandmarkCountHeuristic::notify_state_transition(
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
-    if (use_cost_sharing) {
-        // admissible = true
+    if (admissible) {
         return true;
     }
-
-    // admissible = false
-    return !has_axioms() && (!has_conditional_effects()
-                             || conditional_effects_supported);
+    return !has_axioms() &&
+           (!has_conditional_effects() || conditional_effects_supported);
 }
 
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,

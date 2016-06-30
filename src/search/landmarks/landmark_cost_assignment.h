@@ -18,24 +18,26 @@ class LandmarkCostAssignment {
     const std::set<int> empty;
 protected:
     LandmarkGraph &lm_graph;
-    OperatorCost cost_type;
+    std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(int lmn_status,
                                        const LandmarkNode &lmn) const;
 public:
-    LandmarkCostAssignment(LandmarkGraph &graph, OperatorCost cost_type_);
+    LandmarkCostAssignment(const TaskProxy &task_proxy, LandmarkGraph &graph);
     virtual ~LandmarkCostAssignment();
 
-    virtual double cost_sharing_h_value(const TaskProxy &task_proxy) = 0;
+    virtual double cost_sharing_h_value() = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
     bool use_action_landmarks;
 public:
-    LandmarkUniformSharedCostAssignment(LandmarkGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_);
+    LandmarkUniformSharedCostAssignment(const TaskProxy &task_proxy,
+                                        LandmarkGraph &graph,
+                                        bool use_action_landmarks_);
     virtual ~LandmarkUniformSharedCostAssignment();
 
-    virtual double cost_sharing_h_value(const TaskProxy &task_proxy) override;
+    virtual double cost_sharing_h_value() override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
@@ -52,11 +54,10 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
 public:
     LandmarkEfficientOptimalSharedCostAssignment(const TaskProxy &task_proxy,
                                                  LandmarkGraph &graph,
-                                                 OperatorCost cost_type,
                                                  lp::LPSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
-    virtual double cost_sharing_h_value(const TaskProxy &task_proxy) override;
+    virtual double cost_sharing_h_value() override;
 };
 }
 
