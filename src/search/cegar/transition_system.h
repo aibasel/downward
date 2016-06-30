@@ -9,6 +9,9 @@ class OperatorsProxy;
 namespace cegar {
 class AbstractState;
 
+/*
+  Rewire transitions after each split.
+*/
 class TransitionSystem {
     const std::shared_ptr<AbstractTask> task;
 
