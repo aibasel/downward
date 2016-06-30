@@ -1,4 +1,4 @@
-#include "merge_selector_score_based.h"
+#include "merge_selector_score_based_filtering.h"
 
 #include "factored_transition_system.h"
 #include "merge_scoring_function.h"
@@ -22,18 +22,18 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeSelectorScoreBased::MergeSelectorScoreBased(const options::Options &options)
+MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(const options::Options &options)
     : merge_scoring_functions(
         options.get_list<shared_ptr<MergeScoringFunction>>(
             "scoring_functions")) {
 }
 
-MergeSelectorScoreBased::MergeSelectorScoreBased(
+MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
     vector<shared_ptr<MergeScoringFunction>> scoring_functions)
     : merge_scoring_functions(move(scoring_functions)) {
 }
 
-vector<pair<int, int>> MergeSelectorScoreBased::get_remaining_candidates(
+vector<pair<int, int>> MergeSelectorScoreBasedFiltering::get_remaining_candidates(
     const vector<pair<int, int>> &merge_candidates,
     const vector<int> &scores) const {
     assert(merge_candidates.size() == scores.size());
@@ -53,7 +53,7 @@ vector<pair<int, int>> MergeSelectorScoreBased::get_remaining_candidates(
     return result;
 }
 
-pair<int, int> MergeSelectorScoreBased::select_merge(
+pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
     FactoredTransitionSystem &fts) {
     vector<pair<int, int>> merge_candidates;
     for (int ts_index1 = 0; ts_index1 < fts.get_size(); ++ts_index1) {
@@ -87,14 +87,14 @@ pair<int, int> MergeSelectorScoreBased::select_merge(
     return merge_candidates.front();
 }
 
-void MergeSelectorScoreBased::initialize(shared_ptr<AbstractTask> task) {
+void MergeSelectorScoreBasedFiltering::initialize(shared_ptr<AbstractTask> task) {
     for (shared_ptr<MergeScoringFunction> &scoring_function
          : merge_scoring_functions) {
         scoring_function->initialize(task);
     }
 }
 
-void MergeSelectorScoreBased::dump_specific_options() const {
+void MergeSelectorScoreBasedFiltering::dump_specific_options() const {
     for (const shared_ptr<MergeScoringFunction> &scoring_function
          : merge_scoring_functions) {
         scoring_function->dump_options();
@@ -103,10 +103,10 @@ void MergeSelectorScoreBased::dump_specific_options() const {
 
 static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
-        "Score based merge selector",
+        "Score based filtering merge selector",
         "This merge selector has a list of scoring functions, which are used "
-        "iteratively to compute scores for merge candidates until one best "
-        "candidate has been determined.");
+        "iteratively to compute scores for merge candidates, keeping the best "
+        "ones until only one is left.");
     parser.add_list_option<shared_ptr<MergeScoringFunction>>(
         "scoring_functions",
         "The list of scoring functions used to compute scores for candidates.");
@@ -115,10 +115,10 @@ static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return make_shared<MergeSelectorScoreBased>(opts);
+        return make_shared<MergeSelectorScoreBasedFiltering>(opts);
 }
 
-static options::PluginShared<MergeSelector> _plugin("score_based", _parse);
+static options::PluginShared<MergeSelector> _plugin("score_based_filtering", _parse);
 
 // TODO: this MergeDFP compatibilty parsing does *not* support the old option
 // to randomize the entire transition system order (this requires a different
@@ -156,7 +156,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
 //        "scoring_functions",
 //        scoring_functions);
     shared_ptr<MergeSelector> selector =
-        make_shared<MergeSelectorScoreBased>(move(scoring_functions));
+        make_shared<MergeSelectorScoreBasedFiltering>(move(scoring_functions));
 
     options::Options strategy_options;
     strategy_options.set<shared_ptr<MergeSelector>>(
