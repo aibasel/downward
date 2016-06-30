@@ -414,7 +414,7 @@ fast_downward_plugin(
         merge_and_shrink/merge_scoring_function_tiebreaking_dfp.cc
         merge_and_shrink/merge_scoring_function_tiebreaking_random.cc
         merge_and_shrink/merge_selector.cc
-        merge_and_shrink/merge_selector_score_based.cc
+        merge_and_shrink/merge_selector_score_based_filtering.cc
         merge_and_shrink/merge_strategy.cc
         merge_and_shrink/merge_strategy_factory.cc
         merge_and_shrink/merge_strategy_factory_precomputed.cc

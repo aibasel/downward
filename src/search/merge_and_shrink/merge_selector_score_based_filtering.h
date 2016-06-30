@@ -1,5 +1,5 @@
-#ifndef MERGE_AND_SHRINK_MERGE_SELECTOR_SCORE_BASED_H
-#define MERGE_AND_SHRINK_MERGE_SELECTOR_SCORE_BASED_H
+#ifndef MERGE_AND_SHRINK_MERGE_SELECTOR_SCORE_BASED_FILTERING_H
+#define MERGE_AND_SHRINK_MERGE_SELECTOR_SCORE_BASED_FILTERING_H
 
 #include "merge_selector.h"
 
@@ -12,7 +12,7 @@ class Options;
 }
 
 namespace merge_and_shrink {
-class MergeSelectorScoreBased : public MergeSelector {
+class MergeSelectorScoreBasedFiltering : public MergeSelector {
     std::vector<std::shared_ptr<MergeScoringFunction>> merge_scoring_functions;
 
     std::vector<std::pair<int, int>> get_remaining_candidates(
@@ -24,9 +24,9 @@ protected:
     }
     virtual void dump_specific_options() const override;
 public:
-    explicit MergeSelectorScoreBased(const options::Options &options);
+    explicit MergeSelectorScoreBasedFiltering(const options::Options &options);
     // TODO: get rid of this extra constructor
-    explicit MergeSelectorScoreBased(
+    explicit MergeSelectorScoreBasedFiltering(
         std::vector<std::shared_ptr<MergeScoringFunction>> scoring_functions);
     virtual std::pair<int, int> select_merge(
         FactoredTransitionSystem &fts) override;
