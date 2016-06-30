@@ -160,10 +160,10 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
 
     for (auto &label : labels) {
         // create global condition for label
-        vector<pair<int, int>> precond_pairs;
+        vector<FactPair> precond_pairs;
         for (auto &assignment : label.precond) {
             int var = loc_to_glob[assignment.local_var];
-            precond_pairs.push_back(make_pair(var, assignment.value));
+            precond_pairs.emplace_back(var, assignment.value);
         }
         sort(precond_pairs.begin(), precond_pairs.end());
 
@@ -191,14 +191,14 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
                 pre = pre_it->second;
             int post = eff.get_fact().get_value();
 
-            vector<pair<int, int>> triggercond_pairs;
+            vector<FactPair> triggercond_pairs;
             if (pre != -1)
-                triggercond_pairs.push_back(make_pair(var_no, pre));
+                triggercond_pairs.emplace_back(var_no, pre);
 
             for (FactProxy condition : eff.get_conditions()) {
                 int c_var_id = condition.get_variable().get_id();
                 int c_val = condition.get_value();
-                triggercond_pairs.push_back(make_pair(c_var_id, c_val));
+                triggercond_pairs.emplace_back(c_var_id, c_val);
             }
             sort(triggercond_pairs.begin(), triggercond_pairs.end());
 
