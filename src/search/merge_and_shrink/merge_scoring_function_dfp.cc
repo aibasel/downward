@@ -95,9 +95,6 @@ vector<int> MergeScoringFunctionDFP::compute_scores(
             }
         }
         scores.push_back(pair_weight);
-        // TODO: remove debug output
-//        cout << "pair: " << ts_index1 << ", " << ts_index2 << " score: "
-//             << pair_weight << endl;
     }
     return scores;
 }

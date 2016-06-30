@@ -47,10 +47,6 @@ vector<int> MergeScoringFunctionTiebreakingDFP::compute_scores(
                     other_candidate.first == ts_index2)) {
                 // use the index in the merge candidate order as score
                 scores.push_back(merge_candidate_order_index);
-                // TODO: remove debug output
-//                cout << "pair " << ts_index1 << ", " << ts_index2 <<
-//                        " ordered number " << merge_candidate_order_index <<
-//                        " in merge candidates order" << endl;
             }
         }
     }
