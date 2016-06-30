@@ -1,6 +1,5 @@
 #include "h_m_landmarks.h"
 
-#include "../abstract_task.h"
 #include "../globals.h"
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -316,8 +315,8 @@ void HMLandmarks::get_m_sets(const TaskProxy &task_proxy, int m,
                              const State &s) {
     FluentSet state_fluents;
     VariablesProxy variables = task_proxy.get_variables();
-    for (VariableProxy var : variables) {
-        state_fluents.emplace_back(var.get_id(), s[var.get_id()].get_value());
+    for (VariableProxy variable : variables) {
+        state_fluents.emplace_back(variable.get_id(), s[variable.get_id()].get_value());
     }
     get_m_sets(m, subsets, state_fluents);
 }
@@ -331,37 +330,28 @@ void HMLandmarks::print_proposition(const TaskProxy &task_proxy, const pair<int,
          << "->" << fact.get_value() << ")";
 }
 
-void get_operator_precondition(const TaskProxy &task_proxy, int op_index, FluentSet &pc) {
-    OperatorsProxy operators = task_proxy.get_operators();
-    OperatorProxy op = operators[op_index];
-
-    const PreconditionsProxy &preconditions = op.get_preconditions();
-    for (FactProxy pre : preconditions)
-        pc.emplace_back(pre.get_variable().get_id(), pre.get_value());
+void HMLandmarks::get_operator_precondition(const OperatorProxy &op, FluentSet &pc) const {
+    for (FactProxy precondition : op.get_preconditions())
+        pc.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
 
     std::sort(pc.begin(), pc.end());
 }
 
 // get facts that are always true after the operator application
 // (effects plus prevail conditions)
-void get_operator_postcondition(const TaskProxy &task_proxy, int op_index, FluentSet &post) {
-    OperatorsProxy operators = task_proxy.get_operators();
-    OperatorProxy op = operators[op_index];
-
-    PreconditionsProxy preconditions = op.get_preconditions();
+void HMLandmarks::get_operator_postcondition(const TaskProxy &task_proxy, const OperatorProxy &op, FluentSet &post) const {
     EffectsProxy effects = op.get_effects();
-    VariablesProxy variables = task_proxy.get_variables();
-    std::vector<bool> has_effect_on_var(variables.size(), false);
+    std::vector<bool> has_effect_on_var(task_proxy.get_variables().size(), false);
 
-    for (EffectProxy cond_eff : effects) {
-        FactProxy eff = cond_eff.get_fact();
-        post.emplace_back(eff.get_variable().get_id(), eff.get_value());
-        has_effect_on_var[eff.get_variable().get_id()] = true;
+    for (EffectProxy effect : effects) {
+        FactProxy effect_fact = effect.get_fact();
+        post.emplace_back(effect_fact.get_variable().get_id(), effect_fact.get_value());
+        has_effect_on_var[effect_fact.get_variable().get_id()] = true;
     }
 
-    for (FactProxy pre : preconditions) {
-        if (!has_effect_on_var[pre.get_variable().get_id()])
-            post.emplace_back(pre.get_variable().get_id(), pre.get_value());
+    for (FactProxy precondition : op.get_preconditions()) {
+        if (!has_effect_on_var[precondition.get_variable().get_id()])
+            post.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
     }
 
     std::sort(post.begin(), post.end());
@@ -372,16 +362,14 @@ void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
     std::set<Fluent> pcs, effs, cond_pc, cond_eff;
     std::vector<std::pair<std::set<Fluent>, std::set<Fluent>>> conds;
 
-    std::vector<int>::const_iterator v_it;
-
-    for (v_it = op.pc.begin(); v_it != op.pc.end(); ++v_it) {
-        for (size_t j = 0; j < h_m_table_[*v_it].fluents.size(); ++j) {
-            pcs.insert(h_m_table_[*v_it].fluents[j]);
+    for (int pc : op.pc) {
+        for (Fluent fluent : h_m_table_[pc].fluents) {
+            pcs.insert(fluent);
         }
     }
-    for (v_it = op.eff.begin(); v_it != op.eff.end(); ++v_it) {
-        for (size_t j = 0; j < h_m_table_[*v_it].fluents.size(); ++j) {
-            effs.insert(h_m_table_[*v_it].fluents[j]);
+    for (int eff : op.eff) {
+        for (Fluent fluent : h_m_table_[eff].fluents) {
+            effs.insert(fluent);
         }
     }
     for (size_t i = 0; i < op.cond_noops.size(); ++i) {
@@ -448,8 +436,8 @@ void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
 
 void HMLandmarks::print_fluentset(const TaskProxy &task_proxy, const FluentSet &fs) {
     std::cout << "( ";
-    for (const Fluent &f : fs) {
-        print_proposition(task_proxy, f);
+    for (const Fluent &fact : fs) {
+        print_proposition(task_proxy, fact);
         std::cout << " ";
     }
     std::cout << ")";
@@ -498,9 +486,9 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
 
     // transfer ops from original problem
     // represent noops as "conditional" effects
-    for (size_t i = 0; i < operators.size(); ++i) {
-        PMOp &op = pm_ops_[i];
-        op.index = op_count++;
+    for (OperatorProxy op : operators) {
+        PMOp &pm_op = pm_ops_[op.get_id()];
+        pm_op.index = op_count++;
 
         pc.clear();
         eff.clear();
@@ -509,29 +497,29 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
         eff_subsets.clear();
 
         // preconditions of P_m op are all subsets of original pc
-        get_operator_precondition(task_proxy, i, pc);
+        get_operator_precondition(op, pc);
         get_m_sets(m_, pc_subsets, pc);
-        op.pc.reserve(pc_subsets.size());
+        pm_op.pc.reserve(pc_subsets.size());
 
         // set unsatisfied pc count for op
-        unsat_pc_count_[i].first = pc_subsets.size();
+        unsat_pc_count_[op.get_id()].first = pc_subsets.size();
 
         for (const FluentSet &pc : pc_subsets) {
             assert(set_indices_.find(pc) != set_indices_.end());
             set_index = set_indices_[pc];
-            op.pc.push_back(set_index);
-            h_m_table_[set_index].pc_for.emplace_back(i, -1);
+            pm_op.pc.push_back(set_index);
+            h_m_table_[set_index].pc_for.emplace_back(op.get_id(), -1);
         }
 
         // same for effects
-        get_operator_postcondition(task_proxy, i, eff);
+        get_operator_postcondition(task_proxy, op, eff);
         get_m_sets(m_, eff_subsets, eff);
-        op.eff.reserve(eff_subsets.size());
+        pm_op.eff.reserve(eff_subsets.size());
 
         for (const FluentSet &eff : eff_subsets) {
             assert(set_indices_.find(eff) != set_indices_.end());
             set_index = set_indices_[eff];
-            op.eff.push_back(set_index);
+            pm_op.eff.push_back(set_index);
         }
 
         noop_index = 0;
@@ -545,9 +533,9 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
                && it != set_indices_.end()) {
             if (possible_noop_set(eff, it->first)) {
                 // for each such set, add a "conditional effect" to the operator
-                op.cond_noops.resize(op.cond_noops.size() + 1);
+                pm_op.cond_noops.resize(pm_op.cond_noops.size() + 1);
 
-                std::vector<int> &this_cond_noop = op.cond_noops.back();
+                std::vector<int> &this_cond_noop = pm_op.cond_noops.back();
 
                 noop_pc_subsets.clear();
                 noop_eff_subsets.clear();
@@ -560,7 +548,7 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
 
                 this_cond_noop.reserve(noop_pc_subsets.size() + noop_eff_subsets.size() + 1);
 
-                unsat_pc_count_[i].second.push_back(noop_pc_subsets.size());
+                unsat_pc_count_[op.get_id()].second.push_back(noop_pc_subsets.size());
 
                 // push back all noop preconditions
                 for (size_t j = 0; j < noop_pc_subsets.size(); ++j) {
@@ -570,7 +558,7 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
                     set_index = set_indices_[noop_pc_subsets[j]];
                     this_cond_noop.push_back(set_index);
                     // these facts are "conditional pcs" for this action
-                    h_m_table_[set_index].pc_for.push_back(std::make_pair(i, noop_index));
+                    h_m_table_[set_index].pc_for.push_back(std::make_pair(op.get_id(), noop_index));
                 }
 
                 // separator
@@ -601,14 +589,13 @@ bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
 HMLandmarks::HMLandmarks(const options::Options &opts)
     : LandmarkFactory(opts),
       m_(opts.get<int>("m")) {
+}
+
+void HMLandmarks::init(const TaskProxy &task_proxy) {
     std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
     // need this to be able to print propositions for debugging
     // already called in global.cc
     //  read_external_inconsistencies();
-
-}
-
-void HMLandmarks::init(const TaskProxy &task_proxy) {
     AxiomsProxy axioms = task_proxy.get_axioms();
     if (!axioms.empty()) {
         cerr << "H_m_Landmarks do not support axioms" << endl;
@@ -642,6 +629,7 @@ void HMLandmarks::init(const TaskProxy &task_proxy) {
 void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
     std::cout << "Calculating achievers." << std::endl;
 
+    OperatorsProxy operators = task_proxy.get_operators();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
     for (std::set<LandmarkNode *>::iterator it = lm_graph->get_nodes().begin();
@@ -657,13 +645,10 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
             candidates.insert(ops.begin(), ops.end());
         }
 
-        for (std::set<int>::iterator cands_it = candidates.begin();
-             cands_it != candidates.end(); ++cands_it) {
-            int op = *cands_it;
-
+        for (int op_id : candidates) {
             FluentSet post, pre;
-            get_operator_postcondition(task_proxy, op, post);
-            get_operator_precondition(task_proxy, op, pre);
+            get_operator_postcondition(task_proxy, operators[op_id], post);
+            get_operator_precondition(operators[op_id], pre);
             size_t j;
             for (j = 0; j < lmn.vars.size(); ++j) {
                 std::pair<int, int> lm_val = std::make_pair(lmn.vars[j], lmn.vals[j]);
@@ -698,7 +683,7 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
             }
             if (j == lmn.vars.size()) {
                 // not inconsistent with any of the other landmark fluents
-                lmn.possible_achievers.insert(op);
+                lmn.possible_achievers.insert(op_id);
             }
         }
     }

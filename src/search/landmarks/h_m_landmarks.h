@@ -144,6 +144,8 @@ private:
     void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
     void print_proposition(const TaskProxy &task_proxy, const std::pair<int, int> &fluent) const;
+    void get_operator_precondition(const OperatorProxy &op, FluentSet &pc) const;
+    void get_operator_postcondition(const TaskProxy &task_proxy, const OperatorProxy &op, FluentSet &post) const;
 };
 }
 

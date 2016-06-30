@@ -3,6 +3,7 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "option_parser.h"
+#include "task_proxy.h"
 
 #include "utils/system.h"
 
@@ -27,6 +28,13 @@ int get_adjusted_action_cost(int cost, OperatorCost cost_type) {
 }
 
 int get_adjusted_action_cost(const GlobalOperator &op, OperatorCost cost_type) {
+    if (op.is_axiom())
+        return 0;
+    else
+        return get_adjusted_action_cost(op.get_cost(), cost_type);
+}
+
+int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type) {
     if (op.is_axiom())
         return 0;
     else

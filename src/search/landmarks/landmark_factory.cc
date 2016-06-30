@@ -48,7 +48,7 @@ std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(const TaskProxy
     if (lm_graph)
         return lm_graph;
     utils::Timer lm_generation_timer;
-    lm_graph = make_shared<LandmarkGraph>();
+    lm_graph = utils::make_unique_ptr<LandmarkGraph>(task_proxy);
     generate_landmarks(task_proxy, exploration);
 
     // the following replaces the old "build_lm_graph"
@@ -94,12 +94,12 @@ bool LandmarkFactory::achieves_non_conditional(const OperatorProxy &o,
     /* Test whether the landmark is achieved by the operator unconditionally.
     A disjunctive landmarks is achieved if one of its disjuncts is achieved. */
     assert(lmp != NULL);
-    for (EffectProxy cond_eff: o.get_effects()) {
+    for (EffectProxy effect: o.get_effects()) {
         for (size_t i = 0; i < lmp->vars.size(); ++i) {
-            FactProxy eff = cond_eff.get_fact();
-            if (eff.get_variable().get_id() == lmp->vars[i]
-                && eff.get_value() == lmp->vals[i]) {
-                if (cond_eff.get_conditions().empty())
+            FactProxy effect_fact = effect.get_fact();
+            if (effect_fact.get_variable().get_id() == lmp->vars[i]
+                && effect_fact.get_value() == lmp->vals[i]) {
+                if (effect.get_conditions().empty())
                     return true;
             }
         }
@@ -180,11 +180,10 @@ void LandmarkFactory::add_operator_and_propositions_to_list(const TaskProxy &tas
                                                             const OperatorProxy &op,
                                                             vector<unordered_map<pair<int, int>, int>> &lvl_op) const {
     int op_id = get_operator_or_axiom_id(task_proxy, op);
-    lvl_op[op_id] = unordered_map<pair<int, int>, int> ();
-    for (EffectProxy cond_eff : op.get_effects()) {
-        FactProxy eff = cond_eff.get_fact();
-        lvl_op[op_id].emplace(make_pair(eff.get_variable().get_id(),
-                                        eff.get_value()),
+    for (EffectProxy effect : op.get_effects()) {
+        FactProxy effect_fact = effect.get_fact();
+        lvl_op[op_id].emplace(make_pair(effect_fact.get_variable().get_id(),
+                                        effect_fact.get_value()),
                               numeric_limits<int>::max());
     }
 }
@@ -246,56 +245,57 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
     // - a mapping from cond. effect propositions to all the conditions that they appear with
     set<int> effect_vars;
     set<int> nogood_effect_vars;
-    map<int, pair<int, vector<pair<int, int>>>> effect_conditions;
-    for (EffectProxy cond_eff : effects) {
-        EffectConditionsProxy effect_cond = cond_eff.get_conditions();
-        FactProxy eff = cond_eff.get_fact();
-        if (effect_cond.empty() ||
-            nogood_effect_vars.find(eff.get_variable().get_id()) != nogood_effect_vars.end()) {
+    map<int, pair<int, vector<pair<int, int>>>> effect_conditions_by_variable;
+    for (EffectProxy effect : effects) {
+        EffectConditionsProxy effect_conditions = effect.get_conditions();
+        FactProxy effect_fact = effect.get_fact();
+        const int variable_id = effect_fact.get_variable().get_id();
+        const int value = effect_fact.get_value();
+        if (effect_conditions.empty() ||
+            nogood_effect_vars.find(variable_id) != nogood_effect_vars.end()) {
             // Var has no condition or can take on different values, skipping
             continue;
         }
-        if (effect_vars.find(eff.get_variable().get_id()) != effect_vars.end()) {
+        if (effect_vars.find(variable_id) != effect_vars.end()) {
             // We have seen this effect var before
-            assert(effect_conditions.find(eff.get_variable().get_id()) != effect_conditions.end());
-            int old_eff = effect_conditions.find(eff.get_variable().get_id())->second.first;
-            if (old_eff != eff.get_value()) {
+            assert(effect_conditions_by_variable.find(variable_id) != effect_conditions_by_variable.end());
+            int old_eff = effect_conditions_by_variable.find(variable_id)->second.first;
+            if (old_eff != value) {
                 // Was different effect
-                nogood_effect_vars.insert(eff.get_variable().get_id());
+                nogood_effect_vars.insert(variable_id);
                 continue;
             }
         } else {
             // We have not seen this effect var before
-            effect_vars.insert(eff.get_variable().get_id());
+            effect_vars.insert(variable_id);
         }
-        if (effect_conditions.find(eff.get_variable().get_id()) != effect_conditions.end()
-            && effect_conditions.find(eff.get_variable().get_id())->second.first
-            == eff.get_value()) {
+        if (effect_conditions_by_variable.find(variable_id) != effect_conditions_by_variable.end()
+            && effect_conditions_by_variable.find(variable_id)->second.first == value) {
             // We have seen this effect before, adding conditions
-            for (FactProxy cond : effect_cond) {
-                vector<pair<int, int>> &vec = effect_conditions.find(eff.get_variable().get_id())->second.second;
-                vec.emplace_back(cond.get_variable().get_id(), cond.get_value());
+            for (FactProxy effect_condition : effect_conditions) {
+                vector<pair<int, int>> &vec = effect_conditions_by_variable.find(variable_id)->second.second;
+                vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
             }
         } else {
             // We have not seen this effect before, making new effect entry
-            vector<pair<int, int>> &vec = effect_conditions.emplace(
-                eff.get_variable().get_id(), make_pair(
-                    eff.get_value(), vector<pair<int, int>> ())).first->second.second;
-            for (FactProxy cond : effect_cond) {
-                vec.emplace_back(cond.get_variable().get_id(), cond.get_value());
+            vector<pair<int, int>> &vec = effect_conditions_by_variable.emplace(
+                variable_id, make_pair(
+                    value, vector<pair<int, int>> ())).first->second.second;
+            for (FactProxy effect_condition : effect_conditions) {
+                vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
             }
         }
     }
 
     // For all those effect propositions whose variables do not take on different values...
-    for (const auto cond_effs : effect_conditions) {
-        if (nogood_effect_vars.find(cond_effs.first) != nogood_effect_vars.end()) {
+    for (const auto &effect_conditions : effect_conditions_by_variable) {
+        if (nogood_effect_vars.find(effect_conditions.first) != nogood_effect_vars.end()) {
             continue;
         }
         // ...go through all the conditions that the effect has, and map condition
         // variables to the set of values they take on (in unique_conds)
         map<int, set<int>> unique_conds;
-        for (const pair<int, int> &cond : cond_effs.second.second) {
+        for (const pair<int, int> &cond : effect_conditions.second.second) {
             if (unique_conds.find(cond.first) != unique_conds.end()) {
                 unique_conds.find(cond.first)->second.insert(
                     cond.second);
@@ -306,9 +306,9 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
         }
         // Check for each condition variable whether the number of values it takes on is
         // equal to the domain of that variable...
-        pair<int, int> effect(cond_effs.first, cond_effs.second.first);
+        pair<int, int> effect(effect_conditions.first, effect_conditions.second.first);
         bool is_always_reached = true;
-        for (auto unique_cond : unique_conds) {
+        for (auto &unique_cond : unique_conds) {
             bool is_surely_reached_by_var = false;
             int num_values_for_cond = unique_cond.second.size();
             int num_values_of_variable = task_proxy.get_variables()[unique_cond.first].get_domain_size();
@@ -318,11 +318,11 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
             // ...or else if the condition variable is the same as the effect variable,
             // check whether the condition variable takes on all other values except the
             // effect value
-            else if (unique_cond.first == cond_effs.first &&
+            else if (unique_cond.first == effect_conditions.first &&
                      num_values_for_cond == num_values_of_variable - 1) {
                 // Number of different values is correct, now ensure that the effect value
                 // was the one missing
-                unique_cond.second.insert(cond_effs.second.first);
+                unique_cond.second.insert(effect_conditions.second.first);
                 num_values_for_cond = unique_cond.second.size();
                 if (num_values_for_cond == num_values_of_variable) {
                     is_surely_reached_by_var = true;
@@ -396,15 +396,17 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 bool trivial_conditioned_effects_found = effect_always_happens(task_proxy, effects,
                                                                                trivially_conditioned_effects);
                 unordered_map<int, int> next_eff;
-                for (EffectProxy cond_eff : effects) {
-                    FactProxy eff = cond_eff.get_fact();
-                    if (cond_eff.get_conditions().empty() && eff.get_variable().get_id() != a.first) {
-                        next_eff.emplace(eff.get_variable().get_id(), eff.get_value());
+                for (EffectProxy effect : effects) {
+                    FactProxy effect_fact = effect.get_fact();
+                    const int variable_id = effect_fact.get_variable().get_id();
+                    const int value = effect_fact.get_value();
+                    if (effect.get_conditions().empty() && variable_id != a.first) {
+                        next_eff.emplace(variable_id, value);
                     } else if (trivial_conditioned_effects_found
                                && trivially_conditioned_effects.find(make_pair(
-                                                                         eff.get_variable().get_id(), eff.get_value()))
+                                                                         variable_id, value))
                                != trivially_conditioned_effects.end())
-                        next_eff.emplace(eff.get_variable().get_id(), eff.get_value());
+                        next_eff.emplace(variable_id, value);
                 }
                 // Intersect effects of this operator with those of previous operators
                 if (init)
@@ -591,11 +593,11 @@ void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, E
     bool change = true;
     while (change) {
         change = false;
-        for (LandmarkNode *n : lm_graph->get_nodes()) {
-            if (!is_causal_landmark(task_proxy, exploration, *n)) {
+        for (LandmarkNode *landmark_node : lm_graph->get_nodes()) {
+            if (!is_causal_landmark(task_proxy, exploration, *landmark_node)) {
                 cout << "Discarding non-causal landmark: ";
-                lm_graph->dump_node(task_proxy, n);
-                lm_graph->rm_landmark_node(n);
+                lm_graph->dump_node(task_proxy, landmark_node);
+                lm_graph->rm_landmark_node(landmark_node);
                 ++number_of_noncausal_landmarks;
                 change = true;
                 break;

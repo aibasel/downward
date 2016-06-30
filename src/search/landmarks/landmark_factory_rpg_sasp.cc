@@ -24,28 +24,28 @@ void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
     // resize data structure
     VariablesProxy variables = task_proxy.get_variables();
     dtg_successors.resize(variables.size());
-    for (VariableProxy var : variables)
-        dtg_successors[var.get_id()].resize(var.get_domain_size());
+    for (VariableProxy variable : variables)
+        dtg_successors[variable.get_id()].resize(variable.get_domain_size());
 
     for (OperatorProxy op : task_proxy.get_operators()) {
         // build map for precondition
-        std::unordered_map<int, int> precondition;
-        for (FactProxy pre : op.get_preconditions())
-            precondition[pre.get_variable().get_id()] = pre.get_value();
+        std::unordered_map<int, int> precondition_map;
+        for (FactProxy precondition : op.get_preconditions())
+            precondition_map[precondition.get_variable().get_id()] = precondition.get_value();
 
-        for (EffectProxy eff : op.get_effects()) {
+        for (EffectProxy effect : op.get_effects()) {
             // build map for effect condition
             std::unordered_map<int, int> eff_condition;
-            for (FactProxy cond : eff.get_conditions())
-                eff_condition[cond.get_variable().get_id()] = cond.get_value();
+            for (FactProxy effect_condition : effect.get_conditions())
+                eff_condition[effect_condition.get_variable().get_id()] = effect_condition.get_value();
 
             // whenever the operator can change the value of a variable from pre to
             // post, we insert post into dtg_successors[var_id][pre]
-            FactProxy fact = eff.get_fact();
-            int var_id = fact.get_variable().get_id();
-            int post = fact.get_value();
-            if (precondition.count(var_id)) {
-                int pre = precondition[var_id];
+            FactProxy effect_fact = effect.get_fact();
+            int var_id = effect_fact.get_variable().get_id();
+            int post = effect_fact.get_value();
+            if (precondition_map.count(var_id)) {
+                int pre = precondition_map[var_id];
                 if (eff_condition.count(var_id) && eff_condition[var_id] != pre)
                     continue; // confliction pre- and effect condition
                 add_dtg_successor(var_id, pre, post);
@@ -53,7 +53,7 @@ void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
                 if (eff_condition.count(var_id)) {
                     add_dtg_successor(var_id, eff_condition[var_id], post);
                 } else {
-                    int dom_size = fact.get_variable().get_domain_size();
+                    int dom_size = effect_fact.get_variable().get_domain_size();
                     for (int pre = 0; pre < dom_size; ++pre)
                         add_dtg_successor(var_id, pre, post);
                 }
@@ -75,9 +75,9 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // effects achieving the LM.
 
     vector<bool> has_precondition_on_var(task_proxy.get_variables().size(), false);
-    for (FactProxy pre : op.get_preconditions()) {
-        result.emplace(pre.get_variable().get_id(), pre.get_value());
-        has_precondition_on_var[pre.get_variable().get_id()] = true;
+    for (FactProxy precondition : op.get_preconditions()) {
+        result.emplace(precondition.get_variable().get_id(), precondition.get_value());
+        has_precondition_on_var[precondition.get_variable().get_id()] = true;
     }
 
     // If there is an effect but no precondition on a variable v with domain
@@ -86,13 +86,14 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     // variable must still have the initial value.
     State initial_state = task_proxy.get_initial_state();
     EffectsProxy effects = op.get_effects();
-    for (EffectProxy cond_eff : effects) {
-        FactProxy eff = cond_eff.get_fact();
-        int var_id = eff.get_variable().get_id();
-        if (!has_precondition_on_var[var_id] && eff.get_variable().get_domain_size() == 2) {
+    for (EffectProxy effect : effects) {
+        FactProxy effect_fact = effect.get_fact();
+        const int variable_id = effect_fact.get_variable().get_id();
+        if (!has_precondition_on_var[variable_id] && effect_fact.get_variable().get_domain_size() == 2) {
             for (size_t j = 0; j < lmp->vars.size(); ++j) {
-                if (lmp->vars[j] == var_id && initial_state[var_id].get_value() != lmp->vals[j]) {
-                    result.emplace(var_id, initial_state[var_id].get_value());
+                if (lmp->vars[j] == variable_id &&
+                    initial_state[variable_id].get_value() != lmp->vals[j]) {
+                    result.emplace(variable_id, initial_state[variable_id].get_value());
                     break;
                 }
             }
@@ -101,31 +102,31 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
 
     // Check for lmp in conditional effects
     set<int> lm_props_achievable;
-    for (EffectProxy cond_eff : effects) {
-        FactProxy eff = cond_eff.get_fact();
+    for (EffectProxy effect : effects) {
+        FactProxy effect_fact = effect.get_fact();
         for (size_t j = 0; j < lmp->vars.size(); ++j)
-            if (lmp->vars[j] == eff.get_variable().get_id() && lmp->vals[j] == eff.get_value())
+            if (lmp->vars[j] == effect_fact.get_variable().get_id() && lmp->vals[j] == effect_fact.get_value())
                 lm_props_achievable.insert(j);
     }
     // Intersect effect conditions of all effects that can achieve lmp
     unordered_map<int, int> intersection;
     bool init = true;
     for (int lm_prop : lm_props_achievable) {
-        for (EffectProxy cond_eff : effects) {
-            FactProxy eff = cond_eff.get_fact();
+        for (EffectProxy effect : effects) {
+            FactProxy effect_fact = effect.get_fact();
             if (!init && intersection.empty())
                 break;
             unordered_map<int, int> current_cond;
-            if (lmp->vars[lm_prop] == eff.get_variable().get_id() &&
-                lmp->vals[lm_prop] == eff.get_value()) {
-                EffectConditionsProxy effect_conditions = cond_eff.get_conditions();
+            if (lmp->vars[lm_prop] == effect_fact.get_variable().get_id() &&
+                lmp->vals[lm_prop] == effect_fact.get_value()) {
+                EffectConditionsProxy effect_conditions = effect.get_conditions();
                 if (effect_conditions.empty()) {
                     intersection.clear();
                     break;
                 } else {
-                    for (FactProxy eff_cond : effect_conditions)
-                        current_cond.emplace(eff_cond.get_variable().get_id(),
-                                             eff_cond.get_value());
+                    for (FactProxy effect_condition : effect_conditions)
+                        current_cond.emplace(effect_condition.get_variable().get_id(),
+                                             effect_condition.get_value());
                 }
             }
             if (init) {
@@ -152,7 +153,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
             if (_possibly_reaches_lm(op, lvl_var, bp))
-                min_cost = min(min_cost, op.get_cost());
+                min_cost = min(min_cost, get_adjusted_action_cost(op, get_lm_cost_type()));
         }
     }
     /*
@@ -338,11 +339,11 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(const TaskProxy &task_pro
 
     VariablesProxy variables = task_proxy.get_variables();
     disjunction_classes.resize(variables.size());
-    for (VariableProxy var : variables) {
-        int num_values = var.get_domain_size();
-        disjunction_classes[var.get_id()].reserve(num_values);
+    for (VariableProxy variable : variables) {
+        int num_values = variable.get_domain_size();
+        disjunction_classes[variable.get_id()].reserve(num_values);
         for (int value = 0; value < num_values; ++value) {
-            string predicate = get_predicate_for_fact(task_proxy, var.get_id(), value);
+            string predicate = get_predicate_for_fact(task_proxy, variable.get_id(), value);
             int disj_class;
             if (predicate.empty()) {
                 disj_class = -1;
@@ -352,7 +353,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(const TaskProxy &task_pro
                 pair<string, int> entry(predicate, predicate_to_index.size());
                 disj_class = predicate_to_index.insert(entry).first->second;
             }
-            disjunction_classes[var.get_id()].push_back(disj_class);
+            disjunction_classes[variable.get_id()].push_back(disj_class);
         }
     }
 }
@@ -456,7 +457,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(const TaskProxy &task_proxy,
             // Process achieving operators again to find disj. LMs
             vector<set<pair<int, int>>> disjunctive_pre;
             compute_disjunctive_preconditions(task_proxy, disjunctive_pre, lvl_var, bp);
-            for (const auto preconditions : disjunctive_pre)
+            for (const auto &preconditions : disjunctive_pre)
                 if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
                     found_disj_lm_and_order(task_proxy, preconditions, *bp, EdgeType::greedy_necessary);
                 }
@@ -548,20 +549,20 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const TaskProxy &task_proxy,
      relaxed planning graph (as captured in lvl_var).
      These orders are saved in the node member variable "forward_orders".
      */
-    for (VariableProxy var : task_proxy.get_variables())
-        for (int value = 0; value < var.get_domain_size(); ++value) {
-            if (lvl_var[var.get_id()][value] != numeric_limits<int>::max())
+    for (VariableProxy variable : task_proxy.get_variables())
+        for (int value = 0; value < variable.get_domain_size(); ++value) {
+            if (lvl_var[variable.get_id()][value] != numeric_limits<int>::max())
                 continue;
 
             bool insert = true;
             for (size_t i = 0; i < lmp->vars.size() && insert; ++i) {
                 const pair<int, int> lm = make_pair(lmp->vars[i], lmp->vals[i]);
 
-                if (make_pair(var.get_id(), value) != lm) {
+                if (make_pair(variable.get_id(), value) != lm) {
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
                     const vector<int> &reach_fact = lm_graph->get_operators_including_eff(
-                        make_pair(var.get_id(), value));
+                        make_pair(variable.get_id(), value));
                     const vector<int> &reach_lm = lm_graph->get_operators_including_eff(
                         lm);
 
@@ -577,7 +578,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const TaskProxy &task_proxy,
                     insert = false;
             }
             if (insert)
-                lmp->forward_orders.emplace(var.get_id(), value);
+                lmp->forward_orders.emplace(variable.get_id(), value);
         }
 
 }

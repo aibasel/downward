@@ -36,7 +36,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
         std::vector<std::set<std::pair<int, int>>> &disjunctive_pre,
         std::vector<std::vector<int>> &lvl_var, LandmarkNode *bp);
 
-    int min_cost_for_landmark(const TaskProxy &task_proxy, LandmarkNode *bp,
+    int min_cost_for_landmark(const TaskProxy &task_proxy,
+                              LandmarkNode *bp,
                               std::vector<std::vector<int>> &lvl_var);
     virtual void generate_landmarks(const TaskProxy &task_proxy,
                                     Exploration &exploration) override;

@@ -164,8 +164,7 @@ public:
     // ------------------------------------------------------------------------------
     // methods needed only by landmarkgraph-factories
     LandmarkGraph(const TaskProxy &task_proxy);
-    LandmarkGraph() = default;
-    virtual ~LandmarkGraph() = default;
+    ~LandmarkGraph() = default;
 
     inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
         assert(simple_landmark_exists(a));

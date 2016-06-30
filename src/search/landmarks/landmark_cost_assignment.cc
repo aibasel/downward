@@ -15,9 +15,12 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkCostAssignment::LandmarkCostAssignment(
-    LandmarkGraph &graph, OperatorCost cost_type_)
-    : lm_graph(graph), cost_type(cost_type_) {
+LandmarkCostAssignment::LandmarkCostAssignment(const TaskProxy &task_proxy, LandmarkGraph &graph)
+    : lm_graph(graph) {
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
+        operator_costs.push_back(op.get_cost());
+    }
 }
 
 
@@ -39,22 +42,19 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 // Uniform cost partioning
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    LandmarkGraph &graph, bool use_action_landmarks_, OperatorCost cost_type_)
-    : LandmarkCostAssignment(graph, cost_type_), use_action_landmarks(use_action_landmarks_) {
+    const TaskProxy &task_proxy, LandmarkGraph &graph, bool use_action_landmarks_)
+    : LandmarkCostAssignment(task_proxy, graph), use_action_landmarks(use_action_landmarks_) {
 }
-
 
 LandmarkUniformSharedCostAssignment::~LandmarkUniformSharedCostAssignment() {
 }
 
 
-double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(const TaskProxy &task_proxy) {
-    int num_ops = task_proxy.get_operators().size();
-    vector<int> achieved_lms_by_op(num_ops, 0);
-    vector<bool> action_landmarks(num_ops, false);
+double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
+    vector<int> achieved_lms_by_op(operator_costs.size(), 0);
+    vector<bool> action_landmarks(operator_costs.size(), false);
 
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
-    set<LandmarkNode *>::iterator node_it;
 
     double h = 0;
 
@@ -71,13 +71,12 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(const TaskProxy
                 int op_id = *achievers.begin();
                 if (!action_landmarks[op_id]) {
                     action_landmarks[op_id] = true;
-                    OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
-                    assert(!op.is_axiom());
-                    h += op.get_cost();
+                    assert(utils::in_bounds(op_id, operator_costs));
+                    h += operator_costs[op_id];
                 }
             } else {
                 for (int op_id : achievers) {
-                    assert(!get_operator_or_axiom(task_proxy, op_id).is_axiom());
+                    assert(utils::in_bounds(op_id, operator_costs));
                     ++achieved_lms_by_op[op_id];
                 }
             }
@@ -96,7 +95,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(const TaskProxy
             const set<int> &achievers = get_achievers(lmn_status, *node);
             bool covered_by_action_lm = false;
             for (int op_id : achievers) {
-                assert(!get_operator_or_axiom(task_proxy, op_id).is_axiom());
+                assert(utils::in_bounds(op_id, operator_costs));
                 if (action_landmarks[op_id]) {
                     covered_by_action_lm = true;
                     break;
@@ -104,7 +103,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(const TaskProxy
             }
             if (covered_by_action_lm) {
                 for (int op_id : achievers) {
-                    assert(!get_operator_or_axiom(task_proxy, op_id).is_axiom());
+                    assert(utils::in_bounds(op_id, operator_costs));
                     --achieved_lms_by_op[op_id];
                 }
             } else {
@@ -120,11 +119,10 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(const TaskProxy
         const set<int> &achievers = get_achievers(lmn_status, *node);
         double min_cost = numeric_limits<double>::max();
         for (int op_id : achievers) {
-            OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
-            assert(!op.is_axiom());
+            assert(utils::in_bounds(op_id, operator_costs));
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);
-            double shared_cost = double(op.get_cost()) / num_achieved;
+            double shared_cost = static_cast<double>(operator_costs[op_id]) / num_achieved;
             min_cost = min(min_cost, shared_cost);
         }
         h += min_cost;
@@ -134,9 +132,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(const TaskProxy
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    const TaskProxy &task_proxy, LandmarkGraph &graph,
-    OperatorCost cost_type, lp::LPSolverType solver_type)
-    : LandmarkCostAssignment(graph, cost_type),
+    const TaskProxy &task_proxy, LandmarkGraph &graph, lp::LPSolverType solver_type)
+    : LandmarkCostAssignment(task_proxy, graph),
       lp_solver(solver_type) {
     OperatorsProxy operators = task_proxy.get_operators();
     /* The LP has one variable (column) per landmark and one
@@ -162,8 +159,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
 LandmarkEfficientOptimalSharedCostAssignment::~LandmarkEfficientOptimalSharedCostAssignment() {
 }
 
-double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(const TaskProxy &task_proxy) {
-    utils::unused_variable(task_proxy);
+double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     /* TODO: We could also do the same thing with action landmarks we
              do in the uniform cost partitioning case. */
 
@@ -202,7 +198,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(const 
             const set<int> &achievers = get_achievers(lm_status, *lm);
             assert(!achievers.empty());
             for (int op_id : achievers) {
-                assert(!get_operator_or_axiom(task_proxy, op_id).is_axiom());
+                assert(utils::in_bounds(op_id, operator_costs));
                 lp_constraints[op_id].insert(lm_id, 1.0);
             }
         }
