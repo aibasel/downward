@@ -408,6 +408,7 @@ fast_downward_plugin(
         merge_and_shrink/label_reduction.cc
         merge_and_shrink/labels.cc
         merge_and_shrink/merge_and_shrink_heuristic.cc
+        merge_and_shrink/merge_dfp.cc
         merge_and_shrink/merge_scoring_function.cc
         merge_and_shrink/merge_scoring_function_dfp.cc
         merge_and_shrink/merge_scoring_function_goal_relevance.cc
