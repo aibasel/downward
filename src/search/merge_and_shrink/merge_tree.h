@@ -56,6 +56,10 @@ public:
     std::pair<int, int> get_next_merge(int new_index);
     void update(std::pair<int, int> merge, int new_index, UpdateOption option);
 
+    bool done() const {
+        return root->is_leaf();
+    }
+
     int compute_num_internale_nodes() const {
         return root->compute_num_internal_nodes();
     }
