@@ -1,5 +1,6 @@
 #include "merge_scoring_function_dfp.h"
 #include "merge_scoring_function_goal_relevance.h"
+#include "merge_scoring_function_single_random.h"
 #include "merge_scoring_function_total_order.h"
 #include "merge_selector_score_based_filtering.h"
 #include "merge_strategy_factory_stateless.h"
@@ -13,9 +14,6 @@
 using namespace std;
 
 namespace merge_and_shrink {
-// TODO: this MergeDFP compatibilty parsing does *not* support the old option
-// to randomize the entire transition system order (this requires a different
-// merge scoring function to be used.)
 static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser) {
     parser.document_synopsis(
         "Merge strategy DFP",
@@ -30,18 +28,32 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
             " Intelligence (AAAI 2014)",
             "2358-2366",
             "AAAI Press 2014"));
+    // this also includes the rng option for MergeScoringFunctionSingleRandom.
     MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
+    parser.add_option<bool>(
+        "randomized_order",
+        "If true, use a 'globally' randomized order, i.e. all transition "
+        "systems are considered in an arbitrary order. This renders all other "
+        "ordering options void.",
+        "false");
     options::Options options = parser.parse();
     if (parser.dry_run())
         return nullptr;
 
-    shared_ptr<MergeScoringFunction> scoring_total_order =
-        make_shared<MergeScoringFunctionTotalOrder>(options);
-
     vector<shared_ptr<MergeScoringFunction>> scoring_functions;
     scoring_functions.push_back(make_shared<MergeScoringFunctionGoalRelevance>());
     scoring_functions.push_back(make_shared<MergeScoringFunctionDFP>());
-    scoring_functions.push_back(scoring_total_order);
+
+    bool randomized_order = options.get<bool>("randomized_order");
+    if (randomized_order) {
+        shared_ptr<MergeScoringFunctionSingleRandom> scoring_random =
+            make_shared<MergeScoringFunctionSingleRandom>(options);
+        scoring_functions.push_back(scoring_random);
+    } else {
+        shared_ptr<MergeScoringFunctionTotalOrder> scoring_total_order =
+            make_shared<MergeScoringFunctionTotalOrder>(options);
+        scoring_functions.push_back(scoring_total_order);
+    }
 
     // TODO: the option parser does not handle this
 //    options::Options selector_options;
