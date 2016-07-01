@@ -76,8 +76,9 @@ private:
     const bool no_orders;
     const OperatorCost lm_cost_type;
 
-    bool interferes(const TaskProxy &task_proxy, const LandmarkNode *, const LandmarkNode *) const;
-    bool effect_always_happens(const TaskProxy &task_proxy, const EffectsProxy &effects,
+    bool interferes(const TaskProxy &task_proxy,
+                    const LandmarkNode *lm_node1, const LandmarkNode *node_b) const;
+    bool effect_always_happens(const VariablesProxy &variables, const EffectsProxy &effects,
                                std::set<std::pair<int, int>> &eff) const;
     void approximate_reasonable_orders(const TaskProxy &task_proxy, bool obedient_orders);
     void mk_acyclic_graph();

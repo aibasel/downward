@@ -16,7 +16,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostAssignment::LandmarkCostAssignment(const OperatorsProxy &operators,
-                                               const std::shared_ptr<LandmarkGraph> graph)
+                                               const std::shared_ptr<LandmarkGraph> &graph)
     : lm_graph(graph) {
     for (OperatorProxy op : operators) {
         operator_costs.push_back(op.get_cost());
@@ -42,7 +42,7 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 // Uniform cost partioning
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    const OperatorsProxy &operators, const shared_ptr<LandmarkGraph> graph, bool use_action_landmarks)
+    const OperatorsProxy &operators, const shared_ptr<LandmarkGraph> &graph, bool use_action_landmarks)
     : LandmarkCostAssignment(operators, graph), use_action_landmarks(use_action_landmarks) {
 }
 
@@ -133,7 +133,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    const OperatorsProxy &operators, const std::shared_ptr<LandmarkGraph> graph,
+    const OperatorsProxy &operators, const std::shared_ptr<LandmarkGraph> &graph,
     lp::LPSolverType solver_type)
     : LandmarkCostAssignment(operators, graph),
       lp_solver(solver_type) {
@@ -199,7 +199,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
             const set<int> &achievers = get_achievers(lm_status, *lm);
             assert(!achievers.empty());
             for (int op_id : achievers) {
-                assert(utils::in_bounds(op_id, operator_costs));
+                assert(utils::in_bounds(op_id, lp_constraints));
                 lp_constraints[op_id].insert(lm_id, 1.0);
             }
         }

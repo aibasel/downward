@@ -152,8 +152,12 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
             // and calculate the minimum cost of those that can make
             // bp true for the first time according to lvl_var
-            if (_possibly_reaches_lm(op, lvl_var, bp))
-                min_cost = min(min_cost, get_adjusted_action_cost(op.get_cost(), get_lm_cost_type()));
+            if (_possibly_reaches_lm(op, lvl_var, bp)) {
+                /* TODO: When refactoring the landmarks code, find a better solution
+                   for setting landmark cost types. */
+                int cost = get_adjusted_action_cost(op.get_cost(), get_lm_cost_type());
+                min_cost = min(min_cost, cost);
+            }
         }
     }
     /*
@@ -342,8 +346,8 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(const TaskProxy &task_pro
     for (VariableProxy var : variables) {
         int num_values = var.get_domain_size();
         disjunction_classes[var.get_id()].reserve(num_values);
-        for (int val = 0; val < num_values; ++val) {
-            string predicate = get_predicate_for_fact(task_proxy, var.get_id(), val);
+        for (int value = 0; value < num_values; ++value) {
+            string predicate = get_predicate_for_fact(task_proxy, var.get_id(), value);
             int disj_class;
             if (predicate.empty()) {
                 disj_class = -1;
@@ -486,21 +490,21 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     // before the LM value (in the relaxed plan graph)
     int domain_size = task_proxy.get_variables()[lmk.first].get_domain_size();
     unordered_set<int> unreached(domain_size);
-    for (int val = 0; val < domain_size; ++val)
-        if (lvl_var[lmk.first][val] == numeric_limits<int>::max() && lmk.second != val)
-            unreached.insert(val);
+    for (int value = 0; value < domain_size; ++value)
+        if (lvl_var[lmk.first][value] == numeric_limits<int>::max() && lmk.second != value)
+            unreached.insert(value);
     // The set "exclude" will contain all those values of the LM variable that
     // cannot be reached before the LM value (as in "unreached") PLUS
     // one value that CAN be reached
-    for (int val = 0; val < domain_size; ++val)
-        if (unreached.find(val) == unreached.end() && lmk.second != val) {
+    for (int value = 0; value < domain_size; ++value)
+        if (unreached.find(value) == unreached.end() && lmk.second != value) {
             unordered_set<int> exclude(domain_size);
             exclude = unreached;
-            exclude.insert(val);
+            exclude.insert(value);
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
             if (!domain_connectivity(task_proxy, lmk, exclude))
-                found_simple_lm_and_order(make_pair(lmk.first, val), *lmp, EdgeType::natural);
+                found_simple_lm_and_order(make_pair(lmk.first, value), *lmp, EdgeType::natural);
         }
 
 }
@@ -550,19 +554,19 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const TaskProxy &task_proxy,
      These orders are saved in the node member variable "forward_orders".
      */
     for (VariableProxy var : task_proxy.get_variables())
-        for (int val = 0; val < var.get_domain_size(); ++val) {
-            if (lvl_var[var.get_id()][val] != numeric_limits<int>::max())
+        for (int value = 0; value < var.get_domain_size(); ++value) {
+            if (lvl_var[var.get_id()][value] != numeric_limits<int>::max())
                 continue;
 
             bool insert = true;
             for (size_t i = 0; i < lmp->vars.size() && insert; ++i) {
                 const pair<int, int> lm = make_pair(lmp->vars[i], lmp->vals[i]);
 
-                if (make_pair(var.get_id(), val) != lm) {
+                if (make_pair(var.get_id(), value) != lm) {
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
                     const vector<int> &reach_fact = lm_graph->get_operators_including_eff(
-                        make_pair(var.get_id(), val));
+                        make_pair(var.get_id(), value));
                     const vector<int> &reach_lm = lm_graph->get_operators_including_eff(
                         lm);
 
@@ -578,7 +582,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const TaskProxy &task_proxy,
                     insert = false;
             }
             if (insert)
-                lmp->forward_orders.emplace(var.get_id(), val);
+                lmp->forward_orders.emplace(var.get_id(), value);
         }
 
 }

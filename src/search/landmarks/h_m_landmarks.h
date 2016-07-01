@@ -124,13 +124,13 @@ private:
 
     void get_m_sets_(const TaskProxy &task_proxy, int m, int num_included, int current_var,
                      FluentSet &current,
-                     std::vector<FluentSet > &subsets);
+                     std::vector<FluentSet> &subsets);
 
     void get_m_sets_of_set(const VariablesProxy &variables,
                            int m, int num_included,
                            int current_var_index,
                            FluentSet &current,
-                           std::vector<FluentSet > &subsets,
+                           std::vector<FluentSet> &subsets,
                            const FluentSet &superset);
 
     void get_split_m_sets(const VariablesProxy &variables, int m,
@@ -146,15 +146,15 @@ private:
                     const FluentSet &superset);
 
     void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
-                    const State &s);
+                    const State &state);
 
     void get_split_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
     void print_proposition(const TaskProxy &task_proxy, const std::pair<int, int> &fluent) const;
 };
 
-FluentSet get_operator_precondition(const OperatorProxy &op);
-FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op);
+extern FluentSet get_operator_precondition(const OperatorProxy &op);
+extern FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op);
 }
 
 #endif

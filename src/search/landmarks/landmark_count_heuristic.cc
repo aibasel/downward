@@ -97,7 +97,6 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
         h = total_cost - reached_cost + needed_cost;
     }
 
-    // Two plausibility tests in debug mode.
     assert(h >= 0);
 
     return h;
