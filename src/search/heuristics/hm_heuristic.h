@@ -22,40 +22,40 @@ namespace hm_heuristic {
 */
 
 class HMHeuristic : public Heuristic {
-    using Tuples = std::vector<FactPair>;
+    using Tuple = std::vector<FactPair>;
     // parameters
     int m;
     bool has_cond_effects;
 
     // h^m table
-    std::map<Tuples, int> hm_table;
+    std::map<Tuple, int> hm_table;
     bool was_updated;
 
     // auxiliary methods
-    void init_hm_table(const Tuples &t);
+    void init_hm_table(const Tuple &t);
     void update_hm_table();
-    int eval(const Tuples &t) const;
-    int update_hm_entry(const Tuples &t, int val);
-    void extend_tuple(const Tuples &t, const OperatorProxy &op);
+    int eval(const Tuple &t) const;
+    int update_hm_entry(const Tuple &t, int val);
+    void extend_tuple(const Tuple &t, const OperatorProxy &op);
 
-    int check_tuple_in_tuple(const Tuples &tup, const Tuples &big_tuple) const;
-    void state_to_tuple(const State &state, Tuples &t) const;
+    int check_tuple_in_tuple(const Tuple &tup, const Tuple &big_tuple) const;
+    void state_to_tuple(const State &state, Tuple &t) const;
 
     int get_operator_pre_value(const OperatorProxy &op, int var) const;
-    void get_operator_pre(const OperatorProxy &op, Tuples &t) const;
-    void get_operator_eff(const OperatorProxy &op, Tuples &t) const;
+    void get_operator_pre(const OperatorProxy &op, Tuple &t) const;
+    void get_operator_eff(const OperatorProxy &op, Tuple &t) const;
     bool contradict_effect_of(const OperatorProxy &op, int var, int val) const;
 
     void generate_all_tuples();
-    void generate_all_tuples_aux(int var, int sz, const Tuples &base);
+    void generate_all_tuples_aux(int var, int sz, const Tuple &base);
 
-    void generate_all_partial_tuples(const Tuples &base_tuple,
-                                     std::vector<Tuples> &res) const;
-    void generate_all_partial_tuples_aux(const Tuples &base_tuple, const Tuples &t, int index,
-                                         int sz, std::vector<Tuples> &res) const;
+    void generate_all_partial_tuples(const Tuple &base_tuple,
+                                     std::vector<Tuple> &res) const;
+    void generate_all_partial_tuples_aux(const Tuple &base_tuple, const Tuple &t, int index,
+                                         int sz, std::vector<Tuple> &res) const;
 
     void dump_table() const;
-    void dump_tuple(const Tuples &tup) const;
+    void dump_tuple(const Tuple &tup) const;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
