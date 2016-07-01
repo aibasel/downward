@@ -13,7 +13,7 @@
 // for the alias merge_dfp
 #include "merge_scoring_function_dfp.h"
 #include "merge_scoring_function_goal_relevance.h"
-#include "merge_scoring_function_tiebreaking_dfp.h"
+#include "merge_scoring_function_total_order.h"
 #include "merge_strategy_factory_stateless.h"
 
 #include "../utils/markup.h"
@@ -137,18 +137,18 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
             " Intelligence (AAAI 2014)",
             "2358-2366",
             "AAAI Press 2014"));
-    MergeScoringFunctionTiebreakingDFP::add_options_to_parser(parser);
+    MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
     options::Options options = parser.parse();
     if (parser.dry_run())
         return nullptr;
 
-    shared_ptr<MergeScoringFunction> scoring_tiebreaking_dfp =
-        make_shared<MergeScoringFunctionTiebreakingDFP>(options);
+    shared_ptr<MergeScoringFunction> scoring_total_order =
+        make_shared<MergeScoringFunctionTotalOrder>(options);
 
     vector<shared_ptr<MergeScoringFunction>> scoring_functions;
     scoring_functions.push_back(make_shared<MergeScoringFunctionGoalRelevance>());
     scoring_functions.push_back(make_shared<MergeScoringFunctionDFP>());
-    scoring_functions.push_back(scoring_tiebreaking_dfp);
+    scoring_functions.push_back(scoring_total_order);
 
     // TODO: the option parser does not handle this
 //    options::Options selector_options;

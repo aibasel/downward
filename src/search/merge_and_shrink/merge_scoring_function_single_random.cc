@@ -1,4 +1,4 @@
-#include "merge_scoring_function_tiebreaking_random.h"
+#include "merge_scoring_function_single_random.h"
 
 #include "types.h"
 
@@ -14,13 +14,13 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunctionTiebreakingRandom::MergeScoringFunctionTiebreakingRandom(
+MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     const options::Options &options)
     : random_seed(options.get<int>("random_seed")) {
       rng = utils::parse_rng_from_options(options);
 }
 
-vector<int> MergeScoringFunctionTiebreakingRandom::compute_scores(
+vector<int> MergeScoringFunctionSingleRandom::compute_scores(
     FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
     int chosen_index = (*rng)(merge_candidates.size());
@@ -36,14 +36,14 @@ vector<int> MergeScoringFunctionTiebreakingRandom::compute_scores(
     return scores;
 }
 
-void MergeScoringFunctionTiebreakingRandom::dump_specific_options() const {
+void MergeScoringFunctionSingleRandom::dump_specific_options() const {
     cout << "Random seed: " << random_seed << endl;
 }
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
-        "Random tiebreaking",
-        "This scoring functions assign exactly one merge candidate a score of "
+        "Single random",
+        "This scoring function assigns exactly one merge candidate a score of "
         "0, chosen randomly, and positive infinity to all others.");
     utils::add_rng_options(parser);
 
@@ -51,8 +51,8 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
     else
-        return make_shared<MergeScoringFunctionTiebreakingRandom>(options);
+        return make_shared<MergeScoringFunctionSingleRandom>(options);
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("tiebreaking_random", _parse);
+static options::PluginShared<MergeScoringFunction> _plugin("single_random", _parse);
 }
