@@ -152,7 +152,8 @@ void HMLandmarks::get_m_sets_(const TaskProxy &task_proxy, int m, int num_includ
     for (int i = 0; i < variables[current_var].get_domain_size(); ++i) {
         bool use_var = true;
         for (size_t j = 0; j < current.size(); ++j) {
-            if (!interesting(current_var, i, current[j].first, current[j].second)) {
+            if (!interesting(task_proxy.get_variables(),
+                             current_var, i, current[j].first, current[j].second)) {
                 use_var = false;
                 break;
             }
@@ -169,10 +170,12 @@ void HMLandmarks::get_m_sets_(const TaskProxy &task_proxy, int m, int num_includ
 }
 
 // find all size m or less subsets of superset
-void HMLandmarks::get_m_sets_of_set_(int m, int num_included, int current_var_index,
-                                     FluentSet &current,
-                                     std::vector<FluentSet > &subsets,
-                                     const FluentSet &superset) {
+void HMLandmarks::get_m_sets_of_set(const VariablesProxy &variables,
+                                    int m, int num_included,
+                                    int current_var_index,
+                                    FluentSet &current,
+                                    std::vector<FluentSet > &subsets,
+                                    const FluentSet &superset) {
     if (num_included == m) {
         subsets.push_back(current);
         return;
@@ -187,7 +190,7 @@ void HMLandmarks::get_m_sets_of_set_(int m, int num_included, int current_var_in
 
     bool use_var = true;
     for (size_t i = 0; i < current.size(); ++i) {
-        if (!interesting(superset[current_var_index].first, superset[current_var_index].second,
+        if (!interesting(variables, superset[current_var_index].first, superset[current_var_index].second,
                          current[i].first, current[i].second)) {
             use_var = false;
             break;
@@ -197,17 +200,18 @@ void HMLandmarks::get_m_sets_of_set_(int m, int num_included, int current_var_in
     if (use_var) {
         // include current fluent in the set
         current.push_back(superset[current_var_index]);
-        get_m_sets_of_set_(m, num_included + 1, current_var_index + 1, current, subsets, superset);
+        get_m_sets_of_set(variables, m, num_included + 1, current_var_index + 1, current, subsets, superset);
         current.pop_back();
     }
 
     // don't include current fluent in set
-    get_m_sets_of_set_(m, num_included, current_var_index + 1, current, subsets, superset);
+    get_m_sets_of_set(variables, m, num_included, current_var_index + 1, current, subsets, superset);
 }
 
 // get subsets of superset1 \cup superset2 with size m or less,
 // such that they have >= 1 elements from each set.
-void HMLandmarks::get_split_m_sets_(
+void HMLandmarks::get_split_m_sets(
+    const VariablesProxy &variables,
     int m, int ss1_num_included, int ss2_num_included,
     int ss1_var_index, int ss2_var_index,
     FluentSet &current, std::vector<FluentSet> &subsets,
@@ -238,7 +242,8 @@ void HMLandmarks::get_split_m_sets_(
         (ss2_var_index == sup2_size ||
          superset1[ss1_var_index] < superset2[ss2_var_index])) {
         for (size_t i = 0; i < current.size(); ++i) {
-            if (!interesting(superset1[ss1_var_index].first,
+            if (!interesting(variables,
+                             superset1[ss1_var_index].first,
                              superset1[ss1_var_index].second,
                              current[i].first, current[i].second)) {
                 use_var = false;
@@ -249,19 +254,21 @@ void HMLandmarks::get_split_m_sets_(
         if (use_var) {
             // include
             current.push_back(superset1[ss1_var_index]);
-            get_split_m_sets_(m, ss1_num_included + 1, ss2_num_included,
-                              ss1_var_index + 1, ss2_var_index,
-                              current, subsets, superset1, superset2);
+            get_split_m_sets(variables, m, ss1_num_included + 1, ss2_num_included,
+                             ss1_var_index + 1, ss2_var_index,
+                             current, subsets, superset1, superset2);
             current.pop_back();
         }
 
         // don't include
-        get_split_m_sets_(m, ss1_num_included, ss2_num_included,
-                          ss1_var_index + 1, ss2_var_index,
-                          current, subsets, superset1, superset2);
+        get_split_m_sets(variables, m, ss1_num_included, ss2_num_included,
+                         ss1_var_index + 1, ss2_var_index,
+                         current, subsets, superset1, superset2);
     } else {
         for (size_t i = 0; i < current.size(); ++i) {
-            if (!interesting(superset2[ss2_var_index].first, superset2[ss2_var_index].second,
+            if (!interesting(variables,
+                             superset2[ss2_var_index].first,
+                             superset2[ss2_var_index].second,
                              current[i].first, current[i].second)) {
                 use_var = false;
                 break;
@@ -271,16 +278,16 @@ void HMLandmarks::get_split_m_sets_(
         if (use_var) {
             // include
             current.push_back(superset2[ss2_var_index]);
-            get_split_m_sets_(m, ss1_num_included, ss2_num_included + 1,
-                              ss1_var_index, ss2_var_index + 1,
-                              current, subsets, superset1, superset2);
+            get_split_m_sets(variables, m, ss1_num_included, ss2_num_included + 1,
+                             ss1_var_index, ss2_var_index + 1,
+                             current, subsets, superset1, superset2);
             current.pop_back();
         }
 
         // don't include
-        get_split_m_sets_(m, ss1_num_included, ss2_num_included,
-                          ss1_var_index, ss2_var_index + 1,
-                          current, subsets, superset1, superset2);
+        get_split_m_sets(variables, m, ss1_num_included, ss2_num_included,
+                         ss1_var_index, ss2_var_index + 1,
+                         current, subsets, superset1, superset2);
     }
 }
 
@@ -294,67 +301,73 @@ void HMLandmarks::get_m_sets(const TaskProxy &task_proxy, int m, std::vector<Flu
 }
 
 // get subsets of superset with size <= m
-void HMLandmarks::get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset) {
+void HMLandmarks::get_m_sets(const VariablesProxy &variables,
+                             int m, std::vector<FluentSet> &subsets,
+                             const FluentSet &superset) {
     FluentSet c;
-    get_m_sets_of_set_(m, 0, 0, c, subsets, superset);
+    get_m_sets_of_set(variables, m, 0, 0, c, subsets, superset);
 }
 
 // second function to get subsets of size at most m that
 // have at least one element in ss1 and same in ss2
 // assume disjoint
 void HMLandmarks::get_split_m_sets(
+    const VariablesProxy &variables,
     int m, std::vector<FluentSet> &subsets,
     const FluentSet &superset1, const FluentSet &superset2) {
     FluentSet c;
-    get_split_m_sets_(m, 0, 0, 0, 0, c, subsets, superset1, superset2);
+    get_split_m_sets(variables, m, 0, 0, 0, 0, c, subsets, superset1, superset2);
 }
 
 // get subsets of state with size <= m
-void HMLandmarks::get_m_sets(const TaskProxy &task_proxy, int m,
+void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m,
                              std::vector<FluentSet> &subsets,
                              const State &s) {
     FluentSet state_fluents;
-    VariablesProxy variables = task_proxy.get_variables();
-    for (VariableProxy variable : variables) {
-        state_fluents.emplace_back(variable.get_id(), s[variable.get_id()].get_value());
+    for (VariableProxy var : variables) {
+        state_fluents.emplace_back(var.get_id(), s[var.get_id()].get_value());
     }
-    get_m_sets(m, subsets, state_fluents);
+    get_m_sets(variables, m, subsets, state_fluents);
 }
 
 void HMLandmarks::print_proposition(const TaskProxy &task_proxy, const pair<int, int> &fluent) const {
     VariablesProxy variables = task_proxy.get_variables();
-    VariableProxy variable = variables[fluent.first];
-    FactProxy fact = variable.get_fact(fluent.second);
+    VariableProxy var = variables[fluent.first];
+    FactProxy fact = var.get_fact(fluent.second);
     cout << fact.get_name()
-         << " (" << variable.get_name() << "(" << fact.get_variable().get_id() << ")"
+         << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
          << "->" << fact.get_value() << ")";
 }
 
-void HMLandmarks::get_operator_precondition(const OperatorProxy &op, FluentSet &pc) const {
+FluentSet get_operator_precondition(const OperatorProxy &op) {
+    FluentSet preconditions;
     for (FactProxy precondition : op.get_preconditions())
-        pc.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
+        preconditions.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
 
-    std::sort(pc.begin(), pc.end());
+    sort(preconditions.begin(), preconditions.end());
+    return move(preconditions);
 }
 
 // get facts that are always true after the operator application
 // (effects plus prevail conditions)
-void HMLandmarks::get_operator_postcondition(const TaskProxy &task_proxy, const OperatorProxy &op, FluentSet &post) const {
+FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op) {
+    FluentSet postconditions;
     EffectsProxy effects = op.get_effects();
-    std::vector<bool> has_effect_on_var(task_proxy.get_variables().size(), false);
+    vector<bool> has_effect_on_var(num_vars, false);
 
     for (EffectProxy effect : effects) {
         FactProxy effect_fact = effect.get_fact();
-        post.emplace_back(effect_fact.get_variable().get_id(), effect_fact.get_value());
+        postconditions.emplace_back(effect_fact.get_variable().get_id(), effect_fact.get_value());
         has_effect_on_var[effect_fact.get_variable().get_id()] = true;
     }
 
     for (FactProxy precondition : op.get_preconditions()) {
         if (!has_effect_on_var[precondition.get_variable().get_id()])
-            post.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
+            postconditions.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
     }
 
-    std::sort(post.begin(), post.end());
+    sort(postconditions.begin(), postconditions.end());
+    return move(postconditions);
 }
 
 
@@ -445,7 +458,9 @@ void HMLandmarks::print_fluentset(const TaskProxy &task_proxy, const FluentSet &
 
 // check whether fs2 is a possible noop set for action with fs1 as effect
 // sets cannot be 1) defined on same variable, 2) otherwise mutex
-bool HMLandmarks::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) {
+bool HMLandmarks::possible_noop_set(const VariablesProxy &variables,
+                                    const FluentSet &fs1,
+                                    const FluentSet &fs2) {
     FluentSet::const_iterator fs1it = fs1.begin(), fs2it = fs2.begin();
 
     while (fs1it != fs1.end() && fs2it != fs2.end()) {
@@ -458,10 +473,11 @@ bool HMLandmarks::possible_noop_set(const FluentSet &fs1, const FluentSet &fs2) 
         }
     }
 
-    for (fs1it = fs1.begin(); fs1it != fs1.end(); ++fs1it) {
-        for (fs2it = fs2.begin(); fs2it != fs2.end(); ++fs2it) {
+    for (const Fluent &fluent1 : fs1) {
+        for (const Fluent &fluent2 :fs2) {
             // TODO(issue635): Use Fact struct right away.
-            if (are_mutex(Fact(fs1it->first, fs1it->second), Fact(fs2it->first, fs2it->second)))
+            if (variables[fluent1.first].get_fact(fluent1.second).is_mutex(
+                    variables[fluent2.first].get_fact(fluent2.second)))
                 return false;
         }
     }
@@ -484,21 +500,20 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
     // set unsatisfied precondition counts, used in fixpoint calculation
     unsat_pc_count_.resize(operators.size());
 
+    VariablesProxy variables = task_proxy.get_variables();
+
     // transfer ops from original problem
     // represent noops as "conditional" effects
     for (OperatorProxy op : operators) {
         PMOp &pm_op = pm_ops_[op.get_id()];
         pm_op.index = op_count++;
 
-        pc.clear();
-        eff.clear();
-
         pc_subsets.clear();
         eff_subsets.clear();
 
         // preconditions of P_m op are all subsets of original pc
-        get_operator_precondition(op, pc);
-        get_m_sets(m_, pc_subsets, pc);
+        pc = get_operator_precondition(op);
+        get_m_sets(variables, m_, pc_subsets, pc);
         pm_op.pc.reserve(pc_subsets.size());
 
         // set unsatisfied pc count for op
@@ -512,8 +527,8 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
         }
 
         // same for effects
-        get_operator_postcondition(task_proxy, op, eff);
-        get_m_sets(m_, eff_subsets, eff);
+        eff = get_operator_postcondition(variables.size(), op);
+        get_m_sets(variables, m_, eff_subsets, eff);
         pm_op.eff.reserve(eff_subsets.size());
 
         for (const FluentSet &eff : eff_subsets) {
@@ -531,7 +546,7 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
         FluentSetToIntMap::const_iterator it = set_indices_.begin();
         while (static_cast<int>(it->first.size()) < m_
                && it != set_indices_.end()) {
-            if (possible_noop_set(eff, it->first)) {
+            if (possible_noop_set(variables, eff, it->first)) {
                 // for each such set, add a "conditional effect" to the operator
                 pm_op.cond_noops.resize(pm_op.cond_noops.size() + 1);
 
@@ -543,8 +558,8 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
                 // get the subsets that have >= 1 element in the pc (unless pc is empty)
                 // and >= 1 element in the other set
 
-                get_split_m_sets(m_, noop_pc_subsets, pc, it->first);
-                get_split_m_sets(m_, noop_eff_subsets, eff, it->first);
+                get_split_m_sets(variables, m_, noop_pc_subsets, pc, it->first);
+                get_split_m_sets(variables, m_, noop_eff_subsets, eff, it->first);
 
                 this_cond_noop.reserve(noop_pc_subsets.size() + noop_eff_subsets.size() + 1);
 
@@ -581,9 +596,13 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
     }
 }
 
-bool HMLandmarks::interesting(int var1, int val1, int var2, int val2) {
+bool HMLandmarks::interesting(const VariablesProxy &variables,
+                              int var1, int val1,
+                              int var2, int val2) {
     // mutexes can always be safely pruned
-    return !are_mutex(Fact(var1, val1), Fact(var2, val2));
+    // TODO(issue635): Use Fact struct right away.
+    return !variables[var1].get_fact(val1).is_mutex(
+        variables[var2].get_fact(val2));
 }
 
 HMLandmarks::HMLandmarks(const options::Options &opts)
@@ -630,6 +649,7 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
     std::cout << "Calculating achievers." << std::endl;
 
     OperatorsProxy operators = task_proxy.get_operators();
+    VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
     for (std::set<LandmarkNode *>::iterator it = lm_graph->get_nodes().begin();
@@ -646,9 +666,8 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
         }
 
         for (int op_id : candidates) {
-            FluentSet post, pre;
-            get_operator_postcondition(task_proxy, operators[op_id], post);
-            get_operator_precondition(operators[op_id], pre);
+            FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
+            FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
             for (j = 0; j < lmn.vars.size(); ++j) {
                 std::pair<int, int> lm_val = std::make_pair(lmn.vars[j], lmn.vals[j]);
@@ -657,10 +676,9 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
                     continue;
                 size_t k;
                 for (k = 0; k < post.size(); ++k) {
-                    if (are_mutex(
-                            // TODO(issue635): Use Fact struct right away.
-                            Fact(post[k].first, post[k].second),
-                            Fact(lm_val.first, lm_val.second))) {
+                    // TODO(issue635): Use Fact struct right away.
+                    if (variables[post[k].first].get_fact(post[k].second).is_mutex(
+                            variables[lm_val.first].get_fact(lm_val.second))) {
                         break;
                     }
                 }
@@ -670,10 +688,9 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
                 for (k = 0; k < pre.size(); ++k) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
-                    if (are_mutex(
-                            // TODO(issue635): Use Fact struct right away.
-                            Fact(pre[k].first, pre[k].second),
-                            Fact(lm_val.first, lm_val.second))) {
+                    // TODO(issue635): Use Fact struct right away.
+                    if (variables[pre[k].first].get_fact(pre[k].second).is_mutex(
+                            variables[lm_val.first].get_fact(lm_val.second))) {
                         break;
                     }
                 }
@@ -741,7 +758,7 @@ void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
 void HMLandmarks::compute_h_m_landmarks(const TaskProxy &task_proxy) {
     // get subsets of initial state
     std::vector<FluentSet> init_subsets;
-    get_m_sets(task_proxy, m_, init_subsets, task_proxy.get_initial_state());
+    get_m_sets(task_proxy.get_variables(), m_, init_subsets, task_proxy.get_initial_state());
 
     TriggerSet current_trigger, next_trigger;
 
@@ -959,7 +976,7 @@ void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &)
     for (FactProxy goal : goals) {
         g_goal.emplace_back(goal.get_variable().get_id(), goal.get_value());
     }
-    get_m_sets(m_, goal_subsets, g_goal);
+    get_m_sets(task_proxy.get_variables(), m_, goal_subsets, g_goal);
     std::list<int> all_lms;
     for (const FluentSet &goal_subset : goal_subsets) {
         /*

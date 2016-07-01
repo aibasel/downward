@@ -73,7 +73,9 @@ public:
 
     virtual bool supports_conditional_effects() const override;
 // should be used together in a tuple?
-    bool interesting(int var1, int val1, int var2, int val2);
+    bool interesting(const VariablesProxy &variables,
+                     int var1, int val1,
+                     int var2, int val2);
 private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef std::unordered_map<int, std::set<int>> TriggerSet;
@@ -90,7 +92,9 @@ private:
     void propagate_pm_fact(int fact, bool newly_discovered,
                            TriggerSet &trigger);
 
-    bool possible_noop_set(const FluentSet &fs1, const FluentSet &fs2);
+    bool possible_noop_set(const VariablesProxy &variables,
+                           const FluentSet &fs1,
+                           const FluentSet &fs2);
     void build_pm_ops(const TaskProxy &task_proxy);
 
 // already generated, so just return
@@ -122,31 +126,35 @@ private:
                      FluentSet &current,
                      std::vector<FluentSet > &subsets);
 
-    void get_m_sets_of_set_(int m, int num_included, int current_var_index,
-                            FluentSet &current,
-                            std::vector<FluentSet > &subsets,
-                            const FluentSet &superset);
-
-    void get_split_m_sets_(int m,
-                           int ss1_num_included, int ss2_num_included,
-                           int ss1_var_index, int ss2_var_index,
+    void get_m_sets_of_set(const VariablesProxy &variables,
+                           int m, int num_included,
+                           int current_var_index,
                            FluentSet &current,
-                           std::vector<FluentSet> &subsets,
-                           const FluentSet &superset1, const FluentSet &superset2);
+                           std::vector<FluentSet > &subsets,
+                           const FluentSet &superset);
+
+    void get_split_m_sets(const VariablesProxy &variables, int m,
+                          int ss1_num_included, int ss2_num_included,
+                          int ss1_var_index, int ss2_var_index,
+                          FluentSet &current,
+                          std::vector<FluentSet> &subsets,
+                          const FluentSet &superset1, const FluentSet &superset2);
 
     void get_m_sets(const TaskProxy &task_proxy, int m, std::vector<FluentSet> &subsets);
 
-    void get_m_sets(int m, std::vector<FluentSet> &subsets, const FluentSet &superset);
+    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
+                    const FluentSet &superset);
 
-    void get_m_sets(const TaskProxy &task_proxy, int m, std::vector<FluentSet> &subsets,
+    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
                     const State &s);
 
-    void get_split_m_sets(int m, std::vector<FluentSet> &subsets,
+    void get_split_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
     void print_proposition(const TaskProxy &task_proxy, const std::pair<int, int> &fluent) const;
-    void get_operator_precondition(const OperatorProxy &op, FluentSet &pc) const;
-    void get_operator_postcondition(const TaskProxy &task_proxy, const OperatorProxy &op, FluentSet &post) const;
 };
+
+FluentSet get_operator_precondition(const OperatorProxy &op);
+FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op);
 }
 
 #endif

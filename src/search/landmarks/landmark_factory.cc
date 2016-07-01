@@ -48,7 +48,7 @@ std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(const TaskProxy
     if (lm_graph)
         return lm_graph;
     utils::Timer lm_generation_timer;
-    lm_graph = utils::make_unique_ptr<LandmarkGraph>(task_proxy);
+    lm_graph = make_shared<LandmarkGraph>(task_proxy);
     generate_landmarks(task_proxy, exploration);
 
     // the following replaces the old "build_lm_graph"
@@ -249,38 +249,38 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
     for (EffectProxy effect : effects) {
         EffectConditionsProxy effect_conditions = effect.get_conditions();
         FactProxy effect_fact = effect.get_fact();
-        const int variable_id = effect_fact.get_variable().get_id();
-        const int value = effect_fact.get_value();
+        int var_id = effect_fact.get_variable().get_id();
+        int val = effect_fact.get_value();
         if (effect_conditions.empty() ||
-            nogood_effect_vars.find(variable_id) != nogood_effect_vars.end()) {
+            nogood_effect_vars.find(var_id) != nogood_effect_vars.end()) {
             // Var has no condition or can take on different values, skipping
             continue;
         }
-        if (effect_vars.find(variable_id) != effect_vars.end()) {
+        if (effect_vars.find(var_id) != effect_vars.end()) {
             // We have seen this effect var before
-            assert(effect_conditions_by_variable.find(variable_id) != effect_conditions_by_variable.end());
-            int old_eff = effect_conditions_by_variable.find(variable_id)->second.first;
-            if (old_eff != value) {
+            assert(effect_conditions_by_variable.find(var_id) != effect_conditions_by_variable.end());
+            int old_eff = effect_conditions_by_variable.find(var_id)->second.first;
+            if (old_eff != val) {
                 // Was different effect
-                nogood_effect_vars.insert(variable_id);
+                nogood_effect_vars.insert(var_id);
                 continue;
             }
         } else {
             // We have not seen this effect var before
-            effect_vars.insert(variable_id);
+            effect_vars.insert(var_id);
         }
-        if (effect_conditions_by_variable.find(variable_id) != effect_conditions_by_variable.end()
-            && effect_conditions_by_variable.find(variable_id)->second.first == value) {
+        if (effect_conditions_by_variable.find(var_id) != effect_conditions_by_variable.end()
+            && effect_conditions_by_variable.find(var_id)->second.first == val) {
             // We have seen this effect before, adding conditions
             for (FactProxy effect_condition : effect_conditions) {
-                vector<pair<int, int>> &vec = effect_conditions_by_variable.find(variable_id)->second.second;
+                vector<pair<int, int>> &vec = effect_conditions_by_variable.find(var_id)->second.second;
                 vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
             }
         } else {
             // We have not seen this effect before, making new effect entry
             vector<pair<int, int>> &vec = effect_conditions_by_variable.emplace(
-                variable_id, make_pair(
-                    value, vector<pair<int, int>> ())).first->second.second;
+                var_id, make_pair(
+                    val, vector<pair<int, int>> ())).first->second.second;
             for (FactProxy effect_condition : effect_conditions) {
                 vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
             }
@@ -398,15 +398,15 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 unordered_map<int, int> next_eff;
                 for (EffectProxy effect : effects) {
                     FactProxy effect_fact = effect.get_fact();
-                    const int variable_id = effect_fact.get_variable().get_id();
-                    const int value = effect_fact.get_value();
-                    if (effect.get_conditions().empty() && variable_id != a.first) {
-                        next_eff.emplace(variable_id, value);
+                    int var_id = effect_fact.get_variable().get_id();
+                    int val = effect_fact.get_value();
+                    if (effect.get_conditions().empty() && var_id != a.first) {
+                        next_eff.emplace(var_id, val);
                     } else if (trivial_conditioned_effects_found
                                && trivially_conditioned_effects.find(make_pair(
-                                                                         variable_id, value))
+                                                                         var_id, val))
                                != trivially_conditioned_effects.end())
-                        next_eff.emplace(variable_id, value);
+                        next_eff.emplace(var_id, val);
                 }
                 // Intersect effects of this operator with those of previous operators
                 if (init)
