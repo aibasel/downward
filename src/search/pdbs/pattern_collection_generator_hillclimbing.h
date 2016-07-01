@@ -10,7 +10,6 @@
 #include <cstdlib>
 #include <memory>
 #include <set>
-#include <utility>
 #include <vector>
 
 namespace options {
