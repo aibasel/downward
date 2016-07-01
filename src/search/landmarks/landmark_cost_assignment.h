@@ -24,7 +24,7 @@ protected:
                                        const LandmarkNode &lmn) const;
 public:
     LandmarkCostAssignment(const OperatorsProxy &operators,
-                           const std::shared_ptr<LandmarkGraph> graph);
+                           const std::shared_ptr<LandmarkGraph> &graph);
     virtual ~LandmarkCostAssignment();
 
     virtual double cost_sharing_h_value() = 0;
@@ -34,7 +34,7 @@ class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
     bool use_action_landmarks;
 public:
     LandmarkUniformSharedCostAssignment(const OperatorsProxy &operators,
-                                        const std::shared_ptr<LandmarkGraph> graph,
+                                        const std::shared_ptr<LandmarkGraph> &graph,
                                         bool use_action_landmarks);
     virtual ~LandmarkUniformSharedCostAssignment();
 
@@ -54,7 +54,7 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     std::vector<lp::LPConstraint> non_empty_lp_constraints;
 public:
     LandmarkEfficientOptimalSharedCostAssignment(const OperatorsProxy &operators,
-                                                 const std::shared_ptr<LandmarkGraph> graph,
+                                                 const std::shared_ptr<LandmarkGraph> &graph,
                                                  lp::LPSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 

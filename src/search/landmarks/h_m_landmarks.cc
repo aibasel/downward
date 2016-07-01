@@ -135,7 +135,7 @@ bool contains(std::list<T> &alist, const T &val) {
 // (look at all the variables in the problem)
 void HMLandmarks::get_m_sets_(const TaskProxy &task_proxy, int m, int num_included, int current_var,
                               FluentSet &current,
-                              std::vector<FluentSet > &subsets) {
+                              std::vector<FluentSet> &subsets) {
     VariablesProxy variables = task_proxy.get_variables();
     int num_variables = variables.size();
     if (num_included == m) {
@@ -174,7 +174,7 @@ void HMLandmarks::get_m_sets_of_set(const VariablesProxy &variables,
                                     int m, int num_included,
                                     int current_var_index,
                                     FluentSet &current,
-                                    std::vector<FluentSet > &subsets,
+                                    std::vector<FluentSet> &subsets,
                                     const FluentSet &superset) {
     if (num_included == m) {
         subsets.push_back(current);
@@ -322,10 +322,10 @@ void HMLandmarks::get_split_m_sets(
 // get subsets of state with size <= m
 void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m,
                              std::vector<FluentSet> &subsets,
-                             const State &s) {
+                             const State &state) {
     FluentSet state_fluents;
-    for (VariableProxy var : variables) {
-        state_fluents.emplace_back(var.get_id(), s[var.get_id()].get_value());
+    for (FactProxy fact : state) {
+        state_fluents.emplace_back(fact.get_variable().get_id(), fact.get_value());
     }
     get_m_sets(variables, m, subsets, state_fluents);
 }
@@ -367,7 +367,7 @@ FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op) {
     }
 
     sort(postconditions.begin(), postconditions.end());
-    return move(postconditions);
+    return postconditions;
 }
 
 
@@ -376,12 +376,12 @@ void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
     std::vector<std::pair<std::set<Fluent>, std::set<Fluent>>> conds;
 
     for (int pc : op.pc) {
-        for (Fluent fluent : h_m_table_[pc].fluents) {
+        for (Fluent &fluent : h_m_table_[pc].fluents) {
             pcs.insert(fluent);
         }
     }
     for (int eff : op.eff) {
-        for (Fluent fluent : h_m_table_[eff].fluents) {
+        for (Fluent &fluent : h_m_table_[eff].fluents) {
             effs.insert(fluent);
         }
     }
@@ -474,9 +474,10 @@ bool HMLandmarks::possible_noop_set(const VariablesProxy &variables,
     }
 
     for (const Fluent &fluent1 : fs1) {
-        for (const Fluent &fluent2 :fs2) {
+        FactProxy fact1 = variables[fluent1.first].get_fact(fluent1.second);
+        for (const Fluent &fluent2 : fs2) {
             // TODO(issue635): Use Fact struct right away.
-            if (variables[fluent1.first].get_fact(fluent1.second).is_mutex(
+            if (fact1.is_mutex(
                     variables[fluent2.first].get_fact(fluent2.second)))
                 return false;
         }

@@ -1,4 +1,4 @@
-#include "landmark_factory.h"
+﻿#include "landmark_factory.h"
 
 #include "landmark_graph.h"
 
@@ -160,8 +160,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
                 exclude_op_ids.insert(op.get_id());
         }
         for (size_t i = 0; i < exclude->vars.size(); ++i)
-            exclude_props.emplace_back(exclude->vars[i],
-                                       exclude->vals[i]);
+            exclude_props.emplace_back(exclude->vars[i], exclude->vals[i]);
     }
     // Do relaxed exploration
     exploration.compute_reachability_with_excludes(
@@ -226,7 +225,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
     return false;
 }
 
-bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const EffectsProxy &effects, set<
+bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables, const EffectsProxy &effects, set<
                                                 pair<int, int>> &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
@@ -250,7 +249,7 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
         EffectConditionsProxy effect_conditions = effect.get_conditions();
         FactProxy effect_fact = effect.get_fact();
         int var_id = effect_fact.get_variable().get_id();
-        int val = effect_fact.get_value();
+        int value = effect_fact.get_value();
         if (effect_conditions.empty() ||
             nogood_effect_vars.find(var_id) != nogood_effect_vars.end()) {
             // Var has no condition or can take on different values, skipping
@@ -260,7 +259,7 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
             // We have seen this effect var before
             assert(effect_conditions_by_variable.find(var_id) != effect_conditions_by_variable.end());
             int old_eff = effect_conditions_by_variable.find(var_id)->second.first;
-            if (old_eff != val) {
+            if (old_eff != value) {
                 // Was different effect
                 nogood_effect_vars.insert(var_id);
                 continue;
@@ -270,7 +269,7 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
             effect_vars.insert(var_id);
         }
         if (effect_conditions_by_variable.find(var_id) != effect_conditions_by_variable.end()
-            && effect_conditions_by_variable.find(var_id)->second.first == val) {
+            && effect_conditions_by_variable.find(var_id)->second.first == value) {
             // We have seen this effect before, adding conditions
             for (FactProxy effect_condition : effect_conditions) {
                 vector<pair<int, int>> &vec = effect_conditions_by_variable.find(var_id)->second.second;
@@ -280,7 +279,7 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
             // We have not seen this effect before, making new effect entry
             vector<pair<int, int>> &vec = effect_conditions_by_variable.emplace(
                 var_id, make_pair(
-                    val, vector<pair<int, int>> ())).first->second.second;
+                    value, vector<pair<int, int>> ())).first->second.second;
             for (FactProxy effect_condition : effect_conditions) {
                 vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
             }
@@ -311,7 +310,7 @@ bool LandmarkFactory::effect_always_happens(const TaskProxy &task_proxy, const E
         for (auto &unique_cond : unique_conds) {
             bool is_surely_reached_by_var = false;
             int num_values_for_cond = unique_cond.second.size();
-            int num_values_of_variable = task_proxy.get_variables()[unique_cond.first].get_domain_size();
+            int num_values_of_variable = variables[unique_cond.first].get_domain_size();
             if (num_values_for_cond == num_values_of_variable) {
                 is_surely_reached_by_var = true;
             }
@@ -379,9 +378,9 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
             unordered_map<int, int> shared_eff;
             bool init = true;
-            const vector<int> &ops = lm_graph->get_operators_including_eff(a);
+            const vector<int> &ops_ids = lm_graph->get_operators_including_eff(a);
             // Intersect operators that achieve a one by one
-            for (int op_id : ops) {
+            for (int op_id : ops_ids) {
                 // If no shared effect among previous operators, break
                 if (!init && shared_eff.empty())
                     break;
@@ -393,20 +392,20 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 // of these trivial conditions here.)
                 EffectsProxy effects = get_operator_or_axiom(task_proxy, op_id).get_effects();
                 set<pair<int, int>> trivially_conditioned_effects;
-                bool trivial_conditioned_effects_found = effect_always_happens(task_proxy, effects,
+                bool trivial_conditioned_effects_found = effect_always_happens(task_proxy.get_variables(), effects,
                                                                                trivially_conditioned_effects);
                 unordered_map<int, int> next_eff;
                 for (EffectProxy effect : effects) {
                     FactProxy effect_fact = effect.get_fact();
                     int var_id = effect_fact.get_variable().get_id();
-                    int val = effect_fact.get_value();
+                    int value = effect_fact.get_value();
                     if (effect.get_conditions().empty() && var_id != a.first) {
-                        next_eff.emplace(var_id, val);
+                        next_eff.emplace(var_id, value);
                     } else if (trivial_conditioned_effects_found
                                && trivially_conditioned_effects.find(make_pair(
-                                                                         var_id, val))
+                                                                         var_id, value))
                                != trivially_conditioned_effects.end())
-                        next_eff.emplace(var_id, val);
+                        next_eff.emplace(var_id, value);
                 }
                 // Intersect effects of this operator with those of previous operators
                 if (init)
@@ -622,9 +621,9 @@ void LandmarkFactory::discard_disjunctive_landmarks() {
     bool change = true;
     while (change) {
         change = false;
-        for (LandmarkNode *n : lm_graph->get_nodes()) {
-            if (n->disjunctive) {
-                lm_graph->rm_landmark_node(n);
+        for (LandmarkNode *node : lm_graph->get_nodes()) {
+            if (node->disjunctive) {
+                lm_graph->rm_landmark_node(node);
                 change = true;
                 break;
             }
@@ -644,9 +643,9 @@ void LandmarkFactory::discard_conjunctive_landmarks() {
     bool change = true;
     while (change) {
         change = false;
-        for (LandmarkNode *n : lm_graph->get_nodes()) {
-            if (n->conjunctive) {
-                lm_graph->rm_landmark_node(n);
+        for (LandmarkNode *node : lm_graph->get_nodes()) {
+            if (node->conjunctive) {
+                lm_graph->rm_landmark_node(node);
                 change = true;
                 break;
             }
@@ -659,18 +658,18 @@ void LandmarkFactory::discard_conjunctive_landmarks() {
 
 void LandmarkFactory::discard_all_orderings() {
     cout << "Removing all orderings." << endl;
-    for (LandmarkNode *lmn : lm_graph->get_nodes()) {
-        lmn->children.clear();
-        lmn->parents.clear();
+    for (LandmarkNode *node : lm_graph->get_nodes()) {
+        node->children.clear();
+        node->parents.clear();
     }
 }
 
 void LandmarkFactory::mk_acyclic_graph() {
     unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->number_of_landmarks());
     int removed_edges = 0;
-    for (LandmarkNode *lmn : lm_graph->get_nodes()) {
-        if (acyclic_node_set.find(lmn) == acyclic_node_set.end())
-            removed_edges += loop_acyclic_graph(*lmn, acyclic_node_set);
+    for (LandmarkNode *node : lm_graph->get_nodes()) {
+        if (acyclic_node_set.find(node) == acyclic_node_set.end())
+            removed_edges += loop_acyclic_graph(*node, acyclic_node_set);
     }
     // [Malte] Commented out the following assertion because
     // the old method for this is no longer available.

@@ -80,8 +80,9 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 // relaxed_task_solvable() should be false
                 assert(initial_state[lm.first].get_value() == lm.second ||
                        !relaxed_task_solvable(task_proxy, exploration, true, node));
-            } else
+            } else {
                 node = &lm_graph->get_simple_lm_node(lm);
+            }
             // Add order: lm ->_{nat} lm
             assert(node->parents.find(lmp) == node->parents.end());
             assert(lmp->children.find(node) == lmp->children.end());
@@ -106,10 +107,10 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
         current_prop_layer[var_id].resize(var.get_domain_size());
 
         // label nodes from initial state
-        int val = initial_state[var].get_value();
-        current_prop_layer[var_id][val].labels.emplace(var_id, val);
+        int value = initial_state[var].get_value();
+        current_prop_layer[var_id][value].labels.emplace(var_id, value);
 
-        triggered.insert(triggers[var_id][val].begin(), triggers[var_id][val].end());
+        triggered.insert(triggers[var_id][value].begin(), triggers[var_id][value].end());
     }
     // Operators without preconditions do not propagate labels. So if they have
     // no conditional effects, is only necessary to apply them once. (If they
@@ -240,9 +241,9 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
     for (EffectProxy effect : op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         int var_id = effect_fact.get_variable().get_id();
-        int val = effect_fact.get_value();
+        int value = effect_fact.get_value();
 
-        if (next[var_id][val].labels.size() == 1)
+        if (next[var_id][value].labels.size() == 1)
             continue;
 
         if (operator_cond_effect_fires(effect.get_conditions(), current)) {
@@ -252,9 +253,9 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
                     // not a conditional effect.
                     effect.get_conditions(), current));
 
-            if (_propagate_labels(next[var_id][val].labels,
-                                  precond_label_union_with_condeff, make_pair(var_id, val)))
-                result.emplace(var_id, val);
+            if (_propagate_labels(next[var_id][value].labels,
+                                  precond_label_union_with_condeff, make_pair(var_id, value)))
+                result.emplace(var_id, value);
         }
     }
 
@@ -295,7 +296,7 @@ void LandmarkFactoryZhuGivan::add_operator_to_triggers(const TaskProxy &task_pro
     if (preconditions.empty())
         operators_without_preconditions.push_back(op_id);
 
-    // add operator to triggers vector
+    // Add operator to triggers vector.
     for (const pair<int, int> lm : possible_triggers)
         triggers[lm.first][lm.second].push_back(op_id);
 }

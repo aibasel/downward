@@ -40,9 +40,9 @@ Exploration::Exploration(const options::Options &opts)
     // Build propositions.
     for (size_t var = 0; var < g_variable_domain.size(); ++var) {
         propositions.push_back(vector<ExProposition>(g_variable_domain[var]));
-        for (int val = 0; val < g_variable_domain[var]; ++val) {
-            propositions[var][val].var = var;
-            propositions[var][val].val = val;
+        for (int value = 0; value < g_variable_domain[var]; ++value) {
+            propositions[var][value].var = var;
+            propositions[var][value].val = value;
         }
     }
 
@@ -178,8 +178,8 @@ void Exploration::setup_exploration_queue(const State &state,
     // Deal with current state.
     for (FactProxy fact : state) {
         int var_id = fact.get_variable().get_id();
-        int val = fact.get_value();
-        ExProposition *init_prop = &propositions[var_id][val];
+        int value = fact.get_value();
+        ExProposition *init_prop = &propositions[var_id][value];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
 
