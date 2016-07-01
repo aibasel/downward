@@ -2,7 +2,6 @@
 #define CEGAR_SUBTASK_GENERATORS_H
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 class AbstractTask;

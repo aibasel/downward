@@ -3,7 +3,6 @@
 
 #include "delegating_task.h"
 
-#include <utility>
 #include <vector>
 
 namespace extra_tasks {
