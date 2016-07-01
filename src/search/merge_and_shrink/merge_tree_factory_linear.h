@@ -15,6 +15,7 @@ public:
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts) override;
     virtual void dump_options() const override;
+    static void add_options_to_parser(options::OptionParser &parser);
 };
 }
 
