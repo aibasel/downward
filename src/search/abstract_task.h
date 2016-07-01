@@ -1,6 +1,8 @@
 #ifndef ABSTRACT_TASK_H
 #define ABSTRACT_TASK_H
 
+#include "utils/hash.h"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -39,6 +41,18 @@ public:
         return !(*this == other);
     }
 };
+
+namespace std {
+template<>
+struct hash<FactPair> {
+    size_t operator()(const FactPair &fact) const {
+        std::pair<int, int> raw_fact = make_pair(
+            fact.var, fact.value);
+        std::hash<std::pair<int, int>> hasher;
+        return hasher(raw_fact);
+    }
+};
+}
 
 class AbstractTask {
 public:

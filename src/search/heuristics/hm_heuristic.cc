@@ -63,9 +63,9 @@ int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
 
 void HMHeuristic::init_hm_table(const Tuple &t) {
     for (auto &hm_ent : hm_table) {
-        const Tuple &tup = hm_ent.first;
-        int h_val = check_tuple_in_tuple(tup, t);
-        hm_table[tup] = h_val;
+        const Tuple &tuple = hm_ent.first;
+        int h_val = check_tuple_in_tuple(tuple, t);
+        hm_table[tuple] = h_val;
     }
 }
 
@@ -102,20 +102,20 @@ void HMHeuristic::update_hm_table() {
 
 void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
     for (auto &hm_ent : hm_table) {
-        const Tuple &tup = hm_ent.first;
+        const Tuple &tuple = hm_ent.first;
         bool contradict = false;
-        for (const FactPair &fact : tup) {
+        for (const FactPair &fact : tuple) {
             if (contradict_effect_of(op, fact.var, fact.value)) {
                 contradict = true;
                 break;
             }
         }
-        if (!contradict && (tup.size() > t.size()) && (check_tuple_in_tuple(t, tup) == 0)) {
+        if (!contradict && (tuple.size() > t.size()) && (check_tuple_in_tuple(t, tuple) == 0)) {
             Tuple pre;
             get_operator_pre(op, pre);
 
             Tuple others;
-            for (const FactPair &fact : tup) {
+            for (const FactPair &fact : tuple) {
                 if (find(t.begin(), t.end(), fact) == t.end()) {
                     others.push_back(fact);
                     if (find(pre.begin(), pre.end(), fact) == pre.end()) {
@@ -140,7 +140,7 @@ void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
             if (is_valid) {
                 int c2 = eval(pre);
                 if (c2 != numeric_limits<int>::max()) {
-                    update_hm_entry(tup, c2 + op.get_cost());
+                    update_hm_entry(tuple, c2 + op.get_cost());
                 }
             }
         }
@@ -175,8 +175,8 @@ int HMHeuristic::update_hm_entry(const Tuple &t, int val) {
 
 
 int HMHeuristic::check_tuple_in_tuple(
-    const Tuple &tup, const Tuple &big_tuple) const {
-    for (auto &fact0 : tup) {
+    const Tuple &tuple, const Tuple &big_tuple) const {
+    for (auto &fact0 : tuple) {
         bool found = false;
         for (auto &fact1 : big_tuple) {
             if (fact0 == fact1) {
@@ -239,11 +239,11 @@ void HMHeuristic::generate_all_tuples_aux(int var, int sz, const Tuple &base) {
     for (int i = var; i < num_variables; ++i) {
         int domain_size = task_proxy.get_variables()[i].get_domain_size();
         for (int j = 0; j < domain_size; ++j) {
-            Tuple tup(base);
-            tup.emplace_back(i, j);
-            hm_table[tup] = 0;
+            Tuple tuple(base);
+            tuple.emplace_back(i, j);
+            hm_table[tuple] = 0;
             if (sz > 1) {
-                generate_all_tuples_aux(i + 1, sz - 1, tup);
+                generate_all_tuples_aux(i + 1, sz - 1, tuple);
             }
         }
     }
@@ -261,16 +261,16 @@ void HMHeuristic::generate_all_partial_tuples_aux(
     const Tuple &base_tuple, const Tuple &t, int index, int sz, vector<Tuple> &res) const {
     if (sz == 1) {
         for (size_t i = index; i < base_tuple.size(); ++i) {
-            Tuple tup(t);
-            tup.push_back(base_tuple[i]);
-            res.push_back(tup);
+            Tuple tuple(t);
+            tuple.push_back(base_tuple[i]);
+            res.push_back(tuple);
         }
     } else {
         for (size_t i = index; i < base_tuple.size(); ++i) {
-            Tuple tup(t);
-            tup.push_back(base_tuple[i]);
-            res.push_back(tup);
-            generate_all_partial_tuples_aux(base_tuple, tup, i + 1, sz - 1, res);
+            Tuple tuple(t);
+            tuple.push_back(base_tuple[i]);
+            res.push_back(tuple);
+            generate_all_partial_tuples_aux(base_tuple, tuple, i + 1, sz - 1, res);
         }
     }
 }
@@ -285,9 +285,9 @@ void HMHeuristic::dump_table() const {
 }
 
 
-void HMHeuristic::dump_tuple(const Tuple &tup) const {
-    cout << tup[0].var << "=" << tup[0].value;
-    for (const FactPair &fact : tup)
+void HMHeuristic::dump_tuple(const Tuple &tuple) const {
+    cout << tuple[0].var << "=" << tuple[0].value;
+    for (const FactPair &fact : tuple)
         cout << "," << fact.var << "=" << fact.value;
 }
 

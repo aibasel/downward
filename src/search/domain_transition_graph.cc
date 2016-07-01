@@ -238,15 +238,15 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
       Put the element into the new labels list iff this is the case.
      */
 
-    typedef vector<pair<int, int>> HashKey;
-    typedef unordered_map<HashKey, int> HashMap;
+    using HashKey = vector<FactPair>;
+    using HashMap = unordered_map<HashKey, int>;
     HashMap label_index;
     label_index.reserve(labels.size());
 
     for (size_t i = 0; i < labels.size(); ++i) {
         HashKey key;
         for (LocalAssignment &assign : labels[i].precond)
-            key.push_back(make_pair(assign.local_var, assign.value));
+            key.emplace_back(assign.local_var, assign.value);
         sort(key.begin(), key.end());
         label_index[key] = i;
     }
