@@ -1,4 +1,4 @@
-#include "merge_scoring_function_tiebreaking_dfp.h"
+#include "merge_scoring_function_total_order.h"
 
 #include "factored_transition_system.h"
 #include "transition_system.h"
@@ -18,7 +18,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunctionTiebreakingDFP::MergeScoringFunctionTiebreakingDFP(
+MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const options::Options &options)
     : atomic_ts_order(AtomicTSOrder(options.get_enum("atomic_ts_order"))),
       product_ts_order(ProductTSOrder(options.get_enum("product_ts_order"))),
@@ -27,7 +27,7 @@ MergeScoringFunctionTiebreakingDFP::MergeScoringFunctionTiebreakingDFP(
       rng = utils::parse_rng_from_options(options);
 }
 
-vector<int> MergeScoringFunctionTiebreakingDFP::compute_scores(
+vector<int> MergeScoringFunctionTotalOrder::compute_scores(
     FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
     vector<int> scores;
@@ -53,7 +53,7 @@ vector<int> MergeScoringFunctionTiebreakingDFP::compute_scores(
     return scores;
 }
 
-void MergeScoringFunctionTiebreakingDFP::initialize(
+void MergeScoringFunctionTotalOrder::initialize(
     shared_ptr<AbstractTask> task) {
     TaskProxy task_proxy(*task);
     int num_variables = task_proxy.get_variables().size();
@@ -110,7 +110,7 @@ void MergeScoringFunctionTiebreakingDFP::initialize(
     }
 }
 
-void MergeScoringFunctionTiebreakingDFP::dump_specific_options() const {
+void MergeScoringFunctionTotalOrder::dump_specific_options() const {
     cout << "Atomic transition system order: ";
     switch (atomic_ts_order) {
     case AtomicTSOrder::REGULAR:
@@ -145,7 +145,7 @@ void MergeScoringFunctionTiebreakingDFP::dump_specific_options() const {
     cout << "Random seed: " << random_seed << endl;
 }
 
-void MergeScoringFunctionTiebreakingDFP::add_options_to_parser(
+void MergeScoringFunctionTotalOrder::add_options_to_parser(
     options::OptionParser &parser) {
     vector<string> atomic_ts_order;
     vector<string> atomic_ts_order_documentation;
@@ -192,7 +192,7 @@ void MergeScoringFunctionTiebreakingDFP::add_options_to_parser(
 
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
-        "DFP tiebreaking",
+        "Total order",
         "This scoring function computes an order on merge candidates, based"
         "on an order of all possible 'indices' of transition systems that may "
         "occur. The score for each merge candidate correponds to its position "
@@ -206,14 +206,14 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
             "AAAI Press 2016"));
-    MergeScoringFunctionTiebreakingDFP::add_options_to_parser(parser);
+    MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
 
     options::Options options = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
-        return make_shared<MergeScoringFunctionTiebreakingDFP>(options);
+        return make_shared<MergeScoringFunctionTotalOrder>(options);
 }
 
-static options::PluginShared<MergeScoringFunction> _plugin("tiebreaking_dfp", _parse);
+static options::PluginShared<MergeScoringFunction> _plugin("total_order", _parse);
 }

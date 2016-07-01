@@ -1,5 +1,5 @@
-#ifndef MERGE_AND_SHRINK_MERGE_SCORING_FUNCTION_TIEBREAKING_DFP_H
-#define MERGE_AND_SHRINK_MERGE_SCORING_FUNCTION_TIEBREAKING_DFP_H
+#ifndef MERGE_AND_SHRINK_MERGE_SCORING_FUNCTION_TOTAL_ORDER_H
+#define MERGE_AND_SHRINK_MERGE_SCORING_FUNCTION_TOTAL_ORDER_H
 
 #include "merge_scoring_function.h"
 
@@ -27,7 +27,7 @@ enum class ProductTSOrder {
     RANDOM
 };
 
-class MergeScoringFunctionTiebreakingDFP : public MergeScoringFunction {
+class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     AtomicTSOrder atomic_ts_order;
     ProductTSOrder product_ts_order;
     bool atomic_before_product;
@@ -36,11 +36,11 @@ class MergeScoringFunctionTiebreakingDFP : public MergeScoringFunction {
     std::vector<std::pair<int, int>> merge_candidate_order;
 protected:
     virtual std::string name() const override {
-        return "tiebreaking dfp";
+        return "total order";
     }
     virtual void dump_specific_options() const override;
 public:
-    explicit MergeScoringFunctionTiebreakingDFP(const options::Options &options);
+    explicit MergeScoringFunctionTotalOrder(const options::Options &options);
     virtual std::vector<int> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
