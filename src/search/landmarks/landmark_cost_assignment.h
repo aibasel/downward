@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-class TaskProxy;
+class OperatorsProxy;
 
 namespace landmarks {
 class LandmarkGraph;
@@ -17,13 +17,14 @@ class LandmarkNode;
 class LandmarkCostAssignment {
     const std::set<int> empty;
 protected:
-    LandmarkGraph &lm_graph;
+    const std::shared_ptr<LandmarkGraph> lm_graph;
     std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(int lmn_status,
                                        const LandmarkNode &lmn) const;
 public:
-    LandmarkCostAssignment(const TaskProxy &task_proxy, LandmarkGraph &graph);
+    LandmarkCostAssignment(const OperatorsProxy &operators,
+                           const std::shared_ptr<LandmarkGraph> graph);
     virtual ~LandmarkCostAssignment();
 
     virtual double cost_sharing_h_value() = 0;
@@ -32,9 +33,9 @@ public:
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
     bool use_action_landmarks;
 public:
-    LandmarkUniformSharedCostAssignment(const TaskProxy &task_proxy,
-                                        LandmarkGraph &graph,
-                                        bool use_action_landmarks_);
+    LandmarkUniformSharedCostAssignment(const OperatorsProxy &operators,
+                                        const std::shared_ptr<LandmarkGraph> graph,
+                                        bool use_action_landmarks);
     virtual ~LandmarkUniformSharedCostAssignment();
 
     virtual double cost_sharing_h_value() override;
@@ -52,8 +53,8 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     std::vector<lp::LPConstraint> lp_constraints;
     std::vector<lp::LPConstraint> non_empty_lp_constraints;
 public:
-    LandmarkEfficientOptimalSharedCostAssignment(const TaskProxy &task_proxy,
-                                                 LandmarkGraph &graph,
+    LandmarkEfficientOptimalSharedCostAssignment(const OperatorsProxy &operators,
+                                                 const std::shared_ptr<LandmarkGraph> graph,
                                                  lp::LPSolverType solver_type);
     virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 

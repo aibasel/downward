@@ -101,15 +101,15 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
     State initial_state = task_proxy.get_initial_state();
     VariablesProxy variables = task_proxy.get_variables();
     current_prop_layer.resize(variables.size());
-    for (VariableProxy variable : variables) {
-        const int variable_id = variable.get_id();
-        current_prop_layer[variable_id].resize(variable.get_domain_size());
+    for (VariableProxy var : variables) {
+        int var_id = var.get_id();
+        current_prop_layer[var_id].resize(var.get_domain_size());
 
         // label nodes from initial state
-        const int value = initial_state[variable].get_value();
-        current_prop_layer[variable_id][value].labels.emplace(variable_id, value);
+        int val = initial_state[var].get_value();
+        current_prop_layer[var_id][val].labels.emplace(var_id, val);
 
-        triggered.insert(triggers[variable_id][value].begin(), triggers[variable_id][value].end());
+        triggered.insert(triggers[var_id][val].begin(), triggers[var_id][val].end());
     }
     // Operators without preconditions do not propagate labels. So if they have
     // no conditional effects, is only necessary to apply them once. (If they
@@ -239,10 +239,10 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
 
     for (EffectProxy effect : op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
-        const int variable_id = effect_fact.get_variable().get_id();
-        const int value = effect_fact.get_value();
+        int var_id = effect_fact.get_variable().get_id();
+        int val = effect_fact.get_value();
 
-        if (next[variable_id][value].labels.size() == 1)
+        if (next[var_id][val].labels.size() == 1)
             continue;
 
         if (operator_cond_effect_fires(effect.get_conditions(), current)) {
@@ -252,9 +252,9 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
                     // not a conditional effect.
                     effect.get_conditions(), current));
 
-            if (_propagate_labels(next[variable_id][value].labels,
-                                  precond_label_union_with_condeff, make_pair(variable_id, value)))
-                result.insert(make_pair(variable_id, value));
+            if (_propagate_labels(next[var_id][val].labels,
+                                  precond_label_union_with_condeff, make_pair(var_id, val)))
+                result.emplace(var_id, val);
         }
     }
 

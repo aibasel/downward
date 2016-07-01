@@ -144,9 +144,9 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
                                    [precondition_var_vals2[j].second]);
 
         FactProxy effect_fact = effect.get_fact();
-        ExProposition *eff = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
+        ExProposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
         int op_id = get_operator_or_axiom_id(task_proxy, op);
-        unary_operators.push_back(ExUnaryOperator(precondition, eff, op_id, base_cost));
+        unary_operators.emplace_back(precondition, effect_proposition, op_id, base_cost);
         precondition.clear();
         precondition_var_vals2.clear();
     }
@@ -178,8 +178,8 @@ void Exploration::setup_exploration_queue(const State &state,
     // Deal with current state.
     for (FactProxy fact : state) {
         int var_id = fact.get_variable().get_id();
-        int value = fact.get_value();
-        ExProposition *init_prop = &propositions[var_id][value];
+        int val = fact.get_value();
+        ExProposition *init_prop = &propositions[var_id][val];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
 

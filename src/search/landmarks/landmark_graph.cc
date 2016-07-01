@@ -22,21 +22,19 @@ void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
     /* Build datastructures for efficient landmark computation. Map propositions
     to the operators that achieve them or have them as preconditions */
 
-    const VariablesProxy variables = task_proxy.get_variables();
+    VariablesProxy variables = task_proxy.get_variables();
     operators_eff_lookup.resize(variables.size());
-    for (VariableProxy variable : variables) {
-        operators_eff_lookup[variable.get_id()].resize(variable.get_domain_size());
+    for (VariableProxy var : variables) {
+        operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
     }
-    const OperatorsProxy operators = task_proxy.get_operators();
-    for (OperatorProxy op : operators) {
+    for (OperatorProxy op : task_proxy.get_operators()) {
         const EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
             operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(op.get_id());
         }
     }
-    const AxiomsProxy axioms = task_proxy.get_axioms();
-    for (OperatorProxy op : axioms) {
+    for (OperatorProxy op : task_proxy.get_axioms()) {
         const EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
@@ -238,9 +236,9 @@ void LandmarkGraph::dump_node(const TaskProxy &task_proxy, const LandmarkNode *n
     VariablesProxy variables = task_proxy.get_variables();
     for (size_t i = 0; i < node_p->vars.size(); ++i) {
         int var_no = node_p->vars[i], value = node_p->vals[i];
-        VariableProxy variable = variables[var_no];
-        cout << variable.get_fact(value).get_name() << " ("
-             << variable.get_name() << "(" << var_no << ")"
+        VariableProxy var = variables[var_no];
+        cout << var.get_fact(value).get_name() << " ("
+             << var.get_name() << "(" << var_no << ")"
              << "->" << value << ")";
         if (i < node_p->vars.size() - 1)
             cout << ", ";
