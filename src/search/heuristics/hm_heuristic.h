@@ -38,7 +38,7 @@ class HMHeuristic : public Heuristic {
     int update_hm_entry(const Tuple &t, int val);
     void extend_tuple(const Tuple &t, const OperatorProxy &op);
 
-    int check_tuple_in_tuple(const Tuple &tup, const Tuple &big_tuple) const;
+    int check_tuple_in_tuple(const Tuple &tuple, const Tuple &big_tuple) const;
     void state_to_tuple(const State &state, Tuple &t) const;
 
     int get_operator_pre_value(const OperatorProxy &op, int var) const;
@@ -55,7 +55,7 @@ class HMHeuristic : public Heuristic {
                                          int sz, std::vector<Tuple> &res) const;
 
     void dump_table() const;
-    void dump_tuple(const Tuple &tup) const;
+    void dump_tuple(const Tuple &tuple) const;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
