@@ -41,6 +41,7 @@ class SubtaskGenerator {
 public:
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const = 0;
+    virtual ~SubtaskGenerator() = default;
 };
 
 
@@ -49,7 +50,6 @@ class TaskDuplicator : public SubtaskGenerator {
 
 public:
     explicit TaskDuplicator(const options::Options &options);
-    virtual ~TaskDuplicator() = default;
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;
@@ -63,7 +63,6 @@ class GoalDecomposition : public SubtaskGenerator {
 
 public:
     explicit GoalDecomposition(const options::Options &options);
-    virtual ~GoalDecomposition() = default;
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;
@@ -82,7 +81,6 @@ class LandmarkDecomposition : public SubtaskGenerator {
 
 public:
     explicit LandmarkDecomposition(const options::Options &opts);
-    virtual ~LandmarkDecomposition();
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;

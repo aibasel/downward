@@ -27,9 +27,6 @@ class RefinementHierarchy {
 
 public:
     RefinementHierarchy();
-    ~RefinementHierarchy() = default;
-
-    RefinementHierarchy(RefinementHierarchy &&other);
 
     Node *get_node(const State &state) const;
 

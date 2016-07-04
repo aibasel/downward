@@ -103,7 +103,7 @@ class Abstraction {
     void print_statistics();
 
 public:
-    explicit Abstraction(
+    Abstraction(
         const std::shared_ptr<AbstractTask> task,
         int max_states,
         double max_time,
@@ -113,7 +113,6 @@ public:
     ~Abstraction();
 
     Abstraction(const Abstraction &) = delete;
-    Abstraction &operator=(const Abstraction &) = delete;
 
     RefinementHierarchy && extract_refinement_hierarchy() {
         assert(refinement_hierarchy.get_root());

@@ -23,7 +23,6 @@ protected:
 
 public:
     explicit AdditiveCartesianHeuristic(const options::Options &opts);
-    virtual ~AdditiveCartesianHeuristic() = default;
 };
 }
 

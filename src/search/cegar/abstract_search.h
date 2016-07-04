@@ -39,7 +39,6 @@ public:
     AbstractSearch(
         std::vector<int> &&operator_costs,
         AbstractStates &states);
-    ~AbstractSearch() = default;
 
     bool find_solution(AbstractState *init, AbstractStates &goals);
 

@@ -19,7 +19,6 @@ class Domains {
 
 public:
     explicit Domains(const std::vector<int> &domain_sizes);
-    ~Domains() = default;
 
     void add(int var, int value);
     void set_single_value(int var, int value);
