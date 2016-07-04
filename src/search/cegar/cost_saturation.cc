@@ -47,8 +47,6 @@ CostSaturation::CostSaturation(
       num_abstractions(0),
       num_states(0),
       initial_state(TaskProxy(*task).get_initial_state()) {
-    g_log << "Initializing additive Cartesian heuristic..." << endl;
-
     TaskProxy task_proxy(*task);
 
     verify_no_axioms(task_proxy);
