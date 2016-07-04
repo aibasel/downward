@@ -7,6 +7,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -14,16 +15,23 @@
 using namespace std;
 
 namespace cegar {
+static vector<CartesianHeuristicFunction> generate_heuristic_functions(
+    const options::Options &opts) {
+    g_log << "Initializing additive Cartesian heuristic..." << endl;
+    CostSaturation cost_saturation(
+        get_task_from_options(opts),
+        opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
+        opts.get<int>("max_states"),
+        opts.get<double>("max_time"),
+        opts.get<bool>("use_general_costs"),
+        static_cast<PickSplit>(opts.get<int>("pick")));
+    return cost_saturation.extract_heuristic_functions();
+}
+
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const options::Options &opts)
     : Heuristic(opts),
-      heuristic_functions(CostSaturation(
-          task,
-          opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
-          opts.get<int>("max_states"),
-          opts.get<double>("max_time"),
-          opts.get<bool>("use_general_costs"),
-          static_cast<PickSplit>(opts.get<int>("pick"))).extract_heuristic_functions()) {
+      heuristic_functions(generate_heuristic_functions(opts)) {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_state) {
