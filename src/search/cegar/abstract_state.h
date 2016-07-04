@@ -31,8 +31,6 @@ public:
         reset();
     }
 
-    ~AbstractSearchInfo() = default;
-
     void reset() {
         g = std::numeric_limits<int>::max();
         incoming_arc = Arc(UNDEFINED_OPERATOR, nullptr);
@@ -100,10 +98,7 @@ private:
     bool is_more_general_than(const AbstractState &other) const;
 
 public:
-    ~AbstractState() = default;
-
     AbstractState(const AbstractState &) = delete;
-    AbstractState &operator=(const AbstractState &) = delete;
 
     AbstractState(AbstractState &&other);
 
