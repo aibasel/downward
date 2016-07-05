@@ -32,21 +32,22 @@ namespace cegar {
 static const int memory_padding_in_mb = 75;
 
 CostSaturation::CostSaturation(
-    shared_ptr<AbstractTask> task,
     vector<shared_ptr<SubtaskGenerator>> subtask_generators,
     int max_states,
     int max_time,
     bool use_general_costs,
     PickSplit pick_split)
-    : task(task),
-      subtask_generators(subtask_generators),
+    : subtask_generators(subtask_generators),
       max_states(max_states),
       timer(max_time),
       use_general_costs(use_general_costs),
       pick_split(pick_split),
       num_abstractions(0),
-      num_states(0),
-      initial_state(TaskProxy(*task).get_initial_state()) {
+      num_states(0) {
+}
+
+vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
+    const std::shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
 
     verify_no_axioms(task_proxy);
@@ -55,20 +56,29 @@ CostSaturation::CostSaturation(
     for (OperatorProxy op : task_proxy.get_operators())
         remaining_costs.push_back(op.get_cost());
 
+    State initial_state = TaskProxy(*task).get_initial_state();
+
+    function<bool()> may_continue =
+        [&] () {
+            return num_states < max_states &&
+                   !timer.is_expired() &&
+                   utils::extra_memory_padding_is_reserved() &&
+                   !state_is_dead_end(initial_state);
+        };
+
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
         SharedTasks subtasks = subtask_generator->get_subtasks(task);
-        build_abstractions(subtasks);
-        if (!may_build_another_abstraction())
+        build_abstractions(subtasks, may_continue);
+        if (!may_continue())
             break;
     }
     if (utils::extra_memory_padding_is_reserved())
         utils::release_extra_memory_padding();
     print_statistics();
-}
-
-vector<CartesianHeuristicFunction> CostSaturation::extract_heuristic_functions() {
-    return move(heuristic_functions);
+    vector<CartesianHeuristicFunction> functions;
+    swap(heuristic_functions, functions);
+    return functions;
 }
 
 void CostSaturation::reduce_remaining_costs(
@@ -99,23 +109,17 @@ shared_ptr<AbstractTask> CostSaturation::get_remaining_costs_task(
         parent, move(costs));
 }
 
-bool CostSaturation::initial_state_is_dead_end() const {
+bool CostSaturation::state_is_dead_end(const State &state) const {
     for (const CartesianHeuristicFunction &func : heuristic_functions) {
-        if (func.get_value(initial_state) == INF)
+        if (func.get_value(state) == INF)
             return true;
     }
     return false;
 }
 
-bool CostSaturation::may_build_another_abstraction() {
-    return num_states < max_states &&
-           !timer.is_expired() &&
-           utils::extra_memory_padding_is_reserved() &&
-           !initial_state_is_dead_end();
-}
-
 void CostSaturation::build_abstractions(
-    const vector<shared_ptr<AbstractTask>> &subtasks) {
+    const vector<shared_ptr<AbstractTask>> &subtasks,
+    function<bool()> may_continue) {
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
         subtask = get_remaining_costs_task(subtask);
@@ -139,7 +143,7 @@ void CostSaturation::build_abstractions(
                 subtask,
                 abstraction.extract_refinement_hierarchy());
         }
-        if (!may_build_another_abstraction())
+        if (!may_continue())
             break;
 
         --rem_subtasks;
