@@ -60,19 +60,19 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
 
     State initial_state = TaskProxy(*task).get_initial_state();
 
-    function<bool()> may_continue =
+    function<bool()> should_abort =
         [&] () {
-            return num_states < max_states &&
-                   !timer.is_expired() &&
-                   utils::extra_memory_padding_is_reserved() &&
-                   !state_is_dead_end(initial_state);
+            return num_states >= max_states ||
+                   timer.is_expired() ||
+                   !utils::extra_memory_padding_is_reserved() ||
+                   state_is_dead_end(initial_state);
         };
 
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
         SharedTasks subtasks = subtask_generator->get_subtasks(task);
-        build_abstractions(subtasks, timer, may_continue);
-        if (!may_continue())
+        build_abstractions(subtasks, timer, should_abort);
+        if (should_abort())
             break;
     }
     if (utils::extra_memory_padding_is_reserved())
@@ -133,7 +133,7 @@ bool CostSaturation::state_is_dead_end(const State &state) const {
 void CostSaturation::build_abstractions(
     const vector<shared_ptr<AbstractTask>> &subtasks,
     const utils::CountdownTimer &timer,
-    function<bool()> may_continue) {
+    function<bool()> should_abort) {
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
         subtask = get_remaining_costs_task(subtask);
@@ -157,7 +157,7 @@ void CostSaturation::build_abstractions(
                 subtask,
                 abstraction.extract_refinement_hierarchy());
         }
-        if (!may_continue())
+        if (should_abort())
             break;
 
         --rem_subtasks;
