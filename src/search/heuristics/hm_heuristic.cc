@@ -129,7 +129,7 @@ void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
 
             set<int> vars;
             bool is_valid = true;
-            for (FactPair &fact : pre) {
+            for (const FactPair &fact : pre) {
                 if (vars.count(fact.var) != 0) {
                     is_valid = false;
                     break;
@@ -152,10 +152,10 @@ int HMHeuristic::eval(const Tuple &t) const {
     vector<Tuple> partial;
     generate_all_partial_tuples(t, partial);
     int max = 0;
-    for (Tuple &fact : partial) {
-        assert(hm_table.count(fact) == 1);
+    for (Tuple &tuple : partial) {
+        assert(hm_table.count(tuple) == 1);
 
-        int h = hm_table.at(fact);
+        int h = hm_table.at(tuple);
         if (h > max) {
             max = h;
         }
@@ -176,7 +176,7 @@ int HMHeuristic::update_hm_entry(const Tuple &t, int val) {
 
 int HMHeuristic::check_tuple_in_tuple(
     const Tuple &tuple, const Tuple &big_tuple) const {
-    for (auto &fact0 : tuple) {
+    for (const FactPair &fact0 : tuple) {
         bool found = false;
         for (auto &fact1 : big_tuple) {
             if (fact0 == fact1) {
@@ -286,9 +286,11 @@ void HMHeuristic::dump_table() const {
 
 
 void HMHeuristic::dump_tuple(const Tuple &tuple) const {
-    cout << tuple[0].var << "=" << tuple[0].value;
-    for (const FactPair &fact : tuple)
-        cout << "," << fact.var << "=" << fact.value;
+    string sep = "";
+    for (const FactPair &fact : tuple) {
+        cout << sep << fact.var << "=" << fact.value;
+        sep = ",";
+    }
 }
 
 
