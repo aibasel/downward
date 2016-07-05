@@ -11,7 +11,10 @@ from common_setup import IssueConfig, IssueExperiment, is_test_run
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue635-base", "issue635-v1"]
 CONFIGS = [
-    IssueConfig(heuristic, ["--search", "astar({})".format(heuristic)])
+    IssueConfig(
+        heuristic,
+        ["--search", "astar({})".format(heuristic)],
+        driver_options=["--search-time-limit", "10m"])
     for heuristic in ["hm(m=2)", "ipdb()", "cea()", "cg()"]
 ]
 SUITE = [
