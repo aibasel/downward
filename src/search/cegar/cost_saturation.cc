@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <string>
 
 using namespace std;
 
@@ -78,18 +77,20 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     if (utils::extra_memory_padding_is_reserved())
         utils::release_extra_memory_padding();
     print_statistics();
+
     vector<CartesianHeuristicFunction> functions;
     swap(heuristic_functions, functions);
     return functions;
 }
 
 void CostSaturation::reset(const TaskProxy &task_proxy) {
+    assert(heuristic_functions.empty());
+
     remaining_costs.clear();
     remaining_costs.reserve(task_proxy.get_operators().size());
     for (OperatorProxy op : task_proxy.get_operators())
         remaining_costs.push_back(op.get_cost());
 
-    assert(heuristic_functions.empty());
     num_abstractions = 0;
     num_states = 0;
 }
@@ -123,8 +124,8 @@ shared_ptr<AbstractTask> CostSaturation::get_remaining_costs_task(
 }
 
 bool CostSaturation::state_is_dead_end(const State &state) const {
-    for (const CartesianHeuristicFunction &func : heuristic_functions) {
-        if (func.get_value(state) == INF)
+    for (const CartesianHeuristicFunction &function : heuristic_functions) {
+        if (function.get_value(state) == INF)
             return true;
     }
     return false;
