@@ -53,8 +53,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
 
-    for (OperatorProxy op : task_proxy.get_operators())
-        remaining_costs.push_back(op.get_cost());
+    reset(task_proxy);
 
     State initial_state = TaskProxy(*task).get_initial_state();
 
@@ -79,6 +78,17 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     vector<CartesianHeuristicFunction> functions;
     swap(heuristic_functions, functions);
     return functions;
+}
+
+void CostSaturation::reset(const TaskProxy &task_proxy) {
+    remaining_costs.clear();
+    remaining_costs.reserve(task_proxy.get_operators().size());
+    for (OperatorProxy op : task_proxy.get_operators())
+        remaining_costs.push_back(op.get_cost());
+
+    assert(heuristic_functions.empty());
+    num_abstractions = 0;
+    num_states = 0;
 }
 
 void CostSaturation::reduce_remaining_costs(
