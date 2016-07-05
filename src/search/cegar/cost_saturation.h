@@ -3,10 +3,12 @@
 
 #include "split_selector.h"
 
-#include "../utils/countdown_timer.h"
-
 #include <memory>
 #include <vector>
+
+namespace utils {
+class CountdownTimer;
+}
 
 namespace cegar {
 class CartesianHeuristicFunction;
@@ -22,7 +24,7 @@ class SubtaskGenerator;
 class CostSaturation {
     const std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators;
     const int max_states;
-    utils::CountdownTimer timer;
+    const double max_time;
     const bool use_general_costs;
     const PickSplit pick_split;
     std::vector<int> remaining_costs;
@@ -37,6 +39,7 @@ class CostSaturation {
     bool state_is_dead_end(const State &state) const;
     void build_abstractions(
         const std::vector<std::shared_ptr<AbstractTask>> &subtasks,
+        const utils::CountdownTimer &timer,
         std::function<bool()> may_continue);
     void print_statistics() const;
 
@@ -44,7 +47,7 @@ public:
     CostSaturation(
         std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators,
         int max_states,
-        int max_time,
+        double max_time,
         bool use_general_costs,
         PickSplit pick_split);
 
