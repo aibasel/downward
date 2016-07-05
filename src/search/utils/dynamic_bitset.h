@@ -55,12 +55,10 @@ class DynamicBitset {
     }
 
 public:
-    DynamicBitset(std::size_t num_bits)
+    explicit DynamicBitset(std::size_t num_bits)
         : blocks(compute_num_blocks(num_bits), zeros),
           num_bits(num_bits) {
     }
-
-    ~DynamicBitset() = default;
 
     std::size_t size() const {
         return num_bits;

@@ -64,7 +64,7 @@ private:
     const TaskProxy &task_proxy;
 
     // Abstract domains for all variables.
-    const Domains domains;
+    Domains domains;
 
     // This state's node in the refinement hierarchy.
     Node *node;
