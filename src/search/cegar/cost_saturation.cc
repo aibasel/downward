@@ -10,6 +10,7 @@
 
 #include "../tasks/modified_operator_costs_task.h"
 
+#include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
 
@@ -34,12 +35,12 @@ static const int memory_padding_in_mb = 75;
 CostSaturation::CostSaturation(
     vector<shared_ptr<SubtaskGenerator>> subtask_generators,
     int max_states,
-    int max_time,
+    double max_time,
     bool use_general_costs,
     PickSplit pick_split)
     : subtask_generators(subtask_generators),
       max_states(max_states),
-      timer(max_time),
+      max_time(max_time),
       use_general_costs(use_general_costs),
       pick_split(pick_split),
       num_abstractions(0),
@@ -48,6 +49,8 @@ CostSaturation::CostSaturation(
 
 vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     const std::shared_ptr<AbstractTask> &task) {
+    utils::CountdownTimer timer(max_time);
+
     TaskProxy task_proxy(*task);
 
     verify_no_axioms(task_proxy);
@@ -68,7 +71,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
     for (shared_ptr<SubtaskGenerator> subtask_generator : subtask_generators) {
         SharedTasks subtasks = subtask_generator->get_subtasks(task);
-        build_abstractions(subtasks, may_continue);
+        build_abstractions(subtasks, timer, may_continue);
         if (!may_continue())
             break;
     }
@@ -129,6 +132,7 @@ bool CostSaturation::state_is_dead_end(const State &state) const {
 
 void CostSaturation::build_abstractions(
     const vector<shared_ptr<AbstractTask>> &subtasks,
+    const utils::CountdownTimer &timer,
     function<bool()> may_continue) {
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
