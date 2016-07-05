@@ -29,6 +29,7 @@ AbstractState::AbstractState(AbstractState &&other)
       search_info(move(other.search_info)) {
 }
 
+
 int AbstractState::count(int var) const {
     return domains.count(var);
 }

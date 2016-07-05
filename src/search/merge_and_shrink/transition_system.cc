@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <sstream>
 #include <string>
