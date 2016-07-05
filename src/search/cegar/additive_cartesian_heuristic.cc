@@ -40,8 +40,8 @@ int AdditiveCartesianHeuristic::compute_heuristic(const GlobalState &global_stat
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &state) {
     int sum_h = 0;
-    for (const CartesianHeuristicFunction &func : heuristic_functions) {
-        int value = func.get_value(state);
+    for (const CartesianHeuristicFunction &function : heuristic_functions) {
+        int value = function.get_value(state);
         assert(value >= 0);
         if (value == INF)
             return DEAD_END;
