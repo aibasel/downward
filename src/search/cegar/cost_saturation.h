@@ -20,16 +20,17 @@ class SubtaskGenerator;
   CartesianHeuristicFunctions into AdditiveCartesianHeuristic.
 */
 class CostSaturation {
-    std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators;
+    const std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators;
     const int max_states;
     utils::CountdownTimer timer;
-    bool use_general_costs;
-    PickSplit pick_split;
+    const bool use_general_costs;
+    const PickSplit pick_split;
     std::vector<int> remaining_costs;
     std::vector<CartesianHeuristicFunction> heuristic_functions;
     int num_abstractions;
     int num_states;
 
+    void reset(const TaskProxy &task_proxy);
     void reduce_remaining_costs(const std::vector<int> &saturated_costs);
     std::shared_ptr<AbstractTask> get_remaining_costs_task(
         std::shared_ptr<AbstractTask> &parent) const;
