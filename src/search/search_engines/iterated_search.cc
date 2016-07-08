@@ -128,9 +128,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Iterated search", "");
     parser.document_note(
         "Note 1",
-        "We do no cache values between search iterations at the moment. "
-        "If you perform a LAMA-style iterative search, heuristic values "
-        "will be computed multiple times.");
+        "We don't cache heuristic values between search iterations at"
+        " the moment. If you perform a LAMA-style iterative search,"
+        " heuristic values will be computed multiple times.");
     parser.document_note(
         "Note 2",
         "The configuration\n```\n"
