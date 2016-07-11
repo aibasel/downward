@@ -391,7 +391,7 @@ fast_downward_plugin(
         cegar/split_selector.cc
         cegar/subtask_generators.cc
         cegar/transition.cc
-        cegar/transition_system.cc
+        cegar/transition_updater.cc
         cegar/utils.cc
         cegar/utils_landmarks.cc
     DEPENDS ADDITIVE_HEURISTIC EXTRA_TASKS LANDMARKS

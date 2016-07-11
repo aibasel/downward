@@ -1,5 +1,5 @@
-#ifndef CEGAR_TRANSITION_SYSTEM_H
-#define CEGAR_TRANSITION_SYSTEM_H
+#ifndef CEGAR_TRANSITION_UPDATER_H
+#define CEGAR_TRANSITION_UPDATER_H
 
 class AbstractTask;
 class OperatorsProxy;
@@ -12,7 +12,7 @@ class AbstractState;
 /*
   Rewire transitions after each split.
 */
-class TransitionSystem {
+class TransitionUpdater {
     const std::shared_ptr<AbstractTask> task;
 
     int num_non_loops;
@@ -36,7 +36,7 @@ class TransitionSystem {
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
 
 public:
-    explicit TransitionSystem(const std::shared_ptr<AbstractTask> &task);
+    explicit TransitionUpdater(const std::shared_ptr<AbstractTask> &task);
 
     void add_loops_to_trivial_abstract_state(AbstractState *state);
 

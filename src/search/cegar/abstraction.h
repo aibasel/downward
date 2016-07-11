@@ -4,7 +4,7 @@
 #include "abstract_search.h"
 #include "refinement_hierarchy.h"
 #include "split_selector.h"
-#include "transition_system.h"
+#include "transition_updater.h"
 
 #include "../task_proxy.h"
 
@@ -33,7 +33,7 @@ class Abstraction {
 
     AbstractSearch abstract_search;
     SplitSelector split_selector;
-    TransitionSystem transition_system;
+    TransitionUpdater transition_updater;
 
     // Limit the time for building the abstraction.
     utils::CountdownTimer timer;
@@ -123,7 +123,7 @@ public:
     }
 
     int get_num_non_looping_transitions() const {
-        return transition_system.get_num_non_loops();
+        return transition_updater.get_num_non_loops();
     }
 
     /*
