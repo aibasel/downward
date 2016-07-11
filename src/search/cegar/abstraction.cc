@@ -79,7 +79,7 @@ Abstraction::Abstraction(
       use_general_costs(use_general_costs),
       abstract_search(get_operator_costs(task_proxy), states),
       split_selector(task, pick),
-      transition_system(task),
+      transition_updater(task),
       timer(max_time),
       init(nullptr),
       deviations(0),
@@ -138,7 +138,7 @@ void Abstraction::separate_facts_unreachable_before_goal() {
 void Abstraction::create_trivial_abstraction() {
     init = AbstractState::get_trivial_abstract_state(
         task_proxy, refinement_hierarchy.get_root());
-    transition_system.add_loops_to_trivial_abstract_state(init);
+    transition_updater.add_loops_to_trivial_abstract_state(init);
     goals.insert(init);
     states.insert(init);
 }
@@ -148,7 +148,7 @@ bool Abstraction::may_keep_refining() const {
        Without doing so, the algorithm would be more deterministic. */
     return utils::extra_memory_padding_is_reserved() &&
            get_num_states() < max_states &&
-           transition_system.get_num_non_loops() < max_non_looping_transitions &&
+           transition_updater.get_num_non_loops() < max_non_looping_transitions &&
            !timer.is_expired();
 }
 
@@ -191,7 +191,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     AbstractState *v1 = new_states.first;
     AbstractState *v2 = new_states.second;
 
-    transition_system.rewire(state, v1, v2, var);
+    transition_updater.rewire(state, v1, v2, var);
 
     states.erase(state);
     states.insert(v1);
@@ -216,7 +216,7 @@ void Abstraction::refine(AbstractState *state, int var, const vector<int> &wante
     int num_states = get_num_states();
     if (num_states % 1000 == 0) {
         g_log << num_states << "/" << max_states << " states, "
-              << transition_system.get_num_non_loops() << "/"
+              << transition_updater.get_num_non_loops() << "/"
               << max_non_looping_transitions << " transitions" << endl;
     }
 
@@ -362,8 +362,8 @@ void Abstraction::print_statistics() {
     cout << "Dead ends: " << dead_ends << endl;
     cout << "Init h: " << get_h_value_of_initial_state() << endl;
 
-    assert(transition_system.get_num_loops() == total_loops);
-    assert(transition_system.get_num_non_loops() == total_outgoing_transitions);
+    assert(transition_updater.get_num_loops() == total_loops);
+    assert(transition_updater.get_num_non_loops() == total_outgoing_transitions);
     cout << "Looping transitions: " << total_loops << endl;
     cout << "Non-looping transitions: " << total_outgoing_transitions << endl;
 

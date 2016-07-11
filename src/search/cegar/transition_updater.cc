@@ -1,4 +1,4 @@
-#include "transition_system.h"
+#include "transition_updater.h"
 
 #include "abstract_state.h"
 #include "utils.h"
@@ -8,23 +8,23 @@
 using namespace std;
 
 namespace cegar {
-TransitionSystem::TransitionSystem(const shared_ptr<AbstractTask> &task)
+TransitionUpdater::TransitionUpdater(const shared_ptr<AbstractTask> &task)
     : task(task),
       num_non_loops(0),
       num_loops(0) {
 }
 
-OperatorsProxy TransitionSystem::get_operators() const {
+OperatorsProxy TransitionUpdater::get_operators() const {
     return TaskProxy(*task).get_operators();
 }
 
-void TransitionSystem::add_loops_to_trivial_abstract_state(AbstractState *state) {
+void TransitionUpdater::add_loops_to_trivial_abstract_state(AbstractState *state) {
     for (OperatorProxy op : get_operators()) {
         add_loop(state, op.get_id());
     }
 }
 
-void TransitionSystem::add_transition(
+void TransitionUpdater::add_transition(
     AbstractState *src, int op_id, AbstractState *target) {
     assert(src != target);
     src->add_outgoing_transition(op_id, target);
@@ -32,24 +32,24 @@ void TransitionSystem::add_transition(
     ++num_non_loops;
 }
 
-void TransitionSystem::add_loop(AbstractState *state, int op_id) {
+void TransitionUpdater::add_loop(AbstractState *state, int op_id) {
     state->add_loop(op_id);
     ++num_loops;
 }
 
-void TransitionSystem::remove_incoming_transition(
+void TransitionUpdater::remove_incoming_transition(
     AbstractState *src, int op_id, AbstractState *target) {
     target->remove_incoming_transition(op_id, src);
     --num_non_loops;
 }
 
-void TransitionSystem::remove_outgoing_transition(
+void TransitionUpdater::remove_outgoing_transition(
     AbstractState *src, int op_id, AbstractState *target) {
     src->remove_outgoing_transition(op_id, target);
     --num_non_loops;
 }
 
-void TransitionSystem::split_incoming_transitions(
+void TransitionUpdater::split_incoming_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        u->v we need to add transitions u->v1, u->v2, or both. */
@@ -83,7 +83,7 @@ void TransitionSystem::split_incoming_transitions(
     }
 }
 
-void TransitionSystem::split_outgoing_transitions(
+void TransitionUpdater::split_outgoing_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        v->w we need to add transitions v1->w, v2->w, or both. */
@@ -123,7 +123,7 @@ void TransitionSystem::split_outgoing_transitions(
     }
 }
 
-void TransitionSystem::split_loops(
+void TransitionUpdater::split_loops(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all self-loops
        v->v we need to add one or two of the transitions v1->v1, v1->v2,
@@ -177,18 +177,18 @@ void TransitionSystem::split_loops(
     num_loops -= v->get_loops().size();
 }
 
-void TransitionSystem::rewire(
+void TransitionUpdater::rewire(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     split_incoming_transitions(v, v1, v2, var);
     split_outgoing_transitions(v, v1, v2, var);
     split_loops(v, v1, v2, var);
 }
 
-int TransitionSystem::get_num_non_loops() const {
+int TransitionUpdater::get_num_non_loops() const {
     return num_non_loops;
 }
 
-int TransitionSystem::get_num_loops() const {
+int TransitionUpdater::get_num_loops() const {
     return num_loops;
 }
 }
