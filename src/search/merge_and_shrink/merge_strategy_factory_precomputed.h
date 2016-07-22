@@ -12,6 +12,7 @@ class MergeTreeFactory;
 class MergeStrategyFactoryPrecomputed : public MergeStrategyFactory {
     std::shared_ptr<MergeTreeFactory> merge_tree_factory;
 protected:
+    virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
     explicit MergeStrategyFactoryPrecomputed(options::Options &options);
@@ -19,7 +20,6 @@ public:
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts) override;
-    virtual std::string name() const override;
 };
 }
 

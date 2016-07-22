@@ -25,12 +25,12 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
     return utils::make_unique_ptr<MergeStrategyStateless>(fts, merge_selector);
 }
 
-void MergeStrategyFactoryStateless::dump_strategy_specific_options() const {
-    merge_selector->dump_options();
-}
-
 string MergeStrategyFactoryStateless::name() const {
     return "stateless";
+}
+
+void MergeStrategyFactoryStateless::dump_strategy_specific_options() const {
+    merge_selector->dump_options();
 }
 
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {

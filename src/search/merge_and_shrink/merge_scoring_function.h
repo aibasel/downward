@@ -10,14 +10,18 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeScoringFunction {
 protected:
+    bool initialized;
     virtual std::string name() const = 0;
-    virtual void dump_specific_options() const {}
+    virtual void dump_function_specific_options() const {}
 public:
-    MergeScoringFunction() = default;
+    MergeScoringFunction();
     virtual std::vector<int> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) = 0;
-    virtual void initialize(std::shared_ptr<AbstractTask>) {}
+    // Overriding methods must set initialized to true.
+    virtual void initialize(std::shared_ptr<AbstractTask>) {
+        initialized = true;
+    }
     void dump_options() const;
 };
 }

@@ -3,7 +3,9 @@
 #include "merge_scoring_function_single_random.h"
 #include "merge_scoring_function_total_order.h"
 #include "merge_selector_score_based_filtering.h"
+#include "merge_strategy_factory_precomputed.h"
 #include "merge_strategy_factory_stateless.h"
+#include "merge_tree_factory_linear.h"
 
 #include "../options/option_parser.h"
 #include "../options/options.h"
@@ -72,4 +74,37 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
 }
 
 static options::PluginShared<MergeStrategyFactory> _plugin_dfp("merge_dfp", _parse_dfp);
+
+static shared_ptr<MergeStrategyFactory> _parse_linear(
+    options::OptionParser &parser) {
+    MergeTreeFactoryLinear::add_options_to_parser(parser);
+    parser.document_synopsis(
+        "Linear merge strategies",
+        "These merge strategies implement several linear merge orders, which "
+        "are described in the paper:" + utils::format_paper_reference(
+            {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
+            "Flexible Abstraction Heuristics for Optimal Sequential Planning",
+            "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
+            "Proceedings of the Seventeenth International Conference on"
+            " Automated Planning and Scheduling (ICAPS 2007)",
+            "176-183",
+            "2007"));
+
+    options::Options opts = parser.parse();
+    if (parser.dry_run())
+        return nullptr;
+
+    shared_ptr<MergeTreeFactoryLinear> linear_tree_factory =
+        make_shared<MergeTreeFactoryLinear>(opts);
+
+    options::Options strategy_factory_options;
+    strategy_factory_options.set<shared_ptr<MergeTreeFactory>>(
+        "merge_tree", linear_tree_factory);
+
+    return make_shared<MergeStrategyFactoryPrecomputed>(
+        strategy_factory_options);
+}
+
+static options::PluginShared<MergeStrategyFactory> _plugin_linear(
+    "merge_linear", _parse_linear);
 }

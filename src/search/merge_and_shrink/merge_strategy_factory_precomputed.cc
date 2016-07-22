@@ -24,15 +24,16 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strateg
     FactoredTransitionSystem &fts) {
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task, fts);
+//    merge_tree->inorder_traversal(4);
     return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
-}
-
-void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
-    merge_tree_factory->dump_options();
 }
 
 string MergeStrategyFactoryPrecomputed::name() const {
     return "precomputed";
+}
+
+void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
+    merge_tree_factory->dump_options();
 }
 
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {

@@ -12,6 +12,7 @@ class MergeStrategy;
 
 class MergeStrategyFactory {
 protected:
+    virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
     MergeStrategyFactory() = default;
@@ -20,7 +21,6 @@ public:
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts) = 0;
-    virtual std::string name() const = 0;
 };
 }
 
