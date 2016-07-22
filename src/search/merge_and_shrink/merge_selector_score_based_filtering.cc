@@ -85,6 +85,10 @@ void MergeSelectorScoreBasedFiltering::initialize(shared_ptr<AbstractTask> task)
     }
 }
 
+string MergeSelectorScoreBasedFiltering::name() const {
+    return "score based merge selector";
+}
+
 void MergeSelectorScoreBasedFiltering::dump_specific_options() const {
     for (const shared_ptr<MergeScoringFunction> &scoring_function
          : merge_scoring_functions) {
