@@ -26,7 +26,7 @@ struct MergeTreeNode {
     std::pair<int, int> erase_children_and_set_index(int new_index);
     MergeTreeNode *get_parent_of_ts_index(int index);
     int compute_num_internal_nodes() const;
-    void postorder(int indentation) const;
+    void inorder(int offset, int current_indentation) const;
 
     bool is_leaf() const {
         return !left_child && !right_child;
@@ -64,9 +64,10 @@ public:
         return root->compute_num_internal_nodes();
     }
 
-    void postorder(int indentation) const {
-        return root->postorder(indentation);
-    }
+    // NOTE: this performs the "inverted" inorder_traversal, i.e. from right
+    // to left, so that the printed tree matches the correct left-to-right
+    // order.
+    void inorder_traversal(int indentation_offset) const;
 };
 }
 

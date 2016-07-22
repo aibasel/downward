@@ -1,6 +1,5 @@
 #include "merge_tree_factory_linear.h"
 
-#include "merge_strategy_factory_precomputed.h"
 #include "merge_tree.h"
 
 #include "../options/option_parser.h"
@@ -33,7 +32,11 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
         root, rng);
 }
 
-void MergeTreeFactoryLinear::dump_options() const {
+string MergeTreeFactoryLinear::name() const {
+    return "linear";
+}
+
+void MergeTreeFactoryLinear::dump_tree_specific_options() const {
     dump_variable_order_type(variable_order_type);
 }
 
@@ -74,37 +77,4 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
 }
 
 static options::PluginShared<MergeTreeFactory> _plugin("linear", _parse);
-
-static shared_ptr<MergeStrategyFactory> _parse_strategy(
-    options::OptionParser &parser) {
-    MergeTreeFactoryLinear::add_options_to_parser(parser);
-    parser.document_synopsis(
-        "Linear merge strategies",
-        "These merge strategies implement several linear merge orders, which "
-        "are described in the paper:" + utils::format_paper_reference(
-            {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
-            "Flexible Abstraction Heuristics for Optimal Sequential Planning",
-            "http://ai.cs.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
-            "Proceedings of the Seventeenth International Conference on"
-            " Automated Planning and Scheduling (ICAPS 2007)",
-            "176-183",
-            "2007"));
-
-    options::Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-
-    shared_ptr<MergeTreeFactoryLinear> linear_tree_factory =
-        make_shared<MergeTreeFactoryLinear>(opts);
-
-    options::Options strategy_factory_options;
-    strategy_factory_options.set<shared_ptr<MergeTreeFactory>>(
-        "merge_tree", linear_tree_factory);
-
-    return make_shared<MergeStrategyFactoryPrecomputed>(
-        strategy_factory_options);
-}
-
-static options::PluginShared<MergeStrategyFactory> _plugin_strategy(
-    "merge_linear", _parse_strategy);
 }

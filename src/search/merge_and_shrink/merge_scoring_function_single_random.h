@@ -17,10 +17,8 @@ class MergeScoringFunctionSingleRandom : public MergeScoringFunction {
     int random_seed; // only for dump options
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 protected:
-    virtual std::string name() const override {
-        return "single random";
-    }
-    virtual void dump_specific_options() const override;
+virtual std::string name() const override;
+    virtual void dump_function_specific_options() const override;
 public:
     explicit MergeScoringFunctionSingleRandom(const options::Options &options);
     virtual std::vector<int> compute_scores(

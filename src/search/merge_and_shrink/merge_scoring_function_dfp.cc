@@ -99,6 +99,10 @@ vector<int> MergeScoringFunctionDFP::compute_scores(
     return scores;
 }
 
+string MergeScoringFunctionDFP::name() const {
+    return "dfp";
+}
+
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "DFP scoring",

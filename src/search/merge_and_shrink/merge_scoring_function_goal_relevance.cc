@@ -47,6 +47,10 @@ vector<int> MergeScoringFunctionGoalRelevance::compute_scores(
     return scores;
 }
 
+string MergeScoringFunctionGoalRelevance::name() const {
+    return "goal relevance";
+}
+
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Goal relevance scoring",

@@ -9,9 +9,7 @@ class MergeScoringFunctionDFP : public MergeScoringFunction {
     std::vector<int> compute_label_ranks(
         const FactoredTransitionSystem &fts, int index) const;
 protected:
-    virtual std::string name() const override {
-        return "dfp";
-    }
+    virtual std::string name() const override;
 public:
     MergeScoringFunctionDFP() = default;
     virtual std::vector<int> compute_scores(

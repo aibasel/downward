@@ -30,7 +30,9 @@ MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
 vector<int> MergeScoringFunctionTotalOrder::compute_scores(
     FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
+    assert(initialized);
     vector<int> scores;
+    scores.reserve(merge_candidates.size());
     for (size_t candidate_index = 0; candidate_index < merge_candidates.size();
          ++candidate_index) {
         pair<int, int> merge_candidate = merge_candidates[candidate_index];
@@ -49,12 +51,15 @@ vector<int> MergeScoringFunctionTotalOrder::compute_scores(
                 scores.push_back(merge_candidate_order_index);
             }
         }
+        // We must have inserted a score for the current candidate.
+        assert(scores.size() == candidate_index + 1);
     }
     return scores;
 }
 
 void MergeScoringFunctionTotalOrder::initialize(
     shared_ptr<AbstractTask> task) {
+    initialized = true;
     TaskProxy task_proxy(*task);
     int num_variables = task_proxy.get_variables().size();
     int max_transition_system_count = num_variables * 2 - 1;
@@ -110,7 +115,11 @@ void MergeScoringFunctionTotalOrder::initialize(
     }
 }
 
-void MergeScoringFunctionTotalOrder::dump_specific_options() const {
+string MergeScoringFunctionTotalOrder::name() const {
+    return "total order";
+}
+
+void MergeScoringFunctionTotalOrder::dump_function_specific_options() const {
     cout << "Atomic transition system order: ";
     switch (atomic_ts_order) {
     case AtomicTSOrder::REGULAR:
