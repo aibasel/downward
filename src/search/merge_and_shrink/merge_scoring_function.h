@@ -15,6 +15,7 @@ protected:
     virtual void dump_function_specific_options() const {}
 public:
     MergeScoringFunction();
+    virtual ~MergeScoringFunction() = default;
     virtual std::vector<int> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) = 0;

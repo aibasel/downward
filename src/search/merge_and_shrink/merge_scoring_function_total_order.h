@@ -39,6 +39,7 @@ virtual std::string name() const override;
     virtual void dump_function_specific_options() const override;
 public:
     explicit MergeScoringFunctionTotalOrder(const options::Options &options);
+    virtual ~MergeScoringFunctionTotalOrder() override = default;
     virtual std::vector<int> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
