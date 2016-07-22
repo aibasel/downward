@@ -23,7 +23,7 @@ protected:
     virtual void dump_specific_options() const override;
 public:
     explicit MergeSelectorScoreBasedFiltering(const options::Options &options);
-    virtual ~MergeSelectorScoreBasedFiltering() = default;
+    virtual ~MergeSelectorScoreBasedFiltering() override = default;
     // TODO: get rid of this extra constructor
     explicit MergeSelectorScoreBasedFiltering(
         std::vector<std::shared_ptr<MergeScoringFunction>> scoring_functions);

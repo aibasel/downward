@@ -12,6 +12,7 @@ protected:
     virtual std::string name() const override;
 public:
     MergeScoringFunctionDFP() = default;
+    virtual ~MergeScoringFunctionDFP() override = default;
     virtual std::vector<int> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;

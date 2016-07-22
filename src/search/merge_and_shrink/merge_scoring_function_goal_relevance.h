@@ -7,9 +7,10 @@ namespace merge_and_shrink {
 class TransitionSystem;
 class MergeScoringFunctionGoalRelevance : public MergeScoringFunction {
 protected:
-virtual std::string name() const override;
+    virtual std::string name() const override;
 public:
     MergeScoringFunctionGoalRelevance() = default;
+    virtual ~MergeScoringFunctionGoalRelevance() override = default;
     virtual std::vector<int> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
