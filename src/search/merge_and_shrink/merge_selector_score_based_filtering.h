@@ -19,9 +19,7 @@ class MergeSelectorScoreBasedFiltering : public MergeSelector {
         const std::vector<std::pair<int, int>> &merge_candidates,
         const std::vector<int> &scores) const;
 protected:
-    virtual std::string name() const override {
-        return "score based merge selector";
-    }
+    virtual std::string name() const override;
     virtual void dump_specific_options() const override;
 public:
     explicit MergeSelectorScoreBasedFiltering(const options::Options &options);
