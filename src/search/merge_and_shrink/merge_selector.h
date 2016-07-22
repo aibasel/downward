@@ -14,7 +14,8 @@ protected:
     virtual void dump_specific_options() const {}
 public:
     MergeSelector() = default;
-    virtual std::pair<int, int> select_merge(FactoredTransitionSystem &fts) = 0;
+    virtual std::pair<int, int> select_merge(FactoredTransitionSystem &fts)
+        const = 0;
     virtual void initialize(std::shared_ptr<AbstractTask> task) = 0;
     void dump_options() const;
 };
