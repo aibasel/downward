@@ -80,17 +80,8 @@ def main(revisions=None):
     attributes = exp.DEFAULT_TABLE_ATTRIBUTES
     attributes.extend(extra_attributes)
 
-    exp.add_fetcher('data/issue644-v1-dfp-tiebreaking-eval',
+    exp.add_fetcher('data/issue644-v2-dfp-tiebreaking-eval',
         filter_config=[
-            'issue644-base-dfp-reg-otn-abp-b50k',
-            'issue644-base-dfp-reg-nto-abp-b50k',
-            'issue644-base-dfp-reg-rnd-abp-b50k',
-            'issue644-base-dfp-inv-otn-abp-b50k',
-            'issue644-base-dfp-inv-nto-abp-b50k',
-            'issue644-base-dfp-inv-rnd-abp-b50k',
-            'issue644-base-dfp-rnd-otn-abp-b50k',
-            'issue644-base-dfp-rnd-nto-abp-b50k',
-            'issue644-base-dfp-rnd-rnd-abp-b50k',
             'issue644-v1-dfp-reg-otn-abp-b50k',
             'issue644-v1-dfp-reg-nto-abp-b50k',
             'issue644-v1-dfp-reg-rnd-abp-b50k',
@@ -100,6 +91,15 @@ def main(revisions=None):
             'issue644-v1-dfp-rnd-otn-abp-b50k',
             'issue644-v1-dfp-rnd-nto-abp-b50k',
             'issue644-v1-dfp-rnd-rnd-abp-b50k',
+            'issue644-v2-dfp-reg-otn-abp-b50k',
+            'issue644-v2-dfp-reg-nto-abp-b50k',
+            'issue644-v2-dfp-reg-rnd-abp-b50k',
+            'issue644-v2-dfp-inv-otn-abp-b50k',
+            'issue644-v2-dfp-inv-nto-abp-b50k',
+            'issue644-v2-dfp-inv-rnd-abp-b50k',
+            'issue644-v2-dfp-rnd-otn-abp-b50k',
+            'issue644-v2-dfp-rnd-nto-abp-b50k',
+            'issue644-v2-dfp-rnd-rnd-abp-b50k',
         ])
 
     exp.add_comparison_table_step()
