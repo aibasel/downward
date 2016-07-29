@@ -27,11 +27,11 @@ MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
       rng = utils::parse_rng_from_options(options);
 }
 
-vector<int> MergeScoringFunctionTotalOrder::compute_scores(
+vector<double> MergeScoringFunctionTotalOrder::compute_scores(
     FactoredTransitionSystem &,
     const vector<pair<int, int>> &merge_candidates) {
     assert(initialized);
-    vector<int> scores;
+    vector<double> scores;
     scores.reserve(merge_candidates.size());
     for (size_t candidate_index = 0; candidate_index < merge_candidates.size();
          ++candidate_index) {

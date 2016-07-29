@@ -11,7 +11,7 @@ protected:
 public:
     MergeScoringFunctionGoalRelevance() = default;
     virtual ~MergeScoringFunctionGoalRelevance() override = default;
-    virtual std::vector<int> compute_scores(
+    virtual std::vector<double> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
 };

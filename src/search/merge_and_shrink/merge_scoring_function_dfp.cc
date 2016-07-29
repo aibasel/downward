@@ -59,13 +59,13 @@ vector<int> MergeScoringFunctionDFP::compute_label_ranks(
     return label_ranks;
 }
 
-vector<int> MergeScoringFunctionDFP::compute_scores(
+vector<double> MergeScoringFunctionDFP::compute_scores(
     FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {
     int num_ts = fts.get_size();
 
     vector<vector<int>> transition_system_label_ranks(num_ts);
-    vector<int> scores;
+    vector<double> scores;
     scores.reserve(merge_candidates.size());
 
     // Go over all pairs of transition systems and compute their weight.
