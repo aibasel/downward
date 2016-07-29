@@ -16,7 +16,7 @@ protected:
 public:
     MergeScoringFunction();
     virtual ~MergeScoringFunction() = default;
-    virtual std::vector<int> compute_scores(
+    virtual std::vector<double> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) = 0;
     // Overriding methods must set initialized to true.

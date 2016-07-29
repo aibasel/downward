@@ -26,10 +26,10 @@ MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
 
 vector<pair<int, int>> MergeSelectorScoreBasedFiltering::get_remaining_candidates(
     const vector<pair<int, int>> &merge_candidates,
-    const vector<int> &scores) const {
+    const vector<double> &scores) const {
     assert(merge_candidates.size() == scores.size());
-    int best_score = INF;
-    for (int score : scores) {
+    double best_score = INF;
+    for (double score : scores) {
         if (score < best_score) {
             best_score = score;
         }
@@ -60,8 +60,8 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
 
     for (const shared_ptr<MergeScoringFunction> &scoring_function :
          merge_scoring_functions) {
-        vector<int> scores = scoring_function->compute_scores(fts,
-                                                              merge_candidates);
+        vector<double> scores = scoring_function->compute_scores(
+            fts, merge_candidates);
         merge_candidates = get_remaining_candidates(merge_candidates, scores);
         if (merge_candidates.size() == 1) {
             break;
@@ -71,7 +71,7 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
     if (merge_candidates.size() > 1) {
         cerr << "More than one merge candidate remained after computing all "
                 "scores! Did you forget to include a randomizing scoring "
-                "function?" << endl;
+                "function for tie-breaking?" << endl;
         utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
     }
 
@@ -86,7 +86,7 @@ void MergeSelectorScoreBasedFiltering::initialize(shared_ptr<AbstractTask> task)
 }
 
 string MergeSelectorScoreBasedFiltering::name() const {
-    return "score based merge selector";
+    return "score based filtering";
 }
 
 void MergeSelectorScoreBasedFiltering::dump_specific_options() const {

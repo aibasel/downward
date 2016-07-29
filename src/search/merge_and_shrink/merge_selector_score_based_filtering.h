@@ -17,7 +17,7 @@ class MergeSelectorScoreBasedFiltering : public MergeSelector {
 
     std::vector<std::pair<int, int>> get_remaining_candidates(
         const std::vector<std::pair<int, int>> &merge_candidates,
-        const std::vector<int> &scores) const;
+        const std::vector<double> &scores) const;
 protected:
     virtual std::string name() const override;
     virtual void dump_specific_options() const override;

@@ -75,8 +75,7 @@ GroupAndTransitions TSConstIterator::operator*() const {
   computation is not worth the overhead.
 */
 
-TransitionSystem::TransitionSystem(
-    int num_variables,
+TransitionSystem::TransitionSystem(int num_variables,
     vector<int> &&incorporated_variables,
     unique_ptr<LabelEquivalenceRelation> &&label_equivalence_relation,
     vector<vector<Transition>> &&transitions_by_label,

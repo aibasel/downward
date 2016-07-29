@@ -19,7 +19,7 @@ bool is_goal_relevant(const TransitionSystem &ts) {
     return false;
 }
 
-vector<int> MergeScoringFunctionGoalRelevance::compute_scores(
+vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {
     int num_ts = fts.get_size();
@@ -33,7 +33,7 @@ vector<int> MergeScoringFunctionGoalRelevance::compute_scores(
         }
     }
 
-    vector<int> scores;
+    vector<double> scores;
     scores.reserve(merge_candidates.size());
     for (pair<int, int> merge_candidate : merge_candidates ) {
         int ts_index1 = merge_candidate.first;

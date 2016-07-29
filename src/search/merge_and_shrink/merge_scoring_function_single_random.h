@@ -22,7 +22,7 @@ virtual std::string name() const override;
 public:
     explicit MergeScoringFunctionSingleRandom(const options::Options &options);
     virtual ~MergeScoringFunctionSingleRandom() override = default;
-    virtual std::vector<int> compute_scores(
+    virtual std::vector<double> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
 };

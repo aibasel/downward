@@ -40,7 +40,7 @@ virtual std::string name() const override;
 public:
     explicit MergeScoringFunctionTotalOrder(const options::Options &options);
     virtual ~MergeScoringFunctionTotalOrder() override = default;
-    virtual std::vector<int> compute_scores(
+    virtual std::vector<double> compute_scores(
         FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
     virtual void initialize(std::shared_ptr<AbstractTask> task) override;
