@@ -11,6 +11,11 @@ class RandomNumberGenerator;
 namespace merge_and_shrink {
 extern const int UNINITIALIZED;
 
+/*
+  Binary tree data structure with convenience methods for removing
+  sibling leaf nodes and modifying the tree by removing specific
+  leaf nodes that are not siblings (see also MergeTree class).
+ */
 struct MergeTreeNode {
     MergeTreeNode *parent;
     MergeTreeNode *left_child;
@@ -44,6 +49,31 @@ enum class UpdateOption {
     USE_RANDOM
 };
 
+/*
+  This class manages a binary tree data structure (MergeTreeNode) that
+  represents a merge tree.
+
+  In the common use case, it the merge tree is used as "the merge strategy"
+  and hence it is always synchronized with the current factored transition
+  system managed by the merge-and-shrink heuristic. In that case, when asked
+  for a next merge, the *left-most* sibling leaf pair is returned and their
+  parent node updated to represent the resulting composite transition system.
+
+  NOTE: returning the left-most sibling leaf pair does not allow to represent
+  arbitrary merge strategies with this class, because there is not possibility
+  to specify the merge order of current sibling leaf nodes in an arbitrary
+  way. For existing precomputed merge strategies like the linear ones or MIASM,
+  this does not matter.
+
+  For the less common use case of using a merge tree within another merge
+  strategy where the merge tree acts as a fallback mechanism, the merge tree
+  has to be kept synchronized with the factored transition system. This
+  requires informing the merge tree about all merges that happen and that may
+  differ from what the merge tree prescribes. The method update provides this
+  functionality, leaving the user the choice of which of the two existing leaf
+  nodes (if they have different parents) will represent the merged transition
+  system and which one will be removed without replacement.s
+*/
 class MergeTree {
     MergeTreeNode *root;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
