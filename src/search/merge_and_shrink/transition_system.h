@@ -212,6 +212,10 @@ public:
     bool is_goal_state(int state) const {
         return goal_states[state];
     }
+
+    const std::vector<int> &get_incorporated_variables() const {
+        return incorporated_variables;
+    }
 };
 }
 
