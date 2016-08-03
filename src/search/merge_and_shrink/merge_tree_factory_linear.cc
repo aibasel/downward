@@ -1,6 +1,10 @@
 #include "merge_tree_factory_linear.h"
 
+#include "factored_transition_system.h"
 #include "merge_tree.h"
+#include "transition_system.h"
+
+#include "../task_proxy.h"
 
 #include "../options/option_parser.h"
 #include "../options/options.h"
@@ -21,15 +25,53 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     shared_ptr<AbstractTask> task,
-    FactoredTransitionSystem &) {
+    FactoredTransitionSystem &fts,
+    const vector<int> &subset) {
     VariableOrderFinder vof(task, variable_order_type);
-    MergeTreeNode *root = new MergeTreeNode(vof.next());
-    while (!vof.done()) {
-        MergeTreeNode *right_child = new MergeTreeNode(vof.next());
-        root = new MergeTreeNode(root, right_child);
+    if (subset.empty()) {
+        MergeTreeNode *root = new MergeTreeNode(vof.next());
+        while (!vof.done()) {
+            MergeTreeNode *right_child = new MergeTreeNode(vof.next());
+            root = new MergeTreeNode(root, right_child);
+        }
+        return utils::make_unique_ptr<MergeTree>(
+            root, rng);
+    } else {
+        // Compute a mapping from state variables to transition system indices
+        // that contain those variables.
+        TaskProxy task_proxy(*task);
+        int num_vars = task_proxy.get_variables().size();
+        vector<int> var_to_ts_index(num_vars);
+        int num_ts = fts.get_size();
+        for (int ts_index = 0; ts_index < num_ts; ++ts_index) {
+            if (fts.is_active(ts_index)) {
+                const vector<int> &vars =
+                    fts.get_ts(ts_index).get_incorporated_variables();
+                for (int var : vars) {
+                    var_to_ts_index[var] = ts_index;
+                }
+            }
+        }
+
+        // Compute the merge tree, using transition systems corresponding to
+        // variables in order given by the variable order finder.
+        vector<bool> used_ts_indices(fts.get_size(), false);
+        int next_var = vof.next();
+        int ts_index = var_to_ts_index[next_var];
+        used_ts_indices[ts_index] = true;
+        MergeTreeNode *root = new MergeTreeNode(ts_index);
+        while (!vof.done()) {
+            next_var = vof.next();
+            ts_index = var_to_ts_index[next_var];
+            if (!used_ts_indices[ts_index]) {
+                used_ts_indices[ts_index] = true;
+                MergeTreeNode *right_child = new MergeTreeNode(ts_index);
+                root = new MergeTreeNode(root, right_child);
+            }
+        }
+        return utils::make_unique_ptr<MergeTree>(
+            root, rng);
     }
-    return utils::make_unique_ptr<MergeTree>(
-        root, rng);
 }
 
 string MergeTreeFactoryLinear::name() const {

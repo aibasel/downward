@@ -33,15 +33,17 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
         update_option,
         "When the merge tree is used within another merge strategy, how"
         "should it be updated when a merge different to a merge from the "
-        "tree is performed: choose among use_First, use_second, and "
-        "use_random to let the left (right, random) node in the tree survive "
-        "and move the other subtree to its position.",
+        "tree is performed: choose among use_first, use_second, and "
+        "use_random to let the left (right, random) leaf node in the tree "
+        "survive and remove the other leaf node without replacement. ",
         "use_random");
 
 }
 
 static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(
     "Merge Tree",
-    "This page describes merge trees that can be used in merge strategies "
-    "of type 'precomputed'.");
+    "This page describes the available merge trees that can be used to "
+    "precompute a merge strategy, either for the entire task or a given "
+    "subset of transition systems of a given factored transition system.\n"
+    "Merge trees are used in the merge strategies of type 'precomputed'.");
 }

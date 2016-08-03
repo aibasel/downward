@@ -2,6 +2,7 @@
 #define MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 
 #include <memory>
+#include <vector>
 
 class AbstractTask;
 
@@ -29,7 +30,8 @@ public:
     void dump_options() const;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         std::shared_ptr<AbstractTask> task,
-        FactoredTransitionSystem &fts) = 0;
+        FactoredTransitionSystem &fts,
+        const std::vector<int> &subset = std::vector<int>()) = 0;
     // Inheriting classes must call this method in their parsing methods.
     static void add_options_to_parser(options::OptionParser &parser);
 };
