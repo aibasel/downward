@@ -13,28 +13,28 @@ using namespace std;
 namespace extra_tasks {
 class DomainAbstractedTaskFactory {
 private:
-    std::vector<int> domain_size;
-    std::vector<int> initial_state_values;
-    std::vector<Fact> goals;
-    std::vector<std::vector<std::string>> fact_names;
-    std::vector<std::vector<int>> value_map;
-    std::shared_ptr<AbstractTask> task;
+    vector<int> domain_size;
+    vector<int> initial_state_values;
+    vector<Fact> goals;
+    vector<vector<string>> fact_names;
+    vector<vector<int>> value_map;
+    shared_ptr<AbstractTask> task;
 
     void initialize(const AbstractTask &parent);
     void combine_values(int var, const ValueGroups &groups);
-    std::string get_combined_fact_name(int var, const ValueGroup &values) const;
+    string get_combined_fact_name(int var, const ValueGroup &values) const;
 
 public:
     DomainAbstractedTaskFactory(
-        const std::shared_ptr<AbstractTask> &parent,
+        const shared_ptr<AbstractTask> &parent,
         const VarToGroups &value_groups);
     ~DomainAbstractedTaskFactory() = default;
 
-    std::shared_ptr<AbstractTask> get_task() const;
+    shared_ptr<AbstractTask> get_task() const;
 };
 
 DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
-    const std::shared_ptr<AbstractTask> &parent,
+    const shared_ptr<AbstractTask> &parent,
     const VarToGroups &value_groups) {
     initialize(*parent);
     for (const auto &pair : value_groups) {

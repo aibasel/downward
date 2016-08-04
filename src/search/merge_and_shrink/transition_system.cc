@@ -22,7 +22,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-std::ostream &operator<<(std::ostream &os, const Transition &trans) {
+ostream &operator<<(ostream &os, const Transition &trans) {
     os << trans.src << "->" << trans.target;
     return os;
 }

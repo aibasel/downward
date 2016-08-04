@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace utils {
-static string t2t_escape(const std::string &s) {
+static string t2t_escape(const string &s) {
     return "\"\"" + s + "\"\"";
 }
 
