@@ -60,7 +60,6 @@ class HMHeuristic : public Heuristic {
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
-    virtual void initialize();
 
 public:
     HMHeuristic(const options::Options &opts);

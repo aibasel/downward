@@ -15,6 +15,7 @@ namespace additive_heuristic {
 AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
     : RelaxationHeuristic(opts),
       did_write_overflow_warning(false) {
+    cout << "Initializing additive heuristic..." << endl;
 }
 
 AdditiveHeuristic::~AdditiveHeuristic() {
@@ -30,13 +31,6 @@ void AdditiveHeuristic::write_overflow_warning() {
              << MAX_COST_VALUE << endl;
         did_write_overflow_warning = true;
     }
-}
-
-// initialization
-void AdditiveHeuristic::initialize() {
-    assert(!is_initialized());
-    cout << "Initializing additive heuristic..." << endl;
-    RelaxationHeuristic::initialize();
 }
 
 // heuristic computation
@@ -147,8 +141,7 @@ int AdditiveHeuristic::compute_heuristic(const GlobalState &global_state) {
     return compute_heuristic(convert_global_state(global_state));
 }
 
-void AdditiveHeuristic::initialize_and_compute_heuristic_for_cegar(const State &state) {
-    initialize();
+void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
     compute_heuristic(state);
 }
 
