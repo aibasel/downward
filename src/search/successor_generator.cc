@@ -248,6 +248,6 @@ void SuccessorGenerator::generate_applicable_ops(
 
 
 void SuccessorGenerator::generate_applicable_ops(
-    const GlobalState &state, std::vector<const GlobalOperator *> &applicable_ops) const {
+    const GlobalState &state, vector<const GlobalOperator *> &applicable_ops) const {
     root->generate_applicable_ops(state, applicable_ops);
 }
