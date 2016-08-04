@@ -15,6 +15,11 @@ HMHeuristic::HMHeuristic(const Options &opts)
     : Heuristic(opts),
       m(opts.get<int>("m")),
       has_cond_effects(has_conditional_effects(task_proxy)) {
+    cout << "Using h^" << m << "." << endl;
+    cout << "The implementation of the h^m heuristic is preliminary." << endl
+         << "It is SLOOOOOOOOOOOW." << endl
+         << "Please do not use this for comparison!" << endl;
+    generate_all_tuples();
 }
 
 
@@ -24,15 +29,6 @@ HMHeuristic::~HMHeuristic() {
 
 bool HMHeuristic::dead_ends_are_reliable() const {
     return !has_axioms(task_proxy) && !has_cond_effects;
-}
-
-
-void HMHeuristic::initialize() {
-    cout << "Using h^" << m << "." << endl;
-    cout << "The implementation of the h^m heuristic is preliminary." << endl
-         << "It is SLOOOOOOOOOOOW." << endl
-         << "Please do not use this for comparison!" << endl;
-    generate_all_tuples();
 }
 
 
