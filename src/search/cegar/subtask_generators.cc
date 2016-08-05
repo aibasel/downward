@@ -28,7 +28,7 @@ using namespace std;
 namespace cegar {
 class SortFactsByIncreasingHaddValues {
     // Can't store as unique_ptr since the class needs copy-constructor.
-    std::shared_ptr<additive_heuristic::AdditiveHeuristic> hadd;
+    shared_ptr<additive_heuristic::AdditiveHeuristic> hadd;
 
     int get_cost(Fact fact) {
         return hadd->get_cost_for_cegar(fact.var, fact.value);
@@ -36,7 +36,7 @@ class SortFactsByIncreasingHaddValues {
 
 public:
     explicit SortFactsByIncreasingHaddValues(
-        const std::shared_ptr<AbstractTask> &task)
+        const shared_ptr<AbstractTask> &task)
         : hadd(create_additive_heuristic(task)) {
         TaskProxy task_proxy(*task);
         hadd->compute_heuristic_for_cegar(task_proxy.get_initial_state());

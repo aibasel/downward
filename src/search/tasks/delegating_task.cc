@@ -83,7 +83,7 @@ Fact DelegatingTask::get_goal_fact(int index) const {
     return parent->get_goal_fact(index);
 }
 
-std::vector<int> DelegatingTask::get_initial_state_values() const {
+vector<int> DelegatingTask::get_initial_state_values() const {
     return parent->get_initial_state_values();
 }
 

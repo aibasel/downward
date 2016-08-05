@@ -140,7 +140,7 @@ void PatternDatabase::multiply_out(
 
 void PatternDatabase::build_abstract_operators(
     const OperatorProxy &op, int cost,
-    const std::vector<int> &variable_to_index,
+    const vector<int> &variable_to_index,
     vector<AbstractOperator> &operators) {
     // All variable value pairs that are a prevail condition
     vector<pair<int, int>> prev_pairs;
@@ -187,7 +187,7 @@ void PatternDatabase::build_abstract_operators(
                  operators);
 }
 
-void PatternDatabase::create_pdb(const std::vector<int> &operator_costs) {
+void PatternDatabase::create_pdb(const vector<int> &operator_costs) {
     VariablesProxy vars = task_proxy.get_variables();
     vector<int> variable_to_index(vars.size(), -1);
     for (size_t i = 0; i < pattern.size(); ++i) {

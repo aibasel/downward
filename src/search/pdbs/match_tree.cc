@@ -13,7 +13,7 @@ struct MatchTree::Node {
     static const int LEAF_NODE = -1;
     Node();
     ~Node();
-    std::vector<const AbstractOperator *> applicable_operators;
+    vector<const AbstractOperator *> applicable_operators;
     // The variable which this node represents.
     int var_id;
     int var_domain_size;
