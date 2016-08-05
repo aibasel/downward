@@ -54,7 +54,7 @@ void MemoryTracer::leave_block(const string &block_name) {
 }
 
 
-void MemoryTracer::print_trace_message(const std::string &msg) {
+void MemoryTracer::print_trace_message(const string &msg) {
     cout << "[TRACE] "
          << setw(TIME_FIELD_WIDTH) << g_timer << " "
          << setw(MEM_FIELD_WIDTH) << get_peak_memory_in_kb() << " KB";
@@ -75,7 +75,7 @@ TraceBlock::~TraceBlock() {
 }
 
 
-void trace(const std::string &msg) {
+void trace(const string &msg) {
     _tracer.print_trace_message(msg);
 }
 }
