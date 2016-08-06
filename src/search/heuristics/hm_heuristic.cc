@@ -41,17 +41,13 @@ int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
     if (is_goal_state(task_proxy, state)) {
         return 0;
     } else {
-        Tuple s_tup;
-        state_to_tuple(state, s_tup);
+        Tuple s_tup = state_to_tuple(state);
 
         init_hm_table(s_tup);
         update_hm_table();
         //dump_table();
 
-        Tuple goals;
-        for (FactProxy goal : task_proxy.get_goals()) {
-            goals.emplace_back(goal.get_variable().get_id(), goal.get_value());
-        }
+        Tuple goals = get_fact_pairs(task_proxy.get_goals());
         int h = eval(goals);
 
         if (h == numeric_limits<int>::max())
@@ -77,13 +73,11 @@ void HMHeuristic::update_hm_table() {
         was_updated = false;
 
         for (OperatorProxy op : task_proxy.get_operators()) {
-            Tuple pre;
-            get_operator_pre(op, pre);
+            Tuple pre = get_operator_pre(op);
 
             int c1 = eval(pre);
             if (c1 != numeric_limits<int>::max()) {
-                Tuple eff;
-                get_operator_eff(op, eff);
+                Tuple eff = get_operator_eff(op);
                 vector<Tuple> partial_effs;
                 generate_all_partial_tuples(eff, partial_effs);
                 for (Tuple &partial_eff : partial_effs) {
@@ -111,8 +105,7 @@ void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
             }
         }
         if (!contradict && (tuple.size() > t.size()) && (check_tuple_in_tuple(t, tuple) == 0)) {
-            Tuple pre;
-            get_operator_pre(op, pre);
+            Tuple pre = get_operator_pre(op);
 
             Tuple others;
             for (const FactPair &fact : tuple) {
@@ -192,27 +185,29 @@ int HMHeuristic::check_tuple_in_tuple(
 }
 
 
-void HMHeuristic::state_to_tuple(const State &state, Tuple &t) const {
+HMHeuristic::Tuple HMHeuristic::state_to_tuple(const State &state) const {
+    Tuple tuple;
     for (FactProxy fact : state) {
-        t.emplace_back(fact.get_variable().get_id(), fact.get_value());
+        tuple.push_back(fact.get_pair());
     }
+    return tuple;
 }
 
 
-void HMHeuristic::get_operator_pre(const OperatorProxy &op, Tuple &t) const {
-    for (FactProxy pre : op.get_preconditions()) {
-        t.emplace_back(pre.get_variable().get_id(), pre.get_value());
-    }
-    sort(t.begin(), t.end());
+HMHeuristic::Tuple HMHeuristic::get_operator_pre(const OperatorProxy &op) const {
+    Tuple preconditions = get_fact_pairs(op.get_preconditions());
+    sort(preconditions.begin(), preconditions.end());
+    return preconditions;
 }
 
 
-void HMHeuristic::get_operator_eff(const OperatorProxy &op, Tuple &t) const {
+HMHeuristic::Tuple HMHeuristic::get_operator_eff(const OperatorProxy &op) const {
+    Tuple effects;
     for (EffectProxy eff : op.get_effects()) {
-        FactProxy fact = eff.get_fact();
-        t.emplace_back(fact.get_variable().get_id(), fact.get_value());
+        effects.push_back(eff.get_fact().get_pair());
     }
-    sort(t.begin(), t.end());
+    sort(effects.begin(), effects.end());
+    return effects;
 }
 
 
