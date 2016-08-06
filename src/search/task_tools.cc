@@ -62,12 +62,3 @@ double get_average_operator_cost(TaskProxy task_proxy) {
     average_operator_cost /= task_proxy.get_operators().size();
     return average_operator_cost;
 }
-
-std::vector<FactPair> get_fact_pairs(const ConditionsProxy &conditions) {
-    vector<FactPair> fact_pairs;
-    fact_pairs.reserve(conditions.size());
-    for (FactProxy fact : conditions) {
-        fact_pairs.push_back(fact.get_pair());
-    }
-    return fact_pairs;
-}

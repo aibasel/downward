@@ -48,6 +48,14 @@ void verify_no_conditional_effects(TaskProxy task);
 
 double get_average_operator_cost(TaskProxy task_proxy);
 
-std::vector<FactPair> get_fact_pairs(const ConditionsProxy &conditions);
+template<class FactProxyCollection>
+std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
+    std::vector<FactPair> fact_pairs;
+    fact_pairs.reserve(facts.size());
+    for (FactProxy fact : facts) {
+        fact_pairs.push_back(fact.get_pair());
+    }
+    return fact_pairs;
+}
 
 #endif
