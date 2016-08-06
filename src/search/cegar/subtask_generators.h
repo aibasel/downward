@@ -50,8 +50,6 @@ public:
 class GoalDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
 
-    Facts get_goal_facts(const TaskProxy &task_proxy) const;
-
 public:
     explicit GoalDecomposition(const options::Options &options);
     virtual ~GoalDecomposition() = default;

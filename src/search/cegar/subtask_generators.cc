@@ -109,19 +109,11 @@ GoalDecomposition::GoalDecomposition(const Options &opts)
     : fact_order(FactOrder(opts.get_enum("order"))) {
 }
 
-Facts GoalDecomposition::get_goal_facts(const TaskProxy &task_proxy) const {
-    Facts facts;
-    for (FactProxy goal : task_proxy.get_goals()) {
-        facts.emplace_back(goal.get_variable().get_id(), goal.get_value());
-    }
-    return facts;
-}
-
 SharedTasks GoalDecomposition::get_subtasks(
     const shared_ptr<AbstractTask> &task) const {
     SharedTasks subtasks;
     TaskProxy task_proxy(*task);
-    Facts goal_facts = get_goal_facts(task_proxy);
+    Facts goal_facts = get_fact_pairs(task_proxy.get_goals());
     filter_and_order_facts(task, fact_order, goal_facts);
     for (const FactPair &goal : goal_facts) {
         shared_ptr<AbstractTask> subtask =
