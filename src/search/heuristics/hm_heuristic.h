@@ -54,7 +54,6 @@ class HMHeuristic : public Heuristic {
                                          int sz, std::vector<Tuple> &res) const;
 
     void dump_table() const;
-    void dump_tuple(const Tuple &tuple) const;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);

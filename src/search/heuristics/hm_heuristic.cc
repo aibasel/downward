@@ -4,6 +4,8 @@
 #include "../plugin.h"
 #include "../task_tools.h"
 
+#include "../utils/logging.h"
+
 #include <cassert>
 #include <limits>
 #include <set>
@@ -45,7 +47,6 @@ int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
 
         init_hm_table(s_tup);
         update_hm_table();
-        //dump_table();
 
         Tuple goals = get_fact_pairs(task_proxy.get_goals());
         int h = eval(goals);
@@ -264,18 +265,7 @@ void HMHeuristic::generate_all_partial_tuples_aux(
 
 void HMHeuristic::dump_table() const {
     for (auto &hm_ent : hm_table) {
-        cout << "h[";
-        dump_tuple(hm_ent.first);
-        cout << "] = " << hm_ent.second << endl;
-    }
-}
-
-
-void HMHeuristic::dump_tuple(const Tuple &tuple) const {
-    string sep = "";
-    for (const FactPair &fact : tuple) {
-        cout << sep << fact.var << "=" << fact.value;
-        sep = ",";
+        cout << "h(" << hm_ent.first << ") = " << hm_ent.second << endl;
     }
 }
 

@@ -36,6 +36,8 @@ struct FactPair {
     }
 };
 
+std::ostream &operator<<(std::ostream &os, const FactPair &fact_pair);
+
 namespace std {
 template<>
 struct hash<FactPair> {
