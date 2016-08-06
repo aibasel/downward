@@ -24,8 +24,10 @@ namespace hm_heuristic {
 class HMHeuristic : public Heuristic {
     using Tuple = std::vector<FactPair>;
     // parameters
-    int m;
-    bool has_cond_effects;
+    const int m;
+    const bool has_cond_effects;
+
+    const Tuple goals;
 
     // h^m table
     std::map<Tuple, int> hm_table;
@@ -60,8 +62,8 @@ protected:
     virtual void initialize();
 
 public:
-    HMHeuristic(const options::Options &opts);
-    virtual ~HMHeuristic();
+    explicit HMHeuristic(const options::Options &opts);
+
     virtual bool dead_ends_are_reliable() const;
 };
 }
