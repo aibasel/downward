@@ -41,7 +41,7 @@ int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
     if (is_goal_state(task_proxy, state)) {
         return 0;
     } else {
-        Tuple s_tup = state_to_tuple(state);
+        Tuple s_tup = get_fact_pairs(state);
 
         init_hm_table(s_tup);
         update_hm_table();
@@ -182,15 +182,6 @@ int HMHeuristic::check_tuple_in_tuple(
         }
     }
     return 0;
-}
-
-
-HMHeuristic::Tuple HMHeuristic::state_to_tuple(const State &state) const {
-    Tuple tuple;
-    for (FactProxy fact : state) {
-        tuple.push_back(fact.get_pair());
-    }
-    return tuple;
 }
 
 
