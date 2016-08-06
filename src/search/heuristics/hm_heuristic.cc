@@ -16,11 +16,8 @@ namespace hm_heuristic {
 HMHeuristic::HMHeuristic(const Options &opts)
     : Heuristic(opts),
       m(opts.get<int>("m")),
-      has_cond_effects(has_conditional_effects(task_proxy)) {
-}
-
-
-HMHeuristic::~HMHeuristic() {
+      has_cond_effects(has_conditional_effects(task_proxy)),
+      goals(get_fact_pairs(task_proxy.get_goals())) {
 }
 
 
@@ -48,7 +45,6 @@ int HMHeuristic::compute_heuristic(const GlobalState &global_state) {
         init_hm_table(s_tup);
         update_hm_table();
 
-        Tuple goals = get_fact_pairs(task_proxy.get_goals());
         int h = eval(goals);
 
         if (h == numeric_limits<int>::max())
@@ -119,7 +115,6 @@ void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
             }
 
             sort(pre.begin(), pre.end());
-
 
             set<int> vars;
             bool is_valid = true;
@@ -281,7 +276,6 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_property("consistent",
                              "yes for tasks without conditional "
                              "effects or axioms");
-
     parser.document_property("safe",
                              "yes for tasks without conditional "
                              "effects or axioms");
@@ -291,7 +285,7 @@ static Heuristic *_parse(OptionParser &parser) {
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
-        return 0;
+        return nullptr;
     else
         return new HMHeuristic(opts);
 }
