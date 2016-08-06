@@ -39,11 +39,11 @@ class HMHeuristic : public Heuristic {
     void extend_tuple(const Tuple &t, const OperatorProxy &op);
 
     int check_tuple_in_tuple(const Tuple &tuple, const Tuple &big_tuple) const;
-    void state_to_tuple(const State &state, Tuple &t) const;
+    Tuple state_to_tuple(const State &state) const;
 
     int get_operator_pre_value(const OperatorProxy &op, int var) const;
-    void get_operator_pre(const OperatorProxy &op, Tuple &t) const;
-    void get_operator_eff(const OperatorProxy &op, Tuple &t) const;
+    Tuple get_operator_pre(const OperatorProxy &op) const;
+    Tuple get_operator_eff(const OperatorProxy &op) const;
     bool contradict_effect_of(const OperatorProxy &op, int var, int val) const;
 
     void generate_all_tuples();
