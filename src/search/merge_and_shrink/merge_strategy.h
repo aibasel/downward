@@ -32,6 +32,11 @@ class FactoredTransitionSystem;
   within an SCC, it makes use of a stateless merge strategy or a merge tree,
   until that SCC has been entirely processed. There is currently no such merge
   strategy in the Fast Downward repository.
+
+  NOTE: While stateless merge strategies have full control over the merge
+  order, this is not true for the specific implementation of merge tree,
+  because we always perform the next "left-most" merge in the merge tree.
+  See also the documentation in merge_tree.h.
 */
 class MergeStrategy {
 protected:
