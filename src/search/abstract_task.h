@@ -16,12 +16,6 @@ class Options;
 }
 
 struct FactPair {
-private:
-    std::pair<int, int> get_pair() const {
-        return std::make_pair(var, value);
-    }
-
-public:
     int var;
     int value;
 
@@ -30,15 +24,15 @@ public:
     }
 
     bool operator<(const FactPair &other) const {
-        return get_pair() < other.get_pair();
+        return var < other.var || (var == other.var && value < other.value);
     }
 
     bool operator==(const FactPair &other) const {
-        return get_pair() == other.get_pair();
+        return var == other.var && value == other.value;
     }
 
     bool operator!=(const FactPair &other) const {
-        return !(*this == other);
+        return var != other.var || value != other.value;
     }
 };
 
@@ -46,8 +40,7 @@ namespace std {
 template<>
 struct hash<FactPair> {
     size_t operator()(const FactPair &fact) const {
-        std::pair<int, int> raw_fact = make_pair(
-            fact.var, fact.value);
+        std::pair<int, int> raw_fact(fact.var, fact.value);
         std::hash<std::pair<int, int>> hasher;
         return hasher(raw_fact);
     }
