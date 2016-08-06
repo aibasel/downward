@@ -15,9 +15,11 @@ public:
     explicit MergeTreeFactoryLinear(const options::Options &options);
     virtual ~MergeTreeFactoryLinear() override = default;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
+        std::shared_ptr<AbstractTask> task) override;
+    virtual std::unique_ptr<MergeTree> compute_merge_tree(
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts,
-        const std::vector<int> &subset = std::vector<int>()) override;
+        const std::vector<int> &indices_subset) override;
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

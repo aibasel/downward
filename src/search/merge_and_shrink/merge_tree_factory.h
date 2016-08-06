@@ -29,9 +29,11 @@ public:
     virtual ~MergeTreeFactory() = default;
     void dump_options() const;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
+        std::shared_ptr<AbstractTask> task) = 0;
+    virtual std::unique_ptr<MergeTree> compute_merge_tree(
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts,
-        const std::vector<int> &subset = std::vector<int>()) = 0;
+        const std::vector<int> &indices_subset);
     // Inheriting classes must call this method in their parsing methods.
     static void add_options_to_parser(options::OptionParser &parser);
 };
