@@ -6,6 +6,7 @@
 #include "../options/plugin.h"
 
 #include "../utils/rng_options.h"
+#include "../utils/system.h"
 
 #include <iostream>
 
@@ -20,6 +21,15 @@ void MergeTreeFactory::dump_options() const {
     cout << "Merge tree options: " << endl;
     cout << "Type: " << name() << endl;
     dump_tree_specific_options();
+}
+
+unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
+    shared_ptr<AbstractTask>,
+    FactoredTransitionSystem &,
+    const std::vector<int> &) {
+    cerr << "This merge tree does not support being computed on a subset "
+            "of indices for a given factored transition system!" << endl;
+    utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
 }
 
 void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {

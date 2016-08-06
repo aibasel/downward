@@ -14,6 +14,8 @@
 #include "../utils/rng_options.h"
 #include "../utils/system.h"
 
+#include <algorithm>
+
 using namespace std;
 
 namespace merge_and_shrink {
@@ -24,54 +26,79 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
+    shared_ptr<AbstractTask> task) {
+    VariableOrderFinder vof(task, variable_order_type);
+    MergeTreeNode *root = new MergeTreeNode(vof.next());
+    while (!vof.done()) {
+        MergeTreeNode *right_child = new MergeTreeNode(vof.next());
+        root = new MergeTreeNode(root, right_child);
+    }
+    return utils::make_unique_ptr<MergeTree>(
+        root, rng);
+}
+
+unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     shared_ptr<AbstractTask> task,
     FactoredTransitionSystem &fts,
-    const vector<int> &subset) {
+    const vector<int> &indices_subset) {
+    /*
+      Compute a mapping from state variables to transition system indices
+      that contain those variables. Also set all indices not contained
+      indices_subset to "used".
+    */
+    TaskProxy task_proxy(*task);
+    int num_vars = task_proxy.get_variables().size();
+    int num_ts = fts.get_size();
+    vector<int> var_to_ts_index(num_vars, -1);
+    vector<bool> used_ts_indices(num_ts, true);
+    for (int ts_index = 0; ts_index < num_ts; ++ts_index) {
+        if (fts.is_active(ts_index)) {
+            bool use_ts_index =
+                find(indices_subset.begin(), indices_subset.end(), ts_index) != indices_subset.end();
+            if (use_ts_index) {
+                used_ts_indices[ts_index] = false;
+            }
+            const vector<int> &vars =
+                fts.get_ts(ts_index).get_incorporated_variables();
+            for (int var : vars) {
+                var_to_ts_index[var] = ts_index;
+            }
+        }
+    }
+
+    /*
+     Compute the merge tree, using transition systems corresponding to
+     variables in order given by the variable order finder, implicitly
+     skipping all indices not in indices_subset, because these have been set
+     to "used" above.
+    */
     VariableOrderFinder vof(task, variable_order_type);
-    if (subset.empty()) {
-        MergeTreeNode *root = new MergeTreeNode(vof.next());
-        while (!vof.done()) {
-            MergeTreeNode *right_child = new MergeTreeNode(vof.next());
+
+    int next_var = vof.next();
+    int ts_index = var_to_ts_index[next_var];
+    assert(ts_index != -1);
+    // find the first valid ts index
+    while (used_ts_indices[ts_index]) {
+        assert(!vof.done());
+        next_var = vof.next();
+        ts_index = var_to_ts_index[next_var];
+        assert(ts_index != -1);
+    }
+    used_ts_indices[ts_index] = true;
+    MergeTreeNode *root = new MergeTreeNode(ts_index);
+
+    while (!vof.done()) {
+        next_var = vof.next();
+        ts_index = var_to_ts_index[next_var];
+        assert(ts_index != -1);
+        if (!used_ts_indices[ts_index]) {
+            used_ts_indices[ts_index] = true;
+            MergeTreeNode *right_child = new MergeTreeNode(ts_index);
             root = new MergeTreeNode(root, right_child);
         }
-        return utils::make_unique_ptr<MergeTree>(
-            root, rng);
-    } else {
-        // Compute a mapping from state variables to transition system indices
-        // that contain those variables.
-        TaskProxy task_proxy(*task);
-        int num_vars = task_proxy.get_variables().size();
-        vector<int> var_to_ts_index(num_vars);
-        int num_ts = fts.get_size();
-        for (int ts_index = 0; ts_index < num_ts; ++ts_index) {
-            if (fts.is_active(ts_index)) {
-                const vector<int> &vars =
-                    fts.get_ts(ts_index).get_incorporated_variables();
-                for (int var : vars) {
-                    var_to_ts_index[var] = ts_index;
-                }
-            }
-        }
-
-        // Compute the merge tree, using transition systems corresponding to
-        // variables in order given by the variable order finder.
-        vector<bool> used_ts_indices(fts.get_size(), false);
-        int next_var = vof.next();
-        int ts_index = var_to_ts_index[next_var];
-        used_ts_indices[ts_index] = true;
-        MergeTreeNode *root = new MergeTreeNode(ts_index);
-        while (!vof.done()) {
-            next_var = vof.next();
-            ts_index = var_to_ts_index[next_var];
-            if (!used_ts_indices[ts_index]) {
-                used_ts_indices[ts_index] = true;
-                MergeTreeNode *right_child = new MergeTreeNode(ts_index);
-                root = new MergeTreeNode(root, right_child);
-            }
-        }
-        return utils::make_unique_ptr<MergeTree>(
-            root, rng);
     }
+    return utils::make_unique_ptr<MergeTree>(
+        root, rng);
 }
 
 string MergeTreeFactoryLinear::name() const {
