@@ -33,9 +33,9 @@ SearchEngine *IteratedSearch::get_search_engine(
     return engine;
 }
 
-SearchEngine *IteratedSearch::create_phase(int p) {
+SearchEngine *IteratedSearch::create_phase(int phase) {
     int num_phases = engine_configs.size();
-    if (p >= num_phases) {
+    if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
            repeat_last_phase is true, but *not* if we didn't find a
            solution the last time around, since then this search would
@@ -50,11 +50,11 @@ SearchEngine *IteratedSearch::create_phase(int p) {
         }
     }
 
-    return get_search_engine(p);
+    return get_search_engine(phase);
 }
 
 SearchStatus IteratedSearch::step() {
-    current_search = create_phase(phase);
+    SearchEngine *current_search = create_phase(phase);
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -128,10 +128,9 @@ static SearchEngine *_parse(OptionParser &parser) {
     parser.document_synopsis("Iterated search", "");
     parser.document_note(
         "Note 1",
-        "We do no cache values between search iterations at the moment. "
-        "If you perform a LAMA-style iterative search, heuristic values "
-        "will be computed multiple times. "
-        "Adding heuristic caching is [issue108 http://issues.fast-downward.org/issue108].");
+        "We don't cache heuristic values between search iterations at"
+        " the moment. If you perform a LAMA-style iterative search,"
+        " heuristic values will be computed multiple times.");
     parser.document_note(
         "Note 2",
         "The configuration\n```\n"
