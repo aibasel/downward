@@ -47,6 +47,7 @@ bool has_conditional_effects(TaskProxy task);
 void verify_no_conditional_effects(TaskProxy task);
 
 double get_average_operator_cost(TaskProxy task_proxy);
+int get_min_operator_cost(TaskProxy task_proxy);
 
 template<class FactProxyCollection>
 std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {

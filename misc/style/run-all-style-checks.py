@@ -7,6 +7,7 @@ Run some syntax checks. Return 0 if all tests pass and 1 otherwise.
 
 from __future__ import print_function
 
+import glob
 import os
 import re
 import subprocess
@@ -57,6 +58,14 @@ def check_driver_pyflakes():
 
 def check_include_guard_convention():
     return subprocess.call("./check-include-guard-convention.py", cwd=DIR) == 0
+
+
+def check_cc_files():
+    search_dir = os.path.join(SRC_DIR, "search")
+    cc_files = (
+        glob.glob(os.path.join(search_dir, "*.cc")) +
+        glob.glob(os.path.join(search_dir, "*", "*.cc")))
+    return subprocess.call(["./check-cc-file.py"] + cc_files, cwd=DIR) == 0
 
 
 def check_preprocessor_and_search_style():

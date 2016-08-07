@@ -3,7 +3,8 @@
 using namespace std;
 
 namespace options {
-ArgError::ArgError(std::string msg_) : msg(msg_) {
+ArgError::ArgError(string msg)
+    : msg(msg) {
 }
 
 ParseError::ParseError(string m, ParseTree pt)

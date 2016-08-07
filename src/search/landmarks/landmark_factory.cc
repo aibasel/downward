@@ -52,7 +52,7 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   ensure that the TaskProxy used by the Exploration object is the same
   as the TaskProxy object passed to this function.
 */
-std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
+shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
     if (lm_graph)
         return lm_graph;
     utils::Timer lm_generation_timer;
@@ -781,7 +781,7 @@ void LandmarkFactory::compute_predecessor_information(
     Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
-    std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op) {
+    vector<unordered_map<pair<int, int>, int>> &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */
