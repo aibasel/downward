@@ -15,7 +15,7 @@ class DomainAbstractedTaskFactory {
 private:
     vector<int> domain_size;
     vector<int> initial_state_values;
-    vector<Fact> goals;
+    vector<FactPair> goals;
     vector<vector<string>> fact_names;
     vector<vector<int>> value_map;
     shared_ptr<AbstractTask> task;
@@ -56,7 +56,7 @@ DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
     }
 
     // Apply domain abstraction to goals.
-    for (Fact &goal : goals) {
+    for (FactPair &goal : goals) {
         goal.value = value_map[goal.var][goal.value];
     }
 
@@ -78,7 +78,7 @@ void DomainAbstractedTaskFactory::initialize(const AbstractTask &parent) {
         fact_names[var].resize(num_values);
         for (int value = 0; value < num_values; ++value) {
             value_map[var][value] = value;
-            fact_names[var][value] = parent.get_fact_name(Fact(var, value));
+            fact_names[var][value] = parent.get_fact_name(FactPair(var, value));
         }
     }
 }

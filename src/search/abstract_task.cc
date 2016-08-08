@@ -14,6 +14,11 @@
 using namespace std;
 using utils::ExitCode;
 
+ostream &operator<<(ostream &os, const FactPair &fact_pair) {
+    os << fact_pair.var << "=" << fact_pair.value;
+    return os;
+}
+
 const shared_ptr<AbstractTask> get_task_from_options(const Options &opts) {
     /*
       TODO: This code is only intended for the transitional period while we
