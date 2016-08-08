@@ -275,11 +275,24 @@ public:
         return FactProxy(*task, id, index);
     }
 
+    bool is_derived() const {
+        int axiom_layer = task->get_variable_axiom_layer(id);
+        return axiom_layer != -1;
+    }
+
     int get_axiom_layer() const {
-        return task->get_variable_axiom_layer(id);
+        int axiom_layer = task->get_variable_axiom_layer(id);
+        /*
+          This should only be called for derived variables.
+          Non-derived variables have axiom_layer == -1.
+          Use var.is_derived() to check.
+        */
+        assert(axiom_layer >= 0);
+        return axiom_layer;
     }
 
     int get_default_axiom_value() const {
+        assert(is_derived());
         return task->get_variable_default_axiom_value(id);
     }
 };

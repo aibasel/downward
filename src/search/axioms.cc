@@ -40,17 +40,22 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
 
     // Initialize negation-by-failure information
     int last_layer = -1;
-    for (VariableProxy var : task_proxy.get_variables())
-        last_layer = max(last_layer, var.get_axiom_layer());
+    for (VariableProxy var : task_proxy.get_variables()) {
+        if (var.is_derived()) {
+           last_layer = max(last_layer, var.get_axiom_layer());
+        }
+    }
     nbf_info_by_layer.resize(last_layer + 1);
 
     for (VariableProxy var : task_proxy.get_variables()) {
-        int var_id = var.get_id();
-        int layer = var.get_axiom_layer();
-        if (layer != -1 && layer != last_layer) {
-            int nbf_value = var.get_default_axiom_value();
-            AxiomLiteral *nbf_literal = &axiom_literals[var_id][nbf_value];
-            nbf_info_by_layer[layer].emplace_back(var_id, nbf_literal);
+        if (var.is_derived()) {
+            int layer = var.get_axiom_layer();
+            if (layer != last_layer) {
+                int var_id = var.get_id();
+                int nbf_value = var.get_default_axiom_value();
+                AxiomLiteral *nbf_literal = &axiom_literals[var_id][nbf_value];
+                nbf_info_by_layer[layer].emplace_back(var_id, nbf_literal);
+            }
         }
     }
 }
@@ -66,7 +71,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     assert(queue.empty());
     for (VariableProxy var : variables) {
         int var_id = var.get_id();
-        if (var.get_axiom_layer() != -1) {
+        if (var.is_derived()) {
             state_packer.set(buffer, var_id, var.get_default_axiom_value());
         } else {
             int value = state_packer.get(buffer, var_id);
@@ -119,6 +124,7 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
             for (size_t i = 0; i < nbf_info.size(); ++i) {
                 int var_no = nbf_info[i].var_no;
                 VariableProxy var = variables[var_no];
+                assert(var.is_derived());
                 if (state_packer.get(buffer, var_no) == var.get_default_axiom_value())
                     queue.push_back(nbf_info[i].literal);
             }
