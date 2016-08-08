@@ -26,9 +26,12 @@ int DomainAbstractedTask::get_variable_domain_size(int var) const {
     return domain_size[var];
 }
 
-int DomainAbstractedTask::get_variable_default_axiom_value(int var) const {
-    int parent_value = parent->get_variable_default_axiom_value(var);
-    return get_abstract_value(Fact(var, parent_value));
+int DomainAbstractedTask::get_variable_axiom_layer(int) const {
+    ABORT("DomainAbstractedTask doesn't support axioms.");
+}
+
+int DomainAbstractedTask::get_variable_default_axiom_value(int) const {
+    ABORT("DomainAbstractedTask doesn't support axioms.");
 }
 
 const string &DomainAbstractedTask::get_fact_name(const Fact &fact) const {
@@ -46,10 +49,8 @@ Fact DomainAbstractedTask::get_operator_precondition(
 }
 
 Fact DomainAbstractedTask::get_operator_effect_condition(
-    int op_index, int eff_index, int cond_index, bool is_axiom) const {
-    return get_abstract_fact(
-        parent->get_operator_effect_condition(
-            op_index, eff_index, cond_index, is_axiom));
+    int, int, int, bool) const {
+    ABORT("DomainAbstractedTask doesn't support conditional effects.");
 }
 
 Fact DomainAbstractedTask::get_operator_effect(
