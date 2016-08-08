@@ -48,6 +48,16 @@ Fact DomainAbstractedTask::get_operator_precondition(
         parent->get_operator_precondition(op_index, fact_index, is_axiom));
 }
 
+int DomainAbstractedTask::get_num_operator_effect_conditions(
+    int op_index, int eff_index, bool is_axiom) const {
+    int num_conditions = parent->get_num_operator_effect_conditions(
+        op_index, eff_index, is_axiom);
+    if (num_conditions > 0) {
+        ABORT("DomainAbstractedTask doesn't support conditional effects.");
+    }
+    return num_conditions;
+}
+
 Fact DomainAbstractedTask::get_operator_effect_condition(
     int, int, int, bool) const {
     ABORT("DomainAbstractedTask doesn't support conditional effects.");
@@ -57,6 +67,14 @@ Fact DomainAbstractedTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     return get_abstract_fact(
         parent->get_operator_effect(op_index, eff_index, is_axiom));
+}
+
+int DomainAbstractedTask::get_num_axioms() const {
+    int num_axioms = parent->get_num_axioms();
+    if (num_axioms > 0) {
+        ABORT("DomainAbstractedTask doesn't support axioms.");
+    }
+    return num_axioms;
 }
 
 Fact DomainAbstractedTask::get_goal_fact(int index) const {
