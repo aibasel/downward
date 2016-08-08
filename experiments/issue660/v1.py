@@ -52,7 +52,17 @@ def main(revisions=None):
     )
 
     exp.add_comparison_table_step(
-        filter_domain=suites.suite_satisficing_adl()
+        filter_domain=[
+            'assembly',
+            'miconic-fulladl',
+            'openstacks',
+            'openstacks-sat08-adl',
+            'optical-telegraphs',
+            'philosophers',
+            'psr-large',
+            'psr-middle',
+            'trucks',
+        ],
     )
 
     if matplotlib:
