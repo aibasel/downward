@@ -51,7 +51,9 @@ def main(revisions=None):
         email='florian.pommerening@unibas.ch',
     )
 
-    exp.add_comparison_table_step()
+    exp.add_comparison_table_step(
+        filter_domain=suites.suite_satisficing_adl()
+    )
 
     if matplotlib:
         for attribute in ["memory", "total_time"]:
