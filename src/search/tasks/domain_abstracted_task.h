@@ -53,10 +53,14 @@ public:
 
     virtual Fact get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;
+    virtual int get_num_operator_effect_conditions(
+        int op_index, int eff_index, bool is_axiom) const override;
     virtual Fact get_operator_effect_condition(
         int op_index, int eff_index, int cond_index, bool is_axiom) const override;
     virtual Fact get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
+
+    virtual int get_num_axioms() const override;
 
     virtual Fact get_goal_fact(int index) const override;
 
