@@ -34,6 +34,7 @@ class AxiomEvaluator {
 
     const std::shared_ptr<AbstractTask> task;
     TaskProxy task_proxy;
+
     std::vector<std::vector<AxiomLiteral>> axiom_literals;
     std::vector<AxiomRule> rules;
     std::vector<std::vector<NegationByFailureInfo>> nbf_info_by_layer;
