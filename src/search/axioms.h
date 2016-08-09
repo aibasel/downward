@@ -32,7 +32,6 @@ class AxiomEvaluator {
             : var_no(var), literal(lit) {}
     };
 
-    const std::shared_ptr<AbstractTask> task;
     bool task_has_axioms;
 
     std::vector<std::vector<AxiomLiteral>> axiom_literals;

@@ -10,10 +10,8 @@
 
 using namespace std;
 
-AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
-    : task(task) {
+AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
-
     task_has_axioms = has_axioms(task_proxy);
     if (task_has_axioms) {
         VariablesProxy variables = task_proxy.get_variables();
