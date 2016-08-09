@@ -22,9 +22,9 @@ PDBRelation compute_superset_relation(const PDBCollection &pattern_databases) {
         const Pattern &pattern1 = pdb1->get_pattern();
         for (const shared_ptr<PatternDatabase> &pdb2 : pattern_databases) {
             const Pattern &pattern2 = pdb2->get_pattern();
-            // Note that std::includes assumes that patterns are sorted.
-            if (std::includes(pattern1.begin(), pattern1.end(),
-                              pattern2.begin(), pattern2.end())) {
+            // Note that includes assumes that patterns are sorted.
+            if (includes(pattern1.begin(), pattern1.end(),
+                         pattern2.begin(), pattern2.end())) {
                 superset_relation.insert(make_pair(pdb1.get(), pdb2.get()));
                 /*
                   If we already added the inverse tuple to the relation, the

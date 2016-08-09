@@ -78,7 +78,7 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
         uncovered_samples.push_back(state);
     }
     optimizer.optimize_for_samples(uncovered_samples);
-    std::unique_ptr<PotentialFunction> function = optimizer.get_potential_function();
+    unique_ptr<PotentialFunction> function = optimizer.get_potential_function();
     size_t last_num_samples = samples_to_functions.size();
     remove_covered_samples(*function, samples_to_functions);
     if (samples_to_functions.size() == last_num_samples) {
@@ -107,7 +107,7 @@ void DiversePotentialHeuristics::cover_samples(
     cout << "Time for covering samples: " << covering_timer << endl;
 }
 
-std::vector<std::unique_ptr<PotentialFunction>>
+vector<unique_ptr<PotentialFunction>>
 DiversePotentialHeuristics::find_functions() {
     assert(diverse_functions.empty());
     utils::Timer init_timer;

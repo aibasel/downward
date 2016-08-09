@@ -86,7 +86,6 @@ class AdditiveCartesianHeuristic : public Heuristic {
     void print_statistics() const;
 
 protected:
-    virtual void initialize();
     virtual int compute_heuristic(const GlobalState &global_state);
     int compute_heuristic(const State &state);
 

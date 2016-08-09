@@ -13,7 +13,7 @@ struct MatchTree::Node {
     static const int LEAF_NODE = -1;
     Node();
     ~Node();
-    std::vector<const AbstractOperator *> applicable_operators;
+    vector<const AbstractOperator *> applicable_operators;
     // The variable which this node represents.
     int var_id;
     int var_domain_size;
@@ -83,15 +83,15 @@ void MatchTree::insert_recursive(
         *edge_from_parent = new Node();
     }
 
-    const vector<pair<int, int>> &regression_preconditions =
+    const vector<FactPair> &regression_preconditions =
         op.get_regression_preconditions();
     Node *node = *edge_from_parent;
     if (pre_index == static_cast<int>(regression_preconditions.size())) {
         // All preconditions have been checked, insert op.
         node->applicable_operators.push_back(&op);
     } else {
-        const pair<int, int> &var_val = regression_preconditions[pre_index];
-        int pattern_var_id = var_val.first;
+        const FactPair &fact = regression_preconditions[pre_index];
+        int pattern_var_id = fact.var;
         int var_id = pattern[pattern_var_id];
         VariableProxy var = task_proxy.get_variables()[var_id];
         int var_domain_size = var.get_domain_size();
@@ -114,14 +114,14 @@ void MatchTree::insert_recursive(
         /* Set up edge to the correct child (for which we want to call
            this function recursively). */
         Node **edge_to_child = 0;
-        if (node->var_id == var_val.first) {
+        if (node->var_id == fact.var) {
             // Operator has a precondition on the variable tested by node.
-            edge_to_child = &node->successors[var_val.second];
+            edge_to_child = &node->successors[fact.value];
             ++pre_index;
         } else {
             // Operator doesn't have a precondition on the variable tested by
             // node: follow/create the star-edge.
-            assert(node->var_id < var_val.first);
+            assert(node->var_id < fact.var);
             edge_to_child = &node->star_successor;
         }
 

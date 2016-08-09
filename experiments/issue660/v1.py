@@ -10,7 +10,7 @@ try:
     from relativescatter import RelativeScatterPlotReport
     matplotlib = True
 except ImportError:
-    print 'matplotlib not availabe, scatter plots not available'
+    print 'matplotlib not available, scatter plots not available'
     matplotlib = False
 
 def main(revisions=None):

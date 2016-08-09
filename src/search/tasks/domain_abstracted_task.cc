@@ -11,7 +11,7 @@ DomainAbstractedTask::DomainAbstractedTask(
     const shared_ptr<AbstractTask> &parent,
     vector<int> &&domain_size,
     vector<int> &&initial_state_values,
-    vector<Fact> &&goals,
+    vector<FactPair> &&goals,
     vector<vector<string>> &&fact_names,
     vector<vector<int>> &&value_map)
     : DelegatingTask(parent),
@@ -34,15 +34,15 @@ int DomainAbstractedTask::get_variable_default_axiom_value(int) const {
     ABORT("DomainAbstractedTask doesn't support axioms.");
 }
 
-const string &DomainAbstractedTask::get_fact_name(const Fact &fact) const {
+const string &DomainAbstractedTask::get_fact_name(const FactPair &fact) const {
     return fact_names[fact.var][fact.value];
 }
 
-bool DomainAbstractedTask::are_facts_mutex(const Fact &, const Fact &) const {
+bool DomainAbstractedTask::are_facts_mutex(const FactPair &, const FactPair &) const {
     ABORT("DomainAbstractedTask doesn't support querying mutexes.");
 }
 
-Fact DomainAbstractedTask::get_operator_precondition(
+FactPair DomainAbstractedTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
     return get_abstract_fact(
         parent->get_operator_precondition(op_index, fact_index, is_axiom));
@@ -58,12 +58,12 @@ int DomainAbstractedTask::get_num_operator_effect_conditions(
     return num_conditions;
 }
 
-Fact DomainAbstractedTask::get_operator_effect_condition(
+FactPair DomainAbstractedTask::get_operator_effect_condition(
     int, int, int, bool) const {
     ABORT("DomainAbstractedTask doesn't support conditional effects.");
 }
 
-Fact DomainAbstractedTask::get_operator_effect(
+FactPair DomainAbstractedTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     return get_abstract_fact(
         parent->get_operator_effect(op_index, eff_index, is_axiom));
@@ -77,7 +77,7 @@ int DomainAbstractedTask::get_num_axioms() const {
     return num_axioms;
 }
 
-Fact DomainAbstractedTask::get_goal_fact(int index) const {
+FactPair DomainAbstractedTask::get_goal_fact(int index) const {
     return get_abstract_fact(parent->get_goal_fact(index));
 }
 

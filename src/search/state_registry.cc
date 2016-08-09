@@ -7,7 +7,7 @@ using namespace std;
 
 StateRegistry::StateRegistry(const IntPacker &state_packer,
                              AxiomEvaluator &axiom_evaluator,
-                             const std::vector<int> &initial_state_data)
+                             const vector<int> &initial_state_data)
     : state_packer(state_packer),
       axiom_evaluator(axiom_evaluator),
       initial_state_data(initial_state_data),
