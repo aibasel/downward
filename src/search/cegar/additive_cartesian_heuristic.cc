@@ -18,8 +18,10 @@ namespace cegar {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     const options::Options &opts) {
     g_log << "Initializing additive Cartesian heuristic..." << endl;
+    vector<shared_ptr<SubtaskGenerator>> subtask_generators =
+        opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks");
     CostSaturation cost_saturation(
-        opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
+        subtask_generators,
         opts.get<int>("max_states"),
         opts.get<double>("max_time"),
         opts.get<bool>("use_general_costs"),

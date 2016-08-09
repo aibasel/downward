@@ -46,7 +46,7 @@ class CostSaturation {
 
 public:
     CostSaturation(
-        std::vector<std::shared_ptr<SubtaskGenerator>> subtask_generators,
+        std::vector<std::shared_ptr<SubtaskGenerator>> &subtask_generators,
         int max_states,
         double max_time,
         bool use_general_costs,

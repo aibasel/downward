@@ -32,7 +32,7 @@ namespace cegar {
 static const int memory_padding_in_mb = 75;
 
 CostSaturation::CostSaturation(
-    vector<shared_ptr<SubtaskGenerator>> subtask_generators,
+    vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
     int max_states,
     double max_time,
     bool use_general_costs,
