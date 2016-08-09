@@ -224,7 +224,7 @@ void read_axioms(istream &in) {
     for (int i = 0; i < count; ++i)
         g_axioms.push_back(GlobalOperator(in, true));
 
-    g_axiom_evaluator = new AxiomEvaluator(g_root_task());
+    g_axiom_evaluator = new AxiomEvaluator(TaskProxy(*g_root_task()));
 }
 
 void read_everything(istream &in) {
