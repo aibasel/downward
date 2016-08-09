@@ -30,12 +30,7 @@ enum class FactOrder {
 
 
 /*
-  SubtaskGenerators create focused subtasks.
-
-  TaskDuplicator returns copies of the original task. GoalDecomposition
-  uses ModifiedGoalsTask to set a single goal fact.
-  LandmarkDecomposition nests ModifiedGoalsTask and
-  DomainAbstractedTask to focus on a single landmark fact.
+  Create focused subtasks.
 */
 class SubtaskGenerator {
 public:
@@ -45,6 +40,9 @@ public:
 };
 
 
+/*
+  Return copies of the original task.
+*/
 class TaskDuplicator : public SubtaskGenerator {
     int num_copies;
 
@@ -56,6 +54,9 @@ public:
 };
 
 
+/*
+  Use ModifiedGoalsTask to return a subtask for each goal fact.
+*/
 class GoalDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
 
@@ -69,6 +70,10 @@ public:
 };
 
 
+/*
+  Nest ModifiedGoalsTask and DomainAbstractedTask to return subtasks
+  focussing on a single landmark fact.
+*/
 class LandmarkDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
     const std::shared_ptr<landmarks::LandmarkGraph> landmark_graph;

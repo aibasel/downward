@@ -3,12 +3,10 @@
 
 #include "../heuristic.h"
 
-#include <memory>
 #include <vector>
 
 namespace cegar {
 class CartesianHeuristicFunction;
-class SubtaskGenerator;
 
 /*
   Store CartesianHeuristicFunctions and compute overall heuristic by
@@ -17,9 +15,10 @@ class SubtaskGenerator;
 class AdditiveCartesianHeuristic : public Heuristic {
     const std::vector<CartesianHeuristicFunction> heuristic_functions;
 
-protected:
-    virtual int compute_heuristic(const GlobalState &global_state);
     int compute_heuristic(const State &state);
+
+protected:
+    virtual int compute_heuristic(const GlobalState &global_state) override;
 
 public:
     explicit AdditiveCartesianHeuristic(const options::Options &opts);
