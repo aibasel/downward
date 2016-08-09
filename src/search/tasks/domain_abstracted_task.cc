@@ -7,6 +7,21 @@
 using namespace std;
 
 namespace extra_tasks {
+static bool has_conditional_effects(const AbstractTask &task) {
+    int num_ops = task.get_num_operators();
+    for (int op_index = 0; op_index < num_ops; ++op_index) {
+        int num_effs = task.get_num_operator_effects(op_index, false);
+        for (int eff_index = 0; eff_index < num_effs; ++eff_index) {
+            int num_conditions = task.get_num_operator_effect_conditions(
+                op_index, eff_index, false);
+            if (num_conditions > 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 DomainAbstractedTask::DomainAbstractedTask(
     const shared_ptr<AbstractTask> &parent,
     vector<int> &&domain_size,
@@ -20,18 +35,16 @@ DomainAbstractedTask::DomainAbstractedTask(
       goals(move(goals)),
       fact_names(move(fact_names)),
       value_map(move(value_map)) {
+    if (parent->get_num_axioms() > 0) {
+        ABORT("DomainAbstractedTask doesn't support axioms.");
+    }
+    if (has_conditional_effects(*parent)) {
+        ABORT("DomainAbstractedTask doesn't support conditional effects.");
+    }
 }
 
 int DomainAbstractedTask::get_variable_domain_size(int var) const {
     return domain_size[var];
-}
-
-int DomainAbstractedTask::get_variable_axiom_layer(int) const {
-    ABORT("DomainAbstractedTask doesn't support axioms.");
-}
-
-int DomainAbstractedTask::get_variable_default_axiom_value(int) const {
-    ABORT("DomainAbstractedTask doesn't support axioms.");
 }
 
 const string &DomainAbstractedTask::get_fact_name(const FactPair &fact) const {
@@ -48,33 +61,10 @@ FactPair DomainAbstractedTask::get_operator_precondition(
         parent->get_operator_precondition(op_index, fact_index, is_axiom));
 }
 
-int DomainAbstractedTask::get_num_operator_effect_conditions(
-    int op_index, int eff_index, bool is_axiom) const {
-    int num_conditions = parent->get_num_operator_effect_conditions(
-        op_index, eff_index, is_axiom);
-    if (num_conditions > 0) {
-        ABORT("DomainAbstractedTask doesn't support conditional effects.");
-    }
-    return num_conditions;
-}
-
-FactPair DomainAbstractedTask::get_operator_effect_condition(
-    int, int, int, bool) const {
-    ABORT("DomainAbstractedTask doesn't support conditional effects.");
-}
-
 FactPair DomainAbstractedTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
     return get_abstract_fact(
         parent->get_operator_effect(op_index, eff_index, is_axiom));
-}
-
-int DomainAbstractedTask::get_num_axioms() const {
-    int num_axioms = parent->get_num_axioms();
-    if (num_axioms > 0) {
-        ABORT("DomainAbstractedTask doesn't support axioms.");
-    }
-    return num_axioms;
 }
 
 FactPair DomainAbstractedTask::get_goal_fact(int index) const {
