@@ -62,6 +62,15 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
                 }
             }
         }
+
+        VariablesProxy variables = task_proxy.get_variables();
+        default_values.reserve(variables.size());
+        for (VariableProxy var : variables) {
+            if (var.is_derived())
+                default_values.emplace_back(var.get_default_axiom_value());
+            else
+                default_values.emplace_back(-1);
+        }
     }
 }
 
@@ -71,13 +80,11 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     if (!task_has_axioms)
         return;
 
-    VariablesProxy variables = TaskProxy(*task).get_variables();
-
     assert(queue.empty());
-    for (VariableProxy var : variables) {
-        int var_id = var.get_id();
-        if (var.is_derived()) {
-            state_packer.set(buffer, var_id, var.get_default_axiom_value());
+    for (size_t var_id = 0; var_id < default_values.size(); ++var_id) {
+        int default_value = default_values[var_id];
+        if (default_value != -1) {
+            state_packer.set(buffer, var_id, default_value);
         } else {
             int value = state_packer.get(buffer, var_id);
             queue.push_back(&axiom_literals[var_id][value]);
@@ -128,9 +135,8 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
             const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
             for (size_t i = 0; i < nbf_info.size(); ++i) {
                 int var_no = nbf_info[i].var_no;
-                VariableProxy var = variables[var_no];
-                assert(var.is_derived());
-                if (state_packer.get(buffer, var_no) == var.get_default_axiom_value())
+                assert(default_values[var_no] != -1); // Verify that variable is derived.
+                if (state_packer.get(buffer, var_no) == default_values[var_no])
                     queue.push_back(nbf_info[i].literal);
             }
         }
