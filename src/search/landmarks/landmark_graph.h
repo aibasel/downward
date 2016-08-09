@@ -131,7 +131,7 @@ public:
     LandmarkNode *get_lm_for_index(int);
     int get_needed_cost() const {return needed_cost; }
     int get_reached_cost() const {return reached_cost; }
-    LandmarkNode *get_landmark(const Fact &fact) const;
+    LandmarkNode *get_landmark(const FactPair &fact) const;
 
     // ------------------------------------------------------------------------------
     // methods needed by both landmarkgraph-factories and non-landmarkgraph-factories

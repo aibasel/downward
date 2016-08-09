@@ -105,8 +105,8 @@ void LPSolver::clear_temporary_data() {
 }
 
 void LPSolver::load_problem(LPObjectiveSense sense,
-                            const std::vector<LPVariable> &variables,
-                            const std::vector<LPConstraint> &constraints) {
+                            const vector<LPVariable> &variables,
+                            const vector<LPConstraint> &constraints) {
     clear_temporary_data();
     is_initialized = false;
     num_permanent_constraints = constraints.size();
@@ -169,7 +169,7 @@ void LPSolver::load_problem(LPObjectiveSense sense,
     clear_temporary_data();
 }
 
-void LPSolver::add_temporary_constraints(const std::vector<LPConstraint> &constraints) {
+void LPSolver::add_temporary_constraints(const vector<LPConstraint> &constraints) {
     if (!constraints.empty()) {
         clear_temporary_data();
         int num_rows = constraints.size();
@@ -323,11 +323,11 @@ double LPSolver::get_objective_value() const {
     }
 }
 
-std::vector<double> LPSolver::extract_solution() const {
+vector<double> LPSolver::extract_solution() const {
     assert(has_optimal_solution());
     try {
         const double *sol = lp_solver->getColSolution();
-        return std::vector<double>(sol, sol + get_num_variables());
+        return vector<double>(sol, sol + get_num_variables());
     } catch (CoinError &error) {
         handle_coin_error(error);
     }

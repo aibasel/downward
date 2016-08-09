@@ -2,9 +2,11 @@
 
 #include "../plugin.h"
 
+using namespace std;
+
 namespace operator_counting {
 void ConstraintGenerator::initialize_constraints(
-    const std::shared_ptr<AbstractTask>, std::vector<lp::LPConstraint> &, double) {
+    const shared_ptr<AbstractTask>, vector<lp::LPConstraint> &, double) {
 }
 
 static PluginTypePlugin<ConstraintGenerator> _type_plugin(
