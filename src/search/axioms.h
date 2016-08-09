@@ -56,7 +56,7 @@ class AxiomEvaluator {
     */
     std::vector<AxiomLiteral *> queue;
 public:
-    explicit AxiomEvaluator(const std::shared_ptr<AbstractTask> &task);
+    explicit AxiomEvaluator(const TaskProxy &task_proxy);
     void evaluate(PackedStateBin *buffer, const IntPacker &state_packer);
 };
 
