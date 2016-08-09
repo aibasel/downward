@@ -16,12 +16,15 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
 
     task_has_axioms = has_axioms(task_proxy);
     if (task_has_axioms) {
+        VariablesProxy variables = task_proxy.get_variables();
+        AxiomsProxy axioms = task_proxy.get_axioms();
+
         // Initialize literals
-        for (VariableProxy var : task_proxy.get_variables())
+        for (VariableProxy var : variables)
             axiom_literals.emplace_back(var.get_domain_size());
 
         // Initialize rules
-        for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        for (OperatorProxy axiom : axioms) {
             assert(axiom.get_effects().size() == 1);
             EffectProxy cond_effect = axiom.get_effects()[0];
             FactPair effect = cond_effect.get_fact().get_pair();
@@ -32,7 +35,7 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
         }
 
         // Cross-reference rules and literals
-        for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        for (OperatorProxy axiom : axioms) {
             EffectProxy effect = axiom.get_effects()[0];
             for (FactProxy condition : effect.get_conditions()) {
                 int var_id = condition.get_variable().get_id();
@@ -44,14 +47,14 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
 
         // Initialize negation-by-failure information
         int last_layer = -1;
-        for (VariableProxy var : task_proxy.get_variables()) {
+        for (VariableProxy var : variables) {
             if (var.is_derived()) {
                last_layer = max(last_layer, var.get_axiom_layer());
             }
         }
         nbf_info_by_layer.resize(last_layer + 1);
 
-        for (VariableProxy var : task_proxy.get_variables()) {
+        for (VariableProxy var : variables) {
             if (var.is_derived()) {
                 int layer = var.get_axiom_layer();
                 if (layer != last_layer) {
@@ -63,7 +66,6 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
             }
         }
 
-        VariablesProxy variables = task_proxy.get_variables();
         default_values.reserve(variables.size());
         for (VariableProxy var : variables) {
             if (var.is_derived())
