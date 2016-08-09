@@ -47,7 +47,7 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task) {
         int last_layer = -1;
         for (VariableProxy var : variables) {
             if (var.is_derived()) {
-               last_layer = max(last_layer, var.get_axiom_layer());
+                last_layer = max(last_layer, var.get_axiom_layer());
             }
         }
         nbf_info_by_layer.resize(last_layer + 1);
@@ -94,14 +94,18 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
     for (AxiomRule &rule : rules) {
         rule.unsatisfied_conditions = rule.condition_count;
 
-        // TODO: In a perfect world, trivial axioms would have been
-        // compiled away, and we could have the following assertion
-        // instead of the following block.
-        // assert(rules[i].condition_counter != 0);
+        /*
+          TODO: In a perfect world, trivial axioms would have been
+          compiled away, and we could have the following assertion
+          instead of the following block.
+          assert(rule.condition_count != 0);
+        */
         if (rule.condition_count == 0) {
-            // NOTE: This duplicates code from the main loop below.
-            // I don't mind because this is (hopefully!) going away
-            // some time.
+            /*
+              NOTE: This duplicates code from the main loop below.
+              I don't mind because this is (hopefully!) going away
+              some time.
+            */
             int var_no = rule.effect_var;
             int val = rule.effect_val;
             if (state_packer.get(buffer, var_no) != val) {
@@ -129,13 +133,16 @@ void AxiomEvaluator::evaluate(PackedStateBin *buffer,
             }
         }
 
-        // Apply negation by failure rules. Skip this in last iteration
-        // to save some time (see issue420, msg3058).
+        /*
+          Apply negation by failure rules. Skip this in last iteration
+          to save some time (see issue420, msg3058).
+        */
         if (layer_no != nbf_info_by_layer.size() - 1) {
             const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
             for (size_t i = 0; i < nbf_info.size(); ++i) {
                 int var_no = nbf_info[i].var_no;
-                assert(default_values[var_no] != -1); // Verify that variable is derived.
+                // Verify that variable is derived.
+                assert(default_values[var_no] != -1);
                 if (state_packer.get(buffer, var_no) == default_values[var_no])
                     queue.push_back(nbf_info[i].literal);
             }
