@@ -11,50 +11,54 @@
 using namespace std;
 
 AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
-    : task(task),
-      task_proxy(*task) {
-    // Initialize literals
-    for (VariableProxy var : task_proxy.get_variables())
-        axiom_literals.emplace_back(var.get_domain_size());
+    : task(task) {
+    TaskProxy task_proxy(*task);
 
-    // Initialize rules
-    for (OperatorProxy axiom : task_proxy.get_axioms()) {
-        EffectProxy effect = axiom.get_effects()[0];
-        int cond_count = effect.get_conditions().size();
-        int eff_var = effect.get_fact().get_variable().get_id();
-        int eff_val = effect.get_fact().get_value();
-        AxiomLiteral *eff_literal = &axiom_literals[eff_var][eff_val];
-        rules.emplace_back(cond_count, eff_var, eff_val, eff_literal);
-    }
+    task_has_axioms = has_axioms(task_proxy);
+    if (task_has_axioms) {
+        // Initialize literals
+        for (VariableProxy var : task_proxy.get_variables())
+            axiom_literals.emplace_back(var.get_domain_size());
 
-    // Cross-reference rules and literals
-    for (OperatorProxy axiom : task_proxy.get_axioms()) {
-        EffectProxy effect = axiom.get_effects()[0];
-        for (FactProxy condition : effect.get_conditions()) {
-            int var_id = condition.get_variable().get_id();
-            int val = condition.get_value();
-            AxiomRule *rule = &rules[axiom.get_id()];
-            axiom_literals[var_id][val].condition_of.push_back(rule);
+        // Initialize rules
+        for (OperatorProxy axiom : task_proxy.get_axioms()) {
+            EffectProxy effect = axiom.get_effects()[0];
+            int cond_count = effect.get_conditions().size();
+            int eff_var = effect.get_fact().get_variable().get_id();
+            int eff_val = effect.get_fact().get_value();
+            AxiomLiteral *eff_literal = &axiom_literals[eff_var][eff_val];
+            rules.emplace_back(cond_count, eff_var, eff_val, eff_literal);
         }
-    }
 
-    // Initialize negation-by-failure information
-    int last_layer = -1;
-    for (VariableProxy var : task_proxy.get_variables()) {
-        if (var.is_derived()) {
-           last_layer = max(last_layer, var.get_axiom_layer());
+        // Cross-reference rules and literals
+        for (OperatorProxy axiom : task_proxy.get_axioms()) {
+            EffectProxy effect = axiom.get_effects()[0];
+            for (FactProxy condition : effect.get_conditions()) {
+                int var_id = condition.get_variable().get_id();
+                int val = condition.get_value();
+                AxiomRule *rule = &rules[axiom.get_id()];
+                axiom_literals[var_id][val].condition_of.push_back(rule);
+            }
         }
-    }
-    nbf_info_by_layer.resize(last_layer + 1);
 
-    for (VariableProxy var : task_proxy.get_variables()) {
-        if (var.is_derived()) {
-            int layer = var.get_axiom_layer();
-            if (layer != last_layer) {
-                int var_id = var.get_id();
-                int nbf_value = var.get_default_axiom_value();
-                AxiomLiteral *nbf_literal = &axiom_literals[var_id][nbf_value];
-                nbf_info_by_layer[layer].emplace_back(var_id, nbf_literal);
+        // Initialize negation-by-failure information
+        int last_layer = -1;
+        for (VariableProxy var : task_proxy.get_variables()) {
+            if (var.is_derived()) {
+               last_layer = max(last_layer, var.get_axiom_layer());
+            }
+        }
+        nbf_info_by_layer.resize(last_layer + 1);
+
+        for (VariableProxy var : task_proxy.get_variables()) {
+            if (var.is_derived()) {
+                int layer = var.get_axiom_layer();
+                if (layer != last_layer) {
+                    int var_id = var.get_id();
+                    int nbf_value = var.get_default_axiom_value();
+                    AxiomLiteral *nbf_literal = &axiom_literals[var_id][nbf_value];
+                    nbf_info_by_layer[layer].emplace_back(var_id, nbf_literal);
+                }
             }
         }
     }
@@ -63,10 +67,10 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
 // TODO rethink the way this is called: see issue348.
 void AxiomEvaluator::evaluate(PackedStateBin *buffer,
                               const IntPacker &state_packer) {
-    if (!has_axioms(task_proxy))
+    if (!task_has_axioms)
         return;
 
-    VariablesProxy variables = task_proxy.get_variables();
+    VariablesProxy variables = TaskProxy(*task).get_variables();
 
     assert(queue.empty());
     for (VariableProxy var : variables) {

@@ -33,7 +33,7 @@ class AxiomEvaluator {
     };
 
     const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
+    bool task_has_axioms;
 
     std::vector<std::vector<AxiomLiteral>> axiom_literals;
     std::vector<AxiomRule> rules;
