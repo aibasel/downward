@@ -13,7 +13,8 @@ class Node;
 
 /*
   This class stores the refinement hierarchy of a Cartesian
-  abstraction.
+  abstraction. The hierarchy forms a DAG with inner nodes for each
+  split and leaf nodes for the abstract states.
 
   It is used for efficient lookup of heuristic values during search.
 

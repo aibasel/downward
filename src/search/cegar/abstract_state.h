@@ -59,8 +59,9 @@ public:
   Store and update abstract Domains and transitions.
 */
 class AbstractState {
-private:
-    // Since the abstraction owns the state we don't need AbstractTask.
+    // TODO: The TaskProxy is only needed for splitting states. Once
+    //       this functionality has been moved outside AbstractState
+    //       (issue657) we should make sure that this member is removed.
     const TaskProxy &task_proxy;
 
     // Abstract domains for all variables.
