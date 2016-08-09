@@ -22,12 +22,13 @@ AxiomEvaluator::AxiomEvaluator(const std::shared_ptr<AbstractTask> &task)
 
         // Initialize rules
         for (OperatorProxy axiom : task_proxy.get_axioms()) {
-            EffectProxy effect = axiom.get_effects()[0];
-            int cond_count = effect.get_conditions().size();
-            int eff_var = effect.get_fact().get_variable().get_id();
-            int eff_val = effect.get_fact().get_value();
-            AxiomLiteral *eff_literal = &axiom_literals[eff_var][eff_val];
-            rules.emplace_back(cond_count, eff_var, eff_val, eff_literal);
+            assert(axiom.get_effects().size() == 1);
+            EffectProxy cond_effect = axiom.get_effects()[0];
+            FactPair effect = cond_effect.get_fact().get_pair();
+            int num_conditions = cond_effect.get_conditions().size();
+            AxiomLiteral *eff_literal = &axiom_literals[effect.var][effect.value];
+            rules.emplace_back(
+                num_conditions, effect.var, effect.value, eff_literal);
         }
 
         // Cross-reference rules and literals
