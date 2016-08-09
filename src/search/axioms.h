@@ -50,8 +50,10 @@ class AxiomEvaluator {
     */
     std::vector<int> default_values;
 
-    // The queue is an instance variable rather than a local variable
-    // to reduce reallocation effort. See issue420.
+    /*
+      The queue is an instance variable rather than a local variable
+      to reduce reallocation effort. See issue420.
+    */
     std::vector<AxiomLiteral *> queue;
 public:
     explicit AxiomEvaluator(const std::shared_ptr<AbstractTask> &task);
