@@ -6,7 +6,6 @@
 #include "global_state.h"
 #include "heuristic.h"
 #include "int_packer.h"
-#include "state_registry.h"
 #include "successor_generator.h"
 
 #include "tasks/root_task.h"
@@ -37,7 +36,7 @@ static const int PRE_FILE_VERSION = 3;
 //       are_mutex, which is at least better than exposing the data
 //       structure globally.)
 
-static vector<vector<set<Fact>>> g_inconsistent_facts;
+static vector<vector<set<FactPair>>> g_inconsistent_facts;
 
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -160,7 +159,7 @@ void read_mutexes(istream &in) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
         in >> num_facts;
-        vector<Fact> invariant_group;
+        vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
             int var;
@@ -169,8 +168,8 @@ void read_mutexes(istream &in) {
             invariant_group.emplace_back(var, value);
         }
         check_magic(in, "end_mutex_group");
-        for (const Fact &fact1 : invariant_group) {
-            for (const Fact &fact2 : invariant_group) {
+        for (const FactPair &fact1 : invariant_group) {
+            for (const FactPair &fact2 : invariant_group) {
                 if (fact1.var != fact2.var) {
                     /* The "different variable" test makes sure we
                        don't mark a fact as mutex with itself
@@ -262,20 +261,16 @@ void read_everything(istream &in) {
     g_state_packer = new IntPacker(g_variable_domain);
     cout << "done! [t=" << utils::g_timer << "]" << endl;
 
-    // NOTE: state registry stores the sizes of the state, so must be
-    // built after the problem has been read in.
-    g_state_registry = new StateRegistry;
-
     int num_vars = g_variable_domain.size();
     int num_facts = 0;
     for (int var = 0; var < num_vars; ++var)
         num_facts += g_variable_domain[var];
 
     cout << "Variables: " << num_vars << endl;
-    cout << "Facts: " << num_facts << endl;
+    cout << "FactPairs: " << num_facts << endl;
     cout << "Bytes per state: "
-         << g_state_packer->get_num_bins() *
-        g_state_packer->get_bin_size_in_bytes() << endl;
+         << g_state_packer->get_num_bins() * sizeof(IntPacker::Bin)
+         << endl;
 
     cout << "Building successor generator..." << flush;
     g_successor_generator = new SuccessorGenerator(g_root_task());
@@ -293,7 +288,7 @@ void dump_everything() {
     for (size_t i = 0; i < g_variable_name.size(); ++i)
         cout << "  " << g_variable_name[i]
              << " (range " << g_variable_domain[i] << ")" << endl;
-    GlobalState initial_state = g_initial_state();
+    State initial_state = TaskProxy(*g_root_task()).get_initial_state();
     cout << "Initial State (PDDL):" << endl;
     initial_state.dump_pddl();
     cout << "Initial State (FDR):" << endl;
@@ -352,16 +347,12 @@ void verify_no_axioms_no_conditional_effects() {
     verify_no_conditional_effects();
 }
 
-bool are_mutex(const Fact &a, const Fact &b) {
+bool are_mutex(const FactPair &a, const FactPair &b) {
     if (a.var == b.var) {
         // Same variable: mutex iff different value.
         return a.value != b.value;
     }
     return bool(g_inconsistent_facts[a.var][a.value].count(b));
-}
-
-const GlobalState &g_initial_state() {
-    return g_state_registry->get_initial_state();
 }
 
 const shared_ptr<AbstractTask> g_root_task() {
@@ -395,6 +386,5 @@ SuccessorGenerator *g_successor_generator;
 string g_plan_filename = "sas_plan";
 int g_num_previously_generated_plans = 0;
 bool g_is_part_of_anytime_portfolio = false;
-StateRegistry *g_state_registry = 0;
 
 utils::Log g_log;

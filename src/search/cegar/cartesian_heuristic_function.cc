@@ -4,7 +4,7 @@ using namespace std;
 
 namespace cegar {
 CartesianHeuristicFunction::CartesianHeuristicFunction(
-    const std::shared_ptr<AbstractTask> &task,
+    const shared_ptr<AbstractTask> &task,
     RefinementHierarchy &&hierarchy)
     : task(task),
       task_proxy(*task),

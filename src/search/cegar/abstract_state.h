@@ -63,7 +63,7 @@ private:
     const TaskProxy &task_proxy;
 
     // Abstract domains for all variables.
-    const Domains domains;
+    Domains domains;
 
     // This state's node in the refinement hierarchy.
     Node *node;
@@ -97,13 +97,6 @@ private:
     bool is_more_general_than(const AbstractState &other) const;
 
 public:
-    ~AbstractState() = default;
-
-    AbstractState(const AbstractState &) = delete;
-    AbstractState &operator=(const AbstractState &) = delete;
-
-    AbstractState(AbstractState &&other);
-
     // Return the size of var's abstract domain for this state.
     int count(int var) const;
 

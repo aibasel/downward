@@ -22,7 +22,7 @@ private:
     void add_conflicting_and_disabling(OperatorProxy op, const State &state);
     void compute_active_operators(const State &state);
     void mark_as_stubborn_and_remember_written_vars(int op_no, const State &state);
-    void add_nes_for_fact(Fact fact, const State &state);
+    void add_nes_for_fact(const FactPair &fact, const State &state);
     void apply_s5(OperatorProxy op, const State &state);
 protected:
     virtual void initialize_stubborn_set(const State &state) override;

@@ -8,22 +8,15 @@
 using namespace std;
 
 namespace stubborn_sets {
-// TODO consider moving this to a more central position or implementing it in FactProxy.
-static inline Fact get_fact(FactProxy fact_proxy) {
-    int var_id = fact_proxy.get_variable().get_id();
-    int value = fact_proxy.get_value();
-    return Fact(var_id, value);
-}
-
 struct SortFactsByVariable {
-    bool operator()(const Fact &lhs, const Fact &rhs) {
+    bool operator()(const FactPair &lhs, const FactPair &rhs) {
         return lhs.var < rhs.var;
     }
 };
 
 // Relies on both fact sets being sorted by variable.
-bool contain_conflicting_fact(const vector<Fact> &facts1,
-                              const vector<Fact> &facts2) {
+bool contain_conflicting_fact(const vector<FactPair> &facts1,
+                              const vector<FactPair> &facts2) {
     auto facts1_it = facts1.begin();
     auto facts2_it = facts2.begin();
     while (facts1_it != facts1.end() && facts2_it != facts2.end()) {
@@ -50,23 +43,23 @@ StubbornSets::StubbornSets()
     compute_achievers();
 }
 
-Fact StubbornSets::find_unsatisfied_goal(const State &state) {
+FactPair StubbornSets::find_unsatisfied_goal(const State &state) {
     for (FactProxy goal : task_proxy.get_goals()) {
-        int goal_var_id = goal.get_variable().get_id();
-        if (state[goal_var_id] != goal)
-            return get_fact(goal);
+        VariableProxy goal_var = goal.get_variable();
+        if (state[goal_var] != goal)
+            return goal.get_pair();
     }
-    return Fact(-1, -1);
+    return FactPair(-1, -1);
 }
 
-Fact StubbornSets::find_unsatisfied_precondition(OperatorProxy op,
-                                                 const State &state) {
+FactPair StubbornSets::find_unsatisfied_precondition(
+    OperatorProxy op, const State &state) {
     for (FactProxy precondition : op.get_preconditions()) {
-        int var_id = precondition.get_variable().get_id();
-        if (state[var_id] != precondition)
-            return get_fact(precondition);
+        VariableProxy var = precondition.get_variable();
+        if (state[var] != precondition)
+            return precondition.get_pair();
     }
-    return Fact(-1, -1);
+    return FactPair(-1, -1);
 }
 
 // Relies on op_preconds and op_effects being sorted by variable.
@@ -86,16 +79,16 @@ void StubbornSets::compute_sorted_operators() {
     assert(sorted_op_effects.empty());
 
     for (const OperatorProxy op : task_proxy.get_operators()) {
-        vector<Fact> preconditions;
+        vector<FactPair> preconditions;
         for (const FactProxy pre : op.get_preconditions()) {
-            preconditions.push_back(get_fact(pre));
+            preconditions.push_back(pre.get_pair());
         }
         sort(preconditions.begin(), preconditions.end(), SortFactsByVariable());
         sorted_op_preconditions.push_back(preconditions);
 
-        vector<Fact> effects;
+        vector<FactPair> effects;
         for (const EffectProxy eff : op.get_effects()) {
-            effects.push_back(get_fact(eff.get_fact()));
+            effects.push_back(eff.get_fact().get_pair());
         }
         sort(effects.begin(), effects.end(), SortFactsByVariable());
         sorted_op_effects.push_back(effects);

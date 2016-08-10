@@ -9,7 +9,7 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
        of operators that interfere with op1. */
     std::vector<std::vector<int>> interference_relation;
 
-    void add_necessary_enabling_set(Fact fact);
+    void add_necessary_enabling_set(const FactPair &fact);
     void add_interfering(OperatorProxy op);
 
     inline bool interfere(OperatorProxy op1, OperatorProxy op2) {

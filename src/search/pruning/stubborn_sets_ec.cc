@@ -82,8 +82,8 @@ void recurse_forwards(const StubbornDTG &dtg,
 }
 
 // Relies on both fact sets being sorted by variable.
-void get_conflicting_vars(const vector<Fact> &facts1,
-                          const vector<Fact> &facts2,
+void get_conflicting_vars(const vector<FactPair> &facts1,
+                          const vector<FactPair> &facts2,
                           vector<int> &conflicting_vars) {
     conflicting_vars.clear();
     auto facts1_it = facts1.begin();
@@ -204,7 +204,7 @@ void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
 
 /* TODO: think about a better name, which distinguishes this method
    better from the corresponding method for simple stubborn sets */
-void StubbornSetsEC::add_nes_for_fact(Fact fact, const State &state) {
+void StubbornSetsEC::add_nes_for_fact(const FactPair &fact, const State &state) {
     for (int achiever : achievers[fact.var][fact.value]) {
         if (active_ops[achiever]) {
             mark_as_stubborn_and_remember_written_vars(achiever, state);
@@ -238,13 +238,13 @@ void StubbornSetsEC::apply_s5(OperatorProxy op, const State &state) {
 
         if (state[var_id] != precondition && written_vars[var_id]) {
             if (!nes_computed[var_id][value]) {
-                add_nes_for_fact(Fact(var_id, value), state);
+                add_nes_for_fact(FactPair(var_id, value), state);
             }
             return;
         }
     }
 
-    Fact violated_precondition = find_unsatisfied_precondition(op, state);
+    FactPair violated_precondition = find_unsatisfied_precondition(op, state);
     assert(violated_precondition.var != -1);
     if (!nes_computed[violated_precondition.var][violated_precondition.value]) {
         add_nes_for_fact(violated_precondition, state);
@@ -261,7 +261,7 @@ void StubbornSetsEC::initialize_stubborn_set(const State &state) {
     compute_active_operators(state);
 
     //rule S1
-    Fact unsatisfied_goal = find_unsatisfied_goal(state);
+    FactPair unsatisfied_goal = find_unsatisfied_goal(state);
     assert(unsatisfied_goal.var != -1);
     add_nes_for_fact(unsatisfied_goal, state);     // active operators used
 }

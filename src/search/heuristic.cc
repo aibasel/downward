@@ -18,7 +18,6 @@ using namespace std;
 
 Heuristic::Heuristic(const Options &opts)
     : description(opts.get_unparsed_config()),
-      initialized(false),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_estimates")),
       task(get_task_from_options(opts)),
@@ -40,7 +39,7 @@ void Heuristic::set_preferred(OperatorProxy op) {
     set_preferred(op.get_global_operator());
 }
 
-bool Heuristic::reach_state(
+bool Heuristic::notify_state_transition(
     const GlobalState & /*parent_state*/,
     const GlobalOperator & /*op*/,
     const GlobalState & /*state*/) {
@@ -79,11 +78,6 @@ Options Heuristic::default_options() {
 
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
-
-    if (!initialized) {
-        initialize();
-        initialized = true;
-    }
 
     assert(preferred_operators.empty());
 

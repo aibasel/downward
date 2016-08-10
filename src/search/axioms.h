@@ -5,6 +5,8 @@
 
 #include <vector>
 
+class IntPacker;
+
 class AxiomEvaluator {
     struct AxiomRule;
     struct AxiomLiteral {
@@ -37,7 +39,7 @@ class AxiomEvaluator {
     std::vector<AxiomLiteral *> queue;
 public:
     AxiomEvaluator();
-    void evaluate(PackedStateBin *buffer);
+    void evaluate(PackedStateBin *buffer, const IntPacker &state_packer);
 };
 
 #endif
