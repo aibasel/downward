@@ -55,7 +55,7 @@ public:
        base class to have only one method virtual, and to make the
        interface more obvious */
     virtual void prune_operators(const State &state,
-                                 std::vector<OperatorProxy> &ops) override;
+                                 std::vector<int> &op_ids) override;
     virtual void print_statistics() const override;
 };
 }
