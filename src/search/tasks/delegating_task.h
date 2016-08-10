@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace tasks {
@@ -23,6 +24,8 @@ public:
     virtual int get_num_variables() const override;
     virtual const std::string &get_variable_name(int var) const override;
     virtual int get_variable_domain_size(int var) const override;
+    virtual int get_variable_axiom_layer(int var) const override;
+    virtual int get_variable_default_axiom_value(int var) const override;
     virtual const std::string &get_fact_name(const FactPair &fact) const override;
     virtual bool are_facts_mutex(
         const FactPair &fact1, const FactPair &fact2) const override;
