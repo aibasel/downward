@@ -35,21 +35,19 @@ void PruningMethod::prune_operators(const GlobalState &global_state,
        the search, we would have to convert the state before using it. */
     State state(*g_root_task(), global_state.get_values());
 
-    OperatorsProxy operators = task_proxy.get_operators();
-    vector<OperatorProxy> local_ops;
-    local_ops.reserve(global_ops.size());
+    vector<int> op_ids;
+    op_ids.reserve(global_ops.size());
     for (const GlobalOperator *global_op : global_ops) {
-        int op_id = get_op_index(global_op);
-        local_ops.push_back(operators[op_id]);
+        op_ids.push_back(get_op_index(global_op));
     }
 
-    prune_operators(state, local_ops);
+    prune_operators(state, op_ids);
 
     // If we pruned anything, translate the local operators back to global operators.
-    if (local_ops.size() < global_ops.size()) {
+    if (op_ids.size() < global_ops.size()) {
         vector<const GlobalOperator *> pruned_ops;
-        for (OperatorProxy op : local_ops) {
-            pruned_ops.push_back(&g_operators[op.get_id()]);
+        for (int op_id : op_ids) {
+            pruned_ops.push_back(&g_operators[op_id]);
         }
 
         global_ops.swap(pruned_ops);
