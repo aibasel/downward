@@ -35,6 +35,14 @@ int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
 }
 
+int RootTask::get_variable_axiom_layer(int var) const {
+    return g_axiom_layers[var];
+}
+
+int RootTask::get_variable_default_axiom_value(int var) const {
+    return g_default_axiom_values[var];
+}
+
 const string &RootTask::get_fact_name(const FactPair &fact) const {
     return g_fact_names[fact.var][fact.value];
 }

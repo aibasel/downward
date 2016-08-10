@@ -7,6 +7,27 @@
 using namespace std;
 
 namespace extra_tasks {
+/*
+  If we need the same functionality again in another task, we can move this to
+  actract_task.h. We should then document that this method is only supposed to
+  be used from within AbstractTasks. More high-level users should use
+  has_conditional_effects(TaskProxy) from task_tools.h instead.
+*/
+static bool has_conditional_effects(const AbstractTask &task) {
+    int num_ops = task.get_num_operators();
+    for (int op_index = 0; op_index < num_ops; ++op_index) {
+        int num_effs = task.get_num_operator_effects(op_index, false);
+        for (int eff_index = 0; eff_index < num_effs; ++eff_index) {
+            int num_conditions = task.get_num_operator_effect_conditions(
+                op_index, eff_index, false);
+            if (num_conditions > 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 DomainAbstractedTask::DomainAbstractedTask(
     const shared_ptr<AbstractTask> &parent,
     vector<int> &&domain_size,
@@ -20,6 +41,12 @@ DomainAbstractedTask::DomainAbstractedTask(
       goals(move(goals)),
       fact_names(move(fact_names)),
       value_map(move(value_map)) {
+    if (parent->get_num_axioms() > 0) {
+        ABORT("DomainAbstractedTask doesn't support axioms.");
+    }
+    if (has_conditional_effects(*parent)) {
+        ABORT("DomainAbstractedTask doesn't support conditional effects.");
+    }
 }
 
 int DomainAbstractedTask::get_variable_domain_size(int var) const {
@@ -38,13 +65,6 @@ FactPair DomainAbstractedTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
     return get_abstract_fact(
         parent->get_operator_precondition(op_index, fact_index, is_axiom));
-}
-
-FactPair DomainAbstractedTask::get_operator_effect_condition(
-    int op_index, int eff_index, int cond_index, bool is_axiom) const {
-    return get_abstract_fact(
-        parent->get_operator_effect_condition(
-            op_index, eff_index, cond_index, is_axiom));
 }
 
 FactPair DomainAbstractedTask::get_operator_effect(
