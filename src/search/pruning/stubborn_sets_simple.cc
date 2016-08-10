@@ -43,8 +43,8 @@ void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
 }
 
 // Add all operators that interfere with op.
-void StubbornSetsSimple::add_interfering(OperatorProxy op) {
-    for (int interferer_no : interference_relation[op.get_id()]) {
+void StubbornSetsSimple::add_interfering(int op_no) {
+    for (int interferer_no : interference_relation[op_no]) {
         mark_as_stubborn(interferer_no);
     }
 }
@@ -57,13 +57,13 @@ void StubbornSetsSimple::initialize_stubborn_set(const State &state) {
 }
 
 void StubbornSetsSimple::handle_stubborn_operator(const State &state,
-                                                  OperatorProxy op) {
-    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op, state);
+                                                  int op_no) {
+    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op_no, state);
     if (unsatisfied_precondition.var == -1) {
         /* no unsatisfied precondition found
            => operator is applicable
            => add all interfering operators */
-        add_interfering(op);
+        add_interfering(op_no);
     } else {
         /* unsatisfied precondition found
            => add a necessary enabling set for it */

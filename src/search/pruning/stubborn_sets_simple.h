@@ -10,7 +10,7 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
     std::vector<std::vector<int>> interference_relation;
 
     void add_necessary_enabling_set(const FactPair &fact);
-    void add_interfering(OperatorProxy op);
+    void add_interfering(int op_no);
 
     inline bool interfere(OperatorProxy op1, OperatorProxy op2) {
         return can_disable(op1, op2) ||
@@ -21,7 +21,7 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
 protected:
     virtual void initialize_stubborn_set(const State &state) override;
     virtual void handle_stubborn_operator(const State &state,
-                                          OperatorProxy op) override;
+                                          int op_no) override;
 public:
     StubbornSetsSimple();
     virtual ~StubbornSetsSimple() = default;

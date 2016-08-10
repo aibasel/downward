@@ -40,13 +40,13 @@ protected:
     FactPair find_unsatisfied_goal(const State &state);
 
     // Return the first unsatified precondition, or (-1, -1) if there is none.
-    FactPair find_unsatisfied_precondition(OperatorProxy op, const State &state);
+    FactPair find_unsatisfied_precondition(int op_no, const State &state);
 
     // Returns true iff the operators was enqueued.
     // TODO: rename to enqueue_stubborn_operator?
     bool mark_as_stubborn(int op_no);
     virtual void initialize_stubborn_set(const State &state) = 0;
-    virtual void handle_stubborn_operator(const State &state, OperatorProxy op) = 0;
+    virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
     StubbornSets();
     virtual ~StubbornSets() = default;

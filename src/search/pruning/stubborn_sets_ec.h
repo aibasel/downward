@@ -14,20 +14,19 @@ private:
     std::vector<bool> written_vars;
     std::vector<std::vector<bool>> nes_computed;
 
-    void get_disabled_vars(OperatorProxy op1, OperatorProxy op2,
+    void get_disabled_vars(int op1_no, int op2_no,
                            std::vector<int> &disabled_vars);
     void build_reachability_map();
     void compute_operator_preconditions();
     void compute_conflicts_and_disabling();
-    void add_conflicting_and_disabling(OperatorProxy op, const State &state);
+    void add_conflicting_and_disabling(int op_no, const State &state);
     void compute_active_operators(const State &state);
     void mark_as_stubborn_and_remember_written_vars(int op_no, const State &state);
     void add_nes_for_fact(const FactPair &fact, const State &state);
-    void apply_s5(OperatorProxy op, const State &state);
+    void apply_s5(int op_no, const State &state);
 protected:
     virtual void initialize_stubborn_set(const State &state) override;
-    virtual void handle_stubborn_operator(const State &state,
-                                          OperatorProxy op) override;
+    virtual void handle_stubborn_operator(const State &state, int op_no) override;
 public:
     StubbornSetsEC();
     virtual ~StubbornSetsEC() = default;
