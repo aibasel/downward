@@ -10,7 +10,7 @@ namespace null_pruning_method {
 class NullPruningMethod : public PruningMethod {
 public:
     NullPruningMethod();
-    virtual ~NullPruningMethod() = default;
+
     virtual void prune_operators(const State & /*state*/,
                                  std::vector<int> & /*op_ids*/) override {}
     virtual void prune_operators(const GlobalState & /*state*/,
