@@ -48,6 +48,9 @@ CostSaturation::CostSaturation(
 
 vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     const std::shared_ptr<AbstractTask> &task) {
+    // For simplicity this is a member object. Make sure it is in a valid state.
+    assert(heuristic_functions.empty());
+
     utils::CountdownTimer timer(max_time);
 
     TaskProxy task_proxy(*task);
@@ -84,13 +87,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
 }
 
 void CostSaturation::reset(const TaskProxy &task_proxy) {
-    assert(heuristic_functions.empty());
-
-    remaining_costs.clear();
-    remaining_costs.reserve(task_proxy.get_operators().size());
-    for (OperatorProxy op : task_proxy.get_operators())
-        remaining_costs.push_back(op.get_cost());
-
+    remaining_costs = get_operator_costs(task_proxy);
     num_abstractions = 0;
     num_states = 0;
 }
