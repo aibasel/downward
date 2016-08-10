@@ -17,19 +17,19 @@ StubbornSetsSimple::StubbornSetsSimple() {
 }
 
 void StubbornSetsSimple::compute_interference_relation() {
-    OperatorsProxy operators = task_proxy.get_operators();
-    interference_relation.resize(operators.size());
+    int num_operators = task_proxy.get_operators().size();
+    interference_relation.resize(num_operators);
 
     /*
        TODO: as interference is symmetric, we only need to compute the
        relation for operators (o1, o2) with (o1 < o2) and add a lookup
        method that looks up (i, j) if i < j and (j, i) otherwise.
     */
-    for (OperatorProxy op1 : operators) {
-        vector<int> &interfere_op1 = interference_relation[op1.get_id()];
-        for (OperatorProxy op2 : operators) {
-            if (op1 != op2 && interfere(op1, op2)) {
-                interfere_op1.push_back(op2.get_id());
+    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
+        vector<int> &interfere_op1 = interference_relation[op1_no];
+        for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
+            if (op1_no != op2_no && interfere(op1_no, op2_no)) {
+                interfere_op1.push_back(op2_no);
             }
         }
     }
