@@ -29,7 +29,6 @@ protected:
     virtual void handle_stubborn_operator(const State &state, int op_no) override;
 public:
     StubbornSetsEC();
-    virtual ~StubbornSetsEC() = default;
 };
 }
 #endif

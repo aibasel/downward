@@ -49,7 +49,6 @@ protected:
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
     StubbornSets();
-    virtual ~StubbornSets() = default;
 
     /* TODO: move prune_operators, and also the statistics, to the
        base class to have only one method virtual, and to make the

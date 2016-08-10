@@ -24,7 +24,6 @@ protected:
                                           int op_no) override;
 public:
     StubbornSetsSimple();
-    virtual ~StubbornSetsSimple() = default;
 };
 }
 
