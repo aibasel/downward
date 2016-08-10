@@ -62,15 +62,15 @@ FactPair StubbornSets::find_unsatisfied_precondition(
 }
 
 // Relies on op_preconds and op_effects being sorted by variable.
-bool StubbornSets::can_disable(OperatorProxy op1, OperatorProxy op2) {
-    return contain_conflicting_fact(sorted_op_effects[op1.get_id()],
-                                    sorted_op_preconditions[op2.get_id()]);
+bool StubbornSets::can_disable(int op1_no, int op2_no) {
+    return contain_conflicting_fact(sorted_op_effects[op1_no],
+                                    sorted_op_preconditions[op2_no]);
 }
 
 // Relies on op_effect being sorted by variable.
-bool StubbornSets::can_conflict(OperatorProxy op1, OperatorProxy op2) {
-    return contain_conflicting_fact(sorted_op_effects[op1.get_id()],
-                                    sorted_op_effects[op2.get_id()]);
+bool StubbornSets::can_conflict(int op1_no, int op2_no) {
+    return contain_conflicting_fact(sorted_op_effects[op1_no],
+                                    sorted_op_effects[op2_no]);
 }
 
 void StubbornSets::compute_sorted_operators() {

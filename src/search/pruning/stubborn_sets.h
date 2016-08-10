@@ -32,8 +32,8 @@ protected:
        operators that achieve the fact (var, value). */
     std::vector<std::vector<std::vector<int>>> achievers;
 
-    bool can_disable(OperatorProxy op1, OperatorProxy op2);
-    bool can_conflict(OperatorProxy op1, OperatorProxy op2);
+    bool can_disable(int op1_no, int op2_no);
+    bool can_conflict(int op1_no, int op2_no);
 
 
     // Return the first unsatified goal pair, or (-1, -1) if there is none.

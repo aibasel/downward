@@ -168,20 +168,20 @@ void StubbornSetsEC::compute_active_operators(const State &state) {
 }
 
 void StubbornSetsEC::compute_conflicts_and_disabling() {
-    OperatorsProxy operators = task_proxy.get_operators();
-    conflicting_and_disabling.resize(operators.size());
-    disabled.resize(operators.size());
+    int num_operators = task_proxy.get_operators().size();
+    conflicting_and_disabling.resize(num_operators);
+    disabled.resize(num_operators);
 
-    for (OperatorProxy op1 : operators) {
-        for (OperatorProxy op2 : operators) {
-            if (op1 != op2) {
-                bool conflict = can_conflict(op1, op2);
-                bool disable = can_disable(op2, op1);
+    for (int op1_no = 0; op1_no < num_operators; ++op1_no) {
+        for (int op2_no = 0; op2_no < num_operators; ++op2_no) {
+            if (op1_no != op2_no) {
+                bool conflict = can_conflict(op1_no, op2_no);
+                bool disable = can_disable(op2_no, op1_no);
                 if (conflict || disable) {
-                    conflicting_and_disabling[op1.get_id()].push_back(op2.get_id());
+                    conflicting_and_disabling[op1_no].push_back(op2_no);
                 }
                 if (disable) {
-                    disabled[op2.get_id()].push_back(op1.get_id());
+                    disabled[op2_no].push_back(op1_no);
                 }
             }
         }
