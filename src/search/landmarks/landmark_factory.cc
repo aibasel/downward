@@ -16,6 +16,15 @@
 
 using namespace std;
 
+// HACK! remove this once landmark heuristics are switched to the new task interface
+#include "../state_registry.h"
+const GlobalState &hacked_initial_state() {
+    static StateRegistry registry(*g_state_packer,
+                                  *g_axiom_evaluator,
+                                  g_initial_state_data);
+    return registry.get_initial_state();
+}
+
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(const options::Options &opts)
     : reasonable_orders(opts.get<bool>("reasonable_orders")),
@@ -43,7 +52,7 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   ensure that the TaskProxy used by the Exploration object is the same
   as the TaskProxy object passed to this function.
 */
-std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
+shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(Exploration &exploration) {
     if (lm_graph)
         return lm_graph;
     utils::Timer lm_generation_timer;
@@ -351,8 +360,8 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             }
 
             // 1. a, b mutex
-            // TODO(issue635): Use Fact struct right away.
-            if (are_mutex(Fact(a.first, a.second), Fact(b.first, b.second)))
+            // TODO(issue635): Use FactPair struct right away.
+            if (are_mutex(FactPair(a.first, a.second), FactPair(b.first, b.second)))
                 return true;
 
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
@@ -406,7 +415,7 @@ bool LandmarkFactory::interferes(const LandmarkNode *node_a,
             }
             // Test whether one of the shared effects is inconsistent with b
             for (const auto &eff : shared_eff)
-                if (eff != a && eff != b && are_mutex(Fact(eff.first, eff.second), Fact(b.first, b.second)))
+                if (eff != a && eff != b && are_mutex(FactPair(eff.first, eff.second), FactPair(b.first, b.second)))
                     return true;
         }
 
@@ -442,7 +451,7 @@ void LandmarkFactory::approximate_reasonable_orders(bool obedient_orders) {
         if (node_p->disjunctive)
             continue;
 
-        if (node_p->is_true_in_state(g_initial_state()))
+        if (node_p->is_true_in_state(hacked_initial_state()))
             return;
 
         if (!obedient_orders && node_p->is_goal()) {
@@ -772,7 +781,7 @@ void LandmarkFactory::compute_predecessor_information(
     Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
-    std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op) {
+    vector<unordered_map<pair<int, int>, int>> &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */

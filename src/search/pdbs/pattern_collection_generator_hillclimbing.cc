@@ -112,7 +112,7 @@ void PatternCollectionGeneratorHillclimbing::sample_states(
     }
 }
 
-std::pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
+pair<int, int> PatternCollectionGeneratorHillclimbing::find_best_improving_pdb(
     vector<State> &samples, PDBCollection &candidate_pdbs) {
     /*
       TODO: The original implementation by Haslum et al. uses A* to compute

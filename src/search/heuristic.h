@@ -26,7 +26,6 @@ class Heuristic : public ScalarEvaluator {
     };
 
     std::string description;
-    bool initialized;
 
     /*
       TODO: We might want to get rid of the preferred_operators
@@ -56,8 +55,6 @@ protected:
     TaskProxy task_proxy;
     OperatorCost cost_type;
     enum {DEAD_END = -1, NO_VALUE = -2};
-    virtual void initialize() {}
-    bool is_initialized() const {return initialized; }
     // TODO: Call with State directly once all heuristics support it.
     virtual int compute_heuristic(const GlobalState &state) = 0;
     // Usage note: It's OK to set the same operator as preferred
@@ -76,7 +73,10 @@ public:
     Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
-    virtual bool reach_state(
+    virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
+    }
+
+    virtual bool notify_state_transition(
         const GlobalState &parent_state, const GlobalOperator &op,
         const GlobalState &state);
 

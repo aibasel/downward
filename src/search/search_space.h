@@ -13,12 +13,15 @@ class GlobalState;
 
 
 class SearchNode {
+    const StateRegistry &state_registry;
     StateID state_id;
     SearchNodeInfo &info;
     OperatorCost cost_type;
 public:
-    SearchNode(StateID state_id_, SearchNodeInfo &info_,
-               OperatorCost cost_type_);
+    SearchNode(const StateRegistry &state_registry,
+               StateID state_id,
+               SearchNodeInfo &info,
+               OperatorCost cost_type);
 
     StateID get_state_id() const {
         return state_id;
@@ -50,9 +53,11 @@ public:
 class SearchSpace {
     PerStateInformation<SearchNodeInfo> search_node_infos;
 
+    StateRegistry &state_registry;
     OperatorCost cost_type;
 public:
-    SearchSpace(OperatorCost cost_type_);
+    SearchSpace(StateRegistry &state_registry, OperatorCost cost_type);
+
     SearchNode get_node(const GlobalState &state);
     void trace_path(const GlobalState &goal_state,
                     std::vector<const GlobalOperator *> &path) const;

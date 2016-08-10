@@ -36,7 +36,7 @@ void StubbornSetsSimple::compute_interference_relation() {
 }
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
-void StubbornSetsSimple::add_necessary_enabling_set(Fact fact) {
+void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
     for (int op_no : achievers[fact.var][fact.value]) {
         mark_as_stubborn(op_no);
     }
@@ -51,14 +51,14 @@ void StubbornSetsSimple::add_interfering(OperatorProxy op) {
 
 void StubbornSetsSimple::initialize_stubborn_set(const State &state) {
     // Add a necessary enabling set for an unsatisfied goal.
-    Fact unsatisfied_goal = find_unsatisfied_goal(state);
+    FactPair unsatisfied_goal = find_unsatisfied_goal(state);
     assert(unsatisfied_goal.var != -1);
     add_necessary_enabling_set(unsatisfied_goal);
 }
 
 void StubbornSetsSimple::handle_stubborn_operator(const State &state,
                                                   OperatorProxy op) {
-    Fact unsatisfied_precondition = find_unsatisfied_precondition(op, state);
+    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op, state);
     if (unsatisfied_precondition.var == -1) {
         /* no unsatisfied precondition found
            => operator is applicable
