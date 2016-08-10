@@ -214,9 +214,9 @@ void StubbornSetsEC::add_nes_for_fact(const FactPair &fact, const State &state) 
     nes_computed[fact.var][fact.value] = true;
 }
 
-void StubbornSetsEC::add_conflicting_and_disabling(OperatorProxy op,
+void StubbornSetsEC::add_conflicting_and_disabling(int op_no,
                                                    const State &state) {
-    for (int conflict : conflicting_and_disabling[op.get_id()]) {
+    for (int conflict : conflicting_and_disabling[op_no]) {
         if (active_ops[conflict])
             mark_as_stubborn_and_remember_written_vars(conflict, state);
     }
@@ -224,27 +224,24 @@ void StubbornSetsEC::add_conflicting_and_disabling(OperatorProxy op,
 
 // Relies on op_effects and op_preconditions being sorted by variable.
 void StubbornSetsEC::get_disabled_vars(
-    OperatorProxy op1, OperatorProxy op2, vector<int> &disabled_vars) {
-    get_conflicting_vars(sorted_op_effects[op1.get_id()],
-                         sorted_op_preconditions[op2.get_id()],
+    int op1_no, int op2_no, vector<int> &disabled_vars) {
+    get_conflicting_vars(sorted_op_effects[op1_no],
+                         sorted_op_preconditions[op2_no],
                          disabled_vars);
 }
 
-void StubbornSetsEC::apply_s5(OperatorProxy op, const State &state) {
+void StubbornSetsEC::apply_s5(int op_no, const State &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
-    for (FactProxy precondition : op.get_preconditions()) {
-        int var_id = precondition.get_variable().get_id();
-        int value = precondition.get_value();
-
-        if (state[var_id] != precondition && written_vars[var_id]) {
-            if (!nes_computed[var_id][value]) {
-                add_nes_for_fact(FactPair(var_id, value), state);
+    for (FactPair pre : sorted_op_preconditions[op_no]) {
+        if (state[pre.var].get_pair() != pre && written_vars[pre.var]) {
+            if (!nes_computed[pre.var][pre.value]) {
+                add_nes_for_fact(pre, state);
             }
             return;
         }
     }
 
-    FactPair violated_precondition = find_unsatisfied_precondition(op, state);
+    FactPair violated_precondition = find_unsatisfied_precondition(op_no, state);
     assert(violated_precondition.var != -1);
     if (!nes_computed[violated_precondition.var][violated_precondition.value]) {
         add_nes_for_fact(violated_precondition, state);
@@ -266,18 +263,16 @@ void StubbornSetsEC::initialize_stubborn_set(const State &state) {
     add_nes_for_fact(unsatisfied_goal, state);     // active operators used
 }
 
-void StubbornSetsEC::handle_stubborn_operator(const State &state,
-                                              OperatorProxy op) {
+void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
+    OperatorProxy op = task_proxy.get_operators()[op_no];
     if (is_applicable(op, state)) {
         //Rule S2 & S3
-        add_conflicting_and_disabling(op, state);     // active operators used
+        add_conflicting_and_disabling(op_no, state);     // active operators used
         //Rule S4'
-        OperatorsProxy operators = task_proxy.get_operators();
         vector<int> disabled_vars;
-        for (int disabled_op_no : disabled[op.get_id()]) {
-            OperatorProxy disabled_op = operators[disabled_op_no];
+        for (int disabled_op_no : disabled[op_no]) {
             if (active_ops[disabled_op_no]) {
-                get_disabled_vars(op, disabled_op, disabled_vars);
+                get_disabled_vars(op_no, disabled_op_no, disabled_vars);
                 if (!disabled_vars.empty()) {     // == can_disable(op1_no, op2_no)
                     bool v_applicable_op_found = false;
                     for (int disabled_var : disabled_vars) {
@@ -286,7 +281,8 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state,
                                             disabled_op_no,
                                             state,
                                             op_preconditions_on_var)) {
-                            mark_as_stubborn_and_remember_written_vars(disabled_op_no, state);
+                            mark_as_stubborn_and_remember_written_vars(
+                                disabled_op_no, state);
                             v_applicable_op_found = true;
                             break;
                         }
@@ -294,14 +290,14 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state,
 
                     //Second case: add a necessary enabling set for o' following S5
                     if (!v_applicable_op_found) {
-                        apply_s5(disabled_op, state);
+                        apply_s5(disabled_op_no, state);
                     }
                 }
             }
         }
     } else {     // op is inapplicable
         //S5
-        apply_s5(op, state);
+        apply_s5(op_no, state);
     }
 }
 

@@ -53,11 +53,10 @@ FactPair StubbornSets::find_unsatisfied_goal(const State &state) {
 }
 
 FactPair StubbornSets::find_unsatisfied_precondition(
-    OperatorProxy op, const State &state) {
-    for (FactProxy precondition : op.get_preconditions()) {
-        VariableProxy var = precondition.get_variable();
-        if (state[var] != precondition)
-            return precondition.get_pair();
+    int op_no, const State &state) {
+    for (FactPair pre : sorted_op_preconditions[op_no]) {
+        if (state[pre.var].get_pair() != pre)
+            return pre;
     }
     return FactPair(-1, -1);
 }
@@ -136,8 +135,7 @@ void StubbornSets::prune_operators(
     while (!stubborn_queue.empty()) {
         int op_no = stubborn_queue.back();
         stubborn_queue.pop_back();
-        OperatorProxy op = task_proxy.get_operators()[op_no];
-        handle_stubborn_operator(state, op);
+        handle_stubborn_operator(state, op_no);
     }
 
     // Now check which applicable operators are in the stubborn set.
