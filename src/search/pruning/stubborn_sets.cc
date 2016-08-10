@@ -34,31 +34,37 @@ bool contain_conflicting_fact(const vector<FactPair> &facts1,
     return false;
 }
 
-StubbornSets::StubbornSets()
-    : num_unpruned_successors_generated(0),
-      num_pruned_successors_generated(0) {
+FactPair find_first_unsatisfied(
+    const vector<FactPair> &condition, const State &state) {
+    for (FactPair fact : condition) {
+        if (state[fact.var].get_value() != fact.value)
+            return fact;
+    }
+    return FactPair(-1, -1);
+}
+
+void StubbornSets::initialize(const TaskProxy &task_proxy) {
+    PruningMethod::initialize(task_proxy);
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
-    compute_sorted_operators();
-    compute_achievers();
+    compute_sorted_operators(task_proxy);
+    GoalsProxy task_goals = task_proxy.get_goals();
+    goals.reserve(task_goals.size());
+    for (FactProxy goal : task_goals) {
+        goals.push_back(goal.get_pair());
+    }
+    compute_achievers(task_proxy);
+    num_unpruned_successors_generated = 0;
+    num_pruned_successors_generated = 0;
 }
 
 FactPair StubbornSets::find_unsatisfied_goal(const State &state) {
-    for (FactProxy goal : task_proxy.get_goals()) {
-        VariableProxy goal_var = goal.get_variable();
-        if (state[goal_var] != goal)
-            return goal.get_pair();
-    }
-    return FactPair(-1, -1);
+    return find_first_unsatisfied(goals, state);
 }
 
 FactPair StubbornSets::find_unsatisfied_precondition(
     int op_no, const State &state) {
-    for (FactPair pre : sorted_op_preconditions[op_no]) {
-        if (state[pre.var].get_pair() != pre)
-            return pre;
-    }
-    return FactPair(-1, -1);
+    return find_first_unsatisfied(sorted_op_preconditions[op_no], state);
 }
 
 // Relies on op_preconds and op_effects being sorted by variable.
@@ -73,7 +79,7 @@ bool StubbornSets::can_conflict(int op1_no, int op2_no) {
                                     sorted_op_effects[op2_no]);
 }
 
-void StubbornSets::compute_sorted_operators() {
+void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
     assert(sorted_op_preconditions.empty());
     assert(sorted_op_effects.empty());
 
@@ -94,7 +100,7 @@ void StubbornSets::compute_sorted_operators() {
     }
 }
 
-void StubbornSets::compute_achievers() {
+void StubbornSets::compute_achievers(const TaskProxy &task_proxy) {
     VariablesProxy vars = task_proxy.get_variables();
     achievers.reserve(vars.size());
     for (const VariableProxy var : vars) {
@@ -126,7 +132,8 @@ void StubbornSets::prune_operators(
 
     // Clear stubborn set from previous call.
     stubborn.clear();
-    stubborn.assign(task_proxy.get_operators().size(), false);
+    int num_operators = sorted_op_effects.size();
+    stubborn.assign(num_operators, false);
     assert(stubborn_queue.empty());
 
     initialize_stubborn_set(state);
