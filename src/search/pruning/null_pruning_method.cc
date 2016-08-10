@@ -6,7 +6,8 @@
 using namespace std;
 
 namespace null_pruning_method {
-NullPruningMethod::NullPruningMethod() {
+void NullPruningMethod::initialize(const TaskProxy &task_proxy) {
+    PruningMethod::initialize(task_proxy);
     cout << "pruning method: none" << endl;
 }
 

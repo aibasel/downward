@@ -10,13 +10,12 @@ class GlobalOperator;
 class GlobalState;
 
 class PruningMethod {
-protected:
-    const std::shared_ptr<AbstractTask> task;
-    TaskProxy task_proxy;
-
+    bool initialized;
 public:
     PruningMethod();
     virtual ~PruningMethod() = default;
+
+    virtual void initialize(const TaskProxy &task_proxy);
 
     /* This method should never be called for goal states. This can be checked
        with assertions in derived classes. */

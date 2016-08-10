@@ -17,20 +17,21 @@ static inline int get_op_index(const GlobalOperator *op) {
     return op_index;
 }
 
-/*
-  TODO: once we switch the search to the task interface, we have to think
-  about a better way to get the task into the pruning method. Possible options
-  are to use the constructor (as in Heuristic), to use an initialize method
-  (e.g., MergeStrategy), or to use a factory (e.g., PatternGenerator)
-*/
+
 PruningMethod::PruningMethod()
-    : task(g_root_task()),
-      task_proxy(*task) {
+    : initialized(false) {
 }
+
+void PruningMethod::initialize(const TaskProxy &) {
+    assert(!initialized);
+    initialized = true;
+}
+
 
 // TODO remove this overload once the search uses the task interface.
 void PruningMethod::prune_operators(const GlobalState &global_state,
                                     vector<const GlobalOperator *> &global_ops) {
+    assert(initialized);
     /* Note that if the pruning method would use a different task than
        the search, we would have to convert the state before using it. */
     State state(*g_root_task(), global_state.get_values());

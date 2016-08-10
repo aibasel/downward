@@ -4,6 +4,8 @@
 #include "stubborn_sets.h"
 
 namespace stubborn_sets_simple {
+/* Implementation of simple instantiation of strong stubborn sets.
+   Disjunctive action landmarks are computed trivially.*/
 class StubbornSetsSimple : public stubborn_sets::StubbornSets {
     /* interference_relation[op1_no] contains all operator indices
        of operators that interfere with op1. */
@@ -17,13 +19,13 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
                can_conflict(op1_no, op2_no) ||
                can_disable(op1_no, op2_no);
     }
-    void compute_interference_relation();
+    void compute_interference_relation(const TaskProxy &task_proxy);
 protected:
     virtual void initialize_stubborn_set(const State &state) override;
     virtual void handle_stubborn_operator(const State &state,
                                           int op_no) override;
 public:
-    StubbornSetsSimple();
+    virtual void initialize(const TaskProxy &task_proxy) override;
 };
 }
 

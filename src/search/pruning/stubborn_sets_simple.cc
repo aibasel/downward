@@ -9,14 +9,14 @@
 using namespace std;
 
 namespace stubborn_sets_simple {
-/* Implementation of simple instantiation of strong stubborn sets.
-   Disjunctive action landmarks are computed trivially.*/
-StubbornSetsSimple::StubbornSetsSimple() {
-    compute_interference_relation();
+void StubbornSetsSimple::initialize(const TaskProxy &task_proxy) {
+    StubbornSets::initialize(task_proxy);
+    compute_interference_relation(task_proxy);
     cout << "pruning method: stubborn sets simple" << endl;
 }
 
-void StubbornSetsSimple::compute_interference_relation() {
+
+void StubbornSetsSimple::compute_interference_relation(const TaskProxy &task_proxy) {
     int num_operators = task_proxy.get_operators().size();
     interference_relation.resize(num_operators);
 

@@ -104,15 +104,23 @@ void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
-StubbornSetsEC::StubbornSetsEC()
-    : nes_computed(task_proxy.get_variables().size()) {
-    compute_operator_preconditions();
-    compute_conflicts_and_disabling();
-    build_reachability_map();
+void StubbornSetsEC::initialize(const TaskProxy &task_proxy) {
+    StubbornSets::initialize(task_proxy);
+    VariablesProxy variables = task_proxy.get_variables();
+    written_vars.assign(variables.size(), false);
+    nes_computed.resize(variables.size());
+    for (VariableProxy var : variables) {
+        nes_computed[var.get_id()].assign(var.get_domain_size(), false);
+    }
+    OperatorsProxy operators = task_proxy.get_operators();
+    active_ops.assign(operators.size(), false);
+    compute_operator_preconditions(task_proxy);
+    compute_conflicts_and_disabling(task_proxy);
+    build_reachability_map(task_proxy);
     cout << "pruning method: stubborn sets ec" << endl;
 }
 
-void StubbornSetsEC::compute_operator_preconditions() {
+void StubbornSetsEC::compute_operator_preconditions(const TaskProxy &task_proxy) {
     OperatorsProxy operators = task_proxy.get_operators();
     int num_variables = task_proxy.get_variables().size();
     op_preconditions_on_var.resize(operators.size());
@@ -126,7 +134,7 @@ void StubbornSetsEC::compute_operator_preconditions() {
     }
 }
 
-void StubbornSetsEC::build_reachability_map() {
+void StubbornSetsEC::build_reachability_map(const TaskProxy &task_proxy) {
     vector<StubbornDTG> dtgs = build_dtgs(task_proxy);
     VariablesProxy variables = task_proxy.get_variables();
     reachability_map.resize(variables.size());
@@ -144,30 +152,30 @@ void StubbornSetsEC::build_reachability_map() {
 }
 
 void StubbornSetsEC::compute_active_operators(const State &state) {
-    active_ops.assign(task_proxy.get_operators().size(), false);
+    active_ops.assign(active_ops.size(), false);
 
-    for (OperatorProxy op : task_proxy.get_operators()) {
+    int num_operators = sorted_op_preconditions.size();
+    for (int op_no = 0; op_no < num_operators; ++op_no) {
         bool all_preconditions_are_active = true;
 
-        for (FactProxy precondition : op.get_preconditions()) {
-            int var_id = precondition.get_variable().get_id();
-            int value = precondition.get_value();
+        for (FactPair precondition : sorted_op_preconditions[op_no]) {
+            int var_id = precondition.var;
             int current_value = state[var_id].get_value();
             const vector<bool> &reachable_values =
                 reachability_map[var_id][current_value];
-            if (!reachable_values[value]) {
+            if (!reachable_values[precondition.value]) {
                 all_preconditions_are_active = false;
                 break;
             }
         }
 
         if (all_preconditions_are_active) {
-            active_ops[op.get_id()] = true;
+            active_ops[op_no] = true;
         }
     }
 }
 
-void StubbornSetsEC::compute_conflicts_and_disabling() {
+void StubbornSetsEC::compute_conflicts_and_disabling(const TaskProxy &task_proxy) {
     int num_operators = task_proxy.get_operators().size();
     conflicting_and_disabling.resize(num_operators);
     disabled.resize(num_operators);
@@ -188,16 +196,19 @@ void StubbornSetsEC::compute_conflicts_and_disabling() {
     }
 }
 
+bool StubbornSetsEC::is_applicable(int op_no, const State &state) {
+    FactPair unsatisfied_precondition =
+        find_unsatisfied_precondition(op_no, state);
+    return unsatisfied_precondition == FactPair(-1, -1);
+}
+
 // TODO: find a better name.
 void StubbornSetsEC::mark_as_stubborn_and_remember_written_vars(
     int op_no, const State &state) {
     if (mark_as_stubborn(op_no)) {
-        OperatorProxy op = task_proxy.get_operators()[op_no];
-        if (is_applicable(op, state)) {
-            for (EffectProxy effect : op.get_effects()) {
-                int var_id = effect.get_fact().get_variable().get_id();
-                written_vars[var_id] = true;
-            }
+        if (is_applicable(op_no, state)) {
+            for (const FactPair &effect : sorted_op_effects[op_no])
+                written_vars[effect.var] = true;
         }
     }
 }
@@ -249,11 +260,10 @@ void StubbornSetsEC::apply_s5(int op_no, const State &state) {
 }
 
 void StubbornSetsEC::initialize_stubborn_set(const State &state) {
-    VariablesProxy variables = task_proxy.get_variables();
-    for (VariableProxy var : variables) {
-        nes_computed[var.get_id()].assign(var.get_domain_size(), false);
+    for (vector<bool> &by_value : nes_computed) {
+        by_value.assign(by_value.size(), false);
     }
-    written_vars.assign(variables.size(), false);
+    written_vars.assign(written_vars.size(), false);
 
     compute_active_operators(state);
 
@@ -264,8 +274,7 @@ void StubbornSetsEC::initialize_stubborn_set(const State &state) {
 }
 
 void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
-    OperatorProxy op = task_proxy.get_operators()[op_no];
-    if (is_applicable(op, state)) {
+    if (is_applicable(op_no, state)) {
         //Rule S2 & S3
         add_conflicting_and_disabling(op_no, state);     // active operators used
         //Rule S4'

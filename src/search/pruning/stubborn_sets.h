@@ -21,12 +21,17 @@ class StubbornSets : public PruningMethod {
     */
     std::vector<int> stubborn_queue;
 
-    void compute_sorted_operators();
-    void compute_achievers();
+    void compute_sorted_operators(const TaskProxy &task_proxy);
+    void compute_achievers(const TaskProxy &task_proxy);
 
 protected:
+    /*
+      We copy some parts of the task here, so we can avoid the more expensive
+      access through the task interface during the search.
+    */
     std::vector<std::vector<FactPair>> sorted_op_preconditions;
     std::vector<std::vector<FactPair>> sorted_op_effects;
+    std::vector<FactPair> goals;
 
     /* achievers[var][value] contains all operator indices of
        operators that achieve the fact (var, value). */
@@ -48,7 +53,7 @@ protected:
     virtual void initialize_stubborn_set(const State &state) = 0;
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
-    StubbornSets();
+    virtual void initialize(const TaskProxy &task_proxy) override;
 
     /* TODO: move prune_operators, and also the statistics, to the
        base class to have only one method virtual, and to make the
