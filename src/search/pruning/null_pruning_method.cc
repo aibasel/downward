@@ -6,8 +6,8 @@
 using namespace std;
 
 namespace null_pruning_method {
-void NullPruningMethod::initialize(const TaskProxy &task_proxy) {
-    PruningMethod::initialize(task_proxy);
+void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
+    PruningMethod::initialize(task);
     cout << "pruning method: none" << endl;
 }
 
