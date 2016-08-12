@@ -56,7 +56,7 @@ FactPair StubbornSets::find_unsatisfied_goal(const State &state) {
         int var = goal.get_variable().get_id();
         int value = goal.get_value();
         if (state[var].get_value() != value)
-            return FactPair(var, value);
+            return goal.get_pair();
     }
     return FactPair(-1, -1);
 }
@@ -69,7 +69,7 @@ FactPair StubbornSets::find_unsatisfied_precondition(
         int var = precondition.get_variable().get_id();
         int value = precondition.get_value();
         if (state[var].get_value() != value)
-            return FactPair(var, value);
+            return precondition.get_pair();
     }
     return FactPair(-1, -1);
 }
