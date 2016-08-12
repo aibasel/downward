@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "state_registry.h"
+#include "task_proxy.h"
 
 #include <algorithm>
 #include <iostream>
@@ -30,16 +31,16 @@ vector<int> GlobalState::get_values() const {
     return values;
 }
 
-void GlobalState::dump_pddl() const {
-    for (size_t i = 0; i < g_variable_domain.size(); ++i) {
-        const string &fact_name = g_fact_names[i][(*this)[i]];
-        if (fact_name != "<none of those>")
-            cout << fact_name << endl;
-    }
+void dump_pddl(const GlobalState &global_state, const AbstractTask &task) {
+    vector<int> values = global_state.get_values();
+    State state(task, move(values));
+    state.dump_pddl();
+
 }
 
-void GlobalState::dump_fdr() const {
-    for (size_t i = 0; i < g_variable_domain.size(); ++i)
-        cout << "  #" << i << " [" << g_variable_name[i] << "] -> "
-             << (*this)[i] << endl;
+void dump_fdr(const GlobalState &global_state, const AbstractTask &task) {
+    vector<int> values = global_state.get_values();
+    State state(task, move(values));
+    state.dump_fdr();
+
 }
