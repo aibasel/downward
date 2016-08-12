@@ -147,6 +147,7 @@ class StateRegistry {
     const IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
     const std::vector<int> &initial_state_data;
+    int num_variables;
 
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;

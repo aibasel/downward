@@ -11,6 +11,7 @@ StateRegistry::StateRegistry(const IntPacker &state_packer,
     : state_packer(state_packer),
       axiom_evaluator(axiom_evaluator),
       initial_state_data(initial_state_data),
+      num_variables(initial_state_data.size()),
       state_data_pool(get_bins_per_state()),
       registered_states(
           0,
@@ -46,7 +47,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 GlobalState StateRegistry::lookup_state(StateID id) const {
-    return GlobalState(state_data_pool[id.value], *this, id);
+    return GlobalState(state_data_pool[id.value], *this, id, num_variables);
 }
 
 const GlobalState &StateRegistry::get_initial_state() {
