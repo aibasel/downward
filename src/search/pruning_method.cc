@@ -19,22 +19,22 @@ static inline int get_op_index(const GlobalOperator *op) {
 
 
 PruningMethod::PruningMethod()
-    : initialized(false) {
+    : task(nullptr) {
 }
 
-void PruningMethod::initialize(const TaskProxy &) {
-    assert(!initialized);
-    initialized = true;
+void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
+    assert(!task);
+    task = task_;
 }
 
 
 // TODO remove this overload once the search uses the task interface.
 void PruningMethod::prune_operators(const GlobalState &global_state,
                                     vector<const GlobalOperator *> &global_ops) {
-    assert(initialized);
+    assert(task);
     /* Note that if the pruning method would use a different task than
        the search, we would have to convert the state before using it. */
-    State state(*g_root_task(), global_state.get_values());
+    State state(*task, global_state.get_values());
 
     vector<int> op_ids;
     op_ids.reserve(global_ops.size());

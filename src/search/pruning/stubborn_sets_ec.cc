@@ -104,8 +104,9 @@ void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
-void StubbornSetsEC::initialize(const TaskProxy &task_proxy) {
-    StubbornSets::initialize(task_proxy);
+void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
+    StubbornSets::initialize(task);
+    TaskProxy task_proxy(*task);
     VariablesProxy variables = task_proxy.get_variables();
     written_vars.assign(variables.size(), false);
     nes_computed.resize(variables.size());

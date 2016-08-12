@@ -6,16 +6,21 @@
 #include <memory>
 #include <vector>
 
+class AbstractTask;
 class GlobalOperator;
 class GlobalState;
 
 class PruningMethod {
     bool initialized;
+
+protected:
+    std::shared_ptr<AbstractTask> task;
+
 public:
     PruningMethod();
     virtual ~PruningMethod() = default;
 
-    virtual void initialize(const TaskProxy &task_proxy);
+    virtual void initialize(const std::shared_ptr<AbstractTask> &task);
 
     /* This method should never be called for goal states. This can be checked
        with assertions in derived classes. */

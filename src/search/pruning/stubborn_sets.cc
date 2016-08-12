@@ -34,17 +34,9 @@ bool contain_conflicting_fact(const vector<FactPair> &facts1,
     return false;
 }
 
-FactPair find_first_unsatisfied(
-    const vector<FactPair> &condition, const State &state) {
-    for (FactPair fact : condition) {
-        if (state[fact.var].get_value() != fact.value)
-            return fact;
-    }
-    return FactPair(-1, -1);
-}
-
-void StubbornSets::initialize(const TaskProxy &task_proxy) {
-    PruningMethod::initialize(task_proxy);
+void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
+    PruningMethod::initialize(task);
+    TaskProxy task_proxy(*task);
     verify_no_axioms(task_proxy);
     verify_no_conditional_effects(task_proxy);
     compute_sorted_operators(task_proxy);
@@ -59,12 +51,27 @@ void StubbornSets::initialize(const TaskProxy &task_proxy) {
 }
 
 FactPair StubbornSets::find_unsatisfied_goal(const State &state) {
-    return find_first_unsatisfied(goals, state);
+    GoalsProxy goals = TaskProxy(*task).get_goals();
+    for (const FactProxy &goal : goals) {
+        int var = goal.get_variable().get_id();
+        int value = goal.get_value();
+        if (state[var].get_value() != value)
+            return FactPair(var, value);
+    }
+    return FactPair(-1, -1);
 }
 
 FactPair StubbornSets::find_unsatisfied_precondition(
     int op_no, const State &state) {
-    return find_first_unsatisfied(sorted_op_preconditions[op_no], state);
+    OperatorsProxy operators = TaskProxy(*task).get_operators();
+    OperatorProxy op = operators[op_no];
+    for (const FactProxy &precondition : op.get_preconditions()) {
+        int var = precondition.get_variable().get_id();
+        int value = precondition.get_value();
+        if (state[var].get_value() != value)
+            return FactPair(var, value);
+    }
+    return FactPair(-1, -1);
 }
 
 // Relies on op_preconds and op_effects being sorted by variable.

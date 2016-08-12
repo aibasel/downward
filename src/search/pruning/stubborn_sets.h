@@ -53,7 +53,7 @@ protected:
     virtual void initialize_stubborn_set(const State &state) = 0;
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
 public:
-    virtual void initialize(const TaskProxy &task_proxy) override;
+    virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 
     /* TODO: move prune_operators, and also the statistics, to the
        base class to have only one method virtual, and to make the
