@@ -17,7 +17,7 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSets {
     inline bool interfere(int op1_no, int op2_no) {
         return can_disable(op1_no, op2_no) ||
                can_conflict(op1_no, op2_no) ||
-               can_disable(op1_no, op2_no);
+               can_disable(op2_no, op1_no);
     }
     void compute_interference_relation(const TaskProxy &task_proxy);
 protected:
