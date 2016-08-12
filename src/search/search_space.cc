@@ -106,7 +106,7 @@ void SearchNode::mark_as_dead_end() {
 
 void SearchNode::dump() const {
     cout << state_id << ": ";
-    state_registry.lookup_state(state_id).dump_fdr();
+    dump_fdr(get_state(), *g_root_task());
     if (info.creating_operator) {
         cout << " created by " << info.creating_operator->get_name()
              << " from " << info.parent_state_id << endl;
@@ -150,7 +150,7 @@ void SearchSpace::dump() const {
         GlobalState s = state_registry.lookup_state(id);
         const SearchNodeInfo &node_info = search_node_infos[s];
         cout << id << ": ";
-        s.dump_fdr();
+        dump_fdr(s, *g_root_task());
         if (node_info.creating_operator && node_info.parent_state_id != StateID::no_state) {
             cout << " created by " << node_info.creating_operator->get_name()
                  << " from " << node_info.parent_state_id << endl;
