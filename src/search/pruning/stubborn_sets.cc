@@ -50,30 +50,6 @@ void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
     num_pruned_successors_generated = 0;
 }
 
-FactPair StubbornSets::find_unsatisfied_goal(const State &state) {
-    GoalsProxy goals = TaskProxy(*task).get_goals();
-    for (const FactProxy &goal : goals) {
-        int var = goal.get_variable().get_id();
-        int value = goal.get_value();
-        if (state[var].get_value() != value)
-            return goal.get_pair();
-    }
-    return FactPair(-1, -1);
-}
-
-FactPair StubbornSets::find_unsatisfied_precondition(
-    int op_no, const State &state) {
-    OperatorsProxy operators = TaskProxy(*task).get_operators();
-    OperatorProxy op = operators[op_no];
-    for (const FactProxy &precondition : op.get_preconditions()) {
-        int var = precondition.get_variable().get_id();
-        int value = precondition.get_value();
-        if (state[var].get_value() != value)
-            return precondition.get_pair();
-    }
-    return FactPair(-1, -1);
-}
-
 // Relies on op_preconds and op_effects being sorted by variable.
 bool StubbornSets::can_disable(int op1_no, int op2_no) {
     return contain_conflicting_fact(sorted_op_effects[op1_no],
@@ -95,6 +71,7 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
         for (const FactProxy pre : op.get_preconditions()) {
             preconditions.push_back(pre.get_pair());
         }
+        unsorted_op_preconditions.push_back(preconditions);
         sort(preconditions.begin(), preconditions.end(), SortFactsByVariable());
         sorted_op_preconditions.push_back(preconditions);
 
