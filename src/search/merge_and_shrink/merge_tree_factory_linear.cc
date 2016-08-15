@@ -34,7 +34,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
         root = new MergeTreeNode(root, right_child);
     }
     return utils::make_unique_ptr<MergeTree>(
-        root, rng);
+        root, rng, update_option);
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
@@ -98,7 +98,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
         }
     }
     return utils::make_unique_ptr<MergeTree>(
-        root, rng);
+        root, rng, update_option);
 }
 
 string MergeTreeFactoryLinear::name() const {
