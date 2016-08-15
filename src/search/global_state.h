@@ -8,7 +8,6 @@
 #include <iostream>
 #include <vector>
 
-class AbstractTask;
 class GlobalOperator;
 class StateRegistry;
 
