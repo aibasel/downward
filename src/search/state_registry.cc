@@ -5,10 +5,11 @@
 
 using namespace std;
 
-StateRegistry::StateRegistry(const IntPacker &state_packer,
-                             AxiomEvaluator &axiom_evaluator,
-                             const vector<int> &initial_state_data)
-    : state_packer(state_packer),
+StateRegistry::StateRegistry(
+    const shared_ptr<AbstractTask> &task, const IntPacker &state_packer,
+    AxiomEvaluator &axiom_evaluator, const vector<int> &initial_state_data)
+    : task(task),
+      state_packer(state_packer),
       axiom_evaluator(axiom_evaluator),
       initial_state_data(initial_state_data),
       num_variables(initial_state_data.size()),
@@ -47,7 +48,7 @@ StateID StateRegistry::insert_id_or_pop_state() {
 }
 
 GlobalState StateRegistry::lookup_state(StateID id) const {
-    return GlobalState(state_data_pool[id.value], *this, id, num_variables);
+    return GlobalState(state_data_pool[id.value], *this, id);
 }
 
 const GlobalState &StateRegistry::get_initial_state() {

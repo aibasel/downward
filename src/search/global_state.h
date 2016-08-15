@@ -28,13 +28,9 @@ class GlobalState {
     const StateRegistry *registry;
     StateID id;
 
-    int num_variables;
-
     // Only used by the state registry.
-    GlobalState(const PackedStateBin *buffer,
-                const StateRegistry &registry,
-                StateID id,
-                int num_variables);
+    GlobalState(
+        const PackedStateBin *buffer, const StateRegistry &registry, StateID id);
 
     const PackedStateBin *get_packed_buffer() const {
         return buffer;
@@ -53,9 +49,10 @@ public:
     int operator[](int var) const;
 
     std::vector<int> get_values() const;
+
+    void dump_pddl() const;
+    void dump_fdr() const;
 };
 
-extern void dump_pddl(const GlobalState &global_state, const AbstractTask &task);
-extern void dump_fdr(const GlobalState &global_state, const AbstractTask &task);
 
 #endif
