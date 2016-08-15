@@ -5,6 +5,9 @@
 #include "../pruning_method.h"
 
 namespace stubborn_sets {
+inline FactPair find_unsatisfied_condition(
+    const std::vector<FactPair> &conditions, const State &state);
+
 class StubbornSets : public PruningMethod {
     long num_unpruned_successors_generated;
     long num_pruned_successors_generated;
@@ -29,6 +32,12 @@ protected:
       We copy some parts of the task here, so we can avoid the more expensive
       access through the task interface during the search.
     */
+    /*
+      HACK: we don't need to store the operator conditions twice. The unsorted
+      version is only used for an experiment to make sure that the pruning power
+      does not change.
+    */
+    std::vector<std::vector<FactPair>> unsorted_op_preconditions;
     std::vector<std::vector<FactPair>> sorted_op_preconditions;
     std::vector<std::vector<FactPair>> sorted_op_effects;
     std::vector<FactPair> goals;
@@ -42,10 +51,14 @@ protected:
 
 
     // Return the first unsatified goal pair, or (-1, -1) if there is none.
-    FactPair find_unsatisfied_goal(const State &state);
+    FactPair find_unsatisfied_goal(const State &state) {
+        return find_unsatisfied_condition(goals, state);
+    }
 
     // Return the first unsatified precondition, or (-1, -1) if there is none.
-    FactPair find_unsatisfied_precondition(int op_no, const State &state);
+    FactPair find_unsatisfied_precondition(int op_no, const State &state) {
+        return find_unsatisfied_condition(unsorted_op_preconditions[op_no], state);
+    }
 
     // Returns true iff the operators was enqueued.
     // TODO: rename to enqueue_stubborn_operator?
@@ -62,6 +75,17 @@ public:
                                  std::vector<int> &op_ids) override;
     virtual void print_statistics() const override;
 };
+
+// Return the first unsatified condition, or (-1, -1) if there is none.
+inline FactPair find_unsatisfied_condition(
+    const std::vector<FactPair> &conditions, const State &state) {
+    for (const FactPair &condition : conditions) {
+        if (state[condition.var].get_value() != condition.value)
+            return condition;
+    }
+    return FactPair(-1, -1);
+}
+
 }
 
 #endif
