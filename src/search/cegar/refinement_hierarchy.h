@@ -29,6 +29,11 @@ class RefinementHierarchy {
 public:
     RefinementHierarchy();
 
+    // Visual Studio 2013 needs an explicit implementation.
+    RefinementHierarchy(RefinementHierarchy &&other)
+        : root(std::move(other.root)) {
+    }
+
     Node *get_node(const State &state) const;
 
     Node *get_root() const {
