@@ -18,10 +18,12 @@ class RandomNumberGenerator;
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeTree;
+enum class UpdateOption;
 
 class MergeTreeFactory {
 protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
+    UpdateOption update_option;
     virtual std::string name() const = 0;
     virtual void dump_tree_specific_options() const {}
 public:

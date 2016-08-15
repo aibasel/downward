@@ -13,13 +13,26 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactory::MergeTreeFactory(const options::Options &options) {
+MergeTreeFactory::MergeTreeFactory(const options::Options &options)
+    : update_option(static_cast<UpdateOption>(options.get_enum("update_option"))) {
     rng = utils::parse_rng_from_options(options);
 }
 
 void MergeTreeFactory::dump_options() const {
     cout << "Merge tree options: " << endl;
     cout << "Type: " << name() << endl;
+    cout << "Update option: ";
+    switch (update_option) {
+    case UpdateOption::USE_FIRST:
+        cout << "use first";
+        break;
+    case UpdateOption::USE_SECOND:
+        cout << "use second";
+        break;
+    case UpdateOption::USE_RANDOM:
+        cout << "use random";
+        break;
+    }
     dump_tree_specific_options();
 }
 
@@ -44,8 +57,10 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
         "When the merge tree is used within another merge strategy, how"
         "should it be updated when a merge different to a merge from the "
         "tree is performed: choose among use_first, use_second, and "
-        "use_random to let the left (right, random) leaf node in the tree "
-        "survive and remove the other leaf node without replacement. ",
+        "use_random to choose which node of the tree should survive and "
+        "represent the new merged index. Specify use_first (use_second) to "
+        "let the node represententing the index that would have been merged "
+        "earlier (later) survive. use_random chooses a random node.",
         "use_random");
 
 }
