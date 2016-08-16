@@ -106,7 +106,7 @@ void SearchNode::mark_as_dead_end() {
 
 void SearchNode::dump() const {
     cout << state_id << ": ";
-    state_registry.lookup_state(state_id).dump_fdr();
+    get_state().dump_fdr();
     if (info.creating_operator) {
         cout << " created by " << info.creating_operator->get_name()
              << " from " << info.parent_state_id << endl;
