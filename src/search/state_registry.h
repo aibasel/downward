@@ -145,6 +145,8 @@ class StateRegistry {
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */
+    /* TODO: AbstractTask is an implementation detail that is not supposed to
+             leak. In the long run, we should store a TaskProxy here. */
     const AbstractTask &task;
 
     /* TODO: When we switch StateRegistry to the task interface, the next three
@@ -168,6 +170,8 @@ public:
         AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
     ~StateRegistry();
 
+    /* TODO: Ideally, this should return a TaskProxy. (See comment above the
+             declaration of task.) */
     const AbstractTask &get_task() const {
         return task;
     }
