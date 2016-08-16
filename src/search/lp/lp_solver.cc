@@ -47,12 +47,9 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
         lp_solvers_doc);
 }
 
-LPConstraint::LPConstraint(double lower_bound_, double upper_bound_)
-    : lower_bound(lower_bound_),
-      upper_bound(upper_bound_) {
-}
-
-LPConstraint::~LPConstraint() {
+LPConstraint::LPConstraint(double lower_bound, double upper_bound)
+    : lower_bound(lower_bound),
+      upper_bound(upper_bound) {
 }
 
 void LPConstraint::clear() {
@@ -69,14 +66,11 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-LPVariable::LPVariable(double lower_bound_, double upper_bound_,
-                       double objective_coefficient_)
-    : lower_bound(lower_bound_),
-      upper_bound(upper_bound_),
-      objective_coefficient(objective_coefficient_) {
-}
-
-LPVariable::~LPVariable() {
+LPVariable::LPVariable(double lower_bound, double upper_bound,
+                       double objective_coefficient)
+    : lower_bound(lower_bound),
+      upper_bound(upper_bound),
+      objective_coefficient(objective_coefficient) {
 }
 
 LPSolver::~LPSolver() {
