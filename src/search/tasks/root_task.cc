@@ -108,7 +108,7 @@ FactPair RootTask::get_goal_fact(int index) const {
 vector<int> RootTask::get_initial_state_values() const {
     // TODO: think about a better way to do this.
     static StateRegistry state_registry(
-        g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data);
+        *g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data);
     return state_registry.get_initial_state().get_values();
 }
 
