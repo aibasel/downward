@@ -168,15 +168,15 @@ public:
         AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
     ~StateRegistry();
 
-    inline AbstractTask &get_task() const {
-        return *task;
+    const AbstractTask &get_task() const {
+        return task;
     }
 
-    inline int get_num_variables() const {
+    int get_num_variables() const {
         return num_variables;
     }
 
-    inline int get_state_value(const PackedStateBin *buffer, int var) const {
+    int get_state_value(const PackedStateBin *buffer, int var) const {
         return state_packer.get(buffer, var);
     }
 
