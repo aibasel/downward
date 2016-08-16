@@ -145,7 +145,7 @@ class StateRegistry {
 
     /* TODO: The state registry still doesn't use the task interface completely.
              Fixing this is part of issue509. */
-    std::shared_ptr<AbstractTask> task;
+    const AbstractTask &task;
 
     /* TODO: When we switch StateRegistry to the task interface, the next three
              members should come from the task. */
@@ -164,7 +164,7 @@ class StateRegistry {
     int get_bins_per_state() const;
 public:
     StateRegistry(
-        const std::shared_ptr<AbstractTask> &task, const IntPacker &state_packer,
+        const AbstractTask &task, const IntPacker &state_packer,
         AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
     ~StateRegistry();
 

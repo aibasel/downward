@@ -6,7 +6,7 @@
 using namespace std;
 
 StateRegistry::StateRegistry(
-    const shared_ptr<AbstractTask> &task, const IntPacker &state_packer,
+    const AbstractTask &task, const IntPacker &state_packer,
     AxiomEvaluator &axiom_evaluator, const vector<int> &initial_state_data)
     : task(task),
       state_packer(state_packer),

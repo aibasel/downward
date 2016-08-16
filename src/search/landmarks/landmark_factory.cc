@@ -20,7 +20,7 @@ using namespace std;
 #include "../state_registry.h"
 const GlobalState &hacked_initial_state() {
     static StateRegistry registry(
-        g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data);
+        *g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data);
     return registry.get_initial_state();
 }
 

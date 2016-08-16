@@ -22,7 +22,7 @@ SearchEngine::SearchEngine(const Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
       state_registry(
-          g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
+          *g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data),
       search_space(state_registry,
                    static_cast<OperatorCost>(opts.get_enum("cost_type"))),
       cost_type(static_cast<OperatorCost>(opts.get_enum("cost_type"))),
