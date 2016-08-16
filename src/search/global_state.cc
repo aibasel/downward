@@ -20,6 +20,8 @@ GlobalState::GlobalState(
 }
 
 int GlobalState::operator[](int var) const {
+    assert(var >= 0);
+    assert(var < registry->get_num_variables());
     return registry->get_state_value(buffer, var);
 }
 
