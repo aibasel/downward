@@ -4,7 +4,6 @@
 #include "merge_scoring_function.h"
 
 namespace merge_and_shrink {
-class TransitionSystem;
 class MergeScoringFunctionGoalRelevance : public MergeScoringFunction {
 protected:
     virtual std::string name() const override;

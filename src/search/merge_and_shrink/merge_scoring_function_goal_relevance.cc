@@ -35,7 +35,7 @@ vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
 
     vector<double> scores;
     scores.reserve(merge_candidates.size());
-    for (pair<int, int> merge_candidate : merge_candidates ) {
+    for (pair<int, int> merge_candidate : merge_candidates) {
         int ts_index1 = merge_candidate.first;
         int ts_index2 = merge_candidate.second;
         int score = INF;
@@ -55,7 +55,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Goal relevance scoring",
         "This scoring function assigns a merge candidate a value of 0 iff at "
-        "lest one of the two transition systems of the merge candidate is "
+        "least one of the two transition systems of the merge candidate is "
         "goal relevant in the sense that there is an abstract non-goal state."
         "All other candidates get a score of positive infinity.");
     if (parser.dry_run())
