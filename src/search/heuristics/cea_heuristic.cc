@@ -390,26 +390,6 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
     }
 }
 
-void ContextEnhancedAdditiveHeuristic::initialize() {
-    assert(goal_problem == 0);
-    cout << "Initializing context-enhanced additive heuristic..." << endl;
-
-    DTGFactory factory(task_proxy, true, [](int, int) {return false; });
-    transition_graphs = factory.build_dtgs();
-
-    goal_problem = build_problem_for_goal();
-    goal_node = &goal_problem->nodes[1];
-
-    VariablesProxy vars = task_proxy.get_variables();
-    local_problem_index.resize(vars.size());
-    for (VariableProxy var : vars)
-        local_problem_index[var.get_id()].resize(var.get_domain_size(), 0);
-    min_action_cost = numeric_limits<int>::max();
-    for (OperatorProxy op : task_proxy.get_operators())
-        if (min_action_cost > op.get_cost())
-            min_action_cost = op.get_cost();
-}
-
 int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &g_state) {
     const State state = convert_global_state(g_state);
     initialize_heap();
@@ -428,9 +408,21 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(const GlobalState &g_sta
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    const Options &opts) : Heuristic(opts) {
-    goal_problem = 0;
-    goal_node = 0;
+    const Options &opts)
+    : Heuristic(opts),
+      min_action_cost(get_min_operator_cost(task_proxy)) {
+    cout << "Initializing context-enhanced additive heuristic..." << endl;
+
+    DTGFactory factory(task_proxy, true, [](int, int) {return false; });
+    transition_graphs = factory.build_dtgs();
+
+    goal_problem = build_problem_for_goal();
+    goal_node = &goal_problem->nodes[1];
+
+    VariablesProxy vars = task_proxy.get_variables();
+    local_problem_index.resize(vars.size());
+    for (VariableProxy var : vars)
+        local_problem_index[var.get_id()].resize(var.get_domain_size(), 0);
 }
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {

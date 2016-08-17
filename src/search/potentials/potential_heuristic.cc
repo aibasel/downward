@@ -8,7 +8,7 @@ using namespace std;
 
 namespace potentials {
 PotentialHeuristic::PotentialHeuristic(
-    const Options &opts, std::unique_ptr<PotentialFunction> function)
+    const Options &opts, unique_ptr<PotentialFunction> function)
     : Heuristic(opts),
       function(move(function)) {
 }

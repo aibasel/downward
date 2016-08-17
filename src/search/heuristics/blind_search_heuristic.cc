@@ -13,17 +13,12 @@ using namespace std;
 
 namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
-    : Heuristic(opts) {
-    min_operator_cost = numeric_limits<int>::max();
-    for (OperatorProxy op : task_proxy.get_operators())
-        min_operator_cost = min(min_operator_cost, op.get_cost());
+    : Heuristic(opts),
+      min_operator_cost(get_min_operator_cost(task_proxy)) {
+    cout << "Initializing blind search heuristic..." << endl;
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {
-}
-
-void BlindSearchHeuristic::initialize() {
-    cout << "Initializing blind search heuristic..." << endl;
 }
 
 int BlindSearchHeuristic::compute_heuristic(const GlobalState &global_state) {

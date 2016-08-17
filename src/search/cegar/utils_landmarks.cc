@@ -13,12 +13,12 @@ using namespace std;
 using namespace landmarks;
 
 namespace cegar {
-static Fact get_fact(const LandmarkNode &node) {
+static FactPair get_fact(const LandmarkNode &node) {
     /* We assume that the given LandmarkNodes are from an h^m landmark
        graph with m=1. */
     assert(node.vars.size() == 1);
     assert(node.vals.size() == 1);
-    return Fact(node.vars[0], node.vals[0]);
+    return FactPair(node.vars[0], node.vals[0]);
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph() {
@@ -41,8 +41,8 @@ shared_ptr<LandmarkGraph> get_landmark_graph() {
     return lm_graph_factory.compute_lm_graph(exploration);
 }
 
-vector<Fact> get_fact_landmarks(const LandmarkGraph &graph) {
-    vector<Fact> facts;
+vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
+    vector<FactPair> facts;
     const set<LandmarkNode *> &nodes = graph.get_nodes();
     for (const LandmarkNode *node : nodes) {
         facts.push_back(get_fact(*node));
@@ -51,7 +51,7 @@ vector<Fact> get_fact_landmarks(const LandmarkGraph &graph) {
     return facts;
 }
 
-VarToValues get_prev_landmarks(const LandmarkGraph &graph, const Fact &fact) {
+VarToValues get_prev_landmarks(const LandmarkGraph &graph, const FactPair &fact) {
     VarToValues groups;
     LandmarkNode *node = graph.get_landmark(fact);
     assert(node);
@@ -67,7 +67,7 @@ VarToValues get_prev_landmarks(const LandmarkGraph &graph, const Fact &fact) {
         if (closed.find(ancestor) != closed.end())
             continue;
         closed.insert(ancestor);
-        Fact ancestor_fact = get_fact(*ancestor);
+        FactPair ancestor_fact = get_fact(*ancestor);
         groups[ancestor_fact.var].push_back(ancestor_fact.value);
         for (const auto &parent_and_edge : ancestor->parents) {
             const LandmarkNode *parent = parent_and_edge.first;
