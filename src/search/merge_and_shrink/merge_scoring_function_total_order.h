@@ -13,8 +13,6 @@ class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
-class TransitionSystem;
-
 enum class AtomicTSOrder {
     REGULAR,
     INVERSE,
