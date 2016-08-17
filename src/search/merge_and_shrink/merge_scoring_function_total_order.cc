@@ -202,11 +202,11 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
 static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Total order",
-        "This scoring function computes an order on merge candidates, based"
-        "on an order of all possible 'indices' of transition systems that may "
-        "occur. The score for each merge candidate correponds to its position "
-        "in the order. This tiebreaking has been introduced in the following "
-        "paper:"
+        "This scoring function computes a total order on the merge candidates, "
+        "based on the specified options. The score for each merge candidate "
+        "correponds to its position in the order. This scoring function is "
+        "mainly intended as tie-breaking, and has been introduced in the "
+        "following paper:"
             + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
@@ -215,10 +215,10 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
             "AAAI Press 2016") +
-        "Furthermore, using the atomic_ts_order option, this scoring function "
-        "used alone can be used to emulate the corresponding (precomputed)"
-        "linear merge strategies reverse level/level (independently of the "
-        "other options).");
+        "Furthermore, using the atomic_ts_order option, this scoring function, "
+        "if used alone in a score based filtering merge selector, can be used "
+        "to emulate the corresponding (precomputed) linear merge strategies "
+        "reverse level/level (independently of the other options).");
     MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
 
     options::Options options = parser.parse();

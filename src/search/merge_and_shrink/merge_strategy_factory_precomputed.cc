@@ -24,7 +24,6 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strateg
     FactoredTransitionSystem &fts) {
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task);
-//    merge_tree->inorder_traversal(4);
     return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
 }
 
@@ -40,14 +39,14 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Precomputed merge strategy",
         "This merge strategy has a precomputed merge tree. Note that this "
-        "the merge strategy does not take into account the current state of "
-        "the factored transition system. That also means that this merge "
+        "merge strategy does not take into account the current state of "
+        "the factored transition system. This also means that this merge "
         "strategy relies on the factored transition system being synchronized "
         "with this merge tree, i.e. all merges are performed exactly as given "
         "by the merge tree.");
     parser.add_option<shared_ptr<MergeTreeFactory>>(
         "merge_tree",
-        "the precomputed merge tree");
+        "The precomputed merge tree");
 
     options::Options opts = parser.parse();
     if (parser.dry_run())

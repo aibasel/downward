@@ -62,8 +62,8 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
 
     if (merge_candidates.size() > 1) {
         cerr << "More than one merge candidate remained after computing all "
-                "scores! Did you forget to include a randomizing scoring "
-                "function for tie-breaking?" << endl;
+                "scores! Did you forget to include a uniquely tie-breaking "
+                "scoring function, e.g. total_order or single_random?" << endl;
         utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
     }
 
@@ -93,7 +93,7 @@ static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
         "Score based filtering merge selector",
         "This merge selector has a list of scoring functions, which are used "
         "iteratively to compute scores for merge candidates, keeping the best "
-        "ones until only one is left.");
+        "ones (with minimal scores) until only one is left.");
     parser.add_list_option<shared_ptr<MergeScoringFunction>>(
         "scoring_functions",
         "The list of scoring functions used to compute scores for candidates.");

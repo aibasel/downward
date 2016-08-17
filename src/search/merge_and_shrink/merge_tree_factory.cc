@@ -70,5 +70,7 @@ static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(
     "This page describes the available merge trees that can be used to "
     "precompute a merge strategy, either for the entire task or a given "
     "subset of transition systems of a given factored transition system.\n"
-    "Merge trees are used in the merge strategies of type 'precomputed'.");
+    "Merge trees are typically used in the merge strategy of type "
+    "'precomputed', but they can also be used as fallback merge strategies in "
+    "'combined' merge strategies.");
 }

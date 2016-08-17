@@ -196,8 +196,6 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
     if (first_parent == second_parent) { // given merge already in the tree
         first_parent->erase_children_and_set_index(new_index);
     } else {
-//        inorder_traversal(4);
-//        cout << "updating: merge = " << merge << ", new index = " << new_index << endl;
         MergeTreeNode *surviving_node = nullptr;
         MergeTreeNode *removed_node = nullptr;
         if (update_option == UpdateOption::USE_FIRST) {
@@ -281,9 +279,6 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
                 parent_of_removed_node->right_child = surviving_child_of_removed_node;
             }
         }
-
-//        cout << "after update" << endl;
-//        inorder_traversal(4);
     }
 }
 
