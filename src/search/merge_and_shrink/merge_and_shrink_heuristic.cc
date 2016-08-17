@@ -305,9 +305,6 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
     label_reduction = nullptr;
 }
 
-void MergeAndShrinkHeuristic::initialize() {
-}
-
 int MergeAndShrinkHeuristic::compute_heuristic(const GlobalState &global_state) {
     State state = convert_global_state(global_state);
     int cost = fts->get_cost(state);
@@ -440,7 +437,7 @@ static Heuristic *_parse(OptionParser &parser) {
         "reasonable), DFP merging, and the appropriate label "
         "reduction setting:\n"
         "merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
-        "merge_strategy=merge_dfp(),label_reduction=label_reduction("
+        "merge_strategy=merge_dfp(),label_reduction=exact("
         "before_shrinking=true, before_merging=false),max_states=100000,"
         "threshold_before_merge=1)");
 

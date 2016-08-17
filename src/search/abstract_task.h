@@ -1,6 +1,8 @@
 #ifndef ABSTRACT_TASK_H
 #define ABSTRACT_TASK_H
 
+#include "utils/hash.h"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,32 +15,39 @@ namespace options {
 class Options;
 }
 
-struct Fact {
-private:
-    std::pair<int, int> get_pair() const {
-        return std::make_pair(var, value);
-    }
-
-public:
+struct FactPair {
     int var;
     int value;
 
-    Fact(int var, int value)
+    FactPair(int var, int value)
         : var(var), value(value) {
     }
 
-    bool operator<(const Fact &other) const {
-        return get_pair() < other.get_pair();
+    bool operator<(const FactPair &other) const {
+        return var < other.var || (var == other.var && value < other.value);
     }
 
-    bool operator==(const Fact &other) const {
-        return get_pair() == other.get_pair();
+    bool operator==(const FactPair &other) const {
+        return var == other.var && value == other.value;
     }
 
-    bool operator!=(const Fact &other) const {
-        return !(*this == other);
+    bool operator!=(const FactPair &other) const {
+        return var != other.var || value != other.value;
     }
 };
+
+std::ostream &operator<<(std::ostream &os, const FactPair &fact_pair);
+
+namespace std {
+template<>
+struct hash<FactPair> {
+    size_t operator()(const FactPair &fact) const {
+        std::pair<int, int> raw_fact(fact.var, fact.value);
+        std::hash<std::pair<int, int>> hasher;
+        return hasher(raw_fact);
+    }
+};
+}
 
 class AbstractTask {
 public:
@@ -47,28 +56,30 @@ public:
     virtual int get_num_variables() const = 0;
     virtual const std::string &get_variable_name(int var) const = 0;
     virtual int get_variable_domain_size(int var) const = 0;
-    virtual const std::string &get_fact_name(const Fact &fact) const = 0;
-    virtual bool are_facts_mutex(const Fact &fact1, const Fact &fact2) const = 0;
+    virtual int get_variable_axiom_layer(int var) const = 0;
+    virtual int get_variable_default_axiom_value(int var) const = 0;
+    virtual const std::string &get_fact_name(const FactPair &fact) const = 0;
+    virtual bool are_facts_mutex(const FactPair &fact1, const FactPair &fact2) const = 0;
 
     virtual int get_operator_cost(int index, bool is_axiom) const = 0;
     virtual const std::string &get_operator_name(int index, bool is_axiom) const = 0;
     virtual int get_num_operators() const = 0;
     virtual int get_num_operator_preconditions(int index, bool is_axiom) const = 0;
-    virtual Fact get_operator_precondition(
+    virtual FactPair get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const = 0;
     virtual int get_num_operator_effects(int op_index, bool is_axiom) const = 0;
     virtual int get_num_operator_effect_conditions(
         int op_index, int eff_index, bool is_axiom) const = 0;
-    virtual Fact get_operator_effect_condition(
+    virtual FactPair get_operator_effect_condition(
         int op_index, int eff_index, int cond_index, bool is_axiom) const = 0;
-    virtual Fact get_operator_effect(
+    virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const = 0;
     virtual const GlobalOperator *get_global_operator(int index, bool is_axiom) const = 0;
 
     virtual int get_num_axioms() const = 0;
 
     virtual int get_num_goals() const = 0;
-    virtual Fact get_goal_fact(int index) const = 0;
+    virtual FactPair get_goal_fact(int index) const = 0;
 
     virtual std::vector<int> get_initial_state_values() const = 0;
     /*

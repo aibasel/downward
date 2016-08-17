@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-using Tuple = std::vector<std::pair<int, int>>;
-
 namespace options {
 class Options;
 }
@@ -24,9 +22,12 @@ namespace hm_heuristic {
 */
 
 class HMHeuristic : public Heuristic {
+    using Tuple = std::vector<FactPair>;
     // parameters
-    int m;
-    bool has_cond_effects;
+    const int m;
+    const bool has_cond_effects;
+
+    const Tuple goals;
 
     // h^m table
     std::map<Tuple, int> hm_table;
@@ -39,12 +40,11 @@ class HMHeuristic : public Heuristic {
     int update_hm_entry(const Tuple &t, int val);
     void extend_tuple(const Tuple &t, const OperatorProxy &op);
 
-    int check_tuple_in_tuple(const Tuple &tup, const Tuple &big_tuple) const;
-    void state_to_tuple(const State &state, Tuple &t) const;
+    int check_tuple_in_tuple(const Tuple &tuple, const Tuple &big_tuple) const;
 
     int get_operator_pre_value(const OperatorProxy &op, int var) const;
-    void get_operator_pre(const OperatorProxy &op, Tuple &t) const;
-    void get_operator_eff(const OperatorProxy &op, Tuple &t) const;
+    Tuple get_operator_pre(const OperatorProxy &op) const;
+    Tuple get_operator_eff(const OperatorProxy &op) const;
     bool contradict_effect_of(const OperatorProxy &op, int var, int val) const;
 
     void generate_all_tuples();
@@ -56,15 +56,13 @@ class HMHeuristic : public Heuristic {
                                          int sz, std::vector<Tuple> &res) const;
 
     void dump_table() const;
-    void dump_tuple(const Tuple &tup) const;
 
 protected:
     virtual int compute_heuristic(const GlobalState &global_state);
-    virtual void initialize();
 
 public:
-    HMHeuristic(const options::Options &opts);
-    virtual ~HMHeuristic();
+    explicit HMHeuristic(const options::Options &opts);
+
     virtual bool dead_ends_are_reliable() const;
 };
 }

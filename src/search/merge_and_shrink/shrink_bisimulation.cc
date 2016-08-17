@@ -162,7 +162,7 @@ void ShrinkBisimulation::compute_signatures(
       gives a different result on parcprinter-08-strips:p06.pddl:
       astar(merge_and_shrink(merge_strategy=merge_dfp,
             shrink_strategy=shrink_bisimulation(greedy=false),
-            label_reduction=label_reduction(before_shrinking=true,before_merging=false),
+            label_reduction=exact(before_shrinking=true,before_merging=false),
             max_states=50000,threshold_before_merge=1))
 
       The same behavioral difference can be obtained even without modifying
