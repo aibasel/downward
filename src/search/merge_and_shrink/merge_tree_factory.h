@@ -30,8 +30,11 @@ public:
     explicit MergeTreeFactory(const options::Options &options);
     virtual ~MergeTreeFactory() = default;
     void dump_options() const;
+    // Compute a merge tree for the given entire task
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         std::shared_ptr<AbstractTask> task) = 0;
+    /* Compute a merge tree for the given current factored transition,
+       system, possibly for a sbuset of indices. */
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         std::shared_ptr<AbstractTask> task,
         FactoredTransitionSystem &fts,

@@ -36,9 +36,9 @@ void MergeStrategyFactoryStateless::dump_strategy_specific_options() const {
 static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     parser.document_synopsis(
         "Stateless merge strategy",
-        "This type of merge strategies computes the next merge only depending "
-        "on the current state of the factored transition system, not storing "
-        "any additional information.");
+        "This merge strategy has a merge selector, which computes the next "
+        "merge only depending on the current state of the factored transition "
+        "system, not requireing any additional information.");
     parser.add_option<shared_ptr<MergeSelector>>(
         "merge_selector",
         "The merge selector to be used.");

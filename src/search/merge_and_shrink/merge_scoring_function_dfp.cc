@@ -69,7 +69,7 @@ vector<double> MergeScoringFunctionDFP::compute_scores(
     scores.reserve(merge_candidates.size());
 
     // Go over all pairs of transition systems and compute their weight.
-    for (pair<int, int> merge_candidate : merge_candidates ) {
+    for (pair<int, int> merge_candidate : merge_candidates) {
         int ts_index1 = merge_candidate.first;
         int ts_index2 = merge_candidate.second;
         assert(fts.is_active(ts_index1));
