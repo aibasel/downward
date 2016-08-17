@@ -71,7 +71,7 @@ void MergeScoringFunctionTotalOrder::initialize(
     for (int i = 0; i < num_variables; ++i) {
         atomic_tso.push_back(i);
     }
-    if (atomic_ts_order == AtomicTSOrder::INVERSE) {
+    if (atomic_ts_order == AtomicTSOrder::LEVEL) {
         reverse(atomic_tso.begin(), atomic_tso.end());
     } else if (atomic_ts_order == AtomicTSOrder::RANDOM) {
         rng->shuffle(atomic_tso);
@@ -122,11 +122,11 @@ string MergeScoringFunctionTotalOrder::name() const {
 void MergeScoringFunctionTotalOrder::dump_function_specific_options() const {
     cout << "Atomic transition system order: ";
     switch (atomic_ts_order) {
-    case AtomicTSOrder::REGULAR:
-        cout << "regular";
+    case AtomicTSOrder::REVERSE_LEVEL:
+        cout << "reverse level";
         break;
-    case AtomicTSOrder::INVERSE:
-        cout << "inverse";
+    case AtomicTSOrder::LEVEL:
+        cout << "level";
         break;
     case AtomicTSOrder::RANDOM:
         cout << "random";
@@ -158,11 +158,11 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
     options::OptionParser &parser) {
     vector<string> atomic_ts_order;
     vector<string> atomic_ts_order_documentation;
-    atomic_ts_order.push_back("regular");
+    atomic_ts_order.push_back("reverse_level");
     atomic_ts_order_documentation.push_back(
         "the variable order of Fast Downward");
-    atomic_ts_order.push_back("inverse");
-    atomic_ts_order_documentation.push_back("opposite of regular");
+    atomic_ts_order.push_back("level");
+    atomic_ts_order_documentation.push_back("opposite of reverse_level");
     atomic_ts_order.push_back("random");
     atomic_ts_order_documentation.push_back("a randomized order");
     parser.add_enum_option(
@@ -170,7 +170,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
         atomic_ts_order,
         "The order in which atomic transition systems are considered when "
         "considering pairs of potential merges.",
-        "regular",
+        "reverse_level",
         atomic_ts_order_documentation);
 
     vector<string> product_ts_order;
@@ -214,7 +214,11 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
             "Proceedings of the 26th International Conference on Automated "
             "Planning and Scheduling (ICAPS 2016)",
             "294-298",
-            "AAAI Press 2016"));
+            "AAAI Press 2016") +
+        "Furthermore, using the atomic_ts_order option, this scoring function "
+        "used alone can be used to emulate the corresponding (precomputed)"
+        "linear merge strategies reverse level/level (independently of the "
+        "other options).");
     MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
 
     options::Options options = parser.parse();
