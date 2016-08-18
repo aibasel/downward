@@ -173,7 +173,7 @@ pair<MergeTreeNode *, MergeTreeNode *> MergeTree::get_parents_of_ts_indices(
     }
     delete copy;
 
-    pair<MergeTreeNode *, MergeTreeNode*> result = make_pair(nullptr, nullptr);
+    pair<MergeTreeNode *, MergeTreeNode *> result = make_pair(nullptr, nullptr);
     if (use_first_index_for_first_parent) {
         result.first = root->get_parent_of_ts_index(ts_index1);
         result.second = root->get_parent_of_ts_index(ts_index2);
@@ -220,7 +220,7 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
             surviving_leaf = surviving_node->left_child;
         } else {
             assert(surviving_node->right_child->ts_index == ts_index1 ||
-                surviving_node->right_child->ts_index == ts_index2);
+                   surviving_node->right_child->ts_index == ts_index2);
             surviving_leaf = surviving_node->right_child;
         }
         surviving_leaf->ts_index = new_index;

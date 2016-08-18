@@ -17,7 +17,7 @@ namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     const options::Options &options)
     : random_seed(options.get<int>("random_seed")) {
-      rng = utils::parse_rng_from_options(options);
+    rng = utils::parse_rng_from_options(options);
 }
 
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(
