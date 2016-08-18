@@ -15,8 +15,8 @@ namespace merge_and_shrink {
 MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
     const options::Options &options)
     : merge_scoring_functions(
-        options.get_list<shared_ptr<MergeScoringFunction>>(
-            "scoring_functions")) {
+          options.get_list<shared_ptr<MergeScoringFunction>>(
+              "scoring_functions")) {
 }
 
 MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
@@ -62,8 +62,8 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
 
     if (merge_candidates.size() > 1) {
         cerr << "More than one merge candidate remained after computing all "
-                "scores! Did you forget to include a uniquely tie-breaking "
-                "scoring function, e.g. total_order or single_random?" << endl;
+            "scores! Did you forget to include a uniquely tie-breaking "
+            "scoring function, e.g. total_order or single_random?" << endl;
         utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
     }
 

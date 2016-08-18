@@ -24,7 +24,7 @@ MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
       product_ts_order(ProductTSOrder(options.get_enum("product_ts_order"))),
       atomic_before_product(options.get<bool>("atomic_before_product")),
       random_seed(options.get<int>("random_seed")) {
-      rng = utils::parse_rng_from_options(options);
+    rng = utils::parse_rng_from_options(options);
 }
 
 vector<double> MergeScoringFunctionTotalOrder::compute_scores(
@@ -44,9 +44,9 @@ vector<double> MergeScoringFunctionTotalOrder::compute_scores(
             pair<int, int> other_candidate =
                 merge_candidate_order[merge_candidate_order_index];
             if ((other_candidate.first == ts_index1 &&
-                    other_candidate.second == ts_index2) ||
+                 other_candidate.second == ts_index2) ||
                 (other_candidate.second == ts_index1 &&
-                    other_candidate.first == ts_index2)) {
+                 other_candidate.first == ts_index2)) {
                 // use the index in the merge candidate order as score
                 scores.push_back(merge_candidate_order_index);
             }
@@ -207,7 +207,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "correponds to its position in the order. This scoring function is "
         "mainly intended as tie-breaking, and has been introduced in the "
         "following paper:"
-            + utils::format_paper_reference(
+        + utils::format_paper_reference(
             {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
             "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
             "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",

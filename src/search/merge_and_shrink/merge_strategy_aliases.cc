@@ -47,7 +47,7 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
         "ordering options void.",
         "false");
     cerr << "Warning: this command line option has been depcrecated. Please"
-            "consult fast-downward.org for equivalent new command line options."
+        "consult fast-downward.org for equivalent new command line options."
          << endl;
 
     options::Options options = parser.parse();
@@ -105,7 +105,7 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
         "equivalent call: "
         "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))");
     cerr << "Warning: this command line option has been depcrecated. Please"
-            "consult fast-downward.org for equivalent new command line options."
+        "consult fast-downward.org for equivalent new command line options."
          << endl;
 
     options::Options opts = parser.parse();

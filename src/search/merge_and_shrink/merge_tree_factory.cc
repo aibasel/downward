@@ -41,7 +41,7 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     FactoredTransitionSystem &,
     const std::vector<int> &) {
     cerr << "This merge tree does not support being computed on a subset "
-            "of indices for a given factored transition system!" << endl;
+        "of indices for a given factored transition system!" << endl;
     utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
 }
 
@@ -62,7 +62,6 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
         "let the node represententing the index that would have been merged "
         "earlier (later) survive. use_random chooses a random node.",
         "use_random");
-
 }
 
 static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(
