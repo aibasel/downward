@@ -437,15 +437,18 @@ static Heuristic *_parse(OptionParser &parser) {
         "reasonable), DFP merging, and the appropriate label "
         "reduction setting:\n"
         "merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
-        "merge_strategy=merge_dfp(),label_reduction=exact("
-        "before_shrinking=true, before_merging=false),max_states=100000,"
-        "threshold_before_merge=1)");
+        "merge_stateless(merge_selector=score_based_filtering("
+        "scoring_functions=[goal_relevance,dfp,total_order])),"
+        "label_reduction=label_reduction(before_shrinking=true,"
+        "before_merging=false),max_states=100000,threshold_before_merge=1)");
 
     // Merge strategy option.
     parser.add_option<shared_ptr<MergeStrategyFactory>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
-        "We currently recommend merge_dfp.");
+        "We currently recommend DFP, i.e.: merge_stateless(merge_selector="
+        "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
+        "total_order])).");
 
     // Shrink strategy option.
     parser.add_option<shared_ptr<ShrinkStrategy>>(

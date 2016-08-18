@@ -160,16 +160,22 @@ void ShrinkBisimulation::compute_signatures(
       If label groups were sorted (every group by increasing label numbers,
       groups by smallest label number), then the following configuration
       gives a different result on parcprinter-08-strips:p06.pddl:
-      astar(merge_and_shrink(merge_strategy=merge_dfp,
+      astar(merge_and_shrink(
+            merge_strategy=merge_stateless(merge_selector=
+                score_based_filtering(scoring_functions=[goal_relevance,dfp,
+                                                         total_order])),
             shrink_strategy=shrink_bisimulation(greedy=false),
             label_reduction=exact(before_shrinking=true,before_merging=false),
             max_states=50000,threshold_before_merge=1))
 
       The same behavioral difference can be obtained even without modifying
-      the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
-      Running the above config (move max_states inside shrink_bisimulation,
-      move threshold_before_merge inside shrink_bisimulation and rename to
-      threshold) on those two revisions yields the same difference.
+      the merge-and-shrink code, using the two revisions c66ee00a250a and
+      d2e317621f2c. Running the above config, adapted to the old syntax,
+      yields the same difference:
+      astar(merge_and_shrink(merge_strategy=merge_dfp,
+            shrink_strategy=shrink_bisimulation(greedy=false,max_states=50000,
+                                                threshold=1),
+            label_reduction=exact(before_shrinking=true,before_merging=false)))
     */
     for (const GroupAndTransitions &gat : ts) {
         const LabelGroup &label_group = gat.label_group;
