@@ -39,7 +39,7 @@ void MergeTreeFactory::dump_options() const {
 unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     const shared_ptr<AbstractTask> &,
     FactoredTransitionSystem &,
-    const std::vector<int> &) {
+    const vector<int> &) {
     cerr << "This merge tree does not support being computed on a subset "
         "of indices for a given factored transition system!" << endl;
     utils::exit_with(utils::ExitCode::CRITICAL_ERROR);
