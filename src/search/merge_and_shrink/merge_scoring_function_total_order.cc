@@ -58,7 +58,7 @@ vector<double> MergeScoringFunctionTotalOrder::compute_scores(
 }
 
 void MergeScoringFunctionTotalOrder::initialize(
-    shared_ptr<AbstractTask> task) {
+    const shared_ptr<AbstractTask> &task) {
     initialized = true;
     TaskProxy task_proxy(*task);
     int num_variables = task_proxy.get_variables().size();

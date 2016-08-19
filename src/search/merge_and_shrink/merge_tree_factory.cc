@@ -37,7 +37,7 @@ void MergeTreeFactory::dump_options() const {
 }
 
 unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
-    shared_ptr<AbstractTask>,
+    const shared_ptr<AbstractTask> &,
     FactoredTransitionSystem &,
     const std::vector<int> &) {
     cerr << "This merge tree does not support being computed on a subset "
