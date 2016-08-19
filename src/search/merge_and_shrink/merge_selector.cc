@@ -47,7 +47,7 @@ void MergeSelector::dump_options() const {
 }
 
 static options::PluginTypePlugin<MergeSelector> _type_plugin(
-    "Merge Selector",
+    "MergeSelector",
     "This page describes the available merge selectors. They are used to "
     "compute the next merge purely based on the state of the given factored "
     "transition system. They are used in the merge strategy of type "
