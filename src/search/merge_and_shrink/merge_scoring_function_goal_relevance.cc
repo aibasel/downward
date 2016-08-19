@@ -24,12 +24,10 @@ vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     const vector<pair<int, int>> &merge_candidates) {
     int num_ts = fts.get_size();
     vector<bool> goal_relevant(num_ts, false);
-    for (int ts_index = 0; ts_index < num_ts; ++ts_index) {
-        if (fts.is_active(ts_index)) {
-            const TransitionSystem &ts = fts.get_ts(ts_index);
-            if (is_goal_relevant(ts)) {
-                goal_relevant[ts_index] = true;
-            }
+    for (int ts_index : fts) {
+        const TransitionSystem &ts = fts.get_ts(ts_index);
+        if (is_goal_relevant(ts)) {
+            goal_relevant[ts_index] = true;
         }
     }
 

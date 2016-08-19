@@ -3,6 +3,7 @@
 #include "distances.h"
 #include "factored_transition_system.h"
 #include "label_equivalence_relation.h"
+#include "labels.h"
 #include "transition_system.h"
 
 #include "../options/option_parser.h"
@@ -19,7 +20,7 @@ vector<int> MergeScoringFunctionDFP::compute_label_ranks(
     const FactoredTransitionSystem &fts, int index) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
-    int num_labels = fts.get_num_labels();
+    int num_labels = fts.get_labels().get_size();
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     vector<int> label_ranks(num_labels, -1);
 
@@ -72,8 +73,6 @@ vector<double> MergeScoringFunctionDFP::compute_scores(
     for (pair<int, int> merge_candidate : merge_candidates) {
         int ts_index1 = merge_candidate.first;
         int ts_index2 = merge_candidate.second;
-        assert(fts.is_active(ts_index1));
-        assert(fts.is_active(ts_index2));
 
         vector<int> &label_ranks1 = transition_system_label_ranks[ts_index1];
         if (label_ranks1.empty()) {
