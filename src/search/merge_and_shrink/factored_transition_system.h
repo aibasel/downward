@@ -81,7 +81,7 @@ public:
         return is_index_valid(index);
     }
     // TODO: remove the following method and let DFP use get_labels?
-    int get_num_labels() const; // used by merge_dfp
+    int get_num_labels() const; // used by DFP
     const Labels &get_labels() const { // used by label_reduction
         return *labels;
     }
