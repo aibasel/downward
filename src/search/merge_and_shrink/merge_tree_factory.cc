@@ -65,7 +65,7 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
 }
 
 static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(
-    "Merge Tree",
+    "MergeTree",
     "This page describes the available merge trees that can be used to "
     "precompute a merge strategy, either for the entire task or a given "
     "subset of transition systems of a given factored transition system.\n"
