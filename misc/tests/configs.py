@@ -22,35 +22,35 @@ def configs_optimal_core():
         "astar_merge_and_shrink_rl_fh": [
             "--search",
             "astar(merge_and_shrink("
-            "merge_strategy=merge_linear(variable_order=reverse_level),"
+            "merge_strategy=merge_strategy=merge_precomputed("
+            "merge_tree=linear(variable_order=reverse_level)),"
             "shrink_strategy=shrink_fh(),"
             "label_reduction=exact(before_shrinking=false,"
             "before_merging=true),max_states=50000))"],
         "astar_merge_and_shrink_dfp_bisim": [
             "--search",
-            "astar(merge_and_shrink(merge_strategy=merge_dfp,"
-            "shrink_strategy=shrink_bisimulation("
-            "greedy=false),"
+            "astar(merge_and_shrink(merge_strategy=merge_stateless("
+            "merge_selector=score_based_filtering(scoring_functions=["
+            "goal_relevance,dfp,total_order("
+            "atomic_ts_order=reverse_level,product_ts_order=new_to_old,"
+            "atomic_before_product=false)])),"
+            "shrink_strategy=shrink_bisimulation(greedy=false),"
             "label_reduction=exact(before_shrinking=true,"
-            "before_merging=false),max_states=50000,threshold_before_merge=1))"],
+            "before_merging=false),max_states=50000,"
+            "threshold_before_merge=1))"],
         "astar_merge_and_shrink_dfp_greedy_bisim": [
             "--search",
-            "astar(merge_and_shrink(merge_strategy=merge_dfp,"
+            "astar(merge_and_shrink(merge_strategy=merge_stateless("
+            "merge_selector=score_based_filtering(scoring_functions=["
+            "goal_relevance,dfp,total_order("
+            "atomic_ts_order=reverse_level,product_ts_order=new_to_old,"
+            "atomic_before_product=false)])),"
             "shrink_strategy=shrink_bisimulation("
             "greedy=true),"
             "label_reduction=exact(before_shrinking=true,"
-            "before_merging=false),max_states=infinity,threshold_before_merge=1))"],
+            "before_merging=false),max_states=infinity,"
+            "threshold_before_merge=1))"],
     }
-
-MERGE_AND_SHRINK = ('astar(merge_and_shrink('
-    'merge_strategy=merge_dfp,'
-    'shrink_strategy=shrink_bisimulation(greedy=false),'
-    'label_reduction=exact('
-        'before_shrinking=true,'
-        'before_merging=false),'
-    'max_states=50000,threshold_before_merge=1'
-'))')
-
 
 def configs_satisficing_core():
     return {
