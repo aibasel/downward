@@ -1,6 +1,7 @@
 #ifndef STATE_REGISTRY_H
 #define STATE_REGISTRY_H
 
+#include "abstract_task.h"
 #include "axioms.h"
 #include "global_state.h"
 #include "int_packer.h"
@@ -142,11 +143,18 @@ class StateRegistry {
                                StateIDSemanticHash,
                                StateIDSemanticEqual> StateIDSet;
 
+    /* TODO: The state registry still doesn't use the task interface completely.
+             Fixing this is part of issue509. */
+    /* TODO: AbstractTask is an implementation detail that is not supposed to
+             leak. In the long run, we should store a TaskProxy here. */
+    const AbstractTask &task;
+
     /* TODO: When we switch StateRegistry to the task interface, the next three
              members should come from the task. */
     const IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
     const std::vector<int> &initial_state_data;
+    const int num_variables;
 
     SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
@@ -157,12 +165,22 @@ class StateRegistry {
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
 public:
-    StateRegistry(const IntPacker &state_packer,
-                  AxiomEvaluator &axiom_evaluator,
-                  const std::vector<int> &initial_state_data);
+    StateRegistry(
+        const AbstractTask &task, const IntPacker &state_packer,
+        AxiomEvaluator &axiom_evaluator, const std::vector<int> &initial_state_data);
     ~StateRegistry();
 
-    inline int get_state_value(const PackedStateBin *buffer, int var) const {
+    /* TODO: Ideally, this should return a TaskProxy. (See comment above the
+             declaration of task.) */
+    const AbstractTask &get_task() const {
+        return task;
+    }
+
+    int get_num_variables() const {
+        return num_variables;
+    }
+
+    int get_state_value(const PackedStateBin *buffer, int var) const {
         return state_packer.get(buffer, var);
     }
 
