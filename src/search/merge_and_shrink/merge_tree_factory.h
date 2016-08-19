@@ -32,11 +32,11 @@ public:
     void dump_options() const;
     // Compute a merge tree for the given entire task
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
-        std::shared_ptr<AbstractTask> task) = 0;
+        const std::shared_ptr<AbstractTask> &task) = 0;
     /* Compute a merge tree for the given current factored transition,
        system, possibly for a sbuset of indices. */
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
-        std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> &task,
         FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset);
     // Inheriting classes must call this method in their parsing methods.

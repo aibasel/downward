@@ -18,7 +18,7 @@ public:
     explicit MergeStrategyFactoryStateless(options::Options &options);
     virtual ~MergeStrategyFactoryStateless() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
-        std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> &task,
         FactoredTransitionSystem &fts) override;
 };
 }

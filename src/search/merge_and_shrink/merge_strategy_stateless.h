@@ -8,11 +8,11 @@
 namespace merge_and_shrink {
 class MergeSelector;
 class MergeStrategyStateless : public MergeStrategy {
-    std::shared_ptr<MergeSelector> merge_selector;
+    const std::shared_ptr<MergeSelector> merge_selector;
 public:
     MergeStrategyStateless(
         FactoredTransitionSystem &fts,
-        std::shared_ptr<MergeSelector> merge_selector);
+        const std::shared_ptr<MergeSelector> &merge_selector);
     virtual ~MergeStrategyStateless() override = default;
     virtual std::pair<int, int> get_next() override;
 };

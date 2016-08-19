@@ -20,7 +20,7 @@ MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
-    shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     FactoredTransitionSystem &fts) {
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task);

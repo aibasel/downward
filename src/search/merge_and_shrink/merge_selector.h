@@ -21,7 +21,7 @@ public:
     virtual std::pair<int, int> select_merge(
         FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset = std::vector<int>()) const = 0;
-    virtual void initialize(std::shared_ptr<AbstractTask> task) = 0;
+    virtual void initialize(const std::shared_ptr<AbstractTask> &task) = 0;
     void dump_options() const;
 };
 }

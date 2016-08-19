@@ -129,9 +129,8 @@ void MergeTreeNode::inorder(int offset, int current_indentation) const {
     }
 }
 
-MergeTree::MergeTree(
-    MergeTreeNode *root,
-    shared_ptr<utils::RandomNumberGenerator> rng,
+MergeTree::MergeTree(MergeTreeNode *root,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
     UpdateOption update_option)
     : root(root), rng(rng), update_option(update_option) {
 }

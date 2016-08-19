@@ -19,7 +19,7 @@ public:
     virtual ~MergeStrategyFactory() = default;
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
-        std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> &task,
         FactoredTransitionSystem &fts) = 0;
 };
 }

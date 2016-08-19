@@ -19,7 +19,7 @@ MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
-    shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &task,
     FactoredTransitionSystem &fts) {
     merge_selector->initialize(task);
     return utils::make_unique_ptr<MergeStrategyStateless>(fts, merge_selector);

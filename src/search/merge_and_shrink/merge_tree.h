@@ -92,7 +92,7 @@ class MergeTree {
 public:
     MergeTree(
         MergeTreeNode *root,
-        std::shared_ptr<utils::RandomNumberGenerator> rng,
+        const std::shared_ptr<utils::RandomNumberGenerator> &rng,
         UpdateOption update_option);
     ~MergeTree();
     std::pair<int, int> get_next_merge(int new_index);
