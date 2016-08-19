@@ -56,8 +56,9 @@ void TSConstIterator::operator++() {
 }
 
 GroupAndTransitions TSConstIterator::operator*() const {
-    return GroupAndTransitions(label_equivalence_relation.get_group(current_group_id),
-                               transitions_by_group_id[current_group_id]);
+    return GroupAndTransitions(
+        label_equivalence_relation.get_group(current_group_id),
+        transitions_by_group_id[current_group_id]);
 }
 
 

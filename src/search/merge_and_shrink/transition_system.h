@@ -57,13 +57,13 @@ class TSConstIterator {
     const std::vector<std::vector<Transition>> &transitions_by_group_id;
     // current_group_id is the actual iterator
     int current_group_id;
+
+    void next_valid_index();
 public:
     TSConstIterator(const LabelEquivalenceRelation &label_equivalence_relation,
                     const std::vector<std::vector<Transition>> &transitions_by_group_id,
                     bool end);
-    void next_valid_index();
     void operator++();
-
     GroupAndTransitions operator*() const;
 
     bool operator==(const TSConstIterator &rhs) const {
