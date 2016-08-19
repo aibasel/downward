@@ -18,7 +18,7 @@ void MergeScoringFunction::dump_options() const {
 }
 
 static options::PluginTypePlugin<MergeScoringFunction> _type_plugin(
-    "Merge Scoring Function",
+    "MergeScoringFunction",
     "This page describes various merge scoring functions. A scoring function, "
     "given a list of merge candidates and a factored transition system, "
     "computes a score for each candidate based on this information and "
