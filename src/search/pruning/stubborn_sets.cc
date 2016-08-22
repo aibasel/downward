@@ -71,6 +71,7 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
         for (const FactProxy pre : op.get_preconditions()) {
             preconditions.push_back(pre.get_pair());
         }
+        unsorted_op_preconditions.push_back(preconditions);
         sort(preconditions.begin(), preconditions.end(), SortFactsByVariable());
         sorted_op_preconditions.push_back(preconditions);
 
