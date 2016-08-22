@@ -12,6 +12,7 @@ using LabelConstIter = std::list<int>::const_iterator;
 
 // Positive infinity. The name "INFINITY" is taken by an ISO C99 macro.
 extern const int INF;
+extern const int MINUSINF;
 extern const int PRUNED_STATE;
 
 /*

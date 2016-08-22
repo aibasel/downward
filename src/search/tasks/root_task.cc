@@ -35,6 +35,14 @@ int RootTask::get_variable_domain_size(int var) const {
     return g_variable_domain[var];
 }
 
+int RootTask::get_variable_axiom_layer(int var) const {
+    return g_axiom_layers[var];
+}
+
+int RootTask::get_variable_default_axiom_value(int var) const {
+    return g_default_axiom_values[var];
+}
+
 const string &RootTask::get_fact_name(const FactPair &fact) const {
     return g_fact_names[fact.var][fact.value];
 }
@@ -107,9 +115,8 @@ FactPair RootTask::get_goal_fact(int index) const {
 
 vector<int> RootTask::get_initial_state_values() const {
     // TODO: think about a better way to do this.
-    static StateRegistry state_registry(*g_state_packer,
-                                        *g_axiom_evaluator,
-                                        g_initial_state_data);
+    static StateRegistry state_registry(
+        *g_root_task(), *g_state_packer, *g_axiom_evaluator, g_initial_state_data);
     return state_registry.get_initial_state().get_values();
 }
 

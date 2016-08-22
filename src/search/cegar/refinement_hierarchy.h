@@ -12,7 +12,9 @@ namespace cegar {
 class Node;
 
 /*
-  This class stores the refinement hierarchy of a Cartesian abstraction.
+  This class stores the refinement hierarchy of a Cartesian
+  abstraction. The hierarchy forms a DAG with inner nodes for each
+  split and leaf nodes for the abstract states.
 
   It is used for efficient lookup of heuristic values during search.
 
@@ -26,9 +28,11 @@ class RefinementHierarchy {
 
 public:
     RefinementHierarchy();
-    ~RefinementHierarchy() = default;
 
-    RefinementHierarchy(RefinementHierarchy &&other);
+    // Visual Studio 2013 needs an explicit implementation.
+    RefinementHierarchy(RefinementHierarchy &&other)
+        : root(std::move(other.root)) {
+    }
 
     Node *get_node(const State &state) const;
 
@@ -41,16 +45,16 @@ public:
 class Node {
     static const int LEAF_NODE = -1;
     /*
-      While right_child is always the node of a (possibly split) abstract
-      state, left_child may be a helper node. We add helper nodes to the
-      hierarchy to allow for efficient lookup in case more than one fact is
-      split off a state.
+      While right_child is always the node of a (possibly split)
+      abstract state, left_child may be a helper node. We add helper
+      nodes to the hierarchy to allow for efficient lookup in case more
+      than one fact is split off a state.
     */
     // TODO: Use shared_ptr for left_child and unique_ptr for right_child?
     Node *left_child;
     Node *right_child;
 
-    // Save the variable and value for which the corresponding state was split.
+    // Variable and value for which the corresponding state was split.
     int var;
     int value;
 
@@ -65,9 +69,10 @@ public:
     Node &operator=(const Node &) = delete;
 
     /*
-      Update the split tree for the new split. Additionally to the left and
-      right child nodes add |values|-1 helper nodes that all have the right
-      child as their right child and the next helper node as their left child.
+      Update the split tree for the new split. Additionally to the left
+      and right child nodes add |values|-1 helper nodes that all have
+      the right child as their right child and the next helper node as
+      their left child.
     */
     std::pair<Node *, Node *> split(int var, const std::vector<int> &values);
 

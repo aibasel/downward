@@ -92,7 +92,7 @@ public:
     int get_init_distance(int state) const { // used by shrink_fh
         return init_distances[state];
     }
-    int get_goal_distance(int state) const { // used by shrink strategies and merge_dfp
+    int get_goal_distance(int state) const { // used by shrink strategies and DFP
         return goal_distances[state];
     }
     void dump() const;

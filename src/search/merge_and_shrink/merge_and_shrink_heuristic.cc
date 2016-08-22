@@ -225,6 +225,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
 
     unique_ptr<MergeStrategy> merge_strategy =
         merge_strategy_factory->compute_merge_strategy(task, *fts);
+    merge_strategy_factory = nullptr;
 
     int final_index = -1; // TODO: get rid of this
     if (fts->is_solvable()) { // All atomic transition system are solvable.
@@ -300,7 +301,6 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
         cout << "Abstract problem is unsolvable!" << endl;
     }
 
-    merge_strategy = nullptr;
     shrink_strategy = nullptr;
     label_reduction = nullptr;
 }
@@ -437,15 +437,18 @@ static Heuristic *_parse(OptionParser &parser) {
         "reasonable), DFP merging, and the appropriate label "
         "reduction setting:\n"
         "merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
-        "merge_strategy=merge_dfp(),label_reduction=exact("
-        "before_shrinking=true, before_merging=false),max_states=100000,"
-        "threshold_before_merge=1)");
+        "merge_stateless(merge_selector=score_based_filtering("
+        "scoring_functions=[goal_relevance,dfp,total_order])),"
+        "label_reduction=label_reduction(before_shrinking=true,"
+        "before_merging=false),max_states=100000,threshold_before_merge=1)");
 
     // Merge strategy option.
     parser.add_option<shared_ptr<MergeStrategyFactory>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
-        "We currently recommend merge_dfp.");
+        "We currently recommend DFP, i.e.: merge_stateless(merge_selector="
+        "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
+        "total_order])).");
 
     // Shrink strategy option.
     parser.add_option<shared_ptr<ShrinkStrategy>>(

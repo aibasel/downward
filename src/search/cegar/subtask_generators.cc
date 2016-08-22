@@ -129,9 +129,6 @@ LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
       combine_facts(opts.get<bool>("combine_facts")) {
 }
 
-LandmarkDecomposition::~LandmarkDecomposition() {
-}
-
 shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
     shared_ptr<AbstractTask> &parent, const FactPair &fact) const {
     assert(combine_facts);

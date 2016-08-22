@@ -38,6 +38,9 @@ struct Split {
 };
 
 
+/*
+  Select split in case there are multiple possible splits.
+*/
 class SplitSelector {
     const std::shared_ptr<AbstractTask> task;
     const TaskProxy task_proxy;
