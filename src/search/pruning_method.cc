@@ -52,6 +52,9 @@ void PruningMethod::prune_operators(const GlobalState &global_state,
         }
 
         global_ops.swap(pruned_ops);
+        /* Note that we don't need to sort here, but it seems to help
+           performance for some reason. */
+        sort(global_ops.begin(), global_ops.end());
     }
 }
 
