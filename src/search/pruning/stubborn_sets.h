@@ -32,6 +32,12 @@ protected:
       We copy some parts of the task here, so we can avoid the more expensive
       access through the task interface during the search.
     */
+    /*
+      HACK: we don't need to store the operator conditions twice. The unsorted
+      version is only used for an experiment to make sure that the pruning power
+      does not change.
+    */
+    std::vector<std::vector<FactPair>> unsorted_op_preconditions;
     std::vector<std::vector<FactPair>> sorted_op_preconditions;
     std::vector<std::vector<FactPair>> sorted_op_effects;
     std::vector<FactPair> goals;
@@ -51,7 +57,7 @@ protected:
 
     // Return the first unsatified precondition, or (-1, -1) if there is none.
     FactPair find_unsatisfied_precondition(int op_no, const State &state) {
-        return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
+        return find_unsatisfied_condition(unsorted_op_preconditions[op_no], state);
     }
 
     // Returns true iff the operators was enqueued.
