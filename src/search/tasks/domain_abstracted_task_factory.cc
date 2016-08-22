@@ -2,6 +2,8 @@
 
 #include "domain_abstracted_task.h"
 
+#include "../task_tools.h"
+
 #include "../utils/language.h"
 
 #include <sstream>
@@ -36,6 +38,14 @@ public:
 DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
     const shared_ptr<AbstractTask> &parent,
     const VarToGroups &value_groups) {
+    TaskProxy parent_proxy(*parent);
+    if (has_axioms(parent_proxy)) {
+        ABORT("DomainAbstractedTask doesn't support axioms.");
+    }
+    if (has_conditional_effects(parent_proxy)) {
+        ABORT("DomainAbstractedTask doesn't support conditional effects.");
+    }
+
     initialize(*parent);
     for (const auto &pair : value_groups) {
         int var = pair.first;
