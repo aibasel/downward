@@ -36,7 +36,7 @@ def main(revisions=None):
     exp.add_comparison_table_step()
 
     if matplotlib:
-        for r1, r2 in zip(revisions, revisions[1:]):
+        for r1, r2 in zip(revisions, revisions[1:]) + [(revisions[0], revisions[-1])]:
             for attribute in ["memory", "total_time"]:
                 for config in configs:
                     exp.add_report(
@@ -45,7 +45,7 @@ def main(revisions=None):
                             filter_config=["{}-{}".format(rev, config.nick) for rev in [r1, r2]],
                             get_category=lambda run1, run2: run1.get("domain"),
                         ),
-                        outfile="{}-{}-{}.png".format(exp.name, attribute, config.nick)
+                        outfile="{}-{}-{}-{}-{}.png".format(exp.name, attribute, config.nick, r1, r2)
                     )
 
     exp()
