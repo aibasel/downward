@@ -12,6 +12,26 @@
 using namespace std;
 
 namespace merge_and_shrink {
+FTSConstIterator::FTSConstIterator(
+    const FactoredTransitionSystem &fts,
+    bool end)
+    : fts(fts), current_index((end ? fts.get_size() : 0)) {
+    next_valid_index();
+}
+
+void FTSConstIterator::next_valid_index() {
+    while (current_index < fts.get_size()
+           && !fts.is_active(current_index)) {
+        ++current_index;
+    }
+}
+
+void FTSConstIterator::operator++() {
+    ++current_index;
+    next_valid_index();
+}
+
+
 FactoredTransitionSystem::FactoredTransitionSystem(
     unique_ptr<Labels> labels,
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
@@ -225,9 +245,5 @@ void FactoredTransitionSystem::dump(int index) const {
     assert(transition_systems[index]);
     transition_systems[index]->dump_labels_and_transitions();
     heuristic_representations[index]->dump();
-}
-
-int FactoredTransitionSystem::get_num_labels() const {
-    return labels->get_size();
 }
 }
