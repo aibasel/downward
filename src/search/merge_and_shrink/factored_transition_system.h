@@ -27,7 +27,7 @@ class FTSConstIterator {
 
     void next_valid_index();
 public:
-    FTSConstIterator(const FactoredTransitionSystem &fts,  bool end);
+    FTSConstIterator(const FactoredTransitionSystem &fts, bool end);
     void operator++();
 
     int operator*() const {
