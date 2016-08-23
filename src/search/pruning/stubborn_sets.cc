@@ -8,12 +8,6 @@
 using namespace std;
 
 namespace stubborn_sets {
-struct SortFactsByVariable {
-    bool operator()(const FactPair &lhs, const FactPair &rhs) {
-        return lhs.var < rhs.var;
-    }
-};
-
 // Relies on both fact sets being sorted by variable.
 bool contain_conflicting_fact(const vector<FactPair> &facts1,
                               const vector<FactPair> &facts2) {
@@ -71,14 +65,14 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
         for (const FactProxy pre : op.get_preconditions()) {
             preconditions.push_back(pre.get_pair());
         }
-        sort(preconditions.begin(), preconditions.end(), SortFactsByVariable());
+        sort(preconditions.begin(), preconditions.end());
         sorted_op_preconditions.push_back(preconditions);
 
         vector<FactPair> effects;
         for (const EffectProxy eff : op.get_effects()) {
             effects.push_back(eff.get_fact().get_pair());
         }
-        sort(effects.begin(), effects.end(), SortFactsByVariable());
+        sort(effects.begin(), effects.end());
         sorted_op_effects.push_back(effects);
     }
 }
