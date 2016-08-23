@@ -26,9 +26,6 @@ ShrinkFH::ShrinkFH(const Options &opts)
       h_start(HighLow(opts.get_enum("shrink_h"))) {
 }
 
-ShrinkFH::~ShrinkFH() {
-}
-
 void ShrinkFH::partition_into_buckets(
     const FactoredTransitionSystem &fts,
     int index,

@@ -124,14 +124,13 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
     EquivalenceRelation *relation =
         EquivalenceRelation::from_annotated_elements<int>(num_labels, annotated_labels);
 
-    for (int i = 0; i < fts.get_size(); ++i) {
-        if (!fts.is_active(i) || i == ts_index) {
-            continue;
-        }
-        const TransitionSystem &ts = fts.get_ts(i);
-        for (const GroupAndTransitions &gat : ts) {
-            const LabelGroup &label_group = gat.label_group;
-            relation->refine(label_group.begin(), label_group.end());
+    for (int index : fts) {
+        if (index != ts_index) {
+            const TransitionSystem &ts = fts.get_ts(index);
+            for (const GroupAndTransitions &gat : ts) {
+                const LabelGroup &label_group = gat.label_group;
+                relation->refine(label_group.begin(), label_group.end());
+            }
         }
     }
     return relation;

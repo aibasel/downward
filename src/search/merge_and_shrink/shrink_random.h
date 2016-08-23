@@ -19,7 +19,7 @@ protected:
     void dump_strategy_specific_options() const override {}
 public:
     explicit ShrinkRandom(const options::Options &opts);
-    virtual ~ShrinkRandom() override;
+    virtual ~ShrinkRandom() override = default;
 };
 }
 
