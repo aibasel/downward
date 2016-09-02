@@ -398,14 +398,6 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME SCC
-    HELP "Utility to compute maximal SCCs of a graph"
-    SOURCES
-        scc.cc
-    DEPENDENCY_ONLY
-)
-
-fast_downward_plugin(
     NAME MAS_HEURISTIC
     HELP "The Merge-and-Shrink heuristic"
     SOURCES
@@ -443,7 +435,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
         merge_and_shrink/types.cc
-    DEPENDS SCC
+    DEPENDS SCCS
 )
 
 fast_downward_plugin(
@@ -519,6 +511,14 @@ fast_downward_plugin(
         potentials/single_potential_heuristics.cc
         potentials/util.cc
     DEPENDS LP_SOLVER
+)
+
+fast_downward_plugin(
+    NAME SCCS
+    HELP "Utility to compute maximal SCCs of a graph"
+    SOURCES
+        algorithms/sccs.cc
+    DEPENDENCY_ONLY
 )
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
