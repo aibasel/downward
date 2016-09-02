@@ -1,5 +1,5 @@
-#ifndef SCC_H
-#define SCC_H
+#ifndef ALGORITHMS_SCCS_H
+#define ALGORITHMS_SCCS_H
 
 /*
   This implements Tarjan's linear-time algorithm for finding the maximal
@@ -20,7 +20,8 @@
 
 #include <vector>
 
-class SCC {
+namespace sccs {
+class SCCs {
     const std::vector<std::vector<int>> &graph;
 
     // The following three are indexed by vertex number.
@@ -35,7 +36,8 @@ class SCC {
 
     void dfs(int vertex);
 public:
-    SCC(const std::vector<std::vector<int>> &graph);
+    SCCs(const std::vector<std::vector<int>> &graph);
     const std::vector<std::vector<int>> &get_result();
 };
+}
 #endif

@@ -1,14 +1,15 @@
-#include "scc.h"
+#include "sccs.h"
 
 #include <algorithm>
 
 using namespace std;
 
-SCC::SCC(const vector<vector<int>> &graph_)
+namespace sccs {
+SCCs::SCCs(const vector<vector<int>> &graph_)
     : graph(graph_) {
 }
 
-const vector<vector<int>> &SCC::get_result() {
+const vector<vector<int>> &SCCs::get_result() {
     int node_count = graph.size();
     dfs_numbers.resize(node_count, -1);
     dfs_minima.resize(node_count, -1);
@@ -24,7 +25,7 @@ const vector<vector<int>> &SCC::get_result() {
     return sccs;
 }
 
-void SCC::dfs(int vertex) {
+void SCCs::dfs(int vertex) {
     int vertex_dfs_number = current_dfs_number++;
     dfs_numbers[vertex] = dfs_minima[vertex] = vertex_dfs_number;
     stack_indices[vertex] = stack.size();
@@ -52,4 +53,5 @@ void SCC::dfs(int vertex) {
         stack.erase(stack.begin() + stack_index, stack.end());
         sccs.push_back(scc);
     }
+}
 }

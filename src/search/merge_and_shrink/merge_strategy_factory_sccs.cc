@@ -5,10 +5,10 @@
 #include "merge_tree_factory.h"
 #include "transition_system.h"
 
+#include "../causal_graph.h"
 #include "../task_proxy.h"
 
-#include "../causal_graph.h"
-#include "../scc.h"
+#include "../algorithms/sccs.h"
 
 #include "../options/option_parser.h"
 #include "../options/options.h"
@@ -60,8 +60,8 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
             task_proxy.get_causal_graph().get_successors(var.get_id());
         cg.push_back(successors);
     }
-    SCC scc(cg);
-    vector<vector<int>> sccs(scc.get_result());
+    sccs::SCCs sccs_algorithm(cg);
+    vector<vector<int>> sccs(sccs_algorithm.get_result());
 
     // Put the SCCs in the desired order
     switch (order_of_sccs) {
