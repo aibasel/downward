@@ -398,6 +398,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME SCC
+    HELP "Utility to compute maximal SCCs of a graph"
+    SOURCES
+        scc.cc
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
     NAME MAS_HEURISTIC
     HELP "The Merge-and-Shrink heuristic"
     SOURCES
@@ -420,8 +428,10 @@ fast_downward_plugin(
         merge_and_shrink/merge_strategy_aliases.cc
         merge_and_shrink/merge_strategy_factory.cc
         merge_and_shrink/merge_strategy_factory_precomputed.cc
+        merge_and_shrink/merge_strategy_factory_sccs.cc
         merge_and_shrink/merge_strategy_factory_stateless.cc
         merge_and_shrink/merge_strategy_precomputed.cc
+        merge_and_shrink/merge_strategy_sccs.cc
         merge_and_shrink/merge_strategy_stateless.cc
         merge_and_shrink/merge_tree.cc
         merge_and_shrink/merge_tree_factory.cc
@@ -433,6 +443,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
         merge_and_shrink/types.cc
+    DEPENDS SCC
 )
 
 fast_downward_plugin(
