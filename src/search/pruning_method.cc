@@ -3,6 +3,7 @@
 #include "global_operator.h"
 #include "globals.h"
 #include "plugin.h"
+
 #include "utils/collections.h"
 
 #include <algorithm>

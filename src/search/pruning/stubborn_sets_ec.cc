@@ -116,7 +116,7 @@ void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
     OperatorsProxy operators = task_proxy.get_operators();
     active_ops.assign(operators.size(), false);
     compute_operator_preconditions(task_proxy);
-    compute_conflicts_and_disabling(task_proxy);
+    compute_conflicts_and_disabling(operators.size());
     build_reachability_map(task_proxy);
     cout << "pruning method: stubborn sets ec" << endl;
 }
@@ -159,7 +159,7 @@ void StubbornSetsEC::compute_active_operators(const State &state) {
     for (int op_no = 0; op_no < num_operators; ++op_no) {
         bool all_preconditions_are_active = true;
 
-        for (FactPair precondition : sorted_op_preconditions[op_no]) {
+        for (const FactPair &precondition : sorted_op_preconditions[op_no]) {
             int var_id = precondition.var;
             int current_value = state[var_id].get_value();
             const vector<bool> &reachable_values =
@@ -176,8 +176,7 @@ void StubbornSetsEC::compute_active_operators(const State &state) {
     }
 }
 
-void StubbornSetsEC::compute_conflicts_and_disabling(const TaskProxy &task_proxy) {
-    int num_operators = task_proxy.get_operators().size();
+void StubbornSetsEC::compute_conflicts_and_disabling(int num_operators) {
     conflicting_and_disabling.resize(num_operators);
     disabled.resize(num_operators);
 
@@ -198,9 +197,7 @@ void StubbornSetsEC::compute_conflicts_and_disabling(const TaskProxy &task_proxy
 }
 
 bool StubbornSetsEC::is_applicable(int op_no, const State &state) {
-    FactPair unsatisfied_precondition =
-        find_unsatisfied_precondition(op_no, state);
-    return unsatisfied_precondition == FactPair(-1, -1);
+    return find_unsatisfied_precondition(op_no, state) == FactPair::no_fact;
 }
 
 // TODO: find a better name.
@@ -244,7 +241,7 @@ void StubbornSetsEC::get_disabled_vars(
 
 void StubbornSetsEC::apply_s5(int op_no, const State &state) {
     // Find a violated state variable and check if stubborn contains a writer for this variable.
-    for (FactPair pre : sorted_op_preconditions[op_no]) {
+    for (const FactPair &pre : sorted_op_preconditions[op_no]) {
         if (state[pre.var].get_pair() != pre && written_vars[pre.var]) {
             if (!nes_computed[pre.var][pre.value]) {
                 add_nes_for_fact(pre, state);
@@ -254,7 +251,7 @@ void StubbornSetsEC::apply_s5(int op_no, const State &state) {
     }
 
     FactPair violated_precondition = find_unsatisfied_precondition(op_no, state);
-    assert(violated_precondition.var != -1);
+    assert(violated_precondition != FactPair::no_fact);
     if (!nes_computed[violated_precondition.var][violated_precondition.value]) {
         add_nes_for_fact(violated_precondition, state);
     }
@@ -270,7 +267,7 @@ void StubbornSetsEC::initialize_stubborn_set(const State &state) {
 
     //rule S1
     FactPair unsatisfied_goal = find_unsatisfied_goal(state);
-    assert(unsatisfied_goal.var != -1);
+    assert(unsatisfied_goal != FactPair::no_fact);
     add_nes_for_fact(unsatisfied_goal, state);     // active operators used
 }
 
