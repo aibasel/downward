@@ -205,7 +205,7 @@ vector<bool> Distances::compute_distances(VerboseLevel verbose_level) {
     */
 
     if (verbose_level >= VerboseLevel::V2) {
-        cout << transition_system.tag() << flush;
+        cout << transition_system.tag() << endl;
     }
     assert(!are_distances_computed());
     assert(init_distances.empty() && goal_distances.empty());
