@@ -1,5 +1,7 @@
 #include "shrink_bucket_based.h"
 
+#include "factored_transition_system.h"
+
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -95,11 +97,12 @@ void ShrinkBucketBased::compute_abstraction(
 bool ShrinkBucketBased::shrink(
     FactoredTransitionSystem &fts,
     int index,
-    int target) const {
+    int target,
+    VerboseLevel verbose_level) const {
     vector<Bucket> buckets;
     partition_into_buckets(fts, index, buckets);
     StateEquivalenceRelation equivalence_relation;
     compute_abstraction(buckets, target, equivalence_relation);
-    return shrink_fts(fts, index, equivalence_relation);
+    return fts.apply_abstraction(index, equivalence_relation, verbose_level);
 }
 }

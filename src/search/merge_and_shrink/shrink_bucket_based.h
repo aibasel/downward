@@ -57,7 +57,8 @@ public:
     virtual bool shrink(
         FactoredTransitionSystem &fts,
         int index,
-        int target) const override;
+        int target,
+        VerboseLevel verbose_level) const override;
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

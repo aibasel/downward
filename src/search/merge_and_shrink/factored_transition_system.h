@@ -53,8 +53,13 @@ class FactoredTransitionSystem {
     bool solvable;
     // TODO: add something like "current_index"? for shrink classes e.g.
 
-    void compute_distances_and_prune(int index);
-    void discard_states(int index, const std::vector<bool> &to_be_pruned_states);
+    void compute_distances_and_prune(
+        int index,
+        VerboseLevel verbose_level);
+    void discard_states(
+        int index,
+        const std::vector<bool> &to_be_pruned_states,
+        VerboseLevel verbose_level);
 
     bool is_index_valid(int index) const;
     bool is_component_valid(int index) const;
@@ -66,7 +71,8 @@ public:
         std::unique_ptr<Labels> labels,
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
-        std::vector<std::unique_ptr<Distances>> &&distances);
+        std::vector<std::unique_ptr<Distances>> &&distances,
+        VerboseLevel verbose_level);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
@@ -89,8 +95,9 @@ public:
         int combinable_index);
     bool apply_abstraction(
         int index,
-        const StateEquivalenceRelation &state_equivalence_relation);
-    int merge(int index1, int index2);
+        const StateEquivalenceRelation &state_equivalence_relation,
+        VerboseLevel verbose_level);
+    int merge(int index1, int index2, VerboseLevel verbose_level);
     void finalize(int index = -1);
 
     bool is_solvable() const {
@@ -98,7 +105,7 @@ public:
     }
 
     int get_cost(const State &state) const;
-    void statistics(int index) const;
+    void statistics(int index, VerboseLevel verbose_level) const;
     void dump(int index) const;
 
     // Used by LabelReduction and MergeScoringFunctionDFP

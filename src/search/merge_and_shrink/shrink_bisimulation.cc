@@ -224,7 +224,8 @@ void ShrinkBisimulation::compute_signatures(
 bool ShrinkBisimulation::shrink(
     FactoredTransitionSystem &fts,
     int index,
-    int target_size) const {
+    int target_size,
+    VerboseLevel verbose_level) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     int num_states = ts.get_size();
@@ -341,7 +342,7 @@ bool ShrinkBisimulation::shrink(
         }
     }
 
-    return shrink_fts(fts, index, equivalence_relation);
+    return fts.apply_abstraction(index, equivalence_relation, verbose_level);
 }
 
 string ShrinkBisimulation::name() const {

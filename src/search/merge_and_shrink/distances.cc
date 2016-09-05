@@ -190,7 +190,7 @@ bool Distances::are_distances_computed() const {
     return true;
 }
 
-vector<bool> Distances::compute_distances() {
+vector<bool> Distances::compute_distances(VerboseLevel verbose_level) {
     /*
       This method does the following:
       - Computes the distances of abstract states from the abstract
@@ -204,14 +204,18 @@ vector<bool> Distances::compute_distances() {
         and irrelevant states.
     */
 
-    cout << transition_system.tag() << flush;
+    if (verbose_level >= VerboseLevel::V2) {
+        cout << transition_system.tag() << flush;
+    }
     assert(!are_distances_computed());
     assert(init_distances.empty() && goal_distances.empty());
 
     int num_states = get_num_states();
 
     if (num_states == 0) {
-        cout << "empty transition system, no distances to compute" << endl;
+        if (verbose_level >= VerboseLevel::V2) {
+            cout << "empty transition system, no distances to compute" << endl;
+        }
         max_f = max_g = max_h = INF;
         return vector<bool>();
     }
@@ -219,11 +223,15 @@ vector<bool> Distances::compute_distances() {
     init_distances.resize(num_states, INF);
     goal_distances.resize(num_states, INF);
     if (is_unit_cost()) {
-        cout << "computing distances using unit-cost algorithm" << endl;
+        if (verbose_level >= VerboseLevel::V2) {
+            cout << "computing distances using unit-cost algorithm" << endl;
+        }
         compute_init_distances_unit_cost();
         compute_goal_distances_unit_cost();
     } else {
-        cout << "computing distances using general-cost algorithm" << endl;
+        if (verbose_level >= VerboseLevel::V2) {
+            cout << "computing distances using general-cost algorithm" << endl;
+        }
         compute_init_distances_general_cost();
         compute_goal_distances_general_cost();
     }
@@ -252,7 +260,8 @@ vector<bool> Distances::compute_distances() {
             max_h = max(max_h, h);
         }
     }
-    if (unreachable_count || irrelevant_count) {
+    if (verbose_level >= VerboseLevel::V2 &&
+        (unreachable_count || irrelevant_count)) {
         cout << transition_system.tag()
              << "unreachable: " << unreachable_count << " states, "
              << "irrelevant: " << irrelevant_count << " states" << endl;
@@ -262,7 +271,8 @@ vector<bool> Distances::compute_distances() {
 }
 
 bool Distances::apply_abstraction(
-    const StateEquivalenceRelation &state_equivalence_relation) {
+    const StateEquivalenceRelation &state_equivalence_relation,
+    VerboseLevel verbose_level) {
     assert(are_distances_computed());
     assert(state_equivalence_relation.size() < init_distances.size());
     assert(state_equivalence_relation.size() < goal_distances.size());
@@ -302,7 +312,7 @@ bool Distances::apply_abstraction(
 
     if (must_recompute) {
         clear_distances();
-        compute_distances();
+        compute_distances(verbose_level);
         return false;
     } else {
         init_distances = move(new_init_distances);

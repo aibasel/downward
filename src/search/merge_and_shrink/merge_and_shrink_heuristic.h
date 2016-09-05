@@ -15,6 +15,7 @@ class LabelReduction;
 class MergeStrategyFactory;
 class ShrinkStrategy;
 class TransitionSystem;
+enum class VerboseLevel;
 
 class MergeAndShrinkHeuristic : public Heuristic {
     // TODO: when the option parser supports it, the following should become
@@ -34,6 +35,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
       max_states and max_states_before_merge are not violated.
     */
     const int shrink_threshold_before_merge;
+    VerboseLevel verbose_level;
 
     std::unique_ptr<FactoredTransitionSystem> fts;
     void build_transition_system(const utils::Timer &timer);
@@ -54,7 +56,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     bool shrink_transition_system(int index, int new_size);
     std::pair<bool, bool> shrink_before_merge(int index1, int index2);
 
-
+    void print_time(const utils::Timer &timer, std::string text) const;
     void report_peak_memory_delta(bool final = false) const;
     void dump_options() const;
     void warn_on_unusual_options() const;
