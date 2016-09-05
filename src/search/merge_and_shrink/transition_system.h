@@ -145,9 +145,11 @@ public:
       Invariant: the children ts1 and ts2 must be solvable.
       (It is a bug to merge an unsolvable transition system.)
     */
-    static std::unique_ptr<TransitionSystem> merge(const Labels &labels,
-                                                   const TransitionSystem &ts1,
-                                                   const TransitionSystem &ts2);
+    static std::unique_ptr<TransitionSystem> merge(
+        const Labels &labels,
+        const TransitionSystem &ts1,
+        const TransitionSystem &ts2,
+        VerboseLevel verbose_level);
 
     /*
       Applies the given state equivalence relation to the transition system.
@@ -158,7 +160,8 @@ public:
     */
     bool apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
-        const std::vector<int> &abstraction_mapping);
+        const std::vector<int> &abstraction_mapping,
+        VerboseLevel verbose_level);
 
     /*
       Applies the given label mapping, mapping old to new label numbers. This

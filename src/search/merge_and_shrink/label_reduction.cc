@@ -4,6 +4,7 @@
 #include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
+#include "types.h"
 
 #include "../equivalence_relation.h"
 #include "../option_parser.h"
@@ -60,7 +61,8 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
 void LabelReduction::compute_label_mapping(
     const EquivalenceRelation *relation,
     const FactoredTransitionSystem &fts,
-    vector<pair<int, vector<int>>> &label_mapping) {
+    vector<pair<int, vector<int>>> &label_mapping,
+    VerboseLevel verbose_level) {
     const Labels &labels = fts.get_labels();
     int next_new_label_no = labels.get_size();
     int num_labels = 0;
@@ -93,7 +95,7 @@ void LabelReduction::compute_label_mapping(
         }
     }
     int number_reduced_labels = num_labels - num_labels_after_reduction;
-    if (number_reduced_labels > 0) {
+    if (verbose_level >= VerboseLevel::V2 && number_reduced_labels > 0) {
         cout << "Label reduction: "
              << num_labels << " labels, "
              << num_labels_after_reduction << " after reduction"
@@ -136,8 +138,10 @@ EquivalenceRelation *LabelReduction::compute_combinable_equivalence_relation(
     return relation;
 }
 
-bool LabelReduction::reduce(pair<int, int> next_merge,
-                            FactoredTransitionSystem &fts) {
+bool LabelReduction::reduce(
+    pair<int, int> next_merge,
+    FactoredTransitionSystem &fts,
+    VerboseLevel verbose_level) {
     assert(initialized());
     assert(reduce_before_shrinking() || reduce_before_merging());
     int num_transition_systems = fts.get_size();
@@ -158,7 +162,7 @@ bool LabelReduction::reduce(pair<int, int> next_merge,
             next_merge.first,
             fts);
         vector<pair<int, vector<int>>> label_mapping;
-        compute_label_mapping(relation, fts, label_mapping);
+        compute_label_mapping(relation, fts, label_mapping, verbose_level);
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
                                       next_merge.first);
@@ -171,7 +175,7 @@ bool LabelReduction::reduce(pair<int, int> next_merge,
         relation = compute_combinable_equivalence_relation(
             next_merge.second,
             fts);
-        compute_label_mapping(relation, fts, label_mapping);
+        compute_label_mapping(relation, fts, label_mapping, verbose_level);
         if (!label_mapping.empty()) {
             fts.apply_label_reduction(label_mapping,
                                       next_merge.second);
@@ -210,7 +214,7 @@ bool LabelReduction::reduce(pair<int, int> next_merge,
             EquivalenceRelation *relation =
                 compute_combinable_equivalence_relation(ts_index,
                                                         fts);
-            compute_label_mapping(relation, fts, label_mapping);
+            compute_label_mapping(relation, fts, label_mapping, verbose_level);
             delete relation;
         }
 

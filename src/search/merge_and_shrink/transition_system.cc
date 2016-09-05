@@ -105,9 +105,12 @@ TransitionSystem::~TransitionSystem() {
 unique_ptr<TransitionSystem> TransitionSystem::merge(
     const Labels &labels,
     const TransitionSystem &ts1,
-    const TransitionSystem &ts2) {
-    cout << "Merging " << ts1.get_description() << " and "
-         << ts2.get_description() << endl;
+    const TransitionSystem &ts2,
+    VerboseLevel verbose_level) {
+    if (verbose_level >= VerboseLevel::V2) {
+        cout << "Merging " << ts1.get_description() << " and "
+             << ts2.get_description() << endl;
+    }
 
     assert(ts1.is_solvable() && ts2.is_solvable());
     assert(ts1.are_transitions_sorted_unique() && ts2.are_transitions_sorted_unique());
@@ -250,17 +253,23 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 
 bool TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
-    const vector<int> &abstraction_mapping) {
+    const vector<int> &abstraction_mapping,
+    VerboseLevel verbose_level) {
     assert(are_transitions_sorted_unique());
 
     int new_num_states = state_equivalence_relation.size();
     if (new_num_states == get_size()) {
-        cout << tag() << "not applying abstraction (same number of states)" << endl;
+        if (verbose_level >= VerboseLevel::V2) {
+            cout << tag()
+                 << "not applying abstraction (same number of states)" << endl;
+        }
         return false;
     }
 
-    cout << tag() << "applying abstraction (" << get_size()
-         << " to " << new_num_states << " states)" << endl;
+    if (verbose_level >= VerboseLevel::V2) {
+        cout << tag() << "applying abstraction (" << get_size()
+             << " to " << new_num_states << " states)" << endl;
+    }
 
     vector<bool> new_goal_states(new_num_states, false);
 
@@ -309,8 +318,9 @@ bool TransitionSystem::apply_abstraction(
 
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
-    if (init_state == PRUNED_STATE)
+    if (verbose_level >= VerboseLevel::V2 && init_state == PRUNED_STATE) {
         cout << tag() << "initial state pruned; task unsolvable" << endl;
+    }
 
     assert(are_transitions_sorted_unique());
     return true;

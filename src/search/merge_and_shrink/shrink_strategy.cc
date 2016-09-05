@@ -10,15 +10,6 @@
 using namespace std;
 
 namespace merge_and_shrink {
-bool ShrinkStrategy::shrink_fts(
-    FactoredTransitionSystem &fts,
-    int index,
-    const StateEquivalenceRelation &equivalence_relation) const {
-    // TODO: We currently violate this; see issue250
-    //assert(equivalence_relation.size() <= new_size);
-    return fts.apply_abstraction(index, equivalence_relation);
-}
-
 void ShrinkStrategy::dump_options() const {
     cout << "Shrink strategy options: " << endl;
     cout << "Type: " << name() << endl;
