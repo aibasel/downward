@@ -11,8 +11,6 @@ class GlobalOperator;
 class GlobalState;
 
 class PruningMethod {
-    bool initialized;
-
 protected:
     std::shared_ptr<AbstractTask> task;
 

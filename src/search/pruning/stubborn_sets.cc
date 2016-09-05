@@ -61,19 +61,23 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
     assert(sorted_op_effects.empty());
 
     for (const OperatorProxy op : task_proxy.get_operators()) {
-        vector<FactPair> preconditions;
-        for (const FactProxy pre : op.get_preconditions()) {
-            preconditions.push_back(pre.get_pair());
+        PreconditionsProxy preconditions = op.get_preconditions();
+        vector<FactPair> sorted_preconditions;
+        sorted_preconditions.reserve(preconditions.size());
+        for (const FactProxy pre : preconditions) {
+            sorted_preconditions.push_back(pre.get_pair());
         }
-        sort(preconditions.begin(), preconditions.end());
-        sorted_op_preconditions.push_back(preconditions);
+        sort(sorted_preconditions.begin(), sorted_preconditions.end());
+        sorted_op_preconditions.push_back(sorted_preconditions);
 
-        vector<FactPair> effects;
-        for (const EffectProxy eff : op.get_effects()) {
-            effects.push_back(eff.get_fact().get_pair());
+        EffectsProxy effects = op.get_effects();
+        vector<FactPair> sorted_effects;
+        sorted_effects.reserve(effects.size());
+        for (const EffectProxy eff : effects) {
+            sorted_effects.push_back(eff.get_fact().get_pair());
         }
-        sort(effects.begin(), effects.end());
-        sorted_op_effects.push_back(effects);
+        sort(sorted_effects.begin(), sorted_effects.end());
+        sorted_op_effects.push_back(sorted_effects);
     }
 }
 
@@ -86,10 +90,8 @@ void StubbornSets::compute_achievers(const TaskProxy &task_proxy) {
 
     for (const OperatorProxy op : task_proxy.get_operators()) {
         for (const EffectProxy effect : op.get_effects()) {
-            FactProxy fact = effect.get_fact();
-            int var_id = fact.get_variable().get_id();
-            int value = fact.get_value();
-            achievers[var_id][value].push_back(op.get_id());
+            FactPair fact = effect.get_fact().get_pair();
+            achievers[fact.var][fact.value].push_back(op.get_id());
         }
     }
 }

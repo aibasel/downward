@@ -12,13 +12,12 @@ namespace stubborn_sets_simple {
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     TaskProxy task_proxy(*task);
-    compute_interference_relation(task_proxy);
+    compute_interference_relation(task_proxy.get_operators().size());
     cout << "pruning method: stubborn sets simple" << endl;
 }
 
 
-void StubbornSetsSimple::compute_interference_relation(const TaskProxy &task_proxy) {
-    int num_operators = task_proxy.get_operators().size();
+void StubbornSetsSimple::compute_interference_relation(int num_operators) {
     interference_relation.resize(num_operators);
 
     /*
@@ -53,14 +52,14 @@ void StubbornSetsSimple::add_interfering(int op_no) {
 void StubbornSetsSimple::initialize_stubborn_set(const State &state) {
     // Add a necessary enabling set for an unsatisfied goal.
     FactPair unsatisfied_goal = find_unsatisfied_goal(state);
-    assert(unsatisfied_goal.var != -1);
+    assert(unsatisfied_goal != FactPair::no_fact);
     add_necessary_enabling_set(unsatisfied_goal);
 }
 
 void StubbornSetsSimple::handle_stubborn_operator(const State &state,
                                                   int op_no) {
     FactPair unsatisfied_precondition = find_unsatisfied_precondition(op_no, state);
-    if (unsatisfied_precondition.var == -1) {
+    if (unsatisfied_precondition == FactPair::no_fact) {
         /* no unsatisfied precondition found
            => operator is applicable
            => add all interfering operators */

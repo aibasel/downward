@@ -34,6 +34,8 @@ struct FactPair {
     bool operator!=(const FactPair &other) const {
         return var != other.var || value != other.value;
     }
+
+    static const FactPair no_fact;
 };
 
 std::ostream &operator<<(std::ostream &os, const FactPair &fact_pair);

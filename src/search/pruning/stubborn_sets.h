@@ -44,12 +44,12 @@ protected:
     bool can_conflict(int op1_no, int op2_no);
 
 
-    // Return the first unsatified goal pair, or (-1, -1) if there is none.
+    // Return the first unsatified goal pair, or FactPair::no_fact if there is none.
     FactPair find_unsatisfied_goal(const State &state) {
         return find_unsatisfied_condition(goals, state);
     }
 
-    // Return the first unsatified precondition, or (-1, -1) if there is none.
+    // Return the first unsatified precondition, or FactPair::no_fact if there is none.
     FactPair find_unsatisfied_precondition(int op_no, const State &state) {
         return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
     }
@@ -70,14 +70,14 @@ public:
     virtual void print_statistics() const override;
 };
 
-// Return the first unsatified condition, or (-1, -1) if there is none.
+// Return the first unsatified condition, or FactPair::no_fact if there is none.
 inline FactPair find_unsatisfied_condition(
     const std::vector<FactPair> &conditions, const State &state) {
     for (const FactPair &condition : conditions) {
         if (state[condition.var].get_value() != condition.value)
             return condition;
     }
-    return FactPair(-1, -1);
+    return FactPair::no_fact;
 }
 
 }
