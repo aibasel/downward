@@ -53,8 +53,13 @@ class FactoredTransitionSystem {
     bool solvable;
     // TODO: add something like "current_index"? for shrink classes e.g.
 
-    void compute_distances_and_prune(int index);
-    void discard_states(int index, const std::vector<bool> &to_be_pruned_states);
+    void compute_distances_and_prune(
+        int index,
+        Verbosity verbosity);
+    void discard_states(
+        int index,
+        const std::vector<bool> &to_be_pruned_states,
+        Verbosity verbosity);
 
     bool is_index_valid(int index) const;
     bool is_component_valid(int index) const;
@@ -66,7 +71,8 @@ public:
         std::unique_ptr<Labels> labels,
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
-        std::vector<std::unique_ptr<Distances>> &&distances);
+        std::vector<std::unique_ptr<Distances>> &&distances,
+        Verbosity verbosity);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
@@ -89,8 +95,9 @@ public:
         int combinable_index);
     bool apply_abstraction(
         int index,
-        const StateEquivalenceRelation &state_equivalence_relation);
-    int merge(int index1, int index2);
+        const StateEquivalenceRelation &state_equivalence_relation,
+        Verbosity verbosity);
+    int merge(int index1, int index2, Verbosity verbosity);
     void finalize(int index = -1);
 
     bool is_solvable() const {
