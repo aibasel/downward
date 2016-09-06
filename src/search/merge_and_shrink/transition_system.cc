@@ -106,8 +106,8 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     const Labels &labels,
     const TransitionSystem &ts1,
     const TransitionSystem &ts2,
-    VerboseLevel verbose_level) {
-    if (verbose_level >= VerboseLevel::V2) {
+    Verbosity verbosity) {
+    if (verbosity >= Verbosity::VERBOSE) {
         cout << "Merging " << ts1.get_description() << " and "
              << ts2.get_description() << endl;
     }
@@ -254,19 +254,19 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 bool TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
-    VerboseLevel verbose_level) {
+    Verbosity verbosity) {
     assert(are_transitions_sorted_unique());
 
     int new_num_states = state_equivalence_relation.size();
     if (new_num_states == get_size()) {
-        if (verbose_level >= VerboseLevel::V2) {
+        if (verbosity >= Verbosity::VERBOSE) {
             cout << tag()
                  << "not applying abstraction (same number of states)" << endl;
         }
         return false;
     }
 
-    if (verbose_level >= VerboseLevel::V2) {
+    if (verbosity >= Verbosity::VERBOSE) {
         cout << tag() << "applying abstraction (" << get_size()
              << " to " << new_num_states << " states)" << endl;
     }
@@ -318,7 +318,7 @@ bool TransitionSystem::apply_abstraction(
 
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
-    if (verbose_level >= VerboseLevel::V2 && init_state == PRUNED_STATE) {
+    if (verbosity >= Verbosity::VERBOSE && init_state == PRUNED_STATE) {
         cout << tag() << "initial state pruned; task unsolvable" << endl;
     }
 

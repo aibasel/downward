@@ -37,7 +37,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
     vector<unique_ptr<TransitionSystem>> &&transition_systems,
     vector<unique_ptr<HeuristicRepresentation>> &&heuristic_representations,
     vector<unique_ptr<Distances>> &&distances,
-    VerboseLevel verbose_level)
+    Verbosity verbosity)
     : labels(move(labels)),
       transition_systems(move(transition_systems)),
       heuristic_representations(move(heuristic_representations)),
@@ -45,7 +45,7 @@ FactoredTransitionSystem::FactoredTransitionSystem(
       final_index(-1),
       solvable(true) {
     for (size_t i = 0; i < this->transition_systems.size(); ++i) {
-        compute_distances_and_prune(i, verbose_level);
+        compute_distances_and_prune(i, verbosity);
         if (!this->transition_systems[i]->is_solvable()) {
             solvable = false;
             finalize(i);
@@ -74,7 +74,7 @@ FactoredTransitionSystem::~FactoredTransitionSystem() {
 void FactoredTransitionSystem::discard_states(
     int index,
     const vector<bool> &to_be_pruned_states,
-    VerboseLevel verbose_level) {
+    Verbosity verbosity) {
     assert(is_index_valid(index));
     int num_states = transition_systems[index]->get_size();
     assert(static_cast<int>(to_be_pruned_states.size()) == num_states);
@@ -87,7 +87,7 @@ void FactoredTransitionSystem::discard_states(
             state_equivalence_relation.push_back(state_equivalence_class);
         }
     }
-    apply_abstraction(index, state_equivalence_relation, verbose_level);
+    apply_abstraction(index, state_equivalence_relation, verbosity);
 }
 
 bool FactoredTransitionSystem::is_index_valid(int index) const {
@@ -107,7 +107,7 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
 }
 
 void FactoredTransitionSystem::compute_distances_and_prune(
-    int index, VerboseLevel verbose_level) {
+    int index, Verbosity verbosity) {
     /*
       This method does all that compute_distances does and
       additionally prunes all states that are unreachable (abstract g
@@ -116,8 +116,8 @@ void FactoredTransitionSystem::compute_distances_and_prune(
     assert(is_index_valid(index));
     discard_states(
         index,
-        distances[index]->compute_distances(verbose_level),
-        verbose_level);
+        distances[index]->compute_distances(verbosity),
+        verbosity);
     assert(is_component_valid(index));
 }
 
@@ -139,7 +139,7 @@ void FactoredTransitionSystem::apply_label_reduction(
 bool FactoredTransitionSystem::apply_abstraction(
     int index,
     const StateEquivalenceRelation &state_equivalence_relation,
-    VerboseLevel verbose_level) {
+    Verbosity verbosity) {
     assert(is_index_valid(index));
 
     vector<int> abstraction_mapping(
@@ -156,11 +156,11 @@ bool FactoredTransitionSystem::apply_abstraction(
     }
 
     bool shrunk = transition_systems[index]->apply_abstraction(
-        state_equivalence_relation, abstraction_mapping, verbose_level);
+        state_equivalence_relation, abstraction_mapping, verbosity);
     if (shrunk) {
         bool f_preserving = distances[index]->apply_abstraction(
-            state_equivalence_relation, verbose_level);
-        if (verbose_level >= VerboseLevel::V2 && !f_preserving) {
+            state_equivalence_relation, verbosity);
+        if (verbosity >= Verbosity::VERBOSE && !f_preserving) {
             cout << transition_systems[index]->tag()
                  << "simplification was not f-preserving!" << endl;
         }
@@ -172,7 +172,7 @@ bool FactoredTransitionSystem::apply_abstraction(
 }
 
 int FactoredTransitionSystem::merge(
-    int index1, int index2, VerboseLevel verbose_level) {
+    int index1, int index2, Verbosity verbosity) {
     assert(is_index_valid(index1));
     assert(is_index_valid(index2));
     transition_systems.push_back(
@@ -180,7 +180,7 @@ int FactoredTransitionSystem::merge(
             *labels,
             *transition_systems[index1],
             *transition_systems[index2],
-            verbose_level));
+            verbosity));
     distances[index1] = nullptr;
     distances[index2] = nullptr;
     transition_systems[index1] = nullptr;
@@ -194,7 +194,7 @@ int FactoredTransitionSystem::merge(
     const TransitionSystem &new_ts = *transition_systems.back();
     distances.push_back(utils::make_unique_ptr<Distances>(new_ts));
     int new_index = transition_systems.size() - 1;
-    compute_distances_and_prune(new_index, verbose_level);
+    compute_distances_and_prune(new_index, verbosity);
     assert(is_component_valid(new_index));
     if (!new_ts.is_solvable()) {
         solvable = false;
@@ -248,8 +248,8 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
 }
 
 void FactoredTransitionSystem::statistics(
-    int index, VerboseLevel verbose_level) const {
-    if (verbose_level >= VerboseLevel::V2) {
+    int index, Verbosity verbosity) const {
+    if (verbosity >= Verbosity::VERBOSE) {
         assert(is_index_valid(index));
         const TransitionSystem &ts = *transition_systems[index];
         ts.statistics();

@@ -17,7 +17,7 @@ class RandomNumberGenerator;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-enum class VerboseLevel;
+enum class Verbosity;
 
 class LabelReduction {
     // Options for label reduction
@@ -65,7 +65,7 @@ class LabelReduction {
         const EquivalenceRelation *relation,
         const FactoredTransitionSystem &fts,
         std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-        VerboseLevel verbose_level);
+        Verbosity verbosity);
     EquivalenceRelation *compute_combinable_equivalence_relation(
         int ts_index,
         const FactoredTransitionSystem &fts) const;
@@ -75,7 +75,7 @@ public:
     bool reduce(
         std::pair<int, int> next_merge,
         FactoredTransitionSystem &fts,
-        merge_and_shrink::VerboseLevel verbose_level);
+        merge_and_shrink::Verbosity verbosity);
     void dump_options() const;
     bool reduce_before_shrinking() const {
         return lr_before_shrinking;

@@ -20,7 +20,8 @@ public:
 
     /*
       Shrink the given transition system (index in fts) so that its size is
-      at most target (currently violated; see issue250).
+      at most target. (NOTE: shrink_bisimulation currently violates this,
+      see issue250.)
 
       Note that if target equals the current size of the fts, the shrink
       strategy is not required to actually shrink the size of the transition
@@ -31,7 +32,7 @@ public:
         FactoredTransitionSystem &fts,
         int index,
         int target,
-        VerboseLevel verbose_level) const = 0;
+        Verbosity verbosity) const = 0;
 
     void dump_options() const;
     std::string get_name() const;

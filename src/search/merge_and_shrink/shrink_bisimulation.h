@@ -41,7 +41,7 @@ public:
         FactoredTransitionSystem &fts,
         int index,
         int target,
-        VerboseLevel verbose_level) const override;
+        Verbosity verbosity) const override;
 };
 }
 
