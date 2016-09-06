@@ -30,6 +30,10 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
+void print_time(const utils::Timer &timer, string text) {
+    cout << "t=" << timer << " (" << text << ")" << endl;
+}
+
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     : Heuristic(opts),
       merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),
@@ -65,23 +69,14 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
     cout << endl;
 }
 
-void MergeAndShrinkHeuristic::print_time(
-    const utils::Timer &timer, string text) const {
-    if (verbosity >= Verbosity::NORMAL) {
-        cout << "t=" << timer << " (" << text << ")" << endl;
-    }
-}
-
 void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
-    if (verbosity >= Verbosity::VERBOSE || final) {
-        if (final)
-            cout << "Final";
-        else
-            cout << "Current";
-        cout << " peak memory increase of merge-and-shrink computation: "
-             << utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
-             << endl;
-    }
+    if (final)
+        cout << "Final";
+    else
+        cout << "Current";
+    cout << " peak memory increase of merge-and-shrink computation: "
+         << utils::get_peak_memory_in_kb() - starting_peak_memory << " KB"
+         << endl;
 }
 
 void MergeAndShrinkHeuristic::dump_options() const {
@@ -107,16 +102,16 @@ void MergeAndShrinkHeuristic::dump_options() const {
         cout << "Label reduction disabled" << endl;
     }
 
-    cout << "Verbose level: ";
+    cout << "Verbosity: ";
     switch (verbosity) {
     case Verbosity::SILENT:
-        cout << "v0";
+        cout << "silent";
         break;
     case Verbosity::NORMAL:
-        cout << "v1";
+        cout << "normal";
         break;
     case Verbosity::VERBOSE:
-        cout << "v2";
+        cout << "verbose";
         break;
     }
     cout << endl;
@@ -258,20 +253,22 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             pair<int, int> merge_indices = merge_strategy->get_next();
             int merge_index1 = merge_indices.first;
             int merge_index2 = merge_indices.second;
+            assert(merge_index1 != merge_index2);
             if (verbosity >= Verbosity::NORMAL) {
                 cout << "Next pair of indices: ("
                      << merge_index1 << ", " << merge_index2 << ")" << endl;
+                if (verbosity >= Verbosity::VERBOSE) {
+                    fts->statistics(merge_index1);
+                    fts->statistics(merge_index2);
+                }
+                print_time(timer, "after computation of next merge");
             }
-            assert(merge_index1 != merge_index2);
-            fts->statistics(merge_index1, verbosity);
-            fts->statistics(merge_index2, verbosity);
-            print_time(timer, "after computation of next merge");
 
             // Label reduction (before shrinking)
             if (label_reduction && label_reduction->reduce_before_shrinking()) {
                 bool reduced =
                     label_reduction->reduce(merge_indices, *fts, verbosity);
-                if (reduced) {
+                if (reduced && verbosity >= Verbosity::NORMAL) {
                     print_time(timer, "after label reduction");
                 }
             }
@@ -279,13 +276,16 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             // Shrinking
             pair<bool, bool> shrunk = shrink_before_merge(
             merge_index1, merge_index2);
-            if (shrunk.first) {
-                fts->statistics(merge_index1, verbosity);
-            }
-            if (shrunk.second) {
-                fts->statistics(merge_index2, verbosity);
-            }
-            if (shrunk.first || shrunk.second) {
+            if ((shrunk.first || shrunk.second) &&
+                    verbosity >= Verbosity::NORMAL) {
+                if (verbosity >= Verbosity::VERBOSE) {
+                    if (shrunk.first) {
+                        fts->statistics(merge_index1);
+                    }
+                    if (shrunk.second) {
+                        fts->statistics(merge_index2);
+                    }
+                }
                 print_time(timer, "after shrinking");
             }
 
@@ -293,7 +293,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             if (label_reduction && label_reduction->reduce_before_merging()) {
                 bool reduced =
                     label_reduction->reduce(merge_indices, *fts, verbosity);
-                if (reduced) {
+                if (reduced && verbosity >= Verbosity::NORMAL) {
                     print_time(timer, "after label reduction");
                 }
             }
@@ -307,11 +307,14 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             if (!fts->is_solvable()) {
                 break;
             }
-            fts->statistics(final_index, verbosity);
-            print_time(timer, "after merging");
-
-            report_peak_memory_delta();
             if (verbosity >= Verbosity::NORMAL) {
+                if (verbosity >= Verbosity::VERBOSE) {
+                    fts->statistics(final_index);
+                }
+                print_time(timer, "after merging");
+                if (verbosity >= Verbosity::VERBOSE) {
+                    report_peak_memory_delta();
+                }
                 cout << endl;
             }
         }

@@ -105,7 +105,7 @@ public:
     }
 
     int get_cost(const State &state) const;
-    void statistics(int index, Verbosity verbosity) const;
+    void statistics(int index) const;
     void dump(int index) const;
 
     // Used by LabelReduction and MergeScoringFunctionDFP

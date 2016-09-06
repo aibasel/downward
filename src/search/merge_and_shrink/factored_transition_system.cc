@@ -247,15 +247,12 @@ int FactoredTransitionSystem::get_cost(const State &state) const {
     return cost;
 }
 
-void FactoredTransitionSystem::statistics(
-    int index, Verbosity verbosity) const {
-    if (verbosity >= Verbosity::VERBOSE) {
-        assert(is_index_valid(index));
-        const TransitionSystem &ts = *transition_systems[index];
-        ts.statistics();
-        const Distances &dist = *distances[index];
-        dist.statistics();
-    }
+void FactoredTransitionSystem::statistics(int index) const {
+    assert(is_index_valid(index));
+    const TransitionSystem &ts = *transition_systems[index];
+    ts.statistics();
+    const Distances &dist = *distances[index];
+    dist.statistics();
 }
 
 void FactoredTransitionSystem::dump(int index) const {

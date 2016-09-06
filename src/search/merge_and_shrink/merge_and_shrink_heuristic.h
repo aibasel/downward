@@ -58,7 +58,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     bool shrink_transition_system(int index, int new_size);
     std::pair<bool, bool> shrink_before_merge(int index1, int index2);
 
-    void print_time(const utils::Timer &timer, std::string text) const;
+
     void report_peak_memory_delta(bool final = false) const;
     void dump_options() const;
     void warn_on_unusual_options() const;
