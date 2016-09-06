@@ -30,8 +30,7 @@ void LandmarkFactoryRpgExhaust::generate_landmarks(
     }
     // test all other possible facts
     State initial_state = task_proxy.get_initial_state();
-    VariablesProxy variables = task_proxy.get_variables();
-    for (VariableProxy var : variables) {
+    for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const pair<int, int> lm(var.get_id(), value);
             if (!lm_graph->simple_landmark_exists(lm)) {

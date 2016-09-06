@@ -72,10 +72,6 @@ public:
     virtual ~HMLandmarks() override = default;
 
     virtual bool supports_conditional_effects() const override;
-// should be used together in a tuple?
-    bool interesting(const VariablesProxy &variables,
-                     int var1, int val1,
-                     int var2, int val2);
 private:
 //  typedef std::set<std::pair<int,int> > TriggerSet;
     typedef std::unordered_map<int, std::set<int>> TriggerSet;
@@ -96,7 +92,10 @@ private:
                            const FluentSet &fs1,
                            const FluentSet &fs2);
     void build_pm_ops(const TaskProxy &task_proxy);
-
+// should be used together in a tuple?
+    bool interesting(const VariablesProxy &variables,
+                     int var1, int val1,
+                     int var2, int val2) const;
 // already generated, so just return
     virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) override;
 
@@ -105,8 +104,8 @@ private:
     void init(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
-    void print_fluentset(const TaskProxy &task_proxy, const FluentSet &fs);
-    void print_pm_op(const TaskProxy &task_proxy, const PMOp &op);
+    void print_fluentset(const VariablesProxy &variables, const FluentSet &fs);
+    void print_pm_op(const VariablesProxy &variables, const PMOp &op);
 
     int m_;
 
@@ -122,7 +121,7 @@ private:
 // variable pairs worth looking at
     std::vector<std::vector<bool>> interesting_;
 
-    void get_m_sets_(const TaskProxy &task_proxy, int m, int num_included, int current_var,
+    void get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
                      FluentSet &current,
                      std::vector<FluentSet> &subsets);
 
@@ -140,7 +139,7 @@ private:
                           std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
 
-    void get_m_sets(const TaskProxy &task_proxy, int m, std::vector<FluentSet> &subsets);
+    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets);
 
     void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
                     const FluentSet &superset);
@@ -150,7 +149,7 @@ private:
 
     void get_split_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
-    void print_proposition(const TaskProxy &task_proxy, const std::pair<int, int> &fluent) const;
+    void print_proposition(const VariablesProxy &variables, const std::pair<int, int> &fluent) const;
 };
 
 extern FluentSet get_operator_precondition(const OperatorProxy &op);

@@ -227,13 +227,12 @@ void LandmarkGraph::set_landmark_ids() {
     }
 }
 
-void LandmarkGraph::dump_node(const TaskProxy &task_proxy, const LandmarkNode *node_p) const {
+void LandmarkGraph::dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const {
     cout << "LM " << node_p->get_id() << " ";
     if (node_p->disjunctive)
         cout << "disj {";
     else if (node_p->conjunctive)
         cout << "conj {";
-    VariablesProxy variables = task_proxy.get_variables();
     for (size_t i = 0; i < node_p->vars.size(); ++i) {
         int var_no = node_p->vars[i], value = node_p->vals[i];
         VariableProxy var = variables[var_no];
@@ -251,12 +250,12 @@ void LandmarkGraph::dump_node(const TaskProxy &task_proxy, const LandmarkNode *n
     cout << endl;
 }
 
-void LandmarkGraph::dump(const TaskProxy &task_proxy) const {
+void LandmarkGraph::dump(const VariablesProxy &variables) const {
     cout << "Landmark graph: " << endl;
     set<LandmarkNode *, LandmarkNodeComparer> nodes2(nodes.begin(), nodes.end());
 
     for (const LandmarkNode *node_p : nodes2) {
-        dump_node(task_proxy, node_p);
+        dump_node(variables, node_p);
         for (const auto &parent : node_p->parents) {
             const LandmarkNode *parent_node = parent.first;
             const EdgeType &edge = parent.second;
@@ -278,7 +277,7 @@ void LandmarkGraph::dump(const TaskProxy &task_proxy) const {
                 cout << "o_r ";
                 break;
             }
-            dump_node(task_proxy, parent_node);
+            dump_node(variables, parent_node);
         }
         for (const auto &child : node_p->children) {
             const LandmarkNode *child_node = child.first;
@@ -301,7 +300,7 @@ void LandmarkGraph::dump(const TaskProxy &task_proxy) const {
                 cout << "o_r ";
                 break;
             }
-            dump_node(task_proxy, child_node);
+            dump_node(variables, child_node);
         }
         cout << endl;
     }

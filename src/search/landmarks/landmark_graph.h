@@ -202,8 +202,8 @@ public:
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;
     }
-    void dump_node(const TaskProxy &task_proxy, const LandmarkNode *node_p) const;
-    void dump(const TaskProxy &task_proxy) const;
+    void dump_node(const VariablesProxy &variables, const LandmarkNode *node_p) const;
+    void dump(const VariablesProxy &variables) const;
 private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
     int landmarks_count;

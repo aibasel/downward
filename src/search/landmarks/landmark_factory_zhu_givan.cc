@@ -28,7 +28,7 @@ void LandmarkFactoryZhuGivan::generate_landmarks(const TaskProxy &task_proxy,
 
     PropositionLayer last_prop_layer = build_relaxed_plan_graph_with_labels(task_proxy);
 
-    if (!satisfies_goal_conditions(task_proxy, last_prop_layer)) {
+    if (!satisfies_goal_conditions(task_proxy.get_goals(), last_prop_layer)) {
         cout << "Problem not solvable, even if relaxed.\n";
         return;
     }
@@ -37,9 +37,9 @@ void LandmarkFactoryZhuGivan::generate_landmarks(const TaskProxy &task_proxy,
 }
 
 bool LandmarkFactoryZhuGivan::satisfies_goal_conditions(
-    const TaskProxy &task_proxy,
+    const GoalsProxy &goals,
     const PropositionLayer &layer) const {
-    for (FactProxy goal : task_proxy.get_goals())
+    for (FactProxy goal : goals)
         if (!layer[goal.get_variable().get_id()][goal.get_value()].reached())
             return false;
 

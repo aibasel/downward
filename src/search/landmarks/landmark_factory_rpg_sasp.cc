@@ -296,9 +296,9 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     }
 }
 
-static string get_predicate_for_fact(const TaskProxy &task_proxy,
+static string get_predicate_for_fact(const VariablesProxy &variables,
                                      int var_no, int value) {
-    const string &fact_name = task_proxy.get_variables()[var_no].get_fact(value).get_name();
+    const string &fact_name = variables[var_no].get_fact(value).get_name();
     if (fact_name == "<none of those>")
         return "";
     int predicate_pos = 0;
@@ -347,7 +347,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(const TaskProxy &task_pro
         int num_values = var.get_domain_size();
         disjunction_classes[var.get_id()].reserve(num_values);
         for (int value = 0; value < num_values; ++value) {
-            string predicate = get_predicate_for_fact(task_proxy, var.get_id(), value);
+            string predicate = get_predicate_for_fact(variables, var.get_id(), value);
             int disj_class;
             if (predicate.empty()) {
                 disj_class = -1;
@@ -478,7 +478,8 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     // the result is saved in the node member variable forward_orders, and will be
     // used later, when the phase of finding LMs has ended (because at the
     // moment we don't know which of these var-val pairs will be LMs).
-    find_forward_orders(task_proxy, lvl_var, lmp);
+    VariablesProxy variables = task_proxy.get_variables();
+    find_forward_orders(variables, lvl_var, lmp);
 
     // Use domain transition graphs to find further orders. Only possible if lmp is
     // a simple landmark.
@@ -488,7 +489,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
 
     // Collect in "unreached" all values of the LM variable that cannot be reached
     // before the LM value (in the relaxed plan graph)
-    int domain_size = task_proxy.get_variables()[lmk.first].get_domain_size();
+    int domain_size = variables[lmk.first].get_domain_size();
     unordered_set<int> unreached(domain_size);
     for (int value = 0; value < domain_size; ++value)
         if (lvl_var[lmk.first][value] == numeric_limits<int>::max() && lmk.second != value)
@@ -496,6 +497,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     // The set "exclude" will contain all those values of the LM variable that
     // cannot be reached before the LM value (as in "unreached") PLUS
     // one value that CAN be reached
+    State initial_state = task_proxy.get_initial_state();
     for (int value = 0; value < domain_size; ++value)
         if (unreached.find(value) == unreached.end() && lmk.second != value) {
             unordered_set<int> exclude(domain_size);
@@ -503,13 +505,13 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
             exclude.insert(value);
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
-            if (!domain_connectivity(task_proxy, lmk, exclude))
+            if (!domain_connectivity(initial_state, lmk, exclude))
                 found_simple_lm_and_order(make_pair(lmk.first, value), *lmp, EdgeType::natural);
         }
 
 }
 
-bool LandmarkFactoryRpgSasp::domain_connectivity(const TaskProxy &task_proxy,
+bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
                                                  const pair<int, int> &landmark,
                                                  const unordered_set<int> &exclude) {
     /* Tests whether in the domain transition graph of the LM variable, there is
@@ -517,7 +519,6 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const TaskProxy &task_proxy,
      any value in "exclude". If not, that means that one of the values in "exclude"
      is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
-    State initial_state = task_proxy.get_initial_state();
     int var = landmark.first;
     assert(landmark.second != initial_state[var].get_value()); // no initial state landmarks
     // The value that we want to achieve must not be excluded:
@@ -546,14 +547,14 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const TaskProxy &task_proxy,
     return true;
 }
 
-void LandmarkFactoryRpgSasp::find_forward_orders(const TaskProxy &task_proxy,
+void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables,
                                                  const vector<vector<int>> &lvl_var,
                                                  LandmarkNode *lmp) {
     /* lmp is ordered before any var-val pair that cannot be reached before lmp according to
      relaxed planning graph (as captured in lvl_var).
      These orders are saved in the node member variable "forward_orders".
      */
-    for (VariableProxy var : task_proxy.get_variables())
+    for (VariableProxy var : variables)
         for (int value = 0; value < var.get_domain_size(); ++value) {
             if (lvl_var[var.get_id()][value] != numeric_limits<int>::max())
                 continue;

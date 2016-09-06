@@ -133,10 +133,9 @@ bool contains(std::list<T> &alist, const T &val) {
 
 // find partial variable assignments with size m or less
 // (look at all the variables in the problem)
-void HMLandmarks::get_m_sets_(const TaskProxy &task_proxy, int m, int num_included, int current_var,
+void HMLandmarks::get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
                               FluentSet &current,
                               std::vector<FluentSet> &subsets) {
-    VariablesProxy variables = task_proxy.get_variables();
     int num_variables = variables.size();
     if (num_included == m) {
         subsets.push_back(current);
@@ -152,7 +151,7 @@ void HMLandmarks::get_m_sets_(const TaskProxy &task_proxy, int m, int num_includ
     for (int i = 0; i < variables[current_var].get_domain_size(); ++i) {
         bool use_var = true;
         for (size_t j = 0; j < current.size(); ++j) {
-            if (!interesting(task_proxy.get_variables(),
+            if (!interesting(variables,
                              current_var, i, current[j].first, current[j].second)) {
                 use_var = false;
                 break;
@@ -161,12 +160,12 @@ void HMLandmarks::get_m_sets_(const TaskProxy &task_proxy, int m, int num_includ
 
         if (use_var) {
             current.push_back(std::make_pair(current_var, i));
-            get_m_sets_(task_proxy, m, num_included + 1, current_var + 1, current, subsets);
+            get_m_sets_(variables, m, num_included + 1, current_var + 1, current, subsets);
             current.pop_back();
         }
     }
     // don't include a value of current_var in the set
-    get_m_sets_(task_proxy, m, num_included, current_var + 1, current, subsets);
+    get_m_sets_(variables, m, num_included, current_var + 1, current, subsets);
 }
 
 // find all size m or less subsets of superset
@@ -295,9 +294,9 @@ void HMLandmarks::get_split_m_sets(
 // e.g. we don't want to represent (truck1-loc x, truck2-loc y) type stuff
 
 // get partial assignments of size <= m in the problem
-void HMLandmarks::get_m_sets(const TaskProxy &task_proxy, int m, std::vector<FluentSet> &subsets) {
+void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets) {
     FluentSet c;
-    get_m_sets_(task_proxy, m, 0, 0, c, subsets);
+    get_m_sets_(variables, m, 0, 0, c, subsets);
 }
 
 // get subsets of superset with size <= m
@@ -330,8 +329,7 @@ void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m,
     get_m_sets(variables, m, subsets, state_fluents);
 }
 
-void HMLandmarks::print_proposition(const TaskProxy &task_proxy, const pair<int, int> &fluent) const {
-    VariablesProxy variables = task_proxy.get_variables();
+void HMLandmarks::print_proposition(const VariablesProxy &variables, const pair<int, int> &fluent) const {
     VariableProxy var = variables[fluent.first];
     FactProxy fact = var.get_fact(fluent.second);
     cout << fact.get_name()
@@ -371,7 +369,7 @@ FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op) {
 }
 
 
-void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
+void HMLandmarks::print_pm_op(const VariablesProxy &variables, const PMOp &op) {
     std::set<Fluent> pcs, effs, cond_pc, cond_eff;
     std::vector<std::pair<std::set<Fluent>, std::set<Fluent>>> conds;
 
@@ -392,7 +390,7 @@ void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
         size_t j;
         std::cout << "PC:" << std::endl;
         for (j = 0; (pm_fluent = op.cond_noops[i][j]) != -1; ++j) {
-            print_fluentset(task_proxy, h_m_table_[pm_fluent].fluents);
+            print_fluentset(variables, h_m_table_[pm_fluent].fluents);
             std::cout << std::endl;
 
             for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
@@ -407,7 +405,7 @@ void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
         for (; j < op.cond_noops[i].size(); ++j) {
             int pm_fluent = op.cond_noops[i][j];
 
-            print_fluentset(task_proxy, h_m_table_[pm_fluent].fluents);
+            print_fluentset(variables, h_m_table_[pm_fluent].fluents);
             std::cout << std::endl;
 
             for (size_t k = 0; k < h_m_table_[pm_fluent].fluents.size(); ++k) {
@@ -421,13 +419,13 @@ void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
     std::cout << "Action " << op.index << std::endl;
     std::cout << "Precondition: ";
     for (const Fluent &pc : pcs) {
-        print_proposition(task_proxy, pc);
+        print_proposition(variables, pc);
         std::cout << " ";
     }
 
     std::cout << std::endl << "Effect: ";
     for (const Fluent &eff : effs) {
-        print_proposition(task_proxy, eff);
+        print_proposition(variables, eff);
         std::cout << " ";
     }
     std::cout << std::endl << "Conditionals: " << std::endl;
@@ -435,22 +433,22 @@ void HMLandmarks::print_pm_op(const TaskProxy &task_proxy, const PMOp &op) {
     for (const auto &cond : conds) {
         std::cout << "Cond PC #" << i++ << ":" << std::endl << "\t";
         for (const Fluent &pc : cond.first) {
-            print_proposition(task_proxy, pc);
+            print_proposition(variables, pc);
             std::cout << " ";
         }
         std::cout << std::endl << "Cond Effect #" << i << ":" << std::endl << "\t";
         for (const Fluent &eff : cond.second) {
-            print_proposition(task_proxy, eff);
+            print_proposition(variables, eff);
             std::cout << " ";
         }
         std::cout << std::endl << std::endl;
     }
 }
 
-void HMLandmarks::print_fluentset(const TaskProxy &task_proxy, const FluentSet &fs) {
+void HMLandmarks::print_fluentset(const VariablesProxy &variables, const FluentSet &fs) {
     std::cout << "( ";
     for (const Fluent &fact : fs) {
-        print_proposition(task_proxy, fact);
+        print_proposition(variables, fact);
         std::cout << " ";
     }
     std::cout << ")";
@@ -599,9 +597,8 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
 
 bool HMLandmarks::interesting(const VariablesProxy &variables,
                               int var1, int val1,
-                              int var2, int val2) {
+                              int var2, int val2) const {
     // mutexes can always be safely pruned
-    // TODO(issue635): Use Fact struct right away.
     return !variables[var1].get_fact(val1).is_mutex(
         variables[var2].get_fact(val2));
 }
@@ -616,14 +613,13 @@ void HMLandmarks::init(const TaskProxy &task_proxy) {
     // need this to be able to print propositions for debugging
     // already called in global.cc
     //  read_external_inconsistencies();
-    AxiomsProxy axioms = task_proxy.get_axioms();
-    if (!axioms.empty()) {
+    if (!task_proxy.get_axioms().empty()) {
         cerr << "H_m_Landmarks do not support axioms" << endl;
         utils::exit_with(ExitCode::UNSUPPORTED);
     }
     // get all the m or less size subsets in the domain
     std::vector<std::vector<Fluent>> msets;
-    get_m_sets(task_proxy, m_, msets);
+    get_m_sets(task_proxy.get_variables(), m_, msets);
     //  std::cout << "P^m index\tP fluents" << std::endl;
 
     // map each set to an integer
@@ -972,12 +968,12 @@ void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &)
     compute_h_m_landmarks(task_proxy);
     // now construct landmarks graph
     std::vector<FluentSet> goal_subsets;
-    GoalsProxy goals = task_proxy.get_goals();
     FluentSet g_goal;
-    for (FactProxy goal : goals) {
+    for (FactProxy goal : task_proxy.get_goals()) {
         g_goal.emplace_back(goal.get_variable().get_id(), goal.get_value());
     }
-    get_m_sets(task_proxy.get_variables(), m_, goal_subsets, g_goal);
+    VariablesProxy variables = task_proxy.get_variables();
+    get_m_sets(variables, m_, goal_subsets, g_goal);
     std::list<int> all_lms;
     for (const FluentSet &goal_subset : goal_subsets) {
         /*
@@ -997,7 +993,7 @@ void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &)
         if (h_m_table_[set_index].level == -1) {
             std::cout << std::endl << std::endl << "Subset of goal not reachable !!." << std::endl << std::endl << std::endl;
             std::cout << "Subset is: ";
-            print_fluentset(task_proxy, h_m_table_[set_index].fluents);
+            print_fluentset(variables, h_m_table_[set_index].fluents);
             std::cout << std::endl;
         }
 
