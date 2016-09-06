@@ -275,9 +275,9 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
 
             // Shrinking
             pair<bool, bool> shrunk = shrink_before_merge(
-            merge_index1, merge_index2);
+                merge_index1, merge_index2);
             if ((shrunk.first || shrunk.second) &&
-                    verbosity >= Verbosity::NORMAL) {
+                verbosity >= Verbosity::NORMAL) {
                 if (verbosity >= Verbosity::VERBOSE) {
                     if (shrunk.first) {
                         fts->statistics(merge_index1);
