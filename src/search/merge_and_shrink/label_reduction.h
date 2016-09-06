@@ -75,7 +75,7 @@ public:
     bool reduce(
         std::pair<int, int> next_merge,
         FactoredTransitionSystem &fts,
-        merge_and_shrink::Verbosity verbosity);
+        Verbosity verbosity);
     void dump_options() const;
     bool reduce_before_shrinking() const {
         return lr_before_shrinking;
