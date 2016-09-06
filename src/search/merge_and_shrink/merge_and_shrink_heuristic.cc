@@ -35,11 +35,11 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),
       shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
       label_reduction(nullptr),
-      starting_peak_memory(-1),
       max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),
       shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
       verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))),
+      starting_peak_memory(-1),
       fts(nullptr) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
