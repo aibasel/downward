@@ -126,7 +126,7 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
 
     int num_reached = reached_lms.size();
     if (num_reached == lgraph->number_of_landmarks() ||
-        !generate_helpful_actions(global_state, reached_lms)) {
+        !generate_helpful_actions(state, reached_lms)) {
         set_exploration_goals(global_state);
 
         // Use FF to plan to a landmark leaf
@@ -173,29 +173,30 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &nod
     return false;
 }
 
-bool LandmarkCountHeuristic::generate_helpful_actions(const GlobalState &state,
+bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
                                                       const LandmarkSet &reached) {
     /* Find actions that achieve new landmark leaves. If no such action exist,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
      disjunctive landmarks */
-    vector<const GlobalOperator *> all_operators;
+    vector<OperatorProxy> all_operators;
     g_successor_generator->generate_applicable_ops(state, all_operators);
-    vector<const GlobalOperator *> ha_simple;
-    vector<const GlobalOperator *> ha_disj;
+    vector<OperatorProxy> ha_simple;
+    vector<OperatorProxy> ha_disj;
 
-    for (size_t i = 0; i < all_operators.size(); ++i) {
-        const vector<GlobalEffect> &effects = all_operators[i]->get_effects();
-        for (size_t j = 0; j < effects.size(); ++j) {
-            if (!effects[j].does_fire(state))
+    for (OperatorProxy op : all_operators) {
+        EffectsProxy effects = op.get_effects();
+        for (EffectProxy effect : effects) {
+            if (does_fire(effect, state))
                 continue;
-            const Fact fact(effects[j].var, effects[j].val);
+            FactProxy fact_proxy = effect.get_fact();
+            const Fact fact(fact_proxy.get_variable().get_id(), fact_proxy.get_value());
             LandmarkNode *lm_p = lgraph->get_landmark(fact);
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
-                    ha_disj.push_back(all_operators[i]);
+                    ha_disj.push_back(op);
                 } else
-                    ha_simple.push_back(all_operators[i]);
+                    ha_simple.push_back(op);
             }
         }
     }
@@ -214,7 +215,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const GlobalState &state,
     return true;
 }
 
-bool LandmarkCountHeuristic::landmark_is_interesting(const GlobalState &s,
+bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
                                                      const LandmarkSet &reached, LandmarkNode &lm) const {
     /* A landmark is interesting if it hasn't been reached before and
      its parents have all been reached, or if all landmarks have been

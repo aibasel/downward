@@ -18,7 +18,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
 
     void build_dtg_successors(const TaskProxy &task_proxy);
     void add_dtg_successor(int var_id, int pre, int post);
-    void find_forward_orders(const TaskProxy &task_proxy,
+    void find_forward_orders(const VariablesProxy &variables,
                              const std::vector<std::vector<int>> &lvl_var,
                              LandmarkNode *lmp);
     void add_lm_forward_orders();
@@ -50,7 +50,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     void approximate_lookahead_orders(const TaskProxy &task_proxy,
                                       const std::vector<std::vector<int>> &lvl_var,
                                       LandmarkNode *lmp);
-    bool domain_connectivity(const TaskProxy &task_proxy,
+    bool domain_connectivity(const State &initial_state,
                              const std::pair<int, int> &landmark,
                              const std::unordered_set<int> &exclude);
 

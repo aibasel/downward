@@ -353,6 +353,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
     assert(node_a != node_b);
     assert(!node_a->disjunctive && !node_b->disjunctive);
 
+    VariablesProxy variables = task_proxy.get_variables();
     for (size_t bi = 0; bi < node_b->vars.size(); ++bi) {
         pair<const int, int> b(node_b->vars[bi], node_b->vals[bi]);
         for (size_t ai = 0; ai < node_a->vars.size(); ++ai) {
@@ -378,9 +379,9 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
             unordered_map<int, int> shared_eff;
             bool init = true;
-            const vector<int> &ops_ids = lm_graph->get_operators_including_eff(a);
+            const vector<int> &op_ids = lm_graph->get_operators_including_eff(a);
             // Intersect operators that achieve a one by one
-            for (int op_id : ops_ids) {
+            for (int op_id : op_ids) {
                 // If no shared effect among previous operators, break
                 if (!init && shared_eff.empty())
                     break;
@@ -392,7 +393,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 // of these trivial conditions here.)
                 EffectsProxy effects = get_operator_or_axiom(task_proxy, op_id).get_effects();
                 set<pair<int, int>> trivially_conditioned_effects;
-                bool trivial_conditioned_effects_found = effect_always_happens(task_proxy.get_variables(), effects,
+                bool trivial_conditioned_effects_found = effect_always_happens(variables, effects,
                                                                                trivially_conditioned_effects);
                 unordered_map<int, int> next_eff;
                 for (EffectProxy effect : effects) {
@@ -455,6 +456,7 @@ void LandmarkFactory::approximate_reasonable_orders(const TaskProxy &task_proxy,
     before node_p if they interfere with node_p.
     */
     State initial_state = task_proxy.get_initial_state();
+    int variables_size = task_proxy.get_variables().size();
     for (LandmarkNode *node_p : lm_graph->get_nodes()) {
         if (node_p->disjunctive)
             continue;
@@ -473,7 +475,7 @@ void LandmarkFactory::approximate_reasonable_orders(const TaskProxy &task_proxy,
         } else {
             // Collect candidates for reasonable orders in "interesting nodes".
             // Use hash set to filter duplicates.
-            unordered_set<LandmarkNode *> interesting_nodes(task_proxy.get_variables().size());
+            unordered_set<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2 = *child.first;
                 const EdgeType &edge2 = child.second;
@@ -590,12 +592,13 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
 void LandmarkFactory::discard_noncausal_landmarks(const TaskProxy &task_proxy, Exploration &exploration) {
     int number_of_noncausal_landmarks = 0;
     bool change = true;
+    VariablesProxy variables = task_proxy.get_variables();
     while (change) {
         change = false;
         for (LandmarkNode *landmark_node : lm_graph->get_nodes()) {
             if (!is_causal_landmark(task_proxy, exploration, *landmark_node)) {
                 cout << "Discarding non-causal landmark: ";
-                lm_graph->dump_node(task_proxy, landmark_node);
+                lm_graph->dump_node(variables, landmark_node);
                 lm_graph->rm_landmark_node(landmark_node);
                 ++number_of_noncausal_landmarks;
                 change = true;

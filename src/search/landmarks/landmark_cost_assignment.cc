@@ -18,6 +18,7 @@ namespace landmarks {
 LandmarkCostAssignment::LandmarkCostAssignment(const OperatorsProxy &operators,
                                                const std::shared_ptr<LandmarkGraph> &graph)
     : lm_graph(graph) {
+    operator_costs.reserve(operators.size());
     for (OperatorProxy op : operators) {
         operator_costs.push_back(op.get_cost());
     }

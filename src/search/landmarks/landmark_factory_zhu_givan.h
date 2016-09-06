@@ -68,7 +68,7 @@ public:
                            Exploration &exploration, const PropositionLayer &last_prop_layer);
 
     // test if layer satisfies goal
-    bool satisfies_goal_conditions(const TaskProxy &task_proxy, const PropositionLayer &layer) const;
+    bool satisfies_goal_conditions(const GoalsProxy &goals, const PropositionLayer &layer) const;
 
     // Link operators to its propositions in trigger list.
     void add_operator_to_triggers(const TaskProxy &task_proxy, const OperatorProxy &op);
