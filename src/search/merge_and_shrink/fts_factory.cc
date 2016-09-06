@@ -83,7 +83,7 @@ public:
       Note: create() may only be called once. We don't worry about
       misuse because the class is only used internally in this file.
     */
-    FactoredTransitionSystem create(VerboseLevel verbose_level);
+    FactoredTransitionSystem create(Verbosity verbosity);
 };
 
 
@@ -390,8 +390,8 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
     return result;
 }
 
-FactoredTransitionSystem FTSFactory::create(VerboseLevel verbose_level) {
-    if (verbose_level >= VerboseLevel::V1) {
+FactoredTransitionSystem FTSFactory::create(Verbosity verbosity) {
+    if (verbosity >= Verbosity::NORMAL) {
         cout << "Building atomic transition systems... " << endl;
     }
 
@@ -411,12 +411,12 @@ FactoredTransitionSystem FTSFactory::create(VerboseLevel verbose_level) {
         move(transition_systems),
         move(heuristic_representations),
         move(distances),
-        verbose_level);
+        verbosity);
 }
 
 FactoredTransitionSystem create_factored_transition_system(
     const TaskProxy &task_proxy,
-    VerboseLevel verbose_level) {
-    return FTSFactory(task_proxy).create(verbose_level);
+    Verbosity verbosity) {
+    return FTSFactory(task_proxy).create(verbosity);
 }
 }

@@ -39,7 +39,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
       max_states(opts.get<int>("max_states")),
       max_states_before_merge(opts.get<int>("max_states_before_merge")),
       shrink_threshold_before_merge(opts.get<int>("threshold_before_merge")),
-      verbose_level(static_cast<VerboseLevel>(opts.get_enum("verbose_level"))),
+      verbosity(static_cast<Verbosity>(opts.get_enum("verbosity"))),
       fts(nullptr) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
@@ -67,13 +67,13 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const Options &opts)
 
 void MergeAndShrinkHeuristic::print_time(
     const utils::Timer &timer, string text) const {
-    if (verbose_level >= VerboseLevel::V1) {
+    if (verbosity >= Verbosity::NORMAL) {
         cout << "t=" << timer << " (" << text << ")" << endl;
     }
 }
 
 void MergeAndShrinkHeuristic::report_peak_memory_delta(bool final) const {
-    if (verbose_level >= VerboseLevel::V2 || final) {
+    if (verbosity >= Verbosity::VERBOSE || final) {
         if (final)
             cout << "Final";
         else
@@ -108,14 +108,14 @@ void MergeAndShrinkHeuristic::dump_options() const {
     }
 
     cout << "Verbose level: ";
-    switch (verbose_level) {
-    case VerboseLevel::V0:
+    switch (verbosity) {
+    case Verbosity::SILENT:
         cout << "v0";
         break;
-    case VerboseLevel::V1:
+    case Verbosity::NORMAL:
         cout << "v1";
         break;
-    case VerboseLevel::V2:
+    case Verbosity::VERBOSE:
         cout << "v2";
         break;
     }
@@ -199,7 +199,7 @@ bool MergeAndShrinkHeuristic::shrink_transition_system(
     assert(ts.is_solvable());
     int num_states = ts.get_size();
     if (num_states > min(new_size, shrink_threshold_before_merge)) {
-        if (verbose_level >= VerboseLevel::V2) {
+        if (verbosity >= Verbosity::VERBOSE) {
             cout << ts.tag() << "current size: " << num_states;
             if (new_size < num_states)
                 cout << " (new size limit: " << new_size;
@@ -207,7 +207,7 @@ bool MergeAndShrinkHeuristic::shrink_transition_system(
                 cout << " (shrink threshold: " << shrink_threshold_before_merge;
             cout << ")" << endl;
         }
-        return shrink_strategy->shrink(*fts, index, new_size, verbose_level);
+        return shrink_strategy->shrink(*fts, index, new_size, verbosity);
     }
     return false;
 }
@@ -242,7 +242,7 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
     //       allocates memory.
 
     fts = utils::make_unique_ptr<FactoredTransitionSystem>(
-        create_factored_transition_system(task_proxy, verbose_level));
+        create_factored_transition_system(task_proxy, verbosity));
     print_time(timer, "after computation of atomic transition systems");
     cout << endl;
 
@@ -258,19 +258,19 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             pair<int, int> merge_indices = merge_strategy->get_next();
             int merge_index1 = merge_indices.first;
             int merge_index2 = merge_indices.second;
-            if (static_cast<int>(verbose_level) >= 1) {
+            if (verbosity >= Verbosity::NORMAL) {
                 cout << "Next pair of indices: ("
                      << merge_index1 << ", " << merge_index2 << ")" << endl;
             }
             assert(merge_index1 != merge_index2);
-            fts->statistics(merge_index1, verbose_level);
-            fts->statistics(merge_index2, verbose_level);
+            fts->statistics(merge_index1, verbosity);
+            fts->statistics(merge_index2, verbosity);
             print_time(timer, "after computation of next merge");
 
             // Label reduction (before shrinking)
             if (label_reduction && label_reduction->reduce_before_shrinking()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, *fts, verbose_level);
+                    label_reduction->reduce(merge_indices, *fts, verbosity);
                 if (reduced) {
                     print_time(timer, "after label reduction");
                 }
@@ -280,10 +280,10 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             pair<bool, bool> shrunk = shrink_before_merge(
             merge_index1, merge_index2);
             if (shrunk.first) {
-                fts->statistics(merge_index1, verbose_level);
+                fts->statistics(merge_index1, verbosity);
             }
             if (shrunk.second) {
-                fts->statistics(merge_index2, verbose_level);
+                fts->statistics(merge_index2, verbosity);
             }
             if (shrunk.first || shrunk.second) {
                 print_time(timer, "after shrinking");
@@ -292,14 +292,14 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             // Label reduction (before merging)
             if (label_reduction && label_reduction->reduce_before_merging()) {
                 bool reduced =
-                    label_reduction->reduce(merge_indices, *fts, verbose_level);
+                    label_reduction->reduce(merge_indices, *fts, verbosity);
                 if (reduced) {
                     print_time(timer, "after label reduction");
                 }
             }
 
             // Merging
-            final_index = fts->merge(merge_index1, merge_index2, verbose_level);
+            final_index = fts->merge(merge_index1, merge_index2, verbosity);
             /*
               NOTE: both the shrinking strategy classes and the construction of
               the composite require input transition systems to be solvable.
@@ -307,11 +307,11 @@ void MergeAndShrinkHeuristic::build_transition_system(const utils::Timer &timer)
             if (!fts->is_solvable()) {
                 break;
             }
-            fts->statistics(final_index, verbose_level);
+            fts->statistics(final_index, verbosity);
             print_time(timer, "after merging");
 
             report_peak_memory_delta();
-            if (verbose_level >= VerboseLevel::V1) {
+            if (verbosity >= Verbosity::NORMAL) {
                 cout << endl;
             }
         }
@@ -497,24 +497,26 @@ static Heuristic *_parse(OptionParser &parser) {
     MergeAndShrinkHeuristic::add_shrink_limit_options_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
-    vector<string> verbose_levels;
-    vector<string> verbose_level_doc;
-    verbose_levels.push_back("v0");
-    verbose_level_doc.push_back(
-        "v0: no output at all during construction, only starting and final "
+    vector<string> verbosity_levels;
+    vector<string> verbosity_level_docs;
+    verbosity_levels.push_back("silent");
+    verbosity_level_docs.push_back(
+        "silent: no output during construction, only starting and final "
         "statistics");
-    verbose_levels.push_back("v1");
-    verbose_level_doc.push_back(
-        "v1: basic output during construction, starting and final statistics");
-    verbose_levels.push_back("v2");
-    verbose_level_doc.push_back(
-        "v2: full output during construction, starting and final statistics");
+    verbosity_levels.push_back("normal");
+    verbosity_level_docs.push_back(
+        "normal: basic output during construction, starting and final "
+        "statistics");
+    verbosity_levels.push_back("verbose");
+    verbosity_level_docs.push_back(
+        "verbose: full output during construction, starting and final "
+        "statistics");
     parser.add_enum_option(
-        "verbose_level",
-        verbose_levels,
-        "verbose level",
-        "v2",
-        verbose_level_doc);
+        "verbosity",
+        verbosity_levels,
+        "Option to specify the level of verbosity.",
+        "verbose",
+        verbosity_level_docs);
 
     Options opts = parser.parse();
     if (parser.help_mode()) {

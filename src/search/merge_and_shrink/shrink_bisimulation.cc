@@ -225,7 +225,7 @@ bool ShrinkBisimulation::shrink(
     FactoredTransitionSystem &fts,
     int index,
     int target_size,
-    VerboseLevel verbose_level) const {
+    Verbosity verbosity) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     int num_states = ts.get_size();
@@ -237,7 +237,8 @@ bool ShrinkBisimulation::shrink(
     int num_groups = initialize_groups(fts, index, state_to_group);
     // cout << "number of initial groups: " << num_groups << endl;
 
-    // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
+    // TODO: We currently violate this; see issue250
+    // assert(num_groups <= target_size);
 
     int max_h = distances.get_max_h();
     assert(max_h >= 0 && max_h != INF);
@@ -342,7 +343,9 @@ bool ShrinkBisimulation::shrink(
         }
     }
 
-    return fts.apply_abstraction(index, equivalence_relation, verbose_level);
+    // TODO: We currently violate this; see issue250
+    //assert(equivalence_relation.size() <= target_size);
+    return fts.apply_abstraction(index, equivalence_relation, verbosity);
 }
 
 string ShrinkBisimulation::name() const {

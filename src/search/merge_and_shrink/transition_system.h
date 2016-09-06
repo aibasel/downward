@@ -149,7 +149,7 @@ public:
         const Labels &labels,
         const TransitionSystem &ts1,
         const TransitionSystem &ts2,
-        VerboseLevel verbose_level);
+        Verbosity verbosity);
 
     /*
       Applies the given state equivalence relation to the transition system.
@@ -161,7 +161,7 @@ public:
     bool apply_abstraction(
         const StateEquivalenceRelation &state_equivalence_relation,
         const std::vector<int> &abstraction_mapping,
-        VerboseLevel verbose_level);
+        Verbosity verbosity);
 
     /*
       Applies the given label mapping, mapping old to new label numbers. This

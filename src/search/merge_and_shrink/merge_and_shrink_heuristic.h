@@ -15,7 +15,7 @@ class LabelReduction;
 class MergeStrategyFactory;
 class ShrinkStrategy;
 class TransitionSystem;
-enum class VerboseLevel;
+enum class Verbosity;
 
 class MergeAndShrinkHeuristic : public Heuristic {
     // TODO: when the option parser supports it, the following should become
@@ -35,7 +35,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
       max_states and max_states_before_merge are not violated.
     */
     const int shrink_threshold_before_merge;
-    VerboseLevel verbose_level;
+    Verbosity verbosity;
 
     std::unique_ptr<FactoredTransitionSystem> fts;
     void build_transition_system(const utils::Timer &timer);
