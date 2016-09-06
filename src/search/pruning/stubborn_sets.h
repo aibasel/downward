@@ -43,13 +43,33 @@ protected:
     bool can_disable(int op1_no, int op2_no);
     bool can_conflict(int op1_no, int op2_no);
 
+    /*
+      Return the first unsatified goal pair,
+      or FactPair::no_fact if there is none.
 
-    // Return the first unsatified goal pair, or FactPair::no_fact if there is none.
+      NOTE that we use a sorted list of goals here intentionally.
+      (See comment on find_unsatisfied_precondition.)
+    */
     FactPair find_unsatisfied_goal(const State &state) {
         return find_unsatisfied_condition(goals, state);
     }
 
-    // Return the first unsatified precondition, or FactPair::no_fact if there is none.
+    /*
+      Return the first unsatified precondition,
+      or FactPair::no_fact if there is none.
+
+      NOTE that we use a sorted list of preconditions here intentionally.
+      The ICAPS paper "Efficient Stubborn Sets: Generalized Algorithms and
+      Selection Strategies" (Wehrle and Helmert, 2014) contains a limited study
+      of this (see section "Strategies for Choosing Unsatisfied Conditions" and
+      especially subsection "Static Variable Orderings"). One of the outcomes
+      was the sorted version ("static orders/FD" in Table 1 of the paper)
+      is dramatically better than choosing preconditions and goals randomly
+      every time ("dynamic orders/random" in Table 1).
+
+      The code also intentionally uses the "causal graph order" of variables
+      rather than an arbitrary variable order.
+    */
     FactPair find_unsatisfied_precondition(int op_no, const State &state) {
         return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
     }
