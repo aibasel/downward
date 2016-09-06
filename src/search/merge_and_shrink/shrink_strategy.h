@@ -12,6 +12,16 @@ class TransitionSystem;
 
 class ShrinkStrategy {
 protected:
+    /*
+      Shrink the given transition system (index in fts) with the given
+      equivalence relation. This method should be called by all inheriting
+      shrink methods at the end of the method "shrink".
+    */
+    bool shrink_fts(
+        FactoredTransitionSystem &fts,
+        int index,
+        const StateEquivalenceRelation &equivalence_relation,
+        Verbosity verbosity) const;
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
@@ -20,8 +30,7 @@ public:
 
     /*
       Shrink the given transition system (index in fts) so that its size is
-      at most target. (NOTE: shrink_bisimulation currently violates this,
-      see issue250.)
+      at most target (currently violated; see issue250).
 
       Note that if target equals the current size of the fts, the shrink
       strategy is not required to actually shrink the size of the transition
