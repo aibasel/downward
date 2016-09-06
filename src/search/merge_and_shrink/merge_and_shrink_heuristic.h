@@ -23,7 +23,6 @@ class MergeAndShrinkHeuristic : public Heuristic {
     std::shared_ptr<MergeStrategyFactory> merge_strategy_factory;
     std::shared_ptr<ShrinkStrategy> shrink_strategy;
     std::shared_ptr<LabelReduction> label_reduction;
-    long starting_peak_memory;
 
     // Options for shrinking
     // Hard limit: the maximum size of a transition system at any point.
@@ -35,9 +34,12 @@ class MergeAndShrinkHeuristic : public Heuristic {
       max_states and max_states_before_merge are not violated.
     */
     const int shrink_threshold_before_merge;
-    Verbosity verbosity;
 
+    const Verbosity verbosity;
+
+    long starting_peak_memory;
     std::unique_ptr<FactoredTransitionSystem> fts;
+
     void build_transition_system(const utils::Timer &timer);
 
     /*
