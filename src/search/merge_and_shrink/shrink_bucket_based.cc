@@ -1,7 +1,5 @@
 #include "shrink_bucket_based.h"
 
-#include "factored_transition_system.h"
-
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -103,6 +101,6 @@ bool ShrinkBucketBased::shrink(
     partition_into_buckets(fts, index, buckets);
     StateEquivalenceRelation equivalence_relation;
     compute_abstraction(buckets, target, equivalence_relation);
-    return fts.apply_abstraction(index, equivalence_relation, verbosity);
+    return shrink_fts(fts, index, equivalence_relation, verbosity);
 }
 }

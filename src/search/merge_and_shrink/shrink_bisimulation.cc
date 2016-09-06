@@ -343,9 +343,7 @@ bool ShrinkBisimulation::shrink(
         }
     }
 
-    // TODO: We currently violate this; see issue250
-    //assert(equivalence_relation.size() <= target_size);
-    return fts.apply_abstraction(index, equivalence_relation, verbosity);
+    return shrink_fts(fts, index, equivalence_relation, verbosity);
 }
 
 string ShrinkBisimulation::name() const {
