@@ -29,13 +29,13 @@ void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
 
     for (OperatorProxy op : task_proxy.get_operators()) {
         // build map for precondition
-        std::unordered_map<int, int> precondition_map;
+        unordered_map<int, int> precondition_map;
         for (FactProxy precondition : op.get_preconditions())
             precondition_map[precondition.get_variable().get_id()] = precondition.get_value();
 
         for (EffectProxy effect : op.get_effects()) {
             // build map for effect condition
-            std::unordered_map<int, int> eff_condition;
+            unordered_map<int, int> eff_condition;
             for (FactProxy effect_condition : effect.get_conditions())
                 eff_condition[effect_condition.get_variable().get_id()] = effect_condition.get_value();
 
@@ -531,7 +531,7 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
     closed = exclude;
     open.push_back(initial_state[var].get_value());
     closed.insert(initial_state[var].get_value());
-    const vector<std::unordered_set<int>> &successors = dtg_successors[var];
+    const vector<unordered_set<int>> &successors = dtg_successors[var];
     while (closed.find(landmark.second) == closed.end()) {
         if (open.empty()) // landmark not in closed and nothing more to insert
             return false;

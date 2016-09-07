@@ -2,7 +2,9 @@
 
 #include "../utils/system.h"
 
+#include <algorithm>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 using utils::ExitCode;
@@ -61,4 +63,12 @@ double get_average_operator_cost(TaskProxy task_proxy) {
     }
     average_operator_cost /= task_proxy.get_operators().size();
     return average_operator_cost;
+}
+
+int get_min_operator_cost(TaskProxy task_proxy) {
+    int min_cost = numeric_limits<int>::max();
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        min_cost = min(min_cost, op.get_cost());
+    }
+    return min_cost;
 }

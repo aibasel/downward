@@ -35,7 +35,7 @@ void EvaluationResult::set_h_value(int value) {
 }
 
 void EvaluationResult::set_preferred_operators(
-    std::vector<const GlobalOperator *> &&preferred_ops) {
+    vector<const GlobalOperator *> &&preferred_ops) {
     preferred_operators = move(preferred_ops);
 }
 

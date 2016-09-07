@@ -160,10 +160,10 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
 
     for (auto &label : labels) {
         // create global condition for label
-        vector<pair<int, int>> precond_pairs;
+        vector<FactPair> precond_pairs;
         for (auto &assignment : label.precond) {
             int var = loc_to_glob[assignment.local_var];
-            precond_pairs.push_back(make_pair(var, assignment.value));
+            precond_pairs.emplace_back(var, assignment.value);
         }
         sort(precond_pairs.begin(), precond_pairs.end());
 
@@ -191,14 +191,14 @@ void DTGFactory::collect_side_effects(DomainTransitionGraph *dtg,
                 pre = pre_it->second;
             int post = eff.get_fact().get_value();
 
-            vector<pair<int, int>> triggercond_pairs;
+            vector<FactPair> triggercond_pairs;
             if (pre != -1)
-                triggercond_pairs.push_back(make_pair(var_no, pre));
+                triggercond_pairs.emplace_back(var_no, pre);
 
             for (FactProxy condition : eff.get_conditions()) {
                 int c_var_id = condition.get_variable().get_id();
                 int c_val = condition.get_value();
-                triggercond_pairs.push_back(make_pair(c_var_id, c_val));
+                triggercond_pairs.emplace_back(c_var_id, c_val);
             }
             sort(triggercond_pairs.begin(), triggercond_pairs.end());
 
@@ -238,15 +238,15 @@ void DTGFactory::simplify_labels(vector<ValueTransitionLabel> &labels) {
       Put the element into the new labels list iff this is the case.
      */
 
-    typedef vector<pair<int, int>> HashKey;
-    typedef unordered_map<HashKey, int> HashMap;
+    using HashKey = vector<FactPair>;
+    using HashMap = unordered_map<HashKey, int>;
     HashMap label_index;
     label_index.reserve(labels.size());
 
     for (size_t i = 0; i < labels.size(); ++i) {
         HashKey key;
         for (LocalAssignment &assign : labels[i].precond)
-            key.push_back(make_pair(assign.local_var, assign.value));
+            key.emplace_back(assign.local_var, assign.value);
         sort(key.begin(), key.end());
         label_index[key] = i;
     }

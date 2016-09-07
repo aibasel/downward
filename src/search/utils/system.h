@@ -35,7 +35,7 @@ enum class ExitCode {
     CRITICAL_ERROR = 1,
     INPUT_ERROR = 2,
     UNSUPPORTED = 3,
-    // Task is provably unsolvable with current bound. Currently unused (see issue377).
+    // Task is provably unsolvable with given bound.
     UNSOLVABLE = 4,
     // Search ended without finding a solution.
     UNSOLVED_INCOMPLETE = 5,

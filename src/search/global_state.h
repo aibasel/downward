@@ -19,15 +19,17 @@ class GlobalState {
     friend class StateRegistry;
     template<typename Entry>
     friend class PerStateInformation;
+
     // Values for vars are maintained in a packed state and accessed on demand.
     const PackedStateBin *buffer;
+
     // registry isn't a reference because we want to support operator=
     const StateRegistry *registry;
     StateID id;
+
     // Only used by the state registry.
-    GlobalState(const PackedStateBin *buffer,
-                const StateRegistry &registry,
-                StateID id);
+    GlobalState(
+        const PackedStateBin *buffer, const StateRegistry &registry, StateID id);
 
     const PackedStateBin *get_packed_buffer() const {
         return buffer;
@@ -50,5 +52,6 @@ public:
     void dump_pddl() const;
     void dump_fdr() const;
 };
+
 
 #endif

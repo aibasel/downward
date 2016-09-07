@@ -7,7 +7,6 @@
 #include <map>
 #include <set>
 #include <sstream>
-#include <utility>
 #include <vector>
 
 using namespace std;
@@ -43,12 +42,12 @@ void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
     }
 }
 
-LandmarkNode *LandmarkGraph::get_landmark(const Fact &fact) const {
+LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact, or 0 if no such
      landmark exists.
      */
     LandmarkNode *node_p = 0;
-    // TODO(issue635): Use Fact struct for landmarks.
+    // TODO(issue635): Use FactPair struct for landmarks.
     pair<int, int> prop(fact.var, fact.value);
     auto it = simple_lms_to_nodes.find(prop);
     if (it != simple_lms_to_nodes.end())

@@ -38,8 +38,14 @@ endif()
 # If any enabled plugin requires an LP solver, compile with all
 # available LP solvers. If no solvers are installed, the planner will
 # still compile, but using heuristics that depend on an LP solver will
-# cause an error.
-if(PLUGIN_LP_SOLVER_ENABLED)
+# cause an error. This behavior can be overwritten by setting the
+# option USE_LP to false.
+option(
+  USE_LP
+  "Compile with support for all LP solvers installed on this system."
+  TRUE)
+
+if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
     find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb)
     if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND))
         foreach(SOLVER Cpx Clp Grb)
