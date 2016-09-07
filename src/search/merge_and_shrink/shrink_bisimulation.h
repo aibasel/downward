@@ -32,16 +32,16 @@ class ShrinkBisimulation : public ShrinkStrategy {
                             std::vector<Signature> &signatures,
                             const std::vector<int> &state_to_group) const;
 protected:
-    virtual void compute_equivalence_relation(
-        const FactoredTransitionSystem &fts,
-        int index,
-        int target,
-        StateEquivalenceRelation &equivalence_relation) const override;
     virtual void dump_strategy_specific_options() const override;
     virtual std::string name() const override;
 public:
     explicit ShrinkBisimulation(const options::Options &opts);
-    virtual ~ShrinkBisimulation() override;
+    virtual ~ShrinkBisimulation() override = default;
+    virtual bool shrink(
+        FactoredTransitionSystem &fts,
+        int index,
+        int target,
+        Verbosity verbosity) const override;
 };
 }
 

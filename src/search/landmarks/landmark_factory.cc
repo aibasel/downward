@@ -1,4 +1,4 @@
-﻿#include "landmark_factory.h"
+#include "landmark_factory.h"
 
 #include "landmark_graph.h"
 
@@ -44,7 +44,7 @@ LandmarkFactory::LandmarkFactory(const options::Options &opts)
   ensure that the TaskProxy used by the Exploration object is the same
   as the TaskProxy object passed to this function.
 */
-std::shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(const TaskProxy &task_proxy, Exploration &exploration) {
+shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(const TaskProxy &task_proxy, Exploration &exploration) {
     if (lm_graph)
         return lm_graph;
     utils::Timer lm_generation_timer;
@@ -367,8 +367,8 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             }
 
             // 1. a, b mutex
-            // TODO(issue635): Use Fact struct right away.
-            if (are_mutex(Fact(a.first, a.second), Fact(b.first, b.second)))
+            // TODO(issue635): Use FactPair struct right away.
+            if (are_mutex(FactPair(a.first, a.second), FactPair(b.first, b.second)))
                 return true;
 
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
@@ -424,7 +424,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             }
             // Test whether one of the shared effects is inconsistent with b
             for (const auto &eff : shared_eff)
-                if (eff != a && eff != b && are_mutex(Fact(eff.first, eff.second), Fact(b.first, b.second)))
+                if (eff != a && eff != b && are_mutex(FactPair(eff.first, eff.second), FactPair(b.first, b.second)))
                     return true;
         }
 
@@ -782,7 +782,7 @@ void LandmarkFactory::compute_predecessor_information(
     Exploration &exploration,
     LandmarkNode *bp,
     vector<vector<int>> &lvl_var,
-    std::vector<std::unordered_map<std::pair<int, int>, int>> &lvl_op) {
+    vector<unordered_map<pair<int, int>, int>> &lvl_op) {
     /* Collect information at what time step propositions can be reached
     (in lvl_var) in a relaxed plan that excludes bp, and similarly
     when operators can be applied (in lvl_op).  */

@@ -2,7 +2,6 @@
 
 #include "landmark_factory.h"
 
-#include "../global_operator.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
@@ -97,6 +96,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
         h = total_cost - reached_cost + needed_cost;
     }
 
+    // Two plausibility tests in debug mode.
     assert(h >= 0);
 
     return h;
@@ -190,7 +190,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
             if (does_fire(effect, state))
                 continue;
             FactProxy fact_proxy = effect.get_fact();
-            const Fact fact(fact_proxy.get_variable().get_id(), fact_proxy.get_value());
+            const FactPair fact(fact_proxy.get_variable().get_id(), fact_proxy.get_value());
             LandmarkNode *lm_p = lgraph->get_landmark(fact);
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {

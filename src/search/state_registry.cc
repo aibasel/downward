@@ -5,12 +5,14 @@
 
 using namespace std;
 
-StateRegistry::StateRegistry(const IntPacker &state_packer,
-                             AxiomEvaluator &axiom_evaluator,
-                             const std::vector<int> &initial_state_data)
-    : state_packer(state_packer),
+StateRegistry::StateRegistry(
+    const AbstractTask &task, const IntPacker &state_packer,
+    AxiomEvaluator &axiom_evaluator, const vector<int> &initial_state_data)
+    : task(task),
+      state_packer(state_packer),
       axiom_evaluator(axiom_evaluator),
       initial_state_data(initial_state_data),
+      num_variables(initial_state_data.size()),
       state_data_pool(get_bins_per_state()),
       registered_states(
           0,

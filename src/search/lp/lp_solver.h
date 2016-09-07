@@ -47,8 +47,7 @@ class LPConstraint {
     double lower_bound;
     double upper_bound;
 public:
-    LPConstraint(double lower_bound_, double upper_bound_);
-    ~LPConstraint();
+    LPConstraint(double lower_bound, double upper_bound);
 
     const std::vector<int> &get_variables() const {return variables; }
     const std::vector<double> &get_coefficients() const {return coefficients; }
@@ -69,10 +68,9 @@ struct LPVariable {
     double upper_bound;
     double objective_coefficient;
 
-    LPVariable(double lower_bound_,
-               double upper_bound_,
-               double objective_coefficient_);
-    ~LPVariable();
+    LPVariable(double lower_bound,
+               double upper_bound,
+               double objective_coefficient);
 };
 
 #ifdef __GNUG__

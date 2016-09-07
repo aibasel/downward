@@ -104,7 +104,7 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
                 }
                 /*
                    else {
-                   cout << "non-leaf, not inserting." << std::endl;
+                   cout << "non-leaf, not inserting." << endl;
                    }
                  */
             }

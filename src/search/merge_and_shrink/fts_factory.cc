@@ -6,6 +6,7 @@
 #include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
+#include "types.h"
 
 #include "../task_proxy.h"
 
@@ -82,7 +83,7 @@ public:
       Note: create() may only be called once. We don't worry about
       misuse because the class is only used internally in this file.
     */
-    FactoredTransitionSystem create();
+    FactoredTransitionSystem create(Verbosity verbosity);
 };
 
 
@@ -389,8 +390,10 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
     return result;
 }
 
-FactoredTransitionSystem FTSFactory::create() {
-    cout << "Building atomic transition systems... " << endl;
+FactoredTransitionSystem FTSFactory::create(Verbosity verbosity) {
+    if (verbosity >= Verbosity::NORMAL) {
+        cout << "Building atomic transition systems... " << endl;
+    }
 
     unique_ptr<Labels> labels = utils::make_unique_ptr<Labels>(create_labels());
 
@@ -407,11 +410,13 @@ FactoredTransitionSystem FTSFactory::create() {
         move(labels),
         move(transition_systems),
         move(heuristic_representations),
-        move(distances));
+        move(distances),
+        verbosity);
 }
 
 FactoredTransitionSystem create_factored_transition_system(
-    const TaskProxy &task_proxy) {
-    return FTSFactory(task_proxy).create();
+    const TaskProxy &task_proxy,
+    Verbosity verbosity) {
+    return FTSFactory(task_proxy).create(verbosity);
 }
 }

@@ -2,11 +2,10 @@
 #define CEGAR_SUBTASK_GENERATORS_H
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 class AbstractTask;
-struct Fact;
+struct FactPair;
 class TaskProxy;
 
 namespace landmarks {
@@ -18,7 +17,7 @@ class Options;
 }
 
 namespace cegar {
-using Facts = std::vector<Fact>;
+using Facts = std::vector<FactPair>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 
 enum class FactOrder {
@@ -29,39 +28,49 @@ enum class FactOrder {
 };
 
 
+/*
+  Create focused subtasks.
+*/
 class SubtaskGenerator {
 public:
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const = 0;
+    virtual ~SubtaskGenerator() = default;
 };
 
 
+/*
+  Return copies of the original task.
+*/
 class TaskDuplicator : public SubtaskGenerator {
     int num_copies;
 
 public:
     explicit TaskDuplicator(const options::Options &options);
-    virtual ~TaskDuplicator() = default;
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;
 };
 
 
+/*
+  Use ModifiedGoalsTask to return a subtask for each goal fact.
+*/
 class GoalDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
 
-    Facts get_goal_facts(const TaskProxy &task_proxy) const;
-
 public:
     explicit GoalDecomposition(const options::Options &options);
-    virtual ~GoalDecomposition() = default;
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;
 };
 
 
+/*
+  Nest ModifiedGoalsTask and DomainAbstractedTask to return subtasks
+  focussing on a single landmark fact.
+*/
 class LandmarkDecomposition : public SubtaskGenerator {
     FactOrder fact_order;
     const std::shared_ptr<landmarks::LandmarkGraph> landmark_graph;
@@ -70,11 +79,10 @@ class LandmarkDecomposition : public SubtaskGenerator {
     /* Perform domain abstraction by combining facts that have to be
        achieved before a given landmark can be made true. */
     std::shared_ptr<AbstractTask> build_domain_abstracted_task(
-        std::shared_ptr<AbstractTask> &parent, Fact fact) const;
+        std::shared_ptr<AbstractTask> &parent, const FactPair &fact) const;
 
 public:
     explicit LandmarkDecomposition(const options::Options &opts);
-    virtual ~LandmarkDecomposition();
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task) const override;
