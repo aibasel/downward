@@ -9,6 +9,7 @@
 #include "shrink_strategy.h"
 #include "transition_system.h"
 #include "types.h"
+#include "utils.h"
 
 #include "../option_parser.h"
 #include "../plugin.h"
@@ -152,61 +153,6 @@ void MergeAndShrinkHeuristic::warn_on_unusual_options() const {
     }
 }
 
-pair<int, int> MergeAndShrinkHeuristic::compute_shrink_sizes(
-    int size1, int size2) const {
-    // Bound both sizes by max allowed size before merge.
-    int new_size1 = min(size1, max_states_before_merge);
-    int new_size2 = min(size2, max_states_before_merge);
-
-    if (!utils::is_product_within_limit(new_size1, new_size2, max_states)) {
-        int balanced_size = int(sqrt(max_states));
-
-        if (new_size1 <= balanced_size) {
-            // Size of the first transition system is small enough. Use whatever
-            // is left for the second transition system.
-            new_size2 = max_states / new_size1;
-        } else if (new_size2 <= balanced_size) {
-            // Inverted case as before.
-            new_size1 = max_states / new_size2;
-        } else {
-            // Both transition systems are too big. We set both target sizes
-            // to balanced_size. An alternative would be to set one to
-            // N1 = balanced_size and the other to N2 = max_states /
-            // balanced_size, to get closer to the allowed maximum.
-            // However, this would make little difference (N2 would
-            // always be N1, N1 + 1 or N1 + 2), and our solution has the
-            // advantage of treating the transition systems symmetrically.
-            new_size1 = balanced_size;
-            new_size2 = balanced_size;
-        }
-    }
-    assert(new_size1 <= size1 && new_size2 <= size2);
-    assert(new_size1 <= max_states_before_merge);
-    assert(new_size2 <= max_states_before_merge);
-    assert(new_size1 * new_size2 <= max_states);
-    return make_pair(new_size1, new_size2);
-}
-
-bool MergeAndShrinkHeuristic::shrink_transition_system(
-    int index, int new_size) {
-    assert(fts);
-    const TransitionSystem &ts = fts->get_ts(index);
-    assert(ts.is_solvable());
-    int num_states = ts.get_size();
-    if (num_states > min(new_size, shrink_threshold_before_merge)) {
-        if (verbosity >= Verbosity::VERBOSE) {
-            cout << ts.tag() << "current size: " << num_states;
-            if (new_size < num_states)
-                cout << " (new size limit: " << new_size;
-            else
-                cout << " (shrink threshold: " << shrink_threshold_before_merge;
-            cout << ")" << endl;
-        }
-        return shrink_strategy->shrink(*fts, index, new_size, verbosity);
-    }
-    return false;
-}
-
 pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
     int index1, int index2) {
     assert(fts);
@@ -217,7 +163,7 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
       max_states and max_states_before_merge.
     */
     pair<int, int> new_sizes = compute_shrink_sizes(
-        ts1.get_size(), ts2.get_size());
+        ts1.get_size(), ts2.get_size(), max_states, max_states_before_merge);
 
     /*
       For both transition systems, possibly compute and apply an
@@ -226,8 +172,20 @@ pair<bool, bool> MergeAndShrinkHeuristic::shrink_before_merge(
       for the second shrinking if the first shrinking was larger than
       required.
     */
-    bool shrunk1 = shrink_transition_system(index1, new_sizes.first);
-    bool shrunk2 = shrink_transition_system(index2, new_sizes.second);
+    bool shrunk1 = shrink_transition_system(
+        *fts,
+        index1,
+        new_sizes.first,
+        shrink_threshold_before_merge,
+        shrink_strategy,
+        verbosity);
+    bool shrunk2 = shrink_transition_system(
+        *fts,
+        index2,
+        new_sizes.second,
+        shrink_threshold_before_merge,
+        shrink_strategy,
+        verbosity);
     return make_pair(shrunk1, shrunk2);
 }
 

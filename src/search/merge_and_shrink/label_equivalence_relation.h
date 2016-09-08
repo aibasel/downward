@@ -81,6 +81,7 @@ public:
       the public add_label_group method below.
     */
     explicit LabelEquivalenceRelation(const Labels &labels);
+    LabelEquivalenceRelation(const LabelEquivalenceRelation &other);
 
     /*
       The given label mappings (from label reduction) contain the new label

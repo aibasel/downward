@@ -4,6 +4,8 @@
 
 #include "../task_proxy.h"
 
+#include "../utils/memory.h"
+
 #include <algorithm>
 #include <iostream>
 #include <numeric>
@@ -29,6 +31,12 @@ HeuristicRepresentationLeaf::HeuristicRepresentationLeaf(
       var_id(var_id),
       lookup_table(domain_size) {
     iota(lookup_table.begin(), lookup_table.end(), 0);
+}
+
+HeuristicRepresentationLeaf::HeuristicRepresentationLeaf(const HeuristicRepresentationLeaf *other)
+    : HeuristicRepresentation(other->domain_size),
+      var_id(other->var_id),
+      lookup_table(other->lookup_table) {
 }
 
 void HeuristicRepresentationLeaf::apply_abstraction_to_lookup_table(
@@ -71,6 +79,25 @@ HeuristicRepresentationMerge::HeuristicRepresentationMerge(
             entry = counter;
             ++counter;
         }
+    }
+}
+
+HeuristicRepresentationMerge::HeuristicRepresentationMerge(const HeuristicRepresentationMerge *other)
+    : HeuristicRepresentation(other->domain_size),
+      lookup_table(other->lookup_table) {
+    if (dynamic_cast<HeuristicRepresentationLeaf *>(other->left_child.get())) {
+        left_child = utils::make_unique_ptr<HeuristicRepresentationLeaf>(
+            dynamic_cast<HeuristicRepresentationLeaf *>(other->left_child.get()));
+    } else {
+        left_child = utils::make_unique_ptr<HeuristicRepresentationMerge>(
+            dynamic_cast<HeuristicRepresentationMerge *>(other->left_child.get()));
+    }
+    if (dynamic_cast<HeuristicRepresentationLeaf *>(other->right_child.get())) {
+        right_child = utils::make_unique_ptr<HeuristicRepresentationLeaf>(
+            dynamic_cast<HeuristicRepresentationLeaf *>(other->right_child.get()));
+    } else {
+        right_child = utils::make_unique_ptr<HeuristicRepresentationMerge>(
+            dynamic_cast<HeuristicRepresentationMerge *>(other->right_child.get()));
     }
 }
 

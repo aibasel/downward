@@ -63,6 +63,8 @@ class Distances {
     void compute_goal_distances_general_cost();
 public:
     explicit Distances(const TransitionSystem &transition_system);
+    Distances(const TransitionSystem &transition_system, const Distances &other);
+    Distances(const Distances &other) = delete;
     ~Distances();
 
     bool are_distances_computed() const;
