@@ -172,7 +172,8 @@ bool FactoredTransitionSystem::apply_abstraction(
 }
 
 int FactoredTransitionSystem::merge(
-    int index1, int index2, Verbosity verbosity) {
+    int index1, int index2, Verbosity verbosity,
+    bool finalize_if_unsolvable) {
     assert(is_index_valid(index1));
     assert(is_index_valid(index2));
     transition_systems.push_back(
@@ -196,9 +197,11 @@ int FactoredTransitionSystem::merge(
     int new_index = transition_systems.size() - 1;
     compute_distances_and_prune(new_index, verbosity);
     assert(is_component_valid(new_index));
-    if (!new_ts.is_solvable()) {
-        solvable = false;
-        finalize(new_index);
+    if (finalize_if_unsolvable) {
+        if (!new_ts.is_solvable()) {
+            solvable = false;
+            finalize(new_index);
+        }
     }
     return new_index;
 }
@@ -259,5 +262,49 @@ void FactoredTransitionSystem::dump(int index) const {
     assert(transition_systems[index]);
     transition_systems[index]->dump_labels_and_transitions();
     heuristic_representations[index]->dump();
+}
+
+int FactoredTransitionSystem::copy(int index) {
+    assert(is_active(index));
+    int new_index = transition_systems.size();
+    transition_systems.push_back(
+        utils::make_unique_ptr<TransitionSystem>(*transition_systems[index]));
+
+    unique_ptr<HeuristicRepresentation> hr = nullptr;
+    if (dynamic_cast<HeuristicRepresentationLeaf *>(heuristic_representations[index].get())) {
+        hr = utils::make_unique_ptr<HeuristicRepresentationLeaf>(
+            dynamic_cast<HeuristicRepresentationLeaf *>
+                (heuristic_representations[index].get()));
+    } else {
+        hr = utils::make_unique_ptr<HeuristicRepresentationMerge>(
+            dynamic_cast<HeuristicRepresentationMerge *>(
+                heuristic_representations[index].get()));
+    }
+    heuristic_representations.push_back(move(hr));
+
+    distances.push_back(utils::make_unique_ptr<Distances>(*transition_systems.back(),
+                                                          *distances[index]));
+
+    return new_index;
+}
+
+void FactoredTransitionSystem::release_copies() {
+    int last_index = transition_systems.size() - 1;
+    transition_systems[last_index] = nullptr;
+    transition_systems.pop_back();
+    assert(!transition_systems.back());
+    transition_systems.pop_back();
+    assert(!transition_systems.back());
+    transition_systems.pop_back();
+    heuristic_representations[last_index] = nullptr;
+    heuristic_representations.pop_back();
+    heuristic_representations.pop_back();
+    heuristic_representations.pop_back();
+    distances[last_index] = nullptr;
+    distances.pop_back();
+    assert(!distances.back());
+    distances.pop_back();
+    assert(!distances.back());
+    distances.pop_back();
 }
 }

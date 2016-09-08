@@ -412,6 +412,7 @@ fast_downward_plugin(
         merge_and_shrink/merge_scoring_function.cc
         merge_and_shrink/merge_scoring_function_dfp.cc
         merge_and_shrink/merge_scoring_function_goal_relevance.cc
+        merge_and_shrink/merge_scoring_function_miasm.cc
         merge_and_shrink/merge_scoring_function_single_random.cc
         merge_and_shrink/merge_scoring_function_total_order.cc
         merge_and_shrink/merge_selector.cc
@@ -433,6 +434,7 @@ fast_downward_plugin(
         merge_and_shrink/shrink_strategy.cc
         merge_and_shrink/transition_system.cc
         merge_and_shrink/types.cc
+        merge_and_shrink/utils.cc
 )
 
 fast_downward_plugin(

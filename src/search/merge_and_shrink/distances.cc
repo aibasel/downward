@@ -18,6 +18,15 @@ Distances::Distances(const TransitionSystem &transition_system)
     clear_distances();
 }
 
+Distances::Distances(const TransitionSystem &transition_system, const Distances &other)
+    : transition_system(transition_system),
+      init_distances(other.init_distances),
+      goal_distances(other.goal_distances),
+      max_f(other.max_f),
+      max_g(other.max_g),
+      max_h(other.max_h) {
+}
+
 Distances::~Distances() {
 }
 
