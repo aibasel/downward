@@ -134,7 +134,7 @@ public:
         return is_index_valid(index);
     }
 
-    // Copy the entry at index and appends it, increasing the size by one.
+    // Copy the entry at index and append it, increasing the size by one.
     int copy(int index);
     /*
       Delete the last three indices. This assumes and requires that the
