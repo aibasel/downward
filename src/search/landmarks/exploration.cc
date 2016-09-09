@@ -38,21 +38,22 @@ Exploration::Exploration(const options::Options &opts)
     cout << "Initializing Exploration..." << endl;
 
     // Build propositions.
-    for (size_t var = 0; var < g_variable_domain.size(); ++var) {
-        propositions.push_back(vector<ExProposition>(g_variable_domain[var]));
-        for (int value = 0; value < g_variable_domain[var]; ++value) {
-            propositions[var][value].var = var;
-            propositions[var][value].val = value;
+    for (VariableProxy var : task_proxy.get_variables()) {
+        int var_id = var.get_id();
+        propositions.push_back(vector<ExProposition>(var.get_domain_size()));
+        for (int value = 0; value < var.get_domain_size(); ++value) {
+            propositions[var_id][value].fact = FactPair(var_id, value);
         }
     }
 
     // Build goal propositions.
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int var = g_goal[i].first, val = g_goal[i].second;
-        propositions[var][val].is_goal_condition = true;
-        propositions[var][val].is_termination_condition = true;
-        goal_propositions.push_back(&propositions[var][val]);
-        termination_propositions.push_back(&propositions[var][val]);
+    for (FactProxy goal_fact : task_proxy.get_goals()) {
+        int var_id = goal_fact.get_variable().get_id();
+        int value = goal_fact.get_value();
+        propositions[var_id][value].is_goal_condition = true;
+        propositions[var_id][value].is_termination_condition = true;
+        goal_propositions.push_back(&propositions[var_id][value]);
+        termination_propositions.push_back(&propositions[var_id][value]);
     }
 
     // Build unary operators for operators and axioms.
@@ -95,24 +96,25 @@ void Exploration::write_overflow_warning() {
     }
 }
 
-void Exploration::set_additional_goals(const vector<pair<int, int>> &add_goals) {
+void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
     //Clear previous additional goals.
-    for (size_t i = 0; i < termination_propositions.size(); ++i) {
-        int var = termination_propositions[i]->var, val = termination_propositions[i]->val;
-        propositions[var][val].is_termination_condition = false;
+    for (ExProposition *prop : termination_propositions) {
+        propositions[prop->fact.var][prop->fact.value].is_termination_condition = false;
     }
     termination_propositions.clear();
-    for (size_t i = 0; i < g_goal.size(); ++i) {
-        int var = g_goal[i].first, val = g_goal[i].second;
-        propositions[var][val].is_termination_condition = true;
-        termination_propositions.push_back(&propositions[var][val]);
+    for (FactProxy goal_fact : task_proxy.get_goals()) {
+        int var_id = goal_fact.get_variable().get_id();
+        int value = goal_fact.get_value();
+        propositions[var_id][value].is_termination_condition = true;
+        termination_propositions.push_back(&propositions[var_id][value]);
     }
     // Build new additional goal propositions.
-    for (size_t i = 0; i < add_goals.size(); ++i) {
-        int var = add_goals[i].first, val = add_goals[i].second;
-        if (!propositions[var][val].is_goal_condition) {
-            propositions[var][val].is_termination_condition = true;
-            termination_propositions.push_back(&propositions[var][val]);
+    for (const FactPair &fact : add_goals) {
+        int var_id = fact.var;
+        int value = fact.value;
+        if (!propositions[var_id][value].is_goal_condition) {
+            propositions[var_id][value].is_termination_condition = true;
+            termination_propositions.push_back(&propositions[var_id][value]);
         }
     }
     heuristic_recomputation_needed = true;
@@ -123,63 +125,58 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
     int base_cost = op.get_cost();
     EffectsProxy effects = op.get_effects();
     vector<ExProposition *> precondition;
-    vector<pair<int, int>> precondition_var_vals1;
+    vector<FactPair> precondition_facts1;
 
     for (FactProxy pre : op.get_preconditions()) {
-        precondition_var_vals1.emplace_back(
-            pre.get_variable().get_id(), pre.get_value());
+        precondition_facts1.push_back(pre.get_pair());
     }
     for (EffectProxy effect : effects) {
-        vector<pair<int, int>> precondition_var_vals2(precondition_var_vals1);
+        vector<FactPair> precondition_facts2(precondition_facts1);
         EffectConditionsProxy effect_conditions = effect.get_conditions();
-        for (FactProxy eff_condidition : effect_conditions) {
-            precondition_var_vals2.emplace_back(
-                eff_condidition.get_variable().get_id(), eff_condidition.get_value());
+        for (FactProxy effect_condition : effect_conditions) {
+            precondition_facts2.push_back(effect_condition.get_pair());
         }
 
-        sort(precondition_var_vals2.begin(), precondition_var_vals2.end());
+        sort(precondition_facts2.begin(), precondition_facts2.end());
 
-        for (size_t j = 0; j < precondition_var_vals2.size(); ++j)
-            precondition.push_back(&propositions[precondition_var_vals2[j].first]
-                                   [precondition_var_vals2[j].second]);
+        for (const FactPair &precondition_fact : precondition_facts2)
+            precondition.push_back(&propositions[precondition_fact.var]
+                                   [precondition_fact.value]);
 
         FactProxy effect_fact = effect.get_fact();
         ExProposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
         int op_id = get_operator_or_axiom_id(task_proxy, op);
         unary_operators.emplace_back(precondition, effect_proposition, op_id, base_cost);
         precondition.clear();
-        precondition_var_vals2.clear();
+        precondition_facts2.clear();
     }
 }
 
 // heuristic computation
 void Exploration::setup_exploration_queue(const State &state,
-                                          const vector<pair<int, int>> &excluded_props,
+                                          const vector<FactPair> &excluded_props,
                                           const set<int> &excluded_op_ids,
                                           bool use_h_max = false) {
     prop_queue.clear();
 
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        for (size_t value = 0; value < propositions[var].size(); ++value) {
-            ExProposition &prop = propositions[var][value];
+    for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
+        for (size_t value = 0; value < propositions[var_id].size(); ++value) {
+            ExProposition &prop = propositions[var_id][value];
             prop.h_add_cost = -1;
             prop.h_max_cost = -1;
             prop.depth = -1;
             prop.marked = false;
         }
     }
-    if (excluded_props.size() > 0) {
-        for (size_t i = 0; i < excluded_props.size(); ++i) {
-            ExProposition &prop = propositions[excluded_props[i].first][excluded_props[i].second];
-            prop.h_add_cost = -2;
-        }
+
+    for (const FactPair &fact : excluded_props) {
+        ExProposition &prop = propositions[fact.var][fact.value];
+        prop.h_add_cost = -2;
     }
 
     // Deal with current state.
-    for (FactProxy fact : state) {
-        int var_id = fact.get_variable().get_id();
-        int value = fact.get_value();
-        ExProposition *init_prop = &propositions[var_id][value];
+    for (const FactProxy &fact : state) {
+        ExProposition *init_prop = &propositions[fact.get_variable().get_id()][fact.get_value()];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
 
@@ -271,8 +268,8 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
 
 int Exploration::compute_hsp_add_heuristic() {
     int total_cost = 0;
-    for (size_t i = 0; i < goal_propositions.size(); ++i) {
-        int prop_cost = goal_propositions[i]->h_add_cost;
+    for (ExProposition *goal : goal_propositions) {
+        int prop_cost = goal->h_add_cost;
         if (prop_cost == -1)
             return DEAD_END;
         increase_cost(total_cost, prop_cost);
@@ -325,9 +322,9 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
 }
 
 void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_var,
-                                                     vector<unordered_map<pair<int, int>, int>> &lvl_op,
+                                                     vector<unordered_map<FactPair, int>> &lvl_op,
                                                      bool level_out,
-                                                     const vector<pair<int, int>> &excluded_props,
+                                                     const vector<FactPair> &excluded_props,
                                                      const set<int> &excluded_op_ids,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
@@ -335,21 +332,19 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
     relaxed_exploration(true, level_out);
 
     // Copy reachability information into lvl_var and lvl_op
-    for (size_t var = 0; var < propositions.size(); ++var) {
-        for (size_t value = 0; value < propositions[var].size(); ++value) {
-            ExProposition &prop = propositions[var][value];
+    for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
+        for (size_t value = 0; value < propositions[var_id].size(); ++value) {
+            ExProposition &prop = propositions[var_id][value];
             if (prop.h_max_cost >= 0)
-                lvl_var[var][value] = prop.h_max_cost;
+                lvl_var[var_id][value] = prop.h_max_cost;
         }
     }
     if (compute_lvl_ops) {
-        for (size_t i = 0; i < unary_operators.size(); ++i) {
-            ExUnaryOperator &op = unary_operators[i];
+        for (ExUnaryOperator &op : unary_operators) {
             // H_max_cost of operator might be wrongly 0 or 1, if the operator
             // did not get applied during relaxed exploration. Look through
             // preconditions and adjust.
-            for (size_t i = 0; i < op.precondition.size(); ++i) {
-                ExProposition *prop = op.precondition[i];
+            for (ExProposition *prop : op.precondition) {
                 if (prop->h_max_cost == -1) {
                     // Operator cannot be applied due to unreached precondition
                     op.h_max_cost = numeric_limits<int>::max();
@@ -362,7 +357,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
             // We subtract 1 to keep semantics for landmark code:
             // if op can achieve prop at time step i+1,
             // its index (for prop) is i, where the initial state is time step 0.
-            pair<int, int> effect = make_pair(op.effect->var, op.effect->val);
+            FactPair effect = op.effect->fact;
             assert(lvl_op[op.op_id].find(effect) != lvl_op[op.op_id].end());
             int new_lvl = op.h_max_cost - 1;
             // If we have found a cheaper achieving operator, adjust h_max cost of proposition.
@@ -414,15 +409,15 @@ void Exploration::collect_ha(ExProposition *goal,
 }
 
 // TODO: this should be in landmark class
-bool is_landmark(vector<pair<int, int>> &landmarks, int var, int val) {
+bool is_landmark(vector<FactPair> &landmarks, int var, int value) {
     // TODO: change landmarks to set or unordered_set
-    for (size_t i = 0; i < landmarks.size(); ++i)
-        if (landmarks[i].first == var && landmarks[i].second == val)
+    for (const FactPair &lm : landmarks)
+        if (lm.var == var && lm.value == value)
             return true;
     return false;
 }
 
-bool Exploration::plan_for_disj(vector<pair<int, int>> &landmarks,
+bool Exploration::plan_for_disj(vector<FactPair> &landmarks,
                                 const State &state) {
     relaxed_plan.clear();
     // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
@@ -432,20 +427,22 @@ bool Exploration::plan_for_disj(vector<pair<int, int>> &landmarks,
             prepare_heuristic_computation(state);
         }
         int min_cost = numeric_limits<int>::max();
-        ExProposition *target = NULL;
-        for (size_t i = 0; i < termination_propositions.size(); ++i) {
-            const int prop_cost = termination_propositions[i]->h_add_cost;
-            if (prop_cost == -1 && is_landmark(landmarks, termination_propositions[i]->var,
-                                               termination_propositions[i]->val)) {
+        ExProposition *target = nullptr;
+        for (ExProposition *prop : termination_propositions) {
+            const int prop_cost = prop->h_add_cost;
+            if (prop_cost == -1 && is_landmark(landmarks,
+                                               prop->fact.var,
+                                               prop->fact.value)) {
                 return false; // dead end
             }
-            if (prop_cost < min_cost && is_landmark(landmarks, termination_propositions[i]->var,
-                                                    termination_propositions[i]->val)) {
-                target = termination_propositions[i];
+            if (prop_cost < min_cost && is_landmark(landmarks,
+                                                    prop->fact.var,
+                                                    prop->fact.value)) {
+                target = prop;
                 min_cost = prop_cost;
             }
         }
-        assert(target != NULL);
+        assert(target != nullptr);
         assert(exported_op_ids.empty());
         collect_ha(target, relaxed_plan, state);
     } else {
@@ -453,10 +450,10 @@ bool Exploration::plan_for_disj(vector<pair<int, int>> &landmarks,
         if (heuristic_recomputation_needed) {
             prepare_heuristic_computation(state);
         }
-        for (size_t i = 0; i < goal_propositions.size(); ++i) {
-            if (goal_propositions[i]->h_add_cost == -1)
+        for (ExProposition *prop : goal_propositions) {
+            if (prop->h_add_cost == -1)
                 return false;  // dead end
-            collect_ha(goal_propositions[i], relaxed_plan, state);
+            collect_ha(prop, relaxed_plan, state);
         }
     }
     return true;
