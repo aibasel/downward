@@ -47,6 +47,10 @@ performed. Some of them use lab's deprecated DownwardExperiment:
 * Run experiment in debug mode (with assertions):
   * issue650/v2.py
 
+* Translator:
+  * issue671/v1.py runs simple configs on the entire set of suites and
+    reports also translator-specific attributes
+
 
 Microbenchmarks
 ===============

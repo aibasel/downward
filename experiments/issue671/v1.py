@@ -15,7 +15,7 @@ except ImportError:
 
 def main(revisions=None):
     benchmarks_dir=os.path.expanduser('~/repos/downward/benchmarks')
-    suite=suites.suite_optimal_strips()
+    suite=suites.suite_all()
 
     configs = {
         IssueConfig('blind', ['--search', 'astar(blind())'], driver_options=['--search-time-limit', '60s']),
@@ -27,10 +27,13 @@ def main(revisions=None):
         suite=suite,
         revisions=revisions,
         configs=configs,
-        test_suite=['depot:p01.pddl'],
+        test_suite=['depot:p01.pddl', 'gripper:prob01.pddl'],
         processes=4,
         email='silvan.sievers@unibas.ch',
     )
+
+    attributes = exp.DEFAULT_TABLE_ATTRIBUTES
+    attributes.append('translator_*')
 
     exp.add_comparison_table_step()
 
