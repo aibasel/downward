@@ -51,7 +51,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
                                       const std::vector<std::vector<int>> &lvl_var,
                                       LandmarkNode *lmp);
     bool domain_connectivity(const State &initial_state,
-                             const std::pair<int, int> &landmark,
+                             const FactPair &landmark,
                              const std::unordered_set<int> &exclude);
 
     void build_disjunction_classes(const TaskProxy &task_proxy);

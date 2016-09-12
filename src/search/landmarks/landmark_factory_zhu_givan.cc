@@ -239,11 +239,9 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
     lm_set precond_label_union = union_of_precondition_labels(op, current);
 
     for (EffectProxy effect : op.get_effects()) {
-        FactProxy effect_fact = effect.get_fact();
-        int var_id = effect_fact.get_variable().get_id();
-        int value = effect_fact.get_value();
+        FactPair effect_fact = effect.get_fact().get_pair();
 
-        if (next[var_id][value].labels.size() == 1)
+        if (next[effect_fact.var][effect_fact.value].labels.size() == 1)
             continue;
 
         if (operator_cond_effect_fires(effect.get_conditions(), current)) {
@@ -253,9 +251,9 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
                     // not a conditional effect.
                     effect.get_conditions(), current));
 
-            if (_propagate_labels(next[var_id][value].labels,
-                                  precond_label_union_with_condeff, FactPair(var_id, value)))
-                result.emplace(var_id, value);
+            if (_propagate_labels(next[effect_fact.var][effect_fact.value].labels,
+                                  precond_label_union_with_condeff, effect_fact))
+                result.insert(effect_fact);
         }
     }
 
