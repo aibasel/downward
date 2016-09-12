@@ -386,7 +386,7 @@ void HMLandmarks::print_pm_op(const VariablesProxy &variables, const PMOp &op) {
                 cond_eff.insert(h_m_table_[pm_fluent].fluents[k]);
             }
         }
-        conds.push_back(make_pair(cond_pc, cond_eff));
+        conds.emplace_back(cond_pc, cond_eff);
         cout << endl << endl << endl;
     }
 
@@ -691,33 +691,31 @@ void HMLandmarks::free_unneeded_memory() {
 void HMLandmarks::propagate_pm_fact(int factindex, bool newly_discovered,
                                     TriggerSet &trigger) {
     // for each action/noop for which fact is a pc
-    for (size_t i = 0; i < h_m_table_[factindex].pc_for.size(); ++i) {
-        pair<int, int> const &info = h_m_table_[factindex].pc_for[i];
-
+    for (const FactPair &info : h_m_table_[factindex].pc_for) {
         // a pc for the action itself
-        if (info.second == -1) {
+        if (info.value == -1) {
             if (newly_discovered) {
-                --unsat_pc_count_[info.first].first;
+                --unsat_pc_count_[info.var].first;
             }
             // add to queue if unsatcount at 0
-            if (unsat_pc_count_[info.first].first == 0) {
+            if (unsat_pc_count_[info.var].first == 0) {
                 // create empty set or clear prev entries -- signals do all possible noop effects
-                trigger[info.first].clear();
+                trigger[info.var].clear();
             }
         }
         // a pc for a conditional noop
         else {
             if (newly_discovered) {
-                --unsat_pc_count_[info.first].second[info.second];
+                --unsat_pc_count_[info.var].second[info.value];
             }
             // if associated action is applicable, and effect has become applicable
             // (if associated action is not applicable, all noops will be used when it first does)
-            if ((unsat_pc_count_[info.first].first == 0) &&
-                (unsat_pc_count_[info.first].second[info.second] == 0)) {
+            if ((unsat_pc_count_[info.var].first == 0) &&
+                (unsat_pc_count_[info.var].second[info.value] == 0)) {
                 // if not already triggering all noops, add this one
-                if ((trigger.find(info.first) == trigger.end()) ||
-                    (!trigger[info.first].empty())) {
-                    trigger[info.first].insert(info.second);
+                if ((trigger.find(info.var) == trigger.end()) ||
+                    (!trigger[info.var].empty())) {
+                    trigger[info.var].insert(info.value);
                 }
             }
         }

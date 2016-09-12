@@ -48,7 +48,7 @@ struct HMEntry {
 
     // first int = op index, second int conditional noop effect
     // -1 for op itself
-    std::vector<std::pair<int, int>> pc_for;
+    std::vector<FactPair> pc_for;
 
     HMEntry() {
         fluents.resize(0, FactPair(-1, -1));

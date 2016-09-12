@@ -486,44 +486,44 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     // a simple landmark.
     if (lmp->disjunctive)
         return;
-    const pair<int, int> lmk(lmp->vars[0], lmp->vals[0]);
+    const FactPair lmk(lmp->vars[0], lmp->vals[0]);
 
     // Collect in "unreached" all values of the LM variable that cannot be reached
     // before the LM value (in the relaxed plan graph)
-    int domain_size = variables[lmk.first].get_domain_size();
+    int domain_size = variables[lmk.var].get_domain_size();
     unordered_set<int> unreached(domain_size);
     for (int value = 0; value < domain_size; ++value)
-        if (lvl_var[lmk.first][value] == numeric_limits<int>::max() && lmk.second != value)
+        if (lvl_var[lmk.var][value] == numeric_limits<int>::max() && lmk.value != value)
             unreached.insert(value);
     // The set "exclude" will contain all those values of the LM variable that
     // cannot be reached before the LM value (as in "unreached") PLUS
     // one value that CAN be reached
     State initial_state = task_proxy.get_initial_state();
     for (int value = 0; value < domain_size; ++value)
-        if (unreached.find(value) == unreached.end() && lmk.second != value) {
+        if (unreached.find(value) == unreached.end() && lmk.value != value) {
             unordered_set<int> exclude(domain_size);
             exclude = unreached;
             exclude.insert(value);
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
             if (!domain_connectivity(initial_state, lmk, exclude))
-                found_simple_lm_and_order(FactPair(lmk.first, value), *lmp, EdgeType::natural);
+                found_simple_lm_and_order(FactPair(lmk.var, value), *lmp, EdgeType::natural);
         }
 
 }
 
 bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
-                                                 const pair<int, int> &landmark,
+                                                 const FactPair &landmark,
                                                  const unordered_set<int> &exclude) {
     /* Tests whether in the domain transition graph of the LM variable, there is
      a path from the initial state value to the LM value, without passing through
      any value in "exclude". If not, that means that one of the values in "exclude"
      is crucial for achieving the landmark (i.e. is on every path to the LM).
      */
-    int var = landmark.first;
-    assert(landmark.second != initial_state[var].get_value()); // no initial state landmarks
+    int var = landmark.var;
+    assert(landmark.value != initial_state[var].get_value()); // no initial state landmarks
     // The value that we want to achieve must not be excluded:
-    assert(exclude.find(landmark.second) == exclude.end());
+    assert(exclude.find(landmark.value) == exclude.end());
     // If the value in the initial state is excluded, we won't achieve our goal value:
     if (exclude.find(initial_state[var].get_value()) != exclude.end())
         return false;
@@ -533,7 +533,7 @@ bool LandmarkFactoryRpgSasp::domain_connectivity(const State &initial_state,
     open.push_back(initial_state[var].get_value());
     closed.insert(initial_state[var].get_value());
     const vector<unordered_set<int>> &successors = dtg_successors[var];
-    while (closed.find(landmark.second) == closed.end()) {
+    while (closed.find(landmark.value) == closed.end()) {
         if (open.empty()) // landmark not in closed and nothing more to insert
             return false;
         const int c = open.front();
