@@ -5,23 +5,19 @@
 #include "landmark_graph.h"
 
 namespace landmarks {
-using FactPairSet = std::vector<FactPair>;
+using FluentSet = std::vector<FactPair>;
 
 std::ostream &
-operator<<(std::ostream &os, const FactPairSet &fs);
+operator<<(std::ostream &os, const FluentSet &fs);
 
 struct FluentSetComparer {
-    bool operator()(const FactPairSet &fs1, const FactPairSet &fs2) const {
+    bool operator()(const FluentSet &fs1, const FluentSet &fs2) const {
         if (fs1.size() != fs2.size()) {
             return fs1.size() < fs2.size();
         }
         for (size_t i = 0; i < fs1.size(); ++i) {
-            if (fs1[i].var != fs2[i].var) {
-                return fs1[i].var < fs2[i].var;
-            }
-            if (fs1[i].value != fs2[i].value) {
-                return fs1[i].value < fs2[i].value;
-            }
+            if (fs1[i] != fs2[i])
+                return fs1[i] < fs2[i];
         }
         return false;
     }
@@ -40,7 +36,7 @@ struct PMOp {
 // represents a fluent in the P_m problem
 struct HMEntry {
     // propositions that belong to this set
-    FactPairSet fluents;
+    FluentSet fluents;
     // -1 -> current cost infinite
     // 0 -> present in initial state
     int level;
@@ -60,7 +56,7 @@ struct HMEntry {
     }
 };
 
-typedef std::map<FactPairSet, int, FluentSetComparer> FluentSetToIntMap;
+typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
 
 class HMLandmarks : public LandmarkFactory {
 public:
@@ -85,8 +81,8 @@ private:
                            TriggerSet &trigger);
 
     bool possible_noop_set(const VariablesProxy &variables,
-                           const FactPairSet &fs1,
-                           const FactPairSet &fs2);
+                           const FluentSet &fs1,
+                           const FluentSet &fs2);
     void build_pm_ops(const TaskProxy &task_proxy);
 // should be used together in a tuple?
     bool interesting(const VariablesProxy &variables,
@@ -100,7 +96,7 @@ private:
     void init(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
-    void print_fluentset(const VariablesProxy &variables, const FactPairSet &fs);
+    void print_fluentset(const VariablesProxy &variables, const FluentSet &fs);
     void print_pm_op(const VariablesProxy &variables, const PMOp &op);
 
     int m_;
@@ -118,38 +114,38 @@ private:
     std::vector<std::vector<bool>> interesting_;
 
     void get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
-                     FactPairSet &current,
-                     std::vector<FactPairSet> &subsets);
+                     FluentSet &current,
+                     std::vector<FluentSet> &subsets);
 
     void get_m_sets_of_set(const VariablesProxy &variables,
                            int m, int num_included,
                            int current_var_index,
-                           FactPairSet &current,
-                           std::vector<FactPairSet> &subsets,
-                           const FactPairSet &superset);
+                           FluentSet &current,
+                           std::vector<FluentSet> &subsets,
+                           const FluentSet &superset);
 
     void get_split_m_sets(const VariablesProxy &variables, int m,
                           int ss1_num_included, int ss2_num_included,
                           int ss1_var_index, int ss2_var_index,
-                          FactPairSet &current,
-                          std::vector<FactPairSet> &subsets,
-                          const FactPairSet &superset1, const FactPairSet &superset2);
+                          FluentSet &current,
+                          std::vector<FluentSet> &subsets,
+                          const FluentSet &superset1, const FluentSet &superset2);
 
-    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FactPairSet> &subsets);
+    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets);
 
-    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FactPairSet> &subsets,
-                    const FactPairSet &superset);
+    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
+                    const FluentSet &superset);
 
-    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FactPairSet> &subsets,
+    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
                     const State &state);
 
-    void get_split_m_sets(const VariablesProxy &variables, int m, std::vector<FactPairSet> &subsets,
-                          const FactPairSet &superset1, const FactPairSet &superset2);
+    void get_split_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
+                          const FluentSet &superset1, const FluentSet &superset2);
     void print_proposition(const VariablesProxy &variables, const FactPair &fluent) const;
 };
 
-extern FactPairSet get_operator_precondition(const OperatorProxy &op);
-extern FactPairSet get_operator_postcondition(int num_vars, const OperatorProxy &op);
+extern FluentSet get_operator_precondition(const OperatorProxy &op);
+extern FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op);
 }
 
 #endif
