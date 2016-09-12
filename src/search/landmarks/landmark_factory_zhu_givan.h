@@ -10,7 +10,7 @@
 #include <vector>
 
 namespace landmarks {
-using lm_set = std::unordered_set<std::pair<int, int>>;
+using lm_set = std::unordered_set<FactPair>;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactory {
 private:
