@@ -154,7 +154,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
     // Extract propositions from "exclude"
     set<int> exclude_op_ids;
     vector<FactPair> exclude_props;
-    if (exclude != nullptr) {
+    if (exclude) {
         for (OperatorProxy op : operators) {
             if (achieves_non_conditional(op, exclude))
                 exclude_op_ids.insert(op.get_id());
@@ -352,11 +352,11 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
     VariablesProxy variables = task_proxy.get_variables();
     for (size_t bi = 0; bi < node_b->vars.size(); ++bi) {
-        pair<const int, int> b(node_b->vars[bi], node_b->vals[bi]);
+        FactPair b(node_b->vars[bi], node_b->vals[bi]);
         for (size_t ai = 0; ai < node_a->vars.size(); ++ai) {
-            pair<const int, int> a(node_a->vars[ai], node_a->vals[ai]);
+            FactPair a(node_a->vars[ai], node_a->vals[ai]);
 
-            if (a.first == b.first && a.second == b.second) {
+            if (a == b) {
                 if (!node_a->conjunctive || !node_b->conjunctive)
                     return false;
                 else
@@ -365,7 +365,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
             // 1. a, b mutex
             // TODO(issue635): Use FactPair struct right away.
-            if (are_mutex(FactPair(a.first, a.second), FactPair(b.first, b.second)))
+            if (are_mutex(a, b))
                 return true;
 
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
@@ -397,7 +397,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                     FactProxy effect_fact = effect.get_fact();
                     int var_id = effect_fact.get_variable().get_id();
                     int value = effect_fact.get_value();
-                    if (effect.get_conditions().empty() && var_id != a.first) {
+                    if (effect.get_conditions().empty() && var_id != a.var) {
                         next_eff.emplace(var_id, value);
                     } else if (trivial_conditioned_effects_found
                                && trivially_conditioned_effects.find(make_pair(
@@ -420,9 +420,11 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 init = false;
             }
             // Test whether one of the shared effects is inconsistent with b
-            for (const auto &eff : shared_eff)
-                if (eff != a && eff != b && are_mutex(FactPair(eff.first, eff.second), FactPair(b.first, b.second)))
+            for (const pair<int, int> &eff : shared_eff) {
+                FactPair effect_fact(eff.first, eff.second);
+                if (effect_fact != a && effect_fact != b && are_mutex(effect_fact, b))
                     return true;
+            }
         }
 
         /* // Experimentally commenting this out -- see issue202.
@@ -794,7 +796,7 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
 
         for (size_t i = 0; i < lmn.vars.size(); ++i) {
             const vector<int> &ops = lm_graph->get_operators_including_eff(
-                make_pair(lmn.vars[i], lmn.vals[i]));
+                FactPair(lmn.vars[i], lmn.vals[i]));
             lmn.possible_achievers.insert(ops.begin(), ops.end());
 
             if (g_axiom_layers[lmn.vars[i]] != -1)

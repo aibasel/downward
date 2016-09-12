@@ -145,9 +145,9 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
     for (size_t i = 0; i < bp->vars.size(); ++i) {
-        pair<int, int> b(bp->vars[i], bp->vals[i]);
         // ...look at all achieving operators
-        const vector<int> &ops = lm_graph->get_operators_including_eff(b);
+        const vector<int> &ops = lm_graph->get_operators_including_eff(
+            FactPair(bp->vars[i], bp->vals[i]));
         for (int op_id : ops) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
             // and calculate the minimum cost of those that can make
@@ -170,7 +170,7 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
     return min_cost;
 }
 
-void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
+void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
                                                        LandmarkNode &b, EdgeType t) {
     LandmarkNode *new_lm;
     if (lm_graph->simple_landmark_exists(a)) {
@@ -178,7 +178,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
         edge_add(*new_lm, b, t);
         return;
     }
-    set<pair<int, int>> a_set;
+    set<FactPair> a_set;
     a_set.insert(a);
     if (lm_graph->disj_landmark_exists(a_set)) {
         // Simple landmarks are more informative than disjunctive ones,
@@ -205,8 +205,8 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
 
         node.vars.clear();
         node.vals.clear();
-        node.vars.push_back(a.first);
-        node.vals.push_back(a.second);
+        node.vars.push_back(a.var);
+        node.vals.push_back(a.value);
         // Clean orders: let disj. LM {D1,...,Dn} be ordered before L. We
         // cannot infer that any one of D1,...Dn by itself is ordered before L
         for (const auto &child : node.children) {
@@ -230,13 +230,14 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const pair<int, int> a,
 }
 
 void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
-    const TaskProxy &task_proxy, const set<pair<int, int>> a,
+    const TaskProxy &task_proxy, const set<FactPair> &a,
     LandmarkNode &b, EdgeType t) {
     bool simple_lm_exists = false;
-    pair<int, int> lm_prop;
+    // TODO: assign with FactPair::no_fact
+    FactPair lm_prop(-1, -1);
     State initial_state = task_proxy.get_initial_state();
-    for (const pair<int, int> &lm : a) {
-        if (initial_state[lm.first].get_value() == lm.second) {
+    for (const FactPair &lm : a) {
+        if (initial_state[lm.var].get_value() == lm.value) {
             //cout << endl << "not adding LM that's true in initial state: "
             //<< g_variable_name[it->first] << " -> " << it->second << endl;
             return;
@@ -275,8 +276,8 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
     for (size_t i = 0; i < bp->vars.size(); ++i) {
-        pair<int, int> b(bp->vars[i], bp->vals[i]);
-        const vector<int> &op_ids = lm_graph->get_operators_including_eff(b);
+        const vector<int> &op_ids = lm_graph->get_operators_including_eff(
+            FactPair(bp->vars[i], bp->vals[i]));
 
         for (int op_id : op_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
@@ -363,7 +364,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(const TaskProxy &task_pro
 }
 
 void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
-    const TaskProxy &task_proxy, vector<set<pair<int, int>>> &disjunctive_pre,
+    const TaskProxy &task_proxy, vector<set<FactPair>> &disjunctive_pre,
     vector<vector<int>> &lvl_var, LandmarkNode *bp) {
     /* Compute disjunctive preconditions from all operators than can potentially
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph).
@@ -373,13 +374,13 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
 
     vector<int> ops;
     for (size_t i = 0; i < bp->vars.size(); ++i) {
-        pair<int, int> b = make_pair(bp->vars[i], bp->vals[i]);
-        const vector<int> &tmp_ops = lm_graph->get_operators_including_eff(b);
+        const vector<int> &tmp_ops = lm_graph->get_operators_including_eff(
+            FactPair(bp->vars[i], bp->vals[i]));
         for (size_t j = 0; j < tmp_ops.size(); ++j)
             ops.push_back(tmp_ops[j]);
     }
     int num_ops = 0;
-    unordered_map<int, vector<pair<int, int>>> preconditions;   // maps from
+    unordered_map<int, vector<FactPair>> preconditions;   // maps from
     // pddl_proposition_indeces to props
     unordered_map<int, set<int>> used_operators;  // tells for each
     // proposition which operators use it
@@ -399,8 +400,9 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                if (!lm_graph->simple_landmark_exists(pre)) {
-                    preconditions[disj_class].push_back(pre);
+                FactPair pre_fact(pre.first, pre.second);
+                if (!lm_graph->simple_landmark_exists(pre_fact)) {
+                    preconditions[disj_class].push_back(pre_fact);
                     used_operators[disj_class].insert(i);
                 }
             }
@@ -408,7 +410,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     }
     for (const auto &pre : preconditions) {
         if (static_cast<int>(used_operators[pre.first].size()) == num_ops) {
-            set<pair<int, int>> pre_set;  // the set gets rid of duplicate predicates
+            set<FactPair> pre_set;  // the set gets rid of duplicate predicates
             pre_set.insert(pre.second.begin(), pre.second.end());
             if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
                 disjunctive_pre.push_back(pre_set);
@@ -424,8 +426,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(const TaskProxy &task_proxy,
     build_disjunction_classes(task_proxy);
 
     for (FactProxy goal : task_proxy.get_goals()) {
-        LandmarkNode &lmn = lm_graph->landmark_add_simple(
-            make_pair(goal.get_variable().get_id(), goal.get_value()));
+        LandmarkNode &lmn = lm_graph->landmark_add_simple(goal.get_pair());
         lmn.in_goal = true;
         open_landmarks.push_back(&lmn);
     }
@@ -451,7 +452,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(const TaskProxy &task_proxy,
             compute_shared_preconditions(task_proxy, shared_pre, lvl_var, bp);
             // All such shared preconditions are landmarks, and greedy necessary predecessors of bp.
             for (const auto &pre : shared_pre) {
-                found_simple_lm_and_order(pre, *bp, EdgeType::greedy_necessary);
+                found_simple_lm_and_order(FactPair(pre.first, pre.second), *bp, EdgeType::greedy_necessary);
             }
             // Extract additional orders from relaxed planning graph and DTG.
             approximate_lookahead_orders(task_proxy, lvl_var, bp);
@@ -459,7 +460,7 @@ void LandmarkFactoryRpgSasp::generate_landmarks(const TaskProxy &task_proxy,
             bp->min_cost = min_cost_for_landmark(task_proxy, bp, lvl_var);
 
             // Process achieving operators again to find disj. LMs
-            vector<set<pair<int, int>>> disjunctive_pre;
+            vector<set<FactPair>> disjunctive_pre;
             compute_disjunctive_preconditions(task_proxy, disjunctive_pre, lvl_var, bp);
             for (const auto &preconditions : disjunctive_pre)
                 if (preconditions.size() < 5) { // We don't want disj. LMs to get too big
@@ -506,7 +507,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
             // If that value is crucial for achieving the LM from the initial state,
             // we have found a new landmark.
             if (!domain_connectivity(initial_state, lmk, exclude))
-                found_simple_lm_and_order(make_pair(lmk.first, value), *lmp, EdgeType::natural);
+                found_simple_lm_and_order(FactPair(lmk.first, value), *lmp, EdgeType::natural);
         }
 
 }
@@ -558,19 +559,19 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
         for (int value = 0; value < var.get_domain_size(); ++value) {
             if (lvl_var[var.get_id()][value] != numeric_limits<int>::max())
                 continue;
+            const FactPair fact(var.get_id(), value);
 
             bool insert = true;
             for (size_t i = 0; i < lmp->vars.size() && insert; ++i) {
-                const pair<int, int> lm = make_pair(lmp->vars[i], lmp->vals[i]);
+                const FactPair lm(lmp->vars[i], lmp->vals[i]);
 
-                if (make_pair(var.get_id(), value) != lm) {
+                if (fact != lm) {
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
-                    const vector<int> &reach_fact = lm_graph->get_operators_including_eff(
-                        make_pair(var.get_id(), value));
-                    const vector<int> &reach_lm = lm_graph->get_operators_including_eff(
-                        lm);
-
+                    const vector<int> &reach_fact =
+                        lm_graph->get_operators_including_eff(fact);
+                    const vector<int> &reach_lm =
+                        lm_graph->get_operators_including_eff(lm);
                     for (size_t j = 0; j < reach_fact.size() && intersection_empty; ++j)
                         for (size_t k = 0; k < reach_lm.size()
                              && intersection_empty; ++k)
@@ -583,7 +584,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
                     insert = false;
             }
             if (insert)
-                lmp->forward_orders.emplace(var.get_id(), value);
+                lmp->forward_orders.insert(fact);
         }
 
 }

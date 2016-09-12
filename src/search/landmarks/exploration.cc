@@ -175,7 +175,7 @@ void Exploration::setup_exploration_queue(const State &state,
     }
 
     // Deal with current state.
-    for (const FactProxy &fact : state) {
+    for (FactProxy fact : state) {
         ExProposition *init_prop = &propositions[fact.get_variable().get_id()][fact.get_value()];
         enqueue_if_necessary(init_prop, 0, 0, 0, use_h_max);
     }
@@ -268,7 +268,7 @@ void Exploration::enqueue_if_necessary(ExProposition *prop, int cost, int depth,
 
 int Exploration::compute_hsp_add_heuristic() {
     int total_cost = 0;
-    for (ExProposition *goal : goal_propositions) {
+    for (const ExProposition *goal : goal_propositions) {
         int prop_cost = goal->h_add_cost;
         if (prop_cost == -1)
             return DEAD_END;
@@ -442,7 +442,7 @@ bool Exploration::plan_for_disj(vector<FactPair> &landmarks,
                 min_cost = prop_cost;
             }
         }
-        assert(target != nullptr);
+        assert(target);
         assert(exported_op_ids.empty());
         collect_ha(target, relaxed_plan, state);
     } else {

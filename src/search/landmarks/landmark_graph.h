@@ -54,7 +54,7 @@ public:
     landmark_status status;
     bool is_derived;
 
-    std::unordered_set<std::pair<int, int>> forward_orders;
+    std::unordered_set<FactPair> forward_orders;
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
@@ -166,18 +166,18 @@ public:
     LandmarkGraph(const TaskProxy &task_proxy);
     ~LandmarkGraph() = default;
 
-    inline LandmarkNode &get_simple_lm_node(const std::pair<int, int> &a) const {
+    inline LandmarkNode &get_simple_lm_node(const FactPair &a) const {
         assert(simple_landmark_exists(a));
         return *(simple_lms_to_nodes.find(a)->second);
     }
-    inline LandmarkNode &get_disj_lm_node(const std::pair<int, int> &a) const {
+    inline LandmarkNode &get_disj_lm_node(const FactPair &a) const {
         // Note: this only works because every proposition appears in only one disj. LM
         assert(!simple_landmark_exists(a));
         assert(disj_lms_to_nodes.find(a) != disj_lms_to_nodes.end());
         return *(disj_lms_to_nodes.find(a)->second);
     }
-    inline const std::vector<int> &get_operators_including_eff(const std::pair<int, int> &eff) const {
-        return operators_eff_lookup[eff.first][eff.second];
+    inline const std::vector<int> &get_operators_including_eff(const FactPair &eff) const {
+        return operators_eff_lookup[eff.var][eff.value];
     }
 
     int number_of_disj_landmarks() const {
@@ -188,16 +188,16 @@ public:
     }
     int number_of_edges() const;
 
-    bool simple_landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
-    bool disj_landmark_exists(const std::set<std::pair<int, int>> &lm) const;  // not needed by HMLandmark
-    bool landmark_exists(const std::pair<int, int> &lm) const; // not needed by HMLandmark
-    bool exact_same_disj_landmark_exists(const std::set<std::pair<int, int>> &lm) const;
+    bool simple_landmark_exists(const FactPair &lm) const; // not needed by HMLandmark
+    bool disj_landmark_exists(const std::set<FactPair> &lm) const;  // not needed by HMLandmark
+    bool landmark_exists(const FactPair &lm) const; // not needed by HMLandmark
+    bool exact_same_disj_landmark_exists(const std::set<FactPair> &lm) const;
 
-    LandmarkNode &landmark_add_simple(const std::pair<int, int> &lm);
-    LandmarkNode &landmark_add_disjunctive(const std::set<std::pair<int, int>> &lm);
-    LandmarkNode &landmark_add_conjunctive(const std::set<std::pair<int, int>> &lm);
+    LandmarkNode &landmark_add_simple(const FactPair &lm);
+    LandmarkNode &landmark_add_disjunctive(const std::set<FactPair> &lm);
+    LandmarkNode &landmark_add_conjunctive(const std::set<FactPair> &lm);
     void rm_landmark_node(LandmarkNode *node);
-    LandmarkNode &make_disj_node_simple(std::pair<int, int> lm); // only needed by LandmarkFactorySasp
+    LandmarkNode &make_disj_node_simple(const FactPair &lm); // only needed by LandmarkFactorySasp
     void set_landmark_ids();
     void set_landmark_cost(int cost) {
         landmarks_cost = cost;
@@ -211,8 +211,8 @@ private:
     int reached_cost;
     int needed_cost;
     int landmarks_cost;
-    std::unordered_map<std::pair<int, int>, LandmarkNode *> simple_lms_to_nodes;
-    std::unordered_map<std::pair<int, int>, LandmarkNode *> disj_lms_to_nodes;
+    std::unordered_map<FactPair, LandmarkNode *> simple_lms_to_nodes;
+    std::unordered_map<FactPair, LandmarkNode *> disj_lms_to_nodes;
     std::set<LandmarkNode *> nodes;
     std::vector<LandmarkNode *> ordered_nodes;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;

@@ -193,8 +193,9 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
                     ha_disj.push_back(op.get_id());
-                } else
+                } else {
                     ha_simple.push_back(op.get_id());
+                }
             }
         }
     }

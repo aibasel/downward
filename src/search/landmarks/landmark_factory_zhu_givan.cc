@@ -53,7 +53,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     State initial_state = task_proxy.get_initial_state();
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
-        pair<int, int> goal_lm(goal.get_variable().get_id(), goal.get_value());
+        FactPair goal_lm(goal.get_variable().get_id(), goal.get_value());
         LandmarkNode *lmp;
         if (lm_graph->simple_landmark_exists(goal_lm)) {
             lmp = &lm_graph->get_simple_lm_node(goal_lm);
@@ -64,11 +64,11 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
-            last_prop_layer[goal_lm.first][goal_lm.second];
+            last_prop_layer[goal_lm.var][goal_lm.value];
 
         assert(goal_node.reached());
 
-        for (const pair<int, int> &lm : goal_node.labels) {
+        for (const FactPair &lm : goal_node.labels) {
             if (lm == goal_lm) // ignore label on itself
                 continue;
             LandmarkNode *node;
@@ -78,7 +78,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
 
                 // if landmark is not in the initial state,
                 // relaxed_task_solvable() should be false
-                assert(initial_state[lm.first].get_value() == lm.second ||
+                assert(initial_state[lm.var].get_value() == lm.value ||
                        !relaxed_task_solvable(task_proxy, exploration, true, node));
             } else {
                 node = &lm_graph->get_simple_lm_node(lm);
@@ -130,10 +130,10 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
                                                                      current_prop_layer, next_prop_layer);
                 if (!changed.empty()) {
                     changes = true;
-                    for (const pair<int, int> &lm : changed)
+                    for (const FactPair &lm : changed)
                         next_triggered.insert(
-                            triggers[lm.first][lm.second].begin(),
-                            triggers[lm.first][lm.second].end());
+                            triggers[lm.var][lm.value].begin(),
+                            triggers[lm.var][lm.value].end());
                 }
             }
         }
@@ -207,7 +207,7 @@ lm_set LandmarkFactoryZhuGivan::union_of_condition_labels(
 }
 
 static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
-                              const pair<int, int> &prop) {
+                              const FactPair &prop) {
     lm_set old_labels = labels;
 
     if (!labels.empty()) {
@@ -254,7 +254,7 @@ lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
                     effect.get_conditions(), current));
 
             if (_propagate_labels(next[var_id][value].labels,
-                                  precond_label_union_with_condeff, make_pair(var_id, value)))
+                                  precond_label_union_with_condeff, FactPair(var_id, value)))
                 result.emplace(var_id, value);
         }
     }
@@ -297,8 +297,8 @@ void LandmarkFactoryZhuGivan::add_operator_to_triggers(const TaskProxy &task_pro
         operators_without_preconditions.push_back(op_id);
 
     // Add operator to triggers vector.
-    for (const pair<int, int> lm : possible_triggers)
-        triggers[lm.first][lm.second].push_back(op_id);
+    for (const FactPair &lm : possible_triggers)
+        triggers[lm.var][lm.value].push_back(op_id);
 }
 
 bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {

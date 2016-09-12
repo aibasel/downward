@@ -33,7 +33,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
                                       LandmarkNode *bp);
     void compute_disjunctive_preconditions(
         const TaskProxy &task_proxy,
-        std::vector<std::set<std::pair<int, int>>> &disjunctive_pre,
+        std::vector<std::set<FactPair>> &disjunctive_pre,
         std::vector<std::vector<int>> &lvl_var, LandmarkNode *bp);
 
     int min_cost_for_landmark(const TaskProxy &task_proxy,
@@ -41,10 +41,10 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
                               std::vector<std::vector<int>> &lvl_var);
     virtual void generate_landmarks(const TaskProxy &task_proxy,
                                     Exploration &exploration) override;
-    void found_simple_lm_and_order(const std::pair<int, int> a, LandmarkNode &b,
+    void found_simple_lm_and_order(const FactPair &a, LandmarkNode &b,
                                    EdgeType t);
     void found_disj_lm_and_order(const TaskProxy &task_proxy,
-                                 const std::set<std::pair<int, int>> a,
+                                 const std::set<FactPair> &a,
                                  LandmarkNode &b,
                                  EdgeType t);
     void approximate_lookahead_orders(const TaskProxy &task_proxy,
