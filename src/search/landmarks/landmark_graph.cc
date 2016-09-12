@@ -46,7 +46,7 @@ LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact, or 0 if no such
      landmark exists.
      */
-    LandmarkNode *node_p = 0;
+    LandmarkNode *node_p = nullptr;
     auto it = simple_lms_to_nodes.find(fact);
     if (it != simple_lms_to_nodes.end())
         node_p = it->second;

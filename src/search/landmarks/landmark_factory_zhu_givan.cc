@@ -53,7 +53,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     State initial_state = task_proxy.get_initial_state();
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
-        FactPair goal_lm(goal.get_variable().get_id(), goal.get_value());
+        FactPair goal_lm = goal.get_pair();
         LandmarkNode *lmp;
         if (lm_graph->simple_landmark_exists(goal_lm)) {
             lmp = &lm_graph->get_simple_lm_node(goal_lm);

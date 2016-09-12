@@ -400,7 +400,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                FactPair pre_fact(pre.first, pre.second);
+                const FactPair pre_fact(pre.first, pre.second);
                 if (!lm_graph->simple_landmark_exists(pre_fact)) {
                     preconditions[disj_class].push_back(pre_fact);
                     used_operators[disj_class].insert(i);

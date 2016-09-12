@@ -357,7 +357,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
             // We subtract 1 to keep semantics for landmark code:
             // if op can achieve prop at time step i+1,
             // its index (for prop) is i, where the initial state is time step 0.
-            FactPair effect = op.effect->fact;
+            const FactPair &effect = op.effect->fact;
             assert(lvl_op[op.op_id].find(effect) != lvl_op[op.op_id].end());
             int new_lvl = op.h_max_cost - 1;
             // If we have found a cheaper achieving operator, adjust h_max cost of proposition.

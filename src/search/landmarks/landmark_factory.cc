@@ -222,8 +222,9 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
     return false;
 }
 
-bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables, const EffectsProxy &effects, set<
-                                                pair<int, int>> &eff) const {
+bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables,
+                                            const EffectsProxy &effects,
+                                            set<FactPair> &eff) const {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
      a set of conditions of which one will always be true. This is e.g. the case in
@@ -241,7 +242,7 @@ bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables, con
     // - a mapping from cond. effect propositions to all the conditions that they appear with
     set<int> effect_vars;
     set<int> nogood_effect_vars;
-    map<int, pair<int, vector<pair<int, int>>>> effect_conditions_by_variable;
+    map<int, pair<int, vector<FactPair>>> effect_conditions_by_variable;
     for (EffectProxy effect : effects) {
         EffectConditionsProxy effect_conditions = effect.get_conditions();
         FactProxy effect_fact = effect.get_fact();
@@ -269,14 +270,14 @@ bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables, con
             && effect_conditions_by_variable.find(var_id)->second.first == value) {
             // We have seen this effect before, adding conditions
             for (FactProxy effect_condition : effect_conditions) {
-                vector<pair<int, int>> &vec = effect_conditions_by_variable.find(var_id)->second.second;
+                vector<FactPair> &vec = effect_conditions_by_variable.find(var_id)->second.second;
                 vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
             }
         } else {
             // We have not seen this effect before, making new effect entry
-            vector<pair<int, int>> &vec = effect_conditions_by_variable.emplace(
+            vector<FactPair> &vec = effect_conditions_by_variable.emplace(
                 var_id, make_pair(
-                    value, vector<pair<int, int>> ())).first->second.second;
+                    value, vector<FactPair> ())).first->second.second;
             for (FactProxy effect_condition : effect_conditions) {
                 vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
             }
@@ -291,18 +292,17 @@ bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables, con
         // ...go through all the conditions that the effect has, and map condition
         // variables to the set of values they take on (in unique_conds)
         map<int, set<int>> unique_conds;
-        for (const pair<int, int> &cond : effect_conditions.second.second) {
-            if (unique_conds.find(cond.first) != unique_conds.end()) {
-                unique_conds.find(cond.first)->second.insert(
-                    cond.second);
+        for (const FactPair &cond : effect_conditions.second.second) {
+            if (unique_conds.find(cond.var) != unique_conds.end()) {
+                unique_conds.find(cond.var)->second.insert(
+                    cond.value);
             } else {
-                set<int> &the_set = unique_conds.emplace(cond.first, set<int>()).first->second;
-                the_set.insert(cond.second);
+                set<int> &the_set = unique_conds.emplace(cond.var, set<int>()).first->second;
+                the_set.insert(cond.value);
             }
         }
         // Check for each condition variable whether the number of values it takes on is
         // equal to the domain of that variable...
-        pair<int, int> effect(effect_conditions.first, effect_conditions.second.first);
         bool is_always_reached = true;
         for (auto &unique_cond : unique_conds) {
             bool is_surely_reached_by_var = false;
@@ -330,7 +330,8 @@ bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables, con
                 is_always_reached = false;
         }
         if (is_always_reached)
-            eff.insert(effect);
+            eff.insert(FactPair(
+                           effect_conditions.first, effect_conditions.second.first));
     }
     return eff.empty();
 }
@@ -352,9 +353,9 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
     VariablesProxy variables = task_proxy.get_variables();
     for (size_t bi = 0; bi < node_b->vars.size(); ++bi) {
-        FactPair b(node_b->vars[bi], node_b->vals[bi]);
+        const FactPair b(node_b->vars[bi], node_b->vals[bi]);
         for (size_t ai = 0; ai < node_a->vars.size(); ++ai) {
-            FactPair a(node_a->vars[ai], node_a->vals[ai]);
+            const FactPair a(node_a->vars[ai], node_a->vals[ai]);
 
             if (a == b) {
                 if (!node_a->conjunctive || !node_b->conjunctive)
@@ -364,7 +365,6 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             }
 
             // 1. a, b mutex
-            // TODO(issue635): Use FactPair struct right away.
             if (are_mutex(a, b))
                 return true;
 
@@ -389,21 +389,19 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
                 EffectsProxy effects = get_operator_or_axiom(task_proxy, op_id).get_effects();
-                set<pair<int, int>> trivially_conditioned_effects;
+                set<FactPair> trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(variables, effects,
                                                                                trivially_conditioned_effects);
                 unordered_map<int, int> next_eff;
                 for (EffectProxy effect : effects) {
-                    FactProxy effect_fact = effect.get_fact();
-                    int var_id = effect_fact.get_variable().get_id();
-                    int value = effect_fact.get_value();
-                    if (effect.get_conditions().empty() && var_id != a.var) {
-                        next_eff.emplace(var_id, value);
-                    } else if (trivial_conditioned_effects_found
-                               && trivially_conditioned_effects.find(make_pair(
-                                                                         var_id, value))
+                    FactPair effect_fact = effect.get_fact().get_pair();
+                    if (effect.get_conditions().empty() &&
+                        effect_fact.var != a.var) {
+                        next_eff.emplace(effect_fact.var, effect_fact.value);
+                    } else if (trivial_conditioned_effects_found &&
+                               trivially_conditioned_effects.find(effect_fact)
                                != trivially_conditioned_effects.end())
-                        next_eff.emplace(var_id, value);
+                        next_eff.emplace(effect_fact.var, effect_fact.value);
                 }
                 // Intersect effects of this operator with those of previous operators
                 if (init)
@@ -421,7 +419,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             }
             // Test whether one of the shared effects is inconsistent with b
             for (const pair<int, int> &eff : shared_eff) {
-                FactPair effect_fact(eff.first, eff.second);
+                const FactPair effect_fact(eff.first, eff.second);
                 if (effect_fact != a && effect_fact != b && are_mutex(effect_fact, b))
                     return true;
             }
@@ -580,8 +578,8 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     // If edge does not exist (or has just been removed), insert
     if (from.children.find(&to) == from.children.end()) {
         assert(to.parents.find(&from) == to.parents.end());
-        from.children.insert(make_pair(&to, type));
-        to.parents.insert(make_pair(&from, type));
+        from.children.emplace(&to, type);
+        to.parents.emplace(&from, type);
         //cout << "added parent with address " << &from << endl;
     }
     assert(from.children.find(&to) != from.children.end());
