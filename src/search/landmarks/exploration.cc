@@ -383,15 +383,15 @@ int Exploration::compute_heuristic(const GlobalState &global_state) {
 }
 
 
-void Exploration::collect_ha(ExProposition *goal,
-                             RelaxedPlan &relaxed_plan, const State &state) {
+void Exploration::collect_helpful_actions(
+    ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state) {
     // This is the same as collect_relaxed_plan, except that preferred operators
     // are saved in exported_ops rather than preferred_operators
 
     ExUnaryOperator *unary_op = goal->reached_by;
     if (unary_op) { // We have not yet chained back to a start node.
         for (ExProposition *pre : unary_op->precondition)
-            collect_ha(pre, relaxed_plan, state);
+            collect_helpful_actions(pre, relaxed_plan, state);
         int op_id = unary_op->op_id;
         OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
         bool added_to_relaxed_plan = false;
@@ -437,7 +437,7 @@ bool Exploration::plan_for_disj(
         }
         assert(target);
         assert(exported_op_ids.empty());
-        collect_ha(target, relaxed_plan, state);
+        collect_helpful_actions(target, relaxed_plan, state);
     } else {
         // search for original goals of the task
         if (heuristic_recomputation_needed) {
@@ -446,7 +446,7 @@ bool Exploration::plan_for_disj(
         for (ExProposition *prop : goal_propositions) {
             if (prop->h_add_cost == -1)
                 return false;  // dead end
-            collect_ha(prop, relaxed_plan, state);
+            collect_helpful_actions(prop, relaxed_plan, state);
         }
     }
     return true;
