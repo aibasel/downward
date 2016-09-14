@@ -106,7 +106,7 @@ class Exploration : public Heuristic {
         setup_exploration_queue(state, excluded_props, excluded_op_ids, h_max);
     }
     void relaxed_exploration(bool use_h_max, bool level_out);
-    void prepare_heuristic_computation(const State &state, bool h_max);
+    void prepare_heuristic_computation(const State &state);
     void collect_relaxed_plan(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
 
     int compute_hsp_add_heuristic();
