@@ -220,8 +220,8 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
     return true;
 }
 
-bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
-                                                     const LandmarkSet &reached, LandmarkNode &lm) const {
+bool LandmarkCountHeuristic::landmark_is_interesting(
+    const State &state, const LandmarkSet &reached, LandmarkNode &lm) const {
     /* A landmark is interesting if it hasn't been reached before and
      its parents have all been reached, or if all landmarks have been
      reached before, the LM is a goal, and it's not true at moment */
@@ -233,7 +233,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(const State &s,
         else
             return !check_node_orders_disobeyed(lm, reached);
     }
-    return lm.is_goal() && !lm.is_true_in_state(s);
+    return lm.is_goal() && !lm.is_true_in_state(state);
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const GlobalState &initial_state) {

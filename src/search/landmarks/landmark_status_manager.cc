@@ -65,7 +65,6 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
     vector<bool> &parent_reached = get_reached_landmarks(parent_global_state);
     vector<bool> &reached = get_reached_landmarks(global_state);
 
-
     if (&parent_reached == &reached) {
         assert(global_state.get_id() == parent_global_state.get_id());
         // This can happen, e.g., in Satellite-01.
@@ -94,17 +93,9 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
         } else if (!reached[id]) {
             LandmarkNode *node = lm_graph.get_lm_for_index(id);
             if (node->is_true_in_state(global_state)) {
-                // cout << "New LM reached: id " << id << " ";
-                // lm_graph.dump_node(node);
                 if (landmark_is_leaf(*node, reached)) {
-                    //      cout << "inserting new LM into reached. (2)" << endl;
                     reached[id] = true;
                 }
-                /*
-                   else {
-                   cout << "non-leaf, not inserting." << endl;
-                   }
-                 */
             }
         }
     }

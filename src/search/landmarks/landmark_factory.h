@@ -82,7 +82,8 @@ private:
     bool effect_always_happens(const VariablesProxy &variables,
                                const EffectsProxy &effects,
                                std::set<FactPair> &eff) const;
-    void approximate_reasonable_orders(const TaskProxy &task_proxy, bool obedient_orders);
+    void approximate_reasonable_orders(
+        const TaskProxy &task_proxy, bool obedient_orders);
     void mk_acyclic_graph();
     int loop_acyclic_graph(LandmarkNode &lmn,
                            std::unordered_set<LandmarkNode *> &acyclic_node_set);
