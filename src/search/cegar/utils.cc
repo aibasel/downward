@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include "../operator_cost.h"
 #include "../option_parser.h"
 #include "../task_proxy.h"
 #include "../task_tools.h"

@@ -6,6 +6,7 @@
 #include "validation.h"
 
 #include "../causal_graph.h"
+#include "../operator_cost.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../sampling.h"
