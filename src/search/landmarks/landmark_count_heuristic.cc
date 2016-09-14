@@ -11,6 +11,8 @@
 
 #include "../lp/lp_solver.h"
 
+#include "../task_tools.h"
+
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -29,7 +31,11 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
       ff_search_disjunctive_lms(false),
       conditional_effects_supported(
           opts.get<LandmarkFactory *>("lm_factory")->supports_conditional_effects()),
-      admissible(opts.get<bool>("admissible")) {
+      admissible(opts.get<bool>("admissible")),
+      dead_ends_reliable(
+          admissible ||
+          (!has_axioms(task_proxy) &&
+          (!has_conditional_effects(task_proxy) || conditional_effects_supported))) {
     cout << "Initializing landmarks count heuristic..." << endl;
     LandmarkFactory *lm_graph_factory = opts.get<LandmarkFactory *>("lm_factory");
     lgraph = lm_graph_factory->compute_lm_graph(task_proxy, exploration);
@@ -40,10 +46,10 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         if (reasonable_orders) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::INPUT_ERROR);
-        } else if (has_axioms()) {
+        } else if (has_axioms(task_proxy)) {
             cerr << "cost partitioning does not support axioms" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
-        } else if (has_conditional_effects() && !conditional_effects_supported) {
+        } else if (has_conditional_effects(task_proxy) && !conditional_effects_supported) {
             cerr << "conditional effects not supported by the landmark generation method" << endl;
             utils::exit_with(ExitCode::UNSUPPORTED);
         }
@@ -255,11 +261,7 @@ bool LandmarkCountHeuristic::notify_state_transition(
 }
 
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
-    if (admissible) {
-        return true;
-    }
-    return !has_axioms() &&
-           (!has_conditional_effects() || conditional_effects_supported);
+    return dead_ends_reliable;
 }
 
 void LandmarkCountHeuristic::convert_lms(LandmarkSet &lms_set,
