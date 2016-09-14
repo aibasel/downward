@@ -2,7 +2,6 @@
 #define OPERATOR_COST_H
 
 class GlobalOperator;
-class OperatorProxy;
 
 namespace options {
 class OptionParser;
