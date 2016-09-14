@@ -33,7 +33,7 @@ class LandmarkCountHeuristic : public Heuristic {
     void add_node_children(LandmarkNode &node, const LandmarkSet &reached) const;
 
     bool landmark_is_interesting(
-        const State &s, const LandmarkSet &reached, LandmarkNode &lm) const;
+        const State &state, const LandmarkSet &reached, LandmarkNode &lm) const;
     bool generate_helpful_actions(
         const State &state, const LandmarkSet &reached);
     void set_exploration_goals(const GlobalState &global_state);

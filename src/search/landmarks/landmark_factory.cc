@@ -444,14 +444,20 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
     return false;
 }
 
-void LandmarkFactory::approximate_reasonable_orders(const TaskProxy &task_proxy, bool obedient_orders) {
-    /* Approximate reasonable and obedient reasonable orders according to Hoffmann et al. If flag
-    "obedient_orders" is true, we calculate obedient reasonable orders, otherwise reasonable orders.
+void LandmarkFactory::approximate_reasonable_orders(
+    const TaskProxy &task_proxy, bool obedient_orders) {
+    /*
+      Approximate reasonable and obedient reasonable orders according
+      to Hoffmann et al. If flag "obedient_orders" is true, we
+      calculate obedient reasonable orders, otherwise reasonable
+      orders.
 
-    If node_p is in goal, then any node2_p which interferes with node_p can be reasonably ordered
-    before node_p. Otherwise, if node_p is greedy necessary predecessor of node2, and there is another
-    predecessor "parent" of node2, then parent and all predecessors of parent can be ordered reasonably
-    before node_p if they interfere with node_p.
+      If node_p is in goal, then any node2_p which interferes with
+      node_p can be reasonably ordered before node_p. Otherwise, if
+      node_p is greedy necessary predecessor of node2, and there is
+      another predecessor "parent" of node2, then parent and all
+      predecessors of parent can be ordered reasonably before node_p if
+      they interfere with node_p.
     */
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
