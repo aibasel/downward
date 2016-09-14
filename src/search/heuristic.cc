@@ -21,8 +21,7 @@ Heuristic::Heuristic(const Options &opts)
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_h_values(opts.get<bool>("cache_estimates")),
       task(get_task_from_options(opts)),
-      task_proxy(*task),
-      cost_type(OperatorCost(opts.get_enum("cost_type"))) {
+      task_proxy(*task) {
 }
 
 Heuristic::~Heuristic() {
