@@ -2,14 +2,14 @@
 #define LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
 
 #include "exploration.h"
-#include "landmark_cost_assignment.h"
 #include "landmark_graph.h"
-#include "landmark_status_manager.h"
 
-#include "../global_state.h"
 #include "../heuristic.h"
 
 namespace landmarks {
+class LandmarkCostAssignment;
+class LandmarkStatusManager;
+
 class LandmarkCountHeuristic : public Heuristic {
     friend class LamaFFSynergy;
     std::shared_ptr<LandmarkGraph> lgraph;
@@ -43,6 +43,7 @@ protected:
     virtual int compute_heuristic(const GlobalState &state) override;
 public:
     explicit LandmarkCountHeuristic(const options::Options &opts);
+    ~LandmarkCountHeuristic();
 
     virtual void notify_initial_state(const GlobalState &initial_state) override;
     virtual bool notify_state_transition(const GlobalState &parent_state,
