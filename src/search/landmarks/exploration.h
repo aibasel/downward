@@ -122,6 +122,8 @@ class Exploration : public Heuristic {
 protected:
     virtual int compute_heuristic(const GlobalState &state) override;
 public:
+    explicit Exploration(const options::Options &opts);
+
     void set_additional_goals(const std::vector<FactPair> &goals);
     void set_recompute_heuristic() {heuristic_recomputation_needed = true; }
     void compute_reachability_with_excludes(std::vector<std::vector<int>> &lvl_var,
@@ -130,14 +132,12 @@ public:
                                             const std::vector<FactPair> &excluded_props,
                                             const std::set<int> &excluded_op_ids,
                                             bool compute_lvl_ops);
-    std::vector<int> exported_op_ids; // only needed for landmarks count heuristic ha
+    // Only needed for computing helpful actions for landmark count heuristic.
+    std::vector<int> exported_op_ids;
 
     // Returns true iff disj_goal is relaxed reachable. As a side effect, marks preferred operators
     // via "exported_ops". (This is the real reason why you might want to call this.)
     bool plan_for_disj(std::vector<FactPair> &disj_goal, const State &state);
-
-    explicit Exploration(const options::Options &opts);
-    virtual ~Exploration() override = default;
 };
 }
 
