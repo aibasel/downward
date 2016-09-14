@@ -17,9 +17,8 @@ namespace cegar {
 static FactPair get_fact(const LandmarkNode &node) {
     /* We assume that the given LandmarkNodes are from an h^m landmark
        graph with m=1. */
-    assert(node.vars.size() == 1);
-    assert(node.vals.size() == 1);
-    return FactPair(node.vars[0], node.vals[0]);
+    assert(node.facts.size() == 1);
+    return node.facts[0];
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph() {

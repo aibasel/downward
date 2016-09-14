@@ -4,16 +4,11 @@
 #include <unordered_map>
 #include <vector>
 
-struct GlobalCondition;
-class GlobalOperator;
 class OperatorProxy;
 class TaskProxy;
 
 namespace landmarks {
 class LandmarkNode;
-
-bool _possibly_fires(const std::vector<GlobalCondition> &conditions,
-                     const std::vector<std::vector<int>> &lvl_var);
 
 std::unordered_map<int, int> _intersect(
     const std::unordered_map<int, int> &a,

@@ -22,18 +22,15 @@ LandmarkGraphMerged::LandmarkGraphMerged(const Options &opts)
 
 LandmarkNode *LandmarkGraphMerged::get_matching_landmark(const LandmarkNode &lm) const {
     if (!lm.disjunctive && !lm.conjunctive) {
-        const FactPair lm_fact(lm.vars[0], lm.vals[0]);
+        const FactPair &lm_fact = lm.facts[0];
         if (lm_graph->simple_landmark_exists(lm_fact))
             return &lm_graph->get_simple_lm_node(lm_fact);
         else
             return 0;
     } else if (lm.disjunctive) {
-        set<FactPair> lm_facts;
-        for (size_t i = 0; i < lm.vars.size(); ++i) {
-            lm_facts.insert(FactPair(lm.vars[i], lm.vals[i]));
-        }
+        set<FactPair> lm_facts(lm.facts.begin(), lm.facts.end());
         if (lm_graph->exact_same_disj_landmark_exists(lm_facts))
-            return &lm_graph->get_disj_lm_node(FactPair(lm.vars[0], lm.vals[0]));
+            return &lm_graph->get_disj_lm_node(lm.facts[0]);
         else
             return 0;
     } else if (lm.conjunctive) {
@@ -56,7 +53,7 @@ void LandmarkGraphMerged::generate_landmarks(const TaskProxy &task_proxy, Explor
         set<LandmarkNode *>::const_iterator it;
         for (it = nodes.begin(); it != nodes.end(); ++it) {
             const LandmarkNode &node = **it;
-            const FactPair lm_fact(node.vars[0], node.vals[0]);
+            const FactPair &lm_fact = node.facts[0];
             if (!node.conjunctive && !node.disjunctive && !lm_graph->landmark_exists(lm_fact)) {
                 LandmarkNode &new_node = lm_graph->landmark_add_simple(lm_fact);
                 new_node.in_goal = node.in_goal;
@@ -73,8 +70,7 @@ void LandmarkGraphMerged::generate_landmarks(const TaskProxy &task_proxy, Explor
             if (node.disjunctive) {
                 set<FactPair> lm_facts;
                 bool exists = false;
-                for (size_t j = 0; j < node.vars.size(); ++j) {
-                    const FactPair lm_fact(node.vars[j], node.vals[j]);
+                for (const FactPair &lm_fact: node.facts) {
                     if (lm_graph->landmark_exists(lm_fact)) {
                         exists = true;
                         break;

@@ -47,8 +47,8 @@ bool _possibly_reaches_lm(const OperatorProxy &op, const vector<vector<int>> &lv
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         assert(!lvl_var[effect_fact.get_variable().get_id()].empty());
-        for (size_t j = 0; j < lmp->vars.size(); ++j) {
-            if (effect_fact.get_variable().get_id() == lmp->vars[j] && effect_fact.get_value() == lmp->vals[j]) {
+        for (const FactPair &fact : lmp->facts) {
+            if (effect_fact.get_pair() == fact) {
                 if (_possibly_fires(effect.get_conditions(), lvl_var))
                     return true;
                 break;

@@ -147,16 +147,16 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
 }
 
 void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
-                                               LandmarkSet &reached_lms, vector<FactPair> &leaves) {
+                                               LandmarkSet &reached_lms,
+                                               vector<FactPair> &leaves) {
     for (const LandmarkNode *node_p : lgraph->get_nodes()) {
         if (!disjunctive_lms && node_p->disjunctive)
             continue;
 
-        if (reached_lms.find(node_p) == reached_lms.end()
-            && !check_node_orders_disobeyed(*node_p, reached_lms)) {
-            for (size_t i = 0; i < node_p->vars.size(); ++i) {
-                leaves.push_back(FactPair(node_p->vars[i], node_p->vals[i]));
-            }
+        if (reached_lms.find(node_p) == reached_lms.end() &&
+            !check_node_orders_disobeyed(*node_p, reached_lms)) {
+            leaves.insert(leaves.end(),
+                          node_p->facts.begin(), node_p->facts.end());
         }
     }
 }
