@@ -5,12 +5,10 @@
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
 
-#include <memory>
 #include <vector>
 
 class GlobalOperator;
 class GlobalState;
-class TaskProxy;
 
 namespace options {
 class OptionParser;
@@ -58,7 +56,11 @@ protected:
 
     enum {DEAD_END = -1, NO_VALUE = -2};
 
-    // TODO: Call with State directly once all heuristics support it.
+    /*
+      We need to pass GlobalState for path-dependent heuristics. All
+      other heuristics should convert the GlobalState to a local State
+      with convert_global_state().
+    */
     virtual int compute_heuristic(const GlobalState &state) = 0;
 
     // Usage note: It's OK to set the same operator as preferred
@@ -66,8 +68,7 @@ protected:
     // preferred operators for this heuristic once.
     void set_preferred(const OperatorProxy &op);
 
-    /* TODO: Make private and use State instead of GlobalState once all
-       heuristics use the TaskProxy class. */
+    // Use this method to obtain a state that the heuristic "understands".
     State convert_global_state(const GlobalState &global_state) const;
 
 public:
@@ -92,6 +93,7 @@ public:
         EvaluationContext &eval_context) override;
 
     std::string get_description() const;
+
     bool is_h_dirty(GlobalState &state) {
         return heuristic_cache[state].dirty;
     }
