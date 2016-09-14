@@ -156,7 +156,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 void Exploration::setup_exploration_queue(const State &state,
                                           const vector<FactPair> &excluded_props,
                                           const set<int> &excluded_op_ids,
-                                          bool use_h_max = false) {
+                                          bool use_h_max) {
     prop_queue.clear();
 
     for (size_t var_id = 0; var_id < propositions.size(); ++var_id) {
@@ -200,7 +200,7 @@ void Exploration::setup_exploration_queue(const State &state,
     }
 }
 
-void Exploration::relaxed_exploration(bool use_h_max = false, bool level_out = false) {
+void Exploration::relaxed_exploration(bool use_h_max, bool level_out) {
     int unsolved_goals = termination_propositions.size();
     while (!prop_queue.empty()) {
         pair<int, ExProposition *> top_pair = prop_queue.pop();
@@ -368,9 +368,9 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
     heuristic_recomputation_needed = true;
 }
 
-void Exploration::prepare_heuristic_computation(const State &state, bool h_max = false) {
-    setup_exploration_queue(state, h_max);
-    relaxed_exploration(h_max);
+void Exploration::prepare_heuristic_computation(const State &state) {
+    setup_exploration_queue(state, false);
+    relaxed_exploration(false, false);
     heuristic_recomputation_needed = false;
 }
 
