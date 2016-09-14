@@ -351,7 +351,9 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
     VariablesProxy variables = task_proxy.get_variables();
     for (const FactPair &lm_fact_a : node_b->facts) {
+        const FactProxy &fact_a = variables[lm_fact_a.var].get_fact(lm_fact_a.value);
         for (const FactPair &lm_fact_b : node_a->facts) {
+            const FactProxy &fact_b = variables[lm_fact_b.var].get_fact(lm_fact_b.value);
             if (lm_fact_a == lm_fact_b) {
                 if (!node_a->conjunctive || !node_b->conjunctive)
                     return false;
@@ -360,7 +362,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             }
 
             // 1. a, b mutex
-            if (are_mutex(lm_fact_a, lm_fact_b))
+            if (fact_a.is_mutex(fact_b))
                 return true;
 
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
@@ -414,9 +416,10 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
             }
             // Test whether one of the shared effects is inconsistent with b
             for (const pair<int, int> &eff : shared_eff) {
-                const FactPair effect_fact(eff.first, eff.second);
-                if (effect_fact != lm_fact_a && effect_fact != lm_fact_b &&
-                    are_mutex(effect_fact, lm_fact_b))
+                const FactProxy &effect_fact = variables[eff.first].get_fact(eff.second);
+                if (effect_fact != fact_a &&
+                    effect_fact != fact_b &&
+                    effect_fact.is_mutex(fact_b))
                     return true;
             }
         }
@@ -426,9 +429,12 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
         for (const auto &parent : node_a->parents) {
             const LandmarkNode &node = *parent.first;
             edge_type edge = parent.second;
-            for (const FactProxy &parent_prop : node.facts) {
-                if (edge >= greedy_necessary && parent_prop != lm_fact_b && are_mutex(
-                        parent_prop, lm_fact_b))
+            for (const FactPair &parent_prop : node.facts) {
+                const FactProxy &parent_prop_fact =
+                    variables[parent_prop.var].get_fact(parent_prop.value);
+                if (edge >= greedy_necessary &&
+                    parent_prop_fact != fact_b &&
+                    parent_prop_fact.is_mutex(fact_b))
                     return true;
             }
         }
