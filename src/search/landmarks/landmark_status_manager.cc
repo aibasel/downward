@@ -34,8 +34,8 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
         }
         if (node_p->conjunctive) {
             bool lm_true = true;
-            for (size_t i = 0; i < node_p->vals.size(); ++i) {
-                if (initial_state[node_p->vars[i]] != node_p->vals[i]) {
+            for (const FactPair &fact : node_p->facts) {
+                if (initial_state[fact.var] != fact.value) {
                     lm_true = false;
                     break;
                 }
@@ -45,8 +45,8 @@ void LandmarkStatusManager::set_landmarks_for_initial_state(
                 ++inserted;
             }
         } else {
-            for (size_t i = 0; i < node_p->vals.size(); ++i) {
-                if (initial_state[node_p->vars[i]] == node_p->vals[i]) {
+            for (const FactPair &fact : node_p->facts) {
+                if (initial_state[fact.var] == fact.value) {
                     reached[node_p->get_id()] = true;
                     ++inserted;
                     break;
@@ -83,8 +83,6 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
 
     reached = parent_reached;
 
-
-
     int num_landmarks = lm_graph.number_of_landmarks();
     assert(static_cast<int>(reached.size()) == num_landmarks);
     assert(static_cast<int>(parent_reached.size()) == num_landmarks);
@@ -110,7 +108,6 @@ bool LandmarkStatusManager::update_reached_lms(const GlobalState &parent_global_
             }
         }
     }
-
 
     return true;
 }

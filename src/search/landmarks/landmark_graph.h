@@ -35,14 +35,13 @@ enum landmark_status {lm_reached = 0, lm_not_reached = 1, lm_needed_again = 2};
 class LandmarkNode {
     int id;
 public:
-    LandmarkNode(std::vector<int> &variables, std::vector<int> &values, bool disj, bool conj = false)
-        : id(-1), vars(variables), vals(values), disjunctive(disj), conjunctive(conj), in_goal(false),
+    LandmarkNode(std::vector<FactPair> &facts, bool disj, bool conj = false)
+        : id(-1), facts(facts), disjunctive(disj), conjunctive(conj), in_goal(false),
           min_cost(1), shared_cost(0.0), status(lm_not_reached),
           is_derived(false) {
     }
 
-    std::vector<int> vars;
-    std::vector<int> vals;
+    std::vector<FactPair> facts;
     bool disjunctive;
     bool conjunctive;
     std::unordered_map<LandmarkNode *, EdgeType> parents;
@@ -73,15 +72,15 @@ public:
 
     bool is_true_in_state(const GlobalState &global_state) const {
         if (disjunctive) {
-            for (size_t i = 0; i < vars.size(); ++i) {
-                if (global_state[vars[i]] == vals[i]) {
+            for (const FactPair &fact : facts) {
+                if (global_state[fact.var] == fact.value) {
                     return true;
                 }
             }
             return false;
         } else { // conjunctive or simple
-            for (size_t i = 0; i < vars.size(); ++i) {
-                if (global_state[vars[i]] != vals[i]) {
+            for (const FactPair &fact : facts) {
+                if (global_state[fact.var] != fact.value) {
                     return false;
                 }
             }
@@ -91,15 +90,15 @@ public:
 
     bool is_true_in_state(const State &state) const {
         if (disjunctive) {
-            for (size_t i = 0; i < vars.size(); ++i) {
-                if (state[vars[i]].get_value() == vals[i]) {
+            for (const FactPair &fact : facts) {
+                if (state[fact.var].get_value() == fact.value) {
                     return true;
                 }
             }
             return false;
         } else { // conjunctive or simple
-            for (size_t i = 0; i < vars.size(); ++i) {
-                if (state[vars[i]].get_value() != vals[i]) {
+            for (const FactPair &fact : facts) {
+                if (state[fact.var].get_value() != fact.value) {
                     return false;
                 }
             }
@@ -111,26 +110,18 @@ public:
         return status;
     }
 };
-
+// TODO: Change
 struct LandmarkNodeComparer {
     bool operator()(LandmarkNode *a, LandmarkNode *b) const {
-        if (a->vars.size() > b->vars.size()) {
-            return true;
+        if (a->facts.size() != b->facts.size())
+            return a->facts.size() > b->facts.size();
+        for (size_t i = 0; i < a->facts.size(); ++i) {
+            if (a->facts[i].var != b->facts[i].var)
+                return a->facts[i].var > b->facts[i].var;
         }
-        if (a->vars.size() < b->vars.size()) {
-            return false;
-        }
-        for (size_t i = 0; i < a->vars.size(); ++i) {
-            if (a->vars[i] > b->vars[i])
-                return true;
-            if (a->vars[i] < b->vars[i])
-                return false;
-        }
-        for (size_t i = 0; i < a->vals.size(); ++i) {
-            if (a->vals[i] > b->vals[i])
-                return true;
-            if (a->vals[i] < b->vals[i])
-                return false;
+        for (size_t i = 0; i < a->facts.size(); ++i) {
+            if (a->facts[i].value != b->facts[i].value)
+                return a->facts[i].value > b->facts[i].value;
         }
         return false;
     }

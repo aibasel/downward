@@ -90,9 +90,9 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
         FactProxy effect_fact = effect.get_fact();
         int var_id = effect_fact.get_variable().get_id();
         if (!has_precondition_on_var[var_id] && effect_fact.get_variable().get_domain_size() == 2) {
-            for (size_t j = 0; j < lmp->vars.size(); ++j) {
-                if (lmp->vars[j] == var_id &&
-                    initial_state[var_id].get_value() != lmp->vals[j]) {
+            for (const FactPair &lm_fact : lmp->facts) {
+                if (lm_fact.var == var_id &&
+                    initial_state[var_id].get_value() != lm_fact.value) {
                     result.emplace(var_id, initial_state[var_id].get_value());
                     break;
                 }
@@ -104,8 +104,8 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     set<int> lm_props_achievable;
     for (EffectProxy effect : effects) {
         FactProxy effect_fact = effect.get_fact();
-        for (size_t j = 0; j < lmp->vars.size(); ++j)
-            if (lmp->vars[j] == effect_fact.get_variable().get_id() && lmp->vals[j] == effect_fact.get_value())
+        for (size_t j = 0; j < lmp->facts.size(); ++j)
+            if (lmp->facts[j] == effect_fact.get_pair())
                 lm_props_achievable.insert(j);
     }
     // Intersect effect conditions of all effects that can achieve lmp
@@ -117,8 +117,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
             if (!init && intersection.empty())
                 break;
             unordered_map<int, int> current_cond;
-            if (lmp->vars[lm_prop] == effect_fact.get_variable().get_id() &&
-                lmp->vals[lm_prop] == effect_fact.get_value()) {
+            if (lmp->facts[lm_prop] == effect_fact.get_pair()) {
                 EffectConditionsProxy effect_conditions = effect.get_conditions();
                 if (effect_conditions.empty()) {
                     intersection.clear();
@@ -144,10 +143,9 @@ int LandmarkFactoryRpgSasp::min_cost_for_landmark(const TaskProxy &task_proxy,
                                                   vector<vector<int>> &lvl_var) {
     int min_cost = numeric_limits<int>::max();
     // For each proposition in bp...
-    for (size_t i = 0; i < bp->vars.size(); ++i) {
+    for (const FactPair &lm_fact : bp->facts) {
         // ...look at all achieving operators
-        const vector<int> &ops = lm_graph->get_operators_including_eff(
-            FactPair(bp->vars[i], bp->vals[i]));
+        const vector<int> &ops = lm_graph->get_operators_including_eff(lm_fact);
         for (int op_id : ops) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
             // and calculate the minimum cost of those that can make
@@ -203,10 +201,8 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(const FactPair &a,
         lm_graph->rm_landmark_node(&node2);
         lm_graph->landmark_add_simple(a);*/
 
-        node.vars.clear();
-        node.vals.clear();
-        node.vars.push_back(a.var);
-        node.vals.push_back(a.value);
+        node.facts.clear();
+        node.facts.push_back(a);
         // Clean orders: let disj. LM {D1,...,Dn} be ordered before L. We
         // cannot infer that any one of D1,...Dn by itself is ordered before L
         for (const auto &child : node.children) {
@@ -275,9 +271,8 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     /* Compute the shared preconditions of all operators that can potentially
      achieve landmark bp, given lvl_var (reachability in relaxed planning graph) */
     bool init = true;
-    for (size_t i = 0; i < bp->vars.size(); ++i) {
-        const vector<int> &op_ids = lm_graph->get_operators_including_eff(
-            FactPair(bp->vars[i], bp->vals[i]));
+    for (const FactPair &lm_fact : bp->facts) {
+        const vector<int> &op_ids = lm_graph->get_operators_including_eff(lm_fact);
 
         for (int op_id : op_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
@@ -373,9 +368,8 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
      in the set stems from the same PDDL predicate. */
 
     vector<int> ops;
-    for (size_t i = 0; i < bp->vars.size(); ++i) {
-        const vector<int> &tmp_ops = lm_graph->get_operators_including_eff(
-            FactPair(bp->vars[i], bp->vals[i]));
+    for (const FactPair &lm_fact : bp->facts) {
+        const vector<int> &tmp_ops = lm_graph->get_operators_including_eff(lm_fact);
         for (size_t j = 0; j < tmp_ops.size(); ++j)
             ops.push_back(tmp_ops[j]);
     }
@@ -486,7 +480,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     // a simple landmark.
     if (lmp->disjunctive)
         return;
-    const FactPair lmk(lmp->vars[0], lmp->vals[0]);
+    const FactPair &lmk = lmp->facts[0];
 
     // Collect in "unreached" all values of the LM variable that cannot be reached
     // before the LM value (in the relaxed plan graph)
@@ -562,16 +556,14 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
             const FactPair fact(var.get_id(), value);
 
             bool insert = true;
-            for (size_t i = 0; i < lmp->vars.size() && insert; ++i) {
-                const FactPair lm(lmp->vars[i], lmp->vals[i]);
-
-                if (fact != lm) {
+            for (const FactPair &lm_fact : lmp->facts) {
+                if (fact != lm_fact) {
                     // Make sure there is no operator that reaches both lm and (var, value) at the same time
                     bool intersection_empty = true;
                     const vector<int> &reach_fact =
                         lm_graph->get_operators_including_eff(fact);
                     const vector<int> &reach_lm =
-                        lm_graph->get_operators_including_eff(lm);
+                        lm_graph->get_operators_including_eff(lm_fact);
                     for (size_t j = 0; j < reach_fact.size() && intersection_empty; ++j)
                         for (size_t k = 0; k < reach_lm.size()
                              && intersection_empty; ++k)

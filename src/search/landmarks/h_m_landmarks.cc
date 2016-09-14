@@ -621,16 +621,12 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
-    for (set<LandmarkNode *>::iterator it = lm_graph->get_nodes().begin();
-         it != lm_graph->get_nodes().end(); ++it) {
-        LandmarkNode &lmn = **it;
-
+    for (LandmarkNode *lmn : lm_graph->get_nodes()) {
         set<int> candidates;
         // put all possible adders in candidates set
-        for (size_t i = 0; i < lmn.vars.size(); ++i) {
+        for (const FactPair &lm_fact : lmn->facts) {
             const vector<int> &ops =
-                lm_graph->get_operators_including_eff(FactPair(lmn.vars[i],
-                                                               lmn.vals[i]));
+                lm_graph->get_operators_including_eff(lm_fact);
             candidates.insert(ops.begin(), ops.end());
         }
 
@@ -638,15 +634,15 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
             FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
             FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
-            for (j = 0; j < lmn.vars.size(); ++j) {
-                const FactPair lm_val(lmn.vars[j], lmn.vals[j]);
+            for (j = 0; j < lmn->facts.size(); ++j) {
+                const FactPair &lm_fact = lmn->facts[j];
                 // action adds this element of lm as well
-                if (find(post.begin(), post.end(), lm_val) != post.end())
+                if (find(post.begin(), post.end(), lm_fact) != post.end())
                     continue;
                 bool is_mutex = false;
                 for (const FactPair &fluent : post) {
                     if (variables[fluent.var].get_fact(fluent.value).is_mutex(
-                            variables[lm_val.var].get_fact(lm_val.value))) {
+                            variables[lm_fact.var].get_fact(lm_fact.value))) {
                         is_mutex = true;
                         break;
                     }
@@ -658,7 +654,7 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
                     if (variables[fluent.var].get_fact(fluent.value).is_mutex(
-                            variables[lm_val.var].get_fact(lm_val.value))) {
+                            variables[lm_fact.var].get_fact(lm_fact.value))) {
                         is_mutex = true;
                         break;
                     }
@@ -667,9 +663,9 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
                     break;
                 }
             }
-            if (j == lmn.vars.size()) {
+            if (j == lmn->facts.size()) {
                 // not inconsistent with any of the other landmark fluents
-                lmn.possible_achievers.insert(op_id);
+                lmn->possible_achievers.insert(op_id);
             }
         }
     }
