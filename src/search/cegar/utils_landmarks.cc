@@ -21,10 +21,7 @@ static FactPair get_fact(const LandmarkNode &node) {
     return node.facts[0];
 }
 
-shared_ptr<LandmarkGraph> get_landmark_graph() {
-    // TODO: pass task_proxy from cegar heuristic
-    TaskProxy task_proxy(*g_root_task());
-
+shared_ptr<LandmarkGraph> get_landmark_graph(const TaskProxy &task_proxy) {
     Options exploration_opts = Options();
     exploration_opts.set<int>("cost_type", NORMAL);
     exploration_opts.set<bool>("cache_estimates", false);
