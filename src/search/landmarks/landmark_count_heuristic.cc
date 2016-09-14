@@ -56,17 +56,17 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 }
 
-void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &state) {
+void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &global_state) {
     // Set additional goals for FF exploration
-    vector<FactPair> lm_leaves;
     LandmarkSet result;
-    const vector<bool> &reached_lms_v = lm_status_manager->get_reached_landmarks(state);
+    const vector<bool> &reached_lms_v =
+        lm_status_manager->get_reached_landmarks(global_state);
     convert_lms(result, reached_lms_v);
-    collect_lm_leaves(ff_search_disjunctive_lms, result, lm_leaves);
+    vector<FactPair> lm_leaves = collect_lm_leaves(ff_search_disjunctive_lms, result);
     exploration.set_additional_goals(lm_leaves);
 }
 
-int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
+int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &global_state) {
     double epsilon = 0.01;
 
     // Need explicit test to see if state is a goal state. The landmark
@@ -75,7 +75,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
     // they do not get counted as reached in that case). However, we
     // must return 0 for a goal state.
 
-    bool dead_end = lm_status_manager->update_lm_status(state);
+    bool dead_end = lm_status_manager->update_lm_status(global_state);
 
     if (dead_end) {
         return DEAD_END;
@@ -96,9 +96,7 @@ int LandmarkCountHeuristic::get_heuristic_value(const GlobalState &state) {
         h = total_cost - reached_cost + needed_cost;
     }
 
-    // Two plausibility tests in debug mode.
     assert(h >= 0);
-
     return h;
 }
 
@@ -129,16 +127,16 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
         !generate_helpful_actions(state, reached_lms)) {
         set_exploration_goals(global_state);
 
-        // Use FF to plan to a landmark leaf
-        vector<FactPair> leaves;
-        collect_lm_leaves(ff_search_disjunctive_lms, reached_lms, leaves);
+        // Use FF to plan to a landmark leaf.
+        vector<FactPair> leaves = collect_lm_leaves(
+            ff_search_disjunctive_lms, reached_lms);
         if (!exploration.plan_for_disj(leaves, state)) {
             exploration.exported_op_ids.clear();
             return DEAD_END;
         }
+        OperatorsProxy operators = task_proxy.get_operators();
         for (int exported_op_id : exploration.exported_op_ids) {
-            OperatorProxy exported_op = task_proxy.get_operators()[exported_op_id];
-            set_preferred(exported_op);
+            set_preferred(operators[exported_op_id]);
         }
         exploration.exported_op_ids.clear();
     }
@@ -146,19 +144,20 @@ int LandmarkCountHeuristic::compute_heuristic(const GlobalState &global_state) {
     return h;
 }
 
-void LandmarkCountHeuristic::collect_lm_leaves(bool disjunctive_lms,
-                                               LandmarkSet &reached_lms,
-                                               vector<FactPair> &leaves) {
+vector<FactPair> LandmarkCountHeuristic::collect_lm_leaves(
+    bool disjunctive_lms, LandmarkSet &reached_lms) {
+    vector<FactPair> leaves;
     for (const LandmarkNode *node_p : lgraph->get_nodes()) {
         if (!disjunctive_lms && node_p->disjunctive)
             continue;
 
-        if (reached_lms.find(node_p) == reached_lms.end() &&
+        if (!reached_lms.count(node_p) &&
             !check_node_orders_disobeyed(*node_p, reached_lms)) {
-            leaves.insert(leaves.end(),
-                          node_p->facts.begin(), node_p->facts.end());
+            leaves.insert(
+                leaves.end(), node_p->facts.begin(), node_p->facts.end());
         }
     }
+    return leaves;
 }
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &node,
