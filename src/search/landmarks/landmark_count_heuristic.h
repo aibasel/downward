@@ -18,6 +18,7 @@ class LandmarkCountHeuristic : public Heuristic {
     const bool ff_search_disjunctive_lms;
     const bool conditional_effects_supported;
     const bool admissible;
+    const bool dead_ends_reliable;
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
