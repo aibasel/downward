@@ -448,7 +448,7 @@ static Heuristic *_parse(OptionParser &parser) {
             "2014") + "\n" +
         "Please note that the journal paper describes the \"old\" theory of "
         "label reduction, which has been superseded by the above conference "
-        "paper and is no longer implemented in Fast Downward.\n"
+        "paper and is no longer implemented in Fast Downward.\n\n"
         "The following paper describes how to improve the DFP merge strategy "
         "with tie-breaking, and presents two new merge strategies (dyn-MIASM "
         "and SCC-DFP):" + utils::format_paper_reference(
@@ -460,7 +460,7 @@ static Heuristic *_parse(OptionParser &parser) {
             "294-298",
             "AAAI Press 2016") + "\n" +
         "Note that the two new merge strategies have not yet been integrated "
-        "into the offical code base of Fast Downward. They are available on "
+        "into the official code base of Fast Downward. They are available on "
         "request.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
@@ -483,11 +483,11 @@ static Heuristic *_parse(OptionParser &parser) {
         "based shrinking, DFP merging, and the appropriate label "
         "reduction setting (max_states has been altered to be between "
         "10000 and 200000 in the literature):\n"
-        "{{{merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
+        "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
         "merge_stateless(merge_selector=score_based_filtering("
         "scoring_functions=[goal_relevance,dfp,total_order])),"
         "label_reduction=label_reduction(before_shrinking=true,"
-        "before_merging=false),max_states=50000,threshold_before_merge=1)}}}\n"
+        "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}\n"
         "Note that for versions of Fast Downward prior to 2016-08-19, the "
         "syntax differs. See the recommendation in the file "
         "merge_and_shrink_heuristic.cc for an example configuration.");
