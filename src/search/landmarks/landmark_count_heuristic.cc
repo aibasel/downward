@@ -1,7 +1,10 @@
 #include "landmark_count_heuristic.h"
 
+#include "landmark_cost_assignment.h"
 #include "landmark_factory.h"
+#include "landmark_status_manager.h"
 
+#include "../global_state.h"
 #include "../option_parser.h"
 #include "../plugin.h"
 #include "../successor_generator.h"
@@ -54,6 +57,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     } else {
         lm_cost_assignment = nullptr;
     }
+}
+
+LandmarkCountHeuristic::~LandmarkCountHeuristic() {
 }
 
 void LandmarkCountHeuristic::set_exploration_goals(const GlobalState &global_state) {
