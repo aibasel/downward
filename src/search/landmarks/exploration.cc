@@ -409,9 +409,8 @@ void Exploration::collect_ha(ExProposition *goal,
 }
 
 // TODO: this should be in landmark class
-static bool is_landmark(vector<FactPair> &landmarks, int var, int value) {
+static bool is_landmark(vector<FactPair> &landmarks, const FactPair &fact) {
     // TODO: change landmarks to set or unordered_set
-    const FactPair fact(var, value);
     return find(landmarks.begin(), landmarks.end(), fact) != landmarks.end();
 }
 
@@ -428,14 +427,10 @@ bool Exploration::plan_for_disj(
         ExProposition *target = nullptr;
         for (ExProposition *prop : termination_propositions) {
             const int prop_cost = prop->h_add_cost;
-            if (prop_cost == -1 && is_landmark(landmarks,
-                                               prop->fact.var,
-                                               prop->fact.value)) {
+            if (prop_cost == -1 && is_landmark(landmarks, prop->fact)) {
                 return false; // dead end
             }
-            if (prop_cost < min_cost && is_landmark(landmarks,
-                                                    prop->fact.var,
-                                                    prop->fact.value)) {
+            if (prop_cost < min_cost && is_landmark(landmarks, prop->fact)) {
                 target = prop;
                 min_cost = prop_cost;
             }
