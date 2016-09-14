@@ -101,6 +101,7 @@ void MergeAndShrinkHeuristic::dump_options() const {
     } else {
         cout << "Label reduction disabled" << endl;
     }
+    cout << endl;
 
     cout << "Verbosity: ";
     switch (verbosity) {
@@ -447,7 +448,20 @@ static Heuristic *_parse(OptionParser &parser) {
             "2014") + "\n" +
         "Please note that the journal paper describes the \"old\" theory of "
         "label reduction, which has been superseded by the above conference "
-        "paper and is no longer implemented in Fast Downward.");
+        "paper and is no longer implemented in Fast Downward.\n"
+        "The following paper describes how to improve the DFP merge strategy "
+        "with tie-breaking, and presents two new merge strategies (dyn-MIASM "
+        "and SCC-DFP):" + utils::format_paper_reference(
+            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+            "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
+            "http://ai.cs.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+            "Proceedings of the 26th International Conference on Automated "
+            "Planning and Scheduling (ICAPS 2016)",
+            "294-298",
+            "AAAI Press 2016") + "\n" +
+        "Note that the two new merge strategies have not yet been integrated "
+        "into the offical code base of Fast Downward. They are available on "
+        "request.");
     parser.document_language_support("action costs", "supported");
     parser.document_language_support("conditional effects", "supported (but see note)");
     parser.document_language_support("axioms", "not supported");
@@ -466,22 +480,25 @@ static Heuristic *_parse(OptionParser &parser) {
     parser.document_note(
         "Note",
         "A currently recommended good configuration uses bisimulation "
-        "based shrinking (selecting max states from 50000 to 200000 is "
-        "reasonable), DFP merging, and the appropriate label "
-        "reduction setting:\n"
-        "merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
+        "based shrinking, DFP merging, and the appropriate label "
+        "reduction setting (max_states has been altered to be between "
+        "10000 and 200000 in the literature):\n"
+        "{{{merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
         "merge_stateless(merge_selector=score_based_filtering("
         "scoring_functions=[goal_relevance,dfp,total_order])),"
         "label_reduction=label_reduction(before_shrinking=true,"
-        "before_merging=false),max_states=100000,threshold_before_merge=1)");
+        "before_merging=false),max_states=50000,threshold_before_merge=1)}}}\n"
+        "Note that for versions of Fast Downward prior to 2016-08-19, the "
+        "syntax differs. See the recommendation in the file "
+        "merge_and_shrink_heuristic.cc for an example configuration.");
 
     // Merge strategy option.
     parser.add_option<shared_ptr<MergeStrategyFactory>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
-        "We currently recommend DFP, i.e.: merge_stateless(merge_selector="
-        "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
-        "total_order])).");
+        "We currently recommend DFP, which can be achieved using "
+        "{{{merge_stateless(merge_selector=score_based_filtering("
+        "scoring_functions=[goal_relevance,dfp,total_order]))}}}");
 
     // Shrink strategy option.
     parser.add_option<shared_ptr<ShrinkStrategy>>(
