@@ -582,36 +582,24 @@ HMLandmarks::HMLandmarks(const options::Options &opts)
 }
 
 void HMLandmarks::init(const TaskProxy &task_proxy) {
-    std::cout << "H_m_Landmarks(" << m_ << ")" << std::endl;
-    // need this to be able to print propositions for debugging
-    // already called in global.cc
-    //  read_external_inconsistencies();
+    std::cout << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
-        cerr << "H_m_Landmarks do not support axioms" << endl;
+        cerr << "h^m landmarks don't support axioms" << endl;
         utils::exit_with(ExitCode::UNSUPPORTED);
     }
-    // get all the m or less size subsets in the domain
+    // Get all the m or less size subsets in the domain.
     vector<vector<FactPair>> msets;
     get_m_sets(task_proxy.get_variables(), m_, msets);
-    //  cout << "P^m index\tP fluents" << endl;
 
     // map each set to an integer
     for (size_t i = 0; i < msets.size(); ++i) {
-        h_m_table_.push_back(HMEntry());
+        h_m_table_.emplace_back();
         set_indices_[msets[i]] = i;
         h_m_table_[i].fluents = msets[i];
-        /*
-           cout << i << "\t";
-           print_fluentset(h_m_table_[i].fluents);
-           cout << endl;
-         */
     }
     cout << "Using " << h_m_table_.size() << " P^m fluents." << endl;
 
-    // unsatisfied pc counts are now in build pm ops
-
     build_pm_ops(task_proxy);
-    //  cout << "Built P(m) ops, total: " << pm_ops_.size() << "." << endl;
 }
 
 void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
