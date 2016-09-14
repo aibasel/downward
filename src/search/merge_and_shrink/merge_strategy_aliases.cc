@@ -31,14 +31,14 @@ static shared_ptr<MergeStrategyFactory>_parse_dfp(options::OptionParser &parser)
             "2358-2366",
             "AAAI Press 2014") +
         "Using this command line option is deprecated, please use the "
-        "equivalent call: "
-        "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[goal_relevance,dfp,total_order(<order_option>))]))"
-        "if specifying tie-breaking order criteria or: "
-        "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[goal_relevance,dfp,single_random()]))"
+        "equivalent call "
+        "{{{merge_strategy=merge_stateless(merge_selector=score_based_filtering("
+        "scoring_functions=[goal_relevance,dfp,total_order(<order_option>))]))}}}"
+        "if specifying tie-breaking order criteria, or "
+        "{{{merge_strategy=merge_stateless(merge_selector=score_based_filtering("
+        "scoring_functions=[goal_relevance,dfp,single_random()]))}}}"
         "if using full random tie-breaking.");
-    // this also includes the rng option for MergeScoringFunctionSingleRandom.
+    // This also includes the rng option for MergeScoringFunctionSingleRandom.
     MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
     parser.add_option<bool>(
         "randomized_order",
@@ -103,7 +103,7 @@ static shared_ptr<MergeStrategyFactory> _parse_linear(
             "2007") +
         "Using this command line option is deprecated, please use the "
         "equivalent call: "
-        "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))");
+        "{{{merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))}}}");
     cerr << "Warning: this command line option has been depcrecated. Please"
         "consult fast-downward.org for equivalent new command line options."
          << endl;
