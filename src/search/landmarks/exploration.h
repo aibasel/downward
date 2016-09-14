@@ -112,7 +112,8 @@ class Exploration : public Heuristic {
     int compute_hsp_add_heuristic();
     int compute_ff_heuristic(const State &state);
 
-    void collect_ha(ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
+    void collect_helpful_actions(
+        ExProposition *goal, RelaxedPlan &relaxed_plan, const State &state);
 
     void enqueue_if_necessary(ExProposition *prop, int cost, int depth, ExUnaryOperator *op,
                               bool use_h_max);
