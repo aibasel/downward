@@ -409,16 +409,14 @@ void Exploration::collect_ha(ExProposition *goal,
 }
 
 // TODO: this should be in landmark class
-bool is_landmark(vector<FactPair> &landmarks, int var, int value) {
+static bool is_landmark(vector<FactPair> &landmarks, int var, int value) {
     // TODO: change landmarks to set or unordered_set
-    for (const FactPair &lm : landmarks)
-        if (lm.var == var && lm.value == value)
-            return true;
-    return false;
+    const FactPair fact(var, value);
+    return find(landmarks.begin(), landmarks.end(), fact) != landmarks.end();
 }
 
-bool Exploration::plan_for_disj(vector<FactPair> &landmarks,
-                                const State &state) {
+bool Exploration::plan_for_disj(
+    vector<FactPair> &landmarks, const State &state) {
     relaxed_plan.clear();
     // generate plan to reach part of disj. goal OR if no landmarks given, plan to real goal
     if (!landmarks.empty()) {
