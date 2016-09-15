@@ -123,11 +123,11 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
         PropositionLayer next_prop_layer(current_prop_layer);
         unordered_set<int> next_triggered;
         changes = false;
-        for (int op_index : triggered) {
-            OperatorProxy op = get_operator_or_axiom(task_proxy, op_index);
-            if (operator_applicable(op, current_prop_layer)) {
-                lm_set changed = apply_operator_and_propagate_labels(op,
-                                                                     current_prop_layer, next_prop_layer);
+        for (int op_or_axiom_id : triggered) {
+            OperatorProxy op_or_axiom = get_operator_or_axiom(task_proxy, op_or_axiom_id);
+            if (operator_applicable(op_or_axiom, current_prop_layer)) {
+                lm_set changed = apply_operator_and_propagate_labels(
+                    op_or_axiom, current_prop_layer, next_prop_layer);
                 if (!changed.empty()) {
                     changes = true;
                     for (const FactPair &lm : changed)
@@ -273,30 +273,31 @@ void LandmarkFactoryZhuGivan::compute_triggers(const TaskProxy &task_proxy) {
     for (OperatorProxy op : task_proxy.get_operators()) {
         add_operator_to_triggers(task_proxy, op);
     }
-    for (OperatorProxy op : task_proxy.get_axioms()) {
-        add_operator_to_triggers(task_proxy, op);
+    for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        add_operator_to_triggers(task_proxy, axiom);
     }
 }
 
-void LandmarkFactoryZhuGivan::add_operator_to_triggers(const TaskProxy &task_proxy, const OperatorProxy &op) {
+void LandmarkFactoryZhuGivan::add_operator_to_triggers(
+    const TaskProxy &task_proxy, const OperatorProxy &op_or_axiom) {
     // Collect possible triggers first.
     lm_set possible_triggers;
 
-    int op_id = get_operator_or_axiom_id(task_proxy, op);
-    PreconditionsProxy preconditions = op.get_preconditions();
+    int op_or_axiom_id = get_operator_or_axiom_id(task_proxy, op_or_axiom);
+    PreconditionsProxy preconditions = op_or_axiom.get_preconditions();
     for (FactProxy precondition : preconditions)
-        possible_triggers.emplace(precondition.get_variable().get_id(), precondition.get_value());
+        possible_triggers.insert(precondition.get_pair());
 
-    for (EffectProxy effect : op.get_effects()) {
+    for (EffectProxy effect : op_or_axiom.get_effects()) {
         for (FactProxy effect_condition : effect.get_conditions())
-            possible_triggers.emplace(effect_condition.get_variable().get_id(), effect_condition.get_value());
+            possible_triggers.insert(effect_condition.get_pair());
     }
     if (preconditions.empty())
-        operators_without_preconditions.push_back(op_id);
+        operators_without_preconditions.push_back(op_or_axiom_id);
 
     // Add operator to triggers vector.
     for (const FactPair &lm : possible_triggers)
-        triggers[lm.var][lm.value].push_back(op_id);
+        triggers[lm.var][lm.value].push_back(op_or_axiom_id);
 }
 
 bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
