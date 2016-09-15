@@ -1,8 +1,6 @@
 #ifndef CEGAR_TRANSITION_H
 #define CEGAR_TRANSITION_H
 
-class AbstractTask;
-
 namespace cegar {
 class AbstractState;
 
