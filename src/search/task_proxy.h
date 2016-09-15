@@ -149,7 +149,7 @@ public:
         return fact;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_fact_name(fact);
     }
 
@@ -265,7 +265,7 @@ public:
         return id;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_variable_name(id);
     }
 
@@ -442,7 +442,7 @@ public:
         return is_an_axiom;
     }
 
-    const std::string &get_name() const {
+    std::string get_name() const {
         return task->get_operator_name(index, is_an_axiom);
     }
 
