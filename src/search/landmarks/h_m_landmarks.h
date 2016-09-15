@@ -89,7 +89,7 @@ class HMLandmarks : public LandmarkFactory {
     void print_fluentset(const VariablesProxy &variables, const FluentSet &fs);
     void print_pm_op(const VariablesProxy &variables, const PMOp &op);
 
-    int m_;
+    const int m_;
 
     std::map<int, LandmarkNode *> lm_node_table_;
 
@@ -100,8 +100,6 @@ class HMLandmarks : public LandmarkFactory {
     // first is unsat pcs for operator
     // second is unsat pcs for conditional noops
     std::vector<std::pair<int, std::vector<int>>> unsat_pc_count_;
-    // variable pairs worth looking at
-    std::vector<std::vector<bool>> interesting_;
 
     void get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
                      FluentSet &current,
