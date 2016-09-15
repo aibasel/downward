@@ -69,7 +69,8 @@ public:
     bool satisfies_goal_conditions(const GoalsProxy &goals, const PropositionLayer &layer) const;
 
     // Link operators to its propositions in trigger list.
-    void add_operator_to_triggers(const TaskProxy &task_proxy, const OperatorProxy &op);
+    void add_operator_to_triggers(
+        const TaskProxy &task_proxy, const OperatorProxy &op_or_axiom);
 
     virtual void generate_landmarks(const TaskProxy &task_proxy, Exploration &exploration) override;
 

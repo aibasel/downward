@@ -183,8 +183,8 @@ void Exploration::setup_exploration_queue(const State &state,
     // Initialize operator data, deal with precondition-free operators/axioms.
     for (ExUnaryOperator &op : unary_operators) {
         op.unsatisfied_preconditions = op.precondition.size();
-        if (excluded_op_ids.size() > 0 && (op.effect->h_add_cost == -2 ||
-                                           excluded_op_ids.find(op.op_id) != excluded_op_ids.end())) {
+        if (!excluded_op_ids.empty() &&
+            (op.effect->h_add_cost == -2 || excluded_op_ids.count(op.op_id))) {
             op.h_add_cost = -2; // operator will not be applied during relaxed exploration
             continue;
         }
@@ -305,8 +305,8 @@ void Exploration::collect_relaxed_plan(ExProposition *goal,
             int op_id = unary_op->op_id;
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
             bool added_to_relaxed_plan = false;
-            //if(!op->is_axiom()) // Using axioms in the relaxed plan actually
-            //improves performance in many domains... We need to look into this.
+            /* Using axioms in the relaxed plan actually improves
+               performance in many domains. We should look into this. */
             added_to_relaxed_plan = relaxed_plan.insert(op_id).second;
 
             assert(unary_op->depth != -1);
@@ -358,7 +358,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
             // if op can achieve prop at time step i+1,
             // its index (for prop) is i, where the initial state is time step 0.
             const FactPair &effect = op.effect->fact;
-            assert(lvl_op[op.op_id].find(effect) != lvl_op[op.op_id].end());
+            assert(lvl_op[op.op_id].count(effect));
             int new_lvl = op.h_max_cost - 1;
             // If we have found a cheaper achieving operator, adjust h_max cost of proposition.
             if (lvl_op[op.op_id].find(effect)->second > new_lvl)
