@@ -52,6 +52,15 @@ static vector<vector<FactPair>> get_postconditions_by_operator(
     return postconditions_by_operator;
 }
 
+static int lookup_value(const vector<FactPair> &facts, int var) {
+    for (const FactPair &fact : facts) {
+        if (fact.var == var) {
+            return fact.value;
+        }
+    }
+    return -1;
+}
+
 
 TransitionUpdater::TransitionUpdater(const shared_ptr<AbstractTask> &task)
     : task(task),
@@ -68,12 +77,11 @@ OperatorsProxy TransitionUpdater::get_operators() const {
 }
 
 int TransitionUpdater::get_precondition_value(int op_id, int var) const {
-    for (const FactPair &fact : preconditions_by_operator[op_id]) {
-        if (fact.var == var) {
-            return fact.value;
-        }
-    }
-    return -1;
+    return lookup_value(preconditions_by_operator[op_id], var);
+}
+
+int TransitionUpdater::get_postcondition_value(int op_id, int var) const {
+    return lookup_value(postconditions_by_operator[op_id], var);
 }
 
 void TransitionUpdater::add_loops_to_trivial_abstract_state(AbstractState *state) {
