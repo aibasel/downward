@@ -3,6 +3,7 @@
 #include "../abstract_task.h"
 #include "../option_parser.h"
 #include "../plugin.h"
+#include "../task_tools.h"
 
 #include "../utils/collections.h"
 #include "../utils/system.h"
@@ -304,31 +305,28 @@ void HMLandmarks::print_proposition(const VariablesProxy &variables, const FactP
          << "->" << fact.get_value() << ")";
 }
 
-FluentSet get_operator_precondition(const OperatorProxy &op) {
-    FluentSet preconditions;
-    for (FactProxy precondition : op.get_preconditions())
-        preconditions.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
-
-    sort(preconditions.begin(), preconditions.end());
-    return move(preconditions);
+static FluentSet get_operator_precondition(const OperatorProxy &op) {
+    FluentSet preconditions = get_fact_pairs(op.get_preconditions());
+    assert(is_sorted(preconditions.begin(), preconditions.end()));
+    return preconditions;
 }
 
 // get facts that are always true after the operator application
 // (effects plus prevail conditions)
-FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op) {
+static FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op) {
     FluentSet postconditions;
     EffectsProxy effects = op.get_effects();
     vector<bool> has_effect_on_var(num_vars, false);
 
     for (EffectProxy effect : effects) {
         FactProxy effect_fact = effect.get_fact();
-        postconditions.emplace_back(effect_fact.get_variable().get_id(), effect_fact.get_value());
+        postconditions.push_back(effect_fact.get_pair());
         has_effect_on_var[effect_fact.get_variable().get_id()] = true;
     }
 
     for (FactProxy precondition : op.get_preconditions()) {
         if (!has_effect_on_var[precondition.get_variable().get_id()])
-            postconditions.emplace_back(precondition.get_variable().get_id(), precondition.get_value());
+            postconditions.push_back(precondition.get_pair());
     }
 
     sort(postconditions.begin(), postconditions.end());
@@ -574,7 +572,7 @@ HMLandmarks::HMLandmarks(const options::Options &opts)
       m_(opts.get<int>("m")) {
 }
 
-void HMLandmarks::init(const TaskProxy &task_proxy) {
+void HMLandmarks::initialize(const TaskProxy &task_proxy) {
     cout << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
@@ -910,7 +908,7 @@ void HMLandmarks::add_lm_node(int set_index, bool goal) {
 
 void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &) {
     int set_index;
-    init(task_proxy);
+    initialize(task_proxy);
     compute_h_m_landmarks(task_proxy);
     // now construct landmarks graph
     vector<FluentSet> goal_subsets;
@@ -922,16 +920,6 @@ void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &)
     get_m_sets(variables, m_, goal_subsets, g_goal);
     list<int> all_lms;
     for (const FluentSet &goal_subset : goal_subsets) {
-        /*
-           cout << "Goal set: ";
-           print_fluentset(goal_subsets[i]);
-           cout << " -- ";
-           for(size_t j = 0; j < goal_subsets[i].size(); ++j) {
-           cout << goal_subsets[i][j] << " ";
-           }
-           cout << endl;
-         */
-
         assert(set_indices_.find(goal_subset) != set_indices_.end());
 
         set_index = set_indices_[goal_subset];
@@ -951,11 +939,6 @@ void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &)
 
         // make a node for the goal, with in_goal = true;
         add_lm_node(set_index, true);
-        /*
-           cout << "Goal subset: ";
-           print_fluentset(h_m_table_[set_index].fluents);
-           cout << endl;
-         */
     }
     // now make remaining lm nodes
     for (int lm : all_lms) {
