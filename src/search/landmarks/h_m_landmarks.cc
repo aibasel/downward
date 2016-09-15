@@ -93,15 +93,8 @@ void insert_into(list<T> &alist, const T &val) {
 }
 
 template<typename T>
-bool contains(list<T> &alist, const T &val) {
-    typename list<T>::iterator it1 = alist.begin();
-
-    for (; it1 != alist.end(); ++it1) {
-        if (*it1 == val) {
-            return true;
-        }
-    }
-    return false;
+static bool contains(list<T> &alist, const T &val) {
+    return find(alist.begin(), alist.end(), val) != alist.end();
 }
 
 
