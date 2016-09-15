@@ -28,11 +28,11 @@ class TransitionUpdater {
     void remove_outgoing_transition(
         AbstractState *src, int op_id, AbstractState *target);
 
-    void split_incoming_transitions(
+    void rewire_incoming_transitions(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
-    void split_outgoing_transitions(
+    void rewire_outgoing_transitions(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
-    void split_loops(
+    void rewire_loops(
         AbstractState *v, AbstractState *v1, AbstractState *v2, int var);
 
 public:

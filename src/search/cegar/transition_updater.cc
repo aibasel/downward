@@ -49,7 +49,7 @@ void TransitionUpdater::remove_outgoing_transition(
     --num_non_loops;
 }
 
-void TransitionUpdater::split_incoming_transitions(
+void TransitionUpdater::rewire_incoming_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        u->v we need to add transitions u->v1, u->v2, or both. */
@@ -83,7 +83,7 @@ void TransitionUpdater::split_incoming_transitions(
     }
 }
 
-void TransitionUpdater::split_outgoing_transitions(
+void TransitionUpdater::rewire_outgoing_transitions(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all transitions
        v->w we need to add transitions v1->w, v2->w, or both. */
@@ -123,7 +123,7 @@ void TransitionUpdater::split_outgoing_transitions(
     }
 }
 
-void TransitionUpdater::split_loops(
+void TransitionUpdater::rewire_loops(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
     /* State v has been split into v1 and v2. Now for all self-loops
        v->v we need to add one or two of the transitions v1->v1, v1->v2,
@@ -179,9 +179,9 @@ void TransitionUpdater::split_loops(
 
 void TransitionUpdater::rewire(
     AbstractState *v, AbstractState *v1, AbstractState *v2, int var) {
-    split_incoming_transitions(v, v1, v2, var);
-    split_outgoing_transitions(v, v1, v2, var);
-    split_loops(v, v1, v2, var);
+    rewire_incoming_transitions(v, v1, v2, var);
+    rewire_outgoing_transitions(v, v1, v2, var);
+    rewire_loops(v, v1, v2, var);
 }
 
 int TransitionUpdater::get_num_non_loops() const {
