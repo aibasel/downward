@@ -50,23 +50,15 @@ struct HMEntry {
     // -1 for op itself
     std::vector<FactPair> pc_for;
 
-    HMEntry() {
-        fluents.resize(0, FactPair(-1, -1));
-        level = -1;
+    HMEntry()
+        : level(-1) {
     }
 };
 
-typedef std::map<FluentSet, int, FluentSetComparer> FluentSetToIntMap;
+using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
 
 class HMLandmarks : public LandmarkFactory {
-public:
-    explicit HMLandmarks(const options::Options &opts);
-    virtual ~HMLandmarks() override = default;
-
-    virtual bool supports_conditional_effects() const override;
-private:
-//  typedef std::set<std::pair<int,int> > TriggerSet;
-    typedef std::unordered_map<int, std::set<int>> TriggerSet;
+    using TriggerSet = std::unordered_map<int, std::set<int>>;
 
     virtual void generate_landmarks(const TaskProxy &task_proxy, Exploration &exploration) override;
 
@@ -84,16 +76,14 @@ private:
                            const FluentSet &fs1,
                            const FluentSet &fs2);
     void build_pm_ops(const TaskProxy &task_proxy);
-// should be used together in a tuple?
     bool interesting(const VariablesProxy &variables,
                      int var1, int val1,
                      int var2, int val2) const;
-// already generated, so just return
     virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) override;
 
     void add_lm_node(int set_index, bool goal = false);
 
-    void init(const TaskProxy &task_proxy);
+    void initialize(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
     void print_fluentset(const VariablesProxy &variables, const FluentSet &fs);
@@ -105,12 +95,12 @@ private:
 
     std::vector<HMEntry> h_m_table_;
     std::vector<PMOp> pm_ops_;
-// maps each <m set to an int
+    // maps each <m set to an int
     FluentSetToIntMap set_indices_;
-// first is unsat pcs for operator
-// second is unsat pcs for conditional noops
+    // first is unsat pcs for operator
+    // second is unsat pcs for conditional noops
     std::vector<std::pair<int, std::vector<int>>> unsat_pc_count_;
-// variable pairs worth looking at
+    // variable pairs worth looking at
     std::vector<std::vector<bool>> interesting_;
 
     void get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
@@ -142,10 +132,12 @@ private:
     void get_split_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
                           const FluentSet &superset1, const FluentSet &superset2);
     void print_proposition(const VariablesProxy &variables, const FactPair &fluent) const;
-};
 
-extern FluentSet get_operator_precondition(const OperatorProxy &op);
-extern FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op);
+public:
+    explicit HMLandmarks(const options::Options &opts);
+
+    virtual bool supports_conditional_effects() const override;
+};
 }
 
 #endif
