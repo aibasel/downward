@@ -25,6 +25,7 @@ class TransitionUpdater {
     OperatorsProxy get_operators() const;
 
     int get_precondition_value(int op_id, int var) const;
+    int get_postcondition_value(int op_id, int var) const;
 
     void add_transition(AbstractState *src, int op_id, AbstractState *target);
     void add_loop(AbstractState *state, int op_id);
