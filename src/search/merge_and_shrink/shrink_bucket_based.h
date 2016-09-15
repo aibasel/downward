@@ -47,19 +47,18 @@ private:
         StateEquivalenceRelation &equivalence_relation) const;
 
 protected:
-    virtual void compute_equivalence_relation(
-        const FactoredTransitionSystem &fts,
-        int index,
-        int target,
-        StateEquivalenceRelation &equivalence_relation) const override;
     virtual void partition_into_buckets(
         const FactoredTransitionSystem &fts,
         int index,
         std::vector<Bucket> &buckets) const = 0;
-
 public:
     explicit ShrinkBucketBased(const options::Options &opts);
-    virtual ~ShrinkBucketBased() override;
+    virtual ~ShrinkBucketBased() override = default;
+    virtual bool shrink(
+        FactoredTransitionSystem &fts,
+        int index,
+        int target,
+        Verbosity verbosity) const override;
     static void add_options_to_parser(options::OptionParser &parser);
 };
 }

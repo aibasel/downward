@@ -15,9 +15,6 @@ ShrinkBucketBased::ShrinkBucketBased(const options::Options &opts)
     rng = utils::parse_rng_from_options(opts);
 }
 
-ShrinkBucketBased::~ShrinkBucketBased() {
-}
-
 void ShrinkBucketBased::add_options_to_parser(options::OptionParser &parser) {
     utils::add_rng_options(parser);
 }
@@ -95,13 +92,15 @@ void ShrinkBucketBased::compute_abstraction(
     }
 }
 
-void ShrinkBucketBased::compute_equivalence_relation(
-    const FactoredTransitionSystem &fts,
+bool ShrinkBucketBased::shrink(
+    FactoredTransitionSystem &fts,
     int index,
     int target,
-    StateEquivalenceRelation &equivalence_relation) const {
+    Verbosity verbosity) const {
     vector<Bucket> buckets;
     partition_into_buckets(fts, index, buckets);
+    StateEquivalenceRelation equivalence_relation;
     compute_abstraction(buckets, target, equivalence_relation);
+    return shrink_fts(fts, index, equivalence_relation, verbosity);
 }
 }

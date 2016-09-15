@@ -9,13 +9,10 @@ using namespace std;
 namespace goal_count_heuristic {
 GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
     : Heuristic(opts) {
+    cout << "Initializing goal count heuristic..." << endl;
 }
 
 GoalCountHeuristic::~GoalCountHeuristic() {
-}
-
-void GoalCountHeuristic::initialize() {
-    cout << "Initializing goal count heuristic..." << endl;
 }
 
 int GoalCountHeuristic::compute_heuristic(const GlobalState &global_state) {

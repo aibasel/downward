@@ -15,26 +15,26 @@ namespace stubborn_sets_simple {
    Disjunctive action landmarks are computed trivially.*/
 
 // Return the first unsatified goal pair, or (-1, -1) if there is none.
-static inline Fact find_unsatisfied_goal(const GlobalState &state) {
+static inline FactPair find_unsatisfied_goal(const GlobalState &state) {
     for (const pair<int, int> &goal : g_goal) {
         int goal_var = goal.first;
         int goal_value = goal.second;
         if (state[goal_var] != goal_value)
-            return Fact(goal_var, goal_value);
+            return FactPair(goal_var, goal_value);
     }
-    return Fact(-1, -1);
+    return FactPair(-1, -1);
 }
 
 // Return the first unsatified precondition, or (-1, -1) if there is none.
-static inline Fact find_unsatisfied_precondition(
+static inline FactPair find_unsatisfied_precondition(
     const GlobalOperator &op, const GlobalState &state) {
     for (const GlobalCondition &precondition : op.get_preconditions()) {
         int var = precondition.var;
         int value = precondition.val;
         if (state[var] != value)
-            return Fact(var, value);
+            return FactPair(var, value);
     }
-    return Fact(-1, -1);
+    return FactPair(-1, -1);
 }
 
 StubbornSetsSimple::StubbornSetsSimple() {
@@ -62,7 +62,7 @@ void StubbornSetsSimple::compute_interference_relation() {
 }
 
 // Add all operators that achieve the fact (var, value) to stubborn set.
-void StubbornSetsSimple::add_necessary_enabling_set(Fact fact) {
+void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
     for (int op_no : achievers[fact.var][fact.value]) {
         mark_as_stubborn(op_no);
     }
@@ -77,7 +77,7 @@ void StubbornSetsSimple::add_interfering(int op_no) {
 
 void StubbornSetsSimple::initialize_stubborn_set(const GlobalState &state) {
     // Add a necessary enabling set for an unsatisfied goal.
-    Fact unsatisfied_goal = find_unsatisfied_goal(state);
+    FactPair unsatisfied_goal = find_unsatisfied_goal(state);
     assert(unsatisfied_goal.var != -1);
     add_necessary_enabling_set(unsatisfied_goal);
 }
@@ -85,7 +85,7 @@ void StubbornSetsSimple::initialize_stubborn_set(const GlobalState &state) {
 void StubbornSetsSimple::handle_stubborn_operator(const GlobalState &state,
                                                   int op_no) {
     const GlobalOperator &op = g_operators[op_no];
-    Fact unsatisfied_precondition = find_unsatisfied_precondition(op, state);
+    FactPair unsatisfied_precondition = find_unsatisfied_precondition(op, state);
     if (unsatisfied_precondition.var == -1) {
         /* no unsatisfied precondition found
            => operator is applicable
