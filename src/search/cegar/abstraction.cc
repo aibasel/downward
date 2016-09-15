@@ -44,20 +44,21 @@ struct Flaw {
           the corresponding variable. The values that are in both the
           current and the desired abstract state are the "wanted" ones.
         */
-        for (FactProxy wanted_fact : concrete_state) {
-            if (!current_abstract_state->contains(wanted_fact) ||
-                !desired_abstract_state.contains(wanted_fact)) {
-                VariableProxy var = wanted_fact.get_variable();
+        for (FactProxy wanted_fact_proxy : concrete_state) {
+            FactPair fact = wanted_fact_proxy.get_pair();
+            if (!current_abstract_state->contains(fact.var, fact.value) ||
+                !desired_abstract_state.contains(fact.var, fact.value)) {
+                VariableProxy var = wanted_fact_proxy.get_variable();
+                int var_id = var.get_id();
                 vector<int> wanted;
                 for (int value = 0; value < var.get_domain_size(); ++value) {
-                    FactProxy fact = var.get_fact(value);
-                    if (current_abstract_state->contains(fact) &&
-                        desired_abstract_state.contains(fact)) {
+                    if (current_abstract_state->contains(var_id, value) &&
+                        desired_abstract_state.contains(var_id, value)) {
                         wanted.push_back(value);
                     }
                 }
                 assert(!wanted.empty());
-                splits.emplace_back(var.get_id(), move(wanted));
+                splits.emplace_back(var_id, move(wanted));
             }
         }
         assert(!splits.empty());

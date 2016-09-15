@@ -3,6 +3,8 @@
 #include "refinement_hierarchy.h"
 #include "utils.h"
 
+#include "../task_proxy.h"
+
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
@@ -12,16 +14,13 @@ using namespace std;
 namespace cegar {
 const int AbstractSearchInfo::UNDEFINED_OPERATOR = -1;
 
-AbstractState::AbstractState(
-    const TaskProxy &task_proxy, const Domains &domains, Node *node)
-    : task_proxy(task_proxy),
-      domains(domains),
+AbstractState::AbstractState(const Domains &domains, Node *node)
+    : domains(domains),
       node(node) {
 }
 
 AbstractState::AbstractState(AbstractState &&other)
-    : task_proxy(move(other.task_proxy)),
-      domains(move(other.domains)),
+    : domains(move(other.domains)),
       node(move(other.node)),
       incoming_transitions(move(other.incoming_transitions)),
       outgoing_transitions(move(other.outgoing_transitions)),
@@ -31,10 +30,6 @@ AbstractState::AbstractState(AbstractState &&other)
 
 int AbstractState::count(int var) const {
     return domains.count(var);
-}
-
-bool AbstractState::contains(FactProxy fact) const {
-    return domains.test(fact.get_variable().get_id(), fact.get_value());
 }
 
 bool AbstractState::contains(int var, int value) const {
@@ -102,8 +97,8 @@ pair<AbstractState *, AbstractState *> AbstractState::split(
     // Update refinement hierarchy.
     pair<Node *, Node *> new_nodes = node->split(var, wanted);
 
-    AbstractState *v1 = new AbstractState(task_proxy, v1_domains, new_nodes.first);
-    AbstractState *v2 = new AbstractState(task_proxy, v2_domains, new_nodes.second);
+    AbstractState *v1 = new AbstractState(v1_domains, new_nodes.first);
+    AbstractState *v2 = new AbstractState(v2_domains, new_nodes.second);
 
     assert(this->is_more_general_than(*v1));
     assert(this->is_more_general_than(*v2));
@@ -126,7 +121,7 @@ AbstractState AbstractState::regress(OperatorProxy op) const {
         int var_id = precondition.get_variable().get_id();
         regressed_domains.set_single_value(var_id, precondition.get_value());
     }
-    return AbstractState(task_proxy, regressed_domains, nullptr);
+    return AbstractState(regressed_domains, nullptr);
 }
 
 bool AbstractState::domains_intersect(const AbstractState *other, int var) const {
@@ -158,7 +153,7 @@ int AbstractState::get_h_value() const {
 AbstractState *AbstractState::get_trivial_abstract_state(
     const TaskProxy &task_proxy, Node *root_node) {
     AbstractState *abstract_state = new AbstractState(
-        task_proxy, Domains(get_domain_sizes(task_proxy)), root_node);
+        Domains(get_domain_sizes(task_proxy)), root_node);
     return abstract_state;
 }
 
@@ -168,6 +163,6 @@ AbstractState AbstractState::get_abstract_state(
     for (FactProxy condition : conditions) {
         domains.set_single_value(condition.get_variable().get_id(), condition.get_value());
     }
-    return AbstractState(task_proxy, domains, nullptr);
+    return AbstractState(domains, nullptr);
 }
 }
