@@ -55,9 +55,9 @@ void intersect_with(list<T> &alist, const list<T> &other) {
 
 // alist = alist \setminus other
 template<typename T>
-void set_minus(std::list<T> &alist, const std::list<T> &other) {
-    typename std::list<T>::iterator it1 = alist.begin(), tmp;
-    typename std::list<T>::const_iterator it2 = other.begin();
+void set_minus(list<T> &alist, const list<T> &other) {
+    typename list<T>::iterator it1 = alist.begin(), tmp;
+    typename list<T>::const_iterator it2 = other.begin();
 
     while ((it1 != alist.end()) && (it2 != other.end())) {
         if (*it1 < *it2) {
@@ -187,7 +187,7 @@ void HMLandmarks::get_split_m_sets(
     const VariablesProxy &variables,
     int m, int ss1_num_included, int ss2_num_included,
     int ss1_var_index, int ss2_var_index,
-    FluentSet &current, std::vector<FluentSet> &subsets,
+    FluentSet &current, vector<FluentSet> &subsets,
     const FluentSet &superset1, const FluentSet &superset2) {
     /*
        if( ((ss1_var_index == superset1.size()) && (ss1_num_included == 0)) ||
@@ -582,7 +582,7 @@ HMLandmarks::HMLandmarks(const options::Options &opts)
 }
 
 void HMLandmarks::init(const TaskProxy &task_proxy) {
-    std::cout << "h^m landmarks m=" << m_ << endl;
+    cout << "h^m landmarks m=" << m_ << endl;
     if (!task_proxy.get_axioms().empty()) {
         cerr << "h^m landmarks don't support axioms" << endl;
         utils::exit_with(ExitCode::UNSUPPORTED);
