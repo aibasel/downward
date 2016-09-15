@@ -17,7 +17,6 @@ class LandmarkGraphMerged : public LandmarkFactory {
     LandmarkNode *get_matching_landmark(const LandmarkNode &lm) const;
 public:
     explicit LandmarkGraphMerged(const options::Options &opts);
-    virtual ~LandmarkGraphMerged() override = default;
 
     virtual bool supports_conditional_effects() const override;
 };
