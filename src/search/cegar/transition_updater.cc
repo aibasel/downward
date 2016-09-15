@@ -6,6 +6,9 @@
 #include "../task_proxy.h"
 #include "../task_tools.h"
 
+#include <algorithm>
+#include <map>
+
 using namespace std;
 
 namespace cegar {
@@ -14,15 +17,48 @@ static vector<vector<FactPair>> get_preconditions_by_operator(
     vector<vector<FactPair>> preconditions_by_operator;
     preconditions_by_operator.reserve(ops.size());
     for (OperatorProxy op : ops) {
-        preconditions_by_operator.push_back(get_fact_pairs(op.get_preconditions()));
+        preconditions_by_operator.push_back(
+            get_fact_pairs(op.get_preconditions()));
     }
     return preconditions_by_operator;
 }
+
+static vector<FactPair> get_postconditions(
+    const OperatorProxy &op) {
+    map<int, int> var_to_post;
+    for (FactProxy fact : op.get_preconditions()) {
+        var_to_post[fact.get_variable().get_id()] = fact.get_value();
+    }
+    for (EffectProxy effect : op.get_effects()) {
+        FactPair fact = effect.get_fact().get_pair();
+        var_to_post[fact.var] = fact.value;
+    }
+    vector<FactPair> postconditions;
+    postconditions.reserve(var_to_post.size());
+    for (const pair<int, int> &fact : var_to_post) {
+        postconditions.emplace_back(fact.first, fact.second);
+    }
+    assert(is_sorted(postconditions.begin(), postconditions.end()));
+    return postconditions;
+}
+
+static vector<vector<FactPair>> get_postconditions_by_operator(
+    const OperatorsProxy &ops) {
+    vector<vector<FactPair>> postconditions_by_operator;
+    postconditions_by_operator.reserve(ops.size());
+    for (OperatorProxy op : ops) {
+        postconditions_by_operator.push_back(get_postconditions(op));
+    }
+    return postconditions_by_operator;
+}
+
 
 TransitionUpdater::TransitionUpdater(const shared_ptr<AbstractTask> &task)
     : task(task),
       preconditions_by_operator(
           get_preconditions_by_operator(TaskProxy(*task).get_operators())),
+      postconditions_by_operator(
+          get_postconditions_by_operator(TaskProxy(*task).get_operators())),
       num_non_loops(0),
       num_loops(0) {
 }

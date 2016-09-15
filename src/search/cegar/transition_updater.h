@@ -17,6 +17,7 @@ class AbstractState;
 class TransitionUpdater {
     const std::shared_ptr<AbstractTask> task;
     std::vector<std::vector<FactPair>> preconditions_by_operator;
+    std::vector<std::vector<FactPair>> postconditions_by_operator;
 
     int num_non_loops;
     int num_loops;
