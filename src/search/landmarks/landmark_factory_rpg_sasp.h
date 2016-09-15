@@ -57,7 +57,6 @@ class LandmarkFactoryRpgSasp : public LandmarkFactory {
     void build_disjunction_classes(const TaskProxy &task_proxy);
 public:
     explicit LandmarkFactoryRpgSasp(const options::Options &opts);
-    virtual ~LandmarkFactoryRpgSasp() override = default;
 
     virtual bool supports_conditional_effects() const override;
 };

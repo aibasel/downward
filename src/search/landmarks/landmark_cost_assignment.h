@@ -25,7 +25,7 @@ protected:
 public:
     LandmarkCostAssignment(const OperatorsProxy &operators,
                            const std::shared_ptr<LandmarkGraph> &graph);
-    virtual ~LandmarkCostAssignment();
+    virtual ~LandmarkCostAssignment() = default;
 
     virtual double cost_sharing_h_value() = 0;
 };
@@ -36,7 +36,6 @@ public:
     LandmarkUniformSharedCostAssignment(const OperatorsProxy &operators,
                                         const std::shared_ptr<LandmarkGraph> &graph,
                                         bool use_action_landmarks);
-    virtual ~LandmarkUniformSharedCostAssignment();
 
     virtual double cost_sharing_h_value() override;
 };
@@ -56,7 +55,6 @@ public:
     LandmarkEfficientOptimalSharedCostAssignment(const OperatorsProxy &operators,
                                                  const std::shared_ptr<LandmarkGraph> &graph,
                                                  lp::LPSolverType solver_type);
-    virtual ~LandmarkEfficientOptimalSharedCostAssignment();
 
     virtual double cost_sharing_h_value() override;
 };

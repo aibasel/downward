@@ -24,11 +24,6 @@ LandmarkCostAssignment::LandmarkCostAssignment(const OperatorsProxy &operators,
     }
 }
 
-
-LandmarkCostAssignment::~LandmarkCostAssignment() {
-}
-
-
 const set<int> &LandmarkCostAssignment::get_achievers(
     int lmn_status, const LandmarkNode &lmn) const {
     // Return relevant achievers of the landmark according to its status.
@@ -45,9 +40,6 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
     const OperatorsProxy &operators, const shared_ptr<LandmarkGraph> &graph, bool use_action_landmarks)
     : LandmarkCostAssignment(operators, graph), use_action_landmarks(use_action_landmarks) {
-}
-
-LandmarkUniformSharedCostAssignment::~LandmarkUniformSharedCostAssignment() {
 }
 
 
@@ -158,8 +150,6 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
     }
 }
 
-LandmarkEfficientOptimalSharedCostAssignment::~LandmarkEfficientOptimalSharedCostAssignment() {
-}
 
 double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value() {
     /* TODO: We could also do the same thing with action landmarks we

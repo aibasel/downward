@@ -75,7 +75,6 @@ public:
 
 public:
     explicit LandmarkFactoryZhuGivan(const options::Options &opts);
-    virtual ~LandmarkFactoryZhuGivan() override = default;
 
     virtual bool supports_conditional_effects() const override;
 };

@@ -31,6 +31,8 @@ public:
     explicit LandmarkFactory(const options::Options &opts);
     virtual ~LandmarkFactory() = default;
 
+    LandmarkFactory(const LandmarkFactory &) = delete;
+
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const TaskProxy &task_proxy, Exploration &exploration);
 
     bool use_disjunctive_landmarks() const {return disjunctive_landmarks; }

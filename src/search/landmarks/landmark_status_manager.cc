@@ -1,27 +1,26 @@
 #include "landmark_status_manager.h"
 
+#include "landmark_graph.h"
+
 using namespace std;
 
 namespace landmarks {
 LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    : lm_graph(graph) {
-    do_intersection = true;
+    : lm_graph(graph),
+      do_intersection(true) {
 }
 
 vector<bool> &LandmarkStatusManager::get_reached_landmarks(const GlobalState &state) {
     return reached_lms[state];
 }
 
-
 void LandmarkStatusManager::set_landmarks_for_initial_state(
     const GlobalState &initial_state) {
     vector<bool> &reached = get_reached_landmarks(initial_state);
     reached.resize(lm_graph.number_of_landmarks());
-    //cout << "NUMBER OF LANDMARKS: " << lm_graph.number_of_landmarks() << endl;
 
     int inserted = 0;
     int num_goal_lms = 0;
-    // opt: initial_state_landmarks.resize(lm_graph->number_of_landmarks());
     const set<LandmarkNode *> &nodes = lm_graph.get_nodes();
     for (set<LandmarkNode *>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
         LandmarkNode *node_p = *it;
@@ -167,19 +166,15 @@ bool LandmarkStatusManager::check_lost_landmark_children_needed_again(const Land
 
 bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
                                              const vector<bool> &reached) const {
-//Note: this is the same as !check_node_orders_disobeyed
+    //Note: this is the same as !check_node_orders_disobeyed
     for (const auto &parent : node.parents) {
         LandmarkNode *parent_node = parent.first;
         if (true) // Note: no condition on edge type here
             if (!reached[parent_node->get_id()]) {
-                //cout << "parent is not in reached: ";
-                //cout << parent_p << " ";
-                //lm_graph.dump_node(parent_p);
                 return false;
             }
 
     }
-    //cout << "all parents are in reached" << endl;
     return true;
 }
 }
