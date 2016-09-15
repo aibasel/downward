@@ -5,17 +5,11 @@ import os
 
 from lab.environments import LocalEnvironment, MaiaEnvironment
 
-from common_setup import IssueConfig, IssueExperiment, is_test_run
+from common_setup import IssueConfig, IssueExperiment, is_test_run, get_repo_base
 
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["issue657-v2-base", "issue657-v2"]
-CONFIGS = [
-    IssueConfig(heuristic, ["--search", "astar({})".format(heuristic)])
-    for heuristic in [
-        "cegar(max_states=10000)",
-        "cegar(subtasks=[original()],max_states=10000)"]
-]
+REPO = get_repo_base()
 SUITE = [
     'airport', 'barman-opt11-strips', 'barman-opt14-strips', 'blocks',
     'childsnack-opt14-strips', 'depot', 'driverlog',
@@ -45,14 +39,20 @@ if is_test_run():
     ENVIRONMENT = LocalEnvironment(processes=1)
 
 exp = IssueExperiment(
-    revisions=REVISIONS,
-    configs=CONFIGS,
     environment=ENVIRONMENT,
 )
 exp.add_suite(BENCHMARKS_DIR, SUITE)
+exp.add_algorithm(
+    "01:issue657-v2-base:cegar",
+    REPO,
+    "issue657-v2-base",
+    ["--search", "astar(cegar(max_states=10000,max_time=infinity))"])
+exp.add_algorithm(
+    "02:issue657-v2:cegar",
+    REPO,
+    "issue657-v2",
+    ["--search", "astar(cegar(max_states=10000,max_time=infinity,max_transitions=infinity))"])
 
 exp.add_absolute_report_step()
-exp.add_comparison_table_step()
-exp.add_scatter_plot_step(attributes=["total_time"])
 
 exp()
