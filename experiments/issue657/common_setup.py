@@ -188,6 +188,8 @@ class IssueExperiment(FastDownwardExperiment):
 
         """
 
+        revisions = revisions or []
+        configs = configs or []
         path = path or get_data_dir()
 
         FastDownwardExperiment.__init__(self, path=path, **kwargs)
