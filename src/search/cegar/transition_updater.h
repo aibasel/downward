@@ -2,9 +2,11 @@
 #define CEGAR_TRANSITION_UPDATER_H
 
 class AbstractTask;
+class FactPair;
 class OperatorsProxy;
 
 #include <memory>
+#include <vector>
 
 namespace cegar {
 class AbstractState;
@@ -14,6 +16,7 @@ class AbstractState;
 */
 class TransitionUpdater {
     const std::shared_ptr<AbstractTask> task;
+    std::vector<std::vector<FactPair>> preconditions_by_operator;
 
     int num_non_loops;
     int num_loops;
