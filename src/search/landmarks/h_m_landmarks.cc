@@ -653,7 +653,6 @@ void HMLandmarks::calc_achievers(const TaskProxy &task_proxy, Exploration &) {
 void HMLandmarks::free_unneeded_memory() {
     utils::release_vector_memory(h_m_table_);
     utils::release_vector_memory(pm_ops_);
-    utils::release_vector_memory(interesting_);
     utils::release_vector_memory(unsat_pc_count_);
 
     set_indices_.clear();
@@ -912,12 +911,9 @@ void HMLandmarks::generate_landmarks(const TaskProxy &task_proxy, Exploration &)
     compute_h_m_landmarks(task_proxy);
     // now construct landmarks graph
     vector<FluentSet> goal_subsets;
-    FluentSet g_goal;
-    for (FactProxy goal : task_proxy.get_goals()) {
-        g_goal.emplace_back(goal.get_variable().get_id(), goal.get_value());
-    }
+    FluentSet goals = get_fact_pairs(task_proxy.get_goals());
     VariablesProxy variables = task_proxy.get_variables();
-    get_m_sets(variables, m_, goal_subsets, g_goal);
+    get_m_sets(variables, m_, goal_subsets, goals);
     list<int> all_lms;
     for (const FluentSet &goal_subset : goal_subsets) {
         assert(set_indices_.find(goal_subset) != set_indices_.end());
