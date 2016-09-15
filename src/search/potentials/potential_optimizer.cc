@@ -90,7 +90,7 @@ void PotentialOptimizer::optimize_for_samples(const vector<State> &samples) {
     solve_and_extract();
 }
 
-const std::shared_ptr<AbstractTask> PotentialOptimizer::get_task() const {
+const shared_ptr<AbstractTask> PotentialOptimizer::get_task() const {
     return task;
 }
 

@@ -89,9 +89,6 @@ ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
       at_limit(AtLimit(opts.get_enum("at_limit"))) {
 }
 
-ShrinkBisimulation::~ShrinkBisimulation() {
-}
-
 int ShrinkBisimulation::initialize_groups(const FactoredTransitionSystem &fts,
                                           int index,
                                           vector<int> &state_to_group) const {
@@ -160,16 +157,22 @@ void ShrinkBisimulation::compute_signatures(
       If label groups were sorted (every group by increasing label numbers,
       groups by smallest label number), then the following configuration
       gives a different result on parcprinter-08-strips:p06.pddl:
-      astar(merge_and_shrink(merge_strategy=merge_dfp,
+      astar(merge_and_shrink(
+            merge_strategy=merge_stateless(merge_selector=
+                score_based_filtering(scoring_functions=[goal_relevance,dfp,
+                                                         total_order])),
             shrink_strategy=shrink_bisimulation(greedy=false),
-            label_reduction=label_reduction(before_shrinking=true,before_merging=false),
+            label_reduction=exact(before_shrinking=true,before_merging=false),
             max_states=50000,threshold_before_merge=1))
 
       The same behavioral difference can be obtained even without modifying
-      the merge-and-shrink code: hg meld -r c66ee00a250a:d2e317621f2c.
-      Running the above config (move max_states inside shrink_bisimulation,
-      move threshold_before_merge inside shrink_bisimulation and rename to
-      threshold) on those two revisions yields the same difference.
+      the merge-and-shrink code, using the two revisions c66ee00a250a and
+      d2e317621f2c. Running the above config, adapted to the old syntax,
+      yields the same difference:
+      astar(merge_and_shrink(merge_strategy=merge_dfp,
+            shrink_strategy=shrink_bisimulation(greedy=false,max_states=50000,
+                                                threshold=1),
+            label_reduction=exact(before_shrinking=true,before_merging=false)))
     */
     for (const GroupAndTransitions &gat : ts) {
         const LabelGroup &label_group = gat.label_group;
@@ -218,11 +221,11 @@ void ShrinkBisimulation::compute_signatures(
     ::sort(signatures.begin(), signatures.end());
 }
 
-void ShrinkBisimulation::compute_abstraction(
-    const FactoredTransitionSystem &fts,
+bool ShrinkBisimulation::shrink(
+    FactoredTransitionSystem &fts,
     int index,
     int target_size,
-    StateEquivalenceRelation &equivalence_relation) const {
+    Verbosity verbosity) const {
     const TransitionSystem &ts = fts.get_ts(index);
     const Distances &distances = fts.get_dist(index);
     int num_states = ts.get_size();
@@ -234,7 +237,8 @@ void ShrinkBisimulation::compute_abstraction(
     int num_groups = initialize_groups(fts, index, state_to_group);
     // cout << "number of initial groups: " << num_groups << endl;
 
-    // assert(num_groups <= target_size); // TODO: We currently violate this; see issue250
+    // TODO: We currently violate this; see issue250
+    // assert(num_groups <= target_size);
 
     int max_h = distances.get_max_h();
     assert(max_h >= 0 && max_h != INF);
@@ -329,7 +333,7 @@ void ShrinkBisimulation::compute_abstraction(
     utils::release_vector_memory(signatures);
 
     // Generate final result.
-    assert(equivalence_relation.empty());
+    StateEquivalenceRelation equivalence_relation;
     equivalence_relation.resize(num_groups);
     for (int state = 0; state < num_states; ++state) {
         int group = state_to_group[state];
@@ -338,14 +342,8 @@ void ShrinkBisimulation::compute_abstraction(
             equivalence_relation[group].push_front(state);
         }
     }
-}
 
-void ShrinkBisimulation::compute_equivalence_relation(
-    const FactoredTransitionSystem &fts,
-    int index,
-    int target,
-    StateEquivalenceRelation &equivalence_relation) const {
-    compute_abstraction(fts, index, target, equivalence_relation);
+    return shrink_fts(fts, index, equivalence_relation, verbosity);
 }
 
 string ShrinkBisimulation::name() const {

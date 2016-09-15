@@ -36,7 +36,7 @@ static const int PRE_FILE_VERSION = 3;
 //       are_mutex, which is at least better than exposing the data
 //       structure globally.)
 
-static vector<vector<set<Fact>>> g_inconsistent_facts;
+static vector<vector<set<FactPair>>> g_inconsistent_facts;
 
 bool test_goal(const GlobalState &state) {
     for (size_t i = 0; i < g_goal.size(); ++i) {
@@ -159,7 +159,7 @@ void read_mutexes(istream &in) {
         check_magic(in, "begin_mutex_group");
         int num_facts;
         in >> num_facts;
-        vector<Fact> invariant_group;
+        vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
             int var;
@@ -168,8 +168,8 @@ void read_mutexes(istream &in) {
             invariant_group.emplace_back(var, value);
         }
         check_magic(in, "end_mutex_group");
-        for (const Fact &fact1 : invariant_group) {
-            for (const Fact &fact2 : invariant_group) {
+        for (const FactPair &fact1 : invariant_group) {
+            for (const FactPair &fact2 : invariant_group) {
                 if (fact1.var != fact2.var) {
                     /* The "different variable" test makes sure we
                        don't mark a fact as mutex with itself
@@ -224,7 +224,7 @@ void read_axioms(istream &in) {
     for (int i = 0; i < count; ++i)
         g_axioms.push_back(GlobalOperator(in, true));
 
-    g_axiom_evaluator = new AxiomEvaluator;
+    g_axiom_evaluator = new AxiomEvaluator(TaskProxy(*g_root_task()));
 }
 
 void read_everything(istream &in) {
@@ -267,7 +267,7 @@ void read_everything(istream &in) {
         num_facts += g_variable_domain[var];
 
     cout << "Variables: " << num_vars << endl;
-    cout << "Facts: " << num_facts << endl;
+    cout << "FactPairs: " << num_facts << endl;
     cout << "Bytes per state: "
          << g_state_packer->get_num_bins() * sizeof(IntPacker::Bin)
          << endl;
@@ -347,7 +347,7 @@ void verify_no_axioms_no_conditional_effects() {
     verify_no_conditional_effects();
 }
 
-bool are_mutex(const Fact &a, const Fact &b) {
+bool are_mutex(const FactPair &a, const FactPair &b) {
     if (a.var == b.var) {
         // Same variable: mutex iff different value.
         return a.value != b.value;

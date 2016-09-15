@@ -10,7 +10,7 @@ class AbstractTask;
 class Axiom;
 class AxiomEvaluator;
 class CausalGraph;
-struct Fact;
+struct FactPair;
 class GlobalOperator;
 class GlobalState;
 class IntPacker;
@@ -44,7 +44,7 @@ void verify_no_axioms_no_conditional_effects();
 
 void check_magic(std::istream &in, std::string magic);
 
-bool are_mutex(const Fact &a, const Fact &b);
+bool are_mutex(const FactPair &a, const FactPair &b);
 
 extern bool g_use_metric;
 extern int g_min_action_cost;

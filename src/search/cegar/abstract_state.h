@@ -31,8 +31,6 @@ public:
         reset();
     }
 
-    ~AbstractSearchInfo() = default;
-
     void reset() {
         g = std::numeric_limits<int>::max();
         incoming_transition = Transition(UNDEFINED_OPERATOR, nullptr);
@@ -58,8 +56,13 @@ public:
     }
 };
 
+/*
+  Store and update abstract Domains and transitions.
+*/
 class AbstractState {
-    // Since the abstraction owns the state we don't need AbstractTask.
+    // TODO: The TaskProxy is only needed for splitting states. Once
+    //       this functionality has been moved outside AbstractState
+    //       (issue657) we should make sure that this member is removed.
     const TaskProxy &task_proxy;
 
     // Abstract domains for all variables.
@@ -95,6 +98,10 @@ public:
     void remove_outgoing_transition(int op_id, AbstractState *other);
 
     bool domains_intersect(const AbstractState *other, int var) const;
+
+    AbstractState(const AbstractState &) = delete;
+
+    AbstractState(AbstractState &&other);
 
     // Return the size of var's abstract domain for this state.
     int count(int var) const;
