@@ -31,6 +31,15 @@ OperatorsProxy TransitionUpdater::get_operators() const {
     return TaskProxy(*task).get_operators();
 }
 
+int TransitionUpdater::get_precondition_value(int op_id, int var) const {
+    for (const FactPair &fact : preconditions_by_operator[op_id]) {
+        if (fact.var == var) {
+            return fact.value;
+        }
+    }
+    return -1;
+}
+
 void TransitionUpdater::add_loops_to_trivial_abstract_state(AbstractState *state) {
     for (OperatorProxy op : get_operators()) {
         add_loop(state, op.get_id());
@@ -106,7 +115,7 @@ void TransitionUpdater::rewire_outgoing_transitions(
         OperatorProxy op = operators[op_id];
         AbstractState *w = transition.target;
         assert(w != v);
-        int pre = get_pre(op, var);
+        int pre = get_precondition_value(op_id, var);
         int post = get_post(op, var);
         if (post == UNDEFINED_VALUE) {
             assert(pre == UNDEFINED_VALUE);
@@ -144,7 +153,7 @@ void TransitionUpdater::rewire_loops(
     OperatorsProxy operators = get_operators();
     for (int op_id : v->get_loops()) {
         OperatorProxy op = operators[op_id];
-        int pre = get_pre(op, var);
+        int pre = get_precondition_value(op_id, var);
         int post = get_post(op, var);
         if (pre == UNDEFINED_VALUE) {
             // op has no precondition on var --> it must start in v1 and v2.
