@@ -29,7 +29,7 @@ struct ExProposition {
     ExUnaryOperator *reached_by;
 
     ExProposition()
-        : fact(-1, -1),
+        : fact(FactPair::no_fact),
           is_goal_condition(false),
           is_termination_condition(false),
           h_add_cost(-1),
