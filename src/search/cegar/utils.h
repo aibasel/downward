@@ -34,10 +34,6 @@ extern std::unordered_set<FactProxy> get_relaxed_possible_before(
 
 extern std::vector<int> get_domain_sizes(const TaskProxy &task);
 extern std::vector<int> get_operator_costs(const TaskProxy &task);
-
-extern int get_pre(const OperatorProxy &op, int var_id);
-extern int get_eff(const OperatorProxy &op, int var_id);
-extern int get_post(const OperatorProxy &op, int var_id);
 }
 
 /*
