@@ -77,8 +77,8 @@ class HMLandmarks : public LandmarkFactory {
                            const FluentSet &fs2);
     void build_pm_ops(const TaskProxy &task_proxy);
     bool interesting(const VariablesProxy &variables,
-                     int var1, int val1,
-                     int var2, int val2) const;
+                     const FactPair &fact1,
+                     const FactPair &fact2) const;
     virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration) override;
 
     void add_lm_node(int set_index, bool goal = false);
