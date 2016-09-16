@@ -49,7 +49,9 @@ protected:
 
     void reward_progress();
 
-    void get_successor_operators(std::vector<const GlobalOperator *> &ops);
+    void get_successor_operators(
+        std::vector<const GlobalOperator *> &successor_ops,
+        std::vector<bool> &operator_is_preferred);
 
     // TODO: Move into SearchEngine?
     void print_checkpoint_line(int g) const;
