@@ -75,6 +75,11 @@ public:
     explicit Heuristic(const options::Options &options);
     virtual ~Heuristic() override;
 
+    /*
+      The following two notify* methods are needed for path-dependent
+      heuristics. Since they use PerStateInformation, these methods need
+      registered states, i.e. GlobalStates for now.
+    */
     virtual void notify_initial_state(const GlobalState & /*initial_state*/) {
     }
 
