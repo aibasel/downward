@@ -230,7 +230,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
     LandmarkNode &b, EdgeType t) {
     bool simple_lm_exists = false;
     // TODO: assign with FactPair::no_fact
-    FactPair lm_prop(-1, -1);
+    FactPair lm_prop = FactPair::no_fact;
     State initial_state = task_proxy.get_initial_state();
     for (const FactPair &lm : a) {
         if (initial_state[lm.var].get_value() == lm.value) {
