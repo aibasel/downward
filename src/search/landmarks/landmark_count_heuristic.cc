@@ -199,8 +199,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
             if (does_fire(effect, state))
                 continue;
             FactProxy fact_proxy = effect.get_fact();
-            const FactPair fact(fact_proxy.get_variable().get_id(), fact_proxy.get_value());
-            LandmarkNode *lm_p = lgraph->get_landmark(fact);
+            LandmarkNode *lm_p = lgraph->get_landmark(fact_proxy.get_pair());
             if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
                 if (lm_p->disjunctive) {
                     ha_disj.push_back(op.get_id());

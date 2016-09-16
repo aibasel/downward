@@ -269,7 +269,7 @@ bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables,
             // We have seen this effect before, adding conditions
             for (FactProxy effect_condition : effect_conditions) {
                 vector<FactPair> &vec = effect_conditions_by_variable.find(var_id)->second.second;
-                vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
+                vec.push_back(effect_condition.get_pair());
             }
         } else {
             // We have not seen this effect before, making new effect entry
@@ -277,7 +277,7 @@ bool LandmarkFactory::effect_always_happens(const VariablesProxy &variables,
                 var_id, make_pair(
                     value, vector<FactPair> ())).first->second.second;
             for (FactProxy effect_condition : effect_conditions) {
-                vec.emplace_back(effect_condition.get_variable().get_id(), effect_condition.get_value());
+                vec.push_back(effect_condition.get_pair());
             }
         }
     }
