@@ -300,7 +300,7 @@ void HMLandmarks::print_proposition(const VariablesProxy &variables, const FactP
 
 static FluentSet get_operator_precondition(const OperatorProxy &op) {
     FluentSet preconditions = get_fact_pairs(op.get_preconditions());
-    assert(is_sorted(preconditions.begin(), preconditions.end()));
+    sort(preconditions.begin(), preconditions.end());
     return preconditions;
 }
 
