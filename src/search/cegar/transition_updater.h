@@ -15,14 +15,11 @@ class AbstractState;
   Rewire transitions after each split.
 */
 class TransitionUpdater {
-    const std::shared_ptr<AbstractTask> task;
     std::vector<std::vector<FactPair>> preconditions_by_operator;
     std::vector<std::vector<FactPair>> postconditions_by_operator;
 
     int num_non_loops;
     int num_loops;
-
-    OperatorsProxy get_operators() const;
 
     int get_precondition_value(int op_id, int var) const;
     int get_postcondition_value(int op_id, int var) const;

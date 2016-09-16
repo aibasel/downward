@@ -64,17 +64,12 @@ static int lookup_value(const vector<FactPair> &facts, int var) {
 
 
 TransitionUpdater::TransitionUpdater(const shared_ptr<AbstractTask> &task)
-    : task(task),
-      preconditions_by_operator(
+    : preconditions_by_operator(
           get_preconditions_by_operator(TaskProxy(*task).get_operators())),
       postconditions_by_operator(
           get_postconditions_by_operator(TaskProxy(*task).get_operators())),
       num_non_loops(0),
       num_loops(0) {
-}
-
-OperatorsProxy TransitionUpdater::get_operators() const {
-    return TaskProxy(*task).get_operators();
 }
 
 int TransitionUpdater::get_precondition_value(int op_id, int var) const {
@@ -86,8 +81,8 @@ int TransitionUpdater::get_postcondition_value(int op_id, int var) const {
 }
 
 void TransitionUpdater::add_loops_to_trivial_abstract_state(AbstractState *state) {
-    for (OperatorProxy op : get_operators()) {
-        add_loop(state, op.get_id());
+    for (size_t i = 0; i < preconditions_by_operator.size(); ++i) {
+        add_loop(state, i);
     }
 }
 
