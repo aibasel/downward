@@ -75,7 +75,7 @@ void LazySearch::get_successor_operators(vector<const GlobalOperator *> &ops) {
     vector<const GlobalOperator *> preferred_operators;
     for (Heuristic *heur : preferred_operator_heuristics) {
         if (!current_eval_context.is_heuristic_infinite(heur)) {
-            vector<const GlobalOperator *> preferred =
+            const vector<const GlobalOperator *> &preferred =
                 current_eval_context.get_preferred_operators(heur);
             preferred_operators.insert(
                 preferred_operators.end(), preferred.begin(), preferred.end());
