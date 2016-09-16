@@ -38,7 +38,9 @@ class Heuristic : public ScalarEvaluator {
       being able to reuse a vector from one iteration to the next, but
       this seems to be the only potential downside.
     */
+    std::vector<bool> operator_is_preferred;
     std::vector<const GlobalOperator *> preferred_operators;
+
 protected:
     /*
       Cache for saving h values
