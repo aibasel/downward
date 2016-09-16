@@ -63,11 +63,9 @@ static int lookup_value(const vector<FactPair> &facts, int var) {
 }
 
 
-TransitionUpdater::TransitionUpdater(const shared_ptr<AbstractTask> &task)
-    : preconditions_by_operator(
-          get_preconditions_by_operator(TaskProxy(*task).get_operators())),
-      postconditions_by_operator(
-          get_postconditions_by_operator(TaskProxy(*task).get_operators())),
+TransitionUpdater::TransitionUpdater(const OperatorsProxy &ops)
+    : preconditions_by_operator(get_preconditions_by_operator(ops)),
+      postconditions_by_operator(get_postconditions_by_operator(ops)),
       num_non_loops(0),
       num_loops(0) {
 }
