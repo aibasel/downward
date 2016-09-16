@@ -285,7 +285,7 @@ void HMLandmarks::get_m_sets(const VariablesProxy &variables, int m,
                              const State &state) {
     FluentSet state_fluents;
     for (FactProxy fact : state) {
-        state_fluents.emplace_back(fact.get_variable().get_id(), fact.get_value());
+        state_fluents.push_back(fact.get_pair());
     }
     get_m_sets(variables, m, subsets, state_fluents);
 }
