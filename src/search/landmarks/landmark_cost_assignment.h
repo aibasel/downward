@@ -23,7 +23,7 @@ protected:
     const std::set<int> &get_achievers(int lmn_status,
                                        const LandmarkNode &lmn) const;
 public:
-    LandmarkCostAssignment(const OperatorsProxy &operators,
+    LandmarkCostAssignment(const std::vector<int> &operator_costs,
                            const std::shared_ptr<LandmarkGraph> &graph);
     virtual ~LandmarkCostAssignment() = default;
 
@@ -33,7 +33,7 @@ public:
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
     bool use_action_landmarks;
 public:
-    LandmarkUniformSharedCostAssignment(const OperatorsProxy &operators,
+    LandmarkUniformSharedCostAssignment(const std::vector<int> &operator_costs,
                                         const std::shared_ptr<LandmarkGraph> &graph,
                                         bool use_action_landmarks);
 
@@ -52,7 +52,7 @@ class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignme
     std::vector<lp::LPConstraint> lp_constraints;
     std::vector<lp::LPConstraint> non_empty_lp_constraints;
 public:
-    LandmarkEfficientOptimalSharedCostAssignment(const OperatorsProxy &operators,
+    LandmarkEfficientOptimalSharedCostAssignment(const std::vector<int> &operator_costs,
                                                  const std::shared_ptr<LandmarkGraph> &graph,
                                                  lp::LPSolverType solver_type);
 

@@ -56,6 +56,13 @@ void verify_no_conditional_effects(TaskProxy task) {
     }
 }
 
+vector<int> get_operator_costs(const TaskProxy &task) {
+    vector<int> costs;
+    for (OperatorProxy op : task.get_operators())
+        costs.push_back(op.get_cost());
+    return costs;
+}
+
 double get_average_operator_cost(TaskProxy task_proxy) {
     double average_operator_cost = 0;
     for (OperatorProxy op : task_proxy.get_operators()) {

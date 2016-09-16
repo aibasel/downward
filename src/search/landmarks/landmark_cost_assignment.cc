@@ -15,13 +15,9 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkCostAssignment::LandmarkCostAssignment(const OperatorsProxy &operators,
+LandmarkCostAssignment::LandmarkCostAssignment(const std::vector<int> &operator_costs,
                                                const std::shared_ptr<LandmarkGraph> &graph)
-    : lm_graph(graph) {
-    operator_costs.reserve(operators.size());
-    for (OperatorProxy op : operators) {
-        operator_costs.push_back(op.get_cost());
-    }
+    : lm_graph(graph), operator_costs(operator_costs) {
 }
 
 const set<int> &LandmarkCostAssignment::get_achievers(
@@ -38,8 +34,8 @@ const set<int> &LandmarkCostAssignment::get_achievers(
 
 // Uniform cost partioning
 LandmarkUniformSharedCostAssignment::LandmarkUniformSharedCostAssignment(
-    const OperatorsProxy &operators, const shared_ptr<LandmarkGraph> &graph, bool use_action_landmarks)
-    : LandmarkCostAssignment(operators, graph), use_action_landmarks(use_action_landmarks) {
+    const std::vector<int> &operator_costs, const shared_ptr<LandmarkGraph> &graph, bool use_action_landmarks)
+    : LandmarkCostAssignment(operator_costs, graph), use_action_landmarks(use_action_landmarks) {
 }
 
 
@@ -126,14 +122,14 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    const OperatorsProxy &operators, const std::shared_ptr<LandmarkGraph> &graph,
+    const std::vector<int> &operator_costs, const std::shared_ptr<LandmarkGraph> &graph,
     lp::LPSolverType solver_type)
-    : LandmarkCostAssignment(operators, graph),
+    : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type) {
     /* The LP has one variable (column) per landmark and one
        inequality (row) per operator. */
     int num_cols = lm_graph->number_of_landmarks();
-    int num_rows = operators.size();
+    int num_rows = operator_costs.size();
 
     /* We want to maximize 1 * cost(lm_1) + ... + 1 * cost(lm_n),
        so the coefficients are all 1.
@@ -144,9 +140,9 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
        These simply say that the operator's total cost must fall
        between 0 and the real operator cost. */
     lp_constraints.resize(num_rows, lp::LPConstraint(0.0, 0.0));
-    for (OperatorProxy op : operators) {
-        lp_constraints[op.get_id()].set_lower_bound(0);
-        lp_constraints[op.get_id()].set_upper_bound(op.get_cost());
+    for (size_t op_id; op_id < operator_costs.size(); ++op_id) {
+        lp_constraints[op_id].set_lower_bound(0);
+        lp_constraints[op_id].set_upper_bound(operator_costs[op_id]);
     }
 }
 
