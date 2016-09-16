@@ -77,10 +77,14 @@ void LazySearch::get_successor_operators(
     vector<const GlobalOperator *> preferred_ops;
     for (Heuristic *heur : preferred_operator_heuristics) {
         if (!current_eval_context.is_heuristic_infinite(heur)) {
-            const vector<const GlobalOperator *> &preferred =
-                current_eval_context.get_preferred_operators(heur);
-            preferred_ops.insert(
-                preferred_ops.end(), preferred.begin(), preferred.end());
+            for (const GlobalOperator *op :
+                 current_eval_context.get_preferred_operators(heur)) {
+                int op_id = get_operator_id(op);
+                if (!operator_is_preferred[op_id]) {
+                    preferred_ops.push_back(op);
+                    operator_is_preferred[op_id] = true;
+                }
+            }
         }
     }
 
@@ -94,9 +98,7 @@ void LazySearch::get_successor_operators(
 
     if (preferred_successors_first) {
         for (const GlobalOperator *op : preferred_ops) {
-            int op_id = get_operator_id(op);
-            if (!operator_is_preferred[op_id]) {
-                operator_is_preferred[op_id] = true;
+            if (operator_is_preferred[get_operator_id(op)]) {
                 successor_ops.push_back(op);
             }
         }
@@ -106,12 +108,6 @@ void LazySearch::get_successor_operators(
                 successor_ops.push_back(op);
         }
     } else {
-        for (const GlobalOperator *op : preferred_ops) {
-            int op_id = get_operator_id(op);
-            if (!operator_is_preferred[op_id]) {
-                operator_is_preferred[op_id] = true;
-            }
-        }
         successor_ops.swap(applicable_ops);
     }
 }
