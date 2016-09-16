@@ -73,6 +73,10 @@ public:
     int get_cost() const {return cost; }
 };
 
+/*
+  TODO: If we decide to keep GlobalOperator in some form or another, it
+  should get a get_id() method.
+*/
 extern int get_operator_id(const GlobalOperator *op);
 
 #endif
