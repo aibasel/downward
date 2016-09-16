@@ -140,7 +140,7 @@ LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCost
        These simply say that the operator's total cost must fall
        between 0 and the real operator cost. */
     lp_constraints.resize(num_rows, lp::LPConstraint(0.0, 0.0));
-    for (size_t op_id; op_id < operator_costs.size(); ++op_id) {
+    for (size_t op_id = 0; op_id < operator_costs.size(); ++op_id) {
         lp_constraints[op_id].set_lower_bound(0);
         lp_constraints[op_id].set_upper_bound(operator_costs[op_id]);
     }
