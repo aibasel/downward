@@ -24,32 +24,33 @@ inline bool is_goal_state(TaskProxy task, const State &state) {
 
   Runtime: O(n), where n is the number of operators.
 */
-bool is_unit_cost(TaskProxy task);
+extern bool is_unit_cost(TaskProxy task);
 
 // Runtime: O(1)
-bool has_axioms(TaskProxy task);
+extern bool has_axioms(TaskProxy task);
 
 /*
   Report an error and exit with ExitCode::UNSUPPORTED if the task has axioms.
   Runtime: O(1)
 */
-void verify_no_axioms(TaskProxy task);
+extern void verify_no_axioms(TaskProxy task);
 
 // Runtime: O(n), where n is the number of operators.
-bool has_conditional_effects(TaskProxy task);
+extern bool has_conditional_effects(TaskProxy task);
 
 /*
   Report an error and exit with ExitCode::UNSUPPORTED if the task has
   conditional effects.
   Runtime: O(n), where n is the number of operators.
 */
-void verify_no_conditional_effects(TaskProxy task);
+extern void verify_no_conditional_effects(TaskProxy task);
 
-double get_average_operator_cost(TaskProxy task_proxy);
-int get_min_operator_cost(TaskProxy task_proxy);
+extern std::vector<int> get_operator_costs(const TaskProxy &task);
+extern double get_average_operator_cost(TaskProxy task_proxy);
+extern int get_min_operator_cost(TaskProxy task_proxy);
 
 template<class FactProxyCollection>
-std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
+extern std::vector<FactPair> get_fact_pairs(const FactProxyCollection &facts) {
     std::vector<FactPair> fact_pairs;
     fact_pairs.reserve(facts.size());
     for (FactProxy fact : facts) {
