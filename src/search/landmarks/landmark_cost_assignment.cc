@@ -122,7 +122,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value() {
 }
 
 LandmarkEfficientOptimalSharedCostAssignment::LandmarkEfficientOptimalSharedCostAssignment(
-    const std::vector<int> &operator_costs, const std::shared_ptr<LandmarkGraph> &graph,
+    const std::vector<int> &operator_costs,
+    const std::shared_ptr<LandmarkGraph> &graph,
     lp::LPSolverType solver_type)
     : LandmarkCostAssignment(operator_costs, graph),
       lp_solver(solver_type) {
