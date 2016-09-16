@@ -17,14 +17,16 @@ static vector<vector<FactPair>> get_preconditions_by_operator(
     vector<vector<FactPair>> preconditions_by_operator;
     preconditions_by_operator.reserve(ops.size());
     for (OperatorProxy op : ops) {
-        preconditions_by_operator.push_back(
-            get_fact_pairs(op.get_preconditions()));
+        vector<FactPair> preconditions = get_fact_pairs(op.get_preconditions());
+        sort(preconditions.begin(), preconditions.end());
+        preconditions_by_operator.push_back(move(preconditions));
     }
     return preconditions_by_operator;
 }
 
 static vector<FactPair> get_postconditions(
     const OperatorProxy &op) {
+    // Use map to obtain sorted postconditions.
     map<int, int> var_to_post;
     for (FactProxy fact : op.get_preconditions()) {
         var_to_post[fact.get_variable().get_id()] = fact.get_value();
@@ -38,7 +40,6 @@ static vector<FactPair> get_postconditions(
     for (const pair<int, int> &fact : var_to_post) {
         postconditions.emplace_back(fact.first, fact.second);
     }
-    assert(is_sorted(postconditions.begin(), postconditions.end()));
     return postconditions;
 }
 
@@ -53,13 +54,15 @@ static vector<vector<FactPair>> get_postconditions_by_operator(
 }
 
 static int lookup_value(const vector<FactPair> &facts, int var) {
-    // TODO: Test if binary search is faster.
+    assert(is_sorted(facts.begin(), facts.end()));
     for (const FactPair &fact : facts) {
         if (fact.var == var) {
             return fact.value;
+        } else if (fact.var > var) {
+            return UNDEFINED_VALUE;
         }
     }
-    return -1;
+    return UNDEFINED_VALUE;
 }
 
 
