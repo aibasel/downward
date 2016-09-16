@@ -118,16 +118,16 @@ void HMLandmarks::get_m_sets_(const VariablesProxy &variables, int m, int num_in
     // include a value of current_var in the set
     for (int i = 0; i < variables[current_var].get_domain_size(); ++i) {
         bool use_var = true;
-        for (size_t j = 0; j < current.size(); ++j) {
-            if (!interesting(variables,
-                             current_var, i, current[j].var, current[j].value)) {
+        FactPair current_var_fact(current_var, i);
+        for (const FactPair &current_fact : current) {
+            if (!interesting(variables, current_var_fact, current_fact)) {
                 use_var = false;
                 break;
             }
         }
 
         if (use_var) {
-            current.push_back(FactPair(current_var, i));
+            current.push_back(current_var_fact);
             get_m_sets_(variables, m, num_included + 1, current_var + 1, current, subsets);
             current.pop_back();
         }
@@ -157,8 +157,7 @@ void HMLandmarks::get_m_sets_of_set(const VariablesProxy &variables,
 
     bool use_var = true;
     for (const FactPair &fluent : current) {
-        if (!interesting(variables, superset[current_var_index].var, superset[current_var_index].value,
-                         fluent.var, fluent.value)) {
+        if (!interesting(variables, superset[current_var_index], fluent)) {
             use_var = false;
             break;
         }
@@ -209,10 +208,7 @@ void HMLandmarks::get_split_m_sets(
         (ss2_var_index == sup2_size ||
          superset1[ss1_var_index] < superset2[ss2_var_index])) {
         for (const FactPair &fluent : current) {
-            if (!interesting(variables,
-                             superset1[ss1_var_index].var,
-                             superset1[ss1_var_index].value,
-                             fluent.var, fluent.value)) {
+            if (!interesting(variables, superset1[ss1_var_index], fluent)) {
                 use_var = false;
                 break;
             }
@@ -233,10 +229,7 @@ void HMLandmarks::get_split_m_sets(
                          current, subsets, superset1, superset2);
     } else {
         for (const FactPair &fluent : current) {
-            if (!interesting(variables,
-                             superset2[ss2_var_index].var,
-                             superset2[ss2_var_index].value,
-                             fluent.var, fluent.value)) {
+            if (!interesting(variables, superset2[ss2_var_index], fluent)) {
                 use_var = false;
                 break;
             }
@@ -560,11 +553,10 @@ void HMLandmarks::build_pm_ops(const TaskProxy &task_proxy) {
 }
 
 bool HMLandmarks::interesting(const VariablesProxy &variables,
-                              int var1, int val1,
-                              int var2, int val2) const {
+                              const FactPair &fact1, const FactPair &fact2) const {
     // mutexes can always be safely pruned
-    return !variables[var1].get_fact(val1).is_mutex(
-        variables[var2].get_fact(val2));
+    return !variables[fact1.var].get_fact(fact1.value).is_mutex(
+        variables[fact2.var].get_fact(fact2.value));
 }
 
 HMLandmarks::HMLandmarks(const options::Options &opts)
