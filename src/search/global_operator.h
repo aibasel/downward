@@ -84,4 +84,6 @@ public:
     int get_cost() const {return cost; }
 };
 
+extern int get_operator_id(const GlobalOperator *op);
+
 #endif
