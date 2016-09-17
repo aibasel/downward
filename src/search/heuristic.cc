@@ -23,18 +23,13 @@ Heuristic::Heuristic(const Options &opts)
       task(get_task_from_options(opts)),
       task_proxy(*task),
       cost_type(OperatorCost(opts.get_enum("cost_type"))) {
-    operator_is_preferred.resize(task_proxy.get_operators().size(), false);
 }
 
 Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
-    int op_id = get_operator_id(op);
-    if (!operator_is_preferred[op_id]) {
-        operator_is_preferred[op_id] = true;
-        preferred_operators.push_back(op);
-    }
+    preferred_operators.push_back(op);
 }
 
 void Heuristic::set_preferred(OperatorProxy op) {
@@ -124,7 +119,6 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     result.set_h_value(heuristic);
     result.set_preferred_operators(move(preferred_operators));
     assert(preferred_operators.empty());
-    fill(operator_is_preferred.begin(), operator_is_preferred.end(), false);
     return result;
 }
 

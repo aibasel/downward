@@ -38,7 +38,6 @@ class Heuristic : public ScalarEvaluator {
       being able to reuse a vector from one iteration to the next, but
       this seems to be the only potential downside.
     */
-    std::vector<bool> operator_is_preferred;
     std::vector<const GlobalOperator *> preferred_operators;
 
 protected:
@@ -59,12 +58,18 @@ protected:
     enum {DEAD_END = -1, NO_VALUE = -2};
     // TODO: Call with State directly once all heuristics support it.
     virtual int compute_heuristic(const GlobalState &state) = 0;
-    // Usage note: It's OK to set the same operator as preferred
-    // multiple times -- it will still only appear in the list of
-    // preferred operators for this heuristic once.
+
+    /*
+      Usage note: Marking the same operator as preferred multiple times
+      will make it appear multiple times in the list of preferred
+      operators for this heuristic. However, all code that uses
+      preferred-operator lists combines the lists from all
+      preferred-operator heuristics and filters duplicates.
+    */
     // TODO: Make private once all heuristics use the TaskProxy class.
     void set_preferred(const GlobalOperator *op);
     void set_preferred(OperatorProxy op);
+
     // TODO: Remove once all heuristics use the TaskProxy class.
     int get_adjusted_cost(const GlobalOperator &op) const;
     /* TODO: Make private and use State instead of GlobalState once all
