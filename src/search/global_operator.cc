@@ -129,6 +129,7 @@ void GlobalOperator::dump() const {
 }
 
 int get_operator_id(const GlobalOperator *op) {
+    assert(!op->is_axiom());
     int op_index = op - &*g_operators.begin();
     assert(op_index >= 0 && op_index < static_cast<int>(g_operators.size()));
     return op_index;
