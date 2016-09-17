@@ -53,6 +53,6 @@ exp.add_suite(BENCHMARKS_DIR, SUITE)
 
 exp.add_absolute_report_step()
 exp.add_comparison_table_step()
-exp.add_scatter_plot_step(attributes=["total_time"])
+exp.add_scatter_plot_step(relative=True, attributes=["total_time"])
 
 exp()

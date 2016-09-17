@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import defaultdict
+import logging
 
 from matplotlib import ticker
 
@@ -71,7 +72,7 @@ class RelativeScatterPlotReport(ScatterPlotReport):
         self.xlim_left = float("inf")
         for (domain, problem), runs in self.problem_runs.items():
             if len(runs) != 2:
-                continue
+                logging.critical("Can only compare 2 configs")
             run1, run2 = runs
             assert (run1['config'] == self.configs[0] and
                     run2['config'] == self.configs[1])
@@ -96,6 +97,9 @@ class RelativeScatterPlotReport(ScatterPlotReport):
             self.ylim_top = max(self.ylim_top, 1 / float(self.ylim_bottom))
         if self.ylim_top > 1:
             self.ylim_bottom = min(self.ylim_bottom, 1 / float(self.ylim_top))
+        if self.ylim_bottom == self.ylim_top:
+            self.ylim_bottom *= 0.95
+            self.ylim_top *= 1.05
         return categories
 
     def _set_scales(self, xscale, yscale):
