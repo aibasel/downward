@@ -74,6 +74,9 @@ public:
 };
 
 /*
+  Note: It is an error (guarded by an assertion) to call this function
+  on axioms.
+
   TODO: If we decide to keep GlobalOperator in some form or another, it
   should get a get_id() method.
 */
