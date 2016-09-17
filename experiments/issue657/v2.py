@@ -6,6 +6,7 @@ import os
 from lab.environments import LocalEnvironment, MaiaEnvironment
 
 from common_setup import IssueConfig, IssueExperiment, is_test_run, get_repo_base
+from relativescatter import RelativeScatterPlotReport
 
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
@@ -54,5 +55,11 @@ exp.add_algorithm(
     ["--search", "astar(cegar(max_states=10000,max_time=infinity,max_transitions=infinity))"])
 
 exp.add_absolute_report_step()
+exp.add_report(RelativeScatterPlotReport(
+        filter_config=["01:issue657-v2-base:cegar", "02:issue657-v2:cegar"],
+        attributes=["total_time"],
+        get_category=lambda run1, run2: run1["domain"],
+        legend_location=(1.3, 0.5)),
+    outfile="issue657-base-vs-v2.png")
 
 exp()
