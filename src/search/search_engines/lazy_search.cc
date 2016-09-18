@@ -10,6 +10,7 @@
 
 #include "../open_lists/open_list_factory.h"
 
+#include "../utils/ordered_set.h"
 #include "../utils/rng.h"
 
 #include <algorithm>
@@ -65,62 +66,65 @@ void LazySearch::initialize() {
     }
 }
 
-void LazySearch::get_successor_operators(
-    vector<const GlobalOperator *> &successor_operators,
-    vector<bool> &operator_is_preferred) {
-    assert(successor_operators.empty());
+utils::OrderedSet<const GlobalOperator *>
+LazySearch::collect_preferred_operators() {
+    utils::OrderedSet<const GlobalOperator *> preferred_operators;
+    for (Heuristic *heuristic : preferred_operator_heuristics) {
+        if (!current_eval_context.is_heuristic_infinite(heuristic)) {
+            for (const GlobalOperator *op :
+                 current_eval_context.get_preferred_operators(heuristic)) {
+                preferred_operators.add(op);
+            }
+        }
+    }
+    return preferred_operators;
+}
+
+vector<const GlobalOperator *> LazySearch::get_successor_operators(
+    vector<const GlobalOperator *> &preferred_operators) {
 
     vector<const GlobalOperator *> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);
 
-    vector<const GlobalOperator *> preferred_operators;
-    for (Heuristic *heur : preferred_operator_heuristics) {
-        if (!current_eval_context.is_heuristic_infinite(heur)) {
-            for (const GlobalOperator *op :
-                 current_eval_context.get_preferred_operators(heur)) {
-                int op_id = get_operator_id(op);
-                if (!operator_is_preferred[op_id]) {
-                    preferred_operators.push_back(op);
-                    operator_is_preferred[op_id] = true;
-                }
-            }
-        }
-    }
-
     if (randomize_successors) {
         g_rng()->shuffle(applicable_operators);
-        // Note that preferred_operators can contain duplicates that are
-        // only filtered out later, which gives operators "preferred
-        // multiple times" a higher chance to be ordered early.
         g_rng()->shuffle(preferred_operators);
     }
 
     if (preferred_successors_first) {
+        utils::OrderedSet<const GlobalOperator *> successor_operators;
         for (const GlobalOperator *op : preferred_operators) {
-            successor_operators.push_back(op);
+            successor_operators.add(op);
         }
-
         for (const GlobalOperator *op : applicable_operators) {
-            if (!operator_is_preferred[get_operator_id(op)])
-                successor_operators.push_back(op);
+            successor_operators.add(op);
         }
+        return successor_operators.extract_ordered_items();
     } else {
-        successor_operators.swap(applicable_operators);
+        return applicable_operators;
     }
 }
 
 void LazySearch::generate_successors() {
-    vector<const GlobalOperator *> successor_operators;
-    vector<bool> operator_is_preferred(g_operators.size(), false);
-    get_successor_operators(successor_operators, operator_is_preferred);
+    utils::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
+        collect_preferred_operators();
+    auto collections = ordered_preferred_operators_set.extract_collections();
+    vector<const GlobalOperator *> &ordered_preferred_operators =
+        collections.first;
+    unordered_set<const GlobalOperator *> &unordered_preferred_operators =
+        collections.second;
+
+    vector<const GlobalOperator *> successor_operators =
+        get_successor_operators(ordered_preferred_operators);
 
     statistics.inc_generated(successor_operators.size());
 
     for (const GlobalOperator *op : successor_operators) {
         int new_g = current_g + get_adjusted_cost(*op);
         int new_real_g = current_real_g + op->get_cost();
-        bool is_preferred = operator_is_preferred[get_operator_id(op)];
+        bool is_preferred = static_cast<bool>(
+            unordered_preferred_operators.count(op));
         if (new_real_g < bound) {
             EvaluationContext new_eval_context(
                 current_eval_context.get_cache(), new_g, is_preferred, nullptr);
