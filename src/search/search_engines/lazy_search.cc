@@ -98,9 +98,7 @@ void LazySearch::get_successor_operators(
 
     if (preferred_successors_first) {
         for (const GlobalOperator *op : preferred_ops) {
-            if (operator_is_preferred[get_operator_id(op)]) {
-                successor_ops.push_back(op);
-            }
+            successor_ops.push_back(op);
         }
 
         for (const GlobalOperator *op : applicable_ops) {
