@@ -110,7 +110,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     }
 
     result.set_h_value(heuristic);
-    result.set_preferred_operators(preferred_operators.extract_items());
+    result.set_preferred_operators(preferred_operators.extract_ordered_items());
     assert(preferred_operators.empty());
 
 #ifndef NDEBUG

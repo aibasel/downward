@@ -44,14 +44,14 @@ protected:
     virtual void initialize() override;
     virtual SearchStatus step() override;
 
+    utils::OrderedSet<const GlobalOperator *> collect_preferred_operators();
     void generate_successors();
     SearchStatus fetch_next_state();
 
     void reward_progress();
 
-    void get_successor_operators(
-        std::vector<const GlobalOperator *> &successor_operators,
-        std::vector<bool> &operator_is_preferred);
+    std::vector<const GlobalOperator *> get_successor_operators(
+        std::vector<const GlobalOperator *> &preferred_operators);
 
     // TODO: Move into SearchEngine?
     void print_checkpoint_line(int g) const;
