@@ -13,7 +13,7 @@ class OrderedSet {
 
 public:
     bool empty() const {
-        assert(!(unordered_items.empty() ^ ordered_items.empty()));
+        assert(unordered_items.size() == ordered_items.size());
         return ordered_items.empty();
     }
 
@@ -24,16 +24,17 @@ public:
     }
 
     void add(const T &item) {
-        if (!unordered_items.count(item)) {
+        auto result = unordered_items.insert(item);
+        bool inserted = result.second;
+        if (inserted) {
             ordered_items.push_back(item);
-            unordered_items.insert(item);
         }
-        assert(unordered_items.size() <= ordered_items.size());
+        assert(unordered_items.size() == ordered_items.size());
     }
 
     std::vector<T> extract_items() {
         std::vector<T> items = std::move(ordered_items);
-        unordered_items.clear();
+        std::unordered_set<T>().swap(unordered_items);
         assert(empty());
         return items;
     }
