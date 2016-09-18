@@ -131,6 +131,7 @@ fast_downward_plugin(
         utils/markup.cc
         utils/math.cc
         utils/memory.cc
+        utils/ordered_set.cc
         utils/rng.cc
         utils/rng_options.cc
         utils/system.cc
