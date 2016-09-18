@@ -6,6 +6,8 @@
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
 
+#include "utils/ordered_set.h"
+
 #include <memory>
 #include <vector>
 
@@ -35,10 +37,10 @@ class Heuristic : public ScalarEvaluator {
       compute_heuristic return an EvaluationResult object.
 
       If we do this, we should be mindful of the cost incurred by not
-      being able to reuse a vector from one iteration to the next, but
-      this seems to be the only potential downside.
+      being able to reuse the data structure from one iteration to the
+      next, but this seems to be the only potential downside.
     */
-    std::vector<const GlobalOperator *> preferred_operators;
+    utils::OrderedSet<const GlobalOperator *> preferred_operators;
 
 protected:
     /*
@@ -61,10 +63,8 @@ protected:
 
     /*
       Usage note: Marking the same operator as preferred multiple times
-      will make it appear multiple times in the list of preferred
-      operators for this heuristic. However, all code that uses
-      preferred-operator lists combines the lists from all
-      preferred-operator heuristics and filters duplicates.
+      is OK -- it will only appear once in the list of preferred
+      operators for this heuristic.
     */
     // TODO: Make private once all heuristics use the TaskProxy class.
     void set_preferred(const GlobalOperator *op);

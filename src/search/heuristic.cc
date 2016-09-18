@@ -29,7 +29,7 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const GlobalOperator *op) {
-    preferred_operators.push_back(op);
+    preferred_operators.add(op);
 }
 
 void Heuristic::set_preferred(OperatorProxy op) {
@@ -109,16 +109,17 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
         heuristic = EvaluationResult::INFTY;
     }
 
+    result.set_h_value(heuristic);
+    result.set_preferred_operators(preferred_operators.extract_items());
+    assert(preferred_operators.empty());
+
 #ifndef NDEBUG
     if (heuristic != EvaluationResult::INFTY) {
-        for (size_t i = 0; i < preferred_operators.size(); ++i)
-            assert(preferred_operators[i]->is_applicable(state));
+        for (const GlobalOperator *op : result.get_preferred_operators())
+            assert(op->is_applicable(state));
     }
 #endif
 
-    result.set_h_value(heuristic);
-    result.set_preferred_operators(move(preferred_operators));
-    assert(preferred_operators.empty());
     return result;
 }
 
