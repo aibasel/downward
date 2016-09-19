@@ -36,6 +36,10 @@ public:
         assert(unordered_items.size() == ordered_items.size());
     }
 
+    bool contains(const T &item) const {
+        return static_cast<bool>(unordered_items.count(item));
+    }
+
     std::vector<T> extract_ordered_items() {
         std::vector<T> items = std::move(ordered_items);
         std::unordered_set<T>().swap(unordered_items);
