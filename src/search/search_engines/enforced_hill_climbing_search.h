@@ -46,13 +46,11 @@ class EnforcedHillClimbingSearch : public SearchEngine {
     int num_ehc_phases;
     int last_num_expanded;
 
-    void get_preferred_operators_info(
+    utils::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+        EvaluationContext &eval_context);
+    std::vector<const GlobalOperator *> get_successor_operators(
         EvaluationContext &eval_context,
-        std::vector<const GlobalOperator *> &preferred_operators,
-        std::vector<bool> &operator_is_preferred) const;
-    std::vector<const GlobalOperator *> get_successors(
-        EvaluationContext &eval_context,
-        std::vector<const GlobalOperator *> &preferred_ops);
+        std::vector<const GlobalOperator *> &preferred_operators);
     void expand(EvaluationContext &eval_context);
     void reach_state(
         const GlobalState &parent, const GlobalOperator &op,
