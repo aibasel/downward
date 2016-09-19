@@ -68,7 +68,6 @@ void LazySearch::initialize() {
 
 vector<const GlobalOperator *> LazySearch::get_successor_operators(
     vector<const GlobalOperator *> &preferred_operators) {
-
     vector<const GlobalOperator *> applicable_operators;
     g_successor_generator->generate_applicable_ops(
         current_state, applicable_operators);

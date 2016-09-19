@@ -137,7 +137,7 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
 
 utils::OrderedSet<const GlobalOperator *> collect_preferred_operators(
     EvaluationContext &eval_context,
-    const std::vector<Heuristic *> &preferred_operator_heuristics) {
+    const vector<Heuristic *> &preferred_operator_heuristics) {
     utils::OrderedSet<const GlobalOperator *> preferred_operators;
     for (Heuristic *heuristic : preferred_operator_heuristics) {
         if (!eval_context.is_heuristic_infinite(heuristic)) {
