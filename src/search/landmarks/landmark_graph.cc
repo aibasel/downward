@@ -26,7 +26,8 @@ void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
     for (VariableProxy var : variables) {
         operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
     }
-    for (OperatorProxy op : task_proxy.get_operators()) {
+    OperatorsProxy operators = task_proxy.get_operators();
+    for (OperatorProxy op : operators) {
         const EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
@@ -37,7 +38,7 @@ void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
         const EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(op.get_id());
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(operators.size() + op.get_id());
         }
     }
 }
