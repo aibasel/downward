@@ -1,6 +1,8 @@
 #ifndef ALGORITHMS_ORDERED_SET_H
 #define ALGORITHMS_ORDERED_SET_H
 
+#include "../utils/collections.h"
+
 #include <cassert>
 #include <unordered_set>
 #include <vector>
@@ -22,8 +24,8 @@ public:
     }
 
     void clear() {
-        ordered_items.clear();
-        unordered_items.clear();
+        utils::release_memory(ordered_items);
+        utils::release_memory(unordered_items);
         assert(empty());
     }
 
