@@ -86,7 +86,7 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
         for (const GlobalOperator *op : applicable_operators) {
             successor_operators.add(op);
         }
-        return successor_operators.pop_ordered_items();
+        return successor_operators.pop_as_vector();
     } else {
         return applicable_operators;
     }
