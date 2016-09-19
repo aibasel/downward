@@ -147,7 +147,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
     utils::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
-    auto collections = ordered_preferred_operators_set.extract_collections();
+    auto collections = ordered_preferred_operators_set.pop_collections();
     vector<const GlobalOperator *> &ordered_preferred_operators =
         collections.first;
     unordered_set<const GlobalOperator *> &unordered_preferred_operators =

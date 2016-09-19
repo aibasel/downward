@@ -86,7 +86,7 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
         for (const GlobalOperator *op : applicable_operators) {
             successor_operators.add(op);
         }
-        return successor_operators.extract_ordered_items();
+        return successor_operators.pop_ordered_items();
     } else {
         return applicable_operators;
     }
@@ -96,7 +96,7 @@ void LazySearch::generate_successors() {
     utils::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
-    auto collections = ordered_preferred_operators_set.extract_collections();
+    auto collections = ordered_preferred_operators_set.pop_collections();
     vector<const GlobalOperator *> &ordered_preferred_operators =
         collections.first;
     unordered_set<const GlobalOperator *> &unordered_preferred_operators =
