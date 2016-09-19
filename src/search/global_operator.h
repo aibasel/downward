@@ -73,13 +73,4 @@ public:
     int get_cost() const {return cost; }
 };
 
-/*
-  Note: It is an error (guarded by an assertion) to call this function
-  on axioms.
-
-  TODO: If we decide to keep GlobalOperator in some form or another, it
-  should get a get_id() method.
-*/
-extern int get_operator_id(const GlobalOperator *op);
-
 #endif
