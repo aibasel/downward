@@ -6,8 +6,9 @@
 #include "option_parser.h"
 #include "plugin.h"
 
+#include "algorithms/ordered_set.h"
+
 #include "utils/countdown_timer.h"
-#include "utils/ordered_set.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -135,10 +136,10 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
     "");
 
 
-utils::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
     EvaluationContext &eval_context,
     const vector<Heuristic *> &preferred_operator_heuristics) {
-    utils::OrderedSet<const GlobalOperator *> preferred_operators;
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
     for (Heuristic *heuristic : preferred_operator_heuristics) {
         if (!eval_context.is_heuristic_infinite(heuristic)) {
             for (const GlobalOperator *op :

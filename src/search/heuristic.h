@@ -6,7 +6,7 @@
 #include "scalar_evaluator.h"
 #include "task_proxy.h"
 
-#include "utils/ordered_set.h"
+#include "algorithms/ordered_set.h"
 
 #include <memory>
 #include <vector>
@@ -40,7 +40,7 @@ class Heuristic : public ScalarEvaluator {
       being able to reuse the data structure from one iteration to the
       next, but this seems to be the only potential downside.
     */
-    utils::OrderedSet<const GlobalOperator *> preferred_operators;
+    algorithms::OrderedSet<const GlobalOperator *> preferred_operators;
 
 protected:
     /*

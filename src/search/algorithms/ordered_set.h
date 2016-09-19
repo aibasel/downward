@@ -1,11 +1,11 @@
-#ifndef UTILS_ORDERED_SET_H
-#define UTILS_ORDERED_SET_H
+#ifndef ALGORITHMS_ORDERED_SET_H
+#define ALGORITHMS_ORDERED_SET_H
 
 #include <cassert>
 #include <unordered_set>
 #include <vector>
 
-namespace utils {
+namespace algorithms {
 /*
   Combine vector and unordered_set to store a set of elements, ordered
   by insertion time.

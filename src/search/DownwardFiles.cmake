@@ -119,6 +119,14 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME ALGORITHMS
+    HELP "General-purpose algorithms"
+    SOURCES
+        algorithms/ordered_set.h
+    CORE_PLUGIN
+)
+
+fast_downward_plugin(
     NAME UTILS
     HELP "System utilities"
     SOURCES
@@ -131,7 +139,6 @@ fast_downward_plugin(
         utils/markup.cc
         utils/math.cc
         utils/memory.cc
-        utils/ordered_set.cc
         utils/rng.cc
         utils/rng_options.cc
         utils/system.cc
