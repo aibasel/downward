@@ -10,9 +10,9 @@
 #include "../pruning_method.h"
 #include "../successor_generator.h"
 
-#include "../open_lists/open_list_factory.h"
+#include "../algorithms/ordered_set.h"
 
-#include "../utils/ordered_set.h"
+#include "../open_lists/open_list_factory.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -120,7 +120,7 @@ SearchStatus EagerSearch::step() {
 
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node.get_g(), false, &statistics, true);
-    utils::OrderedSet<const GlobalOperator *> preferred_ops =
+    algorithms::OrderedSet<const GlobalOperator *> preferred_ops =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
 
     for (const GlobalOperator *op : applicable_ops) {

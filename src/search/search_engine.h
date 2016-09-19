@@ -17,7 +17,7 @@ class OptionParser;
 class Options;
 }
 
-namespace utils {
+namespace algorithms {
 template <typename T>
 class OrderedSet;
 }
@@ -66,7 +66,7 @@ public:
 */
 extern void print_initial_h_values(const EvaluationContext &eval_context);
 
-extern utils::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+extern algorithms::OrderedSet<const GlobalOperator *> collect_preferred_operators(
     EvaluationContext &eval_context,
     const std::vector<Heuristic *> &preferred_operator_heuristics);
 

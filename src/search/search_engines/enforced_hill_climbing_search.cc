@@ -11,6 +11,8 @@
 #include "../open_lists/standard_scalar_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
 
+#include "../algorithms/ordered_set.h"
+
 #include "../utils/system.h"
 
 using namespace std;
@@ -145,7 +147,7 @@ EnforcedHillClimbingSearch::get_successor_operators(
 void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
 
-    utils::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
+    algorithms::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
         collect_preferred_operators(eval_context, preferred_operator_heuristics);
     auto collections = ordered_preferred_operators_set.pop_collections();
     vector<const GlobalOperator *> &ordered_preferred_operators =

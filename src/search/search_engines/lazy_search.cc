@@ -8,9 +8,10 @@
 #include "../plugin.h"
 #include "../successor_generator.h"
 
+#include "../algorithms/ordered_set.h"
+
 #include "../open_lists/open_list_factory.h"
 
-#include "../utils/ordered_set.h"
 #include "../utils/rng.h"
 
 #include <algorithm>
@@ -78,7 +79,7 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
     }
 
     if (preferred_successors_first) {
-        utils::OrderedSet<const GlobalOperator *> successor_operators;
+        algorithms::OrderedSet<const GlobalOperator *> successor_operators;
         for (const GlobalOperator *op : preferred_operators) {
             successor_operators.add(op);
         }
@@ -92,7 +93,7 @@ vector<const GlobalOperator *> LazySearch::get_successor_operators(
 }
 
 void LazySearch::generate_successors() {
-    utils::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
+    algorithms::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
         collect_preferred_operators(
             current_eval_context, preferred_operator_heuristics);
     auto collections = ordered_preferred_operators_set.pop_collections();
