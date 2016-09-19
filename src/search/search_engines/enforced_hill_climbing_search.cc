@@ -125,21 +125,6 @@ void EnforcedHillClimbingSearch::initialize() {
     current_phase_start_g = 0;
 }
 
-utils::OrderedSet<const GlobalOperator *>
-EnforcedHillClimbingSearch::collect_preferred_operators(
-    EvaluationContext &eval_context) {
-    utils::OrderedSet<const GlobalOperator *> preferred_operators;
-    for (Heuristic *heuristic : preferred_operator_heuristics) {
-        if (!eval_context.is_heuristic_infinite(heuristic)) {
-            for (const GlobalOperator *op :
-                 eval_context.get_preferred_operators(heuristic)) {
-                preferred_operators.add(op);
-            }
-        }
-    }
-    return preferred_operators;
-}
-
 vector<const GlobalOperator *>
 EnforcedHillClimbingSearch::get_successor_operators(
     EvaluationContext &eval_context,
@@ -161,7 +146,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
     SearchNode node = search_space.get_node(eval_context.get_state());
 
     utils::OrderedSet<const GlobalOperator *> ordered_preferred_operators_set =
-        collect_preferred_operators(eval_context);
+        collect_preferred_operators(eval_context, preferred_operator_heuristics);
     auto collections = ordered_preferred_operators_set.extract_collections();
     vector<const GlobalOperator *> &ordered_preferred_operators =
         collections.first;

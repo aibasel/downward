@@ -7,6 +7,7 @@
 #include "plugin.h"
 
 #include "utils/countdown_timer.h"
+#include "utils/ordered_set.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -132,3 +133,19 @@ static PluginTypePlugin<SearchEngine> _type_plugin(
     "SearchEngine",
     // TODO: Replace empty string by synopsis for the wiki page.
     "");
+
+
+utils::OrderedSet<const GlobalOperator *> collect_preferred_operators(
+    EvaluationContext &eval_context,
+    const std::vector<Heuristic *> &preferred_operator_heuristics) {
+    utils::OrderedSet<const GlobalOperator *> preferred_operators;
+    for (Heuristic *heuristic : preferred_operator_heuristics) {
+        if (!eval_context.is_heuristic_infinite(heuristic)) {
+            for (const GlobalOperator *op :
+                 eval_context.get_preferred_operators(heuristic)) {
+                preferred_operators.add(op);
+            }
+        }
+    }
+    return preferred_operators;
+}

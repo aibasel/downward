@@ -44,7 +44,6 @@ protected:
     virtual void initialize() override;
     virtual SearchStatus step() override;
 
-    utils::OrderedSet<const GlobalOperator *> collect_preferred_operators();
     void generate_successors();
     SearchStatus fetch_next_state();
 
