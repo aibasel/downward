@@ -1,5 +1,7 @@
 #include "landmark_graph.h"
 
+#include "util.h"
+
 #include "../task_proxy.h"
 
 #include <cassert>
@@ -31,14 +33,16 @@ void LandmarkGraph::generate_operators_lookups(const TaskProxy &task_proxy) {
         const EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(op.get_id());
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(op));
         }
     }
-    for (OperatorProxy op : task_proxy.get_axioms()) {
-        const EffectsProxy effects = op.get_effects();
+    for (OperatorProxy axiom : task_proxy.get_axioms()) {
+        const EffectsProxy effects = axiom.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(operators.size() + op.get_id());
+            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+                get_operator_or_axiom_id(axiom));
         }
     }
 }

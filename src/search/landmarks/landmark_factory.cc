@@ -137,10 +137,10 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
     if (compute_lvl_op) {
         lvl_op.resize(operators.size() + axioms.size());
         for (OperatorProxy op : operators) {
-            add_operator_and_propositions_to_list(task_proxy, op, lvl_op);
+            add_operator_and_propositions_to_list(op, lvl_op);
         }
-        for (OperatorProxy op : axioms) {
-            add_operator_and_propositions_to_list(task_proxy, op, lvl_op);
+        for (OperatorProxy axiom : axioms) {
+            add_operator_and_propositions_to_list(axiom, lvl_op);
         }
     }
     VariablesProxy variables = task_proxy.get_variables();
@@ -173,12 +173,11 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
     return true;
 }
 
-void LandmarkFactory::add_operator_and_propositions_to_list(const TaskProxy &task_proxy,
-                                                            const OperatorProxy &op,
+void LandmarkFactory::add_operator_and_propositions_to_list(const OperatorProxy &op_or_axiom,
                                                             vector<unordered_map<FactPair, int>> &lvl_op) const {
-    int op_id = get_operator_or_axiom_id(task_proxy, op);
-    for (EffectProxy effect : op.get_effects()) {
-        lvl_op[op_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
+    int op_or_axiom_id = get_operator_or_axiom_id(op_or_axiom);
+    for (EffectProxy effect : op_or_axiom.get_effects()) {
+        lvl_op[op_or_axiom_id].emplace(effect.get_fact().get_pair(), numeric_limits<int>::max());
     }
 }
 
@@ -373,9 +372,9 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
 
             unordered_map<int, int> shared_eff;
             bool init = true;
-            const vector<int> &op_ids = lm_graph->get_operators_including_eff(lm_fact_a);
+            const vector<int> &op_or_axiom_ids = lm_graph->get_operators_including_eff(lm_fact_a);
             // Intersect operators that achieve a one by one
-            for (int op_id : op_ids) {
+            for (int op_or_axiom_id : op_or_axiom_ids) {
                 // If no shared effect among previous operators, break
                 if (!init && shared_eff.empty())
                     break;
@@ -385,7 +384,7 @@ bool LandmarkFactory::interferes(const TaskProxy &task_proxy,
                 // e.g. in Schedule. There, the same effect is conditioned on a disjunction
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
-                EffectsProxy effects = get_operator_or_axiom(task_proxy, op_id).get_effects();
+                EffectsProxy effects = get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
                 set<FactPair> trivially_conditioned_effects;
                 bool trivial_conditioned_effects_found = effect_always_happens(variables, effects,
                                                                                trivially_conditioned_effects);
@@ -808,11 +807,11 @@ void LandmarkFactory::calc_achievers(const TaskProxy &task_proxy, Exploration &e
         vector<unordered_map<FactPair, int>> lvl_op;
         compute_predecessor_information(task_proxy, exploration, lmn, lvl_var, lvl_op);
 
-        for (int op_id : lmn->possible_achievers) {
-            OperatorProxy op = get_operator_or_axiom(task_proxy, op_id);
+        for (int op_or_axom_id : lmn->possible_achievers) {
+            OperatorProxy op_or_axiom = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
-            if (_possibly_reaches_lm(op, lvl_var, lmn)) {
-                lmn->first_achievers.insert(op_id);
+            if (_possibly_reaches_lm(op_or_axiom, lvl_var, lmn)) {
+                lmn->first_achievers.insert(op_or_axom_id);
             }
         }
     }
