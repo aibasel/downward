@@ -150,7 +150,7 @@ bool LandmarkFactory::relaxed_task_solvable(const TaskProxy &task_proxy,
                                      numeric_limits<int>::max());
     }
     // Extract propositions from "exclude"
-    set<int> exclude_op_ids;
+    unordered_set<int> exclude_op_ids;
     vector<FactPair> exclude_props;
     if (exclude) {
         for (OperatorProxy op : operators) {
@@ -200,7 +200,7 @@ bool LandmarkFactory::is_causal_landmark(const TaskProxy &task_proxy, Exploratio
         lvl_var[var.get_id()].resize(var.get_domain_size(),
                                      numeric_limits<int>::max());
     }
-    set<int> exclude_op_ids;
+    unordered_set<int> exclude_op_ids;
     vector<FactPair> exclude_props;
     for (OperatorProxy op : task_proxy.get_operators()) {
         if (is_landmark_precondition(op, &landmark)) {

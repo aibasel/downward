@@ -122,7 +122,7 @@ void Exploration::set_additional_goals(const vector<FactPair> &add_goals) {
 
 void Exploration::build_unary_operators(const OperatorProxy &op) {
     // Note: changed from the original to allow sorting of operator conditions
-    int base_cost = op.get_cost();
+    int base_cost = op.get_cost(); // Is this correct? Which costs are used?
     EffectsProxy effects = op.get_effects();
     vector<ExProposition *> precondition;
     vector<FactPair> precondition_facts1;
@@ -155,7 +155,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 // heuristic computation
 void Exploration::setup_exploration_queue(const State &state,
                                           const vector<FactPair> &excluded_props,
-                                          const set<int> &excluded_op_ids,
+                                          const unordered_set<int> &excluded_op_ids,
                                           bool use_h_max) {
     prop_queue.clear();
 
@@ -325,7 +325,7 @@ void Exploration::compute_reachability_with_excludes(vector<vector<int>> &lvl_va
                                                      vector<unordered_map<FactPair, int>> &lvl_op,
                                                      bool level_out,
                                                      const vector<FactPair> &excluded_props,
-                                                     const set<int> &excluded_op_ids,
+                                                     const unordered_set<int> &excluded_op_ids,
                                                      bool compute_lvl_ops) {
     // Perform exploration using h_max-values
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props, excluded_op_ids, true);
