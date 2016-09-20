@@ -339,6 +339,8 @@ static Heuristic *_parse(OptionParser &parser) {
 
     Options opts = parser.parse();
 
+    set_task_and_reset_cost_type(opts);
+
     if (parser.dry_run())
         return nullptr;
     else
