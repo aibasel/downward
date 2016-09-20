@@ -76,6 +76,8 @@ struct ExUnaryOperator {
             return true;
         }
     }
+
+    bool is_axiom() {return op_id < 0; }
 };
 
 class Exploration : public Heuristic {
@@ -93,7 +95,7 @@ class Exploration : public Heuristic {
 
     bool heuristic_recomputation_needed;
 
-    void build_unary_operators(const OperatorProxy &op);
+    void build_unary_operators(const OperatorProxy &op_or_axiom);
     void simplify();
 
     void setup_exploration_queue(const State &state,

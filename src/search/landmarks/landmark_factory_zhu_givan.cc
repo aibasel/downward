@@ -271,19 +271,18 @@ void LandmarkFactoryZhuGivan::compute_triggers(const TaskProxy &task_proxy) {
 
     // compute triggers
     for (OperatorProxy op : task_proxy.get_operators()) {
-        add_operator_to_triggers(task_proxy, op);
+        add_operator_to_triggers(op);
     }
     for (OperatorProxy axiom : task_proxy.get_axioms()) {
-        add_operator_to_triggers(task_proxy, axiom);
+        add_operator_to_triggers(axiom);
     }
 }
 
-void LandmarkFactoryZhuGivan::add_operator_to_triggers(
-    const TaskProxy &task_proxy, const OperatorProxy &op_or_axiom) {
+void LandmarkFactoryZhuGivan::add_operator_to_triggers(const OperatorProxy &op_or_axiom) {
     // Collect possible triggers first.
     lm_set possible_triggers;
 
-    int op_or_axiom_id = get_operator_or_axiom_id(task_proxy, op_or_axiom);
+    int op_or_axiom_id = get_operator_or_axiom_id(op_or_axiom);
     PreconditionsProxy preconditions = op_or_axiom.get_preconditions();
     for (FactProxy precondition : preconditions)
         possible_triggers.insert(precondition.get_pair());
