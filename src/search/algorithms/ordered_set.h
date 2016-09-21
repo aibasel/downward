@@ -44,15 +44,13 @@ public:
 
     std::vector<T> pop_as_vector() {
         std::vector<T> items = std::move(ordered_items);
-        std::unordered_set<T>().swap(unordered_items);
-        assert(empty());
+        clear();
         return items;
     }
 
     std::unordered_set<T> pop_as_unordered_set() {
-        std::vector<T>().swap(ordered_items);
         std::vector<T> items = std::move(unordered_items);
-        assert(empty());
+        clear();
         return items;
     }
 
