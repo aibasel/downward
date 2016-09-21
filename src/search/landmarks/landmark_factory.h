@@ -101,7 +101,7 @@ private:
                                bool level_out,
                                const LandmarkNode *exclude,
                                bool compute_lvl_op = false) const;
-    void add_operator_and_propositions_to_list(const OperatorProxy &op_or_axiom,
+    void add_operator_and_propositions_to_list(const OperatorProxy &op,
                                                std::vector<std::unordered_map<FactPair, int>> &lvl_op) const;
     bool is_causal_landmark(const TaskProxy &task_proxy, Exploration &exploration, const LandmarkNode &landmark) const;
     virtual void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration); // keep this virtual because HMLandmarks overrides it!

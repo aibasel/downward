@@ -1,6 +1,8 @@
 #ifndef LANDMARKS_EXPLORATION_H
 #define LANDMARKS_EXPLORATION_H
 
+#include "util.h"
+
 #include "../abstract_task.h"
 #include "../heuristic.h"
 #include "../priority_queue.h"
@@ -45,7 +47,7 @@ struct ExProposition {
 };
 
 struct ExUnaryOperator {
-    int op_id;
+    int op_or_axiom_id;
     std::vector<ExProposition *> precondition;
     ExProposition *effect;
     int base_cost; // 0 for axioms, 1 for regular operators
@@ -55,8 +57,8 @@ struct ExUnaryOperator {
     int h_max_cost;
     int depth;
     ExUnaryOperator(const std::vector<ExProposition *> &pre, ExProposition *eff,
-                    int op_id, int base)
-        : op_id(op_id), precondition(pre), effect(eff), base_cost(base) {}
+                    int op_or_axiom_id, int base)
+        : op_or_axiom_id(op_or_axiom_id), precondition(pre), effect(eff), base_cost(base) {}
 
 
     bool operator<(const ExUnaryOperator &other) const {
@@ -77,7 +79,9 @@ struct ExUnaryOperator {
         }
     }
 
-    bool is_axiom() {return op_id < 0; }
+    bool is_induced_by_axiom(const TaskProxy &task_proxy) const {
+        return get_operator_or_axiom(task_proxy, op_or_axiom_id).is_axiom();
+    }
 };
 
 class Exploration : public Heuristic {
@@ -95,7 +99,7 @@ class Exploration : public Heuristic {
 
     bool heuristic_recomputation_needed;
 
-    void build_unary_operators(const OperatorProxy &op_or_axiom);
+    void build_unary_operators(const OperatorProxy &op);
     void simplify();
 
     void setup_exploration_queue(const State &state,

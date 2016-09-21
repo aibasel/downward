@@ -19,7 +19,7 @@ bool _possibly_reaches_lm(const OperatorProxy &op,
                           const LandmarkNode *lmp);
 
 OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id);
-int get_operator_or_axiom_id(const OperatorProxy &op_or_axiom);
+int get_operator_or_axiom_id(const OperatorProxy &op);
 }
 
 #endif
