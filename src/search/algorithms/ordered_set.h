@@ -18,6 +18,9 @@ class OrderedSet {
     std::unordered_set<T> unordered_items;
 
 public:
+    // Allow iterating over OrderedSet with CollectionIterator.
+    using ItemType = T;
+
     bool empty() const {
         assert(unordered_items.size() == ordered_items.size());
         return ordered_items.empty();
@@ -71,45 +74,6 @@ public:
         return collections;
     }
 };
-
-
-template<typename T>
-class OrderedSetIterator {
-    const OrderedSet<T> &ordered_set;
-    std::size_t pos;
-
-public:
-    OrderedSetIterator(const OrderedSet<T> &ordered_set, std::size_t pos)
-        : ordered_set(ordered_set), pos(pos) {
-    }
-
-    T operator*() const {
-        return ordered_set[pos];
-    }
-
-    OrderedSetIterator &operator++() {
-        ++pos;
-        return *this;
-    }
-
-    bool operator==(const OrderedSetIterator &other) const {
-        return &ordered_set == &other.ordered_set && pos == other.pos;
-    }
-
-    bool operator!=(const OrderedSetIterator &other) const {
-        return !(*this == other);
-    }
-};
-
-template<typename T>
-inline OrderedSetIterator<T> begin(OrderedSet<T> &ordered_set) {
-    return OrderedSetIterator<T>(ordered_set, 0);
-}
-
-template<typename T>
-inline OrderedSetIterator<T> end(OrderedSet<T> &ordered_set) {
-    return OrderedSetIterator<T>(ordered_set, ordered_set.size());
-}
 }
 
 #endif

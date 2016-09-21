@@ -3,6 +3,7 @@
 
 #include "abstract_task.h"
 
+#include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
 
@@ -91,46 +92,6 @@ class VariablesProxy;
 */
 
 
-// Basic iterator support for proxy classes.
-
-template<class ProxyCollection>
-class ProxyIterator {
-    const ProxyCollection &collection;
-    std::size_t pos;
-public:
-    ProxyIterator(const ProxyCollection &collection, std::size_t pos)
-        : collection(collection), pos(pos) {}
-    ~ProxyIterator() = default;
-
-    typename ProxyCollection::ItemType operator*() const {
-        return collection[pos];
-    }
-
-    ProxyIterator &operator++() {
-        ++pos;
-        return *this;
-    }
-
-    bool operator==(const ProxyIterator &other) const {
-        return pos == other.pos;
-    }
-
-    bool operator!=(const ProxyIterator &other) const {
-        return !(*this == other);
-    }
-};
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, 0);
-}
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, collection.size());
-}
-
-
 class FactProxy {
     const AbstractTask *task;
     FactPair fact;
@@ -168,6 +129,9 @@ public:
 };
 
 
+/*
+  Allow iterating over all facts of a task, e.g. in range-based for-loops.
+*/
 class FactsProxyIterator {
     const AbstractTask *task;
     int var_id;

@@ -45,4 +45,53 @@ void release_memory(T &collection) {
 }
 }
 
+
+/*
+  Basic iterator support for custom collections.
+
+  To allow iterating over a new custom collection class C with items of
+  type T, add the following methods and attribute:
+
+    const T &C::operator[](std::size_t) const;
+    std::size_t C::size() const;
+    C::ItemType; // with a public "using ItemType = T;"
+*/
+template<class Collection>
+class CollectionIterator {
+    const Collection &collection;
+    std::size_t pos;
+
+public:
+    CollectionIterator(const Collection &collection, std::size_t pos)
+        : collection(collection), pos(pos) {
+    }
+
+    typename Collection::ItemType operator*() const {
+        return collection[pos];
+    }
+
+    CollectionIterator &operator++() {
+        ++pos;
+        return *this;
+    }
+
+    bool operator==(const CollectionIterator &other) const {
+        return &collection == &other.collection && pos == other.pos;
+    }
+
+    bool operator!=(const CollectionIterator &other) const {
+        return !(*this == other);
+    }
+};
+
+template<class Collection>
+inline CollectionIterator<Collection> begin(Collection &collection) {
+    return CollectionIterator<Collection>(collection, 0);
+}
+
+template<class Collection>
+inline CollectionIterator<Collection> end(Collection &collection) {
+    return CollectionIterator<Collection>(collection, collection.size());
+}
+
 #endif
