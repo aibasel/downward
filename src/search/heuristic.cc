@@ -109,16 +109,16 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
         heuristic = EvaluationResult::INFTY;
     }
 
-    result.set_h_value(heuristic);
-    result.set_preferred_operators(preferred_operators.pop_as_vector());
-    assert(preferred_operators.empty());
-
 #ifndef NDEBUG
     if (heuristic != EvaluationResult::INFTY) {
-        for (const GlobalOperator *op : result.get_preferred_operators())
+        for (const GlobalOperator *op : preferred_operators)
             assert(op->is_applicable(state));
     }
 #endif
+
+    result.set_h_value(heuristic);
+    result.set_preferred_operators(preferred_operators.pop_as_vector());
+    assert(preferred_operators.empty());
 
     return result;
 }

@@ -23,6 +23,11 @@ public:
         return ordered_items.empty();
     }
 
+    bool size() const {
+        assert(unordered_items.size() == ordered_items.size());
+        return ordered_items.size();
+    }
+
     void clear() {
         utils::release_memory(ordered_items);
         utils::release_memory(unordered_items);
@@ -40,6 +45,11 @@ public:
 
     bool contains(const T &item) const {
         return static_cast<bool>(unordered_items.count(item));
+    }
+
+    const T &operator[](std::size_t pos) const {
+        assert(utils::in_bounds(pos, ordered_items));
+        return ordered_items[pos];
     }
 
     std::vector<T> pop_as_vector() {
@@ -61,6 +71,45 @@ public:
         return collections;
     }
 };
+
+
+template<typename T>
+class OrderedSetIterator {
+    const OrderedSet<T> &ordered_set;
+    std::size_t pos;
+
+public:
+    OrderedSetIterator(const OrderedSet<T> &ordered_set, std::size_t pos)
+        : ordered_set(ordered_set), pos(pos) {
+    }
+
+    T operator*() const {
+        return ordered_set[pos];
+    }
+
+    OrderedSetIterator &operator++() {
+        ++pos;
+        return *this;
+    }
+
+    bool operator==(const OrderedSetIterator &other) const {
+        return &ordered_set == &other.ordered_set && pos == other.pos;
+    }
+
+    bool operator!=(const OrderedSetIterator &other) const {
+        return !(*this == other);
+    }
+};
+
+template<typename T>
+inline OrderedSetIterator<T> begin(OrderedSet<T> &ordered_set) {
+    return OrderedSetIterator<T>(ordered_set, 0);
+}
+
+template<typename T>
+inline OrderedSetIterator<T> end(OrderedSet<T> &ordered_set) {
+    return OrderedSetIterator<T>(ordered_set, ordered_set.size());
+}
 }
 
 #endif
