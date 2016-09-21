@@ -72,10 +72,10 @@ AbstractState *AbstractSearch::astar_search(
         if (goals && goals->count(state) == 1) {
             return state;
         }
-        const Transitions &successors = (forward) ?
-            state->get_outgoing_transitions() :
-            state->get_incoming_transitions();
-        for (const Transition &transition : successors) {
+        const Transitions &transitions = forward ?
+                                         state->get_outgoing_transitions() :
+                                         state->get_incoming_transitions();
+        for (const Transition &transition : transitions) {
             int op_id = transition.op_id;
             AbstractState *successor = transition.target;
 
